@@ -1,0 +1,7 @@
+.git
+_build
+.gitignore
+.formatter.exs
+Dockerfile
+Jenkinsfile
+deps
