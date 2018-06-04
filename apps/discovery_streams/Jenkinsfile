@@ -6,14 +6,21 @@ node ('master') {
             returnStdout: true
         ).trim()
     }
+
+    def image
     stage('Build') {
-        docker.build("scos/cota_streaming_consumer:${GIT_COMMIT_HASH}")
+        image = docker.build("scos/cota-streaming-consumer:${GIT_COMMIT_HASH}")
     }
     stage('Test') {
-        docker.image("scos/cota_streaming_consumer:${GIT_COMMIT_HASH}")
-            .inside('-e MIX_ENV=test') {
-                sh('mix deps.get')
-                sh('mix test')
-            }
+        image.inside('-e MIX_ENV=test') {
+            sh('mix deps.get')
+            sh('mix test')
+        }
+    }
+    stage('Publish') {
+        docker.withRegistry("https://199837183662.dkr.ecr.us-east-2.amazonaws.com", "ecr:us-east-2:aws_jenkins_user") {
+            image.push()
+            image.push('latest')
+        }
     }
 }
