@@ -33,6 +33,9 @@ docker-compose up -d --build consumer
 
 ## Environment Variables
 
-- `MIV_ENV`: `dev`, `test`, `prod`
-- `COTA_DATA_TOPIC`: kafka topic name
-- `SECRET_KEY_BASE`: Pheonix uses this to verify cookies. Generate with `mix phx.gen.secret` or pass in your own.
+
+| Variable | Description | Example |
+| -------- | ----------- | ------- |
+| MIV_ENV | Environment for Mix build | `dev` or `test` or `prod`
+| COTA_DATA_TOPIC | kafka topic for vehicle position messages | |
+| SECRET_KEY_BASE | Pheonix uses this to verify cookies. Generate with `mix phx.gen.secret` or pass in your own | |

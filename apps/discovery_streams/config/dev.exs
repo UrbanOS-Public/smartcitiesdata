@@ -2,19 +2,8 @@ use Mix.Config
 
 config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
   debug_errors: true,
-  code_reloader: true,
   check_origin: false,
   watchers: []
-
-config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
-  live_reload: [
-    patterns: [
-      ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
-      ~r{priv/gettext/.*(po)$},
-      ~r{lib/cota_streaming_consumer_web/views/.*(ex)$},
-      ~r{lib/cota_streaming_consumer_web/templates/.*(eex)$}
-    ]
-  ]
 
 config :kaffe,
   consumer: [
