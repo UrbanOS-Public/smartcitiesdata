@@ -37,5 +37,6 @@ docker-compose up -d --build consumer
 | Variable | Description | Example |
 | -------- | ----------- | ------- |
 | MIV_ENV | Environment for Mix build | `dev` or `test` or `prod`
+| KAFKA_BROKERS | comma delimited list of kafka brokers | kafka1.com:9092,kafka2.com:9092
 | COTA_DATA_TOPIC | kafka topic for vehicle position messages | |
 | SECRET_KEY_BASE | Pheonix uses this to verify cookies. Generate with `mix phx.gen.secret` or pass in your own | |
