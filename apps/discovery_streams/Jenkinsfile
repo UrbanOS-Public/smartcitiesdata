@@ -11,12 +11,6 @@ node ('master') {
     stage('Build') {
         image = docker.build("scos/cota-streaming-consumer:${GIT_COMMIT_HASH}")
     }
-    stage('Test') {
-        image.inside('-e MIX_ENV=test') {
-            sh('mix deps.get')
-            sh('mix test')
-        }
-    }
     stage('Publish') {
         docker.withRegistry("https://199837183662.dkr.ecr.us-east-2.amazonaws.com", "ecr:us-east-2:aws_jenkins_user") {
             image.push()
