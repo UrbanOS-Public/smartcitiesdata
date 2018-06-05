@@ -8,8 +8,8 @@ config :logger, level: :info
 
 config :kaffe,
   consumer: [
-    # endpoints: Set in application.ex
-    # topics: Set in application.ex
+    endpoints: [kafka: 9093],
+    topics: [System.get_env("COTA_DATA_TOPIC")],
     consumer_group: "cota-streaming-consumer",
     message_handler: CotaStreamingConsumer
   ]
