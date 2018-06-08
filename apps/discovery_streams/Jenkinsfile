@@ -18,6 +18,6 @@ node ('master') {
         }
     }
     stage('Deploy to Dev') {
-        build job: 'deploy-cota-consumer', parameters: [credentials(name: 'kubernetesCreds', value: 'kubeconfig-dev')]
+        build job: 'deploy-cota-streaming-consumer', parameters: [credentials(name: 'kubernetesCreds', value: 'kubeconfig-dev')]
     }
 }
