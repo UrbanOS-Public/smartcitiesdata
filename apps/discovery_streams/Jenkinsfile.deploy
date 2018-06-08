@@ -1,0 +1,30 @@
+properties([
+    parameters([
+        credentials(
+            credentialType: 'com.microsoft.jenkins.kubernetes.credentials.KubeconfigCredentials', 
+            defaultValue: 'kubeconfig-dev', 
+            description: 'Environment to deploy to',
+            name: 'kubernetesCreds', 
+            required: true
+        )
+    ])
+])
+
+node('master') {
+    ansiColor('xterm') {
+
+        stage('Checkout') {
+            checkout scm
+        }
+
+        stage('Deploy') {
+            kubernetesDeploy(kubeconfigId: "${params.kubernetesCreds}",
+                    configs: 'k8s/*',
+                    secretName: 'regcred',
+                    dockerCredentials: [
+                            [credentialsId: 'ecr:us-east-2:aws_jenkins_user', url: 'https://199837183662.dkr.ecr.us-east-2.amazonaws.com'],
+                    ]
+            )
+        }
+    }
+}

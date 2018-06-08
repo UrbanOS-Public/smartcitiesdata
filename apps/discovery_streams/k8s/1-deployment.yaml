@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cota-streaming-consumer
+  labels:
+    app: cota-streaming-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cota-streaming-consumer
+  template:
+    metadata:
+      labels:
+        app: cota-streaming-consumer
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: cota-streaming-consumer
+        image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/cota-streaming-consumer:latest
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: cota-streaming-consumer
+        - configMapRef:
+            name: kafka-brokers

@@ -17,4 +17,7 @@ node ('master') {
             image.push('latest')
         }
     }
+    stage('Deploy to Dev') {
+        build job: 'deploy-cota-consumer', parameters: [credentials(name: 'kubernetesCreds', value: 'kubeconfig-dev')]
+    }
 }
