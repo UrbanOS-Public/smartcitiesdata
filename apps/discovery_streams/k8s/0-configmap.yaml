@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cota-streaming-consumer
+  namespace: default
+data:
+  COTA_DATA_TOPIC: "cota-vehicle-positions"

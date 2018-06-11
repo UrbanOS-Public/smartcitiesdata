@@ -6,6 +6,9 @@ config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
 
 config :logger, level: :info
 
+config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
+  check_origin: false
+
 config :kaffe,
   consumer: [
     # endpoints: Set in application.ex
