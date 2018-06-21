@@ -38,7 +38,8 @@ defmodule CotaStreamingConsumer.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:cowboy, "~> 1.0"},
       {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false},
-      {:kaffe, "~> 1.8"}
+      {:kaffe, "~> 1.8"},
+      {:cachex, "~> 3.0"}
     ]
   end
 end

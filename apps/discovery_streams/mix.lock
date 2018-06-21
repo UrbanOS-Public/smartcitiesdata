@@ -1,7 +1,9 @@
 %{
   "brod": {:hex, :brod, "3.4.0", "34664713baaa60aed3b560c6a679cf90ace8dde8672732e730218db57440e37a", [:make, :rebar, :rebar3], [{:kafka_protocol, "1.1.2", [hex: :kafka_protocol, repo: "hexpm", optional: false]}, {:supervisor3, "1.1.5", [hex: :supervisor3, repo: "hexpm", optional: false]}], "hexpm"},
+  "cachex": {:hex, :cachex, "3.0.2", "1351caa4e26e29f7d7ec1d29b53d6013f0447630bbf382b4fb5d5bad0209f203", [:mix], [{:eternal, "~> 1.2", [hex: :eternal, repo: "hexpm", optional: false]}, {:unsafe, "~> 1.0", [hex: :unsafe, repo: "hexpm", optional: false]}], "hexpm"},
   "cowboy": {:hex, :cowboy, "1.1.2", "61ac29ea970389a88eca5a65601460162d370a70018afe6f949a29dca91f3bb0", [:rebar3], [{:cowlib, "~> 1.0.2", [hex: :cowlib, repo: "hexpm", optional: false]}, {:ranch, "~> 1.3.2", [hex: :ranch, repo: "hexpm", optional: false]}], "hexpm"},
   "cowlib": {:hex, :cowlib, "1.0.2", "9d769a1d062c9c3ac753096f868ca121e2730b9a377de23dec0f7e08b1df84ee", [:make], [], "hexpm"},
+  "eternal": {:hex, :eternal, "1.2.0", "e2a6b6ce3b8c248f7dc31451aefca57e3bdf0e48d73ae5043229380a67614c41", [:mix], [], "hexpm"},
   "file_system": {:hex, :file_system, "0.2.5", "a3060f063b116daf56c044c273f65202e36f75ec42e678dc10653056d3366054", [:mix], [], "hexpm"},
   "kaffe": {:hex, :kaffe, "1.8.0", "c34fa86882c4f5fae70a5e7d21681a91d80483d37aaa380108dcaef56d86daed", [:mix], [{:brod, "~> 3.0", [hex: :brod, repo: "hexpm", optional: false]}], "hexpm"},
   "kafka_protocol": {:hex, :kafka_protocol, "1.1.2", "96d09c4287377795ae2c488aceae2dc6872b94edba8309a27ace933d9ae32333", [:rebar, :rebar3], [{:snappyer, "1.2.1", [hex: :snappyer, repo: "hexpm", optional: false]}], "hexpm"},
@@ -18,4 +20,5 @@
   "ranch": {:hex, :ranch, "1.3.2", "e4965a144dc9fbe70e5c077c65e73c57165416a901bd02ea899cfd95aa890986", [:rebar3], [], "hexpm"},
   "snappyer": {:hex, :snappyer, "1.2.1", "06c5f5c8afe80ba38e94e1ca1bd9253de95d8f2c85b08783e8d0f63815580556", [:make, :rebar, :rebar3], [], "hexpm"},
   "supervisor3": {:hex, :supervisor3, "1.1.5", "5f3c487a6eba23de0e64c06e93efa0eca06f40324a6412c1318c77aca6da8424", [:make, :rebar, :rebar3], [], "hexpm"},
+  "unsafe": {:hex, :unsafe, "1.0.0", "7c21742cd05380c7875546b023481d3a26f52df8e5dfedcb9f958f322baae305", [:mix], [], "hexpm"},
 }

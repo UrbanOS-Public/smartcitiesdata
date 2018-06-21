@@ -24,3 +24,5 @@ cota_streaming_consumer-*.tar
 
 # Secrets file for Phoenix
 /config/*.secret.exs
+
+.elixir_ls/
