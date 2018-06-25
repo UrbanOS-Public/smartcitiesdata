@@ -2,6 +2,11 @@ defmodule CotaStreamingConsumerTest do
   use CotaStreamingConsumerWeb.ChannelCase
   @cache Application.get_env(:cota_streaming_consumer, :cache)
 
+  setup do
+    Cachex.clear(@cache)
+    :ok
+  end
+
   test "broadcasts data from a kafka topic to a websocket channel" do
     {:ok, _, socket} =
       socket()
@@ -25,8 +30,10 @@ defmodule CotaStreamingConsumerTest do
     ])
 
     assert(
-      Cachex.stream!(@cache) |> Enum.to_list() |> Enum.map(fn{:entry, _key, _create_ts, _ttl, vehicle} -> vehicle end) == [
-         %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}
+      Cachex.stream!(@cache)
+      |> Enum.to_list()
+      |> Enum.map(fn {:entry, _key, _create_ts, _ttl, vehicle} -> vehicle end) == [
+        %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}
       ]
     )
 

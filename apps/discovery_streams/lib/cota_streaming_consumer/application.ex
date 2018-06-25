@@ -4,6 +4,7 @@ defmodule CotaStreamingConsumer.Application do
   require Cachex.Spec
 
   @cache Application.get_env(:cota_streaming_consumer, :cache)
+  @ttl Application.get_env(:cota_streaming_consumer, :ttl)
 
   def start(_type, _args) do
     import Supervisor.Spec
@@ -27,9 +28,11 @@ defmodule CotaStreamingConsumer.Application do
   end
 
   defp cachex do
+    expiration = Cachex.Spec.expiration(default: @ttl)
+
     %{
       id: Cachex,
-      start: {Cachex, :start_link, [@cache]}
+      start: {Cachex, :start_link, [@cache, [expiration: expiration]]}
     }
   end
 
