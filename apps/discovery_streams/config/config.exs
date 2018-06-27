@@ -14,4 +14,6 @@ config :cota_streaming_consumer, :children, [
   Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, [])
 ]
 
+config :cota_streaming_consumer, cache: :cota_vehicle_cache, ttl: 600_000
+
 import_config "#{Mix.env()}.exs"
