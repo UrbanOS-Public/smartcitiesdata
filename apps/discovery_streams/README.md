@@ -21,6 +21,11 @@ Install [wsta](https://github.com/esphen/wsta)
 wsta -I 'ws://localhost:4000/socket/websocket' '{"topic":"vehicle_position","event":"phx_join","payload":{},"ref":"1"}'
 ```
 
+## Setting a filter
+
+{"topic":"vehicle_position","event":"filter","payload":{"vehicle.trip.route_id":"034"},"ref":"1"}
+
+
 The json is the required payload to join the `vehicle_position` channel.
 
 ## Running containers locally
