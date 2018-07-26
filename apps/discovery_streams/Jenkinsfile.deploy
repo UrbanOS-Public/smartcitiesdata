@@ -6,7 +6,12 @@ properties([
             description: 'Environment to deploy to',
             name: 'kubernetesCreds', 
             required: true
-        )
+        ),
+        text(
+            name: 'tag',
+            description: "The Docker image ID to deploy",
+            required: true
+        )        
     ])
 ])
 
@@ -18,6 +23,7 @@ node('master') {
         }
 
         stage('Deploy') {
+            sh("sed -i 's/%VERSION%/${params.tag}/' k8s/1-deployment.yaml")
             kubernetesDeploy(kubeconfigId: "${params.kubernetesCreds}",
                     configs: 'k8s/*',
                     secretName: 'regcred',
