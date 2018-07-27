@@ -1,4 +1,12 @@
 defmodule CotaStreamingConsumerWeb do
+  def controller do
+    quote do
+      use Phoenix.Controller, namespace: CotaStreamingConsumerWeb
+      import Plug.Conn
+      import CotaStreamingConsumerWeb.Router.Helpers
+    end
+  end
+
   def router do
     quote do
       use Phoenix.Router
