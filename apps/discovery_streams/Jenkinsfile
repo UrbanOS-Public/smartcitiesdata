@@ -1,15 +1,3 @@
-properties([
-    parameters([
-        credentials(
-            credentialType: 'com.microsoft.jenkins.kubernetes.credentials.KubeconfigCredentials',
-            defaultValue: 'kubeconfig-dev',
-            description: 'Environment to deploy to',
-            name: 'kubernetesCreds',
-            required: true
-        )
-    ])
-])
-
 def image
 def scmVars
 
@@ -35,7 +23,7 @@ node ('master') {
         }
         stage('Deploy') {
             sh("sed -i 's/%VERSION%/${GIT_COMMIT_HASH}/' k8s/1-deployment.yaml")
-            kubernetesDeploy(kubeconfigId: "${params.kubernetesCreds}",
+            kubernetesDeploy(kubeconfigId: "kubeconfig-dev",
                 configs: 'k8s/*',
                 secretName: 'regcred',
                 dockerCredentials: [
