@@ -1,28 +1,24 @@
 def image
-def scmVars
 
 node ('master') {
     stage('Checkout') {
-        scmVars = checkout scm
-        GIT_COMMIT_HASH = sh(
-            script: 'git rev-parse HEAD',
-            returnStdout: true
-        ).trim()
+        env.GIT_COMMIT_HASH = checkout(scm).GIT_COMMIT
     }
 
     stage('Build') {
-        image = docker.build("scos/cota-streaming-consumer:${GIT_COMMIT_HASH}")
+        image = docker.build("scos/cota-streaming-consumer:${env.GIT_COMMIT_HASH}")
     }
 
-    if (scmVars.GIT_BRANCH == 'master') {
+    if (env.BRANCH_NAME == 'master') {
         stage('Publish') {
             docker.withRegistry("https://199837183662.dkr.ecr.us-east-2.amazonaws.com", "ecr:us-east-2:aws_jenkins_user") {
                 image.push()
                 image.push('latest')
             }
         }
+
         stage('Deploy') {
-            sh("sed -i 's/%VERSION%/${GIT_COMMIT_HASH}/' k8s/1-deployment.yaml")
+            sh("sed -i 's/%VERSION%/${env.GIT_COMMIT_HASH}/' k8s/1-deployment.yaml")
             kubernetesDeploy(kubeconfigId: "kubeconfig-dev",
                 configs: 'k8s/*',
                 secretName: 'regcred',
