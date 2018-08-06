@@ -1,31 +1,58 @@
+library(
+    identifier: 'pipeline-lib@master',
+    retriever: modernSCM([$class: 'GitSCMSource',
+                          remote: 'https://github.com/SmartColumbusOS/pipeline-lib',
+                          credentialsId: 'jenkins-github-user'])
+)
+
 def image
 
 node ('master') {
-    stage('Checkout') {
-        env.GIT_COMMIT_HASH = checkout(scm).GIT_COMMIT
-    }
-
-    stage('Build') {
-        image = docker.build("scos/cota-streaming-consumer:${env.GIT_COMMIT_HASH}")
-    }
-
-    if (env.BRANCH_NAME == 'master') {
-        stage('Publish') {
-            docker.withRegistry("https://199837183662.dkr.ecr.us-east-2.amazonaws.com", "ecr:us-east-2:aws_jenkins_user") {
-                image.push()
-                image.push('latest')
+    ansiColor('xterm') {
+        stage('Checkout') {
+            deleteDir()
+            env.GIT_COMMIT_HASH = checkout(scm).GIT_COMMIT
+            
+            withCredentials([usernamePassword(credentialsId: 'jenkins-github-user', passwordVariable: 'GIT_PWD', usernameVariable: 'GIT_USER')]) {
+                sh 'git remote add github https://$GIT_USER:$GIT_PWD@github.com/SmartColumbusOS/cota-streaming-consumer.git'
             }
         }
 
-        stage('Deploy') {
-            sh("sed -i 's/%VERSION%/${env.GIT_COMMIT_HASH}/' k8s/1-deployment.yaml")
-            kubernetesDeploy(kubeconfigId: "kubeconfig-dev",
-                configs: 'k8s/*',
-                secretName: 'regcred',
-                dockerCredentials: [
-                    [credentialsId: 'ecr:us-east-2:aws_jenkins_user', url: 'https://199837183662.dkr.ecr.us-east-2.amazonaws.com'],
-                ]
-            )
+        stage('Build') {
+            image = docker.build("scos/cota-streaming-consumer:${env.GIT_COMMIT_HASH}")
+        }
+
+        stage('Deploy to Dev') {
+            scos.withDockerRegistry {
+                image.push()
+                image.push('latest')
+            }
+            deployConsumer('dev')
+        }
+
+        if (env.BRANCH_NAME == 'master') {
+            def tag = scos.releaseCandidateNumber()
+            stage('Deploy to Staging') {
+                sh "git tag ${tag}"
+
+                deployConsumer('staging')
+
+                sh "git push github ${tag}"
+                scos.withDockerRegistry {
+                    image.push(tag)
+                }
+            }
         }
     }
+}
+
+def deployConsumer(environment) {
+    sh("sed -i 's/%VERSION%/${env.GIT_COMMIT_HASH}/' k8s/1-deployment.yaml")
+    kubernetesDeploy(kubeconfigId: "kubeconfig-${environment}",
+        configs: 'k8s/*',
+        secretName: 'regcred',
+        dockerCredentials: [
+            [credentialsId: 'ecr:us-east-2:aws_jenkins_user', url: 'https://199837183662.dkr.ecr.us-east-2.amazonaws.com'],
+        ]
+    )
 }
