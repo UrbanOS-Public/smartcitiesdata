@@ -47,12 +47,18 @@ node ('master') {
 }
 
 def deployConsumer(environment) {
-    sh("sed -i 's/%VERSION%/${env.GIT_COMMIT_HASH}/' k8s/1-deployment.yaml")
-    kubernetesDeploy(kubeconfigId: "kubeconfig-${environment}",
-        configs: 'k8s/*',
-        secretName: 'regcred',
-        dockerCredentials: [
-            [credentialsId: 'ecr:us-east-2:aws_jenkins_user', url: 'https://199837183662.dkr.ecr.us-east-2.amazonaws.com'],
-        ]
-    )
+    scos.withEksCredentials(environment) {
+        def terraformOutputs = scos.terraformOutput(environment)
+        def subnets = terraformOutputs.public_subnets.value.join(', ')
+        def allowInboundTrafficSG = terraformOutputs.allow_all_security_group.value
+
+        sh("""#!/bin/bash
+            export VERSION=${env.GIT_COMMIT_HASH}
+            export DNS_ZONE='${environment}.smartcolumbusos.com'
+            export SUBNET='${subnets}'
+            export SECURITY_GROUPS='${allowInboundTrafficSG}'
+
+            find k8s -type f -exec cat {} \\; -exec echo -e '\\n---' \\; | envsubst | kubectl apply -f -
+        """.trim())
+    }
 }
