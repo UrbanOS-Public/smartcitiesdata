@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cota-streaming-consumer
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/subnets: ${SUBNETS}
+    alb.ingress.kubernetes.io/security-groups: ${SECURITY_GROUPS}
+    alb.ingress.kubernetes.io/tags: scos.delete.on.teardown=true
+spec:
+  rules:
+  - host: socket.${DNS_ZONE}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: cota-streaming-consumer
+          servicePort: 80
