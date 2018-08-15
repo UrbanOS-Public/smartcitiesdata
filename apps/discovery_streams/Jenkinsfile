@@ -54,7 +54,7 @@ def deployConsumer(environment) {
 
         sh("""#!/bin/bash
             export VERSION=${env.GIT_COMMIT_HASH}
-            export DNS_ZONE='${environment}.smartcolumbusos.com'
+            export DNS_ZONE='${environment}.internal.smartcolumbusos.com'
             export SUBNET='${subnets}'
             export SECURITY_GROUPS='${allowInboundTrafficSG}'
 

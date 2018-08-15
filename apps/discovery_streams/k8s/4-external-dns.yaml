@@ -51,7 +51,6 @@ spec:
       - name: external-dns
         image: registry.opensource.zalan.do/teapot/external-dns:latest
         args:
-        # - --source=service
         - --source=ingress
         - --domain-filter=${DNS_ZONE} # will make ExternalDNS see only the hosted zones matching provided domain, omit to process all available hosted zones
         - --provider=aws
