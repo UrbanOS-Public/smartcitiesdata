@@ -58,7 +58,9 @@ def deployConsumer(environment) {
             export SUBNETS='${subnets}'
             export SECURITY_GROUPS='${allowInboundTrafficSG}'
 
-            find k8s -type f -exec cat {} \\; -exec echo -e '\\n---' \\; | envsubst | kubectl apply -f -
+            for manifest in k8s/*.yaml; do
+                cat \$manifest | envsubst | kubectl apply -f -
+            done
         """.trim())
     }
 }
