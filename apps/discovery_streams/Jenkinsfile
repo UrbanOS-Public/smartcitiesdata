@@ -55,7 +55,7 @@ def deployConsumer(environment) {
         sh("""#!/bin/bash
             export VERSION=${env.GIT_COMMIT_HASH}
             export DNS_ZONE='${environment}.internal.smartcolumbusos.com'
-            export SUBNET='${subnets}'
+            export SUBNETS='${subnets}'
             export SECURITY_GROUPS='${allowInboundTrafficSG}'
 
             find k8s -type f -exec cat {} \\; -exec echo -e '\\n---' \\; | envsubst | kubectl apply -f -
