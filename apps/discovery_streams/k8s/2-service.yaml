@@ -7,7 +7,6 @@ spec:
     app: cota-streaming-consumer
   ports:
   - protocol: TCP
-    port: 4000
+    port: 80
     targetPort: 4000
-    nodePort: 30070
   type: NodePort
