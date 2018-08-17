@@ -1,28 +1,29 @@
 library(
-    identifier: 'pipeline-lib@master',
+    identifier: 'pipeline-lib@1.2.1',
     retriever: modernSCM([$class: 'GitSCMSource',
                           remote: 'https://github.com/SmartColumbusOS/pipeline-lib',
                           credentialsId: 'jenkins-github-user'])
 )
 
 def image
+def currentTagIsReadyForProduction = scos.isRelease(env.BRANCH_NAME)
+def currentTagIsReadyForStaging = env.BRANCH_NAME == "master"
+def doStageIf = scos.&doStageIf
 
 node ('master') {
     ansiColor('xterm') {
         stage('Checkout') {
             deleteDir()
             env.GIT_COMMIT_HASH = checkout(scm).GIT_COMMIT
-            
-            withCredentials([usernamePassword(credentialsId: 'jenkins-github-user', passwordVariable: 'GIT_PWD', usernameVariable: 'GIT_USER')]) {
-                sh 'git remote add github https://$GIT_USER:$GIT_PWD@github.com/SmartColumbusOS/cota-streaming-consumer.git'
-            }
+
+            scos.addGitHubRemoteForTagging("SmartColumbusOS/cota-streaming-consumer.git")
         }
 
-        stage('Build') {
+        doStageIf(!currentTagIsReadyForProduction, 'Build') {
             image = docker.build("scos/cota-streaming-consumer:${env.GIT_COMMIT_HASH}")
         }
 
-        stage('Deploy to Dev') {
+        doStageIf(!currentTagIsReadyForProduction, 'Deploy to Dev') {
             scos.withDockerRegistry {
                 image.push()
                 image.push('latest')
@@ -30,17 +31,30 @@ node ('master') {
             deployConsumer('dev')
         }
 
-        if (env.BRANCH_NAME == 'master') {
-            def tag = scos.releaseCandidateNumber()
-            stage('Deploy to Staging') {
-                sh "git tag ${tag}"
+        doStageIf(currentTagIsReadyForStaging, 'Deploy to Staging')  {
+            def promotionTag = scos.releaseCandidateNumber()
 
-                deployConsumer('staging')
+            deployConsumer('staging')
 
-                sh "git push github ${tag}"
-                scos.withDockerRegistry {
-                    image.push(tag)
-                }
+            scos.applyAndPushGitHubTag(promotionTag)
+
+            scos.withDockerRegistry {
+                image.push(promotionTag)
+            }
+        }
+
+        doStageIf(currentTagIsReadyForProduction, 'Deploy to Production') {
+            def releaseTag = env.BRANCH_NAME
+            def promotionTag = 'prod'
+
+            deployConsumer('prod')
+
+            scos.applyAndPushGitHubTag(promotionTag)
+
+            scos.withDockerRegistry {
+                image = scos.pullImageFromDockerRegistry("scos/cota-streaming-consumer", env.GIT_COMMIT_HASH)
+                image.push(releaseTag)
+                image.push(promotionTag)
             }
         }
     }
@@ -53,6 +67,7 @@ def deployConsumer(environment) {
         def allowInboundTrafficSG = terraformOutputs.allow_all_security_group.value
 
         sh("""#!/bin/bash
+            set -e
             export VERSION="${env.GIT_COMMIT_HASH}"
             export DNS_ZONE="${environment}.internal.smartcolumbusos.com"
             export SUBNETS="${subnets}"
