@@ -53,10 +53,10 @@ def deployConsumer(environment) {
         def allowInboundTrafficSG = terraformOutputs.allow_all_security_group.value
 
         sh("""#!/bin/bash
-            export VERSION=${env.GIT_COMMIT_HASH}
-            export DNS_ZONE='${environment}.internal.smartcolumbusos.com'
-            export SUBNETS='${subnets}'
-            export SECURITY_GROUPS='${allowInboundTrafficSG}'
+            export VERSION="${env.GIT_COMMIT_HASH}"
+            export DNS_ZONE="${environment}.internal.smartcolumbusos.com"
+            export SUBNETS="${subnets}"
+            export SECURITY_GROUPS="${allowInboundTrafficSG}"
 
             for manifest in k8s/*; do
                 cat \$manifest | envsubst | kubectl apply -f -
