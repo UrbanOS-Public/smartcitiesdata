@@ -18,7 +18,9 @@ To view the data on the websocket:
 Install [wsta](https://github.com/esphen/wsta)
 
 ```bash
-wsta -I --ping 30 'ws://localhost:4000/socket/websocket' '{"topic":"vehicle_position","event":"phx_join","payload":{},"ref":"1"}'
+wsta -I --ping 50 --ping-msg '{"topic":"phoenix","event":"heartbeat","payload":{},"ref":"1"}' \
+'ws://localhost:4000/socket/websocket' \
+'{"topic":"vehicle_position","event":"phx_join","payload":{},"ref":"1"}'
 ```
 
 ## Setting a filter
