@@ -6,9 +6,10 @@ library(
 )
 
 def image
-def currentTagIsReadyForProduction = scos.isRelease(env.BRANCH_NAME)
-def currentTagIsReadyForStaging = (env.BRANCH_NAME == "master")
 def doStageIf = scos.&doStageIf
+def doStageIfRelease = doStageIf.curry(scos.isRelease(env.BRANCH_NAME))
+def doStageUnlessRelease = doStageIf.curry(!scos.isRelease(env.BRANCH_NAME))
+def doStageIfPromoted = doStageIf.curry(env.BRANCH_NAME == 'master')
 
 node ('master') {
     ansiColor('xterm') {
@@ -19,22 +20,22 @@ node ('master') {
             scos.addGitHubRemoteForTagging("SmartColumbusOS/cota-streaming-consumer.git")
         }
 
-        doStageIf(!currentTagIsReadyForProduction, 'Build') {
+        doStageUnlessRelease('Build') {
             image = docker.build("scos/cota-streaming-consumer:${env.GIT_COMMIT_HASH}")
         }
 
-        doStageIf(!currentTagIsReadyForProduction, 'Deploy to Dev') {
+        doStageUnlessRelease('Deploy to Dev') {
             scos.withDockerRegistry {
                 image.push()
                 image.push('latest')
             }
-            deployConsumer('dev')
+            deployConsumerTo('dev')
         }
 
-        doStageIf(currentTagIsReadyForStaging, 'Deploy to Staging')  {
+        doStageIfPromoted('Deploy to Staging')  {
             def promotionTag = scos.releaseCandidateNumber()
 
-            deployConsumer('staging')
+            deployConsumerTo('staging')
 
             scos.applyAndPushGitHubTag(promotionTag)
 
@@ -43,11 +44,11 @@ node ('master') {
             }
         }
 
-        doStageIf(currentTagIsReadyForProduction, 'Deploy to Production') {
+        doStageIfRelease('Deploy to Production') {
             def releaseTag = env.BRANCH_NAME
             def promotionTag = 'prod'
 
-            deployConsumer('prod')
+            deployConsumerTo('prod')
 
             scos.applyAndPushGitHubTag(promotionTag)
 
@@ -60,7 +61,7 @@ node ('master') {
     }
 }
 
-def deployConsumer(environment) {
+def deployConsumerTo(environment) {
     scos.withEksCredentials(environment) {
         def terraformOutputs = scos.terraformOutput(environment)
         def subnets = terraformOutputs.public_subnets.value.join(', ')
