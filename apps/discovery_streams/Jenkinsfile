@@ -29,13 +29,13 @@ node ('master') {
                 image.push()
                 image.push('latest')
             }
-            deployConsumerTo('dev')
+            deployConsumerTo(environment: 'dev')
         }
 
         doStageIfPromoted('Deploy to Staging')  {
             def promotionTag = scos.releaseCandidateNumber()
 
-            deployConsumerTo('staging')
+            deployConsumerTo(environment: 'staging')
 
             scos.applyAndPushGitHubTag(promotionTag)
 
@@ -47,8 +47,8 @@ node ('master') {
         doStageIfRelease('Deploy to Production') {
             def releaseTag = env.BRANCH_NAME
             def promotionTag = 'prod'
-            def isInternal = false
-            deployConsumerTo('prod', isInternal)
+
+            deployConsumerTo(environment: 'prod', internal: false)
 
             scos.applyAndPushGitHubTag(promotionTag)
 
@@ -61,7 +61,12 @@ node ('master') {
     }
 }
 
-def deployConsumerTo(environment, internal = true) {
+def deployConsumerTo(params = [:]) {
+    def environment = params.get('environment')
+    if (environment == null) throw new IllegalArgumentException("environment must be specified")
+    
+    def internal = params.get('internal', true)
+
     scos.withEksCredentials(environment) {
         def terraformOutputs = scos.terraformOutput(environment)
         def subnets = terraformOutputs.public_subnets.value.join(', ')
