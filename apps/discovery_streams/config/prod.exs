@@ -13,5 +13,6 @@ config :kaffe,
     # endpoints: Set in application.ex
     # topics: Set in application.ex
     consumer_group: "cota-streaming-consumer",
-    message_handler: CotaStreamingConsumer
+    message_handler: CotaStreamingConsumer,
+    offset_reset_policy: :reset_to_latest
   ]
