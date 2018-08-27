@@ -7,4 +7,4 @@ config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
 # Don't start kaffe consumer for unit tests
 config :cota_streaming_consumer, :children, []
 
-config :logger, level: :warn
+config :logger, level: :info

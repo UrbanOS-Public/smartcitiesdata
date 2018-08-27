@@ -13,11 +13,9 @@ def doStageIfPromoted = doStageIf.curry(env.BRANCH_NAME == 'master')
 
 node ('master') {
     ansiColor('xterm') {
-        stage('Checkout') {
-            deleteDir()
-            env.GIT_COMMIT_HASH = checkout(scm).GIT_COMMIT
-
-            scos.addGitHubRemoteForTagging("SmartColumbusOS/cota-streaming-consumer.git")
+        scos.doCheckoutStage()
+        withCredentials([usernamePassword(credentialsId: 'jenkins-github-user', passwordVariable: 'GIT_PWD', usernameVariable: 'GIT_USER')]) {
+            sh "git clone https://\$GIT_USER:\$GIT_PWD@github.com/SmartColumbusOS/streaming-metrics"
         }
 
         doStageUnlessRelease('Build') {

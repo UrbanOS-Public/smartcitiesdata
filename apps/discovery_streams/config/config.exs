@@ -14,6 +14,12 @@ config :cota_streaming_consumer, :children, [
   Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, [])
 ]
 
+config :cota_streaming_consumer,
+  metric_collector: StreamingMetrics.ConsoleMetricCollector
+
 config :cota_streaming_consumer, cache: :cota_vehicle_cache, ttl: 600_000
+
+config :ex_aws,
+  region: "us-east-2"
 
 import_config "#{Mix.env()}.exs"
