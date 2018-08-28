@@ -1,5 +1,5 @@
 library(
-    identifier: 'pipeline-lib@checkout-stage',
+    identifier: 'pipeline-lib@2.0.2',
     retriever: modernSCM([$class: 'GitSCMSource',
                           remote: 'https://github.com/SmartColumbusOS/pipeline-lib',
                           credentialsId: 'jenkins-github-user'])
@@ -13,9 +13,8 @@ def doStageIfPromoted = doStageIf.curry(env.BRANCH_NAME == 'master')
 
 node ('master') {
     ansiColor('xterm') {
-        stage('Checkout') {
-            scos.doCheckout()
-        }
+        
+        scos.doCheckoutStage()
 
         doStageUnlessRelease('Build') {
             image = docker.build("scos/cota-streaming-consumer:${env.GIT_COMMIT_HASH}")
