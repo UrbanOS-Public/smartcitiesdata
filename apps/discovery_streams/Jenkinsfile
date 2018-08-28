@@ -11,7 +11,7 @@ def doStageIfRelease = doStageIf.curry(scos.isRelease(env.BRANCH_NAME))
 def doStageUnlessRelease = doStageIf.curry(!scos.isRelease(env.BRANCH_NAME))
 def doStageIfPromoted = doStageIf.curry(env.BRANCH_NAME == 'master')
 
-node ('master') {
+node ('infrastructure') {
     ansiColor('xterm') {
         
         scos.doCheckoutStage()
@@ -67,6 +67,7 @@ def deployConsumerTo(params = [:]) {
         def terraformOutputs = scos.terraformOutput(environment)
         def subnets = terraformOutputs.public_subnets.value.join(', ')
         def allowInboundTrafficSG = terraformOutputs.allow_all_security_group.value
+        def certificateARN = terraformOutputs.tls_certificate_arn.value
 
         def ingressScheme = internal ? 'internal' : 'internet-facing'
         sh("""#!/bin/bash
@@ -76,6 +77,7 @@ def deployConsumerTo(params = [:]) {
             export SUBNETS="${subnets}"
             export SECURITY_GROUPS="${allowInboundTrafficSG}"
             export INGRESS_SCHEME="${ingressScheme}"
+            export CERTIFICATE_ARN="${certificateARN}"
 
             for manifest in k8s/*; do
                 cat \$manifest | envsubst | kubectl apply -f -
