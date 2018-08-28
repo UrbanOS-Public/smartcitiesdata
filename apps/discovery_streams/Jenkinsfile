@@ -1,5 +1,5 @@
 library(
-    identifier: 'pipeline-lib@1.3.1',
+    identifier: 'pipeline-lib@checkout-stage',
     retriever: modernSCM([$class: 'GitSCMSource',
                           remote: 'https://github.com/SmartColumbusOS/pipeline-lib',
                           credentialsId: 'jenkins-github-user'])
@@ -14,10 +14,10 @@ def doStageIfPromoted = doStageIf.curry(env.BRANCH_NAME == 'master')
 node ('master') {
     ansiColor('xterm') {
         stage('Checkout') {
-            deleteDir()
-            env.GIT_COMMIT_HASH = checkout(scm).GIT_COMMIT
-
-            scos.addGitHubRemoteForTagging("SmartColumbusOS/cota-streaming-consumer.git")
+            // deleteDir()
+            // env.GIT_COMMIT_HASH = checkout(scm).GIT_COMMIT
+            // scos.addGitHubRemoteForTagging("SmartColumbusOS/cota-streaming-consumer.git")
+            scos.doCheckout("SmartColumbusOS/cota-streaming-consumer.git")
         }
 
         doStageUnlessRelease('Build') {
