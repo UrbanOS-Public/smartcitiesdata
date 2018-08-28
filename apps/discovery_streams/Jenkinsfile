@@ -11,7 +11,7 @@ def doStageIfRelease = doStageIf.curry(scos.isRelease(env.BRANCH_NAME))
 def doStageUnlessRelease = doStageIf.curry(!scos.isRelease(env.BRANCH_NAME))
 def doStageIfPromoted = doStageIf.curry(env.BRANCH_NAME == 'master')
 
-node ('master') {
+node ('infrastructure') {
     ansiColor('xterm') {
         stage('Checkout') {
             deleteDir()
