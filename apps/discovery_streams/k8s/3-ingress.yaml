@@ -10,7 +10,6 @@ metadata:
     alb.ingress.kubernetes.io/tags: scos.delete.on.teardown=true
     alb.ingress.kubernetes.io/healthcheck-path: /socket/healthcheck
     alb.ingress.kubernetes.io/certificate-arn: ${CERTIFICATE_ARN}
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80,"HTTPS": 443}]'
 spec:
   rules:
   - host: socket.${DNS_ZONE}
