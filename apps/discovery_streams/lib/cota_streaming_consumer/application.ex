@@ -15,7 +15,7 @@ defmodule CotaStreamingConsumer.Application do
 
     children = [
       cachex(),
-      CotaStreamingConsumer.Hostname,
+      StreamingMetrics.Hostname,
       supervisor(CotaStreamingConsumerWeb.Endpoint, [])
       | Application.get_env(:cota_streaming_consumer, :children, [])
     ]

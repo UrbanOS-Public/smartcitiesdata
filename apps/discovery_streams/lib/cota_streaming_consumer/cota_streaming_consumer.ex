@@ -1,6 +1,6 @@
 require Logger
 require Poison
-alias CotaStreamingConsumer.Hostname
+alias StreamingMetrics.Hostname
 
 defmodule CotaStreamingConsumer do
   @cache Application.get_env(:cota_streaming_consumer, :cache)
