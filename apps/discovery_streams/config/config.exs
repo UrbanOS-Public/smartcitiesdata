@@ -6,7 +6,10 @@ config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
   render_errors: [view: CotaStreamingConsumerWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: CotaStreamingConsumer.PubSub, adapter: Phoenix.PubSub.PG2]
 
-config :logger, :console,
+config :logger,
+  backends: [:console],
+  level: :info,
+  compile_time_purge_level: :info,
   format: "$time $metadata[$level] $message\n",
   metadata: [:user_id]
 
@@ -14,6 +17,12 @@ config :cota_streaming_consumer, :children, [
   Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, [])
 ]
 
+config :cota_streaming_consumer,
+  metric_collector: StreamingMetrics.ConsoleMetricCollector
+
 config :cota_streaming_consumer, cache: :cota_vehicle_cache, ttl: 600_000
+
+config :ex_aws,
+  region: "us-east-2"
 
 import_config "#{Mix.env()}.exs"

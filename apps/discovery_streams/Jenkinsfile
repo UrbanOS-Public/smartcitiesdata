@@ -13,8 +13,10 @@ def doStageIfPromoted = doStageIf.curry(env.BRANCH_NAME == 'master')
 
 node ('infrastructure') {
     ansiColor('xterm') {
-        
         scos.doCheckoutStage()
+        withCredentials([usernamePassword(credentialsId: 'jenkins-github-user', passwordVariable: 'GIT_PWD', usernameVariable: 'GIT_USER')]) {
+            sh "git clone https://\$GIT_USER:\$GIT_PWD@github.com/SmartColumbusOS/streaming-metrics"
+        }
 
         doStageUnlessRelease('Build') {
             image = docker.build("scos/cota-streaming-consumer:${env.GIT_COMMIT_HASH}")

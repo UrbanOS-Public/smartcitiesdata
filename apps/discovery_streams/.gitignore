@@ -26,3 +26,9 @@ cota_streaming_consumer-*.tar
 /config/*.secret.exs
 
 .elixir_ls/
+
+# Ignore asdf stuffs
+.tool-versions
+
+# Ignore VS Code config
+/.vscode/

@@ -21,3 +21,6 @@ config :kaffe,
 config :logger, :console, format: "[$level] $message\n"
 
 config :phoenix, :stacktrace_depth, 20
+
+config :ex_aws,
+  debug_requests: true

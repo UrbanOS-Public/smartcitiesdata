@@ -5,7 +5,7 @@ defmodule CotaStreamingConsumer.Mixfile do
     [
       app: :cota_streaming_consumer,
       version: "0.0.1",
-      elixir: "~> 1.4",
+      elixir: "~> 1.6",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -38,7 +38,11 @@ defmodule CotaStreamingConsumer.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:cowboy, "~> 1.0"},
       {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false},
+      {:streaming_metrics, path: "./streaming-metrics"},
+      {:mock, "~> 0.3.1", only: :test, runtime: false},
       {:kaffe, "~> 1.8"},
+      {:httpoison, "~> 0.11.1"},
+      {:sweet_xml, "~> 0.6"},
       {:cachex, "~> 3.0"}
     ]
   end
