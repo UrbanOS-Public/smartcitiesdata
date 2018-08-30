@@ -6,7 +6,10 @@ config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
   render_errors: [view: CotaStreamingConsumerWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: CotaStreamingConsumer.PubSub, adapter: Phoenix.PubSub.PG2]
 
-config :logger, :console,
+config :logger,
+  backends: [:console],
+  level: :info,
+  compile_time_purge_level: :info,
   format: "$time $metadata[$level] $message\n",
   metadata: [:user_id]
 
