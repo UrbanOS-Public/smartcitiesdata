@@ -11,11 +11,9 @@ defmodule CotaStreamingConsumer.Application do
 
     set_kaffe_endpoints(System.get_env("KAFKA_BROKERS"))
     set_kaffe_topics(System.get_env("COTA_DATA_TOPIC"))
-    Application.get_env(:cota_streaming_consumer, :metric_collector).init()
 
     children = [
       cachex(),
-      StreamingMetrics.Hostname,
       supervisor(CotaStreamingConsumerWeb.Endpoint, [])
       | Application.get_env(:cota_streaming_consumer, :children, [])
     ]
