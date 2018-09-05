@@ -15,8 +15,8 @@ config :kaffe,
     offset_reset_policy: :reset_to_latest
   ]
 
-config :cota_streaming_consumer,
-  metric_collector: StreamingMetrics.AwsMetricCollector
+config :streaming_metrics,
+  collector: StreamingMetrics.AwsMetricCollector
 
 config :ex_aws,
   debug_requests: false

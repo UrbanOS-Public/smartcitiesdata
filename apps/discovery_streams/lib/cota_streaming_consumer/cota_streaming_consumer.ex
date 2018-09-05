@@ -4,7 +4,7 @@ alias StreamingMetrics.Hostname
 
 defmodule CotaStreamingConsumer do
   @cache Application.get_env(:cota_streaming_consumer, :cache)
-  @metric_collector Application.get_env(:cota_streaming_consumer, :metric_collector)
+  @metric_collector Application.get_env(:streaming_metrics, :collector)
 
   def handle_messages(messages) do
     json_messages =
