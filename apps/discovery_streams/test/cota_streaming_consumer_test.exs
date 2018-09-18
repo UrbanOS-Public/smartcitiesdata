@@ -89,13 +89,20 @@ defmodule CotaStreamingConsumerTest do
         create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}))
       ])
 
-      assert(
+      cache_record_created = fn ->
         Cachex.stream!(@cache)
         |> Enum.to_list()
         |> Enum.map(fn {:entry, _key, _create_ts, _ttl, vehicle} -> vehicle end) == [
           %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}
         ]
+      end
+
+      Patiently.wait_for!(
+        cache_record_created,
+        dwell: 10,
+        max_tries: 200
       )
+
       leave(socket)
     end
   end

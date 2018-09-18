@@ -8,7 +8,7 @@ config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
 
 config :logger,
   backends: [:console],
-  level: :info,
+  level: :debug,
   compile_time_purge_level: :info,
   format: "$time $metadata[$level] $message\n",
   metadata: [:user_id]

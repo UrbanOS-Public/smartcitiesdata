@@ -16,4 +16,4 @@ EXPOSE 4000
 RUN mix local.hex --force \
     && mix local.rebar --force \
     && mix deps.get
-CMD ["mix", "phx.server"]
+CMD ["./run.sh"]

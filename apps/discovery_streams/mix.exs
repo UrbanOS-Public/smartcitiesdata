@@ -36,7 +36,9 @@ defmodule CotaStreamingConsumer.Mixfile do
       {:kaffe, "~> 1.8"},
       {:httpoison, "~> 0.11.1"},
       {:sweet_xml, "~> 0.6"},
-      {:cachex, "~> 3.0"}
+      {:cachex, "~> 3.0"},
+      {:libcluster, "~> 3.0"},
+      {:patiently, "~> 0.2.0", only: :test}
     ]
   end
 end

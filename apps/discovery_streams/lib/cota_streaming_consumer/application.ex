@@ -12,19 +12,33 @@ defmodule CotaStreamingConsumer.Application do
     set_kaffe_endpoints(System.get_env("KAFKA_BROKERS"))
     set_kaffe_topics(System.get_env("COTA_DATA_TOPIC"))
 
-    children = [
-      cachex(),
-      supervisor(CotaStreamingConsumerWeb.Endpoint, [])
-      | Application.get_env(:cota_streaming_consumer, :children, [])
-    ]
-
     opts = [strategy: :one_for_one, name: CotaStreamingConsumer.Supervisor]
+
+    children =
+      [
+        cachex(),
+        supervisor(CotaStreamingConsumerWeb.Endpoint, []),
+        libcluster(),
+        CotaStreamingConsumer.CacheGenserver
+        | Application.get_env(:cota_streaming_consumer, :children, [])
+      ]
+      |> List.flatten()
+
     Supervisor.start_link(children, opts)
   end
 
   def config_change(changed, _new, removed) do
     CotaStreamingConsumerWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp libcluster do
+    topologies = Application.get_env(:libcluster, :topologies)
+
+    case topologies do
+      nil -> []
+      topo -> {Cluster.Supervisor, [topo, [name: StreamingConsumer.ClusterSupervisor]]}
+    end
   end
 
   defp cachex do
@@ -62,5 +76,4 @@ defmodule CotaStreamingConsumer.Application do
 
     Application.put_env(:kaffe, :consumer, config, persistent: true)
   end
-
 end

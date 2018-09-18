@@ -15,6 +15,22 @@ config :kaffe,
     offset_reset_policy: :reset_to_latest
   ]
 
+config :logger,
+  level: :info
+
+config :libcluster,
+  topologies: [
+    consumer_cluster: [
+      strategy: Elixir.Cluster.Strategy.Kubernetes,
+      config: [
+        mode: :ip,
+        kubernetes_node_basename: "cota-streaming-consumer",
+        kubernetes_selector: "app=cota-streaming-consumer",
+        polling_interval: 10_000
+      ]
+    ]
+  ]
+
 config :streaming_metrics,
   collector: StreamingMetrics.AwsMetricCollector
 

@@ -1,5 +1,6 @@
 require Logger
 require Poison
+require GenServer
 alias StreamingMetrics.Hostname
 
 defmodule CotaStreamingConsumer do
@@ -7,6 +8,7 @@ defmodule CotaStreamingConsumer do
   @metric_collector Application.get_env(:streaming_metrics, :collector)
 
   def handle_messages(messages) do
+
     json_messages =
       messages
       |> Enum.map(fn message -> message.value end)
@@ -34,7 +36,10 @@ defmodule CotaStreamingConsumer do
   end
 
   defp add_to_cache(message) do
-    Cachex.put(@cache, message["vehicle"]["vehicle"]["id"], message)
+    GenServer.abcast(
+      CotaStreamingConsumer.CacheGenserver,
+      {:put, message["vehicle"]["vehicle"]["id"], message}
+    )
   end
 
   defp broadcast(data) do
