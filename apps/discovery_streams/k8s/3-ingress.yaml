@@ -19,3 +19,10 @@ spec:
         backend:
           serviceName: cota-streaming-consumer
           servicePort: 80
+  - host: streaming.${DNS_ZONE}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: cota-streaming-consumer
+          servicePort: 80

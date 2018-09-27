@@ -31,7 +31,7 @@ defmodule CotaStreamingConsumer.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:cowboy, "~> 1.0"},
       {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false},
-      {:streaming_metrics, path: "./streaming-metrics"},
+      {:streaming_metrics, path: "streaming_metrics"},
       {:mock, "~> 0.3.1", only: :test, runtime: false},
       {:kaffe, "~> 1.8"},
       {:httpoison, "~> 0.11.1"},

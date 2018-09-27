@@ -18,8 +18,10 @@ def doStageIfPromoted = doStageIf.curry(scos.changeset.isMaster)
 node ('infrastructure') {
     ansiColor('xterm') {
         scos.doCheckoutStage()
-        withCredentials([usernamePassword(credentialsId: 'jenkins-github-user', passwordVariable: 'GIT_PWD', usernameVariable: 'GIT_USER')]) {
-            sh "git clone https://\$GIT_USER:\$GIT_PWD@github.com/SmartColumbusOS/streaming-metrics"
+        stage("Checkout submodules") {
+            sshagent(credentials: ["GitHub"]) {
+                sh("GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' git submodule update --init --recursive")
+            }
         }
 
         doStageUnlessRelease('Build') {
@@ -66,7 +68,7 @@ node ('infrastructure') {
 def deployConsumerTo(params = [:]) {
     def environment = params.get('environment')
     if (environment == null) throw new IllegalArgumentException("environment must be specified")
-    
+
     def internal = params.get('internal', true)
 
     scos.withEksCredentials(environment) {
