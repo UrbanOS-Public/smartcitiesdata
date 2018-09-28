@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: discovery-api
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: discovery-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: discovery-api
+  template:
+    metadata:
+      labels:
+        app: discovery-api
+    spec:
+      containers:
+      - name: discovery-api
+        image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+        imagePullPolicy: IfNotPresent
