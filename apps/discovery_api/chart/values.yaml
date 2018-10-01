@@ -8,7 +8,7 @@ ingress:
 
 image:
   name: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/discovery-api
-  tag: ""
+  tag: latest
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

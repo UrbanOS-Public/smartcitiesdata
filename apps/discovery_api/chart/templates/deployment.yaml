@@ -19,3 +19,10 @@ spec:
       - name: discovery-api
         image: {{ .Values.image.name }}:{{ .Values.image.tag }}
         imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: 256Mi
+            cpu: 500m
+          requests:
+            memory: 256Mi
+            cpu: 500m

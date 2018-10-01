@@ -13,7 +13,7 @@ metadata:
     alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.certificate_arn }}
 spec:
   rules:
-  - host: discovery.{{ .Values.ingress.dns_zone }}
+  - host: discoveryapi.{{ .Values.ingress.dns_zone }}
     http:
       paths:
       - path: /
