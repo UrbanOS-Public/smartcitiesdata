@@ -72,6 +72,8 @@ def deployConsumerTo(params = [:]) {
     def internal = params.get('internal', true)
 
     scos.withEksCredentials(environment) {
+        sh "kubectl get namespaces | egrep '^cota-services ' || kubectl create namespace cota-services"
+
         def terraformOutputs = scos.terraformOutput(environment)
         def subnets = terraformOutputs.public_subnets.value.join(', ')
         def allowInboundTrafficSG = terraformOutputs.allow_all_security_group.value
@@ -88,7 +90,7 @@ def deployConsumerTo(params = [:]) {
             export CERTIFICATE_ARN="${certificateARN}"
 
             for manifest in k8s/*; do
-                cat \$manifest | envsubst | kubectl apply -f -
+                cat \$manifest | envsubst | kubectl apply --namespace cota-services -f -
             done
         """.trim())
     }
