@@ -1,5 +1,5 @@
 library(
-    identifier: 'pipeline-lib@4.3.0',
+    identifier: 'pipeline-lib@4.3.2',
     retriever: modernSCM([$class: 'GitSCMSource',
                           remote: 'https://github.com/SmartColumbusOS/pipeline-lib',
                           credentialsId: 'jenkins-github-user'])
@@ -18,11 +18,6 @@ def doStageIfPromoted = doStageIf.curry(scos.changeset.isMaster)
 node ('infrastructure') {
     ansiColor('xterm') {
         scos.doCheckoutStage()
-        stage("Checkout submodules") {
-            sshagent(credentials: ["GitHub"]) {
-                sh("GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' git submodule update --init --recursive")
-            }
-        }
 
         doStageUnlessRelease('Build') {
             image = docker.build("scos/cota-streaming-consumer:${env.GIT_COMMIT_HASH}")
