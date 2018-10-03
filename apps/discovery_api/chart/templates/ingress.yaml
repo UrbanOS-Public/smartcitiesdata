@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: discovery-api
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: {{ .Values.ingress.scheme }}
+    alb.ingress.kubernetes.io/tags: scos.delete.on.teardown=true
+    alb.ingress.kubernetes.io/healthcheck-path: /healthcheck
+    alb.ingress.kubernetes.io/subnets: {{ .Values.ingress.subnets }}
+    alb.ingress.kubernetes.io/security-groups: {{ .Values.ingress.security_groups }}
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.certificate_arn }}
+spec:
+  rules:
+  - host: discoveryapi.{{ .Values.ingress.dns_zone }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: discovery-api
+          servicePort: 80
