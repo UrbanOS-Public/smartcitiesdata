@@ -12,14 +12,27 @@ defmodule CotaStreamingConsumerWeb.VehicleChannelTest do
     [socket: socket]
   end
 
-  test "sends the user the cache when they connect" do
+  test "sends the user the entire cache when they connect with no filter" do
     Cachex.put(@cache, "12342", %{"vehicleid" => "12342"})
+    Cachex.put(@cache, "54321", %{"vehicleid" => "54321"})
 
     {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.VehicleChannel, "vehicle_position")
 
     assert_push("update", %{"vehicleid" => "12342"}, 1000)
+    assert_push("update", %{"vehicleid" => "54321"}, 1000)
 
     leave(socket)
+  end
+
+  test "sends the user the cache that matches filter given on params when they connect" do
+    Cachex.put(@cache, "12345", %{"vehicleid" => "12345", "type" => "car"})
+    Cachex.put(@cache, "54321", %{"vehicleid" => "54321", "type" => "bus"})
+
+    {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.VehicleChannel, "vehicle_position", %{"type" => "bus"})
+    on_exit fn -> leave(socket) end
+
+    refute_push("update", %{"vehicleid" => "12345", "type" => "car"}, 1000)
+    assert_push("update", %{"vehicleid" => "54321", "type" => "bus"}, 1000)
   end
 
   test "filter events cause all cached messages to be pushed through filter", %{socket: socket} do

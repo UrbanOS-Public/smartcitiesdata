@@ -7,23 +7,19 @@ defmodule CotaStreamingConsumerWeb.VehicleChannel do
 
   intercept([@update_event])
 
-  def join("vehicle_position", _params, socket) do
+  def join("vehicle_position", params, socket) do
     send(self(), :after_join)
-    {:ok, socket}
+    {:ok, assign(socket, :filter, create_filter_rules(params))}
   end
 
-  def handle_info(:after_join, socket) do
-    push_cache_to_socket(socket)
+  def handle_info(:after_join, socket = %{assigns: %{filter: filter}}) do
+    push_cache_to_socket(socket, fn msg -> message_matches?(msg, filter) end)
 
     {:noreply, socket}
   end
 
   def handle_in(@filter_event, message, socket) do
-    filter_rules =
-      Enum.map(message, fn {key, value} ->
-        {String.split(key, "."), value}
-      end)
-
+    filter_rules = create_filter_rules(message)
     push_cache_to_socket(socket, fn msg -> message_matches?(msg, filter_rules) end)
 
     {:noreply, assign(socket, :filter, filter_rules)}
@@ -40,6 +36,12 @@ defmodule CotaStreamingConsumerWeb.VehicleChannel do
   def handle_out(@update_event, message, socket) do
     push(socket, @update_event, message)
     {:noreply, socket}
+  end
+
+  defp create_filter_rules(message) do
+    Enum.map(message, fn {key, value} ->
+      {String.split(key, "."), value}
+    end)
   end
 
   defp push_cache_to_socket(socket, filter \\ fn _ -> true end) do
