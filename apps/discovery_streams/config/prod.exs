@@ -1,7 +1,11 @@
 use Mix.Config
 
 config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
+  http: [port: {:system, "PORT"}],
   cache_static_manifest: "priv/static/cache_manifest.json",
+  server: true,
+  root: ".",
+  version: Application.spec(:cota_streaming_consumer, :vsn),
   secret_key_base: System.get_env("SECRET_KEY_BASE")
 
 config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint, check_origin: false
@@ -24,7 +28,7 @@ config :libcluster,
       strategy: Elixir.Cluster.Strategy.Kubernetes,
       config: [
         mode: :ip,
-        kubernetes_node_basename: "cota-streaming-consumer",
+        kubernetes_node_basename: "cota_streaming_consumer",
         kubernetes_selector: "app=cota-streaming-consumer",
         polling_interval: 10_000
       ]
