@@ -1,4 +1,4 @@
-ExUnit.start()
+ExUnit.start(exclude: [:skip])
 
 defmodule MockHelper do
   defmacro called_times(times, {{:., _, [module, f]}, _, args}) do
