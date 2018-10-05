@@ -1,0 +1,5 @@
+-name <%= release_name %>@${NODE_IP}
+
+-setcookie <%= release.profile.cookie %>
+
+-smp auto
