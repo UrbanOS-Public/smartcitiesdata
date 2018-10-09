@@ -80,6 +80,7 @@ def deployConsumerTo(params = [:]) {
             helm init --client-only
             helm upgrade --install cota-streaming-consumer ./chart \
                 --namespace=cota-services \
+                --set ingress.enabled="true" \
                 --set ingress.scheme="${ingressScheme}" \
                 --set ingress.subnets="${subnets}" \
                 --set ingress.securityGroups="${allowInboundTrafficSG}" \

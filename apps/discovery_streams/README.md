@@ -47,3 +47,33 @@ docker-compose up -d --build consumer
 | KAFKA_BROKERS | comma delimited list of kafka brokers | kafka1.com:9092,kafka2.com:9092
 | COTA_DATA_TOPIC | kafka topic for vehicle position messages | |
 | SECRET_KEY_BASE | Pheonix uses this to verify cookies. Generate with `mix phx.gen.secret` or pass in your own | |
+
+## Local development with minikube
+
+Ensure you have the Git submodules.
+
+```bash
+git submodule update --init --recursive
+```
+
+Point minikube at your local Docker environment and build the image.
+
+```bash
+eval $(minikube docker-env)
+docker build -t cota-streaming-consumer:wip .
+```
+
+Create the `cota-services` namespace if it does not yet exist.
+
+```bash
+kubectl create ns cota-services
+```
+
+Run a Helm upgrade with (mostly) default values.
+
+```bash
+helm upgrade --install cota-streaming-consumer ./chart \
+  --namespace=cota-services \
+  --set image.repository=cota-streaming-consumer \
+  --set image.tag=wip
+```

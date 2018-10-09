@@ -4,12 +4,12 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 ingress:
-  enabled: true
+  enabled: false
   scheme: ""
   subnets: ""
   securityGroups: ""
   certificateARN: ""
-  dnsZone: ""
+  dnsZone: "localhost"
 service:
   type: NodePort
   port: 80
