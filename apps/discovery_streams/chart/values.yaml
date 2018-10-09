@@ -1,0 +1,16 @@
+replicaCount: 3
+image:
+  repository: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/cota-streaming-consumer
+  tag: latest
+  pullPolicy: IfNotPresent
+ingress:
+  enabled: true
+  scheme: ""
+  subnets: ""
+  securityGroups: ""
+  certificateARN: ""
+  dnsZone: ""
+service:
+  type: NodePort
+  port: 80
+  targetPort: 4000

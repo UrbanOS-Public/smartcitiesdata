@@ -1,26 +1,27 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: cota-streaming-consumer
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    app: cota-streaming-consumer
+    app: {{ .Chart.Name }}
 spec:
-  replicas: 3
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: cota-streaming-consumer
+      app: {{ .Chart.Name }}
   template:
     metadata:
       labels:
-        app: cota-streaming-consumer
+        app: {{ .Chart.Name }}
     spec:
       serviceAccountName: clusterlib
       imagePullSecrets:
       - name: regcred
       containers:
-      - name: cota-streaming-consumer
-        image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/cota-streaming-consumer:${VERSION}
-        imagePullPolicy: IfNotPresent
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         resources:
           limits:
             memory: 512Mi
@@ -30,6 +31,6 @@ spec:
             cpu: 100m
         envFrom:
         - configMapRef:
-            name: cota-streaming-consumer
+            name: {{ .Chart.Name }}
         - configMapRef:
             name: kafka-brokers
