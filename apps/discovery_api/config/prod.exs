@@ -4,8 +4,10 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   http: [port: {:system, "PORT"}],
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true,
-  root: ".",    #Probably not neccessary
-  version: Application.spec(:discovery_api, :vsn)  #Probably not necc
+  # Probably not neccessary
+  root: ".",
+  # Probably not necc
+  version: Application.spec(:discovery_api, :vsn)
 
 # Do not print debug messages in production
 config :logger, level: :info

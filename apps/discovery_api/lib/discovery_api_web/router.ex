@@ -2,7 +2,7 @@ defmodule DiscoveryApiWeb.Router do
   use DiscoveryApiWeb, :router
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug(:accepts, ["json"])
   end
 
   pipeline :browser do
@@ -20,6 +20,7 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   scope "/api", DiscoveryApiWeb do
-    pipe_through :api
+    pipe_through(:api)
+    get("/fetchDatasetSummaries", DiscoveryController, :fetch_dataset_summaries)
   end
 end
