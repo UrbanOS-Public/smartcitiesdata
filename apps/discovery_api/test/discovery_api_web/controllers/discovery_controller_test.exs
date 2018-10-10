@@ -8,17 +8,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     Application.put_env(:discovery_api, :data_lake_url, "http://my-fake-cota-url.nope")
   end
 
-  test "GET /api/fetchDatasetSummaries", %{conn: conn} do
-    with_mocks([
-      {HTTPoison, [], [get: fn _url -> {:ok, create_http_response([])} end]}
-    ]) do
-      DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
-
-      assert called(HTTPoison.get("http://my-fake-cota-url.nope/v1/metadata/feed"))
-    end
-  end
-
-  test "returns the description for each feed", %{conn: conn} do
+  test "maps the data to the correct structure", %{conn: conn} do
     mockFeedMetadata = [generate_entry("Paul"), generate_entry("Richard")]
 
     with_mocks([
@@ -29,20 +19,35 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
         |> retrieveResults
         |> Poison.decode!()
 
-      assert length(actual) == length(mockFeedMetadata)
-      actual |> Enum.each(fn input -> assert map_size(input) == 5 end)
+      expected = mockFeedMetadata |> Enum.map(&convertToExpected/1)
 
-      assert get_properties(actual, "description") ==
-               get_properties(mockFeedMetadata, "description")
+      assert actual == expected
+    end
+  end
 
-      assert get_properties(actual, "title") ==
-               get_properties(mockFeedMetadata, "displayName")
+  test "handles HTTPoison errors correctly", %{conn: conn} do
+    with_mocks([
+      {HTTPoison, [], [get: fn _url -> {:error, %HTTPoison.Error{id: nil, reason: :econnrefused}} end]}
+    ]) do
+      actual =
+        DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
+        |> retrieveResults
+        |> Poison.decode!()
 
-      assert get_properties(actual, "systemName") ==
-               get_properties(mockFeedMetadata, "systemName")
+      assert actual == %{ "message" => "There was a problem processing your request" }
+    end
+  end
 
-      assert get_properties(actual, "id") == get_properties(mockFeedMetadata, "id")
-      assert get_properties(actual, "fileTypes") == Enum.map(mockFeedMetadata, fn _ -> ["csv"] end)
+  test "handles non-200 response codes", %{conn: conn} do
+    with_mocks([
+      {HTTPoison, [], [get: fn _url -> {:ok, %HTTPoison.Response{status_code: 404}} end]}
+    ]) do
+      actual =
+        DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
+        |> retrieveResults
+        |> Poison.decode!()
+
+      assert actual == %{ "message" => "There was a problem processing your request" }
     end
   end
 
@@ -57,6 +62,16 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     }
   end
 
+  defp convertToExpected(metadata) do
+    %{
+      "description" => metadata["description"],
+      "fileTypes" => ["csv"],
+      "id" => metadata["id"],
+      "systemName" => metadata["systemName"],
+      "title" => metadata["displayName"],
+    }
+  end
+
   defp create_http_response(body) do
     %HTTPoison.Response{body: Poison.encode!(body)}
   end
@@ -64,9 +79,5 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
   defp retrieveResults(response) do
     %{resp_body: result} = response
     result
-  end
-
-  defp get_properties(stuff, property) do
-    stuff |> Enum.map(fn input -> input[property] end)
   end
 end
