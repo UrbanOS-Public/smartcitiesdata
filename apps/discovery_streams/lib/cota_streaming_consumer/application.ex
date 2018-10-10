@@ -9,9 +9,6 @@ defmodule CotaStreamingConsumer.Application do
   def start(_type, _args) do
     import Supervisor.Spec
 
-    set_kaffe_endpoints(System.get_env("KAFKA_BROKERS"))
-    set_kaffe_topics(System.get_env("COTA_DATA_TOPIC"))
-
     opts = [strategy: :one_for_one, name: CotaStreamingConsumer.Supervisor]
 
     children =
@@ -19,8 +16,8 @@ defmodule CotaStreamingConsumer.Application do
         cachex(),
         supervisor(CotaStreamingConsumerWeb.Endpoint, []),
         libcluster(),
-        CotaStreamingConsumer.CacheGenserver
-        | Application.get_env(:cota_streaming_consumer, :children, [])
+        CotaStreamingConsumer.CacheGenserver,
+        kaffe()
       ]
       |> List.flatten()
 
@@ -33,11 +30,16 @@ defmodule CotaStreamingConsumer.Application do
   end
 
   defp libcluster do
-    topologies = Application.get_env(:libcluster, :topologies)
-
-    case topologies do
+    case Application.get_env(:libcluster, :topologies) do
       nil -> []
-      topo -> {Cluster.Supervisor, [topo, [name: StreamingConsumer.ClusterSupervisor]]}
+      topologies -> {Cluster.Supervisor, [topologies, [name: StreamingConsumer.ClusterSupervisor]]}
+    end
+  end
+
+  defp kaffe do
+    case Application.get_env(:kaffe, :consumer) do
+      nil -> []
+      _ -> Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, [])
     end
   end
 
@@ -50,30 +52,4 @@ defmodule CotaStreamingConsumer.Application do
     }
   end
 
-  defp set_kaffe_endpoints(nil), do: false
-
-  defp set_kaffe_endpoints(kafka_brokers) do
-    endpoints =
-      kafka_brokers
-      |> String.split(",")
-      |> Enum.map(&String.trim/1)
-      |> Enum.map(fn entry -> String.split(entry, ":") end)
-      |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
-
-    config =
-      Application.get_env(:kaffe, :consumer)
-      |> Keyword.put(:endpoints, endpoints)
-
-    Application.put_env(:kaffe, :consumer, config, persistent: true)
-  end
-
-  defp set_kaffe_topics(nil), do: false
-
-  defp set_kaffe_topics(topic) do
-    config =
-      Application.get_env(:kaffe, :consumer)
-      |> Keyword.put(:topics, [topic])
-
-    Application.put_env(:kaffe, :consumer, config, persistent: true)
-  end
 end
