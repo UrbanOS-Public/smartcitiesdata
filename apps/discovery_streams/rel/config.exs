@@ -40,6 +40,12 @@ environment :prod do
   set include_erts: false
   set include_src: false
   set cookie: :")eAD!m71Bjf:fkQ;c]Im(4kQw~1gd]~Z;%jdGc/;!]AfE_xV]*]?sytQ:^CSfAY5"
+  set config_providers: [
+    {Mix.Releases.Config.Providers.Elixir, ["${RELEASE_ROOT_DIR}/etc/runtime.exs"]}
+  ]
+  set overlays: [
+    {:copy, "rel/runtime.exs", "etc/runtime.exs"}
+  ]
 end
 
 # You may define one or more releases in this file.

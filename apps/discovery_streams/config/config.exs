@@ -13,10 +13,6 @@ config :logger,
   format: "$time $metadata[$level] $message\n",
   metadata: [:user_id]
 
-config :cota_streaming_consumer, :children, [
-  Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, [])
-]
-
 config :cota_streaming_consumer, cache: :cota_vehicle_cache, ttl: 600_000
 
 config :ex_aws,
