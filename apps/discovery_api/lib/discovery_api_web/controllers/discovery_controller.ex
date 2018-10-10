@@ -4,7 +4,6 @@ defmodule DiscoveryApiWeb.DiscoveryController do
   def fetch_dataset_summaries(conn, _params) do
     try do
       {:ok, %HTTPoison.Response{body: body}} = HTTPoison.get("#{data_lake_url()}/v1/metadata/feed")
-      IO.inspect(body)
 
       result =
         Poison.decode!(body)
