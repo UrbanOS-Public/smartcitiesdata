@@ -26,3 +26,6 @@ spec:
           requests:
             memory: 512Mi
             cpu: 200m
+        envFrom:
+        - configMapRef:
+            name: discovery-api-configs
