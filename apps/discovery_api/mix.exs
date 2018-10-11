@@ -19,7 +19,7 @@ defmodule DiscoveryApi.Mixfile do
   def application do
     [
       mod: {DiscoveryApi.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :corsica]
     ]
   end
 
@@ -39,7 +39,8 @@ defmodule DiscoveryApi.Mixfile do
       {:distillery, "~> 2.0"},
       {:httpoison, "~> 1.0"},
       {:mock, "~> 0.3.1", only: :test, runtime: false},
-      {:poison, "~> 3.1"}
+      {:poison, "~> 3.1"},
+      {:corsica, "~> 1.0"}
     ]
   end
 end

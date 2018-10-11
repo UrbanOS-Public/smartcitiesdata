@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: discovery-api-configs
 data:
-  DATA_LAKE_URL: mockylo.{{ .Values.ingress.dns_zone }}
+  DATA_LAKE_URL: https://mockylo.{{ .Values.ingress.dns_zone }}

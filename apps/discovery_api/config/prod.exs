@@ -7,7 +7,8 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   # Probably not neccessary
   root: ".",
   # Probably not necc
-  version: Application.spec(:discovery_api, :vsn)
+  version: Application.spec(:discovery_api, :vsn),
+  check_origin: false
 
 # Do not print debug messages in production
 config :logger, level: :info

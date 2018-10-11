@@ -40,6 +40,8 @@ defmodule DiscoveryApiWeb.Endpoint do
     signing_salt: "foI/nCz1"
   )
 
+  plug(Corsica, origins: "*")
+
   plug(DiscoveryApiWeb.Router)
 
   @doc """
