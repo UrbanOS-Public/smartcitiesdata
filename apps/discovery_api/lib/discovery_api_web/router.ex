@@ -19,8 +19,9 @@ defmodule DiscoveryApiWeb.Router do
     get("/healthcheck", HealthCheckController, :index)
   end
 
-  scope "/api", DiscoveryApiWeb do
+  scope "/v1/api", DiscoveryApiWeb do
     pipe_through(:api)
-    get("/fetchDatasetSummaries", DiscoveryController, :fetch_dataset_summaries)
+    get("/datasets", DiscoveryController, :fetch_dataset_summaries)
+    get("/dataset/:dataset_id", DiscoveryController, :fetch_dataset_detail)
   end
 end
