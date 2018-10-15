@@ -29,7 +29,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     test "handles HTTPoison errors correctly", %{conn: conn} do
       with_mocks([
         {HTTPoison, [],
-        [get: fn _url -> {:error, %HTTPoison.Error{id: nil, reason: :econnrefused}} end]}
+         [get: fn _url -> {:error, %HTTPoison.Error{id: nil, reason: :econnrefused}} end]}
       ]) do
         actual =
           DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
@@ -55,7 +55,6 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
   end
 
   describe "fetch dataset detail" do
-
     test "maps the data to the correct structure", %{conn: conn} do
       mockFeedDetail = generate_feed_detail_entry(7)
 
@@ -78,7 +77,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     test "handles HTTPoison errors correctly", %{conn: conn} do
       with_mocks([
         {HTTPoison, [],
-        [get: fn _url -> {:error, %HTTPoison.Error{id: nil, reason: :econnrefused}} end]}
+         [get: fn _url -> {:error, %HTTPoison.Error{id: nil, reason: :econnrefused}} end]}
       ]) do
         actual =
           DiscoveryApiWeb.DiscoveryController.fetch_dataset_detail(conn, nil)
@@ -155,7 +154,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
   end
 
   defp create_http_response(body) do
-    %HTTPoison.Response{body: Poison.encode!(body)}
+    %HTTPoison.Response{body: Poison.encode!(body), status_code: 200}
   end
 
   defp retrieveResults(response) do

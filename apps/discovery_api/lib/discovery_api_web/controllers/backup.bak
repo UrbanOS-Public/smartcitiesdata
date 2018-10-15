@@ -1,33 +1,34 @@
-defmodule DiscoveryApiWeb.DiscoveryController do
+defmodule DiscoveryApiWeb.DiscoveryController4 do
   use DiscoveryApiWeb, :controller
 
-  def fetch_dataset_summaries(conn, _params) do
-    try do
-      {:ok, %HTTPoison.Response{body: body}} =
-        HTTPoison.get("#{data_lake_url()}/v1/metadata/feed")
+    # def fetch_dataset_summaries(conn, _params) do
+    #      try do
+    #       {:ok, %HTTPoison.Response{body: body}} =
+    #         HTTPoison.get("#{data_lake_url()}/v1/metadata/feed")
+    #       body = http_request(conn, params, "#{data_lake_url()}/v1/metadata/feed")
 
-      result =
-        Poison.decode!(body)
-        |> Enum.map(&transform_metadata/1)
+    #        result =
+    #          Poison.decode!(body)
+    #      end
+    #    end
 
-      json(conn, result)
-    rescue
-      error -> handle_exception(conn, error)
-    end
-  end
+  # defp http_request(conn, _params, url) do
+  #     HTTPoison.get(url)
+  # end
 
   def fetch_dataset_detail(conn, params) do
-    with {:ok, %HTTPoison.Response{body: body, status_code: 200}} <- HTTPoison.get("#{data_lake_url()}/v1/feedmgr/feed/#{params["dataset_id"]}"),
-         {:ok, decode} <- Poison.decode(body)
-    do
-      result = transform_dataset_detail(decode)
-      json(conn, result)
-    else
-      _ -> handle_exception(conn, "There was a problem processing your request")
-    end
+      with {:ok, %HTTPoison.Response{body: body}} <- HTTPoison.get("#{data_lake_url()}/v1/feedmgr/feed/#{params["dataset_id"]}"),
+           {:ok, decode} <- Poison.decode(body)
+      do
+        transform_feed_detail(decode)
+      else
+        _ -> handle_exception(conn, "There was a problem processing your request")
+      end
   end
 
   defp handle_exception(conn, error) do
+    error |> IO.inspect()
+
     json(conn |> put_status(:internal_server_error), %{
       message: "There was a problem processing your request"
     })
@@ -43,7 +44,7 @@ defmodule DiscoveryApiWeb.DiscoveryController do
     }
   end
 
-  defp transform_dataset_detail(feed_detail) do
+  defp transform_feed_detail(feed_detail) do
     %{
       name: feed_detail["feedName"],
       description: feed_detail["description"],
