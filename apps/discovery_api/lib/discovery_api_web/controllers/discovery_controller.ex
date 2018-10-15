@@ -1,26 +1,19 @@
 defmodule DiscoveryApiWeb.DiscoveryController do
   use DiscoveryApiWeb, :controller
 
-  def fetch_dataset_summaries(conn, _params) do
-    try do
-      {:ok, %HTTPoison.Response{body: body}} =
-        HTTPoison.get("#{data_lake_url()}/v1/metadata/feed")
-
-      result =
-        Poison.decode!(body)
-        |> Enum.map(&transform_metadata/1)
-
-      json(conn, result)
-    rescue
-      error -> handle_exception(conn, error)
-    end
+  def fetch_dataset_summaries(conn, params) do
+    retrieve_and_decode_data(conn, "#{data_lake_url()}/v1/metadata/feed", &transform_metadata/1)
   end
 
   def fetch_dataset_detail(conn, params) do
-    with {:ok, %HTTPoison.Response{body: body, status_code: 200}} <- HTTPoison.get("#{data_lake_url()}/v1/feedmgr/feed/#{params["dataset_id"]}"),
+    retrieve_and_decode_data(conn, "#{data_lake_url()}/v1/feedmgr/feed/#{params["dataset_id"]}" , &transform_dataset_detail/1)
+  end
+
+  defp retrieve_and_decode_data(conn, url, transformer) do
+    with {:ok, %HTTPoison.Response{body: body, status_code: 200}} <- HTTPoison.get(url),
          {:ok, decode} <- Poison.decode(body)
     do
-      result = transform_dataset_detail(decode)
+      result = transformer.(decode)
       json(conn, result)
     else
       _ -> handle_exception(conn, "There was a problem processing your request")
@@ -34,13 +27,17 @@ defmodule DiscoveryApiWeb.DiscoveryController do
   end
 
   defp transform_metadata(metadata) do
-    %{
-      description: metadata["description"],
-      fileTypes: ["csv"],
-      id: metadata["id"],
-      systemName: metadata["systemName"],
-      title: metadata["displayName"]
-    }
+    Enum.map(metadata, &transform_metadata_item/1)
+  end
+
+  defp transform_metadata_item(metadata_item) do
+      %{
+        description: metadata_item["description"],
+        fileTypes: ["csv"],
+        id: metadata_item["id"],
+        systemName: metadata_item["systemName"],
+        title: metadata_item["displayName"]
+      }
   end
 
   defp transform_dataset_detail(feed_detail) do
