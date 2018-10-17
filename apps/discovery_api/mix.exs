@@ -38,9 +38,9 @@ defmodule DiscoveryApi.Mixfile do
       {:cowboy, "~> 1.0"},
       {:distillery, "~> 2.0"},
       {:httpoison, "~> 1.0"},
-      {:mock, "~> 0.3.1", only: :test, runtime: false},
       {:poison, "~> 3.1"},
-      {:corsica, "~> 1.0"}
+      {:corsica, "~> 1.0"},
+      {:placebo, "~> 0.2", only: :test},
     ]
   end
 end

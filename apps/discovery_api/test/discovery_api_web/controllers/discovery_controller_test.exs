@@ -1,8 +1,7 @@
 defmodule DiscoveryApiWeb.DiscoveryControllerTest do
   use ExUnit.Case
   use DiscoveryApiWeb.ConnCase
-
-  import Mock
+  use Placebo
 
   setup do
     Application.put_env(:discovery_api, :data_lake_url, "http://my-fake-cota-url.nope")
@@ -10,95 +9,92 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
 
   describe "fetch dataset summaries" do
     test "maps the data to the correct structure", %{conn: conn} do
-      mockFeedMetadata = [generate_metadata_entry("Paul"), generate_metadata_entry("Richard")]
+      mock_feed_metadata = [
+        generate_metadata_entry("Paul"),
+        generate_metadata_entry("Richard")
+      ]
 
-      with_mocks([
-        {HTTPoison, [], [get: fn _url -> {:ok, create_http_response(mockFeedMetadata)} end]}
-      ]) do
-        actual =
-          DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
-          |> retrieveResults
-          |> Poison.decode!()
+      allow HTTPoison.get(any()),
+        return: create_response(body: mock_feed_metadata)
 
-        expected = mockFeedMetadata |> Enum.map(&map_metadata/1)
+      actual =
+        DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
+        |> retrieve_results
+        |> Poison.decode!
 
-        assert actual == expected
-      end
+      expected =
+        mock_feed_metadata
+        |> Enum.map(&map_metadata/1)
+
+      assert actual == expected
     end
 
     test "handles HTTPoison errors correctly", %{conn: conn} do
-      with_mocks([
-        {HTTPoison, [],
-         [get: fn _url -> {:error, %HTTPoison.Error{id: nil, reason: :econnrefused}} end]}
-      ]) do
-        actual =
-          DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
-          |> retrieveResults
-          |> Poison.decode!()
+      allow HTTPoison.get(any()),
+        return: create_response(error_reason: :econnrefused)
 
-        assert actual == %{"message" => "There was a problem processing your request"}
-      end
+      actual =
+        DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
+        |> retrieve_results
+        |> Poison.decode!
+
+      assert actual == %{"message" => "There was a problem processing your request"}
     end
 
     test "handles non-200 response codes", %{conn: conn} do
-      with_mocks([
-        {HTTPoison, [], [get: fn _url -> {:ok, %HTTPoison.Response{status_code: 404}} end]}
-      ]) do
-        actual =
-          DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
-          |> retrieveResults
-          |> Poison.decode!()
+      allow HTTPoison.get(any()),
+        return: create_response(status_code: 404)
 
-        assert actual == %{"message" => "There was a problem processing your request"}
-      end
+      actual =
+        DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
+        |> retrieve_results
+        |> Poison.decode!
+
+      assert actual == %{"message" => "There was a problem processing your request"}
     end
   end
 
   describe "fetch dataset detail" do
     test "maps the data to the correct structure", %{conn: conn} do
-      mockFeedDetail = generate_feed_detail_entry(7)
+      mock_feed_detail = generate_feed_detail_entry(7)
 
-      with_mocks([
-        {HTTPoison, [], [get: fn _url -> {:ok, create_http_response(mockFeedDetail)} end]}
-      ]) do
-        actual =
-          DiscoveryApiWeb.DiscoveryController.fetch_dataset_detail(conn, nil)
-          |> retrieveResults
-          |> Poison.decode!()
+      allow HTTPoison.get(any()),
+        return: create_response(body: mock_feed_detail)
 
-        expected =
-          mockFeedDetail
-          |> map_feed_detail
+      actual =
+        DiscoveryApiWeb.DiscoveryController.fetch_dataset_detail(conn, nil)
+        |> retrieve_results
+        |> Poison.decode!
 
-        assert actual == expected
-      end
+      expected =
+        mock_feed_detail
+        |> map_feed_detail
+
+      assert actual == expected
     end
 
     test "handles HTTPoison errors correctly", %{conn: conn} do
-      with_mocks([
-        {HTTPoison, [],
-         [get: fn _url -> {:error, %HTTPoison.Error{id: nil, reason: :econnrefused}} end]}
-      ]) do
-        actual =
-          DiscoveryApiWeb.DiscoveryController.fetch_dataset_detail(conn, nil)
-          |> retrieveResults
-          |> Poison.decode!()
+      allow HTTPoison.get(any()),
+        return: create_response(error_reason: :econnrefused)
 
-        assert actual == %{"message" => "There was a problem processing your request"}
-      end
+      actual =
+        DiscoveryApiWeb.DiscoveryController.fetch_dataset_detail(conn, nil)
+        |> retrieve_results
+        |> Poison.decode!
+
+      assert actual == %{"message" => "There was a problem processing your request"}
     end
 
     test "handles non-200 response codes", %{conn: conn} do
-      with_mocks([
-        {HTTPoison, [], [get: fn _url -> {:ok, %HTTPoison.Response{status_code: 404}} end]}
-      ]) do
-        actual =
-          DiscoveryApiWeb.DiscoveryController.fetch_dataset_detail(conn, nil)
-          |> retrieveResults
-          |> Poison.decode!()
+      allow HTTPoison.get(any()),
+        return: create_response(status_code: 404)
 
-        assert actual == %{"message" => "There was a problem processing your request"}
-      end
+      actual =
+        DiscoveryApiWeb.DiscoveryController.fetch_dataset_detail(conn, nil)
+        |> retrieve_results
+        |> Poison.decode!
+
+      assert actual == %{"message" => "There was a problem processing your request"}
     end
   end
 
@@ -153,12 +149,15 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     }
   end
 
-  defp create_http_response(body) do
-    %HTTPoison.Response{body: Poison.encode!(body), status_code: 200}
+  defp create_response(error_reason: error) do
+    {:error, %HTTPoison.Error{id: nil, reason: error}}
+  end
+  defp create_response(status_code: code) do
+    {:ok, %HTTPoison.Response{status_code: code}}
+  end
+  defp create_response(body: body) do
+    {:ok, %HTTPoison.Response{body: Poison.encode!(body), status_code: 200}}
   end
 
-  defp retrieveResults(response) do
-    %{resp_body: result} = response
-    result
-  end
+  defp retrieve_results(%{resp_body: result}), do: result
 end
