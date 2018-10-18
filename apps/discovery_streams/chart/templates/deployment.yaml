@@ -37,3 +37,7 @@ spec:
         env:
         - name: RUN_IN_KUBERNETES
           value: "true"
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
