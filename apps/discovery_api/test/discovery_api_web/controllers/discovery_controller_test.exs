@@ -1,5 +1,5 @@
 defmodule DiscoveryApiWeb.DiscoveryControllerTest do
-  # use ExUnit.Case
+  use ExUnit.Case
   use DiscoveryApiWeb.ConnCase
   use Placebo
 
@@ -34,8 +34,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     end
 
     test "handles non-200 response codes", %{conn: conn} do
-      allow HTTPoison.get(any()),
-        return: create_response(status_code: 404)
+      allow HTTPoison.get(any()), return: create_response(status_code: 404)
 
       actual = get(conn, "/v1/api/datasets") |> json_response(500)
 
@@ -47,8 +46,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     test "maps the data to the correct structure", %{conn: conn} do
       mock_feed_detail = generate_feed_detail_entry(7)
 
-      allow HTTPoison.get(any()),
-        return: create_response(body: mock_feed_detail)
+      allow HTTPoison.get(any()), return: create_response(body: mock_feed_detail)
 
       actual = get(conn, "/v1/api/dataset/1") |> json_response(200)
 
@@ -60,8 +58,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     end
 
     test "handles HTTPoison errors correctly", %{conn: conn} do
-      allow HTTPoison.get(any()),
-        return: create_response(error_reason: :econnrefused)
+      allow HTTPoison.get(any()), return: create_response(error_reason: :econnrefused)
 
       actual = get(conn, "/v1/api/dataset/1") |> json_response(500)
 
@@ -69,8 +66,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     end
 
     test "handles non-200 response codes", %{conn: conn} do
-      allow HTTPoison.get(any()),
-        return: create_response(status_code: 404)
+      allow HTTPoison.get(any()), return: create_response(status_code: 404)
 
       actual = get(conn, "/v1/api/dataset/1") |> json_response(500)
 
@@ -132,11 +128,12 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
   defp create_response(error_reason: error) do
     {:error, %HTTPoison.Error{id: nil, reason: error}}
   end
+
   defp create_response(status_code: code) do
     {:ok, %HTTPoison.Response{status_code: code}}
   end
+
   defp create_response(body: body) do
     {:ok, %HTTPoison.Response{body: Poison.encode!(body), status_code: 200}}
   end
-
 end
