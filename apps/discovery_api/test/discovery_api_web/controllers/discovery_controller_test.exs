@@ -14,13 +14,9 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
         generate_metadata_entry("Richard")
       ]
 
-      allow HTTPoison.get(any()),
-        return: create_response(body: mock_feed_metadata)
+      allow HTTPoison.get(any()), return: create_response(body: mock_feed_metadata)
 
-      actual =
-        DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
-        |> retrieve_results
-        |> Poison.decode!
+      actual = get(conn, "/v1/api/datasets") |> json_response(200)
 
       expected =
         mock_feed_metadata
@@ -30,25 +26,17 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     end
 
     test "handles HTTPoison errors correctly", %{conn: conn} do
-      allow HTTPoison.get(any()),
-        return: create_response(error_reason: :econnrefused)
+      allow HTTPoison.get(any()), return: create_response(error_reason: :econnrefused)
 
-      actual =
-        DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
-        |> retrieve_results
-        |> Poison.decode!
+      actual = get(conn, "/v1/api/datasets") |> json_response(500)
 
       assert actual == %{"message" => "There was a problem processing your request"}
     end
 
     test "handles non-200 response codes", %{conn: conn} do
-      allow HTTPoison.get(any()),
-        return: create_response(status_code: 404)
+      allow HTTPoison.get(any()), return: create_response(status_code: 404)
 
-      actual =
-        DiscoveryApiWeb.DiscoveryController.fetch_dataset_summaries(conn, nil)
-        |> retrieve_results
-        |> Poison.decode!
+      actual = get(conn, "/v1/api/datasets") |> json_response(500)
 
       assert actual == %{"message" => "There was a problem processing your request"}
     end
@@ -58,13 +46,9 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     test "maps the data to the correct structure", %{conn: conn} do
       mock_feed_detail = generate_feed_detail_entry(7)
 
-      allow HTTPoison.get(any()),
-        return: create_response(body: mock_feed_detail)
+      allow HTTPoison.get(any()), return: create_response(body: mock_feed_detail)
 
-      actual =
-        DiscoveryApiWeb.DiscoveryController.fetch_dataset_detail(conn, nil)
-        |> retrieve_results
-        |> Poison.decode!
+      actual = get(conn, "/v1/api/dataset/1") |> json_response(200)
 
       expected =
         mock_feed_detail
@@ -74,25 +58,17 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     end
 
     test "handles HTTPoison errors correctly", %{conn: conn} do
-      allow HTTPoison.get(any()),
-        return: create_response(error_reason: :econnrefused)
+      allow HTTPoison.get(any()), return: create_response(error_reason: :econnrefused)
 
-      actual =
-        DiscoveryApiWeb.DiscoveryController.fetch_dataset_detail(conn, nil)
-        |> retrieve_results
-        |> Poison.decode!
+      actual = get(conn, "/v1/api/dataset/1") |> json_response(500)
 
       assert actual == %{"message" => "There was a problem processing your request"}
     end
 
     test "handles non-200 response codes", %{conn: conn} do
-      allow HTTPoison.get(any()),
-        return: create_response(status_code: 404)
+      allow HTTPoison.get(any()), return: create_response(status_code: 404)
 
-      actual =
-        DiscoveryApiWeb.DiscoveryController.fetch_dataset_detail(conn, nil)
-        |> retrieve_results
-        |> Poison.decode!
+      actual = get(conn, "/v1/api/dataset/1") |> json_response(500)
 
       assert actual == %{"message" => "There was a problem processing your request"}
     end
@@ -152,12 +128,12 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
   defp create_response(error_reason: error) do
     {:error, %HTTPoison.Error{id: nil, reason: error}}
   end
+
   defp create_response(status_code: code) do
     {:ok, %HTTPoison.Response{status_code: code}}
   end
+
   defp create_response(body: body) do
     {:ok, %HTTPoison.Response{body: Poison.encode!(body), status_code: 200}}
   end
-
-  defp retrieve_results(%{resp_body: result}), do: result
 end
