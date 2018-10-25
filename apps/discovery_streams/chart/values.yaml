@@ -3,6 +3,10 @@ image:
   repository: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/cota-streaming-consumer
   tag: latest
   pullPolicy: IfNotPresent
+smokeTestImage:
+  repository: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/cota-consumer-smoke-test
+  tag: latest
+  pullPolicy: IfNotPresent
 ingress:
   enabled: false
   scheme: ""

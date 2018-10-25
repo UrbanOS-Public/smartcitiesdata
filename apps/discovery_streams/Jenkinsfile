@@ -9,7 +9,7 @@ properties([
     pipelineTriggers([scos.dailyBuildTrigger()]),
 ])
 
-def image
+def image, smokeTestImage
 def doStageIf = scos.&doStageIf
 def doStageIfRelease = doStageIf.curry(scos.changeset.isRelease)
 def doStageUnlessRelease = doStageIf.curry(!scos.changeset.isRelease)
@@ -21,12 +21,17 @@ node ('infrastructure') {
 
         doStageUnlessRelease('Build') {
             image = docker.build("scos/cota-streaming-consumer:${env.GIT_COMMIT_HASH}")
+            dir('smoke-test') {
+                smokeTestImage = docker.build("scos/cota-consumer-smoke-test:${env.GIT_COMMIT_HASH}")
+            }
         }
 
         doStageUnlessRelease('Deploy to Dev') {
             scos.withDockerRegistry {
                 image.push()
+                smokeTestImage.push()
                 image.push('latest')
+                smokeTestImage.push('latest')
             }
             deployConsumerTo(environment: 'dev')
         }
@@ -40,6 +45,7 @@ node ('infrastructure') {
 
             scos.withDockerRegistry {
                 image.push(promotionTag)
+                smokeTestImage.push(promotionTag)
             }
         }
 
@@ -53,8 +59,11 @@ node ('infrastructure') {
 
             scos.withDockerRegistry {
                 image = scos.pullImageFromDockerRegistry("scos/cota-streaming-consumer", env.GIT_COMMIT_HASH)
+                smokeTestImage = scos.pullImageFromDockerRegistry("scos/cota-consumer-smoke-test", env.GIT_COMMIT_HASH)
                 image.push(releaseTag)
+                smokeTestImage.push(releaseTag)
                 image.push(promotionTag)
+                smokeTestImage.push(promotionTag)
             }
         }
     }
