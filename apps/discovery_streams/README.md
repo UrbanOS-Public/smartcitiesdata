@@ -60,13 +60,7 @@ Point minikube at your local Docker environment and build the image.
 
 ```bash
 eval $(minikube docker-env)
-docker build -t cota-streaming-consumer:wip .
-```
-
-Create the `cota-services` namespace if it does not yet exist.
-
-```bash
-kubectl create ns cota-services
+docker build -t cota-streaming-consumer .
 ```
 
 Run a Helm upgrade with (mostly) default values.
@@ -75,5 +69,5 @@ Run a Helm upgrade with (mostly) default values.
 helm upgrade --install cota-streaming-consumer ./chart \
   --namespace=cota-services \
   --set image.repository=cota-streaming-consumer \
-  --set image.tag=wip
+  --set image.tag=latest
 ```

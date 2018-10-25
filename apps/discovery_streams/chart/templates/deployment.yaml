@@ -15,7 +15,7 @@ spec:
       labels:
         app: {{ .Chart.Name }}
     spec:
-      serviceAccountName: clusterlib
+      serviceAccountName: {{ .Chart.Name }}
       imagePullSecrets:
       - name: regcred
       containers:
