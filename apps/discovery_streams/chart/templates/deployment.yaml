@@ -15,7 +15,7 @@ spec:
       labels:
         app: {{ .Chart.Name }}
     spec:
-      serviceAccountName: clusterlib
+      serviceAccountName: {{ .Chart.Name }}
       imagePullSecrets:
       - name: regcred
       containers:
@@ -25,7 +25,7 @@ spec:
         resources:
           limits:
             memory: 512Mi
-            cpu: 100m
+            cpu: 300m
           requests:
             memory: 512Mi
             cpu: 100m

@@ -76,7 +76,6 @@ def deployConsumerTo(params = [:]) {
     def internal = params.get('internal', true)
 
     scos.withEksCredentials(environment) {
-        sh "kubectl get namespaces | egrep '^cota-services ' || kubectl create namespace cota-services"
 
         def terraformOutputs = scos.terraformOutput(environment)
         def subnets = terraformOutputs.public_subnets.value.join(/\\,/)
