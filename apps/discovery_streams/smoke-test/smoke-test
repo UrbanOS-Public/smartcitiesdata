@@ -18,7 +18,7 @@ _log info "Smoke test is starting"
 payload='{"topic":"vehicle_position","event":"phx_join","payload":{},"ref":"1"}'
 
 _log info "Sending payload \"${payload}\" to \"${host}\""
-data=$(wscat -c wss://${host}/socket/websocket -x ${payload} -w 1)
+data=$(wscat -n -c wss://${host}/socket/websocket -x ${payload} -w 1)
 
 lines=$(echo "${data}" | wc -l)
 
