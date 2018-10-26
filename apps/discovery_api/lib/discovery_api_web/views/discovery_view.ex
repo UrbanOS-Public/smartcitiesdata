@@ -3,6 +3,7 @@ defmodule DiscoveryApiWeb.DiscoveryView do
 
   def render("fetch_dataset_summaries.json", %{datasets: datasets}) do
     transform_metadata(datasets)
+    |> sort_metadata()
   end
 
   def render("fetch_dataset_detail.json", %{dataset: dataset}) do
@@ -11,6 +12,10 @@ defmodule DiscoveryApiWeb.DiscoveryView do
 
   defp transform_metadata(metadata) do
     Enum.map(metadata, &transform_metadata_item/1)
+  end
+
+  defp sort_metadata(metadata) do
+    Enum.sort_by(metadata, fn(map) -> String.downcase(map.systemName) end)
   end
 
   defp transform_metadata_item(metadata_item) do

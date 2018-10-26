@@ -3,14 +3,14 @@ defmodule DiscoveryApiWeb.DiscoveryController do
 
   def fetch_dataset_summaries(conn, _params) do
     case retrieve_and_decode_data("#{data_lake_url()}/v1/metadata/feed") do
-      {:ok, result} -> render(conn, :fetch_dataset_summaries, datasets: result)
+      {:ok, result}    -> render(conn, :fetch_dataset_summaries, datasets: result)
       {:error, reason} -> render_500(conn, reason)
     end
   end
 
   def fetch_dataset_detail(conn, %{"dataset_id" => dataset_id}) do
     case retrieve_and_decode_data("#{data_lake_url()}/v1/feedmgr/feed/#{dataset_id}") do
-      {:ok, result} -> render(conn, :fetch_dataset_detail, dataset: result)
+      {:ok, result}    -> render(conn, :fetch_dataset_detail, dataset: result)
       {:error, reason} -> render_500(conn, reason)
     end
   end
