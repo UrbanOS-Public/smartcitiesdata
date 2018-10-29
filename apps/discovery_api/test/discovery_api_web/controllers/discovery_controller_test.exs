@@ -16,13 +16,40 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
 
       allow HTTPoison.get(any()), return: create_response(body: mock_feed_metadata)
 
-      actual = get(conn, "/v1/api/datasets") |> json_response(200)
+      actual = get(conn, "/v1/api/datasets", sort: "name_asc") |> json_response(200)
 
       expected =
         mock_feed_metadata
         |> Enum.map(&map_metadata/1)
 
       assert actual == expected
+    end
+
+    test "handles dataset sorting alpha ascending", %{conn: conn} do
+      allow HTTPoison.get(any()), return: create_response(body: sort_test_results())
+
+      results = get(conn, "/v1/api/datasets", sort: "name_asc") |> json_response(200)
+
+      assert hd(results)["systemName"] == "alex-system-name"
+      assert List.last(results)["systemName"] == "Richard-system-name"
+    end
+
+    test "handles dataset sorting alpha descending", %{conn: conn} do
+      allow HTTPoison.get(any()), return: create_response(body: sort_test_results())
+
+      results = get(conn, "/v1/api/datasets", sort: "name_des") |> json_response(200)
+
+      assert hd(results)["systemName"] == "Richard-system-name"
+      assert List.last(results)["systemName"] == "alex-system-name"
+    end
+
+    test "handles dataset sorting modified time", %{conn: conn} do
+      allow HTTPoison.get(any()), return: create_response(body: sort_test_results())
+
+      results = get(conn, "/v1/api/datasets", sort: "last_mod") |> json_response(200)
+
+      assert hd(results)["modifiedTime"] == "2018-10-30"
+      assert List.last(results)["modifiedTime"] == "2018-01-01"
     end
 
     test "handles HTTPoison errors correctly", %{conn: conn} do
@@ -89,14 +116,15 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     }
   end
 
-  defp generate_metadata_entry(id) do
+  defp generate_metadata_entry(id, date \\ ~D[2018-06-21]) do
     %{
       "description" => "#{id}-description",
       "displayName" => "#{id}-display-name",
       "systemName" => "#{id}-system-name",
       "id" => "#{id}",
       "blarg" => "#{id}-blarg",
-      "unused" => "#{id}-unused"
+      "unused" => "#{id}-unused",
+      "modifiedTime" => "#{date}"
     }
   end
 
@@ -121,8 +149,18 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
       "fileTypes" => ["csv"],
       "id" => metadata["id"],
       "systemName" => metadata["systemName"],
-      "title" => metadata["displayName"]
+      "title" => metadata["displayName"],
+      "modifiedTime" => metadata["modifiedTime"]
     }
+  end
+
+  defp sort_test_results do
+    [
+      {"Paul", ~D[2018-01-01]},
+      {"Richard", ~D[2018-06-30]},
+      {"alex", ~D[2018-10-30]}
+    ]
+    |> Enum.map(fn({id, date}) -> generate_metadata_entry(id, date) end)
   end
 
   defp create_response(error_reason: error) do
