@@ -26,13 +26,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     end
 
     test "handles dataset sorting alpha ascending", %{conn: conn} do
-      mock_feed_metadata = [
-        generate_metadata_entry("Richard"),
-        generate_metadata_entry("Paul"),
-        generate_metadata_entry("alex")
-      ]
-
-      allow HTTPoison.get(any()), return: create_response(body: mock_feed_metadata)
+      allow HTTPoison.get(any()), return: create_response(body: sort_test_results())
 
       results = get(conn, "/v1/api/datasets", sort: "name_asc") |> json_response(200)
 
@@ -41,13 +35,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     end
 
     test "handles dataset sorting alpha descending", %{conn: conn} do
-      mock_feed_metadata = [
-        generate_metadata_entry("Richard"),
-        generate_metadata_entry("Paul"),
-        generate_metadata_entry("alex")
-      ]
-
-      allow HTTPoison.get(any()), return: create_response(body: mock_feed_metadata)
+      allow HTTPoison.get(any()), return: create_response(body: sort_test_results())
 
       results = get(conn, "/v1/api/datasets", sort: "name_des") |> json_response(200)
 
@@ -56,13 +44,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     end
 
     test "handles dataset sorting modified time", %{conn: conn} do
-      mock_feed_metadata = [
-        generate_metadata_entry("foo", ~D[2018-01-01]),
-        generate_metadata_entry("foo", ~D[2018-06-30]),
-        generate_metadata_entry("foo", ~D[2018-10-30])
-      ]
-
-      allow HTTPoison.get(any()), return: create_response(body: mock_feed_metadata)
+      allow HTTPoison.get(any()), return: create_response(body: sort_test_results())
 
       results = get(conn, "/v1/api/datasets", sort: "last_mod") |> json_response(200)
 
@@ -170,6 +152,15 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
       "title" => metadata["displayName"],
       "modifiedTime" => metadata["modifiedTime"]
     }
+  end
+
+  defp sort_test_results do
+    [
+      {"Paul", ~D[2018-01-01]},
+      {"Richard", ~D[2018-06-30]},
+      {"alex", ~D[2018-10-30]}
+    ]
+    |> Enum.map(fn({id, date}) -> generate_metadata_entry(id, date) end)
   end
 
   defp create_response(error_reason: error) do
