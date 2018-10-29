@@ -55,6 +55,21 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
       assert List.last(results)["systemName"] == "alex-system-name"
     end
 
+    test "handles dataset sorting modified time", %{conn: conn} do
+      mock_feed_metadata = [
+        generate_metadata_entry("foo", ~D[2018-01-01]),
+        generate_metadata_entry("foo", ~D[2018-06-30]),
+        generate_metadata_entry("foo", ~D[2018-10-30])
+      ]
+
+      allow HTTPoison.get(any()), return: create_response(body: mock_feed_metadata)
+
+      results = get(conn, "/v1/api/datasets", sort: "last_mod") |> json_response(200)
+
+      assert hd(results)["modifiedTime"] == "2018-10-30"
+      assert List.last(results)["modifiedTime"] == "2018-01-01"
+    end
+
     test "handles HTTPoison errors correctly", %{conn: conn} do
       allow HTTPoison.get(any()), return: create_response(error_reason: :econnrefused)
 
@@ -119,14 +134,15 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
     }
   end
 
-  defp generate_metadata_entry(id) do
+  defp generate_metadata_entry(id, date \\ ~D[2018-06-21]) do
     %{
       "description" => "#{id}-description",
       "displayName" => "#{id}-display-name",
       "systemName" => "#{id}-system-name",
       "id" => "#{id}",
       "blarg" => "#{id}-blarg",
-      "unused" => "#{id}-unused"
+      "unused" => "#{id}-unused",
+      "modifiedTime" => "#{date}"
     }
   end
 
@@ -151,7 +167,8 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
       "fileTypes" => ["csv"],
       "id" => metadata["id"],
       "systemName" => metadata["systemName"],
-      "title" => metadata["displayName"]
+      "title" => metadata["displayName"],
+      "modifiedTime" => metadata["modifiedTime"]
     }
   end
 

@@ -18,7 +18,7 @@ defmodule DiscoveryApiWeb.DiscoveryView do
     case sort_by do
       "name_asc" -> Enum.sort_by(metadata, fn(map) -> String.downcase(map.systemName) end)
       "name_des" -> Enum.sort_by(metadata, fn(map) -> String.downcase(map.systemName) end, &>=/2)
-      "last_mod" -> IO.puts("Not implemented yet")
+      "last_mod" -> Enum.sort_by(metadata, fn(map) -> map.modifiedTime end, &>=/2)
     end
   end
 
@@ -28,7 +28,8 @@ defmodule DiscoveryApiWeb.DiscoveryView do
         fileTypes: ["csv"],
         id: metadata_item["id"],
         systemName: metadata_item["systemName"],
-        title: metadata_item["displayName"]
+        title: metadata_item["displayName"],
+        modifiedTime: metadata_item["modifiedTime"]
       }
   end
 
