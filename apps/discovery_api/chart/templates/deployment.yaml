@@ -20,12 +20,7 @@ spec:
         image: {{ .Values.image.name }}:{{ .Values.image.tag }}
         imagePullPolicy: IfNotPresent
         resources:
-          limits:
-            memory: 512Mi
-            cpu: 200m
-          requests:
-            memory: 512Mi
-            cpu: 200m
+{{ toYaml .Values.resources | indent 10 }}
         envFrom:
         - configMapRef:
             name: discovery-api-configs

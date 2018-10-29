@@ -76,6 +76,7 @@ def deployDiscoveryApiTo(params = [:]) {
             helm init --client-only
             helm upgrade --install discovery-api ./chart \
                 --namespace=discovery \
+                -f prod.yaml \
                 --set ingress.scheme="${ingressScheme}" \
                 --set ingress.subnets="${subnets}" \
                 --set ingress.security_groups="${allowInboundTrafficSG}" \
