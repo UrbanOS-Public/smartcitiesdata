@@ -1,9 +1,10 @@
 defmodule DiscoveryApiWeb.DiscoveryController do
   use DiscoveryApiWeb, :controller
 
-  def fetch_dataset_summaries(conn, _params) do
+  def fetch_dataset_summaries(conn, params) do
+    sort_by = params["sort"]
     case retrieve_and_decode_data("#{data_lake_url()}/v1/metadata/feed") do
-      {:ok, result}    -> render(conn, :fetch_dataset_summaries, datasets: result)
+      {:ok, result}    -> render(conn, :fetch_dataset_summaries, datasets: result, sort: sort_by)
       {:error, reason} -> render_500(conn, reason)
     end
   end

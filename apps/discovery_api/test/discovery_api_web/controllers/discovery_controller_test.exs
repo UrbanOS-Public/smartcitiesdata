@@ -16,7 +16,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
 
       allow HTTPoison.get(any()), return: create_response(body: mock_feed_metadata)
 
-      actual = get(conn, "/v1/api/datasets") |> json_response(200)
+      actual = get(conn, "/v1/api/datasets", sort: "name_asc") |> json_response(200)
 
       expected =
         mock_feed_metadata
@@ -25,7 +25,7 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
       assert actual == expected
     end
 
-    test "handles dataset map sorting alphabetically", %{conn: conn} do
+    test "handles dataset sorting alpha ascending", %{conn: conn} do
       mock_feed_metadata = [
         generate_metadata_entry("Richard"),
         generate_metadata_entry("Paul"),
@@ -34,10 +34,25 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
 
       allow HTTPoison.get(any()), return: create_response(body: mock_feed_metadata)
 
-      results = get(conn, "/v1/api/datasets") |> json_response(200)
+      results = get(conn, "/v1/api/datasets", sort: "name_asc") |> json_response(200)
 
       assert hd(results)["systemName"] == "alex-system-name"
       assert List.last(results)["systemName"] == "Richard-system-name"
+    end
+
+    test "handles dataset sorting alpha descending", %{conn: conn} do
+      mock_feed_metadata = [
+        generate_metadata_entry("Richard"),
+        generate_metadata_entry("Paul"),
+        generate_metadata_entry("alex")
+      ]
+
+      allow HTTPoison.get(any()), return: create_response(body: mock_feed_metadata)
+
+      results = get(conn, "/v1/api/datasets", sort: "name_des") |> json_response(200)
+
+      assert hd(results)["systemName"] == "Richard-system-name"
+      assert List.last(results)["systemName"] == "alex-system-name"
     end
 
     test "handles HTTPoison errors correctly", %{conn: conn} do

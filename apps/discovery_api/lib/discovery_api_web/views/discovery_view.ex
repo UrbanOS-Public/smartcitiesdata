@@ -1,9 +1,9 @@
 defmodule DiscoveryApiWeb.DiscoveryView do
   use DiscoveryApiWeb, :view
 
-  def render("fetch_dataset_summaries.json", %{datasets: datasets}) do
+  def render("fetch_dataset_summaries.json", %{datasets: datasets, sort: sort_by}) do
     transform_metadata(datasets)
-    |> sort_metadata()
+    |> sort_metadata(sort_by)
   end
 
   def render("fetch_dataset_detail.json", %{dataset: dataset}) do
@@ -14,8 +14,12 @@ defmodule DiscoveryApiWeb.DiscoveryView do
     Enum.map(metadata, &transform_metadata_item/1)
   end
 
-  defp sort_metadata(metadata) do
-    Enum.sort_by(metadata, fn(map) -> String.downcase(map.systemName) end)
+  defp sort_metadata(metadata, sort_by) do
+    case sort_by do
+      "name_asc" -> Enum.sort_by(metadata, fn(map) -> String.downcase(map.systemName) end)
+      "name_des" -> Enum.sort_by(metadata, fn(map) -> String.downcase(map.systemName) end, &>=/2)
+      "last_mod" -> IO.puts("Not implemented yet")
+    end
   end
 
   defp transform_metadata_item(metadata_item) do
