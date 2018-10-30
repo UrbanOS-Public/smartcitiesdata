@@ -2,16 +2,22 @@ defmodule DiscoveryApiWeb.DiscoveryView do
   use DiscoveryApiWeb, :view
 
   def render("fetch_dataset_summaries.json", %{datasets: datasets, sort: sort_by}) do
-    transform_metadata(datasets)
-    |> sort_metadata(sort_by)
+    transform_metadata(datasets, sort_by)
   end
 
   def render("fetch_dataset_detail.json", %{dataset: dataset}) do
     transform_dataset_detail(dataset)
   end
 
-  defp transform_metadata(metadata) do
-    Enum.map(metadata, &transform_metadata_item/1)
+  defp transform_metadata(metadata, sort_by) do
+    %{
+      metadata: %{
+        totalDatasets: 150,
+        limit: 10,
+        offest: 0
+      },
+      results: Enum.map(metadata, &transform_metadata_item/1) |> sort_metadata(sort_by)
+    }
   end
 
   defp sort_metadata(metadata, sort_by) do

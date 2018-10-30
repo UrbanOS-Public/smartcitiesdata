@@ -22,16 +22,16 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
         mock_feed_metadata
         |> Enum.map(&map_metadata/1)
 
-      assert actual == expected
-    end
+        assert actual["results"] == expected
+      end
 
     test "handles dataset sorting alpha ascending", %{conn: conn} do
       allow HTTPoison.get(any()), return: create_response(body: sort_test_results())
 
       results = get(conn, "/v1/api/datasets", sort: "name_asc") |> json_response(200)
 
-      assert hd(results)["systemName"] == "alex-system-name"
-      assert List.last(results)["systemName"] == "Richard-system-name"
+      assert hd(results["results"])["systemName"] == "alex-system-name"
+      assert List.last(results["results"])["systemName"] == "Richard-system-name"
     end
 
     test "handles dataset sorting alpha descending", %{conn: conn} do
@@ -39,8 +39,8 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
 
       results = get(conn, "/v1/api/datasets", sort: "name_des") |> json_response(200)
 
-      assert hd(results)["systemName"] == "Richard-system-name"
-      assert List.last(results)["systemName"] == "alex-system-name"
+      assert hd(results["results"])["systemName"] == "Richard-system-name"
+      assert List.last(results["results"])["systemName"] == "alex-system-name"
     end
 
     test "handles dataset sorting modified time", %{conn: conn} do
@@ -48,8 +48,8 @@ defmodule DiscoveryApiWeb.DiscoveryControllerTest do
 
       results = get(conn, "/v1/api/datasets", sort: "last_mod") |> json_response(200)
 
-      assert hd(results)["modifiedTime"] == "2018-10-30"
-      assert List.last(results)["modifiedTime"] == "2018-01-01"
+      assert hd(results["results"])["modifiedTime"] == "2018-10-30"
+      assert List.last(results["results"])["modifiedTime"] == "2018-01-01"
     end
 
     test "handles HTTPoison errors correctly", %{conn: conn} do
