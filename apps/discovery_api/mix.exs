@@ -40,7 +40,9 @@ defmodule DiscoveryApi.Mixfile do
       {:httpoison, "~> 1.0"},
       {:poison, "~> 3.1"},
       {:corsica, "~> 1.0"},
-      {:placebo, "~> 0.2", only: :test}
+      {:cachex, "~> 3.0"},
+      {:patiently, "~> 0.2.0"},
+      {:placebo, "~> 1.0", only: :test}
     ]
   end
 end

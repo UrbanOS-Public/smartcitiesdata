@@ -6,5 +6,9 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   http: [port: 4001],
   server: false
 
+
+config :discovery_api,
+  test_mode: true
+
 # Print only warnings and errors during test
-config :logger, level: :warn
+config :logger, level: :info
