@@ -46,12 +46,12 @@ defmodule DiscoveryApi.Data.CacheLoader do
 
   defp transform_dataset(dataset) do
     %{
-      "title" => dataset["displayName"],
-      "description" => dataset["description"],
-      "fileTypes" => ["csv"],
-      "id" => dataset["id"],
-      "modifiedTime" => dataset["modifiedTime"],
-      "systemName" => dataset["systemName"]
+      :title => dataset["displayName"],
+      :description => dataset["description"],
+      :fileTypes => ["csv"],
+      :id => dataset["id"],
+      :modifiedTime => dataset["modifiedTime"],
+      :systemName => dataset["systemName"]
     }
   end
 

@@ -18,9 +18,9 @@ defmodule DiscoveryApiWeb.DatasetListView do
 
     defp sort_datasets(datasets, sort_by) do
     case sort_by do
-      "name_asc" -> Enum.sort_by(datasets, fn(map) -> String.downcase(map["systemName"]) end)
-      "name_desc" -> Enum.sort_by(datasets, fn(map) -> String.downcase(map["systemName"]) end, &>=/2)
-      "last_mod" -> Enum.sort_by(datasets, fn(map) -> map["modifiedTime"] end, &>=/2)
+      "name_asc" -> Enum.sort_by(datasets, fn(map) -> String.downcase(map[:systemName]) end)
+      "name_desc" -> Enum.sort_by(datasets, fn(map) -> String.downcase(map[:systemName]) end, &>=/2)
+      "last_mod" -> Enum.sort_by(datasets, fn(map) -> map[:modifiedTime] end, &>=/2)
     end
   end
 

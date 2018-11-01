@@ -53,7 +53,7 @@ defmodule DiscoverApi.Data.CacheLoaderTest do
       Patiently.wait_for!(
         condition,
         dwell: 100,
-        max_tries: 10
+        max_tries: 20
       )
     end
 
@@ -64,20 +64,20 @@ defmodule DiscoverApi.Data.CacheLoaderTest do
 
       {:ok, datasets_from_cache} = Cachex.get(:dataset_cache, "datasets")
       first = Enum.at(datasets_from_cache, 0)
-      assert first["title"] == "Swiss Franc Cotton"
-      assert first["description"] == "Neque soluta architecto consequatur earum ipsam molestiae tempore at dolorem. Similique consectetur cum."
-      assert first["fileTypes"] == ["csv"]
-      assert first["id"] == "e4fca5cd-2ddd-46dd-9380-01e9c35c674f"
-      assert first["modifiedTime"] == "2018-10-08T14:57:09.464Z"
-      assert first["systemName"] == "Swiss_Franc_Cotton"
+      assert first[:title] == "Swiss Franc Cotton"
+      assert first[:description] == "Neque soluta architecto consequatur earum ipsam molestiae tempore at dolorem. Similique consectetur cum."
+      assert first[:fileTypes] == ["csv"]
+      assert first[:id] == "e4fca5cd-2ddd-46dd-9380-01e9c35c674f"
+      assert first[:modifiedTime] == "2018-10-08T14:57:09.464Z"
+      assert first[:systemName] == "Swiss_Franc_Cotton"
 
       second = Enum.at(datasets_from_cache, 1)
-      assert second["title"] == "input invoice"
-      assert second["description"] == "Quo aspernatur rerum voluptas natus ratione suscipit. Occaecati temporibus quibusdam fugit. Minus consequuntur adipisci. Velit molestias minus ratione expedita. Unde voluptatum distinctio officia voluptatem. Dolorem quibusdam quia et rem harum odio magni inventore."
-      assert second["fileTypes"] == ["csv"]
-      assert second["id"] == "57eac648-729c-44f5-89f2-d446ce2a4d68"
-      assert second["modifiedTime"] == "2018-12-08T10:09:11.000Z"
-      assert second["systemName"] == "input_invoice"
+      assert second[:title] == "input invoice"
+      assert second[:description] == "Quo aspernatur rerum voluptas natus ratione suscipit. Occaecati temporibus quibusdam fugit. Minus consequuntur adipisci. Velit molestias minus ratione expedita. Unde voluptatum distinctio officia voluptatem. Dolorem quibusdam quia et rem harum odio magni inventore."
+      assert second[:fileTypes] == ["csv"]
+      assert second[:id] == "57eac648-729c-44f5-89f2-d446ce2a4d68"
+      assert second[:modifiedTime] == "2018-12-08T10:09:11.000Z"
+      assert second[:systemName] == "input_invoice"
     end
   end
 

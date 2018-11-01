@@ -91,36 +91,16 @@ defmodule DiscoveryApiWeb.DatasetListControllerTest do
 
   end
 
-  defp generate_dataset_summary(id, date \\ ~D[2018-06-21]) do
-    %{
-      "description" => "#{id}-description",
-      "displayName" => "#{id}-display-name",
-      "systemName" => "#{id}-system-name",
-      "id" => "#{id}",
-      "blarg" => "#{id}-blarg",
-      "unused" => "#{id}-unused",
-      "modifiedTime" => "#{date}"
-    }
-  end
-
   defp dataset_summary_map(id, date \\ ~D[2018-06-21]) do
     %{
-      "description" => "#{id}-description",
-      "fileTypes" => ["csv"],
-      "id" => id,
-      "systemName" => "#{id}-system-name",
-      "title" => "#{id}-title",
-      "modifiedTime" => "#{date}"
+      :description => "#{id}-description",
+      :fileTypes => ["csv"],
+      :id => id,
+      :systemName => "#{id}-system-name",
+      :title => "#{id}-title",
+      :modifiedTime => "#{date}"
     }
   end
 
-  defp sort_test_results do
-    [
-      {"Paul", ~D[2018-01-01]},
-      {"Richard", ~D[2018-06-30]},
-      {"alex", ~D[2018-10-30]}
-    ]
-    |> Enum.map(fn({id, date}) -> generate_dataset_summary(id, date) end)
-  end
 
 end

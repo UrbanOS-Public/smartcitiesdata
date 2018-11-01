@@ -1,8 +1,6 @@
 defmodule DiscoveryApi.Application do
   use Application
 
-  @cache Application.get_env(:discovery_api, :dataset_cache)
-
   def start(_type, _args) do
     import Supervisor.Spec
 

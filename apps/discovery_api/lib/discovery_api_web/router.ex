@@ -23,5 +23,6 @@ defmodule DiscoveryApiWeb.Router do
     pipe_through(:api)
     get("/datasets", DatasetListController, :fetch_dataset_summaries)
     get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
+    get("/search/", DatasetSearchController, :search)
   end
 end
