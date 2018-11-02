@@ -1,4 +1,4 @@
--name <%= release_name %>@${NODE_IP}
+-name <%= release_name %>@${ERLANG_NAME}
 
 -setcookie <%= release.profile.cookie %>
 
