@@ -18,3 +18,5 @@ service:
   type: NodePort
   port: 80
   targetPort: 4000
+kafka:
+  brokers: "streaming-service-kafka-bootstrap.streaming-prime:9092"
