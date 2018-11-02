@@ -1,7 +1,7 @@
-defmodule DiscoveryApiWeb.DatasetListView do
+defmodule DiscoveryApiWeb.DatasetSearchView do
   use DiscoveryApiWeb, :view
 
-  def render("fetch_dataset_summaries.json", %{datasets: datasets, sort: sort_by, offset: offset, limit: limit}) do
+  def render("search_dataset_summaries.json", %{datasets: datasets, sort: sort_by, offset: offset, limit: limit}) do
     paged_sorted_data =
       sort_datasets(datasets, sort_by)
       |> paginate(offset, limit)

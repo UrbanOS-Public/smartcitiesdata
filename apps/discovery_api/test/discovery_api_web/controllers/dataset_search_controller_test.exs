@@ -1,4 +1,4 @@
-defmodule DiscoveryApiWeb.DatasetListControllerTest do
+defmodule DiscoveryApiWeb.DatasetControllerTest do
   use ExUnit.Case
   use DiscoveryApiWeb.ConnCase
   use Placebo
@@ -17,73 +17,73 @@ defmodule DiscoveryApiWeb.DatasetListControllerTest do
   describe "fetch dataset summaries" do
 
     test "returns metadata", %{conn: conn} do
-      actual = get(conn, "/v1/api/datasets", sort: "name_asc") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc") |> json_response(200)
 
       assert actual["metadata"]["totalDatasets"] == 2
     end
 
 
     test "returns given limit in metadata", %{conn: conn} do
-      actual = get(conn, "/v1/api/datasets", sort: "name_asc", limit: "5") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc", limit: "5") |> json_response(200)
 
       assert actual["metadata"]["limit"] == 5
     end
 
     test "uses default of 10 for limit", %{conn: conn} do
-      actual = get(conn, "/v1/api/datasets", sort: "name_asc") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc") |> json_response(200)
 
       assert actual["metadata"]["limit"] == 10
     end
 
     test "returns given offset in metadata", %{conn: conn} do
-      actual = get(conn, "/v1/api/datasets", sort: "name_asc", offset: "5") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc", offset: "5") |> json_response(200)
 
       assert actual["metadata"]["offset"] == 5
     end
 
     test "uses default of 0 for offset", %{conn: conn} do
-      actual = get(conn, "/v1/api/datasets", sort: "name_asc") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc") |> json_response(200)
 
       assert actual["metadata"]["offset"] == 0
     end
 
     test "sort by name ascending", %{conn: conn} do
-      actual = get(conn, "/v1/api/datasets", sort: "name_asc") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc") |> json_response(200)
 
       assert Enum.at(actual["results"], 0)["id"] == "Paul"
       assert Enum.at(actual["results"], 1)["id"] == "Richard"
     end
 
     test "sort by name descending", %{conn: conn} do
-      actual = get(conn, "/v1/api/datasets", sort: "name_desc") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_desc") |> json_response(200)
 
       assert Enum.at(actual["results"], 0)["id"] == "Richard"
       assert Enum.at(actual["results"], 1)["id"] == "Paul"
     end
 
     test "sort by date descending", %{conn: conn} do
-      actual = get(conn, "/v1/api/datasets", sort: "last_mod") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "last_mod") |> json_response(200)
 
       assert Enum.at(actual["results"], 0)["id"] == "Richard"
       assert Enum.at(actual["results"], 1)["id"] == "Paul"
     end
 
     test "paginate datasets", %{conn: conn} do
-      actual = get(conn, "/v1/api/datasets", sort: "name_asc", limit: "1", offset: "0") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc", limit: "1", offset: "0") |> json_response(200)
 
       assert Enum.at(actual["results"], 0)["id"] == "Paul"
       assert Enum.count(actual["results"]) == 1
     end
 
     test "paginate datasets offset", %{conn: conn} do
-      actual = get(conn, "/v1/api/datasets", sort: "name_asc", limit: "1", offset: "1") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc", limit: "1", offset: "1") |> json_response(200)
 
       assert Enum.at(actual["results"], 0)["id"] == "Richard"
       assert Enum.count(actual["results"]) == 1
     end
 
     test "paginate datasets offset default", %{conn: conn} do
-      actual = get(conn, "/v1/api/datasets", sort: "name_asc", limit: "1") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc", limit: "1") |> json_response(200)
 
       assert Enum.at(actual["results"], 0)["id"] == "Paul"
       assert Enum.count(actual["results"]) == 1

@@ -12,8 +12,7 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
 
     result =  Data.DatasetSearchinator.search(query: query)
 
-    put_view(conn, DiscoveryApiWeb.DatasetListView)
-    |> render(:fetch_dataset_summaries, datasets: result, sort: sort_by, offset: offset, limit: limit)
+    render(conn, :search_dataset_summaries, datasets: result, sort: sort_by, offset: offset, limit: limit)
   end
 
 end
