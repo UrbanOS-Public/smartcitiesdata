@@ -42,6 +42,7 @@ environment :prod do
   set config_providers: [
     {Mix.Releases.Config.Providers.Elixir, ["${RELEASE_ROOT_DIR}/etc/runtime.exs"]}
   ]
+  set pre_configure_hooks: "rel/hooks/pre_configure.d"
   set overlays: [
     {:copy, "rel/runtime.exs", "etc/runtime.exs"}
   ]

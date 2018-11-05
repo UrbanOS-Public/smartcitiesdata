@@ -26,7 +26,7 @@ if System.get_env("RUN_IN_KUBERNETES") do
       consumer_cluster: [
         strategy: Elixir.Cluster.Strategy.Kubernetes,
         config: [
-          mode: :ip,
+          mode: :dns,
           kubernetes_node_basename: "cota_streaming_consumer",
           kubernetes_selector: "app=cota-streaming-consumer",
           polling_interval: 10_000
