@@ -5,6 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: {{ .Chart.Name }}
+  annotations:
+    prometheus.io/port:  "{{ .Values.service.targetPort }}"
+    prometheus.io/scrape: "true"
 spec:
   selector:
     app: {{ .Chart.Name }}
