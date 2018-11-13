@@ -1,3 +1,7 @@
+defmodule CotaStreamingConsumer.MetricsExporter do
+  use Prometheus.PlugExporter
+end
+
 defmodule CotaStreamingConsumer.Application do
   use Application
 
@@ -8,6 +12,8 @@ defmodule CotaStreamingConsumer.Application do
 
   def start(_type, _args) do
     import Supervisor.Spec
+
+    CotaStreamingConsumer.MetricsExporter.setup()
 
     opts = [strategy: :one_for_one, name: CotaStreamingConsumer.Supervisor]
 
