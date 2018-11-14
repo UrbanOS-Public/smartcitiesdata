@@ -4,7 +4,8 @@ config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
   http: [port: 4000],
   secret_key_base: "This is a test key",
   render_errors: [view: CotaStreamingConsumerWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: CotaStreamingConsumer.PubSub, adapter: Phoenix.PubSub.PG2]
+  pubsub: [name: CotaStreamingConsumer.PubSub, adapter: Phoenix.PubSub.PG2],
+  instrumenters: [CotaStreamingConsumerWeb.Endpoint.Instrumenter]
 
 config :logger,
   backends: [:console],

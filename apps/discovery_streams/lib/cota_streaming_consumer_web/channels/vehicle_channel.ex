@@ -1,4 +1,9 @@
 defmodule CotaStreamingConsumerWeb.VehicleChannel do
+  @moduledoc """
+    Handles websocket connections for the COTA Bus location data
+    After a client joins the channel, it pushes the vehicle_position cache to the client,
+    and then begins sending new data as it arrives.
+  """
   use CotaStreamingConsumerWeb, :channel
   @cache Application.get_env(:cota_streaming_consumer, :cache)
 

@@ -1,8 +1,10 @@
 defmodule CotaStreamingConsumer.MetricsExporter do
+  @moduledoc "false"
   use Prometheus.PlugExporter
 end
 
 defmodule CotaStreamingConsumer.Application do
+  @moduledoc "false"
   use Application
 
   require Cachex.Spec
@@ -14,6 +16,7 @@ defmodule CotaStreamingConsumer.Application do
     import Supervisor.Spec
 
     CotaStreamingConsumer.MetricsExporter.setup()
+    CotaStreamingConsumerWeb.Endpoint.Instrumenter.setup()
 
     opts = [strategy: :one_for_one, name: CotaStreamingConsumer.Supervisor]
 
@@ -37,8 +40,11 @@ defmodule CotaStreamingConsumer.Application do
 
   defp libcluster do
     case Application.get_env(:libcluster, :topologies) do
-      nil -> []
-      topologies -> {Cluster.Supervisor, [topologies, [name: StreamingConsumer.ClusterSupervisor]]}
+      nil ->
+        []
+
+      topologies ->
+        {Cluster.Supervisor, [topologies, [name: StreamingConsumer.ClusterSupervisor]]}
     end
   end
 
@@ -57,5 +63,4 @@ defmodule CotaStreamingConsumer.Application do
       start: {Cachex, :start_link, [@cache, [expiration: expiration]]}
     }
   end
-
 end

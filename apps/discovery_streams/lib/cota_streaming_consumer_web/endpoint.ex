@@ -1,3 +1,7 @@
+defmodule CotaStreamingConsumerWeb.Endpoint.Instrumenter do
+  use Prometheus.PhoenixInstrumenter
+end
+
 defmodule CotaStreamingConsumerWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :cota_streaming_consumer
 

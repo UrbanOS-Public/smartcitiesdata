@@ -1,4 +1,5 @@
 defmodule CotaStreamingConsumerWeb do
+  @moduledoc "false"
   def controller do
     quote do
       use Phoenix.Controller, namespace: CotaStreamingConsumerWeb
