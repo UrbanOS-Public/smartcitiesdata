@@ -4,11 +4,13 @@ require GenServer
 alias StreamingMetrics.Hostname
 
 defmodule CotaStreamingConsumer do
-  @cache Application.get_env(:cota_streaming_consumer, :cache)
+  @moduledoc """
+    Gets messages out of kafka, adds them to the cache,
+    broadcasts them, and records metrics.
+  """
   @metric_collector Application.get_env(:streaming_metrics, :collector)
 
   def handle_messages(messages) do
-
     json_messages =
       messages
       |> Enum.map(fn message -> message.value end)

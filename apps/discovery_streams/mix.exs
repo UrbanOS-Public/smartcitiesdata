@@ -9,7 +9,8 @@ defmodule CotaStreamingConsumer.Mixfile do
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -40,7 +41,14 @@ defmodule CotaStreamingConsumer.Mixfile do
       {:cachex, "~> 3.0"},
       {:libcluster, "~> 3.0"},
       {:patiently, "~> 0.2.0", only: :test},
+      {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
       {:distillery, "~> 2.0"}
+    ]
+  end
+
+  defp aliases do
+    [
+      lint: ["format", "credo"]
     ]
   end
 end

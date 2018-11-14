@@ -1,4 +1,5 @@
 defmodule CotaStreamingConsumer.CacheGenserver do
+  @moduledoc "false"
   use GenServer
 
   @cache Application.get_env(:cota_streaming_consumer, :cache)

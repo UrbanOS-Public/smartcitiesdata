@@ -90,7 +90,8 @@ defmodule CotaStreamingConsumerTest do
       ])
 
       cache_record_created = fn ->
-        Cachex.stream!(@cache)
+        @cache
+        |>Cachex.stream!()
         |> Enum.to_list()
         |> Enum.map(fn {:entry, _key, _create_ts, _ttl, vehicle} -> vehicle end) == [
           %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}
