@@ -16,6 +16,7 @@ defmodule CotaStreamingConsumer.Application do
     import Supervisor.Spec
 
     CotaStreamingConsumer.MetricsExporter.setup()
+    CotaStreamingConsumerWeb.Endpoint.Instrumenter.setup()
 
     opts = [strategy: :one_for_one, name: CotaStreamingConsumer.Supervisor]
 

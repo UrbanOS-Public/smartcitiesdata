@@ -17,7 +17,7 @@ defmodule CotaStreamingConsumer.Mixfile do
   def application do
     [
       mod: {CotaStreamingConsumer.Application, []},
-      extra_applications: [:prometheus_plugs, :logger, :runtime_tools]
+      extra_applications: [:prometheus_plugs, :prometheus_phoenix, :logger, :runtime_tools]
     ]
   end
 
@@ -30,6 +30,7 @@ defmodule CotaStreamingConsumer.Mixfile do
       {:phoenix_pubsub, "~> 1.0"},
       {:phoenix_html, "~> 2.10"},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
+      {:prometheus_phoenix, "~> 1.2.0"},
       {:prometheus_plugs, "~> 1.1.1"},
       {:cowboy, "~> 1.0"},
       {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false},
