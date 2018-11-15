@@ -45,7 +45,10 @@ defmodule DiscoveryApiWeb.Endpoint do
 
   plug(Corsica, origins: "*")
 
+  plug(DiscoveryApi.MetricsExporter)
+
   plug(DiscoveryApiWeb.Router)
+
 
   @doc """
   Callback invoked for dynamically configuring the endpoint.

@@ -23,7 +23,6 @@ defmodule DiscoveryApi.Data.CacheLoader do
     {:noreply, state}
   end
 
-  @spec load_cache() :: :ok | {:error, any()} | {:ok, boolean()}
   def load_cache do
     case retrieve_datasets("#{data_lake_url()}/v1/metadata/feed") do
       {:ok, response} -> Cachex.put(:dataset_cache, "datasets", response)

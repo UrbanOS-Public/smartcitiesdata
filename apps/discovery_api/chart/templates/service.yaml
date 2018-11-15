@@ -5,6 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: discovery-api
+  annotations:
+    prometheus.io/port:  "{{ .Values.monitoring.targetPort }}"
+    prometheus.io/scrape: "true"
 spec:
   selector:
     app: discovery-api

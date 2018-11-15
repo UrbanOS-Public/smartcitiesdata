@@ -20,7 +20,6 @@ config :discovery_api,
   data_lake_url: "http://localhost:3030",
   cache_refresh_interval: "60000",
   cache: :dataset_cache
-
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
