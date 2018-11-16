@@ -44,7 +44,8 @@ defmodule DiscoveryApi.Mixfile do
       {:patiently, "~> 0.2.0"},
       {:placebo, "~> 1.0", only: :test},
       {:plug_cowboy, "~> 1.0"},
-      {:prometheus_plugs, "~> 1.1.1"}
+      {:prometheus_plugs, "~> 1.1.1"},
+      {:prometheus_phoenix, "~>1.2.0"}
     ]
   end
 end

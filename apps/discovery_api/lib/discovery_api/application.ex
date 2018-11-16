@@ -5,6 +5,7 @@ defmodule DiscoveryApi.Application do
     import Supervisor.Spec
 
     DiscoveryApi.MetricsExporter.setup()
+    DiscoveryApiWeb.Endpoint.Instrumenter.setup()
 
     children = [
       cachex(),

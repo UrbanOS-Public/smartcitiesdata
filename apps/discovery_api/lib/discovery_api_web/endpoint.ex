@@ -1,3 +1,8 @@
+
+defmodule DiscoveryApiWeb.Endpoint.Instrumenter do
+  use Prometheus.PhoenixInstrumenter
+end
+
 defmodule DiscoveryApiWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :discovery_api
 
