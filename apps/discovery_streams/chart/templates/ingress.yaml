@@ -12,14 +12,14 @@ metadata:
     alb.ingress.kubernetes.io/healthcheck-path: /socket/healthcheck
     alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.certificateARN }}
 spec:
+  backend:
+    serviceName: {{ .Chart.Name }}
+    servicePort: {{ .Values.service.port }}
   rules:
   - host: socket.{{ .Values.ingress.dnsZone }}
     http:
       paths:
       - path: /
-        backend:
-          serviceName: {{ .Chart.Name }}
-          servicePort: {{ .Values.service.port }}
   - host: streaming.{{ .Values.ingress.dnsZone }}
     http:
       paths:
