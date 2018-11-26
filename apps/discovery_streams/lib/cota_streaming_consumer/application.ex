@@ -26,7 +26,9 @@ defmodule CotaStreamingConsumer.Application do
         supervisor(CotaStreamingConsumerWeb.Endpoint, []),
         libcluster(),
         CotaStreamingConsumer.CacheGenserver,
-        kaffe()
+        kaffe(),
+        CotaStreamingConsumerWeb.Presence,
+        CotaStreamingConsumerWeb.Presence.Server
       ]
       |> List.flatten()
 
