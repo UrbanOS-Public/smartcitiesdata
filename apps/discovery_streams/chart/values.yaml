@@ -20,3 +20,6 @@ service:
   targetPort: 4000
 kafka:
   brokers: "streaming-service-kafka-bootstrap.streaming-prime:9092"
+
+dashboard:
+  title: "COTA Streaming Metrics"

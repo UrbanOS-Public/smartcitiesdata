@@ -5,7 +5,7 @@ defmodule CotaStreamingConsumerWeb.Presence.Instrumenter do
 
   def setup do
     Gauge.declare(
-      name: :cota_vehicle_position_presence_count,
+      name: :cota_vehicle_positions_presence_count,
       help: "Number of socket connections."
     )
   end
@@ -13,7 +13,7 @@ defmodule CotaStreamingConsumerWeb.Presence.Instrumenter do
   def record_count do
     count = Presence.connections("vehicle_position")
 
-    [name: :cota_vehicle_position_presence_count]
+    [name: :cota_vehicle_positions_presence_count]
     |> Gauge.set(count)
   end
 end

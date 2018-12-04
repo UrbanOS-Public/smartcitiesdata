@@ -8,7 +8,7 @@ defmodule CotaStreamingConsumerTest do
   alias StreamingMetrics.ConsoleMetricCollector, as: MetricCollector
 
   @cache Application.get_env(:cota_streaming_consumer, :cache)
-  @outbound_records "Outbound Records"
+  @outbound_records "records"
 
   setup do
     Cachex.clear(@cache)
@@ -37,7 +37,7 @@ defmodule CotaStreamingConsumerTest do
     with_mocks([
       {MetricCollector, [:passthrough],
        [record_metrics: fn  [%{
-        metric_name: "Outbound Records",
+        metric_name: @outbound_records,
         value: 1,
         unit: "Count",
         timestamp: _
@@ -52,7 +52,7 @@ defmodule CotaStreamingConsumerTest do
         create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}))
       ])
 
-      assert called_times(1, MetricCollector.record_metrics(:_, "COTA Streaming"))
+      assert called_times(1, MetricCollector.record_metrics(:_, "cota_vehicle_positions"))
       leave(socket)
     end
   end
@@ -70,7 +70,7 @@ defmodule CotaStreamingConsumerTest do
         create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}))
       ])
 
-      assert called_times(1, MetricCollector.record_metrics(:_, "COTA Streaming"))
+      assert called_times(1, MetricCollector.record_metrics(:_, "cota_vehicle_positions"))
       leave(socket)
     end
   end

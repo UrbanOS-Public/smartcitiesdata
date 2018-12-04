@@ -28,9 +28,9 @@ defmodule CotaStreamingConsumer do
 
     messages
     |> Enum.count()
-    |> @metric_collector.count_metric("Outbound Records", [{"PodHostname", "#{hostname}"}])
+    |> @metric_collector.count_metric("records", [{"PodHostname", "#{hostname}"}, {"type", "outbound"}])
     |> List.wrap()
-    |> @metric_collector.record_metrics("COTA Streaming")
+    |> @metric_collector.record_metrics("cota_vehicle_positions")
     |> case do
       {:ok, _} -> {}
       {:error, reason} -> Logger.warn("Unable to write application metrics: #{inspect(reason)}")
