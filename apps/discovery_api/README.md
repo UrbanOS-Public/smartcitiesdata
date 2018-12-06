@@ -18,3 +18,13 @@ Discovery API serves as middleware between Kylo and our Data Discovery UI.
   * Go to localhost:4000/metrics
   * Go to http://localhost:4000/v1/api/dataset/search
   * You can get paginated results using the url http://localhost:4000/v1/api/dataset/search?offset=10&limit=5&sort=name_asc
+
+### Deploying to Sandbox
+
+```bash
+source setup.sh
+export INGRESS_SCHEME=internal
+export ENVIRONMENT=chris.sandbox
+export IMAGE_TAG=latest
+./install.sh
+```
