@@ -5,7 +5,7 @@ helm upgrade --install discovery-api ./chart \
     --namespace=discovery \
     -f prod.yaml \
     --set ingress.scheme="${INGRESS_SCHEME}" \
-    --set ingress.subnets=$(echo $PUBLIC_SUBNETS | sed 's/,/\\,/g') \
+    --set ingress.subnets="$PUBLIC_SUBNETS" \
     --set ingress.security_groups="${ALLOW_WEB_TRAFFIC_SG}" \
     --set ingress.dns_zone="${ENVIRONMENT}.internal.smartcolumbusos.com" \
     --set ingress.certificate_arn="${CERTIFICATE_ARN}" \
