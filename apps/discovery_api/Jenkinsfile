@@ -77,7 +77,7 @@ def deployDiscoveryApiTo(params = [:]) {
             export ENVIRONMENT=${environment}
             export IMAGE_TAG=${env.GIT_COMMIT_HASH}
 
-            if [ 'prod' == $ENVIRONMENT ] ; then
+            if [ 'prod' == \$ENVIRONMENT ] ; then
               export CERTIFICATE_ARN=${prodCertificateARN}
             fi
 

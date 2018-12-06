@@ -21,10 +21,12 @@ Discovery API serves as middleware between Kylo and our Data Discovery UI.
 
 ### Deploying to Sandbox
 
+The `setup.sh` script uses your current kubectl context to retrieve aws properties from the `aws-properties` configmap and sources them as environment variables. It also requires you to have `jq` installed.
+
+The `install.sh` script runs the helm install with the proper values.
+
 ```bash
 source setup.sh
-export INGRESS_SCHEME=internal
 export ENVIRONMENT=chris.sandbox
-export IMAGE_TAG=latest
 ./install.sh
 ```
