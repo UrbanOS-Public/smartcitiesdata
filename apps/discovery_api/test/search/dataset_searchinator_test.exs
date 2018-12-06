@@ -3,13 +3,14 @@ defmodule Search.DatasetSearchinatorTest do
   use Placebo
 
   describe "search" do
-
     setup do
       mock_dataset_summaries = [
-        create_dataset(id: 1, title: "Jarred loves pdf", description: "Something super cool"),
-        create_dataset(id: 2, title: "Jessie hates useless paperwork", description: "Cool beans")
+        %{id: 1, title: "Jarred loves pdf", description: "Something super cool"},
+        %{id: 2, title: "Jessie hates useless paperwork", description: "Cool beans"},
+        %{id: 3, title: "This one has no description"}
       ]
-      allow DiscoveryApi.Data.Retriever.get_datasets(), return: {:ok, mock_dataset_summaries}
+
+      allow(DiscoveryApi.Data.Retriever.get_datasets(), return: {:ok, mock_dataset_summaries})
       :ok
     end
 
@@ -48,11 +49,12 @@ defmodule Search.DatasetSearchinatorTest do
       assert Enum.at(results, 0)[:id] == 1
       assert Enum.at(results, 1)[:id] == 2
     end
-  end
 
-  def create_dataset(options \\ []) do
-    defaults = [id: 1, title: "Jarred", description: "Olson"]
-    Keyword.merge(defaults, options) |> Enum.into(%{})
-  end
+    test "matches when dataset has no description" do
+      results = Data.DatasetSearchinator.search(query: "description")
 
+      assert Enum.count(results) == 1
+      assert Enum.at(results, 0)[:id] == 3
+    end
+  end
 end

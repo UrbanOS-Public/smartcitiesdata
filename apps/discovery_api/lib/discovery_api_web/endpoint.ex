@@ -1,4 +1,3 @@
-
 defmodule DiscoveryApiWeb.Endpoint.Instrumenter do
   use Prometheus.PhoenixInstrumenter
 end
@@ -53,7 +52,6 @@ defmodule DiscoveryApiWeb.Endpoint do
   plug(DiscoveryApi.MetricsExporter)
 
   plug(DiscoveryApiWeb.Router)
-
 
   @doc """
   Callback invoked for dynamically configuring the endpoint.

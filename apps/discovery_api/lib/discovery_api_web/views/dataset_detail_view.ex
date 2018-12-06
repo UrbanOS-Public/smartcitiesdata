@@ -19,5 +19,4 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
       }
     }
   end
-
 end

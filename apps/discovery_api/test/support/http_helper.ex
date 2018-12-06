@@ -1,5 +1,4 @@
 defmodule HttpHelper do
-
   def create_response(error_reason: error) do
     {:error, %HTTPoison.Error{id: nil, reason: error}}
   end
@@ -11,5 +10,4 @@ defmodule HttpHelper do
   def create_response(body: body) do
     {:ok, %HTTPoison.Response{body: Poison.encode!(body), status_code: 200}}
   end
-
 end

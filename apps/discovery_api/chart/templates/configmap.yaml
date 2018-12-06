@@ -3,4 +3,5 @@ kind: ConfigMap
 metadata:
   name: discovery-api-configs
 data:
-  DATA_LAKE_URL: https://mockylo.{{ .Values.ingress.dns_zone }}
+  DATA_LAKE_URL: https://kylo.{{ .Values.ingress.dns_zone }}/proxy
+  DATA_LAKE_AUTH_STRING: "{{ .Values.service.auth_string }}"

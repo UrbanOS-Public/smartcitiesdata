@@ -6,7 +6,6 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   http: [port: 4001],
   server: false
 
-
 config :discovery_api,
   test_mode: true
 

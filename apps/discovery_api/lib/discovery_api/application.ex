@@ -7,12 +7,13 @@ defmodule DiscoveryApi.Application do
     DiscoveryApi.MetricsExporter.setup()
     DiscoveryApiWeb.Endpoint.Instrumenter.setup()
 
-    children = [
-      cachex(),
-      supervisor(DiscoveryApiWeb.Endpoint, []),
-      discoverApiCacheLoader()
-    ]
-    |> List.flatten()
+    children =
+      [
+        cachex(),
+        supervisor(DiscoveryApiWeb.Endpoint, []),
+        discoverApiCacheLoader()
+      ]
+      |> List.flatten()
 
     opts = [strategy: :one_for_one, name: DiscoveryApi.Supervisor]
     Supervisor.start_link(children, opts)

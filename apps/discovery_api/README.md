@@ -4,7 +4,7 @@ Discovery API serves as middleware between Kylo and our Data Discovery UI.
 
 ### To start your Phoenix server(from the root directory):
 
-  * Either run mockylo locally or `export DATA_LAKE_URL=https://mockylo.dev.internal.smartcolumbusos.com`
+  * Either run mockylo locally or `export DATA_LAKE_URL=https://kylo.dev.internal.smartcolumbusos.com`
     * You will need to be on the vpn if you use the dev mockylo as your backing datalake
   * Install dependencies with `mix deps.get`
   * Start Phoenix endpoint with `iex -S mix phx.server`

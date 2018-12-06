@@ -1,6 +1,4 @@
 defmodule DiscoveryApi.Test.MockKyloResponse do
-
-
   def metadata_response() do
     ~s([
       {

@@ -83,6 +83,7 @@ def deployDiscoveryApiTo(params = [:]) {
                 --set ingress.dns_zone="${environment}.internal.smartcolumbusos.com" \
                 --set ingress.certificate_arn="${certificateARN}" \
                 --set image.tag="${env.GIT_COMMIT_HASH}" \
+                --set service.auth_string="YmlnYmFkYm9iOmZvb2JhcmJhejEyMw==" \
                 --timeout=600 \
                 --wait
         """.trim())

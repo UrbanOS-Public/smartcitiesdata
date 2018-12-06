@@ -6,5 +6,4 @@ defmodule DiscoveryApiWeb.Renderer do
     |> put_status(:internal_server_error)
     |> render(DiscoveryApiWeb.ErrorView, :"500", message: reason)
   end
-
 end

@@ -1,6 +1,7 @@
 service:
   name: discovery-api
   port: 80
+  auth_string: ""
 
 ingress:
   enabled: true

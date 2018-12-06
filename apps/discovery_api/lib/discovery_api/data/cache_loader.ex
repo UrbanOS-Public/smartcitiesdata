@@ -31,7 +31,8 @@ defmodule DiscoveryApi.Data.CacheLoader do
   end
 
   defp retrieve_datasets(url) do
-    with {:ok, %HTTPoison.Response{body: body, status_code: 200}} <- HTTPoison.get(url),
+    with {:ok, %HTTPoison.Response{body: body, status_code: 200}} <-
+           HTTPoison.get(url, Authorization: "Basic #{data_lake_auth_string()}"),
          {:ok, decode} <- Poison.decode(body) do
       {:ok, transform_datasets(decode)}
     else
@@ -56,6 +57,10 @@ defmodule DiscoveryApi.Data.CacheLoader do
 
   defp data_lake_url do
     Application.get_env(:discovery_api, :data_lake_url)
+  end
+
+  defp data_lake_auth_string do
+    Application.get_env(:discovery_api, :data_lake_auth_string)
   end
 
   defp cache_refresh_interval do
