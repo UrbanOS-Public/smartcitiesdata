@@ -13,7 +13,7 @@ config :logger,
   level: :info
 
 config :streaming_metrics,
-  collector: StreamingMetrics.AwsMetricCollector
+  collector: StreamingMetrics.PrometheusMetricCollector
 
 config :ex_aws,
   debug_requests: false
