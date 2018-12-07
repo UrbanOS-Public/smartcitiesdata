@@ -66,27 +66,22 @@ def deployDiscoveryApiTo(params = [:]) {
     def internal = params.get('internal', true)
 
     scos.withEksCredentials(environment) {
-        def terraformOutputs = scos.terraformOutput(environment)
-        def subnets = terraformOutputs.public_subnets.value.join(/\\,/)
-        def allowInboundTrafficSG = terraformOutputs.allow_all_security_group.value
-        def certificateARN = scos.terraformOutput(environment, internal ? 'operating-system' : 'prod').tls_certificate_arn.value
+
+        def prodCertificateARN = scos.terraformOutput('prod').tls_certificate_arn.value
         def ingressScheme = internal ? 'internal' : 'internet-facing'
+
         sh("""#!/bin/bash
             set -e
-            helm init --client-only
-            helm upgrade --install discovery-api ./chart \
-                --namespace=discovery \
-                -f prod.yaml \
-                --set ingress.scheme="${ingressScheme}" \
-                --set ingress.subnets="${subnets}" \
-                --set ingress.security_groups="${allowInboundTrafficSG}" \
-                --set ingress.dns_zone="${environment}.internal.smartcolumbusos.com" \
-                --set ingress.certificate_arn="${certificateARN}" \
-                --set image.tag="${env.GIT_COMMIT_HASH}" \
-                --set service.auth_string="YmlnYmFkYm9iOmZvb2JhcmJhejEyMw==" \
-                --timeout=600 \
-                --wait
-        """.trim())
+            source setup.sh
+            export INGRESS_SCHEME=${ingressScheme}
+            export ENVIRONMENT=${environment}
+            export IMAGE_TAG=${env.GIT_COMMIT_HASH}
 
+            if [ 'prod' == \$ENVIRONMENT ] ; then
+              export CERTIFICATE_ARN=${prodCertificateARN}
+            fi
+
+            ./install.sh
+        """.trim())
     }
 }

@@ -18,3 +18,15 @@ Discovery API serves as middleware between Kylo and our Data Discovery UI.
   * Go to localhost:4000/metrics
   * Go to http://localhost:4000/v1/api/dataset/search
   * You can get paginated results using the url http://localhost:4000/v1/api/dataset/search?offset=10&limit=5&sort=name_asc
+
+### Deploying to Sandbox
+
+The `setup.sh` script uses your current kubectl context to retrieve aws properties from the `aws-properties` configmap and sources them as environment variables. It also requires you to have `jq` installed.
+
+The `install.sh` script runs the helm install with the proper values.
+
+```bash
+source setup.sh
+export ENVIRONMENT=chris.sandbox
+./install.sh
+```
