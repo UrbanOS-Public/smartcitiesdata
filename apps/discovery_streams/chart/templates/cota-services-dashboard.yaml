@@ -190,7 +190,7 @@ data:
           "maxDataPoints": 100,
           "nullPointMode": "connected",
           "nullText": null,
-          "postfix": " active users 💃🏻",
+          "postfix": " active users",
           "postfixFontSize": "80%",
           "prefix": "We have",
           "prefixFontSize": "80%",
@@ -363,9 +363,9 @@ data:
           "maxDataPoints": 100,
           "nullPointMode": "connected",
           "nullText": null,
-          "postfix": " 💅🏻",
+          "postfix": "",
           "postfixFontSize": "100%",
-          "prefix": "Max Users: ",
+          "prefix": "Daily Max Users: ",
           "prefixFontSize": "100%",
           "rangeMaps": [
             {
@@ -544,5 +544,5 @@ data:
       "timezone": "",
       "title": "{{ .Values.dashboard.title }}",
       "uid": "i0FCBiPmk",
-      "version": 12
+      "version": 1
     }
