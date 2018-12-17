@@ -12,3 +12,4 @@ set +o allexport
 
 export INGRESS_SCHEME=internal
 export IMAGE_TAG=latest
+set +e

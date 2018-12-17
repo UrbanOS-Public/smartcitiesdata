@@ -9,13 +9,15 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
     offset = Map.get(params, "offset", "0") |> String.to_integer()
     query = Map.get(params, "query", "")
 
-    result = Data.DatasetSearchinator.search(query: query)
-
-    render(conn, :search_dataset_summaries,
-      datasets: result,
-      sort: sort_by,
-      offset: offset,
-      limit: limit
-    )
+    case Data.DatasetSearchinator.search(query: query) do
+      {:error, reason} -> DiscoveryApiWeb.Renderer.render_500(conn, reason)
+      {:ok, result} ->
+        render(conn, :search_dataset_summaries,
+          datasets: result,
+          sort: sort_by,
+          offset: offset,
+          limit: limit
+        )
+    end
   end
 end

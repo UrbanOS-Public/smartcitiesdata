@@ -15,35 +15,35 @@ defmodule Search.DatasetSearchinatorTest do
     end
 
     test "matches based on title" do
-      results = Data.DatasetSearchinator.search(query: "love")
+      {:ok, results} = Data.DatasetSearchinator.search(query: "love")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0)[:id] == 1
     end
 
     test "matches based on title with multiple words" do
-      results = Data.DatasetSearchinator.search(query: "loves Jarred")
+      {:ok, results} = Data.DatasetSearchinator.search(query: "loves Jarred")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0)[:id] == 1
     end
 
     test "matches based on title case insensitive" do
-      results = Data.DatasetSearchinator.search(query: "jaRreD")
+      {:ok, results} = Data.DatasetSearchinator.search(query: "jaRreD")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0)[:id] == 1
     end
 
     test "matches based on description" do
-      results = Data.DatasetSearchinator.search(query: "super")
+      {:ok, results} = Data.DatasetSearchinator.search(query: "super")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0)[:id] == 1
     end
 
     test "matches based on multiple" do
-      results = Data.DatasetSearchinator.search(query: "loves paperwork")
+      {:ok, results} = Data.DatasetSearchinator.search(query: "loves paperwork")
 
       assert Enum.count(results) == 2
       assert Enum.at(results, 0)[:id] == 1
@@ -51,10 +51,19 @@ defmodule Search.DatasetSearchinatorTest do
     end
 
     test "matches when dataset has no description" do
-      results = Data.DatasetSearchinator.search(query: "description")
+      {:ok, results} = Data.DatasetSearchinator.search(query: "description")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0)[:id] == 3
+    end
+  end
+  describe "bad things happens" do
+    test "passes through an error" do
+      allow(DiscoveryApi.Data.Retriever.get_datasets(), return: {:error, "bad things happen"})
+
+      {:error, reason} = Data.DatasetSearchinator.search(query: "description")
+
+      assert reason == "bad things happen"
     end
   end
 end

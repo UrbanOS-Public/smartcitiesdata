@@ -21,7 +21,12 @@ config :discovery_api,
   data_lake_url: "https://kylo.dev.internal.smartcolumbusos.com/proxy",
   data_lake_auth_string: "YmlnYmFkYm9iOmZvb2JhcmJhejEyMw==",
   cache_refresh_interval: "60000",
-  cache: :dataset_cache
+  cache: :dataset_cache,
+  thrive_address: "datalake-hive.dev.internal.smartcolumbusos.com",
+  thrive_port: 10_000,
+  thrive_username: "hive",
+  thrive_password: "nopassword",
+  collector: StreamingMetrics.ConsoleMetricCollector
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

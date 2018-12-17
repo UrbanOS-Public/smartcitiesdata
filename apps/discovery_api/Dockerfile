@@ -1,5 +1,8 @@
 FROM bitwalker/alpine-elixir:1.7.2 as builder
 ENV MIX_ENV test
+RUN apk update \
+    && apk add --no-cache alpine-sdk \
+    && rm -rf /var/cache/**/*
 COPY . /app
 WORKDIR /app
 RUN mix local.hex --force && \

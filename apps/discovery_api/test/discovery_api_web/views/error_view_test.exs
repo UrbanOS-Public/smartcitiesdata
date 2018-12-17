@@ -9,7 +9,6 @@ defmodule DiscoveryApiWeb.ErrorViewTest do
   end
 
   test "renders 500.json" do
-    assert render(DiscoveryApiWeb.ErrorView, "500.json", []) ==
-             %{errors: %{detail: "Internal Server Error"}}
+    assert render(DiscoveryApiWeb.ErrorView, "500.json", []) == %{errors: %{detail: "Internal Server Error"}}
   end
 end
