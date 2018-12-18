@@ -8,8 +8,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   root: ".",
   # Probably not necc
   version: Application.spec(:discovery_api, :vsn),
-  check_origin: false,
-  collector: StreamingMetrics.PrometheusMetricCollector
+  check_origin: false
 
 # Do not print debug messages in production
 config :logger, level: :info

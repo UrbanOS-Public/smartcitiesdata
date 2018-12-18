@@ -3,7 +3,7 @@ defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   alias DiscoverApi.Data.Thrive
-  alias StreamingMetrics.ConsoleMetricCollector, as: MetricCollector
+  alias StreamingMetrics.PrometheusMetricCollector, as: MetricCollector
 
   describe "fetch dataset csv" do
     setup do
@@ -50,10 +50,8 @@ defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
         MetricCollector.record_metrics(
           [
             %{
-              metric_name: "downloaded_csvs",
+              name: "downloaded_csvs",
               value: 1,
-              unit: "Count",
-              timestamp: any(),
               dimensions: [{"PodHostname", any()}, {"DatasetId", "1"}]
             }
           ],

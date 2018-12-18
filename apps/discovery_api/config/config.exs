@@ -26,7 +26,7 @@ config :discovery_api,
   thrive_port: 10_000,
   thrive_username: "hive",
   thrive_password: "nopassword",
-  collector: StreamingMetrics.ConsoleMetricCollector
+  collector: StreamingMetrics.PrometheusMetricCollector
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
