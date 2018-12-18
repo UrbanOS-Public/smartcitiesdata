@@ -27,6 +27,7 @@ defmodule DiscoverApi.Data.CacheLoaderTest do
     test "Cache should not be updated when error reponse from kylo" do
       expected_cache = [1, 2, 3]
       Cachex.put(:dataset_cache, "datasets", expected_cache)
+
       allow(HTTPoison.get(any(), any()), return: HttpHelper.create_response(status_code: 418))
 
       DiscoveryApi.Data.CacheLoader.handle_info(:work, %{})
@@ -51,7 +52,7 @@ defmodule DiscoverApi.Data.CacheLoaderTest do
       DiscoveryApi.Data.CacheLoader.start_link([])
 
       condition = fn ->
-        called?(HTTPoison.get("http://example.com/v1/metadata/feed", [Authorization: "Basic authorized"]), times(3))
+        called?(HTTPoison.get("http://example.com/v1/metadata/feed", Authorization: "Basic authorized"), times(3))
       end
 
       Patiently.wait_for!(

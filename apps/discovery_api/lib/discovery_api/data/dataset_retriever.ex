@@ -1,8 +1,7 @@
 defmodule DiscoveryApi.Data.Retriever do
   def get_datasets do
-    with {:ok, datasets} <- Cachex.get(:dataset_cache, "datasets") do
-      {:ok, datasets}
-    else
+    case Cachex.get(:dataset_cache, "datasets") do
+      {:ok, datasets} when datasets != nil -> {:ok, datasets}
       _ -> {:error, "Could not retrieve datasets"}
     end
   end

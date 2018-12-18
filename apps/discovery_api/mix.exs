@@ -4,10 +4,10 @@ defmodule DiscoveryApi.Mixfile do
   def project do
     [
       app: :discovery_api,
+      compilers: [:phoenix, :gettext | Mix.compilers()],
       version: "0.0.1",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -24,8 +24,8 @@ defmodule DiscoveryApi.Mixfile do
   end
 
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_), do: ["lib"]
+  defp elixirc_paths(:test), do: ["lib", "src", "test/support"]
+  defp elixirc_paths(_), do: ["lib", "src"]
 
   # Specifies your project dependencies.
   #
@@ -37,7 +37,7 @@ defmodule DiscoveryApi.Mixfile do
       {:gettext, "~> 0.11"},
       {:cowboy, "~> 1.0"},
       {:distillery, "~> 2.0"},
-      {:httpoison, "~> 1.0"},
+      {:httpoison, "~> 0.11.1"},
       {:poison, "~> 3.1"},
       {:corsica, "~> 1.0"},
       {:cachex, "~> 3.0"},
@@ -45,7 +45,10 @@ defmodule DiscoveryApi.Mixfile do
       {:placebo, "~> 1.0", only: :test},
       {:plug_cowboy, "~> 1.0"},
       {:prometheus_plugs, "~> 1.1.1"},
-      {:prometheus_phoenix, "~>1.2.0"}
+      {:prometheus_phoenix, "~>1.2.0"},
+      {:csv, "~> 1.4.0"},
+      {:streaming_metrics, path: "streaming_metrics"},
+      {:riffed, git: "https://github.com/pinterest/riffed.git", tag: "1.0.0"}
     ]
   end
 end

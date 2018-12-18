@@ -9,7 +9,8 @@ defmodule DiscoveryApiWeb.DatasetDetailController do
   end
 
   defp retrieve_and_decode_data(url) do
-    with {:ok, %HTTPoison.Response{body: body, status_code: 200}} <- HTTPoison.get(url, Authorization: "Basic #{data_lake_auth_string()}"),
+    with {:ok, %HTTPoison.Response{body: body, status_code: 200}} <-
+           HTTPoison.get(url, Authorization: "Basic #{data_lake_auth_string()}"),
          {:ok, decode} <- Poison.decode(body) do
       {:ok, decode}
     else

@@ -1,0 +1,3 @@
+[submodule "streaming_metrics"]
+	path = streaming_metrics
+	url = git@github.com:SmartColumbusOS/streaming-metrics

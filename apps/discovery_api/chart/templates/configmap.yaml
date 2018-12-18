@@ -5,3 +5,7 @@ metadata:
 data:
   DATA_LAKE_URL: https://kylo.{{ .Values.ingress.dns_zone }}/proxy
   DATA_LAKE_AUTH_STRING: "{{ .Values.service.auth_string }}"
+  HIVE_ADDRESS: datalake-hive.{{ .Values.ingress.dns_zone }}
+  HIVE_PORT: "10000"
+  HIVE_USERNAME: hive
+  HIVE_PASSWORD: doesnotmatter

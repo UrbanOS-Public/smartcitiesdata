@@ -21,8 +21,7 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
     end
 
     test "returns given limit in metadata", %{conn: conn} do
-      actual =
-        get(conn, "/v1/api/dataset/search", sort: "name_asc", limit: "5") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc", limit: "5") |> json_response(200)
 
       assert actual["metadata"]["limit"] == 5
     end
@@ -34,8 +33,7 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
     end
 
     test "returns given offset in metadata", %{conn: conn} do
-      actual =
-        get(conn, "/v1/api/dataset/search", sort: "name_asc", offset: "5") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc", offset: "5") |> json_response(200)
 
       assert actual["metadata"]["offset"] == 5
     end
@@ -86,8 +84,7 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
     end
 
     test "paginate datasets offset default", %{conn: conn} do
-      actual =
-        get(conn, "/v1/api/dataset/search", sort: "name_asc", limit: "1") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc", limit: "1") |> json_response(200)
 
       assert Enum.at(actual["results"], 0)["id"] == "Paul"
       assert Enum.count(actual["results"]) == 1
