@@ -128,16 +128,10 @@ defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
 
   defp generate_metadata_result() do
     %{
-      "destinations" => [
-        %{
-          "datasource" => %{
-            "properties" => %{
-              "Target schema" => "test",
-              "Target table" => "bigdata"
-            }
-          }
-        }
-      ]
+      "systemName" => "bigdata",
+      "category" => %{
+        "systemName" => "test"
+      }
     }
   end
 
