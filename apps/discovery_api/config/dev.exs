@@ -11,8 +11,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  watchers: [],
-  collector: StreamingMetrics.PrometheusMetricCollector
+  watchers: []
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

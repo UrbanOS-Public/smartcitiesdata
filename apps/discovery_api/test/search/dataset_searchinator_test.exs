@@ -57,6 +57,7 @@ defmodule Search.DatasetSearchinatorTest do
       assert Enum.at(results, 0)[:id] == 3
     end
   end
+
   describe "bad things happens" do
     test "passes through an error" do
       allow(DiscoveryApi.Data.Retriever.get_datasets(), return: {:error, "bad things happen"})

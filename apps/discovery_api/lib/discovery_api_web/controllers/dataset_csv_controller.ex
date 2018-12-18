@@ -1,5 +1,6 @@
 require Logger
 alias StreamingMetrics.Hostname
+
 defmodule DiscoveryApiWeb.DatasetCSVController do
   use DiscoveryApiWeb, :controller
   alias DiscoverApi.Data.Thrive
@@ -7,24 +8,23 @@ defmodule DiscoveryApiWeb.DatasetCSVController do
   @metric_collector Application.get_env(:discovery_api, :collector)
 
   def fetch_dataset_csv(conn, %{"dataset_id" => dataset_id}) do
-    {:ok, metadata} = fetch_dataset_metadata(dataset_id)
-    {schema, table} = extract_schema_and_table(metadata)
+    with {:ok, metadata} <- fetch_dataset_metadata(dataset_id),
+         {schema, table} <- extract_schema_and_table(metadata),
+         {:ok, description} <- fetch_table_schema(schema, table),
+         table_headers <- extract_table_headers(description),
+         {:ok, stream} <- Thrive.stream_results("select * from #{schema}.#{table}", 1000) do
+      record_csv_download_count_metrics(dataset_id)
 
-    {:ok, description} = fetch_table_schema(schema, table)
-    table_headers = extract_table_headers(description)
-
-    record_csv_download_count_metrics(dataset_id)
-
-    case Thrive.stream_results("select * from #{schema}.#{table}", 1000) do
-      {:ok, stream} -> Stream.map(stream, &Tuple.to_list(&1))
-        |> (fn stream -> Stream.concat([table_headers], stream) end).()
-        |> CSV.encode(delimiter: "\n")
-        |> Enum.into(
-          conn
-          |> put_resp_content_type("application/csv")
-          |> put_resp_header("content-disposition", "attachment; filename=download.csv")
-          |> send_chunked(200)
-        )
+      Stream.map(stream, &Tuple.to_list(&1))
+      |> (fn stream -> Stream.concat([table_headers], stream) end).()
+      |> CSV.encode(delimiter: "\n")
+      |> Enum.into(
+        conn
+        |> put_resp_content_type("application/csv")
+        |> put_resp_header("content-disposition", "attachment; filename=download.csv")
+        |> send_chunked(200)
+      )
+    else
       {:error, reason} -> DiscoveryApiWeb.Renderer.render_500(conn, reason)
     end
   end
@@ -80,7 +80,10 @@ defmodule DiscoveryApiWeb.DatasetCSVController do
   defp record_csv_download_count_metrics(dataset_id) do
     hostname = get_hostname()
 
-    @metric_collector.count_metric(1, "downloaded_csvs", [{"PodHostname", "#{hostname}"}, {"DatasetId", "#{dataset_id}"}])
+    @metric_collector.count_metric(1, "downloaded_csvs", [
+      {"PodHostname", "#{hostname}"},
+      {"DatasetId", "#{dataset_id}"}
+    ])
     |> List.wrap()
     |> @metric_collector.record_metrics("discovery_api")
     |> case do

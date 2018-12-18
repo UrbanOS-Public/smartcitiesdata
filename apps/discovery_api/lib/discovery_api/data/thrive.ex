@@ -82,67 +82,74 @@ defmodule DiscoverApi.Data.Thrive do
         state.client,
         %Models.TCloseSessionReq{sessionHandle: state.session_handle}
       )
+
     {:ok, status}
   end
 
   def execute_statement(state, query) do
     case HiveClient."ExecuteStatement"(
-      state.client,
-      %Models.TExecuteStatementReq{
-        sessionHandle: state.session_handle,
-        statement: query,
-        confOverlay: :dict.new()
-      }
-    ) do
-      %{status: %Models.TStatus{statusCode: 0}, operationHandle: operation_handle} -> {:ok, operation_handle}
-      %{status: %Models.TStatus{sqlState: sql_state, errorCode: error_code}} -> {:error, "Error processing Hive query: #{sql_state} | #{error_code}"}
+           state.client,
+           %Models.TExecuteStatementReq{
+             sessionHandle: state.session_handle,
+             statement: query,
+             confOverlay: :dict.new()
+           }
+         ) do
+      %{status: %Models.TStatus{statusCode: 0}, operationHandle: operation_handle} ->
+        {:ok, operation_handle}
+
+      %{status: %Models.TStatus{sqlState: sql_state, errorCode: error_code}} ->
+        {:error, "Error processing Hive query: #{sql_state} | #{error_code}"}
     end
   end
 
   def fetch_results(state, operation_handle, chunk_size \\ @max_int) do
-   case HiveClient."FetchResults"(
-      state.client,
-      %Models.TFetchResultsReq{
-        operationHandle: operation_handle,
-        maxRows: chunk_size
-      }
-    ) do
+    case HiveClient."FetchResults"(
+           state.client,
+           %Models.TFetchResultsReq{
+             operationHandle: operation_handle,
+             maxRows: chunk_size
+           }
+         ) do
       %{status: %Models.TStatus{statusCode: 0}, results: results} ->
         parsed_results = parse_results(results)
         {parsed_results, Enum.count(parsed_results) >= chunk_size}
-      _ -> {["Connection Interrupted"], false}
+
+      _ ->
+        {["Connection Interrupted"], false}
     end
   end
 
   def stream_results(query, chunk_size) do
     with {:ok, state} <- connect(),
          {:ok, results} <- get_execution_results(state, query, chunk_size),
-    do: {:ok, results}
+         do: {:ok, results}
   end
 
   defp get_execution_results(state, query, chunk_size) do
-    with {:ok, operation_handle} <- execute_statement(state, query)
-    do
+    with {:ok, operation_handle} <- execute_statement(state, query) do
       {:ok, build_output_stream(state, operation_handle, chunk_size)}
     else
-      {:error, reason} -> disconnect(state); {:error, reason}
+      {:error, reason} ->
+        disconnect(state)
+        {:error, reason}
     end
   end
 
   defp build_output_stream(state, operation_handle, chunk_size) do
     Stream.resource(
-        fn -> true end,
-        fn more_data ->
-          if more_data do
-            fetch_results(state, operation_handle, chunk_size)
-          else
-            {:halt, more_data}
-          end
-        end,
-        fn _ ->
-          disconnect(state)
+      fn -> true end,
+      fn more_data ->
+        if more_data do
+          fetch_results(state, operation_handle, chunk_size)
+        else
+          {:halt, more_data}
         end
-      )
+      end,
+      fn _ ->
+        disconnect(state)
+      end
+    )
   end
 
   def parse_results(results) do
@@ -151,10 +158,14 @@ defmodule DiscoverApi.Data.Thrive do
     |> Enum.map(fn column ->
       Map.from_struct(column)
       |> Map.values()
-      |> Enum.filter(fn x -> x != nil && x != :undefined end)
+      |> Enum.filter(&filter_undefined/1)
       |> List.first()
       |> Map.get(:values)
     end)
     |> Enum.zip()
+  end
+
+  defp filter_undefined(result) do
+    result != nil && result != :undefined
   end
 end

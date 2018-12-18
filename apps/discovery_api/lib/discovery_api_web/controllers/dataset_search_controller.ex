@@ -10,7 +10,9 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
     query = Map.get(params, "query", "")
 
     case Data.DatasetSearchinator.search(query: query) do
-      {:error, reason} -> DiscoveryApiWeb.Renderer.render_500(conn, reason)
+      {:error, reason} ->
+        DiscoveryApiWeb.Renderer.render_500(conn, reason)
+
       {:ok, result} ->
         render(conn, :search_dataset_summaries,
           datasets: result,

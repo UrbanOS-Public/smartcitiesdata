@@ -51,6 +51,7 @@ defmodule DiscoverApi.Data.ThriveTest do
 
     test "when open_session fails, returns error and reason" do
       allow(HiveClient.start_link(:address, :port), return: {:ok, :client_pid})
+
       allow(HiveClient."OpenSession"(:client_pid, mock_open_session_request()),
         exec: fn _, _ -> raise RuntimeError, message: "craisins" end
       )
@@ -90,10 +91,20 @@ defmodule DiscoverApi.Data.ThriveTest do
           statement: :query,
           confOverlay: :dict.new()
         }),
-        return: %{status: %Models.TStatus{statusCode: 3, infoMessages: [], sqlState: "SQLSTATE", errorCode: 9, errorMessage: "bad stuff happened"}, operationHandle: nil }
+        return: %{
+          status: %Models.TStatus{
+            statusCode: 3,
+            infoMessages: [],
+            sqlState: "SQLSTATE",
+            errorCode: 9,
+            errorMessage: "bad stuff happened"
+          },
+          operationHandle: nil
+        }
       )
 
-      assert {:error, "Error processing Hive query: SQLSTATE | 9"} == Thrive.execute_statement(get_common_state(), :query)
+      assert {:error, "Error processing Hive query: SQLSTATE | 9"} ==
+               Thrive.execute_statement(get_common_state(), :query)
     end
   end
 
@@ -179,7 +190,16 @@ defmodule DiscoverApi.Data.ThriveTest do
           statement: :query,
           confOverlay: :dict.new()
         }),
-        return: %{status: %Models.TStatus{statusCode: 3, infoMessages: [], sqlState: "SQUIRRELSTATE", errorCode: 10, errorMessage: "bad stuff happened"}, operationHandle: nil }
+        return: %{
+          status: %Models.TStatus{
+            statusCode: 3,
+            infoMessages: [],
+            sqlState: "SQUIRRELSTATE",
+            errorCode: 10,
+            errorMessage: "bad stuff happened"
+          },
+          operationHandle: nil
+        }
       )
 
       expect(
@@ -187,8 +207,7 @@ defmodule DiscoverApi.Data.ThriveTest do
         return: expected_disconnect_response()
       )
 
-      assert {:error, "Error processing Hive query: SQUIRRELSTATE | 10"} ==
-        Thrive.stream_results(:query, 1_000)
+      assert {:error, "Error processing Hive query: SQUIRRELSTATE | 10"} == Thrive.stream_results(:query, 1_000)
     end
   end
 
