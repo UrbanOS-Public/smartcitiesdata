@@ -52,7 +52,7 @@ defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
             %{
               name: "downloaded_csvs",
               value: 1,
-              dimensions: [{"PodHostname", any()}, {"DatasetId", "1"}]
+              dimensions: [{"PodHostname", any()}, {"DatasetId", "1"}, {"Table", "bigdata"}]
             }
           ],
           "discovery_api"
