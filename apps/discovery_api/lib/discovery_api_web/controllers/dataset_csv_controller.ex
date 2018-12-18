@@ -13,7 +13,7 @@ defmodule DiscoveryApiWeb.DatasetCSVController do
          {:ok, description} <- fetch_table_schema(schema, table),
          table_headers <- extract_table_headers(description),
          {:ok, stream} <- Thrive.stream_results("select * from #{schema}.#{table}", 1000) do
-      record_csv_download_count_metrics(dataset_id)
+      record_csv_download_count_metrics(dataset_id, table)
 
       Stream.map(stream, &Tuple.to_list(&1))
       |> (fn stream -> Stream.concat([table_headers], stream) end).()
@@ -21,7 +21,7 @@ defmodule DiscoveryApiWeb.DatasetCSVController do
       |> Enum.into(
         conn
         |> put_resp_content_type("application/csv")
-        |> put_resp_header("content-disposition", "attachment; filename=download.csv")
+        |> put_resp_header("content-disposition", "attachment; filename=#{table}.csv")
         |> send_chunked(200)
       )
     else
@@ -71,12 +71,13 @@ defmodule DiscoveryApiWeb.DatasetCSVController do
     Application.get_env(:discovery_api, :data_lake_auth_string)
   end
 
-  defp record_csv_download_count_metrics(dataset_id) do
+  defp record_csv_download_count_metrics(dataset_id, table_name) do
     hostname = get_hostname()
 
     @metric_collector.count_metric(1, "downloaded_csvs", [
       {"PodHostname", "#{hostname}"},
-      {"DatasetId", "#{dataset_id}"}
+      {"DatasetId", "#{dataset_id}"},
+      {"Table", "#{table_name}"}
     ])
     |> List.wrap()
     |> @metric_collector.record_metrics("discovery_api")
