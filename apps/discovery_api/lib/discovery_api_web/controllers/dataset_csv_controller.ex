@@ -39,16 +39,10 @@ defmodule DiscoveryApiWeb.DatasetCSVController do
 
   defp extract_schema_and_table(metadata) do
     %{
-      "destinations" => [
-        %{
-          "datasource" => %{
-            "properties" => %{
-              "Target schema" => schema,
-              "Target table" => table
-            }
-          }
-        }
-      ]
+      "systemName" => table,
+      "category" => %{
+        "systemName" => schema
+      }
     } = metadata
 
     {schema, table}
