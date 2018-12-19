@@ -44,6 +44,13 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
       assert actual["metadata"]["offset"] == 0
     end
 
+    test "returns organization facets", %{conn: conn} do
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc") |> json_response(200)
+
+      assert actual["metadata"]["facets"]["organization"]["Paul Co."] == 1
+      assert actual["metadata"]["facets"]["organization"]["Richard Co."] == 1
+    end
+
     test "sort by name ascending", %{conn: conn} do
       actual = get(conn, "/v1/api/dataset/search", sort: "name_asc") |> json_response(200)
 
@@ -89,6 +96,15 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
       assert Enum.at(actual["results"], 0)["id"] == "Paul"
       assert Enum.count(actual["results"]) == 1
     end
+
+    test "facets in query string are used to filter the datasets " do
+      actual =
+        get(conn, "/v1/api/dataset/search", facets: %{organization: ["Richard Co."]})
+        |> json_response(200)
+
+      assert Enum.at(actual["results"], 0)["id"] == "Richard"
+      assert Enum.count(actual["results"]) == 1
+    end
   end
 
   defp dataset_summary_map(id, date \\ ~D[2018-06-21]) do
@@ -98,7 +114,8 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
       :id => id,
       :systemName => "#{id}-system-name",
       :title => "#{id}-title",
-      :modifiedTime => "#{date}"
+      :modifiedTime => "#{date}",
+      :organization => "#{id} Co."
     }
   end
 end

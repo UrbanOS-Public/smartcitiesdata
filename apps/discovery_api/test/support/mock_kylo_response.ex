@@ -1,8 +1,18 @@
 defmodule DiscoveryApi.Test.MockKyloResponse do
+  def feedmgr_response() do
+    ~s({"data": [
+      { "id": "57eac648-729c-44f5-89f2-d446ce2a4d68",
+        "updateDate": "a while back"
+      },
+      { "id": "14fca5cd-2ddd-46dd-9380-01e9c35c674f",
+        "updateDate": "recently"
+      }
+    ]})
+  end
   def metadata_response() do
     ~s([
       {
-        "id": "e4fca5cd-2ddd-46dd-9380-01e9c35c674f",
+        "id": "14fca5cd-2ddd-46dd-9380-01e9c35c674f",
         "systemName": "Swiss_Franc_Cotton",
         "displayName": "Swiss Franc Cotton",
         "description": "Neque soluta architecto consequatur earum ipsam molestiae tempore at dolorem. Similique consectetur cum.",
@@ -349,7 +359,6 @@ defmodule DiscoveryApi.Test.MockKyloResponse do
             }
           ]
         },
-        "modifiedTime": "2018-10-08T14:57:09.464Z",
         "userProperties": {},
         "collectedUserProperties": "string"
       },
@@ -701,7 +710,6 @@ defmodule DiscoveryApi.Test.MockKyloResponse do
             }
           ]
         },
-        "modifiedTime": "2018-12-08T10:09:11.000Z",
         "userProperties": {},
         "collectedUserProperties": "string"
       }

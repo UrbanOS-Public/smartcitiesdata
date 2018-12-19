@@ -1,4 +1,4 @@
-defmodule DiscoverApi.Data.CacheLoaderTest do
+defmodule DiscoveryApi.Data.CacheLoaderTest do
   use ExUnit.Case
   use Placebo
 
@@ -7,37 +7,28 @@ defmodule DiscoverApi.Data.CacheLoaderTest do
     Application.put_env(:discovery_api, :data_lake_auth_string, "authorized")
   end
 
-  describe "CacheLoader" do
+  describe "CacheLoader regular returns" do
+    setup() do
+      allow(HTTPoison.get(ends_with("/metadata/feed"), any()), return: HttpHelper.create_response(body: data_from_kylo()))
+      allow(HTTPoison.get(ends_with("/feedmgr/feeds"), any()), return: HttpHelper.create_response(body: feedmgr_data_from_kylo()))
+
+      :ok
+    end
+
     test "Should make call to appropriate endpoint" do
-      allow(HTTPoison.get(any(), any()), return: HttpHelper.create_response(body: data_from_kylo()))
       DiscoveryApi.Data.CacheLoader.handle_info(:work, %{})
 
       assert_called(HTTPoison.get("http://example.com/v1/metadata/feed", any()))
     end
 
     test "Should put datasets into the cache" do
-      allow(HTTPoison.get(any(), any()), return: HttpHelper.create_response(body: data_from_kylo()))
-
       DiscoveryApi.Data.CacheLoader.handle_info(:work, %{})
 
       {:ok, datasets_from_cache} = Cachex.get(:dataset_cache, "datasets")
       assert Enum.count(datasets_from_cache) > 0
     end
 
-    test "Cache should not be updated when error reponse from kylo" do
-      expected_cache = [1, 2, 3]
-      Cachex.put(:dataset_cache, "datasets", expected_cache)
-
-      allow(HTTPoison.get(any(), any()), return: HttpHelper.create_response(status_code: 418))
-
-      DiscoveryApi.Data.CacheLoader.handle_info(:work, %{})
-
-      {:ok, actual} = Cachex.get(:dataset_cache, "datasets")
-      assert actual == expected_cache
-    end
-
     test "noreply to make gen server happy" do
-      allow(HTTPoison.get(any(), any()), return: HttpHelper.create_response(body: data_from_kylo()))
       state = %{:id => 123, :name => "Jalson"}
 
       {:noreply, new_state} = DiscoveryApi.Data.CacheLoader.handle_info(:work, state)
@@ -46,7 +37,7 @@ defmodule DiscoverApi.Data.CacheLoaderTest do
     end
 
     test "GenServer looping logic" do
-      allow(HTTPoison.get(any(), any()), return: HttpHelper.create_response(body: data_from_kylo()))
+      allow(HTTPoison.get(ends_with("/feed"), any()), return: HttpHelper.create_response(body: data_from_kylo()))
       Application.put_env(:discovery_api, :cache_refresh_interval, "100")
 
       DiscoveryApi.Data.CacheLoader.start_link([])
@@ -63,8 +54,6 @@ defmodule DiscoverApi.Data.CacheLoaderTest do
     end
 
     test "transformation" do
-      allow(HTTPoison.get(any(), any()), return: HttpHelper.create_response(body: data_from_kylo()))
-
       DiscoveryApi.Data.CacheLoader.handle_info(:work, %{})
 
       {:ok, datasets_from_cache} = Cachex.get(:dataset_cache, "datasets")
@@ -75,8 +64,8 @@ defmodule DiscoverApi.Data.CacheLoaderTest do
                "Neque soluta architecto consequatur earum ipsam molestiae tempore at dolorem. Similique consectetur cum."
 
       assert first[:fileTypes] == ["csv"]
-      assert first[:id] == "e4fca5cd-2ddd-46dd-9380-01e9c35c674f"
-      assert first[:modifiedTime] == "2018-10-08T14:57:09.464Z"
+      assert first[:id] == "14fca5cd-2ddd-46dd-9380-01e9c35c674f"
+      assert first[:modifiedTime] == "recently"
       assert first[:systemName] == "Swiss_Franc_Cotton"
 
       second = Enum.at(datasets_from_cache, 1)
@@ -87,14 +76,36 @@ defmodule DiscoverApi.Data.CacheLoaderTest do
 
       assert second[:fileTypes] == ["csv"]
       assert second[:id] == "57eac648-729c-44f5-89f2-d446ce2a4d68"
-      assert second[:modifiedTime] == "2018-12-08T10:09:11.000Z"
+      assert second[:modifiedTime] == "a while back"
       assert second[:systemName] == "input_invoice"
+    end
+  end
+
+  describe "CacheLoader error return" do
+    test "Cache should not be updated when error reponse from kylo" do
+      expected_cache = [1, 2, 3]
+      Cachex.put(:dataset_cache, "datasets", expected_cache)
+
+      allow(HTTPoison.get(any(), any()), return: HttpHelper.create_response(status_code: 418))
+
+      DiscoveryApi.Data.CacheLoader.handle_info(:work, %{})
+
+      {:ok, actual} = Cachex.get(:dataset_cache, "datasets")
+      assert actual == expected_cache
     end
   end
 
   defp data_from_kylo() do
     {:ok, body} =
       DiscoveryApi.Test.MockKyloResponse.metadata_response()
+      |> Poison.decode()
+
+    body
+  end
+
+  defp feedmgr_data_from_kylo() do
+    {:ok, body} =
+      DiscoveryApi.Test.MockKyloResponse.feedmgr_response()
       |> Poison.decode()
 
     body

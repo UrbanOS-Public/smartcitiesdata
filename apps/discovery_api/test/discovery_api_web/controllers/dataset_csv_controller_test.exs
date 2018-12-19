@@ -2,7 +2,7 @@ defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
   use ExUnit.Case
   use DiscoveryApiWeb.ConnCase
   use Placebo
-  alias DiscoverApi.Data.Thrive
+  alias DiscoveryApi.Data.Thrive
   alias StreamingMetrics.PrometheusMetricCollector, as: MetricCollector
 
   describe "fetch dataset csv" do
