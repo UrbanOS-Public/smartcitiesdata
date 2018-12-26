@@ -1,4 +1,4 @@
-defmodule Data.DatasetSearchinator do
+defmodule DiscoveryApi.Search.DatasetSearchinator do
   def search(options \\ []) do
     words = String.split(options[:query], " ") |> Enum.map(fn word -> String.downcase(word) end)
 

@@ -3,7 +3,7 @@ alias StreamingMetrics.Hostname
 
 defmodule DiscoveryApiWeb.DatasetCSVController do
   use DiscoveryApiWeb, :controller
-  alias DiscoverApi.Data.Thrive
+  alias DiscoveryApi.Data.Thrive
 
   @metric_collector Application.get_env(:discovery_api, :collector)
 

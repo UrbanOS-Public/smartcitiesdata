@@ -1,6 +1,8 @@
-defmodule Search.DatasetSearchinatorTest do
+defmodule DiscoveryApi.Search.DatasetSearchinatorTest do
   use ExUnit.Case
   use Placebo
+
+  alias DiscoveryApi.Search.DatasetSearchinator
 
   describe "search" do
     setup do
@@ -15,35 +17,35 @@ defmodule Search.DatasetSearchinatorTest do
     end
 
     test "matches based on title" do
-      {:ok, results} = Data.DatasetSearchinator.search(query: "love")
+      {:ok, results} = DatasetSearchinator.search(query: "love")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0)[:id] == 1
     end
 
     test "matches based on title with multiple words" do
-      {:ok, results} = Data.DatasetSearchinator.search(query: "loves Jarred")
+      {:ok, results} = DatasetSearchinator.search(query: "loves Jarred")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0)[:id] == 1
     end
 
     test "matches based on title case insensitive" do
-      {:ok, results} = Data.DatasetSearchinator.search(query: "jaRreD")
+      {:ok, results} = DatasetSearchinator.search(query: "jaRreD")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0)[:id] == 1
     end
 
     test "matches based on description" do
-      {:ok, results} = Data.DatasetSearchinator.search(query: "super")
+      {:ok, results} = DatasetSearchinator.search(query: "super")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0)[:id] == 1
     end
 
     test "matches based on multiple" do
-      {:ok, results} = Data.DatasetSearchinator.search(query: "loves paperwork")
+      {:ok, results} = DatasetSearchinator.search(query: "loves paperwork")
 
       assert Enum.count(results) == 2
       assert Enum.at(results, 0)[:id] == 1
@@ -51,7 +53,7 @@ defmodule Search.DatasetSearchinatorTest do
     end
 
     test "matches when dataset has no description" do
-      {:ok, results} = Data.DatasetSearchinator.search(query: "description")
+      {:ok, results} = DatasetSearchinator.search(query: "description")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0)[:id] == 3
@@ -62,7 +64,7 @@ defmodule Search.DatasetSearchinatorTest do
     test "passes through an error" do
       allow(DiscoveryApi.Data.Retriever.get_datasets(), return: {:error, "bad things happen"})
 
-      {:error, reason} = Data.DatasetSearchinator.search(query: "description")
+      {:error, reason} = DatasetSearchinator.search(query: "description")
 
       assert reason == "bad things happen"
     end

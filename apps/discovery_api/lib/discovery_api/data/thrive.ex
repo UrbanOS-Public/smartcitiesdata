@@ -41,8 +41,8 @@ defmodule HiveClient do
     ]
 end
 
-defmodule DiscoverApi.Data.Thrive do
-  alias DiscoverApi.Data.Thrive.State
+defmodule DiscoveryApi.Data.Thrive do
+  alias DiscoveryApi.Data.Thrive.State
 
   @max_int 2_147_483_647
 

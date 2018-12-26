@@ -23,35 +23,47 @@ defmodule DiscoveryApi.Data.CacheLoader do
     {:noreply, state}
   end
 
-  def load_cache do
-    case retrieve_datasets("#{data_lake_url()}/v1/metadata/feed") do
-      {:ok, response} -> Cachex.put(:dataset_cache, "datasets", response)
-      {:error, reason} -> Logger.log(:error, reason)
+    def load_cache do
+      with {:ok, metadata_datasets} <-
+        retrieve_datasets("#{data_lake_url()}/v1/metadata/feed"),
+        {:ok, feedmgr_datasets} <-
+          retrieve_datasets("#{data_lake_url()}/v1/feedmgr/feeds") do
+            Cachex.put(
+              :dataset_cache,
+              "datasets",
+              transform_datasets({metadata_datasets, feedmgr_datasets})
+            )
+      else
+        {:error, reason} -> Logger.log(:error, reason)
+      end
     end
-  end
 
   defp retrieve_datasets(url) do
     with {:ok, %HTTPoison.Response{body: body, status_code: 200}} <-
            HTTPoison.get(url, Authorization: "Basic #{data_lake_auth_string()}"),
          {:ok, decode} <- Poison.decode(body) do
-      {:ok, transform_datasets(decode)}
+          {:ok, decode}
     else
       _ -> {:error, "There was a problem processing your request"}
     end
   end
 
-  defp transform_datasets(datasets) do
-    Enum.map(datasets, &transform_dataset/1)
+  defp transform_datasets({metadata_datasets, feedmgr_datasets}) do
+    sorted_metadata_dataset = Enum.sort_by(metadata_datasets, &Map.fetch(&1, "id"))
+    sorted_feedmgr_dataset = Enum.sort_by(feedmgr_datasets["data"], &Map.fetch(&1, "id"))
+    Enum.zip(sorted_metadata_dataset, sorted_feedmgr_dataset)
+    |> Enum.map(&transform_dataset/1)
   end
 
-  defp transform_dataset(dataset) do
+  defp transform_dataset({metadata_dataset, feedmgr_dataset}) do
     %{
-      :title => dataset["displayName"],
-      :description => dataset["description"],
+      :title => metadata_dataset["displayName"],
+      :description => metadata_dataset["description"],
       :fileTypes => ["csv"],
-      :id => dataset["id"],
-      :modifiedTime => dataset["modifiedTime"],
-      :systemName => dataset["systemName"]
+      :id => metadata_dataset["id"],
+      :modifiedTime => feedmgr_dataset["updateDate"],
+      :systemName => metadata_dataset["systemName"],
+      :organization => metadata_dataset["userProperties"]["publisher.name"] |> to_string
     }
   end
 

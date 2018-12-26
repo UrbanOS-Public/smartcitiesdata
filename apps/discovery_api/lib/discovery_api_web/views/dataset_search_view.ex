@@ -3,6 +3,7 @@ defmodule DiscoveryApiWeb.DatasetSearchView do
 
   def render("search_dataset_summaries.json", %{
         datasets: datasets,
+        facets: facets,
         sort: sort_by,
         offset: offset,
         limit: limit
@@ -14,6 +15,7 @@ defmodule DiscoveryApiWeb.DatasetSearchView do
     %{
       "metadata" => %{
         "totalDatasets" => Enum.count(datasets),
+        "facets" => facets,
         "limit" => limit,
         "offset" => offset
       },

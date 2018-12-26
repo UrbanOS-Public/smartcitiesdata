@@ -1,7 +1,7 @@
-defmodule DiscoverApi.Data.ThriveTest do
+defmodule DiscoveryApi.Data.ThriveTest do
   use ExUnit.Case
   use Placebo
-  alias DiscoverApi.Data.Thrive
+  alias DiscoveryApi.Data.Thrive
 
   setup do
     Application.put_env(:discovery_api, :thrive_address, :address)
