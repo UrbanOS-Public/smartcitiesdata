@@ -2,79 +2,40 @@ defmodule DiscoveryApi.Search.DatasetFacinatorTest do
   use ExUnit.Case
   alias DiscoveryApi.Search.DatasetFacinator
 
+
   describe "facinate" do
-    test "given a list of datasets, it extracts unique organizations and their counts" do
-      datasets = [
-        %{
-          title: "Ben's head cannon",
-          organization: "OrgA"
-        },
-        %{
-          title: "Ben's Caniac Combo",
-          organization: "OrgA"
-        },
-        %{
-          title: "Jarred's irrational attachment to natorism's",
-          organization: "OrgB"
-        }
-      ]
-
-      assert DatasetFacinator.get_facets(datasets) == %{
-               organization: %{
-                 "OrgA" => 2,
-                 "OrgB" => 1
-               }
-             }
+    setup context do
+      {:ok, [
+          datasets: [
+            %{
+              title: "Ben's head cannon",
+              organization: "OrgA"
+            },
+            %{
+              title: "Ben's Caniac Combo",
+              organization: "OrgA"
+            },
+            %{
+              title: "Jarred's irrational attachment to natorism's",
+              organization: "OrgB"
+            },
+            %{
+              title: "hi its erin",
+              organization: ""
+            },
+          ]
+        ]
+      }
     end
 
-    test "given a list of datasets, and an empty filter it properly extracts empty attributes" do
-      datasets = [
-        %{
-          title: "Ben's head cannon",
-          organization: ""
-        },
-        %{
-          title: "Ben's Caniac Combo",
-          organization: "OrgA"
-        },
-        %{
-          title: "Jarred's irrational attachment to natorism's",
-          organization: "OrgB"
+    test "given a list of datasets, it extracts unique organizations and their counts", context do
+      assert DatasetFacinator.get_facets(context[:datasets]) == %{
+        organization: %{
+          "OrgA" => 2,
+          "OrgB" => 1,
+          "" => 1
         }
-      ]
-
-      assert DatasetFacinator.get_facets(datasets) == %{
-               organization: %{
-                 "OrgA" => 1,
-                 "OrgB" => 1,
-                 "" => 1
-               }
-             }
-    end
-
-    test "given a list of datasets, and a filter for an empty attribute it properly extracts empty attributes" do
-      datasets = [
-        %{
-          title: "Ben's head cannon",
-          organization: ""
-        },
-        %{
-          title: "Ben's Caniac Combo",
-          organization: "OrgA"
-        },
-        %{
-          title: "Jarred's irrational attachment to natorism's",
-          organization: "OrgB"
-        }
-      ]
-
-      assert DatasetFacinator.get_facets(datasets) == %{
-               organization: %{
-                 "OrgA" => 1,
-                 "OrgB" => 1,
-                 "" => 1
-               }
-             }
+      }
     end
   end
 end

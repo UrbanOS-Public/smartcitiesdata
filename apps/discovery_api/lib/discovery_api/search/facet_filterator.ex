@@ -9,7 +9,8 @@ defmodule DiscoveryApi.Search.FacetFilterator do
   end
 
   defp attribute_value_in_facet_values?({facet_name, facet_values}, dataset) do
-    attribute_value = dataset[String.to_atom(facet_name)] |> to_string
+    attribute_value = dataset[String.to_atom(facet_name)]
+    |> to_string
 
     Enum.member?(facet_values, attribute_value)
   end

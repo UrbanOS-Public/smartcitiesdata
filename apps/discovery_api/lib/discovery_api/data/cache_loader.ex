@@ -49,8 +49,8 @@ defmodule DiscoveryApi.Data.CacheLoader do
   end
 
   defp transform_datasets({metadata_datasets, feedmgr_datasets}) do
-    sorted_metadata_dataset = Enum.sort_by metadata_datasets, &Map.fetch(&1, "id")
-    sorted_feedmgr_dataset = Enum.sort_by feedmgr_datasets["data"], &Map.fetch(&1, "id")
+    sorted_metadata_dataset = Enum.sort_by(metadata_datasets, &Map.fetch(&1, "id"))
+    sorted_feedmgr_dataset = Enum.sort_by(feedmgr_datasets["data"], &Map.fetch(&1, "id"))
     Enum.zip(sorted_metadata_dataset, sorted_feedmgr_dataset)
     |> Enum.map(&transform_dataset/1)
   end
