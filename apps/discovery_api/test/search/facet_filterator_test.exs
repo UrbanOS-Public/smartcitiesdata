@@ -8,27 +8,27 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
         %{
           title: "Ben's head canon",
           organization: "OrgA",
-          foo: "BAR"
+          tags: ["BAR"]
         },
         %{
           title: "Ben's Caniac Combo",
           organization: "OrgA",
-          foo: "BAZ"
+          tags: ["BAZ"]
         },
         %{
           title: "Jarred's irrational attachment to natorism's",
           organization: "OrgB",
-          foo: "BAR"
+          tags: ["BAZ", "BAR"]
         }
       ]
 
-      facets = %{"organization" => ["OrgA"], "foo" => ["BAZ"]}
+      facets = %{"organization" => ["OrgA"], "tags" => ["BAZ"]}
 
       assert FacetFilterator.filter_by_facets(datasets, facets) == [
                %{
                  title: "Ben's Caniac Combo",
                  organization: "OrgA",
-                 foo: "BAZ"
+                 tags: ["BAZ"]
                }
              ]
     end
@@ -38,32 +38,62 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
         %{
           title: "Ben's head canon",
           organization: "",
-          foo: "BAR"
+          tags: ["BAR"]
         },
         %{
           title: "Ben's Caniac Combo",
           organization: "OrgA",
-          foo: "BAZ"
+          tags: ["BAZ"]
         },
         %{
           title: "Jarred's irrational attachment to natorism's",
           organization: nil,
-          foo: "BAR"
+          tags: ["BAZ", "BAR"]
         }
       ]
 
-      facets = %{"organization" => [""]}
+      facets = %{"organization" => [""], "tags" => ["BAR"]}
 
       assert FacetFilterator.filter_by_facets(datasets, facets) == [
                %{
                  title: "Ben's head canon",
                  organization: "",
-                 foo: "BAR"
+                 tags: ["BAR"]
                },
                %{
                  title: "Jarred's irrational attachment to natorism's",
                  organization: nil,
-                 foo: "BAR"
+                 tags: ["BAZ", "BAR"]
+               }
+             ]
+    end
+
+    test "given multiple values in a facet, it does an AND, not an OR" do
+      datasets = [
+        %{
+          title: "Ben's head canon",
+          organization: "",
+          tags: ["BOR"]
+        },
+        %{
+          title: "Ben's Caniac Combo",
+          organization: "OrgA",
+          tags: ["BAZ"]
+        },
+        %{
+          title: "Jarred's irrational attachment to natorism's",
+          organization: nil,
+          tags: ["BAZ", "BOO", "BOR"]
+        }
+      ]
+
+      facets = %{"organization" => [""], "tags" => ["BAZ", "BOR"]}
+
+      assert FacetFilterator.filter_by_facets(datasets, facets) == [
+               %{
+                 title: "Jarred's irrational attachment to natorism's",
+                 organization: nil,
+                 tags: ["BAZ", "BOO", "BOR"]
                }
              ]
     end

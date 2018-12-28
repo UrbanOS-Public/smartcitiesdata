@@ -51,6 +51,13 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
       assert actual["metadata"]["facets"]["organization"]["Richard Co."] == 1
     end
 
+    test "returns tag facets", %{conn: conn} do
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc") |> json_response(200)
+
+      assert actual["metadata"]["facets"]["tags"]["Paul tag"] == 1
+      assert actual["metadata"]["facets"]["tags"]["Richard tag"] == 1
+    end
+
     test "sort by name ascending", %{conn: conn} do
       actual = get(conn, "/v1/api/dataset/search", sort: "name_asc") |> json_response(200)
 
@@ -115,7 +122,8 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
       :systemName => "#{id}-system-name",
       :title => "#{id}-title",
       :modifiedTime => "#{date}",
-      :organization => "#{id} Co."
+      :organization => "#{id} Co.",
+      :tags => ["#{id} tag"]
     }
   end
 end

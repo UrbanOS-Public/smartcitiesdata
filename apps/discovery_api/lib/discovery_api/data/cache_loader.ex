@@ -23,48 +23,71 @@ defmodule DiscoveryApi.Data.CacheLoader do
     {:noreply, state}
   end
 
-    def load_cache do
-      with {:ok, metadata_datasets} <-
-        retrieve_datasets("#{data_lake_url()}/v1/metadata/feed"),
-        {:ok, feedmgr_datasets} <-
-          retrieve_datasets("#{data_lake_url()}/v1/feedmgr/feeds") do
-            Cachex.put(
-              :dataset_cache,
-              "datasets",
-              transform_datasets({metadata_datasets, feedmgr_datasets})
-            )
-      else
-        {:error, reason} -> Logger.log(:error, reason)
-      end
+  def load_cache do
+    with {:ok, %{"data" => feed_list}} <- retrieve_datasets("#{data_lake_url()}/v1/feedmgr/feeds") do
+      feed_details = get_feed_details(feed_list)
+
+      Cachex.put(
+        :dataset_cache,
+        "datasets",
+        transform_datasets(feed_details)
+      )
+    else
+      {:error, reason} -> Logger.log(:error, reason)
     end
+  end
 
   defp retrieve_datasets(url) do
     with {:ok, %HTTPoison.Response{body: body, status_code: 200}} <-
            HTTPoison.get(url, Authorization: "Basic #{data_lake_auth_string()}"),
          {:ok, decode} <- Poison.decode(body) do
-          {:ok, decode}
+      {:ok, decode}
     else
       _ -> {:error, "There was a problem processing your request"}
     end
   end
 
-  defp transform_datasets({metadata_datasets, feedmgr_datasets}) do
-    sorted_metadata_dataset = Enum.sort_by(metadata_datasets, &Map.fetch(&1, "id"))
-    sorted_feedmgr_dataset = Enum.sort_by(feedmgr_datasets["data"], &Map.fetch(&1, "id"))
-    Enum.zip(sorted_metadata_dataset, sorted_feedmgr_dataset)
+  def get_feed_details(feedmgr_dataset) do
+    feedmgr_dataset
+    |> Enum.map(fn dataset ->
+      case retrieve_datasets("#{data_lake_url()}/v1/feedmgr/feeds/#{dataset["id"]}") do
+        {:ok, cooldata} -> cooldata
+        _ -> %{}
+      end
+    end)
+  end
+
+  defp transform_datasets(feed_details) do
+    feed_details
     |> Enum.map(&transform_dataset/1)
   end
 
-  defp transform_dataset({metadata_dataset, feedmgr_dataset}) do
+  defp transform_dataset(feed_details) do
     %{
-      :title => metadata_dataset["displayName"],
-      :description => metadata_dataset["description"],
-      :fileTypes => ["csv"],
-      :id => metadata_dataset["id"],
-      :modifiedTime => feedmgr_dataset["updateDate"],
-      :systemName => metadata_dataset["systemName"],
-      :organization => metadata_dataset["userProperties"]["publisher.name"] |> to_string
+      title: feed_details["feedName"],
+      description: feed_details["description"],
+      fileTypes: ["csv"],
+      id: feed_details["id"],
+      modifiedTime: feed_details["updateDate"],
+      systemName: feed_details["systemFeedName"],
+      organization: (feed_details["userProperties"] || []) |> get_organization(),
+      tags: (feed_details["tags"] || []) |> get_tags()
     }
+  end
+
+  defp get_tags(dataset_tags) do
+    dataset_tags
+    |> Enum.map(fn item -> item["name"] end)
+  end
+
+  defp get_organization(userProperties) do
+    userProperties
+    |> Enum.find_value("", fn x ->
+      case x["systemName"] do
+        "publisher.name" -> x["value"]
+        _ -> false
+      end
+    end)
   end
 
   defp data_lake_url do
