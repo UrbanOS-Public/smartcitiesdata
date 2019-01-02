@@ -1,27 +1,19 @@
 defmodule DiscoveryApi.Search.DatasetFacinator do
   def get_facets(datasets) do
     %{
-      organization: unique_organizations_with_count(datasets),
-      tags: unique_tags_with_count(datasets)
+      organization: unique_facets_with_count(datasets, :organization),
+      tags: unique_facets_with_count(datasets, :tags)
     }
   end
 
-  defp unique_organizations_with_count(datasets) do
+  defp unique_facets_with_count(datasets, facet_name) do
     datasets
-    |> Enum.reduce(%{}, &record_organization_count/2)
+    |> Enum.map(&Map.get(&1, facet_name))
+    |> List.flatten()
+    |> Enum.reduce(%{}, &record_facet_count/2)
   end
 
-  defp record_organization_count(dataset, acc) do
-    Map.update(acc, dataset[:organization], 1, &(&1 + 1))
-  end
-
-  defp unique_tags_with_count(datasets) do
-    datasets
-    |> Enum.flat_map(fn x -> x[:tags] end)
-    |> Enum.reduce(%{}, &record_tag_count/2)
-  end
-
-  defp record_tag_count(tag, acc) do
-    Map.update(acc, tag, 1, &(&1 + 1))
+  defp record_facet_count(facet, acc) do
+    Map.update(acc, facet, 1, &(&1 + 1))
   end
 end
