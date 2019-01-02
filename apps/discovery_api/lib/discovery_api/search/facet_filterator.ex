@@ -1,14 +1,14 @@
 defmodule DiscoveryApi.Search.FacetFilterator do
   def filter_by_facets(datasets, facets) do
     datasets
-    |> Enum.filter(&filter_dataset_using_facet_values(&1, facets))
+    |> Enum.filter(&all_facet_values_in_dataset?(&1, facets))
   end
 
-  defp filter_dataset_using_facet_values(dataset, facets) do
-    Enum.all?(facets, &attribute_value_in_facet_values?(&1, dataset))
+  defp all_facet_values_in_dataset?(dataset, facets) do
+    Enum.all?(facets, &all_facet_values_in_attribute_values?(&1, dataset))
   end
 
-  defp attribute_value_in_facet_values?({facet_name, facet_values}, dataset) do
+  defp all_facet_values_in_attribute_values?({facet_name, facet_values}, dataset) do
     attribute_value =
       [dataset[String.to_atom(facet_name)] || ""]
       |> List.flatten()
