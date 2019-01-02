@@ -68,7 +68,7 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
              ]
     end
 
-    test "given multiple values in a facet, it does an AND, not an OR" do
+    test "given multiple values in a facet, it does an AND" do
       datasets = [
         %{
           title: "Ben's head canon",

@@ -80,14 +80,16 @@ defmodule DiscoveryApi.Data.CacheLoader do
     |> Enum.map(fn item -> item["name"] end)
   end
 
-  defp get_organization(userProperties) do
-    userProperties
-    |> Enum.find_value("", fn x ->
-      case x["systemName"] do
-        "publisher.name" -> x["value"]
-        _ -> false
-      end
-    end)
+  defp get_organization(user_properties) do
+    user_properties
+    |> Enum.find_value("", &extract_organization_if_found/1)
+  end
+
+  defp extract_organization_if_found(user_property) do
+    case user_property["systemName"] do
+      "publisher.name" -> user_property["value"]
+      _ -> false
+    end
   end
 
   defp data_lake_url do
