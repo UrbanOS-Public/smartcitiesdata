@@ -47,7 +47,7 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
         },
         %{
           title: "Jarred's irrational attachment to natorism's",
-          organization: nil,
+          organization: "",
           tags: ["BAZ", "BAR"]
         }
       ]
@@ -62,7 +62,7 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
                },
                %{
                  title: "Jarred's irrational attachment to natorism's",
-                 organization: nil,
+                 organization: "",
                  tags: ["BAZ", "BAR"]
                }
              ]
@@ -82,7 +82,7 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
         },
         %{
           title: "Jarred's irrational attachment to natorism's",
-          organization: nil,
+          organization: "",
           tags: ["BAZ", "BOO", "BOR"]
         }
       ]
@@ -92,7 +92,7 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
       assert FacetFilterator.filter_by_facets(datasets, facets) == [
                %{
                  title: "Jarred's irrational attachment to natorism's",
-                 organization: nil,
+                 organization: "",
                  tags: ["BAZ", "BOO", "BOR"]
                }
              ]

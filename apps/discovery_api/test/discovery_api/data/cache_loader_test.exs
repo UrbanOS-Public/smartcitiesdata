@@ -9,17 +9,14 @@ defmodule DiscoveryApi.Data.CacheLoaderTest do
 
   describe "CacheLoader regular returns" do
     setup do
-      allow(HTTPoison.get(ends_with("/feedmgr/feeds"), any()),
+      allow HTTPoison.get(ends_with("/feedmgr/feeds"), any()),
         return: HttpHelper.create_response(body: feedmgr_data_from_kylo())
-      )
 
-      allow(HTTPoison.get(ends_with("/feedmgr/feeds/14fca5cd-2ddd-46dd-9380-01e9c35c674f"), any()),
+      allow HTTPoison.get(ends_with("/feedmgr/feeds/14fca5cd-2ddd-46dd-9380-01e9c35c674f"), any()),
         return: HttpHelper.create_response(body: feedmgr_id_data_from_kylo_without_tags())
-      )
 
-      allow(HTTPoison.get(ends_with("/feedmgr/feeds/57eac648-729c-44f5-89f2-d446ce2a4d68"), any()),
+      allow HTTPoison.get(ends_with("/feedmgr/feeds/57eac648-729c-44f5-89f2-d446ce2a4d68"), any()),
         return: HttpHelper.create_response(body: feedmgr_id_data_from_kylo_with_tags())
-      )
 
       :ok
     end
@@ -27,7 +24,7 @@ defmodule DiscoveryApi.Data.CacheLoaderTest do
     test "Should make call to appropriate endpoint" do
       DiscoveryApi.Data.CacheLoader.handle_info(:work, %{})
 
-      assert_called(HTTPoison.get("http://example.com/v1/feedmgr/feeds", any()))
+      assert_called HTTPoison.get("http://example.com/v1/feedmgr/feeds", any())
     end
 
     test "Should put datasets into the cache" do
@@ -46,9 +43,8 @@ defmodule DiscoveryApi.Data.CacheLoaderTest do
     end
 
     test "GenServer looping logic" do
-      allow(HTTPoison.get(ends_with("/feeds"), any()),
+      allow HTTPoison.get(ends_with("/feeds"), any()),
         return: HttpHelper.create_response(body: feedmgr_data_from_kylo())
-      )
 
       Application.put_env(:discovery_api, :cache_refresh_interval, "100")
 
@@ -100,7 +96,7 @@ defmodule DiscoveryApi.Data.CacheLoaderTest do
       expected_cache = [1, 2, 3]
       Cachex.put(:dataset_cache, "datasets", expected_cache)
 
-      allow(HTTPoison.get(any(), any()), return: HttpHelper.create_response(status_code: 418))
+      allow HTTPoison.get(any(), any()), return: HttpHelper.create_response(status_code: 418)
 
       DiscoveryApi.Data.CacheLoader.handle_info(:work, %{})
 

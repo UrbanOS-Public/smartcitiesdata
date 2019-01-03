@@ -24,13 +24,16 @@ defmodule DiscoveryApi.Data.CacheLoader do
   end
 
   def load_cache do
-    with {:ok, %{"data" => feed_list}} <- retrieve_datasets("#{data_lake_url()}/v1/feedmgr/feeds") do
-      feed_details = get_feed_details(feed_list)
+    with {:ok, data} <- retrieve_datasets("#{data_lake_url()}/v1/feedmgr/feeds"),
+         %{"data" => feed_list} <- data do
+      datasets =
+        get_feed_details(feed_list)
+        |> transform_datasets()
 
       Cachex.put(
         :dataset_cache,
         "datasets",
-        transform_datasets(feed_details)
+        datasets
       )
     else
       {:error, reason} -> Logger.log(:error, reason)
@@ -49,12 +52,14 @@ defmodule DiscoveryApi.Data.CacheLoader do
 
   def get_feed_details(feedmgr_dataset) do
     feedmgr_dataset
-    |> Enum.map(fn dataset ->
-      case retrieve_datasets("#{data_lake_url()}/v1/feedmgr/feeds/#{dataset["id"]}") do
-        {:ok, cooldata} -> cooldata
-        _ -> %{}
-      end
-    end)
+    |> Enum.map(&retrieve_datasets!("#{data_lake_url()}/v1/feedmgr/feeds/#{&1["id"]}"))
+  end
+
+  defp retrieve_datasets!(url) do
+    case retrieve_datasets(url) do
+      {:ok, data} -> data
+      {:error, cool_reason} -> raise cool_reason
+    end
   end
 
   defp transform_datasets(feed_details) do
@@ -70,15 +75,19 @@ defmodule DiscoveryApi.Data.CacheLoader do
       id: feed_details["id"],
       modifiedTime: feed_details["updateDate"],
       systemName: feed_details["systemFeedName"],
-      organization: (feed_details["userProperties"] || []) |> get_organization(),
-      tags: (feed_details["tags"] || []) |> get_tags()
+      organization: feed_details["userProperties"] |> get_organization(),
+      tags: feed_details["tags"] |> get_tags()
     }
   end
+
+  defp get_tags(nil), do: ""
 
   defp get_tags(dataset_tags) do
     dataset_tags
     |> Enum.map(fn item -> item["name"] end)
   end
+
+  defp get_organization(nil), do: ""
 
   defp get_organization(user_properties) do
     user_properties

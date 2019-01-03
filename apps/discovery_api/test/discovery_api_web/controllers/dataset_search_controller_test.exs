@@ -9,7 +9,7 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
       dataset_summary_map("Richard", ~D(2001-09-09))
     ]
 
-    allow(DiscoveryApi.Data.Retriever.get_datasets(), return: {:ok, mock_dataset_summaries})
+    allow DiscoveryApi.Data.Retriever.get_datasets(), return: {:ok, mock_dataset_summaries}
     Application.put_env(:discovery_api, :data_lake_url, "http://my-fake-cota-url.nope")
   end
 
