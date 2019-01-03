@@ -9,7 +9,7 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
       dataset_summary_map("Richard", ~D(2001-09-09))
     ]
 
-    allow(DiscoveryApi.Data.Retriever.get_datasets(), return: {:ok, mock_dataset_summaries})
+    allow DiscoveryApi.Data.Retriever.get_datasets(), return: {:ok, mock_dataset_summaries}
     Application.put_env(:discovery_api, :data_lake_url, "http://my-fake-cota-url.nope")
   end
 
@@ -49,6 +49,13 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
 
       assert actual["metadata"]["facets"]["organization"]["Paul Co."] == 1
       assert actual["metadata"]["facets"]["organization"]["Richard Co."] == 1
+    end
+
+    test "returns tag facets", %{conn: conn} do
+      actual = get(conn, "/v1/api/dataset/search", sort: "name_asc") |> json_response(200)
+
+      assert actual["metadata"]["facets"]["tags"]["Paul tag"] == 1
+      assert actual["metadata"]["facets"]["tags"]["Richard tag"] == 1
     end
 
     test "sort by name ascending", %{conn: conn} do
@@ -115,7 +122,8 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
       :systemName => "#{id}-system-name",
       :title => "#{id}-title",
       :modifiedTime => "#{date}",
-      :organization => "#{id} Co."
+      :organization => "#{id} Co.",
+      :tags => ["#{id} tag"]
     }
   end
 end

@@ -42,7 +42,7 @@ defmodule DiscoveryApi.Mixfile do
       {:corsica, "~> 1.0"},
       {:cachex, "~> 3.0"},
       {:patiently, "~> 0.2.0"},
-      {:placebo, "~> 1.0", only: :test},
+      {:placebo, "~> 1.2.0", only: [:dev, :test]},
       {:plug_cowboy, "~> 1.0"},
       {:prometheus_plugs, "~> 1.1.1"},
       {:prometheus_phoenix, "~>1.2.0"},
