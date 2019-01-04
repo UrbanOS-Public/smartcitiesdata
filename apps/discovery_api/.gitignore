@@ -18,3 +18,7 @@ erl_crash.dump
 .DS_Store
 
 log
+
+outputs
+.terraform
+terraform.tfstate.d

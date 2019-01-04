@@ -10,6 +10,6 @@ helm upgrade --install discovery-api ./chart \
     --set ingress.dns_zone="${ENVIRONMENT}.internal.smartcolumbusos.com" \
     --set ingress.certificate_arn="${CERTIFICATE_ARN}" \
     --set image.tag="${IMAGE_TAG}" \
-    --set service.auth_string="YmlnYmFkYm9iOmZvb2JhcmJhejEyMw==" \
+    --set service.auth_string="c2EtZGlzY292ZXJ5LWFwaTp2WEs0aU9wRmNnNlR1T1ZXT1RCcDNRQ1BURm56UHRLQ1A5V1B3M3ds" \
     --timeout=600 \
     --wait

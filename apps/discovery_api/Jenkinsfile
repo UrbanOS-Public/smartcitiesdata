@@ -63,25 +63,9 @@ node ('infrastructure') {
 def deployDiscoveryApiTo(params = [:]) {
     def environment = params.get('environment')
     if (environment == null) throw new IllegalArgumentException("environment must be specified")
-    def internal = params.get('internal', true)
 
-    scos.withEksCredentials(environment) {
-
-        def prodCertificateARN = scos.terraformOutput('prod').tls_certificate_arn.value
-        def ingressScheme = internal ? 'internal' : 'internet-facing'
-
-        sh("""#!/bin/bash
-            set -e
-            source setup.sh
-            export INGRESS_SCHEME=${ingressScheme}
-            export ENVIRONMENT=${environment}
-            export IMAGE_TAG=${env.GIT_COMMIT_HASH}
-
-            if [ 'prod' == \$ENVIRONMENT ] ; then
-              export CERTIFICATE_ARN=${prodCertificateARN}
-            fi
-
-            ./install.sh
-        """.trim())
-    }
+    def terraform = scos.terraform(environment)
+    sh "terraform init && terraform workspace new ${environment}"
+    terraform.plan(terraform.defaultVarFile)
+    terraform.apply()
 }
