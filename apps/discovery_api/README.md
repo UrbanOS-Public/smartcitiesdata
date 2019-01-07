@@ -21,12 +21,8 @@ Discovery API serves as middleware between Kylo and our Data Discovery UI.
 
 ### Deploying to Sandbox
 
-The `setup.sh` script uses your current kubectl context to retrieve aws properties from the `aws-properties` configmap and sources them as environment variables. It also requires you to have `jq` installed.
-
-The `install.sh` script runs the helm install with the proper values.
-
-```bash
-source setup.sh
-export ENVIRONMENT=chris.sandbox
-./install.sh
-```
+* This application can be deployed to the sandbox environment using the following Terraform commands:
+  * `tf init`
+  * `tf workspace new {NEW_WORKSPACE_NAME}`
+  * `tf plan --var=file=variables/sandbox.tfvars --out=out.out`
+  * `tf apply out.out`
