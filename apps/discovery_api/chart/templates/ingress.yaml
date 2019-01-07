@@ -4,19 +4,22 @@ metadata:
   name: discovery-api
   namespace: {{ .Release.Namespace }}
   annotations:
-    kubernetes.io/ingress.class: alb
-    alb.ingress.kubernetes.io/scheme: {{ .Values.ingress.scheme }}
-    alb.ingress.kubernetes.io/tags: scos.delete.on.teardown=true
-    alb.ingress.kubernetes.io/healthcheck-path: /healthcheck
-    alb.ingress.kubernetes.io/subnets: {{ .Values.ingress.subnets }}
-    alb.ingress.kubernetes.io/security-groups: {{ .Values.ingress.security_groups }}
-    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.certificate_arn }}
+{{- if .Values.ingress.annotations }}
+{{ toYaml .Values.ingress.annotations | trim | indent 4 }}
+{{- end }}
 spec:
   backend:
-    serviceName: {{ .Values.service.name }} 
+    serviceName: {{ .Values.service.name }}
     servicePort: {{ .Values.service.port }}
   rules:
-  - host: discoveryapi.{{ .Values.ingress.dns_zone }}
+  - host: {{ .Values.ingress.prodDns }}
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: redirect
+          servicePort: use-annotation
+  - host: discoveryapi.{{ .Values.ingress.dnsZone }}
     http:
       paths:
       - path: /

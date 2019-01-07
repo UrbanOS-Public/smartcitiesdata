@@ -12,6 +12,8 @@ spec:
       app: discovery-api
   template:
     metadata:
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
       labels:
         app: discovery-api
     spec:
