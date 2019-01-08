@@ -7,15 +7,23 @@ defmodule DiscoveryApiWeb.DatasetCSVController do
 
   @metric_collector Application.get_env(:discovery_api, :collector)
 
-  def fetch_dataset_csv(conn, %{"dataset_id" => dataset_id}) do
+  def fetch_dataset_csv(conn, %{"dataset_id" => dataset_id} = params) do
+    query_string = Map.get(params, "query", "")
+    columns = Map.get(params, "columns", ["*"])
+
     with {:ok, metadata} <- fetch_dataset_metadata(dataset_id),
          {schema, table} <- extract_schema_and_table(metadata),
          {:ok, description} <- fetch_table_schema(schema, table),
          table_headers <- extract_table_headers(description),
-         {:ok, stream} <- Thrive.stream_results("select * from #{schema}.#{table}", 1000) do
+         {:ok, stream} <-
+           Thrive.stream_results(
+             "select #{Enum.join(columns, ",")} from #{schema}.#{table} #{query_string}",
+             1000
+           ) do
       record_csv_download_count_metrics(dataset_id, table)
 
-      Stream.map(stream, &Tuple.to_list(&1))
+      stream
+      |> Stream.map(&Tuple.to_list(&1))
       |> (fn stream -> Stream.concat([table_headers], stream) end).()
       |> CSV.encode(delimiter: "\n")
       |> Enum.into(
@@ -25,9 +33,19 @@ defmodule DiscoveryApiWeb.DatasetCSVController do
         |> send_chunked(200)
       )
     else
-      {:error, reason} -> DiscoveryApiWeb.Renderer.render_500(conn, reason)
+      {:error, reason} -> DiscoveryApiWeb.Renderer.render_500(conn, parse_error_reason(reason))
     end
   end
+
+  def parse_error_reason(reason) when is_binary(reason) do
+    if reason |> String.downcase() |> String.contains?("hive") do
+      "Something went wrong with your query."
+    else
+      reason
+    end
+  end
+
+  def parse_error_reason(reason), do: reason
 
   defp fetch_dataset_metadata(dataset_id) do
     retrieve_and_decode_data("#{data_lake_url()}/v1/metadata/feed/#{dataset_id}")
@@ -49,8 +67,7 @@ defmodule DiscoveryApiWeb.DatasetCSVController do
   end
 
   defp extract_table_headers(%{"fields" => fields}) do
-    fields
-    |> Enum.map(&Map.get(&1, "name"))
+    Enum.map(fields, &Map.get(&1, "name"))
   end
 
   defp retrieve_and_decode_data(url) do

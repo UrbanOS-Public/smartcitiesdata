@@ -22,7 +22,10 @@ defmodule DiscoveryApiWeb.Router do
   scope "/v1/api", DiscoveryApiWeb do
     pipe_through(:api)
     get("/dataset/search", DatasetSearchController, :search)
-    get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
+
+    post("/dataset/:dataset_id/csv", DatasetCSVController, :fetch_dataset_csv)
     get("/dataset/:dataset_id/csv", DatasetCSVController, :fetch_dataset_csv)
+
+    get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
   end
 end
