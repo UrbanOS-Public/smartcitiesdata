@@ -45,6 +45,67 @@ defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
       assert(generate_expected_csv() == actual)
     end
 
+    test "thrive stream results called with correct query", %{conn: conn} do
+      uri_string = URI.encode("/v1/api/dataset/1/csv?query=WHERE name=Austin6")
+
+      expected = "select * from test.bigdata WHERE name=Austin6"
+      # This is hardcoded in the function
+      timeout = 1000
+
+      actual = get(conn, uri_string) |> response(200)
+      assert_called Thrive.stream_results(expected, timeout)
+    end
+
+    test "thrive stream results called with correct query (POST version)", %{conn: conn} do
+      uri_string = "/v1/api/dataset/1/csv"
+
+      body = """
+      {
+        "query": "WHERE name=Austin6"
+      }
+      """
+
+      expected = "select * from test.bigdata WHERE name=Austin6"
+      # This is hardcoded in the function
+      chunk_size = 1000
+
+      conn = conn |> put_req_header("content-type", "application/json")
+
+      actual = post(conn, uri_string, body) |> response(200)
+      assert_called Thrive.stream_results(expected, chunk_size)
+    end
+
+    test "params are parsed correctly" do
+      uri_string = "/v1/api/dataset/1/csv"
+
+      query_tests = [
+        # {json, expected string}
+        {
+          ~s({ "query": "WHERE name=Austin6" }),
+          "select * from test.bigdata WHERE name=Austin6"
+        },
+        {
+          ~s({ "columns": ["a", "b", "c"] }),
+          "select a,b,c from test.bigdata "
+        },
+        {
+          ~s({ "query": "WHERE name=Austin6", "columns": ["a", "b", "c"] }),
+          "select a,b,c from test.bigdata WHERE name=Austin6"
+        },
+        {
+          ~s({}),
+          "select * from test.bigdata "
+        }
+      ]
+
+      conn = conn |> put_req_header("content-type", "application/json")
+
+      Enum.each(query_tests, fn {body, expected} ->
+        actual = post(conn, uri_string, body) |> response(200)
+        assert_called Thrive.stream_results(expected, 1000)
+      end)
+    end
+
     test "metrics are sent for a count of the uncached entities" do
       expect(
         MetricCollector.record_metrics(
@@ -114,6 +175,11 @@ defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
 
       assert get(conn, "/v1/api/dataset/1/csv")
              |> response(500)
+    end
+
+    test "error reason parser doesn't let you talk about Hive" do
+      reason_from_hive = "Hive exists!"
+      assert(DiscoveryApiWeb.DatasetCSVController.parse_error_reason(reason_from_hive) != reason_from_hive)
     end
   end
 
