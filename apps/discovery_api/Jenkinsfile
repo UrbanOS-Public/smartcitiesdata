@@ -19,6 +19,8 @@ node ('infrastructure') {
     ansiColor('xterm') {
         scos.doCheckoutStage()
 
+        imageTag = "${env.GIT_COMMIT_HASH}"
+
         doStageUnlessRelease('Build') {
             image = docker.build("scos/discovery-api:${env.GIT_COMMIT_HASH}")
         }
@@ -28,13 +30,13 @@ node ('infrastructure') {
                 image.push()
                 image.push('latest')
             }
-            deployDiscoveryApiTo(environment: 'dev')
+            deployDiscoveryApiTo(environment: 'dev', tag: imageTag)
         }
 
         doStageIfPromoted('Deploy to Staging')  {
             def promotionTag = scos.releaseCandidateNumber()
 
-            deployDiscoveryApiTo(environment: 'staging')
+            deployDiscoveryApiTo(environment: 'staging', tag: imageTag)
 
             scos.applyAndPushGitHubTag(promotionTag)
 
@@ -47,7 +49,7 @@ node ('infrastructure') {
             def releaseTag = env.BRANCH_NAME
             def promotionTag = 'prod'
 
-            deployDiscoveryApiTo(environment: 'prod', internal: false)
+            deployDiscoveryApiTo(environment: 'prod', internal: false, tag: imageTag)
 
             scos.applyAndPushGitHubTag(promotionTag)
 
@@ -61,11 +63,14 @@ node ('infrastructure') {
 }
 
 def deployDiscoveryApiTo(params = [:]) {
+    def extraVars = [
+      'image_tag': params.get('tag')
+    ]
     def environment = params.get('environment')
     if (environment == null) throw new IllegalArgumentException("environment must be specified")
 
     def terraform = scos.terraform(environment)
     sh "terraform init && terraform workspace new ${environment}"
-    terraform.plan(terraform.defaultVarFile)
+    terraform.plan(terraform.defaultVarFile, extraVars)
     terraform.apply()
 }

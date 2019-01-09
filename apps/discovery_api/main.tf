@@ -58,6 +58,8 @@ kyloCreds:
   user: "sa-discovery-api"
   password: "${data.aws_secretsmanager_secret_version.discovery_api_user_password.secret_string}"
 environment: "${terraform.workspace}"
+image:
+  tag: "${var.image_tag}"
 ingress:
   annotations:
     alb.ingress.kubernetes.io/scheme: "${var.is_internal ? "internal" : "internet-facing"}"
@@ -122,6 +124,10 @@ variable "alm_state_bucket_name" {
 variable "alm_region" {
   description = "Region of ALM resources"
   default     = "us-east-2"
+}
+
+variable "image_tag" {
+  default = "latest"
 }
 
 variable "alm_workspace" {
