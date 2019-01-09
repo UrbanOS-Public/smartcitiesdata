@@ -22,5 +22,4 @@ defmodule DiscoveryApi.Search.DatasetFacinator do
   defp count_facet_occurrences(facet, acc) do
     Map.update(acc, facet, 1, &(&1 + 1))
   end
-
 end

@@ -11,15 +11,8 @@ defmodule DiscoveryApiWeb.DatasetCSVController do
     query_string = Map.get(params, "query", "")
     columns = Map.get(params, "columns", ["*"])
 
-    with {:ok, metadata} <- fetch_dataset_metadata(dataset_id),
-         {schema, table} <- extract_schema_and_table(metadata),
-         {:ok, description} <- fetch_table_schema(schema, table),
-         table_headers <- extract_table_headers(description),
-         {:ok, stream} <-
-           Thrive.stream_results(
-             "select #{Enum.join(columns, ",")} from #{schema}.#{table} #{query_string}",
-             1000
-           ) do
+    with {:ok, table, schema, table_headers} <- get_table_and_headers(dataset_id),
+         {:ok, stream} <- stream_thrive_results(columns, schema, table, query_string) do
       record_csv_download_count_metrics(dataset_id, table)
 
       stream
@@ -38,14 +31,29 @@ defmodule DiscoveryApiWeb.DatasetCSVController do
   end
 
   def parse_error_reason(reason) when is_binary(reason) do
-    if reason |> String.downcase() |> String.contains?("hive") do
-      "Something went wrong with your query."
-    else
-      reason
+    case Regex.match?(~r/\bhive\b/i, reason) do
+      true -> "Something went wrong with your query."
+      _ -> reason
     end
   end
 
   def parse_error_reason(reason), do: reason
+
+  def get_table_and_headers(dataset_id) do
+    with {:ok, metadata} <- fetch_dataset_metadata(dataset_id),
+         {schema, table} <- extract_schema_and_table(metadata),
+         {:ok, description} <- fetch_table_schema(schema, table),
+         table_headers <- extract_table_headers(description) do
+      {:ok, table, schema, table_headers}
+    end
+  end
+
+  defp stream_thrive_results(columns, schema, table, query_string) do
+    Thrive.stream_results(
+      "select #{Enum.join(columns, ",")} from #{schema}.#{table} #{query_string}",
+      1000
+    )
+  end
 
   defp fetch_dataset_metadata(dataset_id) do
     retrieve_and_decode_data("#{data_lake_url()}/v1/metadata/feed/#{dataset_id}")
