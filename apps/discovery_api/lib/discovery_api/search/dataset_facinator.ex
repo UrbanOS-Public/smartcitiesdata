@@ -6,14 +6,21 @@ defmodule DiscoveryApi.Search.DatasetFacinator do
     }
   end
 
-  defp unique_facets_with_count(datasets, facet_name) do
+  defp unique_facets_with_count(datasets, facet_type) do
     datasets
-    |> Enum.map(&Map.get(&1, facet_name))
-    |> List.flatten()
-    |> Enum.reduce(%{}, &record_facet_count/2)
+    |> extract_facets(facet_type)
+    |> Enum.reduce(%{}, &count_facet_occurrences/2)
+    |> Enum.map(fn {facet, count} -> %{name: facet, count: count} end)
   end
 
-  defp record_facet_count(facet, acc) do
+  defp extract_facets(datasets, facet_type) do
+    datasets
+    |> Enum.map(&Map.get(&1, facet_type))
+    |> List.flatten()
+  end
+
+  defp count_facet_occurrences(facet, acc) do
     Map.update(acc, facet, 1, &(&1 + 1))
   end
+
 end

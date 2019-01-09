@@ -47,15 +47,21 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
     test "returns organization facets", %{conn: conn} do
       actual = get(conn, "/v1/api/dataset/search", sort: "name_asc") |> json_response(200)
 
-      assert actual["metadata"]["facets"]["organization"]["Paul Co."] == 1
-      assert actual["metadata"]["facets"]["organization"]["Richard Co."] == 1
+      assert Enum.at(actual["metadata"]["facets"]["organization"], 0)["name"] == "Paul Co."
+      assert Enum.at(actual["metadata"]["facets"]["organization"], 0)["count"] == 1
+
+      assert Enum.at(actual["metadata"]["facets"]["organization"], 1)["name"] == "Richard Co."
+      assert Enum.at(actual["metadata"]["facets"]["organization"], 1)["count"] == 1
     end
 
     test "returns tag facets", %{conn: conn} do
       actual = get(conn, "/v1/api/dataset/search", sort: "name_asc") |> json_response(200)
 
-      assert actual["metadata"]["facets"]["tags"]["Paul tag"] == 1
-      assert actual["metadata"]["facets"]["tags"]["Richard tag"] == 1
+      assert Enum.at(actual["metadata"]["facets"]["tags"], 0)["name"] == "Paul tag"
+      assert Enum.at(actual["metadata"]["facets"]["tags"], 0)["count"] == 1
+
+      assert Enum.at(actual["metadata"]["facets"]["tags"], 1)["name"] == "Richard tag"
+      assert Enum.at(actual["metadata"]["facets"]["tags"], 1)["count"] == 1
     end
 
     test "sort by name ascending", %{conn: conn} do

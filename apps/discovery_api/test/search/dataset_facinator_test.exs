@@ -33,16 +33,16 @@ defmodule DiscoveryApi.Search.DatasetFacinatorTest do
 
     test "given a list of datasets, it extracts unique facets and their counts", context do
       assert DatasetFacinator.get_facets(context[:datasets]) == %{
-               organization: %{
-                 "OrgA" => 2,
-                 "OrgB" => 1,
-                 "" => 1
-               },
-               tags: %{
-                 "my cool tag" => 2,
-                 "uncool tag" => 1,
-                 "another tag" => 1
-               }
+              organization: [
+                %{name: "", count: 1},
+                %{name: "OrgA", count: 2},
+                %{name: "OrgB", count: 1}
+              ],
+              tags: [
+                %{name: "another tag", count: 1},
+                %{name: "my cool tag", count: 2},
+                %{name: "uncool tag", count: 1}
+              ]
              }
     end
   end
