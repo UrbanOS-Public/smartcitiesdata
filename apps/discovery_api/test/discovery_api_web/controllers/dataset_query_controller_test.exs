@@ -1,4 +1,4 @@
-defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
+defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   use ExUnit.Case
   use DiscoveryApiWeb.ConnCase
   use Placebo
@@ -22,7 +22,7 @@ defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
       }
 
       allow(HTTPoison.get(ends_with("feed/1"), any()),
-        return: HttpHelper.create_response(body: generate_metadata_result)
+        return: HttpHelper.create_response(body: generate_metadata_result())
       )
 
       allow(HTTPoison.get(ends_with("schemas/test/tables/bigdata"), any()),
@@ -40,24 +40,29 @@ defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
       :ok
     end
 
-    test "maps the data to the correct structure", %{conn: conn} do
+    test "maps the data to the correct csv structure", %{conn: conn} do
       actual = get(conn, "/v1/api/dataset/1/csv") |> response(200)
       assert(generate_expected_csv() == actual)
     end
 
+    test "maps the data to the correct json structure", %{conn: conn} do
+      actual = get(conn, "/v1/api/dataset/1/query?type=json") |> response(200)
+      assert(generate_expected_json() == actual)
+    end
+
     test "thrive stream results called with correct query", %{conn: conn} do
-      uri_string = URI.encode("/v1/api/dataset/1/csv?query=WHERE name=Austin6")
+      uri_string = URI.encode("/v1/api/dataset/1/query?query=WHERE name=Austin6")
 
       expected = "select * from test.bigdata WHERE name=Austin6"
       # This is hardcoded in the function
-      timeout = 1000
+      chunk_size = 1000
 
       actual = get(conn, uri_string) |> response(200)
-      assert_called Thrive.stream_results(expected, timeout)
+      assert_called Thrive.stream_results(expected, chunk_size)
     end
 
     test "thrive stream results called with correct query (POST version)", %{conn: conn} do
-      uri_string = "/v1/api/dataset/1/csv"
+      uri_string = "/v1/api/dataset/1/query"
 
       body = """
       {
@@ -76,7 +81,7 @@ defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
     end
 
     test "params are parsed correctly" do
-      uri_string = "/v1/api/dataset/1/csv"
+      uri_string = "/v1/api/dataset/1/query"
 
       query_tests = [
         # {json, expected string}
@@ -179,7 +184,7 @@ defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
 
     test "error reason parser doesn't let you talk about Hive" do
       reason_from_hive = "Hive exists!"
-      assert(DiscoveryApiWeb.DatasetCSVController.parse_error_reason(reason_from_hive) != reason_from_hive)
+      assert(DiscoveryApiWeb.DatasetQueryController.parse_error_reason(reason_from_hive) != reason_from_hive)
     end
   end
 
@@ -205,5 +210,9 @@ defmodule DiscoveryApiWeb.DatasetCSVControllerTest do
     Austin5,The Worst5,25
     Austin6,The Worst6,26
     """
+  end
+
+  defp generate_expected_json() do
+    "{\"content\":{\"id\":\"1\",\"data\":[{\"name\":\"Austin5\",\"animal\":\"The Worst5\",\"age\":25},{\"name\":\"Austin6\",\"animal\":\"The Worst6\",\"age\":26}],\"columns\":[\"name\",\"animal\",\"age\"]}}"
   end
 end
