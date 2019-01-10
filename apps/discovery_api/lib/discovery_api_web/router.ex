@@ -23,8 +23,12 @@ defmodule DiscoveryApiWeb.Router do
     pipe_through(:api)
     get("/dataset/search", DatasetSearchController, :search)
 
-    post("/dataset/:dataset_id/csv", DatasetCSVController, :fetch_dataset_csv)
-    get("/dataset/:dataset_id/csv", DatasetCSVController, :fetch_dataset_csv)
+    get("/dataset/:dataset_id/preview", DatasetQueryController, :fetch_preview)
+
+    get("/dataset/:dataset_id/query", DatasetQueryController, :fetch_query)
+    post("/dataset/:dataset_id/query", DatasetQueryController, :fetch_query)
+
+    get("/dataset/:dataset_id/csv", DatasetQueryController, :fetch_full_csv)
 
     get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
   end
