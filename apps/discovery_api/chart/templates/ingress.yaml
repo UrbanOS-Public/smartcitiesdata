@@ -12,17 +12,10 @@ spec:
     serviceName: {{ .Values.service.name }}
     servicePort: {{ .Values.service.port }}
   rules:
-  - host: {{ .Values.ingress.prodDns }}
+  - host: discoveryapi.{{ .Values.ingress.dnsZone }}
     http:
       paths:
       - path: /*
         backend:
           serviceName: redirect
           servicePort: use-annotation
-  - host: discoveryapi.{{ .Values.ingress.dnsZone }}
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: {{ .Values.service.name }}
-          servicePort: {{ .Values.service.port }}
