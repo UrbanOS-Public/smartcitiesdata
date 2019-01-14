@@ -13,6 +13,10 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   @default_query ""
   @default_columns ["*"]
   @default_type "csv"
+  @default_row_limit 10_000
+  @default_limit_clause "LIMIT " <> Integer.to_string(@default_row_limit)
+
+  @limit_regex ~r/LIMIT (?'limit'\d+)/i
 
   def fetch_preview(conn, %{"dataset_id" => dataset_id}) do
     query = "LIMIT 50"
@@ -42,6 +46,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
   def fetch_query(conn, %{"dataset_id" => dataset_id} = params) do
     query_string = Map.get(params, "query", @default_query)
+    |> enforce_default_limit
     columns = Map.get(params, "columns", @default_columns)
     return_type = Map.get(params, "type", @default_type)
 
@@ -204,4 +209,23 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   defp get_hostname(), do: Hostname.get()
+
+  defp get_limit(query_string) do
+    {limit, _} = if Regex.match?(@limit_regex, query_string) do
+      Regex.named_captures(@limit_regex, query_string)
+      |> Map.get("limit")
+      |> Integer.parse
+    else
+      {nil, nil}
+    end
+    limit
+  end
+
+  defp enforce_default_limit(query_string) do
+    case get_limit(query_string) do
+      nil -> query_string <> " " <> @default_limit_clause
+      limit when limit > @default_row_limit -> Regex.replace(@limit_regex, query_string, @default_limit_clause)
+      _ -> query_string
+    end
+  end
 end

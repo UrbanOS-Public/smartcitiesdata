@@ -52,7 +52,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
     test "thrive stream results called with correct query", %{conn: conn} do
       uri_string = URI.encode("/v1/api/dataset/1/query?query=WHERE name=Austin6")
 
-      expected = "select * from test.bigdata WHERE name=Austin6"
+      expected = "select * from test.bigdata WHERE name=Austin6 LIMIT 10000"
       # This is hardcoded in the function
       chunk_size = 1000
 
@@ -69,7 +69,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       }
       """
 
-      expected = "select * from test.bigdata WHERE name=Austin6"
+      expected = "select * from test.bigdata WHERE name=Austin6 LIMIT 10000"
       # This is hardcoded in the function
       chunk_size = 1000
 
@@ -86,19 +86,50 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         # {json, expected string}
         {
           ~s({ "query": "WHERE name=Austin6" }),
-          "select * from test.bigdata WHERE name=Austin6"
+          "select * from test.bigdata WHERE name=Austin6 LIMIT 10000"
         },
         {
           ~s({ "columns": ["a", "b", "c"] }),
-          "select a,b,c from test.bigdata "
+          "select a,b,c from test.bigdata  LIMIT 10000"
         },
         {
           ~s({ "query": "WHERE name=Austin6", "columns": ["a", "b", "c"] }),
-          "select a,b,c from test.bigdata WHERE name=Austin6"
+          "select a,b,c from test.bigdata WHERE name=Austin6 LIMIT 10000"
         },
         {
           ~s({}),
-          "select * from test.bigdata "
+          "select * from test.bigdata  LIMIT 10000"
+        }
+      ]
+
+      conn = conn |> put_req_header("content-type", "application/json")
+
+      Enum.each(query_tests, fn {body, expected} ->
+        actual = post(conn, uri_string, body) |> response(200)
+        assert_called Thrive.stream_results(expected, 1000)
+      end)
+    end
+
+    test "limits are parsed correctly" do
+      uri_string = "/v1/api/dataset/1/query"
+
+      query_tests = [
+        # {json, expected string}
+        {
+          ~s({ "query": "WHERE name=Austin6 LIMIT 75" }),
+          "select * from test.bigdata WHERE name=Austin6 LIMIT 75"
+        },
+        {
+          ~s({ "query": "WHERE name=Austin6", "columns": ["a", "b", "c"] }),
+          "select a,b,c from test.bigdata WHERE name=Austin6 LIMIT 10000"
+        },
+        {
+          ~s({ "query": "WHERE name=Austin6 LIMIT 20000", "columns": ["a", "b", "c"] }),
+          "select a,b,c from test.bigdata WHERE name=Austin6 LIMIT 10000"
+        },
+        {
+          ~s({}),
+          "select * from test.bigdata  LIMIT 10000"
         }
       ]
 
