@@ -159,6 +159,36 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       get(conn, "/v1/api/dataset/1/csv")
     end
+
+    test "metrics are sent for a data query" do
+      expect(
+        MetricCollector.record_metrics(
+          [
+            %{
+              name: "data_queries",
+              value: 1,
+              dimensions: [{"PodHostname", any()}, {"DatasetId", "1"}, {"Table", "bigdata"}, {"ContentType", "json"}]
+            }
+          ],
+          "discovery_api"
+        ),
+        return: {:ok, %{}},
+        meck_options: [:passthrough]
+      )
+
+      uri_string = "/v1/api/dataset/1/query"
+
+      body = """
+      {
+        "query": "WHERE name=Austin6",
+        "type": "json"
+      }
+      """
+
+      conn = conn |> put_req_header("content-type", "application/json")
+
+      post(conn, uri_string, body)
+    end
   end
 
   describe "error paths" do
