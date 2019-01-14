@@ -22,7 +22,7 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
         }
       ]
 
-      facets = %{"organization" => ["OrgA"], "tags" => ["BAZ"]}
+      facets = %{organization: ["OrgA"], tags: ["BAZ"]}
 
       assert FacetFilterator.filter_by_facets(datasets, facets) == [
                %{
@@ -52,7 +52,7 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
         }
       ]
 
-      facets = %{"organization" => [""], "tags" => ["BAR"]}
+      facets = %{organization: [""], tags: ["BAR"]}
 
       assert FacetFilterator.filter_by_facets(datasets, facets) == [
                %{
@@ -87,7 +87,7 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
         }
       ]
 
-      facets = %{"organization" => [""], "tags" => ["BAZ", "BOR"]}
+      facets = %{organization: [""], tags: ["BAZ", "BOR"]}
 
       assert FacetFilterator.filter_by_facets(datasets, facets) == [
                %{

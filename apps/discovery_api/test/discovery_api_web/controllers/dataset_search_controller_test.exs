@@ -1,7 +1,9 @@
-defmodule DiscoveryApiWeb.DatasetControllerTest do
+defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
   use ExUnit.Case
   use DiscoveryApiWeb.ConnCase
   use Placebo
+
+  alias DiscoveryApiWeb.Router.Helpers, as: Routes
 
   setup do
     mock_dataset_summaries = [
@@ -120,16 +122,43 @@ defmodule DiscoveryApiWeb.DatasetControllerTest do
     end
   end
 
+  test "Non integer offset should throw error" do
+    actual =
+      conn
+      |> get("/v1/api/dataset/search", offset: "not a number")
+      |> json_response(400)
+
+    assert Map.has_key?(actual, "message")
+  end
+
+  test "Non integer limit should throw error" do
+    actual =
+      conn
+      |> get("/v1/api/dataset/search", limit: "not a number")
+      |> json_response(400)
+
+    assert Map.has_key?(actual, "message")
+  end
+
+  test "Non existing facets should throw error" do
+    actual =
+      conn
+      |> get("/v1/api/dataset/search", facets: %{"not a facet" => ["ignored value"]})
+      |> json_response(400)
+
+    assert Map.has_key?(actual, "message")
+  end
+
   defp dataset_summary_map(id, date \\ ~D[2018-06-21]) do
     %{
-      :description => "#{id}-description",
-      :fileTypes => ["csv"],
-      :id => id,
-      :systemName => "#{id}-system-name",
-      :title => "#{id}-title",
-      :modifiedTime => "#{date}",
-      :organization => "#{id} Co.",
-      :tags => ["#{id} tag"]
+      description: "#{id}-description",
+      fileTypes: ["csv"],
+      id: id,
+      systemName: "#{id}-system-name",
+      title: "#{id}-title",
+      modifiedTime: "#{date}",
+      organization: "#{id} Co.",
+      tags: ["#{id} tag"]
     }
   end
 end

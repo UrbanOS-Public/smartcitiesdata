@@ -5,6 +5,10 @@ defmodule DiscoveryApiWeb.ErrorView do
     %{message: message}
   end
 
+  def render("400.json", %{message: message}) do
+    %{message: message}
+  end
+
   # If you want to customize a particular status code
   # for a certain format, you may uncomment below.
   # def render("500.json", _assigns) do

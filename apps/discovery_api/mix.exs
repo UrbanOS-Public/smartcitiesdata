@@ -48,7 +48,8 @@ defmodule DiscoveryApi.Mixfile do
       {:prometheus_phoenix, "~>1.2.0"},
       {:csv, "~> 1.4.0"},
       {:streaming_metrics, path: "streaming_metrics"},
-      {:riffed, git: "https://github.com/pinterest/riffed.git", tag: "1.0.0"}
+      {:riffed, git: "https://github.com/pinterest/riffed.git", tag: "1.0.0"},
+      {:mix_test_watch, "~> 0.9.0", only: [:dev, :test]}
     ]
   end
 end

@@ -9,11 +9,9 @@ defmodule DiscoveryApi.Search.FacetFilterator do
   end
 
   defp dataset_attributes_contain_all_facet_values?({facet_name, facet_values}, dataset) do
-    facet_name_as_atom = String.to_atom(facet_name)
-
     attribute_values =
       dataset
-      |> Map.get(facet_name_as_atom)
+      |> Map.get(facet_name)
       |> List.wrap()
       |> MapSet.new()
 
