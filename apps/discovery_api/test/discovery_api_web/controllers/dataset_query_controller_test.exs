@@ -1,5 +1,4 @@
 defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
-  use ExUnit.Case
   use DiscoveryApiWeb.ConnCase
   use Placebo
   alias DiscoveryApi.Data.Thrive
@@ -57,7 +56,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       # This is hardcoded in the function
       chunk_size = 1000
 
-      actual = get(conn, uri_string) |> response(200)
+      get(conn, uri_string) |> response(200)
       assert_called Thrive.stream_results(expected, chunk_size)
     end
 
@@ -76,11 +75,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       conn = conn |> put_req_header("content-type", "application/json")
 
-      actual = post(conn, uri_string, body) |> response(200)
+      post(conn, uri_string, body) |> response(200)
       assert_called Thrive.stream_results(expected, chunk_size)
     end
 
-    test "params are parsed correctly" do
+    test "params are parsed correctly", %{conn: conn} do
       uri_string = "/v1/api/dataset/1/query"
 
       query_tests = [
@@ -106,12 +105,12 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       conn = conn |> put_req_header("content-type", "application/json")
 
       Enum.each(query_tests, fn {body, expected} ->
-        actual = post(conn, uri_string, body) |> response(200)
+        post(conn, uri_string, body) |> response(200)
         assert_called Thrive.stream_results(expected, 1000)
       end)
     end
 
-    test "metrics are sent for a count of the uncached entities" do
+    test "metrics are sent for a count of the uncached entities", %{conn: conn} do
       expect(
         MetricCollector.record_metrics(
           [
@@ -132,7 +131,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   end
 
   describe "error paths" do
-    test "kylo feed down returns 500" do
+    test "kylo feed down returns 500", %{conn: conn} do
       allow(HTTPoison.get(ends_with("feed/1"), any()),
         return: HttpHelper.create_response(error_reason: "There was an error")
       )
@@ -141,9 +140,9 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
              |> response(500)
     end
 
-    test "kylo hive metadata down returns 500" do
+    test "kylo hive metadata down returns 500", %{conn: conn} do
       allow(HTTPoison.get(ends_with("feed/1"), any()),
-        return: HttpHelper.create_response(body: generate_metadata_result)
+        return: HttpHelper.create_response(body: generate_metadata_result())
       )
 
       allow(HTTPoison.get(ends_with("schemas/test/tables/bigdata"), any()),
@@ -154,7 +153,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
              |> response(500)
     end
 
-    test "thrive streaming down returns 500" do
+    test "thrive streaming down returns 500", %{conn: conn} do
       mock_hive_schema_result = %{
         "fields" => [
           %{
@@ -165,7 +164,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       allow(
         HTTPoison.get(ends_with("feed/1"), any()),
-        return: HttpHelper.create_response(body: generate_metadata_result)
+        return: HttpHelper.create_response(body: generate_metadata_result())
       )
 
       allow(

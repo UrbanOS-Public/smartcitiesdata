@@ -3,7 +3,7 @@ defmodule DiscoveryApi.Search.DatasetFacinatorTest do
   alias DiscoveryApi.Search.DatasetFacinator
 
   describe "facinate" do
-    setup context do
+    setup do
       {:ok,
        [
          datasets: [

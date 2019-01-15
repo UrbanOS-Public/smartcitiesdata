@@ -1,9 +1,6 @@
 defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
-  use ExUnit.Case
   use DiscoveryApiWeb.ConnCase
   use Placebo
-
-  alias DiscoveryApiWeb.Router.Helpers, as: Routes
 
   setup do
     mock_dataset_summaries = [
@@ -112,7 +109,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
       assert Enum.count(actual["results"]) == 1
     end
 
-    test "facets in query string are used to filter the datasets " do
+    test "facets in query string are used to filter the datasets", %{conn: conn} do
       actual =
         get(conn, "/v1/api/dataset/search", facets: %{organization: ["Richard Co."]})
         |> json_response(200)
@@ -122,7 +119,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
     end
   end
 
-  test "Non integer offset should throw error" do
+  test "Non integer offset should throw error", %{conn: conn} do
     actual =
       conn
       |> get("/v1/api/dataset/search", offset: "not a number")
@@ -131,7 +128,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
     assert Map.has_key?(actual, "message")
   end
 
-  test "Non integer limit should throw error" do
+  test "Non integer limit should throw error", %{conn: conn} do
     actual =
       conn
       |> get("/v1/api/dataset/search", limit: "not a number")
@@ -140,7 +137,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
     assert Map.has_key?(actual, "message")
   end
 
-  test "Non existing facets should throw error" do
+  test "Non existing facets should throw error", %{conn: conn} do
     actual =
       conn
       |> get("/v1/api/dataset/search", facets: %{"not a facet" => ["ignored value"]})
@@ -149,7 +146,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
     assert Map.has_key?(actual, "message")
   end
 
-  defp dataset_summary_map(id, date \\ ~D[2018-06-21]) do
+  defp dataset_summary_map(id, date) do
     %{
       description: "#{id}-description",
       fileTypes: ["csv"],

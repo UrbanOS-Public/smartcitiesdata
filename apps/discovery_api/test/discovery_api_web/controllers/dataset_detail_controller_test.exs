@@ -1,5 +1,4 @@
 defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
-  use ExUnit.Case
   use DiscoveryApiWeb.ConnCase
   use Placebo
 

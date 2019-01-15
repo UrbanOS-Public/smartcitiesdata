@@ -10,4 +10,4 @@ config :discovery_api,
   test_mode: true
 
 # Print only warnings and errors during test
-config :logger, level: :info
+config :logger, level: :warn
