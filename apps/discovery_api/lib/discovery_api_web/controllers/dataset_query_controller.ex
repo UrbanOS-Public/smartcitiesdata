@@ -26,10 +26,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
     with {:ok, stream, %{table_headers: table_headers}} <-
            DatasetQueryService.get_thrive_stream(dataset_id, query: query) do
-      return_obj =
-        stream
-        |> DatasetQueryService.map_data_stream_to_obj(table_headers, dataset_id)
-
+      return_obj = DatasetQueryService.map_data_stream_to_obj(stream, table_headers, dataset_id)
       json(conn, return_obj)
     else
       {:error, reason} -> render_error(conn, 500, parse_error_reason(reason))
@@ -69,10 +66,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
       case return_type do
         "json" ->
-          return_obj =
-            stream
-            |> DatasetQueryService.map_data_stream_to_obj(table_headers, dataset_id)
-
+          return_obj = DatasetQueryService.map_data_stream_to_obj(stream, table_headers, dataset_id)
           json(conn, return_obj)
 
         "csv" ->
@@ -114,17 +108,19 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
   defp get_hostname(), do: Hostname.get()
 
-  defp get_limit(query_string) do
-    {limit, _} =
-      if Regex.match?(@limit_regex, query_string) do
-        Regex.named_captures(@limit_regex, query_string)
-        |> Map.get("limit")
-        |> Integer.parse()
-      else
-        {nil, nil}
-      end
+  defp convert_int(int) when int == nil, do: nil
 
-    limit
+  defp convert_int(int) do
+    {result, _} = Integer.parse(int)
+    result
+  end
+
+  defp get_limit(query_string) do
+    if Regex.match?(@limit_regex, query_string) do
+      Regex.named_captures(@limit_regex, query_string)
+      |> Map.get("limit")
+      |> convert_int
+    end
   end
 
   defp enforce_default_limit(query_string) do
