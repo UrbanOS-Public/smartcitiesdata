@@ -1,10 +1,12 @@
 defmodule DiscoveryApiWeb.DatasetDetailController do
   use DiscoveryApiWeb, :controller
 
+  import DiscoveryApiWeb.RenderError
+
   def fetch_dataset_detail(conn, %{"dataset_id" => dataset_id}) do
     case retrieve_and_decode_data("#{data_lake_url()}/v1/feedmgr/feeds/#{dataset_id}") do
       {:ok, result} -> render(conn, :fetch_dataset_detail, dataset: result)
-      {:error, reason} -> DiscoveryApiWeb.Renderer.render_500(conn, reason)
+      {:error, reason} -> render_error(conn, 500, reason)
     end
   end
 

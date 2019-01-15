@@ -3,6 +3,9 @@ alias StreamingMetrics.Hostname
 
 defmodule DiscoveryApiWeb.DatasetQueryController do
   use DiscoveryApiWeb, :controller
+
+  import DiscoveryApiWeb.RenderError
+
   alias DiscoveryApi.Data.Thrive
 
   @metric_collector Application.get_env(:discovery_api, :collector)
@@ -21,7 +24,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
       json(conn, return_obj)
     else
-      {:error, reason} -> DiscoveryApiWeb.Renderer.render_500(conn, parse_error_reason(reason))
+      {:error, reason} -> render_error(conn, 500, parse_error_reason(reason))
     end
   end
 
@@ -33,7 +36,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       |> map_data_stream_for_csv(table_headers)
       |> return_csv(conn, table)
     else
-      {:error, reason} -> DiscoveryApiWeb.Renderer.render_500(conn, parse_error_reason(reason))
+      {:error, reason} -> render_error(conn, 500, parse_error_reason(reason))
     end
   end
 
@@ -66,7 +69,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
           text(conn, "That type is not supported")
       end
     else
-      {:error, reason} -> DiscoveryApiWeb.Renderer.render_500(conn, parse_error_reason(reason))
+      {:error, reason} -> render_error(conn, 500, parse_error_reason(reason))
     end
   end
 

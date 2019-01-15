@@ -2,8 +2,10 @@ require Logger
 
 defmodule DiscoveryApiWeb.DatasetSearchController do
   use DiscoveryApiWeb, :controller
+
+  import DiscoveryApiWeb.RenderError
+
   alias DiscoveryApi.Search.{FacetFilterator, DatasetFacinator, DatasetSearchinator}
-  alias DiscoveryApiWeb.Renderer
 
   def search(conn, params) do
     sort_by = Map.get(params, "sort", "name_asc")
@@ -23,8 +25,8 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
         limit
       )
     else
-      {:request_error, reason} -> Renderer.render_400(conn, reason)
-      {:error, reason} -> Renderer.render_500(conn, reason)
+      {:request_error, reason} -> render_error(conn, 400, reason)
+      {:error, reason} -> render_error(conn, 500, reason)
     end
   end
 

@@ -1,11 +1,7 @@
 defmodule DiscoveryApiWeb.ErrorView do
   use DiscoveryApiWeb, :view
 
-  def render("500.json", %{message: message}) do
-    %{message: message}
-  end
-
-  def render("400.json", %{message: message}) do
+  def render("error.json", %{message: message}) do
     %{message: message}
   end
 
