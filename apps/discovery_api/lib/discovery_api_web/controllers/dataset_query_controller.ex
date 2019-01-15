@@ -47,9 +47,14 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   def fetch_query(conn, %{"dataset_id" => dataset_id} = params) do
+    limit = Map.get(params, "limit", @default_row_limit)
+
     query_string =
       Map.get(params, "query", @default_query)
-      |> enforce_default_limit
+      |> set_limit(limit)
+      |> String.split()
+      |> Enum.join(" ")
+      |> String.replace(";", "")
 
     columns = Map.get(params, "columns", @default_columns)
     return_type = Map.get(params, "type", @default_type)
@@ -123,11 +128,13 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     end
   end
 
-  defp enforce_default_limit(query_string) do
-    case get_limit(query_string) do
-      nil -> "#{query_string} #{@default_limit_clause}"
-      limit when limit > @default_row_limit -> Regex.replace(@limit_regex, query_string, @default_limit_clause)
-      _ -> query_string
+  defp set_limit(query_string, limit) do
+    query_string = Regex.replace(@limit_regex, query_string, "")
+
+    case limit do
+      nil -> "#{query_string} LIMIT #{@default_row_limit}"
+      l when l > @default_row_limit -> "#{query_string} LIMIT #{limit}"
+      _ -> "#{query_string} LIMIT #{limit}"
     end
   end
 end

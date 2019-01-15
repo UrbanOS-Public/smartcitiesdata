@@ -90,15 +90,19 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         },
         {
           ~s({ "columns": ["a", "b", "c"] }),
-          "select a,b,c from test.bigdata  LIMIT 10000"
+          "select a,b,c from test.bigdata LIMIT 10000"
         },
         {
           ~s({ "query": "WHERE name=Austin6", "columns": ["a", "b", "c"] }),
           "select a,b,c from test.bigdata WHERE name=Austin6 LIMIT 10000"
         },
         {
+          ~s({ "query": "WHERE    name=Austin6; drop bobby tables", "columns": ["a", "b", "c"] }),
+          "select a,b,c from test.bigdata WHERE name=Austin6 drop bobby tables LIMIT 10000"
+        },
+        {
           ~s({}),
-          "select * from test.bigdata  LIMIT 10000"
+          "select * from test.bigdata LIMIT 10000"
         }
       ]
 
@@ -116,20 +120,24 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       query_tests = [
         # {json, expected string}
         {
-          ~s({ "query": "WHERE name=Austin6 LIMIT 75" }),
+          ~s({ "query": "WHERE name=Austin6", "limit": 75 }),
           "select * from test.bigdata WHERE name=Austin6 LIMIT 75"
         },
         {
-          ~s({ "query": "WHERE name=Austin6", "columns": ["a", "b", "c"] }),
-          "select a,b,c from test.bigdata WHERE name=Austin6 LIMIT 10000"
+          ~s({ "query": "WHERE name=Austin6 LIMIT 23"}),
+          "select * from test.bigdata WHERE name=Austin6 LIMIT 10000"
         },
         {
-          ~s({ "query": "WHERE name=Austin6 LIMIT 20000", "columns": ["a", "b", "c"] }),
-          "select a,b,c from test.bigdata WHERE name=Austin6 LIMIT 10000"
+          ~s({ "query": "WHERE name=Austin6 LIMIT 23", "limit": 100 }),
+          "select * from test.bigdata WHERE name=Austin6 LIMIT 100"
+        },
+        {
+          ~s({ "query": "WHERE name=Austin6", "limit": 20000 }),
+          "select * from test.bigdata WHERE name=Austin6 LIMIT 10000"
         },
         {
           ~s({}),
-          "select * from test.bigdata  LIMIT 10000"
+          "select * from test.bigdata LIMIT 10000"
         }
       ]
 
