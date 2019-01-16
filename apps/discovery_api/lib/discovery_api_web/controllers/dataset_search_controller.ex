@@ -3,8 +3,6 @@ require Logger
 defmodule DiscoveryApiWeb.DatasetSearchController do
   use DiscoveryApiWeb, :controller
 
-  import DiscoveryApiWeb.RenderError
-
   alias DiscoveryApi.Search.{FacetFilterator, DatasetFacinator, DatasetSearchinator}
 
   def search(conn, params) do

@@ -23,6 +23,7 @@ defmodule DiscoveryApiWeb do
       import Plug.Conn
       import DiscoveryApiWeb.Router.Helpers
       import DiscoveryApiWeb.Gettext
+      import DiscoveryApiWeb.RenderError
     end
   end
 

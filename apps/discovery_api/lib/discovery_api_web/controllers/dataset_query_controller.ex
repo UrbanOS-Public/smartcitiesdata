@@ -4,8 +4,6 @@ alias StreamingMetrics.Hostname
 defmodule DiscoveryApiWeb.DatasetQueryController do
   use DiscoveryApiWeb, :controller
 
-  import DiscoveryApiWeb.RenderError
-
   alias DiscoveryApi.Data.Thrive
 
   @metric_collector Application.get_env(:discovery_api, :collector)
