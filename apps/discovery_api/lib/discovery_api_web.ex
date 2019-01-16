@@ -24,6 +24,7 @@ defmodule DiscoveryApiWeb do
       import DiscoveryApiWeb.Router.Helpers
       import DiscoveryApiWeb.Gettext
       import DiscoveryApiWeb.RenderError
+      import DiscoveryApiWeb.Utilities.ParamUtils
     end
   end
 

@@ -5,11 +5,9 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   use DiscoveryApiWeb, :controller
 
   alias DiscoveryApi.Data.Thrive
+  alias DiscoveryApiWeb.{DatasetQueryService, MetricsCollectorService}
 
   @metric_collector Application.get_env(:discovery_api, :collector)
-
-  alias DiscoveryApiWeb.DatasetQueryService
-  alias DiscoveryApiWeb.MetricsCollectorService
 
   @default_query ""
   @default_columns ["*"]
@@ -44,27 +42,27 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   def fetch_query(conn, %{"dataset_id" => dataset_id} = params) do
-    with {:ok, defaulted_params} <-
-            extract_query_params(params),
-         {:ok} <-
-            error_if_limit_in_query(defaulted_params.query),
-         {:ok, query_string} <-
-            process_query(defaulted_params.query, defaulted_params.limit),
-         {:ok, stream, metadata} <-
-            DatasetQueryService.get_thrive_stream(dataset_id,
-              query_string: query_string,
-              columns: defaulted_params.columns
-            ) do
+    query = Map.get(params, "query", @default_query)
+    columns = Map.get(params, "columns", @default_columns)
+    return_type = Map.get(params, "type", @default_type)
 
+    with {:ok, limit} <- extract_int_from_params(params, "limit", @default_row_limit),
+         :ok <- error_if_limit_in_query(query),
+         {:ok, query_string} <- process_query(query, limit),
+         {:ok, stream, metadata} <-
+           DatasetQueryService.get_thrive_stream(dataset_id,
+             query_string: query_string,
+             columns: columns
+           ) do
       table_headers =
-        case defaulted_params.columns do
-          ["*"] = _default_columns -> metadata.table_headers
-          _specified_columns -> defaulted_params.columns
+        case columns do
+          @default_columns = _default_columns -> metadata.table_headers
+          _specified_columns -> columns
         end
 
-      MetricsCollectorService.record_query_metrics(dataset_id, metadata.table, defaulted_params.return_type)
+      MetricsCollectorService.record_query_metrics(dataset_id, metadata.table, return_type)
 
-      case defaulted_params.return_type do
+      case return_type do
         "json" ->
           return_obj = DatasetQueryService.map_data_stream_to_obj(stream, table_headers, dataset_id)
           json(conn, return_obj)
@@ -78,8 +76,8 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
           text(conn, "That type is not supported")
       end
     else
+      {:request_error, reason} -> render_error(conn, 400, reason)
       {:error, reason} -> render_error(conn, 500, parse_error_reason(reason))
-      {:error, "Bad Request", reason} -> render_error(conn, 400, reason)
     end
   end
 
@@ -109,17 +107,6 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
   defp get_hostname(), do: Hostname.get()
 
-  defp extract_query_params(params) do
-    params = %{
-      limit: Map.get(params, "limit", @default_row_limit),
-      query: Map.get(params, "query", @default_query),
-      return_type: Map.get(params, "type", @default_type),
-      columns: Map.get(params, "columns", ["*"])
-    }
-
-    {:ok, params}
-  end
-
   defp process_query(query, limit) do
     query =
       query
@@ -131,9 +118,9 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
   defp error_if_limit_in_query(query_string) do
     if Regex.match?(~r/LIMIT (?'limit'\d+)/i, query_string) do
-      {:error, "Bad Request", "LIMIT clauses are not supported in the query string. Use the 'limit' parameter instead."}
+      {:request_error, "LIMIT clauses are not supported in the query string. Use the 'limit' parameter instead."}
     else
-      {:ok}
+      :ok
     end
   end
 

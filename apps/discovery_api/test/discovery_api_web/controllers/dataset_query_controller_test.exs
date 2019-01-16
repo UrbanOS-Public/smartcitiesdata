@@ -156,6 +156,21 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       end)
     end
 
+    test "string limits in queries make the query invalid" do
+      uri_string = "/v1/api/dataset/1/query"
+
+      query_tests = [
+        ~s({ "query": "WHERE name=Austin6 LIMIT 23", "limit": "@#$@%@#$@#!@#%@#$129" }),
+        ~s({ "query": "WHERE name=Austin6 LIMIT 23", "limit": "DERP" })
+      ]
+
+      conn = conn |> put_req_header("content-type", "application/json")
+
+      Enum.each(query_tests, fn body ->
+        actual = post(conn, uri_string, body) |> response(400)
+      end)
+    end
+
     test "metrics are sent for a count of the uncached entities" do
       expect(
         MetricCollector.record_metrics(
