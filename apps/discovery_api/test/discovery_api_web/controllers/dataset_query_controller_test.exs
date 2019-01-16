@@ -124,14 +124,6 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
           "select * from test.bigdata WHERE name=Austin6 LIMIT 75"
         },
         {
-          ~s({ "query": "WHERE name=Austin6 LIMIT 23"}),
-          "select * from test.bigdata WHERE name=Austin6 LIMIT 10000"
-        },
-        {
-          ~s({ "query": "WHERE name=Austin6 LIMIT 23", "limit": 100 }),
-          "select * from test.bigdata WHERE name=Austin6 LIMIT 100"
-        },
-        {
           ~s({ "query": "WHERE name=Austin6", "limit": 20000 }),
           "select * from test.bigdata WHERE name=Austin6 LIMIT 10000"
         },
@@ -149,7 +141,22 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       end)
     end
 
-    test "metrics are sent for a count of the uncached entities", %{conn: conn} do
+    test "limits in queries make the query invalid" do
+      uri_string = "/v1/api/dataset/1/query"
+
+      query_tests = [
+        ~s({ "query": "WHERE name=Austin6 LIMIT 23"}),
+        ~s({ "query": "WHERE name=Austin6 LIMIT 23", "limit": 100 })
+      ]
+
+      conn = conn |> put_req_header("content-type", "application/json")
+
+      Enum.each(query_tests, fn body ->
+        actual = post(conn, uri_string, body) |> response(400)
+      end)
+    end
+
+    test "metrics are sent for a count of the uncached entities" do
       expect(
         MetricCollector.record_metrics(
           [

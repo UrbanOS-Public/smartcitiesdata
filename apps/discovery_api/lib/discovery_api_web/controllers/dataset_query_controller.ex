@@ -46,27 +46,27 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   def fetch_query(conn, %{"dataset_id" => dataset_id} = params) do
-    limit = Map.get(params, "limit", @default_row_limit)
+    with {:ok, defaulted_params} <-
+            extract_query_params(params),
+         {:ok} <-
+            error_if_limit_in_query(defaulted_params.query),
+         {:ok, query_string} <-
+            process_query(defaulted_params.query, defaulted_params.limit),
+         {:ok, stream, metadata} <-
+            DatasetQueryService.get_thrive_stream(dataset_id,
+              query_string: query_string,
+              columns: defaulted_params.columns
+            ) do
 
-    query_string =
-      Map.get(params, "query", @default_query)
-      |> set_limit(limit)
-      |> clean_query()
-
-    columns = Map.get(params, "columns", @default_columns)
-    return_type = Map.get(params, "type", @default_type)
-
-    with {:ok, stream, metadata} <-
-           DatasetQueryService.get_thrive_stream(dataset_id, query_string: query_string, columns: columns) do
       table_headers =
-        case columns do
+        case defaulted_params.columns do
           ["*"] = _default_columns -> metadata.table_headers
-          _specified_columns -> columns
+          _specified_columns -> defaulted_params.columns
         end
 
-      MetricsCollectorService.record_query_metrics(dataset_id, metadata.table, return_type)
+      MetricsCollectorService.record_query_metrics(dataset_id, metadata.table, defaulted_params.return_type)
 
-      case return_type do
+      case defaulted_params.return_type do
         "json" ->
           return_obj = DatasetQueryService.map_data_stream_to_obj(stream, table_headers, dataset_id)
           json(conn, return_obj)
@@ -81,6 +81,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       end
     else
       {:error, reason} -> render_error(conn, 500, parse_error_reason(reason))
+      {:error, "Bad Request", reason} -> render_error(conn, 400, reason)
     end
   end
 
@@ -110,16 +111,35 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
   defp get_hostname(), do: Hostname.get()
 
-  defp convert_int(int) when int == nil, do: nil
+  defp extract_query_params(params) do
+    params = %{
+      limit: Map.get(params, "limit", @default_row_limit),
+      query: Map.get(params, "query", @default_query),
+      return_type: Map.get(params, "type", @default_type),
+      columns: Map.get(params, "columns", ["*"])
+    }
 
-  defp convert_int(int) do
-    {result, _} = Integer.parse(int)
-    result
+    {:ok, params}
+  end
+
+  defp process_query(query, limit) do
+    query =
+      query
+      |> set_limit(limit)
+      |> clean_query()
+
+    {:ok, query}
+  end
+
+  defp error_if_limit_in_query(query_string) do
+    if Regex.match?(~r/LIMIT (?'limit'\d+)/i, query_string) do
+      {:error, "Bad Request", "LIMIT clauses are not supported in the query string. Use the 'limit' parameter instead."}
+    else
+      {:ok}
+    end
   end
 
   defp set_limit(query_string, limit) do
-    query_string = Regex.replace(~r/LIMIT (?'limit'\d+)/i, query_string, "")
-
     limit =
       if limit && limit < @default_row_limit do
         limit
