@@ -109,12 +109,12 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       conn = conn |> put_req_header("content-type", "application/json")
 
       Enum.each(query_tests, fn {body, expected} ->
-        actual = post(conn, uri_string, body) |> response(200)
+        post(conn, uri_string, body) |> response(200)
         assert_called Thrive.stream_results(expected, 1000)
       end)
     end
 
-    test "limits are parsed correctly" do
+    test "limits are parsed correctly", %{conn: conn} do
       uri_string = "/v1/api/dataset/1/query"
 
       query_tests = [
@@ -141,7 +141,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       end)
     end
 
-    test "limits in queries make the query invalid" do
+    test "limits in queries make the query invalid", %{conn: conn} do
       uri_string = "/v1/api/dataset/1/query"
 
       query_tests = [
@@ -152,11 +152,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       conn = conn |> put_req_header("content-type", "application/json")
 
       Enum.each(query_tests, fn body ->
-        actual = post(conn, uri_string, body) |> response(400)
+        post(conn, uri_string, body) |> response(400)
       end)
     end
 
-    test "string limits in queries make the query invalid" do
+    test "string limits in queries make the query invalid", %{conn: conn} do
       uri_string = "/v1/api/dataset/1/query"
 
       query_tests = [
@@ -167,11 +167,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       conn = conn |> put_req_header("content-type", "application/json")
 
       Enum.each(query_tests, fn body ->
-        actual = post(conn, uri_string, body) |> response(400)
+        post(conn, uri_string, body) |> response(400)
       end)
     end
 
-    test "metrics are sent for a count of the uncached entities" do
+    test "metrics are sent for a count of the uncached entities", %{conn: conn} do
       expect(
         MetricCollector.record_metrics(
           [
@@ -190,7 +190,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       get(conn, "/v1/api/dataset/1/csv")
     end
 
-    test "metrics are sent for a data query" do
+    test "metrics are sent for a data query", %{conn: conn} do
       expect(
         MetricCollector.record_metrics(
           [
