@@ -44,7 +44,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   def fetch_query(conn, %{"dataset_id" => dataset_id} = params) do
     query = Map.get(params, "query", @default_query)
     columns = Map.get(params, "columns", @default_columns)
-    return_type = Map.get(params, "type", @default_type)
+    return_type = get_format(conn)
 
     with {:ok, limit} <- extract_int_from_params(params, "limit", @default_row_limit),
          :ok <- error_if_limit_in_query(query),
@@ -103,7 +103,13 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     end
   end
 
-  def parse_error_reason(reason), do: reason
+  def parse_error_reason(%{reason: reason}) do
+    parse_error_reason(reason)
+  end
+
+  def parse_error_reason(_reason) do
+    "Your query could not be processed at this time."
+  end
 
   defp get_hostname(), do: Hostname.get()
 

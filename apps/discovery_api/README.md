@@ -9,6 +9,12 @@ Discovery API serves as middleware between Kylo and our Data Discovery UI.
   * Install dependencies with `mix deps.get`
   * Start Phoenix endpoint with `iex -S mix phx.server`
 
+### To run the tests
+
+  * Run `mix test` to run the tests a single time
+  * Run `mix test.watch` to re-run the tests when a file changes
+  * Run `mix test.watch --stale` to only rerun the tests for modules that have changes
+
 ### To run inside a container(from the root directory):
   * `docker build . -t <image_name:tag>`
   * `docker run -d -e DATA_LAKE_URL=https://mockylo.dev.internal.smartcolumbusos.com -p 4000:80 <image_name:tag>`
