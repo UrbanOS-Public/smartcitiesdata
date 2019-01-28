@@ -36,14 +36,15 @@ defmodule CotaStreamingConsumer.Mixfile do
       {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false},
       {:streaming_metrics, path: "streaming_metrics"},
       {:mock, "~> 0.3.1", only: :test, runtime: false},
-      {:kaffe, "~> 1.8"},
+      {:kaffe, "~> 1.9"},
       {:httpoison, "~> 0.11.1"},
       {:sweet_xml, "~> 0.6"},
       {:cachex, "~> 3.0"},
       {:libcluster, "~> 3.0"},
       {:patiently, "~> 0.2.0", only: :test},
       {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
-      {:distillery, "~> 2.0"}
+      {:distillery, "~> 2.0"},
+      {:checkov, "~> 0.4.0", only: :test}
     ]
   end
 

@@ -1,4 +1,7 @@
 defmodule CotaStreamingConsumerWeb.Endpoint.Instrumenter do
+  @moduledoc """
+  Module for prometheus instrumentation
+  """
   use Prometheus.PhoenixInstrumenter
 end
 
