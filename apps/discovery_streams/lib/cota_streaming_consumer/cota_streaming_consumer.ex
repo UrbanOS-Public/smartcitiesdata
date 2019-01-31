@@ -59,7 +59,7 @@ defmodule CotaStreamingConsumer do
   end
 
   defp log_message(%{value: value} = message) do
-    Logger.log(:debug, value)
+    Logger.log(:info, "#{inspect message}")
     message
   end
 
