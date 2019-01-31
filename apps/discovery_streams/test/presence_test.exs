@@ -13,6 +13,8 @@ defmodule CotaStreamingConsumerWeb.PresenceTest do
   end
 
   data_test "subscribing to a channel(#{channel}) inreases the gauge(#{gauge}) count" do
+    Gauge.reset(gauge)
+
     {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel)
 
     check_gauge_incremented = fn ->
