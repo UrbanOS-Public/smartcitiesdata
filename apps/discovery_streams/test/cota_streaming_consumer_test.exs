@@ -60,8 +60,8 @@ defmodule CotaStreamingConsumerTest do
         create_message(~s({"vehicle_id": 34095, "description": "Some Description"}), topic: "shuttle-position")
       ])
 
-      assert called_times(1, MetricCollector.record_metrics(:_, "cota-vehicle-positions"))
-      assert called_times(1, MetricCollector.record_metrics(:_, "shuttle-position"))
+      assert called_times(1, MetricCollector.record_metrics(:_, "cota_vehicle_positions"))
+      assert called_times(1, MetricCollector.record_metrics(:_, "shuttle_position"))
 
       leave(socket)
     end

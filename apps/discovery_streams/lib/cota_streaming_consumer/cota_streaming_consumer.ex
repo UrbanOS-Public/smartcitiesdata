@@ -29,10 +29,14 @@ defmodule CotaStreamingConsumer do
   end
 
   defp record_metric({topic, count}) do
+    converted_topic =
+      topic
+      |> String.replace("-", "_")
+
     count
     |> @metric_collector.count_metric("records", [{"PodHostname", "#{get_hostname()}"}, {"type", "outbound"}])
     |> List.wrap()
-    |> @metric_collector.record_metrics(topic)
+    |> @metric_collector.record_metrics(converted_topic)
     |> case do
       {:ok, _} -> {}
       {:error, reason} -> Logger.warn("Unable to write application metrics: #{inspect(reason)}")
