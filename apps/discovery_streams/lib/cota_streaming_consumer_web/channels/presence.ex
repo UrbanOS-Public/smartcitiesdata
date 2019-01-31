@@ -18,7 +18,8 @@ defmodule CotaStreamingConsumerWeb.Presence.Instrumenter do
     get_gauges()
     |> Enum.map(fn {gauge, topic} ->
       count =
-        topic_to_channel(topic)
+        topic
+        |> topic_to_channel()
         |> Presence.connections()
 
       Gauge.set(gauge, count)
