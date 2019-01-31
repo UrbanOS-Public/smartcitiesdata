@@ -8,8 +8,7 @@ WORKDIR /app
 RUN mix local.hex --force && \
     mix local.rebar --force && \
     mix deps.get && \
-    mix test && \
-    mix credo
+    mix test
 RUN MIX_ENV=prod mix release
 
 FROM alpine:3.8
