@@ -12,7 +12,7 @@ defmodule CotaStreamingConsumerTest do
 
   setup do
     Cachex.clear(:"cota-vehicle-positions")
-    Cachex.clear(:"shuttle-positions")
+    Cachex.clear(:"shuttle-position")
     :ok
   end
 

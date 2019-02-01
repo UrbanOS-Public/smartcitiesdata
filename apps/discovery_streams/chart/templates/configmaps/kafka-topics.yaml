@@ -5,4 +5,4 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   COTA_DATA_TOPIC: "cota-vehicle-positions"
-  CEAV_DATA_TOPIC: "shuttle-position"
+  CEAV_DATA_TOPIC: "ceav-vehicle-locations"
