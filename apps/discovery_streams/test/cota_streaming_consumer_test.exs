@@ -34,10 +34,35 @@ defmodule CotaStreamingConsumerTest do
     end
 
     where [
-      [:channel,                     :topic],
-      ["vehicle_position",           "cota-vehicle-positions"],
-      ["streaming:shuttle-position", "shuttle-position"]
+      [:channel,                           :topic],
+      ["vehicle_position",                 "cota-vehicle-positions"],
+      ["streaming:cota-vehicle-positions", "cota-vehicle-positions"],
+      ["streaming:shuttle-position",       "shuttle-position"]
     ]
+  end
+
+  test "unparsable messages are logged to the console without disruption" do
+    with_mocks([
+      {MetricCollector, [:passthrough], [record_metrics: fn _metrics, _namespace -> {:ok, %{}} end]}
+    ])
+    do
+      {:ok, _, socket} =
+        socket()
+        |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "streaming:shuttle-position")
+
+      assert capture_log([level: :warn], fn ->
+        CotaStreamingConsumer.handle_messages([
+          create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "shuttle-position"),
+          create_message(~s({"vehicle":{"vehicle":{"id:""11604"}}}), topic: "shuttle-position"), # <- Badly formatted JSON
+          create_message(~s({"vehicle":{"vehicle":{"id":"11605"}}}), topic: "shuttle-position")
+        ])
+      end) =~ ~S(Poison parse error: {:invalid, "\"", 28)
+
+      assert_broadcast("update", %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}})
+      assert_broadcast("update", %{"vehicle" => %{"vehicle" => %{"id" => "11605"}}})
+
+      leave(socket)
+    end
   end
 
   test "metrics are sent for a count of the uncached entities" do

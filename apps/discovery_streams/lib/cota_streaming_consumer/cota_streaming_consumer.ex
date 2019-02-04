@@ -14,7 +14,7 @@ defmodule CotaStreamingConsumer do
     json_messages =
       messages
       |> Enum.map(&log_message/1)
-      |> Enum.map(&parse_message/1)
+      |> Enum.reduce([], &parse_message/2)
 
     record_outbound_count_metrics(json_messages)
 
@@ -43,11 +43,12 @@ defmodule CotaStreamingConsumer do
     end
   end
 
-  defp parse_message(%{value: value} = message) do
-    with {:ok, parsed} <- Poison.decode(value) do
-      %{message | value: parsed}
-    else
-      {:error, reason} -> raise ParseError, reason
+  defp parse_message(%{value: value} = message, acc) do
+    case Poison.decode(value) do
+      {:ok, parsed} -> [%{message | value: parsed} | acc]
+      {:error, reason} ->
+        Logger.warn("Poison parse error: #{inspect reason}")
+        acc
     end
   end
 
@@ -60,6 +61,7 @@ defmodule CotaStreamingConsumer do
 
   defp broadcast(%{topic: "cota-vehicle-positions", value: data}) do
     CotaStreamingConsumerWeb.Endpoint.broadcast("vehicle_position", "update", data)
+    CotaStreamingConsumerWeb.Endpoint.broadcast("streaming:cota-vehicle-positions", "update", data)
   end
 
   defp broadcast(%{topic: channel, value: data}) do
