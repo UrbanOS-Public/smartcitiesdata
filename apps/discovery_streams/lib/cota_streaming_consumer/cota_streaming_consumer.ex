@@ -44,7 +44,11 @@ defmodule CotaStreamingConsumer do
   end
 
   defp parse_message(%{value: value} = message) do
-    %{message | value: Poison.Parser.parse!(value)}
+    with {:ok, parsed} <- Poison.decode(value) do
+      %{message | value: parsed}
+    else
+      {:error, reason} -> raise ParseError, reason
+    end
   end
 
   defp add_to_cache(%{key: key, topic: topic, value: message}) do
