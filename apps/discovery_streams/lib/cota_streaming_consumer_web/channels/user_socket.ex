@@ -1,7 +1,8 @@
 defmodule CotaStreamingConsumerWeb.UserSocket do
   use Phoenix.Socket
 
-  channel("vehicle_position", CotaStreamingConsumerWeb.VehicleChannel)
+  channel("vehicle_position", CotaStreamingConsumerWeb.StreamingChannel)
+  channel("streaming:*", CotaStreamingConsumerWeb.StreamingChannel)
 
   transport(:websocket, Phoenix.Transports.WebSocket)
 

@@ -13,9 +13,8 @@ defmodule CotaStreamingConsumer do
   def handle_messages(messages) do
     json_messages =
       messages
-      |> Enum.map(fn message -> message.value end)
       |> Enum.map(&log_message/1)
-      |> Enum.map(&Poison.Parser.parse!/1)
+      |> Enum.reduce([], &parse_message/2)
 
     record_outbound_count_metrics(json_messages)
 
@@ -24,33 +23,54 @@ defmodule CotaStreamingConsumer do
   end
 
   defp record_outbound_count_metrics(messages) do
-    hostname = get_hostname()
-
     messages
-    |> Enum.count()
-    |> @metric_collector.count_metric("records", [{"PodHostname", "#{hostname}"}, {"type", "outbound"}])
+    |> Enum.reduce(%{}, fn %{topic: topic}, acc -> Map.update(acc, topic, 1, &(&1 + 1)) end)
+    |> Enum.each(&record_metric/1)
+  end
+
+  defp record_metric({topic, count}) do
+    converted_topic =
+      topic
+      |> String.replace("-", "_")
+
+    count
+    |> @metric_collector.count_metric("records", [{"PodHostname", "#{get_hostname()}"}, {"type", "outbound"}])
     |> List.wrap()
-    |> @metric_collector.record_metrics("cota_vehicle_positions")
+    |> @metric_collector.record_metrics(converted_topic)
     |> case do
       {:ok, _} -> {}
       {:error, reason} -> Logger.warn("Unable to write application metrics: #{inspect(reason)}")
     end
   end
 
-  defp add_to_cache(message) do
+  defp parse_message(%{value: value} = message, acc) do
+    case Poison.decode(value) do
+      {:ok, parsed} -> [%{message | value: parsed} | acc]
+      {:error, reason} ->
+        Logger.warn("Poison parse error: #{inspect reason}")
+        acc
+    end
+  end
+
+  defp add_to_cache(%{key: key, topic: topic, value: message}) do
     GenServer.abcast(
       CotaStreamingConsumer.CacheGenserver,
-      {:put, message["vehicle"]["vehicle"]["id"], message}
+      {:put, String.to_atom(topic), key, message}
     )
   end
 
-  defp broadcast(data) do
-    CotaStreamingConsumerWeb.Endpoint.broadcast!("vehicle_position", "update", data)
+  defp broadcast(%{topic: "cota-vehicle-positions", value: data}) do
+    CotaStreamingConsumerWeb.Endpoint.broadcast("vehicle_position", "update", data)
+    CotaStreamingConsumerWeb.Endpoint.broadcast("streaming:cota-vehicle-positions", "update", data)
   end
 
-  defp log_message(value) do
-    Logger.log(:debug, value)
-    value
+  defp broadcast(%{topic: channel, value: data}) do
+    CotaStreamingConsumerWeb.Endpoint.broadcast!("streaming:#{channel}", "update", data)
+  end
+
+  defp log_message(message) do
+    Logger.log(:info, "#{inspect message}")
+    message
   end
 
   defp get_hostname(), do: Hostname.get()

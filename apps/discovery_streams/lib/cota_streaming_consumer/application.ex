@@ -9,7 +9,6 @@ defmodule CotaStreamingConsumer.Application do
 
   require Cachex.Spec
 
-  @cache Application.get_env(:cota_streaming_consumer, :cache)
   @ttl Application.get_env(:cota_streaming_consumer, :ttl)
 
   def start(_type, _args) do
@@ -51,7 +50,7 @@ defmodule CotaStreamingConsumer.Application do
   end
 
   defp kaffe do
-    case Application.get_env(:kaffe, :consumer) do
+    case Application.get_env(:kaffe, :consumer)[:endpoints] do
       nil -> []
       _ -> Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, [])
     end
@@ -60,9 +59,14 @@ defmodule CotaStreamingConsumer.Application do
   defp cachex do
     expiration = Cachex.Spec.expiration(default: @ttl)
 
-    %{
-      id: Cachex,
-      start: {Cachex, :start_link, [@cache, [expiration: expiration]]}
-    }
+    Application.get_env(:kaffe, :consumer)
+    |> Keyword.get(:topics, [])
+    |> Enum.map(&String.to_atom(&1))
+    |> Enum.map(fn topic ->
+      %{
+        id: topic,
+        start: {Cachex, :start_link, [topic, [expiration: expiration]]}
+      }
+    end)
   end
 end

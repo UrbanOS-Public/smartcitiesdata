@@ -1,34 +1,66 @@
 defmodule CotaStreamingConsumerTest do
   use CotaStreamingConsumerWeb.ChannelCase
 
+  import Checkov
   import Mock
   import MockHelper
   import ExUnit.CaptureLog
 
   alias StreamingMetrics.ConsoleMetricCollector, as: MetricCollector
 
-  @cache Application.get_env(:cota_streaming_consumer, :cache)
   @outbound_records "records"
 
   setup do
-    Cachex.clear(@cache)
+    Cachex.clear(:"cota-vehicle-positions")
+    Cachex.clear(:"shuttle-position")
     :ok
   end
 
-  test "broadcasts data from a kafka topic to a websocket channel" do
+  data_test "broadcasts data from a kafka topic (#{topic}) to a websocket channel #{channel}" do
     with_mocks([
       {MetricCollector, [:passthrough], [record_metrics: fn _metrics, _namespace -> {:ok, %{}} end]}
       ])
     do
       {:ok, _, socket} =
         socket()
-        |> subscribe_and_join(CotaStreamingConsumerWeb.VehicleChannel, "vehicle_position")
+        |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, channel)
 
       CotaStreamingConsumer.handle_messages([
-        create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}))
+        create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: topic)
       ])
 
       assert_broadcast("update", %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}})
+      leave(socket)
+    end
+
+    where [
+      [:channel,                           :topic],
+      ["vehicle_position",                 "cota-vehicle-positions"],
+      ["streaming:cota-vehicle-positions", "cota-vehicle-positions"],
+      ["streaming:shuttle-position",       "shuttle-position"]
+    ]
+  end
+
+  test "unparsable messages are logged to the console without disruption" do
+    with_mocks([
+      {MetricCollector, [:passthrough], [record_metrics: fn _metrics, _namespace -> {:ok, %{}} end]}
+    ])
+    do
+      {:ok, _, socket} =
+        socket()
+        |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "streaming:shuttle-position")
+
+      assert capture_log([level: :warn], fn ->
+        CotaStreamingConsumer.handle_messages([
+          create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "shuttle-position"),
+          create_message(~s({"vehicle":{"vehicle":{"id:""11604"}}}), topic: "shuttle-position"), # <- Badly formatted JSON
+          create_message(~s({"vehicle":{"vehicle":{"id":"11605"}}}), topic: "shuttle-position")
+        ])
+      end) =~ ~S(Poison parse error: {:invalid, "\"", 28)
+
+      assert_broadcast("update", %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}})
+      assert_broadcast("update", %{"vehicle" => %{"vehicle" => %{"id" => "11605"}}})
+
       leave(socket)
     end
   end
@@ -46,13 +78,16 @@ defmodule CotaStreamingConsumerTest do
     do
       {:ok, _, socket} =
         socket()
-        |> subscribe_and_join(CotaStreamingConsumerWeb.VehicleChannel, "vehicle_position")
+        |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "vehicle_position")
 
       CotaStreamingConsumer.handle_messages([
-        create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}))
+        create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "cota-vehicle-positions"),
+        create_message(~s({"vehicle_id": 34095, "description": "Some Description"}), topic: "shuttle-position")
       ])
 
       assert called_times(1, MetricCollector.record_metrics(:_, "cota_vehicle_positions"))
+      assert called_times(1, MetricCollector.record_metrics(:_, "shuttle_position"))
+
       leave(socket)
     end
   end
@@ -64,13 +99,14 @@ defmodule CotaStreamingConsumerTest do
     do
       {:ok, _, socket} =
         socket()
-        |> subscribe_and_join(CotaStreamingConsumerWeb.VehicleChannel, "vehicle_position")
+        |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "vehicle_position")
 
-      CotaStreamingConsumer.handle_messages([
-        create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}))
-      ])
+      assert capture_log([level: :warn], fn ->
+        CotaStreamingConsumer.handle_messages([
+          create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "cota-vehicle-positions")
+        ])
+      end) =~ "Unable to write application metrics: {:http_error, \"reason\"}"
 
-      assert called_times(1, MetricCollector.record_metrics(:_, "cota_vehicle_positions"))
       leave(socket)
     end
   end
@@ -83,18 +119,17 @@ defmodule CotaStreamingConsumerTest do
     do
       {:ok, _, socket} =
         socket()
-        |> subscribe_and_join(CotaStreamingConsumerWeb.VehicleChannel, "vehicle_position")
+        |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "vehicle_position")
 
       CotaStreamingConsumer.handle_messages([
-        create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}))
+        create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), key: "11604")
       ])
 
       cache_record_created = fn ->
-        @cache
-        |>Cachex.stream!()
+        Cachex.stream!(:"cota-vehicle-positions")
         |> Enum.to_list()
-        |> Enum.map(fn {:entry, _key, _create_ts, _ttl, vehicle} -> vehicle end) == [
-          %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}
+        |> Enum.map(fn {:entry, key, _create_ts, _ttl, vehicle} -> {key, vehicle} end) == [
+          {"11604", %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}}
         ]
       end
 
@@ -139,10 +174,10 @@ defmodule CotaStreamingConsumerTest do
     end
   end
 
-  defp create_message(data) do
+  defp create_message(data, opts \\ []) do
     %{
-      key: "some key",
-      topic: "vehicle_position",
+      key: Keyword.get(opts, :key, "some key"),
+      topic: Keyword.get(opts, :topic, "cota-vehicle-positions"),
       value: data
     }
   end

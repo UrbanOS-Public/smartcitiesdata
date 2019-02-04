@@ -1,4 +1,4 @@
-defmodule CotaStreamingConsumerWeb.VehicleChannel do
+defmodule CotaStreamingConsumerWeb.StreamingChannel do
   @moduledoc """
     Handles websocket connections for the COTA Bus location data
     After a client joins the channel, it pushes the vehicle_position cache to the client,
@@ -6,7 +6,6 @@ defmodule CotaStreamingConsumerWeb.VehicleChannel do
   """
   use CotaStreamingConsumerWeb, :channel
   alias CotaStreamingConsumerWeb.Presence
-  @cache Application.get_env(:cota_streaming_consumer, :cache)
 
   @update_event "update"
   @filter_event "filter"
@@ -14,6 +13,11 @@ defmodule CotaStreamingConsumerWeb.VehicleChannel do
   intercept([@update_event])
 
   def join("vehicle_position", params, socket) do
+    send(self(), :after_join)
+    {:ok, assign(socket, :filter, create_filter_rules(params))}
+  end
+
+  def join("streaming:" <> _topic_name, params, socket) do
     send(self(), :after_join)
     {:ok, assign(socket, :filter, create_filter_rules(params))}
   end
@@ -31,7 +35,7 @@ defmodule CotaStreamingConsumerWeb.VehicleChannel do
     {:noreply, assign(socket, :filter, filter_rules)}
   end
 
-  def handle_out(@update_event, message, socket = %{assigns: %{filter: filter}}) do
+  def handle_out(@update_event, message, %{assigns: %{filter: filter}} = socket) do
     if message_matches?(message, filter) do
       push(socket, @update_event, message)
     end
@@ -56,10 +60,21 @@ defmodule CotaStreamingConsumerWeb.VehicleChannel do
     end)
   end
 
-  defp push_cache_to_socket(socket, filter \\ fn _ -> true end) do
+  defp push_cache_to_socket(%{topic: "vehicle_position"} = socket, filter) do
     query = Cachex.Query.create(true, :value)
 
-    @cache
+    :"cota-vehicle-positions"
+    |> Cachex.stream!(query)
+    |> Stream.filter(filter)
+    |> Enum.each(fn msg -> push(socket, @update_event, msg) end)
+  end
+
+  defp push_cache_to_socket(%{topic: channel} = socket, filter) do
+    query = Cachex.Query.create(true, :value)
+
+    channel
+    |> String.trim_leading("streaming:")
+    |> String.to_atom()
     |> Cachex.stream!(query)
     |> Stream.filter(filter)
     |> Enum.each(fn msg -> push(socket, @update_event, msg) end)
