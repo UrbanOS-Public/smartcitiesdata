@@ -68,7 +68,7 @@ defmodule CotaStreamingConsumer do
     CotaStreamingConsumerWeb.Endpoint.broadcast!("streaming:#{channel}", "update", data)
   end
 
-  defp log_message(%{value: value} = message) do
+  defp log_message(message) do
     Logger.log(:info, "#{inspect message}")
     message
   end
