@@ -13,5 +13,4 @@ defmodule Forklift do
 
   Kaffe => HandleMessage => GenServer(dataset_id, message(s)) => Statement(dataset_id, schema, agg_messages) => Prestige(statement)
   """
-
 end
