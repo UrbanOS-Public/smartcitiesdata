@@ -3,8 +3,7 @@ defmodule Forklift.DatasetServer do
 
   alias Forklift.PrestoClient
 
-  @batch_size 50
-
+  @batch_size 5000
 
   defmodule State do
     defstruct dataset_id: nil, messages: []
@@ -32,18 +31,21 @@ defmodule Forklift.DatasetServer do
     {:ok, %State{dataset_id: dataset_id}}
   end
 
-  def handle_call({:ingest_message, message}, _from, %State{dataset_id: dataset_id, messages: messages}=state) do
+  def handle_call(
+        {:ingest_message, message},
+        _from,
+        %State{dataset_id: dataset_id, messages: messages} = state
+      ) do
     message_set = [message | messages]
+
     if length(message_set) >= @batch_size do
       PrestoClient.upload_data(dataset_id, message_set)
       {:reply, :ok, State.set_messages(state, [])}
     else
-      {:reply, :ok, State.set_messages(state, message_set)}
+      {:reply, :ok, State.set_messages(state, message_set), 60_000}
     end
-
-
-
   end
+
   #####################
   # Private Functions #
   #####################
