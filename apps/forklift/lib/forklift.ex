@@ -1,18 +1,17 @@
 defmodule Forklift do
   @moduledoc """
-  Documentation for Forklift.
+  Message Format
+
+  key = "..."
+  value =
+    {
+      dataset_id: "..."
+      data: {...}/[...],
+    }
+  topic = "<k>"
+  partition = "<i>"
+
+  Kaffe => HandleMessage => GenServer(dataset_id, message(s)) => Statement(dataset_id, schema, agg_messages) => Prestige(statement)
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Forklift.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
 end
