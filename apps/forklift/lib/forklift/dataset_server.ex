@@ -1,15 +1,24 @@
 defmodule Forklift.DatasetServer do
   use GenServer
 
+  alias Forklift.PrestoClient
+
+  @batch_size 50
+
+
   defmodule State do
-    defstruct messages: []
+    defstruct dataset_id: nil, messages: []
+
+    def set_messages(state, messages) do
+      %State{state | messages: messages}
+    end
   end
 
   ##############
   # Client API #
   ##############
   def start_link(dataset_id) do
-    GenServer.start_link(__MODULE__, [], name: dataset_id)
+    GenServer.start_link(__MODULE__, dataset_id, name: dataset_id)
   end
 
   def ingest_message(pid, message) do
@@ -19,12 +28,21 @@ defmodule Forklift.DatasetServer do
   #############
   # Callbacks #
   #############
-  def init(_args) do
-    {:ok, %State{}}
+  def init(dataset_id) do
+    {:ok, %State{dataset_id: dataset_id}}
   end
 
-  def handle_call({:ingest_message, _message}, _from, state) do
-    {:reply, :ok, state}
+  def handle_call({:ingest_message, message}, _from, %State{dataset_id: dataset_id, messages: messages}=state) do
+    message_set = [message | messages]
+    if length(message_set) >= @batch_size do
+      PrestoClient.upload_data(dataset_id, message_set)
+      {:reply, :ok, State.set_messages(state, [])}
+    else
+      {:reply, :ok, State.set_messages(state, message_set)}
+    end
+
+
+
   end
   #####################
   # Private Functions #

@@ -6,8 +6,8 @@ defmodule MessageProcessorTest do
   alias Forklift.MessageProcessor
 
   test "data messages are routed to the appropriate processor" do
-    allow(DatasetServer.start_link("cota-whatever"), return: {:ok, :pid_placeholder})
-    allow(DatasetServer.ingest_message(:pid_placeholder, make_message()), return: :ok)
+    expect(DatasetServer.start_link("cota-whatever"), return: {:ok, :pid_placeholder})
+    expect(DatasetServer.ingest_message(:pid_placeholder, make_message()), return: :ok)
 
     assert MessageProcessor.handle_message(make_message()) == :ok
   end
