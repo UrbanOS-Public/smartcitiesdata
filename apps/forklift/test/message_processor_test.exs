@@ -2,12 +2,12 @@ defmodule MessageProcessorTest do
   use ExUnit.Case
   use Placebo
 
-  alias Forklift.DatasetServer
+  alias Forklift.DatasetStatem
   alias Forklift.MessageProcessor
 
   test "data messages are routed to the appropriate processor" do
-    expect(DatasetServer.start_link("cota-whatever"), return: {:ok, :pid_placeholder})
-    expect(DatasetServer.ingest_message(:pid_placeholder, make_message()), return: :ok)
+    expect(DatasetStatem.start_link("cota-whatever"), return: {:ok, :pid_placeholder})
+    expect(DatasetStatem.send_message(:pid_placeholder, make_message()), return: :ok)
 
     assert MessageProcessor.handle_message(make_message()) == :ok
   end
