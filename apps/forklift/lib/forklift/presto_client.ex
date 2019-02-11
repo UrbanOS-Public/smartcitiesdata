@@ -1,6 +1,11 @@
 defmodule Forklift.PrestoClient do
-  def upload_data(_dataset_id, _data) do
-    Process.sleep(250)
-    :ok
+
+  alias Forklift.Statement
+  def upload_data(dataset_id, messages) do
+    schema = RegistryStore.get_schema(dataset_id)
+
+    statement = Statement.build(schema, messages)
+
+    Prestige.execute(statement, [catalog: "hive", schema: "default"])
   end
 end
