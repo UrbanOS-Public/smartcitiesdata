@@ -1,0 +1,30 @@
+replicaCount: 2
+
+image:
+  repository: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/andi
+  tag: latest
+  pullPolicy: IfNotPresent 
+
+monitoring:
+  targetPort: 80 
+
+kafka:
+  #comma delimited list of kafka seed brokers
+  brokers: "streaming-service-kafka-bootstrap.streaming-prime"
+  strimziCluster: streaming-service # http://strimzi.io/docs/0.4.0/#_topic_configmap
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 80
+
+ingress:
+  enabled: false
+  scheme: ""
+  subnets: ""
+  securityGroups: ""
+  certificateARN: ""
+  dnsZone: "localhost"

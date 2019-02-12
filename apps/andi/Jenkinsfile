@@ -30,13 +30,13 @@ node('infrastructure') {
                 image.push('latest')
             }
 
-            deployProducerTo('dev')
+            deployAndiTo('dev')
         }
 
         doStageIfPromoted('Deploy to Staging') {
             def promotionTag = scos.releaseCandidateNumber()
 
-            deployProducerTo('staging')
+            deployAndiTo('staging')
 
             scos.applyAndPushGitHubTag(promotionTag)
 
@@ -49,7 +49,7 @@ node('infrastructure') {
             def releaseTag = env.BRANCH_NAME
             def promotionTag = 'prod'
 
-            deployProducerTo('prod')
+            deployAndiTo('prod')
 
             scos.applyAndPushGitHubTag(promotionTag)
 
@@ -62,14 +62,27 @@ node('infrastructure') {
     }
 }
 
-def deployProducerTo(environment) {
+def deployAndiTo(environment) {
+    internal = true
     scos.withEksCredentials(environment) {
+        def terraformOutputs = scos.terraformOutput(environment)
+        def subnets = terraformOutputs.public_subnets.value.join(/\\,/)
+        def allowInboundTrafficSG = terraformOutputs.allow_all_security_group.value
+        def certificateARN = internal ? terraformOutputs.tls_certificate_arn.value : terraformOutputs.root_tls_certificate_arn.value
+        def ingressScheme = internal ? 'internal' : 'internet-facing'
+
         sh("""#!/bin/bash
             set -e
             helm init --client-only
             helm upgrade --install andi \
                 ./chart \
-                --namespace=andi \
+                --namespace=admin \
+                --set ingress.enabled="true" \
+                --set ingress.scheme="${ingressScheme}" \
+                --set ingress.subnets="${subnets}" \
+                --set ingress.securityGroups="${allowInboundTrafficSG}" \
+                --set ingress.dnsZone="${environment}.internal.smartcolumbusos.com" \
+                --set ingress.certificateARN="${certificateARN}" \
                 --set image.tag="${env.GIT_COMMIT_HASH}" \
         """.trim())
     }
