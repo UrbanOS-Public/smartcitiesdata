@@ -1,7 +1,5 @@
 defmodule RegistryStore do
-
   alias Forklift.DatasetSchema
-
 
   def get_schema(dataset_id) do
     raw_schema(dataset_id)
@@ -26,8 +24,9 @@ defmodule RegistryStore do
     }
   end
 
-  defp parse_schema(%{id: id, operational: %{ schema: schema } }) do
+  defp parse_schema(%{id: id, operational: %{schema: schema}}) do
     columns = Enum.map(schema, fn %{name: name, type: type} -> {name, type} end)
+
     %DatasetSchema{
       id: id,
       columns: columns

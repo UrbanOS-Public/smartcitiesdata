@@ -35,7 +35,12 @@ defmodule Forklift.DatasetStatem do
     timeout = Keyword.get(opts, :timeout, @timeout)
     batch_size = Keyword.get(opts, :batch_size, @batch_size)
 
-    GenStatem.start_link(__MODULE__, {dataset_id, timeout, batch_size}, opts)
+    GenStatem.start_link(
+      via_tuple(dataset_id),
+      __MODULE__,
+      {dataset_id, timeout, batch_size},
+      opts
+    )
   end
 
   def send_message(pid, message) do
@@ -87,6 +92,7 @@ defmodule Forklift.DatasetStatem do
   end
 
   def buffering_messages(:state_timeout, _event_content, %State{messages: messages} = state) do
+    length(messages) |> IO.inspect(label: "Handling timeout event")
     PrestoClient.upload_data(state.dataset_id, messages)
     {:next_state, :no_messages, State.set_messages(state)}
   end
@@ -94,15 +100,17 @@ defmodule Forklift.DatasetStatem do
   #######################
   ## Private Functions ##
   #######################
-  def maybe_upload(dataset_id, messages, batch_size) when length(messages) >= batch_size do
+  defp maybe_upload(dataset_id, messages, batch_size) when length(messages) >= batch_size do
     with :ok <- PrestoClient.upload_data(dataset_id, messages) do
       :uploaded
     end
   end
 
-  def maybe_upload(_dataset_id, messages, _batch_size) do
+  defp maybe_upload(_dataset_id, messages, _batch_size) do
     {:buffering, messages}
   end
 
-  def make_reply(from, message), do: {:reply, from, message}
+  defp make_reply(from, message), do: {:reply, from, message}
+
+  def via_tuple(dataset_id), do: {:via, Registry, {Forklift.Registry, dataset_id}}
 end

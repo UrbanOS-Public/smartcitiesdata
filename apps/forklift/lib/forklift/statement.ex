@@ -2,17 +2,19 @@ defmodule Forklift.Statement do
   def build(schema, data) do
     columns_fragment =
       schema.columns
-      |> Enum.map(&(elem(&1, 0)))
+      |> Enum.map(&elem(&1, 0))
       |> Enum.join(",")
 
     data_fragment =
       data
-    |> Enum.map(&Jason.decode!/1)
-    |> Enum.map(&(format_columns(schema.columns, &1)))
-    |> Enum.map(&(~s/(#{Enum.join(&1, ",")})/))
-    |> Enum.join(",")
+      |> Enum.map(&Jason.decode!/1)
+      |> Enum.map(&format_columns(schema.columns, &1))
+      |> Enum.map(&~s/(#{Enum.join(&1, ",")})/)
+      |> Enum.join(",")
 
     ~s/insert into #{schema.id} (#{columns_fragment}) values #{data_fragment}/
+  rescue
+    e -> IO.inspect(e, label: "SOMETHING WENT TERRIBLY WRONG")
   end
 
   defp format_columns(columns, row) do

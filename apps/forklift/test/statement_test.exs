@@ -15,18 +15,9 @@ defmodule StatementTest do
     }
 
     data = [
-      ~s({
-        \"id\":\"1\",
-        \"name\":\"Fred\"
-      }),
-      ~s({
-        \"id\":\"2\",
-        \"name\":\"Gred\"
-      }),
-      ~s({
-        \"id\":\"3\",
-        \"name\":\"Hred\"
-      }),
+      ~s({\"id\":\"1\",\"name\":\"Fred\"}),
+      ~s({\"id\":\"2\",\"name\":\"Gred\"}),
+      ~s({\"id\":\"3\",\"name\":\"Hred\"})
     ]
 
     result = Statement.build(schema, data)
@@ -56,7 +47,7 @@ defmodule StatementTest do
       ~s({
         \"id\":\"7\",
         \"name\":\"Yom\"
-      }),
+      })
     ]
 
     result = Statement.build(schema, data)
@@ -64,5 +55,4 @@ defmodule StatementTest do
 
     assert result == expected_result
   end
-
 end

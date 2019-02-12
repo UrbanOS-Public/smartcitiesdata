@@ -8,7 +8,19 @@ config :forklift,
     raw_data: "raw-data-topic"
   }
 
-# config :kaffe, topics: []
+# config :prestige, base_url: "https://presto.dev.internal.smartcolumbusos.com"
+config :prestige, base_url: "http://localhost:8080"
+
+config :kaffe,
+  consumer: [
+    endpoints: [localhost: 9092],
+    topics: ["data-topic"],
+    consumer_group: "forklift-group-1",
+    message_handler: Forklift.MessageProcessor,
+    # offset_reset_policy: :reset_to_latest,
+    # max_bytes: 500_000,
+    worker_allocation_strategy: :worker_per_topic_partition
+  ]
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

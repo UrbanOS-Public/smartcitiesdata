@@ -6,9 +6,10 @@ defmodule PrestoClientTest do
   alias Prestige
 
   test "upload_data sends a valid statement to prestige" do
-    allow(Prestige.execute(any(), catalog: "hive", schema: "default"), return: :ok )
+    allow(Prestige.execute(any(), catalog: "hive", schema: "default"), return: :ok)
 
-    expected_statement = ~s/insert into placeholder_id (id,name) values (123,'bob'),(234,'cob'),(345,'dob')/
+    expected_statement =
+      ~s/insert into placeholder_id (id,name) values (123,'bob'),(234,'cob'),(345,'dob')/
 
     messages = [
       ~s({
@@ -22,12 +23,14 @@ defmodule PrestoClientTest do
       ~s({
         \"id\":\"345\",
         \"name\":\"dob\"
-      }),
+      })
     ]
 
     PrestoClient.upload_data("placeholder_id", messages)
 
-    assert_called Prestige.execute(expected_statement, catalog: "hive", schema: "default"), once()
+    assert_called(
+      Prestige.execute(expected_statement, catalog: "hive", schema: "default"),
+      once()
+    )
   end
-
 end

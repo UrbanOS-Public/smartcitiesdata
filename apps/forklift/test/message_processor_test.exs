@@ -6,23 +6,26 @@ defmodule MessageProcessorTest do
   alias Forklift.MessageProcessor
 
   test "data messages are routed to the appropriate processor" do
-    expect(DatasetStatem.start_link("cota-whatever"), return: {:ok, :pid_placeholder})
-    expect(DatasetStatem.send_message(:pid_placeholder, make_message()), return: :ok)
+    message = make_message()
+    expected = message.value
 
-    assert MessageProcessor.handle_message(make_message()) == :ok
+    expect(DatasetStatem.start_link("cota-whatever"), return: {:ok, :pid_placeholder})
+    expect(DatasetStatem.send_message(:pid_placeholder, expected), return: :ok)
+
+    assert MessageProcessor.handle_messages([message]) == :ok
   end
 
   test "registry messages return :ok" do
     # This test should be expanded once we know more about how registry messages will work. -JP 02/08/18
-    message = make_message("registry-topic") |> IO.inspect(label: "message_router_test.exs:17")
+    message = make_message("registry-topic")
 
-    assert MessageProcessor.handle_message(message) == :ok
+    assert MessageProcessor.handle_messages([message]) == :ok
   end
 
   def make_message(topic \\ "data-topic") do
     %{
       topic: topic,
-      message: "this is a message"
+      value: "This is a message"
     }
   end
 end
