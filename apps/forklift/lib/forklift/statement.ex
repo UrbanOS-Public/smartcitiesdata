@@ -12,8 +12,8 @@ defmodule Forklift.Statement do
       |> Enum.join(",")
 
     ~s/insert into #{schema.id} (#{columns_fragment}) values #{data_fragment}/
-    rescue
-      e -> IO.inspect(e, label: "Unhandled Statement Builder error")
+  rescue
+    e -> IO.inspect(e, label: "Unhandled Statement Builder error")
   end
 
   defp format_columns(columns, row) do
@@ -25,7 +25,9 @@ defmodule Forklift.Statement do
   end
 
   defp format_data(value, "string") do
-    ~s/'#{value}'/
+    value
+    |> String.replace("'", "''")
+    |> (&(~s/'#{&1}'/)).()
   end
 
   defp format_data(value, _type) do
