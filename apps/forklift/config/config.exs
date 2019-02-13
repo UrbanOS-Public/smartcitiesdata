@@ -8,8 +8,8 @@ config :forklift,
   data_topic: "data-topic",
   registry_topic: "registry-topic"
 
-# config :prestige, base_url: "https://presto.dev.internal.smartcolumbusos.com"
-config :prestige, base_url: "http://localhost:8080"
+config :prestige, base_url: "https://presto.dev.internal.smartcolumbusos.com"
+# config :prestige, base_url: "http://localhost:8080"
 
 config :kaffe,
   consumer: [
@@ -17,9 +17,10 @@ config :kaffe,
     topics: ["data-topic"],
     consumer_group: "forklift-group-1",
     message_handler: Forklift.MessageProcessor,
-    # offset_reset_policy: :reset_to_latest,
-    # max_bytes: 500_000,
-    worker_allocation_strategy: :worker_per_topic_partition
+    offset_reset_policy: :reset_to_latest,
+    max_bytes: 1_000_000,
+    worker_allocation_strategy: :worker_per_topic_partition,
+    rebalance_delay_ms: 1_000
   ]
 
     import_config "#{Mix.env()}.exs"
