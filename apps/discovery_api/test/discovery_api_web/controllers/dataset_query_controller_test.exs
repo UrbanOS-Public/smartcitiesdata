@@ -4,6 +4,35 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   alias DiscoveryApi.Data.Thrive
   alias StreamingMetrics.PrometheusMetricCollector, as: MetricCollector
 
+  describe "fetching data from Presto" do
+    setup do
+      allow Prestige.execute("describe hive.default.test"),
+        return: []
+
+
+      allow Prestige.execute("select * from test", catalog: "hive", schema: "default"),
+        return: [[1,2,3], [4,5,6]]
+
+
+      allow Prestige.prefetch(any()),
+        return: [["id", "bigint", "", ""], ["one", "bigint", "", ""], ["two", "bigint", "", ""]]
+
+      :ok
+    end
+
+    test "returns data in CSV format", %{conn: conn} do
+      conn = conn |> put_req_header("accept", "text/csv")
+      actual = get(conn, "/v1/api/dataset/test/queryPresto") |> response(200)
+      assert "id,one,two\n1,2,3\n4,5,6\n" == actual
+    end
+
+    test "handles unknown media type", %{conn: conn} do
+      conn = conn |> put_req_header("accept", "application/json")
+      get(conn, "/v1/api/dataset/test/queryPresto") |> response(415)
+    end
+
+  end
+
   describe "fetch dataset csv" do
     setup do
       mock_hive_schema_result = %{

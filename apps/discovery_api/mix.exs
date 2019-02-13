@@ -19,7 +19,7 @@ defmodule DiscoveryApi.Mixfile do
   def application do
     [
       mod: {DiscoveryApi.Application, []},
-      extra_applications: [:logger, :runtime_tools, :corsica]
+      extra_applications: [:logger, :runtime_tools, :corsica, :prestige]
     ]
   end
 
@@ -37,7 +37,7 @@ defmodule DiscoveryApi.Mixfile do
       {:gettext, "~> 0.11"},
       {:cowboy, "~> 1.0"},
       {:distillery, "~> 2.0"},
-      {:httpoison, "~> 0.11.1"},
+      {:httpoison, "~> 1.5"},
       {:poison, "~> 3.1"},
       {:corsica, "~> 1.0"},
       {:cachex, "~> 3.0"},
@@ -49,6 +49,8 @@ defmodule DiscoveryApi.Mixfile do
       {:csv, "~> 1.4.0"},
       {:streaming_metrics, path: "streaming_metrics"},
       {:riffed, git: "https://github.com/pinterest/riffed.git", tag: "1.0.0"},
+      {:prestige, path: "prestige"},
+      {:jason, "~> 1.1"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false}
     ]
   end

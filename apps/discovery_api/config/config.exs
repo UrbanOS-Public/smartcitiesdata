@@ -5,6 +5,8 @@
 # is restricted to this project.
 use Mix.Config
 
+config :prestige, base_url: "http://kdp-kubernetes-data-platform-presto.kdp:8080"
+
 # Configures the endpoint
 config :discovery_api, DiscoveryApiWeb.Endpoint,
   secret_key_base: "7Qfvr6quFJ6Qks3FGiLMnm/eNV8K66yMVpkU46lCZ2rKj0YR9ksjxsB+SX3qHZre",
@@ -20,7 +22,7 @@ config :logger, :console,
 config :discovery_api,
   data_lake_url: "https://kylo.staging.internal.smartcolumbusos.com/proxy",
   data_lake_auth_string: "c2EtZGlzY292ZXJ5LWFwaTp2WEs0aU9wRmNnNlR1T1ZXT1RCcDNRQ1BURm56UHRLQ1A5V1B3M3ds",
-  cache_refresh_interval: "60000",
+  cache_refresh_interval: "600000000",
   cache: :dataset_cache,
   thrive_address: "datalake-hive.staging.internal.smartcolumbusos.com",
   thrive_port: 10_000,

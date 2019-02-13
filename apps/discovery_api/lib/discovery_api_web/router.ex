@@ -32,6 +32,7 @@ defmodule DiscoveryApiWeb.Router do
 
     get("/dataset/:dataset_id/query", DatasetQueryController, :fetch_query)
     post("/dataset/:dataset_id/query", DatasetQueryController, :fetch_query)
+    get("/dataset/:dataset/queryPresto", DatasetQueryController, :fetch_presto)
   end
 
   scope "/v1/api", DiscoveryApiWeb do

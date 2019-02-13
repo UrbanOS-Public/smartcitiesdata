@@ -41,6 +41,28 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     end
   end
 
+  def fetch_presto(conn, %{"dataset" => dataset}) do
+    columnNames =
+      Prestige.execute("describe hive.default.#{dataset}")
+      |> Prestige.prefetch()
+      |> Enum.map(fn [col | _tail] -> col end)
+
+    case get_format(conn) do
+      "csv" ->
+        Prestige.execute("select * from #{dataset}", catalog: "hive", schema: "default")
+        |> map_data_stream_for_csv(columnNames)
+        |> return_csv(conn, dataset)
+
+      _ ->
+        return_unsupported(conn)
+    end
+  end
+
+  defp map_data_stream_for_csv(stream, table_headers) do
+    Stream.concat([table_headers], stream)
+    |> CSV.encode(delimiter: "\n")
+  end
+
   def fetch_query(conn, %{"dataset_id" => dataset_id} = params) do
     query = Map.get(params, "query", @default_query)
     columns = Map.get(params, "columns", @default_columns)
@@ -94,6 +116,10 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
         {:error, :closed} -> {:halt, conn}
       end
     end)
+  end
+
+  defp return_unsupported(conn) do
+    conn |> resp(415, "")
   end
 
   def parse_error_reason(reason) when is_binary(reason) do
