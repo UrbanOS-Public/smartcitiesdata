@@ -1,4 +1,4 @@
-defmodule Forklift.DatasetStatem do
+defmodule Forklift.MessageAccumulator do
   alias :gen_statem, as: GenStatem
   @behaviour GenStatem
 

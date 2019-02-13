@@ -1,5 +1,5 @@
 defmodule Forklift.MessageProcessor do
-  alias Forklift.DatasetStatem
+  alias Forklift.MessageAccumulator
   @data_topic Application.get_env(:forklift, :data_topic)
   @registry_topic Application.get_env(:forklift, :registry_topic)
 
@@ -8,7 +8,7 @@ defmodule Forklift.MessageProcessor do
     |> Enum.all?(fn x -> x == :ok end)
     |> case do
       true -> :ok
-      false -> raise RuntimeError, "you suck at this"
+      false -> raise RuntimeError, "Unexpected error in MessageProcessor"
     end
   end
 
@@ -20,7 +20,7 @@ defmodule Forklift.MessageProcessor do
   defp process_message(%{topic: @data_topic, value: value} = _message) do
     with {:ok, dataset_id, payload} <- extract_id_and_payload(value),
          {:ok, pid} <- start_server(dataset_id) do
-      DatasetStatem.send_message(pid, payload)
+      MessageAccumulator.send_message(pid, payload)
     else
       {:error, reason} -> raise RuntimeError, reason
     end
@@ -39,10 +39,10 @@ defmodule Forklift.MessageProcessor do
   end
 
   defp start_server(dataset_id) do
-    case DatasetStatem.start_link(dataset_id) do
+    case MessageAccumulator.start_link(dataset_id) do
       {:ok, pid} -> {:ok, pid}
       {:error, {:already_started, pid}} -> {:ok, pid}
-      _error -> {:error, "Error starting/locating GenServer"}
+      _error -> {:error, "Error starting/locating DataSet GenServer"}
     end
   end
 end

@@ -2,7 +2,7 @@ defmodule ForkliftTest do
   use ExUnit.Case
   use Placebo
 
-  alias Forklift.DatasetStatem
+  alias Forklift.MessageAccumulator
   alias Forklift.MessageProcessor
 
   test "data messages are processed to Prestige" do

@@ -2,7 +2,7 @@ defmodule MessageProcessorTest do
   use ExUnit.Case
   use Placebo
 
-  alias Forklift.DatasetStatem
+  alias Forklift.MessageAccumulator
   alias Forklift.MessageProcessor
 
   test "data messages are routed to the appropriate processor" do
@@ -10,8 +10,8 @@ defmodule MessageProcessorTest do
     message = make_message(dataset_id)
     expected = message |> Map.get(:value) |> Jason.decode!() |> Map.get("payload")
 
-    expect(DatasetStatem.start_link(dataset_id), return: {:ok, :pid_placeholder})
-    expect(DatasetStatem.send_message(:pid_placeholder, expected), return: :ok)
+    expect(MessageAccumulator.start_link(dataset_id), return: {:ok, :pid_placeholder})
+    expect(MessageAccumulator.send_message(:pid_placeholder, expected), return: :ok)
 
     assert MessageProcessor.handle_messages([message]) == :ok
   end
