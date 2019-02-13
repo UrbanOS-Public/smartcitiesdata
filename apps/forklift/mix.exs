@@ -26,7 +26,8 @@ defmodule Forklift.MixProject do
       {:kaffe, "~> 1.9.1"},
       {:prestige, path: "prestige"},
       {:placebo, "~> 1.2.0", only: [:dev, :test]},
-      {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
+      {:faker, "~> 0.12", only: :test}
     ]
   end
 end

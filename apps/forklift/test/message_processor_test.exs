@@ -6,10 +6,11 @@ defmodule MessageProcessorTest do
   alias Forklift.MessageProcessor
 
   test "data messages are routed to the appropriate processor" do
-    message = make_message()
-    expected = message.value
+    dataset_id = Faker.StarWars.planet()
+    message = make_message(dataset_id)
+    expected = message |> Map.get(:value) |> Jason.decode!() |> Map.get("payload")
 
-    expect(DatasetStatem.start_link("cota-whatever"), return: {:ok, :pid_placeholder})
+    expect(DatasetStatem.start_link(dataset_id), return: {:ok, :pid_placeholder})
     expect(DatasetStatem.send_message(:pid_placeholder, expected), return: :ok)
 
     assert MessageProcessor.handle_messages([message]) == :ok
@@ -17,15 +18,22 @@ defmodule MessageProcessorTest do
 
   test "registry messages return :ok" do
     # This test should be expanded once we know more about how registry messages will work. -JP 02/08/18
-    message = make_message("registry-topic")
+    message = make_message(Faker.StarWars.planet(), "registry-topic")
 
     assert MessageProcessor.handle_messages([message]) == :ok
   end
 
-  def make_message(topic \\ "data-topic") do
+  def make_message(dataset_id, topic \\ "data-topic") do
+    value =
+      %{
+        payload: %{id: :rand.uniform(999), name: Faker.Superhero.name()},
+        metadata: %{dataset_id: dataset_id}
+      }
+      |> Jason.encode!()
+
     %{
       topic: topic,
-      value: "This is a message"
+      value: value
     }
   end
 end

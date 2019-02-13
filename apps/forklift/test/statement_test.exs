@@ -15,9 +15,9 @@ defmodule StatementTest do
     }
 
     data = [
-      ~s({\"id\":\"1\",\"name\":\"Fred\"}),
-      ~s({\"id\":\"2\",\"name\":\"Gred\"}),
-      ~s({\"id\":\"3\",\"name\":\"Hred\"})
+      %{"id" => 1, "name" => "Fred"},
+      %{"id" => 2, "name" => "Gred"},
+      %{"id" => 3, "name" => "Hred"}
     ]
 
     result = Statement.build(schema, data)
@@ -36,18 +36,9 @@ defmodule StatementTest do
     }
 
     data = [
-      ~s({
-        \"id\":\"9\",
-        \"name\":\"Iom\"
-      }),
-      ~s({
-        \"name\":\"Jom\",
-        \"id\":\"8\"
-      }),
-      ~s({
-        \"id\":\"7\",
-        \"name\":\"Yom\"
-      })
+      %{"id" => 9, "name" => "Iom"},
+      %{"id" => 8, "name" => "Jom"},
+      %{"id" => 7, "name" => "Yom"}
     ]
 
     result = Statement.build(schema, data)

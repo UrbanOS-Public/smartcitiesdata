@@ -4,8 +4,8 @@ defmodule Forklift.DatasetStatem do
 
   alias Forklift.PrestoClient
 
-  @batch_size 5_000
-  @timeout 60_000
+  @batch_size Application.fetch_env!(:forklift, :batch_size)
+  @timeout Application.fetch_env!(:forklift, :timeout)
 
   ##################
   ## State Struct ##
@@ -92,7 +92,6 @@ defmodule Forklift.DatasetStatem do
   end
 
   def buffering_messages(:state_timeout, _event_content, %State{messages: messages} = state) do
-    length(messages) |> IO.inspect(label: "Handling timeout event")
     PrestoClient.upload_data(state.dataset_id, messages)
     {:next_state, :no_messages, State.set_messages(state)}
   end

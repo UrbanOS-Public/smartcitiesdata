@@ -7,14 +7,13 @@ defmodule Forklift.Statement do
 
     data_fragment =
       data
-      |> Enum.map(&Jason.decode!/1)
       |> Enum.map(&format_columns(schema.columns, &1))
       |> Enum.map(&~s/(#{Enum.join(&1, ",")})/)
       |> Enum.join(",")
 
     ~s/insert into #{schema.id} (#{columns_fragment}) values #{data_fragment}/
-  rescue
-    e -> IO.inspect(e, label: "SOMETHING WENT TERRIBLY WRONG")
+    rescue
+      e -> IO.inspect(e, label: "Unhandled Statement Builder error")
   end
 
   defp format_columns(columns, row) do

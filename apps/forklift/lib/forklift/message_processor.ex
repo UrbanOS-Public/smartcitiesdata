@@ -1,27 +1,41 @@
 defmodule Forklift.MessageProcessor do
   alias Forklift.DatasetStatem
+  @data_topic Application.get_env(:forklift, :data_topic)
+  @registry_topic Application.get_env(:forklift, :registry_topic)
 
-  def handle_message(%{topic: topic} = message) do
-    case topic do
-      "registry-topic" -> process_registry_message(message)
-      "data-topic" -> process_data_message(message)
+  def handle_messages(messages) do
+    Enum.map(messages, &process_message/1)
+    |> Enum.all?(fn x -> x == :ok end)
+    |> case do
+      true -> :ok
+      false -> raise RuntimeError, "you suck at this"
     end
   end
 
-  defp process_registry_message(message) do
+
+  defp process_message(%{topic: @registry_topic, value: _value}) do
     :ok
   end
 
-  defp process_data_message(message) do
-    dataset_id = "cota-whatever"
-
-    with {:ok, pid} <- start_server(dataset_id) do
-      DatasetStatem.send_message(pid, message)
+  defp process_message(%{topic: @data_topic, value: value} = _message) do
+    with {:ok, dataset_id, payload} <- extract_id_and_payload(value),
+         {:ok, pid} <- start_server(dataset_id) do
+      DatasetStatem.send_message(pid, payload)
     else
       {:error, reason} -> raise RuntimeError, reason
     end
 
     :ok
+  end
+
+  defp extract_id_and_payload(value) do
+    with {:ok, data} <- Jason.decode(value) do
+      %{"payload" => payload, "metadata" => %{"dataset_id" => dataset_id}} = data
+
+      {:ok, dataset_id, payload}
+    else
+      {:error, error} -> {:error, error.data}
+    end
   end
 
   defp start_server(dataset_id) do

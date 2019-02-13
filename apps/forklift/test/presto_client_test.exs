@@ -12,18 +12,9 @@ defmodule PrestoClientTest do
       ~s/insert into placeholder_id (id,name) values (123,'bob'),(234,'cob'),(345,'dob')/
 
     messages = [
-      ~s({
-        \"id\":\"123\",
-        \"name\":\"bob\"
-      }),
-      ~s({
-        \"id\":\"234\",
-        \"name\":\"cob\"
-      }),
-      ~s({
-        \"id\":\"345\",
-        \"name\":\"dob\"
-      })
+      %{"id" => 123, "name" => "bob"},
+      %{"id" => 234, "name" => "cob"},
+      %{"id" => 345, "name" => "dob"}
     ]
 
     PrestoClient.upload_data("placeholder_id", messages)

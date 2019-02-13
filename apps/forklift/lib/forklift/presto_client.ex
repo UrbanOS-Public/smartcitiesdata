@@ -7,8 +7,7 @@ defmodule Forklift.PrestoClient do
     statement = Statement.build(schema, messages)
 
     Prestige.execute(statement, catalog: "hive", schema: "default")
-
   rescue
-    e -> IO.inspect(e, label: "UNHANDLED ERROR IN PRESTO CLIENT")
+    e -> IO.inspect(e, label: "Unhandled Presto Client error")
   end
 end
