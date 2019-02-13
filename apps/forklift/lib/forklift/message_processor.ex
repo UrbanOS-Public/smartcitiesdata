@@ -4,14 +4,10 @@ defmodule Forklift.MessageProcessor do
   @registry_topic Application.get_env(:forklift, :registry_topic)
 
   def handle_messages(messages) do
-    Enum.map(messages, &process_message/1)
-    |> Enum.all?(fn x -> x == :ok end)
-    |> case do
-      true -> :ok
-      false -> raise RuntimeError, "Unexpected error in MessageProcessor"
-    end
-  end
+    Enum.each(messages, &process_message/1)
 
+    :ok
+  end
 
   defp process_message(%{topic: @registry_topic, value: _value}) do
     :ok
@@ -22,7 +18,7 @@ defmodule Forklift.MessageProcessor do
          {:ok, pid} <- start_server(dataset_id) do
       MessageAccumulator.send_message(pid, payload)
     else
-      {:error, reason} -> raise RuntimeError, reason
+      {:error, reason} -> reason |> IO.inspect(label: "PROCESS MESSAGE FAILED")
     end
 
     :ok
@@ -34,7 +30,7 @@ defmodule Forklift.MessageProcessor do
 
       {:ok, dataset_id, payload}
     else
-      {:error, error} -> {:error, error.data}
+      {:error, error} -> {:error, inspect(error)}
     end
   end
 
