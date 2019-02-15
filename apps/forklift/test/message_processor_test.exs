@@ -18,7 +18,9 @@ defmodule MessageProcessorTest do
 
   test "registry messages return :ok" do
     # This test should be expanded once we know more about how registry messages will work. -JP 02/08/18
-    message = make_message(Faker.StarWars.planet(), "registry-topic")
+    message = make_registry_message(Faker.StarWars.planet())
+
+
 
     assert MessageProcessor.handle_messages([message]) == :ok
   end
@@ -33,6 +35,31 @@ defmodule MessageProcessorTest do
 
     %{
       topic: topic,
+      value: value
+    }
+  end
+
+  def make_registry_message(dataset_id) do
+    value =
+      %{
+        id: dataset_id,
+        operational: %{
+          schema: [
+            %{
+              name: "id",
+              type: "int"
+            },
+            %{
+              name: "name",
+              type: "string"
+            }
+          ]
+        }
+      }
+      |> Jason.encode!()
+
+    %{
+      topic: "dataset-registry",
       value: value
     }
   end

@@ -2,7 +2,7 @@ defmodule Forklift.PrestoClient do
   alias Forklift.Statement
 
   def upload_data(dataset_id, messages) do
-    RegistryStore.get_schema(dataset_id)
+    DatasetRegistryServer.get_schema(dataset_id)
     |> Statement.build(messages)
     |> execute_statement()
 
