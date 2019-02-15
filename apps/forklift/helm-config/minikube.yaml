@@ -1,0 +1,10 @@
+image:
+  repository: forklift
+  pullPolicy: Never
+
+localstack:
+  enabled: true
+
+kafka:
+  topic:
+    replicas: 1
