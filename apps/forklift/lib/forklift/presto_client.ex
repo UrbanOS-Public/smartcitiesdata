@@ -13,6 +13,6 @@ defmodule Forklift.PrestoClient do
 
   defp execute_statement(statement) do
     Prestige.execute(statement, catalog: "hive", schema: "default")
-    |> Prestige.prefetch() |> IO.inspect(label: "prestige return")
+    |> Prestige.prefetch()
   end
 end

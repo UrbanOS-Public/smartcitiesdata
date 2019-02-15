@@ -9,7 +9,6 @@ config :forklift,
   registry_topic: "registry-topic"
 
 config :prestige, base_url: "https://presto.dev.internal.smartcolumbusos.com"
-# config :prestige, base_url: "http://localhost:8080"
 
 config :kaffe,
   consumer: [
@@ -21,6 +20,15 @@ config :kaffe,
     max_bytes: 1_000_000,
     worker_allocation_strategy: :worker_per_topic_partition,
     rebalance_delay_ms: 1_000
+  ],
+  producer: [
+    endpoints: [localhost: 9092],
+    topics: ["data-topic"]
   ]
 
-    import_config "#{Mix.env()}.exs"
+config :logger,
+  backends: [:console],
+  level: :info,
+  compile_time_purge_level: :debug
+
+import_config "#{Mix.env()}.exs"
