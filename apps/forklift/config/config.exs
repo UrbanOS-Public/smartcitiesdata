@@ -2,7 +2,6 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-
 data_topic = "data-topic"
 registry_topic = "dataset-registry"
 

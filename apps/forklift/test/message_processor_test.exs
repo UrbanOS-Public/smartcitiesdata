@@ -20,8 +20,6 @@ defmodule MessageProcessorTest do
     # This test should be expanded once we know more about how registry messages will work. -JP 02/08/18
     message = make_registry_message(Faker.StarWars.planet())
 
-
-
     assert MessageProcessor.handle_messages([message]) == :ok
   end
 

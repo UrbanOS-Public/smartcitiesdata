@@ -14,24 +14,25 @@ defmodule Forklift do
   Kaffe => HandleMessage => GenServer(dataset_id, message(s)) => Statement(dataset_id, schema, agg_messages) => Prestige(statement)
   """
 
-#   CREATE TABLE hive.default.pirate_dilemma5 (
-#     go bigint,
-#     fund varchar,
-#     yourself varchar
-#  )
-#  WITH (
-#     format = 'ORC'
-#  )
+  #   CREATE TABLE hive.default.pirate_dilemma5 (
+  #     go bigint,
+  #     fund varchar,
+  #     yourself varchar
+  #  )
+  #  WITH (
+  #     format = 'ORC'
+  #  )
 
   def make_pirate_dilemna do
     %{
       payload: %{
-        go: :rand.uniform(999999),
+        go: :rand.uniform(999_999),
         fund: Faker.Industry.sector(),
         yourself: Faker.Superhero.name()
       },
       metadata: %{dataset_id: "pirate_dilemma#{:rand.uniform(5)}"}
-    } |> Jason.encode!()
+    }
+    |> Jason.encode!()
   end
 
   def send_to_kafka(msg) do
@@ -46,5 +47,4 @@ defmodule Forklift do
   def produce_messages(x) do
     Enum.each(1..x, &(Forklift.produce_message() || &1))
   end
-
 end

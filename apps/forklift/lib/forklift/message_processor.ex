@@ -5,17 +5,24 @@ defmodule Forklift.MessageProcessor do
 
   def handle_messages(messages) do
     Enum.each(messages, &process_message/1)
+
     case assume_topic(messages) do
-      @data_topic -> :ok
-      @registry_topic -> {:ok, :no_commit}
-      e -> raise RuntimeError, "Unexpected topic #{e} does not match #{@data_topic} or #{@registry_topic}"
+      @data_topic ->
+        :ok
+
+      @registry_topic ->
+        {:ok, :no_commit}
+
+      e ->
+        raise RuntimeError,
+              "Unexpected topic #{e} does not match #{@data_topic} or #{@registry_topic}"
     end
   end
 
   defp assume_topic(messages) do
     topics =
       messages
-      |> Enum.map(&(Map.get(&1, :topic)))
+      |> Enum.map(&Map.get(&1, :topic))
       |> Enum.dedup()
 
     case length(topics) do

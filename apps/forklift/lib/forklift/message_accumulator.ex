@@ -76,7 +76,8 @@ defmodule Forklift.MessageAccumulator do
         {:next_state, :buffering_messages, State.set_messages(state, message_set),
          [reply, timeout_action]}
 
-      other -> other |> IO.inspect(label: "Unhandled Upload error found in accumulator")
+      other ->
+        other |> IO.inspect(label: "Unhandled Upload error found in accumulator")
     end
   end
 

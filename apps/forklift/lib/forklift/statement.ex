@@ -27,7 +27,7 @@ defmodule Forklift.Statement do
   defp format_data(value, "string") do
     value
     |> String.replace("'", "''")
-    |> (&(~s/'#{&1}'/)).()
+    |> (&~s/'#{&1}'/).()
   end
 
   defp format_data(value, _type) do

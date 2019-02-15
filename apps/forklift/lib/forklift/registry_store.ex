@@ -68,7 +68,7 @@ defmodule DatasetRegistryServer do
     schema
   end
 
-  defp store_schema_ets(%DatasetSchema{id: id}=schema) do
+  defp store_schema_ets(%DatasetSchema{id: id} = schema) do
     :ets.insert(:dataset_registry, {id, schema})
   end
 
