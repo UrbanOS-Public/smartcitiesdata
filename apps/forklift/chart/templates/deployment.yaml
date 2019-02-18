@@ -20,26 +20,15 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       serviceAccountName: forklift
-      volumes:
-        - name: data-feeds
-          configMap:
-            name: forklift-feeds
       containers:
         - name: {{ .Chart.Name }}
-          ports:
-            - containerPort: 9001
-            - containerPort: 4369
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          volumeMounts:
-            - name: data-feeds
-              mountPath: /etc/config
-          envFrom:
-          - configMapRef:
-              name: kafka-brokers
           env:
           - name: RUN_IN_KUBERNETES
             value: "true"
+          - name: KAFKA_BROKERS
+            value: {{ .Values.kafka.brokers }}
           - name: PRESTO_URL
             value: {{ .Values.presto.url }}
           - name: NAMESPACE
@@ -50,10 +39,6 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
-          {{ if .Values.localstack.enabled -}}
-          - name: LOCALSTACK
-            value: "true"
-          {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}

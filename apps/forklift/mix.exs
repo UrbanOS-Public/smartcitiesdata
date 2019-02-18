@@ -28,7 +28,6 @@ defmodule Forklift.MixProject do
       {:placebo, "~> 1.2.0", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
       {:faker, "~> 0.12", only: [:dev, :test]},
-      {:libcluster, "~> 3.0"},
       {:distillery, "~> 2.0"}
     ]
   end
