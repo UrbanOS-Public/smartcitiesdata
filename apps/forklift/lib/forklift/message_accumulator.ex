@@ -10,11 +10,11 @@ defmodule Forklift.MessageAccumulator do
   ##################
   ## State Struct ##
   ##################
-  defmodule State do
+  defmodule Data do
     defstruct dataset_id: nil, messages: [], batch_size: nil, timeout: nil
 
-    def set_messages(state, messages \\ []) do
-      %State{state | messages: messages}
+    def set_messages(data, messages \\ []) do
+      %Data{data | messages: messages}
     end
   end
 
@@ -57,23 +57,23 @@ defmodule Forklift.MessageAccumulator do
 
   @impl GenStatem
   def init({dataset_id, timeout, batch_size}) do
-    {:ok, :no_messages, %State{dataset_id: dataset_id, timeout: timeout, batch_size: batch_size}}
+    {:ok, :no_messages, %Data{dataset_id: dataset_id, timeout: timeout, batch_size: batch_size}}
   end
 
   def no_messages(
         {:call, from},
         {:ingest_message, message},
-        %State{dataset_id: dataset_id, messages: messages} = state
+        %Data{dataset_id: dataset_id, messages: messages} = data
       ) do
-    timeout_action = {:state_timeout, state.timeout, :any}
+    timeout_action = {:state_timeout, data.timeout, :any}
     reply = make_reply(from, :ok)
 
-    case maybe_upload(dataset_id, [message | messages], state.batch_size) do
+    case maybe_upload(dataset_id, [message | messages], data.batch_size) do
       :uploaded ->
-        {:keep_state, State.set_messages(state), [reply]}
+        {:keep_state, Data.set_messages(data), [reply]}
 
       {:buffering, message_set} ->
-        {:next_state, :buffering_messages, State.set_messages(state, message_set),
+        {:next_state, :buffering_messages, Data.set_messages(data, message_set),
          [reply, timeout_action]}
 
       other ->
@@ -84,19 +84,19 @@ defmodule Forklift.MessageAccumulator do
   def buffering_messages(
         {:call, from},
         {:ingest_message, message},
-        %State{dataset_id: dataset_id, messages: messages} = state
+        %Data{dataset_id: dataset_id, messages: messages} = data
       ) do
     reply = make_reply(from, :ok)
 
-    case maybe_upload(dataset_id, [message | messages], state.batch_size) do
-      :uploaded -> {:next_state, :no_messages, State.set_messages(state), [reply]}
-      {:buffering, message_set} -> {:keep_state, State.set_messages(state, message_set), [reply]}
+    case maybe_upload(dataset_id, [message | messages], data.batch_size) do
+      :uploaded -> {:next_state, :no_messages, Data.set_messages(data), [reply]}
+      {:buffering, message_set} -> {:keep_state, Data.set_messages(data, message_set), [reply]}
     end
   end
 
-  def buffering_messages(:state_timeout, _event_content, %State{messages: messages} = state) do
-    PrestoClient.upload_data(state.dataset_id, messages)
-    {:next_state, :no_messages, State.set_messages(state)}
+  def buffering_messages(:state_timeout, _event_content, %Data{messages: messages} = data) do
+    PrestoClient.upload_data(data.dataset_id, messages)
+    {:next_state, :no_messages, Data.set_messages(data)}
   end
 
   #######################

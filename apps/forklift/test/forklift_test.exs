@@ -21,8 +21,6 @@ defmodule ForkliftTest do
       Prestige.execute(expected_statement, catalog: "hive", schema: "default"),
       once()
     )
-
-    assert(true)
   end
 
   def make_message(dataset_id, topic \\ "data-topic") do
