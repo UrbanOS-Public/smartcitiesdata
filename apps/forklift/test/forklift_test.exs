@@ -2,7 +2,6 @@ defmodule ForkliftTest do
   use ExUnit.Case
   use Placebo
 
-  alias Forklift.MessageAccumulator
   alias Forklift.MessageProcessor
 
   test "data messages are processed to Prestige" do
@@ -11,7 +10,12 @@ defmodule ForkliftTest do
 
     dataset_id = Faker.StarWars.planet()
     message = make_message(dataset_id)
-    expected = message |> Map.get(:value) |> Jason.decode!() |> Map.get("payload")
+    _expected = message |> Map.get(:value) |> Jason.decode!() |> Map.get("payload")
+
+    dataset_id
+    |> make_schema_message()
+    |> List.wrap()
+    |> MessageProcessor.handle_messages()
 
     MessageProcessor.handle_messages([message])
 
@@ -34,6 +38,33 @@ defmodule ForkliftTest do
     %{
       topic: topic,
       value: value
+    }
+  end
+
+  defp dataset_registry_topic do
+    Application.get_env(:forklift, :registry_topic)
+  end
+
+  defp make_schema_message(dataset_id, topic \\ dataset_registry_topic()) do
+    payload = %{
+      "id" => dataset_id,
+      "operational" => %{
+        "schema" => [
+          %{
+            "name" => "id",
+            "type" => "int"
+          },
+          %{
+            "name" => "name",
+            "type" => "string"
+          }
+        ]
+      }
+    }
+
+    %{
+      topic: topic,
+      value: Jason.encode!(payload)
     }
   end
 end

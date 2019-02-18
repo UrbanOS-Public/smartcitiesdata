@@ -16,11 +16,10 @@ defmodule MessageProcessorTest do
     assert MessageProcessor.handle_messages([message]) == :ok
   end
 
-  test "registry messages return :ok" do
-    # This test should be expanded once we know more about how registry messages will work. -JP 02/08/18
+  test "registry messages return {:ok, :no_commit}" do
     message = make_registry_message(Faker.StarWars.planet())
 
-    assert MessageProcessor.handle_messages([message]) == :ok
+    assert MessageProcessor.handle_messages([message]) == {:ok, :no_commit}
   end
 
   def make_message(dataset_id, topic \\ "data-topic") do
