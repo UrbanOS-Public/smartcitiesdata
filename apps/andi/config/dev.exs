@@ -13,6 +13,12 @@ config :andi, AndiWeb.Endpoint,
   check_origin: false,
   watchers: []
 
+config :kaffe,
+  producer: [
+    endpoints: [kafka: 9092],
+    topics: ["dataset-registry"]
+  ]
+
 # Watch static and templates for browser reloading.
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

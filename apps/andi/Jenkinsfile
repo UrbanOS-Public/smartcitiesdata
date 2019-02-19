@@ -68,7 +68,7 @@ node('infrastructure') {
 
 def deployAndiTo(environment,imageName, tag) {
     def extraVars = [
-        'image_repository': "${scos.ecrHostname}/${imageName}/",
+        'image_repository': "${scos.ecrHostname}/${imageName}",
         'tag': tag
     ]
 

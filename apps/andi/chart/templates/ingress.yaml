@@ -4,20 +4,21 @@ metadata:
   name: {{ .Chart.Name }}
   namespace: {{ .Release.Namespace }}
   annotations:
-    kubernetes.io/ingress.class: alb
-    alb.ingress.kubernetes.io/scheme: {{ .Values.ingress.scheme }}
-    alb.ingress.kubernetes.io/subnets: {{ .Values.ingress.subnets }}
-    alb.ingress.kubernetes.io/security-groups: {{ .Values.ingress.securityGroups }}
-    alb.ingress.kubernetes.io/healthcheck-path: /healthcheck
-    alb.ingress.kubernetes.io/tags: scos.delete.on.teardown=true
-    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.certificateARN }}
-    alb.ingress.kubernetes.io/actions.redirect: '{"Type": "redirect", "RedirectConfig":{"Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+{{- if .Values.ingress.annotations }}
+{{ toYaml .Values.ingress.annotations | trim | indent 4 }}
+{{- end }}
 spec:
   backend:
     serviceName: {{ .Chart.Name }}
     servicePort: {{ .Values.service.port }}
   rules:
+  - host: andi.{{ .Values.ingress.rootDnsZone }}
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: redirect
+          servicePort: use-annotation
   - host: andi.{{ .Values.ingress.dnsZone }}
     http:
       paths:

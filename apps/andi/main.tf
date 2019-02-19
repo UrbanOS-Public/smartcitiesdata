@@ -29,13 +29,17 @@ resource "local_file" "kubeconfig" {
 resource "local_file" "helm_vars" {
   filename = "${path.module}/outputs/${terraform.workspace}.yaml"
   content = <<EOF
-serviceType: NodePort
+image:
+  repository: ${var.image_repository}
+  tag: ${var.tag}
 ingress:
   annotations:
+    kubernetes.io/ingress.class: "alb"
     alb.ingress.kubernetes.io/scheme: "${var.is_internal ? "internal" : "internet-facing"}"
     alb.ingress.kubernetes.io/subnets: "${join(",", data.terraform_remote_state.env_remote_state.public_subnets)}"
-    alb.ingress.kubernetes.io/securityGroups: "${data.terraform_remote_state.env_remote_state.allow_all_security_group}"
-    alb.ingress.kubernetes.io/certificateARN: "${data.terraform_remote_state.env_remote_state.tls_certificate_arn},${data.terraform_remote_state.env_remote_state.root_tls_certificate_arn}"
+    alb.ingress.kubernetes.io/security-groups: "${data.terraform_remote_state.env_remote_state.allow_all_security_group}"
+    alb.ingress.kubernetes.io/certificate-arn: "${data.terraform_remote_state.env_remote_state.tls_certificate_arn},${data.terraform_remote_state.env_remote_state.root_tls_certificate_arn}"
+    alb.ingress.kubernetes.io/healthcheck-path: "/healthcheck"
     alb.ingress.kubernetes.io/tags: scos.delete.on.teardown=true
     alb.ingress.kubernetes.io/actions.redirect: '{"Type": "redirect", "RedirectConfig":{"Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
@@ -93,6 +97,11 @@ variable "alm_state_bucket_name" {
 variable "alm_workspace" {
   description = "The workspace to pull ALM outputs from"
   default     = "alm"
+}
+
+variable "image_repository" {
+  description = "The image repository"
+  default     = "199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/andi"
 }
 
 variable "tag" {

@@ -9,6 +9,16 @@ defmodule KafkaTest do
 
   test "send to kafka produces a kafka message when a valid dataset is sent" do
     result = Andi.Kafka.send_to_kafka(%Dataset{:id => "1", :operational => 2, :business => 3})
+
+    assert_called(
+      Kaffe.Producer.produce_sync(
+        "dataset-registry",
+        "1",
+        "{\"business\":3,\"id\":\"1\",\"operational\":2}"
+      ),
+      once()
+    )
+
     assert result == :ok
   end
 

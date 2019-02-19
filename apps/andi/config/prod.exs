@@ -22,3 +22,10 @@ config :andi, AndiWeb.Endpoint,
   server: true,
   root: ".",
   version: Application.spec(:andi, :vsn)
+
+
+config :kaffe,
+  producer: [
+    endpoints: [kafka: 9092],
+    topics: ["dataset-registry"]
+  ]
