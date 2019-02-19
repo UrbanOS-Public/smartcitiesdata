@@ -30,13 +30,13 @@ node('infrastructure') {
                 image.push('latest')
             }
 
-            deployProducerTo('dev')
+            deployTo('dev')
         }
 
         doStageIfPromoted('Deploy to Staging') {
             def promotionTag = scos.releaseCandidateNumber()
 
-            deployProducerTo('staging')
+            deployTo('staging')
 
             scos.applyAndPushGitHubTag(promotionTag)
 
@@ -62,14 +62,14 @@ node('infrastructure') {
     }
 }
 
-def deployProducerTo(environment) {
+def deployTo(environment) {
     scos.withEksCredentials(environment) {
         sh("""#!/bin/bash
             set -e
             helm init --client-only
             helm upgrade --install forklift \
                 -f helm-config/prod.yaml ./chart \
-                --namespace=forklift \
+                --namespace=streaming-services \
                 --set image.tag="${env.GIT_COMMIT_HASH}" \
         """.trim())
     }
