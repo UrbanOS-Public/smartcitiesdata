@@ -1,4 +1,4 @@
-defmodule DatasetRegistryServer do
+defmodule Forklift.DatasetRegistryServer do
   use GenServer
 
   alias Forklift.DatasetSchema

@@ -1,5 +1,6 @@
 defmodule Forklift.MessageProcessor do
   alias Forklift.MessageAccumulator
+  alias Forklift.DatasetRegistryServer
   @data_topic Application.get_env(:forklift, :data_topic)
   @registry_topic Application.get_env(:forklift, :registry_topic)
 
