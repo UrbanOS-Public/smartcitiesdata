@@ -29,7 +29,7 @@ defmodule Andi.MixProject do
       {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
       {:distillery, "~> 2.0", runtime: false},
       {:kaffe, "~> 1.8"},
-      {:placebo, "~> 1.1"},
+      {:placebo, "~> 1.1", only: [:test, :integration]},
       {:phoenix, "~> 1.4.0"},
       {:phoenix_pubsub, "~> 1.1"},
       {:phoenix_html, "~> 2.11"},

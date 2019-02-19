@@ -9,7 +9,7 @@ properties([
     pipelineTriggers([scos.dailyBuildTrigger('10-12')]), //UTC
 ])
 
-def image
+def image, imageName
 
 def doStageIf = scos.&doStageIf
 def doStageIfRelease = doStageIf.curry(scos.changeset.isRelease)
@@ -20,9 +20,13 @@ node('infrastructure') {
     ansiColor('xterm') {
         scos.doCheckoutStage()
 
+        imageName = "scos/andi"
+        imageTag = "${env.GIT_COMMIT_HASH}"
+
         doStageUnlessRelease('Build') {
-            image = docker.build("scos/andi:${env.GIT_COMMIT_HASH}")
+            image = docker.build("${imageName}:${env.GIT_COMMIT_HASH}")
         }
+        
 
         doStageUnlessRelease('Deploy to Dev') {
             scos.withDockerRegistry {
@@ -30,13 +34,13 @@ node('infrastructure') {
                 image.push('latest')
             }
 
-            deployAndiTo('dev')
+            deployAndiTo('dev', imageName, env.GIT_COMMIT_HASH)
         }
 
         doStageIfPromoted('Deploy to Staging') {
             def promotionTag = scos.releaseCandidateNumber()
 
-            deployAndiTo('staging')
+            deployAndiTo('staging', imageName, env.GIT_COMMIT_HASH)
 
             scos.applyAndPushGitHubTag(promotionTag)
 
@@ -49,12 +53,12 @@ node('infrastructure') {
             def releaseTag = env.BRANCH_NAME
             def promotionTag = 'prod'
 
-            deployAndiTo('prod')
+            deployAndiTo('prod', imageName, env.GIT_COMMIT_HASH)
 
             scos.applyAndPushGitHubTag(promotionTag)
 
             scos.withDockerRegistry {
-                image = scos.pullImageFromDockerRegistry("scos/andi", env.GIT_COMMIT_HASH)
+                image = scos.pullImageFromDockerRegistry(imageName, env.GIT_COMMIT_HASH)
                 image.push(releaseTag)
                 image.push(promotionTag)
             }
@@ -62,28 +66,14 @@ node('infrastructure') {
     }
 }
 
-def deployAndiTo(environment) {
-    internal = true
-    scos.withEksCredentials(environment) {
-        def terraformOutputs = scos.terraformOutput(environment)
-        def subnets = terraformOutputs.public_subnets.value.join(/\\,/)
-        def allowInboundTrafficSG = terraformOutputs.allow_all_security_group.value
-        def certificateARN = internal ? terraformOutputs.tls_certificate_arn.value : terraformOutputs.root_tls_certificate_arn.value
-        def ingressScheme = internal ? 'internal' : 'internet-facing'
+def deployAndiTo(environment,imageName, tag) {
+    def extraVars = [
+        'image_repository': "${scos.ecrHostname}/${imageName}/",
+        'tag': tag
+    ]
 
-        sh("""#!/bin/bash
-            set -e
-            helm init --client-only
-            helm upgrade --install andi \
-                ./chart \
-                --namespace=admin \
-                --set ingress.enabled="true" \
-                --set ingress.scheme="${ingressScheme}" \
-                --set ingress.subnets="${subnets}" \
-                --set ingress.securityGroups="${allowInboundTrafficSG}" \
-                --set ingress.dnsZone="${environment}.internal.smartcolumbusos.com" \
-                --set ingress.certificateARN="${certificateARN}" \
-                --set image.tag="${env.GIT_COMMIT_HASH}" \
-        """.trim())
-    }
+    def terraform = scos.terraform(environment)
+    sh "terraform init && terraform workspace new ${environment}"
+    terraform.plan(terraform.defaultVarFile, extraVars)
+    terraform.apply()
 }
