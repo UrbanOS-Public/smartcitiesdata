@@ -29,9 +29,9 @@ spec:
           - name: PRESTO_URL
             value: {{ .Values.presto.url }}
           - name: DATA_TOPIC
-            value: {{.Values.kafka.data-topic}}
+            value: {{.Values.kafka.dataTopic}}
           - name: REGISTRY_TOPIC
-            value: {{.Values.kafka.registry-topic}}
+            value: {{.Values.kafka.registryTopic}}
           - name: NAMESPACE
             valueFrom:
               fieldRef:

@@ -12,23 +12,14 @@ if kafka_brokers do
 
   config :kaffe,
     consumer: [
-      endpoints: endpoints
+      endpoints: endpoints,
+      topics: [System.get_env("DATA_TOPIC"), System.get_env("REGISTRY_TOPIC")]
     ]
 end
 
-# if System.get_env("RUN_IN_KUBERNETES") do
-#   config :libcluster,
-#     topologies: [
-#       forklift_cluster: [
-#         strategy: Elixir.Cluster.Strategy.Kubernetes,
-#         config: [
-#           mode: :dns,
-#           kubernetes_node_basename: "forklift",
-#           kubernetes_selector: "app.kubernetes.io/name=forklift",
-#           polling_interval: 10_000
-#         ]
-#       ]
-#     ]
-# end
+config :forklift,
+  data_topic: System.get_env("DATA_TOPIC"),
+  registry_topic: System.get_env("REGISTRY_TOPIC")
+
 
 config :prestige, base_url: System.get_env("PRESTO_URL")
