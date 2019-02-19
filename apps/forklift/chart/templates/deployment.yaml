@@ -24,12 +24,14 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-          - name: RUN_IN_KUBERNETES
-            value: "true"
           - name: KAFKA_BROKERS
             value: {{ .Values.kafka.brokers }}
           - name: PRESTO_URL
             value: {{ .Values.presto.url }}
+          - name: DATA_TOPIC
+            value: {{.Values.kafka.data-topic}}
+          - name: REGISTRY_TOPIC
+            value: {{.Values.kafka.registry-topic}}
           - name: NAMESPACE
             valueFrom:
               fieldRef:

@@ -47,3 +47,21 @@ release :forklift do
     :runtime_tools
   ]
 end
+
+config :kaffe,
+  consumer: [
+    endpoints: [localhost: 9092],
+    topics: [System.get_env("DATA_TOPIC"), System.get_env("REGISTRY_TOPIC")],
+    consumer_group: "forklift-group",
+    message_handler: Forklift.MessageProcessor,
+    offset_reset_policy: :reset_to_earliest,
+    start_with_earliest_message: true,
+    max_bytes: 1_000_000,
+    worker_allocation_strategy: :worker_per_topic_partition,
+  ]
+
+  config :forklift,
+    timeout: 60_000,
+    batch_size: 5_000,
+    data_topic: System.get_env("DATA_TOPIC"),
+    registry_topic: System.get_env("REGISTRY_TOPIC")
