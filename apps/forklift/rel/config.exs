@@ -60,8 +60,8 @@ config :kaffe,
     worker_allocation_strategy: :worker_per_topic_partition,
   ]
 
-  config :forklift,
-    timeout: 60_000,
-    batch_size: 5_000,
-    data_topic: System.get_env("DATA_TOPIC"),
-    registry_topic: System.get_env("REGISTRY_TOPIC")
+config :forklift,
+  timeout: 60_000,
+  batch_size: 5_000,
+  data_topic: System.get_env("DATA_TOPIC"),
+  registry_topic: System.get_env("REGISTRY_TOPIC")
