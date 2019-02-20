@@ -72,6 +72,10 @@ defmodule Forklift.DatasetRegistryServer do
     :ets.insert(:dataset_registry, {id, schema})
   end
 
+  defp store_schema_ets(:invalid_schema) do
+    IO.puts("Schema Entry Invalid. Skipping for now.")
+  end
+
   defp make_reply(msg), do: {:reply, msg, nil}
 
   defp parse_schema(%{"id" => id, "operational" => %{"schema" => schema}}) do
@@ -81,5 +85,9 @@ defmodule Forklift.DatasetRegistryServer do
       id: id,
       columns: columns
     }
+  end
+
+  defp parse_schema(_schema_map) do
+    :invalid_schema
   end
 end
