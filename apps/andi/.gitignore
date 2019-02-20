@@ -37,5 +37,5 @@ config/*.secret.exs
 .terraform/
 outputs/
 terraform.tfstate.d/
-.out
+*.out
 *.plan
