@@ -2,8 +2,8 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-raw_topic = "raw-data"
-validated_topic = "validated-data"
+raw_topic = "raw"
+validated_topic = "validated"
 
 endpoints = [localhost: 9092]
 

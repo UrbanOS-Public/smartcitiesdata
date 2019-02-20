@@ -22,7 +22,8 @@ defmodule Valkyrie.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:kaffe, "~> 1.0"}
+      {:kaffe, "~> 1.0"},
+      {:distillery, "~> 2.0"}
     ]
   end
 end
