@@ -2,29 +2,24 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-# This configuration is loaded before any dependency and is restricted
-# to this project. If another project depends on this project, this
-# file won't be loaded nor affect the parent project. For this reason,
-# if you want to provide default values for your application for
-# third-party users, it should be done in your "mix.exs" file.
+raw_topic = "raw"
+validated_topic = "validated"
 
-# You can configure your application as:
-#
-#     config :valkyrie, key: :value
-#
-# and access this configuration in your application as:
-#
-#     Application.get_env(:valkyrie, :key)
-#
-# You can also configure a third-party app:
-#
-#     config :logger, level: :info
-#
+endpoints = [localhost: 9092]
 
-# It is also possible to import configuration files, relative to this
-# directory. For example, you can emulate configuration per environment
-# by uncommenting the line below and defining dev.exs, test.exs and such.
-# Configuration from the imported file will override the ones defined
-# here (which is why it is important to import them last).
-#
-#     import_config "#{Mix.env()}.exs"
+config :kaffe,
+  consumer: [
+    endpoints:  endpoints,
+    topics: [raw_topic],
+    consumer_group: "valkyrie-group",
+    message_handler: Valkyrie.MessageHandler,
+    offset_reset_policy: :reset_earliest,
+    start_with_earliest_message: true,
+    worker_allocation_strategy: :worker_per_topic_partition
+  ],
+  producer: [
+    endpoints: endpoints,
+    topics: [validated_topic]
+  ]
+
+import_config "#{Mix.env()}.exs"
