@@ -22,7 +22,7 @@ defmodule Forklift do
   end
 
   def send_to_kafka(msg) do
-    Kaffe.Producer.produce_sync("data-topic", [{"the_key", msg}])
+    Kaffe.Producer.produce_sync("streaming-transformed", [{"the_key", msg}])
   end
 
   def produce_message do

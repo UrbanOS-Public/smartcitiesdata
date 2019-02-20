@@ -27,7 +27,7 @@ defmodule ForkliftTest do
     )
   end
 
-  def make_message(dataset_id, topic \\ "data-topic") do
+  def make_message(dataset_id, topic \\ "streaming-transformed") do
     value =
       %{
         payload: %{id: 111, name: "bob"},
