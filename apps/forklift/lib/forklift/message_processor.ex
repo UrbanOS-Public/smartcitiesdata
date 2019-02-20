@@ -48,6 +48,11 @@ defmodule Forklift.MessageProcessor do
     :ok
   end
 
+  defp process_message(unhandled_message) do
+    IO.inspect(unhandled_message, label: "Unhandled message")
+    :ok
+  end
+
   defp extract_id_and_payload(value) do
     with {:ok, data} <- Jason.decode(value) do
       %{"payload" => payload, "metadata" => %{"dataset_id" => dataset_id}} = data
