@@ -73,7 +73,7 @@ defmodule Forklift.DatasetRegistryServer do
   end
 
   defp store_schema_ets(:invalid_schema) do
-    IO.puts("Schema Entry Invalid. Skipping for now.")
+    IO.puts("Schema Entry Invalid. Skipping storing for now.")
   end
 
   defp make_reply(msg), do: {:reply, msg, nil}
@@ -87,7 +87,8 @@ defmodule Forklift.DatasetRegistryServer do
     }
   end
 
-  defp parse_schema(_schema_map) do
+  defp parse_schema(schema_map) do
+    IO.inspect(schema_map, label: "Schema Entry Invalid. Skipping for now.")
     :invalid_schema
   end
 end
