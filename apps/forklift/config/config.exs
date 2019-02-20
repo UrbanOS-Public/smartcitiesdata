@@ -2,7 +2,7 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-data_topic = "data-topic"
+data_topic = "streaming-transformed" ## Warning: This is overriding the release configuration
 registry_topic = "dataset-registry"
 
 config :forklift,
