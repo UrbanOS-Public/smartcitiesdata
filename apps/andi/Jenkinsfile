@@ -24,7 +24,7 @@ node('infrastructure') {
         imageTag = "${env.GIT_COMMIT_HASH}"
 
         doStageUnlessRelease('Build') {
-            image = docker.build("${imageName}:${env.GIT_COMMIT_HASH}")
+            image = docker.build("${imageName}:${imageTag}")
         }
         
 
@@ -34,13 +34,13 @@ node('infrastructure') {
                 image.push('latest')
             }
 
-            deployAndiTo('dev', imageName, env.GIT_COMMIT_HASH)
+            deployAndiTo('dev', imageName, imageTag)
         }
 
         doStageIfPromoted('Deploy to Staging') {
             def promotionTag = scos.releaseCandidateNumber()
 
-            deployAndiTo('staging', imageName, env.GIT_COMMIT_HASH)
+            deployAndiTo('staging', imageName, imageTag)
 
             scos.applyAndPushGitHubTag(promotionTag)
 
@@ -53,12 +53,12 @@ node('infrastructure') {
             def releaseTag = env.BRANCH_NAME
             def promotionTag = 'prod'
 
-            deployAndiTo('prod', imageName, env.GIT_COMMIT_HASH)
+            deployAndiTo('prod', imageName, imageTag)
 
             scos.applyAndPushGitHubTag(promotionTag)
 
             scos.withDockerRegistry {
-                image = scos.pullImageFromDockerRegistry(imageName, env.GIT_COMMIT_HASH)
+                image = scos.pullImageFromDockerRegistry(imageName, imageTag)
                 image.push(releaseTag)
                 image.push(promotionTag)
             }
