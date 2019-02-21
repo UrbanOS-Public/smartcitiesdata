@@ -1,19 +1,22 @@
 defmodule Forklift.PrestoClient do
+  @moduledoc false
+  require Logger
   alias Forklift.Statement
 
   def upload_data(dataset_id, messages) do
-    System.get_env("PRESTO_URL") |> IO.inspect(label: "Uploading #{length(messages)} messages to...")
-    Forklift.DatasetRegistryServer.get_schema(dataset_id)
+    dataset_id
+    |> Forklift.DatasetRegistryServer.get_schema()
     |> Statement.build(messages)
     |> execute_statement()
 
     :ok
   rescue
-    e -> IO.inspect(e, label: "Unhandled Presto Client error")
+    e -> Logger.error("Error uploading data, #{e}")
   end
 
   defp execute_statement(statement) do
-    Prestige.execute(statement, catalog: "hive", schema: "default")
+    statement
+    |> Prestige.execute(catalog: "hive", schema: "default")
     |> Prestige.prefetch()
   end
 end

@@ -1,4 +1,6 @@
 defmodule Forklift.DatasetRegistryServer do
+  @moduledoc false
+  require Logger
   use GenServer
 
   alias Forklift.DatasetSchema
@@ -88,7 +90,7 @@ defmodule Forklift.DatasetRegistryServer do
   end
 
   defp parse_schema(schema_map) do
-    IO.inspect(schema_map, label: "Schema Entry Invalid. Skipping for now.")
+    Logger.info("Schema Entry Invalid for #{schema_map}. Skipping for now.")
     :invalid_schema
   end
 end

@@ -1,4 +1,6 @@
 defmodule Forklift.Statement do
+  @moduledoc false
+  require Logger
   def build(schema, data) do
     columns_fragment =
       schema.columns
@@ -13,7 +15,7 @@ defmodule Forklift.Statement do
 
     ~s/insert into #{schema.id} (#{columns_fragment}) values #{data_fragment}/
   rescue
-    e -> IO.inspect(e, label: "Unhandled Statement Builder error")
+    e -> Logger.error("Unhandled Statement Builder error: #{e}")
   end
 
   defp format_columns(columns, row) do

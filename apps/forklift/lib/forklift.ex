@@ -1,5 +1,5 @@
 defmodule Forklift do
-
+  @moduledoc false
   #   CREATE TABLE hive.default.pirate_dilemma5 (
   #     go bigint,
   #     fund varchar,

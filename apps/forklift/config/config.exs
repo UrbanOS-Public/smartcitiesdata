@@ -5,8 +5,6 @@ use Mix.Config
 data_topic = "streaming-transformed" ## Warning: This is overriding the release configuration
 registry_topic = "dataset-registry"
 
-config :prestige, base_url: System.get_env("PRESTO_URL")
-
 config :forklift,
   timeout: 60_000,
   batch_size: 5_000,

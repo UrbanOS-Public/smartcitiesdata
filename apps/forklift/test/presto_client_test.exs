@@ -2,8 +2,7 @@ defmodule PrestoClientTest do
   use ExUnit.Case
   use Placebo
 
-  alias Forklift.{DatasetSchema,PrestoClient,DatasetRegistryServer}
-  alias Prestige
+  alias Forklift.{DatasetSchema, PrestoClient, DatasetRegistryServer}
 
   test "upload_data sends a valid statement to prestige" do
     dataset_id = "placeholder_id"
@@ -16,7 +15,7 @@ defmodule PrestoClientTest do
     }
 
     allow(Prestige.execute(any(), catalog: "hive", schema: "default"), return: :ok)
-    allow(Forklift.DatasetRegistryServer.get_schema(any()), return: schema)
+    allow(DatasetRegistryServer.get_schema(any()), return: schema)
     allow(Prestige.prefetch(any()), return: :ok)
 
     expected_statement =

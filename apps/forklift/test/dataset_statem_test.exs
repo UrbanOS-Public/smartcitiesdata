@@ -6,7 +6,7 @@ defmodule MessageAccumulatorTest do
   alias Forklift.PrestoClient
 
   test "uploads data when at buffer size" do
-    {:ok, pid} = MessageAccumulator.start_link(:dataset_id, timeout: 10000, batch_size: 3)
+    {:ok, pid} = MessageAccumulator.start_link(:dataset_id, timeout: 10_000, batch_size: 3)
 
     expected_message_set = [
       "Hello there! Buffer 1",

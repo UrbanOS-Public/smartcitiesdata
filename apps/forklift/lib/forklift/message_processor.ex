@@ -1,4 +1,6 @@
 defmodule Forklift.MessageProcessor do
+  @moduledoc false
+  require Logger
   alias Forklift.MessageAccumulator
   alias Forklift.DatasetRegistryServer
   @data_topic Application.get_env(:forklift, :data_topic)
@@ -42,14 +44,14 @@ defmodule Forklift.MessageProcessor do
          {:ok, pid} <- start_server(dataset_id) do
       MessageAccumulator.send_message(pid, payload)
     else
-      {:error, reason} -> reason |> IO.inspect(label: "PROCESS MESSAGE FAILED")
+      {:error, reason} -> Logger.info("PROCESS MESSAGE FAILED: #{reason}")
     end
 
     :ok
   end
 
   defp process_message(unhandled_message) do
-    IO.inspect(unhandled_message, label: "Unhandled message")
+    Logger.info("Unhandled message, #{unhandled_message}")
     :ok
   end
 

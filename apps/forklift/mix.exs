@@ -22,6 +22,7 @@ defmodule Forklift.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.9.1"},
       {:prestige, path: "prestige"},
