@@ -16,7 +16,7 @@ if kafka_brokers do
       topics: [System.get_env("RAW_TOPIC")]
     ],
     producer: [
-      endpoitns: endpoitns,
+      endpoints: endpoints,
       topics: [System.get_env("VALIDATED_TOPIC")]
     ]
 end
