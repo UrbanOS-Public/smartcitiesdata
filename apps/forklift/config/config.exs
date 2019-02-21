@@ -11,8 +11,6 @@ config :forklift,
   data_topic: data_topic,
   registry_topic: registry_topic
 
-config :prestige, base_url: "https://presto.dev.internal.smartcolumbusos.com"
-
 config :kaffe,
   consumer: [
     endpoints: [localhost: 9092],
