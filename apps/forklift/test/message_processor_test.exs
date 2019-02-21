@@ -5,10 +5,6 @@ defmodule MessageProcessorTest do
   alias Forklift.MessageAccumulator
   alias Forklift.MessageProcessor
 
-  setup do
-    on_exit fn -> Placebo.unstub() end
-  end
-
   test "data messages are routed to the appropriate processor" do
     dataset_id = Faker.StarWars.planet()
     message = make_message(dataset_id)

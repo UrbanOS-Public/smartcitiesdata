@@ -24,8 +24,8 @@ RUN apk update \
  && apk add --no-cache bash openssl \
  && rm -rf /var/cache/**/*
 
-COPY --from=builder /app/_build/prod/rel/forklift/ .
 WORKDIR /app
+COPY --from=builder /app/_build/prod/rel/forklift/ .
 
 ENV PORT=4000
 EXPOSE ${PORT}
