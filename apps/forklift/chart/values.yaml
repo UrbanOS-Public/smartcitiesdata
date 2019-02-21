@@ -41,4 +41,4 @@ tolerations: []
 affinity: {}
 
 presto:
-  url: https://kdp-kubernetes-data-platform-presto.kdp:8080
+  url: http://kdp-kubernetes-data-platform-presto.kdp:8080
