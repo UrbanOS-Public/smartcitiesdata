@@ -32,6 +32,8 @@ spec:
             value: {{.Values.kafka.dataTopic}}
           - name: REGISTRY_TOPIC
             value: {{.Values.kafka.registryTopic}}
+          - name: PRESTO_USER
+            value: {{.Values.presto.user}}
           - name: NAMESPACE
             valueFrom:
               fieldRef:
