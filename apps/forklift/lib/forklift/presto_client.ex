@@ -2,7 +2,6 @@ defmodule Forklift.PrestoClient do
   @moduledoc false
   require Logger
   alias Forklift.{DatasetRegistryServer, Statement}
-  @user Application.get_env(:forklift, :user)
 
   def upload_data(dataset_id, messages) do
     dataset_id
@@ -17,7 +16,7 @@ defmodule Forklift.PrestoClient do
 
   defp execute_statement(statement) do
     statement
-    |> Prestige.execute(catalog: "hive", schema: "default", user: @user)
+    |> Prestige.execute(catalog: "hive", schema: "default", user: Application.get_env(:forklift, :user))
     |> Prestige.prefetch()
   end
 end

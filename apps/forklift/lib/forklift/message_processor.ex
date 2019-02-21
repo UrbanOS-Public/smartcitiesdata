@@ -3,22 +3,20 @@ defmodule Forklift.MessageProcessor do
   require Logger
   alias Forklift.MessageAccumulator
   alias Forklift.DatasetRegistryServer
-  @data_topic Application.get_env(:forklift, :data_topic)
-  @registry_topic Application.get_env(:forklift, :registry_topic)
 
   def handle_messages(messages) do
     Enum.each(messages, &process_message/1)
 
     case assume_topic(messages) do
-      @data_topic ->
+      Application.get_env(:forklift, :data_topic) ->
         :ok
 
-      @registry_topic ->
+      Application.get_env(:forklift, :registry_topic) ->
         {:ok, :no_commit}
 
       e ->
         raise RuntimeError,
-              "Unexpected topic #{e} does not match #{@data_topic} or #{@registry_topic}"
+              "Unexpected topic #{e} does not match #{Application.get_env(:forklift, :data_topic)} or #{Application.get_env(:forklift, :registry_topic)}"
     end
   end
 
@@ -34,12 +32,12 @@ defmodule Forklift.MessageProcessor do
     end
   end
 
-  defp process_message(%{topic: @registry_topic, value: value}) do
+  defp process_message(%{topic: Application.get_env(:forklift, :registry_topic), value: value}) do
     DatasetRegistryServer.send_message(value)
     :ok
   end
 
-  defp process_message(%{topic: @data_topic, value: value} = _message) do
+  defp process_message(%{topic: Application.get_env(:forklift, :data_topic), value: value} = _message) do
     with {:ok, dataset_id, payload} <- extract_id_and_payload(value),
          {:ok, pid} <- start_server(dataset_id) do
       MessageAccumulator.send_message(pid, payload)
