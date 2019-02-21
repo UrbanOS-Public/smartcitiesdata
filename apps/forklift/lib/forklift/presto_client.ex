@@ -2,6 +2,7 @@ defmodule Forklift.PrestoClient do
   @moduledoc false
   require Logger
   alias Forklift.{DatasetRegistryServer, Statement}
+  @user Application.get_env(:forklift, :user)
 
   def upload_data(dataset_id, messages) do
     dataset_id
@@ -11,12 +12,12 @@ defmodule Forklift.PrestoClient do
 
     :ok
   rescue
-    e -> Logger.error("Error uploading data, #{e}")
+    e -> Logger.error("Error uploading data")
   end
 
   defp execute_statement(statement) do
     statement
-    |> Prestige.execute(catalog: "hive", schema: "default", user: "forklift")
+    |> Prestige.execute(catalog: "hive", schema: "default", user: @user)
     |> Prestige.prefetch()
   end
 end
