@@ -7,16 +7,16 @@ defmodule Forklift.MessageProcessor do
   def handle_messages(messages) do
     Enum.each(messages, &process_message/1)
 
-    case assume_topic(messages) do
-      Application.get_env(:forklift, :data_topic) ->
+    data_topic = data_topic()
+    registry_topic = registry_topic()
+
+    with ^data_topic <- assume_topic(messages) do
+      :ok
+    else
+      ^registry_topic -> {:ok, :no_commit}
+      topic ->
+        Logger.warn("Unexpected topic #{topic} found in message stream. Ignoring")
         :ok
-
-      Application.get_env(:forklift, :registry_topic) ->
-        {:ok, :no_commit}
-
-      e ->
-        raise RuntimeError,
-              "Unexpected topic #{e} does not match #{Application.get_env(:forklift, :data_topic)} or #{Application.get_env(:forklift, :registry_topic)}"
     end
   end
 
@@ -32,12 +32,15 @@ defmodule Forklift.MessageProcessor do
     end
   end
 
-  defp process_message(%{topic: Application.get_env(:forklift, :registry_topic), value: value}) do
-    DatasetRegistryServer.send_message(value)
+  defp process_message(%{topic: topic, value: value}=message) do
+    case data_topic() == topic do
+      true -> accumulate_value(value)
+      _ -> DatasetRegistryServer.send_message(value)
+    end
     :ok
   end
 
-  defp process_message(%{topic: Application.get_env(:forklift, :data_topic), value: value} = _message) do
+  defp accumulate_value(value) do
     with {:ok, dataset_id, payload} <- extract_id_and_payload(value),
          {:ok, pid} <- start_server(dataset_id) do
       MessageAccumulator.send_message(pid, payload)
@@ -45,11 +48,6 @@ defmodule Forklift.MessageProcessor do
       {:error, reason} -> Logger.info("PROCESS MESSAGE FAILED: #{reason}")
     end
 
-    :ok
-  end
-
-  defp process_message(unhandled_message) do
-    Logger.info("Unhandled message, #{unhandled_message}")
     :ok
   end
 
@@ -70,4 +68,7 @@ defmodule Forklift.MessageProcessor do
       _error -> {:error, "Error starting/locating DataSet GenServer"}
     end
   end
+
+  defp data_topic(), do: Application.get_env(:forklift, :data_topic)
+  defp registry_topic(), do: Application.get_env(:forklift, :registry_topic)
 end
