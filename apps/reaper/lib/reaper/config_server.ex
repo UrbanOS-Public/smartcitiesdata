@@ -9,18 +9,31 @@ defmodule Reaper.ConfigServer do
   alias Reaper.DataFeed
 
   def start_link(args) do
-    GenServer.start_link(__MODULE__, args, name: via_tuple(__MODULE__))
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   def init(state \\ []) do
+    Horde.Registry.register(Reaper.Registry, __MODULE__)
+
     {:ok, state}
   end
 
   def child_spec(args) do
-    %{
+    config_server_spec = %{
       id: __MODULE__,
-      start: {__MODULE__, :start_link, [args]},
-      restart: :transient
+      start: {__MODULE__, :start_link, [args]}
+    }
+
+    %{
+      id: :reaper_config_server_starter,
+      restart: :transient,
+      start:
+        {Task, :start_link,
+         [
+           fn ->
+             Horde.Supervisor.start_child(Reaper.Horde.Supervisor, config_server_spec)
+           end
+         ]}
     }
   end
 
@@ -42,7 +55,7 @@ defmodule Reaper.ConfigServer do
     Horde.Supervisor.start_child(
       Reaper.Horde.Supervisor,
       %{
-        id: id,
+        id: String.to_atom(id),
         start: {Reaper.FeedSupervisor, :start_link, [[dataset: dataset, name: via_tuple(String.to_atom(id))]]}
       }
     )
