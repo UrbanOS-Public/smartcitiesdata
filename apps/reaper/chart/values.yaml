@@ -1,0 +1,28 @@
+reaper:
+  from_topic: dataset-registry
+  to_topic: streaming-raw
+  replicaCount: 2
+  image:
+    repository: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/reaper
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    port: 9092
+    type: ClusterIP
+
+strimzi:
+  enable: false
+  watchNamespaces: []
+  resources:
+    limits:
+      cpu: 100m
+    requests:
+      cpu: 10m
+  kafka:
+    brokers: "streaming-service-kafka-bootstrap.streaming-prime:9092"
+    replicaCount: 1
+    numPartitions: 30
+    replicationFactor: 3
+    minIsr: 2
+    autoTopics: false
+  zookeeper: {}
