@@ -2,14 +2,14 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-raw_topic = "raw"
-validated_topic = "validated"
+raw_topic = "streaming-raw"
+validated_topic = "streaming-validated"
 
 endpoints = [localhost: 9092]
 
 config :kaffe,
   consumer: [
-    endpoints:  endpoints,
+    endpoints: endpoints,
     topics: [raw_topic],
     consumer_group: "valkyrie-group",
     message_handler: Valkyrie.MessageHandler,
