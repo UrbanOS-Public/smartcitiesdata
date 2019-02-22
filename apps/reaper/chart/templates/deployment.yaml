@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    helm.sh/chart: {{ include "reaper.chart" . }}
+    app.kubernetes.io/name: {{ include "reaper.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  serviceAccountName: reaper
+  replicas: {{ .Values.reaper.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "reaper.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "reaper.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ .Chart.Name }}
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.reaper.image.repository }}:{{ .Values.reaper.image.tag }}
+        imagePullPolicy: {{ .Values.reaper.image.pullPolicy }}
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: 300m
+          requests:
+            memory: 512Mi
+            cpu: 100m
+        ports:
+        - containerPort: 9001
+        - containerPort: 4369
+        env:
+        - name: FROM_TOPIC
+          value: {{ .Values.reaper.from_topic }}
+        - name: TO_TOPIC
+          value: {{ .Values.reaper.to_topic }}
+        - name: KAFKA_BROKERS
+          value: {{ .Values.strimzi.kafka.brokers | default (include "kafka.brokerservice" .) }}
+        - name: RUN_IN_KUBERNETES
+          value: "true"
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
