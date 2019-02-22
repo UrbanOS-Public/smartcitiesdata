@@ -7,9 +7,11 @@ defmodule DiscoveryApi.Mixfile do
       compilers: [:phoenix, :gettext | Mix.compilers()],
       version: "0.0.1",
       elixir: "~> 1.7",
-      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases(),
+      elixirc_paths: elixirc_paths(Mix.env()),
+      test_paths: test_paths(Mix.env())
     ]
   end
 
@@ -22,10 +24,6 @@ defmodule DiscoveryApi.Mixfile do
       extra_applications: [:logger, :runtime_tools, :corsica, :prestige]
     ]
   end
-
-  # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "src", "test/support"]
-  defp elixirc_paths(_), do: ["lib", "src"]
 
   # Specifies your project dependencies.
   #
@@ -42,7 +40,7 @@ defmodule DiscoveryApi.Mixfile do
       {:corsica, "~> 1.0"},
       {:cachex, "~> 3.0"},
       {:patiently, "~> 0.2.0"},
-      {:placebo, "~> 1.2.0", only: [:dev, :test]},
+      {:placebo, "~> 1.2.1", only: [:dev, :test]},
       {:plug_cowboy, "~> 1.0"},
       {:prometheus_plugs, "~> 1.1.1"},
       {:prometheus_phoenix, "~>1.2.0"},
@@ -50,8 +48,23 @@ defmodule DiscoveryApi.Mixfile do
       {:streaming_metrics, path: "streaming_metrics"},
       {:riffed, git: "https://github.com/pinterest/riffed.git", tag: "1.0.0"},
       {:prestige, path: "prestige"},
+      {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
       {:jason, "~> 1.1"},
-      {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false}
+      {:kaffe, "~> 1.9"},
+      {:redix, "~> 0.9.2"}
+    ]
+  end
+
+  defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/unit/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
+  defp test_paths(:integration), do: ["test/integration"]
+  defp test_paths(_), do: ["test/unit"]
+
+  defp aliases do
+    [
+      test: ["test"],
+      "test.integration": ["docker.start", "test", "scos.application.stop", "docker.stop"]
     ]
   end
 end

@@ -10,7 +10,7 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
       name: feed_detail["feedName"],
       description: feed_detail["description"],
       id: feed_detail["id"],
-      tags: feed_detail["tags"],
+      keywords: feed_detail["keywords"],
       organization: %{
         id: feed_detail["category"]["id"],
         name: feed_detail["category"]["displayName"],

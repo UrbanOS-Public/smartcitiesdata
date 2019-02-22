@@ -2,14 +2,17 @@ defmodule DiscoveryApiWeb.Router do
   use DiscoveryApiWeb, :router
 
   pipeline :api do
+    plug(Plug.Logger)
     plug(:accepts, ["json", "csv"])
   end
 
   pipeline :api_csv_only do
+    plug(Plug.Logger)
     plug(:accepts, ["csv"])
   end
 
   pipeline :api_json_only do
+    plug(Plug.Logger)
     plug(:accepts, ["json"])
   end
 

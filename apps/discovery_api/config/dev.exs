@@ -18,9 +18,22 @@ config :prestige, base_url: "https://presto.dev.internal.smartcolumbusos.com"
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
+# config :logger,
+#   level: :error
+
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
 config :phoenix, :stacktrace_depth, 20
 
 config :mix_test_watch,
   clear: true
+
+config :kaffe,
+  consumer: [
+    endpoints: [localhost: 9092],
+    topics: ["dataset-registry"],
+    consumer_group: "discovery-dataset-consumer",
+    message_handler: DiscoveryApi.Data.DatasetEventListener,
+    rebalance_delay_ms: 10_000,
+    start_with_earliest_message: true
+  ]

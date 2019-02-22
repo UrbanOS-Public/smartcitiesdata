@@ -10,22 +10,22 @@ defmodule DiscoveryApi.Search.DatasetFacinatorTest do
            %{
              title: "Ben's head canon",
              organization: "OrgA",
-             tags: ["my cool tag", "another tag"]
+             keywords: ["my cool keywords", "another keywords"]
            },
            %{
              title: "Ben's Caniac Combo",
              organization: "OrgA",
-             tags: []
+             keywords: []
            },
            %{
              title: "Jarred's irrational attachment to natorism's",
              organization: "OrgB",
-             tags: ["my cool tag"]
+             keywords: ["my cool keywords"]
            },
            %{
              title: "hi its erin",
              organization: "",
-             tags: ["uncool tag"]
+             keywords: ["uncool keywords"]
            }
          ]
        ]}
@@ -38,10 +38,10 @@ defmodule DiscoveryApi.Search.DatasetFacinatorTest do
                  %{name: "OrgA", count: 2},
                  %{name: "OrgB", count: 1}
                ],
-               tags: [
-                 %{name: "another tag", count: 1},
-                 %{name: "my cool tag", count: 2},
-                 %{name: "uncool tag", count: 1}
+               keywords: [
+                 %{name: "another keywords", count: 1},
+                 %{name: "my cool keywords", count: 2},
+                 %{name: "uncool keywords", count: 1}
                ]
              }
     end

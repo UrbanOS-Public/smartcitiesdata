@@ -35,3 +35,11 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+redis:
+  host: redis.external-services
+
+kafka:
+  brokers: streaming-service-kafka-bootstrap.streaming-prime:9092
+  topic: dataset-registry
+  consumerGroup: discovery-dataset-consumer

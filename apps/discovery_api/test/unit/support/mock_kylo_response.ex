@@ -8,7 +8,7 @@ defmodule DiscoveryApi.Test.MockKyloResponse do
     ]})
   end
 
-  def feedmgr_id_response_with_tags() do
+  def feedmgr_id_response_with_keywords() do
     ~s(
       { "id": "57eac648-729c-44f5-89f2-d446ce2a4d68",
       "feedName": "input invoice",
@@ -21,7 +21,7 @@ defmodule DiscoveryApi.Test.MockKyloResponse do
           "value": "Slime Jime"
         }
       ],
-      "tags": [
+      "keywords": [
         {
           "name": "bar"
         },
@@ -33,7 +33,7 @@ defmodule DiscoveryApi.Test.MockKyloResponse do
     )
   end
 
-  def feedmgr_id_response_without_tags() do
+  def feedmgr_id_response_without_keywords() do
     ~s(
       { "id": "14fca5cd-2ddd-46dd-9380-01e9c35c674f",
       "feedName": "Swiss Franc Cotton",

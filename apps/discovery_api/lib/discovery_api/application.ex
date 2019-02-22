@@ -9,9 +9,9 @@ defmodule DiscoveryApi.Application do
 
     children =
       [
-        cachex(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
-        discoverApiCacheLoader()
+        {Redix, host: Application.get_env(:redix, :host), name: :redix},
+        dataset_event_consumer()
       ]
       |> List.flatten()
 
@@ -24,17 +24,17 @@ defmodule DiscoveryApi.Application do
     :ok
   end
 
-  defp cachex do
-    %{
-      id: Cachex,
-      start: {Cachex, :start_link, [:dataset_cache]}
-    }
-  end
-
-  defp discoverApiCacheLoader do
-    case Application.get_env(:discovery_api, :test_mode) do
-      true -> []
-      _ -> DiscoveryApi.Data.CacheLoader
+  defp dataset_event_consumer do
+    Application.get_env(:kaffe, :consumer)[:endpoints]
+    |> case do
+      nil -> []
+      _ -> [%{
+        id: Kaffe.Consumer,
+        start: {Kaffe.Consumer, :start_link, []},
+        type: :supervisor
+      }]
     end
   end
+
+
 end

@@ -2,7 +2,7 @@ defmodule DiscoveryApi.Search.DatasetFacinator do
   def get_facets(datasets) do
     %{
       organization: unique_facets_with_count(datasets, :organization),
-      tags: unique_facets_with_count(datasets, :tags)
+      keywords: unique_facets_with_count(datasets, :keywords)
     }
   end
 

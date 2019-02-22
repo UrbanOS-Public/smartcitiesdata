@@ -4,11 +4,11 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
 
   setup do
     mock_dataset_summaries = [
-      dataset_summary_map("Paul", ~D(1970-01-01)),
-      dataset_summary_map("Richard", ~D(2001-09-09))
+      generate_dataset("Paul", ~D(1970-01-01)),
+      generate_dataset("Richard", ~D(2001-09-09))
     ]
 
-    allow DiscoveryApi.Data.Retriever.get_datasets(), return: {:ok, mock_dataset_summaries}
+    allow DiscoveryApi.Data.Retriever.get_datasets(), return: mock_dataset_summaries
     Application.put_env(:discovery_api, :data_lake_url, "http://my-fake-cota-url.nope")
   end
 
@@ -53,14 +53,14 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
       assert Enum.at(actual["metadata"]["facets"]["organization"], 1)["count"] == 1
     end
 
-    test "returns tag facets", %{conn: conn} do
+    test "returns keywords facets", %{conn: conn} do
       actual = get(conn, "/v1/api/dataset/search", sort: "name_asc") |> json_response(200)
 
-      assert Enum.at(actual["metadata"]["facets"]["tags"], 0)["name"] == "Paul tag"
-      assert Enum.at(actual["metadata"]["facets"]["tags"], 0)["count"] == 1
+      assert Enum.at(actual["metadata"]["facets"]["keywords"], 0)["name"] == "Paul keywords"
+      assert Enum.at(actual["metadata"]["facets"]["keywords"], 0)["count"] == 1
 
-      assert Enum.at(actual["metadata"]["facets"]["tags"], 1)["name"] == "Richard tag"
-      assert Enum.at(actual["metadata"]["facets"]["tags"], 1)["count"] == 1
+      assert Enum.at(actual["metadata"]["facets"]["keywords"], 1)["name"] == "Richard keywords"
+      assert Enum.at(actual["metadata"]["facets"]["keywords"], 1)["count"] == 1
     end
 
     test "sort by name ascending", %{conn: conn} do
@@ -146,16 +146,15 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
     assert Map.has_key?(actual, "message")
   end
 
-  defp dataset_summary_map(id, date) do
-    %{
+  defp generate_dataset(id, date) do
+    %DiscoveryApi.Data.Dataset{
       description: "#{id}-description",
       fileTypes: ["csv"],
       id: id,
-      systemName: "#{id}-system-name",
       title: "#{id}-title",
-      modifiedTime: "#{date}",
+      modified: "#{date}",
       organization: "#{id} Co.",
-      tags: ["#{id} tag"]
+      keywords: ["#{id} keywords"]
     }
   end
 end

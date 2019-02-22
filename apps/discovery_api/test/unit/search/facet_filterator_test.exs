@@ -8,27 +8,27 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
         %{
           title: "Ben's head canon",
           organization: "OrgA",
-          tags: ["BAR"]
+          keywords: ["BAR"]
         },
         %{
           title: "Ben's Caniac Combo",
           organization: "OrgA",
-          tags: ["BAZ"]
+          keywords: ["BAZ"]
         },
         %{
           title: "Jarred's irrational attachment to natorism's",
           organization: "OrgB",
-          tags: ["BAZ", "BAR"]
+          keywords: ["BAZ", "BAR"]
         }
       ]
 
-      facets = %{organization: ["OrgA"], tags: ["BAZ"]}
+      facets = %{organization: ["OrgA"], keywords: ["BAZ"]}
 
       assert FacetFilterator.filter_by_facets(datasets, facets) == [
                %{
                  title: "Ben's Caniac Combo",
                  organization: "OrgA",
-                 tags: ["BAZ"]
+                 keywords: ["BAZ"]
                }
              ]
     end
@@ -38,32 +38,32 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
         %{
           title: "Ben's head canon",
           organization: "",
-          tags: ["BAR"]
+          keywords: ["BAR"]
         },
         %{
           title: "Ben's Caniac Combo",
           organization: "OrgA",
-          tags: ["BAZ"]
+          keywords: ["BAZ"]
         },
         %{
           title: "Jarred's irrational attachment to natorism's",
           organization: "",
-          tags: ["BAZ", "BAR"]
+          keywords: ["BAZ", "BAR"]
         }
       ]
 
-      facets = %{organization: [""], tags: ["BAR"]}
+      facets = %{organization: [""], keywords: ["BAR"]}
 
       assert FacetFilterator.filter_by_facets(datasets, facets) == [
                %{
                  title: "Ben's head canon",
                  organization: "",
-                 tags: ["BAR"]
+                 keywords: ["BAR"]
                },
                %{
                  title: "Jarred's irrational attachment to natorism's",
                  organization: "",
-                 tags: ["BAZ", "BAR"]
+                 keywords: ["BAZ", "BAR"]
                }
              ]
     end
@@ -73,27 +73,27 @@ defmodule DiscoveryApi.Search.FacetFilteratorTest do
         %{
           title: "Ben's head canon",
           organization: "",
-          tags: ["BOR"]
+          keywords: ["BOR"]
         },
         %{
           title: "Ben's Caniac Combo",
           organization: "OrgA",
-          tags: ["BAZ"]
+          keywords: ["BAZ"]
         },
         %{
           title: "Jarred's irrational attachment to natorism's",
           organization: "",
-          tags: ["BAZ", "BOO", "BOR"]
+          keywords: ["BAZ", "BOO", "BOR"]
         }
       ]
 
-      facets = %{organization: [""], tags: ["BAZ", "BOR"]}
+      facets = %{organization: [""], keywords: ["BAZ", "BOR"]}
 
       assert FacetFilterator.filter_by_facets(datasets, facets) == [
                %{
                  title: "Jarred's irrational attachment to natorism's",
                  organization: "",
-                 tags: ["BAZ", "BOO", "BOR"]
+                 keywords: ["BAZ", "BOO", "BOR"]
                }
              ]
     end

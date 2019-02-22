@@ -25,8 +25,6 @@ defmodule DiscoveryApiWeb.Endpoint do
     plug(Phoenix.CodeReloader)
   end
 
-  plug(Plug.Logger)
-
   plug(
     Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],

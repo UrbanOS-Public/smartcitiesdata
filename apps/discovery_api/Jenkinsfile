@@ -23,6 +23,14 @@ node ('infrastructure') {
 
         doStageUnlessRelease('Build') {
             image = docker.build("scos/discovery-api:${env.GIT_COMMIT_HASH}")
+
+            sh('''
+                export HOST_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
+                mix local.hex --force
+                mix local.rebar --force
+                mix deps.get
+                MIX_ENV=integration mix test.integration
+            ''')
         }
 
         doStageUnlessRelease('Deploy to Dev') {
