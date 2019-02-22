@@ -5,4 +5,7 @@ config :forklift,
   batch_size: 1,
   user: "foobar"
 
-config :prestige, base_url: "https://kdp-kubernetes-data-platform-presto.kdp:8080"
+config :prestige, base_url: "https://kdp-kubernetes-data-platform-presto.kdp:8080",
+  headers: [
+    user: "foobar"
+  ]

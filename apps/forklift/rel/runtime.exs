@@ -23,7 +23,6 @@ end
 config :forklift,
   data_topic: System.get_env("DATA_TOPIC"),
   registry_topic: System.get_env("REGISTRY_TOPIC"),
-  user: System.get_env("PRESTO_USER")
 
 
-config :prestige, base_url: System.get_env("PRESTO_URL")
+config :prestige, base_url: System.get_env("PRESTO_URL"), headers: [user: System.get_env("PRESTO_USER")]

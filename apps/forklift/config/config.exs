@@ -29,3 +29,9 @@ config :logger,
   compile_time_purge_level: :debug
 
 import_config "#{Mix.env()}.exs"
+
+config :prestige,
+  headers: [
+    catalog: "hive",
+    schema: "default"
+  ]

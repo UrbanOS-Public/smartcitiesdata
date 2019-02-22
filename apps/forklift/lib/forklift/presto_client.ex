@@ -16,11 +16,7 @@ defmodule Forklift.PrestoClient do
 
   defp execute_statement(statement) do
     statement
-    |> Prestige.execute(
-      catalog: "hive",
-      schema: "default",
-      user: Application.get_env(:forklift, :user)
-    )
+    |> Prestige.execute()
     |> Prestige.prefetch()
   end
 end

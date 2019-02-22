@@ -15,7 +15,7 @@ defmodule PrestoClientTest do
       ]
     }
 
-    allow(Prestige.execute(any(), catalog: "hive", schema: "default", user: "foobar"), return: :ok)
+    allow(Prestige.execute(any()), return: :ok)
 
     allow(DatasetRegistryServer.get_schema(any()), return: schema)
     allow(Prestige.prefetch(any()), return: :ok)
@@ -32,7 +32,7 @@ defmodule PrestoClientTest do
     PrestoClient.upload_data("placeholder_id", messages)
 
     assert_called(
-      Prestige.execute(expected_statement, catalog: "hive", schema: "default", user: "foobar"),
+      Prestige.execute(expected_statement),
       once()
     )
   end

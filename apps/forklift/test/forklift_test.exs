@@ -5,7 +5,7 @@ defmodule ForkliftTest do
   alias Forklift.MessageProcessor
 
   test "data messages are processed to Prestige" do
-    allow(Prestige.execute(any(), catalog: "hive", schema: "default", user: "foobar"), return: :ok)
+    allow(Prestige.execute(any()), return: :ok)
 
     allow(Prestige.prefetch(any()), return: [])
 
@@ -23,7 +23,7 @@ defmodule ForkliftTest do
     expected_statement = ~s/insert into #{dataset_id} (id,name) values (111,'bob')/
 
     assert_called(
-      Prestige.execute(expected_statement, catalog: "hive", schema: "default", user: "foobar"),
+      Prestige.execute(expected_statement),
       once()
     )
   end
