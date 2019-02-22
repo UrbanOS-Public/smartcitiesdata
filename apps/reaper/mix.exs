@@ -10,7 +10,8 @@ defmodule Reaper.MixProject do
       aliases: aliases(),
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      test_paths: test_paths(Mix.env())
+      test_paths: test_paths(Mix.env()),
+      preferred_cli_env: [format: :test]
     ]
   end
 
@@ -46,7 +47,8 @@ defmodule Reaper.MixProject do
       {:placebo, "~> 1.2.1", only: [:test, :integration]},
       {:plug_cowboy, "~> 2.0"},
       {:protobuf, "~> 0.5.3"},
-      {:sweet_xml, "~> 0.6"}
+      {:sweet_xml, "~> 0.6"},
+      {:typed_struct, "~> 0.1.4"}
     ]
   end
 

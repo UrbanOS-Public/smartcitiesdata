@@ -1,4 +1,4 @@
-defmodule ConfigServerTest do
+defmodule Reaper.ConfigServerTest do
   use ExUnit.Case
   use Placebo
 

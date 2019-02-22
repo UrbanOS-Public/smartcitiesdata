@@ -1,0 +1,11 @@
+.git
+_build
+.gitignore
+.elixir_ls
+Dockerfile
+Jenkinsfile
+deps
+
+terraform.tfstate.d
+.terraform
+outputs

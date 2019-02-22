@@ -4,12 +4,14 @@ defmodule Reaper.MessageHandler do
   alias Reaper.ConfigServer
 
   def handle_message(_pid, %{value: dataset}) do
-    {:ok, decoded_dataset} =
-      dataset
-      |> Jason.decode!(keys: :atoms)
-      |> Dataset.new()
-
-    ConfigServer.send_dataset(decoded_dataset)
+    with {:ok, decoded_dataset} <-
+           dataset
+           |> Jason.decode!(keys: :atoms)
+           |> Dataset.new() do
+      ConfigServer.send_dataset(decoded_dataset)
+    else
+      {:error, reason} -> Logger.error("Skipping dataset message for this reason: #{inspect(reason)}")
+    end
 
     :ok
   end
