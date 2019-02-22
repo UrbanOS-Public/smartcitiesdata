@@ -22,16 +22,15 @@ node ('infrastructure') {
         imageTag = "${env.GIT_COMMIT_HASH}"
 
         doStageUnlessRelease('Build') {
-            builderImage = docker.build("scos/reaper:${env.GIT_COMMIT_HASH}", "--target builder")
             image = docker.build("scos/reaper:${env.GIT_COMMIT_HASH}")
 
-            builderImage.inside() {
-                sh('''
-                export HOST_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-                MIX_ENV=integration mix test.integration
-                ''')
-            }
-
+            sh('''
+            export HOST_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
+            mix local.hex --force
+            mix local.rebar --force
+            mix deps.get
+            MIX_ENV=integration mix test.integration
+            ''')
         }
 
         doStageUnlessRelease('Deploy to Dev') {
