@@ -1,4 +1,6 @@
 defmodule Forklift.MessageAccumulator do
+  @moduledoc false
+  require Logger
   alias :gen_statem, as: GenStatem
   @behaviour GenStatem
 
@@ -11,6 +13,7 @@ defmodule Forklift.MessageAccumulator do
   ## State Struct ##
   ##################
   defmodule Data do
+    @moduledoc false
     defstruct dataset_id: nil, messages: [], batch_size: nil, timeout: nil
 
     def set_messages(data, messages \\ []) do
@@ -77,7 +80,7 @@ defmodule Forklift.MessageAccumulator do
          [reply, timeout_action]}
 
       other ->
-        other |> IO.inspect(label: "Unhandled Upload error found in accumulator")
+        Logger.info("Unhandled upload error found in accumulator: #{other}")
     end
   end
 

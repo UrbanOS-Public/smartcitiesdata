@@ -2,7 +2,7 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-data_topic = "data-topic"
+data_topic = "streaming-transformed"
 registry_topic = "dataset-registry"
 
 config :forklift,
@@ -10,8 +10,6 @@ config :forklift,
   batch_size: 5_000,
   data_topic: data_topic,
   registry_topic: registry_topic
-
-config :prestige, base_url: "https://presto.dev.internal.smartcolumbusos.com"
 
 config :kaffe,
   consumer: [
@@ -22,7 +20,7 @@ config :kaffe,
     offset_reset_policy: :reset_to_earliest,
     start_with_earliest_message: true,
     max_bytes: 1_000_000,
-    worker_allocation_strategy: :worker_per_topic_partition,
+    worker_allocation_strategy: :worker_per_topic_partition
   ]
 
 config :logger,
@@ -31,3 +29,9 @@ config :logger,
   compile_time_purge_level: :debug
 
 import_config "#{Mix.env()}.exs"
+
+config :prestige,
+  headers: [
+    catalog: "hive",
+    schema: "default"
+  ]

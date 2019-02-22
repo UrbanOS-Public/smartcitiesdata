@@ -5,10 +5,6 @@ defmodule MessageProcessorTest do
   alias Forklift.MessageAccumulator
   alias Forklift.MessageProcessor
 
-  setup do
-    on_exit fn -> Placebo.unstub() end
-  end
-
   test "data messages are routed to the appropriate processor" do
     dataset_id = Faker.StarWars.planet()
     message = make_message(dataset_id)
@@ -26,7 +22,7 @@ defmodule MessageProcessorTest do
     assert MessageProcessor.handle_messages([message]) == {:ok, :no_commit}
   end
 
-  def make_message(dataset_id, topic \\ "data-topic") do
+  def make_message(dataset_id, topic \\ "streaming-transformed") do
     value =
       %{
         payload: %{id: :rand.uniform(999), name: Faker.Superhero.name()},

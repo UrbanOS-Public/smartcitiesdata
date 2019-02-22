@@ -13,7 +13,10 @@ if kafka_brokers do
   config :kaffe,
     consumer: [
       endpoints: endpoints,
-      topics: [System.get_env("DATA_TOPIC"), System.get_env("REGISTRY_TOPIC")]
+      topics: [System.get_env("DATA_TOPIC"), System.get_env("REGISTRY_TOPIC")],
+      consumer_group: "forklift-group",
+      message_handler: Forklift.MessageProcessor,
+      offset_reset_policy: :reset_to_earliest
     ]
 end
 
@@ -22,4 +25,6 @@ config :forklift,
   registry_topic: System.get_env("REGISTRY_TOPIC")
 
 
-config :prestige, base_url: System.get_env("PRESTO_URL")
+config :prestige,
+  base_url: System.get_env("PRESTO_URL"),
+  headers: [user: System.get_env("PRESTO_USER")]
