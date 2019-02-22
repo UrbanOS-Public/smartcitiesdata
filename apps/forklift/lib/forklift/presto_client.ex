@@ -11,12 +11,16 @@ defmodule Forklift.PrestoClient do
 
     :ok
   rescue
-    e -> Logger.error("Error uploading data")
+    e -> Logger.error("Error uploading data: #{Exception.message(e)}")
   end
 
   defp execute_statement(statement) do
     statement
-    |> Prestige.execute(catalog: "hive", schema: "default", user: Application.get_env(:forklift, :user))
+    |> Prestige.execute(
+      catalog: "hive",
+      schema: "default",
+      user: Application.get_env(:forklift, :user)
+    )
     |> Prestige.prefetch()
   end
 end

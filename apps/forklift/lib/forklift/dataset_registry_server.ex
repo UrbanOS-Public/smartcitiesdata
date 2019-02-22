@@ -89,7 +89,7 @@ defmodule Forklift.DatasetRegistryServer do
     }
   end
 
-  defp parse_schema(schema_map) do
+  defp parse_schema(_schema_map) do
     Logger.info("Schema Entry Invalid. Skipping for now.")
     :invalid_schema
   end

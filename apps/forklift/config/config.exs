@@ -2,7 +2,7 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-data_topic = "streaming-transformed" ## Warning: This is overriding the release configuration
+data_topic = "streaming-transformed"
 registry_topic = "dataset-registry"
 
 config :forklift,
@@ -20,7 +20,7 @@ config :kaffe,
     offset_reset_policy: :reset_to_earliest,
     start_with_earliest_message: true,
     max_bytes: 1_000_000,
-    worker_allocation_strategy: :worker_per_topic_partition,
+    worker_allocation_strategy: :worker_per_topic_partition
   ]
 
 config :logger,

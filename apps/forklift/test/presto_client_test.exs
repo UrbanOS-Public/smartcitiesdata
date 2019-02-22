@@ -6,6 +6,7 @@ defmodule PrestoClientTest do
 
   test "upload_data sends a valid statement to prestige" do
     dataset_id = "placeholder_id"
+
     schema = %DatasetSchema{
       id: dataset_id,
       columns: [
@@ -15,6 +16,7 @@ defmodule PrestoClientTest do
     }
 
     allow(Prestige.execute(any(), catalog: "hive", schema: "default", user: "foobar"), return: :ok)
+
     allow(DatasetRegistryServer.get_schema(any()), return: schema)
     allow(Prestige.prefetch(any()), return: :ok)
 

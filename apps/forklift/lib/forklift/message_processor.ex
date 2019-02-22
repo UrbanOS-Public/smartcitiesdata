@@ -13,7 +13,9 @@ defmodule Forklift.MessageProcessor do
     with ^data_topic <- assume_topic(messages) do
       :ok
     else
-      ^registry_topic -> {:ok, :no_commit}
+      ^registry_topic ->
+        {:ok, :no_commit}
+
       topic ->
         Logger.warn("Unexpected topic #{topic} found in message stream. Ignoring")
         :ok
@@ -32,11 +34,12 @@ defmodule Forklift.MessageProcessor do
     end
   end
 
-  defp process_message(%{topic: topic, value: value}=message) do
+  defp process_message(%{topic: topic, value: value}) do
     case data_topic() == topic do
       true -> accumulate_value(value)
       _ -> DatasetRegistryServer.send_message(value)
     end
+
     :ok
   end
 

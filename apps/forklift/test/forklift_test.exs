@@ -6,6 +6,7 @@ defmodule ForkliftTest do
 
   test "data messages are processed to Prestige" do
     allow(Prestige.execute(any(), catalog: "hive", schema: "default", user: "foobar"), return: :ok)
+
     allow(Prestige.prefetch(any()), return: [])
 
     dataset_id = Faker.StarWars.planet()

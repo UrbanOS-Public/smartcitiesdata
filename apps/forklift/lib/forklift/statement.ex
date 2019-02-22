@@ -1,6 +1,7 @@
 defmodule Forklift.Statement do
   @moduledoc false
   require Logger
+
   def build(schema, data) do
     columns_fragment =
       schema.columns
