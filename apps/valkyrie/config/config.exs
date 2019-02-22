@@ -7,6 +7,9 @@ validated_topic = "streaming-validated"
 
 endpoints = [localhost: 9092]
 
+config :valkyrie,
+  env: Mix.env()
+
 config :kaffe,
   consumer: [
     endpoints: endpoints,
