@@ -45,9 +45,11 @@ defmodule CotaStreamingConsumer do
 
   defp parse_message(%{value: value} = message, acc) do
     case Poison.decode(value) do
-      {:ok, parsed} -> [%{message | value: parsed} | acc]
+      {:ok, parsed} ->
+        [%{message | value: parsed} | acc]
+
       {:error, reason} ->
-        Logger.warn("Poison parse error: #{inspect reason}")
+        Logger.warn("Poison parse error: #{inspect(reason)}")
         acc
     end
   end
@@ -69,7 +71,7 @@ defmodule CotaStreamingConsumer do
   end
 
   defp log_message(message) do
-    Logger.log(:info, "#{inspect message}")
+    Logger.log(:info, "#{inspect(message)}")
     message
   end
 
