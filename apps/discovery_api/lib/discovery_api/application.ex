@@ -27,14 +27,17 @@ defmodule DiscoveryApi.Application do
   defp dataset_event_consumer do
     Application.get_env(:kaffe, :consumer)[:endpoints]
     |> case do
-      nil -> []
-      _ -> [%{
-        id: Kaffe.Consumer,
-        start: {Kaffe.Consumer, :start_link, []},
-        type: :supervisor
-      }]
+      nil ->
+        []
+
+      _ ->
+        [
+          %{
+            id: Kaffe.Consumer,
+            start: {Kaffe.Consumer, :start_link, []},
+            type: :supervisor
+          }
+        ]
     end
   end
-
-
 end

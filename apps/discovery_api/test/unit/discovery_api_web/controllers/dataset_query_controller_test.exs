@@ -9,10 +9,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       allow Prestige.execute("describe hive.default.test"),
         return: []
 
-
       allow Prestige.execute("select * from test", catalog: "hive", schema: "default"),
-        return: [[1,2,3], [4,5,6]]
-
+        return: [[1, 2, 3], [4, 5, 6]]
 
       allow Prestige.prefetch(any()),
         return: [["id", "bigint", "", ""], ["one", "bigint", "", ""], ["two", "bigint", "", ""]]
@@ -30,7 +28,6 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       conn = conn |> put_req_header("accept", "application/json")
       get(conn, "/v1/api/dataset/test/queryPresto") |> response(415)
     end
-
   end
 
   describe "fetch dataset csv" do
