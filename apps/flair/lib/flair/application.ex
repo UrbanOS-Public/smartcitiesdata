@@ -5,6 +5,7 @@ defmodule Flair.Application do
 
   def start(_type, _args) do
     children = [
+      {Flair.Flow, []},
       kaffe_group_supervisor()
     ]
 

@@ -22,7 +22,10 @@ defmodule Flair.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:kaffe, "~> 1.9.1"}
+      {:flow, "~> 0.14"},
+      {:gen_stage, "~> 0.14"},
+      {:kaffe, "~> 1.9.1"},
+      {:jason, "~> 1.1"}
     ]
   end
 end
