@@ -1,9 +1,11 @@
 use Mix.Config
+
 host =
   case System.get_env("HOST_IP") do
     nil -> "127.0.0.1"
     defined -> defined
   end
+
 endpoint = [{to_charlist(host), 9094}]
 
 config :valkyrie,
@@ -30,7 +32,8 @@ config :valkyrie,
       }
     }
   },
-  docker_wait_for: "Previous Leader Epoch was: -1"  # Leader election of Kafka cluster succeeded
+  # Leader election of Kafka cluster succeeded
+  docker_wait_for: "Previous Leader Epoch was: -1"
 
 config :kaffe,
   consumer: [
