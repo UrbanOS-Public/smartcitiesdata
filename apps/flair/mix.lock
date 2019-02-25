@@ -1,0 +1,7 @@
+%{
+  "brod": {:hex, :brod, "3.4.0", "34664713baaa60aed3b560c6a679cf90ace8dde8672732e730218db57440e37a", [:make, :rebar, :rebar3], [{:kafka_protocol, "1.1.2", [hex: :kafka_protocol, repo: "hexpm", optional: false]}, {:supervisor3, "1.1.5", [hex: :supervisor3, repo: "hexpm", optional: false]}], "hexpm"},
+  "kaffe": {:hex, :kaffe, "1.9.2", "f549db79f0ac021f3f097d2a545b15dfc5e8f65d028bf9e57b2db5b271b9cde2", [:mix], [{:brod, ">= 3.0.0 and < 3.5.0", [hex: :brod, repo: "hexpm", optional: false]}], "hexpm"},
+  "kafka_protocol": {:hex, :kafka_protocol, "1.1.2", "96d09c4287377795ae2c488aceae2dc6872b94edba8309a27ace933d9ae32333", [:rebar, :rebar3], [{:snappyer, "1.2.1", [hex: :snappyer, repo: "hexpm", optional: false]}], "hexpm"},
+  "snappyer": {:hex, :snappyer, "1.2.1", "06c5f5c8afe80ba38e94e1ca1bd9253de95d8f2c85b08783e8d0f63815580556", [:make, :rebar, :rebar3], [], "hexpm"},
+  "supervisor3": {:hex, :supervisor3, "1.1.5", "5f3c487a6eba23de0e64c06e93efa0eca06f40324a6412c1318c77aca6da8424", [:make, :rebar, :rebar3], [], "hexpm"},
+}
