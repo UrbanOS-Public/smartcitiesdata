@@ -2,9 +2,9 @@ FROM bitwalker/alpine-elixir:1.7.2 as builder
 
 ENV MIX_ENV test
 
-RUN apk update \
- && apk add --no-cache alpine-sdk \
- && rm -rf /var/cache/**/*
+RUN apk update && \
+    apk add --no-cache alpine-sdk && \
+    rm -rf /var/cache/**/*
 
 COPY . /app
 WORKDIR /app
@@ -12,17 +12,18 @@ WORKDIR /app
 RUN mix local.hex --force && \
     mix local.rebar --force && \
     mix deps.get && \
-    mix test && \
-    mix credo
-
+    mix format --check-formatted && \
+    mix credo && \
+    mix test
+    
 RUN MIX_ENV=prod mix release
 
 FROM alpine:3.8
 ENV REPLACE_OS_VARS=true
 
-RUN apk update \
- && apk add --no-cache bash openssl \
- && rm -rf /var/cache/**/*
+RUN apk update && \
+    apk add --no-cache bash openssl && \
+    rm -rf /var/cache/**/*
 
 WORKDIR /app
 COPY --from=builder /app/_build/prod/rel/forklift/ .
