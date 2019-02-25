@@ -60,12 +60,11 @@ defmodule Reaper.ConfigServer do
   end
 
   defp update_feed_supervisor(%Dataset{id: id} = dataset) do
-    [{_feed_name, pid, _type, _modules} | _] =
-      Reaper.Registry
-      |> Horde.Registry.lookup(String.to_atom(id))
-      |> Horde.Supervisor.which_children()
-
-    DataFeed.update(pid, %{dataset: dataset})
+    feed_supervisor_pid = Horde.Registry.lookup(Reaper.Registry, String.to_atom(id))
+    if feed_supervisor_pid != :undefined do
+      [{_feed_name, pid, _type, _modules} | _] = Horde.Supervisor.which_children(feed_supervisor_pid)
+      DataFeed.update(pid, %{dataset: dataset})
+    end
   end
 
   defp via_tuple(id), do: {:via, Horde.Registry, {Reaper.Registry, id}}

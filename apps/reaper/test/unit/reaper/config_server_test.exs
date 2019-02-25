@@ -57,6 +57,21 @@ defmodule Reaper.ConfigServerTest do
 
       assert source_url == new_url
     end
+
+    test "when feed supervisor is not found update does not blow up" do
+      ConfigServer.start_link([])
+      ConfigServer.send_dataset(FixtureHelper.new_dataset(%{id: "12345-6789"}))
+
+      assert feed_supervisor_count() == 1
+      assert feed_cache_count() == 1
+
+      allow Horde.Registry.lookup(any(), any()), return: :undefined, meck_options: [:passthrough]
+
+      ConfigServer.send_dataset(FixtureHelper.new_dataset(%{id: "12345-6789", operational: %{sourceUrl: "whatever"}}))
+
+      assert feed_supervisor_count() == 1
+      assert feed_cache_count() == 1
+    end
   end
 
   defp get_state(name) do
