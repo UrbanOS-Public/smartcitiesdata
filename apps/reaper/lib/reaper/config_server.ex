@@ -17,10 +17,21 @@ defmodule Reaper.ConfigServer do
   end
 
   def child_spec(args) do
-    %{
+    config_server_spec = %{
       id: __MODULE__,
-      start: {__MODULE__, :start_link, [args]},
-      restart: :transient
+      start: {__MODULE__, :start_link, [args]}
+    }
+
+    %{
+      id: :reaper_config_server_starter,
+      restart: :transient,
+      start:
+        {Task, :start_link,
+         [
+           fn ->
+             Horde.Supervisor.start_child(Reaper.Horde.Supervisor, config_server_spec)
+           end
+         ]}
     }
   end
 
@@ -42,19 +53,19 @@ defmodule Reaper.ConfigServer do
     Horde.Supervisor.start_child(
       Reaper.Horde.Supervisor,
       %{
-        id: id,
+        id: String.to_atom(id),
         start: {Reaper.FeedSupervisor, :start_link, [[dataset: dataset, name: via_tuple(String.to_atom(id))]]}
       }
     )
   end
 
   defp update_feed_supervisor(%Dataset{id: id} = dataset) do
-    [{_feed_name, pid, _type, _modules} | _] =
-      Reaper.Registry
-      |> Horde.Registry.lookup(String.to_atom(id))
-      |> Horde.Supervisor.which_children()
+    feed_supervisor_pid = Horde.Registry.lookup(Reaper.Registry, String.to_atom(id))
 
-    DataFeed.update(pid, %{dataset: dataset})
+    if feed_supervisor_pid != :undefined do
+      [{_feed_name, pid, _type, _modules} | _] = Horde.Supervisor.which_children(feed_supervisor_pid)
+      DataFeed.update(pid, %{dataset: dataset})
+    end
   end
 
   defp via_tuple(id), do: {:via, Horde.Registry, {Reaper.Registry, id}}
