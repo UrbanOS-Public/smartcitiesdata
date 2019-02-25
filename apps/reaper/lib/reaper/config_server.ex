@@ -9,12 +9,10 @@ defmodule Reaper.ConfigServer do
   alias Reaper.DataFeed
 
   def start_link(args) do
-    GenServer.start_link(__MODULE__, args, name: __MODULE__)
+    GenServer.start_link(__MODULE__, args, name: via_tuple(__MODULE__))
   end
 
   def init(state \\ []) do
-    Horde.Registry.register(Reaper.Registry, __MODULE__)
-
     {:ok, state}
   end
 
