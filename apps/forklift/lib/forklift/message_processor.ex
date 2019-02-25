@@ -39,6 +39,7 @@ defmodule Forklift.MessageProcessor do
       true -> accumulate_value(value)
       _ -> DatasetRegistryServer.send_message(value)
     end
+
     :ok
   end
 
