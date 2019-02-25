@@ -23,7 +23,6 @@ config :andi, AndiWeb.Endpoint,
   root: ".",
   version: Application.spec(:andi, :vsn)
 
-
 config :kaffe,
   producer: [
     endpoints: [kafka: 9092],

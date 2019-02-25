@@ -8,8 +8,10 @@ RUN apk update && \
 RUN mix local.hex --force && \
     mix local.rebar --force && \
     mix deps.get && \
-    mix test && \
-    mix credo
+    mix format --check-formatted && \ 
+    mix credo && \
+    mix test
+    
 RUN MIX_ENV=prod mix release
 
 FROM bitwalker/alpine-elixir:1.7.2
