@@ -8,6 +8,7 @@ defmodule DiscoveryApi.Data.DatasetEventListener do
     {status, _} =
       Jason.decode!(value)
       |> DatasetDetailsHandler.process_dataset_details_event()
+
     Logger.debug("Handled Message #{value}")
     status
   end

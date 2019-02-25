@@ -4,6 +4,6 @@ defmodule Mix.Tasks.Scos.Application.Stop do
 
   @impl Mix.Task
   def run(_args) do
-    Application.stop(Mix.Project.config[:app])
+    Application.stop(Mix.Project.config()[:app])
   end
 end

@@ -18,6 +18,5 @@ config :discovery_api,
   },
   docker_wait_for: "Server initialized"
 
-
 config :redix,
   host: host
