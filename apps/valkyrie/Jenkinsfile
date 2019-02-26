@@ -21,7 +21,9 @@ node('infrastructure') {
         scos.doCheckoutStage()
 
         doStageUnlessRelease('Build') {
-            image = docker.build("scos/valkyrie:${env.GIT_COMMIT_HASH}")
+            withCredentials([string(credentialsId: 'hex-read', variable: 'HEX_TOKEN')]) {
+                image = docker.build("scos/valkyrie:${env.GIT_COMMIT_HASH}", '--build-arg HEX_TOKEN=$HEX_TOKEN .')
+            }
         }
 
         doStageUnlessRelease('Deploy to Dev') {
