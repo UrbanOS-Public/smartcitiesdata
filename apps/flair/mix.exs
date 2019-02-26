@@ -25,7 +25,8 @@ defmodule Flair.MixProject do
       {:flow, "~> 0.14"},
       {:gen_stage, "~> 0.14"},
       {:kaffe, "~> 1.9.1"},
-      {:jason, "~> 1.1"}
+      {:jason, "~> 1.1"},
+      {:statistics, "~> 0.6"}
     ]
   end
 end
