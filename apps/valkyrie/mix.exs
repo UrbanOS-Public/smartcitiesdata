@@ -24,7 +24,8 @@ defmodule Valkyrie.MixProject do
     [
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.0"},
-      {:distillery, "~> 2.0"}
+      {:distillery, "~> 2.0"},
+      {:scos_ex, "~> 0.1.0", organization: "smartcolumbus_os"}
     ]
   end
 end

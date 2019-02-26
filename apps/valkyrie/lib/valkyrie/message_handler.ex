@@ -1,7 +1,7 @@
 require Logger
 
 defmodule Valkyrie.MessageHandler do
-  alias SCOS.Message
+  alias SCOS.DataMessage
 
   def handle_messages(messages) do
     Logger.info("#{__MODULE__}: Received #{length(messages)} messages.")
@@ -11,8 +11,8 @@ defmodule Valkyrie.MessageHandler do
 
       new_value =
         value
-        |> Message.parse_message()
-        |> Message.put_operational(
+        |> DataMessage.parse_message()
+        |> DataMessage.put_operational(
           :valkyrie,
           :start_time,
           DateTime.to_iso8601(start_time)
@@ -26,8 +26,8 @@ defmodule Valkyrie.MessageHandler do
 
       new_value =
         new_value
-        |> Message.put_operational(:valkyrie, :duration, duration)
-        |> Message.encode_message()
+        |> DataMessage.put_operational(:valkyrie, :duration, duration)
+        |> DataMessage.encode_message()
 
       Kaffe.Producer.produce_sync(key, new_value)
     end)
