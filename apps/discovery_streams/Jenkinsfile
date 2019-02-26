@@ -37,15 +37,15 @@ node ('infrastructure') {
         }
 
         doStageIfPromoted('Deploy to Staging')  {
-            def promotionTag = scos.releaseCandidateNumber()
+            def environment = 'staging'
 
             deployConsumerTo(environment: 'staging')
 
-            scos.applyAndPushGitHubTag(promotionTag)
+            scos.applyAndPushGitHubTag(environment)
 
             scos.withDockerRegistry {
-                image.push(promotionTag)
-                smokeTestImage.push(promotionTag)
+                image.push(environment)
+                smokeTestImage.push(environment)
             }
         }
 
