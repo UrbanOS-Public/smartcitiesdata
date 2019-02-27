@@ -1,5 +1,5 @@
 FROM bitwalker/alpine-elixir:1.7.2 as builder
-ENV MIX_ENV test
+ARG HEX_TOKEN
 COPY . /app
 WORKDIR /app
 RUN apk update && \
@@ -7,6 +7,7 @@ RUN apk update && \
     apk add g++
 RUN mix local.hex --force && \
     mix local.rebar --force && \
+    mix hex.organization auth smartcolumbus_os --key ${HEX_TOKEN} && \
     mix deps.get && \
     mix format --check-formatted && \
     mix test
