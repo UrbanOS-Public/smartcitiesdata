@@ -6,18 +6,25 @@ defmodule Flair.Application do
   def start(_type, _args) do
     children = [
       {Flair.Flow, []},
-      kaffe_group_supervisor()
+      kafka_ex()
     ]
 
     opts = [strategy: :one_for_one, name: Flair.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
-  def kaffe_group_supervisor do
-    %{
-      id: Kaffe.GroupMemberSupervisor,
-      start: {Kaffe.GroupMemberSupervisor, :start_link, []},
-      type: :supervisor
-    }
+  def kafka_ex do
+    consumer_group_opts = []
+
+    gen_consumer_impl = Flair.MessageProcessor
+    consumer_group_name = "flair-consumer-group"
+    topic_names = ["streaming-validated"]
+
+    Supervisor.Spec.supervisor(KafkaEx.ConsumerGroup, [
+      gen_consumer_impl,
+      consumer_group_name,
+      topic_names,
+      consumer_group_opts
+    ])
   end
 end

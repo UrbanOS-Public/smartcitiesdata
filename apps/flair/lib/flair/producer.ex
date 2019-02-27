@@ -20,7 +20,7 @@ defmodule Flair.Producer do
   # Callbacks #
   #############
   def init(_args) do
-    IO.puts("Starting producer!")
+    IO.puts("~~Starting producer!~~")
 
     {:producer, %State{}}
   end
@@ -54,19 +54,19 @@ defmodule Flair.Producer do
 
     # IO.puts("Replying to caller with #{inspect(new_state)}")
 
-    IO.puts("Got messages (demand: #{new_state.demand}, count: #{length(messages)})")
+    # IO.puts("Got messages (demand: #{new_state.demand}, count: #{length(messages)})")
     {:reply, :ok, messages, new_state}
   end
 
   def handle_demand(demand, %State{message_set: []} = state) when demand > 0 do
-    IO.puts("Handle Demand, no messages (#{demand})")
+    # IO.puts("Handle Demand, no messages (#{demand})")
 
     {:noreply, [], %State{state | demand: demand + state.demand}}
   end
 
   def handle_demand(demand, %State{message_set: message_set, demand: state_demand} = state)
       when demand > 0 and length(message_set) > demand + state_demand do
-    IO.puts("Handle demand, messages > demand (#{demand})")
+    # IO.puts("Handle demand, messages > demand (#{demand})")
     {messages_to_dispatch, remaining_messages} = Enum.split(message_set, demand)
 
     {:noreply, messages_to_dispatch,
