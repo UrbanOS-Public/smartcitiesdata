@@ -20,11 +20,13 @@ defmodule Flair.Producer do
   # Callbacks #
   #############
   def init(_args) do
+    IO.puts("Starting producer!")
+
     {:producer, %State{}}
   end
 
   def handle_call({:add, messages}, from, %State{demand: 0} = state) do
-    IO.puts("Add messages, no demand")
+    # IO.puts("Add messages, no demand")
 
     {:noreply, [], %State{state | message_set: messages, from: [from | state.from]}}
   end
@@ -46,32 +48,43 @@ defmodule Flair.Producer do
   end
 
   def handle_call({:add, messages}, _from, %State{demand: demand} = state) do
-    IO.puts("Add messages default, sync reply")
+    # IO.puts("Add messages default, sync reply")
 
     new_state = %State{state | demand: demand - length(messages)}
 
-    IO.puts("Replying to caller with #{inspect(new_state)}")
+    # IO.puts("Replying to caller with #{inspect(new_state)}")
+
+    IO.puts("Got messages (demand: #{new_state.demand}, count: #{length(messages)})")
     {:reply, :ok, messages, new_state}
   end
 
   def handle_demand(demand, %State{message_set: []} = state) when demand > 0 do
     IO.puts("Handle Demand, no messages (#{demand})")
 
-    {:noreply, [], %State{state | demand: demand}}
+    {:noreply, [], %State{state | demand: demand + state.demand}}
   end
 
-  def handle_demand(demand, %State{message_set: message_set} = state)
-      when demand > 0 and length(message_set) > demand do
+  def handle_demand(demand, %State{message_set: message_set, demand: state_demand} = state)
+      when demand > 0 and length(message_set) > demand + state_demand do
     IO.puts("Handle demand, messages > demand (#{demand})")
     {messages_to_dispatch, remaining_messages} = Enum.split(message_set, demand)
 
-    {:noreply, messages_to_dispatch, %State{state | message_set: remaining_messages, demand: 0}}
+    {:noreply, messages_to_dispatch,
+     %State{
+       state
+       | message_set: remaining_messages,
+         demand: max(0, state_demand - demand)
+     }}
   end
 
   def handle_demand(demand, %State{message_set: message_set} = state) when demand > 0 do
     IO.puts("Handle demand, do async reply (#{demand})")
 
-    new_state = %State{state | message_set: [], demand: demand - length(message_set)}
+    new_state = %State{
+      state
+      | message_set: [],
+        demand: state.demand + demand - length(message_set)
+    }
 
     new_state |> IO.inspect(label: "Replying with current state")
 
