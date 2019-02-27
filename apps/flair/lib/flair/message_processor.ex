@@ -9,8 +9,6 @@ defmodule Flair.MessageProcessor do
     GenStage
   """
   def handle_messages(messages) do
-    messages = Enum.map(messages, &Map.get(&1, :value))
-
     Flair.Producer.add_messages(messages)
 
     :ok

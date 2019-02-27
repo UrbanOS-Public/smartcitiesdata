@@ -16,7 +16,7 @@ defmodule Flair.Flow do
   # end
 
   def start_link(_) do
-    Flow.from_specs([{Flair.Producer, []}], stages: 1, min_demand: 2_500, max_demand: 10_000)
+    Flow.from_specs([{Flair.Producer, []}])
     |> Flow.map(&get_message/1)
     |> Flow.partition(key: &extract_id/1, window: Flow.Window.periodic(15, :second))
     |> Flow.reduce(fn -> %{} end, &reducer/2)
@@ -27,7 +27,7 @@ defmodule Flair.Flow do
 
   defp get_message(kafka_msg) do
     kafka_msg
-    # |> Map.get(:value)
+    |> Map.get(:value)
     |> DataMessage.parse_message()
   end
 

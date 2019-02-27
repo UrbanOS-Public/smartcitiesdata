@@ -26,7 +26,8 @@ defmodule Flair.MixProject do
       {:gen_stage, "~> 0.14"},
       {:kaffe, "~> 1.9.1"},
       {:jason, "~> 1.1"},
-      {:statistics, "~> 0.6"}
+      {:statistics, "~> 0.6"},
+      {:scos_ex, "~> 0.1", organization: "smartcolumbus_os"}
     ]
   end
 end
