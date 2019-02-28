@@ -12,8 +12,6 @@ spec:
       app: discovery-api
   template:
     metadata:
-      annotations:
-        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
       labels:
         app: discovery-api
     spec:
@@ -23,9 +21,6 @@ spec:
         imagePullPolicy: IfNotPresent
         resources:
 {{ toYaml .Values.resources | indent 10 }}
-        envFrom:
-        - configMapRef:
-            name: discovery-api-configs
         env:
           - name: KAFKA_BROKERS
             value: {{ .Values.kafka.brokers }}

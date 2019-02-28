@@ -1,17 +1,25 @@
 defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
-  alias DiscoveryApi.Data.Dataset
+  alias DiscoveryApi.Test.Helper
 
   describe "fetch dataset detail" do
-    test "retreives dataset from retriever" do
-      # id = "123"
-      # dataset = %Dataset{id: id, title: "The Title"}
-      # expect(DiscoveryApi.Data.Retriever.get_dataset(id), return: dataset)
+    test "retreives dataset from retriever", %{conn: conn} do
+      dataset = Helper.sample_dataset()
+      expect(DiscoveryApi.Data.Retriever.get_dataset(dataset.id), return: dataset)
 
-      # actual = get(conn, "/v1/api/dataset/#{id}") |> json_response(200)
+      actual = get(conn, "/v1/api/dataset/#{dataset.id}") |> json_response(200)
 
-      # assert dataset == actual
+      assert dataset.id == actual["id"]
+      assert dataset.description == actual["description"]
+      assert dataset.keywords == actual["keywords"]
+      assert dataset.organization == actual["organization"]["name"]
+    end
+
+    test "returns 404", %{conn: conn} do
+      expect(DiscoveryApi.Data.Retriever.get_dataset(any()), return: nil)
+
+      get(conn, "/v1/api/dataset/xyz123") |> json_response(404)
     end
   end
 end

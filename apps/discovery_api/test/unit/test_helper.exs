@@ -1,4 +1,5 @@
 ExUnit.start()
+Faker.start()
 
 defmodule MockHelper do
   defmacro called_times(times, {{:., _, [module, f]}, _, args}) do

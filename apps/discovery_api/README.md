@@ -1,11 +1,45 @@
 # DiscoveryApi
 
+Discovery API serves as middleware between our metadata store and our Data Discovery UI.
+
+### To start your Phoenix server(from the root directory):
+  * Start Redis
+  * Start Kafka
+  * Install dependencies with `mix deps.get`
+  * Start Phoenix endpoint with `iex -S mix phx.server`
+
+#### Running Kafka and Redis locally
+```
+docker-compose up -d
+```
+
+### To run the tests
+
+  * Run `mix test` to run the tests a single time
+  * Run `mix test.watch` to re-run the tests when a file changes
+  * Run `mix test.watch --stale` to only rerun the tests for modules that have changes
+  * Run `MIX_ENV=integration mix test.integration` to run the integration tests
+
+### To run inside a container(from the root directory):
+  * `docker build . -t <image_name:tag>`
+
+### To see the application live:
+  * Go to localhost:4000/metrics
+  * Go to http://localhost:4000/v1/api/dataset/search
+  * You can get paginated results using the url http://localhost:4000/v1/api/dataset/search?offset=10&limit=5&sort=name_asc
+
+### Deploying to Sandbox
+
+* This application can be deployed to the sandbox environment using the following Terraform commands:
+  * `tf init`
+  * `tf workspace new {NEW_WORKSPACE_NAME}`
+  * `tf plan --var=file=variables/sandbox.tfvars --out=out.out`
+  * `tf apply out.out`
+# DiscoveryApi
+
 Discovery API serves as middleware between Kylo and our Data Discovery UI.
 
 ### To start your Phoenix server(from the root directory):
-
-  * First, `export DATA_LAKE_URL=https://kylo.dev.internal.smartcolumbusos.com`
-    * You will need to be on the vpn if you use the dev kylo as your backing datalake
   * Install dependencies with `mix deps.get`
   * Start Phoenix endpoint with `iex -S mix phx.server`
 
@@ -33,3 +67,7 @@ Discovery API serves as middleware between Kylo and our Data Discovery UI.
   * `tf workspace new {NEW_WORKSPACE_NAME}`
   * `tf plan --var=file=variables/sandbox.tfvars --out=out.out`
   * `tf apply out.out`
+
+
+### Producing Messages to Kafka (using docker-compose)
+docker exec -it discovery-api_kafka_1 sh -c "/opt/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic dataset-registry < /data/dataset_2.json"

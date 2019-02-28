@@ -46,16 +46,16 @@ defmodule DiscoveryApi.Mixfile do
       {:prometheus_phoenix, "~>1.2.0"},
       {:csv, "~> 1.4.0"},
       {:streaming_metrics, path: "streaming_metrics"},
-      {:riffed, git: "https://github.com/pinterest/riffed.git", tag: "1.0.0"},
       {:prestige, path: "prestige"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.9"},
-      {:redix, "~> 0.9.2"}
+      {:redix, "~> 0.9.2"},
+      {:faker, "~> 0.12", only: [:test, :integration]}
     ]
   end
 
-  defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/unit/support"]
+  defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/unit/support", "test/utils"]
   defp elixirc_paths(_), do: ["lib"]
 
   defp test_paths(:integration), do: ["test/integration"]

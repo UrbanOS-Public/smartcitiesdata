@@ -1,5 +1,6 @@
 defmodule DiscoveryApi.Data.DatasetTest do
   use ExUnit.Case
+  alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Data.Dataset
 
   setup do
@@ -8,45 +9,54 @@ defmodule DiscoveryApi.Data.DatasetTest do
   end
 
   test "Dataset saves data to Redis" do
-    dataset = sample_dataset("123")
-
+    dataset = Helper.sample_dataset()
     Dataset.save(dataset)
 
     actual =
-      Redix.command!(:redix, ["GET", "discovery-api:dataset:123"])
+      Redix.command!(:redix, ["GET", "discovery-api:dataset:#{dataset.id}"])
       |> Jason.decode!()
 
-    assert actual["id"] == "123"
-    assert actual["title"] == "The title"
-    assert actual["keywords"] == ["tag a", "tag b"]
-    assert actual["organization"] == "SCOS"
-    assert actual["modified"] == "timestamp"
-    assert actual["fileTypes"] == ["csv", "json"]
-    assert actual["description"] == "This is the description"
+    assert actual["id"] == dataset.id
+    assert actual["title"] == dataset.title
+    assert actual["keywords"] == dataset.keywords
+    assert actual["organization"] == dataset.organization
+    assert actual["modified"] == dataset.modified
+    assert actual["fileTypes"] == dataset.fileTypes
+    assert actual["description"] == dataset.description
   end
 
   test "get should return a single dataset" do
-    dataset = sample_dataset("123")
+    dataset = Helper.sample_dataset()
     dataset_json_string = to_json(dataset)
 
-    Redix.command!(:redix, ["SET", "discovery-api:dataset:123", dataset_json_string])
+    Redix.command!(:redix, ["SET", "discovery-api:dataset:#{dataset.id}", dataset_json_string])
 
-    actual_dataset = Dataset.get("123")
+    actual_dataset = Dataset.get(dataset.id)
 
     assert actual_dataset == dataset
   end
 
+  test "get should return nil when datsaet does not exist" do
+    actual_dataset = Dataset.get("123456")
+
+    assert nil == actual_dataset
+  end
+
   test "should return all of the datasets" do
+    dataset_id_1 = Faker.UUID.v4()
+    dataset_id_2 = Faker.UUID.v4()
+
     Enum.each(
-      [sample_dataset("123"), sample_dataset("456")],
+      [Helper.sample_dataset(%{id: dataset_id_1}), Helper.sample_dataset(%{id: dataset_id_2})],
       fn dataset ->
         Redix.command!(:redix, ["SET", "discovery-api:dataset:#{dataset.id}", to_json(dataset)])
       end
     )
 
-    actual_datasets = Dataset.get_all()
+    expected = [dataset_id_1, dataset_id_2] |> Enum.sort()
+    actual = Dataset.get_all() |> Enum.map(fn dataset -> dataset.id end) |> Enum.sort()
 
-    assert ["123", "456"] == Enum.map(actual_datasets, fn dataset -> dataset.id end) |> Enum.sort()
+    assert expected == actual
   end
 
   test "get all returns empty list if no keys exist" do
@@ -57,17 +67,5 @@ defmodule DiscoveryApi.Data.DatasetTest do
     dataset
     |> Map.from_struct()
     |> Jason.encode!()
-  end
-
-  defp sample_dataset(id) do
-    %Dataset{
-      id: id,
-      title: "The title",
-      keywords: ["tag a", "tag b"],
-      organization: "SCOS",
-      modified: "timestamp",
-      fileTypes: ["csv", "json"],
-      description: "This is the description"
-    }
   end
 end

@@ -19,11 +19,25 @@ defmodule Mix.Tasks.Docker.Start do
     wait_for = Application.get_env(app, :docker_wait_for)
 
     if wait_for do
-      IO.puts("Sleeping")
-      Process.sleep(5000)
-      IO.puts("Checking for #{wait_for}")
-      Mix.shell().cmd("docker-compose -p #{app} -f #{file} logs --tail 10000 | grep -q '#{wait_for}'")
-      IO.puts("Done checking for #{wait_for}")
+      condition = fn ->
+        IO.puts("Waiting for log '#{wait_for}'")
+        status_code = Mix.shell().cmd("docker-compose -p #{app} -f #{file} logs --tail 100000 | grep -q '#{wait_for}'")
+
+        case status_code do
+          0 ->
+            IO.puts("Found log '#{wait_for}'")
+            true
+
+          _ ->
+            false
+        end
+      end
+
+      Patiently.wait_for!(
+        condition,
+        dwell: 500,
+        max_tries: 20
+      )
     end
   end
 

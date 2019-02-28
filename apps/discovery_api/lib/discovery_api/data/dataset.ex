@@ -1,5 +1,5 @@
 defmodule DiscoveryApi.Data.Dataset do
-  defstruct id: nil, title: nil, keywords: nil, organization: nil, modified: nil, fileTypes: nil, description: nil
+  defstruct [:id, :title, :keywords, :organization, :modified, :fileTypes, :description]
 
   @name_space "discovery-api:dataset:"
 
@@ -23,6 +23,10 @@ defmodule DiscoveryApi.Data.Dataset do
   def save(%__MODULE__{} = dataset) do
     Jason.encode!(Map.from_struct(dataset))
     |> (fn dataset_json -> Redix.command(:redix, ["SET", @name_space <> dataset.id, dataset_json]) end).()
+  end
+
+  defp from_json(nil) do
+    nil
   end
 
   defp from_json(json_string) do

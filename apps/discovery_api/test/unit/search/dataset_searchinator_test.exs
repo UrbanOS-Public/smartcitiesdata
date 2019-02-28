@@ -3,14 +3,14 @@ defmodule DiscoveryApi.Search.DatasetSearchinatorTest do
   use Placebo
 
   alias DiscoveryApi.Search.DatasetSearchinator
-  alias DiscoveryApi.Data.Dataset
+  alias DiscoveryApi.Test.Helper
 
   describe "search" do
     setup do
       mock_dataset_summaries = [
-        %Dataset{id: 1, title: "Jarred loves pdf", description: "Something super cool"},
-        %Dataset{id: 2, title: "Jessie hates useless paperwork", description: "Cool beans"},
-        %Dataset{id: 3, title: "This one has no description"}
+        Helper.sample_dataset(%{id: 1, title: "Jarred loves pdf", description: "Something super cool"}),
+        Helper.sample_dataset(%{id: 2, title: "Jessie hates useless paperwork", description: "Cool beans"}),
+        Helper.sample_dataset(%{id: 3, title: "This one has no description"})
       ]
 
       allow(DiscoveryApi.Data.Retriever.get_datasets(), return: mock_dataset_summaries)

@@ -5,16 +5,14 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
     transform_dataset_detail(dataset)
   end
 
-  defp transform_dataset_detail(feed_detail) do
+  defp transform_dataset_detail(dataset) do
     %{
-      name: feed_detail["feedName"],
-      description: feed_detail["description"],
-      id: feed_detail["id"],
-      keywords: feed_detail["keywords"],
+      name: dataset.title,
+      description: dataset.description,
+      id: dataset.id,
+      keywords: dataset.keywords,
       organization: %{
-        id: feed_detail["category"]["id"],
-        name: feed_detail["category"]["displayName"],
-        description: feed_detail["category"]["description"],
+        name: dataset.organization,
         image: "https://www.cota.com/wp-content/uploads/2016/04/COSI-Image-414x236.jpg"
       }
     }

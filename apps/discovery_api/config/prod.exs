@@ -13,5 +13,8 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :redix,
+  host: "localhost"
+
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.

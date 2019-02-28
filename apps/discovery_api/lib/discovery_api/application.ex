@@ -10,7 +10,7 @@ defmodule DiscoveryApi.Application do
     children =
       [
         supervisor(DiscoveryApiWeb.Endpoint, []),
-        {Redix, host: Application.get_env(:redix, :host), name: :redix},
+        redis(),
         dataset_event_consumer()
       ]
       |> List.flatten()
@@ -22,6 +22,14 @@ defmodule DiscoveryApi.Application do
   def config_change(changed, _new, removed) do
     DiscoveryApiWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp redis do
+    Application.get_env(:redix, :host)
+    |> case do
+      nil -> []
+      host -> {Redix, host: host, name: :redix}
+    end
   end
 
   defp dataset_event_consumer do

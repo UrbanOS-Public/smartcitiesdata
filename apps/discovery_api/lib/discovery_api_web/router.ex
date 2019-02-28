@@ -31,24 +31,16 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   scope "/v1/api", DiscoveryApiWeb do
-    pipe_through(:api)
-
-    get("/dataset/:dataset_id/query", DatasetQueryController, :fetch_query)
-    post("/dataset/:dataset_id/query", DatasetQueryController, :fetch_query)
-    get("/dataset/:dataset/queryPresto", DatasetQueryController, :fetch_presto)
-  end
-
-  scope "/v1/api", DiscoveryApiWeb do
     pipe_through(:api_json_only)
 
-    get("/dataset/:dataset_id/preview", DatasetQueryController, :fetch_preview)
+    get("/dataset/:dataset_id/preview", DatasetPreviewController, :fetch_preview)
     get("/dataset/search", DatasetSearchController, :search)
     get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
   end
 
   scope "/v1/api", DiscoveryApiWeb do
-    pipe_through(:api_csv_only)
+    pipe_through(:api)
 
-    get("/dataset/:dataset_id/csv", DatasetQueryController, :fetch_full_csv)
+    get("/dataset/:dataset_id/csv", DatasetQueryController, :fetch_presto)
   end
 end

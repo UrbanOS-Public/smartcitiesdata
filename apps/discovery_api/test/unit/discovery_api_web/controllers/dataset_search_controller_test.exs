@@ -9,7 +9,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
     ]
 
     allow DiscoveryApi.Data.Retriever.get_datasets(), return: mock_dataset_summaries
-    Application.put_env(:discovery_api, :data_lake_url, "http://my-fake-cota-url.nope")
+    :ok
   end
 
   describe "fetch dataset summaries" do
