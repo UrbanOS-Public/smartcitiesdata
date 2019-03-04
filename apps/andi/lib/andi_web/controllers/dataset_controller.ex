@@ -1,14 +1,15 @@
 defmodule AndiWeb.DatasetController do
   use AndiWeb, :controller
 
-  def create(conn, _params) do
-    dataset = conn.body_params
+  alias SCOS.RegistryMessage
 
-    with {:ok, dataset_struct} <- Dataset.new(dataset),
-         :ok <- Andi.Kafka.send_to_kafka(dataset_struct) do
+  def create(conn, _params) do
+    with message <- conn.body_params,
+         {:ok, dataset} <- RegistryMessage.new(message),
+         :ok <- Andi.Kafka.send_to_kafka(dataset) do
       conn
       |> put_status(:created)
-      |> json(dataset_struct)
+      |> json(dataset)
     else
       _ ->
         conn
