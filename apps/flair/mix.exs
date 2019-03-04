@@ -27,7 +27,8 @@ defmodule Flair.MixProject do
       {:kafka_ex, "~> 0.9"},
       {:jason, "~> 1.1"},
       {:statistics, "~> 0.6"},
-      {:scos_ex, "~> 0.1", organization: "smartcolumbus_os"}
+      {:scos_ex, "~> 0.2", organization: "smartcolumbus_os"},
+      {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"}
     ]
   end
 end
