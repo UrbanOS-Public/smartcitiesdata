@@ -7,5 +7,3 @@ defmodule Flair.MessageProcessor do
     {:async_commit, state}
   end
 end
-
-# {"metadata":{},"operational":{},"payload":null}

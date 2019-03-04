@@ -16,13 +16,23 @@ defmodule Flair.Flow do
   # end
 
   def start_link(_) do
+    consumer_spec = [
+      {
+        {Flair.Consumer, []},
+        []
+      }
+    ]
+
     Flow.from_specs([{Flair.Producer, []}])
     |> Flow.map(&get_message/1)
     |> Flow.partition(key: &extract_id/1, window: Flow.Window.periodic(15, :second))
     |> Flow.reduce(fn -> %{} end, &reducer/2)
     |> Flow.map(&calculate_stats/1)
-    |> Flow.map(&IO.inspect(&1, label: "#{inspect(self())} STAT RESULTS"))
-    |> Flow.start_link()
+    # |> Flow.merge(stages: 1, window: Flow.Window.count(5))
+    # |> Flow.map(&IO.inspect(&1, label: "#{inspect(self())} STAT RESULTS"))
+    |> Flow.into_specs(consumer_spec)
+
+    # |> Flow.start_link()
   end
 
   defp get_message(kafka_msg) do
@@ -31,48 +41,57 @@ defmodule Flair.Flow do
     |> DataMessage.parse_message()
   end
 
-  defp extract_id(%DataMessage{metadata: %{id: id}}) do
+  defp extract_id(%DataMessage{dataset_id: id}) do
     id
   end
 
-  defp merge_maps(
-         _key,
-         %{duration: d1, start_time: s1} = _map1,
-         %{duration: d2, start_time: s2} = _map2
-       ) do
-    %{
-      duration: [d2 | List.wrap(d1)],
-      start_time: [s2 | List.wrap(s1)]
-    }
-  end
-
-  defp reducer(%DataMessage{operational: operational} = msg, acc) do
-    # Map.update(acc, extract_id(msg), [operational], &[operational | &1])
-    Map.update(acc, extract_id(msg), operational, fn x ->
-      Map.merge(x, operational, &merge_maps/3)
+  defp reducer(%DataMessage{operational: %{timing: timing}} = msg, acc) do
+    Map.update(acc, extract_id(msg), List.wrap(timing), fn x ->
+      timing ++ x
     end)
   end
 
-  defp calculate_stats({key, stats}) do
-    value =
-      stats
-      |> Enum.map(fn {app, app_stats} ->
-        {app, get_stats(app_stats)}
-      end)
-      |> Enum.into(Map.new())
-
-    {key, value}
+  defp calculate_stats({dataset_id, raw_metrics}) do
+    raw_metrics
+    |> Enum.group_by(
+      &{&1.app, &1.label},
+      &DateTime.diff(
+        &1.end_time |> DateTime.from_iso8601() |> elem(1),
+        &1.start_time |> DateTime.from_iso8601() |> elem(1),
+        :millisecond
+      )
+    )
+    |> Enum.map(&get_stats/1)
+    |> Enum.into(Map.new())
+    |> (&{dataset_id, &1}).()
   end
 
-  defp get_stats(dataset_stats) do
-    durations = Map.get(dataset_stats, :duration)
-
-    %{
-      count: length(durations),
-      max: Enum.max(durations),
-      min: Enum.min(durations),
-      average: Enum.sum(durations) / length(durations),
-      stdev: Statistics.stdev(durations)
-    }
+  defp get_stats({key, durations}) do
+    {key,
+     %{
+       count: length(durations),
+       max: Enum.max(durations),
+       min: Enum.min(durations),
+       average: Enum.sum(durations) / length(durations),
+       stdev: Statistics.stdev(durations)
+     }}
   end
 end
+
+# {4,
+#  %{
+#    {"valkyrie", "placeholder_stat"} => %{
+#      average: 471472.22222222225,
+#      count: 36,
+#      max: 983000,
+#      min: 3000,
+#      stdev: 313451.1734182598
+#    }
+#  }}
+
+# defp do_stuff({dataset_id, stats_map}) do
+#   stats_map
+#   |> Enum.map(fn stats ->
+#     nil
+#   end)
+# end
