@@ -5,13 +5,14 @@ defmodule Valkyrie.MixProject do
     [
       app: :valkyrie,
       version: "0.1.0",
-      elixir: "~> 1.7",
+      elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases(),
+      test_paths: test_paths(Mix.env())
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger],
@@ -19,13 +20,25 @@ defmodule Valkyrie.MixProject do
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.0"},
       {:distillery, "~> 2.0"},
+      {:divo, "~> 0.1.0", only: [:dev, :test, :integration], path: "../divo"},
+      {:mockaffe, "~> 0.1.0", only: [:dev, :test, :integration], path: "../mockaffe"},
       {:scos_ex, "~> 0.1.0", organization: "smartcolumbus_os"}
+    ]
+  end
+
+  defp test_paths(:integration), do: ["test/integration"]
+  defp test_paths(_), do: ["test/unit"]
+
+  defp aliases do
+    [
+      lint: ["format", "credo"],
+      test: ["test --no-start"]
     ]
   end
 end

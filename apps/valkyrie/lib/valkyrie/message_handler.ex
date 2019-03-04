@@ -1,6 +1,7 @@
 require Logger
 
 defmodule Valkyrie.MessageHandler do
+  @moduledoc false
   alias SCOS.DataMessage
 
   def handle_messages(messages) do
