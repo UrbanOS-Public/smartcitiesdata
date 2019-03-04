@@ -37,7 +37,6 @@ defmodule Andi.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:typed_struct, "~> 0.1.4"},
       {:scos_ex, "~> 0.4.0", organization: "smartcolumbus_os"}
     ]
   end
