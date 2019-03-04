@@ -43,10 +43,12 @@ defmodule Reaper.MixProject do
       {:kaffe, "~> 1.9.1"},
       {:libcluster, "~> 3.0"},
       {:mock, "~> 0.3.1", only: [:test, :integration], runtime: false},
+      {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
       {:patiently, "~> 0.2", only: [:test, :integration]},
       {:placebo, "~> 1.2.1", only: [:test, :integration]},
       {:plug_cowboy, "~> 2.0"},
       {:protobuf, "~> 0.5.3"},
+      {:redix, "~> 0.9.2"},
       {:sweet_xml, "~> 0.6"},
       {:typed_struct, "~> 0.1.4"}
     ]

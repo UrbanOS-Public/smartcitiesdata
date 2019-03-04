@@ -35,7 +35,7 @@ defmodule Reaper.FullTest do
                                  |> File.read!()
                                  |> Reaper.Decoder.decode("csv")
                                  |> Enum.count()
-  @total_dataset_feed_record_count @json_dataset_feed_record_count * 2 + @gtfs_dataset_feed_record_count +
+  @total_dataset_feed_record_count @json_dataset_feed_record_count * 2 + @gtfs_dataset_feed_record_count * 2 +
                                      @csv_dataset_feed_record_count
 
   setup_all do
@@ -95,6 +95,39 @@ defmodule Reaper.FullTest do
     assert vehicle_id == "1004"
   end
 
+  test "saves last_success_time to redis" do
+    dataset_id = "12345-5555"
+
+    gtfs_dataset =
+      FixtureHelper.new_dataset(%{
+        id: dataset_id,
+        operational: %{
+          cadence: 1_000,
+          sourceUrl: "http://#{@webserver_host}:#{@webserver_port}/#{@gtfs_file_name}",
+          sourceFormat: "gtfs"
+        }
+      })
+
+    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(gtfs_dataset))
+    wait_for_relative_offset(@destination_topic, @gtfs_dataset_feed_record_count)
+
+    result =
+      Redix.command!(:redix, ["GET", "reaper:derived:#{dataset_id}"])
+      |> Jason.decode!()
+
+    result["timestamp"]
+    |> DateTime.from_iso8601()
+    |> case do
+      {:ok, date_time_from_redis, _} ->
+        assert DateTime.diff(date_time_from_redis, DateTime.utc_now()) < 5
+
+      _ ->
+        flunk("Should have put a valid DateTime into redis")
+    end
+
+    # DateTime.utc_now() - result["timetamp"] < 5000
+  end
+
   test "configures and ingests a json source" do
     dataset_id = "23456-7891"
 
@@ -146,6 +179,7 @@ defmodule Reaper.FullTest do
   end
 
   test "starts at the beginning after a restart/start" do
+    Application.ensure_all_started(:reaper)
     Application.stop(:reaper)
     Application.ensure_all_started(:reaper)
 

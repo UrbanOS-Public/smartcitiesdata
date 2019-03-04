@@ -8,7 +8,7 @@ defmodule Reaper.DataFeed do
   """
 
   use GenServer
-  alias Reaper.{Cache, Decoder, Extractor, Loader, UrlBuilder, Util}
+  alias Reaper.{Cache, Decoder, Extractor, Loader, UrlBuilder, Util, Recorder}
 
   ## CLIENT
 
@@ -34,13 +34,16 @@ defmodule Reaper.DataFeed do
   end
 
   def handle_info(:work, %{pids: %{cache: cache}, dataset: dataset} = state) do
-    dataset.operational.sourceUrl
-    |> UrlBuilder.build(dataset.operational.queryParams)
+    generated_time_stamp = DateTime.utc_now()
+
+    dataset
+    |> UrlBuilder.build()
     |> Extractor.extract()
     |> Decoder.decode(dataset.operational.sourceFormat)
     |> Cache.dedupe(cache)
     |> Loader.load(dataset.id)
     |> Cache.cache(cache)
+    |> Recorder.record_last_fetched_timestamp(dataset.id, generated_time_stamp)
 
     timer_ref = schedule_work(dataset.operational.cadence)
 

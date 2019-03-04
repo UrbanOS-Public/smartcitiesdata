@@ -41,3 +41,8 @@ if System.get_env("RUN_IN_KUBERNETES") do
       ]
     ]
 end
+
+if(System.get_env("REDIS_HOST")) do
+  config :redix,
+    host: System.get_env("REDIS_HOST")
+end

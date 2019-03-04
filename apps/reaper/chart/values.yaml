@@ -26,3 +26,6 @@ strimzi:
     minIsr: 2
     autoTopics: false
   zookeeper: {}
+
+redis:
+  host: redis.external-services

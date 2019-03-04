@@ -11,7 +11,8 @@ defmodule Reaper.Application do
         {Horde.Supervisor, [name: Reaper.Horde.Supervisor, strategy: :one_for_one]},
         {HordeConnector, [supervisor: Reaper.Horde.Supervisor, registry: Reaper.Registry]},
         Reaper.ConfigServer,
-        kaffe()
+        kaffe(),
+        redis()
       ]
       |> List.flatten()
 
@@ -25,6 +26,14 @@ defmodule Reaper.Application do
     |> case do
       nil -> []
       _ -> Supervisor.Spec.worker(Kaffe.Consumer, [])
+    end
+  end
+
+  defp redis do
+    Application.get_env(:redix, :host)
+    |> case do
+      nil -> []
+      host -> {Redix, host: host, name: :redix}
     end
   end
 

@@ -1,10 +1,38 @@
 defmodule Reaper.UrlBuilder do
   @moduledoc false
-  def build(url, nil), do: url
+  def build(%Dataset{operational: %{sourceUrl: url, queryParams: query_params}} = dataset) when query_params == %{},
+    do: url
 
-  def build(url, params) do
-    params = Enum.map(params, fn {k, v} -> {k, EEx.eval_string(v)} end)
-    string_params = URI.encode_query(params)
+  def build(%Dataset{operational: %{sourceUrl: url, queryParams: query_params}} = dataset) do
+    last_success_time = extract_last_success_time(dataset)
+
+    string_params =
+      query_params
+      |> evaluate_parameters(last_success_time: last_success_time)
+      |> URI.encode_query()
+
     "#{url}?#{string_params}"
+  end
+
+  defp extract_last_success_time(dataset) do
+    dataset.operational
+    |> Map.update(:lastSuccessTime, false, &convert_timestamp/1)
+    |> Map.get(:lastSuccessTime)
+  end
+
+  defp convert_timestamp(timestamp) do
+    {:ok, dt, _} = DateTime.from_iso8601(timestamp)
+    dt
+  end
+
+  defp evaluate_parameters(parameters, bindings) do
+    Enum.map(
+      parameters,
+      &evaluate_parameter(&1, bindings)
+    )
+  end
+
+  defp evaluate_parameter({key, value}, bindings) do
+    {key, EEx.eval_string(value, bindings)}
   end
 end

@@ -36,6 +36,10 @@ config :reaper,
         },
         volumes: ["/var/run/docker.sock:/var/run/docker.sock"]
       },
+      redis: %{
+        image: "redis",
+        ports: ["6379:6379"]
+      },
       webserver: %{
         build: %{
           context: "#{File.cwd!()}/test/support/",
@@ -64,3 +68,6 @@ config :kaffe,
     topics: ["streaming-raw"],
     partition_strategy: :md5
   ]
+
+config :redix,
+  host: host

@@ -9,3 +9,6 @@ config :libcluster,
       ]
     ]
   ]
+
+config :redix,
+  host: "localhost"
