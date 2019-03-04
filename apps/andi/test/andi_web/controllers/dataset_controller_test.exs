@@ -8,15 +8,12 @@ defmodule AndiWeb.DatasetControllerTest do
   setup do
     allow(Kaffe.Producer.produce_sync(any(), any(), any()), return: :ok)
     on_exit(fn -> Placebo.unstub() end)
-  end
 
-  test "PUT /api/ with valid data returns 201", %{conn: conn} do
     request = %{
       "id" => "uuid",
       "technical" => %{
         "dataName" => "dataset",
         "orgName" => "org",
-        "systemName" => "org__dataset",
         "stream" => false,
         "sourceUrl" => "https://example.com",
         "sourceFormat" => "gtfs",
@@ -65,7 +62,28 @@ defmodule AndiWeb.DatasetControllerTest do
       }
     }
 
+    {:ok, request: request, message: message}
+  end
+
+  test "PUT /api/ with valid data returns 201", %{conn: conn, request: request, message: message} do
     conn = put(conn, @route, request)
+    assert json_response(conn, 201) == message
+
+    {:ok, struct} = RegistryMessage.new(message)
+
+    assert_called(
+      Kaffe.Producer.produce_sync(
+        "dataset-registry",
+        "uuid",
+        RegistryMessage.encode!(struct)
+      ),
+      once()
+    )
+  end
+
+  test "PUT /api/ with systemName returns 201", %{conn: conn, request: request, message: message} do
+    req = put_in(request, ["technical", "systemName"], "org__dataset")
+    conn = put(conn, @route, req)
     assert json_response(conn, 201) == message
 
     {:ok, struct} = RegistryMessage.new(message)

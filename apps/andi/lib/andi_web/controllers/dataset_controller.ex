@@ -4,7 +4,7 @@ defmodule AndiWeb.DatasetController do
   alias SCOS.RegistryMessage
 
   def create(conn, _params) do
-    with message <- conn.body_params,
+    with {:ok, message} <- parse_message(conn.body_params),
          {:ok, dataset} <- RegistryMessage.new(message),
          :ok <- Andi.Kafka.send_to_kafka(dataset) do
       conn
@@ -17,4 +17,20 @@ defmodule AndiWeb.DatasetController do
         |> json("Unable to process your request")
     end
   end
+
+  defp parse_message(%{"technical" => %{"systemName" => _}} = msg) do
+    {:ok, msg}
+  end
+
+  defp parse_message(%{"technical" => technical} = msg) do
+    with org_name when not is_nil(org_name) <- Map.get(technical, "orgName"),
+         data_name when not is_nil(data_name) <- Map.get(technical, "dataName"),
+         system_name <- "#{org_name}__#{data_name}" do
+      {:ok, put_in(msg, ["technical", "systemName"], system_name)}
+    else
+      _ -> {:error, "Cannot parse message: #{inspect(msg)}"}
+    end
+  end
+
+  defp parse_message(msg), do: {:error, "Cannot parse message: #{inspect(msg)}"}
 end
