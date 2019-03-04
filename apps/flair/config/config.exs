@@ -11,3 +11,11 @@ config :kafka_ex,
     {"localhost", 9092}
   ],
   consumer_group: "flair-consumer-group"
+
+config :prestige,
+  base_url: "https://presto.dev.internal.smartcolumbusos.com",
+  headers: [
+    user: "presto",
+    catalog: "hive",
+    schema: "default"
+  ]
