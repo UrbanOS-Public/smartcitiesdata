@@ -9,7 +9,8 @@ properties([
     pipelineTriggers([scos.dailyBuildTrigger('10-12')]), //UTC
 ])
 
-def image, imageName
+def image
+def imageName = "scos/andi"
 
 def doStageIf = scos.&doStageIf
 def doStageIfRelease = doStageIf.curry(scos.changeset.isRelease)
@@ -20,13 +21,13 @@ node('infrastructure') {
     ansiColor('xterm') {
         scos.doCheckoutStage()
 
-        imageName = "scos/andi"
         imageTag = "${env.GIT_COMMIT_HASH}"
 
         doStageUnlessRelease('Build') {
-            image = docker.build("${imageName}:${imageTag}")
+            withCredentials([string(credentialsId: 'hex-read', variable: 'HEX_TOKEN')]) {
+                image = docker.build("${imageName}:${imageTag}", '--build-arg HEX_TOKEN=$HEX_TOKEN .')
+            }
         }
-        
 
         doStageUnlessRelease('Deploy to Dev') {
             scos.withDockerRegistry {
