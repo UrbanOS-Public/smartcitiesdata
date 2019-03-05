@@ -2,27 +2,37 @@ defmodule FixtureHelper do
   @moduledoc false
 
   alias Reaper.Util
+  alias SCOS.RegistryMessage
 
   def new_dataset(overrides) do
     {:ok, dataset} =
-      Dataset.new(
+      RegistryMessage.new(
         Util.deep_merge(
           %{
-            business: %{},
-            operational: %{
+            business: %{
+              dataTitle: "Stuff",
+              description: "crap",
+              modifiedDate: "something",
+              orgTitle: "SCOS",
+              contactName: "Jalson",
+              contactEmail: "something@email.com",
+              license: "MIT"
+            },
+            technical: %{
+              dataName: "name",
               cadence: 100_000,
               sourceUrl: "https://does-not-matter-url.com",
               sourceFormat: "gtfs",
-              status: "created",
-              queryParams: %{
-                apiKey: "whatever"
-              },
+              # status: "created",
+              queryParams: %{},
               transformations: ["a_transform"],
-              version: "1",
+              # version: "1",
               headers: %{
                 Authorization: "Basic xdasdgdasgdsgd"
               },
-              organization: "Whatever"
+              systemName: "scos",
+              stream: "IDK",
+              orgName: "Whatever"
             }
           },
           overrides

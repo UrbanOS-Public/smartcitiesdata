@@ -8,10 +8,10 @@ defmodule Reaper.MessageHandlerTest do
   describe ".handle_message" do
     @tag capture_log: true
     test "does not actually handle datasets that are not valid" do
-      bad_dataset = %Dataset{
+      bad_dataset = %{
         id: "hello",
         business: 1,
-        operational: []
+        technical: []
       }
 
       allow ConfigServer.send_dataset(any()), return: nil

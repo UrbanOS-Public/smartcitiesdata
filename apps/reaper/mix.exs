@@ -5,7 +5,7 @@ defmodule Reaper.MixProject do
     [
       app: :reaper,
       version: "0.1.0",
-      elixir: "~> 1.7",
+      elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
@@ -50,6 +50,7 @@ defmodule Reaper.MixProject do
       {:protobuf, "~> 0.5.3"},
       {:redix, "~> 0.9.2"},
       {:sweet_xml, "~> 0.6"},
+      {:scos_ex, "~> 0.4.0", organization: "smartcolumbus_os"},
       {:typed_struct, "~> 0.1.4"}
     ]
   end

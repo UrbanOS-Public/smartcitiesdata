@@ -8,6 +8,7 @@ defmodule Reaper.DataFeedTest do
   alias Reaper.Loader
   alias Reaper.UrlBuilder
   alias Reaper.Recorder
+  alias SCOS.RegistryMessage
 
   @dataset_id "12345-6789"
   @dataset FixtureHelper.new_dataset(%{id: @dataset_id})
@@ -31,7 +32,7 @@ defmodule Reaper.DataFeedTest do
 
       {:noreply, %{timer_ref: timer_ref}} = DataFeed.handle_info(:work, @data_feed_args)
 
-      assert Process.read_timer(timer_ref) == @dataset.operational.cadence
+      assert Process.read_timer(timer_ref) == @dataset.technical.cadence
     end
   end
 
@@ -53,12 +54,12 @@ defmodule Reaper.DataFeedTest do
       assert Map.get(new_state, :key) == "key_id"
     end
 
-    test "updates dataset operational data without wiping out old data" do
+    test "updates dataset technical data without wiping out old data" do
       {:ok, pid} = DataFeed.start_link(@data_feed_args)
 
       %{
-        dataset: %Dataset{
-          operational: %{
+        dataset: %{
+          technical: %{
             sourceFormat: old_source_format
           }
         }
@@ -68,14 +69,14 @@ defmodule Reaper.DataFeedTest do
         pid,
         %{
           dataset: %{
-            operational: %{cadence: 200_000}
+            technical: %{cadence: 200_000}
           }
         }
       )
 
       %{
-        dataset: %Dataset{
-          operational: %{
+        dataset: %RegistryMessage{
+          technical: %{
             sourceFormat: new_source_format,
             cadence: cadence
           }

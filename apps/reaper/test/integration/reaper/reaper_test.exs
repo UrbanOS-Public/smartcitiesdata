@@ -42,7 +42,7 @@ defmodule Reaper.FullTest do
     pre_existing_dataset =
       FixtureHelper.new_dataset(%{
         id: @pre_existing_dataset_id,
-        operational: %{
+        technical: %{
           cadence: 1_000,
           sourceUrl: "http://#{@webserver_host}:#{@webserver_port}/#{@json_file_name}",
           sourceFormat: "json"
@@ -76,7 +76,7 @@ defmodule Reaper.FullTest do
     gtfs_dataset =
       FixtureHelper.new_dataset(%{
         id: dataset_id,
-        operational: %{
+        technical: %{
           cadence: 1_000,
           sourceUrl: "http://#{@webserver_host}:#{@webserver_port}/#{@gtfs_file_name}",
           sourceFormat: "gtfs"
@@ -101,7 +101,7 @@ defmodule Reaper.FullTest do
     gtfs_dataset =
       FixtureHelper.new_dataset(%{
         id: dataset_id,
-        operational: %{
+        technical: %{
           cadence: 1_000,
           sourceUrl: "http://#{@webserver_host}:#{@webserver_port}/#{@gtfs_file_name}",
           sourceFormat: "gtfs"
@@ -134,7 +134,7 @@ defmodule Reaper.FullTest do
     json_dataset =
       FixtureHelper.new_dataset(%{
         id: dataset_id,
-        operational: %{
+        technical: %{
           cadence: 1_000,
           sourceUrl: "http://#{@webserver_host}:#{@webserver_port}/#{@json_file_name}",
           sourceFormat: "json"
@@ -159,7 +159,7 @@ defmodule Reaper.FullTest do
     csv_dataset =
       FixtureHelper.new_dataset(%{
         id: dataset_id,
-        operational: %{
+        technical: %{
           cadence: 1_000,
           sourceUrl: "http://#{@webserver_host}:#{@webserver_port}/#{@csv_file_name}",
           sourceFormat: "csv"
@@ -234,7 +234,7 @@ defmodule Reaper.FullTest do
   defp fetch_dataset_feed_messages(topic, dataset_id) do
     topic
     |> fetch_feed_messages()
-    |> Enum.filter(fn %{"metadata" => %{"dataset_id" => id}} -> id == dataset_id end)
+    |> Enum.filter(fn %{"dataset_id" => id} -> id == dataset_id end)
     |> Enum.map(fn %{"payload" => payload} -> payload end)
   end
 end

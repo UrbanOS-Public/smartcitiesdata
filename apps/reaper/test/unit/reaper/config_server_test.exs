@@ -38,7 +38,7 @@ defmodule Reaper.ConfigServerTest do
       initial_pids = get_child_pids_for_feed_supervisor(:"12345-6789")
       assert initial_pids != :undefined
 
-      ConfigServer.send_dataset(FixtureHelper.new_dataset(%{id: "12345-6789", operational: %{sourceUrl: new_url}}))
+      ConfigServer.send_dataset(FixtureHelper.new_dataset(%{id: "12345-6789", technical: %{sourceUrl: new_url}}))
 
       assert feed_supervisor_count() == 1
       assert feed_cache_count() == 1
@@ -49,7 +49,7 @@ defmodule Reaper.ConfigServerTest do
 
       %{
         dataset: %{
-          operational: %{
+          technical: %{
             sourceUrl: source_url
           }
         }
@@ -67,7 +67,7 @@ defmodule Reaper.ConfigServerTest do
 
       allow Horde.Registry.lookup(any(), any()), return: :undefined, meck_options: [:passthrough]
 
-      ConfigServer.send_dataset(FixtureHelper.new_dataset(%{id: "12345-6789", operational: %{sourceUrl: "whatever"}}))
+      ConfigServer.send_dataset(FixtureHelper.new_dataset(%{id: "12345-6789", technical: %{sourceUrl: "whatever"}}))
 
       assert feed_supervisor_count() == 1
       assert feed_cache_count() == 1

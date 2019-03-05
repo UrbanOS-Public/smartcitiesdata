@@ -7,6 +7,7 @@ defmodule Reaper.ConfigServer do
 
   use GenServer
   alias Reaper.DataFeed
+  alias SCOS.RegistryMessage
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: via_tuple(__MODULE__))
@@ -49,7 +50,7 @@ defmodule Reaper.ConfigServer do
     {:reply, from, previous_datasets}
   end
 
-  defp create_feed_supervisor(%Dataset{id: id} = dataset) do
+  defp create_feed_supervisor(%RegistryMessage{id: id} = dataset) do
     Horde.Supervisor.start_child(
       Reaper.Horde.Supervisor,
       %{
@@ -59,7 +60,7 @@ defmodule Reaper.ConfigServer do
     )
   end
 
-  defp update_feed_supervisor(%Dataset{id: id} = dataset) do
+  defp update_feed_supervisor(%RegistryMessage{id: id} = dataset) do
     feed_supervisor_pid = Horde.Registry.lookup(Reaper.Registry, String.to_atom(id))
 
     if feed_supervisor_pid != :undefined do

@@ -1,6 +1,7 @@
 defmodule Reaper.Loader do
   @moduledoc false
   alias Kaffe.Producer
+  alias SCOS.DataMessage
 
   def load(payloads, dataset_id) do
     payloads
@@ -14,12 +15,9 @@ defmodule Reaper.Loader do
 
   defp convert_to_message(payload, dataset_id) do
     value_part =
-      Jason.encode!(%{
-        metadata: %{
-          dataset_id: dataset_id
-        },
-        payload: payload
-      })
+      %{dataset_id: dataset_id, payload: payload, _metadata: %{}, operational: %{}}
+      |> DataMessage.new()
+      |> DataMessage.encode_message()
 
     key_part = md5(value_part)
 

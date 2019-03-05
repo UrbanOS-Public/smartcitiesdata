@@ -27,7 +27,7 @@ defmodule Reaper.DataFeed do
   end
 
   def init(%{pids: %{name: name}, dataset: dataset} = args) do
-    schedule_work(dataset.operational.cadence)
+    schedule_work(dataset.technical.cadence)
 
     Horde.Registry.register(Reaper.Registry, name)
     {:ok, args}
@@ -39,13 +39,13 @@ defmodule Reaper.DataFeed do
     dataset
     |> UrlBuilder.build()
     |> Extractor.extract()
-    |> Decoder.decode(dataset.operational.sourceFormat)
+    |> Decoder.decode(dataset.technical.sourceFormat)
     |> Cache.dedupe(cache)
     |> Loader.load(dataset.id)
     |> Cache.cache(cache)
     |> Recorder.record_last_fetched_timestamp(dataset.id, generated_time_stamp)
 
-    timer_ref = schedule_work(dataset.operational.cadence)
+    timer_ref = schedule_work(dataset.technical.cadence)
 
     {:noreply, Util.deep_merge(state, %{timer_ref: timer_ref})}
   end

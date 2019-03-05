@@ -1,9 +1,11 @@
 defmodule Reaper.UrlBuilder do
+  alias SCOS.RegistryMessage
   @moduledoc false
-  def build(%Dataset{operational: %{sourceUrl: url, queryParams: query_params}} = dataset) when query_params == %{},
-    do: url
+  def build(%RegistryMessage{technical: %{sourceUrl: url, queryParams: query_params}} = dataset)
+      when query_params == %{},
+      do: url
 
-  def build(%Dataset{operational: %{sourceUrl: url, queryParams: query_params}} = dataset) do
+  def build(%RegistryMessage{technical: %{sourceUrl: url, queryParams: query_params}} = dataset) do
     last_success_time = extract_last_success_time(dataset)
 
     string_params =
@@ -15,7 +17,7 @@ defmodule Reaper.UrlBuilder do
   end
 
   defp extract_last_success_time(dataset) do
-    dataset.operational
+    dataset.technical
     |> Map.update(:lastSuccessTime, false, &convert_timestamp/1)
     |> Map.get(:lastSuccessTime)
   end
