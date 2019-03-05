@@ -41,7 +41,8 @@ defmodule ValkyrieTest do
     :ok ==
       Patiently.wait_for!(
         fn ->
-          fetch_and_unwrap(topic)
+          topic
+          |> fetch_and_unwrap()
           |> Enum.any?(callback)
         end,
         dwell: 1000,
@@ -53,7 +54,8 @@ defmodule ValkyrieTest do
     Patiently.wait_for!(
       fn ->
         actual =
-          fetch_and_unwrap(topic)
+          topic
+          |> fetch_and_unwrap()
           |> Enum.map(callback)
 
         IO.puts("Waiting for actual #{inspect(actual)} to match expected #{inspect(expected)}")
