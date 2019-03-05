@@ -23,15 +23,17 @@ node('infrastructure') {
         doStageUnlessRelease('Build') {
             withCredentials([string(credentialsId: 'hex-read', variable: 'HEX_TOKEN')]) {
                 image = docker.build("scos/valkyrie:${env.GIT_COMMIT_HASH}", '--build-arg HEX_TOKEN=$HEX_TOKEN .')
+
+                sh('''
+                    export HOST_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
+                    mix local.hex --force
+                    mix local.rebar --force
+                    mix hex.organization auth smartcolumbus_os --key $HEX_TOKEN
+                    mix deps.get
+                    MIX_ENV=integration mix test.integration
+                ''')
             }
 
-            sh('''
-                export HOST_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-                mix local.hex --force
-                mix local.rebar --force
-                mix deps.get
-                MIX_ENV=integration mix test.integration
-            ''')
         }
 
         doStageUnlessRelease('Deploy to Dev') {
