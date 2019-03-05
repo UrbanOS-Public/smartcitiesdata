@@ -1,4 +1,4 @@
-defmodule Flair.Flow do
+defmodule Flair.StatsFlow do
   use Flow
 
   alias SCOS.DataMessage
