@@ -55,6 +55,7 @@ defmodule ValkyrieTest do
         actual =
           fetch_and_unwrap(topic)
           |> Enum.map(callback)
+
         IO.puts("Waiting for actual #{inspect(actual)} to match expected #{inspect(expected)}")
         actual == expected
       end,
