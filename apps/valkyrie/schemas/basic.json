@@ -1,0 +1,15 @@
+{
+  "id": "basic",
+  "operational": {
+    "schema": [
+      {
+        "name": "id",
+        "type": "int"
+      },
+      {
+        "name": "name",
+        "type": "string"
+      }
+    ]
+  }
+}
