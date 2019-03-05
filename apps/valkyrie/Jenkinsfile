@@ -30,7 +30,7 @@ node('infrastructure') {
                     mix local.rebar --force
                     mix hex.organization auth smartcolumbus_os --key $HEX_TOKEN
                     mix deps.get
-                    MIX_ENV=integration docker.kill
+                    MIX_ENV=integration mix docker.kill
                     MIX_ENV=integration mix test
                 ''')
             }
