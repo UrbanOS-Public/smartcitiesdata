@@ -19,7 +19,6 @@ defmodule ValkyrieTest do
             |> Enum.map(&Jason.encode!/1)
 
   @endpoint Application.get_env(:kaffe, :consumer)[:endpoints]
-            |> Enum.map(fn {k, v} -> {k, v} end)
 
   test "valkyrie updates the operational struct" do
     Mockaffe.send_to_kafka(@messages, "raw")
