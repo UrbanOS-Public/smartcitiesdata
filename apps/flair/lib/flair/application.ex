@@ -3,6 +3,10 @@ defmodule Flair.Application do
 
   use Application
 
+  @consumer_group_name "flair-consumer-group"
+  @topic_names ["streaming-validated"]
+  @gen_consumer_impl Flair.MessageProcessor
+
   def start(_type, _args) do
     children = [
       {Flair.Flow, []},
@@ -16,15 +20,12 @@ defmodule Flair.Application do
   def kafka_ex do
     consumer_group_opts = []
 
-    gen_consumer_impl = Flair.MessageProcessor
-    consumer_group_name = "flair-consumer-group"
-    topic_names = ["streaming-validated"]
-
-    Supervisor.Spec.supervisor(KafkaEx.ConsumerGroup, [
-      gen_consumer_impl,
-      consumer_group_name,
-      topic_names,
-      consumer_group_opts
-    ])
+    %{
+      id: KafkaEx.ConsumerGroup,
+      start:
+        {KafkaEx.ConsumerGroup, :start_link,
+         [@gen_consumer_impl, @consumer_group_name, @topic_names, consumer_group_opts]},
+      type: :supervisor
+    }
   end
 end
