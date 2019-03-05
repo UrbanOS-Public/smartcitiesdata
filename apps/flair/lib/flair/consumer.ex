@@ -14,26 +14,27 @@ defmodule Flair.Consumer do
   end
 
   def handle_events(events, _from, state) do
-    # events |> Enum.into(Map.new()) |> IO.inspect(label: "#{inspect(self())} EVENTS")
-
     events
-    |> Enum.map(fn {dataset_id, stats_map} ->
-      Enum.map(stats_map, fn {{app, label}, stats} ->
-        %{
-          app: app,
-          label: label
-        }
-        |> Map.merge(stats)
-        |> Map.put(:dataset_id, dataset_id)
-      end)
-    end)
-    |> List.flatten()
-    |> Enum.map(&PrestoClient.values_statement/1)
-    |> Enum.join(", ")
-    |> PrestoClient.create_insert_statement()
+    |> convert_events()
+    |> PrestoClient.generate_statement_from_events()
     |> PrestoClient.execute()
     |> IO.inspect(label: "#{inspect(self())} EVENTS")
 
     {:noreply, [], state}
+  end
+
+  defp convert_events(events) do
+    events
+    |> Enum.map(fn {dataset_id, stats_map} ->
+      Enum.map(stats_map, fn {{app, label}, stats} ->
+        %{
+          dataset_id: dataset_id,
+          app: app,
+          label: label
+        }
+        |> Map.merge(stats)
+      end)
+    end)
+    |> List.flatten()
   end
 end
