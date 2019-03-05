@@ -26,7 +26,7 @@ defmodule Valkyrie.MixProject do
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.0"},
       {:distillery, "~> 2.0"},
-      {:divo, "~> 0.2.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
+      {:divo, "~> 0.2.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:mockaffe, "~> 0.1.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:scos_ex, "~> 0.1.0", organization: "smartcolumbus_os"}
     ]
@@ -38,7 +38,7 @@ defmodule Valkyrie.MixProject do
   defp aliases do
     [
       lint: ["format", "credo"],
-      test: ["test --no-start"]
+      test: ["test"]
     ]
   end
 end
