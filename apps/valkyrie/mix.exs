@@ -26,8 +26,8 @@ defmodule Valkyrie.MixProject do
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.0"},
       {:distillery, "~> 2.0"},
-      {:divo, "~> 0.1.0", only: [:dev, :test, :integration], path: "../divo"},
-      {:mockaffe, "~> 0.1.0", only: [:dev, :test, :integration], path: "../mockaffe"},
+      {:divo, "~> 0.2.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
+      {:mockaffe, "~> 0.1.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:scos_ex, "~> 0.1.0", organization: "smartcolumbus_os"}
     ]
   end
