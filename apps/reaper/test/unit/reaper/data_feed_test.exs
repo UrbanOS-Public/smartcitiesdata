@@ -58,11 +58,6 @@ defmodule Reaper.DataFeedTest do
       expected_reaper_config =
         FixtureHelper.new_reaper_config(%{id: @dataset_id, sourceUrl: "persisted", sourceFormat: "Success"})
 
-      _expected_json =
-        expected_reaper_config
-        |> Map.from_struct()
-        |> Jason.encode!()
-
       DataFeed.update(pid, reaper_config_update)
 
       # Force the handle cast to block inside this test
