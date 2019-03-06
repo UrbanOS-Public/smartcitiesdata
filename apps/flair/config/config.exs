@@ -19,3 +19,5 @@ config :prestige,
     catalog: "hive",
     schema: "default"
   ]
+
+import_config "#{Mix.env()}.exs"

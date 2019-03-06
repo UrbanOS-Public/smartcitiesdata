@@ -5,6 +5,9 @@ defmodule Flair.StatsFlow do
 
   alias Flair.Stats
 
+  @window_length Application.get_env(:flair, :window_length, 5)
+  @window_unit Application.get_env(:flair, :window_unit, :minute)
+
   def start_link(_) do
     consumer_spec = [
       {
@@ -22,7 +25,7 @@ defmodule Flair.StatsFlow do
   end
 
   defp partition_by_dataset_id_and_window(flow) do
-    window = Flow.Window.periodic(15, :second)
+    window = Flow.Window.periodic(@window_length, @window_unit)
     key_fn = &extract_id/1
 
     Flow.partition(flow, key_fn, window: window)
