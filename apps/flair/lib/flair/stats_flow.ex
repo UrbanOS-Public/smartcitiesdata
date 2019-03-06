@@ -28,7 +28,7 @@ defmodule Flair.StatsFlow do
     window = Flow.Window.periodic(@window_length, @window_unit)
     key_fn = &extract_id/1
 
-    Flow.partition(flow, key_fn, window: window)
+    Flow.partition(flow, key: key_fn, window: window)
   end
 
   defp aggregate_by_dataset(flow) do
