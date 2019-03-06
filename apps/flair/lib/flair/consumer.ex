@@ -18,7 +18,6 @@ defmodule Flair.Consumer do
     |> convert_events()
     |> PrestoClient.generate_statement_from_events()
     |> PrestoClient.execute()
-    |> IO.inspect(label: "#{inspect(self())} EVENTS")
 
     {:noreply, [], state}
   end
@@ -30,11 +29,16 @@ defmodule Flair.Consumer do
         %{
           dataset_id: dataset_id,
           app: app,
-          label: label
+          label: label,
+          timestamp: get_time(),
+          stats: stats
         }
-        |> Map.merge(stats)
       end)
     end)
     |> List.flatten()
+  end
+
+  defp get_time do
+    DateTime.utc_now() |> DateTime.to_unix()
   end
 end

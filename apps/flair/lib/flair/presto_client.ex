@@ -3,7 +3,7 @@ defmodule Flair.PrestoClient do
 
   def get_create_table_statement do
     """
-    CREATE TABLE IF NOT EXISTS #{@table_name} (
+    CREATE TABLE IF NOT EXISTS #{table_name()} (
       dataset_id varchar,
       app varchar,
       label varchar,
@@ -32,14 +32,18 @@ defmodule Flair.PrestoClient do
     |> Prestige.prefetch()
   end
 
-  defp create_insert_statement(values_statement) do
-    "INSERT INTO #{@table_name} VALUES #{values_statement}"
+  def table_name do
+    @table_name
   end
 
-  defp values_statement(map) do
+  defp create_insert_statement(values_statement) do
+    "INSERT INTO #{table_name()} VALUES #{values_statement}"
+  end
+
+  defp values_statement(%{stats: stats} = map) do
     """
-    ('#{map.dataset_id}', '#{map.app}','#{map.label}', #{DateTime.utc_now() |> DateTime.to_unix()},
-        row(#{map.count},#{map.min},#{map.max},#{map.stdev},#{map.average}))
+    ('#{map.dataset_id}', '#{map.app}','#{map.label}', #{map.timestamp},
+     row(#{stats.count},#{stats.min},#{stats.max},#{stats.stdev},#{stats.average}))
     """
     |> String.replace("\n", "")
   end
