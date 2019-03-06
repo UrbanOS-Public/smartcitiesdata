@@ -45,13 +45,6 @@ defmodule Reaper.DataFeedTest do
     test "reaper config updates replace old state" do
       {:ok, pid} = DataFeed.start_link(@data_feed_args)
 
-      _persisted_reaper_config =
-        FixtureHelper.new_reaper_config(%{
-          id: @dataset_id,
-          sourceUrl: "persisted",
-          sourceFormat: "Fail"
-        })
-
       reaper_config_update =
         FixtureHelper.new_reaper_config(%{id: @dataset_id, sourceUrl: "persisted", sourceFormat: "Success"})
 
