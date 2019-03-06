@@ -1,28 +1,16 @@
 defmodule CotaStreamingConsumerWeb.Router do
   use CotaStreamingConsumerWeb, :router
 
-  pipeline :browser do
-    plug(:accepts, ["html"])
-    plug(:fetch_session)
-    plug(:fetch_flash)
-    plug(:protect_from_forgery)
-    plug(:put_secure_browser_headers)
+  pipeline :logger do
+    plug(Plug.Logger)
   end
 
-  pipeline :api do
-    plug(:accepts, ["json"])
+  scope "/socket/nodelist", CotaStreamingConsumerWeb do
+    pipe_through(:logger)
+    get("/", NodelistController, :index)
   end
 
-  scope "/", CotaStreamingConsumerWeb do
-    # Use the default browser stack
-    pipe_through(:browser)
-
-    get("/socket/healthcheck", HealthCheckController, :index)
-    get("/socket/nodelist", NodelistController, :index)
+  scope "/socket/healthcheck", CotaStreamingConsumerWeb do
+    get("/", HealthCheckController, :index)
   end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", HelloWeb do
-  #   pipe_through :api
-  # end
 end

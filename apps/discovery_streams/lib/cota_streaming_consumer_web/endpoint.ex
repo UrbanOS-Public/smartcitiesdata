@@ -10,7 +10,6 @@ defmodule CotaStreamingConsumerWeb.Endpoint do
 
   socket("/socket", CotaStreamingConsumerWeb.UserSocket)
 
-  plug(Plug.Logger)
   plug(CotaStreamingConsumer.MetricsExporter)
 
   plug(
