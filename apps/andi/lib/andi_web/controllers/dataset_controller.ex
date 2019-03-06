@@ -1,6 +1,7 @@
 defmodule AndiWeb.DatasetController do
   use AndiWeb, :controller
 
+  require Logger
   alias SCOS.RegistryMessage
 
   def create(conn, _params) do
@@ -11,7 +12,9 @@ defmodule AndiWeb.DatasetController do
       |> put_status(:created)
       |> json(dataset)
     else
-      _ ->
+      error ->
+        Logger.error("Failed to create dataset: #{inspect(error)}")
+
         conn
         |> put_status(:internal_server_error)
         |> json("Unable to process your request")
