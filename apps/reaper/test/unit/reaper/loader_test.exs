@@ -60,6 +60,4 @@ defmodule Reaper.LoaderTest do
       _metadata: %{}
     })
   end
-
-  defp md5(thing), do: :crypto.hash(:md5, thing) |> Base.encode16()
 end

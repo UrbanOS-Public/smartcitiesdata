@@ -1,7 +1,6 @@
 defmodule Reaper.MessageHandlerTest do
   use ExUnit.Case
   use Placebo
-  import ExUnit.CaptureLog
 
   alias Reaper.{ConfigServer, MessageHandler}
 
