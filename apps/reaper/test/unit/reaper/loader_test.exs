@@ -26,39 +26,39 @@ defmodule Reaper.LoaderTest do
     ]
 
     test_dataset_id = "abcdef-12345"
+    # Hash | Json | RoundRobin | Single
+    partitioner = "Elixir.Reaper.Partitioners.HashPartitioner"
+    test_dataset_partitioner = partitioner
+    test_dataset_partitionerLocation = nil
 
-    {:ok, data_message_1} =
+    expected_key_one = "AAAE509C7162BBE7D948D141AD2EF0F5"
+    expected_key_two = "2420D9AF43588C11175506A917A81567"
+
+    data_message_1 =
       test_payload_one
       |> create_message(test_dataset_id)
-      |> SCOS.DataMessage.encode()
 
-    {:ok, data_message_2} =
+    data_message_2 =
       test_payload_two
       |> create_message(test_dataset_id)
-      |> SCOS.DataMessage.encode()
-
-    expected_key_one = md5(data_message_1)
-    expected_key_two = md5(data_message_2)
 
     expect(Producer.produce_sync(expected_key_one, data_message_1), return: :ok)
     expect(Producer.produce_sync(expected_key_two, data_message_2), return: :error)
 
-    assert Loader.load(test_payloads, test_dataset_id) == [
-             {:ok, test_payload_one},
-             {:error, test_payload_two}
-           ]
+    assert Loader.load(test_payloads, test_dataset_id, test_dataset_partitioner, test_dataset_partitionerLocation) ==
+             [
+               {:ok, test_payload_one},
+               {:error, test_payload_two}
+             ]
   end
 
   defp create_message(payload, dataset_id) do
-    {:ok, message} =
-      SCOS.DataMessage.new(%{
-        dataset_id: dataset_id,
-        payload: payload,
-        _metadata: %{},
-        operational: %{timing: []}
-      })
-
-    message
+    SCOS.DataMessage.new(%{
+      dataset_id: dataset_id,
+      operational: %{timing: [%{app: "reaper", label: "sus", start_time: 5, end_time: 10}]},
+      payload: payload,
+      _metadata: %{}
+    })
   end
 
   defp md5(thing), do: :crypto.hash(:md5, thing) |> Base.encode16()

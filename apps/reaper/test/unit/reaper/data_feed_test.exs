@@ -26,7 +26,7 @@ defmodule Reaper.DataFeedTest do
       expect(Extractor.extract(any()), return: :does_not_matter)
       expect(Decoder.decode(any(), any()), return: :does_not_matter)
       expect(Cache.dedupe(any(), any()), return: :does_not_matter)
-      expect(Loader.load(any(), any()), return: :does_not_matter)
+      expect(Loader.load(any(), any(), any(), any()), return: :does_not_matter)
       expect(Cache.cache(any(), any()), return: :does_not_matter)
       expect(Persistence.record_last_fetched_timestamp(any(), any(), any()), return: :does_not_matter)
 

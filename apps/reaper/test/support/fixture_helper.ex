@@ -5,8 +5,8 @@ defmodule FixtureHelper do
   alias SCOS.RegistryMessage
   alias Reaper.ReaperConfig
 
-  def new_registry_message(overrides) do
-    {:ok, registry_message} =
+  def new_dataset(overrides) do
+    {:ok, dataset} =
       RegistryMessage.new(
         Util.deep_merge(
           %{
@@ -40,7 +40,7 @@ defmodule FixtureHelper do
         )
       )
 
-    registry_message
+    dataset
   end
 
   def new_reaper_config(overrides) do
@@ -51,6 +51,7 @@ defmodule FixtureHelper do
           cadence: 100_000,
           sourceUrl: "https://does-not-matter-url.com",
           sourceFormat: "gtfs",
+          partitioner: %{type: nil, query: nil},
           queryParams: %{}
         },
         overrides

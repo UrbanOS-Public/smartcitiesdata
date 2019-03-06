@@ -1,27 +1,37 @@
 defmodule Reaper.Loader do
   @moduledoc false
   alias Kaffe.Producer
+  alias Reaper.Partitioners.JsonPartitioner
   alias SCOS.DataMessage
 
-  def load(payloads, dataset_id) do
+  def load(payloads, dataset_id, dataset_partitioner, dataset_partitioner_location) do
     payloads
-    |> Enum.map(&send_to_kafka(&1, dataset_id))
+    |> Enum.map(&send_to_kafka(&1, dataset_id, dataset_partitioner, dataset_partitioner_location))
   end
 
-  defp send_to_kafka(payload, dataset_id) do
-    {key, message} = convert_to_message(payload, dataset_id)
+  defp send_to_kafka(payload, dataset_id, dataset_partitioner, dataset_partitioner_location) do
+    {key, message} = convert_to_message(payload, dataset_id, dataset_partitioner, dataset_partitioner_location)
     {Producer.produce_sync(key, message), payload}
   end
 
-  defp convert_to_message(payload, dataset_id) do
-    message_map = %{dataset_id: dataset_id, payload: payload, _metadata: %{}, operational: %{timing: []}}
+  defp convert_to_message(payload, dataset_id, dataset_partitioner, dataset_partitioner_location) do
+    value_part =
+      %{
+        dataset_id: dataset_id,
+        payload: payload,
+        _metadata: %{},
+        operational: %{timing: [%{app: "reaper", label: "sus", start_time: 5, end_time: 10}]}
+      }
+      |> DataMessage.new()
 
-    with {:ok, message} <- DataMessage.new(message_map),
-         {:ok, value_part} <- DataMessage.encode(message) do
-      key_part = md5(value_part)
-      {key_part, value_part}
+    # value_part --> calc_key(msg) --> key
+    # Extract from registry schema what partitioner to use for computing the key value from the data
+    # If dataset_paritioner is nil, then set key_part nil which means round-robin
+    if dataset_partitioner == nil do
+      {Reaper.Partitioners.HashPartitioner.partition(payload, nil), value_part}
+    else
+      {apply(String.to_existing_atom(dataset_partitioner), :partition, [payload, dataset_partitioner_location]),
+       value_part}
     end
   end
-
-  defp md5(thing), do: :crypto.hash(:md5, thing) |> Base.encode16()
 end
