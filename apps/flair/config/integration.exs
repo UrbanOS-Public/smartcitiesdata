@@ -2,9 +2,11 @@ use Mix.Config
 
 host =
   case System.get_env("HOST_IP") do
-    nil -> "127.0.0.1"
+    nil -> "localhost"
     defined -> defined
   end
+
+endpoint = [{to_char_list(host), 9094}]
 
 config :flair,
   window_unit: :millisecond,
@@ -12,14 +14,12 @@ config :flair,
 
 config :kaffe,
   producer: [
-    endpoints: [localhost: 9094],
+    endpoints: endpoint,
     topics: ["validated"]
   ]
 
 config :kafka_ex,
-  brokers: [
-    {"localhost", 9094}
-  ]
+  brokers: [{host, 9094}]
 
 config :flair,
   divo: [
