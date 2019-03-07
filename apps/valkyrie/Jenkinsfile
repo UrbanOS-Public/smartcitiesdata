@@ -61,7 +61,7 @@ node('infrastructure') {
             def releaseTag = env.BRANCH_NAME
             def environment = 'prod'
 
-            deployProducerTo(environment)
+            deployTo(environment)
             scos.applyAndPushGitHubTag(environment)
 
             scos.withDockerRegistry {
