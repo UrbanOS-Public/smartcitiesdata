@@ -31,11 +31,11 @@ defmodule Flair.StatsFlow do
   end
 
   defp log_profile(profile) do
-    Logger.debug("Calculated profile: #{inspect(profile)}")
+    Logger.info("Calculated profile: #{inspect(profile)}")
   end
 
   defp log_message(message) do
-    Logger.debug("Received message: #{inspect(message)}")
+    Logger.info("Received message: #{inspect(message)}")
   end
 
   defp partition_by_dataset_id_and_window(flow) do
