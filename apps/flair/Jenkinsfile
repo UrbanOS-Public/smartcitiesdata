@@ -62,7 +62,7 @@ node('infrastructure') {
             def releaseTag = env.BRANCH_NAME
             def promotionTag = 'prod'
 
-            deployProducerTo('prod')
+            deployTo('prod')
 
             scos.applyAndPushGitHubTag(promotionTag)
 

@@ -43,18 +43,4 @@ config :flair,
       wait_for: %{log: "Previous Leader Epoch was: -1", dwell: 1000, max_retries: 30},
       net: "flair-zookeeper"
     }
-    # minio: %{
-    #   image: "minio/minio",
-    #   ports: [{9000, 9000}],
-    #   volumes: [
-    #     {"/tmp/data", "/data"},
-    #     {"/tmp/", "/root/.minio"}
-    #   ],
-    #   env: [
-    #     minio_access_key: "admin",
-    #     minio_secret_key: "password"
-    #   ],
-    #   command: "server /data",
-    #   wait_for: %{log: "Object API (Amazon S3 compatible):"}
-    # }
   ]
