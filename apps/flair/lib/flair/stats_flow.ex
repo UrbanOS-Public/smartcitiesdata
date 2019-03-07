@@ -22,10 +22,20 @@ defmodule Flair.StatsFlow do
     |> Flow.from_specs()
     |> Flow.map(&get_message/1)
     |> Flow.reject(&is_dead_letter/1)
+    |> Flow.each(&log_message/1)
     |> partition_by_dataset_id_and_window()
     |> aggregate_by_dataset()
     |> Flow.map(&Stats.calculate_stats/1)
+    |> Flow.each(&log_profile/1)
     |> Flow.into_specs(consumer_spec)
+  end
+
+  defp log_profile(profile) do
+    Logger.debug("Calculated profile: #{inspect(profile)}")
+  end
+
+  defp log_message(message) do
+    Logger.debug("Received message: #{inspect(message)}")
   end
 
   defp partition_by_dataset_id_and_window(flow) do

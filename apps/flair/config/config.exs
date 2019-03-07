@@ -8,7 +8,7 @@ config :logger,
 
 config :kafka_ex,
   brokers: [
-    {"localhost", 9092}
+    {"localhost", 9094}
   ],
   consumer_group: "flair-consumer-group"
 
