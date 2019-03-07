@@ -3,27 +3,30 @@ require Logger
 defmodule Valkyrie.MessageHandler do
   @moduledoc false
   alias SCOS.DataMessage
-  alias SCOS.DataMessage.Timing
 
   def handle_messages(messages) do
     Logger.info("#{__MODULE__}: Received #{length(messages)} messages.")
 
     Enum.each(messages, fn %{key: key, value: value} ->
-      start_time = Timing.current_time()
+      start_time = DataMessage.Timing.current_time()
 
-      new_value =
-        value
-        |> DataMessage.parse_message()
+      {:ok, new_value} = DataMessage.new(value)
 
       # ----
       # Do validations here
       # ----
 
-      new_value =
+      {:ok, new_value} =
         new_value
-        |> DataMessage.add_timing(Timing.new(:valkyrie, :timing, start_time, Timing.current_time()))
-        |> IO.inspect(label: "message_handler.ex:27")
-        |> DataMessage.encode_message()
+        |> DataMessage.add_timing(
+          DataMessage.Timing.new(
+            :valkyrie,
+            :timing,
+            start_time,
+            DataMessage.Timing.current_time()
+          )
+        )
+        |> DataMessage.encode()
 
       Kaffe.Producer.produce_sync(key, new_value)
     end)
@@ -32,6 +35,4 @@ defmodule Valkyrie.MessageHandler do
 
     :ok
   end
-
-  defp calc_duration(end_time, start_time), do: DateTime.diff(end_time, start_time, :millisecond)
 end
