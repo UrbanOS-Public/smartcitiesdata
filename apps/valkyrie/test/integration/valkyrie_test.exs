@@ -5,15 +5,21 @@ defmodule ValkyrieTest do
   @messages [
               %{
                 "payload" => %{"name" => "Jack Sparrow"},
-                "operational" => %{"ship" => "Black Pearl"}
+                "operational" => %{"ship" => "Black Pearl", "timing" => []},
+                "dataset_id" => "basic",
+                "_metadata" => %{},
               },
               %{
                 "payload" => %{"name" => "Will Turner"},
-                "operational" => %{"ship" => "Black Pearl"}
+                "operational" => %{"ship" => "Black Pearl", "timing" => []},
+                "dataset_id" => "basic",
+                "_metadata" => %{},
               },
               %{
                 "payload" => %{"name" => "Barbosa"},
-                "operational" => %{"ship" => "Dead Jerks"}
+                "operational" => %{"ship" => "Dead Jerks", "timing" => []},
+                "dataset_id" => "basic",
+                "_metadata" => %{},
               }
             ]
             |> Enum.map(&Jason.encode!/1)
