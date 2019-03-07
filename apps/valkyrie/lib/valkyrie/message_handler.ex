@@ -36,6 +36,6 @@ defmodule Valkyrie.MessageHandler do
 
     Kaffe.Producer.produce_sync(key, new_value)
   rescue
-    MatchError -> :ok
+    MatchError -> Logger.debug("Got a bad message.")
   end
 end
