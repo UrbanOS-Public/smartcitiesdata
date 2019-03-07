@@ -1,4 +1,6 @@
 defmodule Flair.Stats do
+  @moduledoc false
+
   alias SCOS.DataMessage
   alias SCOS.DataMessage.Timing
 

@@ -48,7 +48,7 @@ defmodule FlairTest do
   def wait_for_function_call() do
     try do
       assert_called(
-        # TODO: Figure out how to Divo a presto environment to complete the integration test environment
+        # Figure out how to Divo a presto environment to complete the integration test environment
         Flair.PrestoClient.execute(any()),
         once()
       )

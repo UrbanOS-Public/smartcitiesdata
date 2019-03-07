@@ -1,4 +1,6 @@
 defmodule Flair.MessageProcessor do
+  @moduledoc false
+
   use KafkaEx.GenConsumer
 
   def handle_message_set(message_set, state) do

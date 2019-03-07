@@ -1,4 +1,5 @@
 defmodule Flair.StatsFlow do
+  @moduledoc false
   use Flow
 
   alias SCOS.DataMessage
@@ -16,7 +17,8 @@ defmodule Flair.StatsFlow do
       }
     ]
 
-    Flow.from_specs([{Flair.Producer, []}])
+    [{Flair.Producer, []}]
+    |> Flow.from_specs()
     |> Flow.map(&get_message/1)
     |> partition_by_dataset_id_and_window()
     |> aggregate_by_dataset()

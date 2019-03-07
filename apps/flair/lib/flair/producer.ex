@@ -1,9 +1,12 @@
 require Logger
 
 defmodule Flair.Producer do
+  @moduledoc false
+
   use GenStage
 
   defmodule State do
+    @moduledoc false
     defstruct demand: 0, message_set: [], from: []
   end
 

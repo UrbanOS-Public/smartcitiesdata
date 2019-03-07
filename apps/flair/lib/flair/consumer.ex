@@ -1,4 +1,6 @@
 defmodule Flair.Consumer do
+  @moduledoc false
+
   use GenStage
 
   alias Flair.PrestoClient
