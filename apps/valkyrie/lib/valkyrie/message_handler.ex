@@ -8,27 +8,25 @@ defmodule Valkyrie.MessageHandler do
     Logger.info("#{__MODULE__}: Received #{length(messages)} messages.")
 
     Enum.each(messages, fn %{key: key, value: value} ->
-      start_time = DateTime.utc_now()
+      start_time = DataMessage.Timing.current_time()
 
-      new_value =
-        value
-        |> DataMessage.parse_message()
-        |> DataMessage.put_operational(
-          :valkyrie,
-          :start_time,
-          DateTime.to_iso8601(start_time)
-        )
+      {:ok, new_value} = DataMessage.new(value)
 
       # ----
       # Do validations here
       # ----
 
-      duration = calc_duration(DateTime.utc_now(), start_time)
-
-      new_value =
+      {:ok, new_value} =
         new_value
-        |> DataMessage.put_operational(:valkyrie, :duration, duration)
-        |> DataMessage.encode_message()
+        |> DataMessage.add_timing(
+          DataMessage.Timing.new(
+            :valkyrie,
+            :timing,
+            start_time,
+            DataMessage.Timing.current_time()
+          )
+        )
+        |> DataMessage.encode()
 
       Kaffe.Producer.produce_sync(key, new_value)
     end)
@@ -37,6 +35,4 @@ defmodule Valkyrie.MessageHandler do
 
     :ok
   end
-
-  defp calc_duration(end_time, start_time), do: DateTime.diff(end_time, start_time, :millisecond)
 end

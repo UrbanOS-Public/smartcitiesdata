@@ -1,5 +1,6 @@
 {
-  "id": "basic",
+  "dataset_id": "basic",
+  "_metadata": {},
   "operational": {
     "schema": [
       {

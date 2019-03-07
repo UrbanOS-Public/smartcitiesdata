@@ -6,7 +6,7 @@ host =
     defined -> defined
   end
 
-endpoint = [{to_char_list(host), 9094}]
+endpoint = [{to_charlist(host), 9094}]
 
 config :valkyrie,
   divo: [
@@ -27,7 +27,11 @@ config :valkyrie,
         kafka_create_topics: "raw:1:1,validated:1:1",
         kafka_zookeeper_connect: "localhost:2181"
       ],
-      wait_for: %{log: "Previous Leader Epoch was: -1", dwell: 1000, max_retries: 30},
+      wait_for: %{
+        log: "Previous Leader Epoch was: -1",
+        dwell: 1000,
+        max_retries: 30
+      },
       net: "valkyrie-zookeeper"
     }
   ]

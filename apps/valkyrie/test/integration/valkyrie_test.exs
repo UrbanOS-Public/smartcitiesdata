@@ -5,15 +5,21 @@ defmodule ValkyrieTest do
   @messages [
               %{
                 "payload" => %{"name" => "Jack Sparrow"},
-                "operational" => %{"ship" => "Black Pearl"}
+                "operational" => %{"ship" => "Black Pearl", "timing" => []},
+                "dataset_id" => "basic",
+                "_metadata" => %{}
               },
               %{
                 "payload" => %{"name" => "Will Turner"},
-                "operational" => %{"ship" => "Black Pearl"}
+                "operational" => %{"ship" => "Black Pearl", "timing" => []},
+                "dataset_id" => "basic",
+                "_metadata" => %{}
               },
               %{
                 "payload" => %{"name" => "Barbosa"},
-                "operational" => %{"ship" => "Dead Jerks"}
+                "operational" => %{"ship" => "Dead Jerks", "timing" => []},
+                "dataset_id" => "basic",
+                "_metadata" => %{}
               }
             ]
             |> Enum.map(&Jason.encode!/1)
@@ -24,16 +30,20 @@ defmodule ValkyrieTest do
     Mockaffe.send_to_kafka(@messages, "raw")
 
     assert any_messages_where("validated", fn message ->
-             message.operational.valkyrie != nil
+             Enum.any?(message.operational.timing, &(&1.app == "valkyrie"))
            end)
   end
 
   test "valkyrie does not change the content of the messages processed" do
     Mockaffe.send_to_kafka(@messages, "raw")
 
-    assert messages_as_expected("validated", ["Jack Sparrow", "Will Turner", "Barbosa"], fn message ->
-             message.payload.name
-           end)
+    assert messages_as_expected(
+             "validated",
+             ["Jack Sparrow", "Will Turner", "Barbosa"],
+             fn message ->
+               message.payload.name
+             end
+           )
   end
 
   defp any_messages_where(topic, callback) do
@@ -58,6 +68,7 @@ defmodule ValkyrieTest do
           |> Enum.map(callback)
 
         IO.puts("Waiting for actual #{inspect(actual)} to match expected #{inspect(expected)}")
+
         actual == expected
       end,
       dwell: 1000,
@@ -69,7 +80,9 @@ defmodule ValkyrieTest do
     {:ok, messages} = :brod.fetch(@endpoint, topic, 0, 0)
 
     messages
-    |> Enum.map(fn {:kafka_message, _, _, _, key, body, _, _, _} -> {key, body} end)
+    |> Enum.map(fn {:kafka_message, _, _, _, key, body, _, _, _} ->
+      {key, body}
+    end)
     |> Enum.map(fn {_key, body} -> Jason.decode!(body, keys: :atoms) end)
   end
 end
