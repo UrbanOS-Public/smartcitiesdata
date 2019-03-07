@@ -47,24 +47,22 @@ node('infrastructure') {
         }
 
         doStageIfPromoted('Deploy to Staging') {
-            def promotionTag = scos.releaseCandidateNumber()
+            def environment = 'staging'
 
-            deployTo('staging')
-
-            scos.applyAndPushGitHubTag(promotionTag)
+            deployTo(environment)
+            scos.applyAndPushGitHubTag(environment)
 
             scos.withDockerRegistry {
-                image.push(promotionTag)
+                image.push(environment)
             }
         }
 
         doStageIfRelease('Deploy to Production') {
             def releaseTag = env.BRANCH_NAME
-            def promotionTag = 'prod'
+            def environment = 'prod'
 
-            deployProducerTo('prod')
-
-            scos.applyAndPushGitHubTag(promotionTag)
+            deployTo(environment)
+            scos.applyAndPushGitHubTag(environment)
 
             scos.withDockerRegistry {
                 image = scos.pullImageFromDockerRegistry("scos/valkyrie", env.GIT_COMMIT_HASH)
