@@ -4,7 +4,7 @@ defmodule Reaper.MessageHandler do
   alias Reaper.ConfigServer
   alias SCOS.RegistryMessage
 
-  def handle_message(_pid, %{value: dataset}) do
+  def handle_message(%{value: dataset}) do
     with {:ok, decoded} <- Jason.decode(dataset, keys: :atoms),
          {:ok, dataset} <- RegistryMessage.new(decoded) do
       ConfigServer.send_dataset(dataset)

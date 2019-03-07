@@ -12,6 +12,7 @@ defmodule Reaper.DataFeed do
 
   ## CLIENT
 
+  @spec update(atom() | pid() | {atom(), any()} | {:via, atom(), any()}, any()) :: :ok
   def update(data_feed, state) do
     GenServer.cast(data_feed, {:update, state})
   end
@@ -55,7 +56,7 @@ defmodule Reaper.DataFeed do
   end
 
   def handle_cast({:update, config}, state) do
-    {:noreply, Util.deep_merge(state, config)}
+    {:noreply, Map.put(state, :dataset, config)}
   end
 
   def handle_call(:get, _from, state) do

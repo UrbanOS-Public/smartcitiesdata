@@ -16,7 +16,7 @@ defmodule Reaper.MessageHandlerTest do
 
       allow ConfigServer.send_dataset(any()), return: nil
 
-      MessageHandler.handle_message("", %{value: Jason.encode!(bad_dataset)})
+      MessageHandler.handle_message(%{value: Jason.encode!(bad_dataset)})
 
       assert not called?(ConfigServer.send_dataset(any()))
     end
@@ -26,14 +26,14 @@ defmodule Reaper.MessageHandlerTest do
 
       expect ConfigServer.send_dataset(good_dataset), return: nil
 
-      MessageHandler.handle_message("", %{value: Jason.encode!(good_dataset)})
+      MessageHandler.handle_message(%{value: Jason.encode!(good_dataset)})
     end
 
     @tag capture_log: true
     test "returns ok when invalid json" do
       allow ConfigServer.send_dataset(any()), return: nil
 
-      response = MessageHandler.handle_message("", %{value: "a"})
+      response = MessageHandler.handle_message(%{value: "a"})
 
       assert not called?(ConfigServer.send_dataset(any()))
       assert :ok == response

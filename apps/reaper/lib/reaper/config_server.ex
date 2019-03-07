@@ -7,6 +7,7 @@ defmodule Reaper.ConfigServer do
 
   use GenServer
   alias Reaper.DataFeed
+  alias Reaper.Persistence
   alias SCOS.RegistryMessage
 
   def start_link(args) do
@@ -14,6 +15,7 @@ defmodule Reaper.ConfigServer do
   end
 
   def init(state \\ []) do
+    load_persisted_datasets()
     {:ok, state}
   end
 
@@ -36,18 +38,15 @@ defmodule Reaper.ConfigServer do
     }
   end
 
-  def send_dataset(dataset) do
-    GenServer.call(
-      via_tuple(__MODULE__),
-      {:dataset, dataset}
-    )
+  defp load_persisted_datasets() do
+    Persistence.get_all()
+    |> Enum.map(&create_feed_supervisor/1)
   end
 
-  def handle_call({:dataset, dataset}, from, previous_datasets) do
+  def send_dataset(dataset) do
     create_feed_supervisor(dataset)
     update_feed_supervisor(dataset)
-
-    {:reply, from, previous_datasets}
+    Persistence.persist(dataset)
   end
 
   defp create_feed_supervisor(%RegistryMessage{id: id} = dataset) do
@@ -64,8 +63,7 @@ defmodule Reaper.ConfigServer do
     feed_supervisor_pid = Horde.Registry.lookup(Reaper.Registry, String.to_atom(id))
 
     if feed_supervisor_pid != :undefined do
-      [{_feed_name, pid, _type, _modules} | _] = Horde.Supervisor.which_children(feed_supervisor_pid)
-      DataFeed.update(pid, %{dataset: dataset})
+      Reaper.FeedSupervisor.update_data_feed(feed_supervisor_pid, dataset)
     end
   end
 

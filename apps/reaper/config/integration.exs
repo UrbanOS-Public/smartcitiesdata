@@ -61,7 +61,7 @@ config :kaffe,
     consumer_group: "reaper-consumer-group",
     message_handler: Reaper.MessageHandler,
     start_with_earliest_message: true,
-    async_message_ack: true
+    async_message_ack: false
   ],
   producer: [
     endpoints: endpoint,

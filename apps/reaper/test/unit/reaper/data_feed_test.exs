@@ -43,49 +43,30 @@ defmodule Reaper.DataFeedTest do
       :ok
     end
 
-    test "generically updates the feed state" do
+    test "dataset updates replace old state" do
       {:ok, pid} = DataFeed.start_link(@data_feed_args)
 
-      old_state = DataFeed.get(pid)
-      DataFeed.update(pid, %{key: "key_id"})
-      new_state = DataFeed.get(pid)
+      persisted_dataset =
+        FixtureHelper.new_dataset(%{
+          id: @dataset_id,
+          operational: %{organization: "persisted", status: "Fail"}
+        })
 
-      assert old_state != new_state
-      assert Map.get(new_state, :key) == "key_id"
-    end
+      dataset_update =
+        FixtureHelper.new_dataset(%{id: @dataset_id, operational: %{organization: "persisted", status: "Success"}})
 
-    test "updates dataset technical data without wiping out old data" do
-      {:ok, pid} = DataFeed.start_link(@data_feed_args)
+      expected_dataset =
+        FixtureHelper.new_dataset(%{id: @dataset_id, operational: %{organization: "persisted", status: "Success"}})
 
-      %{
-        dataset: %{
-          technical: %{
-            sourceFormat: old_source_format
-          }
-        }
-      } = old_state = DataFeed.get(pid)
+      expected_json =
+        expected_dataset
+        |> Map.from_struct()
+        |> Jason.encode!()
 
-      DataFeed.update(
-        pid,
-        %{
-          dataset: %{
-            technical: %{cadence: 200_000}
-          }
-        }
-      )
+      DataFeed.update(pid, dataset_update)
 
-      %{
-        dataset: %RegistryMessage{
-          technical: %{
-            sourceFormat: new_source_format,
-            cadence: cadence
-          }
-        }
-      } = new_state = DataFeed.get(pid)
-
-      assert new_state != old_state
-      assert cadence == 200_000
-      assert new_source_format == old_source_format
+      # Force the handle cast to block inside this test
+      assert expected_dataset == DataFeed.get(pid).dataset
     end
   end
 end

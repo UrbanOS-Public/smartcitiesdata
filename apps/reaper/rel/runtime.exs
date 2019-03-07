@@ -18,7 +18,7 @@ if kafka_brokers do
       message_handler: Reaper.MessageHandler,
       offset_reset_policy: :reset_to_earliest,
       start_with_earliest_message: true,
-      async_message_ack: true
+      async_message_ack: false
     ],
     producer: [
       endpoints: endpoints,

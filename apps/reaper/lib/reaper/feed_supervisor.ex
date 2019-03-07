@@ -21,6 +21,13 @@ defmodule Reaper.FeedSupervisor do
     Supervisor.init(children, strategy: :one_for_one)
   end
 
+  def update_data_feed(supervisor_pid, %{id: id} = dataset) do
+    "#{id}_feed"
+    |> String.to_atom()
+    |> find_child_by_id(supervisor_pid)
+    |> Reaper.DataFeed.update(dataset)
+  end
+
   def create_child_spec(%{id: id} = dataset) do
     feed_name = String.to_atom("#{id}_feed")
     cache_name = String.to_atom("#{id}_cache")
@@ -48,5 +55,14 @@ defmodule Reaper.FeedSupervisor do
         }
       }
     ]
+  end
+
+  defp find_child_by_id(id, supervisor) do
+    {_child_id, pid, _type, _modules} =
+      supervisor
+      |> Supervisor.which_children()
+      |> Enum.find(fn {child_id, _pid, _type, _modules} -> child_id == id end)
+
+    pid
   end
 end

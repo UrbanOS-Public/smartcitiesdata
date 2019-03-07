@@ -35,8 +35,6 @@ defmodule Reaper.FullTest do
                                  |> File.read!()
                                  |> Reaper.Decoder.decode("csv")
                                  |> Enum.count()
-  @total_dataset_feed_record_count @json_dataset_feed_record_count * 2 + @gtfs_dataset_feed_record_count * 2 +
-                                     @csv_dataset_feed_record_count
 
   setup_all do
     pre_existing_dataset =
@@ -176,16 +174,6 @@ defmodule Reaper.FullTest do
       |> Map.get("name")
 
     assert person_name == "Erin"
-  end
-
-  test "starts at the beginning after a restart/start" do
-    Application.ensure_all_started(:reaper)
-    Application.stop(:reaper)
-    Application.ensure_all_started(:reaper)
-
-    wait_for_relative_offset(@destination_topic, @total_dataset_feed_record_count)
-
-    assert @destination_topic |> fetch_feed_messages() |> Enum.count() == @total_dataset_feed_record_count * 2
   end
 
   defp wait_for_relative_offset(topic, count) do
