@@ -5,6 +5,7 @@ defmodule Flair.StatsFlow do
   alias SCOS.DataMessage
 
   alias Flair.Stats
+  require Logger
 
   @window_length Application.get_env(:flair, :window_length, 5)
   @window_unit Application.get_env(:flair, :window_unit, :minute)
@@ -20,6 +21,7 @@ defmodule Flair.StatsFlow do
     [{Flair.Producer, []}]
     |> Flow.from_specs()
     |> Flow.map(&get_message/1)
+    |> Flow.reject(&is_dead_letter/1)
     |> partition_by_dataset_id_and_window()
     |> aggregate_by_dataset()
     |> Flow.map(&Stats.calculate_stats/1)
@@ -38,9 +40,22 @@ defmodule Flair.StatsFlow do
   end
 
   defp get_message(kafka_msg) do
-    kafka_msg
-    |> Map.get(:value)
-    |> DataMessage.parse_message()
+    try do
+      kafka_msg
+      |> Map.get(:value)
+      |> DataMessage.parse_message()
+    rescue
+      e ->
+        Logger.error(
+          "Dead Message Encountered: #{inspect(kafka_msg)}. Rejecting because: #{inspect(e)}"
+        )
+
+        :dead_letter
+    end
+  end
+
+  defp is_dead_letter(message) do
+    message == :dead_letter
   end
 
   defp extract_id(%DataMessage{dataset_id: id}), do: id
