@@ -15,6 +15,9 @@ if kafka_brokers do
       endpoints: endpoints,
       topics: [System.get_env("VALIDATED_TOPIC")]
     ]
+
+  config :kafka_ex,
+    brokers: endpoints
 end
 
 config :prestige,
