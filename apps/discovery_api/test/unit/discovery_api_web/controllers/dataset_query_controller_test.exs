@@ -21,10 +21,5 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       actual = get(conn, "/v1/api/dataset/test/csv") |> response(200)
       assert "id,one,two\n1,2,3\n4,5,6\n" == actual
     end
-
-    test "handles unknown media type", %{conn: conn} do
-      conn = conn |> put_req_header("accept", "application/json")
-      get(conn, "/v1/api/dataset/test/csv") |> response(415)
-    end
   end
 end

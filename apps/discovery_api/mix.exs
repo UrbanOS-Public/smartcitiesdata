@@ -46,12 +46,13 @@ defmodule DiscoveryApi.Mixfile do
       {:prometheus_phoenix, "~>1.2.0"},
       {:csv, "~> 1.4.0"},
       {:streaming_metrics, path: "streaming_metrics"},
-      {:prestige, path: "prestige"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.9"},
       {:redix, "~> 0.9.2"},
-      {:faker, "~> 0.12", only: [:test, :integration]}
+      {:faker, "~> 0.12", only: [:test, :integration]},
+      {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"},
+      {:scos_ex, "~> 0.4.2", organization: "smartcolumbus_os"}
     ]
   end
 

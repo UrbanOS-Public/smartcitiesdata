@@ -30,3 +30,9 @@ spec:
             value: {{ .Values.kafka.consumerGroup }}
           - name: REDIS_HOST
             value: {{ .Values.redis.host }}
+          - name: PRESTO_URL
+            value: {{ .Values.presto.url }}
+          - name: PRESTO_CATALOG
+            value: {{ .Values.presto.catalog }}
+          - name: PRESTO_SCHEMA
+            value: {{ .Values.presto.schema }}

@@ -1,5 +1,21 @@
 use Mix.Config
 
+presto_url = System.get_env("PRESTO_URL") |> IO.inspect(label: "PRESTO URL")
+presto_catalog = System.get_env("PRESTO_CATALOG") |> IO.inspect(label: "runtime.exs:4")
+presto_schema = System.get_env("PRESTO_SCHEMA")
+
+if presto_url == nil do
+  raise ArgumentError, message: "Undefined PRESTO_URL environment variable!"
+end
+
+if presto_catalog == nil do
+  raise ArgumentError, message: "Undefined PRESTO_CATALOG environment variable!"
+end
+
+if presto_schema == nil do
+  raise ArgumentError, message: "Undefined PRESTO_SCHEMA environment variable!"
+end
+
 if(System.get_env("REDIS_HOST")) do
   config :redix,
     host: System.get_env("REDIS_HOST")
@@ -25,3 +41,12 @@ if kafka_brokers do
       start_with_earliest_message: true
     ]
 end
+
+config :prestige,
+  base_url: presto_url,
+  headers: [
+    user: "presto",
+    catalog: presto_catalog,
+    schema: presto_schema
+  ],
+  log_level: :debug

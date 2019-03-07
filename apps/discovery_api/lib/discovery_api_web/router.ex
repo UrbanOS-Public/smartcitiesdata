@@ -29,7 +29,7 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   scope "/v1/api", DiscoveryApiWeb do
-    pipe_through(:api)
+    pipe_through(:api_csv_only)
 
     get("/dataset/:dataset_id/csv", DatasetQueryController, :fetch_presto)
   end

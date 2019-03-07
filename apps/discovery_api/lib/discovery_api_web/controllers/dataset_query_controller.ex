@@ -14,9 +14,6 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
         Prestige.execute("select * from #{dataset_id}", catalog: "hive", schema: "default")
         |> map_data_stream_for_csv(columnNames)
         |> return_csv(conn, dataset_id)
-
-      _ ->
-        return_unsupported(conn)
     end
   end
 
@@ -38,10 +35,6 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
         {:error, :closed} -> {:halt, conn}
       end
     end)
-  end
-
-  defp return_unsupported(conn) do
-    conn |> resp(415, "")
   end
 
   def parse_error_reason(reason) when is_binary(reason) do

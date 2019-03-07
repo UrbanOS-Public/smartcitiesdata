@@ -10,6 +10,7 @@ properties([
 ])
 
 def image
+def imageName = "scos/discovery-api"
 def doStageIf = scos.&doStageIf
 def doStageIfRelease = doStageIf.curry(scos.changeset.isRelease)
 def doStageUnlessRelease = doStageIf.curry(!scos.changeset.isRelease)
@@ -22,15 +23,18 @@ node ('infrastructure') {
         imageTag = "${env.GIT_COMMIT_HASH}"
 
         doStageUnlessRelease('Build') {
-            image = docker.build("scos/discovery-api:${env.GIT_COMMIT_HASH}")
+            withCredentials([string(credentialsId: 'hex-read', variable: 'HEX_TOKEN')]) {
+                image = docker.build("${imageName}:${imageTag}", '--build-arg HEX_TOKEN=$HEX_TOKEN .')
 
-            sh('''
+                sh('''
                 export HOST_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
                 mix local.hex --force
                 mix local.rebar --force
+                mix hex.organization auth smartcolumbus_os --key $HEX_TOKEN
                 mix deps.get
                 MIX_ENV=integration mix test.integration
-            ''')
+                ''')
+            }
         }
 
         doStageUnlessRelease('Deploy to Dev') {
@@ -62,7 +66,7 @@ node ('infrastructure') {
             scos.applyAndPushGitHubTag(promotionTag)
 
             scos.withDockerRegistry {
-                image = scos.pullImageFromDockerRegistry("scos/discovery-api", env.GIT_COMMIT_HASH)
+                image = scos.pullImageFromDockerRegistry(imageName, env.GIT_COMMIT_HASH)
                 image.push(releaseTag)
                 image.push(promotionTag)
             }

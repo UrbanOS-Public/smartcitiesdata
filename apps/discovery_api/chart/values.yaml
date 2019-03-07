@@ -43,3 +43,8 @@ kafka:
   brokers: streaming-service-kafka-bootstrap.streaming-prime:9092
   topic: dataset-registry
   consumerGroup: discovery-dataset-consumer
+
+presto:
+  url: "http://kdp-kubernetes-data-platform-presto.kdp:8080"
+  catalog: "hive"
+  schema: "default"
