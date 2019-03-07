@@ -10,7 +10,8 @@ config :kafka_ex,
   brokers: [
     {"localhost", 9094}
   ],
-  consumer_group: "flair-consumer-group"
+  consumer_group: "flair-consumer-group",
+  auto_offset_reset: :latest
 
 config :prestige,
   base_url: "https://presto.dev.internal.smartcolumbusos.com",
