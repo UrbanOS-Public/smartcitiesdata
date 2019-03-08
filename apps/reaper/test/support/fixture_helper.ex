@@ -3,10 +3,10 @@ defmodule FixtureHelper do
 
   alias Reaper.Util
   alias SCOS.RegistryMessage
-  alias Reaper.Sickle
+  alias Reaper.ReaperConfig
 
   def new_registry_message(overrides) do
-    {:ok, dataset} =
+    {:ok, registry_message} =
       RegistryMessage.new(
         Util.deep_merge(
           %{
@@ -40,12 +40,12 @@ defmodule FixtureHelper do
         )
       )
 
-    dataset
+    registry_message
   end
 
-  def new_sickle(overrides) do
+  def new_reaper_config(overrides) do
     struct(
-      %Sickle{},
+      %ReaperConfig{},
       Util.deep_merge(
         %{
           cadence: 100_000,

@@ -1,4 +1,4 @@
-defmodule Reaper.Sickle do
+defmodule Reaper.ReaperConfig do
   @moduledoc false
 
   @derive Jason.Encoder
@@ -16,11 +16,11 @@ defmodule Reaper.Sickle do
     {:ok, struct}
   end
 
-  def encode(%__MODULE__{} = sickle) do
-    Jason.encode(sickle)
+  def encode(%__MODULE__{} = reaper_config) do
+    Jason.encode(reaper_config)
   end
 
-  def encode!(%__MODULE__{} = sickle) do
-    Jason.encode!(sickle)
+  def encode!(%__MODULE__{} = reaper_config) do
+    Jason.encode!(reaper_config)
   end
 end

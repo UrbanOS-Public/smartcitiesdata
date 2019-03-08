@@ -14,21 +14,21 @@ defmodule Reaper.FeedSupervisor do
   end
 
   def init(state) do
-    children = create_child_spec(state[:dataset])
+    children = create_child_spec(state[:reaper_config])
 
     Logger.debug(fn -> "Starting #{__MODULE__} with children: #{inspect(children, pretty: true)}" end)
 
     Supervisor.init(children, strategy: :one_for_one)
   end
 
-  def update_data_feed(supervisor_pid, %{dataset_id: id} = dataset) do
+  def update_data_feed(supervisor_pid, %{dataset_id: id} = reaper_config) do
     "#{id}_feed"
     |> String.to_atom()
     |> find_child_by_id(supervisor_pid)
-    |> Reaper.DataFeed.update(dataset)
+    |> Reaper.DataFeed.update(reaper_config)
   end
 
-  def create_child_spec(%{dataset_id: id} = dataset) do
+  def create_child_spec(%{dataset_id: id} = reaper_config) do
     feed_name = String.to_atom("#{id}_feed")
     cache_name = String.to_atom("#{id}_cache")
     cache_limit = Spec.limit(size: 2000, policy: Policy.LRW, reclaim: 0.2)
@@ -45,7 +45,7 @@ defmodule Reaper.FeedSupervisor do
           :start_link,
           [
             %{
-              dataset: dataset,
+              reaper_config: reaper_config,
               pids: %{
                 name: feed_name,
                 cache: cache_name

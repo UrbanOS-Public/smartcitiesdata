@@ -7,14 +7,14 @@ defmodule Reaper.ConfigServer do
 
   use GenServer
   alias Reaper.Persistence
-  alias Reaper.Sickle
+  alias Reaper.ReaperConfig
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: via_tuple(__MODULE__))
   end
 
   def init(state \\ []) do
-    load_persisted_datasets()
+    load_persisted_reaper_configs()
     {:ok, state}
   end
 
@@ -37,32 +37,33 @@ defmodule Reaper.ConfigServer do
     }
   end
 
-  defp load_persisted_datasets() do
+  defp load_persisted_reaper_configs() do
     Persistence.get_all()
     |> Enum.map(&create_feed_supervisor/1)
   end
 
-  def send_sickle(sickle) do
-    create_feed_supervisor(sickle)
-    update_feed_supervisor(sickle)
-    Persistence.persist(sickle)
+  def process_reaper_config(reaper_config) do
+    create_feed_supervisor(reaper_config)
+    update_feed_supervisor(reaper_config)
+    Persistence.persist(reaper_config)
   end
 
-  defp create_feed_supervisor(%Sickle{dataset_id: id} = dataset) do
+  defp create_feed_supervisor(%ReaperConfig{dataset_id: id} = reaper_config) do
     Horde.Supervisor.start_child(
       Reaper.Horde.Supervisor,
       %{
         id: String.to_atom(id),
-        start: {Reaper.FeedSupervisor, :start_link, [[dataset: dataset, name: via_tuple(String.to_atom(id))]]}
+        start:
+          {Reaper.FeedSupervisor, :start_link, [[reaper_config: reaper_config, name: via_tuple(String.to_atom(id))]]}
       }
     )
   end
 
-  defp update_feed_supervisor(%Sickle{dataset_id: id} = dataset) do
+  defp update_feed_supervisor(%ReaperConfig{dataset_id: id} = reaper_config) do
     feed_supervisor_pid = Horde.Registry.lookup(Reaper.Registry, String.to_atom(id))
 
     if feed_supervisor_pid != :undefined do
-      Reaper.FeedSupervisor.update_data_feed(feed_supervisor_pid, dataset)
+      Reaper.FeedSupervisor.update_data_feed(feed_supervisor_pid, reaper_config)
     end
   end
 

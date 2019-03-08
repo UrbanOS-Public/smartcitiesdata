@@ -27,26 +27,26 @@ defmodule Reaper.DataFeed do
     GenServer.start_link(__MODULE__, args)
   end
 
-  def init(%{pids: %{name: name}, dataset: dataset} = args) do
-    schedule_work(dataset.cadence)
+  def init(%{pids: %{name: name}, reaper_config: reaper_config} = args) do
+    schedule_work(reaper_config.cadence)
 
     Horde.Registry.register(Reaper.Registry, name)
     {:ok, args}
   end
 
-  def handle_info(:work, %{pids: %{cache: cache}, dataset: dataset} = state) do
+  def handle_info(:work, %{pids: %{cache: cache}, reaper_config: reaper_config} = state) do
     generated_time_stamp = DateTime.utc_now()
 
-    dataset
+    reaper_config
     |> UrlBuilder.build()
     |> Extractor.extract()
-    |> Decoder.decode(dataset.sourceFormat)
+    |> Decoder.decode(reaper_config.sourceFormat)
     |> Cache.dedupe(cache)
-    |> Loader.load(dataset.dataset_id)
+    |> Loader.load(reaper_config.dataset_id)
     |> Cache.cache(cache)
-    |> Persistence.record_last_fetched_timestamp(dataset.dataset_id, generated_time_stamp)
+    |> Persistence.record_last_fetched_timestamp(reaper_config.dataset_id, generated_time_stamp)
 
-    timer_ref = schedule_work(dataset.cadence)
+    timer_ref = schedule_work(reaper_config.cadence)
 
     {:noreply, Util.deep_merge(state, %{timer_ref: timer_ref})}
   end
@@ -56,7 +56,7 @@ defmodule Reaper.DataFeed do
   end
 
   def handle_cast({:update, config}, state) do
-    {:noreply, Map.put(state, :dataset, config)}
+    {:noreply, Map.put(state, :reaper_config, config)}
   end
 
   def handle_call(:get, _from, state) do

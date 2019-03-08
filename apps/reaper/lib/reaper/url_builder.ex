@@ -1,12 +1,12 @@
 defmodule Reaper.UrlBuilder do
-  alias Reaper.Sickle
+  alias Reaper.ReaperConfig
   @moduledoc false
-  def build(%Sickle{sourceUrl: url, queryParams: query_params} = dataset)
+  def build(%ReaperConfig{sourceUrl: url, queryParams: query_params} = reaper_config)
       when query_params == %{},
       do: url
 
-  def build(%Sickle{sourceUrl: url, queryParams: query_params} = dataset) do
-    last_success_time = extract_last_success_time(dataset)
+  def build(%ReaperConfig{sourceUrl: url, queryParams: query_params} = reaper_config) do
+    last_success_time = extract_last_success_time(reaper_config)
 
     string_params =
       query_params
@@ -16,10 +16,10 @@ defmodule Reaper.UrlBuilder do
     "#{url}?#{string_params}"
   end
 
-  defp extract_last_success_time(dataset) do
-    case dataset.lastSuccessTime do
+  defp extract_last_success_time(reaper_config) do
+    case reaper_config.lastSuccessTime do
       nil -> false
-      time -> convert_timestamp(dataset.lastSuccessTime)
+      time -> convert_timestamp(reaper_config.lastSuccessTime)
     end
   end
 

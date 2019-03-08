@@ -37,7 +37,7 @@ defmodule Reaper.FullTest do
                                  |> Enum.count()
 
   setup_all do
-    pre_existing_dataset =
+    pre_existing_registry_message =
       FixtureHelper.new_registry_message(%{
         id: @pre_existing_dataset_id,
         technical: %{
@@ -48,7 +48,7 @@ defmodule Reaper.FullTest do
       })
 
     Application.ensure_all_started(:kaffe)
-    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(pre_existing_dataset))
+    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(pre_existing_registry_message))
     wait_for_absolute_offset(@source_topic, 1)
 
     Application.ensure_all_started(:reaper)
@@ -61,7 +61,7 @@ defmodule Reaper.FullTest do
   test "configures and ingests a json-source that was added before reaper started" do
     vehicle_id =
       @destination_topic
-      |> fetch_dataset_feed_messages(@pre_existing_dataset_id)
+      |> fetch_registry_feed_messages(@pre_existing_dataset_id)
       |> List.last()
       |> Map.get("vehicle_id")
 
@@ -71,7 +71,7 @@ defmodule Reaper.FullTest do
   test "configures and ingests a gtfs source" do
     dataset_id = "12345-6789"
 
-    gtfs_dataset =
+    gtfs_registry_message =
       FixtureHelper.new_registry_message(%{
         id: dataset_id,
         technical: %{
@@ -81,12 +81,12 @@ defmodule Reaper.FullTest do
         }
       })
 
-    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(gtfs_dataset))
+    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(gtfs_registry_message))
     wait_for_relative_offset(@destination_topic, @gtfs_dataset_feed_record_count)
 
     vehicle_id =
       @destination_topic
-      |> fetch_dataset_feed_messages(dataset_id)
+      |> fetch_registry_feed_messages(dataset_id)
       |> List.first()
       |> Map.get("id")
 
@@ -96,7 +96,7 @@ defmodule Reaper.FullTest do
   test "saves last_success_time to redis" do
     dataset_id = "12345-5555"
 
-    gtfs_dataset =
+    gtfs_registry_message =
       FixtureHelper.new_registry_message(%{
         id: dataset_id,
         technical: %{
@@ -106,7 +106,7 @@ defmodule Reaper.FullTest do
         }
       })
 
-    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(gtfs_dataset))
+    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(gtfs_registry_message))
     wait_for_relative_offset(@destination_topic, @gtfs_dataset_feed_record_count)
 
     result =
@@ -129,7 +129,7 @@ defmodule Reaper.FullTest do
   test "configures and ingests a json source" do
     dataset_id = "23456-7891"
 
-    json_dataset =
+    json_registry_message =
       FixtureHelper.new_registry_message(%{
         id: dataset_id,
         technical: %{
@@ -139,12 +139,12 @@ defmodule Reaper.FullTest do
         }
       })
 
-    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(json_dataset))
+    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(json_registry_message))
     wait_for_relative_offset(@destination_topic, @json_dataset_feed_record_count)
 
     vehicle_id =
       @destination_topic
-      |> fetch_dataset_feed_messages(dataset_id)
+      |> fetch_registry_feed_messages(dataset_id)
       |> List.first()
       |> Map.get("vehicle_id")
 
@@ -154,7 +154,7 @@ defmodule Reaper.FullTest do
   test "configures and ingests a csv source" do
     dataset_id = "34567-8912"
 
-    csv_dataset =
+    csv_registry_message =
       FixtureHelper.new_registry_message(%{
         id: dataset_id,
         technical: %{
@@ -164,12 +164,12 @@ defmodule Reaper.FullTest do
         }
       })
 
-    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(csv_dataset))
+    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(csv_registry_message))
     wait_for_relative_offset(@destination_topic, @csv_dataset_feed_record_count)
 
     person_name =
       @destination_topic
-      |> fetch_dataset_feed_messages(dataset_id)
+      |> fetch_registry_feed_messages(dataset_id)
       |> List.first()
       |> Map.get("name")
 
@@ -219,7 +219,7 @@ defmodule Reaper.FullTest do
     end)
   end
 
-  defp fetch_dataset_feed_messages(topic, dataset_id) do
+  defp fetch_registry_feed_messages(topic, dataset_id) do
     topic
     |> fetch_feed_messages()
     |> Enum.filter(fn %{"dataset_id" => id} -> id == dataset_id end)

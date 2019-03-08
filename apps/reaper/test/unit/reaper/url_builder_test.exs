@@ -5,12 +5,12 @@ defmodule Reaper.UrlBuilderTest do
   alias Reaper.UrlBuilder
 
   data_test "builds #{result}" do
-    assert result == UrlBuilder.build(dataset)
+    assert result == UrlBuilder.build(reaper_config)
 
     where([
-      [:dataset, :result],
+      [:reaper_config, :result],
       [
-        FixtureHelper.new_sickle(%{
+        FixtureHelper.new_reaper_config(%{
           id: "",
           sourceUrl: "https://my-url.com",
           queryParams: %{start_date: "19700101", end_date: "19700102"}
@@ -18,7 +18,7 @@ defmodule Reaper.UrlBuilderTest do
         "https://my-url.com?end_date=19700102&start_date=19700101"
       ],
       [
-        FixtureHelper.new_sickle(%{
+        FixtureHelper.new_reaper_config(%{
           id: "",
           sourceUrl: "https://my-url.com",
           queryParams: %{
@@ -29,7 +29,7 @@ defmodule Reaper.UrlBuilderTest do
         "https://my-url.com?end_date=19700102&start_date=19700101"
       ],
       [
-        FixtureHelper.new_sickle(%{
+        FixtureHelper.new_reaper_config(%{
           id: "",
           sourceUrl: "https://my-url.com",
           queryParams: %{}
@@ -37,7 +37,7 @@ defmodule Reaper.UrlBuilderTest do
         "https://my-url.com"
       ],
       [
-        FixtureHelper.new_sickle(%{
+        FixtureHelper.new_reaper_config(%{
           id: "",
           sourceUrl: "https://my-url.com",
           queryParams: %{

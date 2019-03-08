@@ -11,16 +11,16 @@ defmodule Reaper.DataFeedTest do
   alias SCOS.RegistryMessage
 
   @dataset_id "12345-6789"
-  @dataset FixtureHelper.new_sickle(%{id: @dataset_id})
+  @reaper_config FixtureHelper.new_reaper_config(%{id: @dataset_id})
   @data_feed_args %{
     pids: %{
       name: String.to_atom("#{@dataset_id}_feed"),
       cache: String.to_atom("#{@dataset_id}_cache")
     },
-    dataset: @dataset
+    reaper_config: @reaper_config
   }
 
-  describe "handle_info given a state that includes a dataset struct" do
+  describe "handle_info given a state that includes a reaper config struct" do
     test "schedules itself on the provided cadence" do
       expect(UrlBuilder.build(any()), return: :does_not_matter)
       expect(Extractor.extract(any()), return: :does_not_matter)
@@ -32,7 +32,7 @@ defmodule Reaper.DataFeedTest do
 
       {:noreply, %{timer_ref: timer_ref}} = DataFeed.handle_info(:work, @data_feed_args)
 
-      assert Process.read_timer(timer_ref) == @dataset.cadence
+      assert Process.read_timer(timer_ref) == @reaper_config.cadence
     end
   end
 
@@ -43,29 +43,31 @@ defmodule Reaper.DataFeedTest do
       :ok
     end
 
-    test "dataset updates replace old state" do
+    test "reaper config updates replace old state" do
       {:ok, pid} = DataFeed.start_link(@data_feed_args)
 
-      persisted_dataset =
-        FixtureHelper.new_sickle(%{
+      persisted_reaper_config =
+        FixtureHelper.new_reaper_config(%{
           id: @dataset_id,
           sourceUrl: "persisted",
           sourceFormat: "Fail"
         })
 
-      dataset_update = FixtureHelper.new_sickle(%{id: @dataset_id, sourceUrl: "persisted", sourceFormat: "Success"})
+      reaper_config_update =
+        FixtureHelper.new_reaper_config(%{id: @dataset_id, sourceUrl: "persisted", sourceFormat: "Success"})
 
-      expected_dataset = FixtureHelper.new_sickle(%{id: @dataset_id, sourceUrl: "persisted", sourceFormat: "Success"})
+      expected_reaper_config =
+        FixtureHelper.new_reaper_config(%{id: @dataset_id, sourceUrl: "persisted", sourceFormat: "Success"})
 
       expected_json =
-        expected_dataset
+        expected_reaper_config
         |> Map.from_struct()
         |> Jason.encode!()
 
-      DataFeed.update(pid, dataset_update)
+      DataFeed.update(pid, reaper_config_update)
 
       # Force the handle cast to block inside this test
-      assert expected_dataset == DataFeed.get(pid).dataset
+      assert expected_reaper_config == DataFeed.get(pid).reaper_config
     end
   end
 end

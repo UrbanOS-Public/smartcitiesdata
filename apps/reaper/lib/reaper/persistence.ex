@@ -1,9 +1,9 @@
 defmodule Reaper.Persistence do
   @moduledoc false
 
-  alias Reaper.Sickle
+  alias Reaper.ReaperConfig
 
-  @name_space "reaper:dataset:"
+  @name_space "reaper:reaper_config:"
   @name_space_derived "reaper:derived:"
 
   def get(dataset_id) do
@@ -28,17 +28,17 @@ defmodule Reaper.Persistence do
     end
   end
 
-  def persist(%Sickle{} = dataset) do
-    dataset
+  def persist(%ReaperConfig{} = reaper_config) do
+    reaper_config
     |> Map.from_struct()
     |> Jason.encode!()
-    |> (fn dataset_json -> Redix.command!(:redix, ["SET", @name_space <> dataset.dataset_id, dataset_json]) end).()
+    |> (fn config_json -> Redix.command!(:redix, ["SET", @name_space <> reaper_config.dataset_id, config_json]) end).()
   end
 
   defp from_json(json_string) do
     json_string
     |> Jason.decode!(keys: :atoms)
-    |> (fn map -> struct(%Sickle{}, map) end).()
+    |> (fn map -> struct(%ReaperConfig{}, map) end).()
   end
 
   def record_last_fetched_timestamp([_ | _] = records, dataset_id, timestamp) do
