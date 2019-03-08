@@ -1,7 +1,7 @@
 defmodule PersistenceTest do
   use ExUnit.Case
   alias Reaper.Persistence
-  alias SCOS.RegistryMessage
+  alias Reaper.Sickle
 
   @dataset_id "12345-3323"
 
@@ -25,39 +25,37 @@ defmodule PersistenceTest do
     assert nil == actual_dataset
   end
 
-  test "Dataset saves data to Redis" do
-    dataset = FixtureHelper.new_dataset(%{id: @dataset_id})
-    Persistence.persist(dataset)
+  test "Sickle saves data to Redis" do
+    sickle = FixtureHelper.new_sickle(%{dataset_id: @dataset_id})
+    Persistence.persist(sickle)
 
-    {:ok, actual} =
-      Redix.command!(:redix, ["GET", "reaper:dataset:#{dataset.id}"])
+    actual_map =
+      Redix.command!(:redix, ["GET", "reaper:dataset:#{sickle.dataset_id}"])
       |> Jason.decode!(keys: :atoms)
-      |> SCOS.RegistryMessage.new()
 
-    assert actual.id == dataset.id
-    assert actual.business == dataset.business
-    assert actual.technical == dataset.technical
+    actual = struct(%Sickle{}, actual_map)
+    assert actual == sickle
   end
 
-  test "get should return a single dataset" do
-    dataset = FixtureHelper.new_dataset(%{id: @dataset_id})
-    dataset_json_string = RegistryMessage.encode!(dataset)
+  test "get should return a single sickle" do
+    sickle = FixtureHelper.new_sickle(%{dataset_id: @dataset_id})
+    sickle_json_string = Sickle.encode!(sickle)
 
-    Redix.command!(:redix, ["SET", "reaper:dataset:#{dataset.id}", dataset_json_string])
+    Redix.command!(:redix, ["SET", "reaper:dataset:#{sickle.dataset_id}", sickle_json_string])
 
-    actual_dataset = Persistence.get(dataset.id)
-    assert actual_dataset == dataset
+    actual_sickle = Persistence.get(sickle.dataset_id)
+    assert actual_sickle == sickle
   end
 
-  test "getall should return all datasets" do
-    dataset = FixtureHelper.new_dataset(%{id: @dataset_id})
-    dataset2 = FixtureHelper.new_dataset(%{id: "987"})
+  test "getall should return all sickles" do
+    sickle = FixtureHelper.new_sickle(%{dataset_id: @dataset_id})
+    sickle2 = FixtureHelper.new_sickle(%{dataset_id: "987"})
 
-    Redix.command!(:redix, ["SET", "reaper:dataset:#{dataset.id}", RegistryMessage.encode!(dataset)])
-    Redix.command!(:redix, ["SET", "reaper:dataset:#{dataset2.id}", RegistryMessage.encode!(dataset2)])
+    Redix.command!(:redix, ["SET", "reaper:dataset:#{sickle.dataset_id}", Sickle.encode!(sickle)])
+    Redix.command!(:redix, ["SET", "reaper:dataset:#{sickle2.dataset_id}", Sickle.encode!(sickle2)])
 
-    actual_datasets = Persistence.get_all() |> Enum.sort()
-    assert actual_datasets == [dataset, dataset2] |> Enum.sort()
+    actual_sickles = Persistence.get_all() |> Enum.sort()
+    assert actual_sickles == [sickle, sickle2] |> Enum.sort()
   end
 
   test "get all returns empty list if no keys exist" do

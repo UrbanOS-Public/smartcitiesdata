@@ -1,11 +1,11 @@
 defmodule Reaper.UrlBuilder do
-  alias SCOS.RegistryMessage
+  alias Reaper.Sickle
   @moduledoc false
-  def build(%RegistryMessage{technical: %{sourceUrl: url, queryParams: query_params}} = dataset)
+  def build(%Sickle{sourceUrl: url, queryParams: query_params} = dataset)
       when query_params == %{},
       do: url
 
-  def build(%RegistryMessage{technical: %{sourceUrl: url, queryParams: query_params}} = dataset) do
+  def build(%Sickle{sourceUrl: url, queryParams: query_params} = dataset) do
     last_success_time = extract_last_success_time(dataset)
 
     string_params =
@@ -17,9 +17,10 @@ defmodule Reaper.UrlBuilder do
   end
 
   defp extract_last_success_time(dataset) do
-    dataset.technical
-    |> Map.update(:lastSuccessTime, false, &convert_timestamp/1)
-    |> Map.get(:lastSuccessTime)
+    case dataset.lastSuccessTime do
+      nil -> false
+      time -> convert_timestamp(dataset.lastSuccessTime)
+    end
   end
 
   defp convert_timestamp(timestamp) do

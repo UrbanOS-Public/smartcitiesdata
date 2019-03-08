@@ -27,18 +27,18 @@ defmodule Reaper.LoaderTest do
 
     test_dataset_id = "abcdef-12345"
 
-    expected_key_one = "FC8AF9F2179E98FDC5406928D9D72963"
-    expected_key_two = "5E79EABCAD910766A02B39092FB6C860"
-
-    data_message_1 =
+    {:ok, data_message_1} =
       test_payload_one
       |> create_message(test_dataset_id)
-      |> SCOS.DataMessage.encode_message()
+      |> SCOS.DataMessage.encode()
 
-    data_message_2 =
+    {:ok, data_message_2} =
       test_payload_two
       |> create_message(test_dataset_id)
-      |> SCOS.DataMessage.encode_message()
+      |> SCOS.DataMessage.encode()
+
+    expected_key_one = md5(data_message_1)
+    expected_key_two = md5(data_message_2)
 
     expect(Producer.produce_sync(expected_key_one, data_message_1), return: :ok)
     expect(Producer.produce_sync(expected_key_two, data_message_2), return: :error)
@@ -50,6 +50,16 @@ defmodule Reaper.LoaderTest do
   end
 
   defp create_message(payload, dataset_id) do
-    SCOS.DataMessage.new(%{dataset_id: dataset_id, payload: payload, _metadata: %{}, operational: %{}})
+    {:ok, message} =
+      SCOS.DataMessage.new(%{
+        dataset_id: dataset_id,
+        payload: payload,
+        _metadata: %{},
+        operational: %{timing: []}
+      })
+
+    message
   end
+
+  defp md5(thing), do: :crypto.hash(:md5, thing) |> Base.encode16()
 end

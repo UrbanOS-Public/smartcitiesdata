@@ -14,14 +14,13 @@ defmodule Reaper.Loader do
   end
 
   defp convert_to_message(payload, dataset_id) do
-    value_part =
-      %{dataset_id: dataset_id, payload: payload, _metadata: %{}, operational: %{}}
-      |> DataMessage.new()
-      |> DataMessage.encode_message()
+    message_map = %{dataset_id: dataset_id, payload: payload, _metadata: %{}, operational: %{timing: []}}
 
-    key_part = md5(value_part)
-
-    {key_part, value_part}
+    with {:ok, message} <- DataMessage.new(message_map),
+         {:ok, value_part} <- DataMessage.encode(message) do
+      key_part = md5(value_part)
+      {key_part, value_part}
+    end
   end
 
   defp md5(thing), do: :crypto.hash(:md5, thing) |> Base.encode16()

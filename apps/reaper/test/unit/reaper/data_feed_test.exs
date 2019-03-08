@@ -7,11 +7,11 @@ defmodule Reaper.DataFeedTest do
   alias Reaper.Extractor
   alias Reaper.Loader
   alias Reaper.UrlBuilder
-  alias Reaper.Recorder
+  alias Reaper.Persistence
   alias SCOS.RegistryMessage
 
   @dataset_id "12345-6789"
-  @dataset FixtureHelper.new_dataset(%{id: @dataset_id})
+  @dataset FixtureHelper.new_sickle(%{id: @dataset_id})
   @data_feed_args %{
     pids: %{
       name: String.to_atom("#{@dataset_id}_feed"),
@@ -20,7 +20,7 @@ defmodule Reaper.DataFeedTest do
     dataset: @dataset
   }
 
-  describe ".handle_info given a state that includes a dataset struct" do
+  describe "handle_info given a state that includes a dataset struct" do
     test "schedules itself on the provided cadence" do
       expect(UrlBuilder.build(any()), return: :does_not_matter)
       expect(Extractor.extract(any()), return: :does_not_matter)
@@ -28,11 +28,11 @@ defmodule Reaper.DataFeedTest do
       expect(Cache.dedupe(any(), any()), return: :does_not_matter)
       expect(Loader.load(any(), any()), return: :does_not_matter)
       expect(Cache.cache(any(), any()), return: :does_not_matter)
-      expect(Recorder.record_last_fetched_timestamp(any(), any(), any()), return: :does_not_matter)
+      expect(Persistence.record_last_fetched_timestamp(any(), any(), any()), return: :does_not_matter)
 
       {:noreply, %{timer_ref: timer_ref}} = DataFeed.handle_info(:work, @data_feed_args)
 
-      assert Process.read_timer(timer_ref) == @dataset.technical.cadence
+      assert Process.read_timer(timer_ref) == @dataset.cadence
     end
   end
 
@@ -47,16 +47,15 @@ defmodule Reaper.DataFeedTest do
       {:ok, pid} = DataFeed.start_link(@data_feed_args)
 
       persisted_dataset =
-        FixtureHelper.new_dataset(%{
+        FixtureHelper.new_sickle(%{
           id: @dataset_id,
-          operational: %{organization: "persisted", status: "Fail"}
+          sourceUrl: "persisted",
+          sourceFormat: "Fail"
         })
 
-      dataset_update =
-        FixtureHelper.new_dataset(%{id: @dataset_id, operational: %{organization: "persisted", status: "Success"}})
+      dataset_update = FixtureHelper.new_sickle(%{id: @dataset_id, sourceUrl: "persisted", sourceFormat: "Success"})
 
-      expected_dataset =
-        FixtureHelper.new_dataset(%{id: @dataset_id, operational: %{organization: "persisted", status: "Success"}})
+      expected_dataset = FixtureHelper.new_sickle(%{id: @dataset_id, sourceUrl: "persisted", sourceFormat: "Success"})
 
       expected_json =
         expected_dataset

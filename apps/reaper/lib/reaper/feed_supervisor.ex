@@ -21,14 +21,14 @@ defmodule Reaper.FeedSupervisor do
     Supervisor.init(children, strategy: :one_for_one)
   end
 
-  def update_data_feed(supervisor_pid, %{id: id} = dataset) do
+  def update_data_feed(supervisor_pid, %{dataset_id: id} = dataset) do
     "#{id}_feed"
     |> String.to_atom()
     |> find_child_by_id(supervisor_pid)
     |> Reaper.DataFeed.update(dataset)
   end
 
-  def create_child_spec(%{id: id} = dataset) do
+  def create_child_spec(%{dataset_id: id} = dataset) do
     feed_name = String.to_atom("#{id}_feed")
     cache_name = String.to_atom("#{id}_cache")
     cache_limit = Spec.limit(size: 2000, policy: Policy.LRW, reclaim: 0.2)

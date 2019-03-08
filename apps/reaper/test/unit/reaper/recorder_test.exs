@@ -1,7 +1,7 @@
 defmodule Reaper.RecorderTest do
   use ExUnit.Case
   use Placebo
-  alias Reaper.Recorder
+  alias Reaper.Persistence
 
   @dataset_id "whatever"
   @timestamp "does not matter"
@@ -9,7 +9,7 @@ defmodule Reaper.RecorderTest do
   test "when given the an empty list of dataset records, it does not record to redis" do
     allow Redix.command(any(), any()), return: nil
 
-    Recorder.record_last_fetched_timestamp([], @dataset_id, @timestamp)
+    Persistence.record_last_fetched_timestamp([], @dataset_id, @timestamp)
 
     assert not called?(Redix.command(any(), any()))
   end
@@ -21,7 +21,7 @@ defmodule Reaper.RecorderTest do
 
     expect Redix.command(:redix, ["SET", "reaper:derived:#{@dataset_id}", any()]), return: nil
 
-    Recorder.record_last_fetched_timestamp(records, @dataset_id, @timestamp)
+    Persistence.record_last_fetched_timestamp(records, @dataset_id, @timestamp)
   end
 
   test "when valid, persist to redis json with timestamp" do
@@ -31,7 +31,7 @@ defmodule Reaper.RecorderTest do
 
     expect Redix.command(:redix, ["SET", any(), "{\"timestamp\": \"#{@timestamp}\"}"]), return: nil
 
-    Recorder.record_last_fetched_timestamp(records, @dataset_id, @timestamp)
+    Persistence.record_last_fetched_timestamp(records, @dataset_id, @timestamp)
   end
 
   test "when given the list of dataset records with no failures, it records to redis" do
@@ -42,7 +42,7 @@ defmodule Reaper.RecorderTest do
 
     expect Redix.command(any(), any()), return: nil
 
-    Recorder.record_last_fetched_timestamp(records, @dataset_id, @timestamp)
+    Persistence.record_last_fetched_timestamp(records, @dataset_id, @timestamp)
   end
 
   test "when given the list of dataset records with a single failure, it records to redis" do
@@ -53,7 +53,7 @@ defmodule Reaper.RecorderTest do
 
     expect Redix.command(any(), any()), return: nil
 
-    Recorder.record_last_fetched_timestamp(records, @dataset_id, @timestamp)
+    Persistence.record_last_fetched_timestamp(records, @dataset_id, @timestamp)
   end
 
   test "when given the list of dataset records with all failures (something is really wrong), it does not record to redis" do
@@ -64,7 +64,7 @@ defmodule Reaper.RecorderTest do
 
     allow Redix.command(any(), any()), return: nil
 
-    Recorder.record_last_fetched_timestamp(records, @dataset_id, @timestamp)
+    Persistence.record_last_fetched_timestamp(records, @dataset_id, @timestamp)
 
     assert not called?(Redix.command(any(), any()))
   end

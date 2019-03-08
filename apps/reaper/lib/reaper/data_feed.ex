@@ -8,7 +8,7 @@ defmodule Reaper.DataFeed do
   """
 
   use GenServer
-  alias Reaper.{Cache, Decoder, Extractor, Loader, UrlBuilder, Util, Recorder}
+  alias Reaper.{Cache, Decoder, Extractor, Loader, UrlBuilder, Util, Persistence}
 
   ## CLIENT
 
@@ -28,7 +28,7 @@ defmodule Reaper.DataFeed do
   end
 
   def init(%{pids: %{name: name}, dataset: dataset} = args) do
-    schedule_work(dataset.technical.cadence)
+    schedule_work(dataset.cadence)
 
     Horde.Registry.register(Reaper.Registry, name)
     {:ok, args}
@@ -40,13 +40,13 @@ defmodule Reaper.DataFeed do
     dataset
     |> UrlBuilder.build()
     |> Extractor.extract()
-    |> Decoder.decode(dataset.technical.sourceFormat)
+    |> Decoder.decode(dataset.sourceFormat)
     |> Cache.dedupe(cache)
-    |> Loader.load(dataset.id)
+    |> Loader.load(dataset.dataset_id)
     |> Cache.cache(cache)
-    |> Recorder.record_last_fetched_timestamp(dataset.id, generated_time_stamp)
+    |> Persistence.record_last_fetched_timestamp(dataset.dataset_id, generated_time_stamp)
 
-    timer_ref = schedule_work(dataset.technical.cadence)
+    timer_ref = schedule_work(dataset.cadence)
 
     {:noreply, Util.deep_merge(state, %{timer_ref: timer_ref})}
   end

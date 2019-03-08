@@ -14,28 +14,37 @@ defmodule Reaper.MessageHandlerTest do
         technical: []
       }
 
-      allow ConfigServer.send_dataset(any()), return: nil
+      allow ConfigServer.send_sickle(any()), return: nil
 
       MessageHandler.handle_message(%{value: Jason.encode!(bad_dataset)})
 
-      assert not called?(ConfigServer.send_dataset(any()))
+      assert not called?(ConfigServer.send_sickle(any()))
     end
 
     test "does send the dataset on if it's valid" do
-      good_dataset = FixtureHelper.new_dataset(%{id: "cool"})
+      dataset = FixtureHelper.new_registry_message(%{id: "cool"})
 
-      expect ConfigServer.send_dataset(good_dataset), return: nil
+      sickle =
+        FixtureHelper.new_sickle(%{
+          dataset_id: dataset.id,
+          cadence: dataset.technical.cadence,
+          sourceUrl: dataset.technical.sourceUrl,
+          sourceFormat: dataset.technical.sourceFormat,
+          queryParams: dataset.technical.queryParams
+        })
 
-      MessageHandler.handle_message(%{value: Jason.encode!(good_dataset)})
+      expect ConfigServer.send_sickle(sickle), return: nil
+
+      MessageHandler.handle_message(%{value: Jason.encode!(dataset)})
     end
 
     @tag capture_log: true
     test "returns ok when invalid json" do
-      allow ConfigServer.send_dataset(any()), return: nil
+      allow ConfigServer.send_sickle(any()), return: nil
 
       response = MessageHandler.handle_message(%{value: "a"})
 
-      assert not called?(ConfigServer.send_dataset(any()))
+      assert not called?(ConfigServer.send_sickle(any()))
       assert :ok == response
     end
   end

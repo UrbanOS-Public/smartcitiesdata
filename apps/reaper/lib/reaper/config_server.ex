@@ -6,9 +6,8 @@ defmodule Reaper.ConfigServer do
   """
 
   use GenServer
-  alias Reaper.DataFeed
   alias Reaper.Persistence
-  alias SCOS.RegistryMessage
+  alias Reaper.Sickle
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: via_tuple(__MODULE__))
@@ -43,13 +42,13 @@ defmodule Reaper.ConfigServer do
     |> Enum.map(&create_feed_supervisor/1)
   end
 
-  def send_dataset(dataset) do
-    create_feed_supervisor(dataset)
-    update_feed_supervisor(dataset)
-    Persistence.persist(dataset)
+  def send_sickle(sickle) do
+    create_feed_supervisor(sickle)
+    update_feed_supervisor(sickle)
+    Persistence.persist(sickle)
   end
 
-  defp create_feed_supervisor(%RegistryMessage{id: id} = dataset) do
+  defp create_feed_supervisor(%Sickle{dataset_id: id} = dataset) do
     Horde.Supervisor.start_child(
       Reaper.Horde.Supervisor,
       %{
@@ -59,7 +58,7 @@ defmodule Reaper.ConfigServer do
     )
   end
 
-  defp update_feed_supervisor(%RegistryMessage{id: id} = dataset) do
+  defp update_feed_supervisor(%Sickle{dataset_id: id} = dataset) do
     feed_supervisor_pid = Horde.Registry.lookup(Reaper.Registry, String.to_atom(id))
 
     if feed_supervisor_pid != :undefined do

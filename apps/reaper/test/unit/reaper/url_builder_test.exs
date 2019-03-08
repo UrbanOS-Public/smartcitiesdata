@@ -10,62 +10,40 @@ defmodule Reaper.UrlBuilderTest do
     where([
       [:dataset, :result],
       [
-        FixtureHelper.new_dataset(%{
+        FixtureHelper.new_sickle(%{
           id: "",
-          technical: %{
-            sourceUrl: "https://my-url.com",
-            queryParams: %{start_date: "19700101", end_date: "19700102"}
+          sourceUrl: "https://my-url.com",
+          queryParams: %{start_date: "19700101", end_date: "19700102"}
+        }),
+        "https://my-url.com?end_date=19700102&start_date=19700101"
+      ],
+      [
+        FixtureHelper.new_sickle(%{
+          id: "",
+          sourceUrl: "https://my-url.com",
+          queryParams: %{
+            start_date: "<%= Date.to_iso8601(~D[1970-01-01], :basic) %>",
+            end_date: "<%= Date.to_iso8601(~D[1970-01-02], :basic) %>"
           }
         }),
         "https://my-url.com?end_date=19700102&start_date=19700101"
       ],
       [
-        FixtureHelper.new_dataset(%{
+        FixtureHelper.new_sickle(%{
           id: "",
-          technical: %{
-            sourceUrl: "https://my-url.com",
-            queryParams: %{
-              start_date: "<%= Date.to_iso8601(~D[1970-01-01], :basic) %>",
-              end_date: "<%= Date.to_iso8601(~D[1970-01-02], :basic) %>"
-            }
-          }
-        }),
-        "https://my-url.com?end_date=19700102&start_date=19700101"
-      ],
-      [
-        FixtureHelper.new_dataset(%{
-          id: "",
-          technical: %{
-            sourceUrl: "https://my-url.com",
-            queryParams: %{}
-          }
+          sourceUrl: "https://my-url.com",
+          queryParams: %{}
         }),
         "https://my-url.com"
       ],
-      # [
-      #   FixtureHelper.new_dataset(%{
-      #     id: "",
-      #     technical: %{
-      #       sourceUrl: "https://my-url.com",
-      #       queryParams: %{
-      #         start_date: "<%= Date.to_iso8601(last_success_time |> DateTime.to_date(), :basic) %>",
-      #         end_date: "<%= Date.to_iso8601(~D[1970-01-02], :basic) %>"
-      #       },
-      #       lastSuccessTime: "2019-02-27T18:40:03.239976Z"
-      #     }
-      #   }),
-      #   "https://my-url.com?end_date=19700102&start_date=20190227"
-      # ],
       [
-        FixtureHelper.new_dataset(%{
+        FixtureHelper.new_sickle(%{
           id: "",
-          technical: %{
-            sourceUrl: "https://my-url.com",
-            queryParams: %{
-              start_date:
-                "<%= Date.to_iso8601(last_success_time || DateTime.from_unix!(0) |> DateTime.to_date(), :basic) %>",
-              end_date: "<%= Date.to_iso8601(~D[1970-01-02], :basic) %>"
-            }
+          sourceUrl: "https://my-url.com",
+          queryParams: %{
+            start_date:
+              "<%= Date.to_iso8601(last_success_time || DateTime.from_unix!(0) |> DateTime.to_date(), :basic) %>",
+            end_date: "<%= Date.to_iso8601(~D[1970-01-02], :basic) %>"
           }
         }),
         "https://my-url.com?end_date=19700102&start_date=19700101"

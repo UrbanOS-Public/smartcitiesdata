@@ -3,8 +3,9 @@ defmodule FixtureHelper do
 
   alias Reaper.Util
   alias SCOS.RegistryMessage
+  alias Reaper.Sickle
 
-  def new_dataset(overrides) do
+  def new_registry_message(overrides) do
     {:ok, dataset} =
       RegistryMessage.new(
         Util.deep_merge(
@@ -40,5 +41,20 @@ defmodule FixtureHelper do
       )
 
     dataset
+  end
+
+  def new_sickle(overrides) do
+    struct(
+      %Sickle{},
+      Util.deep_merge(
+        %{
+          cadence: 100_000,
+          sourceUrl: "https://does-not-matter-url.com",
+          sourceFormat: "gtfs",
+          queryParams: %{}
+        },
+        overrides
+      )
+    )
   end
 end
