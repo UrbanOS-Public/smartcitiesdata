@@ -1,5 +1,5 @@
-FROM bitwalker/alpine-elixir:1.7.2 as builder
-
+FROM bitwalker/alpine-elixir:1.8.1 as builder
+ARG HEX_TOKEN
 ENV MIX_ENV test
 
 RUN apk update && \
@@ -11,6 +11,7 @@ WORKDIR /app
 
 RUN mix local.hex --force && \
     mix local.rebar --force && \
+    mix hex.organization auth smartcolumbus_os --key ${HEX_TOKEN} && \
     mix deps.get && \
     mix format --check-formatted && \
     mix credo && \
@@ -18,7 +19,7 @@ RUN mix local.hex --force && \
     
 RUN MIX_ENV=prod mix release
 
-FROM alpine:3.8
+FROM alpine:3.9
 ENV REPLACE_OS_VARS=true
 
 RUN apk update && \

@@ -5,7 +5,7 @@ defmodule Forklift.MixProject do
     [
       app: :forklift,
       version: "0.1.0",
-      elixir: "~> 1.7",
+      elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -25,7 +25,9 @@ defmodule Forklift.MixProject do
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.9.1"},
-      {:prestige, path: "prestige"},
+      {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"},
+      {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
+      {:scos_ex, "~> 1.0.0", organization: "smartcolumbus_os"},
       {:placebo, "~> 1.2.1", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
       {:faker, "~> 0.12", only: [:dev, :test]},

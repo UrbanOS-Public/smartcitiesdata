@@ -10,7 +10,8 @@ properties([
 ])
 
 def image
-
+def imageName = 'scos/forklift'
+def imageTag
 def doStageIf = scos.&doStageIf
 def doStageIfRelease = doStageIf.curry(scos.changeset.isRelease)
 def doStageUnlessRelease = doStageIf.curry(!scos.changeset.isRelease)
@@ -20,8 +21,12 @@ node('infrastructure') {
     ansiColor('xterm') {
         scos.doCheckoutStage()
 
+        imageTag = "${env.GIT_COMMIT_HASH}"
+
         doStageUnlessRelease('Build') {
-            image = docker.build("scos/forklift:${env.GIT_COMMIT_HASH}")
+            withCredentials([string(credentialsId: 'hex-read', variable: 'HEX_TOKEN')]) {
+                image = docker.build("${imageName}:${imageTag}", '--build-arg HEX_TOKEN=$HEX_TOKEN .')
+            }
         }
 
         doStageUnlessRelease('Deploy to Dev') {
@@ -30,13 +35,13 @@ node('infrastructure') {
                 image.push('latest')
             }
 
-            deployTo('dev')
+            deployTo('dev', imageTag)
         }
 
         doStageIfPromoted('Deploy to Staging') {
             def environment= 'staging'
 
-            deployTo('staging')
+            deployTo('staging', imageTag)
 
             scos.applyAndPushGitHubTag(environment)
 
@@ -49,12 +54,12 @@ node('infrastructure') {
             def releaseTag = env.BRANCH_NAME
             def promotionTag = 'prod'
 
-            deployProducerTo('prod')
+            deployTo('prod', imageTag)
 
             scos.applyAndPushGitHubTag(promotionTag)
 
             scos.withDockerRegistry {
-                image = scos.pullImageFromDockerRegistry("scos/forklift", env.GIT_COMMIT_HASH)
+                image = scos.pullImageFromDockerRegistry(imageName, imageTag)
                 image.push(releaseTag)
                 image.push(promotionTag)
             }
@@ -62,7 +67,7 @@ node('infrastructure') {
     }
 }
 
-def deployTo(environment) {
+def deployTo(environment, imageTag) {
     scos.withEksCredentials(environment) {
         sh("""#!/bin/bash
             set -e
@@ -70,7 +75,7 @@ def deployTo(environment) {
             helm upgrade --install forklift \
                 -f helm-config/prod.yaml ./chart \
                 --namespace=streaming-services \
-                --set image.tag="${env.GIT_COMMIT_HASH}" \
+                --set image.tag="${imageTag}" \
         """.trim())
     }
 }

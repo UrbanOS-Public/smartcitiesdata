@@ -39,11 +39,10 @@ defmodule Forklift.DatasetRegistryServer do
     |> make_reply()
   end
 
-  def handle_call({:ingest_message, message}, _from, _state) do
+  def handle_call({:ingest_message, registry_message}, _from, _state) do
     IO.puts("DatasetRegistryServer: Received 1 message")
 
-    message
-    |> Jason.decode!()
+    registry_message
     |> parse_schema()
     |> store_schema_ets()
     |> make_reply()
@@ -80,8 +79,8 @@ defmodule Forklift.DatasetRegistryServer do
 
   defp make_reply(msg), do: {:reply, msg, nil}
 
-  defp parse_schema(%{"id" => id, "operational" => %{"schema" => schema}}) do
-    columns = Enum.map(schema, fn %{"name" => name, "type" => type} -> {name, type} end)
+  defp parse_schema(%{:id => id, :technical => %{:schema => schema}}) do
+    columns = Enum.map(schema, fn %{:name => name, :type => type} -> {String.to_atom(name), type} end)
 
     %DatasetSchema{
       id: id,

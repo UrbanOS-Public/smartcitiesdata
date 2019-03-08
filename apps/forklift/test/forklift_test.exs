@@ -5,67 +5,34 @@ defmodule ForkliftTest do
   alias Forklift.MessageProcessor
 
   test "data messages are processed to Prestige" do
-    allow(Prestige.execute(any()), return: :ok)
+    dataset_id = Faker.UUID.v4()
 
+    payload = %{
+      id: :rand.uniform(999),
+      name: Faker.StarWars.planet()
+    }
+
+    expected_statement = ~s/insert into #{dataset_id} (id,name) values (#{payload.id},'#{payload.name}')/
+    expect(Prestige.execute(expected_statement), return: :ok)
     allow(Prestige.prefetch(any()), return: [])
 
-    dataset_id = Faker.StarWars.planet()
-    message = make_message(dataset_id)
-    _expected = message |> Map.get(:value) |> Jason.decode!() |> Map.get("payload")
+    send_registry_message(dataset_id)
+    send_data_message(payload, dataset_id)
+  end
 
+  defp send_registry_message(dataset_id) do
     dataset_id
-    |> make_schema_message()
+    |> Helper.make_registry_message()
+    |> Helper.make_kafka_message("dataset-registry")
     |> List.wrap()
     |> MessageProcessor.handle_messages()
-
-    MessageProcessor.handle_messages([message])
-
-    expected_statement = ~s/insert into #{dataset_id} (id,name) values (111,'bob')/
-
-    assert_called(
-      Prestige.execute(expected_statement),
-      once()
-    )
   end
 
-  def make_message(dataset_id, topic \\ "streaming-transformed") do
-    value =
-      %{
-        payload: %{id: 111, name: "bob"},
-        metadata: %{dataset_id: dataset_id}
-      }
-      |> Jason.encode!()
-
-    %{
-      topic: topic,
-      value: value
-    }
-  end
-
-  defp dataset_registry_topic do
-    Application.get_env(:forklift, :registry_topic)
-  end
-
-  defp make_schema_message(dataset_id, topic \\ dataset_registry_topic()) do
-    payload = %{
-      "id" => dataset_id,
-      "operational" => %{
-        "schema" => [
-          %{
-            "name" => "id",
-            "type" => "int"
-          },
-          %{
-            "name" => "name",
-            "type" => "string"
-          }
-        ]
-      }
-    }
-
-    %{
-      topic: topic,
-      value: Jason.encode!(payload)
-    }
+  defp send_data_message(payload, dataset_id) do
+    payload
+    |> Helper.make_data_message!(dataset_id)
+    |> Helper.make_kafka_message("streaming-transformed")
+    |> List.wrap()
+    |> MessageProcessor.handle_messages()
   end
 end

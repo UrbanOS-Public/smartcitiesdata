@@ -1,24 +1,19 @@
 defmodule Forklift.MessageProcessor do
   @moduledoc false
   require Logger
-  alias Forklift.MessageAccumulator
-  alias Forklift.DatasetRegistryServer
+  alias Forklift.{MessageAccumulator, DatasetRegistryServer}
+  alias SCOS.{RegistryMessage, DataMessage}
+
+  @data_topic Application.get_env(:forklift, :data_topic)
+  @registry_topic Application.get_env(:forklift, :registry_topic)
 
   def handle_messages(messages) do
     Enum.each(messages, &process_message/1)
 
-    data_topic = data_topic()
-    registry_topic = registry_topic()
-
-    with ^data_topic <- assume_topic(messages) do
-      :ok
-    else
-      ^registry_topic ->
-        {:ok, :no_commit}
-
-      topic ->
-        Logger.warn("Unexpected topic #{topic} found in message stream. Ignoring")
-        :ok
+    case assume_topic(messages) do
+      @data_topic -> :ok
+      @registry_topic -> {:ok, :no_commit}
+      topic -> Logger.warn("Unexpected topic #{topic} found in message stream. Ignoring")
     end
   end
 
@@ -35,32 +30,27 @@ defmodule Forklift.MessageProcessor do
   end
 
   defp process_message(%{topic: topic, value: value}) do
-    case data_topic() == topic do
-      true -> accumulate_value(value)
-      _ -> DatasetRegistryServer.send_message(value)
+    case topic do
+      @data_topic -> process_data_message(value)
+      @registry_topic -> process_registry_message(value)
+      _ -> Logger.error("Unknown topic #{topic} with message #{value}")
     end
-
-    :ok
   end
 
-  defp accumulate_value(value) do
-    with {:ok, dataset_id, payload} <- extract_id_and_payload(value),
-         {:ok, pid} <- start_server(dataset_id) do
-      MessageAccumulator.send_message(pid, payload)
+  defp process_data_message(value) do
+    with {:ok, data_message} <- DataMessage.new(value),
+         {:ok, pid} <- start_server(data_message.dataset_id) do
+      MessageAccumulator.send_message(pid, data_message.payload)
     else
-      {:error, reason} -> Logger.info("PROCESS MESSAGE FAILED: #{reason}")
+      {:error, reason} -> Logger.error("Invalid data message: #{value} : #{inspect(reason)}")
     end
-
-    :ok
   end
 
-  defp extract_id_and_payload(value) do
-    with {:ok, data} <- Jason.decode(value) do
-      %{"payload" => payload, "metadata" => %{"dataset_id" => dataset_id}} = data
-
-      {:ok, dataset_id, payload}
+  def process_registry_message(value) do
+    with {:ok, registry_message} <- RegistryMessage.new(value) do
+      DatasetRegistryServer.send_message(registry_message)
     else
-      {:error, error} -> {:error, inspect(error)}
+      {:error, reason} -> Logger.error("Unable to process message: #{value} : #{inspect(reason)}")
     end
   end
 
@@ -71,7 +61,4 @@ defmodule Forklift.MessageProcessor do
       _error -> {:error, "Error starting/locating DataSet GenServer"}
     end
   end
-
-  defp data_topic(), do: Application.get_env(:forklift, :data_topic)
-  defp registry_topic(), do: Application.get_env(:forklift, :registry_topic)
 end

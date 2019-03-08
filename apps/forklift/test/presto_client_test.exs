@@ -20,8 +20,7 @@ defmodule PrestoClientTest do
     allow(DatasetRegistryServer.get_schema(any()), return: schema)
     allow(Prestige.prefetch(any()), return: :ok)
 
-    expected_statement =
-      ~s/insert into placeholder_id (id,name) values (123,'bob'),(234,'cob'),(345,'dob')/
+    expected_statement = ~s/insert into placeholder_id (id,name) values (123,'bob'),(234,'cob'),(345,'dob')/
 
     messages = [
       %{"id" => 123, "name" => "bob"},
