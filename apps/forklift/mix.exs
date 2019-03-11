@@ -7,7 +7,8 @@ defmodule Forklift.MixProject do
       version: "0.1.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -31,7 +32,12 @@ defmodule Forklift.MixProject do
       {:placebo, "~> 1.2.1", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
       {:faker, "~> 0.12", only: [:dev, :test]},
-      {:distillery, "~> 2.0"}
+      {:distillery, "~> 2.0"},
+      {:redix, "~> 0.9.2"}
     ]
+  end
+
+  defp aliases do
+    [test: "test --no-start"]
   end
 end

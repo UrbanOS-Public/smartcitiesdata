@@ -35,3 +35,6 @@ config :prestige,
     catalog: "hive",
     schema: "default"
   ]
+
+config :redix,
+  host: "localhost"
