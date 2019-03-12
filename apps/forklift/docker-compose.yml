@@ -1,46 +1,62 @@
 ---
-version: '2'
+version: '3.4'
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:4.1.0
-    ports:
-      - 2181:2181
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    extra_hosts:
-      - "moby:127.0.0.1"
-  kafka:
-    image: confluentinc/cp-kafka:4.1.0
-    ports:
-      - 9092:9092
-      - 9093:9093
+  # zookeeper:
+  #   image: wurstmeister/zookeeper
+  #   ports:
+  #   - "2181:2181"
+  # kafka:
+  #   image: wurstmeister/kafka
+  #   depends_on:
+  #   - zookeeper
+  #   ports:
+  #   - "9094:9094"
+  #   environment:
+  #   - "KAFKA_ADVERTISED_LISTENERS=INSIDE://:9092,OUTSIDE://localhost:9094"
+  #   - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
+  #   - "KAFKA_LISTENERS=INSIDE://:9092,OUTSIDE://:9094"
+  #   - "KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE"
+  #   - "KAFKA_CREATE_TOPICS=validated:1:1,transformed:1:1,raw:1:1"
+  #   - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181"
+  metastore:
+    image: jeffgrunewald/metastore:1.0
     depends_on:
-      - zookeeper
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: CLUSTER://kafka:9093,LOCAL://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLUSTER:PLAINTEXT,LOCAL:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: CLUSTER
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    extra_hosts:
-      - "moby:127.0.0.1"
-  aws:
-    image: localstack/localstack:0.8.7
-    environment:
-      SERVICES: "cloudwatch"
+    - postgres
     ports:
-      - 4582:4582
-      - 8080:8080
-  producer:
-    build:
-      context: .
-    image: producer
+    - "9083:9083"
+    volumes:
+    - "./metastore-site.xml:/opt/hive-metastore/conf/metastore-site.xml"
+    - "./core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml"
+    command: >
+      /bin/bash -c "
+        /opt/hive-metastore/bin/schematool -dbType postgres -validate || /opt/hive-metastore/bin/schematool -dbType postgres -initSchema;
+        /opt/hive-metastore/bin/start-metastore"
+  postgres:
+    image: postgres
+    ports:
+    - "5432:5432"
+    environment:
+    - "POSTGRES_PASSWORD=password123"
+    - "POSTGRES_USER=hive"
+    - "POSTGRES_DB=metastore"
+  minio:
+    image: minio/minio
+    ports:
+    - "9000:9000"
+    command: >
+      /bin/bash -c "
+        wget https://dl.minio.io/client/mc/release/linux-amd64/mc -P /usr/bin/
+        chmod a+x /usr/bin/mc
+        sleep 10
+        mc config host add kdp http://RELEASE-NAME-kubernetes-data-platform-minio:9000  
+        mc mb kdp/kdp-cloud-storage
+        mc policy public kdp/kdp-cloud-storage"
+  presto:
     depends_on:
-      - kafka
-      - aws
+    - metastore
+    - minio
+    image: jeffgrunewald/presto:1.1
     ports:
-      - 4000:4000
-    environment:
-      KAFKA_BROKERS: "kafka:9093"
+    - "8080:8080"
+    volumes:
+    - "./presto-config/:/presto/etc/"    
