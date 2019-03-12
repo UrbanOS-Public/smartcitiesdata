@@ -1,7 +1,7 @@
 defmodule Forklift.MessageProcessor do
   @moduledoc false
   require Logger
-  alias Forklift.{MessageAccumulator, DatasetRegistryServer}
+  alias Forklift.{MessageAccumulator, DatasetRegistryServer, RedisClient}
   alias SCOS.{RegistryMessage, DataMessage}
 
   @data_topic Application.get_env(:forklift, :data_topic)
@@ -9,24 +9,6 @@ defmodule Forklift.MessageProcessor do
 
   def handle_messages(messages) do
     Enum.each(messages, &process_message/1)
-
-    case assume_topic(messages) do
-      @data_topic -> :ok
-      @registry_topic -> {:ok, :no_commit}
-      topic -> Logger.warn("Unexpected topic #{topic} found in message stream. Ignoring")
-    end
-  end
-
-  defp assume_topic(messages) do
-    topics =
-      messages
-      |> Enum.map(&Map.get(&1, :topic))
-      |> Enum.dedup()
-
-    case length(topics) do
-      1 -> List.first(topics)
-      _ -> raise RuntimeError, "Received mixed topics, this is probably a problem with Kaffe"
-    end
   end
 
   defp process_message(%{topic: topic, value: value}) do
@@ -38,6 +20,8 @@ defmodule Forklift.MessageProcessor do
   end
 
   defp process_data_message(value) do
+    RedisClient.write(value)
+
     with {:ok, data_message} <- DataMessage.new(value),
          {:ok, pid} <- start_server(data_message.dataset_id) do
       MessageAccumulator.send_message(pid, data_message.payload)
