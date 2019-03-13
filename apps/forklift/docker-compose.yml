@@ -25,13 +25,15 @@ services:
     ports:
     - "9083:9083"
     volumes:
-    - "./metastore-site.xml:/opt/hive-metastore/conf/metastore-site.xml"
-    - "./core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml"
+    - "./divo/metastore-site.xml:/opt/hive-metastore/conf/metastore-site.xml"
+    - "./divo/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml"
     command: >
       /bin/bash -c "
         /opt/hive-metastore/bin/schematool -dbType postgres -validate || /opt/hive-metastore/bin/schematool -dbType postgres -initSchema;
         /opt/hive-metastore/bin/start-metastore"
   postgres:
+    logging:
+      driver: none
     image: postgres
     ports:
     - "5432:5432"
@@ -43,15 +45,23 @@ services:
     image: minio/minio
     ports:
     - "9000:9000"
-    command: >
-      /bin/bash -c "
-        wget https://dl.minio.io/client/mc/release/linux-amd64/mc -P /usr/bin/
-        chmod a+x /usr/bin/mc
-        sleep 10
-        mc config host add kdp http://RELEASE-NAME-kubernetes-data-platform-minio:9000  
-        mc mb kdp/kdp-cloud-storage
-        mc policy public kdp/kdp-cloud-storage"
+    environment:
+    - "MINIO_ACCESS_KEY=admin"
+    - "MINIO_SECRET_KEY=V8f1CwQqAcwo80UEIJEjc5gVQUSSx5ohQ9GSrr12"
+    volumes:
+    - "./divo/minio/data:/data"
+    - "./divo:/root/.minio"
+    command: server /data
+  mini-worker:
+    depends_on:
+    - minio
+    image: alpine:3.8
+    command: /bin/sh /create_bucket.sh
+    volumes:
+    - "./divo/create_bucket.sh:/create_bucket.sh"
   presto:
+    logging:
+      driver: none
     depends_on:
     - metastore
     - minio
@@ -59,4 +69,4 @@ services:
     ports:
     - "8080:8080"
     volumes:
-    - "./presto-config/:/presto/etc/"    
+    - "./divo/presto-config/:/presto/etc/"    

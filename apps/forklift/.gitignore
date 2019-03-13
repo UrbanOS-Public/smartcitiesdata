@@ -23,3 +23,7 @@ erl_crash.dump
 forklift-*.tar
 
 .elixir_ls
+
+/divo/minio/*
+
+/divo/presto-config/data/

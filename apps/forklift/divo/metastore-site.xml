@@ -7,7 +7,7 @@
       </property>
       <property>
         <name>metastore.warehouse.dir</name>
-        <value>s3a://minio/hive-s3</value>
+        <value>s3a://kdp-cloud-storage/hive-s3</value>
       </property>
       <property>
         <name>metastore.task.threads.always</name>
