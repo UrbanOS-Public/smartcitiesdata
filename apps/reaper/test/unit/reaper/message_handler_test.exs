@@ -21,7 +21,7 @@ defmodule Reaper.MessageHandlerTest do
     end
 
     test "does send the registry message on if it's valid" do
-      registry_message = FixtureHelper.new_dataset(%{id: "cool"})
+      registry_message = FixtureHelper.new_registry_message(%{id: "cool"})
 
       reaper_config =
         FixtureHelper.new_reaper_config(%{

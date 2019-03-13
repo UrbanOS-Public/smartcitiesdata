@@ -42,13 +42,7 @@ defmodule Reaper.DataFeed do
     |> Extractor.extract()
     |> Decoder.decode(reaper_config.sourceFormat)
     |> Cache.dedupe(cache)
-    |> Loader.load(
-      reaper_config.dataset_id,
-      "Elixir.Reaper.Partitioners." <>
-        ((reaper_config.partitioner.type == nil && "Hash") || reaper_config.partitioner.type) <>
-        "Partitioner",
-      reaper_config.partitioner.query
-    )
+    |> Loader.load(reaper_config)
     |> Cache.cache(cache)
     |> Persistence.record_last_fetched_timestamp(reaper_config.dataset_id, generated_time_stamp)
 

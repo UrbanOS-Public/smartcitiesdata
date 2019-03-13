@@ -38,7 +38,7 @@ defmodule Reaper.FullTest do
 
   setup_all do
     pre_existing_registry_message =
-      FixtureHelper.new_dataset(%{
+      FixtureHelper.new_registery_message(%{
         id: @pre_existing_dataset_id,
         technical: %{
           cadence: 1_000,

@@ -5,6 +5,7 @@ defmodule Reaper.LoaderTest do
   use Placebo
   alias Kaffe.Producer
   alias Reaper.Loader
+  alias SCOS.RegistryMessage
 
   setup do
     on_exit(fn -> unstub() end)
@@ -26,10 +27,8 @@ defmodule Reaper.LoaderTest do
     ]
 
     test_dataset_id = "abcdef-12345"
-    # Hash | Json | RoundRobin | Single
-    partitioner = "Elixir.Reaper.Partitioners.HashPartitioner"
-    test_dataset_partitioner = partitioner
-    test_dataset_partitionerLocation = nil
+
+    reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: test_dataset_id})
 
     expected_key_one = "AAAE509C7162BBE7D948D141AD2EF0F5"
     expected_key_two = "2420D9AF43588C11175506A917A81567"
@@ -45,7 +44,7 @@ defmodule Reaper.LoaderTest do
     expect(Producer.produce_sync(expected_key_one, data_message_1), return: :ok)
     expect(Producer.produce_sync(expected_key_two, data_message_2), return: :error)
 
-    assert Loader.load(test_payloads, test_dataset_id, test_dataset_partitioner, test_dataset_partitionerLocation) ==
+    assert Loader.load(test_payloads, reaper_config) ==
              [
                {:ok, test_payload_one},
                {:error, test_payload_two}

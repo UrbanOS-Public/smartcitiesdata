@@ -4,9 +4,18 @@ defmodule Reaper.Loader do
   alias Reaper.Partitioners.JsonPartitioner
   alias SCOS.DataMessage
 
-  def load(payloads, dataset_id, dataset_partitioner, dataset_partitioner_location) do
+  def load(payloads, reaper_config) do
     payloads
-    |> Enum.map(&send_to_kafka(&1, dataset_id, dataset_partitioner, dataset_partitioner_location))
+    |> Enum.map(
+      &send_to_kafka(
+        &1,
+        reaper_config.dataset_id,
+        "Elixir.Reaper.Partitioners." <>
+          ((reaper_config.partitioner.type == nil && "Hash") || reaper_config.partitioner.type) <>
+          "Partitioner",
+        reaper_config.partitioner.query
+      )
+    )
   end
 
   defp send_to_kafka(payload, dataset_id, dataset_partitioner, dataset_partitioner_location) do
