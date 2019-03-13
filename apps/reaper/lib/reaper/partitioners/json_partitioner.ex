@@ -8,7 +8,8 @@ defmodule Reaper.Partitioners.JsonPartitioner do
       |> String.split(".")
       |> Enum.map(&String.to_atom/1)
 
-    Jason.decode!(payload, keys: :atoms)
+    payload
+    |> Jason.decode!(keys: :atoms)
     |> get_in(filter)
   end
 end
