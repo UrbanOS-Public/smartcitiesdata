@@ -1,7 +1,6 @@
 defmodule Reaper.Loader do
   @moduledoc false
   alias Kaffe.Producer
-  alias Reaper.Partitioners.JsonPartitioner
   alias SCOS.DataMessage
 
   def load(payloads, reaper_config) do

@@ -1,7 +1,7 @@
 defmodule Reaper.UrlBuilder do
   alias Reaper.ReaperConfig
   @moduledoc false
-  def build(%ReaperConfig{sourceUrl: url, queryParams: query_params} = reaper_config)
+  def build(%ReaperConfig{sourceUrl: url, queryParams: query_params} = _reaper_config)
       when query_params == %{},
       do: url
 
@@ -19,7 +19,7 @@ defmodule Reaper.UrlBuilder do
   defp extract_last_success_time(reaper_config) do
     case reaper_config.lastSuccessTime do
       nil -> false
-      time -> convert_timestamp(reaper_config.lastSuccessTime)
+      _time -> convert_timestamp(reaper_config.lastSuccessTime)
     end
   end
 
