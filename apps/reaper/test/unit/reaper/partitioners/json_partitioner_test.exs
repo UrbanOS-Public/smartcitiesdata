@@ -40,7 +40,7 @@ defmodule Reaper.Partitioners.JsonPartitionerTest do
       operational: %{valkyrie: %{duration: 0, start_time: "2019-02-22T20:06:03.462424Z"}},
       payload: %{
         alert: nil,
-        id: "1304",
+        id: "1308",
         is_deleted: false,
         trip_update: nil,
         vehicle: %{
@@ -50,7 +50,7 @@ defmodule Reaper.Partitioners.JsonPartitionerTest do
           occupancy_status: nil,
           position: %{
             bearing: 180.0,
-            latitude: 40.04230499267578,
+            latitude: 40.04230499267579,
             longitude: -82.97738647460938,
             odometer: nil,
             speed: 6.041108917997917e-6
