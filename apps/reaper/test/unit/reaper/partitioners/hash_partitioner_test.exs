@@ -10,17 +10,17 @@ defmodule Reaper.Partitioners.HashPartitionerTest do
   end
 
   test "Successfully produces hash for valid message" do
-    message = ~s({"a": "1", "b": "2"})
-    expected = "556DF92BA1150B4087D6D5EC9080AC9A"
-    actual = HashPartitioner.partition(message, nil)
+    message = %{a: "1", b: "2"}
+    expected = "7D7D9E8E60D8D8A8C62F78E388E29EB7"
+    actual = HashPartitioner.partition(Jason.encode!(message), nil)
 
     assert actual == expected
   end
 
   test "Successfully returns hash for yet another valid message" do
-    message = ~s({"a": "1", "b": {"c": "2", "d": {"e": "5"}}})
-    expected = "7ED90FDE691552492EC5E4A11CD34D7E"
-    actual = HashPartitioner.partition(message, nil)
+    message = %{a: "1", b: %{c: "2", d: %{e: "5"}}}
+    expected = "0887929F124F2AF4BD2961A0B68A1C7A"
+    actual = HashPartitioner.partition(Jason.encode!(message), nil)
     assert actual == expected
   end
 
