@@ -40,7 +40,7 @@ defmodule Reaper.Partitioners.HashPartitionerTest do
       operational: %{valkyrie: %{duration: 0, start_time: "2019-02-22T20:06:03.462424Z"}},
       payload: %{
         alert: nil,
-        id: "1304",
+        id: "5433",
         is_deleted: false,
         trip_update: nil,
         vehicle: %{
@@ -50,8 +50,8 @@ defmodule Reaper.Partitioners.HashPartitionerTest do
           occupancy_status: nil,
           position: %{
             bearing: 180.0,
-            latitude: 40.04230499267578,
-            longitude: -82.97738647460938,
+            latitude: 40.04230499267999,
+            longitude: -82.97738647460111,
             odometer: nil,
             speed: 6.041108917997917e-6
           },
@@ -65,12 +65,12 @@ defmodule Reaper.Partitioners.HashPartitionerTest do
             start_time: nil,
             trip_id: "656921"
           },
-          vehicle: %{id: "11304", label: "1304", license_plate: "Jessie123"}
+          vehicle: %{id: "5433", label: "1304", license_plate: "Jessie123"}
         }
       }
     }
 
-    expected = "779EEE80ED04E43F88064088236CDBA9"
+    expected = "7BE92EBA8F67DC5A0174B146C9F453B6"
     actual = HashPartitioner.partition(Jason.encode!(message), nil)
     assert actual == expected
   end
