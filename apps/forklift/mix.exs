@@ -33,8 +33,8 @@ defmodule Forklift.MixProject do
       {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
       {:faker, "~> 0.12", only: [:dev, :test]},
       {:distillery, "~> 2.0"},
-      {:redix, "~> 0.9.2"},
-      {:mockaffe, "~> 0.3", organization: "smartcolumbus_os", only: :test, runtime: false}
+      {:mockaffe, "~> 0.3", path: "../mockaffe", only: :test, runtime: false},
+      {:redix, "~> 0.9.3"}
     ]
   end
 

@@ -1,5 +1,5 @@
 defmodule MessageAccumulatorTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use Placebo
 
   alias Forklift.MessageAccumulator
