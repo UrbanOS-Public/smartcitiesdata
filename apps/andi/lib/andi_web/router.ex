@@ -10,6 +10,7 @@ defmodule AndiWeb.Router do
     pipe_through :api
 
     put "/v1/dataset", DatasetController, :create
+    post "/v1/organization", OrganizationController, :create
   end
 
   scope "/", AndiWeb do

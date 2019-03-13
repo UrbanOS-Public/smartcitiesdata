@@ -46,6 +46,7 @@ defmodule AndiWeb.DatasetControllerTest do
         "queryParams" => %{},
         "transformations" => [],
         "validations" => [],
+        "partitioner" => %{"query" => nil, "type" => nil},
         "schema" => []
       },
       "business" => %{

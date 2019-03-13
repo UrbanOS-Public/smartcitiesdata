@@ -2,7 +2,7 @@ defmodule Andi.Kafka do
   @moduledoc false
   require Logger
 
-  alias SCOS.RegistryMessage
+  alias SCOS.{RegistryMessage, OrganizationMessage}
 
   def send_to_kafka(%RegistryMessage{} = dataset) do
     with dataset_id <- Map.get(dataset, :id),
@@ -15,7 +15,18 @@ defmodule Andi.Kafka do
     end
   end
 
+  def send_to_kafka(%OrganizationMessage{} = organization) do
+    with {:ok, encoded} <- Jason.encode(organization) do
+      :andi
+      |> Application.get_env(:organization_topic)
+      |> Kaffe.Producer.produce_sync(organization.id, encoded)
+    else
+      _ -> {:error, "Unable to parse jason for object #{inspect(organization)}"}
+    end
+  end
+
   def send_to_kafka(_) do
-    {:error, "Send to kafka only suppports SCOS.RegistryMessage structs"}
+    {:error,
+     "Send to kafka only suppports SCOS.RegistryMessage and SCOS.OrganizationMessage structs"}
   end
 end

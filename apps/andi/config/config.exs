@@ -22,7 +22,8 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 config :andi,
-  topic: "dataset-registry"
+  topic: "dataset-registry",
+  organization_topic: "organization-raw"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
