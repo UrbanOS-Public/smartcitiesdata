@@ -27,8 +27,17 @@ defmodule Reaper.ConfigServerTest do
 
       ConfigServer.start_link([])
 
-      assert feed_supervisor_count() == 2
-      assert feed_cache_count() == 2
+      Patiently.wait_for!(
+        fn -> feed_supervisor_count() == 2 end,
+        dwell: 100,
+        max_tries: 10
+      )
+
+      Patiently.wait_for!(
+        fn -> feed_cache_count() == 2 end,
+        dwell: 100,
+        max_tries: 10
+      )
     end
   end
 

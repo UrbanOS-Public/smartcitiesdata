@@ -14,8 +14,7 @@ defmodule Reaper.ConfigServer do
   end
 
   def init(state \\ []) do
-    load_persisted_reaper_configs()
-    {:ok, state}
+    {:ok, state, {:continue, :load_persisted_configs}}
   end
 
   def child_spec(args) do
@@ -37,9 +36,11 @@ defmodule Reaper.ConfigServer do
     }
   end
 
-  defp load_persisted_reaper_configs() do
+  def handle_continue(:load_persisted_configs, state) do
     Persistence.get_all()
-    |> Enum.map(&create_feed_supervisor/1)
+    |> Enum.each(&create_feed_supervisor/1)
+
+    {:noreply, state}
   end
 
   def process_reaper_config(reaper_config) do
