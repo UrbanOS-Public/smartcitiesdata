@@ -4,51 +4,6 @@ defmodule Forklift.MessageWriterTest do
 
   alias Forklift.{PrestoClient, MessageWriter, RedisClient}
 
-  # test "write to presto" do
-  #   dataset_id = "my-id"
-
-  #   message =
-  #     Mockaffe.create_message(:data, :basic)
-  #     |> Map.put(:dataset_id, dataset_id)
-  #     |> Jason.encode!()
-
-  #   allow(RedisClient.read_all_batched_messages(), return: [message])
-  #   expect(RedisClient.delete(dataset_id), return: :ok)
-
-  #   expect(PrestoClient.upload_data(dataset_id, [message]), return: :ok)
-
-  #   MessageWriter.handle_info(:work, %{})
-  # end
-
-  # test "new write to presto" do
-  #   messages = [
-  #     {"forklift:dataset:key1:5", "v1"},
-  #     {"forklift:dataset:key2:6", "v2"}
-  #   ]
-
-  #   allow(RedisClient.read_all_batched_messages(), return: messages)
-  #   allow(RedisClient.delete(any()), return: :ok)
-  #   expect(PrestoClient.upload_data(any(), any()))
-
-  #   MessageWriter.handle_info(:work, %{})
-  # end
-
-  # test "deletes from redis after writing to presto" do
-  #   dataset_id = "my-id"
-
-  #   message =
-  #     Mockaffe.create_message(:data, :basic)
-  #     |> Map.put(:dataset_id, dataset_id)
-  #     |> Jason.encode!()
-
-  #   allow(RedisClient.read_all_batched_messages(), return: [message])
-  #   expect(RedisClient.delete(dataset_id), return: :ok)
-
-  #   allow(PrestoClient.upload_data(dataset_id, [message]), return: :ok)
-
-  #   MessageWriter.handle_info(:work, %{})
-  # end
-
   test "does all the things" do
     id_a = "forklift:dataset:KeyA:5"
     id_b = "forklift:dataset:KeyB:6"

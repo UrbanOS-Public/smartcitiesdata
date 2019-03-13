@@ -16,24 +16,21 @@ defmodule Forklift.MessageWriter do
   end
 
   def handle_info(:work, state) do
-    messages = RedisClient.read_all_batched_messages()
-
-    messages
+    RedisClient.read_all_batched_messages()
     |> Enum.map(fn {key, message} ->
       {:ok, value} = DataMessage.new(message)
       {key, value}
     end)
-    |> Enum.group_by(fn {key, _} ->
-      key |> String.split(":") |> Enum.at(2)
-    end)
-    |> Enum.map(fn {key, messages} ->
-      {key, Enum.map(messages, fn {key, val} -> val end)}
-    end)
+    |> Enum.group_by(&extract_key/1, fn {msg_key, msg} -> msg end)
     |> Enum.each(fn {dataset_id, messages} -> PrestoClient.upload_data(dataset_id, messages) end)
 
     # RedisClient.delete(dataset_id)
     schedule_work()
     {:noreply, state}
+  end
+
+  defp extract_key({key, _}) do
+    key |> String.split(":") |> Enum.at(2)
   end
 
   defp schedule_work do
