@@ -21,6 +21,8 @@ defmodule Reaper.CacheTest do
 
       records = Cache.cache([{:error, "bad_hello"}, {:ok, "hello"}], :test_cache_two)
       assert Cachex.size!(:test_cache_two) == 1
+      # assert records == [{:error, "bad_hello"}, {:ok, "hello"}]
+      IO.puts("Hey there these are my records: " <> inspect(records))
       assert records == [{:error, "bad_hello"}, {:ok, "hello"}]
     end
   end

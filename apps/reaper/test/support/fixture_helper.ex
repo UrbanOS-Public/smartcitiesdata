@@ -22,6 +22,46 @@ defmodule FixtureHelper do
             technical: %{
               dataName: "name",
               cadence: 100_000,
+              partitioner: %{type: nil, query: nil},
+              sourceUrl: "https://does-not-matter-url.com",
+              sourceFormat: "gtfs",
+              # status: "created",
+              queryParams: %{},
+              transformations: ["a_transform"],
+              # version: "1",
+              headers: %{
+                Authorization: "Basic xdasdgdasgdsgd"
+              },
+              systemName: "scos",
+              stream: "IDK",
+              orgName: "Whatever"
+            }
+          },
+          overrides
+        )
+      )
+
+    registry_message
+  end
+
+  def new_registry_messageZZZ(overrides) do
+    {:ok, registry_message} =
+      RegistryMessage.new(
+        Util.deep_merge(
+          %{
+            business: %{
+              dataTitle: "Stuff",
+              description: "crap",
+              modifiedDate: "something",
+              orgTitle: "SCOS",
+              contactName: "Jalson",
+              contactEmail: "something@email.com",
+              license: "MIT"
+            },
+            technical: %{
+              dataName: "name",
+              cadence: 100_000,
+              partitioner: %{type: nil, query: nil},
               sourceUrl: "https://does-not-matter-url.com",
               sourceFormat: "gtfs",
               # status: "created",

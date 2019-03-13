@@ -38,7 +38,7 @@ defmodule Reaper.FullTest do
 
   setup_all do
     pre_existing_registry_message =
-      FixtureHelper.new_registery_message(%{
+      FixtureHelper.new_registry_message(%{
         id: @pre_existing_dataset_id,
         technical: %{
           cadence: 1_000,
@@ -72,7 +72,7 @@ defmodule Reaper.FullTest do
     dataset_id = "12345-6789"
 
     gtfs_registry_message =
-      FixtureHelper.new_dataset(%{
+      FixtureHelper.new_registry_message(%{
         id: dataset_id,
         technical: %{
           cadence: 1_000,
@@ -97,7 +97,7 @@ defmodule Reaper.FullTest do
     dataset_id = "12345-5555"
 
     gtfs_registry_message =
-      FixtureHelper.new_dataset(%{
+      FixtureHelper.new_registry_message(%{
         id: dataset_id,
         technical: %{
           cadence: 1_000,
@@ -130,7 +130,7 @@ defmodule Reaper.FullTest do
     dataset_id = "23456-7891"
 
     json_registry_message =
-      FixtureHelper.new_dataset(%{
+      FixtureHelper.new_registry_message(%{
         id: dataset_id,
         technical: %{
           cadence: 1_000,
@@ -155,7 +155,7 @@ defmodule Reaper.FullTest do
     dataset_id = "34567-8912"
 
     csv_registry_message =
-      FixtureHelper.new_dataset(%{
+      FixtureHelper.new_registry_message(%{
         id: dataset_id,
         technical: %{
           cadence: 1_000,
