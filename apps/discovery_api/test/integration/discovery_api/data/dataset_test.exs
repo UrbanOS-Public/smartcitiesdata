@@ -1,5 +1,6 @@
 defmodule DiscoveryApi.Data.DatasetTest do
   use ExUnit.Case
+  use Divo.Integration
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Data.Dataset
 
