@@ -19,7 +19,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
     expected = %{"data" => encoded_maps}
 
     expect(DiscoveryApiWeb.DatasetPrestoQueryService.preview(any()), return: list_of_maps)
-    actual = get(conn, "/v1/api/dataset/#{dataset_id}/preview") |> json_response(200)
+    actual = conn |> get("/api/v1/dataset/#{dataset_id}/preview") |> json_response(200)
 
     assert expected == actual
   end

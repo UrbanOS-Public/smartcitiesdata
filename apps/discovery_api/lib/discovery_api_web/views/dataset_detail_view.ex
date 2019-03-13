@@ -1,4 +1,5 @@
 defmodule DiscoveryApiWeb.DatasetDetailView do
+  @moduledoc false
   use DiscoveryApiWeb, :view
 
   def render("fetch_dataset_detail.json", %{dataset: dataset}) do

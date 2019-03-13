@@ -1,4 +1,5 @@
 defmodule DiscoveryApi.Search.DatasetFacinator do
+  @moduledoc false
   def get_facets(datasets) do
     %{
       organization: unique_facets_with_count(datasets, :organization),

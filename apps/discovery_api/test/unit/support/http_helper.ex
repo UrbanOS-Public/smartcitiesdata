@@ -1,4 +1,5 @@
 defmodule HttpHelper do
+  @moduledoc false
   def create_response(error_reason: error) do
     {:error, %HTTPoison.Error{id: nil, reason: error}}
   end

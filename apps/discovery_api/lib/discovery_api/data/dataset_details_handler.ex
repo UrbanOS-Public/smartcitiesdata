@@ -1,4 +1,5 @@
 defmodule DiscoveryApi.Data.DatasetDetailsHandler do
+  @moduledoc false
   alias DiscoveryApi.Data.Dataset
 
   def process_dataset_details_event(registry_message) do

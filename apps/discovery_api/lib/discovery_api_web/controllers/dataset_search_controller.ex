@@ -1,6 +1,7 @@
 require Logger
 
 defmodule DiscoveryApiWeb.DatasetSearchController do
+  @moduledoc false
   use DiscoveryApiWeb, :controller
 
   alias DiscoveryApi.Search.{FacetFilterator, DatasetFacinator, DatasetSearchinator}

@@ -1,4 +1,5 @@
 defmodule DiscoveryApiWeb.UserSocket do
+  @moduledoc false
   use Phoenix.Socket
 
   ## Channels

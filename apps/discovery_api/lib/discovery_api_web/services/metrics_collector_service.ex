@@ -2,6 +2,7 @@ alias StreamingMetrics.Hostname
 require Logger
 
 defmodule DiscoveryApiWeb.MetricsCollectorService do
+  @moduledoc false
   @metric_collector Application.get_env(:discovery_api, :collector)
   def record_csv_download_count_metrics(dataset_id, table_name) do
     record_metrics("downloaded_csvs", [
@@ -21,7 +22,8 @@ defmodule DiscoveryApiWeb.MetricsCollectorService do
   defp record_metrics(metric_name, labels) do
     hostname = Hostname.get()
 
-    @metric_collector.count_metric(1, metric_name, [{"PodHostname", "#{hostname}"}] ++ labels)
+    1
+    |> @metric_collector.count_metric(metric_name, [{"PodHostname", "#{hostname}"}] ++ labels)
     |> List.wrap()
     |> @metric_collector.record_metrics("discovery_api")
     |> case do
