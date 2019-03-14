@@ -8,7 +8,6 @@ defmodule Reaper.DataFeedTest do
   alias Reaper.Loader
   alias Reaper.UrlBuilder
   alias Reaper.Persistence
-  alias SCOS.RegistryMessage
 
   @dataset_id "12345-6789"
   @reaper_config FixtureHelper.new_reaper_config(%{id: @dataset_id})
@@ -46,23 +45,11 @@ defmodule Reaper.DataFeedTest do
     test "reaper config updates replace old state" do
       {:ok, pid} = DataFeed.start_link(@data_feed_args)
 
-      persisted_reaper_config =
-        FixtureHelper.new_reaper_config(%{
-          id: @dataset_id,
-          sourceUrl: "persisted",
-          sourceFormat: "Fail"
-        })
-
       reaper_config_update =
         FixtureHelper.new_reaper_config(%{id: @dataset_id, sourceUrl: "persisted", sourceFormat: "Success"})
 
       expected_reaper_config =
         FixtureHelper.new_reaper_config(%{id: @dataset_id, sourceUrl: "persisted", sourceFormat: "Success"})
-
-      expected_json =
-        expected_reaper_config
-        |> Map.from_struct()
-        |> Jason.encode!()
 
       DataFeed.update(pid, reaper_config_update)
 

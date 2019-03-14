@@ -22,6 +22,7 @@ defmodule FixtureHelper do
             technical: %{
               dataName: "name",
               cadence: 100_000,
+              partitioner: %{type: nil, query: nil},
               sourceUrl: "https://does-not-matter-url.com",
               sourceFormat: "gtfs",
               # status: "created",
@@ -51,6 +52,7 @@ defmodule FixtureHelper do
           cadence: 100_000,
           sourceUrl: "https://does-not-matter-url.com",
           sourceFormat: "gtfs",
+          partitioner: %{type: nil, query: nil},
           queryParams: %{}
         },
         overrides
