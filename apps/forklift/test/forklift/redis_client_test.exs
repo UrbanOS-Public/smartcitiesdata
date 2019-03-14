@@ -36,4 +36,11 @@ defmodule RedisClientTest do
 
     RedisClient.delete(keys)
   end
+
+  test "deletes records given a single key" do
+    key = "forklift:dataset:key2:6"
+    expect(Redix.command!(any(), ["DEL", key]), return: :ok)
+
+    RedisClient.delete(key)
+  end
 end

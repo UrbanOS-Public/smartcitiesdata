@@ -16,7 +16,11 @@ defmodule Forklift.RedisClient do
     end)
   end
 
-  def delete(keys) do
+  def delete(keys) when is_list(keys) do
     Redix.command!(:redix, ["DEL" | keys])
+  end
+
+  def delete(key) do
+    Redix.command!(:redix, ["DEL", key])
   end
 end
