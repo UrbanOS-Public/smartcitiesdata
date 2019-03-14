@@ -1,6 +1,7 @@
 defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
+  import Checkov
 
   setup do
     mock_dataset_summaries = [
@@ -13,140 +14,92 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
   end
 
   describe "fetch dataset summaries" do
-    test "returns metadata", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/search", sort: "name_asc") |> json_response(200)
+    data_test "request to search #{inspect(params)} has #{inspect(selector)} == #{inspect(result)}",
+              %{conn: conn} do
+      response_map = conn |> get("/api/v1/dataset/search", params) |> json_response(200)
+      actual = get_in(response_map, selector)
 
-      assert actual["metadata"]["totalDatasets"] == 2
-    end
+      assert actual == result
 
-    test "returns given limit in metadata", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/search", sort: "name_asc", limit: "5") |> json_response(200)
-
-      assert actual["metadata"]["limit"] == 5
-    end
-
-    test "uses default of 10 for limit", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/search", sort: "name_asc") |> json_response(200)
-
-      assert actual["metadata"]["limit"] == 10
-    end
-
-    test "returns given offset in metadata", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/search", sort: "name_asc", offset: "5") |> json_response(200)
-
-      assert actual["metadata"]["offset"] == 5
-    end
-
-    test "uses default of 0 for offset", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/search", sort: "name_asc") |> json_response(200)
-
-      assert actual["metadata"]["offset"] == 0
-    end
-
-    test "returns organization facets", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/search", sort: "name_asc") |> json_response(200)
-
-      assert Enum.at(actual["metadata"]["facets"]["organization"], 0)["name"] == "Paul Co."
-      assert Enum.at(actual["metadata"]["facets"]["organization"], 0)["count"] == 1
-
-      assert Enum.at(actual["metadata"]["facets"]["organization"], 1)["name"] == "Richard Co."
-      assert Enum.at(actual["metadata"]["facets"]["organization"], 1)["count"] == 1
-    end
-
-    test "returns keywords facets", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/search", sort: "name_asc") |> json_response(200)
-
-      assert Enum.at(actual["metadata"]["facets"]["keywords"], 0)["name"] == "Paul keywords"
-      assert Enum.at(actual["metadata"]["facets"]["keywords"], 0)["count"] == 1
-
-      assert Enum.at(actual["metadata"]["facets"]["keywords"], 1)["name"] == "Richard keywords"
-      assert Enum.at(actual["metadata"]["facets"]["keywords"], 1)["count"] == 1
-    end
-
-    test "sort by name ascending", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/search", sort: "name_asc") |> json_response(200)
-
-      assert Enum.at(actual["results"], 0)["id"] == "Paul"
-      assert Enum.at(actual["results"], 1)["id"] == "Richard"
-    end
-
-    test "sort by name descending", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/search", sort: "name_desc") |> json_response(200)
-
-      assert Enum.at(actual["results"], 0)["id"] == "Richard"
-      assert Enum.at(actual["results"], 1)["id"] == "Paul"
-    end
-
-    test "sort by date descending", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/search", sort: "last_mod") |> json_response(200)
-
-      assert Enum.at(actual["results"], 0)["id"] == "Richard"
-      assert Enum.at(actual["results"], 1)["id"] == "Paul"
-    end
-
-    test "paginate datasets", %{conn: conn} do
-      actual =
-        conn
-        |> get("/api/v1/dataset/search", sort: "name_asc", limit: "1", offset: "0")
-        |> json_response(200)
-
-      assert Enum.at(actual["results"], 0)["id"] == "Paul"
-      assert Enum.count(actual["results"]) == 1
-    end
-
-    test "paginate datasets offset", %{conn: conn} do
-      actual =
-        conn
-        |> get("/api/v1/dataset/search", sort: "name_asc", limit: "1", offset: "1")
-        |> json_response(200)
-
-      assert Enum.at(actual["results"], 0)["id"] == "Richard"
-      assert Enum.count(actual["results"]) == 1
-    end
-
-    test "paginate datasets offset default", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/search", sort: "name_asc", limit: "1") |> json_response(200)
-
-      assert Enum.at(actual["results"], 0)["id"] == "Paul"
-      assert Enum.count(actual["results"]) == 1
-    end
-
-    test "facets in query string are used to filter the datasets", %{conn: conn} do
-      actual =
-        conn
-        |> get("/api/v1/dataset/search", facets: %{organization: ["Richard Co."]})
-        |> json_response(200)
-
-      assert Enum.at(actual["results"], 0)["id"] == "Richard"
-      assert Enum.count(actual["results"]) == 1
+      where([
+        [:params, :selector, :result],
+        [[sort: "name_asc"], ["metadata", "totalDatasets"], 2],
+        [[sort: "name_asc", limit: "5"], ["metadata", "limit"], 5],
+        [[sort: "name_asc"], ["metadata", "limit"], 10],
+        [[sort: "name_asc", offset: "5"], ["metadata", "offset"], 5],
+        [[sort: "name_asc"], ["metadata", "offset"], 0],
+        [
+          [sort: "name_asc"],
+          ["metadata", "facets", "organization", Access.all(), "name"],
+          ["Paul Co.", "Richard Co."]
+        ],
+        [
+          [sort: "name_asc"],
+          ["metadata", "facets", "organization", Access.all(), "count"],
+          [1, 1]
+        ],
+        [
+          [sort: "name_asc"],
+          ["metadata", "facets", "keywords", Access.all(), "name"],
+          ["Paul keywords", "Richard keywords"]
+        ],
+        [
+          [sort: "name_asc"],
+          ["metadata", "facets", "keywords", Access.all(), "count"],
+          [1, 1]
+        ],
+        [
+          [sort: "name_asc"],
+          ["results", Access.all(), "id"],
+          ["Paul", "Richard"]
+        ],
+        [
+          [sort: "name_desc"],
+          ["results", Access.all(), "id"],
+          ["Richard", "Paul"]
+        ],
+        [
+          [sort: "last_mod"],
+          ["results", Access.all(), "id"],
+          ["Richard", "Paul"]
+        ],
+        [
+          [sort: "name_asc", limit: "1", offset: "0"],
+          ["results", Access.all(), "id"],
+          ["Paul"]
+        ],
+        [
+          [sort: "name_asc", limit: "1", offset: "1"],
+          ["results", Access.all(), "id"],
+          ["Richard"]
+        ],
+        [
+          [sort: "name_asc", limit: "1"],
+          ["results", Access.all(), "id"],
+          ["Paul"]
+        ],
+        [
+          [facets: %{organization: ["Richard Co."]}],
+          ["results", Access.all(), "id"],
+          ["Richard"]
+        ]
+      ])
     end
   end
 
-  test "Non integer offset should throw error", %{conn: conn} do
-    actual =
-      conn
-      |> get("/api/v1/dataset/search", offset: "not a number")
-      |> json_response(400)
+  describe "fetch dataset summaries - error cases" do
+    data_test "request to search #{inspect(params)} returns a 400 with an error message",
+              %{conn: conn} do
+      actual = conn |> get("/api/v1/dataset/search", params) |> json_response(400)
+      assert Map.has_key?(actual, "message")
 
-    assert Map.has_key?(actual, "message")
-  end
-
-  test "Non integer limit should throw error", %{conn: conn} do
-    actual =
-      conn
-      |> get("/api/v1/dataset/search", limit: "not a number")
-      |> json_response(400)
-
-    assert Map.has_key?(actual, "message")
-  end
-
-  test "Non existing facets should throw error", %{conn: conn} do
-    actual =
-      conn
-      |> get("/api/v1/dataset/search", facets: %{"not a facet" => ["ignored value"]})
-      |> json_response(400)
-
-    assert Map.has_key?(actual, "message")
+      where([
+        [:params],
+        [[offset: "not a number"]],
+        [[limit: "not a number"]],
+        [[facets: %{"not a facet" => ["ignored value"]}]]
+      ])
+    end
   end
 
   defp generate_dataset(id, date) do
