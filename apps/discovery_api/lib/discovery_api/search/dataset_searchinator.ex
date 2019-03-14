@@ -1,6 +1,10 @@
 defmodule DiscoveryApi.Search.DatasetSearchinator do
+  @moduledoc false
   def search(options \\ [query: ""]) do
-    words = String.split(options[:query], " ") |> Enum.map(fn word -> String.downcase(word) end)
+    words =
+      options[:query]
+      |> String.split(" ")
+      |> Enum.map(fn word -> String.downcase(word) end)
 
     result =
       DiscoveryApi.Data.Retriever.get_datasets()

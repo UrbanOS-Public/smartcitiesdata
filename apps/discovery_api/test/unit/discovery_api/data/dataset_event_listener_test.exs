@@ -1,13 +1,15 @@
 defmodule DiscoveryApi.Data.DatasetEventListenerTest do
   use ExUnit.Case
-  import ExUnit.CaptureLog
   use Placebo
   alias DiscoveryApi.Data.DatasetEventListener
   alias DiscoveryApi.Data.DatasetDetailsHandler
 
   test "handle_message should pass RegistryMessage to dataset detail handler" do
     registry_message = create_registry_message("123")
-    expect(DatasetDetailsHandler.process_dataset_details_event(registry_message), return: {:ok, "OK"})
+
+    expect(DatasetDetailsHandler.process_dataset_details_event(registry_message),
+      return: {:ok, "OK"}
+    )
 
     DatasetEventListener.handle_message(create_kafka_event(registry_message))
   end
@@ -58,7 +60,8 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
   end
 
   defp create_kafka_event(event) do
-    Jason.encode!(event)
+    event
+    |> Jason.encode!()
     |> (fn encoded_json -> %{key: "message", value: encoded_json} end).()
   end
 end

@@ -33,6 +33,8 @@ defmodule DiscoveryApi.Mixfile do
       {:corsica, "~> 1.0"},
       {:cowboy, "~> 1.0"},
       {:csv, "~> 1.4.0"},
+      {:credo, "~> 0.10", only: [:dev, :test, :integration], runtime: false},
+      {:checkov, "~> 0.4.0"},
       {:distillery, "~> 2.0"},
       {:divo, "~> 0.2.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:gettext, "~> 0.11"},

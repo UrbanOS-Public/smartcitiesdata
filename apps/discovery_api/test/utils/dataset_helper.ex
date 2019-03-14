@@ -1,4 +1,5 @@
 defmodule DiscoveryApi.Test.Helper do
+  @moduledoc false
   alias DiscoveryApi.Data.Dataset
 
   def sample_dataset(values \\ %{}) do

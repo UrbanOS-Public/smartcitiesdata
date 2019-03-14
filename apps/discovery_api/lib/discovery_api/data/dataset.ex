@@ -1,4 +1,7 @@
 defmodule DiscoveryApi.Data.Dataset do
+  @moduledoc """
+  dataset utilities to persist and load.
+  """
   defstruct [:id, :title, :keywords, :organization, :modified, :fileTypes, :description]
 
   @name_space "discovery-api:dataset:"
@@ -21,8 +24,12 @@ defmodule DiscoveryApi.Data.Dataset do
   end
 
   def save(%__MODULE__{} = dataset) do
-    Jason.encode!(Map.from_struct(dataset))
-    |> (fn dataset_json -> Redix.command(:redix, ["SET", @name_space <> dataset.id, dataset_json]) end).()
+    dataset
+    |> Map.from_struct()
+    |> Jason.encode!()
+    |> (fn dataset_json ->
+          Redix.command(:redix, ["SET", @name_space <> dataset.id, dataset_json])
+        end).()
   end
 
   defp from_json(nil) do
@@ -30,7 +37,8 @@ defmodule DiscoveryApi.Data.Dataset do
   end
 
   defp from_json(json_string) do
-    Jason.decode!(json_string, keys: :atoms)
+    json_string
+    |> Jason.decode!(keys: :atoms)
     |> (fn map -> struct(__MODULE__, map) end).()
   end
 end

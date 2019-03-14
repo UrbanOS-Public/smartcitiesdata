@@ -1,4 +1,5 @@
 defmodule DiscoveryApiWeb.DatasetDetailController do
+  @moduledoc false
   use DiscoveryApiWeb, :controller
 
   def fetch_dataset_detail(conn, %{"dataset_id" => dataset_id}) do

@@ -13,7 +13,14 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   check_origin: false,
   watchers: []
 
-config :prestige, base_url: "https://presto.dev.internal.smartcolumbusos.com"
+config :prestige,
+  base_url: "https://presto.dev.internal.smartcolumbusos.com",
+  headers: [
+    user: "presto",
+    catalog: "hive",
+    schema: "default"
+  ],
+  log_level: :debug
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

@@ -1,9 +1,10 @@
 defmodule DiscoveryApiWeb.Router do
+  @moduledoc false
   use DiscoveryApiWeb, :router
 
   pipeline :api do
     plug(Plug.Logger)
-    plug(:accepts, ["json", "csv"])
+    plug(:accepts, ["csv", "json"])
   end
 
   pipeline :api_csv_only do
@@ -20,7 +21,7 @@ defmodule DiscoveryApiWeb.Router do
     get("/healthcheck", HealthCheckController, :index)
   end
 
-  scope "/v1/api", DiscoveryApiWeb do
+  scope "/api/v1", DiscoveryApiWeb do
     pipe_through(:api_json_only)
 
     get("/dataset/:dataset_id/preview", DatasetPreviewController, :fetch_preview)
@@ -28,9 +29,9 @@ defmodule DiscoveryApiWeb.Router do
     get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
   end
 
-  scope "/v1/api", DiscoveryApiWeb do
-    pipe_through(:api_csv_only)
+  scope "/api/v1", DiscoveryApiWeb do
+    pipe_through(:api)
 
-    get("/dataset/:dataset_id/csv", DatasetQueryController, :fetch_presto)
+    get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_presto)
   end
 end

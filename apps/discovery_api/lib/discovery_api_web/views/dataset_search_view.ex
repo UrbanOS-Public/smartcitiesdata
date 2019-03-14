@@ -1,4 +1,5 @@
 defmodule DiscoveryApiWeb.DatasetSearchView do
+  @moduledoc false
   use DiscoveryApiWeb, :view
 
   def render("search_dataset_summaries.json", %{
@@ -9,7 +10,8 @@ defmodule DiscoveryApiWeb.DatasetSearchView do
         limit: limit
       }) do
     paged_sorted_data =
-      sort_datasets(datasets, sort_by)
+      datasets
+      |> sort_datasets(sort_by)
       |> paginate(offset, limit)
       |> Enum.map(&Map.from_struct/1)
       |> Enum.map(fn data -> Map.drop(data, [:__meta__]) end)

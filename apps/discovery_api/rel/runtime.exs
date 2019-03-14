@@ -45,7 +45,7 @@ end
 config :prestige,
   base_url: presto_url,
   headers: [
-    user: "presto",
+    user: "discovery-api",
     catalog: presto_catalog,
     schema: presto_schema
   ],

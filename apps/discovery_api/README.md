@@ -25,8 +25,8 @@ docker-compose up -d
 
 ### To see the application live:
   * Go to localhost:4000/metrics
-  * Go to http://localhost:4000/v1/api/dataset/search
-  * You can get paginated results using the url http://localhost:4000/v1/api/dataset/search?offset=10&limit=5&sort=name_asc
+  * Go to http://localhost:4000/api/v1/dataset/search
+  * You can get paginated results using the url http://localhost:4000/api/v1/dataset/search?offset=10&limit=5&sort=name_asc
 
 ### Deploying to Sandbox
 
@@ -57,8 +57,8 @@ Discovery API serves as middleware between Kylo and our Data Discovery UI.
 
 ### To see the application live:
   * Go to localhost:4000/metrics
-  * Go to http://localhost:4000/v1/api/dataset/search
-  * You can get paginated results using the url http://localhost:4000/v1/api/dataset/search?offset=10&limit=5&sort=name_asc
+  * Go to http://localhost:4000/api/v1/dataset/search
+  * You can get paginated results using the url http://localhost:4000/api/v1/dataset/search?offset=10&limit=5&sort=name_asc
 
 ### Deploying to Sandbox
 

@@ -1,4 +1,5 @@
 defmodule DiscoveryApi.Search.FacetFilterator do
+  @moduledoc false
   def filter_by_facets(datasets, facets) do
     datasets
     |> Enum.filter(&dataset_contains_all_facet_values?(&1, facets))
