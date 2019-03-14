@@ -11,7 +11,7 @@ defmodule Forklift.PrestoClient do
 
     :ok
   rescue
-    e -> Logger.error("Error uploading data: #{Exception.message(e)}")
+    e -> Logger.error("Error uploading data: #{inspect(e)}")
   end
 
   defp execute_statement(statement) do
