@@ -57,19 +57,4 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
       end
     end)
   end
-
-  def parse_error_reason(reason) when is_binary(reason) do
-    case Regex.match?(~r/\bhive\b/i, reason) do
-      true -> "Something went wrong with your query."
-      _ -> reason
-    end
-  end
-
-  def parse_error_reason(%{reason: reason}) do
-    parse_error_reason(reason)
-  end
-
-  def parse_error_reason(_reason) do
-    "Your query could not be processed at this time."
-  end
 end
