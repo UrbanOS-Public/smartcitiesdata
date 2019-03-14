@@ -15,7 +15,8 @@ defmodule Forklift.MessageWriter do
 
   def handle_info(:work, state) do
     RedisClient.read_all_batched_messages()
-    |> Enum.map(&create_data_message/1)
+    |> Enum.map(&parse_data_message/1)
+    |> Enum.filter(&(&1 != :parsing_error))
     |> Enum.group_by(&extract_dataset_id/1)
     |> Enum.map(&start_upload_and_delete_task/1)
     |> Enum.each(&Task.await/1)
@@ -28,6 +29,7 @@ defmodule Forklift.MessageWriter do
     Task.Supervisor.async_nolink(Forklift.TaskSupervisor, fn ->
       redis_keys = Enum.map(key_message_pairs, fn {redis_key, msg} -> redis_key end)
       messages = Enum.map(key_message_pairs, fn {redis_key, msg} -> msg end)
+
       PrestoClient.upload_data(dataset_id, messages)
       RedisClient.delete(redis_keys)
     end)
@@ -37,9 +39,19 @@ defmodule Forklift.MessageWriter do
     key |> String.split(":") |> Enum.at(2)
   end
 
-  defp create_data_message({key, message}) do
-    {:ok, value} = DataMessage.new(message)
-    {key, value}
+  defp parse_data_message({key, message}) do
+    case DataMessage.new(message) do
+      {:ok, value} ->
+        {key, value}
+
+      _ ->
+        send_to_dead_letter_queue(message)
+        :parsing_error
+    end
+  end
+
+  defp send_to_dead_letter_queue(message) do
+    nil
   end
 
   defp schedule_work do
