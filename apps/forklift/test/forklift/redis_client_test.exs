@@ -29,4 +29,11 @@ defmodule RedisClientTest do
 
     assert RedisClient.read_all_batched_messages() == expected
   end
+
+  test "deletes records given a list of keys" do
+    keys = ["forklift:dataset:key1:5", "forklift:dataset:key2:6"]
+    expect(Redix.command!(any(), ["DEL" | keys]), return: :ok)
+
+    RedisClient.delete(keys)
+  end
 end

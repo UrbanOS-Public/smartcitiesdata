@@ -4,16 +4,11 @@ defmodule Forklift.Application do
   use Application
 
   def start(_type, _args) do
-    kaffe_group_supervisor = %{
-      id: Kaffe.GroupMemberSupervisor,
-      start: {Kaffe.GroupMemberSupervisor, :start_link, []},
-      type: :supervisor
-    }
-
     children = [
       {Registry, keys: :unique, name: Forklift.Registry},
+      {Task.Supervisor, name: Forklift.TaskSupervisor},
       redis(),
-      kaffe_group_supervisor
+      kaffe()
     ]
 
     opts = [strategy: :one_for_one, name: Forklift.Supervisor]
@@ -25,6 +20,21 @@ defmodule Forklift.Application do
     |> case do
       nil -> []
       host -> {Redix, host: host, name: :redix}
+    end
+  end
+
+  defp kaffe do
+    Application.get_env(:kaffe, :consumer)[:endpoints]
+    |> case do
+      nil ->
+        []
+
+      _ ->
+        %{
+          id: Kaffe.Consumer,
+          start: {Kaffe.Consumer, :start_link, []},
+          type: :supervisor
+        }
     end
   end
 end

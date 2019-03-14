@@ -21,10 +21,15 @@ defmodule Forklift.MessageWriter do
       {:ok, value} = DataMessage.new(message)
       {key, value}
     end)
-    |> Enum.group_by(&extract_key/1, fn {msg_key, msg} -> msg end)
-    |> Enum.each(fn {dataset_id, messages} -> PrestoClient.upload_data(dataset_id, messages) end)
+    |> Enum.group_by(&extract_key/1, fn value -> value end)
+    |> Enum.map(fn {dataset_id, messages} ->
+      Task.Supervisor.async_nolink(Forklift.TaskSupervisor, fn ->
+        PrestoClient.upload_data(dataset_id, Enum.map(messages, fn {redis_key, msg} -> msg end))
+        RedisClient.delete(Enum.map(messages, fn {redis_key, msg} -> redis_key end))
+      end)
+    end)
+    |> Enum.each(&Task.await/1)
 
-    # RedisClient.delete(dataset_id)
     schedule_work()
     {:noreply, state}
   end

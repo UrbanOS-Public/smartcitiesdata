@@ -16,7 +16,7 @@ defmodule Forklift.RedisClient do
     end)
   end
 
-  def delete(dataset_id) do
-    nil
+  def delete(keys) do
+    Redix.command!(:redix, ["DEL" | keys])
   end
 end
