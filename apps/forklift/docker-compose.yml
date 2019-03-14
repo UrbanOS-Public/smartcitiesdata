@@ -1,25 +1,32 @@
 ---
 version: '3.4'
 services:
-  # zookeeper:
-  #   image: wurstmeister/zookeeper
-  #   ports:
-  #   - "2181:2181"
-  # kafka:
-  #   image: wurstmeister/kafka
-  #   depends_on:
-  #   - zookeeper
-  #   ports:
-  #   - "9094:9094"
-  #   environment:
-  #   - "KAFKA_ADVERTISED_LISTENERS=INSIDE://:9092,OUTSIDE://localhost:9094"
-  #   - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
-  #   - "KAFKA_LISTENERS=INSIDE://:9092,OUTSIDE://:9094"
-  #   - "KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE"
-  #   - "KAFKA_CREATE_TOPICS=validated:1:1,transformed:1:1,raw:1:1"
-  #   - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181"
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+    - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka
+    depends_on:
+    - zookeeper
+    ports:
+    - "9094:9094"
+    environment:
+    - "KAFKA_ADVERTISED_LISTENERS=INSIDE://:9092,OUTSIDE://localhost:9094"
+    - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
+    - "KAFKA_LISTENERS=INSIDE://:9092,OUTSIDE://:9094"
+    - "KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE"
+    - "KAFKA_CREATE_TOPICS=validated:1:1,streaming-transformed:1:1,raw:1:1,dataset-registry:1:1"
+    - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181"
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--zookeeper", "zookeeper:2181", "--list", "||", "exit", "1"]
+      interval: 10s
+      timeout: 20s
+      retries: 3
   metastore:
     image: jeffgrunewald/metastore:1.0
+    logging:
+      driver: none
     depends_on:
     - postgres
     ports:
@@ -60,8 +67,6 @@ services:
     volumes:
     - "./divo/create_bucket.sh:/create_bucket.sh"
   presto:
-    logging:
-      driver: none
     depends_on:
     - metastore
     - minio
