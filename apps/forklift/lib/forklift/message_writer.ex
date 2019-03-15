@@ -22,7 +22,8 @@ defmodule Forklift.MessageWriter do
     |> Enum.filter(&(&1 != :parsing_error))
     |> Enum.group_by(&extract_dataset_id/1)
     |> Enum.map(&start_upload_and_delete_task/1)
-    |> Enum.each(&Task.await/1)
+    # TODO What should the timeout be for await?
+    |> Enum.each(&(Task.await(&1, 30_000)))
 
     schedule_work()
     {:noreply, state}

@@ -32,5 +32,6 @@ import_config "#{Mix.env()}.exs"
 config :prestige,
   headers: [
     catalog: "hive",
-    schema: "default"
+    schema: "default",
+    user: "foobar"
   ]

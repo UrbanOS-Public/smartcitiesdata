@@ -8,14 +8,14 @@ config :forklift,
   batch_size: 5_000,
   user: "forklift"
 
-config :prestige, base_url: "https://127.0.0.1:8080"
+config :prestige, base_url: "http://127.0.0.1:8080"
 
 config :redix,
   host: "localhost"
 
 config :kaffe,
   consumer: [
-    endpoints: [localhost: 9092],
+    endpoints: [localhost: 9094],
     topics: [data_topic, registry_topic],
     consumer_group: "forklift-group",
     message_handler: Forklift.MessageProcessor,

@@ -3,12 +3,12 @@ defmodule PersistenceTest do
   require Logger
   alias Reaper.Persistence
   alias Reaper.ReaperConfig
-  use Divo
+  use Divo.Integration
 
   @dataset_id "12345-3323"
 
   test "should insert records into Presto" do
-    Prestige.execute("create table basic (id integer)")
+    Prestige.execute("create table basic (id integer, name varchar)")
     |> Prestige.prefetch()
 
     Mockaffe.create_message(:registry, :basic) |> Mockaffe.send_to_kafka("dataset-registry")

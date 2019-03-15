@@ -9,7 +9,7 @@ defmodule Forklift.PersistenceClient do
     |> Statement.build(messages)
     |> execute_statement()
 
-    Logger.info("Writing #{inspect(Enum.count(messages))} records for #{dataset_id}")
+    Logger.info("Persisting #{inspect(Enum.count(messages))} records for #{dataset_id}")
 
     :ok
   rescue

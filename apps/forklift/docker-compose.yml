@@ -75,3 +75,7 @@ services:
     - "8080:8080"
     volumes:
     - "./divo/presto-config/:/presto/etc/"
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
