@@ -21,13 +21,15 @@ defmodule Forklift.MessageProcessor do
 
   defp process_data_message(raw_message, offset) do
     case DataMessage.new(raw_message) do
-    {:ok, message} -> CacheClient.write(raw_message, message.dataset_id, offset)
-    {:error, reason} ->
-      DeadLetterQueue.enqueue(raw_message)
-      Logger.warn("Failed to parse message: #{reason} : #{raw_message}")
+      {:ok, message} ->
+        CacheClient.write(raw_message, message.dataset_id, offset)
+
+      {:error, reason} ->
+        DeadLetterQueue.enqueue(raw_message)
+        Logger.warn("Failed to parse message: #{reason} : #{raw_message}")
     end
   end
-  
+
   def process_registry_message(value) do
     with {:ok, registry_message} <- RegistryMessage.new(value) do
       DatasetRegistryServer.send_message(registry_message)

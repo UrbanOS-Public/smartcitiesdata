@@ -23,18 +23,22 @@ defmodule Forklift.MessageWriterTest do
     MessageWriter.handle_info(:work, %{})
   end
 
+  @moduletag capture_log: true
   test "sends malformed messages to dead letter queue" do
     redis_key = "forklift:dataset:KeyA:5"
 
     malformed_messages =
-      create_messages(redis_key)
+      redis_key
+      |> create_messages()
       |> Enum.map(fn {key, message} -> {key, String.replace(message, "a", "z")} end)
 
     allow(CacheClient.read_all_batched_messages(), return: malformed_messages)
     expect(CacheClient.delete(redis_key), return: :ok)
 
-    expect(DeadLetterQueue.enqueue(Enum.at(malformed_messages, 0) |> elem(1)), return: :ok)
-    expect(DeadLetterQueue.enqueue(Enum.at(malformed_messages, 1) |> elem(1)), return: :ok)
+    malformed_0 = malformed_messages |> Enum.at(0) |> elem(1)
+    malformed_1 = malformed_messages |> Enum.at(1) |> elem(1)
+    expect(DeadLetterQueue.enqueue(malformed_0), return: :ok)
+    expect(DeadLetterQueue.enqueue(malformed_1), return: :ok)
 
     MessageWriter.handle_info(:work, %{})
   end

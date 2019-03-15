@@ -3,6 +3,7 @@ defmodule Forklift.MessageWriter do
   alias Forklift.{CacheClient, PersistenceClient, DeadLetterQueue}
   alias SCOS.DataMessage
   use GenServer
+  require Logger
 
   def start_link(_args) do
     GenServer.start_link(__MODULE__, [])
@@ -33,6 +34,7 @@ defmodule Forklift.MessageWriter do
       _ ->
         DeadLetterQueue.enqueue(message)
         CacheClient.delete(key)
+        Logger.warn("Failed to parse cached message: #{message}")
         :parsing_error
     end
   end

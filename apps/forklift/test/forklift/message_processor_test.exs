@@ -20,12 +20,12 @@ defmodule MessageProcessorTest do
     MessageProcessor.handle_messages([kaffe_message])
   end
 
-
   @moduletag capture_log: true
   test "malformed messages are sent to dead letter queue" do
-    message = Mockaffe.create_message(:data, :basic)
-    malformed_kaffe_message = Helper.make_kafka_message(message, "streaming-transformed")
-    |> Map.update(:value, "", &(String.replace(&1, "a", "z")))
+    malformed_kaffe_message =
+      Mockaffe.create_message(:data, :basic)
+      |> (fn message -> Helper.make_kafka_message(message, "streaming-transformed") end).()
+      |> Map.update(:value, "", &String.replace(&1, "a", "z"))
 
     expect(DeadLetterQueue.enqueue(any()), return: :ok)
 
