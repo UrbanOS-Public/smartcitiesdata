@@ -2,7 +2,7 @@ defmodule MessageProcessorTest do
   use ExUnit.Case
   use Placebo
 
-  alias Forklift.{MessageProcessor, CacheClient}
+  alias Forklift.{MessageProcessor, CacheClient, DeadLetterQueue}
 
   test "data messages are sent to cache client" do
     message = Mockaffe.create_message(:data, :basic)
@@ -21,4 +21,14 @@ defmodule MessageProcessorTest do
   end
 
 
+  @moduletag capture_log: true
+  test "malformed messages are sent to dead letter queue" do
+    message = Mockaffe.create_message(:data, :basic)
+    malformed_kaffe_message = Helper.make_kafka_message(message, "streaming-transformed")
+    |> Map.update(:value, "", &(String.replace(&1, "a", "z")))
+
+    expect(DeadLetterQueue.enqueue(any()), return: :ok)
+
+    MessageProcessor.handle_messages([malformed_kaffe_message])
+  end
 end

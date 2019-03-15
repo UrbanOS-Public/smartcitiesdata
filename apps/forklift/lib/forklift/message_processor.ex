@@ -1,7 +1,7 @@
 defmodule Forklift.MessageProcessor do
   @moduledoc false
   require Logger
-  alias Forklift.{MessageAccumulator, DatasetRegistryServer, CacheClient}
+  alias Forklift.{MessageAccumulator, DatasetRegistryServer, CacheClient, DeadLetterQueue}
   alias SCOS.{RegistryMessage, DataMessage}
 
   @data_topic Application.get_env(:forklift, :data_topic)
@@ -20,13 +20,14 @@ defmodule Forklift.MessageProcessor do
   end
 
   defp process_data_message(raw_message, offset) do
-    with {:ok, message} <- DataMessage.new(raw_message) do
-      CacheClient.write(raw_message, message.dataset_id, offset)
-    else
-      {:error, reason} -> Logger.warn("Failed to parse message: #{reason} : #{raw_message}")
+    case DataMessage.new(raw_message) do
+    {:ok, message} -> CacheClient.write(raw_message, message.dataset_id, offset)
+    {:error, reason} ->
+      DeadLetterQueue.enqueue(raw_message)
+      Logger.warn("Failed to parse message: #{reason} : #{raw_message}")
     end
   end
-
+  
   def process_registry_message(value) do
     with {:ok, registry_message} <- RegistryMessage.new(value) do
       DatasetRegistryServer.send_message(registry_message)
