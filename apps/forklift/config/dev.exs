@@ -1,5 +1,8 @@
 use Mix.Config
 
+data_topic = "streaming-transformed"
+registry_topic = "dataset-registry"
+
 config :forklift,
   timeout: 15_000,
   batch_size: 5_000,

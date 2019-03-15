@@ -1,4 +1,4 @@
-defmodule Forklift.RedisClient do
+defmodule Forklift.CacheClient do
   @moduledoc false
 
   @data_name_space "forklift:dataset"

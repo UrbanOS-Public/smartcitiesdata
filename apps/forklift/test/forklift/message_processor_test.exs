@@ -2,12 +2,9 @@ defmodule MessageProcessorTest do
   use ExUnit.Case
   use Placebo
 
-  alias Forklift.{MessageAccumulator, MessageProcessor, CacheClient}
+  alias Forklift.{MessageProcessor, CacheClient}
 
-  test "data messages are sent to redis client" do
-    allow(MessageAccumulator.start_link(any()), return: {:ok, :pid_placeholder})
-    allow(MessageAccumulator.send_message(any(), any()), return: :ok)
-
+  test "data messages are sent to cache client" do
     message = Mockaffe.create_message(:data, :basic)
     kaffe_message = Helper.make_kafka_message(message, "streaming-transformed")
 
@@ -23,5 +20,5 @@ defmodule MessageProcessorTest do
     MessageProcessor.handle_messages([kaffe_message])
   end
 
-  # TODO Test that malformed messages are sent to dead letter
+
 end
