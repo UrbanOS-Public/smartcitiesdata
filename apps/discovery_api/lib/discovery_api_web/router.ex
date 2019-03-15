@@ -27,6 +27,7 @@ defmodule DiscoveryApiWeb.Router do
     get("/dataset/:dataset_id/preview", DatasetPreviewController, :fetch_preview)
     get("/dataset/search", DatasetSearchController, :search)
     get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
+    get("/data_json", DataJsonController, :get_data_json)
   end
 
   scope "/api/v1", DiscoveryApiWeb do

@@ -12,7 +12,9 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   secret_key_base: "7Qfvr6quFJ6Qks3FGiLMnm/eNV8K66yMVpkU46lCZ2rKj0YR9ksjxsB+SX3qHZre",
   render_errors: [view: DiscoveryApiWeb.ErrorView, accepts: ~w(json)],
   pubsub: [name: DiscoveryApi.PubSub, adapter: Phoenix.PubSub.PG2],
-  instrumenters: [DiscoveryApiWeb.Endpoint.Instrumenter]
+  instrumenters: [DiscoveryApiWeb.Endpoint.Instrumenter],
+  http: [port: 4000],
+  url: [host: {:system, "HOST"}, port: {:system, "PORT"}]
 
 # Configures Elixir's Logger
 config :logger, :console,

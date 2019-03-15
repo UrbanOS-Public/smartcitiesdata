@@ -40,9 +40,9 @@ defmodule DiscoveryApi.Mixfile do
       {:gettext, "~> 0.11"},
       {:httpoison, "~> 1.5"},
       {:jason, "~> 1.1"},
-      {:kaffe, "~> 1.9"},
-      {:faker, "~> 0.12", only: [:test, :integration]},
+      {:kaffe, "~> 1.9.1"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
+      {:mockaffe, "~> 0.3.2", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:patiently, "~> 0.2.0"},
       {:phoenix, "~> 1.3.3"},
       {:phoenix_pubsub, "~> 1.0"},
@@ -54,7 +54,8 @@ defmodule DiscoveryApi.Mixfile do
       {:prometheus_phoenix, "~>1.2.0"},
       {:redix, "~> 0.9.2"},
       {:streaming_metrics, path: "streaming_metrics"},
-      {:scos_ex, "~> 0.4.2", organization: "smartcolumbus_os"}
+      {:scos_ex, "~> 1.0", organization: "smartcolumbus_os"},
+      {:ex_json_schema, "~> 0.5.7", only: [:test, :integration]}
     ]
   end
 

@@ -37,7 +37,7 @@ defmodule DiscoveryApi.Data.DatasetTest do
     assert actual_dataset == dataset
   end
 
-  test "get should return nil when datsaet does not exist" do
+  test "get should return nil when dataset does not exist" do
     actual_dataset = Dataset.get("123456")
 
     assert nil == actual_dataset
