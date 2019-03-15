@@ -1,8 +1,8 @@
-defmodule RedisClientTest do
+defmodule CacheClientTest do
   use ExUnit.Case
   use Placebo
 
-  alias Forklift.RedisClient
+  alias Forklift.CacheClient
 
   test "inserts into redis" do
     message = Mockaffe.create_message(:data, :basic) |> Jason.encode!()
@@ -12,7 +12,7 @@ defmodule RedisClientTest do
     key = "forklift:dataset:#{dataset_id}:#{offset}"
     expect(Redix.command!(any(), ["SET", key, message]), return: :ok)
 
-    RedisClient.write(message, dataset_id, offset)
+    CacheClient.write(message, dataset_id, offset)
   end
 
   test "reads all data messages from redis" do
@@ -27,20 +27,20 @@ defmodule RedisClientTest do
       {"forklift:dataset:key2:6", "v2"}
     ]
 
-    assert RedisClient.read_all_batched_messages() == expected
+    assert CacheClient.read_all_batched_messages() == expected
   end
 
   test "deletes records given a list of keys" do
     keys = ["forklift:dataset:key1:5", "forklift:dataset:key2:6"]
     expect(Redix.command!(any(), ["DEL" | keys]), return: :ok)
 
-    RedisClient.delete(keys)
+    CacheClient.delete(keys)
   end
 
   test "deletes records given a single key" do
     key = "forklift:dataset:key2:6"
     expect(Redix.command!(any(), ["DEL", key]), return: :ok)
 
-    RedisClient.delete(key)
+    CacheClient.delete(key)
   end
 end

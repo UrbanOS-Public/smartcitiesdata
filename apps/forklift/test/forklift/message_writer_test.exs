@@ -2,7 +2,7 @@ defmodule Forklift.MessageWriterTest do
   use ExUnit.Case, async: false
   use Placebo
 
-  alias Forklift.{PrestoClient, MessageWriter, RedisClient, DeadLetterQueue}
+  alias Forklift.{PersistenceClient, MessageWriter, CacheClient, DeadLetterQueue}
 
   test "happy path is successful" do
     redis_key_a = "forklift:dataset:KeyA:5"
@@ -10,15 +10,15 @@ defmodule Forklift.MessageWriterTest do
     messages_a = create_messages(redis_key_a)
     messages_b = create_messages(redis_key_b)
 
-    allow(RedisClient.read_all_batched_messages(), return: messages_a ++ messages_b)
-    expect(RedisClient.delete([redis_key_a, redis_key_a]), return: :ok)
-    expect(RedisClient.delete([redis_key_b, redis_key_b]), return: :ok)
+    allow(CacheClient.read_all_batched_messages(), return: messages_a ++ messages_b)
+    expect(CacheClient.delete([redis_key_a, redis_key_a]), return: :ok)
+    expect(CacheClient.delete([redis_key_b, redis_key_b]), return: :ok)
 
     expected_for_id_a = create_presto_expectation(messages_a)
     expected_for_id_b = create_presto_expectation(messages_b)
 
-    expect(PrestoClient.upload_data("KeyA", expected_for_id_a), return: :ok)
-    expect(PrestoClient.upload_data("KeyB", expected_for_id_b), return: :ok)
+    expect(PersistenceClient.upload_data("KeyA", expected_for_id_a), return: :ok)
+    expect(PersistenceClient.upload_data("KeyB", expected_for_id_b), return: :ok)
 
     MessageWriter.handle_info(:work, %{})
   end
@@ -30,8 +30,8 @@ defmodule Forklift.MessageWriterTest do
       create_messages(redis_key)
       |> Enum.map(fn {key, message} -> {key, String.replace(message, "a", "z")} end)
 
-    allow(RedisClient.read_all_batched_messages(), return: malformed_messages)
-    expect(RedisClient.delete(redis_key), return: :ok)
+    allow(CacheClient.read_all_batched_messages(), return: malformed_messages)
+    expect(CacheClient.delete(redis_key), return: :ok)
 
     expect(DeadLetterQueue.enqueue(Enum.at(malformed_messages, 0) |> elem(1)), return: :ok)
     expect(DeadLetterQueue.enqueue(Enum.at(malformed_messages, 1) |> elem(1)), return: :ok)

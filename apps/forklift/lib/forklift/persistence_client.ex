@@ -1,4 +1,4 @@
-defmodule Forklift.PrestoClient do
+defmodule Forklift.PersistenceClient do
   @moduledoc false
   require Logger
   alias Forklift.{DatasetRegistryServer, Statement}

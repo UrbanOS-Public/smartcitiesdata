@@ -1,6 +1,6 @@
 defmodule Forklift.MessageWriter do
   @moduledoc false
-  alias Forklift.{RedisClient, PrestoClient, DeadLetterQueue}
+  alias Forklift.{CacheClient, PersistenceClient, DeadLetterQueue}
   alias SCOS.DataMessage
   use GenServer
 
@@ -14,7 +14,7 @@ defmodule Forklift.MessageWriter do
   end
 
   def handle_info(:work, state) do
-    RedisClient.read_all_batched_messages()
+    CacheClient.read_all_batched_messages()
     |> Enum.map(&parse_data_message/1)
     |> Enum.filter(&(&1 != :parsing_error))
     |> Enum.group_by(&extract_dataset_id/1)
@@ -32,7 +32,7 @@ defmodule Forklift.MessageWriter do
 
       _ ->
         DeadLetterQueue.enqueue(message)
-        RedisClient.delete(key)
+        CacheClient.delete(key)
         :parsing_error
     end
   end
@@ -46,8 +46,8 @@ defmodule Forklift.MessageWriter do
       redis_keys = Enum.map(key_message_pairs, fn {redis_key, msg} -> redis_key end)
       messages = Enum.map(key_message_pairs, fn {redis_key, msg} -> msg end)
 
-      PrestoClient.upload_data(dataset_id, messages)
-      RedisClient.delete(redis_keys)
+      PersistenceClient.upload_data(dataset_id, messages)
+      CacheClient.delete(redis_keys)
     end)
   end
 
