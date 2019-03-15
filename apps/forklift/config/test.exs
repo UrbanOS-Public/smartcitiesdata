@@ -1,8 +1,8 @@
 use Mix.Config
 
 config :forklift,
-  timeout: 10,
-  batch_size: 1,
+  # To ensure that MessageWriter never starts while testing
+  timeout: 1_000_000_000,
   user: "foobar"
 
 config :prestige,

@@ -9,6 +9,8 @@ defmodule Forklift.PersistenceClient do
     |> Statement.build(messages)
     |> execute_statement()
 
+    Logger.info("Writing #{inspect(Enum.count(messages))} records for #{dataset_id}")
+
     :ok
   rescue
     e -> Logger.error("Error uploading data: #{Exception.message(e)}")

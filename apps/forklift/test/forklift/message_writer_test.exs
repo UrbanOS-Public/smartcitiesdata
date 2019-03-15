@@ -55,7 +55,7 @@ defmodule Forklift.MessageWriterTest do
     |> Enum.map(&elem(&1, 1))
     |> Enum.map(fn x ->
       {:ok, msg} = SCOS.DataMessage.new(x)
-      msg
+      msg.payload
     end)
   end
 end
