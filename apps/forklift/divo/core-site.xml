@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+    <configuration>
+
+      <!-- <property>
+        <name>fs.defaultFS</name>
+        <value>s3a://kdp-cloud-storage</value>
+        <final>true</final>
+      </property> -->
+      <property>
+        <name>fs.s3a.endpoint</name>
+        <value>http://minio:9000</value>
+      </property>
+      <property>
+        <name>fs.s3a.access.key</name>
+        <value>admin</value>
+      </property>
+      <property>
+        <name>fs.s3a.secret.key</name>
+        <value>V8f1CwQqAcwo80UEIJEjc5gVQUSSx5ohQ9GSrr12</value>
+      </property>
+
+      <property>
+        <name>fs.s3a.impl</name>
+        <value>org.apache.hadoop.fs.s3a.S3AFileSystem</value>
+      </property>
+
+      <property>
+        <name>fs.AbstractFileSystem.s3a.imp</name>
+        <value>org.apache.hadoop.fs.s3a.S3A</value>
+      </property>
+
+      <property>
+        <name>fs.trash.interval</name>
+        <value>4320</value>
+      </property>
+
+      <property>
+        <name>fs.s3a.fast.upload</name>
+        <value>true</value>
+      </property>
+    
+      <property>
+        <name>fs.s3a.fast.upload.buffer</name>
+        <value>disk</value>
+      </property>
+
+      <property>
+        <name>fs.s3a.multipart.size</name>
+        <value>67108864</value>
+      </property>
+
+      <property>
+        <name>fs.s3a.path.style.access</name>
+        <value>true</value>
+      </property>
+
+      <property>
+        <name>hive.s3.ssl.enabled</name>
+        <value>false</value>
+      </property>
+
+    </configuration>

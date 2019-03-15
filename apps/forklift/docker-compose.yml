@@ -1,37 +1,77 @@
 ---
-version: '2'
+version: '3.4'
 services:
   zookeeper:
     image: wurstmeister/zookeeper
     ports:
-      - "2181:2181"
+    - "2181:2181"
   kafka:
-    image: wurstmeister/kafka:latest
+    image: wurstmeister/kafka
+    depends_on:
+    - zookeeper
     ports:
-      - "9092:9092"
+    - "9094:9094"
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: localhost
-      KAFKA_CREATE_TOPICS: "dataset-registry:1:1,streaming-transformed:1:1"
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-  aws:
-    image: localstack/localstack:0.8.7
+    - "KAFKA_ADVERTISED_LISTENERS=INSIDE://:9092,OUTSIDE://localhost:9094"
+    - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
+    - "KAFKA_LISTENERS=INSIDE://:9092,OUTSIDE://:9094"
+    - "KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE"
+    - "KAFKA_CREATE_TOPICS=streaming-transformed:1:1,dataset-registry:1:1"
+    - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181"
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--zookeeper", "zookeeper:2181", "--list", "||", "exit", "1"]
+      interval: 10s
+      timeout: 20s
+      retries: 3
+  metastore:
+    image: jeffgrunewald/metastore:1.0
+    logging:
+      driver: none
+    depends_on:
+    - postgres
+    ports:
+    - "9083:9083"
+    volumes:
+    - "./divo/metastore-site.xml:/opt/hive-metastore/conf/metastore-site.xml"
+    - "./divo/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml"
+    command: >
+      /bin/bash -c "
+        /opt/hive-metastore/bin/schematool -dbType postgres -validate || /opt/hive-metastore/bin/schematool -dbType postgres -initSchema;
+        /opt/hive-metastore/bin/start-metastore"
+  postgres:
+    logging:
+      driver: none
+    image: postgres
+    ports:
+    - "5432:5432"
     environment:
-      SERVICES: "cloudwatch"
+    - "POSTGRES_PASSWORD=password123"
+    - "POSTGRES_USER=hive"
+    - "POSTGRES_DB=metastore"
+  minio:
+    image: minio/minio
     ports:
-      - 4582:4582
-      - 8080:8080
-  # producer:
-  #   build:
-  #     context: .
-  #   image: producer
-  #   depends_on:
-  #     - kafka
-  #     - aws
-  #   ports:
-  #     - 4000:4000
-  #   environment:
-  #     KAFKA_BROKERS: "kafka:9093"
-  redis:
-    image: redis:latest
+    - "9000:9000"
+    environment:
+    - "MINIO_ACCESS_KEY=admin"
+    - "MINIO_SECRET_KEY=V8f1CwQqAcwo80UEIJEjc5gVQUSSx5ohQ9GSrr12"
+    volumes:
+    - "./divo/minio/data:/data"
+    - "./divo:/root/.minio"
+    command: server /data
+  mini-worker:
+    depends_on:
+    - minio
+    image: alpine:3.8
+    command: /bin/sh /create_bucket.sh
+    volumes:
+    - "./divo/create_bucket.sh:/create_bucket.sh"
+  presto:
+    depends_on:
+    - metastore
+    - minio
+    image: jeffgrunewald/presto:1.1
     ports:
-      - "6379:6379"
+    - "8080:8080"
+    volumes:
+    - "./divo/presto-config/:/presto/etc/"
