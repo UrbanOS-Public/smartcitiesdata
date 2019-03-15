@@ -7,7 +7,6 @@ registry_topic = "dataset-registry"
 
 config :forklift,
   timeout: 60_000,
-  batch_size: 5_000,
   data_topic: data_topic,
   registry_topic: registry_topic
 

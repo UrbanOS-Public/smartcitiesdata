@@ -5,6 +5,8 @@ defmodule Forklift.MessageWriter do
   use GenServer
   require Logger
 
+  @timeout Application.get_env(:forklift, :timeout)
+
   def start_link(_args) do
     GenServer.start_link(__MODULE__, [])
   end
@@ -54,6 +56,6 @@ defmodule Forklift.MessageWriter do
   end
 
   defp schedule_work do
-    Process.send_after(self(), :work, 60_000)
+    Process.send_after(self(), :work, @timeout)
   end
 end
