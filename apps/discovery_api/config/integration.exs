@@ -10,8 +10,7 @@ System.put_env("HOST", host)
 
 endpoints = [{to_char_list(host), 9092}]
 
-config :discovery_api, DiscoveryApiWeb.Endpoint,
-  url: [host: "discoveryapi.integrationtests.com", port: {:system, "PORT"}]
+config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: "integrationtests.example.com", port: {:system, "PORT"}]
 
 config :redix,
   host: host

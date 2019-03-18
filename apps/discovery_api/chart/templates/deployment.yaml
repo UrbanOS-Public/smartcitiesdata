@@ -36,3 +36,5 @@ spec:
             value: {{ .Values.presto.catalog }}
           - name: PRESTO_SCHEMA
             value: {{ .Values.presto.schema }}
+          - name: HOST
+            value: {{ .Values.ingress.dnsZone }}

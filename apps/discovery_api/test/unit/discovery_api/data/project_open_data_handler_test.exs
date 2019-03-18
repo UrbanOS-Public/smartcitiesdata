@@ -3,8 +3,6 @@ defmodule DiscoveryApi.Data.ProjectOpenDataHandlerTest do
   use Placebo
   alias DiscoveryApi.Data.ProjectOpenDataHandler
 
-  @base_url Application.get_env(:discovery_api, DiscoveryApiWeb.Endpoint)[:url][:host]
-
   test "saves project open data to redis" do
     registry_message = %SCOS.RegistryMessage{
       id: "myfancydata",
@@ -41,12 +39,12 @@ defmodule DiscoveryApi.Data.ProjectOpenDataHandlerTest do
         "distribution" => [
           %{
             "@type" => "dcat:Distribution",
-            "accessURL" => "https://#{@base_url}/api/v1/#{registry_message.id}/download?_format=json",
+            "accessURL" => "https://discoveryapi.tests.example.com/api/v1/#{registry_message.id}/download?_format=json",
             "mediaType" => "application/json"
           },
           %{
             "@type" => "dcat:Distribution",
-            "accessURL" => "https://#{@base_url}/api/v1/#{registry_message.id}/download?_format=csv",
+            "accessURL" => "https://discoveryapi.tests.example.com/api/v1/#{registry_message.id}/download?_format=csv",
             "mediaType" => "text/csv"
           }
         ]

@@ -1,6 +1,6 @@
 provider "aws" {
   version = "1.39"
-  region = "${var.region}"
+  region  = "${var.region}"
 
   assume_role {
     role_arn = "${var.role_arn}"
@@ -8,7 +8,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias = "alm"
+  alias   = "alm"
   version = "1.39"
   region  = "${var.alm_region}"
 
@@ -30,20 +30,20 @@ data "terraform_remote_state" "alm_remote_state" {
 }
 
 data "terraform_remote_state" "env_remote_state" {
-  backend = "s3"
+  backend   = "s3"
   workspace = "${terraform.workspace}"
 
   config {
-    bucket = "${var.alm_state_bucket_name}"
-    key = "operating-system"
-    region = "us-east-2"
+    bucket   = "${var.alm_state_bucket_name}"
+    key      = "operating-system"
+    region   = "us-east-2"
     role_arn = "${var.alm_role_arn}"
   }
 }
 
 resource "local_file" "kubeconfig" {
   filename = "${path.module}/outputs/kubeconfig"
-  content = "${data.terraform_remote_state.env_remote_state.eks_cluster_kubeconfig}"
+  content  = "${data.terraform_remote_state.env_remote_state.eks_cluster_kubeconfig}"
 }
 
 data "aws_secretsmanager_secret_version" "discovery_api_user_password" {
@@ -53,6 +53,7 @@ data "aws_secretsmanager_secret_version" "discovery_api_user_password" {
 
 resource "local_file" "helm_vars" {
   filename = "${path.module}/outputs/${terraform.workspace}.yaml"
+
   content = <<EOF
 kyloCreds:
   user: "sa-discovery-api"
@@ -76,7 +77,6 @@ ingress:
   port: 80
 EOF
 }
-
 
 resource "null_resource" "helm_deploy" {
   provisioner "local-exec" {
@@ -136,4 +136,3 @@ variable "alm_workspace" {
   description = "The workspace to pull ALM outputs from"
   default     = "alm"
 }
-

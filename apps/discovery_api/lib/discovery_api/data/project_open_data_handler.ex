@@ -3,9 +3,9 @@ defmodule DiscoveryApi.Data.ProjectOpenDataHandler do
   alias DiscoveryApi.Data.Persistence
   @name_space "discovery-api:project-open-data:"
 
-  @base_url Application.get_env(:discovery_api, DiscoveryApiWeb.Endpoint)[:url][:host]
-
   def process_project_open_data_event(registry_message) do
+    base_url = Application.get_env(:discovery_api, DiscoveryApiWeb.Endpoint)[:url][:host]
+
     podms_map = %{
       "@type" => "dcat:Dataset",
       "title" => registry_message.business.dataTitle,
@@ -26,12 +26,12 @@ defmodule DiscoveryApi.Data.ProjectOpenDataHandler do
       "distribution" => [
         %{
           "@type" => "dcat:Distribution",
-          "accessURL" => "https://#{@base_url}/api/v1/#{registry_message.id}/download?_format=json",
+          "accessURL" => "https://discoveryapi.#{base_url}/api/v1/#{registry_message.id}/download?_format=json",
           "mediaType" => "application/json"
         },
         %{
           "@type" => "dcat:Distribution",
-          "accessURL" => "https://#{@base_url}/api/v1/#{registry_message.id}/download?_format=csv",
+          "accessURL" => "https://discoveryapi.#{base_url}/api/v1/#{registry_message.id}/download?_format=csv",
           "mediaType" => "text/csv"
         }
       ]

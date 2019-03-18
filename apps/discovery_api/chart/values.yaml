@@ -8,7 +8,7 @@ ingress:
   scheme: ""
   subnets: ""
   security_groups: "" #Load balancer Security Group
-  dns_zone: ""
+  dnsZone: ""
   certificate_arn: ""
 
 image:

@@ -1,5 +1,7 @@
 use Mix.Config
 
+config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: System.get_env("HOST"), port: System.get_env("PORT")]
+
 presto_url = System.get_env("PRESTO_URL") |> IO.inspect(label: "PRESTO URL")
 presto_catalog = System.get_env("PRESTO_CATALOG") |> IO.inspect(label: "runtime.exs:4")
 presto_schema = System.get_env("PRESTO_SCHEMA")
@@ -38,7 +40,8 @@ if kafka_brokers do
       consumer_group: System.get_env("KAFKA_CONSUMER_GROUP") || "discovery-dataset-consumer",
       message_handler: DiscoveryApi.Data.DatasetEventListener,
       rebalance_delay_ms: 10_000,
-      start_with_earliest_message: true
+      start_with_earliest_message: true,
+      offset_reset_policy: :reset_to_earliest
     ]
 end
 

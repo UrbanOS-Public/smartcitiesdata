@@ -36,7 +36,7 @@ defmodule DiscoveryApi.Mixfile do
       {:credo, "~> 0.10", only: [:dev, :test, :integration], runtime: false},
       {:checkov, "~> 0.4.0"},
       {:distillery, "~> 2.0"},
-      {:divo, "~> 1.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
+      {:divo, "~> 1.0", only: [:integration], organization: "smartcolumbus_os"},
       {:gettext, "~> 0.11"},
       {:httpoison, "~> 1.5"},
       {:jason, "~> 1.1"},
