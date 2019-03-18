@@ -3,19 +3,19 @@ defmodule PersistenceTest do
   require Logger
   alias Reaper.Persistence
   alias Reaper.ReaperConfig
-  use Divo.Integration
-
-  @dataset_id "12345-3323"
+  use Divo
 
   test "should insert records into Presto" do
     Prestige.execute("create table basic (id integer, name varchar)")
     |> Prestige.prefetch()
 
     Mockaffe.create_message(:registry, :basic) |> Mockaffe.send_to_kafka("dataset-registry")
-    Mockaffe.create_message(:data, :basic) |> Mockaffe.send_to_kafka("streaming-transformed")
+
+    %{payload: %{"id" => id, "name" => name}} = data = Mockaffe.create_message(:data, :basic)
+    Mockaffe.send_to_kafka(data, "streaming-transformed")
 
     Patiently.wait_for!(
-      prestige_query("select * from basic", [""]),
+      prestige_query("select * from basic", [[id, name]]),
       dwell: 1000,
       max_tries: 20
     )
@@ -28,7 +28,7 @@ defmodule PersistenceTest do
         |> Prestige.execute()
         |> Prestige.prefetch()
 
-      Logger.info("Waiting for #{actual} to equal #{expected}")
+      Logger.info("Waiting for #{inspect(actual)} to equal #{inspect(expected)}")
 
       try do
         assert actual == expected

@@ -56,7 +56,6 @@ services:
     - "MINIO_ACCESS_KEY=admin"
     - "MINIO_SECRET_KEY=V8f1CwQqAcwo80UEIJEjc5gVQUSSx5ohQ9GSrr12"
     volumes:
-    - "./divo/minio/data:/data"
     - "./divo:/root/.minio"
     command: server /data
   mini-worker:
