@@ -122,8 +122,6 @@ defmodule Reaper.FullTest do
       _ ->
         flunk("Should have put a valid DateTime into redis")
     end
-
-    # DateTime.utc_now() - result["timetamp"] < 5000
   end
 
   test "configures and ingests a json source" do
