@@ -16,6 +16,7 @@ defmodule AndiWeb.DatasetControllerTest do
         "orgName" => "org",
         "stream" => false,
         "sourceUrl" => "https://example.com",
+        "sourceType" => "stream",
         "sourceFormat" => "gtfs",
         "cadence" => 9000
       },
@@ -41,6 +42,7 @@ defmodule AndiWeb.DatasetControllerTest do
         "stream" => false,
         "sourceUrl" => "https://example.com",
         "sourceFormat" => "gtfs",
+        "sourceType" => "stream",
         "cadence" => 9000,
         "headers" => %{},
         "queryParams" => %{},
