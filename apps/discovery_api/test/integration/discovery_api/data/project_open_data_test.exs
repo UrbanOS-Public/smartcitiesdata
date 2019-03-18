@@ -1,6 +1,6 @@
 defmodule DiscoveryApi.Data.ProjectOpenDataTest do
   use ExUnit.Case
-  use Divo.Integration
+  use Divo
 
   @source_topic "dataset-registry"
   @name_space "discovery-api:project-open-data:"
@@ -36,8 +36,6 @@ defmodule DiscoveryApi.Data.ProjectOpenDataTest do
       technical: %{dataName: "", orgName: "", systemName: "", stream: "", sourceUrl: "", sourceFormat: ""}
     }
 
-    # Watching the leader log is causing intermittent failures. Adding a sleep until we upgrade divo to health check
-    Process.sleep(2000)
     Mockaffe.send_to_kafka(dataset, @source_topic)
     Mockaffe.send_to_kafka(dataset2, @source_topic)
 

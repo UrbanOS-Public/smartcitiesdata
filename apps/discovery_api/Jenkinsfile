@@ -32,7 +32,7 @@ node ('infrastructure') {
                 mix local.rebar --force
                 mix hex.organization auth smartcolumbus_os --key $HEX_TOKEN
                 mix deps.get
-                MIX_ENV=integration mix test
+                MIX_ENV=integration mix test --no-start
                 ''')
             }
         }
