@@ -5,7 +5,8 @@ defmodule Forklift.MessageWriter do
   use GenServer
   require Logger
 
-  @timeout Application.get_env(:forklift, :timeout)
+  @message_processing_cadence Application.get_env(:forklift, :message_processing_cadence)
+  @persistence_timeout Application.get_env(:forklift, :persistence_timeout)
 
   def start_link(_args) do
     GenServer.start_link(__MODULE__, [])
@@ -22,8 +23,7 @@ defmodule Forklift.MessageWriter do
     |> Enum.filter(&(&1 != :parsing_error))
     |> Enum.group_by(&extract_dataset_id/1)
     |> Enum.map(&start_upload_and_delete_task/1)
-    # TODO What should the timeout be for await?
-    |> Enum.each(&(Task.await(&1, 30_000)))
+    |> Enum.each(&Task.await(&1, @persistence_timeout))
 
     schedule_work()
     {:noreply, state}
@@ -57,6 +57,6 @@ defmodule Forklift.MessageWriter do
   end
 
   defp schedule_work do
-    Process.send_after(self(), :work, @timeout)
+    Process.send_after(self(), :work, @message_processing_cadence)
   end
 end

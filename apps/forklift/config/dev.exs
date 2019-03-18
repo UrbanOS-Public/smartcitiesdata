@@ -4,8 +4,7 @@ data_topic = "streaming-transformed"
 registry_topic = "dataset-registry"
 
 config :forklift,
-  timeout: 15_000,
-  batch_size: 5_000,
+  message_processing_cadence: 15_000,
   user: "forklift"
 
 config :prestige, base_url: "http://127.0.0.1:8080"
