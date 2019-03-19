@@ -48,8 +48,8 @@ defmodule Forklift.MessageWriter do
 
   defp start_upload_and_delete_task({dataset_id, key_message_pairs}) do
     Task.Supervisor.async_nolink(Forklift.TaskSupervisor, fn ->
-      redis_keys = Enum.map(key_message_pairs, fn {redis_key, msg} -> redis_key end)
-      data = Enum.map(key_message_pairs, fn {redis_key, msg} -> msg.payload end)
+      redis_keys = Enum.map(key_message_pairs, fn {redis_key, _msg} -> redis_key end)
+      data = Enum.map(key_message_pairs, fn {_redis_key, msg} -> msg.payload end)
 
       PersistenceClient.upload_data(dataset_id, data)
       CacheClient.delete(redis_keys)

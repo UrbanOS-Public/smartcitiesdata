@@ -1,7 +1,7 @@
 defmodule Forklift.MessageProcessor do
   @moduledoc false
   require Logger
-  alias Forklift.{MessageAccumulator, DatasetRegistryServer, CacheClient, DeadLetterQueue}
+  alias Forklift.{DatasetRegistryServer, CacheClient, DeadLetterQueue}
   alias SCOS.{RegistryMessage, DataMessage}
 
   @data_topic Application.get_env(:forklift, :data_topic)
