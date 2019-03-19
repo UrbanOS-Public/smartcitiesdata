@@ -3,7 +3,7 @@ defmodule AndiWeb.DatasetControllerTest do
   use Placebo
 
   @route "/api/v1/dataset"
-  alias SCOS.RegistryMessage
+  alias SmartCity.Dataset
 
   setup do
     allow(Kaffe.Producer.produce_sync(any(), any(), any()), return: :ok)
@@ -72,13 +72,13 @@ defmodule AndiWeb.DatasetControllerTest do
     conn = put(conn, @route, request)
     assert json_response(conn, 201) == message
 
-    {:ok, struct} = RegistryMessage.new(message)
+    {:ok, struct} = Dataset.new(message)
 
     assert_called(
       Kaffe.Producer.produce_sync(
         "dataset-registry",
         "uuid",
-        RegistryMessage.encode!(struct)
+        Dataset.encode!(struct)
       ),
       once()
     )
@@ -89,13 +89,13 @@ defmodule AndiWeb.DatasetControllerTest do
     conn = put(conn, @route, req)
     assert json_response(conn, 201) == message
 
-    {:ok, struct} = RegistryMessage.new(message)
+    {:ok, struct} = Dataset.new(message)
 
     assert_called(
       Kaffe.Producer.produce_sync(
         "dataset-registry",
         "uuid",
-        RegistryMessage.encode!(struct)
+        Dataset.encode!(struct)
       ),
       once()
     )

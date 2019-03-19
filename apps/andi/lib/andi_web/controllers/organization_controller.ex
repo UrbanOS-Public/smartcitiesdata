@@ -2,10 +2,10 @@ defmodule AndiWeb.OrganizationController do
   use AndiWeb, :controller
 
   require Logger
-  alias SCOS.OrganizationMessage
+  alias SmartCity.Organization
 
   def create(conn, _params) do
-    with {:ok, organization} <- OrganizationMessage.new(conn.body_params),
+    with {:ok, organization} <- Organization.new(conn.body_params),
          :ok <- Andi.Kafka.send_to_kafka(organization) do
       conn
       |> put_status(:created)

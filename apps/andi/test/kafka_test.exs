@@ -2,7 +2,7 @@ defmodule KafkaTest do
   use ExUnit.Case
   use Placebo
 
-  alias SCOS.{RegistryMessage, OrganizationMessage}
+  alias SmartCity.{Dataset, Organization}
 
   setup do
     allow(Kaffe.Producer.produce_sync(any(), any(), any()), return: :ok)
@@ -11,7 +11,7 @@ defmodule KafkaTest do
 
   test "send to kafka produces a kafka message when a valid dataset is sent" do
     result =
-      %RegistryMessage{:id => "1", :technical => 2, :business => 3}
+      %Dataset{:id => "1", :technical => 2, :business => 3}
       |> Andi.Kafka.send_to_kafka()
 
     assert_called(
@@ -28,7 +28,7 @@ defmodule KafkaTest do
 
   test "send to kafka produces a kafka message when a valid organization is sent" do
     result =
-      %OrganizationMessage{:id => "1", :orgName => "Organization One", :orgTitle => "Title One"}
+      %Organization{:id => "1", :orgName => "Organization One", :orgTitle => "Title One"}
       |> Andi.Kafka.send_to_kafka()
 
     assert_called(
@@ -48,6 +48,6 @@ defmodule KafkaTest do
 
     assert result ==
              {:error,
-              "Send to kafka only suppports SCOS.RegistryMessage and SCOS.OrganizationMessage structs"}
+              "Send to kafka only suppports SmartCity.Dataset and SmartCity.Organization structs"}
   end
 end

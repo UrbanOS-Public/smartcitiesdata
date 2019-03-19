@@ -2,11 +2,11 @@ defmodule AndiWeb.DatasetController do
   use AndiWeb, :controller
 
   require Logger
-  alias SCOS.RegistryMessage
+  alias SmartCity.Dataset
 
   def create(conn, _params) do
     with {:ok, message} <- parse_message(conn.body_params),
-         {:ok, dataset} <- RegistryMessage.new(message),
+         {:ok, dataset} <- Dataset.new(message),
          :ok <- Andi.Kafka.send_to_kafka(dataset) do
       conn
       |> put_status(:created)

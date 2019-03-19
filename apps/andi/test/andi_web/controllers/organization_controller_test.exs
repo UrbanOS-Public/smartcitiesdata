@@ -4,7 +4,7 @@ defmodule AndiWeb.OrganizationControllerTest do
   use AndiWeb.ConnCase
 
   @route "/api/v1/organization"
-  alias SCOS.OrganizationMessage
+  alias SmartCity.Organization
 
   setup do
     allow(Kaffe.Producer.produce_sync(any(), any(), any()), return: :ok)
@@ -33,7 +33,7 @@ defmodule AndiWeb.OrganizationControllerTest do
     conn = post(conn, @route, request)
     assert json_response(conn, 201) == message
 
-    {:ok, struct} = OrganizationMessage.new(message)
+    {:ok, struct} = Organization.new(message)
     assert_called(Andi.Kafka.send_to_kafka(struct), once())
   end
 

@@ -2,11 +2,11 @@ defmodule Andi.Kafka do
   @moduledoc false
   require Logger
 
-  alias SCOS.{RegistryMessage, OrganizationMessage}
+  alias SmartCity.{Dataset, Organization}
 
-  def send_to_kafka(%RegistryMessage{} = dataset) do
+  def send_to_kafka(%Dataset{} = dataset) do
     with dataset_id <- Map.get(dataset, :id),
-         {:ok, encoded} <- RegistryMessage.encode(dataset) do
+         {:ok, encoded} <- Dataset.encode(dataset) do
       :andi
       |> Application.get_env(:topic)
       |> Kaffe.Producer.produce_sync(dataset_id, encoded)
@@ -15,7 +15,7 @@ defmodule Andi.Kafka do
     end
   end
 
-  def send_to_kafka(%OrganizationMessage{} = organization) do
+  def send_to_kafka(%Organization{} = organization) do
     with {:ok, encoded} <- Jason.encode(organization) do
       :andi
       |> Application.get_env(:organization_topic)
@@ -26,7 +26,6 @@ defmodule Andi.Kafka do
   end
 
   def send_to_kafka(_) do
-    {:error,
-     "Send to kafka only suppports SCOS.RegistryMessage and SCOS.OrganizationMessage structs"}
+    {:error, "Send to kafka only suppports SmartCity.Dataset and SmartCity.Organization structs"}
   end
 end
