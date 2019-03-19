@@ -13,7 +13,9 @@ defmodule Forklift.PersistenceClient do
 
     :ok
   rescue
-    e -> Logger.error("Error uploading data: #{inspect(e)}")
+    e ->
+      Logger.error("Error uploading data: #{inspect(e)}")
+      reraise(e, __STACKTRACE__)
   end
 
   defp execute_statement(statement) do

@@ -6,7 +6,6 @@ defmodule Forklift.MessageWriter do
   require Logger
 
   @message_processing_cadence Application.get_env(:forklift, :message_processing_cadence)
-  @persistence_timeout Application.get_env(:forklift, :persistence_timeout)
 
   def start_link(_args) do
     GenServer.start_link(__MODULE__, [])
@@ -22,10 +21,14 @@ defmodule Forklift.MessageWriter do
     |> Enum.map(&parse_data_message/1)
     |> Enum.filter(&(&1 != :parsing_error))
     |> Enum.group_by(&extract_dataset_id/1)
-    |> Enum.map(&start_upload_and_delete_task/1)
-    |> Enum.each(&Task.await(&1, @persistence_timeout))
+    |> Enum.each(&start_upload_and_delete_task/1)
 
     schedule_work()
+    {:noreply, state}
+  end
+
+  # Handles returns from tasks started in start_upload_and_delete_task
+  def handle_info(_, state) do
     {:noreply, state}
   end
 

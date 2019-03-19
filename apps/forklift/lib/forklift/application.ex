@@ -8,7 +8,8 @@ defmodule Forklift.Application do
       [
         {Registry, keys: :unique, name: Forklift.Registry},
         {Task.Supervisor, name: Forklift.TaskSupervisor},
-        Forklift.MessageWriter,
+        {Forklift.MessageWriter, name: Forklift.MessageWriter},
+        {Forklift.DatasetRegistryServer, name: Forklift.DatasetRegistryServer},
         redis(),
         kaffe()
       ]

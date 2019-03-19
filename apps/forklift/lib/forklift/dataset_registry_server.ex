@@ -17,11 +17,7 @@ defmodule Forklift.DatasetRegistryServer do
   end
 
   def send_message(message) do
-    with :ok <- start_server() do
-      GenServer.call(__MODULE__, {:ingest_message, message})
-    else
-      {:error, e} -> raise RuntimeError, "Something went wrong (#{e})"
-    end
+    GenServer.call(__MODULE__, {:ingest_message, message})
   end
 
   ######################
@@ -51,22 +47,19 @@ defmodule Forklift.DatasetRegistryServer do
   #######################
   ## Private Functions ##
   #######################
-  defp start_server do
-    case __MODULE__.start_link() do
-      {:ok, _pid} -> :ok
-      {:error, {:already_started, __pid}} -> :ok
-      e -> {:error, e}
-    end
-  end
-
   defp init_ets_table do
     :ets.new(:dataset_registry, [:set, :protected, :named_table])
   end
 
   def get_schema_ets(dataset_id) do
-    [{_id, schema}] = :ets.lookup(:dataset_registry, dataset_id)
+    case :ets.lookup(:dataset_registry, dataset_id) do
+      [{_id, schema}] ->
+        schema
 
-    schema
+      _ ->
+        Logger.warn("A schema has not been loaded for #{dataset_id}.")
+        nil
+    end
   end
 
   defp store_schema_ets(%DatasetSchema{id: id} = schema) do
@@ -80,7 +73,8 @@ defmodule Forklift.DatasetRegistryServer do
   defp make_reply(msg), do: {:reply, msg, nil}
 
   defp parse_schema(%{:id => id, :technical => %{:schema => schema}}) do
-    columns = Enum.map(schema, fn %{:name => name, :type => type} -> {String.to_atom(name), type} end)
+    columns =
+      Enum.map(schema, fn %{:name => name, :type => type} -> {String.to_atom(name), type} end)
 
     %DatasetSchema{
       id: id,
