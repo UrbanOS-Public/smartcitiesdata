@@ -43,3 +43,5 @@ affinity: {}
 presto:
   user: "forklift"
   url: http://kdp-kubernetes-data-platform-presto.kdp:8080
+redis:
+  host: redis.external-services

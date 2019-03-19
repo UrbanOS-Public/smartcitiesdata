@@ -28,6 +28,8 @@ spec:
             value: {{ .Values.kafka.brokers }}
           - name: PRESTO_URL
             value: {{ .Values.presto.url }}
+          - name: REDIS_HOST
+            value: {{ .Values.redis.host }}
           - name: DATA_TOPIC
             value: {{.Values.kafka.dataTopic}}
           - name: REGISTRY_TOPIC
