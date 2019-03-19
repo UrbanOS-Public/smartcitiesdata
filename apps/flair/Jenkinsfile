@@ -47,29 +47,29 @@ node('infrastructure') {
         }
 
         doStageIfPromoted('Deploy to Staging') {
-            def promotionTag = scos.releaseCandidateNumber()
+            def environment = 'staging'
 
-            deployTo('staging')
+            deployTo(environment)
 
-            scos.applyAndPushGitHubTag(promotionTag)
+            scos.applyAndPushGitHubTag(environment)
 
             scos.withDockerRegistry {
-                image.push(promotionTag)
+                image.push(environment)
             }
         }
 
         doStageIfRelease('Deploy to Production') {
             def releaseTag = env.BRANCH_NAME
-            def promotionTag = 'prod'
+            def environment = 'prod'
 
-            deployTo('prod')
+            deployTo(environment)
 
-            scos.applyAndPushGitHubTag(promotionTag)
+            scos.applyAndPushGitHubTag(environment)
 
             scos.withDockerRegistry {
                 image = scos.pullImageFromDockerRegistry("scos/flair", env.GIT_COMMIT_HASH)
                 image.push(releaseTag)
-                image.push(promotionTag)
+                image.push(environment)
             }
         }
     }
