@@ -2,7 +2,7 @@ require Logger
 
 defmodule Valkyrie.MessageHandler do
   @moduledoc false
-  alias SCOS.DataMessage
+  alias SmartCity.Data
 
   def handle_messages(messages) do
     Logger.info("#{__MODULE__}: Received #{length(messages)} messages.")
@@ -14,9 +14,9 @@ defmodule Valkyrie.MessageHandler do
   end
 
   def handle_message(%{key: key, value: value}) do
-    start_time = DataMessage.Timing.current_time()
+    start_time = Data.Timing.current_time()
 
-    {:ok, new_value} = DataMessage.new(value)
+    {:ok, new_value} = Data.new(value)
 
     # ----
     # Do validations here
@@ -24,15 +24,15 @@ defmodule Valkyrie.MessageHandler do
 
     {:ok, new_value} =
       new_value
-      |> DataMessage.add_timing(
-        DataMessage.Timing.new(
+      |> Data.add_timing(
+        Data.Timing.new(
           :valkyrie,
           :timing,
           start_time,
-          DataMessage.Timing.current_time()
+          Data.Timing.current_time()
         )
       )
-      |> DataMessage.encode()
+      |> Data.encode()
 
     Kaffe.Producer.produce_sync(key, new_value)
   rescue
