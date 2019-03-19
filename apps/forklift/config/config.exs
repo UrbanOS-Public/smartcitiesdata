@@ -13,7 +13,6 @@ config :forklift,
 
 config :kaffe,
   consumer: [
-    endpoints: [localhost: 9092],
     topics: [data_topic, registry_topic],
     consumer_group: "forklift-group",
     message_handler: Forklift.MessageProcessor,
