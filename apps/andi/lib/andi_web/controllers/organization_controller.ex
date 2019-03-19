@@ -6,6 +6,7 @@ defmodule AndiWeb.OrganizationController do
 
   def create(conn, _params) do
     with {:ok, organization} <- Organization.new(conn.body_params),
+         {:ok, _id} <- Organization.write(organization),
          :ok <- Andi.Kafka.send_to_kafka(organization) do
       conn
       |> put_status(:created)

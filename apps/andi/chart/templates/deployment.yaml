@@ -28,6 +28,8 @@ spec:
           env:
           - name: KAFKA_BROKERS
             value: {{ .Values.kafka.brokers }}
+          - name: REDIS_HOST
+            value: {{ .Values.redis.host }}
           - name: RUN_IN_KUBERNETES
             value: "true"
           - name: NAMESPACE

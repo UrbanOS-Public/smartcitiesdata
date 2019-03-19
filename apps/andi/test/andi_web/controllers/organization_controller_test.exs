@@ -7,9 +7,8 @@ defmodule AndiWeb.OrganizationControllerTest do
   alias SmartCity.Organization
 
   setup do
-    allow(Kaffe.Producer.produce_sync(any(), any(), any()), return: :ok)
     allow(Andi.Kafka.send_to_kafka(any()), return: :ok)
-    on_exit(fn -> Placebo.unstub() end)
+    allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
 
     request = %{
       "id" => "uuid",
@@ -29,12 +28,24 @@ defmodule AndiWeb.OrganizationControllerTest do
     {:ok, request: request, message: message}
   end
 
-  test "post /api/ with valid data returns 201", %{conn: conn, request: request, message: message} do
-    conn = post(conn, @route, request)
-    assert json_response(conn, 201) == message
+  describe "post /api/ with valid data" do
+    setup %{conn: conn, request: request} do
+      [conn: post(conn, @route, request)]
+    end
 
-    {:ok, struct} = Organization.new(message)
-    assert_called(Andi.Kafka.send_to_kafka(struct), once())
+    test "returns 201", %{conn: conn, message: message} do
+      assert json_response(conn, 201) == message
+    end
+
+    test "sends organization to kafka", %{message: message} do
+      {:ok, struct} = Organization.new(message)
+      assert_called(Andi.Kafka.send_to_kafka(struct), once())
+    end
+
+    test "writes organization to registry", %{message: message} do
+      {:ok, struct} = Organization.new(message)
+      assert_called(Organization.write(struct), once())
+    end
   end
 
   test "post /api/ without data returns 500", %{conn: conn} do

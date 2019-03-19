@@ -122,7 +122,7 @@ defmodule AndiWeb.DatasetControllerTest do
 
     test "writes to dataset registry", %{message: message} do
       {:ok, struct} = Dataset.new(message)
-      assert_called Dataset.write(struct), once()
+      assert_called(Dataset.write(struct), once())
     end
   end
 
