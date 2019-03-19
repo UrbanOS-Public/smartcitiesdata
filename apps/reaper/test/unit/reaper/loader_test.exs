@@ -5,7 +5,7 @@ defmodule Reaper.LoaderTest do
   use Placebo
   alias Kaffe.Producer
   alias Reaper.Loader
-  alias SCOS.RegistryMessage
+  alias SmartCity.Dataset
 
   setup do
     on_exit(fn -> unstub() end)

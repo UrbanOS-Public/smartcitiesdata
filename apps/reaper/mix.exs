@@ -51,7 +51,7 @@ defmodule Reaper.MixProject do
       {:redix, "~> 0.9.2"},
       {:sweet_xml, "~> 0.6"},
       {:scos_ex, "~> 1.1.1", organization: "smartcolumbus_os"},
-      {:typed_struct, "~> 0.1.4"}
+      {:smart_city_registry, "~> 2.0", organization: "smartcolumbus_os"}
     ]
   end
 
