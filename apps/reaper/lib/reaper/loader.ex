@@ -1,7 +1,7 @@
 defmodule Reaper.Loader do
   @moduledoc false
   alias Kaffe.Producer
-  alias SCOS.DataMessage
+  alias SmartCity.Data
 
   def load(payloads, reaper_config) do
     payloads
@@ -31,13 +31,13 @@ defmodule Reaper.Loader do
 
   defp convert_to_message(payload, dataset_id) do
     with {:ok, message} <-
-           DataMessage.new(%{
+           Data.new(%{
              dataset_id: dataset_id,
              operational: %{timing: [%{app: "reaper", label: "sus", start_time: 5, end_time: 10}]},
              payload: payload,
              _metadata: %{}
            }),
-         {:ok, value_part} <- DataMessage.encode(message) do
+         {:ok, value_part} <- Data.encode(message) do
       value_part
     end
   end

@@ -36,12 +36,12 @@ defmodule Reaper.LoaderTest do
     data_message_1 =
       test_payload_one
       |> create_message(test_dataset_id)
-      |> SCOS.DataMessage.encode!()
+      |> SmartCity.Data.encode!()
 
     data_message_2 =
       test_payload_two
       |> create_message(test_dataset_id)
-      |> SCOS.DataMessage.encode!()
+      |> SmartCity.Data.encode!()
 
     expect(Producer.produce_sync(expected_key_one, data_message_1), return: :ok)
     expect(Producer.produce_sync(expected_key_two, data_message_2), return: :error)
@@ -54,9 +54,9 @@ defmodule Reaper.LoaderTest do
   end
 
   defp create_message(payload, dataset_id) do
-    # SCOS.DataMessage.new(payload)
+    # SmartCity.Data.new(payload)
     {:ok, message} =
-      SCOS.DataMessage.new(%{
+      SmartCity.Data.new(%{
         dataset_id: dataset_id,
         operational: %{timing: [%{app: "reaper", label: "sus", start_time: 5, end_time: 10}]},
         payload: payload,

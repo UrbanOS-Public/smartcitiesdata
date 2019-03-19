@@ -50,8 +50,8 @@ defmodule Reaper.MixProject do
       {:protobuf, "~> 0.5.3"},
       {:redix, "~> 0.9.2"},
       {:sweet_xml, "~> 0.6"},
-      {:scos_ex, "~> 1.1.1", organization: "smartcolumbus_os"},
-      {:smart_city_registry, "~> 2.0", organization: "smartcolumbus_os"}
+      {:smart_city_registry, "~> 2.0", organization: "smartcolumbus_os"},
+      {:smart_city_data, "~> 2.0", organization: "smartcolumbus_os"}
     ]
   end
 

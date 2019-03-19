@@ -53,6 +53,7 @@
   "scos_ex": {:hex, :scos_ex, "1.1.1", "8282d4d9776fd2cfa068329d9102c70396426b682e800c7df5d8b715efa3f970", [:mix], [{:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm:smartcolumbus_os"},
   "sleeplocks": {:hex, :sleeplocks, "1.1.1", "3d462a0639a6ef36cc75d6038b7393ae537ab394641beb59830a1b8271faeed3", [:rebar3], [], "hexpm"},
   "smart_city": {:hex, :smart_city, "2.0.0", "9b5cababa57bf3545daf5424ba0635feca4d6779c75760966687bacca94e136b", [:mix], [], "hexpm:smartcolumbus_os"},
+  "smart_city_data": {:hex, :smart_city_data, "2.0.0", "4e57d93762734fb86ae557c6085fc71d5391e13d6e949da9060fb86508be21e0", [:mix], [{:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:smart_city, "~> 2.0", [hex: :smart_city, repo: "hexpm:smartcolumbus_os", optional: false]}], "hexpm:smartcolumbus_os"},
   "smart_city_registry": {:hex, :smart_city_registry, "2.0.0", "e790b4a7d4e7bd68483420ea110e83205c6f1dc0e3f45a7a8c1ecd1c3f81f366", [:mix], [{:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:smart_city, "~> 2.0", [hex: :smart_city, repo: "hexpm:smartcolumbus_os", optional: false]}], "hexpm:smartcolumbus_os"},
   "snappyer": {:hex, :snappyer, "1.2.1", "06c5f5c8afe80ba38e94e1ca1bd9253de95d8f2c85b08783e8d0f63815580556", [:make, :rebar, :rebar3], [], "hexpm"},
   "ssl_verify_fun": {:hex, :ssl_verify_fun, "1.1.1", "28a4d65b7f59893bc2c7de786dec1e1555bd742d336043fe644ae956c3497fbe", [:make, :rebar], [], "hexpm"},
