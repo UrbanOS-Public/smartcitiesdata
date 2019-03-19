@@ -21,6 +21,8 @@ defmodule Forklift.MessageWriterTest do
     expect(PersistenceClient.upload_data("KeyB", expected_for_id_b), return: :ok)
 
     MessageWriter.handle_info(:work, %{})
+
+    :timer.sleep(10)
   end
 
   @moduletag capture_log: true
