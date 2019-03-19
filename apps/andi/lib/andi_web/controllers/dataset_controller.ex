@@ -7,6 +7,7 @@ defmodule AndiWeb.DatasetController do
   def create(conn, _params) do
     with {:ok, message} <- parse_message(conn.body_params),
          {:ok, dataset} <- Dataset.new(message),
+         {:ok, _id} <- Dataset.write(dataset),
          :ok <- Andi.Kafka.send_to_kafka(dataset) do
       conn
       |> put_status(:created)

@@ -7,7 +7,7 @@ defmodule AndiWeb.DatasetControllerTest do
 
   setup do
     allow(Kaffe.Producer.produce_sync(any(), any(), any()), return: :ok)
-    on_exit(fn -> Placebo.unstub() end)
+    allow(Dataset.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
 
     request = %{
       "id" => "uuid",
@@ -68,37 +68,62 @@ defmodule AndiWeb.DatasetControllerTest do
     {:ok, request: request, message: message}
   end
 
-  test "PUT /api/ with valid data returns 201", %{conn: conn, request: request, message: message} do
-    conn = put(conn, @route, request)
-    assert json_response(conn, 201) == message
+  describe "PUT /api/ with valid data" do
+    setup %{conn: conn, request: request} do
+      [conn: put(conn, @route, request)]
+    end
 
-    {:ok, struct} = Dataset.new(message)
+    test "return a 201", %{conn: conn, message: message} do
+      assert json_response(conn, 201) == message
+    end
 
-    assert_called(
-      Kaffe.Producer.produce_sync(
-        "dataset-registry",
-        "uuid",
-        Dataset.encode!(struct)
-      ),
-      once()
-    )
+    test "sends dataset to kafka", %{message: message} do
+      {:ok, struct} = Dataset.new(message)
+
+      assert_called(
+        Kaffe.Producer.produce_sync(
+          "dataset-registry",
+          "uuid",
+          Jason.encode!(struct)
+        ),
+        once()
+      )
+    end
+
+    test "writes data to registry", %{message: message} do
+      {:ok, struct} = Dataset.new(message)
+
+      assert_called(Dataset.write(struct), once())
+    end
   end
 
-  test "PUT /api/ with systemName returns 201", %{conn: conn, request: request, message: message} do
-    req = put_in(request, ["technical", "systemName"], "org__dataset")
-    conn = put(conn, @route, req)
-    assert json_response(conn, 201) == message
+  describe "PUT /api/ with systemName" do
+    setup %{conn: conn, request: request} do
+      req = put_in(request, ["technical", "systemName"], "org__dataset")
+      [conn: put(conn, @route, req)]
+    end
 
-    {:ok, struct} = Dataset.new(message)
+    test "return 201", %{conn: conn, message: message} do
+      assert json_response(conn, 201) == message
+    end
 
-    assert_called(
-      Kaffe.Producer.produce_sync(
-        "dataset-registry",
-        "uuid",
-        Dataset.encode!(struct)
-      ),
-      once()
-    )
+    test "sends dataset to kafka", %{message: message} do
+      {:ok, struct} = Dataset.new(message)
+
+      assert_called(
+        Kaffe.Producer.produce_sync(
+          "dataset-registry",
+          "uuid",
+          Jason.encode!(struct)
+        ),
+        once()
+      )
+    end
+
+    test "writes to dataset registry", %{message: message} do
+      {:ok, struct} = Dataset.new(message)
+      assert_called Dataset.write(struct), once()
+    end
   end
 
   test "PUT /api/ without data returns 500", %{conn: conn} do

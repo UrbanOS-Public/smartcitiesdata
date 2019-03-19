@@ -6,7 +6,7 @@ defmodule Andi.Kafka do
 
   def send_to_kafka(%Dataset{} = dataset) do
     with dataset_id <- Map.get(dataset, :id),
-         {:ok, encoded} <- Dataset.encode(dataset) do
+         {:ok, encoded} <- Jason.encode(dataset) do
       :andi
       |> Application.get_env(:topic)
       |> Kaffe.Producer.produce_sync(dataset_id, encoded)
