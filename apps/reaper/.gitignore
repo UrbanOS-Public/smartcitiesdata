@@ -24,8 +24,6 @@ cota_streaming_producer-*.tar
 
 /.elixir_ls/
 
-# Ignore asdf .tool-versions file
-.tool-versions
 .DS_Store
 
 .terraform
