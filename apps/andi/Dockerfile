@@ -3,8 +3,9 @@ ARG HEX_TOKEN
 COPY . /app
 WORKDIR /app
 RUN apk update && \
-    apk add make && \
-    apk add g++
+    apk --no-cache --update upgrade alpine-sdk && \
+    apk --no-cache add alpine-sdk && \
+    rm -rf /var/cache/**/*
 RUN mix local.hex --force && \
     mix local.rebar --force && \
     mix hex.organization auth smartcolumbus_os --key ${HEX_TOKEN} && \
