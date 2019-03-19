@@ -14,8 +14,7 @@ defmodule StatementTest do
 
     result = Statement.build(get_schema(), data)
 
-    expected_result =
-      ~s/insert into "rivers" ("id","name") values (1,'Fred'),(2,'Gred'),(3,'Hred')/
+    expected_result = ~s/insert into "rivers" ("id","name") values (1,'Fred'),(2,'Gred'),(3,'Hred')/
 
     assert result == expected_result
   end

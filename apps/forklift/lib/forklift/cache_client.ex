@@ -2,7 +2,6 @@ defmodule Forklift.CacheClient do
   @moduledoc false
 
   @data_name_space "forklift:dataset"
-  # @registry_name_space "forklift:registry"
 
   def write(message, dataset_id, offset) do
     key = "#{@data_name_space}:#{dataset_id}:#{offset}"
