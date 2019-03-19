@@ -1,8 +1,7 @@
 use Mix.Config
 
 config :forklift,
-  message_processing_cadence: 6,
-  persistence_timeout: 30_000
+  message_processing_cadence: 10_000
 
 config :kaffe,
   producer: [
