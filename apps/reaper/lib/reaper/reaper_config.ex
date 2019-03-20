@@ -4,7 +4,7 @@ defmodule Reaper.ReaperConfig do
   @derive Jason.Encoder
   defstruct [:dataset_id, :cadence, :lastSuccessTime, :sourceFormat, :sourceUrl, :partitioner, :queryParams]
 
-  def from_registry_message(%SCOS.RegistryMessage{} = registry_message) do
+  def from_registry_message(%SmartCity.Dataset{} = registry_message) do
     struct = %__MODULE__{
       dataset_id: registry_message.id,
       cadence: registry_message.technical.cadence,

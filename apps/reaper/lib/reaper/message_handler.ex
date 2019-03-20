@@ -3,10 +3,10 @@ defmodule Reaper.MessageHandler do
   require Logger
   alias Reaper.ConfigServer
   alias Reaper.ReaperConfig
-  alias SCOS.RegistryMessage
+  alias SmartCity.Dataset
 
   def handle_message(%{value: registry_message_string}) do
-    with {:ok, registry_message} <- RegistryMessage.new(registry_message_string),
+    with {:ok, registry_message} <- Dataset.new(registry_message_string),
          {:ok, reaper_config} <- ReaperConfig.from_registry_message(registry_message) do
       ConfigServer.process_reaper_config(reaper_config)
 

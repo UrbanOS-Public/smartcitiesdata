@@ -2,5 +2,5 @@
 [
   inputs: ["mix.exs", "{config,lib,test}/**/*.{ex,exs}"],
   line_length: 120,
-  import_deps: [:typed_struct, :placebo]
+  import_deps: [:placebo]
 ]

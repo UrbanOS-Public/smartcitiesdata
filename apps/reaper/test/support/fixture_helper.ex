@@ -2,12 +2,12 @@ defmodule FixtureHelper do
   @moduledoc false
 
   alias Reaper.Util
-  alias SCOS.RegistryMessage
+  alias SmartCity.Dataset
   alias Reaper.ReaperConfig
 
   def new_registry_message(overrides) do
     {:ok, registry_message} =
-      RegistryMessage.new(
+      Dataset.new(
         Util.deep_merge(
           %{
             business: %{

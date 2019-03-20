@@ -4,7 +4,7 @@ defmodule Reaper.ReaperConfigTest do
   use ExUnit.Case
   use Placebo
   alias Reaper.ReaperConfig
-  alias SCOS.RegistryMessage
+  alias SmartCity.Dataset
 
   setup do
     map = %{
@@ -70,7 +70,7 @@ defmodule Reaper.ReaperConfigTest do
     }
 
     json = Jason.encode!(map)
-    {:ok, registry_message} = RegistryMessage.new(map)
+    {:ok, registry_message} = Dataset.new(map)
 
     {:ok, map: map, map_missing: map_missing, registry_message: registry_message, json: json}
   end
@@ -88,7 +88,7 @@ defmodule Reaper.ReaperConfigTest do
   end
 
   test "Successfully fills in partitioner when registry message is missing partitioner", %{map_missing: map_missing} do
-    {:ok, registry_message} = RegistryMessage.new(map_missing)
+    {:ok, registry_message} = Dataset.new(map_missing)
     {:ok, reaper_config} = ReaperConfig.from_registry_message(registry_message)
 
     assert reaper_config.dataset_id == "uuid"
