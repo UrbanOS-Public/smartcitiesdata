@@ -1,4 +1,4 @@
 defmodule Forklift.DatasetSchema do
   @moduledoc false
-  defstruct id: nil, columns: []
+  defstruct system_name: nil, columns: []
 end
