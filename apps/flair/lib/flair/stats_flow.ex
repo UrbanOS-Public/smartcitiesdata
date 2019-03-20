@@ -2,7 +2,7 @@ defmodule Flair.StatsFlow do
   @moduledoc false
   use Flow
 
-  alias SCOS.DataMessage
+  alias SmartCity.Data
 
   alias Flair.Stats
   require Logger
@@ -53,7 +53,8 @@ defmodule Flair.StatsFlow do
     try do
       kafka_msg
       |> Map.get(:value)
-      |> DataMessage.parse_message()
+      |> Data.new()
+      |> ok()
     rescue
       e ->
         Logger.error(
@@ -68,5 +69,7 @@ defmodule Flair.StatsFlow do
     message == :dead_letter
   end
 
-  defp extract_id(%DataMessage{dataset_id: id}), do: id
+  defp extract_id(%Data{dataset_id: id}), do: id
+
+  defp ok({:ok, data}), do: data
 end

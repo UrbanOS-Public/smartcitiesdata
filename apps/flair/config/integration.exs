@@ -6,7 +6,7 @@ host =
     defined -> defined
   end
 
-endpoint = [{to_char_list(host), 9094}]
+endpoint = [{to_charlist(host), 9094}]
 
 config :flair,
   window_unit: :millisecond,

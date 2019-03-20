@@ -1,11 +1,10 @@
 defmodule Flair.Stats do
   @moduledoc false
 
-  alias SCOS.DataMessage
-  alias SCOS.DataMessage.Timing
+  alias SmartCity.Data
 
-  @spec reducer(%DataMessage{}, %{}) :: %{}
-  def reducer(%DataMessage{dataset_id: id, operational: %{timing: timing}} = msg, acc) do
+  @spec reducer(%Data{}, %{}) :: %{}
+  def reducer(%Data{dataset_id: id, operational: %{timing: timing}}, acc) do
     Map.update(acc, id, List.wrap(timing), fn x ->
       timing ++ x
     end)

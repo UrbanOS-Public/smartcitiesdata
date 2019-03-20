@@ -2,7 +2,7 @@ defmodule FlairTest do
   use ExUnit.Case
   use Divo.Integration
   use Placebo
-  alias SCOS.DataMessage.Timing
+  alias SmartCity.Data.Timing
 
   doctest Flair
 
@@ -45,7 +45,7 @@ defmodule FlairTest do
     )
   end
 
-  test "flair gracefully handles messages that don't parse in the standard format", context do
+  test "flair gracefully handles messages that don't parse in the standard format" do
     messages =
       [
         %{

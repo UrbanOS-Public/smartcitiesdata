@@ -1,8 +1,8 @@
 defmodule Flair.StatsTest do
   use ExUnit.Case
 
-  alias SCOS.DataMessage
-  alias SCOS.DataMessage.Timing
+  alias SmartCity.Data
+  alias SmartCity.Data.Timing
 
   alias Flair.Stats
 
@@ -10,7 +10,7 @@ defmodule Flair.StatsTest do
     test "with empty accumulator" do
       message =
         make_data_message()
-        |> DataMessage.add_timing(make_timing())
+        |> Data.add_timing(make_timing())
 
       assert %{"some_id" => [%Timing{}]} = Stats.reducer(message, %{})
     end
@@ -18,7 +18,7 @@ defmodule Flair.StatsTest do
     test "with existing accumulator" do
       message =
         make_data_message()
-        |> DataMessage.add_timing(make_timing())
+        |> Data.add_timing(make_timing())
 
       assert %{"some_id" => [%Timing{}, %Timing{}]} =
                Stats.reducer(message, Stats.reducer(message, %{}))
@@ -28,7 +28,7 @@ defmodule Flair.StatsTest do
       messages =
         1..3
         |> Enum.map(fn _ -> make_data_message() end)
-        |> Enum.map(&DataMessage.add_timing(&1, make_timing()))
+        |> Enum.map(&Data.add_timing(&1, make_timing()))
 
       assert %{"some_id" => [%Timing{}, %Timing{}, %Timing{}]} =
                Enum.reduce(messages, %{}, &Stats.reducer/2)
@@ -39,7 +39,7 @@ defmodule Flair.StatsTest do
         1..3
         |> Enum.map(&Integer.to_string/1)
         |> Enum.map(&make_data_message(dataset_id: &1))
-        |> Enum.map(&DataMessage.add_timing(&1, make_timing()))
+        |> Enum.map(&Data.add_timing(&1, make_timing()))
 
       assert %{"1" => [%Timing{}], "2" => [%Timing{}], "3" => [%Timing{}]} =
                Enum.reduce(messages, %{}, &Stats.reducer/2)
@@ -96,14 +96,17 @@ defmodule Flair.StatsTest do
     dataset_id = Keyword.get(opts, :dataset_id, "some_id")
     timing = Keyword.get(opts, :timing, [])
 
-    DataMessage.new(
-      dataset_id: dataset_id,
-      payload: "dont_care",
-      _metadata: "dont_care",
-      operational: %{
-        timing: timing
-      }
-    )
+    {:ok, data} =
+      Data.new(%{
+        dataset_id: dataset_id,
+        payload: "dont_care",
+        _metadata: "dont_care",
+        operational: %{
+          timing: timing
+        }
+      })
+
+    data
   end
 
   defp make_timing(opts \\ []) do
@@ -125,7 +128,7 @@ defmodule Flair.StatsTest do
     }
   end
 
-  defp make_times(offset \\ 5) do
+  defp make_times(offset) do
     start_time = DateTime.utc_now()
     end_time = start_time |> DateTime.add(offset, :second)
     {DateTime.to_iso8601(start_time), DateTime.to_iso8601(end_time)}
