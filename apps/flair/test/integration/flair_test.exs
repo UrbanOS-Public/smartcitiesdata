@@ -1,6 +1,6 @@
 defmodule FlairTest do
   use ExUnit.Case
-  use Divo.Integration
+  use Divo
   use Placebo
   alias SmartCity.Data.Timing
 

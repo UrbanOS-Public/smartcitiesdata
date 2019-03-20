@@ -33,7 +33,7 @@ defmodule Flair.MixProject do
       {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"},
       {:distillery, "~> 2.0"},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:divo, "~> 0.2.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
+      {:divo, "~> 1.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:mockaffe, "~> 0.1.1",
        only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:placebo, "~> 1.2", only: :integration}
