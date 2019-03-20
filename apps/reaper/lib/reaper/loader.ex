@@ -37,7 +37,7 @@ defmodule Reaper.Loader do
              payload: payload,
              _metadata: %{}
            }),
-         {:ok, value_part} <- Data.encode(message) do
+         {:ok, value_part} <- Jason.encode(message) do
       value_part
     end
   end
