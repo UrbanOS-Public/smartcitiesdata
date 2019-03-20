@@ -78,5 +78,17 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       assert_called Prestige.execute("SELECT id, one, two FROM coda__test_dataset", catalog: "hive", schema: "default"),
                     once()
     end
+
+    test "dataset does not exist returns Not Found", %{conn: conn} do
+      allow(DiscoveryApi.Data.Retriever.get_dataset("bobber"), return: nil)
+
+      conn
+      |> put_req_header("accept", "text/csv")
+      |> get("/api/v1/dataset/bobber/query", columns: "id,one,two")
+      |> response(404)
+
+      assert_called Prestige.execute(any(), catalog: "hive", schema: "default"),
+                    times(0)
+    end
   end
 end

@@ -1,21 +1,24 @@
 defmodule DiscoveryApiWeb.DatasetQueryController do
   @moduledoc false
   use DiscoveryApiWeb, :controller
+  alias DiscoveryApi.Data.Retriever
 
   def query(conn, params) do
     query(conn, params, get_format(conn))
   end
 
   def query(conn, %{"dataset_id" => dataset_id} = params, "csv") do
-    %{:system_name => system_name} = DiscoveryApi.Data.Retriever.get_dataset(dataset_id)
+    with %{:system_name => system_name} <- Retriever.get_dataset(dataset_id) do
+      column_names = get_column_names(system_name)
 
-    column_names = get_column_names(system_name)
-
-    params
-    |> build_query(system_name)
-    |> Prestige.execute(catalog: "hive", schema: "default")
-    |> map_data_stream_for_csv(column_names)
-    |> stream_data(conn, system_name)
+      params
+      |> build_query(system_name)
+      |> Prestige.execute(catalog: "hive", schema: "default")
+      |> map_data_stream_for_csv(column_names)
+      |> stream_data(conn, system_name)
+    else
+      _ -> render_error(conn, 404, "Not Found")
+    end
   end
 
   defp get_column_names(system_name) do
