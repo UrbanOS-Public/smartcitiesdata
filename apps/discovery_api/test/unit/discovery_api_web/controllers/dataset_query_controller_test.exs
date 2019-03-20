@@ -78,13 +78,31 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       assert_called Prestige.execute("SELECT id, one, two FROM coda__test_dataset", catalog: "hive", schema: "default"),
                     once()
     end
+  end
 
+  describe "error cases" do
     test "dataset does not exist returns Not Found", %{conn: conn} do
       allow(DiscoveryApi.Data.Retriever.get_dataset("bobber"), return: nil)
+      allow(Prestige.execute(any()), return: [])
 
       conn
       |> put_req_header("accept", "text/csv")
       |> get("/api/v1/dataset/bobber/query", columns: "id,one,two")
+      |> response(404)
+
+      assert_called Prestige.execute(any(), catalog: "hive", schema: "default"),
+                    times(0)
+    end
+
+    test "table does not exist returns Not Found", %{conn: conn} do
+      allow(DiscoveryApi.Data.Retriever.get_dataset("no_exist"), return: %{:system_name => "coda__no_exist"})
+      allow(Prestige.execute(any()), return: [])
+      allow(Prestige.execute(any(), catalog: "hive", schema: "default"), return: [])
+      allow(Prestige.prefetch(any()), return: [])
+
+      conn
+      |> put_req_header("accept", "text/csv")
+      |> get("/api/v1/dataset/no_exist/query", columns: "id,one,two")
       |> response(404)
 
       assert_called Prestige.execute(any(), catalog: "hive", schema: "default"),

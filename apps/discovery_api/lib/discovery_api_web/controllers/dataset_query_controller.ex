@@ -1,6 +1,7 @@
 defmodule DiscoveryApiWeb.DatasetQueryController do
   @moduledoc false
   use DiscoveryApiWeb, :controller
+  require Logger
   alias DiscoveryApi.Data.Retriever
 
   def query(conn, params) do
@@ -8,16 +9,17 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   def query(conn, %{"dataset_id" => dataset_id} = params, "csv") do
-    with %{:system_name => system_name} <- Retriever.get_dataset(dataset_id) do
-      column_names = get_column_names(system_name)
-
+    with {:ok, system_name} <- get_system_name(dataset_id),
+         {:ok, column_names} <- get_column_names(system_name) do
       params
       |> build_query(system_name)
       |> Prestige.execute(catalog: "hive", schema: "default")
       |> map_data_stream_for_csv(column_names)
       |> stream_data(conn, system_name)
     else
-      _ -> render_error(conn, 404, "Not Found")
+      {:error, reason} ->
+        Logger.error(reason)
+        render_error(conn, 404, "Not Found")
     end
   end
 
@@ -26,6 +28,18 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     |> Prestige.execute()
     |> Prestige.prefetch()
     |> Enum.map(fn [col | _tail] -> col end)
+    |> case do
+      [] -> {:error, "Table #{system_name} not found"}
+      names -> {:ok, names}
+    end
+  end
+
+  defp get_system_name(dataset_id) do
+    Retriever.get_dataset(dataset_id)
+    |> case do
+      nil -> {:error, "Dataset #{dataset_id} not found"}
+      %{:system_name => system_name} -> {:ok, system_name}
+    end
   end
 
   defp build_query(params, system_name) do
