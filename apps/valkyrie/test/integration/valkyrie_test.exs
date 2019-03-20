@@ -1,6 +1,6 @@
 defmodule ValkyrieTest do
   use ExUnit.Case
-  use Divo.Integration
+  use Divo
 
   @messages [
               %{
