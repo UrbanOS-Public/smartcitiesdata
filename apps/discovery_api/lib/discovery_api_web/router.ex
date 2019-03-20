@@ -32,6 +32,7 @@ defmodule DiscoveryApiWeb.Router do
 
   scope "/api/v1", DiscoveryApiWeb do
     pipe_through(:api)
+    get("/dataset/:dataset_id/query", DatasetQueryController, :query)
 
     get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_presto)
   end

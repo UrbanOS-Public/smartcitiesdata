@@ -36,7 +36,7 @@
   "mimerl": {:hex, :mimerl, "1.0.2", "993f9b0e084083405ed8252b99460c4f0563e41729ab42d9074fd5e52439be88", [:rebar3], [], "hexpm"},
   "mix_test_watch": {:hex, :mix_test_watch, "0.9.0", "c72132a6071261893518fa08e121e911c9358713f62794a90c95db59042af375", [:mix], [{:file_system, "~> 0.2.1 or ~> 0.3", [hex: :file_system, repo: "hexpm", optional: false]}], "hexpm"},
   "mock": {:git, "https://github.com/jjh42/mock.git", "f5b8a3781c2f8c5e6a7ea8819ba1db78c85963ea", []},
-  "mockaffe": {:hex, :mockaffe, "0.3.2", "86239b33f4abcd9a234ae58271f4ce1b9e4d7d89245453f17e87f04a345a38d1", [:mix], [{:faker, "~> 0.12", [hex: :faker, repo: "hexpm", optional: false]}, {:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:kaffe, "~> 1.9.1", [hex: :kaffe, repo: "hexpm", optional: false]}, {:scos_ex, "~> 1.0", [hex: :scos_ex, repo: "hexpm:smartcolumbus_os", optional: false]}], "hexpm:smartcolumbus_os"},
+  "mockaffe": {:hex, :mockaffe, "0.3.2", "b5949a14a6be2cb52ad80728f189d1cb110f3a1bf327e4d5284673861e594205", [:mix], [{:faker, "~> 0.12", [hex: :faker, repo: "hexpm", optional: false]}, {:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:kaffe, "~> 1.9.1", [hex: :kaffe, repo: "hexpm", optional: false]}, {:scos_ex, "~> 1.0", [hex: :scos_ex, repo: "hexpm:smartcolumbus_os", optional: false]}], "hexpm:smartcolumbus_os"},
   "parallel_stream": {:hex, :parallel_stream, "1.0.6", "b967be2b23f0f6787fab7ed681b4c45a215a81481fb62b01a5b750fa8f30f76c", [:mix], [], "hexpm"},
   "parse_trans": {:hex, :parse_trans, "3.3.0", "09765507a3c7590a784615cfd421d101aec25098d50b89d7aa1d66646bc571c1", [:rebar3], [], "hexpm"},
   "patiently": {:hex, :patiently, "0.2.0", "67eb139591e10c4b363ae0198e832552f191c58894731efd3bf124ec4722267a", [:mix], [], "hexpm"},

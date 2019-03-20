@@ -13,6 +13,9 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
         keywords: ["key", "words"],
         orgTitle: "publisher",
         modifiedDate: "timestamp"
+      },
+      technical: %{
+        systemName: "bob"
       }
     }
 
@@ -23,7 +26,8 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
       organization: "publisher",
       modified: "timestamp",
       description: "description",
-      fileTypes: ["CSV"]
+      fileTypes: ["CSV"],
+      system_name: "bob"
     }
 
     expect(Dataset.save(expected), return: {:ok, "OK"})
