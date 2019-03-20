@@ -6,6 +6,8 @@ defmodule Forklift.Statement do
     columns_fragment =
       schema.columns
       |> Enum.map(&elem(&1, 0))
+      |> Enum.map(&to_string/1)
+      |> Enum.map(&("\"" <> &1 <> "\""))
       |> Enum.join(",")
 
     data_fragment =
@@ -14,7 +16,7 @@ defmodule Forklift.Statement do
       |> Enum.map(&~s/(#{Enum.join(&1, ",")})/)
       |> Enum.join(",")
 
-    ~s/insert into #{schema.id} (#{columns_fragment}) values #{data_fragment}/
+    ~s/insert into "#{schema.id}" (#{columns_fragment}) values #{data_fragment}/
   rescue
     e -> Logger.error("Unhandled Statement Builder error: #{e}")
   end

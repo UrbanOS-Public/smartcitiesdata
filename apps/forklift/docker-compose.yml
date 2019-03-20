@@ -1,46 +1,61 @@
 ---
-version: '2'
+version: '3.4'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:4.1.0
+    image: wurstmeister/zookeeper
     ports:
-      - 2181:2181
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    extra_hosts:
-      - "moby:127.0.0.1"
+    - "2181:2181"
   kafka:
-    image: confluentinc/cp-kafka:4.1.0
-    ports:
-      - 9092:9092
-      - 9093:9093
+    image: wurstmeister/kafka
     depends_on:
-      - zookeeper
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: CLUSTER://kafka:9093,LOCAL://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLUSTER:PLAINTEXT,LOCAL:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: CLUSTER
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    extra_hosts:
-      - "moby:127.0.0.1"
-  aws:
-    image: localstack/localstack:0.8.7
-    environment:
-      SERVICES: "cloudwatch"
+    - zookeeper
     ports:
-      - 4582:4582
-      - 8080:8080
-  producer:
-    build:
-      context: .
-    image: producer
+    - "9094:9094"
+    environment:
+    - "KAFKA_ADVERTISED_LISTENERS=INSIDE://:9092,OUTSIDE://${HOST_IP:-localhost}:9094"
+    - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
+    - "KAFKA_LISTENERS=INSIDE://:9092,OUTSIDE://:9094"
+    - "KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE"
+    - "KAFKA_CREATE_TOPICS=dataset-registry:1:1,streaming-transformed:1:1"
+    - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181"
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--zookeeper", "zookeeper:2181", "--list", "||", "exit", "1"]
+      interval: 10s
+      timeout: 20s
+      retries: 3
+  metastore:
+    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/metastore-testo:latest
     depends_on:
-      - kafka
-      - aws
+    - postgres
     ports:
-      - 4000:4000
-    environment:
-      KAFKA_BROKERS: "kafka:9093"
+    - "9083:9083"
+    command: >
+      /bin/bash -c "
+        /opt/hive-metastore/bin/schematool -dbType postgres -validate || /opt/hive-metastore/bin/schematool -dbType postgres -initSchema;
+        /opt/hive-metastore/bin/start-metastore"
+  postgres:
+    logging:
+      driver: none
+    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/postgres-testo:latest
+    ports:
+    - "5432:5432"
+  minio:
+    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/minio-testo:latest
+    ports:
+    - "9000:9000"
+  presto:
+    depends_on:
+    - metastore
+    - minio
+    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/presto-testo:latest
+    ports:
+    - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:8080/v1/info | grep -q '\"starting\":false'"]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"

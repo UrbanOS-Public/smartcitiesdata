@@ -1,4 +1,4 @@
-defmodule Forklift.PrestoClient do
+defmodule Forklift.PersistenceClient do
   @moduledoc false
   require Logger
   alias Forklift.{DatasetRegistryServer, Statement}
@@ -9,9 +9,13 @@ defmodule Forklift.PrestoClient do
     |> Statement.build(messages)
     |> execute_statement()
 
+    Logger.info("Persisting #{inspect(Enum.count(messages))} records for #{dataset_id}")
+
     :ok
   rescue
-    e -> Logger.error("Error uploading data: #{inspect(e)}")
+    e ->
+      Logger.error("Error uploading data: #{inspect(e)}")
+      reraise(e, __STACKTRACE__)
   end
 
   defp execute_statement(statement) do

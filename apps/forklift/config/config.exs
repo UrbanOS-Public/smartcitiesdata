@@ -6,8 +6,7 @@ data_topic = "streaming-transformed"
 registry_topic = "dataset-registry"
 
 config :forklift,
-  timeout: 60_000,
-  batch_size: 5_000,
+  message_processing_cadence: 60_000,
   data_topic: data_topic,
   registry_topic: registry_topic
 
@@ -32,5 +31,6 @@ import_config "#{Mix.env()}.exs"
 config :prestige,
   headers: [
     catalog: "hive",
-    schema: "default"
+    schema: "default",
+    user: "foobar"
   ]
