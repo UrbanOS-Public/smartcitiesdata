@@ -10,24 +10,22 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
   def query(conn, %{"dataset_id" => dataset_id} = params, "csv") do
     with {:ok, system_name} <- get_system_name(dataset_id),
-         {:ok, column_names} <- get_column_names(system_name) do
-      params
-      |> build_query(system_name)
+         {:ok, column_names} <- get_column_names(system_name),
+         {:ok, query} <- build_query(params, system_name) do
+      query
       |> Prestige.execute(catalog: "hive", schema: "default")
       |> map_data_stream_for_csv(column_names)
       |> stream_data(conn, system_name, get_format(conn))
     else
-      {:error, reason} ->
-        Logger.error(reason)
-        render_error(conn, 404, "Not Found")
+      error -> handle_error(conn, error)
     end
   end
 
   def query(conn, %{"dataset_id" => dataset_id} = params, "json") do
-    with {:ok, system_name} <- get_system_name(dataset_id) do
+    with {:ok, system_name} <- get_system_name(dataset_id),
+         {:ok, query} <- build_query(params, system_name) do
       data =
-        params
-        |> build_query(system_name)
+        query
         |> Prestige.execute(catalog: "hive", schema: "default", rows_as_maps: true)
         |> Stream.map(&Jason.encode!/1)
         |> Stream.intersperse(",")
@@ -36,7 +34,17 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       |> Stream.concat()
       |> stream_data(conn, system_name, get_format(conn))
     else
-      {:error, reason} ->
+      error -> handle_error(conn, error)
+    end
+  end
+
+  defp handle_error(conn, {type, reason}) do
+    case type do
+      :bad_request ->
+        Logger.error(reason)
+        render_error(conn, 400, "Bad Request")
+
+      :error ->
         Logger.error(reason)
         render_error(conn, 404, "Not Found")
     end
@@ -73,6 +81,17 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     |> add_clause("groupBy", params)
     |> Enum.reject(&is_nil/1)
     |> Enum.join(" ")
+    |> validate_query()
+  end
+
+  defp validate_query(query) do
+    [";", "/*", "*/", "--"]
+    |> Enum.map(fn x -> String.contains?(query, x) end)
+    |> Enum.any?(fn contained_string -> contained_string end)
+    |> case do
+      true -> {:bad_request, "Query contained an illegal character: [#{query}]"}
+      false -> {:ok, query}
+    end
   end
 
   defp add_clause(clauses, type, map) do

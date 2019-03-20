@@ -151,4 +151,48 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
                     times(0)
     end
   end
+
+  describe "malice cases" do
+    setup do
+      allow(DiscoveryApi.Data.Retriever.get_dataset("bobber"), return: %{:system_name => "coda__test_dataset"})
+      allow(Prestige.execute(any(), catalog: "hive", schema: "default"), return: [])
+      allow(Prestige.execute(any()), return: [])
+
+      allow(Prestige.prefetch(any()),
+        return: [["id", "bigint", "", ""], ["one", "bigint", "", ""], ["two", "bigint", "", ""]]
+      )
+
+      :ok
+    end
+
+    test "queries cannot contain semicolons", %{conn: conn} do
+      conn
+      |> put_req_header("accept", "text/csv")
+      |> get("/api/v1/dataset/bobber/query", columns: "id,one; select * from system; two")
+      |> response(400)
+
+      assert_called Prestige.execute(any(), catalog: "hive", schema: "default"),
+                    times(0)
+    end
+
+    test "queries cannot contain block comments", %{conn: conn} do
+      conn
+      |> put_req_header("accept", "text/csv")
+      |> get("/api/v1/dataset/bobber/query", orderBy: "/* This is a comment */")
+      |> response(400)
+
+      assert_called Prestige.execute(any(), catalog: "hive", schema: "default"),
+                    times(0)
+    end
+
+    test "queries cannot contain single-line comments", %{conn: conn} do
+      conn
+      |> put_req_header("accept", "text/csv")
+      |> get("/api/v1/dataset/bobber/query", orderBy: "-- This is a comment")
+      |> response(400)
+
+      assert_called Prestige.execute(any(), catalog: "hive", schema: "default"),
+                    times(0)
+    end
+  end
 end
