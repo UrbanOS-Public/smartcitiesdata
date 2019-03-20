@@ -15,7 +15,26 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       |> build_query(system_name)
       |> Prestige.execute(catalog: "hive", schema: "default")
       |> map_data_stream_for_csv(column_names)
-      |> stream_data(conn, system_name)
+      |> stream_data(conn, system_name, get_format(conn))
+    else
+      {:error, reason} ->
+        Logger.error(reason)
+        render_error(conn, 404, "Not Found")
+    end
+  end
+
+  def query(conn, %{"dataset_id" => dataset_id} = params, "json") do
+    with {:ok, system_name} <- get_system_name(dataset_id) do
+      data =
+        params
+        |> build_query(system_name)
+        |> Prestige.execute(catalog: "hive", schema: "default", rows_as_maps: true)
+        |> Stream.map(&Jason.encode!/1)
+        |> Stream.intersperse(",")
+
+      [["["], data, ["]"]]
+      |> Stream.concat()
+      |> stream_data(conn, system_name, get_format(conn))
     else
       {:error, reason} ->
         Logger.error(reason)
@@ -70,30 +89,5 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   defp build_columns(clauses, columns) do
     cleaned_columns = columns |> String.replace(",", ", ")
     clauses ++ [cleaned_columns]
-  end
-
-  defp map_data_stream_for_csv(stream, table_headers) do
-    [table_headers]
-    |> Stream.concat(stream)
-    |> CSV.encode(delimiter: "\n")
-  end
-
-  defp stream_data(stream, conn, system_name) do
-    stream_data(stream, conn, system_name, get_format(conn))
-  end
-
-  defp stream_data(stream, conn, system_name, format) do
-    conn =
-      conn
-      |> put_resp_content_type(MIME.type(format))
-      |> put_resp_header("content-disposition", "attachment; filename=#{system_name}.#{format}")
-      |> send_chunked(200)
-
-    Enum.reduce_while(stream, conn, fn data, conn ->
-      case chunk(conn, data) do
-        {:ok, conn} -> {:cont, conn}
-        {:error, :closed} -> {:halt, conn}
-      end
-    end)
   end
 end

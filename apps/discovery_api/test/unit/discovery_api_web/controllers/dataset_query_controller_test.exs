@@ -21,6 +21,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       :ok
     end
 
+    test "returns csv", %{conn: conn} do
+      actual = conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query") |> response(200)
+      assert "id,one,two\n1,2,3\n4,5,6\n" == actual
+    end
+
     test "selects from the table specified in the dataset definition", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query") |> response(200)
 
@@ -76,6 +81,43 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> response(200)
 
       assert_called Prestige.execute("SELECT id, one, two FROM coda__test_dataset", catalog: "hive", schema: "default"),
+                    once()
+    end
+  end
+
+  describe "fetching json" do
+    setup do
+      allow(DiscoveryApi.Data.Retriever.get_dataset("test"), return: %{:system_name => "coda__test_dataset"})
+
+      allow(
+        Prestige.execute("SELECT * FROM coda__test_dataset",
+          catalog: "hive",
+          schema: "default",
+          rows_as_maps: true
+        ),
+        return: [%{id: 1, name: "Joe", age: 21}, %{id: 2, name: "Robby", age: 32}]
+      )
+
+      :ok
+    end
+
+    test "returns json", %{conn: conn} do
+      actual =
+        conn
+        |> put_req_header("accept", "application/json")
+        |> get("/api/v1/dataset/test/query")
+        |> response(200)
+
+      assert Jason.decode!(actual) == [
+               %{"id" => 1, "name" => "Joe", "age" => 21},
+               %{"id" => 2, "name" => "Robby", "age" => 32}
+             ]
+
+      assert_called Prestige.execute("SELECT * FROM coda__test_dataset",
+                      catalog: "hive",
+                      schema: "default",
+                      rows_as_maps: true
+                    ),
                     once()
     end
   end
