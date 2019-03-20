@@ -6,35 +6,13 @@ host =
     defined -> defined
   end
 
-endpoint = [{to_charlist(host), 9094}]
+System.put_env("HOST", host)
+
+endpoint = [{to_charlist(host), 9092}]
 
 config :valkyrie,
-  divo: [
-    zookeeper: %{
-      image: "wurstmeister/zookeeper",
-      ports: [
-        {2181, 2181},
-        {9094, 9094}
-      ]
-    },
-    kafka: %{
-      image: "wurstmeister/kafka:latest",
-      env: [
-        kafka_advertised_listeners: "INSIDE://:9092,OUTSIDE://#{host}:9094",
-        kafka_listener_security_protocol_map: "INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT",
-        kafka_listeners: "INSIDE://:9092,OUTSIDE://:9094",
-        kafka_inter_broker_listener_name: "INSIDE",
-        kafka_create_topics: "raw:1:1,validated:1:1",
-        kafka_zookeeper_connect: "localhost:2181"
-      ],
-      wait_for: %{
-        log: "Previous Leader Epoch was: -1",
-        dwell: 1000,
-        max_retries: 30
-      },
-      net: "valkyrie-zookeeper"
-    }
-  ]
+  divo: "./docker-compose.yaml",
+  divo_wait: [dwell: 700, max_tries: 50]
 
 config :kaffe,
   consumer: [

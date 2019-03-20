@@ -32,7 +32,7 @@ defmodule Valkyrie.MessageHandler do
           Data.Timing.current_time()
         )
       )
-      |> Data.encode()
+      |> Jason.encode()
 
     Kaffe.Producer.produce_sync(key, new_value)
   rescue

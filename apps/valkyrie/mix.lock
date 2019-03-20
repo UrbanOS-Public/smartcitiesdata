@@ -4,7 +4,7 @@
   "bunt": {:hex, :bunt, "0.2.0", "951c6e801e8b1d2cbe58ebbd3e616a869061ddadcc4863d0a2182541acae9a38", [:mix], [], "hexpm"},
   "credo": {:hex, :credo, "1.0.2", "88bc918f215168bf6ce7070610a6173c45c82f32baa08bdfc80bf58df2d103b6", [:mix], [{:bunt, "~> 0.2.0", [hex: :bunt, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm"},
   "distillery": {:hex, :distillery, "2.0.12", "6e78fe042df82610ac3fa50bd7d2d8190ad287d120d3cd1682d83a44e8b34dfb", [:mix], [{:artificery, "~> 0.2", [hex: :artificery, repo: "hexpm", optional: false]}], "hexpm"},
-  "divo": {:hex, :divo, "0.2.1", "c305e810ebdcb54ebbc16a9605a0303e5e3d2b190cc733b7610edf70c9156fb7", [:mix], [{:patiently, "~> 0.2.0", [hex: :patiently, repo: "hexpm", optional: false]}], "hexpm:smartcolumbus_os"},
+  "divo": {:hex, :divo, "1.0.0", "58295174346d49f451b0c1a254096df5c83c1e93ed53c53c3ec4888c105ac4d6", [:mix], [{:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:patiently, "~> 0.2.0", [hex: :patiently, repo: "hexpm", optional: false]}], "hexpm:smartcolumbus_os"},
   "faker": {:hex, :faker, "0.12.0", "796cbac868c86c2df6f273ea4cdf2e271860863820e479e04a374b7ee6c376b6", [:mix], [], "hexpm"},
   "jason": {:hex, :jason, "1.1.2", "b03dedea67a99223a2eaf9f1264ce37154564de899fd3d8b9a21b1a6fd64afe7", [:mix], [{:decimal, "~> 1.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm"},
   "kaffe": {:hex, :kaffe, "1.9.2", "f549db79f0ac021f3f097d2a545b15dfc5e8f65d028bf9e57b2db5b271b9cde2", [:mix], [{:brod, ">= 3.0.0 and < 3.5.0", [hex: :brod, repo: "hexpm", optional: false]}], "hexpm"},
