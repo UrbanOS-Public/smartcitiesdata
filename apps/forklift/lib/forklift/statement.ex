@@ -18,7 +18,7 @@ defmodule Forklift.Statement do
 
     ~s/insert into "#{schema.id}" (#{columns_fragment}) values #{data_fragment}/
   rescue
-    e -> Logger.error("Unhandled Statement Builder error: #{e}")
+    e -> Logger.error("Unhandled Statement Builder error: #{inspect(e)}")
   end
 
   defp format_columns(columns, row) do
@@ -31,6 +31,7 @@ defmodule Forklift.Statement do
 
   defp format_data(value, "string") do
     value
+    |> to_string()
     |> String.replace("'", "''")
     |> (&~s/'#{&1}'/).()
   end
