@@ -10,7 +10,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
   def query(conn, %{"dataset_id" => dataset_id} = params, "csv") do
     with {:ok, system_name} <- get_system_name(dataset_id),
-         {:ok, column_names} <- get_column_names(system_name),
+         {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
          {:ok, query} <- build_query(params, system_name) do
       query
       |> Prestige.execute(catalog: "hive", schema: "default")
@@ -50,6 +50,16 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     end
   end
 
+  defp get_column_names(system_name, nil), do: get_column_names(system_name)
+
+  defp get_column_names(system_name, columns_string) do
+    with {:ok, _} <- get_column_names(system_name) do
+      {:ok, clean_columns(columns_string)}
+    else
+      error -> error
+    end
+  end
+
   defp get_column_names(system_name) do
     "describe hive.default.#{system_name}"
     |> Prestige.execute()
@@ -70,10 +80,10 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   defp build_query(params, system_name) do
-    columns = Map.get(params, "columns", "*")
+    column_string = Map.get(params, "columns", "*")
 
     ["SELECT"]
-    |> build_columns(columns)
+    |> build_columns(column_string)
     |> Enum.concat(["FROM #{system_name}"])
     |> add_clause("where", params)
     |> add_clause("orderBy", params)
@@ -105,8 +115,13 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   defp build_clause("limit", value), do: "LIMIT #{value}"
   defp build_clause("groupBy", value), do: "GROUP BY #{value}"
 
-  defp build_columns(clauses, columns) do
-    cleaned_columns = columns |> String.replace(",", ", ")
-    clauses ++ [cleaned_columns]
+  defp build_columns(clauses, column_string) do
+    clauses ++ [clean_columns(column_string) |> Enum.join(", ")]
+  end
+
+  defp clean_columns(column_string) do
+    column_string
+    |> String.split(",", trim: true)
+    |> Enum.map(&String.trim/1)
   end
 end

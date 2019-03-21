@@ -10,6 +10,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         return: []
       )
 
+      allow(Prestige.execute("SELECT id, one FROM coda__test_dataset", catalog: "hive", schema: "default"),
+        return: [[1, 2], [4, 5]]
+      )
+
       allow(Prestige.execute(any(), catalog: "hive", schema: "default"),
         return: [[1, 2, 3], [4, 5, 6]]
       )
@@ -74,14 +78,14 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
                     once()
     end
 
-    test "selects using columns provided", %{conn: conn} do
-      conn
-      |> put_req_header("accept", "text/csv")
-      |> get("/api/v1/dataset/test/query", columns: "id,one,two")
-      |> response(200)
+    test "selects using columns provided returns only those columns of data", %{conn: conn} do
+      actual =
+        conn
+        |> put_req_header("accept", "text/csv")
+        |> get("/api/v1/dataset/test/query", columns: "id, one")
+        |> response(200)
 
-      assert_called Prestige.execute("SELECT id, one, two FROM coda__test_dataset", catalog: "hive", schema: "default"),
-                    once()
+      assert "id,one\n1,2\n4,5\n" == actual
     end
   end
 
