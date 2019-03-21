@@ -12,6 +12,14 @@ endpoints = [{to_char_list(host), 9092}]
 
 config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: "integrationtests.example.com", port: {:system, "PORT"}]
 
+config :prestige,
+  base_url: "http://#{host}:8080",
+  headers: [
+    catalog: "hive",
+    schema: "default",
+    user: "foobar"
+  ]
+
 config :redix,
   host: host
 

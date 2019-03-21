@@ -87,12 +87,13 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     |> build_columns(column_string)
     |> Enum.concat(["FROM #{system_name}"])
     |> add_clause("where", params)
+    |> add_clause("groupBy", params)
     |> add_clause("orderBy", params)
     |> add_clause("limit", params)
-    |> add_clause("groupBy", params)
     |> Enum.reject(&is_nil/1)
     |> Enum.join(" ")
     |> validate_query()
+    |> IO.inspect(label: "dataset_query_controller.ex:96")
   end
 
   defp validate_query(query) do
