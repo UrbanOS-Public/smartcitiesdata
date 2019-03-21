@@ -93,7 +93,6 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     |> Enum.reject(&is_nil/1)
     |> Enum.join(" ")
     |> validate_query()
-    |> IO.inspect(label: "dataset_query_controller.ex:96")
   end
 
   defp validate_query(query) do

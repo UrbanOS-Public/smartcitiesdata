@@ -16,7 +16,8 @@ defmodule DiscoveryApi.Data.QueryTest do
 
     dataset |> Mockaffe.send_to_kafka("dataset-registry")
 
-    Prestige.execute("create table #{system_name} (id integer, name varchar)")
+    "create table #{system_name} (id integer, name varchar)"
+    |> Prestige.execute()
     |> Prestige.prefetch()
 
     ~s|insert into "#{system_name}" ("id","name") values (1,'Fred'),(2,'Gred'),(3,'Hred')|

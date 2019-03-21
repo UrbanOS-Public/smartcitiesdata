@@ -71,7 +71,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> get("/api/v1/dataset/test/query", where: "one=1", orderBy: "one", limit: "200", groupBy: "one")
       |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM coda__test_dataset WHERE one=1 ORDER BY one LIMIT 200 GROUP BY one",
+      assert_called Prestige.execute("SELECT * FROM coda__test_dataset WHERE one=1 GROUP BY one ORDER BY one LIMIT 200",
                       catalog: "hive",
                       schema: "default"
                     ),

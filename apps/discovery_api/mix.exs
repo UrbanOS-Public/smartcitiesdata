@@ -42,7 +42,7 @@ defmodule DiscoveryApi.Mixfile do
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.9.1"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
-      {:mockaffe, only: [:dev, :test, :integration], path: "../mockaffe"},
+      {:mockaffe, "~> 0.3.5", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:patiently, "~> 0.2.0"},
       {:phoenix, "~> 1.3.3"},
       {:phoenix_pubsub, "~> 1.0"},
