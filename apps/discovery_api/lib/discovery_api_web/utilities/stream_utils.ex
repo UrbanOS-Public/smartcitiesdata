@@ -1,4 +1,5 @@
 defmodule DiscoveryApiWeb.Utilities.StreamUtils do
+  @moduledoc false
   alias Plug.Conn
 
   def map_data_stream_for_csv(stream, table_headers) do

@@ -72,7 +72,8 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   defp get_system_name(dataset_id) do
-    Retriever.get_dataset(dataset_id)
+    dataset_id
+    |> Retriever.get_dataset()
     |> case do
       nil -> {:error, "Dataset #{dataset_id} not found"}
       %{:system_name => system_name} -> {:ok, system_name}
@@ -116,7 +117,8 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   defp build_clause("groupBy", value), do: "GROUP BY #{value}"
 
   defp build_columns(clauses, column_string) do
-    clauses ++ [clean_columns(column_string) |> Enum.join(", ")]
+    cleaned_columns = column_string |> clean_columns() |> Enum.join(", ")
+    clauses ++ [cleaned_columns]
   end
 
   defp clean_columns(column_string) do
