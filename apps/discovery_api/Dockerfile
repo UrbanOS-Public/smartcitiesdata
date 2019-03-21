@@ -2,8 +2,8 @@ FROM bitwalker/alpine-elixir:1.8.1 as builder
 ARG HEX_TOKEN
 ENV MIX_ENV test
 RUN apk update && \
-    apk add --no-cache alpine-sdk && \
-    rm -rf /var/cache/**/*
+    apk --no-cache --update upgrade alpine-sdk && \
+    apk --no-cache add alpine-sdk
 COPY . /app
 WORKDIR /app
 RUN mix local.hex --force && \
