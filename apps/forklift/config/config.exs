@@ -6,6 +6,7 @@ data_topic = "streaming-transformed"
 registry_topic = "dataset-registry"
 
 config :forklift,
+  cache_processing_batch_size: 10_000,
   message_processing_cadence: 60_000,
   data_topic: data_topic,
   registry_topic: registry_topic
