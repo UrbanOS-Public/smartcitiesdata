@@ -51,6 +51,20 @@ defmodule StatementTest do
     assert result == expected_result
   end
 
+  test "handles nil values with a type of string" do
+    data = [
+      %{:id => 1, :name => "Fred"},
+      %{:id => 2, :name => "Gred"},
+      %{:id => 3, :name => nil}
+    ]
+
+    result = Statement.build(get_schema(), data)
+
+    expected_result = ~s/insert into "rivers" ("id","name") values (1,'Fred'),(2,'Gred'),(3,'')/
+
+    assert result == expected_result
+  end
+
   defp get_schema() do
     %DatasetSchema{
       id: "rivers",
