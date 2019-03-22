@@ -53,7 +53,11 @@ defmodule Reaper.Persistence do
   defp extract_timestamp(nil), do: nil
 
   defp extract_timestamp(json) do
-    {:ok, timestamp, _offset} = DateTime.from_iso8601(Jason.decode!(json)["timestamp"])
+    {:ok, timestamp, _offset} =
+      json
+      |> Jason.decode!()
+      |> Map.get("timestamp")
+      |> DateTime.from_iso8601()
 
     timestamp
   end

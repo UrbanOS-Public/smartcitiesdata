@@ -28,7 +28,9 @@ defmodule Reaper.DataFeed do
   end
 
   def init(%{pids: %{name: name}, reaper_config: reaper_config} = args) do
-    schedule_work(calculate_next_run_time(reaper_config))
+    reaper_config
+    |> calculate_next_run_time()
+    |> schedule_work()
 
     Horde.Registry.register(Reaper.Registry, name)
     {:ok, args}
@@ -64,18 +66,15 @@ defmodule Reaper.DataFeed do
   end
 
   def calculate_next_run_time(reaper_config) do
-    {:ok, unix_epoch} = DateTime.from_unix(0)
-
     last_run_time =
       case Persistence.get_last_fetched_timestamp(reaper_config.dataset_id) do
-        nil -> unix_epoch
+        nil -> DateTime.from_unix!(0)
         exists -> exists
       end
 
-    current_time = DateTime.utc_now()
-    cadence = reaper_config.cadence
-    expected_run_time = DateTime.add(last_run_time, cadence, :millisecond)
-    remaining_wait_time = DateTime.diff(expected_run_time, current_time, :millisecond)
+    expected_run_time = DateTime.add(last_run_time, reaper_config.cadence, :millisecond)
+    remaining_wait_time = DateTime.diff(expected_run_time, DateTime.utc_now(), :millisecond)
+
     max(0, remaining_wait_time)
   end
 
