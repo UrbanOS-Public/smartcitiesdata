@@ -47,8 +47,6 @@ defmodule Reaper.Loader do
   end
 
   def format_date(some_date) do
-    # TODO:  In a future story, need to switch REAPER from scos_ex to smart_city_data
-    #        The switch will include the addition of timing info with proper dates
     DateTime.to_iso8601(some_date)
   end
 end
