@@ -17,7 +17,6 @@ defmodule Reaper.DataFeed do
     GenServer.cast(data_feed, {:update, state})
   end
 
-  @spec get(atom() | pid() | {atom(), any()} | {:via, atom(), any()}) :: any()
   def get(data_feed) do
     GenServer.call(data_feed, :get)
   end
