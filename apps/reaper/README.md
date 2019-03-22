@@ -54,6 +54,13 @@ You can then verify offsets on the source and destination topic with the followi
 :brod_utils.resolve_offset([{'localhost', 9094}], "raw", 0, -1, [])
 ```
 
+### Example Messages
+
+The following message should create a datafeed which will point at the integration webserver and pull down a sample file on a cadence of 100 seconds.  This message should be posted to the `dataset-registry` topic and will cause messages to be posted to the `streaming-raw` topic on the cadence:
+```
+{"business":{"contactEmail":"something@email.example","contactName":"Jalson","dataTitle":"Stuff","description":"dataset","homepage":"","keywords":[],"license":"MIT","modifiedDate":"something","orgTitle":"SCOS","rights":""},"id":"Reaper","technical":{"cadence":100000,"dataName":"name","headers":{"Authorization":"Basic xdasdgdasgdsgd"},"orgName":"Sample_Organization","partitioner":{"query":null,"type":null},"queryParams":{},"schema":[],"sourceFormat":"json","sourceUrl":"localhost:7000/vehicle_locations.json","stream": true,"systemName":"scos","transformations":["a_transform"],"validations":[]}}
+```
+
 ## Clustering
 
 This application uses [Horde](https://hexdocs.pm/horde/api-reference.html) to perform distributed supervison of the data feeds and [libcluster](https://hexdocs.pm/libcluster/readme.html) to dynamically discover other instances of the application running on Kubernetes.
