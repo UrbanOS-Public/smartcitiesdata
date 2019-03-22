@@ -7,19 +7,21 @@ defmodule AndiWeb.OrganizationControllerTest do
   alias SmartCity.Organization
 
   setup do
-    allow(Andi.Kafka.send_to_kafka(any()), return: :ok)
-    allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
+    allow Andi.Kafka.send_to_kafka(any()), return: :ok
+    allow Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough]
+    allow Paddle.add(any(), any()), return: :ok
+    allow Paddle.authenticate(any(), any()), return: :ok
 
     request = %{
       "id" => "uuid",
-      "orgName" => "Org Name",
-      "orgTitle" => "Org Title"
+      "orgName" => "myOrg",
+      "orgTitle" => "My Org Title"
     }
 
     message = %{
       "id" => "uuid",
-      "orgName" => "Org Name",
-      "orgTitle" => "Org Title",
+      "orgName" => "myOrg",
+      "orgTitle" => "My Org Title",
       "description" => nil,
       "homepage" => nil,
       "logoUrl" => nil
@@ -39,12 +41,19 @@ defmodule AndiWeb.OrganizationControllerTest do
 
     test "sends organization to kafka", %{message: message} do
       {:ok, struct} = Organization.new(message)
-      assert_called(Andi.Kafka.send_to_kafka(struct), once())
+      assert_called Andi.Kafka.send_to_kafka(struct), once()
     end
 
     test "writes organization to registry", %{message: message} do
       {:ok, struct} = Organization.new(message)
-      assert_called(Organization.write(struct), once())
+      assert_called Organization.write(struct), once()
+    end
+
+    test "writes organization to LDAP", %{message: message} do
+      {:ok, org} = Organization.new(message)
+      attrs = [objectClass: ["top", "groupofnames"], cn: org.orgName, member: "cn=admin"]
+
+      assert_called Paddle.add([cn: org.orgName], attrs), once()
     end
   end
 

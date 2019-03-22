@@ -13,6 +13,8 @@ use Mix.Releases.Config,
     # This sets the default environment used by `mix release`
     default_environment: Mix.env()
 
+# TODO inject environment ou configuration
+
 # For a full list of config options for both releases
 # and environments, visit https://hexdocs.pm/distillery/config/distillery.html
 

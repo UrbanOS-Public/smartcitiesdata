@@ -12,6 +12,12 @@ config :andi,
   divo: "./docker-compose.yaml",
   divo_wait: [dwell: 700, max_tries: 50]
 
+config :kaffe,
+  producer: [
+    endpoints: [{to_charlist(host), 9092}],
+    topics: ["dataset-registry"]
+  ]
+
 config :smart_city_registry,
   redis: [host: host]
 
@@ -19,3 +25,8 @@ config :paddle, Paddle,
   host: host,
   base: "dc=example,dc=org",
   timeout: 3000
+
+config :andi, AndiWeb.Endpoint,
+  http: [port: 4000],
+  server: true,
+  check_origin: false

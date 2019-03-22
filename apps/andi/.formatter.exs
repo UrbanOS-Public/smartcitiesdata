@@ -1,5 +1,5 @@
 [
-  import_deps: [:phoenix],
+  import_deps: [:phoenix, :placebo],
   inputs: ["*.{ex,exs}", "{config,lib,test}/**/*.{ex,exs}"],
-  line_length: 100
+  line_length: 120
 ]
