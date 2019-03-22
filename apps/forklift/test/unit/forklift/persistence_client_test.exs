@@ -20,7 +20,7 @@ defmodule PersistenceClientTest do
     allow(DatasetRegistryServer.get_schema(any()), return: schema)
     allow(Prestige.prefetch(any()), return: :ok)
 
-    expected_statement = ~s/insert into "placeholder_id" ("id","name") values (123,'bob'),(234,'cob'),(345,'dob')/
+    expected_statement = ~s/insert into "#{system_name}" ("id","name") values (123,'bob'),(234,'cob'),(345,'dob')/
 
     messages = [
       %{"id" => 123, "name" => "bob"},
@@ -28,7 +28,7 @@ defmodule PersistenceClientTest do
       %{"id" => 345, "name" => "dob"}
     ]
 
-    PersistenceClient.upload_data("placeholder_id", messages)
+    PersistenceClient.upload_data(system_name, messages)
 
     assert_called(
       Prestige.execute(expected_statement),
