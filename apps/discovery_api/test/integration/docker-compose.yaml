@@ -27,6 +27,11 @@ services:
     - postgres
     ports:
     - "9083:9083"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 9083"]
+      interval: 10s
+      timeout: 30s
+      retries: 3
     command: >
       /bin/bash -c "
         /opt/hive-metastore/bin/schematool -dbType postgres -validate || /opt/hive-metastore/bin/schematool -dbType postgres -initSchema;

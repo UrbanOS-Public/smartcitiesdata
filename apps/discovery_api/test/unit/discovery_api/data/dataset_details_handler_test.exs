@@ -16,6 +16,8 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
       },
       technical: %{
         systemName: "foo__bar_baz"
+        sourceUrl: "http://example.com",
+        sourceType: "remote"
       }
     }
 
@@ -27,7 +29,10 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
       organization: "publisher",
       modified: "timestamp",
       description: "description",
-      fileTypes: ["CSV"]
+      fileTypes: ["CSV"],
+      system_name: "bob",
+      sourceUrl: "http://example.com",
+      sourceType: "remote"
     }
 
     expect(Dataset.save(expected), return: {:ok, "OK"})

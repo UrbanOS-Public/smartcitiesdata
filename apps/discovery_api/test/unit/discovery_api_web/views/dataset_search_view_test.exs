@@ -9,14 +9,16 @@ defmodule DiscoveryApiWeb.DatasetSearchViewTest do
         "search_dataset_summaries.json",
         datasets: [
           %DiscoveryApi.Data.Dataset{
-            id: 1,
-            title: "title",
-            systemName: "foo__bar_baz",
-            keywords: ["cat"],
-            organization: "org",
-            modified: "today",
-            fileTypes: ["csv", "pdf"],
-            description: "best ever"
+            :id => 1,
+            :title => "title",
+            :systemName => "foo__bar_baz",
+            :keywords => ["cat"],
+            :organization => "org",
+            :modified => "today",
+            :fileTypes => ["csv", "pdf"],
+            :description => "best ever",
+            :sourceUrl => "http://example.com",
+            :sourceType => "remote"
           }
         ],
         facets: %{organization: [name: "org", count: 1], keywords: [name: "cat", count: 1]},
@@ -34,14 +36,16 @@ defmodule DiscoveryApiWeb.DatasetSearchViewTest do
       },
       "results" => [
         %{
-          id: 1,
-          title: "title",
-          systemName: "foo__bar_baz",
-          keywords: ["cat"],
-          organization: "org",
-          modified: "today",
-          fileTypes: ["csv", "pdf"],
-          description: "best ever"
+          :id => 1,
+          :title => "title",
+          :keywords => ["cat"],
+          :systemName => "foo__bar_baz",
+          :organization => "org",
+          :modified => "today",
+          :fileTypes => ["csv", "pdf"],
+          :description => "best ever",
+          :sourceUrl => "http://example.com",
+          :sourceType => "remote"
         }
       ]
     }

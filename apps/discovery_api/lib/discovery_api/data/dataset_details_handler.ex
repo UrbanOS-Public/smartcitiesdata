@@ -11,7 +11,9 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandler do
       organization: dataset.business.orgTitle,
       modified: dataset.business.modifiedDate,
       description: dataset.business.description,
-      fileTypes: ["CSV"]
+      fileTypes: ["CSV"],
+      sourceType: dataset.technical.sourceType,
+      sourceUrl: dataset.technical.sourceUrl
     })
   end
 end
