@@ -62,8 +62,8 @@ defmodule Forklift.DatasetRegistryServer do
     end
   end
 
-  defp store_schema_ets(%DatasetSchema{system_name: system_name} = schema) do
-    :ets.insert(:dataset_registry, {system_name, schema})
+  defp store_schema_ets(%DatasetSchema{id: id} = schema) do
+    :ets.insert(:dataset_registry, {id, schema})
   end
 
   defp store_schema_ets(:invalid_schema) do
@@ -72,10 +72,11 @@ defmodule Forklift.DatasetRegistryServer do
 
   defp make_reply(msg), do: {:reply, msg, nil}
 
-  defp parse_schema(%{:system_name => system_name, :technical => %{:schema => schema}}) do
+  defp parse_schema(%{:id => id, :technical => %{:schema => schema, :systemName => system_name}}) do
     columns = Enum.map(schema, fn %{:name => name, :type => type} -> {String.to_atom(name), type} end)
 
     %DatasetSchema{
+      id: id,
       system_name: system_name,
       columns: columns
     }
