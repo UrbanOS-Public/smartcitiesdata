@@ -5,7 +5,7 @@ defmodule PersistenceClientTest do
   alias Forklift.{DatasetSchema, PersistenceClient, DatasetRegistryServer}
 
   test "upload_data sends a valid statement to prestige" do
-    system_name = "placeholder_id"
+    system_name = "placeholder_sys_name"
 
     schema = %DatasetSchema{
       system_name: system_name,
