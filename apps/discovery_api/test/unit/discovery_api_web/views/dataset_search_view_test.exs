@@ -15,7 +15,8 @@ defmodule DiscoveryApiWeb.DatasetSearchViewTest do
             :organization => "org",
             :modified => "today",
             :fileTypes => ["csv", "pdf"],
-            :description => "best ever"
+            :description => "best ever",
+            :system_name => ""
           }
         ],
         facets: %{organization: [name: "org", count: 1], keywords: [name: "cat", count: 1]},
@@ -39,7 +40,8 @@ defmodule DiscoveryApiWeb.DatasetSearchViewTest do
           :organization => "org",
           :modified => "today",
           :fileTypes => ["csv", "pdf"],
-          :description => "best ever"
+          :description => "best ever",
+          :system_name => ""
         }
       ]
     }

@@ -25,6 +25,7 @@ defmodule DiscoveryApiWeb do
       import DiscoveryApiWeb.Gettext
       import DiscoveryApiWeb.RenderError
       import DiscoveryApiWeb.Utilities.ParamUtils
+      import DiscoveryApiWeb.Utilities.StreamUtils
     end
   end
 

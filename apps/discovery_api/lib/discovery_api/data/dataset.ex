@@ -3,7 +3,7 @@ defmodule DiscoveryApi.Data.Dataset do
   dataset utilities to persist and load.
   """
   alias DiscoveryApi.Data.Persistence
-  defstruct [:id, :title, :keywords, :organization, :modified, :fileTypes, :description]
+  defstruct [:id, :title, :keywords, :organization, :modified, :fileTypes, :description, :system_name]
 
   @name_space "discovery-api:dataset:"
 

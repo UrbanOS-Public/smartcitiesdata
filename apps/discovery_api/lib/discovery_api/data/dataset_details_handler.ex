@@ -10,6 +10,7 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandler do
       organization: registry_message.business.orgTitle,
       modified: registry_message.business.modifiedDate,
       description: registry_message.business.description,
+      system_name: registry_message.technical.systemName,
       fileTypes: ["CSV"]
     })
   end
