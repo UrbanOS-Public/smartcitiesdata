@@ -13,7 +13,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
          {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
          {:ok, query} <- build_query(params, system_name) do
       query
-      |> Prestige.execute(catalog: "hive", schema: "default")
+      |> Prestige.execute()
       |> map_data_stream_for_csv(column_names)
       |> stream_data(conn, system_name, get_format(conn))
     else
@@ -26,7 +26,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
          {:ok, query} <- build_query(params, system_name) do
       data =
         query
-        |> Prestige.execute(catalog: "hive", schema: "default", rows_as_maps: true)
+        |> Prestige.execute(rows_as_maps: true)
         |> Stream.map(&Jason.encode!/1)
         |> Stream.intersperse(",")
 
@@ -61,7 +61,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   defp get_column_names(system_name) do
-    "describe hive.default.#{system_name}"
+    "describe #{system_name}"
     |> Prestige.execute()
     |> Prestige.prefetch()
     |> Enum.map(fn [col | _tail] -> col end)

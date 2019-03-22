@@ -6,15 +6,15 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
     setup do
       allow(DiscoveryApi.Data.Retriever.get_dataset("test"), return: %{:system_name => "coda__test_dataset"})
 
-      allow(Prestige.execute(any()),
+      allow(Prestige.execute("describe coda__test_dataset"),
         return: []
       )
 
-      allow(Prestige.execute("SELECT id, one FROM coda__test_dataset", catalog: "hive", schema: "default"),
+      allow(Prestige.execute("SELECT id, one FROM coda__test_dataset"),
         return: [[1, 2], [4, 5]]
       )
 
-      allow(Prestige.execute(any(), catalog: "hive", schema: "default"),
+      allow(Prestige.execute(any()),
         return: [[1, 2, 3], [4, 5, 6]]
       )
 
@@ -33,35 +33,35 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
     test "selects from the table specified in the dataset definition", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query") |> response(200)
 
-      assert_called Prestige.execute("describe hive.default.coda__test_dataset"), once()
-      assert_called Prestige.execute("SELECT * FROM coda__test_dataset", catalog: "hive", schema: "default"), once()
+      assert_called Prestige.execute("describe coda__test_dataset"), once()
+      assert_called Prestige.execute("SELECT * FROM coda__test_dataset"), once()
     end
 
     test "selects using the where clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query", where: "one=1") |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM coda__test_dataset WHERE one=1", catalog: "hive", schema: "default"),
+      assert_called Prestige.execute("SELECT * FROM coda__test_dataset WHERE one=1"),
                     once()
     end
 
     test "selects using the order by clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query", orderBy: "one") |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM coda__test_dataset ORDER BY one", catalog: "hive", schema: "default"),
+      assert_called Prestige.execute("SELECT * FROM coda__test_dataset ORDER BY one"),
                     once()
     end
 
     test "selects using the limit clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query", limit: "200") |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM coda__test_dataset LIMIT 200", catalog: "hive", schema: "default"),
+      assert_called Prestige.execute("SELECT * FROM coda__test_dataset LIMIT 200"),
                     once()
     end
 
     test "selects using the group by clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query", groupBy: "one") |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM coda__test_dataset GROUP BY one", catalog: "hive", schema: "default"),
+      assert_called Prestige.execute("SELECT * FROM coda__test_dataset GROUP BY one"),
                     once()
     end
 
@@ -71,9 +71,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> get("/api/v1/dataset/test/query", where: "one=1", orderBy: "one", limit: "200", groupBy: "one")
       |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM coda__test_dataset WHERE one=1 GROUP BY one ORDER BY one LIMIT 200",
-                      catalog: "hive",
-                      schema: "default"
+      assert_called Prestige.execute(
+                      "SELECT * FROM coda__test_dataset WHERE one=1 GROUP BY one ORDER BY one LIMIT 200"
                     ),
                     once()
     end
@@ -91,15 +90,17 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
   describe "fetching json" do
     setup do
+      allow(Prestige.execute(any()),
+        return: []
+      )
+
       allow(DiscoveryApi.Data.Retriever.get_dataset("test"), return: %{:system_name => "coda__test_dataset"})
 
       allow(
         Prestige.execute("SELECT * FROM coda__test_dataset",
-          catalog: "hive",
-          schema: "default",
           rows_as_maps: true
         ),
-        return: [%{id: 1, name: "Joe", age: 21}, %{id: 2, name: "Robby", age: 32}]
+        return: [%{id: 1, name: "Joe"}, %{id: 2, name: "Robby"}]
       )
 
       :ok
@@ -113,13 +114,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         |> response(200)
 
       assert Jason.decode!(actual) == [
-               %{"id" => 1, "name" => "Joe", "age" => 21},
-               %{"id" => 2, "name" => "Robby", "age" => 32}
+               %{"id" => 1, "name" => "Joe"},
+               %{"id" => 2, "name" => "Robby"}
              ]
 
       assert_called Prestige.execute("SELECT * FROM coda__test_dataset",
-                      catalog: "hive",
-                      schema: "default",
                       rows_as_maps: true
                     ),
                     once()
@@ -136,14 +135,14 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> get("/api/v1/dataset/bobber/query", columns: "id,one,two")
       |> response(404)
 
-      assert_called Prestige.execute(any(), catalog: "hive", schema: "default"),
+      assert_called Prestige.execute("SELECT id, one, two FROM "),
                     times(0)
     end
 
     test "table does not exist returns Not Found", %{conn: conn} do
       allow(DiscoveryApi.Data.Retriever.get_dataset("no_exist"), return: %{:system_name => "coda__no_exist"})
       allow(Prestige.execute(any()), return: [])
-      allow(Prestige.execute(any(), catalog: "hive", schema: "default"), return: [])
+      allow(Prestige.execute(any()), return: [])
       allow(Prestige.prefetch(any()), return: [])
 
       conn
@@ -151,7 +150,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> get("/api/v1/dataset/no_exist/query", columns: "id,one,two")
       |> response(404)
 
-      assert_called Prestige.execute(any(), catalog: "hive", schema: "default"),
+      assert_called Prestige.execute("SELECT id, one, two FROM coda__no_exist"),
                     times(0)
     end
   end
@@ -159,7 +158,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   describe "malice cases" do
     setup do
       allow(DiscoveryApi.Data.Retriever.get_dataset("bobber"), return: %{:system_name => "coda__test_dataset"})
-      allow(Prestige.execute(any(), catalog: "hive", schema: "default"), return: [])
+      allow(Prestige.execute(any()), return: [])
       allow(Prestige.execute(any()), return: [])
 
       allow(Prestige.prefetch(any()),
@@ -175,7 +174,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> get("/api/v1/dataset/bobber/query", columns: "id,one; select * from system; two")
       |> response(400)
 
-      assert_called Prestige.execute(any(), catalog: "hive", schema: "default"),
+      assert_called Prestige.execute("SELECT id, one; select * from system; two FROM coda__test_dataset"),
                     times(0)
     end
 
@@ -185,7 +184,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> get("/api/v1/dataset/bobber/query", orderBy: "/* This is a comment */")
       |> response(400)
 
-      assert_called Prestige.execute(any(), catalog: "hive", schema: "default"),
+      assert_called Prestige.execute("SELECT * FROM coda__test_dataset ORDER BY /* This is a comment */"),
                     times(0)
     end
 
@@ -195,7 +194,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> get("/api/v1/dataset/bobber/query", orderBy: "-- This is a comment")
       |> response(400)
 
-      assert_called Prestige.execute(any(), catalog: "hive", schema: "default"),
+      assert_called Prestige.execute("SELECT * FROM coda__test_dataset ORDER BY -- This is a comment"),
                     times(0)
     end
   end
