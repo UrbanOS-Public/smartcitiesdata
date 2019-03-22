@@ -42,18 +42,15 @@ defmodule Reaper.Persistence do
   end
 
   def record_last_fetched_timestamp(dataset_id, timestamp) do
-    Redix.command(:redix, ["SET", @name_space_derived <> dataset_id, "{\"timestamp\": \"#{timestamp}\"}"])
+    Redix.command(:redix, ["SET", @name_space_derived <> dataset_id, ~s({"timestamp": "#{timestamp}"})])
   end
 
   def get_last_fetched_timestamp(dataset_id) do
-    case Redix.command!(:redix, ["GET", @name_space_derived <> dataset_id]) do
-      nil ->
-        nil
-
-      json ->
-        extract_timestamp(json)
-    end
+    json = Redix.command!(:redix, ["GET", @name_space_derived <> dataset_id])
+    extract_timestamp(json)
   end
+
+  defp extract_timestamp(nil), do: nil
 
   defp extract_timestamp(json) do
     {:ok, timestamp, _offset} = DateTime.from_iso8601(Jason.decode!(json)["timestamp"])
