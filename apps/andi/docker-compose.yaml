@@ -1,14 +1,21 @@
-version: '2'
+version: '3'
 services:
-  zookeeper:
-    image: wurstmeister/zookeeper
+  redis:
+    image: redis
     ports:
-      - "2181:2181"
-  kafka:
-    image: wurstmeister/kafka:latest
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "PING"]
+      interval: 5s
+      timeout: 20s
+      retries: 3
+  ldap:
+    image: osixia/openldap
     ports:
-      - "9092:9092"
-    environment:
-      KAFKA_ADVERTISED_HOST_NAME: localhost
-      KAFKA_CREATE_TOPICS: "dataset-registry:1:1,organization-raw:1:1"
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      - "389:389"
+      - "636:636"
+    healthcheck:
+      test: ["CMD-SHELL", "ldapsearch -x -H ldap://localhost -b dc=example,dc=org -D 'cn=admin,dc=example,dc=org' -w admin"]
+      interval: 5s
+      timeout: 20s
+      retries: 3

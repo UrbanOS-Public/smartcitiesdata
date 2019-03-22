@@ -21,9 +21,10 @@ defmodule Andi.MixProject do
     ]
   end
 
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
+  defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]
 
   defp deps do
@@ -40,8 +41,9 @@ defmodule Andi.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
-      {:faker, "~> 0.12", only: [:test, :integration], runtime: false},
-      {:smart_city_registry, "~> 2.4", organization: "smartcolumbus_os"}
+      {:smart_city_registry, "~> 2.2", organization: "smartcolumbus_os"},
+      {:divo, "~> 1.0.1", only: [:dev, :integration], organization: "smartcolumbus_os"},
+      {:paddle, "~> 0.1.4"}
     ]
   end
 end
