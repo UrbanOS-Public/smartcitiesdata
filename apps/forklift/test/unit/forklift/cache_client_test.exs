@@ -3,6 +3,7 @@ defmodule CacheClientTest do
   use Placebo
 
   alias Forklift.CacheClient
+  @cache_processing_batch_size Application.get_env(:forklift, :cache_processing_batch_size)
 
   test "inserts into redis" do
     message = Mockaffe.create_message(:data, :basic) |> Jason.encode!()
@@ -18,7 +19,19 @@ defmodule CacheClientTest do
   test "reads all data messages from redis" do
     keys = ["forklift:dataset:key1:5", "forklift:dataset:key2:6"]
     values = ["v1", "v2"]
-    allow(Redix.command!(any(), ["KEYS", "forklift:dataset:*"]), return: keys)
+
+    allow(
+      Redix.command!(any(), [
+        "SCAN",
+        0,
+        "MATCH",
+        "forklift:dataset:*",
+        "COUNT",
+        @cache_processing_batch_size
+      ]),
+      return: ["0", keys]
+    )
+
     allow(Redix.command!(any(), ["GET", Enum.at(keys, 0)]), return: Enum.at(values, 0))
     allow(Redix.command!(any(), ["GET", Enum.at(keys, 1)]), return: Enum.at(values, 1))
 
