@@ -21,7 +21,7 @@ defmodule StatementTest do
 
   test "build generates a valid statement when given a schema and data that are not in the same order" do
     schema = %DatasetSchema{
-      id: "rivers",
+      system_name: "rivers",
       columns: [
         {:name, "string"},
         {:id, "int"}
@@ -67,7 +67,7 @@ defmodule StatementTest do
 
   defp get_schema() do
     %DatasetSchema{
-      id: "rivers",
+      system_name: "rivers",
       columns: [
         {:id, "int"},
         {:name, "string"}

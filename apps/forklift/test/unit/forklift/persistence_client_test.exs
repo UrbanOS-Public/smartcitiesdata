@@ -5,10 +5,10 @@ defmodule PersistenceClientTest do
   alias Forklift.{DatasetSchema, PersistenceClient, DatasetRegistryServer}
 
   test "upload_data sends a valid statement to prestige" do
-    dataset_id = "placeholder_id"
+    system_name = "placeholder_sys_name"
 
     schema = %DatasetSchema{
-      id: dataset_id,
+      system_name: system_name,
       columns: [
         {"id", "int"},
         {"name", "string"}
@@ -20,7 +20,7 @@ defmodule PersistenceClientTest do
     allow(DatasetRegistryServer.get_schema(any()), return: schema)
     allow(Prestige.prefetch(any()), return: :ok)
 
-    expected_statement = ~s/insert into "placeholder_id" ("id","name") values (123,'bob'),(234,'cob'),(345,'dob')/
+    expected_statement = ~s/insert into "#{system_name}" ("id","name") values (123,'bob'),(234,'cob'),(345,'dob')/
 
     messages = [
       %{"id" => 123, "name" => "bob"},
@@ -28,7 +28,7 @@ defmodule PersistenceClientTest do
       %{"id" => 345, "name" => "dob"}
     ]
 
-    PersistenceClient.upload_data("placeholder_id", messages)
+    PersistenceClient.upload_data(system_name, messages)
 
     assert_called(
       Prestige.execute(expected_statement),

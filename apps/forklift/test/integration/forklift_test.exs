@@ -1,21 +1,30 @@
 defmodule PersistenceTest do
   use ExUnit.Case
   require Logger
-  alias Reaper.Persistence
-  alias Reaper.ReaperConfig
   use Divo
 
   test "should insert records into Presto" do
-    Prestige.execute("create table basic (id integer, name varchar)")
+    reg_message = Mockaffe.create_message(:registry, :basic)
+
+    technical =
+      reg_message.technical
+      |> Map.put(:systemName, "Organization1__Dataset2")
+
+    reg_message = Map.put(reg_message, :technical, technical)
+
+    system_name = reg_message.technical.systemName
+
+    "create table #{system_name} (id integer, name varchar)"
+    |> Prestige.execute()
     |> Prestige.prefetch()
 
-    Mockaffe.create_message(:registry, :basic) |> Mockaffe.send_to_kafka("dataset-registry")
+    Mockaffe.send_to_kafka(reg_message, "dataset-registry")
 
     %{payload: %{"id" => id, "name" => name}} = data = Mockaffe.create_message(:data, :basic)
     Mockaffe.send_to_kafka(data, "streaming-transformed")
 
     Patiently.wait_for!(
-      prestige_query("select * from basic", [[id, name]]),
+      prestige_query("select id, name from #{system_name}", [[id, name]]),
       dwell: 1000,
       max_tries: 20
     )

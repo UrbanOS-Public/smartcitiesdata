@@ -72,11 +72,12 @@ defmodule Forklift.DatasetRegistryServer do
 
   defp make_reply(msg), do: {:reply, msg, nil}
 
-  defp parse_schema(%{:id => id, :technical => %{:schema => schema}}) do
+  defp parse_schema(%{:id => id, :technical => %{:schema => schema, :systemName => system_name}}) do
     columns = Enum.map(schema, fn %{:name => name, :type => type} -> {String.to_atom(name), type} end)
 
     %DatasetSchema{
       id: id,
+      system_name: system_name,
       columns: columns
     }
   end
