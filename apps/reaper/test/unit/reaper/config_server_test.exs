@@ -25,6 +25,11 @@ defmodule Reaper.ConfigServerTest do
         return: [ReaperConfig.encode!(reaper_config), ReaperConfig.encode!(reaper_config2)]
       )
 
+      allow(Reaper.Persistence.get_last_fetched_timestamp(any()),
+        return: DateTime.utc_now(),
+        meck_options: [:passthrough]
+      )
+
       ConfigServer.start_link([])
 
       Patiently.wait_for!(
@@ -46,6 +51,11 @@ defmodule Reaper.ConfigServerTest do
       allow(Redix.command!(:redix, ["KEYS", @name_space <> "*"]), return: [])
       allow(Redix.command!(:redix, any()), return: :does_not_matter)
 
+      allow(Reaper.Persistence.get_last_fetched_timestamp(any()),
+        return: DateTime.utc_now(),
+        meck_options: [:passthrough]
+      )
+
       ConfigServer.start_link([])
 
       ConfigServer.process_reaper_config(FixtureHelper.new_reaper_config(%{dataset_id: "12345-6789"}))
@@ -59,6 +69,7 @@ defmodule Reaper.ConfigServerTest do
 
   test "a reaper config is persisted when created or updated" do
     allow(Redix.command!(:redix, ["KEYS", @name_space <> "*"]), return: [])
+    allow(Redix.command!(:redix, ["GET", any()]), return: '')
 
     reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: "12345-6789"})
 
@@ -108,6 +119,11 @@ defmodule Reaper.ConfigServerTest do
       allow(Redix.command!(:redix, ["GET", any()]), return: return_json)
       allow(Redix.command!(:redix, any()), return: :does_not_matter)
 
+      allow(Reaper.Persistence.get_last_fetched_timestamp(any()),
+        return: DateTime.utc_now(),
+        meck_options: [:passthrough]
+      )
+
       ConfigServer.process_reaper_config(reaper_config)
 
       assert feed_supervisor_count() == 1
@@ -137,6 +153,12 @@ defmodule Reaper.ConfigServerTest do
     test "when feed supervisor is not found update does not blow up" do
       allow(Redix.command!(:redix, ["KEYS", @name_space <> "*"]), return: [])
       allow(Redix.command!(:redix, any()), return: :does_not_matter)
+
+      allow(Reaper.Persistence.get_last_fetched_timestamp(any()),
+        return: DateTime.utc_now(),
+        meck_options: [:passthrough]
+      )
+
       ConfigServer.start_link([])
       ConfigServer.process_reaper_config(FixtureHelper.new_reaper_config(%{dataset_id: "12345-6789"}))
 
