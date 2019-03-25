@@ -12,12 +12,20 @@ defmodule Reaper.Application do
         {HordeConnector, [supervisor: Reaper.Horde.Supervisor, registry: Reaper.Registry]},
         Reaper.ConfigServer,
         kaffe(),
-        redis()
+        redis(),
+        dataset_subscriber()
       ]
       |> List.flatten()
 
     opts = [strategy: :one_for_one, name: Reaper.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp dataset_subscriber() do
+    case Application.get_env(:smart_city_registry, :redis) do
+      nil -> []
+      _ -> {SmartCity.Registry.Subscriber, [message_handler: Reaper.MessageHandler]}
+    end
   end
 
   defp kaffe do

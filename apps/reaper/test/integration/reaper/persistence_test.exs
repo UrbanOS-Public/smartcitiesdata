@@ -3,17 +3,9 @@ defmodule PersistenceTest do
   alias Reaper.Persistence
   alias Reaper.ReaperConfig
 
+  use Divo
+
   @dataset_id "12345-3323"
-
-  setup_all do
-    Application.ensure_all_started(:reaper)
-
-    on_exit(fn ->
-      Application.stop(:reaper)
-    end)
-
-    :ok
-  end
 
   setup do
     Redix.command!(:redix, ["FLUSHALL"])
@@ -40,7 +32,11 @@ defmodule PersistenceTest do
     reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id})
     reaper_config_json_string = ReaperConfig.encode!(reaper_config)
 
-    Redix.command!(:redix, ["SET", "reaper:reaper_config:#{reaper_config.dataset_id}", reaper_config_json_string])
+    Redix.command!(:redix, [
+      "SET",
+      "reaper:reaper_config:#{reaper_config.dataset_id}",
+      reaper_config_json_string
+    ])
 
     actual_reaper_config = Persistence.get(reaper_config.dataset_id)
     assert actual_reaper_config == reaper_config
