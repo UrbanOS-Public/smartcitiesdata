@@ -9,7 +9,7 @@ defmodule Reaper.ExtractorTest do
       {:ok, bypass: bypass}
     end
 
-    test "when given GTFS protobuf body and a gtfs format it returns it as a list of entities", %{
+    test "When the extractor encounters a redirect it follows it to the source", %{
       bypass: bypass
     } do
       Bypass.stub(bypass, "GET", "/1.1/statuses/update.csv", fn conn ->
