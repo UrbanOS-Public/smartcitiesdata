@@ -1,6 +1,6 @@
 defmodule Reaper.FullTest do
-  @moduletag timeout: 120_000
   use ExUnit.Case
+  @moduletag timeout: 120_000
   require Logger
   alias SmartCity.Dataset
 
