@@ -191,8 +191,8 @@ defmodule Reaper.FullTest do
   defp wait_for_absolute_offset(topic, count) do
     Patiently.wait_for!(
       fn -> enough_offsets_seen?(topic, count) end,
-      dwell: 1000,
-      max_tries: 20
+      dwell: 2000,
+      max_tries: 30
     )
   end
 
@@ -211,7 +211,8 @@ defmodule Reaper.FullTest do
       fn -> 0 end,
       fn offset ->
         with {:ok, results} <- :brod.fetch(@kafka_endpoint, topic, 0, offset),
-             {:kafka_message, current_offset, _headers?, _partition, _key, _body, _ts, _type, _ts_type} <-
+             {:kafka_message, current_offset, _headers?, _partition, _key, _body, _ts, _type,
+              _ts_type} <-
                List.last(results) do
           {results, current_offset + 1}
         else
@@ -220,7 +221,8 @@ defmodule Reaper.FullTest do
       end,
       fn _ -> :unused end
     )
-    |> Enum.map(fn {:kafka_message, _offset, _headers?, _partition, _key, body, _ts, _type, _ts_type} ->
+    |> Enum.map(fn {:kafka_message, _offset, _headers?, _partition, _key, body, _ts, _type,
+                    _ts_type} ->
       Jason.decode!(body)
     end)
   end
