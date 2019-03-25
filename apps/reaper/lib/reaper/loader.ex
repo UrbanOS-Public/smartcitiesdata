@@ -11,8 +11,7 @@ defmodule Reaper.Loader do
         partition_key(
           &1,
           "Elixir.Reaper.Partitioners." <>
-            ((reaper_config.partitioner.type == nil && "Hash") || reaper_config.partitioner.type) <>
-            "Partitioner",
+            ((reaper_config.partitioner.type == nil && "Hash") || reaper_config.partitioner.type) <> "Partitioner",
           reaper_config.partitioner.query
         ),
         reaper_config,

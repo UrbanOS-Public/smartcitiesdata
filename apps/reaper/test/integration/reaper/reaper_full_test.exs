@@ -55,6 +55,8 @@ defmodule Reaper.FullTest do
     on_exit(fn -> Application.stop(:reaper) end)
     wait_for_relative_offset(@destination_topic, @json_dataset_feed_record_count)
 
+    Redix.command(:redix, ["FLUSHALL"])
+
     :ok
   end
 

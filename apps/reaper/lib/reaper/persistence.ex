@@ -41,13 +41,24 @@ defmodule Reaper.Persistence do
     |> (fn map -> struct(%ReaperConfig{}, map) end).()
   end
 
-  def record_last_fetched_timestamp([_ | _] = records, dataset_id, timestamp) do
-    success = Enum.any?(records, fn {status, _} -> status == :ok end)
-
-    if success do
-      Redix.command(:redix, ["SET", @name_space_derived <> dataset_id, "{\"timestamp\": \"#{timestamp}\"}"])
-    end
+  def record_last_fetched_timestamp(dataset_id, timestamp) do
+    Redix.command(:redix, ["SET", @name_space_derived <> dataset_id, ~s({"timestamp": "#{timestamp}"})])
   end
 
-  def record_last_fetched_timestamp(_records, _dataset_id, _timestamp), do: nil
+  def get_last_fetched_timestamp(dataset_id) do
+    json = Redix.command!(:redix, ["GET", @name_space_derived <> dataset_id])
+    extract_timestamp(json)
+  end
+
+  defp extract_timestamp(nil), do: nil
+
+  defp extract_timestamp(json) do
+    {:ok, timestamp, _offset} =
+      json
+      |> Jason.decode!()
+      |> Map.get("timestamp")
+      |> DateTime.from_iso8601()
+
+    timestamp
+  end
 end

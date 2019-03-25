@@ -28,7 +28,9 @@ defmodule Reaper.DataFeed do
   end
 
   def init(%{pids: %{name: name}, reaper_config: reaper_config} = args) do
-    schedule_work(reaper_config.cadence)
+    reaper_config
+    |> calculate_next_run_time()
+    |> schedule_work()
 
     Horde.Registry.register(Reaper.Registry, name)
     {:ok, args}
@@ -44,7 +46,7 @@ defmodule Reaper.DataFeed do
     |> Cache.dedupe(cache)
     |> Loader.load(reaper_config, generated_time_stamp)
     |> Cache.cache(cache)
-    |> Persistence.record_last_fetched_timestamp(reaper_config.dataset_id, generated_time_stamp)
+    |> record_last_fetched_timestamp(reaper_config.dataset_id, generated_time_stamp)
 
     timer_ref = schedule_work(reaper_config.cadence)
 
@@ -61,5 +63,29 @@ defmodule Reaper.DataFeed do
 
   def handle_call(:get, _from, state) do
     {:reply, state, state}
+  end
+
+  def calculate_next_run_time(reaper_config) do
+    last_run_time =
+      case Persistence.get_last_fetched_timestamp(reaper_config.dataset_id) do
+        nil -> DateTime.from_unix!(0)
+        exists -> exists
+      end
+
+    expected_run_time = DateTime.add(last_run_time, reaper_config.cadence, :millisecond)
+    remaining_wait_time = DateTime.diff(expected_run_time, DateTime.utc_now(), :millisecond)
+
+    max(0, remaining_wait_time)
+  end
+
+  defp record_last_fetched_timestamp([], dataset_id, timestamp),
+    do: Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
+
+  defp record_last_fetched_timestamp(records, dataset_id, timestamp) do
+    success = Enum.any?(records, fn {status, _} -> status == :ok end)
+
+    if success do
+      Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
+    end
   end
 end

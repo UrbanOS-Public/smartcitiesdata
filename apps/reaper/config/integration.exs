@@ -33,8 +33,7 @@ config :reaper,
           "KAFKA_INTER_BROKER_LISTENER_NAME" => "INSIDE",
           "KAFKA_CREATE_TOPICS" => "dataset-registry:1:1,streaming-raw:1:1",
           "KAFKA_ZOOKEEPER_CONNECT" => "zookeeper:2181"
-        },
-        volumes: ["/var/run/docker.sock:/var/run/docker.sock"]
+        }
       },
       redis: %{
         image: "redis",

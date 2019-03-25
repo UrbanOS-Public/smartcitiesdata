@@ -11,7 +11,14 @@ defmodule Reaper.MixProject do
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env()),
-      preferred_cli_env: [format: :test]
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        format: :test,
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ]
     ]
   end
 
@@ -33,6 +40,7 @@ defmodule Reaper.MixProject do
     [
       {:cachex, "~> 3.1"},
       {:checkov, "~> 0.4.0"},
+      {:excoveralls, "~> 0.9", only: :test},
       {:credo, "~> 0.10", only: [:dev, :test, :integration], runtime: false},
       {:csv, "~> 2.1"},
       {:distillery, "~> 2.0"},
