@@ -192,7 +192,7 @@ defmodule Reaper.FullTest do
   defp wait_for_absolute_offset(topic, count) do
     Patiently.wait_for!(
       fn -> enough_offsets_seen?(topic, count) end,
-      dwell: 2000,
+      dwell: 5000,
       max_tries: 60
     )
   end
