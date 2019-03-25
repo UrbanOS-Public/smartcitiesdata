@@ -44,7 +44,7 @@ defmodule Reaper.DataFeed do
     |> Extractor.extract()
     |> Decoder.decode(reaper_config.sourceFormat)
     |> Cache.dedupe(cache)
-    |> Loader.load(reaper_config)
+    |> Loader.load(reaper_config, generated_time_stamp)
     |> Cache.cache(cache)
     |> record_last_fetched_timestamp(reaper_config.dataset_id, generated_time_stamp)
 
