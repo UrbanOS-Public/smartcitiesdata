@@ -4,7 +4,7 @@ defmodule Flair.Application do
   use Application
 
   @consumer_group_name "flair-consumer-group"
-  @topic_names ["streaming-validated"]
+  @topic_names ["streaming-transformed"]
   @gen_consumer_impl Flair.MessageProcessor
 
   def start(_type, _args) do

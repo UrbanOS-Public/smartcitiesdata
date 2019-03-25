@@ -1,5 +1,3 @@
 use Mix.Config
 
-# config :flair,
-#   window_unit: :second,
-#   window_length: 15
+config :prestige, base_url: "http://127.0.0.1:8080"

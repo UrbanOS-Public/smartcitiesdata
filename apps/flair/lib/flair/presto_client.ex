@@ -1,5 +1,5 @@
 defmodule Flair.PrestoClient do
-  @table_name "operational_stats_3"
+  @table_name "operational_stats"
   @moduledoc false
 
   def get_create_table_statement do

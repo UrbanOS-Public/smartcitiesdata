@@ -26,8 +26,6 @@ spec:
           env:
           - name: KAFKA_BROKERS
             value: {{ .Values.kafka.brokers }}
-          - name: VALIDATED_TOPIC
-            value: {{.Values.kafka.validatedTopic}}
           - name: PRESTO_URL
             value: {{ .Values.presto.url }}
           - name: PRESTO_USER

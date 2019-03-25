@@ -3,7 +3,7 @@ defmodule FlairTest do
   use Divo
   use Placebo
   alias SmartCity.Data.Timing
-
+  require Logger
   doctest Flair
 
   setup _ do
@@ -36,7 +36,7 @@ defmodule FlairTest do
   test "flair consumes messages and calls out to presto", context do
     allow(Flair.PrestoClient.execute(any()), return: [])
     allow(Flair.PrestoClient.generate_statement_from_events(any()), return: "")
-    Mockaffe.send_to_kafka(context[:messages], "streaming-validated")
+    Mockaffe.send_to_kafka(context[:messages], "streaming-transformed")
 
     Patiently.wait_for!(
       &wait_for_function_call/0,
@@ -59,13 +59,43 @@ defmodule FlairTest do
 
     allow(Flair.PrestoClient.execute(any()), return: [])
     allow(Flair.PrestoClient.generate_statement_from_events(any()), return: "")
-    Mockaffe.send_to_kafka(messages, "streaming-validated")
+    Mockaffe.send_to_kafka(messages, "streaming-transformed")
 
     Patiently.wait_for!(
       &wait_for_function_not_called/0,
       dwell: 1000,
       max_tries: 10
     )
+  end
+
+  test "should insert records into Presto", context do
+    Mockaffe.send_to_kafka(context[:messages], "streaming-transformed")
+
+    Patiently.wait_for!(
+      prestige_query("select dataset_id, app from operational_stats", [
+        ["pirates", "valkyrie"]
+      ]),
+      dwell: 1000,
+      max_tries: 20
+    )
+  end
+
+  defp prestige_query(statement, expected) do
+    fn ->
+      actual =
+        statement
+        |> Prestige.execute()
+        |> Prestige.prefetch()
+
+      Logger.info("Waiting for #{inspect(actual)} to equal #{inspect(expected)}")
+
+      try do
+        assert actual == expected
+        true
+      rescue
+        _ -> false
+      end
+    end
   end
 
   def wait_for_function_call() do

@@ -25,6 +25,9 @@ defmodule Flair.Producer do
   # Callbacks #
   #############
   def init(_args) do
+    Flair.PrestoClient.get_create_table_statement()
+    |> Flair.PrestoClient.execute()
+
     {:producer, %State{}}
   end
 

@@ -8,7 +8,7 @@ host =
 
 System.put_env("HOST", host)
 
-endpoint = [{to_charlist(host), 9092}]
+endpoint = [{to_charlist(host), 9094}]
 
 config :flair,
   window_unit: :millisecond,
@@ -17,11 +17,19 @@ config :flair,
 config :kaffe,
   producer: [
     endpoints: endpoint,
-    topics: ["validated"]
+    topics: ["streaming-transformed"]
+  ]
+
+config :prestige,
+  base_url: "http://#{host}:8080",
+  headers: [
+    catalog: "hive",
+    schema: "default",
+    user: "foobar"
   ]
 
 config :kafka_ex,
-  brokers: [{host, 9092}]
+  brokers: [{host, 9094}]
 
 config :flair,
   divo: "./docker-compose.yaml",

@@ -1,8 +1,5 @@
 use Mix.Config
 
-# data_topic = "streaming-transformed"
-data_topic = "streaming-validated"
-
 config :logger,
   level: :info
 
