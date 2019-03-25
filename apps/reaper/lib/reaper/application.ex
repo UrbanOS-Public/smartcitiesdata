@@ -11,7 +11,6 @@ defmodule Reaper.Application do
         {Horde.Supervisor, [name: Reaper.Horde.Supervisor, strategy: :one_for_one]},
         {HordeConnector, [supervisor: Reaper.Horde.Supervisor, registry: Reaper.Registry]},
         Reaper.ConfigServer,
-        kaffe(),
         redis(),
         dataset_subscriber()
       ]
@@ -25,15 +24,6 @@ defmodule Reaper.Application do
     case Application.get_env(:smart_city_registry, :redis) do
       nil -> []
       _ -> {SmartCity.Registry.Subscriber, [message_handler: Reaper.MessageHandler]}
-    end
-  end
-
-  defp kaffe do
-    Application.get_env(:kaffe, :consumer, [])
-    |> Keyword.get(:endpoints)
-    |> case do
-      nil -> []
-      _ -> Supervisor.Spec.worker(Kaffe.Consumer, [])
     end
   end
 

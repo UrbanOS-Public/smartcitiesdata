@@ -14,9 +14,7 @@ defmodule Reaper.ExtractorTest do
     } do
       Bypass.stub(bypass, "GET", "/1.1/statuses/update.csv", fn conn ->
         conn
-        |> Phoenix.Controller.redirect(
-          external: "http://localhost:#{bypass.port}/1.1/statuses/update2.csv"
-        )
+        |> Phoenix.Controller.redirect(external: "http://localhost:#{bypass.port}/1.1/statuses/update2.csv")
       end)
 
       Bypass.stub(bypass, "GET", "/1.1/statuses/update2.csv", fn conn ->
@@ -27,9 +25,7 @@ defmodule Reaper.ExtractorTest do
         )
       end)
 
-      actual =
-        Extractor.extract("http://localhost:#{bypass.port}/1.1/statuses/update.csv")
-        |> IO.inspect(label: "extractor_test.exs:35")
+      actual = Extractor.extract("http://localhost:#{bypass.port}/1.1/statuses/update.csv")
 
       assert actual == ~s<one,two\n1,2\n>
     end
