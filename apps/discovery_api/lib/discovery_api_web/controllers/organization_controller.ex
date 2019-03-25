@@ -23,6 +23,7 @@ defmodule DiscoveryApiWeb.OrganizationController do
 
   defp sync_org(id) do
     org = Persistence.get(@name_space <> id)
+
     case org do
       _ -> add_to_cache(id, org)
       nil -> nil

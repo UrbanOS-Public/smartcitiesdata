@@ -32,7 +32,7 @@ defmodule DiscoveryApiWeb.OrganizationControllerTest do
     test "returns 404 if organization does not exist", %{conn: conn} do
       expect(Persistence.get("smart_city:organization:latest:1234"), return: nil)
       actual = conn |> get("/api/v1/organization/1234") |> json_response(404)
-      
+
       assert %{"message" => "Not Found"} = actual
     end
 
@@ -45,6 +45,7 @@ defmodule DiscoveryApiWeb.OrganizationControllerTest do
         "homepage" => nil,
         "logoUrl" => nil
       }
+
       expect(Cachex.get!(any(), "1234"), return: expected)
       actual = conn |> get("/api/v1/organization/1234") |> json_response(200)
 
