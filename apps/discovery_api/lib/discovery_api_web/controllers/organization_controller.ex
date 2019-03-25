@@ -15,25 +15,22 @@ defmodule DiscoveryApiWeb.OrganizationController do
   end
 
   defp get_org(id) do
-    case Cachex.get!(@cache, id) do
-      nil -> sync_org(id)
-      value -> value
-    end
+    id
+    |> read_from_cache()
+    |> read_from_redis(id)
   end
 
-  defp sync_org(id) do
+  defp read_from_cache(id) do
+    Cachex.get!(@cache, id)
+  end
+
+  defp read_from_redis(nil, id) do
     org = Persistence.get(@name_space <> id)
-
-    case org do
-      _ -> add_to_cache(id, org)
-      nil -> nil
-    end
-  end
-
-  defp add_to_cache(id, org) do
     Cachex.put(@cache, id, org)
     org
   end
+
+  defp read_from_redis(org, _), do: org
 
   def cache_name() do
     @cache
