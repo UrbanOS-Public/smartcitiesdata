@@ -15,7 +15,7 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
         modifiedDate: "timestamp"
       },
       technical: %{
-        systemName: "foo__bar_baz"
+        systemName: "foo__bar_baz",
         sourceUrl: "http://example.com",
         sourceType: "remote"
       }
@@ -30,7 +30,6 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
       modified: "timestamp",
       description: "description",
       fileTypes: ["CSV"],
-      system_name: "bob",
       sourceUrl: "http://example.com",
       sourceType: "remote"
     }
