@@ -3,33 +3,53 @@ require Logger
 defmodule DiscoveryApiWeb.DatasetDownloadController do
   @moduledoc false
   use DiscoveryApiWeb, :controller
+  alias DiscoveryApi.Data.Dataset
 
   def fetch_presto(conn, params) do
     fetch_presto(conn, params, get_format(conn))
   end
 
   def fetch_presto(conn, %{"dataset_id" => dataset_id}, "csv") do
-    column_names =
-      "describe hive.default.#{dataset_id}"
-      |> Prestige.execute()
-      |> Prestige.prefetch()
-      |> Enum.map(fn [col | _tail] -> col end)
+    table =
+      dataset_id
+      |> Dataset.get()
+      |> fetch_table()
 
-    "select * from #{dataset_id}"
-    |> Prestige.execute(catalog: "hive", schema: "default")
-    |> map_data_stream_for_csv(column_names)
-    |> stream_data(conn, dataset_id, get_format(conn))
+    columns = fetch_columns(table)
+
+    download(conn, dataset_id, table, columns)
   end
 
   def fetch_presto(conn, %{"dataset_id" => dataset_id}, "json") do
     data =
       "select * from #{dataset_id}"
-      |> Prestige.execute(catalog: "hive", schema: "default", rows_as_maps: true)
+      |> Prestige.execute(rows_as_maps: true)
       |> Stream.map(&Jason.encode!/1)
       |> Stream.intersperse(",")
 
     [["["], data, ["]"]]
     |> Stream.concat()
+    |> stream_data(conn, dataset_id, get_format(conn))
+  end
+
+  defp fetch_table(nil), do: nil
+  defp fetch_table(dataset), do: dataset.systemName
+
+  defp fetch_columns(nil), do: nil
+
+  defp fetch_columns(table) do
+    "describe #{table}"
+    |> Prestige.execute()
+    |> Prestige.prefetch()
+    |> Enum.map(fn [col | _tail] -> col end)
+  end
+
+  defp download(_conn, _id, _table_name, nil), do: nil
+
+  defp download(conn, dataset_id, table, columns) do
+    "select * from #{table}"
+    |> Prestige.execute()
+    |> map_data_stream_for_csv(columns)
     |> stream_data(conn, dataset_id, get_format(conn))
   end
 end

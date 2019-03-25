@@ -13,12 +13,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   watchers: []
 
 config :prestige,
-  base_url: "https://presto.dev.internal.smartcolumbusos.com",
-  headers: [
-    user: "presto",
-    catalog: "hive",
-    schema: "default"
-  ],
+  base_url: "http://localhost:8080",
   log_level: :debug
 
 # Do not include metadata nor timestamps in development logs
@@ -34,12 +29,6 @@ config :mix_test_watch,
 config :redix,
   host: "localhost"
 
-config :kaffe,
-  consumer: [
-    endpoints: [localhost: 9092],
-    topics: ["dataset-registry"],
-    consumer_group: "discovery-dataset-consumer",
-    message_handler: DiscoveryApi.Data.DatasetEventListener,
-    rebalance_delay_ms: 10_000,
-    start_with_earliest_message: true
-  ]
+config :discovery_api,
+  divo: "test/integration/docker-compose.yaml",
+  divo_wait: [dwell: 1000, max_tries: 20]

@@ -3,21 +3,20 @@ defmodule DiscoveryApi.Data.DatasetEventListener do
   require Logger
   alias DiscoveryApi.Data.DatasetDetailsHandler
   alias DiscoveryApi.Data.ProjectOpenDataHandler
-  alias SCOS.RegistryMessage
+  use SmartCity.Registry.MessageHandler
 
-  def handle_message(%{value: value}) do
-    Logger.debug(fn -> "Handling message: `#{value}`" end)
+  def handle_dataset(%SmartCity.Dataset{} = dataset) do
+    Logger.debug(fn -> "Handling dataset: `#{dataset.technical.systemName}`" end)
 
-    with {:ok, registry_message} <- RegistryMessage.new(value),
-         {:ok, _result} <- DatasetDetailsHandler.process_dataset_details_event(registry_message),
-         ProjectOpenDataHandler.process_project_open_data_event(registry_message) do
-      Logger.debug(fn -> "Successfully handled message: `#{value}`" end)
+    with {:ok, _result} <- DatasetDetailsHandler.process_dataset_details_event(dataset),
+         ProjectOpenDataHandler.process_project_open_data_event(dataset) do
+      Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
     else
-      {:error, reason} -> log_error(value, reason)
+      {:error, reason} -> log_error(dataset, reason)
     end
   end
 
-  defp log_error(value, reason) do
-    Logger.error("Unable to process message `#{value}` : ERROR: #{inspect(reason)}")
+  defp log_error(dataset, reason) do
+    Logger.error("Unable to process message `#{inspect(dataset)}` : ERROR: #{inspect(reason)}")
   end
 end

@@ -22,12 +22,6 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:
-          - name: KAFKA_BROKERS
-            value: {{ .Values.kafka.brokers }}
-          - name: KAFKA_TOPIC
-            value: {{ .Values.kafka.topic }}
-          - name: KAFKA_CONSUMER_GROUP
-            value: {{ .Values.kafka.consumerGroup }}
           - name: REDIS_HOST
             value: {{ .Values.redis.host }}
           - name: PRESTO_URL

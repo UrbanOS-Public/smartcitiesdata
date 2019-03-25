@@ -4,7 +4,7 @@ defmodule DiscoveryApi.Data.ProjectOpenDataHandlerTest do
   alias DiscoveryApi.Data.ProjectOpenDataHandler
 
   test "saves project open data to redis" do
-    registry_message = %SCOS.RegistryMessage{
+    registry_message = %SmartCity.Dataset{
       id: "myfancydata",
       business: %{
         dataTitle: "my title",

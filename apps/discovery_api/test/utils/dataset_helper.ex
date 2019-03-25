@@ -6,6 +6,7 @@ defmodule DiscoveryApi.Test.Helper do
     %Dataset{
       id: values[:id] || Faker.UUID.v4(),
       title: values[:title] || Faker.Lorem.characters(20..30),
+      systemName: values[:systemName] || Faker.Lorem.characters(5..10),
       keywords: values[:keywords] || [Faker.Lorem.characters(5), Faker.Lorem.characters(6)],
       organization: values[:organization] || Faker.Lorem.characters(8..10),
       modified: values[:modified] || Date.to_string(Faker.Date.backward(20)),

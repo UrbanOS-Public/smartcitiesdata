@@ -18,10 +18,6 @@ image:
 monitoring:
   targetPort: 80
 
-kyloCreds:
-  user: ""
-  password: ""
-
 resources:
   limits:
     memory: 512Mi
@@ -38,11 +34,6 @@ affinity: {}
 
 redis:
   host: redis.external-services
-
-kafka:
-  brokers: streaming-service-kafka-bootstrap.streaming-prime:9092
-  topic: dataset-registry
-  consumerGroup: discovery-dataset-consumer
 
 presto:
   url: "http://kdp-kubernetes-data-platform-presto.kdp:8080"

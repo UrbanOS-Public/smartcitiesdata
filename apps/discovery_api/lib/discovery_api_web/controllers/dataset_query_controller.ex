@@ -2,7 +2,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   @moduledoc false
   use DiscoveryApiWeb, :controller
   require Logger
-  alias DiscoveryApi.Data.Retriever
+  alias DiscoveryApi.Data.Dataset
 
   def query(conn, params) do
     query(conn, params, get_format(conn))
@@ -17,7 +17,8 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       |> map_data_stream_for_csv(column_names)
       |> stream_data(conn, system_name, get_format(conn))
     else
-      error -> handle_error(conn, error)
+      error ->
+        handle_error(conn, error)
     end
   end
 
@@ -34,7 +35,8 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       |> Stream.concat()
       |> stream_data(conn, system_name, get_format(conn))
     else
-      error -> handle_error(conn, error)
+      error ->
+        handle_error(conn, error)
     end
   end
 
@@ -73,10 +75,11 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
   defp get_system_name(dataset_id) do
     dataset_id
-    |> Retriever.get_dataset()
+    |> Dataset.get()
     |> case do
+      %Dataset{systemName: system_name} -> {:ok, system_name}
       nil -> {:error, "Dataset #{dataset_id} not found"}
-      %{:system_name => system_name} -> {:ok, system_name}
+      _ -> {:error, "Something unexpected went wrong"}
     end
   end
 
@@ -100,7 +103,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     |> Enum.map(fn x -> String.contains?(query, x) end)
     |> Enum.any?(fn contained_string -> contained_string end)
     |> case do
-      true -> {:bad_request, "Query contained an illegal character: [#{query}]"}
+      true -> {:bad_request, "Query contained illegal character(s): [#{query}]"}
       false -> {:ok, query}
     end
   end

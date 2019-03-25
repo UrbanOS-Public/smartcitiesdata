@@ -1,10 +1,12 @@
 defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
+  import ExUnit.CaptureLog
   use DiscoveryApiWeb.ConnCase
   use Placebo
+  alias DiscoveryApi.Data.Dataset
 
   describe "fetching csv data" do
     setup do
-      allow(DiscoveryApi.Data.Retriever.get_dataset("test"), return: %{:system_name => "coda__test_dataset"})
+      allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:systemName => "coda__test_dataset"})
 
       allow(Prestige.execute("describe coda__test_dataset"),
         return: []
@@ -94,7 +96,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         return: []
       )
 
-      allow(DiscoveryApi.Data.Retriever.get_dataset("test"), return: %{:system_name => "coda__test_dataset"})
+      allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:systemName => "coda__test_dataset"})
 
       allow(
         Prestige.execute("SELECT * FROM coda__test_dataset",
@@ -127,37 +129,41 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
   describe "error cases" do
     test "dataset does not exist returns Not Found", %{conn: conn} do
-      allow(DiscoveryApi.Data.Retriever.get_dataset("bobber"), return: nil)
+      allow(DiscoveryApi.Data.Dataset.get("bobber"), return: nil)
       allow(Prestige.execute(any()), return: [])
 
-      conn
-      |> put_req_header("accept", "text/csv")
-      |> get("/api/v1/dataset/bobber/query", columns: "id,one,two")
-      |> response(404)
+      assert capture_log(fn ->
+               conn
+               |> put_req_header("accept", "text/csv")
+               |> get("/api/v1/dataset/bobber/query", columns: "id,one,two")
+               |> response(404)
+             end) =~ "Dataset bobber not found"
 
       assert_called Prestige.execute("SELECT id, one, two FROM "),
                     times(0)
     end
 
     test "table does not exist returns Not Found", %{conn: conn} do
-      allow(DiscoveryApi.Data.Retriever.get_dataset("no_exist"), return: %{:system_name => "coda__no_exist"})
-      allow(Prestige.execute(any()), return: [])
+      allow(DiscoveryApi.Data.Dataset.get("no_exist"), return: %Dataset{:systemName => "coda__no_exist"})
       allow(Prestige.execute(any()), return: [])
       allow(Prestige.prefetch(any()), return: [])
 
-      conn
-      |> put_req_header("accept", "text/csv")
-      |> get("/api/v1/dataset/no_exist/query", columns: "id,one,two")
-      |> response(404)
+      query_string = "SELECT id, one, two FROM coda__no_exist"
 
-      assert_called Prestige.execute("SELECT id, one, two FROM coda__no_exist"),
-                    times(0)
+      assert capture_log(fn ->
+               conn
+               |> put_req_header("accept", "text/csv")
+               |> get("/api/v1/dataset/no_exist/query", columns: "id,one,two")
+               |> response(404)
+             end) =~ "Table coda__no_exist not found"
+
+      assert_called Prestige.execute(query_string), times(0)
     end
   end
 
   describe "malice cases" do
     setup do
-      allow(DiscoveryApi.Data.Retriever.get_dataset("bobber"), return: %{:system_name => "coda__test_dataset"})
+      allow(DiscoveryApi.Data.Dataset.get("bobber"), return: %Dataset{:systemName => "coda__test_dataset"})
       allow(Prestige.execute(any()), return: [])
       allow(Prestige.execute(any()), return: [])
 
@@ -169,33 +175,44 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
     end
 
     test "queries cannot contain semicolons", %{conn: conn} do
-      conn
-      |> put_req_header("accept", "text/csv")
-      |> get("/api/v1/dataset/bobber/query", columns: "id,one; select * from system; two")
-      |> response(400)
+      assert capture_log(fn ->
+               conn
+               |> put_req_header("accept", "text/csv")
+               |> get("/api/v1/dataset/bobber/query", columns: "id,one; select * from system; two")
+               |> response(400)
+             end) =~
+               "Query contained illegal character(s): [SELECT id, one; select * from system; two FROM coda__test_dataset]"
 
-      assert_called Prestige.execute("SELECT id, one; select * from system; two FROM coda__test_dataset"),
-                    times(0)
+      assert_called(
+        Prestige.execute("SELECT id, one; select * from system; two FROM coda__test_dataset"),
+        times(0)
+      )
     end
 
     test "queries cannot contain block comments", %{conn: conn} do
-      conn
-      |> put_req_header("accept", "text/csv")
-      |> get("/api/v1/dataset/bobber/query", orderBy: "/* This is a comment */")
-      |> response(400)
+      query_string = "SELECT * FROM coda__test_dataset ORDER BY /* This is a comment */"
 
-      assert_called Prestige.execute("SELECT * FROM coda__test_dataset ORDER BY /* This is a comment */"),
-                    times(0)
+      assert capture_log(fn ->
+               conn
+               |> put_req_header("accept", "text/csv")
+               |> get("/api/v1/dataset/bobber/query", orderBy: "/* This is a comment */")
+               |> response(400)
+             end) =~ "Query contained illegal character(s): [#{query_string}]"
+
+      assert_called Prestige.execute(query_string), times(0)
     end
 
     test "queries cannot contain single-line comments", %{conn: conn} do
-      conn
-      |> put_req_header("accept", "text/csv")
-      |> get("/api/v1/dataset/bobber/query", orderBy: "-- This is a comment")
-      |> response(400)
+      query_string = "SELECT * FROM coda__test_dataset ORDER BY -- This is a comment"
 
-      assert_called Prestige.execute("SELECT * FROM coda__test_dataset ORDER BY -- This is a comment"),
-                    times(0)
+      assert capture_log(fn ->
+               conn
+               |> put_req_header("accept", "text/csv")
+               |> get("/api/v1/dataset/bobber/query", orderBy: "-- This is a comment")
+               |> response(400)
+             end) =~ "Query contained illegal character(s): [#{query_string}]"
+
+      assert_called Prestige.execute(query_string), times(0)
     end
   end
 end

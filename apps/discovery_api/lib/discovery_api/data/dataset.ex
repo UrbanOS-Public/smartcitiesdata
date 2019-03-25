@@ -3,7 +3,8 @@ defmodule DiscoveryApi.Data.Dataset do
   dataset utilities to persist and load.
   """
   alias DiscoveryApi.Data.Persistence
-  defstruct [:id, :title, :keywords, :organization, :modified, :fileTypes, :description, :system_name]
+
+  defstruct [:id, :title, :keywords, :systemName, :keywords, :organization, :modified, :fileTypes, :description]
 
   @name_space "discovery-api:dataset:"
 
@@ -23,9 +24,7 @@ defmodule DiscoveryApi.Data.Dataset do
     Persistence.persist(@name_space <> dataset.id, Map.from_struct(dataset))
   end
 
-  defp struct_from_map(nil) do
-    nil
-  end
+  defp struct_from_map(nil), do: nil
 
   defp struct_from_map(map) do
     struct(__MODULE__, map)

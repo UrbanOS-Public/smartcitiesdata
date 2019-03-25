@@ -13,7 +13,7 @@ defmodule DiscoveryApi.Search.DatasetSearchinatorTest do
         Helper.sample_dataset(%{id: 3, title: "This one has no description"})
       ]
 
-      allow(DiscoveryApi.Data.Retriever.get_datasets(), return: mock_dataset_summaries)
+      allow(DiscoveryApi.Data.Dataset.get_all(), return: mock_dataset_summaries)
       :ok
     end
 

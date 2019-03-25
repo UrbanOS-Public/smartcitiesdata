@@ -1,16 +1,16 @@
 defmodule DiscoveryApi.Data.DatasetDetailsHandler do
   @moduledoc false
-  alias DiscoveryApi.Data.Dataset
+  alias DiscoveryApi.Data.Dataset, as: DiscoveryDataset
 
-  def process_dataset_details_event(registry_message) do
-    Dataset.save(%Dataset{
-      id: registry_message.id,
-      title: registry_message.business.dataTitle,
-      keywords: registry_message.business.keywords,
-      organization: registry_message.business.orgTitle,
-      modified: registry_message.business.modifiedDate,
-      description: registry_message.business.description,
-      system_name: registry_message.technical.systemName,
+  def process_dataset_details_event(%SmartCity.Dataset{} = dataset) do
+    DiscoveryDataset.save(%DiscoveryDataset{
+      id: dataset.id,
+      title: dataset.business.dataTitle,
+      systemName: dataset.technical.systemName,
+      keywords: dataset.business.keywords,
+      organization: dataset.business.orgTitle,
+      modified: dataset.business.modifiedDate,
+      description: dataset.business.description,
       fileTypes: ["CSV"]
     })
   end

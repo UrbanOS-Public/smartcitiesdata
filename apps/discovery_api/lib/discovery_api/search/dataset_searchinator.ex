@@ -1,5 +1,7 @@
 defmodule DiscoveryApi.Search.DatasetSearchinator do
   @moduledoc false
+  alias DiscoveryApi.Data.Dataset
+
   def search(options \\ [query: ""]) do
     words =
       options[:query]
@@ -7,7 +9,7 @@ defmodule DiscoveryApi.Search.DatasetSearchinator do
       |> Enum.map(fn word -> String.downcase(word) end)
 
     result =
-      DiscoveryApi.Data.Retriever.get_datasets()
+      Dataset.get_all()
       |> Enum.filter(fn dataset ->
         [dataset.title, dataset.description]
         |> Enum.filter(fn property -> property != nil end)

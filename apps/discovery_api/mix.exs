@@ -6,7 +6,7 @@ defmodule DiscoveryApi.Mixfile do
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
       version: "0.0.1",
-      elixir: "~> 1.7",
+      elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -14,9 +14,6 @@ defmodule DiscoveryApi.Mixfile do
     ]
   end
 
-  # Configuration for the OTP application.
-  #
-  # Type `mix help compile.app` for more information.
   def application do
     [
       mod: {DiscoveryApi.Application, []},
@@ -24,9 +21,6 @@ defmodule DiscoveryApi.Mixfile do
     ]
   end
 
-  # Specifies your project dependencies.
-  #
-  # Type `mix help deps` for examples and options.
   defp deps do
     [
       {:cachex, "~> 3.0"},
@@ -36,13 +30,12 @@ defmodule DiscoveryApi.Mixfile do
       {:credo, "~> 0.10", only: [:dev, :test, :integration], runtime: false},
       {:checkov, "~> 0.4.0"},
       {:distillery, "~> 2.0"},
-      {:divo, "~> 1.0.1", only: [:integration], organization: "smartcolumbus_os"},
+      {:divo, "~> 1.0.1", only: [:dev, :integration], organization: "smartcolumbus_os"},
       {:gettext, "~> 0.11"},
       {:httpoison, "~> 1.5"},
+      {:faker, "~> 0.12.0"},
       {:jason, "~> 1.1"},
-      {:kaffe, "~> 1.9.1"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
-      {:mockaffe, "~> 0.3.5", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:patiently, "~> 0.2.0"},
       {:phoenix, "~> 1.3.3"},
       {:phoenix_pubsub, "~> 1.0"},
@@ -52,9 +45,9 @@ defmodule DiscoveryApi.Mixfile do
       {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"},
       {:prometheus_plugs, "~> 1.1.1"},
       {:prometheus_phoenix, "~>1.2.0"},
-      {:redix, "~> 0.9.2"},
+      {:redix, "~> 0.9.3"},
       {:streaming_metrics, path: "streaming_metrics"},
-      {:scos_ex, "~> 1.0", organization: "smartcolumbus_os"},
+      {:smart_city_registry, "~> 2.2.0", organization: "smartcolumbus_os"},
       {:ex_json_schema, "~> 0.5.7", only: [:test, :integration]}
     ]
   end

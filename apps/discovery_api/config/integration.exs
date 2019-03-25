@@ -8,45 +8,27 @@ host =
 
 System.put_env("HOST", host)
 
-endpoints = [{to_char_list(host), 9092}]
-
 config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: "integrationtests.example.com", port: {:system, "PORT"}]
 
-config :prestige,
-  base_url: "http://#{host}:8080",
-  headers: [
-    catalog: "hive",
-    schema: "default",
-    user: "foobar"
+config :discovery_api,
+  divo: "test/integration/docker-compose.yaml",
+  divo_wait: [dwell: 1000, max_tries: 35]
+
+config :smart_city_registry,
+  redis: [
+    host: host
   ]
 
 config :redix,
   host: host
 
-config :kaffe,
-  producer: [
-    endpoints: endpoints,
-    topics: ["dataset-registry"],
-    max_retries: 30,
-    retry_backoff_ms: 500
-  ],
-  consumer: [
-    endpoints: endpoints,
-    topics: ["dataset-registry"],
-    consumer_group: "discovery-dataset-consumer",
-    message_handler: DiscoveryApi.Data.DatasetEventListener,
-    rebalance_delay_ms: 10_000,
-    start_with_earliest_message: true
-  ]
-
 config :phoenix,
   serve_endpoints: true,
   persistent: true
 
-config :discovery_api,
-  divo: "test/integration/docker-compose.yaml",
-  divo_wait: [dwell: 700, max_tries: 50]
-
 config :ex_json_schema,
        :remote_schema_resolver,
        fn url -> URLResolver.resolve_url(url) end
+
+config :prestige,
+  base_url: "http://#{host}:8080"

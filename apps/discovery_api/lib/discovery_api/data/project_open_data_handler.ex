@@ -3,40 +3,40 @@ defmodule DiscoveryApi.Data.ProjectOpenDataHandler do
   alias DiscoveryApi.Data.Persistence
   @name_space "discovery-api:project-open-data:"
 
-  def process_project_open_data_event(registry_message) do
+  def process_project_open_data_event(dataset) do
     base_url = Application.get_env(:discovery_api, DiscoveryApiWeb.Endpoint)[:url][:host]
 
     podms_map = %{
       "@type" => "dcat:Dataset",
-      "title" => registry_message.business.dataTitle,
-      "description" => registry_message.business.description,
-      "keyword" => registry_message.business.keywords,
-      "modified" => registry_message.business.modifiedDate,
+      "title" => dataset.business.dataTitle,
+      "description" => dataset.business.description,
+      "keyword" => dataset.business.keywords,
+      "modified" => dataset.business.modifiedDate,
       "publisher" => %{
         "@type" => "org:Organization",
-        "name" => registry_message.business.orgTitle
+        "name" => dataset.business.orgTitle
       },
       "contactPoint" => %{
         "@type" => "vcard:Contact",
-        "fn" => registry_message.business.contactName,
-        "hasEmail" => "mailto:" <> registry_message.business.contactEmail
+        "fn" => dataset.business.contactName,
+        "hasEmail" => "mailto:" <> dataset.business.contactEmail
       },
-      "identifier" => registry_message.id,
+      "identifier" => dataset.id,
       "accessLevel" => "public",
       "distribution" => [
         %{
           "@type" => "dcat:Distribution",
-          "accessURL" => "https://discoveryapi.#{base_url}/api/v1/#{registry_message.id}/download?_format=json",
+          "accessURL" => "https://discoveryapi.#{base_url}/api/v1/#{dataset.id}/download?_format=json",
           "mediaType" => "application/json"
         },
         %{
           "@type" => "dcat:Distribution",
-          "accessURL" => "https://discoveryapi.#{base_url}/api/v1/#{registry_message.id}/download?_format=csv",
+          "accessURL" => "https://discoveryapi.#{base_url}/api/v1/#{dataset.id}/download?_format=csv",
           "mediaType" => "text/csv"
         }
       ]
     }
 
-    Persistence.persist(@name_space <> registry_message.id, podms_map)
+    Persistence.persist(@name_space <> dataset.id, podms_map)
   end
 end

@@ -9,7 +9,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
       generate_dataset("Richard", ~D(2001-09-09))
     ]
 
-    allow(DiscoveryApi.Data.Retriever.get_datasets(), return: mock_dataset_summaries)
+    allow(DiscoveryApi.Data.Dataset.get_all(), return: mock_dataset_summaries)
     :ok
   end
 

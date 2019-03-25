@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
   alias DiscoveryApi.Data.Dataset
 
   test "maps a RegistryMessage to a Dataset" do
-    event = %SCOS.RegistryMessage{
+    event = %SmartCity.Dataset{
       id: "erin",
       business: %{
         dataTitle: "my title",
@@ -15,19 +15,19 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
         modifiedDate: "timestamp"
       },
       technical: %{
-        systemName: "bob"
+        systemName: "foo__bar_baz"
       }
     }
 
     expected = %Dataset{
       id: "erin",
       title: "my title",
+      systemName: "foo__bar_baz",
       keywords: ["key", "words"],
       organization: "publisher",
       modified: "timestamp",
       description: "description",
-      fileTypes: ["CSV"],
-      system_name: "bob"
+      fileTypes: ["CSV"]
     }
 
     expect(Dataset.save(expected), return: {:ok, "OK"})

@@ -11,8 +11,8 @@ defmodule DiscoveryApi.Application do
     children =
       [
         supervisor(DiscoveryApiWeb.Endpoint, []),
-        redis(),
-        dataset_event_consumer()
+        registry_pubsub(),
+        redis()
       ]
       |> List.flatten()
 
@@ -25,28 +25,19 @@ defmodule DiscoveryApi.Application do
     :ok
   end
 
+  defp registry_pubsub() do
+    Application.get_env(:smart_city_registry, :redis)
+    |> case do
+      nil -> []
+      [host: _] -> {SmartCity.Registry.Subscriber, [message_handler: DiscoveryApi.Data.DatasetEventListener]}
+    end
+  end
+
   defp redis do
     Application.get_env(:redix, :host)
     |> case do
       nil -> []
       host -> {Redix, host: host, name: :redix}
-    end
-  end
-
-  defp dataset_event_consumer do
-    Application.get_env(:kaffe, :consumer)[:endpoints]
-    |> case do
-      nil ->
-        []
-
-      _ ->
-        [
-          %{
-            id: Kaffe.Consumer,
-            start: {Kaffe.Consumer, :start_link, []},
-            type: :supervisor
-          }
-        ]
     end
   end
 end

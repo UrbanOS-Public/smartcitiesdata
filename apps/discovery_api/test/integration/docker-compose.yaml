@@ -1,29 +1,5 @@
 version: '3'
 services:
-  zookeeper:
-    image: wurstmeister/zookeeper
-    ports:
-      - "2181:2181"
-    healthcheck:
-      test: ["CMD-SHELL", "echo ruok | nc -w 2 zookeeper 2181"]
-      interval: 5s
-      timeout: 10s
-      retries: 3
-  kafka:
-    image: wurstmeister/kafka:latest
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_ADVERTISED_HOST_NAME: "${HOST}"
-      KAFKA_CREATE_TOPICS: "dataset-registry:1:1"
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-    depends_on:
-      - zookeeper
-    healthcheck:
-      test: ["CMD-SHELL", "cat /opt/kafka/logs/server.log | grep \"Previous Leader Epoch was: -1\""]
-      interval: 10s
-      timeout: 20s
-      retries: 3
   redis:
     image: redis
     ports:
@@ -33,12 +9,18 @@ services:
       interval: 5s
       timeout: 20s
       retries: 3
-  postgres:
-    logging:
-      driver: none
-    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/postgres-testo:latest
+  presto:
+    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/presto-testo:latest
+    depends_on:
+    - metastore
+    - minio
     ports:
-    - "5432:5432"
+    - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:8080/v1/info | grep -q '\"starting\":false'"]
+      interval: 10s
+      timeout: 30s
+      retries: 10
   metastore:
     image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/metastore-testo:latest
     depends_on:
@@ -49,23 +31,11 @@ services:
       /bin/bash -c "
         /opt/hive-metastore/bin/schematool -dbType postgres -validate || /opt/hive-metastore/bin/schematool -dbType postgres -initSchema;
         /opt/hive-metastore/bin/start-metastore"
+  postgres:
+    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/postgres-testo:latest
+    ports:
+    - "5432:5432"
   minio:
     image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/minio-testo:latest
     ports:
     - "9000:9000"
-  presto:
-    depends_on:
-    - metastore
-    - minio
-    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/presto-testo:latest
-    ports:
-    - "8080:8080"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:8080/v1/info | grep -q '\"starting\":false'"]
-      interval: 10s
-      timeout: 30s
-      retries: 10
-  redis:
-    image: redis:latest
-    ports:
-      - "6379:6379"

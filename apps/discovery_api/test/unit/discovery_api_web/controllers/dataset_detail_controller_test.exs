@@ -6,7 +6,7 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
   describe "fetch dataset detail" do
     test "retreives dataset from retriever", %{conn: conn} do
       dataset = Helper.sample_dataset()
-      expect(DiscoveryApi.Data.Retriever.get_dataset(dataset.id), return: dataset)
+      expect(DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset)
 
       actual = conn |> get("/api/v1/dataset/#{dataset.id}") |> json_response(200)
 
@@ -17,7 +17,7 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
     end
 
     test "returns 404", %{conn: conn} do
-      expect(DiscoveryApi.Data.Retriever.get_dataset(any()), return: nil)
+      expect(DiscoveryApi.Data.Dataset.get(any()), return: nil)
 
       conn |> get("/api/v1/dataset/xyz123") |> json_response(404)
     end

@@ -19,6 +19,7 @@ defmodule DiscoveryApi.Data.DatasetTest do
 
     assert actual["id"] == dataset.id
     assert actual["title"] == dataset.title
+    assert actual["systemName"] == dataset.systemName
     assert actual["keywords"] == dataset.keywords
     assert actual["organization"] == dataset.organization
     assert actual["modified"] == dataset.modified
