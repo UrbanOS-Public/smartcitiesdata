@@ -14,9 +14,7 @@ defmodule Reaper.ExtractorTest do
     } do
       Bypass.stub(bypass, "GET", "/1.1/statuses/update.csv", fn conn ->
         conn
-        |> Phoenix.Controller.redirect(
-          external: "http://localhost:#{bypass.port}/1.1/statuses/update2.csv"
-        )
+        |> Phoenix.Controller.redirect(external: "http://localhost:#{bypass.port}/1.1/statuses/update2.csv")
       end)
 
       Bypass.stub(bypass, "GET", "/1.1/statuses/update2.csv", fn conn ->
