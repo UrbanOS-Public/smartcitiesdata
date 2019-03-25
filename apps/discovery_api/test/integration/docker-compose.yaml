@@ -15,7 +15,7 @@ services:
     - redis
     command: >
       redis-cli -h redis set discovery-api:dataset:myguid '{
-        "id": "my-id",
+        "id": "myguid",
         "title": "Super Sweet Data",
         "keywords": ["super", "sweet", "data"],
         "organization": "The Arsenal",
@@ -23,7 +23,7 @@ services:
         "fileTypes": ["csv", "json"],
         "description": "The sweetest of data.",
         "systemName": "the_arsenal__super_sweet_data",
-        "sourceUrl": "example.com/damn-this-data-is-hot.json",
+        "sourceUrl": "http://example.com/damn-this-data-is-hot.json",
         "sourceType": "remote"
       }'
   presto:

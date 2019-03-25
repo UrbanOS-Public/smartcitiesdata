@@ -15,7 +15,9 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
       organization: %{
         name: dataset.organization,
         image: "https://www.cota.com/wp-content/uploads/2016/04/COSI-Image-414x236.jpg"
-      }
+      },
+      sourceType: dataset.sourceType,
+      sourceUrl: dataset.sourceUrl
     }
   end
 end
