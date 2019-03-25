@@ -26,8 +26,8 @@ defmodule Reaper.DataFeedTest do
       expect(Decoder.decode(any(), any()), return: :does_not_matter)
       expect(Cache.dedupe(any(), any()), return: :does_not_matter)
       expect(Loader.load(any(), any(), any()), return: :does_not_matter)
-      expect(Cache.cache(any(), any()), return: :does_not_matter)
-      expect(Persistence.record_last_fetched_timestamp(any(), any(), any()), return: :does_not_matter)
+      expect(Cache.cache(any(), any()), return: [])
+      expect(Persistence.record_last_fetched_timestamp(any(), any()), return: :does_not_matter)
 
       {:noreply, %{timer_ref: timer_ref}} = DataFeed.handle_info(:work, @data_feed_args)
 
@@ -65,7 +65,7 @@ defmodule Reaper.DataFeedTest do
       allow(Extractor.extract(any()), return: :does_not_matter)
       allow(Decoder.decode(any(), any()), return: :does_not_matter)
       allow(Cache.dedupe(any(), any()), return: :does_not_matter)
-      allow(Loader.load(any(), any()), return: :does_not_matter)
+      allow(Loader.load(any(), any(), any()), return: :does_not_matter)
 
       :ok
     end
