@@ -2,7 +2,6 @@ defmodule Forklift.MessageProcessor do
   @moduledoc false
   require Logger
   alias Forklift.{DatasetRegistryServer, CacheClient, DeadLetterQueue}
-  alias SCOS.{RegistryMessage, DataMessage}
 
   @data_topic Application.get_env(:forklift, :data_topic)
   @registry_topic Application.get_env(:forklift, :registry_topic)
@@ -20,18 +19,18 @@ defmodule Forklift.MessageProcessor do
   end
 
   defp process_data_message(raw_message, offset) do
-    case DataMessage.new(raw_message) do
+    case SmartCity.Data.new(raw_message) do
       {:ok, message} ->
         CacheClient.write(raw_message, message.dataset_id, offset)
 
       {:error, reason} ->
         DeadLetterQueue.enqueue(raw_message)
-        Logger.warn("Failed to parse message: #{reason} : #{raw_message}")
+        Logger.warn("Failed to parse message: #{inspect(reason)} : #{raw_message}")
     end
   end
 
   def process_registry_message(value) do
-    with {:ok, registry_message} <- RegistryMessage.new(value) do
+    with {:ok, registry_message} <- SmartCity.Dataset.new(value) do
       DatasetRegistryServer.send_message(registry_message)
     else
       {:error, reason} -> Logger.error("Unable to process message: #{value} : #{inspect(reason)}")

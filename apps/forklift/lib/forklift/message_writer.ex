@@ -33,7 +33,7 @@ defmodule Forklift.MessageWriter do
   end
 
   defp parse_data_message({key, message}) do
-    case DataMessage.new(message) do
+    case SmartCity.Data.new(message) do
       {:ok, value} ->
         {key, value}
 
