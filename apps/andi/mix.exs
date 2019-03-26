@@ -38,7 +38,8 @@ defmodule Andi.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
-      {:smart_city_registry, "~> 2.2", organization: "smartcolumbus_os"}
+      {:faker, "~> 0.12", only: [:test, :integration], runtime: false},
+      {:smart_city_registry, "~> 2.4", organization: "smartcolumbus_os"}
     ]
   end
 end

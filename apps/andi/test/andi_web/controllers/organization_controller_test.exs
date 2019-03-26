@@ -48,11 +48,13 @@ defmodule AndiWeb.OrganizationControllerTest do
     end
   end
 
+  @tag capture_log: true
   test "post /api/ without data returns 500", %{conn: conn} do
     conn = post(conn, @route)
     assert json_response(conn, 500) =~ "Unable to process your request"
   end
 
+  @tag capture_log: true
   test "post /api/ with improperly shaped data returns 500", %{conn: conn} do
     conn = post(conn, @route, %{"invalidData" => 2})
     assert json_response(conn, 500) =~ "Unable to process your request"

@@ -9,8 +9,10 @@ defmodule AndiWeb.DatasetControllerTest do
     allow(Kaffe.Producer.produce_sync(any(), any(), any()), return: :ok)
     allow(Dataset.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
 
+    uuid = Faker.UUID.v4()
+
     request = %{
-      "id" => "uuid",
+      "id" => uuid,
       "technical" => %{
         "dataName" => "dataset",
         "orgName" => "org",
@@ -34,7 +36,7 @@ defmodule AndiWeb.DatasetControllerTest do
     }
 
     message = %{
-      "id" => "uuid",
+      "id" => uuid,
       "technical" => %{
         "dataName" => "dataset",
         "orgName" => "org",
@@ -54,7 +56,6 @@ defmodule AndiWeb.DatasetControllerTest do
       "business" => %{
         "dataTitle" => "dataset title",
         "description" => "description",
-        "keywords" => [],
         "modifiedDate" => "date",
         "orgTitle" => "org title",
         "contactName" => "contact name",
@@ -65,7 +66,7 @@ defmodule AndiWeb.DatasetControllerTest do
       }
     }
 
-    {:ok, request: request, message: message}
+    {:ok, request: request, message: message, id: uuid}
   end
 
   describe "PUT /api/ with valid data" do
@@ -73,17 +74,22 @@ defmodule AndiWeb.DatasetControllerTest do
       [conn: put(conn, @route, request)]
     end
 
-    test "return a 201", %{conn: conn, message: message} do
-      assert json_response(conn, 201) == message
+    test "return a 201", %{conn: conn, id: id} do
+      actual_id =
+        conn
+        |> json_response(201)
+        |> Map.get("id")
+
+      assert id == actual_id
     end
 
-    test "sends dataset to kafka", %{message: message} do
+    test "sends dataset to kafka", %{message: message, id: id} do
       {:ok, struct} = Dataset.new(message)
 
       assert_called(
         Kaffe.Producer.produce_sync(
           "dataset-registry",
-          "uuid",
+          id,
           Jason.encode!(struct)
         ),
         once()
@@ -103,17 +109,22 @@ defmodule AndiWeb.DatasetControllerTest do
       [conn: put(conn, @route, req)]
     end
 
-    test "return 201", %{conn: conn, message: message} do
-      assert json_response(conn, 201) == message
+    test "return 201", %{conn: conn, id: id} do
+      actual_id =
+        conn
+        |> json_response(201)
+        |> Map.get("id")
+
+      assert id == actual_id
     end
 
-    test "sends dataset to kafka", %{message: message} do
+    test "sends dataset to kafka", %{message: message, id: id} do
       {:ok, struct} = Dataset.new(message)
 
       assert_called(
         Kaffe.Producer.produce_sync(
           "dataset-registry",
-          "uuid",
+          id,
           Jason.encode!(struct)
         ),
         once()
@@ -126,11 +137,13 @@ defmodule AndiWeb.DatasetControllerTest do
     end
   end
 
+  @tag capture_log: true
   test "PUT /api/ without data returns 500", %{conn: conn} do
     conn = put(conn, @route)
     assert json_response(conn, 500) =~ "Unable to process your request"
   end
 
+  @tag capture_log: true
   test "PUT /api/ with improperly shaped data returns 500", %{conn: conn} do
     conn = put(conn, @route, %{"id" => 5, "operational" => 2})
     assert json_response(conn, 500) =~ "Unable to process your request"
