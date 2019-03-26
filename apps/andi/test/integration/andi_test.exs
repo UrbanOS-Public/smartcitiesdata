@@ -1,12 +1,22 @@
 defmodule AndiTest do
   use ExUnit.Case
   use Divo
+  use Placebo
 
   alias SmartCity.Organization
 
-  setup_all [:auth, :create_happy_path]
+  setup_all do
+    Paddle.authenticate([cn: "admin"], "admin")
+    org = organization(%{id: "happy-path"})
+    {:ok, response} = create(org)
+    [happy_path: org, response: response]
+  end
 
   describe "successful organization creation" do
+    test "responds with a 201", %{response: response} do
+      assert response.status_code == 201
+    end
+
     test "writes organization to LDAP", %{happy_path: expected} do
       expected_dn = "cn=#{expected.orgName}"
       assert {:ok, [actual]} = Paddle.get(filter: [cn: expected.orgName])
@@ -35,22 +45,28 @@ defmodule AndiTest do
     end
   end
 
-  defp auth(_) do
-    Paddle.authenticate([cn: "admin"], "admin")
-  end
+  describe "failure to persist new organization" do
+    setup do
+      allow(Organization.write(any()), return: {:error, :reason}, meck_options: [:passthrough])
+      org = organization(%{id: "unhappy-path", orgName: "unhappyPath"})
+      {:ok, response} = create(org)
+      [unhappy_path: org, response: response]
+    end
 
-  defp create_happy_path(_) do
-    org = organization(%{id: "happy-path"})
-    create(org)
-    [happy_path: org]
+    test "responds with a 500", %{response: response} do
+      assert response.status_code == 500
+    end
+
+    test "removes organization from LDAP", %{unhappy_path: expected} do
+      assert {:error, :noSuchObject} = Paddle.get(filter: [cn: expected.orgName])
+    end
   end
 
   defp create(org) do
     struct = Jason.encode!(org)
 
-    {:ok, _} =
-      "http://localhost:4000/api/v1/organization"
-      |> HTTPoison.post(struct, [{"content-type", "application/json"}])
+    "http://localhost:4000/api/v1/organization"
+    |> HTTPoison.post(struct, [{"content-type", "application/json"}])
   end
 
   defp organization(overrides) do

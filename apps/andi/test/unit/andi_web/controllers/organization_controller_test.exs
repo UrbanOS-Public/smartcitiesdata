@@ -8,7 +8,6 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   setup do
     allow(Andi.Kafka.send_to_kafka(any()), return: :ok)
-    allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
     allow(Paddle.authenticate(any(), any()), return: :ok)
 
     request = %{
@@ -32,6 +31,7 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   describe "post /api/ with valid data" do
     setup %{conn: conn, request: request} do
+      allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
       allow(Paddle.add(any(), any()), return: :ok)
       [conn: post(conn, @route, request)]
     end
@@ -60,6 +60,7 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   describe "failed write to LDAP" do
     setup do
+      allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
       allow(Paddle.add(any(), any()), return: {:error, :reason})
       :ok
     end
@@ -72,6 +73,20 @@ defmodule AndiWeb.OrganizationControllerTest do
     test "never persists organization to registry", %{conn: conn, request: req} do
       post(conn, @route, req)
       refute_called(Organization.write(any()))
+    end
+  end
+
+  describe "failed write to Redis" do
+    setup %{conn: conn, request: req} do
+      allow(Organization.write(any()), return: {:error, :reason}, meck_options: [:passthrough])
+      allow(Paddle.add(any(), any()), return: :ok, meck_options: [:passthrough])
+      allow(Paddle.delete(any()), return: :ok)
+
+      [conn: post(conn, @route, req), request: req]
+    end
+
+    test "removes organization from LDAP" do
+      assert_called(Paddle.delete(cn: "myOrg"))
     end
   end
 

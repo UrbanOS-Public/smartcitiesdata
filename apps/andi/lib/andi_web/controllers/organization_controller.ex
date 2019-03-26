@@ -8,7 +8,7 @@ defmodule AndiWeb.OrganizationController do
     with {:ok, organization} <- Organization.new(conn.body_params),
          :ok <- Paddle.authenticate([cn: "admin"], "admin"),
          {:ok, ldap_org} <- write_to_ldap(organization),
-         {:ok, _id} <- Organization.write(ldap_org),
+         :ok <- write_to_redis(ldap_org),
          :ok <- Andi.Kafka.send_to_kafka(ldap_org) do
       conn
       |> put_status(:created)
@@ -20,6 +20,15 @@ defmodule AndiWeb.OrganizationController do
         conn
         |> put_status(:internal_server_error)
         |> json("Unable to process your request")
+    end
+  end
+
+  defp write_to_redis(org) do
+    case Organization.write(org) do
+      {:ok, _} -> :ok
+      error ->
+        Paddle.delete([cn: org.orgName])
+        error
     end
   end
 
