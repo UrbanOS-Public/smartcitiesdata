@@ -23,7 +23,7 @@ services:
         "fileTypes": ["csv", "json"],
         "description": "The sweetest of data.",
         "systemName": "the_arsenal__super_sweet_data",
-        "sourceUrl": "http://example.com/damn-this-data-is-hot.json",
+        "sourceUrl": "http://example.com/this-data-is-hot.json",
         "sourceType": "remote"
       }'
   presto:
