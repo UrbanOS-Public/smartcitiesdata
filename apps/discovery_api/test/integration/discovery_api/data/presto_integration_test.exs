@@ -12,13 +12,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
   test "returns empty list when dataset id doesn't exist" do
     dataset_id = "does not exist"
 
-    %{"data" => actual} =
-      "http://localhost:4000/api/v1/dataset/#{dataset_id}/preview"
-      |> HTTPoison.get!()
-      |> Map.get(:body)
-      |> Jason.decode!()
-
-    assert [] == actual
+    assert [] == get_dataset_preview(dataset_id)
   end
 
   @moduletag capture_log: true
@@ -54,13 +48,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
 
     Dataset.write(dataset)
 
-    %{"data" => actual} =
-      "http://localhost:4000/api/v1/dataset/#{dataset_id}/preview"
-      |> HTTPoison.get!()
-      |> Map.get(:body)
-      |> Jason.decode!()
-
-    assert [] == actual
+    assert [] == get_dataset_preview(dataset_id)
   end
 
   @moduletag capture_log: true
@@ -100,25 +88,16 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
 
     Dataset.write(dataset)
 
-    expected = [
-      [1, "bob"],
-      [2, "mike"]
-    ]
+    expected = [[1, "bob"], [2, "mike"]]
 
     Patiently.wait_for!(
-      fn ->
-        if check_dataset_preview(dataset_id) == expected do
-          true
-        else
-          false
-        end
-      end,
+      fn -> get_dataset_preview(dataset_id) == expected end,
       dwell: 1000,
       max_tries: 20
     )
   end
 
-  defp check_dataset_preview(dataset_id) do
+  defp get_dataset_preview(dataset_id) do
     %{"data" => data} =
       "http://localhost:4000/api/v1/dataset/#{dataset_id}/preview"
       |> HTTPoison.get!()

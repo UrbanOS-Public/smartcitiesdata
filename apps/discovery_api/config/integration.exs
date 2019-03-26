@@ -8,6 +8,8 @@ host =
 
 System.put_env("HOST", host)
 
+endpoints = [{to_charlist(host), 9092}]
+
 config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: "integrationtests.example.com", port: {:system, "PORT"}]
 
 config :discovery_api,

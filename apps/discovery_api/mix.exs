@@ -9,7 +9,6 @@ defmodule DiscoveryApi.Mixfile do
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env())
     ]
   end
@@ -30,7 +29,7 @@ defmodule DiscoveryApi.Mixfile do
       {:credo, "~> 0.10", only: [:dev, :test, :integration], runtime: false},
       {:checkov, "~> 0.4.0"},
       {:distillery, "~> 2.0"},
-      {:divo, "~> 1.0.1", only: [:dev, :integration], organization: "smartcolumbus_os"},
+      {:divo, "~> 1.0.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:gettext, "~> 0.11"},
       {:httpoison, "~> 1.5"},
       {:faker, "~> 0.12.0"},
@@ -46,15 +45,12 @@ defmodule DiscoveryApi.Mixfile do
       {:prometheus_plugs, "~> 1.1.1"},
       {:prometheus_phoenix, "~>1.2.0"},
       {:redix, "~> 0.9.3"},
-      {:streaming_metrics, path: "streaming_metrics"},
+      {:streaming_metrics, "~> 2.1.4", organization: "smartcolumbus_os"},
       {:smart_city_registry, "~> 2.2.0", organization: "smartcolumbus_os"},
       {:ex_json_schema, "~> 0.5.7", only: [:test, :integration]}
     ]
   end
 
-  defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/unit/support", "test/utils"]
-  defp elixirc_paths(_), do: ["lib"]
-
-  defp test_paths(:integration), do: ["test/integration"]
-  defp test_paths(_), do: ["test/unit"]
+  defp test_paths(:integration), do: ["test/integration", "test/utils"]
+  defp test_paths(_), do: ["test/unit", "test/utils"]
 end

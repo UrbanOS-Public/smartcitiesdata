@@ -14,6 +14,8 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
       assert dataset.description == actual["description"]
       assert dataset.keywords == actual["keywords"]
       assert dataset.organization == actual["organization"]["name"]
+      assert dataset.sourceType == actual["sourceType"]
+      assert dataset.sourceUrl == actual["sourceUrl"]
     end
 
     test "returns 404", %{conn: conn} do

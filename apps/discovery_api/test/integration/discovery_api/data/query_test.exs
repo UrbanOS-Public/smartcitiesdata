@@ -47,7 +47,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   end
 
   @moduletag capture_log: true
-  test "queries limited data from presto" do
+  test "Queries limited data from presto" do
     actual =
       "http://localhost:4000/api/v1/dataset/#{@dataset_id}/query?limit=2&orderBy=name"
       |> HTTPoison.get!()
@@ -58,7 +58,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   end
 
   @moduletag capture_log: true
-  test "queries data from presto with multiple clauses" do
+  test "Queries data from presto with multiple clauses" do
     actual =
       "http://localhost:4000/api/v1/dataset/#{@dataset_id}/query?limit=2&columns=name&orderBy=name"
       |> HTTPoison.get!()
@@ -69,7 +69,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   end
 
   @moduletag capture_log: true
-  test "queries data from presto with an aggregator" do
+  test "Queries data from presto with an aggregator" do
     actual =
       "http://localhost:4000/api/v1/dataset/#{@dataset_id}/query?columns=count(id),%20name&groupBy=name&orderBy=name"
       |> HTTPoison.get!()

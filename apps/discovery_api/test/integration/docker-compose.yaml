@@ -9,6 +9,23 @@ services:
       interval: 5s
       timeout: 20s
       retries: 3
+  redis-helper:
+    image: redis
+    depends_on:
+    - redis
+    command: >
+      redis-cli -h redis set discovery-api:dataset:myguid '{
+        "id": "myguid",
+        "title": "Super Sweet Data",
+        "keywords": ["super", "sweet", "data"],
+        "organization": "The Arsenal",
+        "modified": "20190823",
+        "fileTypes": ["csv", "json"],
+        "description": "The sweetest of data.",
+        "systemName": "the_arsenal__super_sweet_data",
+        "sourceUrl": "http://example.com/this-data-is-hot.json",
+        "sourceType": "remote"
+      }'
   presto:
     image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/presto-testo:latest
     depends_on:
@@ -27,6 +44,11 @@ services:
     - postgres
     ports:
     - "9083:9083"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 9083"]
+      interval: 10s
+      timeout: 30s
+      retries: 3
     command: >
       /bin/bash -c "
         /opt/hive-metastore/bin/schematool -dbType postgres -validate || /opt/hive-metastore/bin/schematool -dbType postgres -initSchema;

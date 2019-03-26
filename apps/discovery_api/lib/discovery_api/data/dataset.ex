@@ -4,7 +4,18 @@ defmodule DiscoveryApi.Data.Dataset do
   """
   alias DiscoveryApi.Data.Persistence
 
-  defstruct [:id, :title, :keywords, :systemName, :keywords, :organization, :modified, :fileTypes, :description]
+  defstruct [
+    :id,
+    :title,
+    :keywords,
+    :organization,
+    :modified,
+    :fileTypes,
+    :description,
+    :systemName,
+    :sourceUrl,
+    :sourceType
+  ]
 
   @name_space "discovery-api:dataset:"
 

@@ -1,3 +1,23 @@
+defmodule DiscoveryApi.Test.Helper do
+  @moduledoc false
+  alias DiscoveryApi.Data.Dataset
+
+  def sample_dataset(values \\ %{}) do
+    %Dataset{
+      id: Faker.UUID.v4(),
+      title: Faker.Lorem.characters(20..30),
+      keywords: [Faker.Lorem.characters(5), Faker.Lorem.characters(6)],
+      organization: Faker.Lorem.characters(8..10),
+      modified: Date.to_string(Faker.Date.backward(20)),
+      fileTypes: [Faker.Lorem.characters(3), Faker.Lorem.characters(4)],
+      description: Enum.join(Faker.Lorem.sentences(2..3), " "),
+      sourceType: "remote",
+      sourceUrl: Faker.Internet.url()
+    }
+    |> Map.merge(values)
+  end
+end
+
 defmodule DiscoveryApiWeb.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
