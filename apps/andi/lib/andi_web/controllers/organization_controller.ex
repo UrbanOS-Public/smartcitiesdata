@@ -25,16 +25,21 @@ defmodule AndiWeb.OrganizationController do
 
   defp write_to_ldap(org) do
     admin = Application.get_env(:andi, :ldap_admin)
-    group = [cn: org.orgName]
     attrs = [objectClass: ["top", "groupofnames"], cn: org.orgName, member: admin]
+
+    [cn: org.orgName]
+    |> Paddle.add(attrs)
+    |> handle_ldap(org)
+  end
+
+  defp handle_ldap(:ok, org) do
     base = Application.get_env(:paddle, Paddle)[:base]
 
-    with :ok <- Paddle.add(group, attrs),
-         map <- Map.from_struct(org),
-         new_map <- Map.merge(map, %{dn: "cn=#{org.orgName},#{base}"}) do
-      Organization.new(new_map)
-    else
-      error -> error
-    end
+    org
+    |> Map.from_struct()
+    |> Map.merge(%{dn: "cn=#{org.orgName},#{base}"})
+    |> Organization.new
   end
+
+  defp handle_ldap(error, _), do: error
 end
