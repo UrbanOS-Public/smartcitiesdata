@@ -5,7 +5,9 @@ defmodule AndiWeb.OrganizationController do
   alias SmartCity.Organization
 
   def create(conn, _params) do
-    with {:ok, organization} <- Organization.new(conn.body_params),
+    with uuid <- UUID.uuid4(),
+         message <- Map.merge(conn.body_params, %{"id" => uuid}),
+         {:ok, organization} <- Organization.new(message),
          :ok <- Paddle.authenticate([cn: "admin"], "admin"),
          {:ok, ldap_org} <- write_to_ldap(organization),
          :ok <- write_to_redis(ldap_org),
@@ -25,9 +27,11 @@ defmodule AndiWeb.OrganizationController do
 
   defp write_to_redis(org) do
     case Organization.write(org) do
-      {:ok, _} -> :ok
+      {:ok, _} ->
+        :ok
+
       error ->
-        Paddle.delete([cn: org.orgName])
+        Paddle.delete(cn: org.orgName)
         error
     end
   end
@@ -47,7 +51,7 @@ defmodule AndiWeb.OrganizationController do
     org
     |> Map.from_struct()
     |> Map.merge(%{dn: "cn=#{org.orgName},#{base}"})
-    |> Organization.new
+    |> Organization.new()
   end
 
   defp handle_ldap(error, _), do: error

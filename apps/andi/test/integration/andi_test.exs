@@ -7,7 +7,7 @@ defmodule AndiTest do
 
   setup_all do
     Paddle.authenticate([cn: "admin"], "admin")
-    org = organization(%{id: "happy-path"})
+    org = organization()
     {:ok, response} = create(org)
     [happy_path: org, response: response]
   end
@@ -33,14 +33,16 @@ defmodule AndiTest do
       assert actual["member"] == ["cn=admin"]
     end
 
-    test "persists organization for downstream use", %{happy_path: expected} do
-      assert {:ok, actual} = Organization.get(expected.id)
+    test "persists organization for downstream use", %{happy_path: expected, response: resp} do
+      id = Jason.decode!(resp.body)["id"]
+      assert {:ok, actual} = Organization.get(id)
       assert actual.orgName == expected.orgName
     end
 
-    test "persists organization with distinguished name", %{happy_path: expected} do
+    test "persists organization with distinguished name", %{happy_path: expected, response: resp} do
       base = Application.get_env(:paddle, Paddle)[:base]
-      assert {:ok, actual} = Organization.get(expected.id)
+      id = Jason.decode!(resp.body)["id"]
+      assert {:ok, actual} = Organization.get(id)
       assert actual.dn == "cn=#{expected.orgName},#{base}"
     end
   end
@@ -69,9 +71,8 @@ defmodule AndiTest do
     |> HTTPoison.post(struct, [{"content-type", "application/json"}])
   end
 
-  defp organization(overrides) do
+  defp organization(overrides \\ %{}) do
     org_map = %{
-      id: "my-org-id",
       orgTitle: "My Organization",
       orgName: "myOrg",
       description: "test data",
@@ -79,11 +80,7 @@ defmodule AndiTest do
       homepage: "https://github.com"
     }
 
-    {:ok, org} =
-      org_map
-      |> Map.merge(overrides)
-      |> Organization.new()
-
-    org
+    org_map
+    |> Map.merge(overrides)
   end
 end

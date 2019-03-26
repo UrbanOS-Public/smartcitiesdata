@@ -11,13 +11,11 @@ defmodule AndiWeb.OrganizationControllerTest do
     allow(Paddle.authenticate(any(), any()), return: :ok)
 
     request = %{
-      "id" => "uuid",
       "orgName" => "myOrg",
       "orgTitle" => "My Org Title"
     }
 
     message = %{
-      "id" => "uuid",
       "orgName" => "myOrg",
       "orgTitle" => "My Org Title",
       "description" => nil,
@@ -36,25 +34,28 @@ defmodule AndiWeb.OrganizationControllerTest do
       [conn: post(conn, @route, request)]
     end
 
-    test "returns 201", %{conn: conn, message: message} do
-      assert json_response(conn, 201) == message
+    test "returns 201", %{conn: conn, message: %{"orgName" => name}} do
+      response = json_response(conn, 201)
+
+      assert response["orgName"] == name
+      assert uuid?(response["id"])
     end
 
     test "sends organization to kafka", %{message: message} do
-      {:ok, struct} = Organization.new(message)
-      assert_called(Andi.Kafka.send_to_kafka(struct), once())
+      struct = capture(Andi.Kafka.send_to_kafka(any()), 1)
+      assert struct.orgName == message["orgName"]
+      assert uuid?(struct.id)
     end
 
     test "writes organization to registry", %{message: message} do
-      {:ok, struct} = Organization.new(message)
-      assert_called(Organization.write(struct), once())
+      struct = capture(Organization.write(any()), 1)
+      assert struct.orgName == message["orgName"]
+      assert uuid?(struct.id)
     end
 
-    test "writes organization to LDAP", %{message: message} do
-      {:ok, org} = Organization.new(message)
-      attrs = [objectClass: ["top", "groupofnames"], cn: org.orgName, member: "cn=admin"]
-
-      assert_called(Paddle.add([cn: org.orgName], attrs), once())
+    test "writes organization to LDAP", %{message: %{"orgName" => name}} do
+      attrs = [objectClass: ["top", "groupofnames"], cn: name, member: "cn=admin"]
+      assert_called(Paddle.add([cn: name], attrs), once())
     end
   end
 
@@ -99,5 +100,9 @@ defmodule AndiWeb.OrganizationControllerTest do
   test "post /api/ with improperly shaped data returns 500", %{conn: conn} do
     conn = post(conn, @route, %{"invalidData" => 2})
     assert json_response(conn, 500) =~ "Unable to process your request"
+  end
+
+  defp uuid?(str) do
+    str =~ ~r/\b[a-f0-9]{8}\b-\b[a-f0-9]{4}\b-\b[a-f0-9]{4}\b-\b[a-f0-9]{4}\b-\b[a-f0-9]{12}\b/
   end
 end
