@@ -12,3 +12,9 @@ config :libcluster,
 
 config :redix,
   host: "localhost"
+
+System.put_env("HOST", "localhost")
+
+config :reaper,
+  divo: "./docker-compose.yaml",
+  divo_wait: [dwell: 700, max_tries: 50]

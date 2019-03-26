@@ -1,17 +1,13 @@
 defmodule Reaper.FullTest do
   use ExUnit.Case
+  @moduletag timeout: 300_000
   require Logger
-  alias Kaffe.Producer
+  alias SmartCity.Dataset
 
-  @kafka_endpoint Application.get_env(:kaffe, :consumer)[:endpoints]
+  use Divo
+
+  @kafka_endpoint Application.get_env(:kaffe, :producer)[:endpoints]
                   |> Enum.map(fn {k, v} -> {k, v} end)
-
-  @webserver_host Application.get_env(:reaper, :webserver_host, "localhost")
-  @webserver_port Application.get_env(:reaper, :webserver_port, "7000")
-
-  @source_topic Application.get_env(:kaffe, :consumer)
-                |> Keyword.get(:topics)
-                |> List.first()
 
   @destination_topic Application.get_env(:kaffe, :producer)
                      |> Keyword.get(:topics)
@@ -37,30 +33,32 @@ defmodule Reaper.FullTest do
                                  |> Enum.count()
 
   setup_all do
+    Redix.command(:redix, ["FLUSHALL"])
+    bypass = Bypass.open()
+
     pre_existing_registry_message =
       FixtureHelper.new_registry_message(%{
         id: @pre_existing_dataset_id,
         technical: %{
           cadence: 1_000,
-          sourceUrl: "http://#{@webserver_host}:#{@webserver_port}/#{@json_file_name}",
+          sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
           sourceFormat: "json"
         }
       })
 
-    Application.ensure_all_started(:kaffe)
-    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(pre_existing_registry_message))
-    wait_for_absolute_offset(@source_topic, 1)
+    bypass
+    |> bypass_file(@json_file_name)
+    |> bypass_file(@gtfs_file_name)
+    |> bypass_file(@csv_file_name)
 
-    Application.ensure_all_started(:reaper)
-    on_exit(fn -> Application.stop(:reaper) end)
-    wait_for_relative_offset(@destination_topic, @json_dataset_feed_record_count)
+    Dataset.write(pre_existing_registry_message)
 
-    Redix.command(:redix, ["FLUSHALL"])
-
-    :ok
+    {:ok, bypass: bypass}
   end
 
-  test "configures and ingests a json-source that was added before reaper started" do
+  test "configures and ingests a json-source that was added before reaper started", _context do
+    wait_for_relative_offset(@destination_topic, @json_dataset_feed_record_count)
+
     vehicle_id =
       @destination_topic
       |> fetch_registry_feed_messages(@pre_existing_dataset_id)
@@ -70,7 +68,9 @@ defmodule Reaper.FullTest do
     assert vehicle_id == 41_015
   end
 
-  test "configures and ingests a gtfs source" do
+  test "configures and ingests a gtfs source", %{
+    bypass: bypass
+  } do
     dataset_id = "12345-6789"
 
     gtfs_registry_message =
@@ -78,12 +78,12 @@ defmodule Reaper.FullTest do
         id: dataset_id,
         technical: %{
           cadence: 1_000,
-          sourceUrl: "http://#{@webserver_host}:#{@webserver_port}/#{@gtfs_file_name}",
+          sourceUrl: "http://localhost:#{bypass.port}/#{@gtfs_file_name}",
           sourceFormat: "gtfs"
         }
       })
 
-    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(gtfs_registry_message))
+    Dataset.write(gtfs_registry_message)
     wait_for_relative_offset(@destination_topic, @gtfs_dataset_feed_record_count)
 
     vehicle_id =
@@ -95,7 +95,9 @@ defmodule Reaper.FullTest do
     assert vehicle_id == "1004"
   end
 
-  test "saves last_success_time to redis" do
+  test "saves last_success_time to redis", %{
+    bypass: bypass
+  } do
     dataset_id = "12345-5555"
 
     gtfs_registry_message =
@@ -103,12 +105,13 @@ defmodule Reaper.FullTest do
         id: dataset_id,
         technical: %{
           cadence: 1_000,
-          sourceUrl: "http://#{@webserver_host}:#{@webserver_port}/#{@gtfs_file_name}",
+          sourceUrl: "http://localhost:#{bypass.port}/#{@gtfs_file_name}",
           sourceFormat: "gtfs"
         }
       })
 
-    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(gtfs_registry_message))
+    Dataset.write(gtfs_registry_message)
+
     wait_for_relative_offset(@destination_topic, @gtfs_dataset_feed_record_count)
 
     result =
@@ -126,7 +129,9 @@ defmodule Reaper.FullTest do
     end
   end
 
-  test "configures and ingests a json source" do
+  test "configures and ingests a json source", %{
+    bypass: bypass
+  } do
     dataset_id = "23456-7891"
 
     json_registry_message =
@@ -134,12 +139,12 @@ defmodule Reaper.FullTest do
         id: dataset_id,
         technical: %{
           cadence: 1_000,
-          sourceUrl: "http://#{@webserver_host}:#{@webserver_port}/#{@json_file_name}",
+          sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
           sourceFormat: "json"
         }
       })
 
-    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(json_registry_message))
+    Dataset.write(json_registry_message)
     wait_for_relative_offset(@destination_topic, @json_dataset_feed_record_count)
 
     vehicle_id =
@@ -151,7 +156,9 @@ defmodule Reaper.FullTest do
     assert vehicle_id == 51_127
   end
 
-  test "configures and ingests a csv source" do
+  test "configures and ingests a csv source", %{
+    bypass: bypass
+  } do
     dataset_id = "34567-8912"
 
     csv_registry_message =
@@ -159,12 +166,12 @@ defmodule Reaper.FullTest do
         id: dataset_id,
         technical: %{
           cadence: 1_000,
-          sourceUrl: "http://#{@webserver_host}:#{@webserver_port}/#{@csv_file_name}",
+          sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
           sourceFormat: "csv"
         }
       })
 
-    Producer.produce_sync(@source_topic, "does-not-matter", Jason.encode!(csv_registry_message))
+    Dataset.write(csv_registry_message)
     wait_for_relative_offset(@destination_topic, @csv_dataset_feed_record_count)
 
     person_name =
@@ -185,8 +192,8 @@ defmodule Reaper.FullTest do
   defp wait_for_absolute_offset(topic, count) do
     Patiently.wait_for!(
       fn -> enough_offsets_seen?(topic, count) end,
-      dwell: 1000,
-      max_tries: 20
+      dwell: 5000,
+      max_tries: 60
     )
   end
 
@@ -224,5 +231,17 @@ defmodule Reaper.FullTest do
     |> fetch_feed_messages()
     |> Enum.filter(fn %{"dataset_id" => id} -> id == dataset_id end)
     |> Enum.map(fn %{"payload" => payload} -> payload end)
+  end
+
+  defp bypass_file(bypass, file_name) do
+    Bypass.stub(bypass, "GET", "/#{file_name}", fn conn ->
+      Plug.Conn.resp(
+        conn,
+        200,
+        File.read!("test/support/#{file_name}")
+      )
+    end)
+
+    bypass
   end
 end

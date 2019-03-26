@@ -11,15 +11,6 @@ if kafka_brokers do
     |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
   config :kaffe,
-    consumer: [
-      endpoints: endpoints,
-      topics: [System.get_env("FROM_TOPIC")],
-      consumer_group: "reaper-consumer-group",
-      message_handler: Reaper.MessageHandler,
-      offset_reset_policy: :reset_to_earliest,
-      start_with_earliest_message: true,
-      async_message_ack: false
-    ],
     producer: [
       endpoints: endpoints,
       topics: [System.get_env("TO_TOPIC")],

@@ -1,5 +1,4 @@
 reaper:
-  from_topic: dataset-registry
   to_topic: streaming-raw
   replicaCount: 2
   image:

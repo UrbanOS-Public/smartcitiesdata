@@ -7,7 +7,6 @@ Retrieves streamed data, transforms it, and loads it onto a Kafka topic -- gener
 | Variable | Description | Example |
 | -------- | ----------- | ------- |
 | KAFKA_BROKERS | comma delimited list of kafka brokers | kafka1.com:9092,kafka2.com:9092 |
-| FROM_TOPIC | topic from which to read feed configuration | dataset-registry |
 | TO_TOPIC | topic unto which we do the raw data | raw |
 
 ## Running Tests

@@ -5,15 +5,17 @@ defmodule Reaper.MessageHandler do
   alias Reaper.ReaperConfig
   alias SmartCity.Dataset
 
-  def handle_message(%{value: registry_message_string}) do
-    with {:ok, registry_message} <- Dataset.new(registry_message_string),
-         {:ok, reaper_config} <- ReaperConfig.from_registry_message(registry_message) do
-      ConfigServer.process_reaper_config(reaper_config)
+  use SmartCity.Registry.MessageHandler
 
-      :ok
+  def handle_dataset(dataset) do
+    with {:ok, reaper_config} <- ReaperConfig.from_registry_message(dataset) do
+      ConfigServer.process_reaper_config(reaper_config)
     else
-      {:error, reason} -> Logger.error("Skipping registry message for this reason: #{inspect(reason)}")
-      _ -> Logger.error("Unexpected response received")
+      {:error, reason} ->
+        Logger.error("Skipping registry message for this reason: #{inspect(reason)}")
+
+      _ ->
+        Logger.error("Unexpected response received")
     end
   end
 end
