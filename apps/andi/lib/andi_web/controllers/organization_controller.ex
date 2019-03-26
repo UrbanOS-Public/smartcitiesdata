@@ -31,9 +31,8 @@ defmodule AndiWeb.OrganizationController do
 
     with :ok <- Paddle.add(group, attrs),
          map <- Map.from_struct(org),
-         new_map <- Map.merge(map, %{dn: "cn=#{org.orgName},#{base}"}),
-         {:ok, new_org} <- Organization.new(new_map) do
-      {:ok, new_org}
+         new_map <- Map.merge(map, %{dn: "cn=#{org.orgName},#{base}"}) do
+      Organization.new(new_map)
     else
       error -> error
     end

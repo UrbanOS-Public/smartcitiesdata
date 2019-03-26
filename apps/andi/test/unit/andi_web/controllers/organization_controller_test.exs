@@ -7,10 +7,9 @@ defmodule AndiWeb.OrganizationControllerTest do
   alias SmartCity.Organization
 
   setup do
-    allow Andi.Kafka.send_to_kafka(any()), return: :ok
-    allow Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough]
-    allow Paddle.add(any(), any()), return: :ok
-    allow Paddle.authenticate(any(), any()), return: :ok
+    allow(Andi.Kafka.send_to_kafka(any()), return: :ok)
+    allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
+    allow(Paddle.authenticate(any(), any()), return: :ok)
 
     request = %{
       "id" => "uuid",
@@ -33,6 +32,7 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   describe "post /api/ with valid data" do
     setup %{conn: conn, request: request} do
+      allow(Paddle.add(any(), any()), return: :ok)
       [conn: post(conn, @route, request)]
     end
 
@@ -42,23 +42,39 @@ defmodule AndiWeb.OrganizationControllerTest do
 
     test "sends organization to kafka", %{message: message} do
       {:ok, struct} = Organization.new(message)
-      assert_called Andi.Kafka.send_to_kafka(struct), once()
+      assert_called(Andi.Kafka.send_to_kafka(struct), once())
     end
 
     test "writes organization to registry", %{message: message} do
       {:ok, struct} = Organization.new(message)
-      assert_called Organization.write(struct), once()
+      assert_called(Organization.write(struct), once())
     end
 
     test "writes organization to LDAP", %{message: message} do
       {:ok, org} = Organization.new(message)
       attrs = [objectClass: ["top", "groupofnames"], cn: org.orgName, member: "cn=admin"]
 
-      assert_called Paddle.add([cn: org.orgName], attrs), once()
+      assert_called(Paddle.add([cn: org.orgName], attrs), once())
     end
   end
 
-  @tag capture_log: true
+  describe "failed write to LDAP" do
+    setup do
+      allow(Paddle.add(any(), any()), return: {:error, :reason})
+      :ok
+    end
+
+    test "returns 500", %{conn: conn, request: req} do
+      conn = post(conn, @route, req)
+      assert json_response(conn, 500) =~ "Unable to process your request"
+    end
+
+    test "never persists organization to registry", %{conn: conn, request: req} do
+      post(conn, @route, req)
+      refute_called(Organization.write(any()))
+    end
+  end
+
   test "post /api/ without data returns 500", %{conn: conn} do
     conn = post(conn, @route)
     assert json_response(conn, 500) =~ "Unable to process your request"
