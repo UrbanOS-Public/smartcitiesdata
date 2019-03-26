@@ -1,41 +1,14 @@
 defmodule DiscoveryApi.Data.ProjectOpenDataHandler do
   @moduledoc false
   alias DiscoveryApi.Data.Persistence
+  alias DiscoveryApi.Data.Mapper
   @name_space "discovery-api:project-open-data:"
 
   def process_project_open_data_event(dataset) do
-    base_url = Application.get_env(:discovery_api, DiscoveryApiWeb.Endpoint)[:url][:host]
+    host = Application.get_env(:discovery_api, DiscoveryApiWeb.Endpoint)[:url][:host]
+    base_url = "https://discoveryapi.#{host}"
 
-    podms_map = %{
-      "@type" => "dcat:Dataset",
-      "title" => dataset.business.dataTitle,
-      "description" => dataset.business.description,
-      "keyword" => dataset.business.keywords,
-      "modified" => dataset.business.modifiedDate,
-      "publisher" => %{
-        "@type" => "org:Organization",
-        "name" => dataset.business.orgTitle
-      },
-      "contactPoint" => %{
-        "@type" => "vcard:Contact",
-        "fn" => dataset.business.contactName,
-        "hasEmail" => "mailto:" <> dataset.business.contactEmail
-      },
-      "identifier" => dataset.id,
-      "accessLevel" => "public",
-      "distribution" => [
-        %{
-          "@type" => "dcat:Distribution",
-          "accessURL" => "https://discoveryapi.#{base_url}/api/v1/#{dataset.id}/download?_format=json",
-          "mediaType" => "application/json"
-        },
-        %{
-          "@type" => "dcat:Distribution",
-          "accessURL" => "https://discoveryapi.#{base_url}/api/v1/#{dataset.id}/download?_format=csv",
-          "mediaType" => "text/csv"
-        }
-      ]
-    }
+    podms_map = Mapper.to_podms(dataset, base_url)
 
     Persistence.persist(@name_space <> dataset.id, podms_map)
   end
