@@ -11,6 +11,7 @@ defmodule Forklift.Application do
         {Forklift.MessageWriter, name: Forklift.MessageWriter},
         {Forklift.DatasetRegistryServer, name: Forklift.DatasetRegistryServer},
         redis(),
+        dataset_subscriber(),
         kaffe()
       ]
       |> List.flatten()
@@ -27,6 +28,13 @@ defmodule Forklift.Application do
 
       host ->
         {Redix, host: host, name: :redix}
+    end
+  end
+
+  defp dataset_subscriber() do
+    case Application.get_env(:smart_city_registry, :redis) do
+      nil -> []
+      _ -> {SmartCity.Registry.Subscriber, [message_handler: Forklift.MessageProcessor]}
     end
   end
 

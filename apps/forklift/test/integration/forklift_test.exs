@@ -8,7 +8,7 @@ defmodule PersistenceTest do
   test "should insert records into Presto" do
     system_name = "Organization1__Dataset1"
 
-    reg_message =
+    dataset =
       TDG.create_dataset(
         id: "ds1",
         technical: %{
@@ -21,7 +21,7 @@ defmodule PersistenceTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    SmartCity.KafkaHelper.send_to_kafka(reg_message, "dataset-registry")
+    SmartCity.Dataset.write(dataset)
 
     data = TDG.create_data(dataset_id: "ds1", payload: %{"id" => 1, "name" => "George"})
     SmartCity.KafkaHelper.send_to_kafka(data, "streaming-transformed")
