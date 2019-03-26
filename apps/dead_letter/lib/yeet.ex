@@ -1,18 +1,31 @@
-defmodule YEET do
-  @moduledoc """
-  Documentation for YEET.
-  """
+defmodule Yeet do
+  @moduledoc false
 
-  @doc """
-  Hello world.
+  def format_message(app_name, original_message, options \\ []) do
+    stacktrace =
+      case Keyword.get(options, :stacktrace) do
+        nil -> nil
+        e -> Exception.format_stacktrace(e)
+      end
 
-  ## Examples
+    exit =
+      case Keyword.get(options, :exit) do
+        nil -> nil
+        e -> Exception.format_exit(e)
+      end
 
-      iex> YEET.hello()
-      :world
+    error = Keyword.get(options, :error)
+    reason = Keyword.get(options, :reason)
+    timestamp = Keyword.get(options, :timestamp, DateTime.utc_now())
 
-  """
-  def hello do
-    :world
+    %{
+      app: app_name,
+      original_message: Jason.encode!(original_message),
+      stacktrace: stacktrace,
+      exit: exit,
+      error: error,
+      reason: reason,
+      timestamp: timestamp
+    }
   end
 end

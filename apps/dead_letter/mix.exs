@@ -1,4 +1,4 @@
-defmodule YEET.MixProject do
+defmodule Yeet.MixProject do
   use Mix.Project
 
   def project do
@@ -22,7 +22,8 @@ defmodule YEET.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 0.10", only: [:dev, :test], runtime: false}
+      {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
+      {:jason, "~> 1.1"}
     ]
   end
 
