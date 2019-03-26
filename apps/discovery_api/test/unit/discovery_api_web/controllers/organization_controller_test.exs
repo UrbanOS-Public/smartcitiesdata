@@ -20,14 +20,14 @@ defmodule DiscoveryApiWeb.OrganizationControllerTest do
         logoUrl: nil
       }
 
-      expect(SmartCity.Organization.get("1234"), return: Jason.encode!(expected))
+      expect(SmartCity.Organization.get!("1234"), return: Jason.encode!(expected))
       actual = conn |> get("/api/v1/organization/1234") |> json_response(200)
 
       assert Jason.encode!(expected) == actual
     end
 
     test "returns 404 if organization does not exist", %{conn: conn} do
-      expect(SmartCity.Organization.get("1234"), return: nil)
+      expect(SmartCity.Organization.get!("1234"), return: nil)
       actual = conn |> get("/api/v1/organization/1234") |> json_response(404)
 
       assert %{"message" => "Not Found"} = actual

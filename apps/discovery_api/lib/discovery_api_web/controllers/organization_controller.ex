@@ -20,7 +20,7 @@ defmodule DiscoveryApiWeb.OrganizationController do
   end
 
   defp read_from_redis(id) do
-    org = SmartCity.Organization.get(id)
+    org = SmartCity.Organization.get!(id)
     Cachex.put(@cache, id, org)
     org
   end
