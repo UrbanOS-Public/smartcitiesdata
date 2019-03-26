@@ -10,12 +10,28 @@ defmodule AndiTest do
     test "writes organization to LDAP", %{happy_path: expected} do
       expected_dn = "cn=#{expected.orgName}"
       assert {:ok, [actual]} = Paddle.get(filter: [cn: expected.orgName])
-      assert Map.get(actual, "dn") == expected_dn
+      assert actual["dn"] == expected_dn
+    end
+
+    test "writes to LDAP as group", %{happy_path: expected} do
+      assert {:ok, [actual]} = Paddle.get(filter: [cn: expected.orgName])
+      assert actual["objectClass"] == ["top", "groupOfNames"]
+    end
+
+    test "writes to LDAP with an admin member", %{happy_path: expected} do
+      assert {:ok, [actual]} = Paddle.get(filter: [cn: expected.orgName])
+      assert actual["member"] == ["cn=admin"]
     end
 
     test "persists organization for downstream use", %{happy_path: expected} do
       assert {:ok, actual} = Organization.get(expected.id)
       assert actual.orgName == expected.orgName
+    end
+
+    test "persists organization with distinguished name", %{happy_path: expected} do
+      base = Application.get_env(:paddle, Paddle)[:base]
+      assert {:ok, actual} = Organization.get(expected.id)
+      assert actual.dn == "cn=#{expected.orgName},#{base}"
     end
   end
 

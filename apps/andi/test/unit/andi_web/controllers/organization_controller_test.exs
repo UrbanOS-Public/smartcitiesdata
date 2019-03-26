@@ -24,7 +24,8 @@ defmodule AndiWeb.OrganizationControllerTest do
       "orgTitle" => "My Org Title",
       "description" => nil,
       "homepage" => nil,
-      "logoUrl" => nil
+      "logoUrl" => nil,
+      "dn" => "cn=myOrg,dc=foo,dc=bar"
     }
 
     {:ok, request: request, message: message}

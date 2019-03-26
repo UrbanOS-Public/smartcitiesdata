@@ -35,7 +35,7 @@ defmodule KafkaTest do
       Kaffe.Producer.produce_sync(
         "organization-raw",
         "1",
-        "{\"description\":null,\"homepage\":null,\"id\":\"1\",\"logoUrl\":null,\"orgName\":\"Organization One\",\"orgTitle\":\"Title One\"}"
+        "{\"description\":null,\"dn\":null,\"homepage\":null,\"id\":\"1\",\"logoUrl\":null,\"orgName\":\"Organization One\",\"orgTitle\":\"Title One\"}"
       ),
       once()
     )
@@ -47,7 +47,6 @@ defmodule KafkaTest do
     result = Andi.Kafka.send_to_kafka(%{:business => 3, :operational => 4, :id => "5"})
 
     assert result ==
-             {:error,
-              "Send to kafka only suppports SmartCity.Dataset and SmartCity.Organization structs"}
+             {:error, "Send to kafka only suppports SmartCity.Dataset and SmartCity.Organization structs"}
   end
 end

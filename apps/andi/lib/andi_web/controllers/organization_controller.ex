@@ -7,12 +7,12 @@ defmodule AndiWeb.OrganizationController do
   def create(conn, _params) do
     with {:ok, organization} <- Organization.new(conn.body_params),
          :ok <- Paddle.authenticate([cn: "admin"], "admin"),
-         :ok <- write_to_ldap(organization),
-         {:ok, _id} <- Organization.write(organization),
-         :ok <- Andi.Kafka.send_to_kafka(organization) do
+         {:ok, ldap_org} <- write_to_ldap(organization),
+         {:ok, _id} <- Organization.write(ldap_org),
+         :ok <- Andi.Kafka.send_to_kafka(ldap_org) do
       conn
       |> put_status(:created)
-      |> json(organization)
+      |> json(ldap_org)
     else
       error ->
         Logger.error("Failed to create organization: #{inspect(error)}")
@@ -24,13 +24,17 @@ defmodule AndiWeb.OrganizationController do
   end
 
   defp write_to_ldap(org) do
+    admin = Application.get_env(:andi, :ldap_admin)
     group = [cn: org.orgName]
-    attrs = [objectClass: ["top", "groupofnames"], cn: org.orgName, member: "cn=admin"]
+    attrs = [objectClass: ["top", "groupofnames"], cn: org.orgName, member: admin]
+    base = Application.get_env(:paddle, Paddle)[:base]
 
-
-    case Paddle.add(group, attrs) do
-      :ok -> :ok
-      {:error, :entryAlreadyExists} -> :ok
+    with :ok <- Paddle.add(group, attrs),
+         map <- Map.from_struct(org),
+         new_map <- Map.merge(map, %{dn: "cn=#{org.orgName},#{base}"}),
+         {:ok, new_org} <- Organization.new(new_map) do
+      {:ok, new_org}
+    else
       error -> error
     end
   end
