@@ -1,9 +1,6 @@
 defmodule DiscoveryApiWeb.OrganizationController do
   @moduledoc false
   use DiscoveryApiWeb, :controller
-  alias DiscoveryApi.Data.Persistence
-
-  @name_space "smart_city:organization:latest:"
 
   @cache :org_cache
 
@@ -15,22 +12,18 @@ defmodule DiscoveryApiWeb.OrganizationController do
   end
 
   defp get_org(id) do
-    id
-    |> read_from_cache()
-    |> read_from_redis(id)
+    read_from_cache(id) || read_from_redis(id)
   end
 
   defp read_from_cache(id) do
     Cachex.get!(@cache, id)
   end
 
-  defp read_from_redis(nil, id) do
-    org = Persistence.get(@name_space <> id)
+  defp read_from_redis(id) do
+    org = SmartCity.Organization.get(id)
     Cachex.put(@cache, id, org)
     org
   end
-
-  defp read_from_redis(org, _), do: org
 
   def cache_name() do
     @cache

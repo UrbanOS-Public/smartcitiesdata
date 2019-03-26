@@ -1,7 +1,4 @@
 defmodule DiscoveryApiWeb.OrganizationControllerTest do
-  alias SmartCity.Organization
-  alias DiscoveryApi.Data.Persistence
-  # alias DiscoveryApiWeb.OrganizationController
   use DiscoveryApiWeb.ConnCase
   use Placebo
 
@@ -14,7 +11,7 @@ defmodule DiscoveryApiWeb.OrganizationControllerTest do
 
   describe "organization controller" do
     test "fetches organization from redis by org id", %{conn: conn} do
-      expected = %Organization{
+      expected = %SmartCity.Organization{
         id: "1234",
         orgName: "Org Name",
         orgTitle: "Org Title",
@@ -23,14 +20,14 @@ defmodule DiscoveryApiWeb.OrganizationControllerTest do
         logoUrl: nil
       }
 
-      expect(Persistence.get("smart_city:organization:latest:1234"), return: Jason.encode!(expected))
+      expect(SmartCity.Organization.get("1234"), return: Jason.encode!(expected))
       actual = conn |> get("/api/v1/organization/1234") |> json_response(200)
 
       assert Jason.encode!(expected) == actual
     end
 
     test "returns 404 if organization does not exist", %{conn: conn} do
-      expect(Persistence.get("smart_city:organization:latest:1234"), return: nil)
+      expect(SmartCity.Organization.get("1234"), return: nil)
       actual = conn |> get("/api/v1/organization/1234") |> json_response(404)
 
       assert %{"message" => "Not Found"} = actual
