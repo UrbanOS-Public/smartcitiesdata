@@ -17,17 +17,20 @@ defmodule Reaper.FullTest do
   @gtfs_file_name "gtfs-realtime.pb"
   @csv_file_name "random_stuff.csv"
 
+  schema = [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
+
   @json_dataset_feed_record_count "test/support/#{@json_file_name}"
                                   |> File.read!()
-                                  |> Reaper.Decoder.decode("json")
+                                  |> Reaper.Decoder.decode("json", nil)
                                   |> Enum.count()
+
   @gtfs_dataset_feed_record_count "test/support/#{@gtfs_file_name}"
                                   |> File.read!()
-                                  |> Reaper.Decoder.decode("gtfs")
+                                  |> Reaper.Decoder.decode("gtfs", nil)
                                   |> Enum.count()
   @csv_dataset_feed_record_count "test/support/#{@csv_file_name}"
                                  |> File.read!()
-                                 |> Reaper.Decoder.decode("csv")
+                                 |> Reaper.Decoder.decode("csv", schema)
                                  |> Enum.count()
 
   describe "pre-existing dataset" do
@@ -49,7 +52,6 @@ defmodule Reaper.FullTest do
       |> bypass_file(@json_file_name)
 
       Dataset.write(pre_existing_dataset)
-
       {:ok, bypass: bypass}
     end
 
@@ -162,7 +164,8 @@ defmodule Reaper.FullTest do
           technical: %{
             cadence: 1_000,
             sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
-            sourceFormat: "csv"
+            sourceFormat: "csv",
+            schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
           }
         })
 
@@ -177,7 +180,7 @@ defmodule Reaper.FullTest do
 
           case result do
             nil -> false
-            message -> message["name"] == "Erin"
+            message -> message["name"] == "Austin"
           end
         end,
         dwell: 1000,

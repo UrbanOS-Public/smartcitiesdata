@@ -16,6 +16,7 @@ defmodule Reaper.MessageHandlerTest do
           sourceUrl: dataset.technical.sourceUrl,
           sourceFormat: dataset.technical.sourceFormat,
           sourceType: dataset.technical.sourceType,
+          schema: dataset.technical.schema,
           queryParams: dataset.technical.queryParams
         })
 

@@ -2,6 +2,7 @@ defmodule Reaper.ReaperConfig do
   @moduledoc false
 
   @derive Jason.Encoder
+
   defstruct [
     :dataset_id,
     :cadence,
@@ -10,7 +11,8 @@ defmodule Reaper.ReaperConfig do
     :sourceUrl,
     :sourceType,
     :partitioner,
-    :queryParams
+    :queryParams,
+    :schema
   ]
 
   def from_dataset(%SmartCity.Dataset{} = dataset) do
@@ -21,6 +23,7 @@ defmodule Reaper.ReaperConfig do
       sourceUrl: dataset.technical.sourceUrl,
       sourceType: dataset.technical.sourceType,
       partitioner: dataset.technical.partitioner,
+      schema: dataset.technical.schema,
       queryParams: dataset.technical.queryParams
     }
 

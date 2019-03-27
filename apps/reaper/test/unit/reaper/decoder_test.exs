@@ -2,30 +2,50 @@ defmodule Reaper.DecoderTest do
   use ExUnit.Case
   use Placebo
   alias Reaper.Decoder
+  alias SmartCity.TestDataGenerator, as: TDG
 
   describe(".decode") do
     test "when given GTFS protobuf body and a gtfs format it returns it as a list of entities" do
       entities =
         "test/support/gtfs-realtime.pb"
         |> File.read!()
-        |> Decoder.decode("gtfs")
+        |> Decoder.decode("gtfs", nil)
 
       assert Enum.count(entities) == 176
       assert entities |> List.first() |> Map.get(:id) == "1004"
     end
 
     test "when given a CSV string body and a csv format it returns it as a Map" do
-      structure =
-        ~s(id, name, pet\n1, erin, bella\n2, ben, max\n\n)
-        |> Decoder.decode("csv")
+      dataset =
+        TDG.create_dataset(%{id: "cool", technical: %{schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]}})
 
-      assert structure |> List.first() |> Map.has_key?("name")
+      reaper_config =
+        FixtureHelper.new_reaper_config(%{
+          dataset_id: dataset.id,
+          cadence: dataset.technical.cadence,
+          sourceUrl: dataset.technical.sourceUrl,
+          sourceFormat: dataset.technical.sourceFormat,
+          schema: dataset.technical.schema,
+          queryParams: dataset.technical.queryParams
+        })
+
+      expected = [
+        %{"id" => "1", "name" => "Johnson", "pet" => "Spot"},
+        %{"id" => "2", "name" => "Erin", "pet" => "Bella"},
+        %{"id" => "3", "name" => "Ben", "pet" => "Max"}
+      ]
+
+      actual =
+        ~s(1, Johnson, Spot\n2, Erin, Bella\n3, Ben, Max\n\n)
+        |> Decoder.decode("csv", reaper_config.schema)
+
+      assert actual == expected
     end
 
     test "when given a JSON string body and a json format it returns it as a Map" do
       structure =
         ~s({"vehicle_id":22471,"update_time":"2019-01-02T16:15:50.662532+00:00","longitude":-83.0085,"latitude":39.9597})
-        |> Decoder.decode("json")
+        |> Decoder.decode("json", nil)
 
       assert Map.has_key?(structure, "vehicle_id")
     end

@@ -12,7 +12,6 @@ defmodule Reaper.DataFeed do
 
   ## CLIENT
 
-  @spec update(atom() | pid() | {atom(), any()} | {:via, atom(), any()}, any()) :: :ok
   def update(data_feed, state) do
     GenServer.cast(data_feed, {:update, state})
   end
@@ -42,7 +41,7 @@ defmodule Reaper.DataFeed do
     reaper_config
     |> UrlBuilder.build()
     |> Extractor.extract()
-    |> Decoder.decode(reaper_config.sourceFormat)
+    |> Decoder.decode(reaper_config.sourceFormat, reaper_config.schema)
     |> Cache.dedupe(cache)
     |> Loader.load(reaper_config, generated_time_stamp)
     |> Cache.cache(cache)

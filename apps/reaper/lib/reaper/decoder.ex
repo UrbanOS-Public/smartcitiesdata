@@ -2,7 +2,7 @@ defmodule Reaper.Decoder do
   @moduledoc false
   alias TransitRealtime.FeedMessage
 
-  def decode(body, "gtfs") do
+  def decode(body, "gtfs", _schema) do
     message =
       body
       |> FeedMessage.decode()
@@ -10,16 +10,18 @@ defmodule Reaper.Decoder do
     message.entity
   end
 
-  def decode(body, "json") do
+  def decode(body, "json", _schema) do
     body
     |> Jason.decode!()
   end
 
-  def decode(body, "csv") do
+  def decode(body, "csv", schema) do
+    keys = Enum.map(schema, fn el -> el.name end)
+
     body
     |> String.trim()
     |> String.split("\n")
-    |> CSV.decode!(headers: true, strip_fields: true)
+    |> CSV.decode!(headers: keys, strip_fields: true)
     |> Enum.to_list()
   end
 end
