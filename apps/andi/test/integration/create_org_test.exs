@@ -4,6 +4,7 @@ defmodule Andi.CreateOrgTest do
   use Placebo
 
   alias SmartCity.Organization
+  alias SmartCity.TestDataGenerator, as: TDG
 
   setup_all do
     Paddle.authenticate([cn: "admin"], "admin")
@@ -50,7 +51,7 @@ defmodule Andi.CreateOrgTest do
   describe "failure to persist new organization" do
     setup do
       allow(Organization.write(any()), return: {:error, :reason}, meck_options: [:passthrough])
-      org = organization(%{id: "unhappy-path", orgName: "unhappyPath"})
+      org = organization(%{orgName: "unhappyPath"})
       {:ok, response} = create(org)
       [unhappy_path: org, response: response]
     end
@@ -72,15 +73,8 @@ defmodule Andi.CreateOrgTest do
   end
 
   defp organization(overrides \\ %{}) do
-    org_map = %{
-      orgTitle: "My Organization",
-      orgName: "myOrg",
-      description: "test data",
-      logoUrl: "https://google.com",
-      homepage: "https://github.com"
-    }
-
-    org_map
-    |> Map.merge(overrides)
+    TDG.create_organization(overrides)
+    |> Map.from_struct()
+    |> Map.delete(:id)
   end
 end

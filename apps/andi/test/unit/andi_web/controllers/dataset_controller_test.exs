@@ -4,6 +4,7 @@ defmodule AndiWeb.DatasetControllerTest do
 
   @route "/api/v1/dataset"
   alias SmartCity.Dataset
+  alias SmartCity.TestDataGenerator, as: TDG
 
   setup do
     allow(Kaffe.Producer.produce_sync(any(), any(), any()), return: :ok)
@@ -20,38 +21,17 @@ defmodule AndiWeb.DatasetControllerTest do
         "sourceUrl" => "https://example.com",
         "sourceType" => "stream",
         "sourceFormat" => "gtfs",
-        "cadence" => 9000
-      },
-      "business" => %{
-        "dataTitle" => "dataset title",
-        "description" => "description",
-        "modifiedDate" => "date",
-        "orgTitle" => "org title",
-        "contactName" => "contact name",
-        "contactEmail" => "contact@email.com",
-        "license" => "license",
-        "rights" => "rights information",
-        "homepage" => ""
-      }
-    }
-
-    message = %{
-      "id" => uuid,
-      "technical" => %{
-        "dataName" => "dataset",
-        "orgName" => "org",
-        "systemName" => "org__dataset",
-        "stream" => false,
-        "sourceUrl" => "https://example.com",
-        "sourceFormat" => "gtfs",
-        "sourceType" => "stream",
         "cadence" => 9000,
-        "headers" => %{},
-        "queryParams" => %{},
+        "schema" => [],
+        "headers" => %{
+          "accepts" => "application/foobar"
+        },
+        "queryParams" => %{
+          "apiKey" => "foobar"
+        },
+        "systemName" => "org__dataset",
         "transformations" => [],
-        "validations" => [],
-        "partitioner" => %{"query" => nil, "type" => nil},
-        "schema" => []
+        "validations" => []
       },
       "business" => %{
         "dataTitle" => "dataset title",
@@ -62,11 +42,19 @@ defmodule AndiWeb.DatasetControllerTest do
         "contactEmail" => "contact@email.com",
         "license" => "license",
         "rights" => "rights information",
-        "homepage" => ""
+        "homepage" => "",
+        "keywords" => []
       }
     }
 
-    {:ok, request: request, message: message, id: uuid}
+    message =
+      request
+      |> SmartCity.Helpers.to_atom_keys()
+      |> TDG.create_dataset()
+      |> Jason.encode!()
+      |> Jason.decode!()
+
+    {:ok, request: request, message: message}
   end
 
   describe "PUT /api/ with valid data" do
