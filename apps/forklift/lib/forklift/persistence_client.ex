@@ -3,13 +3,18 @@ defmodule Forklift.PersistenceClient do
   require Logger
   alias Forklift.{DatasetRegistryServer, Statement}
 
+  def upload_data(_dataset_id, []) do
+    Logger.debug("No records to persist!")
+    :ok
+  end
+
   def upload_data(dataset_id, messages) do
     dataset_id
     |> DatasetRegistryServer.get_schema()
     |> Statement.build(messages)
     |> execute_statement()
 
-    Logger.info("Persisting #{inspect(Enum.count(messages))} records for #{dataset_id}")
+    Logger.debug("Persisting #{inspect(Enum.count(messages))} records for #{dataset_id}")
 
     :ok
   rescue

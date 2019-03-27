@@ -3,6 +3,8 @@ defmodule Forklift.Application do
 
   use Application
 
+  def redis_connection(), do: :redix
+
   def start(_type, _args) do
     children =
       [
@@ -10,6 +12,7 @@ defmodule Forklift.Application do
         {Task.Supervisor, name: Forklift.TaskSupervisor},
         {Forklift.MessageWriter, name: Forklift.MessageWriter},
         {Forklift.DatasetRegistryServer, name: Forklift.DatasetRegistryServer},
+        Forklift.DataBuffer,
         redis(),
         dataset_subscriber(),
         kaffe()
@@ -27,7 +30,7 @@ defmodule Forklift.Application do
         []
 
       host ->
-        {Redix, host: host, name: :redix}
+        {Redix, host: host, name: redis_connection()}
     end
   end
 

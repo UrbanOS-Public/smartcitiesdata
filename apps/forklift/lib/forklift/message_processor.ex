@@ -2,16 +2,16 @@ defmodule Forklift.MessageProcessor do
   @moduledoc false
   use SmartCity.Registry.MessageHandler
   require Logger
-  alias Forklift.{DatasetRegistryServer, CacheClient, DeadLetterQueue}
+  alias Forklift.{DatasetRegistryServer, DataBuffer, DeadLetterQueue}
 
   def handle_messages(messages) do
     Enum.each(messages, &process_data_message/1)
   end
 
-  defp process_data_message(%{value: raw_message, partition: partition, offset: offset}) do
+  defp process_data_message(%{value: raw_message}) do
     case SmartCity.Data.new(raw_message) do
-      {:ok, message} ->
-        CacheClient.write(raw_message, message.dataset_id, partition, offset)
+      {:ok, data} ->
+        DataBuffer.write(data)
 
       {:error, reason} ->
         DeadLetterQueue.enqueue(raw_message)
