@@ -14,12 +14,6 @@ config :andi,
   ldap_user: [cn: "admin"],
   ldap_pass: "admin"
 
-config :kaffe,
-  producer: [
-    endpoints: [{to_charlist(host), 9092}],
-    topics: ["dataset-registry"]
-  ]
-
 config :smart_city_registry,
   redis: [host: host]
 

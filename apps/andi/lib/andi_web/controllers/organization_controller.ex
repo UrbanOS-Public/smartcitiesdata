@@ -10,8 +10,7 @@ defmodule AndiWeb.OrganizationController do
     with {:ok, organization} <- Organization.new(message),
          :ok <- authenticate(),
          {:ok, ldap_org} <- write_to_ldap(organization),
-         :ok <- write_to_redis(ldap_org),
-         :ok <- Andi.Kafka.send_to_kafka(ldap_org) do
+         :ok <- write_to_redis(ldap_org) do
       conn
       |> put_status(:created)
       |> json(ldap_org)

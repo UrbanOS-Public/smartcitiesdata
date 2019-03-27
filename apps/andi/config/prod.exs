@@ -22,8 +22,3 @@ config :andi, AndiWeb.Endpoint,
   server: true,
   root: ".",
   version: Application.spec(:andi, :vsn)
-
-config :kaffe,
-  producer: [
-    topics: ["dataset-registry"]
-  ]

@@ -7,7 +7,6 @@ defmodule AndiWeb.OrganizationControllerTest do
   alias SmartCity.Organization
 
   setup do
-    allow(Andi.Kafka.send_to_kafka(any()), return: :ok)
     allow(Paddle.authenticate(any(), any()), return: :ok)
 
     request = %{
@@ -39,12 +38,6 @@ defmodule AndiWeb.OrganizationControllerTest do
 
       assert response["orgName"] == name
       assert uuid?(response["id"])
-    end
-
-    test "sends organization to kafka", %{message: message} do
-      struct = capture(Andi.Kafka.send_to_kafka(any()), 1)
-      assert struct.orgName == message["orgName"]
-      assert uuid?(struct.id)
     end
 
     test "writes organization to registry", %{message: message} do

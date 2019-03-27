@@ -13,12 +13,6 @@ config :andi, AndiWeb.Endpoint,
   check_origin: false,
   watchers: []
 
-config :kaffe,
-  producer: [
-    endpoints: [localhost: 9092],
-    topics: ["dataset-registry"]
-  ]
-
 config :smart_city_registry,
   redis: [
     host: "localhost"

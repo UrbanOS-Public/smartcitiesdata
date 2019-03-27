@@ -8,11 +8,6 @@ image:
 monitoring:
   targetPort: 80 
 
-kafka:
-  #comma delimited list of kafka seed brokers
-  brokers: "streaming-service-kafka-bootstrap.streaming-prime"
-  strimziCluster: streaming-service # http://strimzi.io/docs/0.4.0/#_topic_configmap
-
 redis:
   host: redis.external-services
 

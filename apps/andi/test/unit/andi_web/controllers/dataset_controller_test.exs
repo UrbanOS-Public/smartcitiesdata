@@ -7,7 +7,6 @@ defmodule AndiWeb.DatasetControllerTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   setup do
-    allow(Kaffe.Producer.produce_sync(any(), any(), any()), return: :ok)
     allow(Dataset.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
 
     uuid = Faker.UUID.v4()
@@ -71,19 +70,6 @@ defmodule AndiWeb.DatasetControllerTest do
       assert id == actual_id
     end
 
-    test "sends dataset to kafka", %{message: message, id: id} do
-      {:ok, struct} = Dataset.new(message)
-
-      assert_called(
-        Kaffe.Producer.produce_sync(
-          "dataset-registry",
-          id,
-          Jason.encode!(struct)
-        ),
-        once()
-      )
-    end
-
     test "writes data to registry", %{message: message} do
       {:ok, struct} = Dataset.new(message)
 
@@ -104,19 +90,6 @@ defmodule AndiWeb.DatasetControllerTest do
         |> Map.get("id")
 
       assert id == actual_id
-    end
-
-    test "sends dataset to kafka", %{message: message, id: id} do
-      {:ok, struct} = Dataset.new(message)
-
-      assert_called(
-        Kaffe.Producer.produce_sync(
-          "dataset-registry",
-          id,
-          Jason.encode!(struct)
-        ),
-        once()
-      )
     end
 
     test "writes to dataset registry", %{message: message} do

@@ -31,7 +31,6 @@ defmodule Andi.MixProject do
     [
       {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
       {:distillery, "~> 2.0", runtime: false},
-      {:kaffe, "~> 1.8"},
       {:placebo, "~> 1.2.1", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4.0"},
       {:phoenix_pubsub, "~> 1.1"},
