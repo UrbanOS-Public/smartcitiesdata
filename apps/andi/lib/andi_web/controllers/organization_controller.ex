@@ -38,9 +38,9 @@ defmodule AndiWeb.OrganizationController do
 
   defp write_to_ldap(org) do
     admin =
-      Application.get_env(:andi, :ldap_user)
-      |> Enum.map(fn {k, v} -> "#{k}=#{v}" end)
-      |> Enum.join(",")
+      :andi
+      |> Application.get_env(:ldap_user)
+      |> Andi.LdapUtils.encode_dn!()
 
     attrs = [objectClass: ["top", "groupofnames"], cn: org.orgName, member: admin]
 
