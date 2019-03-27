@@ -25,6 +25,5 @@ config :andi, AndiWeb.Endpoint,
 
 config :kaffe,
   producer: [
-    endpoints: [kafka: 9092],
     topics: ["dataset-registry"]
   ]
