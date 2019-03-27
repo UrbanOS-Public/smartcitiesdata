@@ -10,7 +10,7 @@ services:
       timeout: 10s
       retries: 3
   kafka:
-    image: wurstmeister/kafka:latest
+    image: wurstmeister/kafka
     ports:
       - "9092:9092"
     environment:
@@ -20,7 +20,7 @@ services:
     depends_on:
       - zookeeper
     healthcheck:
-      test: ["CMD-SHELL", "cat /opt/kafka/logs/server.log | grep \"Previous Leader Epoch was: -1\""]
+      test: ["CMD-SHELL", "kafka-topics.sh --zookeeper zookeeper:2181 --list | grep streaming-raw || exit 1"]
       interval: 10s
       timeout: 20s
       retries: 3

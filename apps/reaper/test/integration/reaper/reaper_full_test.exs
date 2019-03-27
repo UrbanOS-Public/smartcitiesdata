@@ -1,16 +1,14 @@
 defmodule Reaper.FullTest do
   use ExUnit.Case
-  @moduletag timeout: 300_000
+  use Divo
   require Logger
   alias SmartCity.Dataset
-
-  use Divo
+  alias SmartCity.TestDataGenerator, as: TDG
 
   @kafka_endpoint Application.get_env(:kaffe, :producer)[:endpoints]
                   |> Enum.map(fn {k, v} -> {k, v} end)
 
-  @destination_topic Application.get_env(:kaffe, :producer)
-                     |> Keyword.get(:topics)
+  @destination_topic Application.get_env(:kaffe, :producer)[:topics]
                      |> List.first()
 
   @pre_existing_dataset_id "00000-0000"
@@ -32,182 +30,209 @@ defmodule Reaper.FullTest do
                                  |> Reaper.Decoder.decode("csv")
                                  |> Enum.count()
 
-  setup_all do
-    Redix.command(:redix, ["FLUSHALL"])
-    bypass = Bypass.open()
+  describe "pre-existing dataset" do
+    setup do
+      Redix.command(:redix, ["FLUSHALL"])
+      bypass = Bypass.open()
 
-    pre_existing_registry_message =
-      FixtureHelper.new_registry_message(%{
-        id: @pre_existing_dataset_id,
-        technical: %{
-          cadence: 1_000,
-          sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
-          sourceFormat: "json"
-        }
-      })
+      pre_existing_dataset =
+        TDG.create_dataset(%{
+          id: @pre_existing_dataset_id,
+          technical: %{
+            cadence: 1_000,
+            sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
+            sourceFormat: "json"
+          }
+        })
 
-    bypass
-    |> bypass_file(@json_file_name)
-    |> bypass_file(@gtfs_file_name)
-    |> bypass_file(@csv_file_name)
+      bypass
+      |> bypass_file(@json_file_name)
 
-    Dataset.write(pre_existing_registry_message)
+      Dataset.write(pre_existing_dataset)
 
-    {:ok, bypass: bypass}
-  end
+      {:ok, bypass: bypass}
+    end
 
-  test "configures and ingests a json-source that was added before reaper started", _context do
-    wait_for_relative_offset(@destination_topic, @json_dataset_feed_record_count)
+    test "configures and ingests a json-source that was added before reaper started" do
+      expected = %{
+        "latitude" => 39.9613,
+        "vehicle_id" => 41_015,
+        "update_time" => "2019-02-14T18:53:23.498889+00:00",
+        "longitude" => -83.0074
+      }
 
-    vehicle_id =
-      @destination_topic
-      |> fetch_registry_feed_messages(@pre_existing_dataset_id)
-      |> List.last()
-      |> Map.get("vehicle_id")
+      Patiently.wait_for!(
+        fn ->
+          result =
+            @pre_existing_dataset_id
+            |> fetch_relevant_messages()
+            |> List.last()
 
-    assert vehicle_id == 41_015
-  end
-
-  test "configures and ingests a gtfs source", %{
-    bypass: bypass
-  } do
-    dataset_id = "12345-6789"
-
-    gtfs_registry_message =
-      FixtureHelper.new_registry_message(%{
-        id: dataset_id,
-        technical: %{
-          cadence: 1_000,
-          sourceUrl: "http://localhost:#{bypass.port}/#{@gtfs_file_name}",
-          sourceFormat: "gtfs"
-        }
-      })
-
-    Dataset.write(gtfs_registry_message)
-    wait_for_relative_offset(@destination_topic, @gtfs_dataset_feed_record_count)
-
-    vehicle_id =
-      @destination_topic
-      |> fetch_registry_feed_messages(dataset_id)
-      |> List.first()
-      |> Map.get("id")
-
-    assert vehicle_id == "1004"
-  end
-
-  test "saves last_success_time to redis", %{
-    bypass: bypass
-  } do
-    dataset_id = "12345-5555"
-
-    gtfs_registry_message =
-      FixtureHelper.new_registry_message(%{
-        id: dataset_id,
-        technical: %{
-          cadence: 1_000,
-          sourceUrl: "http://localhost:#{bypass.port}/#{@gtfs_file_name}",
-          sourceFormat: "gtfs"
-        }
-      })
-
-    Dataset.write(gtfs_registry_message)
-
-    wait_for_relative_offset(@destination_topic, @gtfs_dataset_feed_record_count)
-
-    result =
-      Redix.command!(:redix, ["GET", "reaper:derived:#{dataset_id}"])
-      |> Jason.decode!()
-
-    result["timestamp"]
-    |> DateTime.from_iso8601()
-    |> case do
-      {:ok, date_time_from_redis, _} ->
-        assert DateTime.diff(date_time_from_redis, DateTime.utc_now()) < 5
-
-      _ ->
-        flunk("Should have put a valid DateTime into redis")
+          result == expected
+        end,
+        dwell: 1000,
+        max_tries: 20
+      )
     end
   end
 
-  test "configures and ingests a json source", %{
-    bypass: bypass
-  } do
-    dataset_id = "23456-7891"
+  describe "No pre-existing datasets" do
+    setup do
+      Redix.command(:redix, ["FLUSHALL"])
+      bypass = Bypass.open()
 
-    json_registry_message =
-      FixtureHelper.new_registry_message(%{
-        id: dataset_id,
-        technical: %{
-          cadence: 1_000,
-          sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
-          sourceFormat: "json"
-        }
-      })
+      bypass
+      |> bypass_file(@gtfs_file_name)
+      |> bypass_file(@json_file_name)
+      |> bypass_file(@csv_file_name)
 
-    Dataset.write(json_registry_message)
-    wait_for_relative_offset(@destination_topic, @json_dataset_feed_record_count)
+      {:ok, bypass: bypass}
+    end
 
-    vehicle_id =
-      @destination_topic
-      |> fetch_registry_feed_messages(dataset_id)
-      |> List.first()
-      |> Map.get("vehicle_id")
+    test "configures and ingests a gtfs source", %{bypass: bypass} do
+      dataset_id = "12345-6789"
 
-    assert vehicle_id == 51_127
-  end
+      gtfs_dataset =
+        TDG.create_dataset(%{
+          id: dataset_id,
+          technical: %{
+            cadence: 1_000,
+            sourceUrl: "http://localhost:#{bypass.port}/#{@gtfs_file_name}",
+            sourceFormat: "gtfs"
+          }
+        })
 
-  test "configures and ingests a csv source", %{
-    bypass: bypass
-  } do
-    dataset_id = "34567-8912"
+      Dataset.write(gtfs_dataset)
 
-    csv_registry_message =
-      FixtureHelper.new_registry_message(%{
-        id: dataset_id,
-        technical: %{
-          cadence: 1_000,
-          sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
-          sourceFormat: "csv"
-        }
-      })
+      Patiently.wait_for!(
+        fn ->
+          result =
+            dataset_id
+            |> fetch_relevant_messages()
+            |> List.first()
 
-    Dataset.write(csv_registry_message)
-    wait_for_relative_offset(@destination_topic, @csv_dataset_feed_record_count)
+          case result do
+            nil -> false
+            message -> message["id"] == "1004"
+          end
+        end,
+        dwell: 1000,
+        max_tries: 20
+      )
+    end
 
-    person_name =
-      @destination_topic
-      |> fetch_registry_feed_messages(dataset_id)
-      |> List.first()
-      |> Map.get("name")
+    test "configures and ingests a json source", %{bypass: bypass} do
+      dataset_id = "23456-7891"
 
-    assert person_name == "Erin"
-  end
+      json_dataset =
+        TDG.create_dataset(%{
+          id: dataset_id,
+          technical: %{
+            cadence: 1_000,
+            sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
+            sourceFormat: "json"
+          }
+        })
 
-  defp wait_for_relative_offset(topic, count) do
-    {:ok, last_offset} = :brod_utils.resolve_offset(@kafka_endpoint, topic, 0, -1, [])
+      Dataset.write(json_dataset)
 
-    wait_for_absolute_offset(topic, last_offset + count)
-  end
+      Patiently.wait_for!(
+        fn ->
+          result =
+            dataset_id
+            |> fetch_relevant_messages()
+            |> List.first()
 
-  defp wait_for_absolute_offset(topic, count) do
-    Patiently.wait_for!(
-      fn -> enough_offsets_seen?(topic, count) end,
-      dwell: 5000,
-      max_tries: 60
-    )
-  end
+          case result do
+            nil -> false
+            message -> message["vehicle_id"] == 51_127
+          end
+        end,
+        dwell: 1000,
+        max_tries: 20
+      )
+    end
 
-  defp enough_offsets_seen?(topic, count) do
-    case :brod_utils.resolve_offset(@kafka_endpoint, topic, 0, -1, []) do
-      {:ok, last_offset} ->
-        last_offset == count
+    test "configures and ingests a csv source", %{bypass: bypass} do
+      dataset_id = "34567-8912"
 
-      _ ->
-        false
+      csv_dataset =
+        TDG.create_dataset(%{
+          id: dataset_id,
+          technical: %{
+            cadence: 1_000,
+            sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+            sourceFormat: "csv"
+          }
+        })
+
+      Dataset.write(csv_dataset)
+
+      Patiently.wait_for!(
+        fn ->
+          result =
+            dataset_id
+            |> fetch_relevant_messages()
+            |> List.first()
+
+          case result do
+            nil -> false
+            message -> message["name"] == "Erin"
+          end
+        end,
+        dwell: 1000,
+        max_tries: 20
+      )
+    end
+
+    test "saves last_success_time to redis", %{bypass: bypass} do
+      dataset_id = "12345-5555"
+
+      gtfs_dataset =
+        TDG.create_dataset(%{
+          id: dataset_id,
+          technical: %{
+            cadence: 1_000,
+            sourceUrl: "http://localhost:#{bypass.port}/#{@gtfs_file_name}",
+            sourceFormat: "gtfs"
+          }
+        })
+
+      Dataset.write(gtfs_dataset)
+
+      Patiently.wait_for!(
+        fn ->
+          result = Redix.command!(:redix, ["GET", "reaper:derived:#{dataset_id}"])
+          result != nil
+        end,
+        dwell: 1000,
+        max_tries: 20
+      )
+
+      result =
+        Redix.command!(:redix, ["GET", "reaper:derived:#{dataset_id}"])
+        |> Jason.decode!()
+
+      result["timestamp"]
+      |> DateTime.from_iso8601()
+      |> case do
+        {:ok, date_time_from_redis, _} ->
+          assert DateTime.diff(date_time_from_redis, DateTime.utc_now()) < 5
+
+        _ ->
+          flunk("Should have put a valid DateTime into redis")
+      end
     end
   end
 
-  defp fetch_feed_messages(topic) do
+  defp fetch_relevant_messages(dataset_id) do
+    @destination_topic
+    |> fetch_all_feed_messages()
+    |> Enum.filter(fn %{"dataset_id" => id} -> id == dataset_id end)
+    |> Enum.map(fn %{"payload" => payload} -> payload end)
+  end
+
+  defp fetch_all_feed_messages(topic) do
     Stream.resource(
       fn -> 0 end,
       fn offset ->
@@ -224,13 +249,6 @@ defmodule Reaper.FullTest do
     |> Enum.map(fn {:kafka_message, _offset, _headers?, _partition, _key, body, _ts, _type, _ts_type} ->
       Jason.decode!(body)
     end)
-  end
-
-  defp fetch_registry_feed_messages(topic, dataset_id) do
-    topic
-    |> fetch_feed_messages()
-    |> Enum.filter(fn %{"dataset_id" => id} -> id == dataset_id end)
-    |> Enum.map(fn %{"payload" => payload} -> payload end)
   end
 
   defp bypass_file(bypass, file_name) do

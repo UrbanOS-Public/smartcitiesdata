@@ -3,12 +3,10 @@ defmodule Reaper.MessageHandler do
   require Logger
   alias Reaper.ConfigServer
   alias Reaper.ReaperConfig
-  alias SmartCity.Dataset
-
   use SmartCity.Registry.MessageHandler
 
-  def handle_dataset(dataset) do
-    with {:ok, reaper_config} <- ReaperConfig.from_registry_message(dataset) do
+  def handle_dataset(%SmartCity.Dataset{} = dataset) do
+    with {:ok, reaper_config} <- ReaperConfig.from_dataset(dataset) do
       ConfigServer.process_reaper_config(reaper_config)
     else
       {:error, reason} ->

@@ -2,16 +2,26 @@ defmodule Reaper.ReaperConfig do
   @moduledoc false
 
   @derive Jason.Encoder
-  defstruct [:dataset_id, :cadence, :lastSuccessTime, :sourceFormat, :sourceUrl, :partitioner, :queryParams]
+  defstruct [
+    :dataset_id,
+    :cadence,
+    :lastSuccessTime,
+    :sourceFormat,
+    :sourceUrl,
+    :sourceType,
+    :partitioner,
+    :queryParams
+  ]
 
-  def from_registry_message(%SmartCity.Dataset{} = registry_message) do
+  def from_dataset(%SmartCity.Dataset{} = dataset) do
     struct = %__MODULE__{
-      dataset_id: registry_message.id,
-      cadence: registry_message.technical.cadence,
-      sourceFormat: registry_message.technical.sourceFormat,
-      sourceUrl: registry_message.technical.sourceUrl,
-      partitioner: registry_message.technical.partitioner,
-      queryParams: registry_message.technical.queryParams
+      dataset_id: dataset.id,
+      cadence: dataset.technical.cadence,
+      sourceFormat: dataset.technical.sourceFormat,
+      sourceUrl: dataset.technical.sourceUrl,
+      sourceType: dataset.technical.sourceType,
+      partitioner: dataset.technical.partitioner,
+      queryParams: dataset.technical.queryParams
     }
 
     {:ok, struct}

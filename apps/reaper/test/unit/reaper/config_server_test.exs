@@ -47,7 +47,7 @@ defmodule Reaper.ConfigServerTest do
   end
 
   describe "on registry message received with no previous reaper configs" do
-    test "the config server spins up several new supervisors" do
+    test "the config server spins up several new supervisors for streaming and batch datasets" do
       allow(Redix.command!(:redix, ["KEYS", @name_space <> "*"]), return: [])
       allow(Redix.command!(:redix, any()), return: :does_not_matter)
 
@@ -173,6 +173,27 @@ defmodule Reaper.ConfigServerTest do
 
       assert feed_supervisor_count() == 1
       assert feed_cache_count() == 1
+    end
+  end
+
+  describe "processing remote datasets" do
+    test "does NOT create or update a supervisor, or persist data" do
+      reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: "34567-8912", sourceType: "remote"})
+
+      # Does Not persist data; only allow server to check for existing configs on startup
+      allow(Redix.command!(:redix, ["KEYS", @name_space <> "*"]), return: [])
+
+      allow(Reaper.Persistence.get_last_fetched_timestamp(any()),
+        return: DateTime.utc_now(),
+        meck_options: [:passthrough]
+      )
+
+      ConfigServer.start_link([])
+      ConfigServer.process_reaper_config(reaper_config)
+
+      # Does not start supervisors
+      assert feed_supervisor_count() == 0
+      assert feed_cache_count() == 0
     end
   end
 

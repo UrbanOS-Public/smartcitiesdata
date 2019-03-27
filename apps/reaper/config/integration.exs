@@ -14,7 +14,7 @@ webserver_host = host
 webserver_port = 7000
 
 config :logger,
-  level: :error
+  level: :info
 
 config :reaper,
   divo: "./docker-compose.yaml",

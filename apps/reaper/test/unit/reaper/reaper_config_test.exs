@@ -16,6 +16,7 @@ defmodule Reaper.ReaperConfigTest do
         "stream" => false,
         "sourceUrl" => "https://example.com",
         "sourceFormat" => "gtfs",
+        "sourceType" => "batch",
         "cadence" => 9000,
         "headers" => %{},
         "partitioner" => %{type: nil, query: nil},
@@ -70,26 +71,27 @@ defmodule Reaper.ReaperConfigTest do
     }
 
     json = Jason.encode!(map)
-    {:ok, registry_message} = Dataset.new(map)
+    {:ok, dataset} = Dataset.new(map)
 
-    {:ok, map: map, map_missing: map_missing, registry_message: registry_message, json: json}
+    {:ok, map: map, map_missing: map_missing, dataset: dataset, json: json}
   end
 
-  test "Successfully create ReaperConfig from Registry with valid partitioner", %{registry_message: registry_message} do
-    {:ok, reaper_config} = ReaperConfig.from_registry_message(registry_message)
+  test "Successfully create ReaperConfig from Registry with valid partitioner", %{dataset: dataset} do
+    {:ok, reaper_config} = ReaperConfig.from_dataset(dataset)
 
     assert reaper_config.dataset_id == "uuid"
     assert reaper_config.cadence == 9000
     assert reaper_config.sourceFormat == "gtfs"
     assert reaper_config.sourceUrl == "https://example.com"
+    assert reaper_config.sourceType == "batch"
     assert reaper_config.partitioner.type == nil
     assert reaper_config.partitioner.query == nil
     assert reaper_config.queryParams == %{}
   end
 
   test "Successfully fills in partitioner when registry message is missing partitioner", %{map_missing: map_missing} do
-    {:ok, registry_message} = Dataset.new(map_missing)
-    {:ok, reaper_config} = ReaperConfig.from_registry_message(registry_message)
+    {:ok, dataset} = Dataset.new(map_missing)
+    {:ok, reaper_config} = ReaperConfig.from_dataset(dataset)
 
     assert reaper_config.dataset_id == "uuid"
     assert reaper_config.cadence == 9000

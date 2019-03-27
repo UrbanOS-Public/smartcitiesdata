@@ -43,7 +43,9 @@ defmodule Reaper.ConfigServer do
     {:noreply, state}
   end
 
-  def process_reaper_config(reaper_config) do
+  def process_reaper_config(%ReaperConfig{sourceType: "remote"}), do: nil
+
+  def process_reaper_config(%ReaperConfig{} = reaper_config) do
     create_feed_supervisor(reaper_config)
     update_feed_supervisor(reaper_config)
     Persistence.persist(reaper_config)
