@@ -1,7 +1,6 @@
 use Mix.Config
 
 data_topic = "streaming-transformed"
-registry_topic = "dataset-registry"
 
 config :forklift,
   message_processing_cadence: 15_000,
@@ -15,7 +14,7 @@ config :redix,
 config :kaffe,
   consumer: [
     endpoints: [localhost: 9094],
-    topics: [data_topic, registry_topic],
+    topics: [data_topic],
     consumer_group: "forklift-group",
     message_handler: Forklift.MessageProcessor,
     offset_reset_policy: :reset_to_earliest,

@@ -3,17 +3,15 @@
 use Mix.Config
 
 data_topic = "streaming-transformed"
-registry_topic = "dataset-registry"
 
 config :forklift,
   cache_processing_batch_size: 20_000,
   message_processing_cadence: 10_000,
-  data_topic: data_topic,
-  registry_topic: registry_topic
+  data_topic: data_topic
 
 config :kaffe,
   consumer: [
-    topics: [data_topic, registry_topic],
+    topics: [data_topic],
     consumer_group: "forklift-group",
     message_handler: Forklift.MessageProcessor,
     offset_reset_policy: :reset_to_earliest,
