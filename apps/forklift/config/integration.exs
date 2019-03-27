@@ -14,7 +14,7 @@ config :forklift,
 config :kaffe,
   producer: [
     endpoints: endpoint,
-    topics: ["streaming-transformed", "dataset-registry"],
+    topics: ["streaming-transformed"],
     max_retries: 30,
     retry_backoff_ms: 500
   ],
