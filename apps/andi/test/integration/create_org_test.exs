@@ -1,4 +1,4 @@
-defmodule AndiTest do
+defmodule Andi.CreateOrgTest do
   use ExUnit.Case
   use Divo
   use Placebo
