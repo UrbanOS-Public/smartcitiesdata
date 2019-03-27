@@ -34,3 +34,8 @@ config(:forklift, divo: "docker-compose.yml", divo_wait: [dwell: 1000, max_tries
 
 config :redix,
   host: host
+
+config :smart_city_registry,
+  redis: [
+    host: host
+  ]

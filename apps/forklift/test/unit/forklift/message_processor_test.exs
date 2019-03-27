@@ -2,10 +2,12 @@ defmodule MessageProcessorTest do
   use ExUnit.Case
   use Placebo
 
+  alias SmartCity.TestDataGenerator, as: TDG
+
   alias Forklift.{MessageProcessor, CacheClient, DeadLetterQueue}
 
   test "data messages are sent to cache client" do
-    message = Mockaffe.create_message(:data, :basic)
+    message = TDG.create_data(dataset_id: "ds1")
     kaffe_message = Helper.make_kafka_message(message, "streaming-transformed")
 
     expect(
@@ -23,7 +25,7 @@ defmodule MessageProcessorTest do
   @moduletag capture_log: true
   test "malformed messages are sent to dead letter queue" do
     malformed_kaffe_message =
-      Mockaffe.create_message(:data, :basic)
+      TDG.create_data(dataset_id: "ds1")
       |> (fn message -> Helper.make_kafka_message(message, "streaming-transformed") end).()
       |> Map.update(:value, "", &String.replace(&1, "a", "z"))
 

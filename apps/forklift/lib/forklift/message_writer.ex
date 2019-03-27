@@ -1,7 +1,6 @@
 defmodule Forklift.MessageWriter do
   @moduledoc false
   alias Forklift.{CacheClient, PersistenceClient, DeadLetterQueue}
-  alias SCOS.DataMessage
   use GenServer
   require Logger
 
@@ -33,7 +32,7 @@ defmodule Forklift.MessageWriter do
   end
 
   defp parse_data_message({key, message}) do
-    case DataMessage.new(message) do
+    case SmartCity.Data.new(message) do
       {:ok, value} ->
         {key, value}
 

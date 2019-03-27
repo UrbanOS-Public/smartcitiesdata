@@ -2,6 +2,8 @@ defmodule Forklift.MessageWriterTest do
   use ExUnit.Case, async: false
   use Placebo
 
+  alias SmartCity.TestDataGenerator, as: TDG
+
   alias Forklift.{PersistenceClient, MessageWriter, CacheClient, DeadLetterQueue}
 
   test "happy path is successful" do
@@ -46,7 +48,8 @@ defmodule Forklift.MessageWriterTest do
   end
 
   def create_messages(dataset_id) do
-    Mockaffe.create_messages(:data, :basic, 2)
+    %{dataset_id: "ds1"}
+    |> TDG.create_data(2)
     |> Enum.map(&Map.put(&1, :dataset_id, dataset_id))
     |> Enum.map(&Jason.encode!/1)
     |> Enum.map(&{dataset_id, &1})
@@ -56,7 +59,7 @@ defmodule Forklift.MessageWriterTest do
     messages
     |> Enum.map(&elem(&1, 1))
     |> Enum.map(fn x ->
-      {:ok, msg} = SCOS.DataMessage.new(x)
+      {:ok, msg} = SmartCity.Data.new(x)
       msg.payload
     end)
   end

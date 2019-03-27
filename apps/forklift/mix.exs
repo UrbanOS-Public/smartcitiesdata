@@ -24,19 +24,20 @@ defmodule Forklift.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:smart_city_data, "~> 2.0", organization: "smartcolumbus_os"},
+      {:smart_city_registry, "~> 2.4", organization: "smartcolumbus_os"},
+      {:smart_city_test, "~> 0.2.0", organization: "smartcolumbus_os", only: [:test, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.9.1"},
-      {:divo, "~> 1.0.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
+      {:divo, "~> 1.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:patiently, "~> 0.2.0", only: [:dev, :test, :integration]},
       {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
-      {:scos_ex, "~> 1.2.0", organization: "smartcolumbus_os"},
       {:placebo, "~> 1.2.1", only: [:dev, :test, :integration]},
       {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
       {:redix, "~> 0.9.3"},
       {:faker, "~> 0.12", only: [:dev, :test, :integration]},
-      {:mockaffe, "~> 0.3.4", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:distillery, "~> 2.0"}
     ]
   end

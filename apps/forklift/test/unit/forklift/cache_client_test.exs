@@ -2,11 +2,13 @@ defmodule CacheClientTest do
   use ExUnit.Case
   use Placebo
 
+  alias SmartCity.TestDataGenerator, as: TDG
+
   alias Forklift.CacheClient
   @cache_processing_batch_size Application.get_env(:forklift, :cache_processing_batch_size)
 
   test "inserts into redis" do
-    message = Mockaffe.create_message(:data, :basic) |> Jason.encode!()
+    message = TDG.create_data(dataset_id: "ds1") |> Jason.encode!()
     offset = 5
     dataset_id = "cota"
 
