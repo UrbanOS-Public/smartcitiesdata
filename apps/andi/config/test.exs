@@ -9,5 +9,8 @@ config :andi, AndiWeb.Endpoint,
 # Print only warnings and errors during test
 config :logger, level: :warn
 
-config :andi, ldap_admin: "cn=admin"
+config :andi,
+  ldap_user: [cn: "admin"],
+  ldap_pass: "admin"
+
 config :paddle, Paddle, base: "dc=foo,dc=bar"

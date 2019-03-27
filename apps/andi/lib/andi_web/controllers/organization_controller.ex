@@ -5,10 +5,10 @@ defmodule AndiWeb.OrganizationController do
   alias SmartCity.Organization
 
   def create(conn, _params) do
-    with uuid <- UUID.uuid4(),
-         message <- Map.merge(conn.body_params, %{"id" => uuid}),
-         {:ok, organization} <- Organization.new(message),
-         :ok <- Paddle.authenticate([cn: "admin"], "admin"),
+    message = add_uuid(conn.body_params)
+
+    with {:ok, organization} <- Organization.new(message),
+         :ok <- authenticate(),
          {:ok, ldap_org} <- write_to_ldap(organization),
          :ok <- write_to_redis(ldap_org),
          :ok <- Andi.Kafka.send_to_kafka(ldap_org) do
@@ -37,7 +37,11 @@ defmodule AndiWeb.OrganizationController do
   end
 
   defp write_to_ldap(org) do
-    admin = Application.get_env(:andi, :ldap_admin)
+    admin =
+      Application.get_env(:andi, :ldap_user)
+      |> Enum.map(fn {k, v} -> "#{k}=#{v}" end)
+      |> Enum.join(",")
+
     attrs = [objectClass: ["top", "groupofnames"], cn: org.orgName, member: admin]
 
     [cn: org.orgName]
@@ -55,4 +59,17 @@ defmodule AndiWeb.OrganizationController do
   end
 
   defp handle_ldap(error, _), do: error
+
+  defp add_uuid(message) do
+    uuid = UUID.uuid4()
+
+    message
+    |> Map.merge(%{"id" => uuid})
+  end
+
+  defp authenticate do
+    user = Application.get_env(:andi, :ldap_user)
+    pass = Application.get_env(:andi, :ldap_pass)
+    Paddle.authenticate(user, pass)
+  end
 end

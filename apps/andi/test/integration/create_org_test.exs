@@ -7,7 +7,10 @@ defmodule Andi.CreateOrgTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   setup_all do
-    Paddle.authenticate([cn: "admin"], "admin")
+    user = Application.get_env(:andi, :ldap_user)
+    pass = Application.get_env(:andi, :ldap_pass)
+    Paddle.authenticate(user, pass)
+
     org = organization()
     {:ok, response} = create(org)
     [happy_path: org, response: response]
