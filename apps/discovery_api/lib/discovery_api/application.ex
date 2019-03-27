@@ -15,8 +15,8 @@ defmodule DiscoveryApi.Application do
       [
         cachex(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
-        registry_pubsub(),
-        redis()
+        redis(),
+        registry_pubsub()
       ]
       |> List.flatten()
 
