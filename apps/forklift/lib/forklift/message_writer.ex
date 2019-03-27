@@ -1,7 +1,6 @@
 defmodule Forklift.MessageWriter do
   @moduledoc false
   alias Forklift.{CacheClient, PersistenceClient, DeadLetterQueue}
-  alias SCOS.DataMessage
   use GenServer
   require Logger
 
