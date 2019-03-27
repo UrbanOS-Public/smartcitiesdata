@@ -11,23 +11,23 @@ defmodule DiscoveryApiWeb.OrganizationControllerTest do
 
   describe "organization controller" do
     test "fetches organization from redis by org id", %{conn: conn} do
-      expected = %SmartCity.Organization{
-        id: "1234",
-        orgName: "Org Name",
-        orgTitle: "Org Title",
-        description: nil,
-        homepage: nil,
-        logoUrl: nil
+      expected = %{
+        "id" => "1234",
+        "orgName" => "Org Name",
+        "orgTitle" => "Org Title",
+        "description" => nil,
+        "homepage" => nil,
+        "logoUrl" => nil
       }
 
-      expect(SmartCity.Organization.get!("1234"), return: Jason.encode!(expected))
+      expect(SmartCity.Organization.get("1234"), return: {:ok, expected})
       actual = conn |> get("/api/v1/organization/1234") |> json_response(200)
 
-      assert Jason.encode!(expected) == actual
+      assert expected == actual
     end
 
     test "returns 404 if organization does not exist", %{conn: conn} do
-      expect(SmartCity.Organization.get!("1234"), return: nil)
+      expect(SmartCity.Organization.get("1234"), return: {:error, "Does not exist"})
       actual = conn |> get("/api/v1/organization/1234") |> json_response(404)
 
       assert %{"message" => "Not Found"} = actual
@@ -43,7 +43,7 @@ defmodule DiscoveryApiWeb.OrganizationControllerTest do
         "logoUrl" => nil
       }
 
-      expect(Cachex.get!(any(), "1234"), return: expected)
+      expect(Cachex.get(any(), "1234"), return: {:ok, expected})
       actual = conn |> get("/api/v1/organization/1234") |> json_response(200)
 
       assert expected == actual

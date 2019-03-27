@@ -6,22 +6,26 @@ defmodule DiscoveryApiWeb.OrganizationController do
 
   def fetch_organization(conn, %{"id" => id}) do
     case get_org(id) do
-      nil -> render_error(conn, 404, "Not Found")
-      result -> render(conn, :fetch_organization, org: result)
+      {:error, _} -> render_error(conn, 404, "Not Found")
+      {:ok, result} -> render(conn, :fetch_organization, org: result)
     end
   end
 
   defp get_org(id) do
-    read_from_cache(id) || read_from_redis(id)
-  end
-
-  defp read_from_cache(id) do
-    Cachex.get!(@cache, id)
+    case Cachex.get(@cache, id) do
+      {:ok, nil} -> read_from_redis(id)
+      {:ok, result} -> {:ok, result}
+    end
   end
 
   defp read_from_redis(id) do
-    org = SmartCity.Organization.get!(id)
-    Cachex.put(@cache, id, org)
+    org = SmartCity.Organization.get(id)
+
+    case org do
+      {:error, reason} -> {:error, reason}
+      {:ok, value} -> Cachex.put(@cache, id, value)
+    end
+
     org
   end
 
