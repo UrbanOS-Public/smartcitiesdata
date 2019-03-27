@@ -13,7 +13,7 @@ defmodule DiscoveryApi.Data.Mapper do
       "@type" => "dcat:Dataset",
       "title" => business.dataTitle,
       "description" => business.description,
-      "keyword" => business.keywords,
+      "keyword" => val_or_optional(business.keywords),
       "modified" => business.modifiedDate,
       "publisher" => %{
         "@type" => "org:Organization",

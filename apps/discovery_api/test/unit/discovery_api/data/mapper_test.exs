@@ -90,7 +90,6 @@ defmodule DiscoveryApi.Data.MapperTest do
         business: %SmartCity.Dataset.Business{
           dataTitle: "my title",
           description: "description",
-          keywords: ["all", "the", "keywords"],
           modifiedDate: "The Date",
           orgTitle: "Organization 1",
           contactName: "Bob Jones",
@@ -108,7 +107,6 @@ defmodule DiscoveryApi.Data.MapperTest do
         [
           "@type",
           "title",
-          "keyword",
           "description",
           "modified",
           "publisher",
