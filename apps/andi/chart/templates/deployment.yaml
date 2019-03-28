@@ -30,6 +30,26 @@ spec:
             value: {{ .Values.redis.host }}
           - name: RUN_IN_KUBERNETES
             value: "true"
+          - name: LDAP_HOST
+            valueFrom:
+              secretKeyRef:
+                name: ldap
+                key: host
+          - name: LDAP_BASE
+            valueFrom:
+              secretKeyRef:
+                name: ldap
+                key: base_dn
+          - name: LDAP_USER
+            valueFrom:
+              secretKeyRef:
+                name: ldap
+                key: user
+          - name: LDAP_PASS
+            valueFrom:
+              secretKeyRef:
+                name: ldap
+                key: password
           - name: NAMESPACE
             valueFrom:
               fieldRef:
