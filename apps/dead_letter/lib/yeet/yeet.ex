@@ -1,11 +1,11 @@
 defmodule Yeet do
+  alias Yeet.KafkaHelper
   @moduledoc false
-
-  def format_message(app_name, original_message, options \\ []) do
+  def format_message(original_message, app_name, options \\ []) do
     stacktrace =
       case Keyword.get(options, :stacktrace) do
         nil -> nil
-        e -> Exception.format_stacktrace(e)
+        {_, stacktrace} -> Exception.format_stacktrace(stacktrace)
       end
 
     exit =
@@ -20,12 +20,17 @@ defmodule Yeet do
 
     %{
       app: app_name,
-      original_message: Jason.encode!(original_message),
+      original_message: original_message,
       stacktrace: stacktrace,
       exit: exit,
       error: error,
       reason: reason,
       timestamp: timestamp
     }
+  end
+
+  def process_dead_letter(message, app_name, options \\ []) do
+    dead_letter = format_message(message, app_name, options)
+    KafkaHelper.produce(dead_letter)
   end
 end
