@@ -4,8 +4,8 @@ defmodule Forklift.CacheClient do
   @data_name_space "forklift:dataset"
   @cache_processing_batch_size Application.get_env(:forklift, :cache_processing_batch_size)
 
-  def write(message, dataset_id, offset) do
-    key = "#{@data_name_space}:#{dataset_id}:#{offset}"
+  def write(message, dataset_id, partition, offset) do
+    key = "#{@data_name_space}:#{dataset_id}:#{partition}:#{offset}"
     Redix.command!(:redix, ["SET", key, message])
   end
 

@@ -7,8 +7,8 @@ defmodule Forklift.MessageWriterTest do
   alias Forklift.{PersistenceClient, MessageWriter, CacheClient, DeadLetterQueue}
 
   test "happy path is successful" do
-    redis_key_a = "forklift:dataset:KeyA:5"
-    redis_key_b = "forklift:dataset:KeyB:6"
+    redis_key_a = "forklift:dataset:KeyA:15:5"
+    redis_key_b = "forklift:dataset:KeyB:16:6"
     messages_a = create_messages(redis_key_a)
     messages_b = create_messages(redis_key_b)
 
@@ -29,7 +29,7 @@ defmodule Forklift.MessageWriterTest do
 
   @moduletag capture_log: true
   test "sends malformed messages to dead letter queue" do
-    redis_key = "forklift:dataset:KeyA:5"
+    redis_key = "forklift:dataset:KeyA:15:5"
 
     malformed_messages =
       redis_key

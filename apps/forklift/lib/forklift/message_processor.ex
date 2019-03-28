@@ -8,10 +8,10 @@ defmodule Forklift.MessageProcessor do
     Enum.each(messages, &process_data_message/1)
   end
 
-  defp process_data_message(%{value: raw_message, offset: offset}) do
+  defp process_data_message(%{value: raw_message, partition: partition, offset: offset}) do
     case SmartCity.Data.new(raw_message) do
       {:ok, message} ->
-        CacheClient.write(raw_message, message.dataset_id, offset)
+        CacheClient.write(raw_message, message.dataset_id, partition, offset)
 
       {:error, reason} ->
         DeadLetterQueue.enqueue(raw_message)

@@ -6,7 +6,8 @@ defmodule Helper do
     %{
       topic: topic,
       value: value |> Jason.encode!(),
-      offset: :rand.uniform(999)
+      offset: :rand.uniform(999),
+      partition: :rand.uniform(100)
     }
   end
 end

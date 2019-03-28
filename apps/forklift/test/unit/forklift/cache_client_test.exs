@@ -9,17 +9,18 @@ defmodule CacheClientTest do
 
   test "inserts into redis" do
     message = TDG.create_data(dataset_id: "ds1") |> Jason.encode!()
+    partition = 10
     offset = 5
     dataset_id = "cota"
 
-    key = "forklift:dataset:#{dataset_id}:#{offset}"
+    key = "forklift:dataset:#{dataset_id}:#{partition}:#{offset}"
     expect(Redix.command!(any(), ["SET", key, message]), return: :ok)
 
-    CacheClient.write(message, dataset_id, offset)
+    CacheClient.write(message, dataset_id, partition, offset)
   end
 
   test "reads all data messages from redis" do
-    keys = ["forklift:dataset:key1:5", "forklift:dataset:key2:6"]
+    keys = ["forklift:dataset:key1:15:5", "forklift:dataset:key2:16:6"]
     values = ["v1", "v2"]
 
     allow(
@@ -38,22 +39,22 @@ defmodule CacheClientTest do
     allow(Redix.command!(any(), ["GET", Enum.at(keys, 1)]), return: Enum.at(values, 1))
 
     expected = [
-      {"forklift:dataset:key1:5", "v1"},
-      {"forklift:dataset:key2:6", "v2"}
+      {"forklift:dataset:key1:15:5", "v1"},
+      {"forklift:dataset:key2:16:6", "v2"}
     ]
 
     assert CacheClient.read_all_batched_messages() == expected
   end
 
   test "deletes records given a list of keys" do
-    keys = ["forklift:dataset:key1:5", "forklift:dataset:key2:6"]
+    keys = ["forklift:dataset:key1:15:5", "forklift:dataset:key2:16:6"]
     expect(Redix.command!(any(), ["DEL" | keys]), return: :ok)
 
     CacheClient.delete(keys)
   end
 
   test "deletes records given a single key" do
-    key = "forklift:dataset:key2:6"
+    key = "forklift:dataset:key2:16:6"
     expect(Redix.command!(any(), ["DEL", key]), return: :ok)
 
     CacheClient.delete(key)

@@ -14,6 +14,7 @@ defmodule MessageProcessorTest do
       CacheClient.write(
         kaffe_message.value,
         message.dataset_id,
+        kaffe_message.partition,
         kaffe_message.offset
       ),
       return: :ok
