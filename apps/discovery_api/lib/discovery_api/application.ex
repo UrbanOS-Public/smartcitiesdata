@@ -47,10 +47,11 @@ defmodule DiscoveryApi.Application do
 
   defp cachex do
     expiration = Cachex.Spec.expiration(default: @ttl)
+    cache = DiscoveryApi.Data.Organization.cache_name()
 
     %{
-      id: DiscoveryApiWeb.OrganizationController.cache_name(),
-      start: {Cachex, :start_link, [DiscoveryApiWeb.OrganizationController.cache_name(), [expiration: expiration]]}
+      id: cache,
+      start: {Cachex, :start_link, [cache, [expiration: expiration]]}
     }
   end
 end
