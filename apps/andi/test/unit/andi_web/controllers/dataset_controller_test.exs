@@ -56,18 +56,18 @@ defmodule AndiWeb.DatasetControllerTest do
     {:ok, request: request, message: message}
   end
 
-  describe "PUT /api/ with valid data" do
+  describe "PUT /api/ without systemName" do
     setup %{conn: conn, request: request} do
       [conn: put(conn, @route, request)]
     end
 
-    test "return a 201", %{conn: conn, id: id} do
-      actual_id =
+    test "return a 201", %{conn: conn} do
+      system_name =
         conn
         |> json_response(201)
-        |> Map.get("id")
+        |> get_in(["technical", "systemName"])
 
-      assert id == actual_id
+      assert system_name == "org__dataset"
     end
 
     test "writes data to registry", %{message: message} do
@@ -83,13 +83,13 @@ defmodule AndiWeb.DatasetControllerTest do
       [conn: put(conn, @route, req)]
     end
 
-    test "return 201", %{conn: conn, id: id} do
-      actual_id =
+    test "return 201", %{conn: conn} do
+      system_name =
         conn
         |> json_response(201)
-        |> Map.get("id")
+        |> get_in(["technical", "systemName"])
 
-      assert id == actual_id
+      assert system_name == "org__dataset"
     end
 
     test "writes to dataset registry", %{message: message} do

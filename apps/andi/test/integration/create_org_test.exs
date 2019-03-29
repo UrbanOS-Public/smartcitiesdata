@@ -80,7 +80,8 @@ defmodule Andi.CreateOrgTest do
   end
 
   defp organization(overrides \\ %{}) do
-    TDG.create_organization(overrides)
+    overrides
+    |> TDG.create_organization()
     |> Map.from_struct()
     |> Map.delete(:id)
   end
