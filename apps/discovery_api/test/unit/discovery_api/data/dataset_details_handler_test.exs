@@ -17,7 +17,8 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
       technical: %{
         systemName: "foo__bar_baz",
         sourceUrl: "http://example.com",
-        sourceType: "remote"
+        sourceType: "remote",
+        orgId: "an-org-uuid"
       }
     }
 
@@ -26,7 +27,7 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
       title: "my title",
       systemName: "foo__bar_baz",
       keywords: ["key", "words"],
-      organization: "publisher",
+      organization: "an-org-uuid",
       modified: "timestamp",
       description: "description",
       fileTypes: ["CSV"],

@@ -2,19 +2,21 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
   @moduledoc false
   use DiscoveryApiWeb, :view
 
-  def render("fetch_dataset_detail.json", %{dataset: dataset}) do
-    transform_dataset_detail(dataset)
+  def render("fetch_dataset_detail.json", %{dataset: dataset, organization: organization}) do
+    transform_dataset_detail(dataset, organization)
   end
 
-  defp transform_dataset_detail(dataset) do
+  defp transform_dataset_detail(dataset, organization) do
     %{
       name: dataset.title,
       description: dataset.description,
       id: dataset.id,
       keywords: dataset.keywords,
       organization: %{
-        name: dataset.organization,
-        image: "https://www.cota.com/wp-content/uploads/2016/04/COSI-Image-414x236.jpg"
+        name: organization.orgTitle,
+        image: organization.logoUrl,
+        description: organization.description,
+        homepage: organization.homepage
       },
       sourceType: dataset.sourceType,
       sourceUrl: dataset.sourceUrl

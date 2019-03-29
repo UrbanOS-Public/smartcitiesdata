@@ -25,7 +25,7 @@ defmodule DiscoveryApi.Data.OrganizationTest do
 
       allow SmartCity.Organization.get("1234"), return: {:ok, expected}
 
-      assert expected = OrganizationController.("1234")
+      assert expected = Organization.get("1234")
     end
 
     test "returns error tuple when organization is not found" do
