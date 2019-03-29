@@ -50,6 +50,11 @@ spec:
               secretKeyRef:
                 name: ldap
                 key: password
+          - name: LDAP_ENV
+            valueFrom:
+              secretKeyRef:
+                name: ldap
+                key: environment_ou
           - name: NAMESPACE
             valueFrom:
               fieldRef:

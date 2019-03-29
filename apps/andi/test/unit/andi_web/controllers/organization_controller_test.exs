@@ -4,6 +4,7 @@ defmodule AndiWeb.OrganizationControllerTest do
   use AndiWeb.ConnCase
 
   @route "/api/v1/organization"
+  @ou Application.get_env(:andi, :ldap_env_ou)
   alias SmartCity.Organization
 
   setup do
@@ -48,7 +49,7 @@ defmodule AndiWeb.OrganizationControllerTest do
 
     test "writes organization to LDAP", %{message: %{"orgName" => name}} do
       attrs = [objectClass: ["top", "groupofnames"], cn: name, member: "cn=admin"]
-      assert_called(Paddle.add([cn: name], attrs), once())
+      assert_called(Paddle.add([cn: name, ou: @ou], attrs), once())
     end
   end
 
@@ -80,7 +81,7 @@ defmodule AndiWeb.OrganizationControllerTest do
     end
 
     test "removes organization from LDAP" do
-      assert_called(Paddle.delete(cn: "myOrg"))
+      assert_called(Paddle.delete(cn: "myOrg", ou: @ou))
     end
   end
 

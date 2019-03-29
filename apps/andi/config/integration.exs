@@ -12,7 +12,8 @@ config :andi,
   divo: "./docker-compose.yaml",
   divo_wait: [dwell: 700, max_tries: 50],
   ldap_user: [cn: "admin"],
-  ldap_pass: "admin"
+  ldap_pass: "admin",
+  ldap_env_ou: "integration"
 
 config :smart_city_registry,
   redis: [host: host]

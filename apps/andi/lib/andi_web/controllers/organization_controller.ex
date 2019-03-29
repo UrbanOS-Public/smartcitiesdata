@@ -30,9 +30,16 @@ defmodule AndiWeb.OrganizationController do
         :ok
 
       error ->
-        Paddle.delete(cn: org.orgName)
+        org.orgName
+        |> kwdn()
+        |> Paddle.delete()
+
         error
     end
+  end
+
+  defp kwdn(name) do
+    [cn: name, ou: Application.get_env(:andi, :ldap_env_ou)]
   end
 
   defp write_to_ldap(org) do
@@ -43,7 +50,8 @@ defmodule AndiWeb.OrganizationController do
 
     attrs = [objectClass: ["top", "groupofnames"], cn: org.orgName, member: admin]
 
-    [cn: org.orgName]
+    org.orgName
+    |> kwdn()
     |> Paddle.add(attrs)
     |> handle_ldap(org)
   end
@@ -51,9 +59,14 @@ defmodule AndiWeb.OrganizationController do
   defp handle_ldap(:ok, org) do
     base = Application.get_env(:paddle, Paddle)[:base]
 
+    cn_ou =
+      org.orgName
+      |> kwdn()
+      |> Andi.LdapUtils.encode_dn!()
+
     org
     |> Map.from_struct()
-    |> Map.merge(%{dn: "cn=#{org.orgName},#{base}"})
+    |> Map.merge(%{dn: "#{cn_ou},#{base}"})
     |> Organization.new()
   end
 

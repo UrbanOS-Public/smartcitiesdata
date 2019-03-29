@@ -11,6 +11,7 @@ config :logger, level: :warn
 
 config :andi,
   ldap_user: [cn: "admin"],
-  ldap_pass: "admin"
+  ldap_pass: "admin",
+  ldap_env_ou: "test"
 
 config :paddle, Paddle, base: "dc=foo,dc=bar"

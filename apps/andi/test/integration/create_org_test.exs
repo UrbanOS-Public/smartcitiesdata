@@ -6,10 +6,14 @@ defmodule Andi.CreateOrgTest do
   alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG
 
+  @ou Application.get_env(:andi, :ldap_env_ou)
+
   setup_all do
     user = Application.get_env(:andi, :ldap_user)
     pass = Application.get_env(:andi, :ldap_pass)
     Paddle.authenticate(user, pass)
+
+    Paddle.add([ou: @ou], objectClass: ["top", "organizationalunit"], ou: @ou)
 
     org = organization()
     {:ok, response} = create(org)
@@ -22,7 +26,7 @@ defmodule Andi.CreateOrgTest do
     end
 
     test "writes organization to LDAP", %{happy_path: expected} do
-      expected_dn = "cn=#{expected.orgName}"
+      expected_dn = "cn=#{expected.orgName},ou=#{@ou}"
       assert {:ok, [actual]} = Paddle.get(filter: [cn: expected.orgName])
       assert actual["dn"] == expected_dn
     end
@@ -47,7 +51,7 @@ defmodule Andi.CreateOrgTest do
       base = Application.get_env(:paddle, Paddle)[:base]
       id = Jason.decode!(resp.body)["id"]
       assert {:ok, actual} = Organization.get(id)
-      assert actual.dn == "cn=#{expected.orgName},#{base}"
+      assert actual.dn == "cn=#{expected.orgName},ou=#{@ou},#{base}"
     end
   end
 
@@ -64,7 +68,7 @@ defmodule Andi.CreateOrgTest do
     end
 
     test "removes organization from LDAP", %{unhappy_path: expected} do
-      assert {:error, :noSuchObject} = Paddle.get(filter: [cn: expected.orgName])
+      assert {:error, :noSuchObject} = Paddle.get(filter: [cn: expected.orgName, ou: @ou])
     end
   end
 
