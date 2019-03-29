@@ -97,6 +97,9 @@ defmodule AndiWeb.OrganizationControllerTest do
   end
 
   defp uuid?(str) do
-    str =~ ~r/\b[a-f0-9]{8}\b-\b[a-f0-9]{4}\b-\b[a-f0-9]{4}\b-\b[a-f0-9]{4}\b-\b[a-f0-9]{12}\b/
+    case UUID.info(str) do
+      {:ok, _} -> true
+      _ -> false
+    end
   end
 end

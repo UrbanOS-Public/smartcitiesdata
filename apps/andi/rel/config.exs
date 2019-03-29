@@ -8,16 +8,13 @@
 |> Enum.map(&Code.eval_file(&1))
 
 use Mix.Releases.Config,
-    # This sets the default release built by `mix release`
-    default_release: :default,
-    # This sets the default environment used by `mix release`
-    default_environment: Mix.env()
-
-# TODO inject environment ou configuration
+  # This sets the default release built by `mix release`
+  default_release: :default,
+  # This sets the default environment used by `mix release`
+  default_environment: Mix.env()
 
 # For a full list of config options for both releases
 # and environments, visit https://hexdocs.pm/distillery/config/distillery.html
-
 
 # You may define one or more environments in this file,
 # an environment's settings will override those of a release
@@ -31,24 +28,28 @@ environment :dev do
   # It is recommended that you build with MIX_ENV=prod and pass
   # the --env flag to Distillery explicitly if you want to use
   # dev mode.
-  set dev_mode: true
-  set include_erts: false
-  set cookie: :"o$HFh_>wIi)<zi/gOIl$1cRWhKZJvDMI?9MGHz~(q%~(%1Oynb^`URW:?2LvDP~A"
+  set(dev_mode: true)
+  set(include_erts: false)
+  set(cookie: :"o$HFh_>wIi)<zi/gOIl$1cRWhKZJvDMI?9MGHz~(q%~(%1Oynb^`URW:?2LvDP~A")
 end
 
 environment :prod do
-  set include_erts: true
-  set include_src: false
-  set cookie: :"=H`Pcb.Z.D?}c{!9D`A0odcUc90t$LOw9N!!,p8j[:Aiw?b:[JNdeW_$,K&{gnLs"
-  set vm_args: "rel/vm.args"
+  set(include_erts: true)
+  set(include_src: false)
+  set(cookie: :"=H`Pcb.Z.D?}c{!9D`A0odcUc90t$LOw9N!!,p8j[:Aiw?b:[JNdeW_$,K&{gnLs")
+  set(vm_args: "rel/vm.args")
 
-  set config_providers: [
-    {Mix.Releases.Config.Providers.Elixir, ["${RELEASE_ROOT_DIR}/etc/runtime.exs"]}
-  ]
-  set overlays: [
-    {:copy, "rel/runtime.exs", "etc/runtime.exs"}
-  ]
-  
+  set(
+    config_providers: [
+      {Mix.Releases.Config.Providers.Elixir, ["${RELEASE_ROOT_DIR}/etc/runtime.exs"]}
+    ]
+  )
+
+  set(
+    overlays: [
+      {:copy, "rel/runtime.exs", "etc/runtime.exs"}
+    ]
+  )
 end
 
 # You may define one or more releases in this file.
@@ -57,9 +58,11 @@ end
 # will be used by default
 
 release :andi do
-  set version: current_version(:andi)
-  set applications: [
-    :runtime_tools
-  ]
-end
+  set(version: current_version(:andi))
 
+  set(
+    applications: [
+      :runtime_tools
+    ]
+  )
+end

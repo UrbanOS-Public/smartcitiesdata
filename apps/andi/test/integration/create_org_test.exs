@@ -27,17 +27,17 @@ defmodule Andi.CreateOrgTest do
 
     test "writes organization to LDAP", %{happy_path: expected} do
       expected_dn = "cn=#{expected.orgName},ou=#{@ou}"
-      assert {:ok, [actual]} = Paddle.get(filter: [cn: expected.orgName])
+      [actual] = Paddle.get!(filter: [cn: expected.orgName])
       assert actual["dn"] == expected_dn
     end
 
     test "writes to LDAP as group", %{happy_path: expected} do
-      assert {:ok, [actual]} = Paddle.get(filter: [cn: expected.orgName])
+      [actual] = Paddle.get!(filter: [cn: expected.orgName])
       assert actual["objectClass"] == ["top", "groupOfNames"]
     end
 
     test "writes to LDAP with an admin member", %{happy_path: expected} do
-      assert {:ok, [actual]} = Paddle.get(filter: [cn: expected.orgName])
+      [actual] = Paddle.get!(filter: [cn: expected.orgName])
       assert actual["member"] == ["cn=admin"]
     end
 
