@@ -46,7 +46,7 @@ defmodule DiscoveryApi.Mixfile do
       {:prometheus_phoenix, "~>1.2.0"},
       {:redix, "~> 0.9.3"},
       {:streaming_metrics, "~> 2.1.4", organization: "smartcolumbus_os"},
-      {:smart_city_registry, "~> 2.4", organization: "smartcolumbus_os"},
+      {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
       {:ex_json_schema, "~> 0.5.7", only: [:test, :integration]}
     ]
   end
