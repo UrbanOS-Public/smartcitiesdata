@@ -28,6 +28,10 @@ config :kaffe,
     offset_reset_policy: :reset_to_earliest
   ]
 
+config :yeet,
+  topic: "streaming-dead-letters",
+  endpoint: endpoints
+
 config :forklift,
   data_topic: topic
 
@@ -42,3 +46,4 @@ config :smart_city_registry,
   redis: [
     host: redis_host
   ]
+

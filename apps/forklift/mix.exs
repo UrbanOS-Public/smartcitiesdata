@@ -38,7 +38,8 @@ defmodule Forklift.MixProject do
       {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
       {:redix, "~> 0.9.3"},
       {:faker, "~> 0.12", only: [:dev, :test, :integration]},
-      {:distillery, "~> 2.0"}
+      {:distillery, "~> 2.0"},
+      {:yeet, "~> 0.2.0", organization: "smartcolumbus_os"}
     ]
   end
 

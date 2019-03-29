@@ -4,6 +4,10 @@ use Mix.Config
 
 data_topic = "streaming-transformed"
 
+config :yeet,
+  topic: "streaming-dead-letters",
+  endpoint: [localhost: 9094]
+
 config :forklift,
   cache_processing_batch_size: 20_000,
   message_processing_cadence: 10_000,

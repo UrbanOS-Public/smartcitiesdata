@@ -10,9 +10,9 @@ defmodule MessageProcessorTest do
     data = TDG.create_data(dataset_id: "ds1", payload: %{one: 1})
     kaffe_message = Helper.make_kafka_message(data, "streaming-transformed")
 
-    expect DataBuffer.write(data), return: :ok
+    expect DataBuffer.write(data), return: {:ok, :does_not_matter}
 
-    MessageProcessor.handle_messages([kaffe_message])
+    MessageProcessor.handle_message(kaffe_message)
   end
 
   @moduletag capture_log: true
@@ -24,6 +24,6 @@ defmodule MessageProcessorTest do
 
     expect(DeadLetterQueue.enqueue(any()), return: :ok)
 
-    MessageProcessor.handle_messages([malformed_kaffe_message])
+    MessageProcessor.handle_message(malformed_kaffe_message)
   end
 end

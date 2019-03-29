@@ -27,3 +27,5 @@ forklift-*.tar
 /divo/minio/*
 
 /divo/presto-config/data/
+
+.DS_Store
