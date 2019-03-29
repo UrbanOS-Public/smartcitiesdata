@@ -8,9 +8,21 @@ defmodule DiscoveryApi.Search.DatasetSearchinatorTest do
   describe "search" do
     setup do
       mock_dataset_summaries = [
-        Helper.sample_dataset(%{id: 1, title: "Jarred loves pdf", description: "Something super cool"}),
-        Helper.sample_dataset(%{id: 2, title: "Jessie hates useless paperwork", description: "Cool beans"}),
-        Helper.sample_dataset(%{id: 3, title: "This one has no description"})
+        Helper.sample_dataset(%{
+          id: 1,
+          title: "Jarred loves pdf",
+          description: "Something super cool",
+          organization: "hi"
+        }),
+        Helper.sample_dataset(%{
+          id: 2,
+          title: "Jessie hates useless paperwork",
+          description: "Cool beans",
+          organization: "hi"
+        }),
+        Helper.sample_dataset(%{id: 3, title: "This one has no description", organization: "hi"}),
+        Helper.sample_dataset(%{id: 4, organization: "testOrg"}),
+        Helper.sample_dataset(%{id: 5, organization: "Bogus"})
       ]
 
       allow(DiscoveryApi.Data.Dataset.get_all(), return: mock_dataset_summaries)
@@ -58,6 +70,13 @@ defmodule DiscoveryApi.Search.DatasetSearchinatorTest do
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0).id == 3
+    end
+
+    test "matches based on organization" do
+      {:ok, results} = DatasetSearchinator.search(query: "testorg")
+
+      assert Enum.count(results) == 1
+      assert Enum.at(results, 0).id == 4
     end
   end
 end
