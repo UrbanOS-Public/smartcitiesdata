@@ -17,22 +17,6 @@ defmodule Reaper.FullTest do
   @gtfs_file_name "gtfs-realtime.pb"
   @csv_file_name "random_stuff.csv"
 
-  schema = [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
-
-  @json_dataset_feed_record_count "test/support/#{@json_file_name}"
-                                  |> File.read!()
-                                  |> Reaper.Decoder.decode("json", nil)
-                                  |> Enum.count()
-
-  @gtfs_dataset_feed_record_count "test/support/#{@gtfs_file_name}"
-                                  |> File.read!()
-                                  |> Reaper.Decoder.decode("gtfs", nil)
-                                  |> Enum.count()
-  @csv_dataset_feed_record_count "test/support/#{@csv_file_name}"
-                                 |> File.read!()
-                                 |> Reaper.Decoder.decode("csv", schema)
-                                 |> Enum.count()
-
   describe "pre-existing dataset" do
     setup do
       Redix.command(:redix, ["FLUSHALL"])
@@ -225,6 +209,51 @@ defmodule Reaper.FullTest do
         _ ->
           flunk("Should have put a valid DateTime into redis")
       end
+    end
+
+    test "cadence of once is only processed once", %{bypass: bypass} do
+      dataset_id = "34567-8912"
+
+      csv_dataset =
+        TDG.create_dataset(%{
+          id: dataset_id,
+          technical: %{
+            cadence: "once",
+            sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+            sourceFormat: "csv",
+            sourceType: "batch"
+          }
+        })
+
+      Dataset.write(csv_dataset)
+
+      # The data is written to kafka
+      Patiently.wait_for!(
+        fn ->
+          result =
+            dataset_id
+            |> fetch_relevant_messages()
+            |> List.last()
+
+          case result do
+            nil -> false
+            message -> message["name"] == "Ben"
+          end
+        end,
+        dwell: 1000,
+        max_tries: 20
+      )
+
+      # The supervisor successfully shuts down after running once
+      Patiently.wait_for!(
+        fn ->
+          TestUtils.child_count(Reaper.DataFeed) == 0 &&
+            TestUtils.child_count(Cachex) == 0 &&
+            TestUtils.feed_supervisor_count() == 0
+        end,
+        dwell: 1000,
+        max_tries: 20
+      )
     end
   end
 

@@ -1,16 +1,10 @@
 defmodule Reaper.DataFeedTest do
   use ExUnit.Case
   use Placebo
-  alias Reaper.Cache
-  alias Reaper.DataFeed
-  alias Reaper.Decoder
-  alias Reaper.Extractor
-  alias Reaper.Loader
-  alias Reaper.UrlBuilder
-  alias Reaper.Persistence
+  alias Reaper.{Cache, DataFeed, Decoder, Extractor, Loader, UrlBuilder, Persistence}
 
   @dataset_id "12345-6789"
-  @reaper_config FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id})
+  @reaper_config FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id, sourceType: "batch", cadence: 100})
   @data_feed_args %{
     pids: %{
       name: String.to_atom("#{@dataset_id}_feed"),

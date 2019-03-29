@@ -9,8 +9,9 @@ defmodule FixtureHelper do
       %ReaperConfig{},
       Util.deep_merge(
         %{
-          cadence: 100_000,
+          cadence: "never",
           sourceUrl: "https://does-not-matter-url.com",
+          sourceType: "remote",
           sourceFormat: "gtfs",
           partitioner: %{type: nil, query: nil},
           queryParams: %{}

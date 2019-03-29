@@ -33,6 +33,12 @@ defmodule Reaper.FeedSupervisor do
     cache_name = String.to_atom("#{id}_cache")
     cache_limit = Spec.limit(size: 2000, policy: Policy.LRW, reclaim: 0.2)
 
+    restart_policy =
+      case Map.get(reaper_config, :cadence) do
+        "once" -> :transient
+        _ -> :permanent
+      end
+
     [
       %{
         id: cache_name,
@@ -40,6 +46,7 @@ defmodule Reaper.FeedSupervisor do
       },
       %{
         id: feed_name,
+        restart: restart_policy,
         start: {
           Reaper.DataFeed,
           :start_link,

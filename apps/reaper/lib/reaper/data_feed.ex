@@ -27,11 +27,18 @@ defmodule Reaper.DataFeed do
   end
 
   def init(%{pids: %{name: name}, reaper_config: reaper_config} = args) do
-    reaper_config
-    |> calculate_next_run_time()
-    |> schedule_work()
+    case reaper_config.cadence do
+      "once" ->
+        Process.send_after(self(), :work, 1)
+
+      _ ->
+        reaper_config
+        |> calculate_next_run_time()
+        |> schedule_work()
+    end
 
     Horde.Registry.register(Reaper.Registry, name)
+
     {:ok, args}
   end
 
@@ -49,8 +56,16 @@ defmodule Reaper.DataFeed do
 
     timer_ref = schedule_work(reaper_config.cadence)
 
-    {:noreply, Util.deep_merge(state, %{timer_ref: timer_ref})}
+    case reaper_config.cadence do
+      "once" ->
+        {:stop, {:normal, "Finished successfully"}, state}
+
+      _ ->
+        {:noreply, Util.deep_merge(state, %{timer_ref: timer_ref})}
+    end
   end
+
+  defp schedule_work("once"), do: nil
 
   defp schedule_work(cadence) do
     Process.send_after(self(), :work, cadence)

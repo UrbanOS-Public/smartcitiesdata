@@ -38,8 +38,8 @@ defmodule Reaper.MixProject do
   defp deps do
     [
       {:cachex, "~> 3.1"},
-      {:checkov, "~> 0.4.0"},
-      {:csv, "~> 2.1"},
+      {:checkov, "~> 0.4"},
+      {:csv, "~> 2.3"},
       {:distillery, "~> 2.0"},
       {:horde, "~> 0.2.3"},
       {:horde_connector, "~> 0.1", organization: "smartcolumbus_os"},
@@ -48,22 +48,22 @@ defmodule Reaper.MixProject do
       {:kaffe, "~> 1.11"},
       {:libcluster, "~> 3.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:protobuf, "~> 0.5.3"},
-      {:redix, "~> 0.9.3"},
+      {:protobuf, "~> 0.6"},
+      {:redix, "~> 0.9"},
       {:sweet_xml, "~> 0.6"},
-      {:smart_city_registry, "~> 2.5", organization: "smartcolumbus_os"},
-      {:smart_city_data, "~> 2.0", organization: "smartcolumbus_os"},
+      {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
+      {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
       # Test/Dev Dependencies
       {:smart_city_test, "~> 0.2", organization: "smartcolumbus_os"},
-      {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
-      {:credo, "~> 0.10", only: [:dev, :test, :integration], runtime: false},
+      {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
+      {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false},
       {:divo, "~> 1.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
-      {:mock, "~> 0.3.1", only: [:test, :integration], runtime: false},
-      {:patiently, "~> 0.2.0", only: [:dev, :test, :integration]},
-      {:placebo, "~> 1.2.1", only: [:test, :integration]},
+      {:mock, "~> 0.3", only: [:test, :integration], runtime: false},
+      {:patiently, "~> 0.2", only: [:dev, :test, :integration]},
+      {:placebo, "~> 1.2", only: [:test, :integration]},
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:excoveralls, "~> 0.10", only: :test},
-      {:phoenix, "~> 1.4.2", only: :test}
+      {:phoenix, "~> 1.4", only: :test}
     ]
   end
 

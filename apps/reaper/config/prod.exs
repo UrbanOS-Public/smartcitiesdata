@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :logger,
-  level: :error
+  level: :warn
 
 config :redix,
   host: "localhost"

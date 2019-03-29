@@ -3,7 +3,7 @@ defmodule Reaper.ExtractorTest do
   use Placebo
   alias Reaper.Extractor
 
-  describe(".extract") do
+  describe "extract" do
     setup do
       bypass = Bypass.open()
       {:ok, bypass: bypass}
@@ -28,6 +28,14 @@ defmodule Reaper.ExtractorTest do
       actual = Extractor.extract("http://localhost:#{bypass.port}/1.1/statuses/update.csv")
 
       assert actual == ~s<one,two\n1,2\n>
+    end
+  end
+
+  describe "failure to extract" do
+    test "Poison errors are bubbled up instead of masked as a match error" do
+      assert_raise HTTPoison.Error, fn ->
+        Extractor.extract("http://localhost:100/1.1/statuses/update.csv")
+      end
     end
   end
 end

@@ -2,7 +2,6 @@ defmodule PersistenceTest do
   use ExUnit.Case
   alias Reaper.Persistence
   alias Reaper.ReaperConfig
-  alias SmartCity.TestDataGenerator, as: TDG
   use Divo
 
   @dataset_id "12345-3323"
