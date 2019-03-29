@@ -33,4 +33,4 @@ config :kafka_ex,
 
 config :flair,
   divo: "./docker-compose.yaml",
-  divo_wait: [dwell: 700, max_tries: 50]
+  divo_wait: [dwell: 1000, max_tries: 60]
