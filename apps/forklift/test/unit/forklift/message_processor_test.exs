@@ -4,21 +4,13 @@ defmodule MessageProcessorTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
 
-  alias Forklift.{MessageProcessor, CacheClient, DeadLetterQueue}
+  alias Forklift.{MessageProcessor, DataBuffer, DeadLetterQueue}
 
   test "data messages are sent to cache client" do
-    message = TDG.create_data(dataset_id: "ds1")
-    kaffe_message = Helper.make_kafka_message(message, "streaming-transformed")
+    data = TDG.create_data(dataset_id: "ds1", payload: %{one: 1})
+    kaffe_message = Helper.make_kafka_message(data, "streaming-transformed")
 
-    expect(
-      CacheClient.write(
-        kaffe_message.value,
-        message.dataset_id,
-        kaffe_message.partition,
-        kaffe_message.offset
-      ),
-      return: :ok
-    )
+    expect DataBuffer.write(data), return: :ok
 
     MessageProcessor.handle_messages([kaffe_message])
   end
