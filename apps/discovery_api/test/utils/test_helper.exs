@@ -8,6 +8,7 @@ defmodule DiscoveryApi.Test.Helper do
       title: Faker.Lorem.word(),
       keywords: [Faker.Lorem.characters(5), Faker.Lorem.characters(6)],
       organization: Faker.Lorem.word(),
+      orgId: Faker.UUID.v4(),
       modified: Date.to_string(Faker.Date.backward(20)),
       fileTypes: [Faker.Lorem.characters(3), Faker.Lorem.characters(4)],
       description: Enum.join(Faker.Lorem.sentences(2..3), " "),

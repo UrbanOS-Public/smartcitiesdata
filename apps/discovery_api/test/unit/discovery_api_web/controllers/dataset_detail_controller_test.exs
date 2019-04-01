@@ -7,10 +7,10 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
   describe "fetch dataset detail" do
     test "retreives dataset + organization from retriever when organzation found", %{conn: conn} do
       dataset = Helper.sample_dataset()
-      organization = TDG.create_organization(%{id: dataset.organization})
+      organization = TDG.create_organization(%{id: dataset.orgId})
 
-      expect(DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset)
-      expect(DiscoveryApi.Data.Organization.get(dataset.organization), return: {:ok, organization})
+      expect DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset
+      expect DiscoveryApi.Data.Organization.get(dataset.orgId), return: {:ok, organization}
 
       actual = conn |> get("/api/v1/dataset/#{dataset.id}") |> json_response(200)
 
@@ -34,7 +34,7 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
       dataset = Helper.sample_dataset()
 
       expect(DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset)
-      expect(DiscoveryApi.Data.Organization.get(dataset.organization), return: {:error, :whatever})
+      expect(DiscoveryApi.Data.Organization.get(dataset.orgId), return: {:error, :whatever})
 
       conn |> get("/api/v1/dataset/#{dataset.id}") |> json_response(500)
     end

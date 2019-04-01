@@ -1,41 +1,30 @@
 defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
   use ExUnit.Case
   use Placebo
-  alias DiscoveryApi.Data.DatasetDetailsHandler
-  alias DiscoveryApi.Data.Dataset
+  alias DiscoveryApi.Data.{Dataset, DatasetDetailsHandler}
+  alias SmartCity.TestDataGenerator, as: TDG
 
-  test "maps a RegistryMessage to a Dataset" do
-    event = %SmartCity.Dataset{
-      id: "erin",
-      business: %{
-        dataTitle: "my title",
-        description: "description",
-        keywords: ["key", "words"],
-        orgTitle: "publisher",
-        modifiedDate: "timestamp"
-      },
-      technical: %{
-        systemName: "foo__bar_baz",
-        sourceUrl: "http://example.com",
-        sourceType: "remote",
-        orgId: "an-org-uuid"
-      }
-    }
+  test "maps a SmartCity.Dataset to a API Dataset" do
+    event = TDG.create_dataset(%{})
 
     expected = %Dataset{
-      id: "erin",
-      title: "my title",
-      systemName: "foo__bar_baz",
-      keywords: ["key", "words"],
-      organization: "an-org-uuid",
-      modified: "timestamp",
-      description: "description",
+      id: event.id,
+      title: event.business.dataTitle,
+      systemName: event.technical.systemName,
+      keywords: event.business.keywords,
+      organization: event.business.orgTitle,
+      orgId: event.technical.orgId,
+      modified: event.business.modifiedDate,
+      description: event.business.description,
       fileTypes: ["CSV"],
-      sourceUrl: "http://example.com",
-      sourceType: "remote"
+      sourceUrl: event.technical.sourceUrl,
+      sourceType: event.technical.sourceType
     }
 
-    expect(Dataset.save(expected), return: {:ok, "OK"})
+    allow Dataset.save(any()), return: {:ok, "OK"}
+
     DatasetDetailsHandler.process_dataset_details_event(event)
+
+    assert_called Dataset.save(expected)
   end
 end
