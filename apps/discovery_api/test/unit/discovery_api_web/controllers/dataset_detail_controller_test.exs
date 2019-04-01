@@ -2,15 +2,12 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   alias DiscoveryApi.Test.Helper
-  alias SmartCity.TestDataGenerator, as: TDG
 
   describe "fetch dataset detail" do
-    test "retreives dataset + organization from retriever when organzation found", %{conn: conn} do
+    test "retrieves dataset + organization from retriever when organization found", %{conn: conn} do
       dataset = Helper.sample_dataset()
-      organization = TDG.create_organization(%{id: dataset.orgId})
 
       expect DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset
-      expect DiscoveryApi.Data.Organization.get(dataset.orgId), return: {:ok, organization}
 
       actual = conn |> get("/api/v1/dataset/#{dataset.id}") |> json_response(200)
 
@@ -20,23 +17,14 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
                "description" => dataset.description,
                "keywords" => dataset.keywords,
                "organization" => %{
-                 "name" => organization.orgTitle,
-                 "image" => organization.logoUrl,
-                 "description" => organization.description,
-                 "homepage" => organization.homepage
+                 "name" => dataset.organizationDetails.orgTitle,
+                 "image" => dataset.organizationDetails.logoUrl,
+                 "description" => dataset.organizationDetails.description,
+                 "homepage" => dataset.organizationDetails.homepage
                },
                "sourceType" => dataset.sourceType,
                "sourceUrl" => dataset.sourceUrl
              } == actual
-    end
-
-    test "returns 500 if organization not found for various reasons", %{conn: conn} do
-      dataset = Helper.sample_dataset()
-
-      expect(DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset)
-      expect(DiscoveryApi.Data.Organization.get(dataset.orgId), return: {:error, :whatever})
-
-      conn |> get("/api/v1/dataset/#{dataset.id}") |> json_response(500)
     end
 
     test "returns 404", %{conn: conn} do

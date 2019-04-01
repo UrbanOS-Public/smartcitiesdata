@@ -15,16 +15,18 @@ defmodule DiscoveryApi.Data.DatasetTest do
 
     actual =
       Redix.command!(:redix, ["GET", "discovery-api:dataset:#{dataset.id}"])
-      |> Jason.decode!()
+      |> Jason.decode!(keys: :atoms)
 
-    assert actual["id"] == dataset.id
-    assert actual["title"] == dataset.title
-    assert actual["systemName"] == dataset.systemName
-    assert actual["keywords"] == dataset.keywords
-    assert actual["organization"] == dataset.organization
-    assert actual["modified"] == dataset.modified
-    assert actual["fileTypes"] == dataset.fileTypes
-    assert actual["description"] == dataset.description
+    assert actual[:id] == dataset.id
+    assert actual[:title] == dataset.title
+    assert actual[:systemName] == dataset.systemName
+    assert actual[:keywords] == dataset.keywords
+
+    assert actual[:organization] == dataset.organization
+    assert actual[:modified] == dataset.modified
+
+    assert actual[:fileTypes] == dataset.fileTypes
+    assert actual[:description] == dataset.description
   end
 
   test "get should return a single dataset" do
