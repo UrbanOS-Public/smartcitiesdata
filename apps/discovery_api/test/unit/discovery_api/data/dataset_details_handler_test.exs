@@ -14,7 +14,7 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
       title: dataset.business.dataTitle,
       systemName: dataset.technical.systemName,
       keywords: dataset.business.keywords,
-      organization: dataset.business.orgTitle,
+      organization: organization.orgTitle,
       organizationDetails: organization,
       modified: dataset.business.modifiedDate,
       description: dataset.business.description,
