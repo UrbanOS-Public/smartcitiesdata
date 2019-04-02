@@ -1,6 +1,7 @@
 defmodule DiscoveryApi.Test.Helper do
   @moduledoc false
   alias DiscoveryApi.Data.Dataset
+  alias SmartCity.TestDataGenerator, as: TDG
 
   def sample_dataset(values \\ %{}) do
     %Dataset{
@@ -8,6 +9,7 @@ defmodule DiscoveryApi.Test.Helper do
       title: Faker.Lorem.word(),
       keywords: [Faker.Lorem.characters(5), Faker.Lorem.characters(6)],
       organization: Faker.Lorem.word(),
+      organizationDetails: %{} |> TDG.create_organization() |> Map.from_struct(),
       modified: Date.to_string(Faker.Date.backward(20)),
       fileTypes: [Faker.Lorem.characters(3), Faker.Lorem.characters(4)],
       description: Enum.join(Faker.Lorem.sentences(2..3), " "),

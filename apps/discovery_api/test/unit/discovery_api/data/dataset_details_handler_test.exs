@@ -1,40 +1,42 @@
 defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
   use ExUnit.Case
   use Placebo
-  alias DiscoveryApi.Data.DatasetDetailsHandler
-  alias DiscoveryApi.Data.Dataset
+  alias DiscoveryApi.Data.{DatasetDetailsHandler, Dataset}
+  alias SmartCity.Organization
+  alias SmartCity.TestDataGenerator, as: TDG
 
-  test "maps a RegistryMessage to a Dataset" do
-    event = %SmartCity.Dataset{
-      id: "erin",
-      business: %{
-        dataTitle: "my title",
-        description: "description",
-        keywords: ["key", "words"],
-        orgTitle: "publisher",
-        modifiedDate: "timestamp"
-      },
-      technical: %{
-        systemName: "foo__bar_baz",
-        sourceUrl: "http://example.com",
-        sourceType: "remote"
-      }
-    }
+  test "maps a SmartCity.Dataset to a DiscoveryApi.Data.Dataset" do
+    organization = TDG.create_organization(%{})
+    dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
 
     expected = %Dataset{
-      id: "erin",
-      title: "my title",
-      systemName: "foo__bar_baz",
-      keywords: ["key", "words"],
-      organization: "publisher",
-      modified: "timestamp",
-      description: "description",
+      id: dataset.id,
+      title: dataset.business.dataTitle,
+      systemName: dataset.technical.systemName,
+      keywords: dataset.business.keywords,
+      organization: dataset.business.orgTitle,
+      organizationDetails: organization,
+      modified: dataset.business.modifiedDate,
+      description: dataset.business.description,
       fileTypes: ["CSV"],
-      sourceUrl: "http://example.com",
-      sourceType: "remote"
+      sourceUrl: dataset.technical.sourceUrl,
+      sourceType: dataset.technical.sourceType
     }
 
-    expect(Dataset.save(expected), return: {:ok, "OK"})
-    DatasetDetailsHandler.process_dataset_details_event(event)
+    allow Organization.get(dataset.technical.orgId), return: {:ok, organization}
+    allow Dataset.save(any()), return: {:ok, "OK"}
+
+    DatasetDetailsHandler.process_dataset_details_event(dataset)
+
+    assert_called Dataset.save(expected)
+  end
+
+  test "returns error tuple when organization is not found" do
+    organization = TDG.create_organization(%{})
+    dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+
+    allow Organization.get(dataset.technical.orgId), return: {:error, :generic_error}
+
+    assert {:error, _} = DatasetDetailsHandler.process_dataset_details_event(dataset)
   end
 end

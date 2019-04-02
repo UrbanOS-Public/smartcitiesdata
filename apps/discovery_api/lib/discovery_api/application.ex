@@ -1,9 +1,6 @@
 defmodule DiscoveryApi.Application do
   @moduledoc false
   use Application
-  require Cachex.Spec
-
-  @ttl Application.get_env(:discovery_api, :ttl)
 
   def start(_type, _args) do
     import Supervisor.Spec
@@ -13,7 +10,6 @@ defmodule DiscoveryApi.Application do
 
     children =
       [
-        cachex(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
         redis(),
         registry_pubsub()
@@ -43,14 +39,5 @@ defmodule DiscoveryApi.Application do
       nil -> []
       host -> {Redix, host: host, name: :redix}
     end
-  end
-
-  defp cachex do
-    expiration = Cachex.Spec.expiration(default: @ttl)
-
-    %{
-      id: DiscoveryApiWeb.OrganizationController.cache_name(),
-      start: {Cachex, :start_link, [DiscoveryApiWeb.OrganizationController.cache_name(), [expiration: expiration]]}
-    }
   end
 end

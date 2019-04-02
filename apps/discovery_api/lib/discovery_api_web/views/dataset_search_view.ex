@@ -15,6 +15,7 @@ defmodule DiscoveryApiWeb.DatasetSearchView do
       |> paginate(offset, limit)
       |> Enum.map(&Map.from_struct/1)
       |> Enum.map(fn data -> Map.drop(data, [:__meta__]) end)
+      |> Enum.map(fn data -> Map.drop(data, [:organizationDetails]) end)
 
     %{
       "metadata" => %{
