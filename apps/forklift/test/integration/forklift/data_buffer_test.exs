@@ -26,12 +26,14 @@ defmodule Forklist.DataBufferIntTest do
   test "get_pending_datasets/0 returns keys of all existing data streams" do
     data1 = TDG.create_data(dataset_id: "ds1")
     data2 = TDG.create_data(dataset_id: "ds2")
+    data3 = TDG.create_data(dataset_id: "64da2b7d-189e-48a3-8ff3-86e03bc4feef")
     DataBuffer.write(data1)
     DataBuffer.write(data2)
+    DataBuffer.write(data3)
 
     actual = DataBuffer.get_pending_datasets()
 
-    assert MapSet.new(["ds1", "ds2"]) == MapSet.new(actual)
+    assert MapSet.new(["ds1", "ds2", "64da2b7d-189e-48a3-8ff3-86e03bc4feef"]) == MapSet.new(actual)
   end
 
   test "get_pending_data/1 returns messages that have not been read by group yet" do

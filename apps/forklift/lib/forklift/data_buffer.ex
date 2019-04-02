@@ -8,8 +8,7 @@ defmodule Forklift.DataBuffer do
   @conn Forklift.Application.redis_connection()
   @consumer_group "forklift"
   @consumer "consumer1"
-
-  @stream_key_regex ~r/^forklift:data:(?<dataset_id>\w+)$/
+  @key_prefix "forklift:data:"
 
   alias SmartCity.Data
 
@@ -86,9 +85,7 @@ defmodule Forklift.DataBuffer do
   end
 
   defp extract_dataset_id(key) do
-    @stream_key_regex
-    |> Regex.named_captures(key)
-    |> Map.get("dataset_id")
+    String.replace_leading(key, @key_prefix, "")
   end
 
   defp xread_group(key, unread) do
@@ -139,7 +136,7 @@ defmodule Forklift.DataBuffer do
     end
   end
 
-  defp stream_key(dataset_id), do: "forklift:data:#{dataset_id}"
+  defp stream_key(dataset_id), do: "#{@key_prefix}#{dataset_id}"
 
   defp xadd(dataset_id, json) do
     Redix.command(@conn, ["XADD", stream_key(dataset_id), "*", "message", json])
