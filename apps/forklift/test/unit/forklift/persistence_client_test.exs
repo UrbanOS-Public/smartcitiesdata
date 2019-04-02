@@ -8,6 +8,7 @@ defmodule PersistenceClientTest do
     system_name = "placeholder_sys_name"
 
     schema = %DatasetSchema{
+      id: "1234",
       system_name: system_name,
       columns: [
         {"id", "int"},
@@ -16,6 +17,8 @@ defmodule PersistenceClientTest do
     }
 
     allow(Prestige.execute(any()), return: :ok)
+
+    allow Redix.command(any(), ["SET", "forklift:last_insert_date:" <> schema.id, any()]), return: :ok
 
     allow(DatasetRegistryServer.get_schema(any()), return: schema)
     allow(Prestige.prefetch(any()), return: :ok)
@@ -28,7 +31,7 @@ defmodule PersistenceClientTest do
       %{"id" => 345, "name" => "dob"}
     ]
 
-    PersistenceClient.upload_data(system_name, messages)
+    PersistenceClient.upload_data(schema.id, messages)
 
     assert_called(
       Prestige.execute(expected_statement),
