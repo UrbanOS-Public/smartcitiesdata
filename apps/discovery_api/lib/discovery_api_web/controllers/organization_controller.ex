@@ -1,7 +1,7 @@
 defmodule DiscoveryApiWeb.OrganizationController do
   @moduledoc false
   use DiscoveryApiWeb, :controller
-  alias DiscoveryApi.Data.Organization
+  alias SmartCity.Organization
 
   def fetch_organization(conn, %{"id" => id}) do
     case Organization.get(id) do

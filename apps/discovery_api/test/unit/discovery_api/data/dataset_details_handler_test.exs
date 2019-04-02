@@ -1,7 +1,8 @@
 defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
   use ExUnit.Case
   use Placebo
-  alias DiscoveryApi.Data.{DatasetDetailsHandler, Dataset, Organization}
+  alias DiscoveryApi.Data.{DatasetDetailsHandler, Dataset}
+  alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG
 
   test "maps a SmartCity.Dataset to a DiscoveryApi.Data.Dataset" do

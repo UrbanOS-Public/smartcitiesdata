@@ -1,10 +1,10 @@
 defmodule DiscoveryApiWeb.OrganizationControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
-  alias DiscoveryApi.Data.Organization
+  alias SmartCity.Organization
 
   describe "organization controller" do
-    test "fetches organization from organization by org id", %{conn: conn} do
+    test "fetches organization from registry by org id", %{conn: conn} do
       expected = %{
         "id" => "1234",
         "orgName" => "Org Name",

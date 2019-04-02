@@ -1,7 +1,7 @@
 defmodule DiscoveryApi.Data.DatasetDetailsHandler do
   @moduledoc false
   alias DiscoveryApi.Data.Dataset, as: DiscoveryDataset
-  alias DiscoveryApi.Data.Organization
+  alias SmartCity.Organization
 
   def process_dataset_details_event(%SmartCity.Dataset{} = dataset) do
     case Organization.get(dataset.technical.orgId) do
