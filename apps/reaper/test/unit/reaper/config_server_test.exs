@@ -1,5 +1,6 @@
 defmodule Reaper.ConfigServerTest do
   use ExUnit.Case
+  import ExUnit.CaptureLog
   use Placebo
 
   alias Reaper.ConfigServer
@@ -245,9 +246,9 @@ defmodule Reaper.ConfigServerTest do
         meck_options: [:passthrough]
       )
 
-      assert_raise ArgumentError, fn ->
-        ConfigServer.process_reaper_config(reaper_config)
-      end
+      assert capture_log(fn ->
+               ConfigServer.process_reaper_config(reaper_config)
+             end) =~ "Inviable configuration"
     end
 
     test "the config server raises an error if the a non-remote dataset has a cadence of never" do
@@ -262,9 +263,9 @@ defmodule Reaper.ConfigServerTest do
         meck_options: [:passthrough]
       )
 
-      assert_raise ArgumentError, fn ->
-        ConfigServer.process_reaper_config(reaper_config)
-      end
+      assert capture_log(fn ->
+               ConfigServer.process_reaper_config(reaper_config)
+             end) =~ "Inviable configuration"
     end
 
     test "the config server raises an error if a dataset has a cadence of 0" do
@@ -279,9 +280,9 @@ defmodule Reaper.ConfigServerTest do
         meck_options: [:passthrough]
       )
 
-      assert_raise ArgumentError, fn ->
-        ConfigServer.process_reaper_config(reaper_config)
-      end
+      assert capture_log(fn ->
+               ConfigServer.process_reaper_config(reaper_config)
+             end) =~ "Inviable configuration"
     end
   end
 

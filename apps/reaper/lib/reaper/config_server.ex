@@ -4,7 +4,7 @@ defmodule Reaper.ConfigServer do
 
   Reaper.ConfigServer manages supervisors (`Reaper.FeedSupervisor`) for each dataset configured in dataset registry kafka topic.
   """
-
+  require Logger
   use GenServer
   alias Reaper.Persistence
   alias Reaper.ReaperConfig
@@ -59,8 +59,10 @@ defmodule Reaper.ConfigServer do
     do_process_reaper_config(reaper_config)
   end
 
-  def process_reaper_config(reaper_config),
-    do: raise(ArgumentError, "Unviable configuration error #{inspect(reaper_config)}")
+  def process_reaper_config(reaper_config) do
+    Logger.error("Inviable configuration error #{inspect(reaper_config)}")
+    nil
+  end
 
   defp do_process_reaper_config(reaper_config) do
     create_feed_supervisor(reaper_config)
