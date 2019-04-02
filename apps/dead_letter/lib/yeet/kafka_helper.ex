@@ -1,9 +1,9 @@
 defmodule Yeet.KafkaHelper do
-  @moduledoc fals
+  @moduledoc false
   def produce(message) do
-    :brod.start_client(endpoint(), :client_1, [])
-    :brod.start_producer(:client_1, topic(), [])
-    :brod.produce_sync(:client_1, topic(), 0, "key", Jason.encode!(message))
+    :brod.start_client(endpoint(), :dead_letter_client, [])
+    :brod.start_producer(:dead_letter_client, topic(), [])
+    :brod.produce_sync(:dead_letter_client, topic(), 0, message.app, Jason.encode!(message))
   end
 
   defp endpoint do
