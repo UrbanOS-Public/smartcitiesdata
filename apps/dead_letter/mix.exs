@@ -24,7 +24,8 @@ defmodule Yeet.MixProject do
     [
       {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.19", only: :dev},
-      {:jason, "~> 1.1"}
+      {:jason, "~> 1.1"},
+      {:brod, "~> 3.4"}
     ]
   end
 
