@@ -1,6 +1,7 @@
 defmodule Reaper.FullTest do
   use ExUnit.Case
   use Divo
+  use Tesla
   require Logger
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
@@ -17,10 +18,29 @@ defmodule Reaper.FullTest do
   @gtfs_file_name "gtfs-realtime.pb"
   @csv_file_name "random_stuff.csv"
 
+  setup_all do
+    bypass = Bypass.open()
+
+    bypass
+    |> bypass_file(@gtfs_file_name)
+    |> bypass_file(@json_file_name)
+    |> bypass_file(@csv_file_name)
+
+    Patiently.wait_for!(
+      fn ->
+        {type, result} = get("http://localhost:#{bypass.port}/#{@json_file_name}")
+        type == :ok and result.status == 200
+      end,
+      dwell: 1000,
+      max_tries: 20
+    )
+
+    {:ok, bypass: bypass}
+  end
+
   describe "pre-existing dataset" do
-    setup do
+    setup %{bypass: bypass} do
       Redix.command(:redix, ["FLUSHALL"])
-      bypass = Bypass.open()
 
       pre_existing_dataset =
         TDG.create_dataset(%{
@@ -32,11 +52,8 @@ defmodule Reaper.FullTest do
           }
         })
 
-      bypass
-      |> bypass_file(@json_file_name)
-
       Dataset.write(pre_existing_dataset)
-      {:ok, bypass: bypass}
+      :ok
     end
 
     test "configures and ingests a json-source that was added before reaper started" do
@@ -65,14 +82,7 @@ defmodule Reaper.FullTest do
   describe "No pre-existing datasets" do
     setup do
       Redix.command(:redix, ["FLUSHALL"])
-      bypass = Bypass.open()
-
-      bypass
-      |> bypass_file(@gtfs_file_name)
-      |> bypass_file(@json_file_name)
-      |> bypass_file(@csv_file_name)
-
-      {:ok, bypass: bypass}
+      :ok
     end
 
     test "configures and ingests a gtfs source", %{bypass: bypass} do
@@ -149,6 +159,7 @@ defmodule Reaper.FullTest do
             cadence: 1_000,
             sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
             sourceFormat: "csv",
+            sourceType: "batch",
             schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
           }
         })
@@ -210,9 +221,16 @@ defmodule Reaper.FullTest do
           flunk("Should have put a valid DateTime into redis")
       end
     end
+  end
+
+  describe "One time Batch" do
+    setup do
+      Redix.command(:redix, ["FLUSHALL"])
+      :ok
+    end
 
     test "cadence of once is only processed once", %{bypass: bypass} do
-      dataset_id = "34567-8912"
+      dataset_id = "only-once"
 
       csv_dataset =
         TDG.create_dataset(%{
@@ -221,7 +239,8 @@ defmodule Reaper.FullTest do
             cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
             sourceFormat: "csv",
-            sourceType: "batch"
+            sourceType: "batch",
+            schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
           }
         })
 
@@ -241,17 +260,17 @@ defmodule Reaper.FullTest do
           end
         end,
         dwell: 1000,
-        max_tries: 20
+        max_tries: 40
       )
 
-      # The supervisor successfully shuts down after running once
       Patiently.wait_for!(
         fn ->
-          TestUtils.child_count(Reaper.DataFeed) == 0 &&
-            TestUtils.child_count(Cachex) == 0 &&
-            TestUtils.feed_supervisor_count() == 0
+          data_feed_status =
+            Horde.Registry.lookup({:via, Horde.Registry, {Reaper.Registry, String.to_atom(dataset_id <> "_feed")}})
+
+          data_feed_status == :undefined
         end,
-        dwell: 1000,
+        dwell: 100,
         max_tries: 20
       )
     end

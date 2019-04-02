@@ -8,6 +8,7 @@ defmodule Reaper.FeedSupervisor do
   require Logger
   require Cachex.Spec
   alias Cachex.{Policy, Spec}
+  alias Reaper.ReaperConfig
 
   def start_link(args) do
     Supervisor.start_link(__MODULE__, args, name: Keyword.get(args, :name, __MODULE__))
@@ -19,6 +20,15 @@ defmodule Reaper.FeedSupervisor do
     Logger.debug(fn -> "Starting #{__MODULE__} with children: #{inspect(children, pretty: true)}" end)
 
     Supervisor.init(children, strategy: :one_for_one)
+  end
+
+  def child_spec(%ReaperConfig{dataset_id: id} = reaper_config) do
+    %{
+      id: String.to_atom(id),
+      type: :supervisor,
+      start:
+        {__MODULE__, :start_link, [[reaper_config: reaper_config, name: Reaper.Util.via_tuple(String.to_atom(id))]]}
+    }
   end
 
   def update_data_feed(supervisor_pid, %{dataset_id: id} = reaper_config) do
@@ -42,6 +52,7 @@ defmodule Reaper.FeedSupervisor do
     [
       %{
         id: cache_name,
+        restart: restart_policy,
         start: {Cachex, :start_link, [cache_name, [limit: cache_limit]]}
       },
       %{

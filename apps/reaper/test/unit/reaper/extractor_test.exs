@@ -33,7 +33,7 @@ defmodule Reaper.ExtractorTest do
 
   describe "failure to extract" do
     test "Poison errors are bubbled up instead of masked as a match error" do
-      assert_raise HTTPoison.Error, fn ->
+      assert_raise RuntimeError, fn ->
         Extractor.extract("http://localhost:100/1.1/statuses/update.csv")
       end
     end

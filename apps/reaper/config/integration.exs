@@ -17,7 +17,10 @@ config :logger,
   level: :info
 
 config :reaper,
-  divo: "./docker-compose.yaml",
+  divo: [
+    {DivoKafka, [create_topics: "streaming-raw:1:1", outside_host: host]},
+    DivoRedis
+  ],
   divo_wait: [dwell: 700, max_tries: 50]
 
 config :smart_city_registry,

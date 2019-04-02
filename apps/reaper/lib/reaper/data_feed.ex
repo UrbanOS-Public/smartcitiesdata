@@ -58,7 +58,7 @@ defmodule Reaper.DataFeed do
 
     case reaper_config.cadence do
       "once" ->
-        {:stop, {:normal, "Finished successfully"}, state}
+        {:stop, {:shutdown, "transient process finished its work"}, state}
 
       _ ->
         {:noreply, Util.deep_merge(state, %{timer_ref: timer_ref})}

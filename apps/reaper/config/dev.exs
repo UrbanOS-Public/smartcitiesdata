@@ -16,5 +16,8 @@ config :redix,
 System.put_env("HOST", "localhost")
 
 config :reaper,
-  divo: "./docker-compose.yaml",
+  divo: [
+    {DivoKafka, [create_topics: "streaming-raw:1:1"]},
+    DivoRedis
+  ],
   divo_wait: [dwell: 700, max_tries: 50]

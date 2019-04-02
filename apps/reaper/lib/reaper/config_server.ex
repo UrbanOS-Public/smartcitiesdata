@@ -10,7 +10,7 @@ defmodule Reaper.ConfigServer do
   alias Reaper.ReaperConfig
 
   def start_link(args) do
-    GenServer.start_link(__MODULE__, args, name: via_tuple(__MODULE__))
+    GenServer.start_link(__MODULE__, args, name: Reaper.Util.via_tuple(__MODULE__))
   end
 
   def init(state \\ []) do
@@ -68,14 +68,10 @@ defmodule Reaper.ConfigServer do
     Persistence.persist(reaper_config)
   end
 
-  defp create_feed_supervisor(%ReaperConfig{dataset_id: id} = reaper_config) do
+  defp create_feed_supervisor(reaper_config) do
     Horde.Supervisor.start_child(
       Reaper.Horde.Supervisor,
-      %{
-        id: String.to_atom(id),
-        start:
-          {Reaper.FeedSupervisor, :start_link, [[reaper_config: reaper_config, name: via_tuple(String.to_atom(id))]]}
-      }
+      Reaper.FeedSupervisor.child_spec(reaper_config)
     )
   end
 
@@ -86,6 +82,4 @@ defmodule Reaper.ConfigServer do
       Reaper.FeedSupervisor.update_data_feed(feed_supervisor_pid, reaper_config)
     end
   end
-
-  defp via_tuple(id), do: {:via, Horde.Registry, {Reaper.Registry, id}}
 end
