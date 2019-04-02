@@ -11,7 +11,7 @@ defmodule YeetTest do
                app: "forklift",
                original_message: %{},
                stacktrace: nil,
-               exit: nil,
+               exit_code: nil,
                error: nil,
                reason: nil,
                timestamp: %DateTime{}
@@ -80,9 +80,9 @@ defmodule YeetTest do
         e -> e
       end
 
-    actual = Yeet.format_message("forklift", original_message, exit: an_exit)
+    actual = Yeet.format_message("forklift", original_message, exit_code: an_exit)
 
-    assert "%RuntimeError{message: \"Error\"}" == Map.get(actual, :exit)
+    assert "%RuntimeError{message: \"Error\"}" == Map.get(actual, :exit_code)
   end
 
   test "sets the timestamp on DLQ message" do
