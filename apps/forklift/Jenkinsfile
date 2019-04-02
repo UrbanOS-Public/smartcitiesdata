@@ -81,8 +81,7 @@ def deployTo(environment, imageTag) {
         sh("""#!/bin/bash
             set -e
             helm init --client-only
-            helm upgrade --install forklift \
-                -f helm-config/prod.yaml ./chart \
+            helm upgrade --install forklift ./chart \
                 --namespace=streaming-services \
                 --set image.tag="${imageTag}" \
         """.trim())
