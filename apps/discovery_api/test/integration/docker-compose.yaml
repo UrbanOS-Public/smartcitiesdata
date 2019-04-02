@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   redis:
     image: redis
@@ -12,7 +12,7 @@ services:
   redis-helper:
     image: redis
     depends_on:
-    - redis
+      - redis
     command: >
       redis-cli -h redis set discovery-api:dataset:myguid '{
         "id": "myguid",
@@ -29,21 +29,25 @@ services:
   presto:
     image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/presto-testo:latest
     depends_on:
-    - metastore
-    - minio
+      - metastore
+      - minio
     ports:
-    - "8080:8080"
+      - "8080:8080"
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:8080/v1/info | grep -q '\"starting\":false'"]
+      test:
+        [
+          "CMD-SHELL",
+          'curl -s http://localhost:8080/v1/info | grep -q ''"starting":false''',
+        ]
       interval: 10s
       timeout: 30s
       retries: 10
   metastore:
     image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/metastore-testo:latest
     depends_on:
-    - postgres
+      - postgres
     ports:
-    - "9083:9083"
+      - "9083:9083"
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 9083"]
       interval: 10s
@@ -56,8 +60,22 @@ services:
   postgres:
     image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/postgres-testo:latest
     ports:
-    - "5432:5432"
+      - "5432:5432"
   minio:
     image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/minio-testo:latest
     ports:
-    - "9000:9000"
+      - "9000:9000"
+  ldap:
+    image: osixia/openldap
+    ports:
+      - "389:389"
+      - "636:636"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "ldapsearch -x -H ldap://localhost -b dc=example,dc=org -D 'cn=admin,dc=example,dc=org' -w admin",
+        ]
+      interval: 5s
+      timeout: 20s
+      retries: 3

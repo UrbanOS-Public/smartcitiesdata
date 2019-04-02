@@ -34,3 +34,8 @@ config :ex_json_schema,
 
 config :prestige,
   base_url: "http://#{host}:8080"
+
+config :paddle, Paddle,
+  host: host,
+  base: "dc=example,dc=org",
+  timeout: 3000

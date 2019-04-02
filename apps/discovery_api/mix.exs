@@ -22,6 +22,7 @@ defmodule DiscoveryApi.Mixfile do
 
   defp deps do
     [
+      {:paddle, "~> 0.1.4"},
       {:cachex, "~> 3.0"},
       {:corsica, "~> 1.0"},
       {:cowboy, "~> 1.0"},
@@ -30,6 +31,7 @@ defmodule DiscoveryApi.Mixfile do
       {:checkov, "~> 0.4.0"},
       {:distillery, "~> 2.0"},
       {:divo, "~> 1.0.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
+      {:guardian, "~> 1.2.1"},
       {:gettext, "~> 0.11"},
       {:httpoison, "~> 1.5"},
       {:faker, "~> 0.12.0"},
