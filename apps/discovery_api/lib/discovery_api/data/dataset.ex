@@ -9,6 +9,7 @@ defmodule DiscoveryApi.Data.Dataset do
     :title,
     :keywords,
     :organization,
+    :organizationDetails,
     :modified,
     :fileTypes,
     :description,

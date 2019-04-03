@@ -4,18 +4,27 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
   alias DiscoveryApi.Test.Helper
 
   describe "fetch dataset detail" do
-    test "retreives dataset from retriever", %{conn: conn} do
+    test "retrieves dataset + organization from retriever when organization found", %{conn: conn} do
       dataset = Helper.sample_dataset()
-      expect(DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset)
+
+      expect DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset
 
       actual = conn |> get("/api/v1/dataset/#{dataset.id}") |> json_response(200)
 
-      assert dataset.id == actual["id"]
-      assert dataset.description == actual["description"]
-      assert dataset.keywords == actual["keywords"]
-      assert dataset.organization == actual["organization"]["name"]
-      assert dataset.sourceType == actual["sourceType"]
-      assert dataset.sourceUrl == actual["sourceUrl"]
+      assert %{
+               "id" => dataset.id,
+               "name" => dataset.title,
+               "description" => dataset.description,
+               "keywords" => dataset.keywords,
+               "organization" => %{
+                 "name" => dataset.organizationDetails.orgTitle,
+                 "image" => dataset.organizationDetails.logoUrl,
+                 "description" => dataset.organizationDetails.description,
+                 "homepage" => dataset.organizationDetails.homepage
+               },
+               "sourceType" => dataset.sourceType,
+               "sourceUrl" => dataset.sourceUrl
+             } == actual
     end
 
     test "returns 404", %{conn: conn} do

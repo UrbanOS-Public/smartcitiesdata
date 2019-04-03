@@ -1,44 +1,20 @@
 defmodule DiscoveryApi.Data.DatasetEventsTest do
   use ExUnit.Case
   use Divo
-  alias SmartCity.Dataset
+  alias SmartCity.{Dataset, Organization}
+  alias SmartCity.TestDataGenerator, as: TDG
 
   @name_space "discovery-api:project-open-data:"
 
   test "Properly formatted metadata is returned after consuming registry messages" do
-    dataset = %Dataset{
-      id: "erin",
-      business: %{
-        dataTitle: "my title",
-        description: "description",
-        modifiedDate: "2017-11-28T16:53:15.000Z",
-        orgTitle: "Organization 1",
-        contactName: "Bob Jones",
-        contactEmail: "bjones@example.com",
-        license: "http://openlicense.org",
-        keywords: ["key", "words"]
-      },
-      technical: %{dataName: "", orgName: "", systemName: "", stream: "", sourceUrl: "", sourceFormat: ""}
-    }
+    organization = TDG.create_organization(%{})
+    Organization.write(organization)
 
-    Dataset.write(dataset)
+    dataset_one = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+    Dataset.write(dataset_one)
 
-    dataset2 = %Dataset{
-      id: "Ben",
-      business: %{
-        dataTitle: "my other title",
-        description: "your description",
-        modifiedDate: "2017-11-28T16:53:15.000Z",
-        orgTitle: "Organization 2",
-        contactName: "Bob Bob",
-        contactEmail: "bb@example.com",
-        license: "http://closedlicense.org",
-        keywords: ["lock", "sentences"]
-      },
-      technical: %{dataName: "", orgName: "", systemName: "", stream: "", sourceUrl: "", sourceFormat: ""}
-    }
-
-    Dataset.write(dataset2)
+    dataset_two = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+    Dataset.write(dataset_two)
 
     Patiently.wait_for!(
       fn -> redix_populated?() end,

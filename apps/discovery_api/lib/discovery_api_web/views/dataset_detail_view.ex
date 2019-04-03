@@ -13,8 +13,10 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
       id: dataset.id,
       keywords: dataset.keywords,
       organization: %{
-        name: dataset.organization,
-        image: "https://www.cota.com/wp-content/uploads/2016/04/COSI-Image-414x236.jpg"
+        name: dataset.organizationDetails.orgTitle,
+        image: dataset.organizationDetails.logoUrl,
+        description: dataset.organizationDetails.description,
+        homepage: dataset.organizationDetails.homepage
       },
       sourceType: dataset.sourceType,
       sourceUrl: dataset.sourceUrl

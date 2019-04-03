@@ -1,7 +1,8 @@
 defmodule DiscoveryApi.Data.PrestoIngrationTest do
   use ExUnit.Case
   use Divo
-  alias SmartCity.Dataset
+  alias SmartCity.{Dataset, Organization}
+  alias SmartCity.TestDataGenerator, as: TDG
 
   setup do
     Redix.command!(:redix, ["FLUSHALL"])
@@ -24,28 +25,10 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    dataset = %Dataset{
-      id: dataset_id,
-      business: %{
-        dataTitle: "my title",
-        description: "description",
-        modifiedDate: "2017-11-28T16:53:15.000Z",
-        orgTitle: "Organization 1",
-        contactName: "Bob Jones",
-        contactEmail: "bjones@example.com",
-        license: "http://openlicense.org",
-        keywords: ["key", "words"]
-      },
-      technical: %{
-        dataName: "myTitle",
-        orgName: "foobar",
-        systemName: system_name,
-        stream: false,
-        sourceUrl: "http://foobar.com/data",
-        sourceFormat: "csv"
-      }
-    }
+    organization = TDG.create_organization(%{})
+    Organization.write(organization)
 
+    dataset = TDG.create_dataset(%{technical: %{systemName: system_name, orgId: organization.id}})
     Dataset.write(dataset)
 
     assert [] == get_dataset_preview(dataset_id)
@@ -64,28 +47,10 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    dataset = %Dataset{
-      id: dataset_id,
-      business: %{
-        dataTitle: "my title",
-        description: "description",
-        modifiedDate: "2017-11-28T16:53:15.000Z",
-        orgTitle: "Organization 1",
-        contactName: "Bob Jones",
-        contactEmail: "bjones@example.com",
-        license: "http://openlicense.org",
-        keywords: ["key", "words"]
-      },
-      technical: %{
-        dataName: "myTitle",
-        orgName: "foobar",
-        systemName: system_name,
-        stream: false,
-        sourceUrl: "http://foobar.com/data",
-        sourceFormat: "csv"
-      }
-    }
+    organization = TDG.create_organization(%{})
+    Organization.write(organization)
 
+    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
     Dataset.write(dataset)
 
     expected = [[1, "bob"], [2, "mike"]]
