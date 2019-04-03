@@ -23,3 +23,9 @@ config :discovery_api,
   collector: StreamingMetrics.PrometheusMetricCollector
 
 import_config "#{Mix.env()}.exs"
+
+config :paddle, Paddle, host: "localhost"
+
+config :discovery_api, DiscoveryApi.Auth.Guardian,
+  issuer: "discovery_api",
+  secret_key: "this_is_a_secret"
