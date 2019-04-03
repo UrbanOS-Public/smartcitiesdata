@@ -8,14 +8,13 @@ defmodule Forklift.Application do
   def start(_type, _args) do
     children =
       [
-        {Registry, keys: :unique, name: Forklift.Registry},
-        {Task.Supervisor, name: Forklift.TaskSupervisor},
-        {Forklift.MessageWriter, name: Forklift.MessageWriter},
+        exq(),
+        redis(),
+        kaffe(),
         {Forklift.DatasetRegistryServer, name: Forklift.DatasetRegistryServer},
         Forklift.DataBuffer,
-        redis(),
         dataset_subscriber(),
-        kaffe()
+        {Forklift.MessageWriter, name: Forklift.MessageWriter}
       ]
       |> List.flatten()
 
@@ -52,6 +51,20 @@ defmodule Forklift.Application do
           id: Kaffe.Consumer,
           start: {Kaffe.Consumer, :start_link, []},
           type: :supervisor
+        }
+    end
+  end
+
+  defp exq do
+    case Application.get_env(:exq, :host) do
+      nil ->
+        []
+
+      _ ->
+        %{
+          id: Exq,
+          type: :supervisor,
+          start: {Exq, :start_link, []}
         }
     end
   end

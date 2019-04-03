@@ -16,3 +16,6 @@ config :kaffe,
   consumer: [
     endpoints: nil
   ]
+
+config :exq,
+  start_on_application: false
