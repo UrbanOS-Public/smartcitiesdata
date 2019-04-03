@@ -25,13 +25,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
   end
 
   @moduletag capture_log: true
-  test "Wait a very long time" do
-    IO.puts("WAIT FOR A LONG TIME")
-    Process.sleep(120_000)
-    assert 200 == 200
-  end
-
-  @moduletag capture_log: true
   test "Successfully login via the login url with valid password" do
     %{status_code: status_code, body: body} =
       "http://localhost:4000/api/v1/login"
