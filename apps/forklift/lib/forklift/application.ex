@@ -49,8 +49,8 @@ defmodule Forklift.Application do
 
       _ ->
         %{
-          id: Kaffe.GroupMemberSupervisor,
-          start: {Kaffe.GroupMemberSupervisor, :start_link, []},
+          id: Kaffe.Consumer,
+          start: {Kaffe.Consumer, :start_link, []},
           type: :supervisor
         }
     end
