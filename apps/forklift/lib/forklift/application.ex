@@ -3,7 +3,7 @@ defmodule Forklift.Application do
 
   use Application
 
-  def redis_connection(), do: :redix
+  def redis_client(), do: Forklift.Redix
 
   def start(_type, _args) do
     children =
@@ -30,7 +30,7 @@ defmodule Forklift.Application do
         []
 
       host ->
-        {Redix, host: host, name: redis_connection()}
+        {Forklift.Redix, host: host}
     end
   end
 

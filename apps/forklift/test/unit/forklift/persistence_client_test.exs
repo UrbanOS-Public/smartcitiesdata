@@ -3,6 +3,7 @@ defmodule PersistenceClientTest do
   use Placebo
 
   alias Forklift.{DatasetSchema, PersistenceClient, DatasetRegistryServer}
+  alias Forklift.Redix, as: Redix
 
   test "upload_data sends a valid statement to prestige" do
     system_name = "placeholder_sys_name"
@@ -18,7 +19,7 @@ defmodule PersistenceClientTest do
 
     allow(Prestige.execute(any()), return: :ok)
 
-    allow Redix.command(any(), ["SET", "forklift:last_insert_date:" <> schema.id, any()]), return: :ok
+    allow Redix.command(["SET", "forklift:last_insert_date:" <> schema.id, any()]), return: :ok
 
     allow(DatasetRegistryServer.get_schema(any()), return: schema)
     allow(Prestige.prefetch(any()), return: :ok)

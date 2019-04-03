@@ -5,7 +5,7 @@ defmodule Forklift.DataBuffer do
 
   @batch_size Application.get_env(:forklift, :cache_processing_batch_size)
   @number_of_empty_reads_to_delete Application.get_env(:forklift, :number_of_empty_reads_to_delete, 50)
-  @conn Forklift.Application.redis_connection()
+  @redis Forklift.Application.redis_client()
   @consumer_group "forklift"
   @consumer "consumer1"
   @key_prefix "forklift:data:"
@@ -32,7 +32,7 @@ defmodule Forklift.DataBuffer do
   end
 
   def get_pending_datasets() do
-    case Redix.command(@conn, ["KEYS", stream_key("*")]) do
+    case @redis.command(["KEYS", stream_key("*")]) do
       {:ok, result} ->
         Enum.map(result, &extract_dataset_id/1)
 
@@ -56,7 +56,7 @@ defmodule Forklift.DataBuffer do
     ack_command = ["XACK", key, @consumer_group | message_keys]
     del_command = ["XDEL", key | message_keys]
 
-    case Redix.pipeline(@conn, [ack_command, del_command]) do
+    case @redis.pipeline([ack_command, del_command]) do
       {:ok, _result} -> :ok
       result -> result
     end
@@ -73,7 +73,7 @@ defmodule Forklift.DataBuffer do
 
     if number >= @number_of_empty_reads_to_delete do
       Logger.info(fn -> "Deleting stream for dataset #{dataset_id} due to inactivity" end)
-      Redix.command!(@conn, ["DEL", stream_key(dataset_id)])
+      @redis.command!(["DEL", stream_key(dataset_id)])
       Agent.update(__MODULE__, &Map.delete(&1, dataset_id))
     end
   end
@@ -92,7 +92,7 @@ defmodule Forklift.DataBuffer do
     id = if unread, do: ">", else: "0"
     command = ["XREADGROUP", "GROUP", @consumer_group, @consumer, "COUNT", @batch_size, "STREAMS", key, id]
 
-    case Redix.command(@conn, command) do
+    case @redis.command(command) do
       {:ok, response} ->
         response
         |> parse_xread_response()
@@ -105,7 +105,7 @@ defmodule Forklift.DataBuffer do
   end
 
   defp create_consumer_group(key) do
-    Redix.command(@conn, ["XGROUP", "CREATE", key, @consumer_group, "0"])
+    @redis.command(["XGROUP", "CREATE", key, @consumer_group, "0"])
   end
 
   defp parse_xread_response(nil), do: %{}
@@ -139,6 +139,6 @@ defmodule Forklift.DataBuffer do
   defp stream_key(dataset_id), do: "#{@key_prefix}#{dataset_id}"
 
   defp xadd(dataset_id, json) do
-    Redix.command(@conn, ["XADD", stream_key(dataset_id), "*", "message", json])
+    @redis.command(["XADD", stream_key(dataset_id), "*", "message", json])
   end
 end

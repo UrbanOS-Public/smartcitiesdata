@@ -5,7 +5,7 @@ defmodule PersistenceTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @conn Forklift.Application.redis_connection()
+  @redis Forklift.Application.redis_client()
 
   test "should insert records into Presto" do
     system_name = "Organization1__Dataset1"
@@ -45,7 +45,7 @@ defmodule PersistenceTest do
     fn ->
       Logger.info("Waiting for redis last_insert_date to update for dataset id " <> dataset_id)
 
-      case Redix.command(@conn, ["GET", "forklift:last_insert_date:" <> dataset_id]) do
+      case @redis.command(["GET", "forklift:last_insert_date:" <> dataset_id]) do
         {:ok, nil} ->
           false
 
