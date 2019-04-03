@@ -9,10 +9,10 @@ defmodule Yeet do
 
   def format_message(original_message, app_name, options \\ []) do
     stacktrace =
-      case Keyword.get(options, :stacktrace) do
-        nil -> nil
-        {_, stacktrace} -> Exception.format_stacktrace(stacktrace)
-      end
+      options
+      |> Keyword.get(:stacktrace, Process.info(self(), :current_stacktrace))
+      |> get_stacktrace()
+      |> Exception.format_stacktrace()
 
     exit_code =
       case Keyword.get(options, :exit_code) do
@@ -33,5 +33,13 @@ defmodule Yeet do
       reason: reason,
       timestamp: timestamp
     }
+  end
+
+  defp get_stacktrace(stacktrace) when is_list(stacktrace) do
+    stacktrace
+  end
+
+  defp get_stacktrace({_, stacktrace}) when is_list(stacktrace) do
+    stacktrace
   end
 end

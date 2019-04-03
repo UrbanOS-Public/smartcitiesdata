@@ -1,102 +1,104 @@
 defmodule YeetTest do
   use ExUnit.Case
+  use Placebo
+  alias Yeet.KafkaHelper
 
-  test "returns formatted DLQ message with defaults and empty original message" do
-    original_message = %{}
+  @default_stacktrace [
+    {:erlang, :/, [1, 0], []},
+    {Yeet, :catcher, 1, [file: 'lib/yeet.ex', line: 26]},
+    {:erl_eval, :do_apply, 6, [file: 'erl_eval.erl', line: 680]},
+    {:elixir, :eval_forms, 4, [file: 'src/elixir.erl', line: 258]},
+    {IEx.Evaluator, :handle_eval, 5, [file: 'lib/iex/evaluator.ex', line: 257]},
+    {IEx.Evaluator, :do_eval, 3, [file: 'lib/iex/evaluator.ex', line: 237]},
+    {IEx.Evaluator, :eval, 3, [file: 'lib/iex/evaluator.ex', line: 215]},
+    {IEx.Evaluator, :loop, 1, [file: 'lib/iex/evaluator.ex', line: 103]}
+  ]
 
-    actual = Yeet.format_message(original_message, "forklift")
+  @default_original_message %{
+    payload: "{}",
+    topic: "streaming-raw"
+  }
 
-    assert match?(
-             %{
-               app: "forklift",
-               original_message: %{},
-               stacktrace: nil,
-               exit_code: nil,
-               error: nil,
-               reason: nil,
-               timestamp: %DateTime{}
-             },
-             actual
-           )
+  describe "process_dead_letter/2" do
+    test "sends formatted message to kafka" do
+      allow(KafkaHelper.produce(any()), return: :ok)
+
+      Yeet.process_dead_letter(@default_original_message, "forklift")
+
+      assert_called(KafkaHelper.produce(%{app: "forklift"}))
+    end
   end
 
-  test "returns formatted DLQ message with defaults and non-empty original message" do
-    original_message = %{
-      payload: "{}",
-      topic: "streaming-raw"
-    }
+  describe "format_message/2" do
+    test "returns formatted DLQ message with defaults and empty original message" do
+      actual = Yeet.format_message(@default_original_message, "forklift")
 
-    actual = Yeet.format_message(original_message, "forklift")
+      assert match?(
+               %{
+                 app: "forklift",
+                 original_message: %{},
+                 exit_code: nil,
+                 error: nil,
+                 reason: nil,
+                 timestamp: %DateTime{}
+               },
+               actual
+             )
 
-    assert Map.get(actual, :original_message) == %{payload: "{}", topic: "streaming-raw"}
-  end
+      assert Map.get(actual, :stacktrace) =~ "Yeet.format_message"
+    end
 
-  test "returns formatted DLQ message with a reason" do
-    original_message = %{
-      payload: "{}",
-      topic: "streaming-raw"
-    }
+    test "returns formatted DLQ message with defaults and non-empty original message" do
+      actual = Yeet.format_message(@default_original_message, "forklift")
 
-    actual = Yeet.format_message("forklift", original_message, reason: "Failed to parse something")
+      assert Map.get(actual, :original_message) == %{payload: "{}", topic: "streaming-raw"}
+    end
 
-    assert "Failed to parse something" == Map.get(actual, :reason)
-  end
+    test "returns formatted DLQ message with a reason" do
+      actual = Yeet.format_message("forklift", @default_original_message, reason: "Failed to parse something")
 
-  test "returns formatted DLQ message with a stacktrace" do
-    original_message = %{
-      payload: "{}",
-      topic: "streaming-raw"
-    }
+      assert "Failed to parse something" == Map.get(actual, :reason)
+    end
 
-    stacktrace =
-      {:error,
-       [
-         {:erlang, :/, [1, 0], []},
-         {Yeet, :catcher, 1, [file: 'lib/yeet.ex', line: 26]},
-         {:erl_eval, :do_apply, 6, [file: 'erl_eval.erl', line: 680]},
-         {:elixir, :eval_forms, 4, [file: 'src/elixir.erl', line: 258]},
-         {IEx.Evaluator, :handle_eval, 5, [file: 'lib/iex/evaluator.ex', line: 257]},
-         {IEx.Evaluator, :do_eval, 3, [file: 'lib/iex/evaluator.ex', line: 237]},
-         {IEx.Evaluator, :eval, 3, [file: 'lib/iex/evaluator.ex', line: 215]},
-         {IEx.Evaluator, :loop, 1, [file: 'lib/iex/evaluator.ex', line: 103]}
-       ]}
+    test "returns formatted DLQ message with a stacktrace from Process.info" do
+      stacktrace = {:current_stacktrace, @default_stacktrace}
 
-    actual = Yeet.format_message(original_message, "forklift", stacktrace: stacktrace)
+      actual = Yeet.format_message(@default_original_message, "forklift", stacktrace: stacktrace)
 
-    assert Map.get(actual, :stacktrace) ==
-             "    :erlang./(1, 0)\n    (yeet) lib/yeet.ex:26: Yeet.catcher/1\n    (stdlib) erl_eval.erl:680: :erl_eval.do_apply/6\n    (elixir) src/elixir.erl:258: :elixir.eval_forms/4\n    lib/iex/evaluator.ex:257: IEx.Evaluator.handle_eval/5\n    lib/iex/evaluator.ex:237: IEx.Evaluator.do_eval/3\n    lib/iex/evaluator.ex:215: IEx.Evaluator.eval/3\n    lib/iex/evaluator.ex:103: IEx.Evaluator.loop/1\n"
-  end
+      assert Map.get(actual, :stacktrace) == Exception.format_stacktrace(@default_stacktrace)
+    end
 
-  test "returns formatted DLQ message with an exit" do
-    original_message = %{
-      payload: "{}",
-      topic: "streaming-raw"
-    }
+    test "returns formatted DLQ message with a stacktrace from System.stacktrace" do
+      actual = Yeet.format_message(@default_original_message, "forklift", stacktrace: @default_stacktrace)
 
-    an_exit =
-      try do
-        raise "Error"
-      rescue
-        e -> e
-      end
+      assert Map.get(actual, :stacktrace) == Exception.format_stacktrace(@default_stacktrace)
+    end
 
-    actual = Yeet.format_message("forklift", original_message, exit_code: an_exit)
+    test "returns formatted DLQ message with an exit" do
+      an_exit =
+        try do
+          raise "Error"
+        rescue
+          e -> e
+        end
 
-    assert "%RuntimeError{message: \"Error\"}" == Map.get(actual, :exit_code)
-  end
+      actual = Yeet.format_message("forklift", @default_original_message, exit_code: an_exit)
 
-  test "sets the timestamp on DLQ message" do
-    original_message = %{}
-    actual = Yeet.format_message("forklift", original_message)
+      assert "%RuntimeError{message: \"Error\"}" == Map.get(actual, :exit_code)
+    end
 
-    assert %DateTime{} = Map.get(actual, :timestamp)
-  end
+    test "sets the timestamp on DLQ message" do
+      actual = Yeet.format_message("forklift", @default_original_message)
 
-  test "allows overriding the timestamp on DLQ message" do
-    epoch = DateTime.from_unix!(0)
-    original_message = %{}
-    actual = Yeet.format_message("forklift", original_message, timestamp: epoch)
+      assert %DateTime{} = Map.get(actual, :timestamp)
+    end
 
-    assert epoch == Map.get(actual, :timestamp)
+    test "allows overriding the timestamp on DLQ message" do
+      epoch = DateTime.from_unix!(0)
+
+      actual = Yeet.format_message("forklift", @default_original_message, timestamp: epoch)
+
+      assert epoch == Map.get(actual, :timestamp)
+    end
   end
 end
