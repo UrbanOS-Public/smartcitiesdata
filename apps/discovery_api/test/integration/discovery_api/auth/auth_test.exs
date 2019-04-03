@@ -5,6 +5,9 @@ defmodule DiscoveryApi.Auth.AuthTest do
   alias SmartCity.Dataset
 
   setup_all do
+    IO.puts("WAIT FOR A LONG TIME")
+    Process.sleep(600_000)
+
     Paddle.authenticate([cn: "admin"], "admin")
     Paddle.add([ou: "People"], objectClass: ["top", "organizationalunit"], ou: "People")
     dn = [uid: "FirstUser", ou: "People"]
