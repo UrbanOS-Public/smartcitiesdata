@@ -21,7 +21,7 @@ defmodule Forklift.DatasetWriterTest do
     allow DataBuffer.cleanup_dataset(any(), any()), return: :ok
     allow PersistenceClient.upload_data(any(), any()), return: :ok
 
-    DatasetWriter.run("ds1")
+    DatasetWriter.perform("ds1")
 
     assert_called PersistenceClient.upload_data("ds1", payloads)
     assert_called DataBuffer.mark_complete("ds1", entries)

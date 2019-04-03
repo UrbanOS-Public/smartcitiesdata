@@ -49,7 +49,7 @@ defmodule PersistenceTest do
         {:ok, nil} ->
           false
 
-        {:ok, result} ->
+        {:ok, _result} ->
           true
 
         {:error, reason} ->

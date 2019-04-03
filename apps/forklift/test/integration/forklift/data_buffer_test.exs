@@ -90,13 +90,26 @@ defmodule Forklist.DataBufferIntTest do
 
   test "cleanup_dataset/2 deletes the stream when no messages have been read for awhile" do
     data = TDG.create_data(dataset_id: "ds101")
-    DataBuffer.write(data)
+    {:ok, key} = DataBuffer.write(data)
     number_of_empty_reads = Application.get_env(:forklift, :number_of_empty_reads_to_delete, 50)
+
+    DataBuffer.mark_complete("ds101", [%{key: key, data: data}])
 
     0..(number_of_empty_reads + 1)
     |> Enum.each(fn _ -> DataBuffer.cleanup_dataset("ds101", []) end)
 
     assert @redis.command!(["EXISTS", "forklift:data:ds101"]) == 0
+  end
+
+  test "cleanup_dataset/2 deletes the stream when no messages have been read for a while and stream length = 0" do
+    data = TDG.create_data(dataset_id: "ds102")
+    DataBuffer.write(data)
+    number_of_empty_reads = Application.get_env(:forklift, :number_of_empty_reads_to_delete, 50)
+
+    0..(number_of_empty_reads + 1)
+    |> Enum.each(fn _ -> DataBuffer.cleanup_dataset("ds102", []) end)
+
+    assert @redis.command!(["EXISTS", "forklift:data:ds102"]) == 1
   end
 
   defp ok({:ok, value}), do: value

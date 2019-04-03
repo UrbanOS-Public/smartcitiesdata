@@ -30,7 +30,7 @@ defmodule Forklift.MessageWriter do
   end
 
   defp start_task(dataset_id) do
-    Task.Supervisor.async_nolink(Forklift.TaskSupervisor, Forklift.DatasetWriter, :run, [dataset_id])
+    Exq.enqueue(Exq, "default", Forklift.DatasetWriter, [dataset_id])
   end
 
   defp schedule_work do

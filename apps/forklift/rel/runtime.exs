@@ -47,3 +47,17 @@ config :smart_city_registry,
     host: redis_host
   ]
 
+config :exq,
+  name: Exq,
+  host: redis_host,
+  port: 6379,
+  namespace: "forklift:exq",
+  concurrency: 20,
+  queues: ["default"],
+  poll_timeout: 50,
+  scheduler_poll_timeout: 200,
+  scheduler_enable: true,
+  max_retries: 25,
+  shutdown_timeout: 500,
+  node_identifier: Forklift.NodeIdentifier,
+  start_on_application: false

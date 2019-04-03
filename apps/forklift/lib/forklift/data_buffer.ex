@@ -72,9 +72,7 @@ defmodule Forklift.DataBuffer do
       end)
 
     if number >= @number_of_empty_reads_to_delete do
-      Logger.info(fn -> "Deleting stream for dataset #{dataset_id} due to inactivity" end)
-      @redis.command!(["DEL", stream_key(dataset_id)])
-      Agent.update(__MODULE__, &Map.delete(&1, dataset_id))
+      delete_inactive_stream(dataset_id)
     end
   end
 
@@ -82,6 +80,18 @@ defmodule Forklift.DataBuffer do
     Agent.update(__MODULE__, fn s ->
       Map.put(s, dataset_id, 0)
     end)
+  end
+
+  defp delete_inactive_stream(dataset_id) do
+    case @redis.command!(["XLEN", stream_key(dataset_id)]) do
+      0 ->
+        Logger.info(fn -> "Deleting stream for dataset #{dataset_id} due to inactivity" end)
+        @redis.command!(["DEL", stream_key(dataset_id)])
+        Agent.update(__MODULE__, &Map.delete(&1, dataset_id))
+
+      _ ->
+        Logger.info("Dataset #{dataset_id} received new data while attempting to delete redis stream")
+    end
   end
 
   defp extract_dataset_id(key) do

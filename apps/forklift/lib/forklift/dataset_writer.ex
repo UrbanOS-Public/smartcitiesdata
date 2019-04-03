@@ -3,7 +3,7 @@ defmodule Forklift.DatasetWriter do
 
   alias Forklift.{DataBuffer, PersistenceClient}
 
-  def run(dataset_id) do
+  def perform(dataset_id) do
     pending_entries = DataBuffer.get_pending_data(dataset_id)
     payloads = Enum.map(pending_entries, fn %{data: data} -> data.payload end)
 
