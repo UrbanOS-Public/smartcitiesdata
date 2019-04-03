@@ -3,7 +3,7 @@ defmodule Forklift.PersistenceClient do
   require Logger
   alias Forklift.{DatasetRegistryServer, Statement}
 
-  @conn Forklift.Application.redis_connection()
+  @redis Forklift.Application.redis_client()
 
   def upload_data(_dataset_id, []) do
     Logger.debug("No records to persist!")
@@ -16,7 +16,7 @@ defmodule Forklift.PersistenceClient do
     |> Statement.build(messages)
     |> execute_statement()
 
-    Redix.command(@conn, ["SET", "forklift:last_insert_date:" <> dataset_id, DateTime.to_iso8601(DateTime.utc_now())])
+    @redis.command(["SET", "forklift:last_insert_date:" <> dataset_id, DateTime.to_iso8601(DateTime.utc_now())])
 
     Logger.debug("Persisting #{inspect(Enum.count(messages))} records for #{dataset_id}")
 

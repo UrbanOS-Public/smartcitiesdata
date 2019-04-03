@@ -6,10 +6,10 @@ defmodule Forklist.DataBufferIntTest do
   alias Forklift.DataBuffer
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @conn Forklift.Application.redis_connection()
+  @redis Forklift.Application.redis_client()
 
   setup do
-    Redix.command!(@conn, ["FLUSHALL"])
+    @redis.command!(["FLUSHALL"])
     :ok
   end
 
@@ -19,7 +19,7 @@ defmodule Forklist.DataBufferIntTest do
     DataBuffer.write(data)
 
     key = "forklift:data:#{data.dataset_id}"
-    [["forklift:data:ds1", [[_key, ["message", actual]]]]] = Redix.command!(@conn, ["XREAD", "STREAMS", key, "0"])
+    [["forklift:data:ds1", [[_key, ["message", actual]]]]] = @redis.command!(["XREAD", "STREAMS", key, "0"])
     assert data == ok(Data.new(actual))
   end
 
@@ -69,13 +69,12 @@ defmodule Forklist.DataBufferIntTest do
 
     :ok = DataBuffer.mark_complete("ds1", [actual2, actual3])
 
-    response =
-      Redix.command!(@conn, ["XREADGROUP", "GROUP", "forklift", "consumer1", "STREAMS", "forklift:data:ds1", "0"])
+    response = @redis.command!(["XREADGROUP", "GROUP", "forklift", "consumer1", "STREAMS", "forklift:data:ds1", "0"])
 
     [["forklift:data:ds1", [[_key, ["message", pending]]]]] = response
     assert data1 == ok(Data.new(pending))
 
-    response = Redix.command!(@conn, ["XREAD", "STREAMS", "forklift:data:ds1", "0"])
+    response = @redis.command!(["XREAD", "STREAMS", "forklift:data:ds1", "0"])
     [["forklift:data:ds1", [[_key, ["message", pending]]]]] = response
     assert data1 == ok(Data.new(pending))
   end
@@ -86,7 +85,7 @@ defmodule Forklist.DataBufferIntTest do
 
     DataBuffer.cleanup_dataset("ds100", [])
 
-    assert Redix.command!(@conn, ["EXISTS", "forklift:data:ds100"]) == 1
+    assert @redis.command!(["EXISTS", "forklift:data:ds100"]) == 1
   end
 
   test "cleanup_dataset/2 deletes the stream when no messages have been read for awhile" do
@@ -97,7 +96,7 @@ defmodule Forklist.DataBufferIntTest do
     0..(number_of_empty_reads + 1)
     |> Enum.each(fn _ -> DataBuffer.cleanup_dataset("ds101", []) end)
 
-    assert Redix.command!(@conn, ["EXISTS", "forklift:data:ds101"]) == 0
+    assert @redis.command!(["EXISTS", "forklift:data:ds101"]) == 0
   end
 
   defp ok({:ok, value}), do: value

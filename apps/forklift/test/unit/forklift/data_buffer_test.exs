@@ -5,16 +5,17 @@ defmodule Forklift.DataBufferTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   alias Forklift.DataBuffer
+  alias Forklift.Redix, as: Redix
 
   test "write/1 should return an ok tuple on success" do
-    allow Redix.command(any(), any()), return: {:ok, :ok}
+    allow Redix.command(any()), return: {:ok, :ok}
     data = TDG.create_data(dataset_id: "1")
 
     assert {:ok, :ok} = DataBuffer.write(data)
   end
 
   test "write/1 should return error tuple on failed write to redis" do
-    allow Redix.command(any(), any()), return: {:error, "Reason Something"}
+    allow Redix.command(any()), return: {:error, "Reason Something"}
     data = TDG.create_data(dataset_id: "1")
 
     assert {:error, "Reason Something"} == DataBuffer.write(data)
@@ -28,13 +29,13 @@ defmodule Forklift.DataBufferTest do
   end
 
   test "get_pending_datasets/0 shoud return empty list when redix returns an error" do
-    allow Redix.command(any(), any()), return: {:error, "Failure"}
+    allow Redix.command(any()), return: {:error, "Failure"}
 
     assert [] == DataBuffer.get_pending_datasets()
   end
 
   test "get_pending_data/0 should return empty list when redix returns an error" do
-    allow Redix.command(any(), any()), return: {:error, "Failure"}
+    allow Redix.command(any()), return: {:error, "Failure"}
 
     assert [] == DataBuffer.get_pending_data("ds1")
   end
@@ -42,23 +43,23 @@ defmodule Forklift.DataBufferTest do
   test "get_pending_data marks complete and sends to dead letter when message is not valid" do
     data = TDG.create_data(dataset_id: "ds1", payload: %{one: 1})
 
-    allow Redix.command(:redix, ["XGROUP" | any()]), return: :ok
+    allow Redix.command(["XGROUP" | any()]), return: :ok
 
-    allow Redix.command(:redix, ["XREADGROUP" | any()]),
+    allow Redix.command(["XREADGROUP" | any()]),
       seq: [
         {:ok, to_xread_result("ds1", [{"k1", "Jerks"}])},
         {:ok, to_xread_result("ds1", [{"k2", Jason.encode!(data)}])}
       ]
 
-    allow Redix.command(:redix, any()), return: :ok
-    allow Redix.pipeline(:redix, any()), return: :ok
+    allow Redix.command(any()), return: :ok
+    allow Redix.pipeline(any()), return: :ok
     allow Forklift.DeadLetterQueue.enqueue(any()), return: :ok
 
     results = DataBuffer.get_pending_data("ds1")
 
     assert results == [%{key: "k2", data: data}]
 
-    assert_called Redix.pipeline(:redix, [
+    assert_called Redix.pipeline([
                     ["XACK", "forklift:data:ds1", "forklift", "k1"],
                     ["XDEL", "forklift:data:ds1", "k1"]
                   ])
@@ -67,7 +68,7 @@ defmodule Forklift.DataBufferTest do
   end
 
   test "mark_complete/2 returns error tuple when redix returns an error" do
-    allow Redix.pipeline(any(), any()), return: {:error, "Failure"}
+    allow Redix.pipeline(any()), return: {:error, "Failure"}
 
     assert {:error, "Failure"} == DataBuffer.mark_complete("key", [%{key: "id"}])
   end
