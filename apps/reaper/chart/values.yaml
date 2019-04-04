@@ -1,5 +1,6 @@
 reaper:
   to_topic: streaming-raw
+  dlq_topic: streaming-dead-letters
   replicaCount: 2
   image:
     repository: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/reaper

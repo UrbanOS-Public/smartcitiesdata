@@ -50,4 +50,42 @@ defmodule Reaper.DecoderTest do
       assert Map.has_key?(structure, "vehicle_id")
     end
   end
+
+  describe "failure to decode" do
+    test "json messages yoted and raises error" do
+      body = "baaad json"
+
+      allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
+
+      assert [] == Reaper.Decoder.decode(body, "json", nil)
+
+      assert_called Yeet.process_dead_letter(body, "Reaper",
+                      exit_code: %Jason.DecodeError{data: "baaad json", position: 0, token: nil}
+                    )
+    end
+
+    test "gtfs messages yoted and raises error" do
+      body = "baaad gtfs"
+
+      allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
+
+      allow(TransitRealtime.FeedMessage.decode(any()), exec: fn _ -> raise "this is an error" end)
+
+      assert [] == Reaper.Decoder.decode(body, "gtfs", nil)
+
+      assert_called Yeet.process_dead_letter(body, "Reaper", exit_code: %RuntimeError{message: "this is an error"})
+    end
+
+    test "csv messages yoted and raises error" do
+      body = "baaad csv"
+
+      allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
+
+      assert [] == Reaper.Decoder.decode(body, "csv", nil)
+
+      assert_called Yeet.process_dead_letter(body, "Reaper",
+                      exit_code: %Protocol.UndefinedError{description: "", protocol: Enumerable, value: nil}
+                    )
+    end
+  end
 end

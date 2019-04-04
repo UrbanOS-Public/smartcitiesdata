@@ -47,3 +47,7 @@ config :smart_city_registry,
 
 config :redix,
   host: redis_host
+
+config :yeet,
+  endpoint: endpoints,
+  topic: System.get_env("DLQ_TOPIC")

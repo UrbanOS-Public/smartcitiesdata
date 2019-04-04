@@ -36,12 +36,14 @@ defmodule Reaper.Loader do
     with {:ok, message} <-
            Data.new(%{
              dataset_id: dataset_id,
-             operational: %{timing: [%{app: "reaper", label: "sus", start_time: start, end_time: stop}]},
+             operational: %{timing: [%{app: "reaper", label: "Ingested", start_time: start, end_time: stop}]},
              payload: payload,
              _metadata: %{}
            }),
          {:ok, value_part} <- Jason.encode(message) do
       value_part
+    else
+      error -> Yeet.process_dead_letter(payload, "Reaper", exit_code: error)
     end
   end
 

@@ -18,7 +18,7 @@ config :logger,
 
 config :reaper,
   divo: [
-    {DivoKafka, [create_topics: "streaming-raw:1:1", outside_host: host]},
+    {DivoKafka, [create_topics: "streaming-raw:1:1,streaming-dead-letters:1:1", outside_host: host]},
     DivoRedis
   ],
   divo_wait: [dwell: 700, max_tries: 50]
@@ -31,9 +31,13 @@ config :smart_city_registry,
 config :kaffe,
   producer: [
     endpoints: endpoint,
-    topics: ["streaming-raw"],
+    topics: ["streaming-raw", "streaming-dead-letters"],
     partition_strategy: :md5
   ]
 
 config :redix,
   host: host
+
+config :yeet,
+  endpoint: endpoint,
+  topic: "streaming-dead-letters"

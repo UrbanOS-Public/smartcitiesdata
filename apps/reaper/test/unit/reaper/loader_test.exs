@@ -46,4 +46,22 @@ defmodule Reaper.LoaderTest do
                {:error, test_payload_two}
              ]
   end
+
+  test "load failures are yoted and raise an error" do
+    allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
+    allow(Producer.produce_sync(any(), any()), return: :ok)
+    allow(SmartCity.Data.new(any()), return: {:error, "Bad stuff happened"})
+
+    test_payload = %{
+      payload: "as",
+      a: "map"
+    }
+
+    good_date = DateTime.utc_now()
+    reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: "123"})
+
+    Loader.load([test_payload], reaper_config, good_date)
+
+    assert_called Yeet.process_dead_letter(test_payload, "Reaper", exit_code: {:error, "Bad stuff happened"})
+  end
 end

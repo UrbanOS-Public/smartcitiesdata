@@ -65,7 +65,8 @@ defmodule Reaper.MixProject do
       {:placebo, "~> 1.2", only: [:test, :integration]},
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:excoveralls, "~> 0.10", only: :test},
-      {:phoenix, "~> 1.4", only: :test}
+      {:phoenix, "~> 1.4", only: :test},
+      {:yeet, "~> 0.3", organization: "smartcolumbus_os"}
     ]
   end
 
