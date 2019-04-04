@@ -9,7 +9,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
     Paddle.add([ou: "People"], objectClass: ["top", "organizationalunit"], ou: "People")
     dn = [uid: "FirstUser", ou: "People"]
 
-    thing = [
+    user = [
       objectClass: ["account", "posixAccount"],
       cn: "FirstUser",
       uid: "FirstUser",
@@ -21,7 +21,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
     ]
 
     # NOTE: To create the userPassword encrypted hash run:  slappasswd -h {SSHA} -s <password>
-    Paddle.add(dn, thing)
+    Paddle.add(dn, user)
   end
 
   @moduletag capture_log: true
