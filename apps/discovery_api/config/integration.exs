@@ -14,7 +14,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: "integrationtests.e
 
 config :discovery_api,
   divo: "test/integration/docker-compose.yaml",
-  divo_wait: [dwell: 1000, max_tries: 35]
+  divo_wait: [dwell: 2000, max_tries: 35]
 
 config :smart_city_registry,
   redis: [
@@ -34,3 +34,8 @@ config :ex_json_schema,
 
 config :prestige,
   base_url: "http://#{host}:8080"
+
+config :paddle, Paddle,
+  host: host,
+  base: "dc=example,dc=org",
+  timeout: 3000

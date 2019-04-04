@@ -22,4 +22,11 @@ config :logger, :console,
 config :discovery_api,
   collector: StreamingMetrics.PrometheusMetricCollector
 
+config :paddle, Paddle, host: "localhost"
+
+# NOTE: To generate a secret_key:  mix guardian.gen.secret
+config :discovery_api, DiscoveryApi.Auth.Guardian,
+  issuer: "discovery_api",
+  secret_key: "this_is_a_secret"
+
 import_config "#{Mix.env()}.exs"
