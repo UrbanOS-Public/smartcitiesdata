@@ -25,4 +25,4 @@ config :prestige,
 config :paddle, Paddle,
   host: System.get_env("LDAP_HOST"),
   base: System.get_env("LDAP_BASE"),
-  account_subdn: "cn=users"
+  account_subdn: "cn=users,cn=compat"
