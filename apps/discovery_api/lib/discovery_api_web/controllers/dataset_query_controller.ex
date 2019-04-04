@@ -3,6 +3,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   use DiscoveryApiWeb, :controller
   require Logger
   alias DiscoveryApi.Data.Dataset
+  alias DiscoveryApiWeb.DatasetMetricsService
 
   def query(conn, params) do
     query(conn, params, get_format(conn))
@@ -12,6 +13,8 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     with {:ok, system_name} <- get_system_name(dataset_id),
          {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
          {:ok, query} <- build_query(params, system_name) do
+      DatasetMetricsService.record_api_hit("queries", dataset_id)
+
       query
       |> Prestige.execute()
       |> map_data_stream_for_csv(column_names)
@@ -25,6 +28,8 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   def query(conn, %{"dataset_id" => dataset_id} = params, "json") do
     with {:ok, system_name} <- get_system_name(dataset_id),
          {:ok, query} <- build_query(params, system_name) do
+      DatasetMetricsService.record_api_hit("queries", dataset_id)
+
       data =
         query
         |> Prestige.execute(rows_as_maps: true)

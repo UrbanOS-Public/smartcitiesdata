@@ -24,6 +24,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         return: [["id", "bigint", "", ""], ["one", "bigint", "", ""], ["two", "bigint", "", ""]]
       )
 
+      allow(Redix.command!(any(), any()), return: :does_not_matter)
       :ok
     end
 
@@ -88,6 +89,16 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       assert "id,one\n1,2\n4,5\n" == actual
     end
+
+    test "increments dataset queries count when dataset query is requested", %{conn: conn} do
+      actual =
+        conn
+        |> put_req_header("accept", "text/csv")
+        |> get("/api/v1/dataset/test/query", columns: "id, one")
+        |> response(200)
+
+      assert_called(Redix.command!(:redix, ["INCR", "smart_registry:queries:count:test"]))
+    end
   end
 
   describe "fetching json" do
@@ -105,6 +116,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         return: [%{id: 1, name: "Joe"}, %{id: 2, name: "Robby"}]
       )
 
+      allow(Redix.command!(any(), any()), return: :does_not_matter)
       :ok
     end
 
@@ -124,6 +136,15 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
                       rows_as_maps: true
                     ),
                     once()
+    end
+
+    test "increments dataset queries count when dataset query is requested" do
+      conn
+      |> put_req_header("accept", "application/json")
+      |> get("/api/v1/dataset/test/query")
+      |> response(200)
+
+      assert_called(Redix.command!(:redix, ["INCR", "smart_registry:queries:count:test"]))
     end
   end
 

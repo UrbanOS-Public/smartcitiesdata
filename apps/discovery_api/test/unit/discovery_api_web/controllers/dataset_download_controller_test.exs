@@ -22,7 +22,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name})
 
       allow(Redix.command!(:redix, ["GET", "discovery-api:dataset:#{@dataset_id}"]), return: dataset_json)
-
+      allow(Redix.command!(any(), any()), return: :does_not_matter)
       :ok
     end
 
@@ -41,6 +41,11 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       actual = conn |> get("/api/v1/dataset/#{@dataset_id}/download") |> response(200)
       assert "id,one,two\n1,2,3\n4,5,6\n" == actual
     end
+
+    test "increments dataset download count when dataset download is requested", %{conn: conn} do
+      conn |> get("/api/v1/dataset/#{@dataset_id}/download?_format=csv") |> response(200)
+      assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"]))
+    end
   end
 
   describe "fetching json data" do
@@ -50,6 +55,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
         return: [%{id: 1, name: "Joe", age: 21}, %{id: 2, name: "Robby", age: 32}]
       )
 
+      allow(Redix.command!(any(), any()), return: :does_not_matter)
       :ok
     end
 
@@ -70,6 +76,11 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
                %{"id" => 1, "name" => "Joe", "age" => 21},
                %{"id" => 2, "name" => "Robby", "age" => 32}
              ]
+    end
+
+    test "increments downloads count for dataset when dataset download requested", %{conn: conn} do
+      actual = conn |> get("/api/v1/dataset/test/download?_format=json") |> response(200)
+      assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:test"]))
     end
   end
 end
