@@ -8,7 +8,7 @@ defmodule DiscoveryApi.Auth.Guardian do
 
   def resource_from_claims(claims) do
     id = claims["sub"]
-    resource = Paddle.get(filter: [uid: id], base: [ou: "People"])
+    resource = Paddle.get(filter: [uid: id])
     {:ok, resource}
   end
 end

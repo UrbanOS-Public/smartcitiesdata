@@ -42,3 +42,8 @@ spec:
               secretKeyRef:
                 name: ldap
                 key: base_dn
+          - name: GUARDIAN_KEY
+            valueFrom:
+              secretKeyRef:
+                name: guardian
+                key: secret_key

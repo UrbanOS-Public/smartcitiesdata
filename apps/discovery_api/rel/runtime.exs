@@ -26,3 +26,5 @@ config :paddle, Paddle,
   host: System.get_env("LDAP_HOST"),
   base: System.get_env("LDAP_BASE"),
   account_subdn: "cn=users,cn=compat"
+
+config :discovery_api, DiscoveryApi.Auth.Guardian, secret_key: System.get_env("GUARDIAN_KEY")

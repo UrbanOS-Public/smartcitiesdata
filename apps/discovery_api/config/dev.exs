@@ -32,3 +32,9 @@ config :redix,
 config :discovery_api,
   divo: "test/integration/docker-compose.yaml",
   divo_wait: [dwell: 1000, max_tries: 20]
+
+config :paddle, Paddle,
+  host: System.get_env("LDAP_HOST"),
+  base: "dc=internal,dc=smartcolumbusos,dc=com",
+  timeout: 3000,
+  account_subdn: "cn=users,cn=compat"
