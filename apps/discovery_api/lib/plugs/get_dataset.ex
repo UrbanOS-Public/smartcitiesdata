@@ -1,4 +1,6 @@
 defmodule DiscoveryApi.Plugs.GetDataset do
+  @moduledoc false
+
   require Logger
   import Plug.Conn
   alias DiscoveryApi.Auth.Guardian

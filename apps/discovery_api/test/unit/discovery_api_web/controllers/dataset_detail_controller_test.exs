@@ -59,11 +59,10 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
       allow Paddle.get(any()), return: {:ok, [ldap_user]}
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bob")
 
-      actual =
-        conn
-        |> Plug.Conn.put_req_header("token", token)
-        |> get("/api/v1/dataset/#{dataset.id}")
-        |> json_response(401)
+      conn
+      |> Plug.Conn.put_req_header("token", token)
+      |> get("/api/v1/dataset/#{dataset.id}")
+      |> json_response(401)
     end
   end
 
@@ -90,10 +89,9 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
     allow Paddle.get(any()), return: {:ok, [ldap_user]}
     {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bob")
 
-    actual =
-      conn
-      |> Plug.Conn.put_req_header("token", token)
-      |> get("/api/v1/dataset/#{dataset.id}")
-      |> json_response(200)
+    conn
+    |> Plug.Conn.put_req_header("token", token)
+    |> get("/api/v1/dataset/#{dataset.id}")
+    |> json_response(200)
   end
 end
