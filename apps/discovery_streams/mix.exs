@@ -50,7 +50,8 @@ defmodule CotaStreamingConsumer.Mixfile do
       {:checkov, "~> 0.4.0", only: :test},
       {:divo, "~> 1.1", organization: "smartcolumbus_os"},
       {:divo_kafka, "~> 0.1.0", organization: "smartcolumbus_os"},
-      {:placebo, "~> 1.2", only: [:dev, :test, :integration]}
+      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:temporary_env, "~> 2.0", only: [:test, :integration]}
     ]
   end
 

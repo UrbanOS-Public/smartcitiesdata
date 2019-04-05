@@ -31,8 +31,6 @@ spec:
             cpu: 100m
         envFrom:
         - configMapRef:
-            name: {{ .Chart.Name }}
-        - configMapRef:
             name: kafka-brokers
         env:
         - name: RUN_IN_KUBERNETES

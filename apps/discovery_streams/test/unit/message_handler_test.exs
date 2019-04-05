@@ -1,4 +1,4 @@
-defmodule CotaStreamingConsumerTest do
+defmodule CotaStreamingConsumer.MessageHandlerTest do
   use CotaStreamingConsumerWeb.ChannelCase
   use Placebo
 
@@ -6,6 +6,7 @@ defmodule CotaStreamingConsumerTest do
   import ExUnit.CaptureLog
 
   alias StreamingMetrics.ConsoleMetricCollector, as: MetricCollector
+  alias CotaStreamingConsumer.MessageHandler
 
   @outbound_records "records"
 
@@ -22,7 +23,7 @@ defmodule CotaStreamingConsumerTest do
       socket()
       |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, channel)
 
-    CotaStreamingConsumer.handle_messages([
+    MessageHandler.handle_messages([
       create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: topic)
     ])
 
@@ -45,7 +46,7 @@ defmodule CotaStreamingConsumerTest do
       |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "streaming:shuttle-position")
 
     assert capture_log([level: :warn], fn ->
-             CotaStreamingConsumer.handle_messages([
+             MessageHandler.handle_messages([
                create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "shuttle-position"),
                # <- Badly formatted JSON
                create_message(~s({"vehicle":{"vehicle":{"id:""11604"}}}), topic: "shuttle-position"),
@@ -66,7 +67,7 @@ defmodule CotaStreamingConsumerTest do
       socket()
       |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "vehicle_position")
 
-    CotaStreamingConsumer.handle_messages([
+    MessageHandler.handle_messages([
       create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "cota-vehicle-positions"),
       create_message(~s({"vehicle_id": 34095, "description": "Some Description"}), topic: "shuttle-position")
     ])
@@ -87,7 +88,7 @@ defmodule CotaStreamingConsumerTest do
       |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "vehicle_position")
 
     assert capture_log([level: :warn], fn ->
-             CotaStreamingConsumer.handle_messages([
+             MessageHandler.handle_messages([
                create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "cota-vehicle-positions")
              ])
            end) =~ "Unable to write application metrics: {:http_error, \"reason\"}"
@@ -102,7 +103,7 @@ defmodule CotaStreamingConsumerTest do
       socket()
       |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "vehicle_position")
 
-    CotaStreamingConsumer.handle_messages([
+    MessageHandler.handle_messages([
       create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), key: "11604")
     ])
 
@@ -125,14 +126,14 @@ defmodule CotaStreamingConsumerTest do
 
   test "returns :ok after processing" do
     allow MetricCollector.record_metrics(any(), any()), return: {:ok, %{}}, meck_options: [:passthrough]
-    assert CotaStreamingConsumer.handle_messages([]) == :ok
+    assert MessageHandler.handle_messages([]) == :ok
   end
 
   describe("integration") do
     test "Consumer properly invokes the \"count metric\" library function" do
       actual =
         capture_log(fn ->
-          CotaStreamingConsumer.handle_messages([
+          MessageHandler.handle_messages([
             create_message(~s({"vehicle":{"vehicle":{"id":"11605"}}})),
             create_message(~s({"vehicle":{"vehicle":{"id":"11608"}}}))
           ])

@@ -12,7 +12,7 @@ if kafka_brokers do
 
   config :kaffe, consumer: [
     endpoints: endpoints,
-    topics: [System.get_env("COTA_DATA_TOPIC"), System.get_env("CEAV_DATA_TOPIC")],
+    topics: [],
     consumer_group: "cota-streaming-consumer",
     message_handler: CotaStreamingConsumer,
     offset_reset_policy: :reset_to_latest

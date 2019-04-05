@@ -21,6 +21,7 @@ defmodule CotaStreamingConsumer.Application do
 
     children =
       [
+        CotaStreamingConsumer.CachexSupervisor,
         cachex(),
         supervisor(CotaStreamingConsumerWeb.Endpoint, []),
         libcluster(),

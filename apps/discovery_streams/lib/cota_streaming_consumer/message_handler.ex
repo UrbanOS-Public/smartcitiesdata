@@ -1,13 +1,14 @@
-require Logger
-require Poison
-require GenServer
-alias StreamingMetrics.Hostname
-
-defmodule CotaStreamingConsumer do
+defmodule CotaStreamingConsumer.MessageHandler do
   @moduledoc """
     Gets messages out of kafka, adds them to the cache,
     broadcasts them, and records metrics.
   """
+
+  require Logger
+  require Poison
+  require GenServer
+  alias StreamingMetrics.Hostname
+
   @metric_collector Application.get_env(:streaming_metrics, :collector)
 
   def handle_messages(messages) do

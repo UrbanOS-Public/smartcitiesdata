@@ -8,14 +8,14 @@ host =
 
 config :cota_streaming_consumer,
   divo: [
-   {DivoKafka, [create_topics: "cota-vehicle-positions:1:1,shuttle-positions:1:1", outside_host: host]}
+    {DivoKafka, [create_topics: "cota-vehicle-positions:1:1,shuttle-positions:1:1", outside_host: host]}
   ],
   divo_wait: [dwell: 700, max_tries: 50]
 
 config :kaffe,
   consumer: [
     endpoints: [{String.to_atom(host), 9092}],
-    topics: ["cota-vehicle-positions"],
+    topics: [],
     consumer_group: "cota-streaming-consumer",
     message_handler: CotaStreamingConsumer,
     offset_reset_policy: :reset_to_latest

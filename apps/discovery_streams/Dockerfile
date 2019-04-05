@@ -15,7 +15,6 @@ RUN mix local.hex --force && \
 RUN MIX_ENV=prod mix release
 
 FROM alpine:3.8
-ENV COTA_DATA_TOPIC "cota-vehicle-positions"
 ENV REPLACE_OS_VARS=true
 RUN apk update && \
     apk add --no-cache bash openssl && \
