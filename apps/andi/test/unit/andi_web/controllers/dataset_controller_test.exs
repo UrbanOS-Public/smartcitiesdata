@@ -43,6 +43,10 @@ defmodule AndiWeb.DatasetControllerTest do
         "rights" => "rights information",
         "homepage" => "",
         "keywords" => []
+      },
+      "_metadata" => %{
+        "intendedUse" => ["use 1", "use 2", "use 3"],
+        "expectedBenefit" => []
       }
     }
 
