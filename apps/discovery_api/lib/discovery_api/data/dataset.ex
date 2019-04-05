@@ -15,7 +15,8 @@ defmodule DiscoveryApi.Data.Dataset do
     :description,
     :systemName,
     :sourceUrl,
-    :sourceType
+    :sourceType,
+    :private
   ]
 
   @name_space "discovery-api:dataset:"

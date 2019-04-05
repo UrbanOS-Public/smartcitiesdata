@@ -8,7 +8,13 @@ defmodule DiscoveryApi.Auth.Guardian do
 
   def resource_from_claims(claims) do
     id = claims["sub"]
-    resource = Paddle.get(filter: [uid: id])
-    {:ok, resource}
+    {:ok, resources} = Paddle.get(filter: [uid: id])
+    {:ok, List.first(resources)}
+  end
+
+  def current_claims(conn) do
+    token = Plug.Conn.get_req_header(conn, "token")
+    {:ok, claims} = DiscoveryApi.Auth.Guardian.decode_and_verify(token)
+    List.first(claims)
   end
 end

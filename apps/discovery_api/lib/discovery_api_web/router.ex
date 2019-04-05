@@ -17,6 +17,11 @@ defmodule DiscoveryApiWeb.Router do
     plug(:accepts, ["json"])
   end
 
+  pipeline :check_restricted do
+    plug(DiscoveryApi.Plugs.GetDataset)
+    plug(DiscoveryApi.Auth.Restrictor)
+  end
+
   scope "/", DiscoveryApiWeb do
     get("/healthcheck", HealthCheckController, :index)
   end
@@ -26,9 +31,14 @@ defmodule DiscoveryApiWeb.Router do
 
     get("/dataset/:dataset_id/preview", DatasetPreviewController, :fetch_preview)
     get("/dataset/search", DatasetSearchController, :search)
-    get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
     get("/data_json", DataJsonController, :get_data_json)
     get("/organization/:id", OrganizationController, :fetch_organization)
+  end
+
+  scope "/api/v1", DiscoveryApiWeb do
+    pipe_through([:api_json_only, :check_restricted])
+
+    get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
   end
 
   scope "/api/v1", DiscoveryApiWeb do

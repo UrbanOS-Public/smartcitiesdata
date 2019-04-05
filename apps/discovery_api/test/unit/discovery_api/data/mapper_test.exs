@@ -113,7 +113,8 @@ defmodule DiscoveryApi.Data.MapperTest do
           "contactPoint",
           "identifier",
           "accessLevel",
-          "distribution"
+          "distribution",
+          "license"
         ]
         |> Enum.sort()
 

@@ -14,7 +14,8 @@ defmodule DiscoveryApi.Test.Helper do
       fileTypes: [Faker.Lorem.characters(3), Faker.Lorem.characters(4)],
       description: Enum.join(Faker.Lorem.sentences(2..3), " "),
       sourceType: "remote",
-      sourceUrl: Faker.Internet.url()
+      sourceUrl: Faker.Internet.url(),
+      private: false
     }
     |> Map.merge(values)
   end

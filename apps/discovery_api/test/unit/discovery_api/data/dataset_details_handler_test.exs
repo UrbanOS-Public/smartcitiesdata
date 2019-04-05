@@ -20,7 +20,8 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
       description: dataset.business.description,
       fileTypes: ["CSV"],
       sourceUrl: dataset.technical.sourceUrl,
-      sourceType: dataset.technical.sourceType
+      sourceType: dataset.technical.sourceType,
+      private: false
     }
 
     allow Organization.get(dataset.technical.orgId), return: {:ok, organization}

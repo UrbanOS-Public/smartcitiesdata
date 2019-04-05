@@ -18,7 +18,8 @@ defmodule DiscoveryApiWeb.DatasetSearchViewTest do
             :fileTypes => ["csv", "pdf"],
             :description => "best ever",
             :sourceUrl => "http://example.com",
-            :sourceType => "remote"
+            :sourceType => "remote",
+            :private => false
           }
         ],
         facets: %{organization: [name: "org", count: 1], keywords: [name: "cat", count: 1]},
@@ -45,7 +46,8 @@ defmodule DiscoveryApiWeb.DatasetSearchViewTest do
           :fileTypes => ["csv", "pdf"],
           :description => "best ever",
           :sourceUrl => "http://example.com",
-          :sourceType => "remote"
+          :sourceType => "remote",
+          :private => false
         }
       ]
     }

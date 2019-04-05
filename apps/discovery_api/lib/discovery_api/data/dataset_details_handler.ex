@@ -17,7 +17,8 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandler do
           description: dataset.business.description,
           fileTypes: ["CSV"],
           sourceType: dataset.technical.sourceType,
-          sourceUrl: dataset.technical.sourceUrl
+          sourceUrl: dataset.technical.sourceUrl,
+          private: dataset.technical.private
         })
 
       error ->
