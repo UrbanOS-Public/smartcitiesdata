@@ -24,19 +24,19 @@ defmodule Flair.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:distillery, "~> 2.0"},
+      {:divo, "~> 1.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:flow, "~> 0.14"},
       {:gen_stage, "~> 0.14"},
-      {:kafka_ex, "~> 0.9"},
       {:jason, "~> 1.1"},
-      {:statistics, "~> 0.6"},
-      {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
-      {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"},
-      {:distillery, "~> 2.0"},
-      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:divo, "~> 1.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
+      {:kafka_ex, "~> 0.9"},
       {:mockaffe, "~> 0.1.1",
        only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
-      {:placebo, "~> 1.2", only: :integration}
+      {:placebo, "~> 1.2", only: :integration},
+      {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"},
+      {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
+      {:statistics, "~> 0.6"}
     ]
   end
 
