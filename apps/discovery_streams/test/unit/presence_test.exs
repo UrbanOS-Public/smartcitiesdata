@@ -32,10 +32,10 @@ defmodule CotaStreamingConsumerWeb.PresenceTest do
       Gauge.reset(gauge)
     end)
 
-    where [
-      [:channel,                     :gauge],
+    where([
+      [:channel, :gauge],
       ["streaming:shuttle-position", :shuttle_position_presence_count],
-      ["vehicle_position",           :cota_vehicle_positions_presence_count]
-    ]
+      ["vehicle_position", :cota_vehicle_positions_presence_count]
+    ])
   end
 end

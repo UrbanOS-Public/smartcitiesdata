@@ -41,11 +41,8 @@ defmodule CotaStreamingConsumer.Application do
 
   defp libcluster do
     case Application.get_env(:libcluster, :topologies) do
-      nil ->
-        []
-
-      topologies ->
-        {Cluster.Supervisor, [topologies, [name: StreamingConsumer.ClusterSupervisor]]}
+      nil -> []
+      topologies -> {Cluster.Supervisor, [topologies, [name: StreamingConsumer.ClusterSupervisor]]}
     end
   end
 
