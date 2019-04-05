@@ -16,26 +16,45 @@ defmodule Valkyrie.MessageHandler do
   def handle_message(%{key: key, value: value}) do
     start_time = Data.Timing.current_time()
 
-    {:ok, new_value} = Data.new(value)
+    with {:ok, new_value} <- Data.new(value),
+         {:ok, validated_message} <- validate(new_value),
+         {:ok, updated_message} <- set_operational_timing(start_time, validated_message),
+         {:ok, encoded_message} <- Jason.encode(updated_message) do
+      Kaffe.Producer.produce_sync(key, encoded_message)
+    else
+      {:error, reason} ->
+        Logger.warn("Error handling message: #{value}")
+        Yeet.process_dead_letter(value, "Valkyrie", reason: inspect(reason))
 
+      _ ->
+        Logger.warn("Error handling message: #{value}")
+        Yeet.process_dead_letter(value, "Valkyrie")
+    end
+  end
+
+  defp validate(new_value) do
     # ----
     # Do validations here
     # ----
+    {:ok, new_value}
+  end
 
-    {:ok, new_value} =
-      new_value
-      |> Data.add_timing(
-        Data.Timing.new(
-          :valkyrie,
-          :timing,
-          start_time,
-          Data.Timing.current_time()
+  defp set_operational_timing(start_time, validated_message) do
+    try do
+      updated_message =
+        validated_message
+        |> Data.add_timing(
+          Data.Timing.new(
+            :valkyrie,
+            :timing,
+            start_time,
+            Data.Timing.current_time()
+          )
         )
-      )
-      |> Jason.encode()
 
-    Kaffe.Producer.produce_sync(key, new_value)
-  rescue
-    MatchError -> Logger.debug("Got a bad message.")
+      {:ok, updated_message}
+    rescue
+      _ -> {:error, "Failed to set operational timing."}
+    end
   end
 end

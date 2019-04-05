@@ -30,3 +30,7 @@ config :kaffe,
     topics: ["validated"],
     partition_strategy: :md5
   ]
+
+config :yeet,
+  topic: "streaming-dead-letters",
+  endpoint: endpoint

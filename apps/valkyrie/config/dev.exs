@@ -1,12 +1,21 @@
 use Mix.Config
 
-endpoints = [localhost: 9094]
-raw_topic = "streaming-raw"
-validated_topic = "streaming-validated"
+host = "localhost"
+raw_topic = "raw"
+validated_topic = "validated"
+dead_letter_queue = "streaming-dead-letters"
+
+System.put_env("HOST", host)
+
+endpoint = [{to_charlist(host), 9092}]
+
+config :valkyrie,
+  divo: "./docker-compose.yaml",
+  divo_wait: [dwell: 700, max_tries: 50]
 
 config :kaffe,
   consumer: [
-    endpoints: endpoints,
+    endpoints: endpoint,
     topics: [raw_topic],
     consumer_group: "valkyrie-group",
     message_handler: Valkyrie.MessageHandler,
@@ -15,6 +24,10 @@ config :kaffe,
     worker_allocation_strategy: :worker_per_topic_partition
   ],
   producer: [
-    endpoints: endpoints,
+    endpoints: endpoint,
     topics: [validated_topic]
   ]
+
+config :yeet,
+  topic: dead_letter_queue,
+  endpoint: endpoint

@@ -4,7 +4,8 @@
   "bunt": {:hex, :bunt, "0.2.0", "951c6e801e8b1d2cbe58ebbd3e616a869061ddadcc4863d0a2182541acae9a38", [:mix], [], "hexpm"},
   "credo": {:hex, :credo, "1.0.2", "88bc918f215168bf6ce7070610a6173c45c82f32baa08bdfc80bf58df2d103b6", [:mix], [{:bunt, "~> 0.2.0", [hex: :bunt, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm"},
   "distillery": {:hex, :distillery, "2.0.12", "6e78fe042df82610ac3fa50bd7d2d8190ad287d120d3cd1682d83a44e8b34dfb", [:mix], [{:artificery, "~> 0.2", [hex: :artificery, repo: "hexpm", optional: false]}], "hexpm"},
-  "divo": {:hex, :divo, "1.0.0", "58295174346d49f451b0c1a254096df5c83c1e93ed53c53c3ec4888c105ac4d6", [:mix], [{:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:patiently, "~> 0.2.0", [hex: :patiently, repo: "hexpm", optional: false]}], "hexpm:smartcolumbus_os"},
+  "divo": {:hex, :divo, "1.1.2", "72720fb69e66f17e7a0aa8a62ac442a560cf15c47115d5d621efd913d533f203", [:mix], [{:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:patiently, "~> 0.2", [hex: :patiently, repo: "hexpm", optional: false]}], "hexpm:smartcolumbus_os"},
+  "divo_kafka": {:hex, :divo_kafka, "0.1.0", "e32b3526abd4af52e6e82460e2fb5e48eb0be4cc633a4985435e774ded61c0f8", [:mix], [{:divo, "~> 1.1", [hex: :divo, repo: "hexpm:smartcolumbus_os", optional: false]}], "hexpm:smartcolumbus_os"},
   "faker": {:hex, :faker, "0.12.0", "796cbac868c86c2df6f273ea4cdf2e271860863820e479e04a374b7ee6c376b6", [:mix], [], "hexpm"},
   "jason": {:hex, :jason, "1.1.2", "b03dedea67a99223a2eaf9f1264ce37154564de899fd3d8b9a21b1a6fd64afe7", [:mix], [{:decimal, "~> 1.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm"},
   "kaffe": {:hex, :kaffe, "1.9.2", "f549db79f0ac021f3f097d2a545b15dfc5e8f65d028bf9e57b2db5b271b9cde2", [:mix], [{:brod, ">= 3.0.0 and < 3.5.0", [hex: :brod, repo: "hexpm", optional: false]}], "hexpm"},
@@ -15,4 +16,5 @@
   "smart_city_data": {:hex, :smart_city_data, "2.1.0", "0b0c9e3b110bd4d0603d5f914907430b537156b6996e08a10367aa4708952dfe", [:mix], [{:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:smart_city, "~> 2.1", [hex: :smart_city, repo: "hexpm:smartcolumbus_os", optional: false]}], "hexpm:smartcolumbus_os"},
   "snappyer": {:hex, :snappyer, "1.2.1", "06c5f5c8afe80ba38e94e1ca1bd9253de95d8f2c85b08783e8d0f63815580556", [:make, :rebar, :rebar3], [], "hexpm"},
   "supervisor3": {:hex, :supervisor3, "1.1.5", "5f3c487a6eba23de0e64c06e93efa0eca06f40324a6412c1318c77aca6da8424", [:make, :rebar, :rebar3], [], "hexpm"},
+  "yeet": {:hex, :yeet, "0.3.0", "af7668768c7738a28dbbcfda1705567b13b996d8dba1aad0b203411e804f9d8d", [:mix], [{:brod, "~> 3.4", [hex: :brod, repo: "hexpm", optional: false]}, {:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm:smartcolumbus_os"},
 }

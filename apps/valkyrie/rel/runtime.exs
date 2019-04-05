@@ -19,5 +19,9 @@ if kafka_brokers do
       endpoints: endpoints,
       topics: [System.get_env("VALIDATED_TOPIC")]
     ]
+
+  config :yeet,
+    topic: System.get_env("DLQ_TOPIC"),
+    endpoint: endpoints
 end
 

@@ -30,6 +30,8 @@ spec:
             value: {{.Values.kafka.rawTopic}}
           - name: VALIDATED_TOPIC
             value: {{.Values.kafka.validatedTopic}}
+          - name: DLQ_TOPIC
+            value: {{.Values.kafka.dlqTopic}}
           - name: NAMESPACE
             valueFrom:
               fieldRef:

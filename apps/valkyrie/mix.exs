@@ -26,9 +26,11 @@ defmodule Valkyrie.MixProject do
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.0"},
       {:distillery, "~> 2.0"},
-      {:divo, "~> 1.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
+      {:divo, "~> 1.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
+      {:divo_kafka, "~> 0.1.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:mockaffe, "~> 0.1.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
-      {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"}
+      {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
+      {:yeet, "~> 0.3.0", organization: "smartcolumbus_os"}
     ]
   end
 

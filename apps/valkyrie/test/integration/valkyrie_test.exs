@@ -10,6 +10,11 @@ defmodule ValkyrieTest do
                 "_metadata" => %{}
               },
               %{
+                "payload" => %{"name" => "I am bad"},
+                "dataset_id" => "dlq",
+                "_metadata" => %{}
+              },
+              %{
                 "payload" => %{"name" => "Will Turner"},
                 "operational" => %{"ship" => "Black Pearl", "timing" => []},
                 "dataset_id" => "basic",
@@ -44,6 +49,24 @@ defmodule ValkyrieTest do
                message.payload.name
              end
            )
+  end
+
+  test "valkyrie sends invalid data messages to the dlq" do
+    Mockaffe.send_to_kafka(@messages, "raw")
+
+    Patiently.wait_for!(
+      fn ->
+        data_messages = fetch_and_unwrap("streaming-dead-letters")
+
+        Enum.any?(data_messages, fn data_message ->
+          assert String.contains?(data_message.reason, "Invalid data message")
+          assert data_message.app == "Valkyrie"
+          assert String.contains?(data_message.original_message, "I am bad")
+        end)
+      end,
+      dwell: 1000,
+      max_tries: 10
+    )
   end
 
   defp any_messages_where(topic, callback) do
