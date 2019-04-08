@@ -4,7 +4,6 @@ defmodule FlairTest do
   use Placebo
   alias SmartCity.Data.Timing
   require Logger
-  doctest Flair
 
   @endpoint Application.get_env(:kaffe, :producer)[:endpoints]
             |> Enum.map(fn {k, v} -> {k, v} end)
