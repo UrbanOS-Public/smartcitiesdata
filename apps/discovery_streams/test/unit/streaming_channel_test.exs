@@ -84,9 +84,7 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
     ])
   end
 
-  data_test "filter events cause all cached messages in cachee #{cache} to be pushed through filter in channel #{
-              channel
-            }" do
+  data_test "filter events cause all cached messages in cache #{cache} to be pushed through filter in channel #{channel}" do
     {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel)
 
     Cachex.put(cache, "12342", %{"foo" => %{"bar" => "12342"}})
