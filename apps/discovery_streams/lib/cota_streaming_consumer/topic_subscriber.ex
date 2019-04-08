@@ -11,6 +11,8 @@ defmodule CotaStreamingConsumer.TopicSubscriber do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
+  defdelegate list_subscribed_topics(), to: Kaffe.GroupManager
+
   def init(_args) do
     :timer.send_interval(@interval, :subscribe)
     {:ok, [], {:continue, :subscribe}}
@@ -27,7 +29,7 @@ defmodule CotaStreamingConsumer.TopicSubscriber do
   end
 
   defp check_for_new_topics_and_subscribe() do
-    (public_topics() -- Kaffe.GroupManager.list_subscribed_topics())
+    (public_topics() -- list_subscribed_topics())
     |> subscribe()
   end
 

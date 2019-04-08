@@ -6,7 +6,7 @@ defmodule CotaStreamingConsumer.MessageHandlerTest do
   import ExUnit.CaptureLog
 
   alias StreamingMetrics.ConsoleMetricCollector, as: MetricCollector
-  alias CotaStreamingConsumer.{CachexSupervisor, MessageHandler}
+  alias CotaStreamingConsumer.{CachexSupervisor, MessageHandler, TopicSubscriber}
 
   @outbound_records "records"
 
@@ -15,6 +15,7 @@ defmodule CotaStreamingConsumer.MessageHandlerTest do
     CachexSupervisor.create_cache(:"shuttle-position")
     Cachex.clear(:"cota-vehicle-positions")
     Cachex.clear(:"shuttle-position")
+    allow TopicSubscriber.list_subscribed_topics(), return: ["shuttle-position", "cota-vehicle-positions"]
     :ok
   end
 

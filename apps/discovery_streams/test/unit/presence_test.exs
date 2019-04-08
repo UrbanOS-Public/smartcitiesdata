@@ -1,14 +1,16 @@
 defmodule CotaStreamingConsumerWeb.PresenceTest do
   use CotaStreamingConsumerWeb.ChannelCase
   use Prometheus.Metric
+  use Placebo
 
   import Checkov
 
-  alias CotaStreamingConsumer.CachexSupervisor
+  alias CotaStreamingConsumer.{CachexSupervisor, TopicSubscriber}
 
   setup do
     CachexSupervisor.create_cache(:"shuttle-position")
     CachexSupervisor.create_cache(:"cota-vehicle-positions")
+    allow TopicSubscriber.list_subscribed_topics(), return: ["shuttle-position", "cota-vehicle-positions"]
     :ok
   end
 
