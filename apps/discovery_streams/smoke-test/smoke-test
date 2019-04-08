@@ -15,7 +15,7 @@ host=${1:-streaming.smartcolumbusos.com}
 
 _log info "Smoke test is starting"
 
-payload='{"topic":"vehicle_position","event":"phx_join","payload":{},"ref":"1"}'
+payload='{"topic":"streaming:cota-vehicle-positions","event":"phx_join","payload":{},"ref":"1"}'
 
 _log info "Sending payload \"${payload}\" to \"${host}\""
 data=$(wscat -n -c wss://${host}/socket/websocket -x ${payload} -w 1)

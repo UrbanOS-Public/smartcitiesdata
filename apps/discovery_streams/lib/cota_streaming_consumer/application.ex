@@ -9,8 +9,6 @@ defmodule CotaStreamingConsumer.Application do
 
   require Cachex.Spec
 
-  @ttl Application.get_env(:cota_streaming_consumer, :ttl)
-
   def start(_type, _args) do
     import Supervisor.Spec
 
@@ -21,7 +19,7 @@ defmodule CotaStreamingConsumer.Application do
 
     children =
       [
-        cachex(),
+        CotaStreamingConsumer.CachexSupervisor,
         supervisor(CotaStreamingConsumerWeb.Endpoint, []),
         libcluster(),
         CotaStreamingConsumer.CacheGenserver,
@@ -41,32 +39,21 @@ defmodule CotaStreamingConsumer.Application do
 
   defp libcluster do
     case Application.get_env(:libcluster, :topologies) do
-      nil ->
-        []
-
-      topologies ->
-        {Cluster.Supervisor, [topologies, [name: StreamingConsumer.ClusterSupervisor]]}
+      nil -> []
+      topologies -> {Cluster.Supervisor, [topologies, [name: StreamingConsumer.ClusterSupervisor]]}
     end
   end
 
   defp kaffe do
     case Application.get_env(:kaffe, :consumer)[:endpoints] do
-      nil -> []
-      _ -> Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, [])
+      nil ->
+        []
+
+      _ ->
+        [
+          Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, []),
+          CotaStreamingConsumer.TopicSubscriber
+        ]
     end
-  end
-
-  defp cachex do
-    expiration = Cachex.Spec.expiration(default: @ttl)
-
-    Application.get_env(:kaffe, :consumer)
-    |> Keyword.get(:topics, [])
-    |> Enum.map(&String.to_atom(&1))
-    |> Enum.map(fn topic ->
-      %{
-        id: topic,
-        start: {Cachex, :start_link, [topic, [expiration: expiration]]}
-      }
-    end)
   end
 end

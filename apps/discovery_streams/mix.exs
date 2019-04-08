@@ -10,7 +10,8 @@ defmodule CotaStreamingConsumer.Mixfile do
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: aliases()
+      aliases: aliases(),
+      test_paths: test_paths(Mix.env())
     ]
   end
 
@@ -21,8 +22,11 @@ defmodule CotaStreamingConsumer.Mixfile do
     ]
   end
 
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp test_paths(:integration), do: ["test/integration"]
+  defp test_paths(_), do: ["test/unit"]
 
   defp deps do
     [
@@ -35,16 +39,19 @@ defmodule CotaStreamingConsumer.Mixfile do
       {:cowboy, "~> 1.0"},
       {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false},
       {:streaming_metrics, path: "streaming_metrics"},
-      {:mock, "~> 0.3.1", only: :test, runtime: false},
-      {:kaffe, "~> 1.9"},
+      {:kaffe, "~> 1.11"},
       {:httpoison, "~> 0.11.1"},
       {:sweet_xml, "~> 0.6"},
       {:cachex, "~> 3.0"},
       {:libcluster, "~> 3.0"},
-      {:patiently, "~> 0.2.0", only: :test},
+      {:patiently, "~> 0.2", only: [:test, :integration], override: true},
       {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
       {:distillery, "~> 2.0"},
-      {:checkov, "~> 0.4.0", only: :test}
+      {:checkov, "~> 0.4.0", only: :test},
+      {:divo, "~> 1.1", organization: "smartcolumbus_os"},
+      {:divo_kafka, "~> 0.1.0", organization: "smartcolumbus_os"},
+      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:temporary_env, "~> 2.0", only: [:test, :integration]}
     ]
   end
 

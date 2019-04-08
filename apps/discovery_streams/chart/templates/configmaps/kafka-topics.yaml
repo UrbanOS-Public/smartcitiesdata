@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Chart.Name }}
-  namespace: {{ .Release.Namespace }}
-data:
-  COTA_DATA_TOPIC: "cota-vehicle-positions"
-  CEAV_DATA_TOPIC: "ceav-vehicle-locations"
