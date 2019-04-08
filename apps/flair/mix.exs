@@ -36,7 +36,8 @@ defmodule Flair.MixProject do
       {:placebo, "~> 1.2", only: :integration},
       {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"},
       {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
-      {:statistics, "~> 0.6"}
+      {:statistics, "~> 0.6"},
+      {:yeet, "~> 0.3.0", organization: "smartcolumbus_os"}
     ]
   end
 

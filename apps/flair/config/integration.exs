@@ -34,3 +34,7 @@ config :kafka_ex,
 config :flair,
   divo: "./docker-compose.yaml",
   divo_wait: [dwell: 1000, max_tries: 60]
+
+config :yeet,
+  topic: "streaming-dead-letters",
+  endpoint: endpoint

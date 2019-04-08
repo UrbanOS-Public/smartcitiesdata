@@ -6,6 +6,9 @@ defmodule FlairTest do
   require Logger
   doctest Flair
 
+  @endpoint Application.get_env(:kaffe, :producer)[:endpoints]
+            |> Enum.map(fn {k, v} -> {k, v} end)
+
   setup _ do
     messages =
       [
@@ -80,6 +83,35 @@ defmodule FlairTest do
     )
   end
 
+  test "should send errors to DLQ", context do
+    messages =
+      [
+        %{
+          "payload" => %{"name" => "Barbosa"},
+          "metadata" => %{},
+          "dataset_id" => "pirates",
+          "operational" => %{"timing" => [timing()]}
+        }
+      ]
+      |> Enum.map(&Jason.encode!/1)
+
+    allow(Flair.PrestoClient.execute(any()), return: [])
+    allow(Flair.PrestoClient.generate_statement_from_events(any()), return: "")
+
+    Mockaffe.send_to_kafka(messages, "streaming-transformed")
+
+    get_dead_letter = fn ->
+      fetch_and_unwrap("streaming-dead-letters")
+      |> Enum.any?()
+    end
+
+    Patiently.wait_for!(
+      get_dead_letter,
+      dwell: 1000,
+      max_tries: 20
+    )
+  end
+
   defp prestige_query(statement, expected) do
     fn ->
       actual =
@@ -136,5 +168,12 @@ defmodule FlairTest do
       "app" => :valkyrie,
       "label" => ""
     }
+  end
+
+  defp fetch_and_unwrap(topic) do
+    {:ok, messages} = :brod.fetch(@endpoint, topic, 0, 0)
+
+    messages
+    |> Enum.map(fn {:kafka_message, _, _, _, key, body, _, _, _} -> {key, body} end)
   end
 end

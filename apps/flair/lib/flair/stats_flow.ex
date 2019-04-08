@@ -61,6 +61,10 @@ defmodule Flair.StatsFlow do
           "Dead Message Encountered: #{inspect(kafka_msg)}. Rejecting because: #{inspect(e)}"
         )
 
+        kafka_msg
+        |> Map.from_struct()
+        |> Yeet.process_dead_letter("flair", error_code: e)
+
         :dead_letter
     end
   end
