@@ -5,7 +5,6 @@ defmodule CotaStreamingConsumer.CachexSupervisorTest do
   alias CotaStreamingConsumer.CachexSupervisor
 
   describe "create_cache/1" do
-
     test "creates new cachex" do
       assert Cachex.count(:cache_1) == {:error, :no_cache}
 

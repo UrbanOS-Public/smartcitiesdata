@@ -10,7 +10,7 @@ config :kaffe,
     endpoints: [localhost: 9092, kafka: 9093],
     topics: [],
     consumer_group: "cota-streaming-consumer",
-    message_handler: CotaStreamingConsumer,
+    message_handler: CotaStreamingConsumer.MessageHandler,
     offset_reset_policy: :reset_to_latest
   ],
   producer: [

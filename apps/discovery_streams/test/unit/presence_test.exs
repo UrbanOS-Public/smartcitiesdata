@@ -4,6 +4,14 @@ defmodule CotaStreamingConsumerWeb.PresenceTest do
 
   import Checkov
 
+  alias CotaStreamingConsumer.CachexSupervisor
+
+  setup do
+    CachexSupervisor.create_cache(:"shuttle-position")
+    CachexSupervisor.create_cache(:"cota-vehicle-positions")
+    :ok
+  end
+
   test "setup declares a special metric gauge for a legacy snowflake" do
     assert Gauge.value(:cota_vehicle_positions_presence_count) >= 0
   end

@@ -3,7 +3,11 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
 
   import Checkov
 
+  alias CotaStreamingConsumer.CachexSupervisor
+
   setup do
+    CachexSupervisor.create_cache(:"shuttle-position")
+    CachexSupervisor.create_cache(:"cota-vehicle-positions")
     Cachex.clear(:"shuttle-position")
     Cachex.clear(:"cota-vehicle-positions")
     :ok

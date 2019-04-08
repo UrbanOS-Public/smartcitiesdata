@@ -10,7 +10,7 @@ defmodule CotaStreamingConsumer.CachexSupervisor do
   end
 
   @impl DynamicSupervisor
-  def init(arg) do
+  def init(_arg) do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
