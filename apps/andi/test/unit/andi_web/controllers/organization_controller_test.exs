@@ -55,7 +55,7 @@ defmodule AndiWeb.OrganizationControllerTest do
   end
 
   describe "post /api/ with valid data and imported id" do
-    setup %{conn: conn, request: request} do
+    setup %{conn: conn} do
       allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
       allow(Paddle.add(any(), any()), return: :ok)
 
@@ -83,11 +83,13 @@ defmodule AndiWeb.OrganizationControllerTest do
       :ok
     end
 
+    @tag capture_log: true
     test "returns 500", %{conn: conn, request: req} do
       conn = post(conn, @route, req)
       assert json_response(conn, 500) =~ "Unable to process your request"
     end
 
+    @tag capture_log: true
     test "never persists organization to registry", %{conn: conn, request: req} do
       post(conn, @route, req)
       refute_called(Organization.write(any()))
@@ -103,11 +105,13 @@ defmodule AndiWeb.OrganizationControllerTest do
       [conn: post(conn, @route, req), request: req]
     end
 
+    @tag capture_log: true
     test "removes organization from LDAP" do
       assert_called(Paddle.delete(cn: "myOrg", ou: @ou))
     end
   end
 
+  @tag capture_log: true
   test "post /api/ without data returns 500", %{conn: conn} do
     conn = post(conn, @route)
     assert json_response(conn, 500) =~ "Unable to process your request"
@@ -125,6 +129,7 @@ defmodule AndiWeb.OrganizationControllerTest do
       :ok
     end
 
+    @tag capture_log: true
     test "post /api/v1/organization fails with explanation", %{conn: conn, request: req} do
       post(conn, @route, req)
       refute_called(Organization.write(any()))
