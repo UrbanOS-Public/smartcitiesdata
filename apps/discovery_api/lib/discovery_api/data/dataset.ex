@@ -16,7 +16,23 @@ defmodule DiscoveryApi.Data.Dataset do
     :systemName,
     :sourceUrl,
     :sourceType,
-    :lastUpdatedDate
+    :lastUpdatedDate,
+    :contactName,
+    :contactEmail,
+    :license,
+    :rights,
+    :homepage,
+    :spatial,
+    :temporal,
+    :publishFrequency,
+    :conformsToUri,
+    :describedByUrl,
+    :describedByMimeType,
+    :parentDataset,
+    :issuedDate,
+    :language,
+    :referenceUrls,
+    :categories
   ]
 
   @name_space "discovery-api:dataset:"
