@@ -21,9 +21,11 @@ defmodule DiscoveryApi.Plugs.Restrictor do
   defp is_authorized?(token, %{private: true} = dataset) do
     with {:ok, claims} <- Guardian.decode_and_verify(token),
          {:ok, resource} <- Guardian.resource_from_claims(claims) do
-      resource
-      |> extract_groups()
-      |> Enum.member?(dataset.organizationDetails.dn)
+      uid = parse_uid(resource)
+
+      dataset.organizationDetails.dn
+      |> get_members()
+      |> Enum.member?(uid)
     else
       {:error, error} ->
         Logger.error(inspect(error))
@@ -33,17 +35,25 @@ defmodule DiscoveryApi.Plugs.Restrictor do
 
   defp is_authorized?(_token, _unrestricted_dataset), do: true
 
-  defp extract_groups(resource) do
-    resource
-    |> Map.get("memberOf", [])
-    |> Enum.map(&extract_group/1)
-  end
-
-  defp extract_group(group) do
-    group
+  defp extract_cn(dn) do
+    dn
     |> String.split(",")
-    |> List.first()
+    |> Enum.find(fn x -> String.contains?(x, "cn=") end)
     |> String.split("=")
     |> List.last()
+  end
+
+  defp get_members(org_dn) do
+    Paddle.get(base: org_dn)
+    |> elem(1)
+    |> List.first()
+    |> Map.get("member", [])
+    |> Enum.map(&extract_cn/1)
+  end
+
+  defp parse_uid(resource) do
+    resource
+    |> Map.get("uid")
+    |> List.first()
   end
 end

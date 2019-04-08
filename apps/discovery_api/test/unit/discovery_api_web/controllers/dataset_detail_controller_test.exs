@@ -37,7 +37,7 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
 
   describe "fetch restricted dataset detail" do
     test "does not retrieve a restricted dataset if the given user does not have access to it", %{conn: conn} do
-      organization = TDG.create_organization(%{dn: "my_first_dn"})
+      organization = TDG.create_organization(%{dn: "cn=this_is_a_group,ou=Group"})
       dataset = Helper.sample_dataset(%{private: true, organizationDetails: organization})
 
       allow DiscoveryApi.Data.Dataset.get(dataset.id),
@@ -46,18 +46,27 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
       allow SmartCity.Organization.get(dataset.organizationDetails.id), return: organization
 
       ldap_user = %{
-        "cn" => ["big bad"],
+        "cn" => ["bigbadbob"],
         "displayName" => ["big bad"],
         "dn" => "uid=bigbadbob,cn=users,cn=accounts",
-        "memberOf" => ["cn=superGroup,cn=groups,cn=accounts,dc=internal,dc=smartcolumbusos,dc=com"],
+        "memberOf" => ["cn=my_first_dn,cn=groups,cn=accounts,dc=internal,dc=smartcolumbusos,dc=com"],
         "ou" => ["People"],
         "sn" => ["bad"],
         "uid" => ["bigbadbob"],
         "uidNumber" => ["1501200034"]
       }
 
-      allow Paddle.get(any()), return: {:ok, [ldap_user]}
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bob")
+      ldap_group = %{
+        "cn" => ["this_is_a_group"],
+        "dn" => "cn=this_is_a_group,ou=Group",
+        "member" => ["cn=FirstUser,ou=People"],
+        "objectClass" => ["top", "groupOfNames"]
+      }
+
+      allow Paddle.authenticate(any(), any()), return: :ok
+      allow Paddle.get(base: [uid: "bigbadbob", ou: "People"]), return: {:ok, [ldap_user]}
+      allow Paddle.get(base: "cn=this_is_a_group,ou=Group"), return: {:ok, [ldap_group]}
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
 
       conn
       |> Plug.Conn.put_req_header("token", token)
@@ -67,7 +76,7 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
   end
 
   test "retrieves a restricted dataset if the given user has access to it", %{conn: conn} do
-    organization = TDG.create_organization(%{dn: "my_first_dn"})
+    organization = TDG.create_organization(%{dn: "cn=this_is_a_group,ou=Group"})
     dataset = Helper.sample_dataset(%{private: true, organizationDetails: organization})
 
     allow DiscoveryApi.Data.Dataset.get(dataset.id),
@@ -76,7 +85,7 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
     allow SmartCity.Organization.get(dataset.organizationDetails.id), return: organization
 
     ldap_user = %{
-      "cn" => ["big bad"],
+      "cn" => ["bigbadbob"],
       "displayName" => ["big bad"],
       "dn" => "uid=bigbadbob,cn=users,cn=accounts",
       "memberOf" => ["cn=my_first_dn,cn=groups,cn=accounts,dc=internal,dc=smartcolumbusos,dc=com"],
@@ -86,8 +95,17 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
       "uidNumber" => ["1501200034"]
     }
 
-    allow Paddle.get(any()), return: {:ok, [ldap_user]}
-    {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bob")
+    ldap_group = %{
+      "cn" => ["this_is_a_group"],
+      "dn" => "cn=this_is_a_group,ou=Group",
+      "member" => ["cn=bigbadbob,ou=People"],
+      "objectClass" => ["top", "groupOfNames"]
+    }
+
+    allow Paddle.authenticate(any(), any()), return: :ok
+    allow Paddle.get(base: [uid: "bigbadbob", ou: "People"]), return: {:ok, [ldap_user]}
+    allow Paddle.get(base: "cn=this_is_a_group,ou=Group"), return: {:ok, [ldap_group]}
+    {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
 
     conn
     |> Plug.Conn.put_req_header("token", token)

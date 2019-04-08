@@ -1,6 +1,7 @@
 defmodule DiscoveryApi.Auth.Guardian do
   @moduledoc false
   use Guardian, otp_app: :discovery_api
+  require Logger
 
   def subject_for_token(resource, _claims) do
     {:ok, resource}
@@ -8,8 +9,15 @@ defmodule DiscoveryApi.Auth.Guardian do
 
   def resource_from_claims(claims) do
     id = claims["sub"]
-    {:ok, resources} = Paddle.get(filter: [uid: id])
-    {:ok, List.first(resources)}
+    Paddle.authenticate([cn: "admin"], "admin")
+
+    with {:ok, resources} <- Paddle.get(base: [uid: id, ou: "People"]) do
+      {:ok, List.first(resources)}
+    else
+      error ->
+        Logger.error(inspect(error))
+        error
+    end
   end
 
   def current_claims(conn) do
