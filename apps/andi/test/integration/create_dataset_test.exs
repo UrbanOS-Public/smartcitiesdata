@@ -1,9 +1,12 @@
 defmodule Andi.CreateDatasetTest do
   use ExUnit.Case
   use Divo
+  use Tesla
 
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
+
+  plug Tesla.Middleware.BaseUrl, "http://localhost:4000"
 
   describe "successful dataset creation" do
     test "responds with a 201" do
@@ -12,7 +15,7 @@ defmodule Andi.CreateDatasetTest do
         |> TDG.create_dataset()
         |> create()
 
-      assert response.status_code == 201
+      assert response.status == 201
     end
 
     test "persists dataset for downstream use" do
@@ -27,7 +30,6 @@ defmodule Andi.CreateDatasetTest do
   defp create(dataset) do
     struct = Jason.encode!(dataset)
 
-    "http://localhost:4000/api/v1/dataset"
-    |> HTTPoison.put(struct, [{"content-type", "application/json"}])
+    put("/api/v1/dataset", struct, headers: [{"content-type", "application/json"}])
   end
 end

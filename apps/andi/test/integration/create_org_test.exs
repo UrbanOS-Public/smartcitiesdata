@@ -2,9 +2,12 @@ defmodule Andi.CreateOrgTest do
   use ExUnit.Case
   use Divo
   use Placebo
+  use Tesla
 
   alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG
+
+  plug Tesla.Middleware.BaseUrl, "http://localhost:4000"
 
   @ou Application.get_env(:andi, :ldap_env_ou)
 
@@ -22,7 +25,7 @@ defmodule Andi.CreateOrgTest do
 
   describe "successful organization creation" do
     test "responds with a 201", %{response: response} do
-      assert response.status_code == 201
+      assert response.status == 201
     end
 
     test "writes organization to LDAP", %{happy_path: expected} do
@@ -64,7 +67,7 @@ defmodule Andi.CreateOrgTest do
     end
 
     test "responds with a 500", %{response: response} do
-      assert response.status_code == 500
+      assert response.status == 500
     end
 
     test "removes organization from LDAP", %{unhappy_path: expected} do
@@ -75,8 +78,7 @@ defmodule Andi.CreateOrgTest do
   defp create(org) do
     struct = Jason.encode!(org)
 
-    "http://localhost:4000/api/v1/organization"
-    |> HTTPoison.post(struct, [{"content-type", "application/json"}])
+    post("/api/v1/organization", struct, headers: [{"content-type", "application/json"}])
   end
 
   defp organization(overrides \\ %{}) do

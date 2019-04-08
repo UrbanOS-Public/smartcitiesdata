@@ -31,21 +31,21 @@ defmodule Andi.MixProject do
     [
       {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
       {:distillery, "~> 2.0", runtime: false},
-      {:placebo, "~> 1.2.1", only: [:dev, :test, :integration]},
-      {:phoenix, "~> 1.4.0"},
+      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:phoenix, "~> 1.4"},
       {:phoenix_pubsub, "~> 1.1"},
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:gettext, "~> 0.11"},
-      {:jason, "~> 1.0"},
+      {:jason, "~> 1.1"},
       {:plug_cowboy, "~> 2.0"},
-      {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
+      {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
       {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
-      {:divo, "~> 1.0.1", only: [:dev, :integration], organization: "smartcolumbus_os"},
-      {:paddle, "~> 0.1.4"},
-      {:httpoison, "~> 1.5", only: :integration},
+      {:divo, "~> 1.1", only: [:dev, :integration], organization: "smartcolumbus_os"},
+      {:paddle, "~> 0.1"},
+      {:tesla, "~> 1.2", only: :integration},
       {:uuid, "~> 1.1"},
-      {:smart_city_test, "~> 0.2.0", organization: "smartcolumbus_os", only: [:test, :integration]}
+      {:smart_city_test, "~> 0.2", organization: "smartcolumbus_os", only: [:test, :integration]}
     ]
   end
 end

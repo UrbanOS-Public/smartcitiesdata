@@ -6,8 +6,10 @@ defmodule AndiWeb.OrganizationController do
 
   def create(conn, _params) do
     message = add_uuid(conn.body_params)
+    pre_id = message["id"]
 
-    with {:ok, organization} <- Organization.new(message),
+    with {:error, %Organization.NotFound{}} <- Organization.get(pre_id),
+         {:ok, organization} <- Organization.new(message),
          :ok <- authenticate(),
          {:ok, ldap_org} <- write_to_ldap(organization),
          :ok <- write_to_redis(ldap_org) do
@@ -27,8 +29,7 @@ defmodule AndiWeb.OrganizationController do
   defp add_uuid(message) do
     uuid = UUID.uuid4()
 
-    message
-    |> Map.merge(%{"id" => uuid})
+    Map.merge(message, %{"id" => uuid}, fn _k, v1, _v2 -> v1 end)
   end
 
   defp authenticate do

@@ -9,6 +9,7 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   setup do
     allow(Paddle.authenticate(any(), any()), return: :ok)
+    allow(Organization.get(any()), return: {:error, %Organization.NotFound{}}, meck_options: [:passthrough])
 
     request = %{
       "orgName" => "myOrg",
@@ -53,6 +54,28 @@ defmodule AndiWeb.OrganizationControllerTest do
     end
   end
 
+  describe "post /api/ with valid data and imported id" do
+    setup %{conn: conn, request: request} do
+      allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
+      allow(Paddle.add(any(), any()), return: :ok)
+
+      req_with_id = %{
+        "id" => "123",
+        "orgName" => "yourOrg",
+        "orgTitle" => "Your Org Title"
+      }
+
+      [conn: post(conn, @route, req_with_id)]
+    end
+
+    test "passed in id is used", %{conn: conn} do
+      response = json_response(conn, 201)
+
+      assert response["orgName"] == "yourOrg"
+      assert response["id"] == "123"
+    end
+  end
+
   describe "failed write to LDAP" do
     setup do
       allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
@@ -94,6 +117,18 @@ defmodule AndiWeb.OrganizationControllerTest do
   test "post /api/ with improperly shaped data returns 500", %{conn: conn} do
     conn = post(conn, @route, %{"invalidData" => 2})
     assert json_response(conn, 500) =~ "Unable to process your request"
+  end
+
+  describe "id already exists" do
+    setup do
+      allow(Organization.get(any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
+      :ok
+    end
+
+    test "post /api/v1/organization fails with explanation", %{conn: conn, request: req} do
+      post(conn, @route, req)
+      refute_called(Organization.write(any()))
+    end
   end
 
   defp uuid?(str) do

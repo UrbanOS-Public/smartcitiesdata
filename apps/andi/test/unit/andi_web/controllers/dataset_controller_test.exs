@@ -15,6 +15,7 @@ defmodule AndiWeb.DatasetControllerTest do
       "id" => uuid,
       "technical" => %{
         "dataName" => "dataset",
+        "orgId" => "org-123-456",
         "orgName" => "org",
         "stream" => false,
         "sourceUrl" => "https://example.com",
