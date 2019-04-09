@@ -22,7 +22,7 @@ config :logger, :console,
 config :discovery_api,
   collector: StreamingMetrics.PrometheusMetricCollector
 
-config :paddle, Paddle, host: "localhost"
+config :paddle, Paddle, host: "localhost", account_subdn: "ou=People"
 
 # NOTE: To generate a secret_key:  mix guardian.gen.secret
 config :discovery_api, DiscoveryApi.Auth.Guardian,

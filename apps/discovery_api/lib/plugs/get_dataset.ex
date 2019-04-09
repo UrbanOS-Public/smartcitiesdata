@@ -3,9 +3,7 @@ defmodule DiscoveryApi.Plugs.GetDataset do
 
   require Logger
   import Plug.Conn
-  alias DiscoveryApi.Auth.Guardian
 
-  alias SmartCity.Organization
   alias DiscoveryApi.Data.Dataset
 
   def init(default), do: default

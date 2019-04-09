@@ -76,7 +76,8 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
       ldap_group = Helper.ldap_group(%{"member" => ["cn=FirstUser,ou=People"]})
 
       allow Paddle.authenticate(any(), any()), return: :ok
-      allow Paddle.get(base: [uid: "bigbadbob", ou: "People"]), return: {:ok, [ldap_user]}
+      allow Paddle.config(:account_subdn), return: "ou=People"
+      allow Paddle.get(base: "uid=bigbadbob,ou=People"), return: {:ok, [ldap_user]}
       allow Paddle.get(base: "cn=this_is_a_group,ou=Group"), return: {:ok, [ldap_group]}
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
@@ -93,7 +94,8 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
       ldap_group = Helper.ldap_group(%{"member" => ["cn=bigbadbob,ou=People"]})
 
       allow Paddle.authenticate(any(), any()), return: :ok
-      allow Paddle.get(base: [uid: "bigbadbob", ou: "People"]), return: {:ok, [ldap_user]}
+      allow Paddle.config(:account_subdn), return: "ou=People"
+      allow Paddle.get(base: "uid=bigbadbob,ou=People"), return: {:ok, [ldap_user]}
       allow Paddle.get(base: "cn=this_is_a_group,ou=Group"), return: {:ok, [ldap_group]}
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")

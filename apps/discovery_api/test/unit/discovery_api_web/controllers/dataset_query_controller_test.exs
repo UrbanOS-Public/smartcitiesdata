@@ -200,4 +200,73 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       assert_called Prestige.execute(query_string), times(0)
     end
   end
+
+  describe "query restricted dataset" do
+    setup do
+      organization = TDG.create_organization(%{dn: "cn=this_is_a_group,ou=Group"})
+
+      dataset =
+        Helper.sample_dataset(%{
+          id: "test",
+          private: true,
+          organizationDetails: organization,
+          systemName: "coda__test_dataset"
+        })
+
+      allow DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset
+
+      allow SmartCity.Organization.get(dataset.organizationDetails.id), return: organization
+
+      allow(Prestige.execute(any()),
+        return: []
+      )
+
+      allow(
+        Prestige.execute("SELECT * FROM coda__test_dataset",
+          rows_as_maps: true
+        ),
+        return: [%{id: 1, name: "Joe"}, %{id: 2, name: "Robby"}]
+      )
+
+      :ok
+    end
+
+    test "does not query a restricted dataset if the given user does not have access to it", %{conn: conn} do
+      ldap_user = Helper.ldap_user()
+
+      ldap_group = Helper.ldap_group(%{"member" => ["cn=FirstUser,ou=People"]})
+
+      allow Paddle.authenticate(any(), any()), return: :ok
+      allow Paddle.config(:account_subdn), return: "ou=People"
+      allow Paddle.get(base: "uid=bigbadbob,ou=People"), return: {:ok, [ldap_user]}
+      allow Paddle.get(base: "cn=this_is_a_group,ou=Group"), return: {:ok, [ldap_group]}
+
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+
+      conn
+      |> Plug.Conn.put_req_header("token", token)
+      |> put_req_header("accept", "application/json")
+      |> get("/api/v1/dataset/test/query")
+      |> json_response(404)
+    end
+
+    test "queries a restricted dataset if the given user has access to it", %{conn: conn} do
+      ldap_user = Helper.ldap_user()
+
+      ldap_group = Helper.ldap_group(%{"member" => ["cn=bigbadbob,ou=People"]})
+
+      allow Paddle.authenticate(any(), any()), return: :ok
+      allow Paddle.config(:account_subdn), return: "ou=People"
+      allow Paddle.get(base: "uid=bigbadbob,ou=People"), return: {:ok, [ldap_user]}
+      allow Paddle.get(base: "cn=this_is_a_group,ou=Group"), return: {:ok, [ldap_group]}
+
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+
+      conn
+      |> Plug.Conn.put_req_header("token", token)
+      |> put_req_header("accept", "application/json")
+      |> get("/api/v1/dataset/test/query")
+      |> json_response(200)
+    end
+  end
 end
