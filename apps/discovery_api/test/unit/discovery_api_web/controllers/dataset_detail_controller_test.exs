@@ -62,7 +62,7 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
       conn
       |> Plug.Conn.put_req_header("token", token)
       |> get("/api/v1/dataset/#{@dataset_id}")
-      |> json_response(401)
+      |> json_response(404)
     end
 
     test "retrieves a restricted dataset if the given user has access to it", %{conn: conn} do

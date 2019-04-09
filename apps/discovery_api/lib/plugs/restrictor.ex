@@ -13,7 +13,7 @@ defmodule DiscoveryApi.Plugs.Restrictor do
       conn
     else
       conn
-      |> DiscoveryApiWeb.RenderError.render_error(401, "Not Authorized")
+      |> DiscoveryApiWeb.RenderError.render_error(404, "Not Found")
       |> halt()
     end
   end

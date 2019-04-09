@@ -65,11 +65,6 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
         %{"id" => Faker.UUID.v4(), name: Faker.Lorem.characters(3..10)}
       ]
 
-      encoded_maps =
-        list_of_maps
-        |> Jason.encode!()
-        |> Jason.decode!()
-
       allow(DiscoveryApiWeb.DatasetPrestoQueryService.preview(@system_name), return: list_of_maps)
 
       :ok
@@ -89,7 +84,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
       conn
       |> Plug.Conn.put_req_header("token", token)
       |> get("/api/v1/dataset/#{@dataset_id}/preview")
-      |> json_response(401)
+      |> json_response(404)
     end
 
     test "previews a restricted dataset if the given user has access to it", %{conn: conn} do

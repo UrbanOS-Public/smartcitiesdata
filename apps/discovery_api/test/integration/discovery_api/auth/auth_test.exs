@@ -10,7 +10,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
   setup_all do
     Paddle.authenticate([cn: "admin"], "admin")
     Paddle.add([ou: "People"], objectClass: ["top", "organizationalunit"], ou: "People")
-    users = [make_ldap_user("FirstUser")]
+    make_ldap_user("FirstUser")
     make_ldap_user("SecondUser")
 
     Paddle.add([ou: "Group"], objectClass: ["top", "organizationalunit"], ou: "Group")
@@ -68,6 +68,22 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
     assert actual.id == result.id
     assert status_code == 200
+  end
+
+  @moduletag capture_log: true
+  test "Is not able to access a restricted dataset with a bad token" do
+    organization = TDG.create_organization(%{dn: "cn=this_is_a_group,ou=Group"})
+    dataset = Helper.sample_dataset(%{private: true, organizationDetails: organization})
+    Dataset.save(dataset)
+
+    %{status_code: status_code, body: body} =
+      "http://localhost:4000/api/v1/dataset/#{dataset.id}/"
+      |> HTTPoison.get!([{"token", "wetgsdffshgfkdhj"}])
+
+    result = Jason.decode!(body, keys: :atoms)
+
+    assert result.message == "Not Found"
+    assert status_code == 404
   end
 
   def make_ldap_user(name) do
