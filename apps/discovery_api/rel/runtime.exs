@@ -2,6 +2,10 @@ use Mix.Config
 
 config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: System.get_env("HOST"), port: System.get_env("PORT")]
 
+config :discovery_api,
+  ldap_user: System.get_env("LDAP_USER"),
+  ldap_pass: System.get_env("LDAP_PASS")
+
 required_envars = ["REDIS_HOST", "PRESTO_URL"]
 
 Enum.each(required_envars, fn var ->

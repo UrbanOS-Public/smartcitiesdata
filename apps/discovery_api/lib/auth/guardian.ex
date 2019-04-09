@@ -9,7 +9,9 @@ defmodule DiscoveryApi.Auth.Guardian do
 
   def resource_from_claims(claims) do
     id = claims["sub"]
-    Paddle.authenticate([cn: "admin"], "admin")
+    user = Application.get_env(:discovery_api, :ldap_user)
+    pass = Application.get_env(:discovery_api, :ldap_pass)
+    Paddle.authenticate(user, pass)
     sub_dn = Paddle.config(:account_subdn)
 
     with {:ok, resources} <- Paddle.get(base: "uid=#{id},#{sub_dn}") do
