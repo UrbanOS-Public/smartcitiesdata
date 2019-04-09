@@ -47,7 +47,12 @@ defmodule DiscoveryApiWeb.Endpoint do
     signing_salt: "foI/nCz1"
   )
 
-  plug(Corsica, origins: "*")
+  plug(Corsica,
+    origins: "*",
+    allow_credentials: true,
+    allow_headers: ["authorization"],
+    expose_headers: ["token"]
+  )
 
   plug(DiscoveryApi.MetricsExporter)
 
