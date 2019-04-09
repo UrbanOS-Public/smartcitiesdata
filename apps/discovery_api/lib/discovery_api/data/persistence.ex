@@ -17,13 +17,6 @@ defmodule DiscoveryApi.Data.Persistence do
   def get(key_string) do
     :redix
     |> Redix.command!(["GET", key_string])
-    |> map_from_json()
-  end
-
-  defp map_from_json(nil), do: nil
-
-  defp map_from_json(json) do
-    Jason.decode!(json, keys: :atoms)
   end
 
   def persist(key_string, value_map) do

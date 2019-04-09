@@ -23,7 +23,8 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
                  "homepage" => dataset.organizationDetails.homepage
                },
                "sourceType" => dataset.sourceType,
-               "sourceUrl" => dataset.sourceUrl
+               "sourceUrl" => dataset.sourceUrl,
+               "lastUpdatedDate" => nil
              } == actual
     end
 
