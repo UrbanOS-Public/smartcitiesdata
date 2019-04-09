@@ -3,7 +3,6 @@ require Logger
 defmodule DiscoveryApiWeb.DatasetDownloadController do
   @moduledoc false
   use DiscoveryApiWeb, :controller
-  alias DiscoveryApi.Data.Dataset
   alias DiscoveryApiWeb.DatasetMetricsService
 
   def fetch_presto(conn, params) do
@@ -33,9 +32,6 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
     |> Stream.concat()
     |> stream_data(conn, conn.assigns.dataset.id, get_format(conn))
   end
-
-  defp fetch_table(nil), do: nil
-  defp fetch_table(dataset), do: dataset.systemName
 
   defp fetch_columns(nil), do: nil
 

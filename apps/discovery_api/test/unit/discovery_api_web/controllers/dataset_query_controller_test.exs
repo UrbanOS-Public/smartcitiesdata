@@ -4,6 +4,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   use Placebo
   alias DiscoveryApi.Data.Dataset
 
+  @dataset_id "test"
+
   describe "fetching csv data" do
     setup do
       allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:id => "test", :systemName => "coda__test_dataset"})
@@ -91,11 +93,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
     end
 
     test "increments dataset queries count when dataset query is requested", %{conn: conn} do
-      actual =
-        conn
-        |> put_req_header("accept", "text/csv")
-        |> get("/api/v1/dataset/test/query", columns: "id, one")
-        |> response(200)
+      conn
+      |> put_req_header("accept", "text/csv")
+      |> get("/api/v1/dataset/test/query", columns: "id, one")
+      |> response(200)
 
       assert_called(Redix.command!(:redix, ["INCR", "smart_registry:queries:count:test"]))
     end
@@ -138,7 +139,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
                     once()
     end
 
-    test "increments dataset queries count when dataset query is requested" do
+    test "increments dataset queries count when dataset query is requested", %{conn: conn} do
       conn
       |> put_req_header("accept", "application/json")
       |> get("/api/v1/dataset/test/query")
