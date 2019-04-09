@@ -24,9 +24,11 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
     Dataset.write(dataset)
 
-    Process.sleep(2000)
-
-    assert [] == get_dataset_preview(dataset_id)
+    Patiently.wait_for!(
+      fn -> get_dataset_preview(dataset_id) == [] end,
+      dwell: 2000,
+      max_tries: 10
+    )
   end
 
   @moduletag capture_log: true
