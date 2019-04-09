@@ -13,7 +13,7 @@ defmodule DiscoveryApiWeb.DatasetPrestoQueryServiceTest do
       %{"id" => Faker.UUID.v4(), name: Faker.Lorem.characters(3..10)}
     ]
 
-    expect(Prestige.execute("select * from #{dataset} limit 50"),
+    expect(Prestige.execute("select * from #{dataset} limit 50", rows_as_maps: true),
       return: response_from_execute
     )
 

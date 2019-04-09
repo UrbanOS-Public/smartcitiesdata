@@ -48,7 +48,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
     Dataset.write(dataset)
 
-    expected = [[1, "bob"], [2, "mike"]]
+    expected = [%{"id" => 1, "name" => "bob"}, %{"id" => 2, "name" => "mike"}]
 
     Patiently.wait_for!(
       fn -> get_dataset_preview(dataset_id) == expected end,

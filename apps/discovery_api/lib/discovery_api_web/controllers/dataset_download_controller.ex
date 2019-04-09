@@ -4,6 +4,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
   @moduledoc false
   use DiscoveryApiWeb, :controller
   alias DiscoveryApi.Data.Dataset
+  alias DiscoveryApiWeb.DatasetMetricsService
 
   def fetch_presto(conn, params) do
     fetch_presto(conn, params, get_format(conn))
@@ -32,6 +33,8 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
       |> Stream.map(&Jason.encode!/1)
       |> Stream.intersperse(",")
 
+    DatasetMetricsService.record_api_hit("downloads", dataset_id)
+
     [["["], data, ["]"]]
     |> Stream.concat()
     |> stream_data(conn, dataset_id, get_format(conn))
@@ -52,6 +55,8 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
   defp download(_conn, _id, _table_name, nil), do: nil
 
   defp download(conn, dataset_id, table, columns) do
+    DatasetMetricsService.record_api_hit("downloads", dataset_id)
+
     "select * from #{table}"
     |> Prestige.execute()
     |> map_data_stream_for_csv(columns)

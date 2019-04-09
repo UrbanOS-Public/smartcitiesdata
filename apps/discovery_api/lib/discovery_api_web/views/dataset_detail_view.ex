@@ -19,7 +19,8 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
         homepage: dataset.organizationDetails.homepage
       },
       sourceType: dataset.sourceType,
-      sourceUrl: dataset.sourceUrl
+      sourceUrl: dataset.sourceUrl,
+      lastUpdatedDate: dataset.lastUpdatedDate
     }
   end
 end

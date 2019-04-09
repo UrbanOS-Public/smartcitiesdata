@@ -47,7 +47,8 @@ defmodule DiscoveryApiWeb.DatasetSearchViewTest do
           :description => "best ever",
           :sourceUrl => "http://example.com",
           :sourceType => "remote",
-          :private => false
+          :private => false,
+          :lastUpdatedDate => nil
         }
       ]
     }

@@ -16,7 +16,8 @@ defmodule DiscoveryApi.Data.Dataset do
     :systemName,
     :sourceUrl,
     :sourceType,
-    :private
+    :private,
+    :lastUpdatedDate
   ]
 
   @name_space "discovery-api:dataset:"
@@ -30,7 +31,14 @@ defmodule DiscoveryApi.Data.Dataset do
   def get(id) do
     (@name_space <> id)
     |> Persistence.get()
+    |> map_from_json()
     |> struct_from_map()
+    |> add_last_updated_date_to_struct()
+  end
+
+  def get_last_updated_date(id) do
+    ("forklift:last_insert_date:" <> id)
+    |> Persistence.get()
   end
 
   def save(%__MODULE__{} = dataset) do
@@ -40,6 +48,12 @@ defmodule DiscoveryApi.Data.Dataset do
       |> Map.from_struct()
 
     Persistence.persist(@name_space <> dataset.id, dataset_to_save)
+  end
+
+  defp map_from_json(nil), do: nil
+
+  defp map_from_json(json) do
+    Jason.decode!(json, keys: :atoms)
   end
 
   defp default_nil_field_to(dataset, field, default) do
@@ -53,5 +67,11 @@ defmodule DiscoveryApi.Data.Dataset do
 
   defp struct_from_map(map) do
     struct(__MODULE__, map)
+  end
+
+  defp add_last_updated_date_to_struct(nil), do: nil
+
+  defp add_last_updated_date_to_struct(dataset) do
+    struct(dataset, %{lastUpdatedDate: get_last_updated_date(dataset.id)})
   end
 end

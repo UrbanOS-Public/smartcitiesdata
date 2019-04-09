@@ -30,19 +30,30 @@ defmodule DiscoveryApi.Data.DatasetTest do
   end
 
   test "get should return a single dataset" do
-    dataset = Helper.sample_dataset()
-    dataset_json_string = to_json(dataset)
+    expected_dataset = Helper.sample_dataset()
+    dataset_json_string = to_json(expected_dataset)
+    last_updated_date = DateTime.to_iso8601(DateTime.utc_now())
 
-    Redix.command!(:redix, ["SET", "discovery-api:dataset:#{dataset.id}", dataset_json_string])
+    Redix.command!(:redix, ["SET", "discovery-api:dataset:#{expected_dataset.id}", dataset_json_string])
+    expected_dataset = %{expected_dataset | lastUpdatedDate: last_updated_date}
+    Redix.command!(:redix, ["SET", "forklift:last_insert_date:#{expected_dataset.id}", last_updated_date])
 
-    actual_dataset = Dataset.get(dataset.id)
+    actual_dataset = Dataset.get(expected_dataset.id)
+    assert actual_dataset == expected_dataset
+  end
 
-    assert actual_dataset == dataset
+  test "get latest should return a single date" do
+    last_updated_date = DateTime.to_iso8601(DateTime.utc_now())
+    dataset_id = "123"
+
+    Redix.command!(:redix, ["SET", "forklift:last_insert_date:#{dataset_id}", last_updated_date])
+
+    actual_date = Dataset.get_last_updated_date(dataset_id)
+    assert actual_date == last_updated_date
   end
 
   test "get should return nil when dataset does not exist" do
     actual_dataset = Dataset.get("123456")
-
     assert nil == actual_dataset
   end
 

@@ -14,4 +14,12 @@ defmodule DiscoveryApi.Data.DatasetTest do
 
     assert [] == actual_keywords
   end
+
+  test "dataset last_updated_date is retrieved from redis" do
+    expected_date = DateTime.utc_now()
+    allow(Persistence.get(any()), return: {:last_updated_date, expected_date})
+
+    actual_date = DiscoveryApi.Data.Dataset.get_last_updated_date("123")
+    assert expected_date = actual_date
+  end
 end
