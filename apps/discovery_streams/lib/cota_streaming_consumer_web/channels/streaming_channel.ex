@@ -6,20 +6,24 @@ defmodule CotaStreamingConsumerWeb.StreamingChannel do
   """
   use CotaStreamingConsumerWeb, :channel
   alias CotaStreamingConsumerWeb.Presence
+  alias CotaStreamingConsumer.TopicSubscriber
 
   @update_event "update"
   @filter_event "filter"
 
   intercept([@update_event])
 
-  def join("vehicle_position", params, socket) do
-    send(self(), :after_join)
-    {:ok, assign(socket, :filter, create_filter_rules(params))}
-  end
+  def join(channel, params, socket) do
+    topic = determine_topic(channel)
 
-  def join("streaming:" <> _topic_name, params, socket) do
-    send(self(), :after_join)
-    {:ok, assign(socket, :filter, create_filter_rules(params))}
+    case topic in TopicSubscriber.list_subscribed_topics() do
+      false ->
+        {:error, %{reason: "Channel #{channel} does not exist"}}
+
+      true ->
+        send(self(), :after_join)
+        {:ok, assign(socket, :filter, create_filter_rules(params))}
+    end
   end
 
   def handle_info(:after_join, %{assigns: %{filter: filter}} = socket) do
@@ -60,25 +64,19 @@ defmodule CotaStreamingConsumerWeb.StreamingChannel do
     end)
   end
 
-  defp push_cache_to_socket(%{topic: "vehicle_position"} = socket, filter) do
-    query = Cachex.Query.create(true, :value)
-
-    :"cota-vehicle-positions"
-    |> Cachex.stream!(query)
-    |> Stream.filter(filter)
-    |> Enum.each(fn msg -> push(socket, @update_event, msg) end)
-  end
-
   defp push_cache_to_socket(%{topic: channel} = socket, filter) do
     query = Cachex.Query.create(true, :value)
 
     channel
-    |> String.trim_leading("streaming:")
+    |> determine_topic()
     |> String.to_atom()
     |> Cachex.stream!(query)
     |> Stream.filter(filter)
     |> Enum.each(fn msg -> push(socket, @update_event, msg) end)
   end
+
+  defp determine_topic("vehicle_position"), do: "cota-vehicle-positions"
+  defp determine_topic("streaming:" <> topic), do: topic
 
   defp message_matches?(message, filter) do
     Enum.all?(filter, fn {field, value} -> field_matches?(message, field, value) end)

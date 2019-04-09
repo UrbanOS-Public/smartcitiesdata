@@ -1,15 +1,17 @@
 defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
   use CotaStreamingConsumerWeb.ChannelCase
+  use Placebo
 
   import Checkov
 
-  alias CotaStreamingConsumer.CachexSupervisor
+  alias CotaStreamingConsumer.{CachexSupervisor, TopicSubscriber}
 
   setup do
     CachexSupervisor.create_cache(:"shuttle-position")
     CachexSupervisor.create_cache(:"cota-vehicle-positions")
     Cachex.clear(:"shuttle-position")
     Cachex.clear(:"cota-vehicle-positions")
+    allow TopicSubscriber.list_subscribed_topics(), return: ["shuttle-position", "cota-vehicle-positions"]
     :ok
   end
 
@@ -216,5 +218,10 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
       [:"shuttle-position", "streaming:shuttle-position"],
       [:"cota-vehicle-positions", "vehicle_position"]
     ])
+  end
+
+  test "joining topic that does not exist returns error tuple" do
+    assert {:error, %{reason: "Channel streaming:three does not exist"}} ==
+             subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, "streaming:three")
   end
 end
