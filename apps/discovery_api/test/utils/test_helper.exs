@@ -19,6 +19,30 @@ defmodule DiscoveryApi.Test.Helper do
     }
     |> Map.merge(values)
   end
+
+  def ldap_user(values \\ %{}) do
+    %{
+      "cn" => ["bigbadbob"],
+      "displayName" => ["big bad"],
+      "dn" => "uid=bigbadbob,cn=users,cn=accounts",
+      "memberOf" => ["cn=my_first_dn,cn=groups,cn=accounts,dc=internal,dc=smartcolumbusos,dc=com"],
+      "ou" => ["People"],
+      "sn" => ["bad"],
+      "uid" => ["bigbadbob"],
+      "uidNumber" => ["1501200034"]
+    }
+    |> Map.merge(values)
+  end
+
+  def ldap_group(values \\ %{}) do
+    %{
+      "cn" => ["this_is_a_group"],
+      "dn" => "cn=this_is_a_group,ou=Group",
+      "member" => ["cn=FirstUser,ou=People"],
+      "objectClass" => ["top", "groupOfNames"]
+    }
+    |> Map.merge(values)
+  end
 end
 
 defmodule DiscoveryApiWeb.ConnCase do
@@ -43,6 +67,8 @@ defmodule DiscoveryApiWeb.ConnCase do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
       import DiscoveryApiWeb.Router.Helpers
+      alias SmartCity.TestDataGenerator, as: TDG
+      alias DiscoveryApi.Test.Helper
 
       # The default endpoint for testing
       @endpoint DiscoveryApiWeb.Endpoint

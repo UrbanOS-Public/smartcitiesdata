@@ -46,9 +46,12 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
   describe "fetching json data" do
     setup do
       allow(
-        Prestige.execute("select * from test", rows_as_maps: true),
+        Prestige.execute("select * from #{@system_name}", rows_as_maps: true),
         return: [%{id: 1, name: "Joe", age: 21}, %{id: 2, name: "Robby", age: 32}]
       )
+
+      dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name})
+      allow(Redix.command!(:redix, ["GET", "discovery-api:dataset:test"]), return: dataset_json)
 
       :ok
     end
@@ -70,6 +73,74 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
                %{"id" => 1, "name" => "Joe", "age" => 21},
                %{"id" => 2, "name" => "Robby", "age" => 32}
              ]
+    end
+  end
+
+  describe "download restricted dataset" do
+    setup do
+      organization = TDG.create_organization(%{dn: "cn=this_is_a_group,ou=Group"})
+
+      dataset =
+        Helper.sample_dataset(%{
+          id: @dataset_id,
+          private: true,
+          organizationDetails: organization,
+          systemName: @system_name
+        })
+
+      allow DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset
+
+      allow SmartCity.Organization.get(dataset.organizationDetails.id), return: organization
+
+      allow(Prestige.execute("describe #{@system_name}"),
+        return: []
+      )
+
+      allow(Prestige.execute("select * from #{@system_name}", rows_as_maps: true),
+        return: [%{id: 1, name: "Joe", age: 21}, %{id: 2, name: "Robby", age: 32}]
+      )
+
+      allow(Prestige.prefetch(any()),
+        return: [["id", "1", "4"], ["one", "2", "5"], ["two", "3", "6"]]
+      )
+
+      :ok
+    end
+
+    test "does not download a restricted dataset if the given user does not have access to it", %{conn: conn} do
+      ldap_user = Helper.ldap_user()
+
+      ldap_group = Helper.ldap_group(%{"member" => ["cn=FirstUser,ou=People"]})
+
+      allow Paddle.authenticate(any(), any()), return: :ok
+      allow Paddle.get(base: [uid: "bigbadbob", ou: "People"]), return: {:ok, [ldap_user]}
+      allow Paddle.get(base: "cn=this_is_a_group,ou=Group"), return: {:ok, [ldap_group]}
+
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+
+      conn
+      |> Plug.Conn.put_req_header("token", token)
+      |> put_req_header("accept", "application/json")
+      |> get("/api/v1/dataset/#{@dataset_id}/download")
+      |> json_response(401)
+    end
+
+    test "downloads a restricted dataset if the given user has access to it", %{conn: conn} do
+      ldap_user = Helper.ldap_user()
+
+      ldap_group = Helper.ldap_group(%{"member" => ["cn=bigbadbob,ou=People"]})
+
+      allow Paddle.authenticate(any(), any()), return: :ok
+      allow Paddle.get(base: [uid: "bigbadbob", ou: "People"]), return: {:ok, [ldap_user]}
+      allow Paddle.get(base: "cn=this_is_a_group,ou=Group"), return: {:ok, [ldap_group]}
+
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+
+      conn
+      |> Plug.Conn.put_req_header("token", token)
+      |> put_req_header("accept", "application/json")
+      |> get("/api/v1/dataset/#{@dataset_id}/download")
+      |> json_response(200)
     end
   end
 end

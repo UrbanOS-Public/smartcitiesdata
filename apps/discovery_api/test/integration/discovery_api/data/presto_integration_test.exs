@@ -10,13 +10,6 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
   end
 
   @moduletag capture_log: true
-  test "returns empty list when dataset id doesn't exist" do
-    dataset_id = "does not exist"
-
-    assert [] == get_dataset_preview(dataset_id)
-  end
-
-  @moduletag capture_log: true
   test "returns empty list when dataset has no data saved" do
     dataset_id = "123"
     system_name = "not_saved"
@@ -28,8 +21,10 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     organization = TDG.create_organization(%{})
     Organization.write(organization)
 
-    dataset = TDG.create_dataset(%{technical: %{systemName: system_name, orgId: organization.id}})
+    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
     Dataset.write(dataset)
+
+    Process.sleep(2000)
 
     assert [] == get_dataset_preview(dataset_id)
   end
@@ -57,18 +52,21 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
 
     Patiently.wait_for!(
       fn -> get_dataset_preview(dataset_id) == expected end,
-      dwell: 1000,
-      max_tries: 20
+      dwell: 2000,
+      max_tries: 10
     )
   end
 
   defp get_dataset_preview(dataset_id) do
-    %{"data" => data} =
+    body =
       "http://localhost:4000/api/v1/dataset/#{dataset_id}/preview"
       |> HTTPoison.get!()
       |> Map.get(:body)
       |> Jason.decode!()
 
-    data
+    case body do
+      %{"message" => message} -> message
+      %{"data" => data} -> data
+    end
   end
 end

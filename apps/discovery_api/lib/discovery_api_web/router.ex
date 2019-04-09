@@ -29,7 +29,6 @@ defmodule DiscoveryApiWeb.Router do
   scope "/api/v1", DiscoveryApiWeb do
     pipe_through(:api_json_only)
 
-    get("/dataset/:dataset_id/preview", DatasetPreviewController, :fetch_preview)
     get("/dataset/search", DatasetSearchController, :search)
     get("/data_json", DataJsonController, :get_data_json)
     get("/organization/:id", OrganizationController, :fetch_organization)
@@ -38,14 +37,19 @@ defmodule DiscoveryApiWeb.Router do
   scope "/api/v1", DiscoveryApiWeb do
     pipe_through([:api_json_only, :check_restricted])
 
+    get("/dataset/:dataset_id/preview", DatasetPreviewController, :fetch_preview)
     get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
   end
 
   scope "/api/v1", DiscoveryApiWeb do
-    pipe_through(:api)
-    get("/login", LoginController, :new)
-    get("/dataset/:dataset_id/query", DatasetQueryController, :query)
+    pipe_through([:api, :check_restricted])
 
+    get("/dataset/:dataset_id/query", DatasetQueryController, :query)
     get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_presto)
+  end
+
+  scope "/api/v1", DiscoveryApiWeb do
+    pipe_through([:api])
+    get("/login", LoginController, :new)
   end
 end

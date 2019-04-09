@@ -21,8 +21,13 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
   end
 
   def fetch_presto(conn, %{"dataset_id" => dataset_id}, "json") do
+    table =
+      dataset_id
+      |> Dataset.get()
+      |> fetch_table()
+
     data =
-      "select * from #{dataset_id}"
+      "select * from #{table}"
       |> Prestige.execute(rows_as_maps: true)
       |> Stream.map(&Jason.encode!/1)
       |> Stream.intersperse(",")

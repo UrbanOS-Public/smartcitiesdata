@@ -128,21 +128,6 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   end
 
   describe "error cases" do
-    test "dataset does not exist returns Not Found", %{conn: conn} do
-      allow(DiscoveryApi.Data.Dataset.get("bobber"), return: nil)
-      allow(Prestige.execute(any()), return: [])
-
-      assert capture_log(fn ->
-               conn
-               |> put_req_header("accept", "text/csv")
-               |> get("/api/v1/dataset/bobber/query", columns: "id,one,two")
-               |> response(404)
-             end) =~ "Dataset bobber not found"
-
-      assert_called Prestige.execute("SELECT id, one, two FROM "),
-                    times(0)
-    end
-
     test "table does not exist returns Not Found", %{conn: conn} do
       allow(DiscoveryApi.Data.Dataset.get("no_exist"), return: %Dataset{:systemName => "coda__no_exist"})
       allow(Prestige.execute(any()), return: [])

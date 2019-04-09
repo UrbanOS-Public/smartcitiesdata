@@ -8,8 +8,8 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     query(conn, params, get_format(conn))
   end
 
-  def query(conn, %{"dataset_id" => dataset_id} = params, "csv") do
-    with {:ok, system_name} <- get_system_name(dataset_id),
+  def query(conn, params, "csv") do
+    with {:ok, system_name} <- get_system_name(conn.assigns.dataset),
          {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
          {:ok, query} <- build_query(params, system_name) do
       query
@@ -22,8 +22,8 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     end
   end
 
-  def query(conn, %{"dataset_id" => dataset_id} = params, "json") do
-    with {:ok, system_name} <- get_system_name(dataset_id),
+  def query(conn, params, "json") do
+    with {:ok, system_name} <- get_system_name(conn.assigns.dataset),
          {:ok, query} <- build_query(params, system_name) do
       data =
         query
@@ -73,15 +73,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     end
   end
 
-  defp get_system_name(dataset_id) do
-    dataset_id
-    |> Dataset.get()
-    |> case do
-      %Dataset{systemName: system_name} -> {:ok, system_name}
-      nil -> {:error, "Dataset #{dataset_id} not found"}
-      _ -> {:error, "Something unexpected went wrong"}
-    end
-  end
+  defp get_system_name(%Dataset{systemName: system_name}), do: {:ok, system_name}
 
   defp build_query(params, system_name) do
     column_string = Map.get(params, "columns", "*")
