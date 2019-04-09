@@ -3,9 +3,8 @@ defmodule DiscoveryApiWeb.DatasetPreviewController do
   use DiscoveryApiWeb, :controller
   alias DiscoveryApi.Data.Dataset
 
-  def fetch_preview(conn, %{"dataset_id" => dataset_id}) do
-    dataset_id
-    |> Dataset.get()
+  def fetch_preview(conn, _params) do
+    conn.assigns.dataset
     |> run_query()
     |> return_preview(conn)
   end

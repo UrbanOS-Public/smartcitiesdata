@@ -10,22 +10,16 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
     fetch_presto(conn, params, get_format(conn))
   end
 
-  def fetch_presto(conn, %{"dataset_id" => dataset_id}, "csv") do
-    table =
-      dataset_id
-      |> Dataset.get()
-      |> fetch_table()
+  def fetch_presto(conn, _params, "csv") do
+    table = conn.assigns.dataset.systemName
 
     columns = fetch_columns(table)
 
-    download(conn, dataset_id, table, columns)
+    download(conn, conn.assigns.dataset.id, table, columns)
   end
 
-  def fetch_presto(conn, %{"dataset_id" => dataset_id}, "json") do
-    table =
-      dataset_id
-      |> Dataset.get()
-      |> fetch_table()
+  def fetch_presto(conn, _params, "json") do
+    table = conn.assigns.dataset.systemName
 
     data =
       "select * from #{table}"
@@ -33,11 +27,11 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
       |> Stream.map(&Jason.encode!/1)
       |> Stream.intersperse(",")
 
-    DatasetMetricsService.record_api_hit("downloads", dataset_id)
+    DatasetMetricsService.record_api_hit("downloads", conn.assigns.dataset.id)
 
     [["["], data, ["]"]]
     |> Stream.concat()
-    |> stream_data(conn, dataset_id, get_format(conn))
+    |> stream_data(conn, conn.assigns.dataset.id, get_format(conn))
   end
 
   defp fetch_table(nil), do: nil

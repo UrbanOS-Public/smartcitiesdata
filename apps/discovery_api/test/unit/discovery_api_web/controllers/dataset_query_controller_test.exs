@@ -6,7 +6,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
   describe "fetching csv data" do
     setup do
-      allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:systemName => "coda__test_dataset"})
+      allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:id => "test", :systemName => "coda__test_dataset"})
 
       allow(Prestige.execute("describe coda__test_dataset"),
         return: []
@@ -107,7 +107,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         return: []
       )
 
-      allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:systemName => "coda__test_dataset"})
+      allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:id => "test", :systemName => "coda__test_dataset"})
 
       allow(
         Prestige.execute("SELECT * FROM coda__test_dataset",
@@ -150,7 +150,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
   describe "error cases" do
     test "table does not exist returns Not Found", %{conn: conn} do
-      allow(DiscoveryApi.Data.Dataset.get("no_exist"), return: %Dataset{:systemName => "coda__no_exist"})
+      allow(DiscoveryApi.Data.Dataset.get("no_exist"), return: %Dataset{:id => "test", :systemName => "coda__no_exist"})
       allow(Prestige.execute(any()), return: [])
       allow(Prestige.prefetch(any()), return: [])
 
@@ -169,7 +169,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
   describe "malice cases" do
     setup do
-      allow(DiscoveryApi.Data.Dataset.get("bobber"), return: %Dataset{:systemName => "coda__test_dataset"})
+      allow(DiscoveryApi.Data.Dataset.get("bobber"),
+        return: %Dataset{:id => "test", :systemName => "coda__test_dataset"}
+      )
+
       allow(Prestige.execute(any()), return: [])
       allow(Prestige.execute(any()), return: [])
 
@@ -224,6 +227,9 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
   describe "query restricted dataset" do
     setup do
+      allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
+
+      allow(Redix.command!(any(), any()), return: :does_not_matter)
       organization = TDG.create_organization(%{dn: "cn=this_is_a_group,ou=Group"})
 
       dataset =
