@@ -14,7 +14,23 @@ defmodule DiscoveryApi.Test.Helper do
       fileTypes: [Faker.Lorem.characters(3), Faker.Lorem.characters(4)],
       description: Enum.join(Faker.Lorem.sentences(2..3), " "),
       sourceType: "remote",
-      sourceUrl: Faker.Internet.url()
+      sourceUrl: Faker.Internet.url(),
+      contactName: Faker.Name.first_name(),
+      contactEmail: Faker.Internet.email(),
+      license: "APL2",
+      rights: "public",
+      homepage: Faker.Internet.url(),
+      spatial: Faker.Lorem.characters(10),
+      temporal: Date.to_string(Faker.Date.date_of_birth()),
+      publishFrequency: "10",
+      conformsToUri: Faker.Internet.url(),
+      describedByUrl: Faker.Internet.url(),
+      describedByMimeType: "application/pdf",
+      parentDataset: "none",
+      issuedDate: Date.to_string(Faker.Date.date_of_birth()),
+      language: "en-US",
+      referenceUrls: Faker.Internet.url(),
+      categories: [Faker.Lorem.word(), Faker.Lorem.word()]
     }
     |> Map.merge(values)
   end

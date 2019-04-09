@@ -79,7 +79,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
     end
 
     test "increments downloads count for dataset when dataset download requested", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/test/download?_format=json") |> response(200)
+      conn |> get("/api/v1/dataset/test/download?_format=json") |> response(200)
       assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:test"]))
     end
   end

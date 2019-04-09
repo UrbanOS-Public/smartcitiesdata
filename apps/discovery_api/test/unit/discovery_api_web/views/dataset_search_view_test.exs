@@ -45,8 +45,7 @@ defmodule DiscoveryApiWeb.DatasetSearchViewTest do
           :fileTypes => ["csv", "pdf"],
           :description => "best ever",
           :sourceUrl => "http://example.com",
-          :sourceType => "remote",
-          :lastUpdatedDate => nil
+          :sourceType => "remote"
         }
       ]
     }
