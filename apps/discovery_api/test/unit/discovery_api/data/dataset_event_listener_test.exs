@@ -5,6 +5,12 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
   alias DiscoveryApi.Data.DatasetDetailsHandler
   alias DiscoveryApi.Data.ProjectOpenDataHandler
   alias DiscoveryApi.Data.SystemNameCache
+  alias SmartCity.TestDataGenerator, as: TDG
+
+  setup do
+    allow SmartCity.Organization.get(any()), return: {:error, :not_found}, meck_options: [:passthrough]
+    :ok
+  end
 
   test "handle_dataset should pass Dataset to handlers" do
     dataset = create_dataset("123")
@@ -56,13 +62,15 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
   end
 
   test "handle_dataset create orgName/dataName mapping to dataset_id" do
-    dataset = create_dataset("ds1")
+    org = TDG.create_organization(id: "org1")
+    dataset = TDG.create_dataset(id: "ds1", technical: %{orgId: org.id})
+    allow SmartCity.Organization.get("org1"), return: {:ok, org}
     allow DatasetDetailsHandler.process_dataset_details_event(any()), return: {:ok, "OK"}
     allow ProjectOpenDataHandler.process_project_open_data_event(any()), return: {:ok, "OK"}
 
     DatasetEventListener.handle_dataset(dataset)
 
-    assert SystemNameCache.get("org_name", "name") == "ds1"
+    assert SystemNameCache.get(org.orgName, dataset.technical.dataName) == "ds1"
   end
 
   defp create_dataset(id) do
@@ -79,6 +87,7 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
       },
       technical: %{
         dataName: "name",
+        orgId: "org_id",
         orgName: "org_name",
         systemName: "sys",
         stream: false,

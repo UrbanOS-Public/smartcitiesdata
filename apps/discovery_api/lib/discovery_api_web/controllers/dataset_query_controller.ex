@@ -5,7 +5,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   alias DiscoveryApiWeb.DatasetMetricsService
   alias DiscoveryApiWeb.Plugs.OrgDatasetParamReplacement
 
-  plug OrgDatasetParamReplacement
+  plug(OrgDatasetParamReplacement)
 
   def query(conn, params) do
     query(conn, params, get_format(conn))

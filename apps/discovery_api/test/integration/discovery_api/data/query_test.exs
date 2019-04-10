@@ -13,7 +13,7 @@ defmodule DiscoveryApi.Data.QueryTest do
     Redix.command!(:redix, ["FLUSHALL"])
     system_name = "foo__bar_baz"
 
-    organization = TDG.create_organization(%{})
+    organization = TDG.create_organization(id: "org1234", orgName: @org_name)
     Organization.write(organization)
 
     dataset =
@@ -22,7 +22,7 @@ defmodule DiscoveryApi.Data.QueryTest do
         technical: %{
           systemName: system_name,
           orgId: organization.id,
-          orgName: @org_name,
+          orgName: organization.orgName,
           dataName: @data_name
         }
       })
@@ -63,9 +63,9 @@ defmodule DiscoveryApi.Data.QueryTest do
   test "Queries limited data from presto when using orgName and dataName in url" do
     actual =
       "http://localhost:4000/api/v1/dataset/#{@org_name}/#{@data_name}/query?limit=2&orderBy=name"
-    |> HTTPoison.get!()
-    |> Map.from_struct()
-    |> Map.get(:body)
+      |> HTTPoison.get!()
+      |> Map.from_struct()
+      |> Map.get(:body)
 
     assert "id,name\n1,Fred\n2,Gred\n" == actual
   end

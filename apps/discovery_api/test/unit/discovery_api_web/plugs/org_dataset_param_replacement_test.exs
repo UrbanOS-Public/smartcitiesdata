@@ -9,14 +9,15 @@ defmodule DiscoveryApiWeb.Plugs.OrgDatasetParamReplacementTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   describe "call/2" do
-
     setup do
       Cachex.clear(SystemNameCache.cache_name())
       :ok
     end
 
     test "replaces the org_name and dataset_name with the correct dataset_id" do
-      dataset = TDG.create_dataset(id: "ds1", technical: %{orgName: "org1", dataName: "data1"})
+      org = TDG.create_organization(id: "o1", orgName: "org1")
+      dataset = TDG.create_dataset(id: "ds1", technical: %{orgId: org.id, dataName: "data1"})
+      allow SmartCity.Organization.get(any()), return: {:ok, org}
       SystemNameCache.put(dataset)
       SystemNameCache.put(TDG.create_dataset(id: "ds2"))
 
