@@ -18,7 +18,23 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandler do
           fileTypes: ["CSV"],
           sourceType: dataset.technical.sourceType,
           sourceUrl: dataset.technical.sourceUrl,
-          private: dataset.technical.private
+          private: dataset.technical.private,
+          contactName: dataset.business.contactName,
+          contactEmail: dataset.business.contactEmail,
+          license: dataset.business.license,
+          rights: dataset.business.rights,
+          homepage: dataset.business.homepage,
+          spatial: dataset.business.spatial,
+          temporal: dataset.business.temporal,
+          publishFrequency: dataset.business.publishFrequency,
+          conformsToUri: dataset.business.conformsToUri,
+          describedByUrl: dataset.business.describedByUrl,
+          describedByMimeType: dataset.business.describedByMimeType,
+          parentDataset: dataset.business.parentDataset,
+          issuedDate: dataset.business.issuedDate,
+          language: dataset.business.language,
+          referenceUrls: dataset.business.referenceUrls,
+          categories: dataset.business.categories
         })
 
       error ->

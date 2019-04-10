@@ -14,8 +14,6 @@ defmodule DiscoveryApiWeb.DatasetSearchView do
       |> sort_datasets(sort_by)
       |> paginate(offset, limit)
       |> Enum.map(&Map.from_struct/1)
-      |> Enum.map(fn data -> Map.drop(data, [:__meta__]) end)
-      |> Enum.map(fn data -> Map.drop(data, [:organizationDetails]) end)
 
     %{
       "metadata" => %{
@@ -24,7 +22,22 @@ defmodule DiscoveryApiWeb.DatasetSearchView do
         "limit" => limit,
         "offset" => offset
       },
-      "results" => paged_sorted_data
+      "results" => Enum.map(paged_sorted_data, fn dataset -> transform_dataset(dataset) end)
+    }
+  end
+
+  defp transform_dataset(dataset) do
+    %{
+      id: dataset.id,
+      title: dataset.title,
+      keywords: dataset.keywords,
+      systemName: dataset.systemName,
+      organization: dataset.organization,
+      modified: dataset.modified,
+      fileTypes: dataset.fileTypes,
+      description: dataset.description,
+      sourceType: dataset.sourceType,
+      sourceUrl: dataset.sourceUrl
     }
   end
 

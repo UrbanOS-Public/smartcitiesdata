@@ -21,7 +21,23 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
       fileTypes: ["CSV"],
       sourceUrl: dataset.technical.sourceUrl,
       sourceType: dataset.technical.sourceType,
-      private: false
+      private: false,
+      contactName: dataset.business.contactName,
+      contactEmail: dataset.business.contactEmail,
+      license: dataset.business.license,
+      rights: dataset.business.rights,
+      homepage: dataset.business.homepage,
+      spatial: dataset.business.spatial,
+      temporal: dataset.business.temporal,
+      publishFrequency: dataset.business.publishFrequency,
+      conformsToUri: dataset.business.conformsToUri,
+      describedByUrl: dataset.business.describedByUrl,
+      describedByMimeType: dataset.business.describedByMimeType,
+      parentDataset: dataset.business.parentDataset,
+      issuedDate: dataset.business.issuedDate,
+      language: dataset.business.language,
+      referenceUrls: dataset.business.referenceUrls,
+      categories: dataset.business.categories
     }
 
     allow Organization.get(dataset.technical.orgId), return: {:ok, organization}

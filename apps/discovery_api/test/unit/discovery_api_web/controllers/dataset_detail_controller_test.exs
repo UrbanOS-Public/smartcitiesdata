@@ -26,7 +26,23 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
                },
                "sourceType" => dataset.sourceType,
                "sourceUrl" => dataset.sourceUrl,
-               "lastUpdatedDate" => nil
+               "lastUpdatedDate" => nil,
+               "contactName" => dataset.contactName,
+               "contactEmail" => dataset.contactEmail,
+               "license" => dataset.license,
+               "rights" => dataset.rights,
+               "homepage" => dataset.homepage,
+               "spatial" => dataset.spatial,
+               "temporal" => dataset.temporal,
+               "publishFrequency" => dataset.publishFrequency,
+               "conformsToUri" => dataset.conformsToUri,
+               "describedByUrl" => dataset.describedByUrl,
+               "describedByMimeType" => dataset.describedByMimeType,
+               "parentDataset" => dataset.parentDataset,
+               "issuedDate" => dataset.issuedDate,
+               "language" => dataset.language,
+               "referenceUrls" => dataset.referenceUrls,
+               "categories" => dataset.categories
              } == actual
     end
 
