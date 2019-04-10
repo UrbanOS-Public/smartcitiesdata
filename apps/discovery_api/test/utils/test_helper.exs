@@ -41,7 +41,6 @@ defmodule DiscoveryApi.Test.Helper do
       "cn" => ["bigbadbob"],
       "displayName" => ["big bad"],
       "dn" => "uid=bigbadbob,cn=users,cn=accounts",
-      "memberOf" => ["cn=my_first_dn,cn=groups,cn=accounts,dc=internal,dc=smartcolumbusos,dc=com"],
       "ou" => ["People"],
       "sn" => ["bad"],
       "uid" => ["bigbadbob"],

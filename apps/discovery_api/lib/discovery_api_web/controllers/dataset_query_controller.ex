@@ -2,7 +2,6 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   @moduledoc false
   use DiscoveryApiWeb, :controller
   require Logger
-  alias DiscoveryApi.Data.Dataset
   alias DiscoveryApiWeb.DatasetMetricsService
 
   def query(conn, params) do
@@ -10,8 +9,9 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   def query(conn, params, "csv") do
-    with {:ok, system_name} <- get_system_name(conn.assigns.dataset),
-         {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
+    system_name = conn.assigns.dataset.systemName
+
+    with {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
          {:ok, query} <- build_query(params, system_name) do
       DatasetMetricsService.record_api_hit("queries", conn.assigns.dataset.id)
 
@@ -26,8 +26,9 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   def query(conn, params, "json") do
-    with {:ok, system_name} <- get_system_name(conn.assigns.dataset),
-         {:ok, query} <- build_query(params, system_name) do
+    system_name = conn.assigns.dataset.systemName
+
+    with {:ok, query} <- build_query(params, system_name) do
       DatasetMetricsService.record_api_hit("queries", conn.assigns.dataset.id)
 
       data =
@@ -77,8 +78,6 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       names -> {:ok, names}
     end
   end
-
-  defp get_system_name(%Dataset{systemName: system_name}), do: {:ok, system_name}
 
   defp build_query(params, system_name) do
     column_string = Map.get(params, "columns", "*")
