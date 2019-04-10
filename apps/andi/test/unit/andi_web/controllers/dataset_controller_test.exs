@@ -3,6 +3,7 @@ defmodule AndiWeb.DatasetControllerTest do
   use Placebo
 
   @route "/api/v1/dataset"
+  @get_datasets_route "/api/v1/datasets"
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -133,7 +134,7 @@ defmodule AndiWeb.DatasetControllerTest do
 
   describe "GET dataset definitions from /api/dataset/" do
     setup %{conn: conn, request: request} do
-      [conn: get(conn, @route, request)]
+      [conn: get(conn, @get_datasets_route, request)]
     end
 
     @tag capture_log: true

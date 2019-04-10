@@ -83,7 +83,7 @@ defmodule Andi.CreateOrgTest do
     end
 
     test "returns all organzations", %{expected: expected} do
-      result = get("/api/v1/organization")
+      result = get("/api/v1/organizations")
 
       organizations =
         elem(result, 1).body

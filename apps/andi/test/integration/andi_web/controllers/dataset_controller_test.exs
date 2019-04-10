@@ -27,7 +27,7 @@ defmodule Andi.CreateDatasetTest do
 
   describe "dataset retrieval" do
     test "returns all datasets", %{expected: expected} do
-      result = get("/api/v1/dataset")
+      result = get("/api/v1/datasets")
 
       datasets =
         elem(result, 1).body

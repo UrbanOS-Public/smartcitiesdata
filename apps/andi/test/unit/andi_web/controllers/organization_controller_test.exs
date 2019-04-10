@@ -4,6 +4,7 @@ defmodule AndiWeb.OrganizationControllerTest do
   use AndiWeb.ConnCase
 
   @route "/api/v1/organization"
+  @get_orgs_route "/api/v1/organizations"
   @ou Application.get_env(:andi, :ldap_env_ou)
   alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG
@@ -157,7 +158,7 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   describe "GET orgs from /api/organization" do
     setup %{conn: conn, request: request} do
-      [conn: get(conn, @route, request)]
+      [conn: get(conn, @get_orgs_route, request)]
     end
 
     test "returns a 200", %{conn: conn, expected_orgs: expected_orgs} do
