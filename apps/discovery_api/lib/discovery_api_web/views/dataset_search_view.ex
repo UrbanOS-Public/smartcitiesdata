@@ -37,7 +37,8 @@ defmodule DiscoveryApiWeb.DatasetSearchView do
       fileTypes: dataset.fileTypes,
       description: dataset.description,
       sourceType: dataset.sourceType,
-      sourceUrl: dataset.sourceUrl
+      sourceUrl: dataset.sourceUrl,
+      lastUpdatedDate: dataset.lastUpdatedDate
     }
   end
 
