@@ -3,6 +3,9 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   use DiscoveryApiWeb, :controller
   require Logger
   alias DiscoveryApiWeb.DatasetMetricsService
+  alias DiscoveryApiWeb.Plugs.OrgDatasetParamReplacement
+
+  plug OrgDatasetParamReplacement
 
   def query(conn, params) do
     query(conn, params, get_format(conn))

@@ -3,10 +3,13 @@ defmodule DiscoveryApi.Data.DatasetEventListener do
   require Logger
   alias DiscoveryApi.Data.DatasetDetailsHandler
   alias DiscoveryApi.Data.ProjectOpenDataHandler
+  alias DiscoveryApi.Data.SystemNameCache
   use SmartCity.Registry.MessageHandler
 
   def handle_dataset(%SmartCity.Dataset{} = dataset) do
     Logger.debug(fn -> "Handling dataset: `#{dataset.technical.systemName}`" end)
+
+    SystemNameCache.put(dataset)
 
     with {:ok, _result} <- DatasetDetailsHandler.process_dataset_details_event(dataset),
          ProjectOpenDataHandler.process_project_open_data_event(dataset) do

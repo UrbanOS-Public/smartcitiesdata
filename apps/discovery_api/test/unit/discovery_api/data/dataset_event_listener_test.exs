@@ -4,6 +4,7 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
   alias DiscoveryApi.Data.DatasetEventListener
   alias DiscoveryApi.Data.DatasetDetailsHandler
   alias DiscoveryApi.Data.ProjectOpenDataHandler
+  alias DiscoveryApi.Data.SystemNameCache
 
   test "handle_dataset should pass Dataset to handlers" do
     dataset = create_dataset("123")
@@ -54,6 +55,16 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
     assert response == :ok
   end
 
+  test "handle_dataset create orgName/dataName mapping to dataset_id" do
+    dataset = create_dataset("ds1")
+    allow DatasetDetailsHandler.process_dataset_details_event(any()), return: {:ok, "OK"}
+    allow ProjectOpenDataHandler.process_project_open_data_event(any()), return: {:ok, "OK"}
+
+    DatasetEventListener.handle_dataset(dataset)
+
+    assert SystemNameCache.get("org_name", "name") == "ds1"
+  end
+
   defp create_dataset(id) do
     %SmartCity.Dataset{
       id: id,
@@ -68,7 +79,7 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
       },
       technical: %{
         dataName: "name",
-        orgName: "org name",
+        orgName: "org_name",
         systemName: "sys",
         stream: false,
         sourceUrl: "http://none.dev",

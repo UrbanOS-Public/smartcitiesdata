@@ -2,13 +2,15 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   import ExUnit.CaptureLog
   use DiscoveryApiWeb.ConnCase
   use Placebo
-  alias DiscoveryApi.Data.Dataset
+  alias DiscoveryApi.Data.{Dataset, SystemNameCache}
   alias Plug.Conn
-
-  @dataset_id "test"
+  alias SmartCity.TestDataGenerator, as: TDG
 
   describe "fetching csv data" do
     setup do
+      dataset = TDG.create_dataset(id: "test", technical: %{orgName: "org1", dataName: "data1"})
+      SystemNameCache.put(dataset)
+
       allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:id => "test", :systemName => "coda__test_dataset"})
 
       allow(Prestige.execute("describe coda__test_dataset"),
@@ -33,6 +35,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
     test "returns csv", %{conn: conn} do
       actual = conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query") |> response(200)
+      assert "id,one,two\n1,2,3\n4,5,6\n" == actual
+    end
+
+    test "query can be called with systemName rather than dataset id", %{conn: conn} do
+      actual = conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/org1/data1/query") |> response(200)
       assert "id,one,two\n1,2,3\n4,5,6\n" == actual
     end
 
@@ -134,10 +141,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
                %{"id" => 2, "name" => "Robby"}
              ]
 
-      assert_called Prestige.execute("SELECT * FROM coda__test_dataset",
-                      rows_as_maps: true
-                    ),
-                    once()
+      assert_called Prestige.execute("SELECT * FROM coda__test_dataset", rows_as_maps: true), once()
     end
 
     test "increments dataset queries count when dataset query is requested", %{conn: conn} do
