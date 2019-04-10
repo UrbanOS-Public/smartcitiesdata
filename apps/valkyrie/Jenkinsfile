@@ -59,6 +59,7 @@ node('infrastructure') {
 
         doStageIfRelease('Deploy to Production') {
             def releaseTag = env.BRANCH_NAME
+            def promotionTag = 'prod'
             def environment = 'prod'
 
             deployTo(environment)
