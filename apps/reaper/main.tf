@@ -81,11 +81,6 @@ EOF
   }
 }
 
-variable "is_internal" {
-  description = "Should the ALBs be internal facing"
-  default     = false
-}
-
 variable "region" {
   description = "Region of operating system resources"
   default     = "us-west-2"
