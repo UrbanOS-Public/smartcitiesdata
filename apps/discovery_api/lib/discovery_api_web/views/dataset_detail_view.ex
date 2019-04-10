@@ -36,7 +36,8 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
       issuedDate: dataset.issuedDate,
       language: dataset.language,
       referenceUrls: dataset.referenceUrls,
-      categories: dataset.categories
+      categories: dataset.categories,
+      modified: dataset.modified
     }
   end
 end
