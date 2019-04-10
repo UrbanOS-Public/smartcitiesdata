@@ -1,20 +1,12 @@
 defmodule DiscoveryApiWeb.DatasetPreviewController do
   @moduledoc false
   use DiscoveryApiWeb, :controller
-  alias DiscoveryApi.Data.Dataset
+  alias DiscoveryApiWeb.DatasetPrestoQueryService
 
-  def fetch_preview(conn, %{"dataset_id" => dataset_id}) do
-    dataset_id
-    |> Dataset.get()
-    |> run_query()
+  def fetch_preview(conn, _params) do
+    conn.assigns.dataset.systemName
+    |> DatasetPrestoQueryService.preview()
     |> return_preview(conn)
-  end
-
-  defp run_query(nil), do: []
-
-  defp run_query(dataset) do
-    dataset.systemName
-    |> DiscoveryApiWeb.DatasetPrestoQueryService.preview()
   end
 
   defp return_preview(rows, conn), do: json(conn, %{data: rows})

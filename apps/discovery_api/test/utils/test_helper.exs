@@ -15,6 +15,7 @@ defmodule DiscoveryApi.Test.Helper do
       description: Enum.join(Faker.Lorem.sentences(2..3), " "),
       sourceType: "remote",
       sourceUrl: Faker.Internet.url(),
+      private: false,
       contactName: Faker.Name.first_name(),
       contactEmail: Faker.Internet.email(),
       license: "APL2",
@@ -31,6 +32,29 @@ defmodule DiscoveryApi.Test.Helper do
       language: "en-US",
       referenceUrls: Faker.Internet.url(),
       categories: [Faker.Lorem.word(), Faker.Lorem.word()]
+    }
+    |> Map.merge(values)
+  end
+
+  def ldap_user(values \\ %{}) do
+    %{
+      "cn" => ["bigbadbob"],
+      "displayName" => ["big bad"],
+      "dn" => "uid=bigbadbob,cn=users,cn=accounts",
+      "ou" => ["People"],
+      "sn" => ["bad"],
+      "uid" => ["bigbadbob"],
+      "uidNumber" => ["1501200034"]
+    }
+    |> Map.merge(values)
+  end
+
+  def ldap_group(values \\ %{}) do
+    %{
+      "cn" => ["this_is_a_group"],
+      "dn" => "cn=this_is_a_group,ou=Group",
+      "member" => ["cn=FirstUser,ou=People"],
+      "objectClass" => ["top", "groupOfNames"]
     }
     |> Map.merge(values)
   end
@@ -58,6 +82,8 @@ defmodule DiscoveryApiWeb.ConnCase do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
       import DiscoveryApiWeb.Router.Helpers
+      alias SmartCity.TestDataGenerator, as: TDG
+      alias DiscoveryApi.Test.Helper
 
       # The default endpoint for testing
       @endpoint DiscoveryApiWeb.Endpoint

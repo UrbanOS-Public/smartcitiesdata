@@ -16,6 +16,7 @@ defmodule DiscoveryApi.Data.Dataset do
     :systemName,
     :sourceUrl,
     :sourceType,
+    :private,
     :lastUpdatedDate,
     :contactName,
     :contactEmail,

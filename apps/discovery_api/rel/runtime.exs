@@ -2,6 +2,10 @@ use Mix.Config
 
 config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: System.get_env("HOST"), port: System.get_env("PORT")]
 
+config :discovery_api,
+  ldap_user: System.get_env("LDAP_USER"),
+  ldap_pass: System.get_env("LDAP_PASS")
+
 required_envars = ["REDIS_HOST", "PRESTO_URL"]
 
 Enum.each(required_envars, fn var ->
@@ -25,6 +29,6 @@ config :prestige,
 config :paddle, Paddle,
   host: System.get_env("LDAP_HOST"),
   base: System.get_env("LDAP_BASE"),
-  account_subdn: "cn=users,cn=compat"
+  account_subdn: "cn=users,cn=accounts"
 
 config :discovery_api, DiscoveryApi.Auth.Guardian, secret_key: System.get_env("GUARDIAN_KEY")

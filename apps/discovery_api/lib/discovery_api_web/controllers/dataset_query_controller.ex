@@ -2,18 +2,18 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   @moduledoc false
   use DiscoveryApiWeb, :controller
   require Logger
-  alias DiscoveryApi.Data.Dataset
   alias DiscoveryApiWeb.DatasetMetricsService
 
   def query(conn, params) do
     query(conn, params, get_format(conn))
   end
 
-  def query(conn, %{"dataset_id" => dataset_id} = params, "csv") do
-    with {:ok, system_name} <- get_system_name(dataset_id),
-         {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
+  def query(conn, params, "csv") do
+    system_name = conn.assigns.dataset.systemName
+
+    with {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
          {:ok, query} <- build_query(params, system_name) do
-      DatasetMetricsService.record_api_hit("queries", dataset_id)
+      DatasetMetricsService.record_api_hit("queries", conn.assigns.dataset.id)
 
       query
       |> Prestige.execute()
@@ -25,10 +25,11 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     end
   end
 
-  def query(conn, %{"dataset_id" => dataset_id} = params, "json") do
-    with {:ok, system_name} <- get_system_name(dataset_id),
-         {:ok, query} <- build_query(params, system_name) do
-      DatasetMetricsService.record_api_hit("queries", dataset_id)
+  def query(conn, params, "json") do
+    system_name = conn.assigns.dataset.systemName
+
+    with {:ok, query} <- build_query(params, system_name) do
+      DatasetMetricsService.record_api_hit("queries", conn.assigns.dataset.id)
 
       data =
         query
@@ -75,16 +76,6 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     |> case do
       [] -> {:error, "Table #{system_name} not found"}
       names -> {:ok, names}
-    end
-  end
-
-  defp get_system_name(dataset_id) do
-    dataset_id
-    |> Dataset.get()
-    |> case do
-      %Dataset{systemName: system_name} -> {:ok, system_name}
-      nil -> {:error, "Dataset #{dataset_id} not found"}
-      _ -> {:error, "Something unexpected went wrong"}
     end
   end
 

@@ -3,10 +3,13 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   alias DiscoveryApi.Data.Dataset
+  alias Plug.Conn
+
+  @dataset_id "test"
 
   describe "fetching csv data" do
     setup do
-      allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:systemName => "coda__test_dataset"})
+      allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:id => "test", :systemName => "coda__test_dataset"})
 
       allow(Prestige.execute("describe coda__test_dataset"),
         return: []
@@ -106,7 +109,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         return: []
       )
 
-      allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:systemName => "coda__test_dataset"})
+      allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:id => "test", :systemName => "coda__test_dataset"})
 
       allow(
         Prestige.execute("SELECT * FROM coda__test_dataset",
@@ -148,23 +151,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   end
 
   describe "error cases" do
-    test "dataset does not exist returns Not Found", %{conn: conn} do
-      allow(DiscoveryApi.Data.Dataset.get("bobber"), return: nil)
-      allow(Prestige.execute(any()), return: [])
-
-      assert capture_log(fn ->
-               conn
-               |> put_req_header("accept", "text/csv")
-               |> get("/api/v1/dataset/bobber/query", columns: "id,one,two")
-               |> response(404)
-             end) =~ "Dataset bobber not found"
-
-      assert_called Prestige.execute("SELECT id, one, two FROM "),
-                    times(0)
-    end
-
     test "table does not exist returns Not Found", %{conn: conn} do
-      allow(DiscoveryApi.Data.Dataset.get("no_exist"), return: %Dataset{:systemName => "coda__no_exist"})
+      allow(DiscoveryApi.Data.Dataset.get("no_exist"), return: %Dataset{:id => "test", :systemName => "coda__no_exist"})
       allow(Prestige.execute(any()), return: [])
       allow(Prestige.prefetch(any()), return: [])
 
@@ -183,7 +171,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
   describe "malice cases" do
     setup do
-      allow(DiscoveryApi.Data.Dataset.get("bobber"), return: %Dataset{:systemName => "coda__test_dataset"})
+      allow(DiscoveryApi.Data.Dataset.get("bobber"),
+        return: %Dataset{:id => "test", :systemName => "coda__test_dataset"}
+      )
+
       allow(Prestige.execute(any()), return: [])
       allow(Prestige.execute(any()), return: [])
 
@@ -233,6 +224,78 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
              end) =~ "Query contained illegal character(s): [#{query_string}]"
 
       assert_called Prestige.execute(query_string), times(0)
+    end
+  end
+
+  describe "query restricted dataset" do
+    setup do
+      allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
+
+      allow(Redix.command!(any(), any()), return: :does_not_matter)
+      organization = TDG.create_organization(%{dn: "cn=this_is_a_group,ou=Group"})
+
+      dataset =
+        Helper.sample_dataset(%{
+          id: "test",
+          private: true,
+          organizationDetails: organization,
+          systemName: "coda__test_dataset"
+        })
+
+      allow DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset
+
+      allow SmartCity.Organization.get(dataset.organizationDetails.id), return: organization
+
+      allow(Prestige.execute(any()),
+        return: []
+      )
+
+      allow(
+        Prestige.execute("SELECT * FROM coda__test_dataset",
+          rows_as_maps: true
+        ),
+        return: [%{id: 1, name: "Joe"}, %{id: 2, name: "Robby"}]
+      )
+
+      :ok
+    end
+
+    test "does not query a restricted dataset if the given user does not have access to it", %{conn: conn} do
+      ldap_user = Helper.ldap_user()
+
+      ldap_group = Helper.ldap_group(%{"member" => ["uid=FirstUser,ou=People"]})
+
+      allow Paddle.authenticate(any(), any()), return: :ok
+      allow Paddle.config(:account_subdn), return: "ou=People"
+      allow Paddle.get(filter: [uid: "bigbadbob"]), return: {:ok, [ldap_user]}
+      allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
+
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+
+      conn
+      |> Conn.put_req_header("authorization", "Bearer " <> token)
+      |> put_req_header("accept", "application/json")
+      |> get("/api/v1/dataset/test/query")
+      |> json_response(404)
+    end
+
+    test "queries a restricted dataset if the given user has access to it", %{conn: conn} do
+      ldap_user = Helper.ldap_user()
+
+      ldap_group = Helper.ldap_group(%{"member" => ["uid=bigbadbob,ou=People"]})
+
+      allow Paddle.authenticate(any(), any()), return: :ok
+      allow Paddle.config(:account_subdn), return: "ou=People"
+      allow Paddle.get(filter: [uid: "bigbadbob"]), return: {:ok, [ldap_user]}
+      allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
+
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+
+      conn
+      |> Conn.put_req_header("authorization", "Bearer " <> token)
+      |> put_req_header("accept", "application/json")
+      |> get("/api/v1/dataset/test/query")
+      |> json_response(200)
     end
   end
 end

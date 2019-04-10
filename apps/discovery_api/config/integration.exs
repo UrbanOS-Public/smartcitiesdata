@@ -14,7 +14,9 @@ config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: "integrationtests.e
 
 config :discovery_api,
   divo: "test/integration/docker-compose.yaml",
-  divo_wait: [dwell: 2000, max_tries: 35]
+  divo_wait: [dwell: 2000, max_tries: 35],
+  ldap_user: [cn: "admin"],
+  ldap_pass: "admin"
 
 config :smart_city_registry,
   redis: [

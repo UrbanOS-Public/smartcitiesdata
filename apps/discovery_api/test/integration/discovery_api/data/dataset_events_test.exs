@@ -1,6 +1,6 @@
 defmodule DiscoveryApi.Data.DatasetEventsTest do
   use ExUnit.Case
-  use Divo
+  use Divo, services: [:redis]
   alias SmartCity.{Dataset, Organization}
   alias SmartCity.TestDataGenerator, as: TDG
 

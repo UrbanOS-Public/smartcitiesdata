@@ -18,6 +18,7 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandler do
           fileTypes: ["CSV"],
           sourceType: dataset.technical.sourceType,
           sourceUrl: dataset.technical.sourceUrl,
+          private: dataset.technical.private,
           contactName: dataset.business.contactName,
           contactEmail: dataset.business.contactEmail,
           license: dataset.business.license,

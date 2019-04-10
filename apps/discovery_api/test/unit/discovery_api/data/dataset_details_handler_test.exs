@@ -21,6 +21,7 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
       fileTypes: ["CSV"],
       sourceUrl: dataset.technical.sourceUrl,
       sourceType: dataset.technical.sourceType,
+      private: false,
       contactName: dataset.business.contactName,
       contactEmail: dataset.business.contactEmail,
       license: dataset.business.license,
