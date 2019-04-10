@@ -47,6 +47,10 @@ defmodule DiscoveryApi.Plugs.Restrictor do
       |> Paddle.Parsing.dn_to_kwlist()
       |> Map.new()
 
+    user = Application.get_env(:discovery_api, :ldap_user)
+    pass = Application.get_env(:discovery_api, :ldap_pass)
+    Paddle.authenticate(user, pass)
+
     Paddle.get(base: [ou: ou], filter: [cn: cn])
     |> elem(1)
     |> List.first()
