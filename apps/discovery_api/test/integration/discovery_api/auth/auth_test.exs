@@ -16,7 +16,12 @@ defmodule DiscoveryApi.Auth.AuthTest do
     Paddle.add([ou: "Group"], objectClass: ["top", "organizationalunit"], ou: "Group")
 
     dn = [cn: "this_is_a_group", ou: "Group"]
-    group = [objectClass: ["top", "groupofnames"], cn: "this_is_a_group", member: ["cn=FirstUser,ou=People"]]
+
+    group = [
+      objectClass: ["top", "groupofnames"],
+      cn: "this_is_a_group",
+      member: ["uid=FirstUser,ou=People"]
+    ]
 
     Paddle.add(dn, group)
   end
@@ -72,7 +77,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
   @moduletag capture_log: true
   test "Is not able to access a restricted dataset with a bad token" do
-    organization = TDG.create_organization(%{dn: "cn=this_is_a_group,ou=Group"})
+    organization = TDG.create_organization(%{dn: "cn=azzurro_lucky,ou=dev,dc=internal,dc=smartcolumbusos,dc=com"})
     dataset = Helper.sample_dataset(%{private: true, organizationDetails: organization})
     Dataset.save(dataset)
 

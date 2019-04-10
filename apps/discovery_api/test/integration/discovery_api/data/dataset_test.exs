@@ -1,6 +1,6 @@
 defmodule DiscoveryApi.Data.DatasetTest do
   use ExUnit.Case
-  use Divo
+  use Divo, services: [:ldap, :redis]
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Data.Dataset
 

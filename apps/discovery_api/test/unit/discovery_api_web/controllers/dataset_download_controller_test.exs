@@ -128,12 +128,12 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
     test "does not download a restricted dataset if the given user does not have access to it", %{conn: conn} do
       ldap_user = Helper.ldap_user()
 
-      ldap_group = Helper.ldap_group(%{"member" => ["cn=FirstUser,ou=People"]})
+      ldap_group = Helper.ldap_group(%{"member" => ["uid=FirstUser,ou=People"]})
 
       allow Paddle.authenticate(any(), any()), return: :ok
       allow Paddle.config(:account_subdn), return: "ou=People"
-      allow Paddle.get(base: "uid=bigbadbob,ou=People"), return: {:ok, [ldap_user]}
-      allow Paddle.get(base: "cn=this_is_a_group,ou=Group"), return: {:ok, [ldap_group]}
+      allow Paddle.get(filter: [uid: "bigbadbob"]), return: {:ok, [ldap_user]}
+      allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
 
@@ -147,12 +147,12 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
     test "downloads a restricted dataset if the given user has access to it", %{conn: conn} do
       ldap_user = Helper.ldap_user()
 
-      ldap_group = Helper.ldap_group(%{"member" => ["cn=bigbadbob,ou=People"]})
+      ldap_group = Helper.ldap_group(%{"member" => ["uid=bigbadbob,ou=People"]})
 
       allow Paddle.authenticate(any(), any()), return: :ok
       allow Paddle.config(:account_subdn), return: "ou=People"
-      allow Paddle.get(base: "uid=bigbadbob,ou=People"), return: {:ok, [ldap_user]}
-      allow Paddle.get(base: "cn=this_is_a_group,ou=Group"), return: {:ok, [ldap_group]}
+      allow Paddle.get(filter: [uid: "bigbadbob"]), return: {:ok, [ldap_user]}
+      allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
 

@@ -35,20 +35,24 @@ defmodule DiscoveryApi.Plugs.Restrictor do
 
   defp is_authorized?(_token, _unrestricted_dataset), do: true
 
-  defp extract_cn(dn) do
+  defp extract_uid(dn) do
     dn
-    |> String.split(",")
-    |> Enum.find(fn x -> String.contains?(x, "cn=") end)
-    |> String.split("=")
-    |> List.last()
+    |> Paddle.Parsing.dn_to_kwlist()
+    |> Map.new()
+    |> Map.get("uid")
   end
 
   defp get_members(org_dn) do
-    Paddle.get(base: org_dn)
+    %{"cn" => cn, "ou" => ou} =
+      org_dn
+      |> Paddle.Parsing.dn_to_kwlist()
+      |> Map.new()
+
+    Paddle.get(base: [ou: ou], filter: [cn: cn])
     |> elem(1)
     |> List.first()
     |> Map.get("member", [])
-    |> Enum.map(&extract_cn/1)
+    |> Enum.map(&extract_uid/1)
   end
 
   defp parse_uid(resource) do

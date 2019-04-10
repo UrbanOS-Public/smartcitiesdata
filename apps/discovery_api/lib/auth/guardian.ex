@@ -14,7 +14,7 @@ defmodule DiscoveryApi.Auth.Guardian do
     Paddle.authenticate(user, pass)
     sub_dn = Paddle.config(:account_subdn)
 
-    with {:ok, resources} <- Paddle.get(base: "uid=#{id},#{sub_dn}") do
+    with {:ok, resources} <- Paddle.get(filter: [uid: id]) do
       {:ok, List.first(resources)}
     else
       error ->
