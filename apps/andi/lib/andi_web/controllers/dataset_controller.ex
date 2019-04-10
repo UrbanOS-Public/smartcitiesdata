@@ -21,6 +21,21 @@ defmodule AndiWeb.DatasetController do
     end
   end
 
+  def get_all(conn, _params) do
+    with {:ok, datasets} <- Dataset.get_all() do
+      conn
+      |> put_status(:ok)
+      |> json(datasets)
+    else
+      error ->
+        Logger.error("Failed to retrieve datasets: #{inspect(error)}")
+
+        conn
+        |> put_status(:not_found)
+        |> json("Unable to process your request")
+    end
+  end
+
   defp parse_message(%{"technical" => %{"systemName" => _}} = msg) do
     {:ok, msg}
   end

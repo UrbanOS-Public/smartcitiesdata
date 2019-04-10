@@ -7,7 +7,23 @@ defmodule AndiWeb.DatasetControllerTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   setup do
+    example_dataset_1 = TDG.create_dataset(%{})
+
+    example_dataset_1 =
+      example_dataset_1
+      |> Jason.encode!()
+      |> Jason.decode!()
+
+    example_dataset_2 = TDG.create_dataset(%{})
+
+    example_dataset_2 =
+      example_dataset_2
+      |> Jason.encode!()
+      |> Jason.decode!()
+
+    example_datasets = [example_dataset_1, example_dataset_2]
     allow(Dataset.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
+    allow(Dataset.get_all(), return: {:ok, example_datasets}, meck_options: [:passthrough])
 
     uuid = Faker.UUID.v4()
 
@@ -58,7 +74,7 @@ defmodule AndiWeb.DatasetControllerTest do
       |> Jason.encode!()
       |> Jason.decode!()
 
-    {:ok, request: request, message: message}
+    {:ok, request: request, message: message, example_datasets: example_datasets}
   end
 
   describe "PUT /api/ without systemName" do
@@ -113,5 +129,20 @@ defmodule AndiWeb.DatasetControllerTest do
   test "PUT /api/ with improperly shaped data returns 500", %{conn: conn} do
     conn = put(conn, @route, %{"id" => 5, "operational" => 2})
     assert json_response(conn, 500) =~ "Unable to process your request"
+  end
+
+  describe "GET dataset definitions from /api/dataset/" do
+    setup %{conn: conn, request: request} do
+      [conn: get(conn, @route, request)]
+    end
+
+    @tag capture_log: true
+    test "returns a 200", %{conn: conn, example_datasets: example_datasets} do
+      actual_datasets =
+        conn
+        |> json_response(200)
+
+      assert example_datasets == actual_datasets
+    end
   end
 end

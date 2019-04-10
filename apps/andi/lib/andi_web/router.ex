@@ -9,7 +9,9 @@ defmodule AndiWeb.Router do
   scope "/api", AndiWeb do
     pipe_through :api
 
+    get "/v1/dataset", DatasetController, :get_all
     put "/v1/dataset", DatasetController, :create
+    get "/v1/organization", OrganizationController, :get_all
     post "/v1/organization", OrganizationController, :create
   end
 

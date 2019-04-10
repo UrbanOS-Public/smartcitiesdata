@@ -106,4 +106,19 @@ defmodule AndiWeb.OrganizationController do
     |> keyword_dn()
     |> Paddle.delete()
   end
+
+  def get_all(conn, _params) do
+    with {:ok, orgs} <- Organization.get_all() do
+      conn
+      |> put_status(:ok)
+      |> json(orgs)
+    else
+      error ->
+        Logger.error("Failed to retrieve organizations: #{inspect(error)}")
+
+        conn
+        |> put_status(:not_found)
+        |> json("Unable to process your request")
+    end
+  end
 end

@@ -75,6 +75,28 @@ defmodule Andi.CreateOrgTest do
     end
   end
 
+  describe "organization retrieval" do
+    setup do
+      expected = TDG.create_organization(%{})
+      create(expected)
+      {:ok, expected: expected}
+    end
+
+    test "returns all organzations", %{expected: expected} do
+      result = get("/api/v1/organization")
+
+      organizations =
+        elem(result, 1).body
+        |> Jason.decode!()
+        |> Enum.map(fn x ->
+          {:ok, organization} = Organization.new(x)
+          organization
+        end)
+
+      assert Enum.find(organizations, fn organization -> expected.id == organization.id end)
+    end
+  end
+
   defp create(org) do
     struct = Jason.encode!(org)
 

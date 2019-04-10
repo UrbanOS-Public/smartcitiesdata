@@ -6,6 +6,7 @@ defmodule AndiWeb.OrganizationControllerTest do
   @route "/api/v1/organization"
   @ou Application.get_env(:andi, :ldap_env_ou)
   alias SmartCity.Organization
+  alias SmartCity.TestDataGenerator, as: TDG
 
   setup do
     allow(Paddle.authenticate(any(), any()), return: :ok)
@@ -25,7 +26,25 @@ defmodule AndiWeb.OrganizationControllerTest do
       "dn" => "cn=myOrg,dc=foo,dc=bar"
     }
 
-    {:ok, request: request, message: message}
+    expected_org_1 = TDG.create_organization(%{})
+
+    expected_org_1 =
+      expected_org_1
+      |> Jason.encode!()
+      |> Jason.decode!()
+
+    expected_org_2 = TDG.create_organization(%{})
+
+    expected_org_2 =
+      expected_org_2
+      |> Jason.encode!()
+      |> Jason.decode!()
+
+    expected_orgs = [expected_org_1, expected_org_2]
+
+    allow(Organization.get_all(), return: {:ok, expected_orgs}, meck_options: [:passthrough])
+
+    {:ok, request: request, message: message, expected_orgs: expected_orgs}
   end
 
   describe "post /api/ with valid data" do
@@ -133,6 +152,20 @@ defmodule AndiWeb.OrganizationControllerTest do
     test "post /api/v1/organization fails with explanation", %{conn: conn, request: req} do
       post(conn, @route, req)
       refute_called(Organization.write(any()))
+    end
+  end
+
+  describe "GET orgs from /api/organization" do
+    setup %{conn: conn, request: request} do
+      [conn: get(conn, @route, request)]
+    end
+
+    test "returns a 200", %{conn: conn, expected_orgs: expected_orgs} do
+      actual_orgs =
+        conn
+        |> json_response(200)
+
+      assert expected_orgs == actual_orgs
     end
   end
 
