@@ -3,6 +3,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   alias DiscoveryApi.Data.Dataset
+  alias Plug.Conn
 
   @dataset_id "test"
 
@@ -272,7 +273,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
 
       conn
-      |> Plug.Conn.put_req_header("token", token)
+      |> Conn.put_req_header("authorization", "Bearer " <> token)
       |> put_req_header("accept", "application/json")
       |> get("/api/v1/dataset/test/query")
       |> json_response(404)
@@ -291,7 +292,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
 
       conn
-      |> Plug.Conn.put_req_header("token", token)
+      |> Conn.put_req_header("authorization", "Bearer " <> token)
       |> put_req_header("accept", "application/json")
       |> get("/api/v1/dataset/test/query")
       |> json_response(200)

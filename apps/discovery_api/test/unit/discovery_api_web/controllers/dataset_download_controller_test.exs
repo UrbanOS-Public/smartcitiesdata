@@ -1,6 +1,7 @@
 defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
+  alias Plug.Conn
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -138,7 +139,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
 
       conn
-      |> Plug.Conn.put_req_header("token", token)
+      |> Conn.put_req_header("authorization", "Bearer " <> token)
       |> put_req_header("accept", "application/json")
       |> get("/api/v1/dataset/#{@dataset_id}/download")
       |> json_response(404)
@@ -157,7 +158,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
 
       conn
-      |> Plug.Conn.put_req_header("token", token)
+      |> Conn.put_req_header("authorization", "Bearer " <> token)
       |> put_req_header("accept", "application/json")
       |> get("/api/v1/dataset/#{@dataset_id}/download")
       |> json_response(200)

@@ -67,7 +67,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
     %{status_code: status_code, body: body} =
       "http://localhost:4000/api/v1/dataset/#{dataset.id}/"
-      |> HTTPoison.get!([{"token", token}])
+      |> HTTPoison.get!(Authorization: "Bearer #{token}")
 
     result = Jason.decode!(body, keys: :atoms)
 
@@ -83,7 +83,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
     %{status_code: status_code, body: body} =
       "http://localhost:4000/api/v1/dataset/#{dataset.id}/"
-      |> HTTPoison.get!([{"token", "wetgsdffshgfkdhj"}])
+      |> HTTPoison.get!(Authorization: "Bearer sdfsadfasdasdfas")
 
     result = Jason.decode!(body, keys: :atoms)
 

@@ -1,6 +1,7 @@
 defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
+  alias Plug.Conn
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -84,7 +85,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
 
       conn
-      |> Plug.Conn.put_req_header("token", token)
+      |> Conn.put_req_header("authorization", "Bearer " <> token)
       |> get("/api/v1/dataset/#{@dataset_id}/preview")
       |> json_response(404)
     end
@@ -102,7 +103,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
 
       conn
-      |> Plug.Conn.put_req_header("token", token)
+      |> Conn.put_req_header("authorization", "Bearer " <> token)
       |> get("/api/v1/dataset/#{@dataset_id}/preview")
       |> json_response(200)
     end

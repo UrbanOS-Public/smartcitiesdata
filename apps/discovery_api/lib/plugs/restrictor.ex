@@ -3,31 +3,30 @@ defmodule DiscoveryApi.Plugs.Restrictor do
   require Logger
   import Plug.Conn
   alias DiscoveryApi.Auth.Guardian
+  alias Guardian.Plug, as: GuardianPlug
 
   def init(default), do: default
 
   def call(conn, _) do
-    token = conn |> Plug.Conn.get_req_header("token") |> List.first()
+    case is_authorized?(conn, conn.assigns.dataset) do
+      true ->
+        conn
 
-    if is_authorized?(token, conn.assigns.dataset) do
-      conn
-    else
-      conn
-      |> DiscoveryApiWeb.RenderError.render_error(404, "Not Found")
-      |> halt()
+      false ->
+        conn
+        |> DiscoveryApiWeb.RenderError.render_error(404, "Not Found")
+        |> halt()
     end
   end
 
-  defp is_authorized?(token, %{private: true} = dataset) do
-    with {:ok, claims} <- Guardian.decode_and_verify(token),
-         {:ok, resource} <- Guardian.resource_from_claims(claims) do
-      uid = parse_uid(resource)
+  defp is_authorized?(conn, %{private: true} = dataset) do
+    case GuardianPlug.current_claims(conn) do
+      %{"sub" => uid} ->
+        dataset.organizationDetails.dn
+        |> get_members()
+        |> Enum.member?(uid)
 
-      dataset.organizationDetails.dn
-      |> get_members()
-      |> Enum.member?(uid)
-    else
-      {:error, error} ->
+      error ->
         Logger.error(inspect(error))
         false
     end
@@ -53,11 +52,5 @@ defmodule DiscoveryApi.Plugs.Restrictor do
     |> List.first()
     |> Map.get("member", [])
     |> Enum.map(&extract_uid/1)
-  end
-
-  defp parse_uid(resource) do
-    resource
-    |> Map.get("uid")
-    |> List.first()
   end
 end
