@@ -61,7 +61,7 @@ node ('infrastructure') {
             def releaseTag = env.BRANCH_NAME
             def promotionTag = 'prod'
 
-            deployReaperTo(environment: 'prod', internal: false, tag: imageTag)
+            deployReaperTo(environment: 'prod', tag: imageTag)
 
             scos.applyAndPushGitHubTag(promotionTag)
 
