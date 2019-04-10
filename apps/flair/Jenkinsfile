@@ -80,7 +80,7 @@ def deployTo(environment) {
             set -e
             helm init --client-only
             helm upgrade --install flair \
-                -f helm-config/prod.yaml ./chart \
+                ./chart \
                 --namespace=streaming-services \
                 --set image.tag="${env.GIT_COMMIT_HASH}" \
         """.trim())
