@@ -10,9 +10,10 @@ defmodule DiscoveryApi.Application do
 
     children =
       [
-        supervisor(DiscoveryApiWeb.Endpoint, []),
+        DiscoveryApi.Data.SystemNameCache,
         redis(),
-        registry_pubsub()
+        registry_pubsub(),
+        supervisor(DiscoveryApiWeb.Endpoint, [])
       ]
       |> List.flatten()
 

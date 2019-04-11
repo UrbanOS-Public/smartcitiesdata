@@ -1,5 +1,3 @@
-require Logger
-
 defmodule DiscoveryApiWeb.DatasetDownloadController do
   @moduledoc false
   use DiscoveryApiWeb, :controller

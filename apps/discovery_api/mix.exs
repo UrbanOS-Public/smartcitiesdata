@@ -28,7 +28,7 @@ defmodule DiscoveryApi.Mixfile do
       {:cowboy, "~> 1.0"},
       {:csv, "~> 1.4.0"},
       {:credo, "~> 0.10", only: [:dev, :test, :integration], runtime: false},
-      {:checkov, "~> 0.4.0"},
+      {:checkov, "~> 0.4.0", only: [:test, :integration]},
       {:distillery, "~> 2.0"},
       {:divo, "~> 1.0.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:guardian, "~> 1.2.1"},

@@ -1,4 +1,4 @@
-defmodule DiscoveryApi.Plugs.Restrictor do
+defmodule DiscoveryApiWeb.Plugs.Restrictor do
   @moduledoc false
   require Logger
   import Plug.Conn

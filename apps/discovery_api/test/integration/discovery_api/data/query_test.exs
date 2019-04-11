@@ -6,12 +6,14 @@ defmodule DiscoveryApi.Data.QueryTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   @dataset_id "123-456-789"
+  @org_name "org1"
+  @data_name "data1"
 
   setup_all do
     Redix.command!(:redix, ["FLUSHALL"])
     system_name = "foo__bar_baz"
 
-    organization = TDG.create_organization(%{})
+    organization = TDG.create_organization(id: "org1234", orgName: @org_name)
     Organization.write(organization)
 
     dataset =
@@ -19,7 +21,9 @@ defmodule DiscoveryApi.Data.QueryTest do
         id: @dataset_id,
         technical: %{
           systemName: system_name,
-          orgId: organization.id
+          orgId: organization.id,
+          orgName: organization.orgName,
+          dataName: @data_name
         }
       })
 
@@ -48,6 +52,17 @@ defmodule DiscoveryApi.Data.QueryTest do
   test "Queries limited data from presto" do
     actual =
       "http://localhost:4000/api/v1/dataset/#{@dataset_id}/query?limit=2&orderBy=name"
+      |> HTTPoison.get!()
+      |> Map.from_struct()
+      |> Map.get(:body)
+
+    assert "id,name\n1,Fred\n2,Gred\n" == actual
+  end
+
+  @moduletag capture_log: true
+  test "Queries limited data from presto when using orgName and dataName in url" do
+    actual =
+      "http://localhost:4000/api/v1/dataset/#{@org_name}/#{@data_name}/query?limit=2&orderBy=name"
       |> HTTPoison.get!()
       |> Map.from_struct()
       |> Map.get(:body)

@@ -2,13 +2,18 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   import ExUnit.CaptureLog
   use DiscoveryApiWeb.ConnCase
   use Placebo
-  alias DiscoveryApi.Data.Dataset
+  import Checkov
+  alias DiscoveryApi.Data.{Dataset, SystemNameCache}
   alias Plug.Conn
-
-  @dataset_id "test"
+  alias SmartCity.TestDataGenerator, as: TDG
 
   describe "fetching csv data" do
     setup do
+      org = TDG.create_organization(id: "org_id", orgName: "org1")
+      dataset = TDG.create_dataset(id: "test", technical: %{orgId: org.id, dataName: "data1"})
+      allow SmartCity.Organization.get(any()), return: {:ok, org}
+      SystemNameCache.put(dataset)
+
       allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:id => "test", :systemName => "coda__test_dataset"})
 
       allow(Prestige.execute("describe coda__test_dataset"),
@@ -31,80 +36,148 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       :ok
     end
 
-    test "returns csv", %{conn: conn} do
-      actual = conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query") |> response(200)
+    data_test "returns csv", %{conn: conn} do
+      actual = conn |> put_req_header("accept", "text/csv") |> get(url) |> response(200)
       assert "id,one,two\n1,2,3\n4,5,6\n" == actual
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/dataset/org1/data1/query"
+        ]
+      )
     end
 
-    test "selects from the table specified in the dataset definition", %{conn: conn} do
-      conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query") |> response(200)
+    data_test "selects from the table specified in the dataset definition", %{conn: conn} do
+      conn |> put_req_header("accept", "text/csv") |> get(url) |> response(200)
 
       assert_called Prestige.execute("describe coda__test_dataset"), once()
       assert_called Prestige.execute("SELECT * FROM coda__test_dataset"), once()
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/dataset/org1/data1/query"
+        ]
+      )
     end
 
-    test "selects using the where clause provided", %{conn: conn} do
-      conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query", where: "one=1") |> response(200)
+    data_test "selects using the where clause provided", %{conn: conn} do
+      conn |> put_req_header("accept", "text/csv") |> get(url, where: "one=1") |> response(200)
 
       assert_called Prestige.execute("SELECT * FROM coda__test_dataset WHERE one=1"),
                     once()
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/dataset/org1/data1/query"
+        ]
+      )
     end
 
-    test "selects using the order by clause provided", %{conn: conn} do
-      conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query", orderBy: "one") |> response(200)
+    data_test "selects using the order by clause provided", %{conn: conn} do
+      conn |> put_req_header("accept", "text/csv") |> get(url, orderBy: "one") |> response(200)
 
       assert_called Prestige.execute("SELECT * FROM coda__test_dataset ORDER BY one"),
                     once()
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/dataset/org1/data1/query"
+        ]
+      )
     end
 
-    test "selects using the limit clause provided", %{conn: conn} do
-      conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query", limit: "200") |> response(200)
+    data_test "selects using the limit clause provided", %{conn: conn} do
+      conn |> put_req_header("accept", "text/csv") |> get(url, limit: "200") |> response(200)
 
       assert_called Prestige.execute("SELECT * FROM coda__test_dataset LIMIT 200"),
                     once()
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/dataset/org1/data1/query"
+        ]
+      )
     end
 
-    test "selects using the group by clause provided", %{conn: conn} do
-      conn |> put_req_header("accept", "text/csv") |> get("/api/v1/dataset/test/query", groupBy: "one") |> response(200)
+    data_test "selects using the group by clause provided", %{conn: conn} do
+      conn |> put_req_header("accept", "text/csv") |> get(url, groupBy: "one") |> response(200)
 
       assert_called Prestige.execute("SELECT * FROM coda__test_dataset GROUP BY one"),
                     once()
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/dataset/org1/data1/query"
+        ]
+      )
     end
 
-    test "selects using multiple clauses provided", %{conn: conn} do
+    data_test "selects using multiple clauses provided", %{conn: conn} do
       conn
       |> put_req_header("accept", "text/csv")
-      |> get("/api/v1/dataset/test/query", where: "one=1", orderBy: "one", limit: "200", groupBy: "one")
+      |> get(url, where: "one=1", orderBy: "one", limit: "200", groupBy: "one")
       |> response(200)
 
       assert_called Prestige.execute(
                       "SELECT * FROM coda__test_dataset WHERE one=1 GROUP BY one ORDER BY one LIMIT 200"
                     ),
                     once()
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/dataset/org1/data1/query"
+        ]
+      )
     end
 
-    test "selects using columns provided returns only those columns of data", %{conn: conn} do
+    data_test "selects using columns provided returns only those columns of data", %{conn: conn} do
       actual =
         conn
         |> put_req_header("accept", "text/csv")
-        |> get("/api/v1/dataset/test/query", columns: "id, one")
+        |> get(url, columns: "id, one")
         |> response(200)
 
       assert "id,one\n1,2\n4,5\n" == actual
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/dataset/org1/data1/query"
+        ]
+      )
     end
 
-    test "increments dataset queries count when dataset query is requested", %{conn: conn} do
+    data_test "increments dataset queries count when dataset query is requested", %{conn: conn} do
       conn
       |> put_req_header("accept", "text/csv")
-      |> get("/api/v1/dataset/test/query", columns: "id, one")
+      |> get(url, columns: "id, one")
       |> response(200)
 
       assert_called(Redix.command!(:redix, ["INCR", "smart_registry:queries:count:test"]))
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/dataset/org1/data1/query"
+        ]
+      )
     end
   end
 
   describe "fetching json" do
     setup do
+      org = TDG.create_organization(id: "org_id", orgName: "org1")
+      dataset = TDG.create_dataset(id: "test", technical: %{orgId: org.id, dataName: "data1"})
+      allow SmartCity.Organization.get(any()), return: {:ok, org}
+      SystemNameCache.put(dataset)
+
       allow(Prestige.execute(any()),
         return: []
       )
@@ -122,11 +195,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       :ok
     end
 
-    test "returns json", %{conn: conn} do
+    data_test "returns json", %{conn: conn} do
       actual =
         conn
         |> put_req_header("accept", "application/json")
-        |> get("/api/v1/dataset/test/query")
+        |> get(url)
         |> response(200)
 
       assert Jason.decode!(actual) == [
@@ -134,19 +207,30 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
                %{"id" => 2, "name" => "Robby"}
              ]
 
-      assert_called Prestige.execute("SELECT * FROM coda__test_dataset",
-                      rows_as_maps: true
-                    ),
-                    once()
+      assert_called Prestige.execute("SELECT * FROM coda__test_dataset", rows_as_maps: true), once()
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/dataset/org1/data1/query"
+        ]
+      )
     end
 
-    test "increments dataset queries count when dataset query is requested", %{conn: conn} do
+    data_test "increments dataset queries count when dataset query is requested", %{conn: conn} do
       conn
       |> put_req_header("accept", "application/json")
-      |> get("/api/v1/dataset/test/query")
+      |> get(url)
       |> response(200)
 
       assert_called(Redix.command!(:redix, ["INCR", "smart_registry:queries:count:test"]))
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/dataset/org1/data1/query"
+        ]
+      )
     end
   end
 
@@ -229,8 +313,6 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
   describe "query restricted dataset" do
     setup do
-      allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
-
       allow(Redix.command!(any(), any()), return: :does_not_matter)
       organization = TDG.create_organization(%{dn: "cn=this_is_a_group,ou=Group"})
 

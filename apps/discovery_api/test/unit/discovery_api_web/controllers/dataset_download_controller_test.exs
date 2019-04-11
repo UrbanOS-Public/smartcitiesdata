@@ -2,12 +2,22 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   alias Plug.Conn
+  import Checkov
+  alias SmartCity.TestDataGenerator, as: TDG
+  alias DiscoveryApi.Data.SystemNameCache
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
+  @org_name "org1"
+  @data_name "data1"
 
   describe "fetching csv data" do
     setup do
+      org = TDG.create_organization(id: "org-id", orgName: @org_name)
+      dataset = TDG.create_dataset(id: @dataset_id, technical: %{orgId: "org-id", dataName: @data_name})
+      allow SmartCity.Organization.get(any()), return: {:ok, org}
+      SystemNameCache.put(dataset)
+
       allow(Prestige.execute("describe #{@system_name}"),
         return: []
       )
@@ -29,30 +39,82 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       :ok
     end
 
-    test "returns data in CSV format, given an accept header for it", %{conn: conn} do
+    data_test "returns data in CSV format, given an accept header for it", %{conn: conn} do
       conn = conn |> put_req_header("accept", "text/csv")
-      actual = conn |> get("/api/v1/dataset/#{@dataset_id}/download") |> response(200)
+      actual = conn |> get(url) |> response(200)
       assert "id,one,two\n1,2,3\n4,5,6\n" == actual
+
+      where(
+        url: [
+          "/api/v1/dataset/1234-4567-89101/download",
+          "/api/v1/dataset/org1/data1/download"
+        ]
+      )
     end
 
-    test "returns data in CSV format, given a query parameter for it", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/#{@dataset_id}/download?_format=csv") |> response(200)
+    data_test "returns data in CSV format, given an accept header for it ", %{conn: conn} do
+      conn = conn |> put_req_header("accept", "text/csv")
+      actual = conn |> get(url) |> response(200)
       assert "id,one,two\n1,2,3\n4,5,6\n" == actual
+
+      where(
+        url: [
+          "/api/v1/dataset/1234-4567-89101/download",
+          "/api/v1/dataset/org1/data1/download"
+        ]
+      )
     end
 
-    test "returns data in CSV format, given no accept header", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/#{@dataset_id}/download") |> response(200)
+    data_test "returns data in CSV format, given a query parameter for it", %{conn: conn} do
+      actual = conn |> get(url) |> response(200)
       assert "id,one,two\n1,2,3\n4,5,6\n" == actual
+
+      where(
+        url: [
+          "/api/v1/dataset/1234-4567-89101/download?_format=csv",
+          "/api/v1/dataset/org1/data1/download?_format_csv"
+        ]
+      )
     end
 
-    test "increments dataset download count when dataset download is requested", %{conn: conn} do
-      conn |> get("/api/v1/dataset/#{@dataset_id}/download?_format=csv") |> response(200)
+    data_test "returns data in CSV format, given no accept header", %{conn: conn} do
+      actual = conn |> get(url) |> response(200)
+      assert "id,one,two\n1,2,3\n4,5,6\n" == actual
+
+      where(
+        url: [
+          "/api/v1/dataset/1234-4567-89101/download",
+          "/api/v1/dataset/org1/data1/download"
+        ]
+      )
+    end
+
+    data_test "increments dataset download count when dataset download is requested", %{conn: conn} do
+      conn |> get(url) |> response(200)
       assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"]))
+
+      where(
+        url: [
+          "/api/v1/dataset/1234-4567-89101/download?_format=csv",
+          "/api/v1/dataset/org1/data1/download?_format_csv"
+        ]
+      )
     end
   end
 
   describe "fetching json data" do
     setup do
+      org = TDG.create_organization(id: "org-id", orgName: @org_name)
+
+      dataset =
+        TDG.create_dataset(
+          id: @dataset_id,
+          technical: %{orgId: org.id, dataName: @data_name, systemName: @system_name}
+        )
+
+      allow SmartCity.Organization.get(any()), return: {:ok, org}
+      SystemNameCache.put(dataset)
+
       allow(
         Prestige.execute("select * from #{@system_name}", rows_as_maps: true),
         return: [%{id: 1, name: "Joe", age: 21}, %{id: 2, name: "Robby", age: 32}]
@@ -61,33 +123,55 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name})
       allow(Redix.command!(:redix, ["GET", "discovery-api:dataset:#{@dataset_id}"]), return: dataset_json)
       allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
+
       allow(Redix.command!(any(), any()), return: :does_not_matter)
 
       :ok
     end
 
-    test "returns data in JSON format, given an accept header for it", %{conn: conn} do
+    data_test "returns data in JSON format, given an accept header for it", %{conn: conn} do
       conn = put_req_header(conn, "accept", "application/json")
-      actual = conn |> get("/api/v1/dataset/#{@dataset_id}/download") |> response(200)
+      actual = conn |> get(url) |> response(200)
 
       assert Jason.decode!(actual) == [
                %{"id" => 1, "name" => "Joe", "age" => 21},
                %{"id" => 2, "name" => "Robby", "age" => 32}
              ]
+
+      where(
+        url: [
+          "/api/v1/dataset/1234-4567-89101/download",
+          "/api/v1/dataset/org1/data1/download"
+        ]
+      )
     end
 
-    test "returns data in JSON format, given a query parameter for it", %{conn: conn} do
-      actual = conn |> get("/api/v1/dataset/#{@dataset_id}/download?_format=json") |> response(200)
+    data_test "returns data in JSON format, given a query parameter for it", %{conn: conn} do
+      actual = conn |> get(url) |> response(200)
 
       assert Jason.decode!(actual) == [
                %{"id" => 1, "name" => "Joe", "age" => 21},
                %{"id" => 2, "name" => "Robby", "age" => 32}
              ]
+
+      where(
+        url: [
+          "/api/v1/dataset/1234-4567-89101/download?_format=json",
+          "/api/v1/dataset/org1/data1/download?_format=json"
+        ]
+      )
     end
 
-    test "increments downloads count for dataset when dataset download requested", %{conn: conn} do
-      conn |> get("/api/v1/dataset/#{@dataset_id}/download?_format=json") |> response(200)
+    data_test "increments downloads count for dataset when dataset download requested", %{conn: conn} do
+      conn |> get(url) |> response(200)
       assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"]))
+
+      where(
+        url: [
+          "/api/v1/dataset/1234-4567-89101/download?_format=json",
+          "/api/v1/dataset/org1/data1/download?_format=json"
+        ]
+      )
     end
   end
 
