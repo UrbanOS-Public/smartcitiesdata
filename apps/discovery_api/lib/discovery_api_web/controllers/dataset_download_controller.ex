@@ -1,12 +1,7 @@
 defmodule DiscoveryApiWeb.DatasetDownloadController do
   @moduledoc false
   use DiscoveryApiWeb, :controller
-  require Logger
-  alias DiscoveryApi.Data.Dataset
   alias DiscoveryApiWeb.DatasetMetricsService
-  alias DiscoveryApiWeb.Plugs.OrgDatasetParamReplacement
-
-  plug(OrgDatasetParamReplacement)
 
   def fetch_presto(conn, params) do
     fetch_presto(conn, params, get_format(conn))

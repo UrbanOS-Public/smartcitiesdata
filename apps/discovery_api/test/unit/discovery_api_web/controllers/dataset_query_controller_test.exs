@@ -155,11 +155,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
     end
 
     data_test "increments dataset queries count when dataset query is requested", %{conn: conn} do
-      actual =
-        conn
-        |> put_req_header("accept", "text/csv")
-        |> get(url, columns: "id, one")
-        |> response(200)
+      conn
+      |> put_req_header("accept", "text/csv")
+      |> get(url, columns: "id, one")
+      |> response(200)
 
       assert_called(Redix.command!(:redix, ["INCR", "smart_registry:queries:count:test"]))
 
@@ -314,8 +313,6 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
   describe "query restricted dataset" do
     setup do
-      allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
-
       allow(Redix.command!(any(), any()), return: :does_not_matter)
       organization = TDG.create_organization(%{dn: "cn=this_is_a_group,ou=Group"})
 

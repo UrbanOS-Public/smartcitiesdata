@@ -13,8 +13,7 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
       id: dataset.id,
       keywords: dataset.keywords,
       organization: %{
-        name: dataset.organizationDetails.orgName,
-        title: dataset.organizationDetails.orgTitle,
+        name: dataset.organizationDetails.orgTitle,
         image: dataset.organizationDetails.logoUrl,
         description: dataset.organizationDetails.description,
         homepage: dataset.organizationDetails.homepage

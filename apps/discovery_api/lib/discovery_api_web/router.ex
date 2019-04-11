@@ -18,9 +18,9 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   pipeline :check_restricted do
-    plug(DiscoveryApi.Plugs.GetDataset)
+    plug(DiscoveryApiWeb.Plugs.GetDataset)
     plug(DiscoveryApi.Auth.Pipeline)
-    plug(DiscoveryApi.Plugs.Restrictor)
+    plug(DiscoveryApiWeb.Plugs.Restrictor)
   end
 
   scope "/", DiscoveryApiWeb do
@@ -45,7 +45,9 @@ defmodule DiscoveryApiWeb.Router do
   scope "/api/v1", DiscoveryApiWeb do
     pipe_through([:api, :check_restricted])
 
+    get("/dataset/:org_name/:dataset_name/query", DatasetQueryController, :query)
     get("/dataset/:dataset_id/query", DatasetQueryController, :query)
+    get("/dataset/:org_name/:dataset_name/download", DatasetDownloadController, :fetch_presto)
     get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_presto)
   end
 

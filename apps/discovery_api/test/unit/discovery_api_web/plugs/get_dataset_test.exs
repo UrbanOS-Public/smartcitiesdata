@@ -1,10 +1,9 @@
-defmodule DiscoveryApiWeb.Plugs.OrgDatasetParamReplacementTest do
+defmodule DiscoveryApiWeb.Plugs.GetDatasetTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
-  import Checkov
 
-  alias DiscoveryApi.Data.SystemNameCache
-  alias DiscoveryApiWeb.Plugs.OrgDatasetParamReplacement
+  alias DiscoveryApi.Data.{Dataset, SystemNameCache}
+  alias DiscoveryApiWeb.Plugs.GetDataset
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -20,33 +19,21 @@ defmodule DiscoveryApiWeb.Plugs.OrgDatasetParamReplacementTest do
       allow SmartCity.Organization.get(any()), return: {:ok, org}
       SystemNameCache.put(dataset)
       SystemNameCache.put(TDG.create_dataset(id: "ds2"))
+      allow Dataset.get(any()), return: :dataset
 
       conn = build_conn(:get, "/doesnt/matter", %{"org_name" => "org1", "dataset_name" => "data1"})
-      %{params: params} = OrgDatasetParamReplacement.call(conn, [])
+      %{assigns: assigns} = GetDataset.call(conn, [])
 
-      assert %{"dataset_id" => "ds1"} == params
+      assert :dataset == assigns.dataset
     end
 
     test "responds with a 404 when org_name and dataset_name combination is not known" do
       allow DiscoveryApiWeb.RenderError.render_error(any(), any(), any()), exec: fn conn, _, _ -> conn end
       conn = build_conn(:get, "/doesnt/matter", %{"org_name" => "org1", "dataset_name" => "data1"})
-      result = OrgDatasetParamReplacement.call(conn, [])
+      result = GetDataset.call(conn, [])
 
       assert_called DiscoveryApiWeb.RenderError.render_error(conn, 404, "Not Found")
       assert result.halted == true
-    end
-
-    data_test "passes conn through when params are #{inspect(params)}" do
-      conn = build_conn(:get, "/doesnt/matter", params)
-      assert conn == OrgDatasetParamReplacement.call(conn, [])
-
-      where(
-        params: [
-          %{"dataset_id" => "ds1"},
-          %{"org_name" => "org1", "dataset_id" => "ds1"},
-          %{"dataset_name" => "data1"}
-        ]
-      )
     end
   end
 end
