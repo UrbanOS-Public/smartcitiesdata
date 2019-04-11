@@ -62,7 +62,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   @moduletag capture_log: true
   test "Queries limited data from presto when using orgName and dataName in url" do
     actual =
-      "http://localhost:4000/api/v1/dataset/#{@org_name}/#{@data_name}/query?limit=2&orderBy=name"
+      "http://localhost:4000/api/v1/organization/#{@org_name}/dataset/#{@data_name}/query?limit=2&orderBy=name"
       |> HTTPoison.get!()
       |> Map.from_struct()
       |> Map.get(:body)

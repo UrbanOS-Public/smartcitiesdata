@@ -39,15 +39,17 @@ defmodule DiscoveryApiWeb.Router do
     pipe_through([:api_json_only, :check_restricted])
 
     get("/dataset/:dataset_id/preview", DatasetPreviewController, :fetch_preview)
+    get("/organization/:org_name/dataset/:dataset_name", DatasetDetailController, :fetch_dataset_detail)
     get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
   end
 
   scope "/api/v1", DiscoveryApiWeb do
     pipe_through([:api, :check_restricted])
 
-    get("/dataset/:org_name/:dataset_name/query", DatasetQueryController, :query)
+    get("/organization/:org_name/dataset/:dataset_name/query", DatasetQueryController, :query)
     get("/dataset/:dataset_id/query", DatasetQueryController, :query)
-    get("/dataset/:org_name/:dataset_name/download", DatasetDownloadController, :fetch_presto)
+
+    get("/organization/:org_name/dataset/:dataset_name/download", DatasetDownloadController, :fetch_presto)
     get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_presto)
   end
 

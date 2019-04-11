@@ -43,7 +43,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       where(
         url: [
           "/api/v1/dataset/test/query",
-          "/api/v1/dataset/org1/data1/query"
+          "/api/v1/organization/org1/dataset/data1/query"
         ]
       )
     end
@@ -57,7 +57,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       where(
         url: [
           "/api/v1/dataset/test/query",
-          "/api/v1/dataset/org1/data1/query"
+          "/api/v1/organization/org1/dataset/data1/query"
         ]
       )
     end
@@ -71,7 +71,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       where(
         url: [
           "/api/v1/dataset/test/query",
-          "/api/v1/dataset/org1/data1/query"
+          "/api/v1/organization/org1/dataset/data1/query"
         ]
       )
     end
@@ -85,7 +85,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       where(
         url: [
           "/api/v1/dataset/test/query",
-          "/api/v1/dataset/org1/data1/query"
+          "/api/v1/organization/org1/dataset/data1/query"
         ]
       )
     end
@@ -99,7 +99,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       where(
         url: [
           "/api/v1/dataset/test/query",
-          "/api/v1/dataset/org1/data1/query"
+          "/api/v1/organization/org1/dataset/data1/query"
         ]
       )
     end
@@ -113,7 +113,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       where(
         url: [
           "/api/v1/dataset/test/query",
-          "/api/v1/dataset/org1/data1/query"
+          "/api/v1/organization/org1/dataset/data1/query"
         ]
       )
     end
@@ -132,7 +132,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       where(
         url: [
           "/api/v1/dataset/test/query",
-          "/api/v1/dataset/org1/data1/query"
+          "/api/v1/organization/org1/dataset/data1/query"
         ]
       )
     end
@@ -149,7 +149,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       where(
         url: [
           "/api/v1/dataset/test/query",
-          "/api/v1/dataset/org1/data1/query"
+          "/api/v1/organization/org1/dataset/data1/query"
         ]
       )
     end
@@ -165,7 +165,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       where(
         url: [
           "/api/v1/dataset/test/query",
-          "/api/v1/dataset/org1/data1/query"
+          "/api/v1/organization/org1/dataset/data1/query"
         ]
       )
     end
@@ -212,7 +212,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       where(
         url: [
           "/api/v1/dataset/test/query",
-          "/api/v1/dataset/org1/data1/query"
+          "/api/v1/organization/org1/dataset/data1/query"
         ]
       )
     end
@@ -228,7 +228,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       where(
         url: [
           "/api/v1/dataset/test/query",
-          "/api/v1/dataset/org1/data1/query"
+          "/api/v1/organization/org1/dataset/data1/query"
         ]
       )
     end

@@ -47,7 +47,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       where(
         url: [
           "/api/v1/dataset/1234-4567-89101/download",
-          "/api/v1/dataset/org1/data1/download"
+          "/api/v1/organization/org1/dataset/data1/download"
         ]
       )
     end
@@ -60,7 +60,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       where(
         url: [
           "/api/v1/dataset/1234-4567-89101/download",
-          "/api/v1/dataset/org1/data1/download"
+          "/api/v1/organization/org1/dataset/data1/download"
         ]
       )
     end
@@ -72,7 +72,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       where(
         url: [
           "/api/v1/dataset/1234-4567-89101/download?_format=csv",
-          "/api/v1/dataset/org1/data1/download?_format_csv"
+          "/api/v1/organization/org1/dataset/data1/download?_format_csv"
         ]
       )
     end
@@ -84,7 +84,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       where(
         url: [
           "/api/v1/dataset/1234-4567-89101/download",
-          "/api/v1/dataset/org1/data1/download"
+          "/api/v1/organization/org1/dataset/data1/download"
         ]
       )
     end
@@ -96,7 +96,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       where(
         url: [
           "/api/v1/dataset/1234-4567-89101/download?_format=csv",
-          "/api/v1/dataset/org1/data1/download?_format_csv"
+          "/api/v1/organization/org1/dataset/data1/download?_format_csv"
         ]
       )
     end
@@ -141,7 +141,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       where(
         url: [
           "/api/v1/dataset/1234-4567-89101/download",
-          "/api/v1/dataset/org1/data1/download"
+          "/api/v1/organization/org1/dataset/data1/download"
         ]
       )
     end
@@ -157,7 +157,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       where(
         url: [
           "/api/v1/dataset/1234-4567-89101/download?_format=json",
-          "/api/v1/dataset/org1/data1/download?_format=json"
+          "/api/v1/organization/org1/dataset/data1/download?_format=json"
         ]
       )
     end
@@ -169,7 +169,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       where(
         url: [
           "/api/v1/dataset/1234-4567-89101/download?_format=json",
-          "/api/v1/dataset/org1/data1/download?_format=json"
+          "/api/v1/organization/org1/dataset/data1/download?_format=json"
         ]
       )
     end
