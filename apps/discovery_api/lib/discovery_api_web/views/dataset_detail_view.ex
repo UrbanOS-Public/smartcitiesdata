@@ -20,6 +20,7 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
         homepage: dataset.organizationDetails.homepage
       },
       sourceType: dataset.sourceType,
+      sourceFormat: dataset.sourceFormat,
       sourceUrl: dataset.sourceUrl,
       lastUpdatedDate: dataset.lastUpdatedDate,
       contactName: dataset.contactName,

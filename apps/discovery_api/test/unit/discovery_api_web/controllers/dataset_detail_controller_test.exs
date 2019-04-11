@@ -27,6 +27,7 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
                  "homepage" => dataset.organizationDetails.homepage
                },
                "sourceType" => dataset.sourceType,
+               "sourceFormat" => dataset.sourceFormat,
                "sourceUrl" => dataset.sourceUrl,
                "lastUpdatedDate" => nil,
                "contactName" => dataset.contactName,
