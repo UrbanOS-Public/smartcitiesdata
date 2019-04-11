@@ -87,5 +87,17 @@ defmodule Reaper.DecoderTest do
                       exit_code: %Protocol.UndefinedError{description: "", protocol: Enumerable, value: nil}
                     )
     end
+
+    test "invalid format messages yoted and raises error" do
+      body = "c,s,v"
+
+      allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
+
+      assert [] == Reaper.Decoder.decode(body, "CSY", nil)
+
+      assert_called Yeet.process_dead_letter(body, "Reaper",
+                      exit_code: %RuntimeError{message: "CSY is an invalid format"}
+                    )
+    end
   end
 end

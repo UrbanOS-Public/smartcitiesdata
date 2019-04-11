@@ -2,7 +2,6 @@ defmodule Reaper.Decoder do
   @moduledoc false
   require Logger
   alias TransitRealtime.FeedMessage
-  @dlq_topic Application.get_env(:yeet, :topic)
 
   def decode(body, "gtfs", _schema) do
     try do
@@ -42,8 +41,14 @@ defmodule Reaper.Decoder do
     end
   end
 
+  def decode(body, other, _schema) do
+    yeet_error(body, %RuntimeError{message: "#{other} is an invalid format"})
+    []
+  end
+
   defp yeet_error(message, error) do
-    Logger.warn("Unable to decode message; re-routing to DLQ topic '#{@dlq_topic}'")
+    dlq_topic = Application.get_env(:yeet, :topic)
+    Logger.warn("Unable to decode message; re-routing to DLQ topic '#{dlq_topic}'")
     Yeet.process_dead_letter(message, "Reaper", exit_code: error)
   end
 end
