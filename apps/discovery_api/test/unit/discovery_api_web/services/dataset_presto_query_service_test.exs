@@ -22,4 +22,20 @@ defmodule DiscoveryApiWeb.DatasetPrestoQueryServiceTest do
     result = DatasetPrestoQueryService.preview(dataset)
     assert list_of_maps == result
   end
+
+  test "preview_columns should query presto for given columns" do
+    dataset = "things_in_the_fire"
+    response_from_execute = %{something: "Unique", id: Faker.UUID.v4()}
+
+    list_of_columns = ["col_a", "col_b", "col_c"]
+
+    unprocessed_columns = [["col_a", "varchar", "", ""], ["col_b", "varchar", "", ""], ["col_c", "integer", "", ""]]
+
+    expect(Prestige.execute("show columns from #{dataset}"), return: response_from_execute)
+
+    expect(Prestige.prefetch(response_from_execute), return: unprocessed_columns)
+
+    result = DatasetPrestoQueryService.preview_columns(dataset)
+    assert list_of_columns == result
+  end
 end
