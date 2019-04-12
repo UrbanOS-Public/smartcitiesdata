@@ -222,7 +222,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob", %{}, token_type: "refresh")
 
       conn
-      |> put_req_cookie(Guardian.Plug.Keys.token_key() |> Atom.to_string(), token)
+      |> put_req_cookie(Helper.default_guardian_token_key(), token)
       |> put_req_header("accept", "application/json")
       |> get("/api/v1/dataset/#{@dataset_id}/download")
       |> json_response(404)
@@ -241,7 +241,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob", %{}, token_type: "refresh")
 
       conn
-      |> put_req_cookie(Guardian.Plug.Keys.token_key() |> Atom.to_string(), token)
+      |> put_req_cookie(Helper.default_guardian_token_key(), token)
       |> put_req_header("accept", "application/json")
       |> get("/api/v1/dataset/#{@dataset_id}/download")
       |> json_response(200)

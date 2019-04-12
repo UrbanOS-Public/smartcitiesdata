@@ -92,7 +92,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob", %{}, token_type: "refresh")
 
       conn
-      |> put_req_cookie(Guardian.Plug.Keys.token_key() |> Atom.to_string(), token)
+      |> put_req_cookie(Helper.default_guardian_token_key(), token)
       |> get("/api/v1/dataset/#{@dataset_id}/preview")
       |> json_response(404)
     end
@@ -110,7 +110,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob", %{}, token_type: "refresh")
 
       conn
-      |> put_req_cookie(Guardian.Plug.Keys.token_key() |> Atom.to_string(), token)
+      |> put_req_cookie(Helper.default_guardian_token_key(), token)
       |> get("/api/v1/dataset/#{@dataset_id}/preview")
       |> json_response(200)
     end

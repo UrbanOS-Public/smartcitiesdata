@@ -63,11 +63,12 @@ defmodule DiscoveryApi.Auth.AuthTest do
       |> HTTPoison.get!([], hackney: [basic_auth: {"FirstUser", "admin"}])
       |> Map.from_struct()
 
-    {"token", token} = Enum.find(headers, fn {header, value} -> header == "token" end)
+    {"set-cookie", cookie_string} = Enum.find(headers, fn {header, value} -> header == "set-cookie" end)
+    token = Helper.extract_token(cookie_string)
 
     %{status_code: status_code, body: body} =
       "http://localhost:4000/api/v1/dataset/#{dataset.id}/"
-      |> HTTPoison.get!(Authorization: "Bearer #{token}")
+      |> HTTPoison.get!(Cookie: "#{Guardian.Plug.Keys.token_key() |> Atom.to_string()}=#{token}")
 
     result = Jason.decode!(body, keys: :atoms)
 
@@ -83,7 +84,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
     %{status_code: status_code, body: body} =
       "http://localhost:4000/api/v1/dataset/#{dataset.id}/"
-      |> HTTPoison.get!(Authorization: "Bearer sdfsadfasdasdfas")
+      |> HTTPoison.get!(Cookie: "#{Helper.default_guardian_token_key()}=wedidthebadthing")
 
     result = Jason.decode!(body, keys: :atoms)
 
