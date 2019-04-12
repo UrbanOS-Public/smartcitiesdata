@@ -29,10 +29,12 @@ defmodule DiscoveryApiWeb.DatasetSearchView do
   defp transform_dataset(dataset) do
     %{
       id: dataset.id,
+      name: dataset.name,
       title: dataset.title,
       keywords: dataset.keywords,
       systemName: dataset.systemName,
-      organization: dataset.organization,
+      organization_title: dataset.organizationDetails.orgTitle,
+      organization_name: dataset.organizationDetails.orgName,
       modified: dataset.modified,
       fileTypes: dataset.fileTypes,
       description: dataset.description,

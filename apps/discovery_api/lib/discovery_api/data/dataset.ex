@@ -6,6 +6,7 @@ defmodule DiscoveryApi.Data.Dataset do
 
   defstruct [
     :id,
+    :name,
     :title,
     :keywords,
     :organization,

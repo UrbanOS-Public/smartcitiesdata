@@ -10,10 +10,12 @@ defmodule DiscoveryApiWeb.DatasetSearchViewTest do
         datasets: [
           %DiscoveryApi.Data.Dataset{
             :id => 1,
+            :name => "name",
             :title => "title",
             :systemName => "foo__bar_baz",
             :keywords => ["cat"],
             :organization => "org",
+            :organizationDetails => %{orgName: "org_name", orgTitle: "org"},
             :modified => "today",
             :fileTypes => ["csv", "pdf"],
             :description => "best ever",
@@ -39,10 +41,12 @@ defmodule DiscoveryApiWeb.DatasetSearchViewTest do
       "results" => [
         %{
           :id => 1,
+          :name => "name",
           :title => "title",
           :keywords => ["cat"],
           :systemName => "foo__bar_baz",
-          :organization => "org",
+          :organization_title => "org",
+          :organization_name => "org_name",
           :modified => "today",
           :fileTypes => ["csv", "pdf"],
           :description => "best ever",

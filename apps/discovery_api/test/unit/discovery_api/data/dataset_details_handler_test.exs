@@ -12,6 +12,7 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandlerTest do
     expected = %Dataset{
       id: dataset.id,
       title: dataset.business.dataTitle,
+      name: dataset.technical.dataName,
       systemName: dataset.technical.systemName,
       keywords: dataset.business.keywords,
       organization: organization.orgTitle,
