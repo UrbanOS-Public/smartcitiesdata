@@ -7,10 +7,9 @@ defmodule DiscoveryApiWeb.LoginController do
     {user, password} = extract_auth(conn)
 
     with :ok <- Paddle.authenticate(user, password) do
-      {:ok, token, _claims} = Guardian.encode_and_sign(user)
-
       conn
-      |> Plug.Conn.put_resp_header("token", token)
+      |> Guardian.Plug.sign_in(user)
+      |> Guardian.Plug.remember_me(user)
       |> text("#{user} logged in.")
     else
       {:error, :invalidCredentials} -> render_error(conn, 401, "Not Authorized")

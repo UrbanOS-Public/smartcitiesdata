@@ -1,7 +1,6 @@
 defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
-  alias Plug.Conn
   alias DiscoveryApi.Test.Helper
 
   @dataset_id "123"
@@ -80,10 +79,10 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
       allow Paddle.get(filter: [uid: "bigbadbob"]), return: {:ok, [ldap_user]}
       allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob", %{}, token_type: "refresh")
 
       conn
-      |> Conn.put_req_header("authorization", "Bearer " <> token)
+      |> put_req_cookie(Guardian.Plug.Keys.token_key() |> Atom.to_string(), token)
       |> get("/api/v1/dataset/#{@dataset_id}")
       |> json_response(404)
     end
@@ -98,10 +97,10 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
       allow Paddle.get(filter: [uid: "bigbadbob"]), return: {:ok, [ldap_user]}
       allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob", %{}, token_type: "refresh")
 
       conn
-      |> Conn.put_req_header("authorization", "Bearer " <> token)
+      |> put_req_cookie(Guardian.Plug.Keys.token_key() |> Atom.to_string(), token)
       |> get("/api/v1/dataset/#{@dataset_id}")
       |> json_response(200)
     end

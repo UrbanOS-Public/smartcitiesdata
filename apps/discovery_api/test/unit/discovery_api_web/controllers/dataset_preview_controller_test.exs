@@ -1,7 +1,6 @@
 defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
-  alias Plug.Conn
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -90,10 +89,10 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
       allow Paddle.get(filter: [uid: "bigbadbob"]), return: {:ok, [ldap_user]}
       allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob", %{}, token_type: "refresh")
 
       conn
-      |> Conn.put_req_header("authorization", "Bearer " <> token)
+      |> put_req_cookie(Guardian.Plug.Keys.token_key() |> Atom.to_string(), token)
       |> get("/api/v1/dataset/#{@dataset_id}/preview")
       |> json_response(404)
     end
@@ -108,10 +107,10 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
       allow Paddle.get(filter: [uid: "bigbadbob"]), return: {:ok, [ldap_user]}
       allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob", %{}, token_type: "refresh")
 
       conn
-      |> Conn.put_req_header("authorization", "Bearer " <> token)
+      |> put_req_cookie(Guardian.Plug.Keys.token_key() |> Atom.to_string(), token)
       |> get("/api/v1/dataset/#{@dataset_id}/preview")
       |> json_response(200)
     end

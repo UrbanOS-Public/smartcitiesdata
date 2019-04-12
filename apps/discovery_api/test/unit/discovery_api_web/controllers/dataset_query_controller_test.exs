@@ -4,7 +4,6 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   use Placebo
   import Checkov
   alias DiscoveryApi.Data.{Dataset, SystemNameCache}
-  alias Plug.Conn
   alias SmartCity.TestDataGenerator, as: TDG
 
   describe "fetching csv data" do
@@ -352,10 +351,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       allow Paddle.get(filter: [uid: "bigbadbob"]), return: {:ok, [ldap_user]}
       allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob", %{}, token_type: "refresh")
 
       conn
-      |> Conn.put_req_header("authorization", "Bearer " <> token)
+      |> put_req_cookie(Guardian.Plug.Keys.token_key() |> Atom.to_string(), token)
       |> put_req_header("accept", "application/json")
       |> get("/api/v1/dataset/test/query")
       |> json_response(404)
@@ -371,10 +370,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       allow Paddle.get(filter: [uid: "bigbadbob"]), return: {:ok, [ldap_user]}
       allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob", %{}, token_type: "refresh")
 
       conn
-      |> Conn.put_req_header("authorization", "Bearer " <> token)
+      |> put_req_cookie(Guardian.Plug.Keys.token_key() |> Atom.to_string(), token)
       |> put_req_header("accept", "application/json")
       |> get("/api/v1/dataset/test/query")
       |> json_response(200)
