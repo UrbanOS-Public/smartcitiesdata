@@ -18,16 +18,35 @@ defmodule DiscoveryApiWeb.LoginControllerTest do
       {:ok, %{response_conn: conn}}
     end
 
-    test "sets cookie as httponly", %{response_conn: conn} do
+    test "returns cookie with httponly", %{response_conn: conn} do
       cookie = conn |> Helper.extract_response_cookie_as_map()
 
       assert Map.get(cookie, "HttpOnly") == true
     end
 
-    test "sets cookie as secure", %{response_conn: conn} do
+    test "returns cookie with secure", %{response_conn: conn} do
       cookie = conn |> Helper.extract_response_cookie_as_map()
 
       assert Map.get(cookie, "secure") == true
+    end
+
+    test "returns cookie token with type 'refresh'", %{response_conn: conn} do
+      cookie = conn |> Helper.extract_response_cookie_as_map()
+
+      {:ok, token} = cookie
+      |> Map.get(Helper.default_guardian_token_key())
+      |> DiscoveryApi.Auth.Guardian.decode_and_verify()
+
+      assert Map.get(token, "typ") == "refresh"
+    end
+
+    test "returns token header with type 'access'", %{response_conn: conn} do
+      {:ok, token} = conn
+      |> Conn.get_resp_header("token")
+      |> List.first()
+      |> DiscoveryApi.Auth.Guardian.decode_and_verify()
+
+      assert Map.get(token, "typ") == "access"
     end
   end
 
