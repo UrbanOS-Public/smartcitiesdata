@@ -4,10 +4,14 @@ defmodule DiscoveryApiWeb.DatasetPreviewController do
   alias DiscoveryApiWeb.DatasetPrestoQueryService
 
   def fetch_preview(conn, _params) do
+    columns =
+      conn.assigns.dataset.systemName
+      |> DatasetPrestoQueryService.preview_columns()
+
     conn.assigns.dataset.systemName
     |> DatasetPrestoQueryService.preview()
-    |> return_preview(conn)
+    |> return_preview(columns, conn)
   end
 
-  defp return_preview(rows, conn), do: json(conn, %{data: rows})
+  defp return_preview(rows, columns, conn), do: json(conn, %{data: rows, meta: %{columns: columns}})
 end

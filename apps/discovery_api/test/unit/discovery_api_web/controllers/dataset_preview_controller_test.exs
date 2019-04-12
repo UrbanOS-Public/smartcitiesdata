@@ -27,18 +27,23 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
         |> Jason.encode!()
         |> Jason.decode!()
 
-      expected = %{"data" => encoded_maps}
+      list_of_columns = ["id", "name"]
+
+      expected = %{"data" => encoded_maps, "meta" => %{"columns" => list_of_columns}}
 
       expect(DiscoveryApiWeb.DatasetPrestoQueryService.preview(@system_name), return: list_of_maps)
+      expect(DiscoveryApiWeb.DatasetPrestoQueryService.preview_columns(@system_name), return: list_of_columns)
       actual = conn |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
 
       assert expected == actual
     end
 
     test "preview controller returns an empty list for an existing dataset with no data", %{conn: conn} do
-      expected = %{"data" => []}
+      list_of_columns = ["id", "name"]
+      expected = %{"data" => [], "meta" => %{"columns" => list_of_columns}}
 
       expect(DiscoveryApiWeb.DatasetPrestoQueryService.preview(@system_name), return: [])
+      expect(DiscoveryApiWeb.DatasetPrestoQueryService.preview_columns(@system_name), return: list_of_columns)
       actual = conn |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
 
       assert expected == actual
@@ -67,7 +72,10 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
         %{"id" => Faker.UUID.v4(), name: Faker.Lorem.characters(3..10)}
       ]
 
+      list_of_columns = ["id", "name"]
+
       allow(DiscoveryApiWeb.DatasetPrestoQueryService.preview(@system_name), return: list_of_maps)
+      allow(DiscoveryApiWeb.DatasetPrestoQueryService.preview_columns(@system_name), return: list_of_columns)
 
       :ok
     end
