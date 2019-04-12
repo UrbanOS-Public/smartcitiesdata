@@ -16,7 +16,8 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
 
       assert %{
                "id" => dataset.id,
-               "name" => dataset.title,
+               "name" => dataset.name,
+               "title" => dataset.title,
                "description" => dataset.description,
                "keywords" => dataset.keywords,
                "organization" => %{

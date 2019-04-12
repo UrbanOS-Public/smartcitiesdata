@@ -107,10 +107,15 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
       description: "#{id}-description",
       fileTypes: ["csv"],
       id: id,
+      name: "#{id}-name",
       title: "#{id}-title",
       modified: "#{date}",
       organization: "#{id} Co.",
-      keywords: ["#{id} keywords"]
+      keywords: ["#{id} keywords"],
+      organizationDetails: %{
+        orgTitle: "#{id}-org-title",
+        orgName: "#{id}-org-name"
+      }
     }
   end
 end

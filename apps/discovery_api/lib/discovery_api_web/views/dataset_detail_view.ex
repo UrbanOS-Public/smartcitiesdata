@@ -8,7 +8,8 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
 
   defp transform_dataset_detail(dataset) do
     %{
-      name: dataset.title,
+      name: dataset.name,
+      title: dataset.title,
       description: dataset.description,
       id: dataset.id,
       keywords: dataset.keywords,
