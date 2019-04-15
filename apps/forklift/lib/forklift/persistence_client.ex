@@ -14,9 +14,7 @@ defmodule Forklift.PersistenceClient do
     dataset_id
     |> DatasetRegistryServer.get_schema()
     |> Statement.build(messages)
-    |> IO.inspect(label: "I MADE THIS SQL FOR YOU")
     |> execute_statement()
-    |> IO.inspect(label: "THIS IS WHAT PRESTO RETURNED")
     |> validate_result()
 
     @redis.command(["SET", "forklift:last_insert_date:" <> dataset_id, DateTime.to_iso8601(DateTime.utc_now())])
