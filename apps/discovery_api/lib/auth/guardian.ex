@@ -1,6 +1,6 @@
 defmodule DiscoveryApi.Auth.Guardian do
   @moduledoc false
-  use Guardian, otp_app: :discovery_api
+  use Guardian, otp_app: :discovery_api, cookie_options: [secure: true, http_only: true]
   require Logger
 
   def subject_for_token(resource, _claims) do

@@ -58,6 +58,28 @@ defmodule DiscoveryApi.Test.Helper do
     }
     |> Map.merge(values)
   end
+
+  def extract_token(cookie_string) do
+    cookie_string
+    |> parse_cookie_string()
+    |> Map.get(default_guardian_token_key())
+  end
+
+  def extract_response_cookie_as_map(conn) do
+    conn
+    |> Plug.Conn.get_resp_header("set-cookie")
+    |> List.first()
+    |> parse_cookie_string()
+  end
+
+  defp parse_cookie_string(cookie_string) do
+    cookie_string
+    |> String.split("; ")
+    |> Enum.map(&String.split(&1, "="))
+    |> Enum.reduce(%{}, fn key_value, acc -> Map.put(acc, Enum.at(key_value, 0), Enum.at(key_value, 1, true)) end)
+  end
+
+  def default_guardian_token_key(), do: Guardian.Plug.Keys.token_key() |> Atom.to_string()
 end
 
 defmodule DiscoveryApiWeb.ConnCase do

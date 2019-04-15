@@ -11,6 +11,8 @@ defmodule DiscoveryApiWeb.LoginController do
 
       conn
       |> Plug.Conn.put_resp_header("token", token)
+      |> Guardian.Plug.sign_in(user)
+      |> Guardian.Plug.remember_me(user)
       |> text("#{user} logged in.")
     else
       {:error, :invalidCredentials} -> render_error(conn, 401, "Not Authorized")

@@ -1,7 +1,6 @@
 defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
-  alias Plug.Conn
   import Checkov
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Data.SystemNameCache
@@ -210,39 +209,60 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       :ok
     end
 
-    test "does not download a restricted dataset if the given user does not have access to it", %{conn: conn} do
+    test "does not download a restricted dataset if the given user is not a member of the dataset's group", %{
+      conn: conn
+    } do
+      username = "bigbadbob"
       ldap_user = Helper.ldap_user()
-
       ldap_group = Helper.ldap_group(%{"member" => ["uid=FirstUser,ou=People"]})
 
       allow Paddle.authenticate(any(), any()), return: :ok
       allow Paddle.config(:account_subdn), return: "ou=People"
-      allow Paddle.get(filter: [uid: "bigbadbob"]), return: {:ok, [ldap_user]}
+      allow Paddle.get(filter: [uid: username]), return: {:ok, [ldap_user]}
       allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
 
       conn
-      |> Conn.put_req_header("authorization", "Bearer " <> token)
+      |> put_req_cookie(Helper.default_guardian_token_key(), token)
       |> put_req_header("accept", "application/json")
       |> get("/api/v1/dataset/#{@dataset_id}/download")
       |> json_response(404)
     end
 
-    test "downloads a restricted dataset if the given user has access to it", %{conn: conn} do
+    test "downloads a restricted dataset if the given user has access to it, via cookie", %{conn: conn} do
+      username = "bigbadbob"
       ldap_user = Helper.ldap_user()
-
-      ldap_group = Helper.ldap_group(%{"member" => ["uid=bigbadbob,ou=People"]})
+      ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
 
       allow Paddle.authenticate(any(), any()), return: :ok
       allow Paddle.config(:account_subdn), return: "ou=People"
-      allow Paddle.get(filter: [uid: "bigbadbob"]), return: {:ok, [ldap_user]}
+      allow Paddle.get(filter: [uid: username]), return: {:ok, [ldap_user]}
       allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("bigbadbob")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
 
       conn
-      |> Conn.put_req_header("authorization", "Bearer " <> token)
+      |> put_req_cookie(Helper.default_guardian_token_key(), token)
+      |> put_req_header("accept", "application/json")
+      |> get("/api/v1/dataset/#{@dataset_id}/download")
+      |> json_response(200)
+    end
+
+    test "downloads a restricted dataset if the given user has access to it, via token", %{conn: conn} do
+      username = "bigbadbob"
+      ldap_user = Helper.ldap_user()
+      ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
+
+      allow Paddle.authenticate(any(), any()), return: :ok
+      allow Paddle.config(:account_subdn), return: "ou=People"
+      allow Paddle.get(filter: [uid: username]), return: {:ok, [ldap_user]}
+      allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
+
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
+
+      conn
+      |> put_req_header("authorization", "Bearer #{token}")
       |> put_req_header("accept", "application/json")
       |> get("/api/v1/dataset/#{@dataset_id}/download")
       |> json_response(200)
