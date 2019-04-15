@@ -68,7 +68,6 @@ defmodule PersistenceTest do
 
     Patiently.wait_for!(
       fn ->
-        IO.inspect("Waiting for ds2 stream to have a record")
         @redis.command(["XLEN", "forklift:data:ds2"]) > 0
       end,
       dwell: 1000,
@@ -77,7 +76,6 @@ defmodule PersistenceTest do
 
     Patiently.wait_for!(
       fn ->
-        IO.inspect("Waiting for DLQ to have a record")
         {:ok, messages} = :brod.fetch(@endpoint, @topic, 0, 0)
         length(messages) > 0
       end,
