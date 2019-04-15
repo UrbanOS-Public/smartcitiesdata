@@ -6,6 +6,8 @@ defmodule PersistenceTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   @redis Forklift.Application.redis_client()
+  @endpoint Application.get_env(:yeet, :endpoint)
+  @topic Application.get_env(:yeet, :topic)
 
   test "should insert records into Presto" do
     system_name = "Organization1__Dataset1"
@@ -31,11 +33,52 @@ defmodule PersistenceTest do
     Patiently.wait_for!(
       prestige_query("select id, name from #{system_name}", [[1, "George"]]),
       dwell: 1000,
-      max_tries: 30
+      max_tries: 60
     )
 
     Patiently.wait_for!(
       redis_query(dataset.id),
+      dwell: 1000,
+      max_tries: 30
+    )
+  end
+
+  test "should DLQ records which fail to insert into Presto after a set number of times" do
+    system_name = "Organization1__FailingDataset"
+
+    dataset =
+      TDG.create_dataset(
+        id: "ds2",
+        technical: %{
+          systemName: system_name,
+          schema: [
+            %{"name" => "CRAP", "type" => "double"},
+            %{"name" => "AGAIN", "type" => "string"},
+            %{"name" => "ANOTHER", "type" => "string"}
+          ]
+        }
+      )
+
+    SmartCity.Dataset.write(dataset)
+
+    TDG.create_data(dataset_id: "ds2", payload: %{"id" => 1, "UNKNOWN" => "George"})
+    |> SmartCity.KafkaHelper.send_to_kafka("streaming-transformed")
+
+    Patiently.wait_for!(
+      fn ->
+        IO.inspect("Waiting for ds2 stream to have a record")
+        @redis.command(["XLEN", "forklift:data:ds2"]) > 0
+      end,
+      dwell: 1000,
+      max_tries: 30
+    )
+
+    Patiently.wait_for!(
+      fn ->
+        IO.inspect("Waiting for DLQ to have a record")
+        {:ok, messages} = :brod.fetch(@endpoint, @topic, 0, 0)
+        length(messages) > 0
+      end,
       dwell: 1000,
       max_tries: 30
     )
