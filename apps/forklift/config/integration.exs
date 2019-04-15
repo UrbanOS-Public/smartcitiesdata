@@ -22,6 +22,9 @@ config :kaffe,
     endpoints: endpoint
   ]
 
+config :yeet,
+  endpoint: endpoint
+
 config :prestige,
   base_url: "http://#{host}:8080",
   headers: [

@@ -35,7 +35,7 @@ defmodule PersistenceTest do
     Patiently.wait_for!(
       prestige_query("select id, name from #{system_name}", [[1, "George"]]),
       dwell: 1000,
-      max_tries: 60
+      max_tries: 30
     )
 
     Patiently.wait_for!(
@@ -68,7 +68,8 @@ defmodule PersistenceTest do
 
     Patiently.wait_for!(
       fn ->
-        @redis.command(["XLEN", "forklift:data:ds2"]) > 0
+        {:ok, count} = @redis.command(["XLEN", "forklift:data:ds2"])
+        count > 0
       end,
       dwell: 1000,
       max_tries: 30
@@ -78,6 +79,15 @@ defmodule PersistenceTest do
       fn ->
         {:ok, messages} = :brod.fetch(@endpoint, @topic, 0, 0)
         length(messages) > 0
+      end,
+      dwell: 1000,
+      max_tries: 30
+    )
+
+    Patiently.wait_for!(
+      fn ->
+        {:ok, count} = @redis.command(["XLEN", "forklift:data:ds2"])
+        count == 0
       end,
       dwell: 1000,
       max_tries: 30

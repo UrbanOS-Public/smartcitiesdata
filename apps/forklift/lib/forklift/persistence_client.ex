@@ -41,7 +41,7 @@ defmodule Forklift.PersistenceClient do
 
       _ ->
         {:error, "Write to Presto failed"}
-        raise "YOU SUCK"
+        raise "Presto write failed"
     end
   end
 end
