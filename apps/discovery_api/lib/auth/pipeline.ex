@@ -5,6 +5,7 @@ defmodule DiscoveryApi.Auth.Pipeline do
     module: DiscoveryApi.Auth.Guardian,
     error_handler: DiscoveryApi.Auth.ErrorHandler
 
+  plug(Guardian.Plug.VerifyHeader, claims: %{iss: "discovery_api"}, realm: "Bearer")
   plug(Guardian.Plug.VerifyCookie)
   plug(Guardian.Plug.LoadResource, allow_blank: true)
 end
