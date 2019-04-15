@@ -69,7 +69,9 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
       :ok
     end
 
-    test "does not retrieve a restricted dataset if the given user is not a member of the dataset's group", %{conn: conn} do
+    test "does not retrieve a restricted dataset if the given user is not a member of the dataset's group", %{
+      conn: conn
+    } do
       username = "bigbadbob"
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=FirstUser,ou=People"]})

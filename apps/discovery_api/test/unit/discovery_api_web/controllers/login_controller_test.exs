@@ -33,18 +33,20 @@ defmodule DiscoveryApiWeb.LoginControllerTest do
     test "returns cookie token with type 'refresh'", %{response_conn: conn} do
       cookie = conn |> Helper.extract_response_cookie_as_map()
 
-      {:ok, token} = cookie
-      |> Map.get(Helper.default_guardian_token_key())
-      |> DiscoveryApi.Auth.Guardian.decode_and_verify()
+      {:ok, token} =
+        cookie
+        |> Map.get(Helper.default_guardian_token_key())
+        |> DiscoveryApi.Auth.Guardian.decode_and_verify()
 
       assert Map.get(token, "typ") == "refresh"
     end
 
     test "returns token header with type 'access'", %{response_conn: conn} do
-      {:ok, token} = conn
-      |> Conn.get_resp_header("token")
-      |> List.first()
-      |> DiscoveryApi.Auth.Guardian.decode_and_verify()
+      {:ok, token} =
+        conn
+        |> Conn.get_resp_header("token")
+        |> List.first()
+        |> DiscoveryApi.Auth.Guardian.decode_and_verify()
 
       assert Map.get(token, "typ") == "access"
     end

@@ -68,7 +68,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
     %{status_code: status_code, body: body} =
       "http://localhost:4000/api/v1/dataset/#{dataset.id}/"
-      |> HTTPoison.get!(Cookie: "#{Helper.default_guardian_token_key}=#{token}")
+      |> HTTPoison.get!(Cookie: "#{Helper.default_guardian_token_key()}=#{token}")
 
     result = Jason.decode!(body, keys: :atoms)
 
