@@ -31,6 +31,8 @@ defmodule Forklift.Statement do
     end)
   end
 
+  defp format_data(nil, %{type: _}), do: "null"
+
   defp format_data(value, %{type: "string"}) do
     value
     |> to_string()

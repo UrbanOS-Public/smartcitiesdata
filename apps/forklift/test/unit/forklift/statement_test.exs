@@ -45,11 +45,22 @@ defmodule StatementTest do
     assert result == expected_result
   end
 
-  test "handles nil values with a type of string" do
+  test "inserts null when field is null" do
+    data = [
+      %{id: 9, name: nil}
+    ]
+
+    result = Statement.build(get_schema(), data)
+    expected_result = ~s/insert into "rivers" ("id","name") values row(9,null)/
+
+    assert result == expected_result
+  end
+
+  test "handles empty string values with a type of string" do
     data = [
       %{id: 1, name: "Fred"},
       %{id: 2, name: "Gred"},
-      %{id: 3, name: nil}
+      %{id: 3, name: ""}
     ]
 
     result = Statement.build(get_schema(), data)
