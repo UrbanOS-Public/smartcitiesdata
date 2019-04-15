@@ -1,4 +1,4 @@
-defmodule Forklist.DataBufferIntTest do
+defmodule Forklift.DataBufferIntTest do
   use ExUnit.Case
   use Divo, services: [:kafka, :redis]
 
@@ -41,7 +41,8 @@ defmodule Forklist.DataBufferIntTest do
     {:ok, data1_key} = DataBuffer.write(data1)
     {:ok, data2_key} = DataBuffer.write(data2)
 
-    assert [%{key: data1_key, data: data1}, %{key: data2_key, data: data2}] == DataBuffer.get_pending_data("ds1")
+    {_, actual} = DataBuffer.get_pending_data("ds1")
+    assert [%{key: data1_key, data: data1}, %{key: data2_key, data: data2}] == actual
   end
 
   test "get_pending_data/1 returns non acked messages and new messages" do
@@ -49,14 +50,14 @@ defmodule Forklist.DataBufferIntTest do
     {:ok, data1_key} = DataBuffer.write(data1)
     {:ok, _data2_key} = DataBuffer.write(data2)
 
-    [_actual1, actual2] = DataBuffer.get_pending_data("ds1")
+    {_, [_actual1, actual2]} = DataBuffer.get_pending_data("ds1")
     DataBuffer.mark_complete("ds1", [actual2])
 
     [data3, data4] = TDG.create_data([dataset_id: "ds1", payload: %{one: 1, two: 2}], 2)
     {:ok, data3_key} = DataBuffer.write(data3)
     {:ok, data4_key} = DataBuffer.write(data4)
 
-    expected = [%{key: data1_key, data: data1}, %{key: data3_key, data: data3}, %{key: data4_key, data: data4}]
+    expected = {[%{key: data1_key, data: data1}], [%{key: data3_key, data: data3}, %{key: data4_key, data: data4}]}
     assert expected == DataBuffer.get_pending_data("ds1")
   end
 
@@ -65,7 +66,7 @@ defmodule Forklist.DataBufferIntTest do
     DataBuffer.write(data1)
     DataBuffer.write(data2)
     DataBuffer.write(data3)
-    [_actual1, actual2, actual3] = DataBuffer.get_pending_data("ds1")
+    {_, [_actual1, actual2, actual3]} = DataBuffer.get_pending_data("ds1")
 
     :ok = DataBuffer.mark_complete("ds1", [actual2, actual3])
 
