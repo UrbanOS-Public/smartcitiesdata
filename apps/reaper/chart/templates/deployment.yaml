@@ -29,10 +29,10 @@ spec:
         imagePullPolicy: {{ .Values.reaper.image.pullPolicy }}
         resources:
           limits:
-            memory: 512Mi
+            memory: 1Gi
             cpu: 300m
           requests:
-            memory: 512Mi
+            memory: 1Gi
             cpu: 100m
         ports:
         - containerPort: 9001
