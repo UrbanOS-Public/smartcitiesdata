@@ -56,6 +56,25 @@ defmodule StatementTest do
     assert result == expected_result
   end
 
+  test "inserts null when timestamp field is an empty string" do
+    schema = %DatasetSchema{
+      system_name: "rivers",
+      columns: [
+        %{name: "id", type: "number"},
+        %{name: "date", type: "timestamp"}
+      ]
+    }
+
+    data = [
+      %{id: 9, date: ""}
+    ]
+
+    result = Statement.build(schema, data)
+    expected_result = ~s/insert into "rivers" ("id","date") values row(9,null)/
+
+    assert result == expected_result
+  end
+
   test "handles empty string values with a type of string" do
     data = [
       %{id: 1, name: "Fred"},
