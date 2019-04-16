@@ -37,7 +37,7 @@ defmodule Forklift.Application do
   defp dataset_subscriber() do
     case Application.get_env(:smart_city_registry, :redis) do
       nil -> []
-      _ -> {SmartCity.Registry.Subscriber, [message_handler: Forklift.MessageProcessor]}
+      _ -> {SmartCity.Registry.Subscriber, [message_handler: Forklift.DatasetHandler]}
     end
   end
 

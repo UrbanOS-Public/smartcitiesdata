@@ -2,7 +2,7 @@ defmodule Forklift.MessageProcessor do
   @moduledoc false
   use SmartCity.Registry.MessageHandler
   require Logger
-  alias Forklift.{DatasetRegistryServer, DataBuffer, DeadLetterQueue}
+  alias Forklift.{DataBuffer, DeadLetterQueue}
 
   def handle_message(message) do
     process_data_message(message)
@@ -20,9 +20,5 @@ defmodule Forklift.MessageProcessor do
         Logger.warn("Failed to parse message: #{inspect(reason)} : #{raw_message}")
         DeadLetterQueue.enqueue(raw_message)
     end
-  end
-
-  def handle_dataset(dataset) do
-    DatasetRegistryServer.send_message(dataset)
   end
 end
