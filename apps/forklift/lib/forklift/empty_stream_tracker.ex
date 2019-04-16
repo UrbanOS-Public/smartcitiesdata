@@ -6,7 +6,7 @@ defmodule Forklift.EmptyStreamTracker do
     Agent.start_link(fn -> %{} end, name: __MODULE__)
   end
 
-  def get_and_update_empty_reads(dataset_id) do
+  def get_and_increment_empty_reads(dataset_id) do
     Agent.get_and_update(__MODULE__, fn state ->
       Map.get_and_update(state, dataset_id, fn
         nil -> {0, 0}
