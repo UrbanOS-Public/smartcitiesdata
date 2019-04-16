@@ -1,6 +1,5 @@
 defmodule Forklift.DataBuffer do
   @moduledoc false
-  use Agent
   require Logger
 
   @batch_size Application.get_env(:forklift, :cache_processing_batch_size)
@@ -11,10 +10,7 @@ defmodule Forklift.DataBuffer do
   @key_prefix "forklift:data:"
 
   alias SmartCity.Data
-
-  def start_link(_opts) do
-    Agent.start_link(fn -> %{} end, name: __MODULE__)
-  end
+  alias Forklift.EmptyStreamTracker
 
   def write(%Data{dataset_id: dataset_id} = data) do
     with {:json, {:ok, json}} <- {:json, Jason.encode(data)},
@@ -63,13 +59,7 @@ defmodule Forklift.DataBuffer do
   end
 
   def cleanup_dataset(dataset_id, []) do
-    number =
-      Agent.get_and_update(__MODULE__, fn s ->
-        Map.get_and_update(s, dataset_id, fn
-          nil -> {0, 0}
-          x -> {x, x + 1}
-        end)
-      end)
+    number = EmptyStreamTracker.get_and_update_empty_reads(dataset_id)
 
     if number >= @number_of_empty_reads_to_delete do
       delete_inactive_stream(dataset_id)
@@ -77,9 +67,7 @@ defmodule Forklift.DataBuffer do
   end
 
   def cleanup_dataset(dataset_id, _messages) do
-    Agent.update(__MODULE__, fn s ->
-      Map.put(s, dataset_id, 0)
-    end)
+    EmptyStreamTracker.reset_empty_reads(dataset_id)
   end
 
   defp delete_inactive_stream(dataset_id) do
@@ -87,7 +75,7 @@ defmodule Forklift.DataBuffer do
       0 ->
         Logger.info(fn -> "Deleting stream for dataset #{dataset_id} due to inactivity" end)
         @redis.command!(["DEL", stream_key(dataset_id)])
-        Agent.update(__MODULE__, &Map.delete(&1, dataset_id))
+        EmptyStreamTracker.delete_stream_ref(dataset_id)
 
       _ ->
         Logger.info("Dataset #{dataset_id} received new data while attempting to delete redis stream")

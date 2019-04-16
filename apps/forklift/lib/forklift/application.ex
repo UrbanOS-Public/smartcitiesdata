@@ -12,7 +12,7 @@ defmodule Forklift.Application do
         redis(),
         kaffe(),
         {Forklift.DatasetRegistryServer, name: Forklift.DatasetRegistryServer},
-        Forklift.DataBuffer,
+        Forklift.EmptyStreamTracker,
         Forklift.RetryTracker,
         dataset_subscriber(),
         {Forklift.MessageWriter, name: Forklift.MessageWriter}
