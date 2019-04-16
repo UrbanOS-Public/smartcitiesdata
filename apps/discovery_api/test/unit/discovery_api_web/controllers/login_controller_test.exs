@@ -1,6 +1,7 @@
 defmodule DiscoveryApiWeb.LoginControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
+
   alias Plug.Conn
 
   describe "GET /login" do
@@ -59,5 +60,26 @@ defmodule DiscoveryApiWeb.LoginControllerTest do
     |> Conn.put_req_header("authorization", "Basic " <> Base.encode64("bob:12345"))
     |> get("/api/v1/login")
     |> response(401)
+  end
+
+  describe "GET /logout" do
+    setup do
+      user = "bob"
+      {:ok, token, claims} = Guardian.encode_and_sign(DiscoveryApi.Auth.Guardian, user)
+      allow Paddle.authenticate(any(), any()), return: :does_not_matter
+      allow Paddle.get(filter: any()), return: {:ok, [Helper.ldap_user()]}
+      {:ok, %{user: user, jwt: token, claims: claims}}
+    end
+
+    test "GET /logout", %{conn: conn, jwt: jwt} do
+      cookie =
+        conn
+        |> put_req_header("authorization", "Bearer #{jwt}")
+        |> put_req_cookie(Helper.default_guardian_token_key(), jwt)
+        |> get("/api/v1/logout")
+        |> Helper.extract_response_cookie_as_map()
+
+      assert cookie["guardian_default_token"] == ""
+    end
   end
 end

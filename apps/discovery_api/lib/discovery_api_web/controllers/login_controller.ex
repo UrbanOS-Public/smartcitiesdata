@@ -29,4 +29,25 @@ defmodule DiscoveryApiWeb.LoginController do
     |> String.split(":")
     |> List.to_tuple()
   end
+
+  defp extract_token(conn) do
+    conn
+    |> Plug.Conn.get_req_header("authorization")
+    |> List.last()
+    |> String.split(" ")
+    |> List.last()
+  end
+
+  def logout(conn, _) do
+    jwt = extract_token(conn)
+
+    with {:ok, _claims} <- Guardian.revoke(jwt) do
+      conn
+      |> Guardian.Plug.sign_out(clear_remember_me: true)
+      |> text("Logged out.")
+    else
+      {:error, _error} ->
+        render_error(conn, 404, "Not Found")
+    end
+  end
 end

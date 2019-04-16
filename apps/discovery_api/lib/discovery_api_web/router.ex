@@ -23,6 +23,10 @@ defmodule DiscoveryApiWeb.Router do
     plug(DiscoveryApiWeb.Plugs.Restrictor)
   end
 
+  pipeline :log_out do
+    plug(DiscoveryApi.Auth.Pipeline)
+  end
+
   scope "/", DiscoveryApiWeb do
     get("/healthcheck", HealthCheckController, :index)
   end
@@ -44,6 +48,11 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   scope "/api/v1", DiscoveryApiWeb do
+    pipe_through([:api, :log_out])
+    get("/logout", LoginController, :logout)
+  end
+
+  scope "/api/v1", DiscoveryApiWeb do
     pipe_through([:api, :check_restricted])
 
     get("/organization/:org_name/dataset/:dataset_name/query", DatasetQueryController, :query)
@@ -51,6 +60,7 @@ defmodule DiscoveryApiWeb.Router do
 
     get("/organization/:org_name/dataset/:dataset_name/download", DatasetDownloadController, :fetch_presto)
     get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_presto)
+    get("/logout", LoginController, :logout)
   end
 
   scope "/api/v1", DiscoveryApiWeb do
