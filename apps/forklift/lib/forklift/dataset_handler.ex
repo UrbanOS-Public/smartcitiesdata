@@ -1,5 +1,3 @@
-require Logger
-
 defmodule Forklift.DatasetHandler do
   @moduledoc false
   use SmartCity.Registry.MessageHandler

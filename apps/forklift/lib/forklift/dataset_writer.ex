@@ -19,7 +19,7 @@ defmodule Forklift.DatasetWriter do
 
   defp upload_unread_data(_dataset_id, []), do: nil
 
-  defp upload_unread_data(dataset_id, data) when length(data) > 0 do
+  defp upload_unread_data(dataset_id, data) do
     payloads = extract_payloads(data)
 
     if PersistenceClient.upload_data(dataset_id, payloads) == :ok do
