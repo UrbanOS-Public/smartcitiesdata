@@ -18,7 +18,7 @@ defmodule Flair.Consumer do
   def handle_events(events, _from, state) do
     events
     |> convert_events()
-    |> PrestoClient.generate_statement_from_events()
+    |> PrestoClient.generate_timing_statement_from_events()
     |> PrestoClient.execute()
 
     {:noreply, [], state}
