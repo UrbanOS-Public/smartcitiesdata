@@ -13,6 +13,7 @@ defmodule Forklift.Application do
         kaffe(),
         {Forklift.DatasetRegistryServer, name: Forklift.DatasetRegistryServer},
         Forklift.DataBuffer,
+        Forklift.RetryTracker,
         dataset_subscriber(),
         {Forklift.MessageWriter, name: Forklift.MessageWriter}
       ]

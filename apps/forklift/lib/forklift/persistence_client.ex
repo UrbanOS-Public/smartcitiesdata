@@ -15,6 +15,7 @@ defmodule Forklift.PersistenceClient do
     |> DatasetRegistryServer.get_schema()
     |> Statement.build(messages)
     |> execute_statement()
+    |> validate_result()
 
     @redis.command(["SET", "forklift:last_insert_date:" <> dataset_id, DateTime.to_iso8601(DateTime.utc_now())])
 
@@ -24,12 +25,23 @@ defmodule Forklift.PersistenceClient do
   rescue
     e ->
       Logger.error("Error uploading data: #{inspect(e)}")
-      reraise(e, __STACKTRACE__)
+      {:error, e}
   end
 
   defp execute_statement(statement) do
     statement
     |> Prestige.execute()
     |> Prestige.prefetch()
+  end
+
+  defp validate_result(result) do
+    case result do
+      [[_]] ->
+        :ok
+
+      _ ->
+        {:error, "Write to Presto failed"}
+        raise "Presto write failed"
+    end
   end
 end

@@ -37,7 +37,7 @@ defmodule Forklift.DataBufferTest do
   test "get_pending_data/0 should return empty list when redix returns an error" do
     allow Redix.command(any()), return: {:error, "Failure"}
 
-    assert [] == DataBuffer.get_pending_data("ds1")
+    assert {[], []} == DataBuffer.get_pending_data("ds1")
   end
 
   test "get_pending_data marks complete and sends to dead letter when message is not valid" do
@@ -55,7 +55,7 @@ defmodule Forklift.DataBufferTest do
     allow Redix.pipeline(any()), return: :ok
     allow Forklift.DeadLetterQueue.enqueue(any()), return: :ok
 
-    results = DataBuffer.get_pending_data("ds1")
+    {_, results} = DataBuffer.get_pending_data("ds1")
 
     assert results == [%{key: "k2", data: data}]
 

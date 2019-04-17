@@ -9,7 +9,7 @@ host =
 endpoint = [{to_charlist(host), 9094}]
 
 config :forklift,
-  message_processing_cadence: 10_000
+  message_processing_cadence: 5_000
 
 config :kaffe,
   producer: [
@@ -21,6 +21,9 @@ config :kaffe,
   consumer: [
     endpoints: endpoint
   ]
+
+config :yeet,
+  endpoint: endpoint
 
 config :prestige,
   base_url: "http://#{host}:8080",

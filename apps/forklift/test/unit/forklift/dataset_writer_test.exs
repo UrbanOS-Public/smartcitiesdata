@@ -16,7 +16,7 @@ defmodule Forklift.DatasetWriterTest do
 
     payloads = Enum.map(entries, fn %{data: %{payload: payload}} -> payload end)
 
-    allow DataBuffer.get_pending_data("ds1"), return: entries
+    allow DataBuffer.get_pending_data("ds1"), return: {entries, []}
     allow DataBuffer.mark_complete(any(), any()), return: :ok
     allow DataBuffer.cleanup_dataset(any(), any()), return: :ok
     allow PersistenceClient.upload_data(any(), any()), return: :ok

@@ -47,7 +47,7 @@ defmodule Forklift.DataBuffer do
     create_consumer_group(key)
     pending = xread_group(key, false)
     unread = xread_group(key, true)
-    pending ++ unread
+    {pending, unread}
   end
 
   def mark_complete(dataset_id, messages) when is_list(messages) do
