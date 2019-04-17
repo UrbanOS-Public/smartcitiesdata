@@ -62,6 +62,18 @@ defmodule Forklift.Statement do
     |> (&~s|'#{&1}'|).()
   end
 
+  defp format_data(value, %{type: "integer"}) when is_binary(value) do
+    value
+    |> Integer.parse()
+    |> elem(0)
+  end
+
+  defp format_data(value, %{type: "float"}) when is_binary(value) do
+    value
+    |> Float.parse()
+    |> elem(0)
+  end
+
   defp format_data(value, %{type: "map", subSchema: sub_schema}) do
     sub_schema
     |> format_columns(value)
