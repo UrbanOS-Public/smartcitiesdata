@@ -50,6 +50,18 @@ defmodule Forklift.Statement do
     |> (&~s(DATE '#{&1}')).()
   end
 
+  defp format_data(value, %{type: "timestamp"}) do
+    value
+    |> to_string()
+    |> (&~s|date_parse('#{&1}', '%Y-%m-%dT%H:%i:%S.%fZ')|).()
+  end
+
+  defp format_data(value, %{type: "time"}) do
+    value
+    |> to_string()
+    |> (&~s|'#{&1}'|).()
+  end
+
   defp format_data(value, %{type: "integer"}) when is_binary(value) do
     value
     |> Integer.parse()
