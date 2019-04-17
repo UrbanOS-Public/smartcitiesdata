@@ -36,28 +36,27 @@ defmodule Forklift.DataBufferIntTest do
     assert MapSet.new(["ds1", "ds2", "64da2b7d-189e-48a3-8ff3-86e03bc4feef"]) == MapSet.new(actual)
   end
 
-  test "get_pending_data/1 returns messages that have not been read by group yet" do
+  test "get_unread_data/1 returns messages that have not been read by group yet" do
     [data1, data2] = TDG.create_data([dataset_id: "ds1", payload: %{one: 1, two: 2}], 2)
     {:ok, data1_key} = DataBuffer.write(data1)
     {:ok, data2_key} = DataBuffer.write(data2)
 
-    {_, actual} = DataBuffer.get_pending_data("ds1")
+    actual = DataBuffer.get_unread_data("ds1")
     assert [%{key: data1_key, data: data1}, %{key: data2_key, data: data2}] == actual
   end
 
-  test "get_pending_data/1 returns non acked messages and new messages" do
-    [data1, data2] = TDG.create_data([dataset_id: "ds1", payload: %{one: 1, two: 2}], 2)
+  test "get_pending_data/1 returns only pending messages" do
+    [data1, data2] = TDG.create_data([dataset_id: "ds1", payload: %{will_be_pending: true}], 2)
     {:ok, data1_key} = DataBuffer.write(data1)
-    {:ok, _data2_key} = DataBuffer.write(data2)
+    {:ok, data2_key} = DataBuffer.write(data2)
+    # Mark them as pending
+    DataBuffer.get_unread_data("ds1")
 
-    {_, [_actual1, actual2]} = DataBuffer.get_pending_data("ds1")
-    DataBuffer.mark_complete("ds1", [actual2])
+    [data3, data4] = TDG.create_data([dataset_id: "ds1", payload: %{will_be_unread: true}], 2)
+    DataBuffer.write(data3)
+    DataBuffer.write(data4)
 
-    [data3, data4] = TDG.create_data([dataset_id: "ds1", payload: %{one: 1, two: 2}], 2)
-    {:ok, data3_key} = DataBuffer.write(data3)
-    {:ok, data4_key} = DataBuffer.write(data4)
-
-    expected = {[%{key: data1_key, data: data1}], [%{key: data3_key, data: data3}, %{key: data4_key, data: data4}]}
+    expected = [%{key: data1_key, data: data1}, %{key: data2_key, data: data2}]
     assert expected == DataBuffer.get_pending_data("ds1")
   end
 
@@ -66,7 +65,7 @@ defmodule Forklift.DataBufferIntTest do
     DataBuffer.write(data1)
     DataBuffer.write(data2)
     DataBuffer.write(data3)
-    {_, [_actual1, actual2, actual3]} = DataBuffer.get_pending_data("ds1")
+    [_actual1, actual2, actual3] = DataBuffer.get_unread_data("ds1")
 
     :ok = DataBuffer.mark_complete("ds1", [actual2, actual3])
 

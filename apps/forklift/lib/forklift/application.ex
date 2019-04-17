@@ -12,7 +12,7 @@ defmodule Forklift.Application do
         redis(),
         kaffe(),
         {Forklift.DatasetRegistryServer, name: Forklift.DatasetRegistryServer},
-        Forklift.DataBuffer,
+        Forklift.EmptyStreamTracker,
         Forklift.RetryTracker,
         dataset_subscriber(),
         {Forklift.MessageWriter, name: Forklift.MessageWriter}
@@ -37,7 +37,7 @@ defmodule Forklift.Application do
   defp dataset_subscriber() do
     case Application.get_env(:smart_city_registry, :redis) do
       nil -> []
-      _ -> {SmartCity.Registry.Subscriber, [message_handler: Forklift.MessageProcessor]}
+      _ -> {SmartCity.Registry.Subscriber, [message_handler: Forklift.DatasetHandler]}
     end
   end
 
