@@ -56,6 +56,117 @@ defmodule StatementTest do
     assert result == expected_result
   end
 
+  test "inserts null when timestamp field is an empty string" do
+    schema = %DatasetSchema{
+      system_name: "rivers",
+      columns: [
+        %{name: "id", type: "integer"},
+        %{name: "date", type: "timestamp"}
+      ]
+    }
+
+    data = [
+      %{id: 9, date: ""}
+    ]
+
+    result = Statement.build(schema, data)
+    expected_result = ~s/insert into "rivers" ("id","date") values row(9,null)/
+
+    assert result == expected_result
+  end
+
+  test "inserts a presto-appropriate date when inserting a date" do
+    schema = %DatasetSchema{
+      system_name: "rivers",
+      columns: [
+        %{name: "id", type: "number"},
+        %{name: "start_date", type: "date"}
+      ]
+    }
+
+    data = [
+      %{id: 9, start_date: "1900-01-01"}
+    ]
+
+    result = Statement.build(schema, data)
+    expected_result = ~s/insert into "rivers" ("id","start_date") values row(9,DATE '1900-01-01')/
+
+    assert result == expected_result
+  end
+
+  test "inserts 1 when integer field is a signed 1" do
+    data = [
+      %{id: "+1", name: "Hroki"},
+      %{id: "-1", name: "Doki"}
+    ]
+
+    result = Statement.build(get_schema(), data)
+    expected_result = ~s/insert into "rivers" ("id","name") values row(1,'Hroki'),row(-1,'Doki')/
+
+    assert result == expected_result
+  end
+
+  test "inserts number when float field is a signed number" do
+    schema = %DatasetSchema{
+      system_name: "rivers",
+      columns: [
+        %{name: "id", type: "integer"},
+        %{name: "floater", type: "float"}
+      ]
+    }
+
+    data = [
+      %{id: "1", floater: "+4.5"},
+      %{id: "1", floater: "-4.5"}
+    ]
+
+    result = Statement.build(schema, data)
+    expected_result = ~s/insert into "rivers" ("id","floater") values row(1,4.5),row(1,-4.5)/
+
+    assert result == expected_result
+  end
+
+  test "inserts without timezone when inserting a timestamp" do
+    schema = %DatasetSchema{
+      system_name: "rivers",
+      columns: [
+        %{name: "id", type: "number"},
+        %{name: "start_time", type: "timestamp"}
+      ]
+    }
+
+    data = [
+      %{id: 9, start_time: "2019-04-17T14:23:09.030939"}
+    ]
+
+    result = Statement.build(schema, data)
+
+    expected_result =
+      ~s/insert into "rivers" ("id","start_time") values row(9,date_parse('2019-04-17T14:23:09.030939', '%Y-%m-%dT%H:%i:%S.%f'))/
+
+    assert result == expected_result
+  end
+
+  test "inserts time data types as strings" do
+    schema = %DatasetSchema{
+      system_name: "rivers",
+      columns: [
+        %{name: "id", type: "number"},
+        %{name: "start_time", type: "time"}
+      ]
+    }
+
+    data = [
+      %{id: 9, start_time: "23:00:13.001"}
+    ]
+
+    result = Statement.build(schema, data)
+
+    expected_result = ~s/insert into "rivers" ("id","start_time") values row(9,'23:00:13.001')/
+
+    assert result == expected_result
+  end
+
   test "handles empty string values with a type of string" do
     data = [
       %{id: 1, name: "Fred"},
@@ -257,7 +368,7 @@ defmodule StatementTest do
     %DatasetSchema{
       system_name: "rivers",
       columns: [
-        %{name: "id", type: "number"},
+        %{name: "id", type: "integer"},
         %{name: "name", type: "string"}
       ]
     }
@@ -268,7 +379,7 @@ defmodule StatementTest do
       system_name: "nested_rivers",
       columns: [
         %{name: "first_name", type: "string"},
-        %{name: "age", type: "number"},
+        %{name: "age", type: "integer"},
         %{name: "friend_names", type: "list", itemType: "string"},
         %{
           name: "friends",

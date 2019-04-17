@@ -33,6 +33,10 @@ defmodule Forklift.Statement do
 
   defp format_data(nil, %{type: _}), do: "null"
 
+  defp format_data("", %{type: "string"}), do: ~S|''|
+
+  defp format_data("", %{type: _}), do: "null"
+
   defp format_data(value, %{type: "string"}) do
     value
     |> to_string()
@@ -40,10 +44,22 @@ defmodule Forklift.Statement do
     |> (&~s('#{&1}')).()
   end
 
-  defp format_data(value, %{type: "date"}) do
+  defp format_data(value, %{type: "date"}), do: ~s|DATE '#{value}'|
+
+  defp format_data(value, %{type: "timestamp"}), do: ~s|date_parse('#{value}', '%Y-%m-%dT%H:%i:%S.%f')|
+
+  defp format_data(value, %{type: "time"}), do: ~s|'#{value}'|
+
+  defp format_data(value, %{type: "integer"}) when is_binary(value) do
     value
-    |> to_string()
-    |> (&~s(DATE '#{&1}')).()
+    |> Integer.parse()
+    |> elem(0)
+  end
+
+  defp format_data(value, %{type: "float"}) when is_binary(value) do
+    value
+    |> Float.parse()
+    |> elem(0)
   end
 
   defp format_data(value, %{type: "map", subSchema: sub_schema}) do
