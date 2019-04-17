@@ -4,14 +4,22 @@ defmodule Forklift.DatasetWriter do
   alias Forklift.{DataBuffer, PersistenceClient, RetryTracker, DeadLetterQueue}
 
   def perform(dataset_id) do
-    {pending, unread} = DataBuffer.get_pending_data(dataset_id)
-    upload_pending_data(dataset_id, pending)
-    upload_unread_data(dataset_id, unread)
+    pending = DataBuffer.get_pending_data(dataset_id)
+
+    case upload_pending_data(dataset_id, pending) do
+      :continue ->
+        unread = DataBuffer.get_unread_data(dataset_id)
+        upload_unread_data(dataset_id, unread)
+        :ok
+
+      :retry ->
+        :ok
+    end
   end
 
-  def upload_unread_data(dataset_id, []), do: nil
+  defp upload_unread_data(_dataset_id, []), do: nil
 
-  def upload_unread_data(dataset_id, data) when length(data) > 0 do
+  defp upload_unread_data(dataset_id, data) when length(data) > 0 do
     payloads = extract_payloads(data)
 
     if PersistenceClient.upload_data(dataset_id, payloads) == :ok do
@@ -20,20 +28,25 @@ defmodule Forklift.DatasetWriter do
     end
   end
 
-  def upload_pending_data(dataset_id, []), do: nil
+  defp upload_pending_data(_dataset_id, []), do: :continue
 
-  def upload_pending_data(dataset_id, data) do
+  defp upload_pending_data(dataset_id, data) do
     payloads = extract_payloads(data)
 
-    if PersistenceClient.upload_data(dataset_id, payloads) == :ok do
-      cleanup_pending(dataset_id, data)
-    else
-      RetryTracker.mark_retry(dataset_id)
-
-      if RetryTracker.get_retries(dataset_id) > 3 do
-        Enum.each(data, fn message -> DeadLetterQueue.enqueue(message) end)
+    case PersistenceClient.upload_data(dataset_id, payloads) do
+      :ok ->
         cleanup_pending(dataset_id, data)
-      end
+        :continue
+
+      {:error, _} ->
+        if RetryTracker.get_and_increment_retries(dataset_id) > 3 do
+          Enum.each(data, fn message -> DeadLetterQueue.enqueue(message) end)
+          cleanup_pending(dataset_id, data)
+
+          :continue
+        else
+          :retry
+        end
     end
   end
 

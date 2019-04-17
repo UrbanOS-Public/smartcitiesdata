@@ -17,11 +17,11 @@ defmodule Forklift.DataBuffer do
   end
 
   def get_pending_data(dataset_id) do
-    key = RedisStreamsClient.stream_key(dataset_id)
-    RedisStreamsClient.create_consumer_group(key)
-    pending = RedisStreamsClient.xread_group(key, false)
-    unread = RedisStreamsClient.xread_group(key, true)
-    {pending, unread}
+    RedisStreamsClient.xread_group_pending(dataset_id)
+  end
+
+  def get_unread_data(dataset_id) do
+    RedisStreamsClient.xread_group_new(dataset_id)
   end
 
   def mark_complete(dataset_id, messages) when is_list(messages) do

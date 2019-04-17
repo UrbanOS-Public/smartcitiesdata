@@ -7,6 +7,8 @@ defmodule Forklift.DataBufferTest do
   alias Forklift.DataBuffer
   alias Forklift.Redix, as: Redix
 
+  @moduletag capture_log: true
+
   test "write/1 should return an ok tuple on success" do
     allow Redix.command(any()), return: {:ok, :ok}
     data = TDG.create_data(dataset_id: "1")
@@ -37,25 +39,22 @@ defmodule Forklift.DataBufferTest do
   test "get_pending_data/0 should return empty list when redix returns an error" do
     allow Redix.command(any()), return: {:error, "Failure"}
 
-    assert {[], []} == DataBuffer.get_pending_data("ds1")
+    assert [] == DataBuffer.get_pending_data("ds1")
   end
 
-  test "get_pending_data marks complete and sends to dead letter when message is not valid" do
+  test "get_unread_data marks complete and sends to dead letter when message is not valid" do
     data = TDG.create_data(dataset_id: "ds1", payload: %{one: 1})
 
     allow Redix.command(["XGROUP" | any()]), return: :ok
 
     allow Redix.command(["XREADGROUP" | any()]),
-      seq: [
-        {:ok, to_xread_result("ds1", [{"k1", "Jerks"}])},
-        {:ok, to_xread_result("ds1", [{"k2", Jason.encode!(data)}])}
-      ]
+      return: {:ok, to_xread_result("ds1", [{"k1", "Jerks"}, {"k2", Jason.encode!(data)}])}
 
     allow Redix.command(any()), return: :ok
     allow Redix.pipeline(any()), return: :ok
     allow Forklift.DeadLetterQueue.enqueue(any()), return: :ok
 
-    {_, results} = DataBuffer.get_pending_data("ds1")
+    results = DataBuffer.get_unread_data("ds1")
 
     assert results == [%{key: "k2", data: data}]
 

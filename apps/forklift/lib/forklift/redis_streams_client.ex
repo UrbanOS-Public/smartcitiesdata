@@ -61,12 +61,16 @@ defmodule Forklift.RedisStreamsClient do
     end
   end
 
-  def extract_dataset_id(key) do
-    String.replace_leading(key, @key_prefix, "")
+  def xread_group_new(key) do
+    xread_group(key, ">")
   end
 
-  def xread_group(key, unread) do
-    id = if unread, do: ">", else: "0"
+  def xread_group_pending(key) do
+    xread_group(key, "0")
+  end
+
+  defp xread_group(dataset_id, id) do
+    key = create_consumer_group(dataset_id)
     command = ["XREADGROUP", "GROUP", @consumer_group, @consumer, "COUNT", @batch_size, "STREAMS", key, id]
 
     case @redis.command(command) do
@@ -81,27 +85,30 @@ defmodule Forklift.RedisStreamsClient do
     end
   end
 
-  def create_consumer_group(key) do
+  defp create_consumer_group(dataset_id) do
+    key = stream_key(dataset_id)
     @redis.command(["XGROUP", "CREATE", key, @consumer_group, "0"])
+
+    key
   end
 
-  def parse_xread_response(nil), do: %{}
+  defp parse_xread_response(nil), do: %{}
 
-  def parse_xread_response(response) do
+  defp parse_xread_response(response) do
     response
     |> Enum.map(fn [dataset_key, entries] -> {dataset_key, parse_xread_entries(dataset_key, entries)} end)
     |> Map.new()
   end
 
-  def parse_xread_entries(dataset_key, entries) do
+  defp parse_xread_entries(dataset_key, entries) do
     entries
     |> Enum.map(fn [key, ["message", message]] -> %{key: key, data: parse_data_json(dataset_key, key, message)} end)
     |> Enum.filter(fn %{data: data} -> data != nil end)
   end
 
-  def stream_key(dataset_id), do: "#{@key_prefix}#{dataset_id}"
+  defp stream_key(dataset_id), do: "#{@key_prefix}#{dataset_id}"
 
-  def parse_data_json(dataset_key, key, json) do
+  defp parse_data_json(dataset_key, key, json) do
     case Data.new(json) do
       {:ok, data} ->
         data
@@ -115,9 +122,11 @@ defmodule Forklift.RedisStreamsClient do
     end
   end
 
-  def xadd(dataset_id, json) do
-    @redis.command(["XADD", stream_key(dataset_id), "*", "message", json])
+  defp extract_dataset_id(key) do
+    String.replace_leading(key, @key_prefix, "")
   end
 
-  def stream_key(dataset_id), do: "#{@key_prefix}#{dataset_id}" |> IO.inspect(label: "HERE IS YOUR KEY")
+  defp xadd(dataset_id, json) do
+    @redis.command(["XADD", stream_key(dataset_id), "*", "message", json])
+  end
 end
