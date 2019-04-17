@@ -10,6 +10,7 @@ defmodule Valkyrie.Application do
     children =
       [
         cachex(),
+        dataset_subscriber(),
         kaffe()
       ]
       |> List.flatten()
@@ -30,6 +31,13 @@ defmodule Valkyrie.Application do
           start: {Kaffe.GroupMemberSupervisor, :start_link, []},
           type: :supervisor
         }
+    end
+  end
+
+  defp dataset_subscriber() do
+    case Application.get_env(:smart_city_registry, :redis) do
+      nil -> []
+      _ -> {SmartCity.Registry.Subscriber, [message_handler: Valkyrie.Dataset.MessageHandler]}
     end
   end
 

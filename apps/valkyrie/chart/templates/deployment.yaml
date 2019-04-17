@@ -32,6 +32,8 @@ spec:
             value: {{.Values.kafka.validatedTopic}}
           - name: DLQ_TOPIC
             value: {{.Values.kafka.dlqTopic}}
+          - name: REDIS_HOST
+            value: {{ .Values.redis.host }}
           - name: NAMESPACE
             valueFrom:
               fieldRef:
