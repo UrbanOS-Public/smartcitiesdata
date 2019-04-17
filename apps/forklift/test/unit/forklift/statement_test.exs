@@ -60,7 +60,7 @@ defmodule StatementTest do
     schema = %DatasetSchema{
       system_name: "rivers",
       columns: [
-        %{name: "id", type: "number"},
+        %{name: "id", type: "integer"},
         %{name: "date", type: "timestamp"}
       ]
     }
@@ -71,6 +71,38 @@ defmodule StatementTest do
 
     result = Statement.build(schema, data)
     expected_result = ~s/insert into "rivers" ("id","date") values row(9,null)/
+
+    assert result == expected_result
+  end
+
+  test "inserts 1 when integer field is a signed 1" do
+    data = [
+      %{id: "+1", name: "Hroki"},
+      %{id: "-1", name: "Doki"}
+    ]
+
+    result = Statement.build(get_schema(), data)
+    expected_result = ~s/insert into "rivers" ("id","name") values row(1,'Hroki'),row(-1,'Doki')/
+
+    assert result == expected_result
+  end
+
+  test "inserts number when float field is a signed number" do
+    schema = %DatasetSchema{
+      system_name: "rivers",
+      columns: [
+        %{name: "id", type: "integer"},
+        %{name: "floater", type: "float"}
+      ]
+    }
+
+    data = [
+      %{id: "1", floater: "+4.5"},
+      %{id: "1", floater: "-4.5"}
+    ]
+
+    result = Statement.build(schema, data)
+    expected_result = ~s/insert into "rivers" ("id","floater") values row(1,4.5),row(1,-4.5)/
 
     assert result == expected_result
   end
@@ -276,7 +308,7 @@ defmodule StatementTest do
     %DatasetSchema{
       system_name: "rivers",
       columns: [
-        %{name: "id", type: "number"},
+        %{name: "id", type: "integer"},
         %{name: "name", type: "string"}
       ]
     }
@@ -287,7 +319,7 @@ defmodule StatementTest do
       system_name: "nested_rivers",
       columns: [
         %{name: "first_name", type: "string"},
-        %{name: "age", type: "number"},
+        %{name: "age", type: "integer"},
         %{name: "friend_names", type: "list", itemType: "string"},
         %{
           name: "friends",
