@@ -7,7 +7,7 @@ defmodule DiscoveryApi.Test.Helper do
     %Dataset{
       id: Faker.UUID.v4(),
       title: Faker.Lorem.word(),
-      keywords: [Faker.Lorem.characters(5), Faker.Lorem.characters(6)],
+      keywords: [Faker.Lorem.word(), Faker.Lorem.word()],
       organization: Faker.Lorem.word(),
       organizationDetails: %{} |> TDG.create_organization() |> Map.from_struct(),
       modified: Date.to_string(Faker.Date.backward(20)),

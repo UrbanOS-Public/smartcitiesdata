@@ -23,7 +23,7 @@ defmodule DiscoveryApiWeb.Router do
     plug(DiscoveryApiWeb.Plugs.Restrictor)
   end
 
-  pipeline :log_out do
+  pipeline :add_auth_details do
     plug(DiscoveryApi.Auth.Pipeline)
   end
 
@@ -32,7 +32,7 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   scope "/api/v1", DiscoveryApiWeb do
-    pipe_through(:api_json_only)
+    pipe_through([:api_json_only, :add_auth_details])
 
     get("/dataset/search", DatasetSearchController, :search)
     get("/data_json", DataJsonController, :get_data_json)
@@ -48,7 +48,7 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:api, :log_out])
+    pipe_through([:api, :add_auth_details])
     get("/logout", LoginController, :logout)
   end
 

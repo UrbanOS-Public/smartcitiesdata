@@ -115,7 +115,8 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
       organizationDetails: %{
         orgTitle: "#{id}-org-title",
         orgName: "#{id}-org-name"
-      }
+      },
+      private: false
     }
   end
 end

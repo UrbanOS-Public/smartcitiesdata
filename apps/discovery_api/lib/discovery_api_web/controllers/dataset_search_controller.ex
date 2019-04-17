@@ -31,12 +31,17 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
 
   defp filter_and_render(conn, search_result, filter_facets, sort_by, offset, limit) do
     filtered_result = FacetFilterator.filter_by_facets(search_result, filter_facets)
-    dataset_facets = DatasetFacinator.get_facets(filtered_result)
+
+    authorized_results =
+      filtered_result
+      |> Enum.filter(fn dataset -> dataset.private == false || has_access?(conn, dataset) end)
+
+    dataset_facets = DatasetFacinator.get_facets(authorized_results)
 
     render(
       conn,
       :search_dataset_summaries,
-      datasets: filtered_result,
+      datasets: authorized_results,
       facets: dataset_facets,
       sort: sort_by,
       offset: offset,
@@ -55,5 +60,42 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
 
   defp atomize_map({facet_name, facet_values} = _facet, atom_map) do
     Map.put(atom_map, String.to_existing_atom(facet_name), facet_values)
+  end
+
+  defp has_access?(conn, dataset) do
+    case Guardian.Plug.current_claims(conn) do
+      %{"sub" => uid} ->
+        dataset.organizationDetails.dn
+        |> get_members()
+        |> Enum.member?(uid)
+
+      error ->
+        Logger.error(inspect(error))
+        false
+    end
+  end
+
+  defp get_members(org_dn) do
+    %{"cn" => cn, "ou" => ou} =
+      org_dn
+      |> Paddle.Parsing.dn_to_kwlist()
+      |> Map.new()
+
+    user = Application.get_env(:discovery_api, :ldap_user)
+    pass = Application.get_env(:discovery_api, :ldap_pass)
+    Paddle.authenticate(user, pass)
+
+    Paddle.get(base: [ou: ou], filter: [cn: cn])
+    |> elem(1)
+    |> List.first()
+    |> Map.get("member", [])
+    |> Enum.map(&extract_uid/1)
+  end
+
+  defp extract_uid(dn) do
+    dn
+    |> Paddle.Parsing.dn_to_kwlist()
+    |> Map.new()
+    |> Map.get("uid")
   end
 end
