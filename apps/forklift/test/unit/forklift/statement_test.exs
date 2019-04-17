@@ -75,6 +75,66 @@ defmodule StatementTest do
     assert result == expected_result
   end
 
+  test "inserts a presto-appropriate date when inserting a date" do
+    schema = %DatasetSchema{
+      system_name: "rivers",
+      columns: [
+        %{name: "id", type: "number"},
+        %{name: "start_date", type: "date"}
+      ]
+    }
+
+    data = [
+      %{id: 9, start_date: "1900-01-01"}
+    ]
+
+    result = Statement.build(schema, data)
+    expected_result = ~s/insert into "rivers" ("id","start_date") values row(9,DATE '1900-01-01')/
+
+    assert result == expected_result
+  end
+
+  test "inserts without timezone when inserting a timestamp" do
+    schema = %DatasetSchema{
+      system_name: "rivers",
+      columns: [
+        %{name: "id", type: "number"},
+        %{name: "start_time", type: "timestamp"}
+      ]
+    }
+
+    data = [
+      %{id: 9, start_time: "2019-04-17T14:23:09.030939Z"}
+    ]
+
+    result = Statement.build(schema, data)
+
+    expected_result =
+      ~s/insert into "rivers" ("id","start_time") values row(9,date_parse('2019-04-17T14:23:09.030939Z', '%Y-%m-%dT%H:%i:%S.%fZ'))/
+
+    assert result == expected_result
+  end
+
+  test "inserts time data types as strings" do
+    schema = %DatasetSchema{
+      system_name: "rivers",
+      columns: [
+        %{name: "id", type: "number"},
+        %{name: "start_time", type: "time"}
+      ]
+    }
+
+    data = [
+      %{id: 9, start_time: "23:00:13.001"}
+    ]
+
+    result = Statement.build(schema, data)
+
+    expected_result = ~s/insert into "rivers" ("id","start_time") values row(9,'23:00:13.001')/
+
+    assert result == expected_result
+  end
+
   test "handles empty string values with a type of string" do
     data = [
       %{id: 1, name: "Fred"},
