@@ -44,23 +44,11 @@ defmodule Forklift.Statement do
     |> (&~s('#{&1}')).()
   end
 
-  defp format_data(value, %{type: "date"}) do
-    value
-    |> to_string()
-    |> (&~s(DATE '#{&1}')).()
-  end
+  defp format_data(value, %{type: "date"}), do: ~s|DATE '#{value}'|
 
-  defp format_data(value, %{type: "timestamp"}) do
-    value
-    |> to_string()
-    |> (&~s|date_parse('#{&1}', '%Y-%m-%dT%H:%i:%S.%fZ')|).()
-  end
+  defp format_data(value, %{type: "timestamp"}), do: ~s|date_parse('#{value}', '%Y-%m-%dT%H:%i:%S.%f')|
 
-  defp format_data(value, %{type: "time"}) do
-    value
-    |> to_string()
-    |> (&~s|'#{&1}'|).()
-  end
+  defp format_data(value, %{type: "time"}), do: ~s|'#{value}'|
 
   defp format_data(value, %{type: "integer"}) when is_binary(value) do
     value

@@ -136,13 +136,13 @@ defmodule StatementTest do
     }
 
     data = [
-      %{id: 9, start_time: "2019-04-17T14:23:09.030939Z"}
+      %{id: 9, start_time: "2019-04-17T14:23:09.030939"}
     ]
 
     result = Statement.build(schema, data)
 
     expected_result =
-      ~s/insert into "rivers" ("id","start_time") values row(9,date_parse('2019-04-17T14:23:09.030939Z', '%Y-%m-%dT%H:%i:%S.%fZ'))/
+      ~s/insert into "rivers" ("id","start_time") values row(9,date_parse('2019-04-17T14:23:09.030939', '%Y-%m-%dT%H:%i:%S.%f'))/
 
     assert result == expected_result
   end
