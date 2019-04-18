@@ -25,3 +25,11 @@ if kafka_brokers do
     endpoint: endpoints
 end
 
+redis_host = System.get_env("REDIS_HOST")
+
+if redis_host do
+  config :smart_city_registry,
+    redis: [
+      host: redis_host
+    ]
+end

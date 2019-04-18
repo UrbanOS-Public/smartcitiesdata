@@ -22,6 +22,7 @@ defmodule Valkyrie.MixProject do
 
   defp deps do
     [
+      {:cachex, "~> 3.1"},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.0"},
@@ -29,7 +30,10 @@ defmodule Valkyrie.MixProject do
       {:divo, "~> 1.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:divo_kafka, "~> 0.1.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:mockaffe, "~> 0.1.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
+      {:placebo, "~> 1.2", only: [:dev, :test]},
       {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
+      {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
+      {:smart_city_test, "~> 0.2.0", organization: "smartcolumbus_os", only: [:test, :integration]},
       {:yeet, "~> 0.3.0", organization: "smartcolumbus_os"}
     ]
   end
