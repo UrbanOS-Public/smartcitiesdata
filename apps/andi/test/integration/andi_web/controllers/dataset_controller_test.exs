@@ -9,7 +9,8 @@ defmodule Andi.CreateDatasetTest do
   plug Tesla.Middleware.BaseUrl, "http://localhost:4000"
 
   setup do
-    expected = TDG.create_dataset(%{})
+    Redix.command!(:smart_city_registry, ["FLUSHALL"])
+    expected = TDG.create_dataset(technical: %{orgName: "org1", dataName: "data1"})
     {:ok, response} = create(expected)
     {:ok, response: response, expected: expected}
   end
@@ -21,7 +22,7 @@ defmodule Andi.CreateDatasetTest do
 
     test "persists dataset for downstream use", %{expected: expected} do
       assert {:ok, actual} = Dataset.get(expected.id)
-      assert actual.technical.systemName == expected.technical.systemName
+      assert actual.technical.systemName == "org1__data1"
     end
   end
 

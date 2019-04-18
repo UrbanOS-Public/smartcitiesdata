@@ -80,6 +80,8 @@ defmodule AndiWeb.DatasetControllerTest do
 
   describe "PUT /api/ without systemName" do
     setup %{conn: conn, request: request} do
+      allow Dataset.get_all!(), return: []
+      {_, request} = pop_in(request, ["technical", "systemName"])
       [conn: put(conn, @route, request)]
     end
 
@@ -99,9 +101,30 @@ defmodule AndiWeb.DatasetControllerTest do
     end
   end
 
+  test "put returns 400 when systemName matches existing systemName", %{conn: conn, request: request} do
+    org_name = request["technical"]["orgName"]
+    data_name = request["technical"]["dataName"]
+
+    existing_dataset =
+      TDG.create_dataset(
+        id: "existing-ds1",
+        technical: %{dataName: data_name, orgName: org_name, systemName: "#{org_name}__#{data_name}"}
+      )
+
+    allow SmartCity.Dataset.get_all!(), return: [existing_dataset]
+
+    response =
+      conn
+      |> put(@route, request)
+      |> json_response(400)
+
+    assert %{"reason" => "Existing dataset has the same orgName and dataName"} == response
+  end
+
   describe "PUT /api/ with systemName" do
     setup %{conn: conn, request: request} do
-      req = put_in(request, ["technical", "systemName"], "org__dataset")
+      allow Dataset.get_all!(), return: []
+      req = put_in(request, ["technical", "systemName"], "org__dataset_akdjbas")
       [conn: put(conn, @route, req)]
     end
 
@@ -145,5 +168,19 @@ defmodule AndiWeb.DatasetControllerTest do
 
       assert example_datasets == actual_datasets
     end
+  end
+
+  test "PUT /api/ dataset passed without UUID generates UUID for dataset", %{conn: conn, request: request} do
+    allow Dataset.get_all!(), return: []
+
+    {_, request} = pop_in(request, ["id"])
+    conn = put(conn, @route, request)
+
+    uuid =
+      conn
+      |> json_response(201)
+      |> get_in(["id"])
+
+    assert uuid != nil
   end
 end
