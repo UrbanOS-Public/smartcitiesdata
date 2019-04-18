@@ -7,7 +7,7 @@ defmodule DiscoveryApiWeb.DatasetMetricsControllerTest do
     setup do
       keys = ["smart_registry:queries:count:123", "smart_registry:downloads:count:123"]
       allow(Persistence.get_keys("smart_registry:*:count:123"), return: keys)
-      allow(Persistence.get_keys("smart_registry:*:count:456"), return: nil)
+      allow(Persistence.get_keys("smart_registry:*:count:456"), return: [])
       allow(Persistence.get_many(keys), return: ["7", "9"])
       :ok
     end
