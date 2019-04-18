@@ -65,5 +65,6 @@ defmodule DiscoveryApiWeb.Router do
   scope "/api/v1", DiscoveryApiWeb do
     pipe_through([:api])
     get("/login", LoginController, :new)
+    get("/dataset/:dataset_id/metrics", DatasetMetricsController, :get)
   end
 end

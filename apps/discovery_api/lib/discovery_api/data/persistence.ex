@@ -23,4 +23,14 @@ defmodule DiscoveryApi.Data.Persistence do
     :redix
     |> Redix.command(["SET", key_string, Jason.encode!(value_map)])
   end
+
+  def get_keys(key_string) do
+    :redix
+    |> Redix.command!(["KEYS", key_string])
+  end
+
+  def get_many(keys) do
+    :redix
+    |> Redix.command!(["MGET" | keys])
+  end
 end
