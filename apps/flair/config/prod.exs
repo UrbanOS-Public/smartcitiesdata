@@ -5,4 +5,4 @@ config :flair,
   window_length: 5
 
 config :logger,
-  level: :info
+  level: :warn

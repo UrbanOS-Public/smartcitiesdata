@@ -39,7 +39,7 @@ defmodule Flair.PrestoClient do
     """
   end
 
-  #TODO - collapse these into one message
+  # TODO - collapse these into one message
   def generate_timing_statement_from_events(events) do
     events
     |> Enum.map(&values_statement/1)
