@@ -53,6 +53,9 @@ resource "local_file" "helm_vars" {
 reaper:
   image:
     tag: "${var.image_tag}"
+strimzi:
+  kafka:
+    brokers: "streaming-service-kafka-bootstrap.streaming-prime:9092"
 EOF
 }
 
