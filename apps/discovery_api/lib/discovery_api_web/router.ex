@@ -60,7 +60,6 @@ defmodule DiscoveryApiWeb.Router do
 
     get("/organization/:org_name/dataset/:dataset_name/download", DatasetDownloadController, :fetch_presto)
     get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_presto)
-    get("/logout", LoginController, :logout)
   end
 
   scope "/api/v1", DiscoveryApiWeb do
