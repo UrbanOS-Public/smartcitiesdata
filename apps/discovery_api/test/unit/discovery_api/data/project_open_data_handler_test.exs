@@ -38,7 +38,7 @@ defmodule DiscoveryApi.Data.ProjectOpenDataHandlerTest do
       base_url = "this_is_the_host"
 
       TemporaryEnv.put :discovery_api, DiscoveryApiWeb.Endpoint, %{url: %{host: base_url}} do
-        podms_map = Mapper.to_podms(dataset, "https://discoveryapi.#{base_url}")
+        podms_map = Mapper.to_podms(dataset, "https://data.#{base_url}")
 
         {:ok, _} = ProjectOpenDataHandler.process_project_open_data_event(dataset)
 

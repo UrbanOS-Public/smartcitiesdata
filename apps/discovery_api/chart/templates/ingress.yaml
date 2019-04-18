@@ -12,7 +12,7 @@ spec:
     serviceName: {{ .Values.service.name }}
     servicePort: {{ .Values.service.port }}
   rules:
-  - host: discoveryapi.{{ .Values.ingress.dnsZone }}
+  - host: data.{{ .Values.ingress.dnsZone }}
     http:
       paths:
       - path: /*

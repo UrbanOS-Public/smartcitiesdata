@@ -13,7 +13,7 @@ defmodule DiscoveryApi.Data.ProjectOpenDataHandler do
 
   defp persist(%SmartCity.Dataset{} = dataset) do
     host = Application.get_env(:discovery_api, DiscoveryApiWeb.Endpoint)[:url][:host]
-    base_url = "https://discoveryapi.#{host}"
+    base_url = "https://data.#{host}"
     podms_map = Mapper.to_podms(dataset, base_url)
     Persistence.persist(@name_space <> dataset.id, podms_map)
   end

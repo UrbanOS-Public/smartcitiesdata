@@ -73,7 +73,6 @@ ingress:
     alb.ingress.kubernetes.io/actions.redirect: '{"Type": "redirect", "RedirectConfig":{"Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
   dnsZone: "${data.terraform_remote_state.env_remote_state.dns_zone_name}"
-  prodDns: "discoveryapi.smartcolumbusos.com"
   port: 80
 EOF
 }
