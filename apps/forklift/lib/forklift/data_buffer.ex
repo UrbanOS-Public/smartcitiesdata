@@ -28,7 +28,7 @@ defmodule Forklift.DataBuffer do
     RedisStreamsClient.mark_complete(dataset_id, messages)
   end
 
-  def cleanup_dataset(dataset_id, []) do
+  def cleanup_dataset(dataset_id) do
     number = EmptyStreamTracker.get_and_increment_empty_reads(dataset_id)
 
     if number >= @number_of_empty_reads_to_delete do
@@ -36,7 +36,7 @@ defmodule Forklift.DataBuffer do
     end
   end
 
-  def cleanup_dataset(dataset_id, _messages) do
+  def reset_empty_reads(dataset_id) do
     EmptyStreamTracker.reset_empty_reads(dataset_id)
   end
 end

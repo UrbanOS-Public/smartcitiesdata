@@ -17,14 +17,16 @@ defmodule Forklift.DatasetWriter do
     end
   end
 
-  defp upload_unread_data(_dataset_id, []), do: nil
+  defp upload_unread_data(dataset_id, []) do
+    DataBuffer.cleanup_dataset(dataset_id)
+  end
 
   defp upload_unread_data(dataset_id, data) do
     payloads = extract_payloads(data)
 
     if PersistenceClient.upload_data(dataset_id, payloads) == :ok do
       DataBuffer.mark_complete(dataset_id, data)
-      DataBuffer.cleanup_dataset(dataset_id, data)
+      DataBuffer.reset_empty_reads(dataset_id)
     end
   end
 
@@ -56,7 +58,7 @@ defmodule Forklift.DatasetWriter do
 
   defp cleanup_pending(dataset_id, data) do
     DataBuffer.mark_complete(dataset_id, data)
-    DataBuffer.cleanup_dataset(dataset_id, data)
+    DataBuffer.cleanup_dataset(dataset_id)
     RetryTracker.reset_retries(dataset_id)
   end
 end
