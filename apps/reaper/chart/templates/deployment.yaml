@@ -43,7 +43,7 @@ spec:
         - name: DLQ_TOPIC
           value: {{ .Values.reaper.dlq_topic }}
         - name: KAFKA_BROKERS
-          value: {{ .Values.strimzi.kafka.brokers | default (include "kafka.brokerservice" .) }}
+          value: {{ include "kafka.brokerservice" . }}
         - name: RUN_IN_KUBERNETES
           value: "true"
         - name: REDIS_HOST

@@ -1,6 +1,6 @@
 provider "aws" {
   version = "1.39"
-  region = "${var.region}"
+  region  = "${var.region}"
 
   assume_role {
     role_arn = "${var.role_arn}"
@@ -8,7 +8,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias = "alm"
+  alias   = "alm"
   version = "1.39"
   region  = "${var.alm_region}"
 
@@ -30,31 +30,31 @@ data "terraform_remote_state" "alm_remote_state" {
 }
 
 data "terraform_remote_state" "env_remote_state" {
-  backend = "s3"
+  backend   = "s3"
   workspace = "${terraform.workspace}"
 
   config {
-    bucket = "${var.alm_state_bucket_name}"
-    key = "operating-system"
-    region = "us-east-2"
+    bucket   = "${var.alm_state_bucket_name}"
+    key      = "operating-system"
+    region   = "us-east-2"
     role_arn = "${var.alm_role_arn}"
   }
 }
 
 resource "local_file" "kubeconfig" {
   filename = "${path.module}/outputs/kubeconfig"
-  content = "${data.terraform_remote_state.env_remote_state.eks_cluster_kubeconfig}"
+  content  = "${data.terraform_remote_state.env_remote_state.eks_cluster_kubeconfig}"
 }
 
 resource "local_file" "helm_vars" {
   filename = "${path.module}/outputs/${terraform.workspace}.yaml"
+
   content = <<EOF
 reaper:
   image:
     tag: "${var.image_tag}"
 EOF
 }
-
 
 resource "null_resource" "helm_deploy" {
   provisioner "local-exec" {
@@ -65,9 +65,7 @@ export KUBECONFIG=${local_file.kubeconfig.filename}
 
 export AWS_DEFAULT_REGION=us-east-2
 
-helm repo add strimzi https://strimzi.io/charts
 helm repo update
-helm dependency build chart
 
 helm upgrade --install reaper ./chart --namespace=streaming-services \
     --values ${local_file.helm_vars.filename}
