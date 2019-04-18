@@ -6,7 +6,7 @@ defmodule Flair.StatsTest do
 
   alias Flair.Stats
 
-  describe "reducer" do
+  describe "stats_reducer" do
     test "with empty accumulator" do
       message =
         make_data_message()

@@ -74,7 +74,9 @@ defmodule Flair.PrestoClient do
 
   defp values_statement(map) do
     """
-    ('#{map.dataset_id}', #{map.schema_version}, '#{map.field}', #{map.window_start}, #{map.window_end}, #{map.valid_values}, #{map.records})
+    ('#{map.dataset_id}', #{map.schema_version}, '#{map.field}', #{map.window_start}, #{
+      map.window_end
+    }, #{map.valid_values}, #{map.records})
     """
     |> String.replace("\n", "")
   end

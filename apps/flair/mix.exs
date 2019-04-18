@@ -41,9 +41,14 @@ defmodule Flair.MixProject do
       {:kafka_ex, "~> 0.9"},
       {:mockaffe, "~> 0.1.1",
        only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
-      {:placebo, "~> 1.2", only: :integration},
+      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:faker, "~> 0.12.0"},
       {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"},
+      {:smart_city, "~> 2.1", organization: "smartcolumbus_os"},
       {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
+      {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
+      {:smart_city_test, "~> 0.2.3",
+       only: [:test, :integration], organization: "smartcolumbus_os"},
       {:statistics, "~> 0.6"},
       {:yeet, "~> 0.3.0", organization: "smartcolumbus_os"}
     ]
