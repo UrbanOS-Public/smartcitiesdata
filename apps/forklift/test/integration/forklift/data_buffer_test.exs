@@ -83,7 +83,7 @@ defmodule Forklift.DataBufferIntTest do
     data = TDG.create_data(dataset_id: "ds100")
     DataBuffer.write(data)
 
-    DataBuffer.cleanup_dataset("ds100", [])
+    DataBuffer.reset_empty_reads("ds100")
 
     assert @redis.command!(["EXISTS", "forklift:data:ds100"]) == 1
   end
@@ -96,7 +96,7 @@ defmodule Forklift.DataBufferIntTest do
     DataBuffer.mark_complete("ds101", [%{key: key, data: data}])
 
     0..(number_of_empty_reads + 1)
-    |> Enum.each(fn _ -> DataBuffer.cleanup_dataset("ds101", []) end)
+    |> Enum.each(fn _ -> DataBuffer.cleanup_dataset("ds101") end)
 
     assert @redis.command!(["EXISTS", "forklift:data:ds101"]) == 0
   end
@@ -107,7 +107,7 @@ defmodule Forklift.DataBufferIntTest do
     number_of_empty_reads = Application.get_env(:forklift, :number_of_empty_reads_to_delete, 50)
 
     0..(number_of_empty_reads + 1)
-    |> Enum.each(fn _ -> DataBuffer.cleanup_dataset("ds102", []) end)
+    |> Enum.each(fn _ -> DataBuffer.reset_empty_reads("ds102") end)
 
     assert @redis.command!(["EXISTS", "forklift:data:ds102"]) == 1
   end
