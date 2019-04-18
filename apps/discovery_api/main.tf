@@ -68,7 +68,7 @@ ingress:
     alb.ingress.kubernetes.io/scheme: "${var.is_internal ? "internal" : "internet-facing"}"
     alb.ingress.kubernetes.io/subnets: "${join(",", data.terraform_remote_state.env_remote_state.public_subnets)}"
     alb.ingress.kubernetes.io/security-groups: "${data.terraform_remote_state.env_remote_state.allow_all_security_group}"
-    alb.ingress.kubernetes.io/certificate-arn: "${data.terraform_remote_state.env_remote_state.tls_certificate_arn}"
+    alb.ingress.kubernetes.io/certificate-arn: "${data.terraform_remote_state.env_remote_state.root_tls_certificate_arn}"
     alb.ingress.kubernetes.io/tags: scos.delete.on.teardown=true
     alb.ingress.kubernetes.io/actions.redirect: '{"Type": "redirect", "RedirectConfig":{"Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
