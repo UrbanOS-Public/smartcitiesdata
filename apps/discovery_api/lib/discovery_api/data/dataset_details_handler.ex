@@ -16,7 +16,7 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandler do
           organizationDetails: organization,
           modified: dataset.business.modifiedDate,
           description: dataset.business.description,
-          fileTypes: ["CSV"],
+          fileTypes: get_file_type(dataset.technical.sourceFormat),
           sourceFormat: dataset.technical.sourceFormat,
           sourceType: dataset.technical.sourceType,
           sourceUrl: dataset.technical.sourceUrl,
@@ -41,6 +41,15 @@ defmodule DiscoveryApi.Data.DatasetDetailsHandler do
 
       error ->
         error
+    end
+  end
+
+  defp get_file_type(source_format) do
+    upcase_source_format = String.upcase(source_format)
+
+    case upcase_source_format do
+      "GTFS" -> ["JSON"]
+      _everything_else -> [upcase_source_format]
     end
   end
 end
