@@ -14,7 +14,7 @@ defmodule Valkyrie.MessageHandlerTest do
           key: "someKey",
           value: %{
             "payload" => %{"name" => "Jack Sparrow"},
-            "operational" => %{"ship" => "Black Pearl", "timing" => []},
+            "operational" => %{"timing" => []},
             "dataset_id" => "basic",
             "_metadata" => %{}
           }
