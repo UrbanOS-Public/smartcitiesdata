@@ -9,7 +9,7 @@ config :yeet,
   endpoint: [localhost: 9094]
 
 config :forklift,
-  cache_processing_batch_size: 20_000,
+  cache_processing_batch_size: 1_000,
   message_processing_cadence: 10_000,
   number_of_empty_reads_to_delete: 50,
   data_topic: data_topic
