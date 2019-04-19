@@ -3,8 +3,19 @@ defmodule Yeet do
   @moduledoc false
 
   def process_dead_letter(message, app_name, options \\ []) do
-    dead_letter = format_message(message, app_name, options)
+    dead_letter =
+      message
+      |> sanitize_message()
+      |> format_message(app_name, options)
+
     KafkaHelper.produce(dead_letter)
+  end
+
+  def sanitize_message(message) do
+    case Jason.encode(%{message: message}) do
+      {:ok, _message} -> message
+      {:error, _unencodable_message} -> inspect(message)
+    end
   end
 
   def format_message(original_message, app_name, options \\ []) do

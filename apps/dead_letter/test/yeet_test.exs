@@ -25,7 +25,22 @@ defmodule YeetTest do
 
       Yeet.process_dead_letter(@default_original_message, "forklift")
 
-      assert_called(KafkaHelper.produce(%{app: "forklift"}))
+      assert_called(KafkaHelper.produce(%{app: "forklift", original_message: @default_original_message}))
+    end
+
+    test "message is an unparseable binary" do
+      allow(KafkaHelper.produce(any()), return: :ok)
+
+      message = <<80, 75, 3, 4, 20, 0, 6, 0, 8, 0, 0, 0, 33, 0, 235, 122, 210>>
+
+      Yeet.process_dead_letter(message, "forklift")
+
+      assert_called(
+        KafkaHelper.produce(%{
+          app: "forklift",
+          original_message: "<<80, 75, 3, 4, 20, 0, 6, 0, 8, 0, 0, 0, 33, 0, 235, 122, 210>>"
+        })
+      )
     end
   end
 
@@ -55,10 +70,7 @@ defmodule YeetTest do
     end
 
     test "returns formatted DLQ message with a reason" do
-      actual =
-        Yeet.format_message("forklift", @default_original_message,
-          reason: "Failed to parse something"
-        )
+      actual = Yeet.format_message("forklift", @default_original_message, reason: "Failed to parse something")
 
       assert "Failed to parse something" == Map.get(actual, :reason)
     end
@@ -72,8 +84,7 @@ defmodule YeetTest do
     end
 
     test "returns formatted DLQ message with a stacktrace from System.stacktrace" do
-      actual =
-        Yeet.format_message(@default_original_message, "forklift", stacktrace: @default_stacktrace)
+      actual = Yeet.format_message(@default_original_message, "forklift", stacktrace: @default_stacktrace)
 
       assert Map.get(actual, :stacktrace) == Exception.format_stacktrace(@default_stacktrace)
     end
