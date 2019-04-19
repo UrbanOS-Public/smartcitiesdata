@@ -21,9 +21,8 @@ defmodule Valkyrie.Validators do
     payload
     |> Map.get(String.to_atom(name))
     |> case do
-         nil -> false
-         _ -> true
-       end
+      nil -> false
+      _ -> true
+    end
   end
-
 end
