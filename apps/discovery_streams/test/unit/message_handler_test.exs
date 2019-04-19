@@ -11,9 +11,9 @@ defmodule DiscoveryStreams.MessageHandlerTest do
   @outbound_records "records"
 
   setup do
-    CachexSupervisor.create_cache(:"cota__cota_vehicle_positions")
+    CachexSupervisor.create_cache(:cota__cota_vehicle_positions)
     CachexSupervisor.create_cache(:"shuttle-position")
-    Cachex.clear(:"cota__cota_vehicle_positions")
+    Cachex.clear(:cota__cota_vehicle_positions)
     Cachex.clear(:"shuttle-position")
     allow TopicSubscriber.list_subscribed_topics(), return: ["shuttle-position", "cota__cota_vehicle_positions"]
     :ok
@@ -111,7 +111,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
     ])
 
     cache_record_created = fn ->
-      Cachex.stream!(:"cota__cota_vehicle_positions")
+      Cachex.stream!(:cota__cota_vehicle_positions)
       |> Enum.to_list()
       |> Enum.map(fn {:entry, key, _create_ts, _ttl, vehicle} -> {key, vehicle} end) == [
         {"11604", %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}}
