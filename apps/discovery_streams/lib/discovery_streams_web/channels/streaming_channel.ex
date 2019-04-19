@@ -1,12 +1,12 @@
-defmodule CotaStreamingConsumerWeb.StreamingChannel do
+defmodule DiscoveryStreamsWeb.StreamingChannel do
   @moduledoc """
     Handles websocket connections for the COTA Bus location data
     After a client joins the channel, it pushes the vehicle_position cache to the client,
     and then begins sending new data as it arrives.
   """
-  use CotaStreamingConsumerWeb, :channel
-  alias CotaStreamingConsumerWeb.Presence
-  alias CotaStreamingConsumer.TopicSubscriber
+  use DiscoveryStreamsWeb, :channel
+  alias DiscoveryStreamsWeb.Presence
+  alias DiscoveryStreams.TopicSubscriber
 
   @update_event "update"
   @filter_event "filter"

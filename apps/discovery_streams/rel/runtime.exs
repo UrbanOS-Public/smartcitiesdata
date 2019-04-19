@@ -13,8 +13,8 @@ if kafka_brokers do
   config :kaffe, consumer: [
     endpoints: endpoints,
     topics: [],
-    consumer_group: "cota-streaming-consumer",
-    message_handler: CotaStreamingConsumer.MessageHandler,
+    consumer_group: "discovery-streams",
+    message_handler: DiscoveryStreams.MessageHandler,
     offset_reset_policy: :reset_to_latest
   ]
 end
@@ -27,8 +27,8 @@ if System.get_env("RUN_IN_KUBERNETES") do
         strategy: Elixir.Cluster.Strategy.Kubernetes,
         config: [
           mode: :dns,
-          kubernetes_node_basename: "cota_streaming_consumer",
-          kubernetes_selector: "app=cota-streaming-consumer",
+          kubernetes_node_basename: "discovery_streams",
+          kubernetes_selector: "app=discovery-streams",
           polling_interval: 10_000
         ]
       ]

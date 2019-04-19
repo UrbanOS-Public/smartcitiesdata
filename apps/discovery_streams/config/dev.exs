@@ -1,6 +1,6 @@
 use Mix.Config
 
-config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
+config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   debug_errors: true,
   check_origin: false,
   watchers: []
@@ -9,8 +9,8 @@ config :kaffe,
   consumer: [
     endpoints: [localhost: 9092, kafka: 9093],
     topics: [],
-    consumer_group: "cota-streaming-consumer",
-    message_handler: CotaStreamingConsumer.MessageHandler,
+    consumer_group: "discovery-streams",
+    message_handler: DiscoveryStreams.MessageHandler,
     offset_reset_policy: :reset_to_latest
   ],
   producer: [

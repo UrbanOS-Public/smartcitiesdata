@@ -1,10 +1,10 @@
-defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
-  use CotaStreamingConsumerWeb.ChannelCase
+defmodule DiscoveryStreamsWeb.StreamingChannelTest do
+  use DiscoveryStreamsWeb.ChannelCase
   use Placebo
 
   import Checkov
 
-  alias CotaStreamingConsumer.{CachexSupervisor, TopicSubscriber}
+  alias DiscoveryStreams.{CachexSupervisor, TopicSubscriber}
 
   setup do
     CachexSupervisor.create_cache(:"shuttle-position")
@@ -16,9 +16,9 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
   end
 
   data_test "presence is tracked per channel - #{channel}" do
-    {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel)
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
 
-    assert 1 == CotaStreamingConsumerWeb.Presence.connections(channel)
+    assert 1 == DiscoveryStreamsWeb.Presence.connections(channel)
 
     leave(socket)
 
@@ -33,7 +33,7 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
     Cachex.put(cache, "12345", %{"shuttleid" => "12345"})
     Cachex.put(cache, "98765", %{"shuttleid" => "98765"})
 
-    {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel)
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
 
     assert_push("update", %{"shuttleid" => "12345"}, 1000)
     assert_push("update", %{"shuttleid" => "98765"}, 1000)
@@ -51,7 +51,7 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
     Cachex.put(cache, "12342", %{"vehicleid" => "12342"})
     Cachex.put(cache, "54321", %{"vehicleid" => "54321"})
 
-    {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel)
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
 
     assert_push("update", %{"vehicleid" => "12342"}, 1000)
     assert_push("update", %{"vehicleid" => "54321"}, 1000)
@@ -71,8 +71,7 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
     Cachex.put(cache, "12345", %{"vehicleid" => "12345", "type" => "car"})
     Cachex.put(cache, "54321", %{"vehicleid" => "54321", "type" => "bus"})
 
-    {:ok, _, socket} =
-      subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel, %{"type" => "bus"})
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel, %{"type" => "bus"})
 
     refute_push("update", %{"vehicleid" => "12345", "type" => "car"}, 1000)
     assert_push("update", %{"vehicleid" => "54321", "type" => "bus"}, 1000)
@@ -87,7 +86,7 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
   end
 
   data_test "filter events cause all cached messages in cache #{cache} to be pushed through filter in channel #{channel}" do
-    {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel)
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
 
     Cachex.put(cache, "12342", %{"foo" => %{"bar" => "12342"}})
     Cachex.put(cache, "98765", %{"foo" => %{"bar" => "98765"}})
@@ -109,7 +108,7 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
   data_test "filter events cause all subsequent messages to be pushed to cache #{cache} through filter in channel #{
               channel
             }" do
-    {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel)
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
 
     push(socket, "filter", %{"foo.bar" => "12342"})
     broadcast_from(socket, "update", %{"foo" => %{"bar" => "12342"}})
@@ -130,7 +129,7 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
   data_test "filter fields on cache #{cache} with multiple values causes non-matches to be filtered out in channel #{
               channel
             }" do
-    {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel)
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
 
     push(socket, "filter", %{"foo.bar" => ["12342", "12349"]})
     broadcast_from(socket, "update", %{"foo" => %{"bar" => "12342"}})
@@ -156,7 +155,7 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
   end
 
   data_test "filters with multiple keys must all match for message to get pushed" do
-    {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel)
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
 
     push(socket, "filter", %{"foo.bar" => 1, "abc.def" => "two"})
 
@@ -179,7 +178,7 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
   end
 
   data_test "empty filter events cause all cached messages to be pushed" do
-    {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel)
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
 
     Cachex.put(cache, "123456", %{"foo" => %{"bar" => "123456"}})
     Cachex.put(cache, "test42", %{"foo" => %{"bar" => "test42"}})
@@ -201,7 +200,7 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
   end
 
   data_test "empty filter events cause all subsequent messages to be pushed" do
-    {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel)
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
 
     push(socket, "filter", %{})
 
@@ -222,6 +221,6 @@ defmodule CotaStreamingConsumerWeb.StreamingChannelTest do
 
   test "joining topic that does not exist returns error tuple" do
     assert {:error, %{reason: "Channel streaming:three does not exist"}} ==
-             subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, "streaming:three")
+             subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, "streaming:three")
   end
 end

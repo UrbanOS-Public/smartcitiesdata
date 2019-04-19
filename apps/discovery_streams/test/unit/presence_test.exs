@@ -1,11 +1,11 @@
-defmodule CotaStreamingConsumerWeb.PresenceTest do
-  use CotaStreamingConsumerWeb.ChannelCase
+defmodule DiscoveryStreamsWeb.PresenceTest do
+  use DiscoveryStreamsWeb.ChannelCase
   use Prometheus.Metric
   use Placebo
 
   import Checkov
 
-  alias CotaStreamingConsumer.{CachexSupervisor, TopicSubscriber}
+  alias DiscoveryStreams.{CachexSupervisor, TopicSubscriber}
 
   setup do
     CachexSupervisor.create_cache(:"shuttle-position")
@@ -25,7 +25,7 @@ defmodule CotaStreamingConsumerWeb.PresenceTest do
   data_test "subscribing to a channel(#{channel}) inreases the gauge(#{gauge}) count" do
     Gauge.reset(gauge)
 
-    {:ok, _, socket} = subscribe_and_join(socket(), CotaStreamingConsumerWeb.StreamingChannel, channel)
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
 
     check_gauge_incremented = fn ->
       Gauge.value(gauge) == 1

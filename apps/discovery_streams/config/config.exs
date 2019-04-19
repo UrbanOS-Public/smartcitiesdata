@@ -1,11 +1,11 @@
 use Mix.Config
 
-config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
+config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   http: [port: 4000],
   secret_key_base: "This is a test key",
-  render_errors: [view: CotaStreamingConsumerWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: CotaStreamingConsumer.PubSub, adapter: Phoenix.PubSub.PG2],
-  instrumenters: [CotaStreamingConsumerWeb.Endpoint.Instrumenter]
+  render_errors: [view: DiscoveryStreamsWeb.ErrorView, accepts: ~w(html json)],
+  pubsub: [name: DiscoveryStreams.PubSub, adapter: Phoenix.PubSub.PG2],
+  instrumenters: [DiscoveryStreamsWeb.Endpoint.Instrumenter]
 
 config :logger,
   backends: [:console],
@@ -14,7 +14,7 @@ config :logger,
   format: "$time $metadata[$level] $message\n",
   metadata: [:user_id]
 
-config :cota_streaming_consumer, ttl: 600_000
+config :discovery_streams, ttl: 600_000
 
 config :ex_aws,
   region: "us-east-2"

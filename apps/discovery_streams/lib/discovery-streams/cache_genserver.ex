@@ -1,4 +1,4 @@
-defmodule CotaStreamingConsumer.CacheGenserver do
+defmodule DiscoveryStreams.CacheGenserver do
   @moduledoc "false"
   use GenServer
 

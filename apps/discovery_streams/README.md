@@ -1,4 +1,4 @@
-# cota-streaming-consumer
+# discovery-streams
 
 To start your Phoenix server:
 
@@ -45,7 +45,6 @@ docker-compose up -d --build consumer
 | -------- | ----------- | ------- |
 | MIV_ENV | Environment for Mix build | `dev` or `test` or `prod`
 | KAFKA_BROKERS | comma delimited list of kafka brokers | kafka1.com:9092,kafka2.com:9092
-| COTA_DATA_TOPIC | kafka topic for vehicle position messages | |
 | SECRET_KEY_BASE | Pheonix uses this to verify cookies. Generate with `mix phx.gen.secret` or pass in your own | |
 
 ## Local development with minikube
@@ -60,14 +59,14 @@ Point minikube at your local Docker environment and build the image.
 
 ```bash
 eval $(minikube docker-env)
-docker build -t cota-streaming-consumer .
+docker build -t discovery-streams .
 ```
 
 Run a Helm upgrade with (mostly) default values.
 
 ```bash
-helm upgrade --install cota-streaming-consumer ./chart \
-  --namespace=cota-services \
-  --set image.repository=cota-streaming-consumer \
+helm upgrade --install discovery-streams ./chart \
+  --namespace=discovery \
+  --set image.repository=discovery-streams \
   --set image.tag=latest
 ```

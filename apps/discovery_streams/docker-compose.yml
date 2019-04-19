@@ -36,4 +36,3 @@ services:
       - 4000:4000
     environment:
       MIX_ENV: "dev"
-      COTA_DATA_TOPIC: "dev"

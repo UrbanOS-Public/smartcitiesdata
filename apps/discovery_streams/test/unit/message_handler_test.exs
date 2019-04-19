@@ -1,12 +1,12 @@
-defmodule CotaStreamingConsumer.MessageHandlerTest do
-  use CotaStreamingConsumerWeb.ChannelCase
+defmodule DiscoveryStreams.MessageHandlerTest do
+  use DiscoveryStreamsWeb.ChannelCase
   use Placebo
 
   import Checkov
   import ExUnit.CaptureLog
 
   alias StreamingMetrics.ConsoleMetricCollector, as: MetricCollector
-  alias CotaStreamingConsumer.{CachexSupervisor, MessageHandler, TopicSubscriber}
+  alias DiscoveryStreams.{CachexSupervisor, MessageHandler, TopicSubscriber}
 
   @outbound_records "records"
 
@@ -24,7 +24,7 @@ defmodule CotaStreamingConsumer.MessageHandlerTest do
 
     {:ok, _, socket} =
       socket()
-      |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, channel)
+      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, channel)
 
     MessageHandler.handle_messages([
       create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: topic)
@@ -46,7 +46,7 @@ defmodule CotaStreamingConsumer.MessageHandlerTest do
 
     {:ok, _, socket} =
       socket()
-      |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "streaming:shuttle-position")
+      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
 
     assert capture_log([level: :warn], fn ->
              MessageHandler.handle_messages([
@@ -68,7 +68,7 @@ defmodule CotaStreamingConsumer.MessageHandlerTest do
 
     {:ok, _, socket} =
       socket()
-      |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "vehicle_position")
+      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "vehicle_position")
 
     MessageHandler.handle_messages([
       create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "cota-vehicle-positions"),
@@ -88,7 +88,7 @@ defmodule CotaStreamingConsumer.MessageHandlerTest do
 
     {:ok, _, socket} =
       socket()
-      |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "vehicle_position")
+      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "vehicle_position")
 
     assert capture_log([level: :warn], fn ->
              MessageHandler.handle_messages([
@@ -104,7 +104,7 @@ defmodule CotaStreamingConsumer.MessageHandlerTest do
 
     {:ok, _, socket} =
       socket()
-      |> subscribe_and_join(CotaStreamingConsumerWeb.StreamingChannel, "vehicle_position")
+      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "vehicle_position")
 
     MessageHandler.handle_messages([
       create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), key: "11604")
