@@ -10,22 +10,5 @@ reaper:
     port: 9092
     type: ClusterIP
 
-strimzi:
-  enable: false
-  watchNamespaces: []
-  resources:
-    limits:
-      cpu: 100m
-    requests:
-      cpu: 10m
-  kafka:
-    brokers: "streaming-service-kafka-bootstrap.streaming-prime:9092"
-    replicaCount: 1
-    numPartitions: 30
-    replicationFactor: 3
-    minIsr: 2
-    autoTopics: false
-  zookeeper: {}
-
 redis:
   host: redis.external-services
