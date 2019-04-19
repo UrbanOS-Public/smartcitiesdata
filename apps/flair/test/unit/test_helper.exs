@@ -3,7 +3,6 @@ Application.ensure_all_started(:faker)
 Application.ensure_all_started(:placebo)
 
 defmodule TestHelper do
-  alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
   def create_dataset do

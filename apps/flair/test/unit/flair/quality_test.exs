@@ -81,33 +81,33 @@ defmodule Flair.QualityTest do
                Enum.reduce(messages, %{}, &Quality.reducer/2)
     end
 
-    # test "with nested schema accumulator", %{dataset: dataset} do
-    #   data_override = %{
-    #     dataset_id: "abc",
-    #     payload: %{
-    #       "required field" => "123",
-    #       "required parent field" => %{
-    #         "required sub field" => "jim",
-    #         "next_of_kin" => %{"required_sub_schema_field" => "bob"}
-    #       }
-    #     }
-    #   }
+    test "with nested schema accumulator", %{dataset: dataset} do
+      data_override = %{
+        dataset_id: "abc",
+        payload: %{
+          "required field" => "123",
+          "required parent field" => %{
+            "required sub field" => "jim",
+            "next_of_kin" => %{"required_sub_schema_field" => "bob"}
+          }
+        }
+      }
 
-    #   data = TDG.create_data(data_override)
+      data = TDG.create_data(data_override)
 
-    #   expected = %{
-    #     "123" => %{
-    #       :record_count => 1,
-    #       "required field" => 1,
-    #       "required parent field" => 1,
-    #       "required parent field.required sub field" => 1,
-    #       "required parent field.required sub field.next_of_kin" => 1,
-    #       "required parent field.required sub field.next_of_kin.required_sub_schema_field" => 1
-    #     }
-    #   }
+      expected = %{
+        "abc" => %{
+          :record_count => 1,
+          "required field" => 1,
+          "required parent field" => 1,
+          "required parent field.required sub field" => 1,
+          "required parent field.next_of_kin" => 1,
+          "required parent field.next_of_kin.required_sub_schema_field" => 1
+        }
+      }
 
-    #   allow(Dataset.get!(dataset.id), return: dataset)
-    #   assert expected == Quality.reducer(data, %{})
-    # end
+      allow(Dataset.get!(dataset.id), return: dataset)
+      assert expected == Quality.reducer(data, %{})
+    end
   end
 end

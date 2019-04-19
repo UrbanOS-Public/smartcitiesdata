@@ -52,7 +52,9 @@ defmodule Flair.Quality do
   end
 
   defp update_field_count(acc, field_name, data) do
-    if Map.get(data, field_name, nil) != nil do
+    field_path = String.split(field_name, ".")
+
+    if get_in(data, field_path) != nil do
       Map.update(acc, field_name, 1, fn existing_value -> existing_value + 1 end)
     else
       Map.update(acc, field_name, 0, fn existing_value -> existing_value end)
