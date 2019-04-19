@@ -10,7 +10,7 @@ by adding `forklift` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:forklift, "~> 0.1.0"}
+    {:forklift, "~> 0.1.4"}
   ]
 end
 ```
