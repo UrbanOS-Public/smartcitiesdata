@@ -10,7 +10,7 @@ defmodule DiscoveryStreamsWeb.PresenceTest do
   setup do
     CachexSupervisor.create_cache(:"shuttle-position")
     CachexSupervisor.create_cache(:"cota-vehicle-positions")
-    allow TopicSubscriber.list_subscribed_topics(), return: ["shuttle-position", "cota-vehicle-positions"]
+    allow TopicSubscriber.list_subscribed_topics(), return: ["shuttle-position", "cota__cota_vehicle_positions"]
     :ok
   end
 

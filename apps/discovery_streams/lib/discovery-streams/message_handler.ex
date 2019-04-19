@@ -62,9 +62,10 @@ defmodule DiscoveryStreams.MessageHandler do
     )
   end
 
-  defp broadcast(%{topic: "cota-vehicle-positions", value: data}) do
+  defp broadcast(%{topic: "cota__cota_vehicle_positions", value: data}) do
     DiscoveryStreamsWeb.Endpoint.broadcast("vehicle_position", "update", data)
     DiscoveryStreamsWeb.Endpoint.broadcast("streaming:cota-vehicle-positions", "update", data)
+    DiscoveryStreamsWeb.Endpoint.broadcast("streaming:cota__cota_vehicle_positions", "update", data)
   end
 
   defp broadcast(%{topic: channel, value: data}) do
