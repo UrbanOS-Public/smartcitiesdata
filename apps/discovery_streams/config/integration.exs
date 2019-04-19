@@ -6,7 +6,7 @@ host =
     defined -> defined
   end
 
-config :cota_streaming_consumer,
+config :discovery_streams,
   divo: [
     {DivoKafka, [create_topics: "cota-vehicle-positions:1:1,shuttle-positions:1:1", outside_host: host]}
   ],
@@ -16,9 +16,9 @@ config :kaffe,
   consumer: [
     endpoints: [{String.to_atom(host), 9092}],
     topics: [],
-    consumer_group: "cota-streaming-consumer",
-    message_handler: CotaStreamingConsumer.MessageHandler,
+    consumer_group: "discovery-streams",
+    message_handler: DiscoveryStreams.MessageHandler,
     offset_reset_policy: :reset_to_latest
   ]
 
-config :cota_streaming_consumer, topic_subscriber_interval: 1_000
+config :discovery_streams, topic_subscriber_interval: 1_000

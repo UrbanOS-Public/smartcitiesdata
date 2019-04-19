@@ -1,5 +1,5 @@
-defmodule CotaStreamingConsumerWeb.HealthCheckControllerTest do
-  use CotaStreamingConsumerWeb.ConnCase
+defmodule DiscoveryStreamsWeb.HealthCheckControllerTest do
+  use DiscoveryStreamsWeb.ConnCase
 
   test "GET /socket/healthcheck", %{conn: conn} do
     conn = get(conn, "/socket/healthcheck")

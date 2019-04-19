@@ -1,10 +1,10 @@
 replicaCount: 3
 image:
-  repository: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/cota-streaming-consumer
+  repository: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/discovery-streams
   tag: latest
   pullPolicy: IfNotPresent
 smokeTestImage:
-  repository: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/cota-consumer-smoke-test
+  repository: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/discovery-streams-smoke-test
   tag: latest
   pullPolicy: IfNotPresent
 ingress:

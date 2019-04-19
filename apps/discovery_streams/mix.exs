@@ -1,9 +1,9 @@
-defmodule CotaStreamingConsumer.Mixfile do
+defmodule DiscoveryStreams.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app: :cota_streaming_consumer,
+      app: :discovery_streams,
       version: "0.0.1",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -17,7 +17,7 @@ defmodule CotaStreamingConsumer.Mixfile do
 
   def application do
     [
-      mod: {CotaStreamingConsumer.Application, []},
+      mod: {DiscoveryStreams.Application, []},
       extra_applications: [:prometheus_plugs, :prometheus_phoenix, :logger, :runtime_tools]
     ]
   end

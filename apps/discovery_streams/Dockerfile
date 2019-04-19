@@ -22,7 +22,7 @@ RUN apk update && \
     apk add --no-cache bash openssl && \
     rm -rf /var/cache/**/*
 WORKDIR /app
-COPY --from=builder /app/_build/prod/rel/cota_streaming_consumer/ .
+COPY --from=builder /app/_build/prod/rel/discovery_streams/ .
 ENV PORT 4000
 EXPOSE ${PORT}
-CMD ["bin/cota_streaming_consumer", "foreground"]
+CMD ["bin/discovery_streams", "foreground"]

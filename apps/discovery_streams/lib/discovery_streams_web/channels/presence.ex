@@ -1,7 +1,7 @@
-defmodule CotaStreamingConsumerWeb.Presence.Instrumenter do
+defmodule DiscoveryStreamsWeb.Presence.Instrumenter do
   @moduledoc false
   use Prometheus.Metric
-  alias CotaStreamingConsumerWeb.Presence
+  alias DiscoveryStreamsWeb.Presence
 
   def setup do
     get_gauges()
@@ -42,13 +42,13 @@ defmodule CotaStreamingConsumerWeb.Presence.Instrumenter do
   defp topic_to_channel(topic), do: "streaming:#{topic}"
 end
 
-defmodule CotaStreamingConsumerWeb.Presence.Server do
+defmodule DiscoveryStreamsWeb.Presence.Server do
   @moduledoc """
   Push Phoenix presence metrics to our Prometheus gauge every 1 second.
   """
 
   use GenServer
-  alias CotaStreamingConsumerWeb.Presence.Instrumenter
+  alias DiscoveryStreamsWeb.Presence.Instrumenter
 
   def init(_) do
     Instrumenter.setup()
@@ -71,11 +71,11 @@ defmodule CotaStreamingConsumerWeb.Presence.Server do
   end
 end
 
-defmodule CotaStreamingConsumerWeb.Presence do
+defmodule DiscoveryStreamsWeb.Presence do
   @moduledoc false
   use Phoenix.Presence,
-    otp_app: :cota_streaming_consumer,
-    pubsub_server: CotaStreamingConsumer.PubSub
+    otp_app: :discovery_streams,
+    pubsub_server: DiscoveryStreams.PubSub
 
   def connections(channel) do
     __MODULE__

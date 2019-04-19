@@ -1,10 +1,10 @@
-defmodule CotaStreamingConsumerWeb do
+defmodule DiscoveryStreamsWeb do
   @moduledoc "false"
   def controller do
     quote do
-      use Phoenix.Controller, namespace: CotaStreamingConsumerWeb
+      use Phoenix.Controller, namespace: DiscoveryStreamsWeb
       import Plug.Conn
-      import CotaStreamingConsumerWeb.Router.Helpers
+      import DiscoveryStreamsWeb.Router.Helpers
     end
   end
 

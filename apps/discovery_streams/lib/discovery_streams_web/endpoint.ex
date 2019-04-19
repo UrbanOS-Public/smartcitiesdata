@@ -1,16 +1,16 @@
-defmodule CotaStreamingConsumerWeb.Endpoint.Instrumenter do
+defmodule DiscoveryStreamsWeb.Endpoint.Instrumenter do
   @moduledoc """
   Module for prometheus instrumentation
   """
   use Prometheus.PhoenixInstrumenter
 end
 
-defmodule CotaStreamingConsumerWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :cota_streaming_consumer
+defmodule DiscoveryStreamsWeb.Endpoint do
+  use Phoenix.Endpoint, otp_app: :discovery_streams
 
-  socket("/socket", CotaStreamingConsumerWeb.UserSocket)
+  socket("/socket", DiscoveryStreamsWeb.UserSocket)
 
-  plug(CotaStreamingConsumer.MetricsExporter)
+  plug(DiscoveryStreams.MetricsExporter)
 
   plug(
     Plug.Parsers,
@@ -29,7 +29,7 @@ defmodule CotaStreamingConsumerWeb.Endpoint do
     signing_salt: "qigJncyv"
   )
 
-  plug(CotaStreamingConsumerWeb.Router)
+  plug(DiscoveryStreamsWeb.Router)
 
   def init(_key, config) do
     {:ok, config}

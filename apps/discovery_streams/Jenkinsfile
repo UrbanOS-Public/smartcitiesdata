@@ -21,7 +21,7 @@ node ('infrastructure') {
 
         doStageUnlessRelease('Build') {
             withCredentials([string(credentialsId: 'hex-read', variable: 'HEX_TOKEN')]) {
-                image = docker.build("scos/cota-streaming-consumer:${env.GIT_COMMIT_HASH}", '--build-arg HEX_TOKEN=$HEX_TOKEN .')
+                image = docker.build("scos/discovery-streams:${env.GIT_COMMIT_HASH}", '--build-arg HEX_TOKEN=$HEX_TOKEN .')
 
                 sh('''
                 export HOST_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
@@ -34,7 +34,7 @@ node ('infrastructure') {
             }
 
             dir('smoke-test') {
-                smokeTestImage = docker.build("scos/cota-consumer-smoke-test:${env.GIT_COMMIT_HASH}")
+                smokeTestImage = docker.build("scos/discovery-streams-smoke-test:${env.GIT_COMMIT_HASH}")
             }
         }
 
@@ -70,8 +70,8 @@ node ('infrastructure') {
             scos.applyAndPushGitHubTag(promotionTag)
 
             scos.withDockerRegistry {
-                image = scos.pullImageFromDockerRegistry("scos/cota-streaming-consumer", env.GIT_COMMIT_HASH)
-                smokeTestImage = scos.pullImageFromDockerRegistry("scos/cota-consumer-smoke-test", env.GIT_COMMIT_HASH)
+                image = scos.pullImageFromDockerRegistry("scos/discovery-streams", env.GIT_COMMIT_HASH)
+                smokeTestImage = scos.pullImageFromDockerRegistry("scos/discovery-streams-smoke-test", env.GIT_COMMIT_HASH)
                 image.push(releaseTag)
                 smokeTestImage.push(releaseTag)
                 image.push(promotionTag)
@@ -91,15 +91,15 @@ def deployConsumerTo(params = [:]) {
 
         def terraformOutputs = scos.terraformOutput(environment)
         def subnets = terraformOutputs.public_subnets.value.join(/\\,/)
-        def allowInboundTrafficSG = terraformOutputs.allow_all_security_group.value            
+        def allowInboundTrafficSG = terraformOutputs.allow_all_security_group.value
         def certificateARN = internal ? terraformOutputs.tls_certificate_arn.value : terraformOutputs.root_tls_certificate_arn.value
         def ingressScheme = internal ? 'internal' : 'internet-facing'
 
         sh("""#!/bin/bash
             set -e
             helm init --client-only
-            helm upgrade --install cota-streaming-consumer ./chart \
-                --namespace=cota-services \
+            helm upgrade --install discovery-streams ./chart \
+                --namespace=discovery \
                 --set ingress.enabled="true" \
                 --set ingress.scheme="${ingressScheme}" \
                 --set ingress.subnets="${subnets}" \

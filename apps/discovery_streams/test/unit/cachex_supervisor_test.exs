@@ -1,8 +1,8 @@
-defmodule CotaStreamingConsumer.CachexSupervisorTest do
+defmodule DiscoveryStreams.CachexSupervisorTest do
   use ExUnit.Case
   use TemporaryEnv
 
-  alias CotaStreamingConsumer.CachexSupervisor
+  alias DiscoveryStreams.CachexSupervisor
 
   describe "create_cache/1" do
     test "creates new cachex" do
@@ -14,7 +14,7 @@ defmodule CotaStreamingConsumer.CachexSupervisorTest do
     end
 
     test "cache gets created as a ttl based cache" do
-      TemporaryEnv.put :cota_streaming_consumer, :ttl, 200 do
+      TemporaryEnv.put :discovery_streams, :ttl, 200 do
         CachexSupervisor.create_cache(:cache_2)
 
         Cachex.put(:cache_2, :hello, "Brian")

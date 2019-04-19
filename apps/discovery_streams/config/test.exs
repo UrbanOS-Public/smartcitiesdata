@@ -1,6 +1,6 @@
 use Mix.Config
 
-config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
+config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   http: [port: 4001],
   server: false
 

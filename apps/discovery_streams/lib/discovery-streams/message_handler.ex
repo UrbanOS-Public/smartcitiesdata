@@ -1,4 +1,4 @@
-defmodule CotaStreamingConsumer.MessageHandler do
+defmodule DiscoveryStreams.MessageHandler do
   @moduledoc """
     Gets messages out of kafka, adds them to the cache,
     broadcasts them, and records metrics.
@@ -57,18 +57,18 @@ defmodule CotaStreamingConsumer.MessageHandler do
 
   defp add_to_cache(%{key: key, topic: topic, value: message}) do
     GenServer.abcast(
-      CotaStreamingConsumer.CacheGenserver,
+      DiscoveryStreams.CacheGenserver,
       {:put, String.to_atom(topic), key, message}
     )
   end
 
   defp broadcast(%{topic: "cota-vehicle-positions", value: data}) do
-    CotaStreamingConsumerWeb.Endpoint.broadcast("vehicle_position", "update", data)
-    CotaStreamingConsumerWeb.Endpoint.broadcast("streaming:cota-vehicle-positions", "update", data)
+    DiscoveryStreamsWeb.Endpoint.broadcast("vehicle_position", "update", data)
+    DiscoveryStreamsWeb.Endpoint.broadcast("streaming:cota-vehicle-positions", "update", data)
   end
 
   defp broadcast(%{topic: channel, value: data}) do
-    CotaStreamingConsumerWeb.Endpoint.broadcast!("streaming:#{channel}", "update", data)
+    DiscoveryStreamsWeb.Endpoint.broadcast!("streaming:#{channel}", "update", data)
   end
 
   defp log_message(message) do

@@ -1,13 +1,13 @@
 use Mix.Config
 
-config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint,
+config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   http: [port: {:system, "PORT"}],
   server: true,
   root: ".",
-  version: Application.spec(:cota_streaming_consumer, :vsn),
+  version: Application.spec(:discovery_streams, :vsn),
   secret_key_base: System.get_env("SECRET_KEY_BASE")
 
-config :cota_streaming_consumer, CotaStreamingConsumerWeb.Endpoint, check_origin: false
+config :discovery_streams, DiscoveryStreamsWeb.Endpoint, check_origin: false
 
 config :logger,
   level: :info

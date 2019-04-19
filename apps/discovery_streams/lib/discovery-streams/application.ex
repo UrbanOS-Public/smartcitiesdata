@@ -1,9 +1,9 @@
-defmodule CotaStreamingConsumer.MetricsExporter do
+defmodule DiscoveryStreams.MetricsExporter do
   @moduledoc "false"
   use Prometheus.PlugExporter
 end
 
-defmodule CotaStreamingConsumer.Application do
+defmodule DiscoveryStreams.Application do
   @moduledoc "false"
   use Application
 
@@ -12,20 +12,20 @@ defmodule CotaStreamingConsumer.Application do
   def start(_type, _args) do
     import Supervisor.Spec
 
-    CotaStreamingConsumer.MetricsExporter.setup()
-    CotaStreamingConsumerWeb.Endpoint.Instrumenter.setup()
+    DiscoveryStreams.MetricsExporter.setup()
+    DiscoveryStreamsWeb.Endpoint.Instrumenter.setup()
 
-    opts = [strategy: :one_for_one, name: CotaStreamingConsumer.Supervisor]
+    opts = [strategy: :one_for_one, name: DiscoveryStreams.Supervisor]
 
     children =
       [
-        CotaStreamingConsumer.CachexSupervisor,
-        supervisor(CotaStreamingConsumerWeb.Endpoint, []),
+        DiscoveryStreams.CachexSupervisor,
+        supervisor(DiscoveryStreamsWeb.Endpoint, []),
         libcluster(),
-        CotaStreamingConsumer.CacheGenserver,
+        DiscoveryStreams.CacheGenserver,
         kaffe(),
-        CotaStreamingConsumerWeb.Presence,
-        CotaStreamingConsumerWeb.Presence.Server
+        DiscoveryStreamsWeb.Presence,
+        DiscoveryStreamsWeb.Presence.Server
       ]
       |> List.flatten()
 
@@ -33,7 +33,7 @@ defmodule CotaStreamingConsumer.Application do
   end
 
   def config_change(changed, _new, removed) do
-    CotaStreamingConsumerWeb.Endpoint.config_change(changed, removed)
+    DiscoveryStreamsWeb.Endpoint.config_change(changed, removed)
     :ok
   end
 
@@ -52,7 +52,7 @@ defmodule CotaStreamingConsumer.Application do
       _ ->
         [
           Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, []),
-          CotaStreamingConsumer.TopicSubscriber
+          DiscoveryStreams.TopicSubscriber
         ]
     end
   end

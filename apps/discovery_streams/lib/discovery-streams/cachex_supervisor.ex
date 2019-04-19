@@ -1,4 +1,4 @@
-defmodule CotaStreamingConsumer.CachexSupervisor do
+defmodule DiscoveryStreams.CachexSupervisor do
   @moduledoc """
   Supervisor that manages dyanmic caches
   """
@@ -15,7 +15,7 @@ defmodule CotaStreamingConsumer.CachexSupervisor do
   end
 
   def create_cache(name) when is_atom(name) do
-    ttl = Application.get_env(:cota_streaming_consumer, :ttl)
+    ttl = Application.get_env(:discovery_streams, :ttl)
     expiration = Cachex.Spec.expiration(default: ttl)
 
     child_spec = %{

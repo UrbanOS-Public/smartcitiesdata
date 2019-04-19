@@ -1,4 +1,4 @@
-defmodule CotaStreamingConsumerWeb.ChannelCase do
+defmodule DiscoveryStreamsWeb.ChannelCase do
   @moduledoc "false"
   use ExUnit.CaseTemplate
 
@@ -6,7 +6,7 @@ defmodule CotaStreamingConsumerWeb.ChannelCase do
     quote do
       use Phoenix.ChannelTest
 
-      @endpoint CotaStreamingConsumerWeb.Endpoint
+      @endpoint DiscoveryStreamsWeb.Endpoint
     end
   end
 

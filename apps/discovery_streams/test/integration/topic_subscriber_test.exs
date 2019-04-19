@@ -1,4 +1,4 @@
-defmodule CotaStreamingConsumer.TopicSubscriberTest do
+defmodule DiscoveryStreams.TopicSubscriberTest do
   use ExUnit.Case
   use Divo
 

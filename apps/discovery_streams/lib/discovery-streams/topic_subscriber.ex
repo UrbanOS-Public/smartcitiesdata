@@ -1,11 +1,11 @@
-defmodule CotaStreamingConsumer.TopicSubscriber do
+defmodule DiscoveryStreams.TopicSubscriber do
   @moduledoc false
   use GenServer
   require Logger
 
-  alias CotaStreamingConsumer.CachexSupervisor
+  alias DiscoveryStreams.CachexSupervisor
 
-  @interval Application.get_env(:cota_streaming_consumer, :topic_subscriber_interval, 120_000)
+  @interval Application.get_env(:discovery_streams, :topic_subscriber_interval, 120_000)
 
   def start_link(_args) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
