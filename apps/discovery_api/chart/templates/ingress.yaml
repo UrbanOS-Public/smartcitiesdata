@@ -12,6 +12,13 @@ spec:
     serviceName: {{ .Values.service.name }}
     servicePort: {{ .Values.service.port }}
   rules:
+  - host: data.{{ .Values.ingress.rootDnsZone }}
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: redirect
+          servicePort: use-annotation
   - host: data.{{ .Values.ingress.dnsZone }}
     http:
       paths:
