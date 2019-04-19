@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.1.1",
+      version: "0.1.2",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -46,6 +46,7 @@ defmodule Reaper.MixProject do
       {:jason, "~>1.1"},
       {:kaffe, "~> 1.11"},
       {:libcluster, "~> 3.0"},
+      {:observer_cli, "~> 1.4"},
       {:plug_cowboy, "~> 2.0"},
       {:protobuf, "~> 0.6"},
       {:redix, "~> 0.9"},
