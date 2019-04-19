@@ -32,12 +32,13 @@ defmodule Valkyrie.MessageHandler do
     end
   end
 
-  defp validate(message) do
-    # case schema_satisfied?(message, schema) do
-    #   true -> {:ok, message}
-    #   false -> Yeet.process_dead_letter(message, "Valkyrie")
-    # end
-    {:ok, message}
+  defp validate(%Data{dataset_id: id, payload: payload} = message) do
+    %Valkyrie.Dataset{schema: schema} = Valkyrie.Dataset.get(id)
+
+    case Valkyrie.Validators.schema_satisfied?(payload, schema) do
+      true -> {:ok, message}
+      false -> Yeet.process_dead_letter(message, "Valkyrie")
+    end
   end
 
   defp set_operational_timing(start_time, validated_message) do

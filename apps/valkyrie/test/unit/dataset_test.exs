@@ -25,11 +25,11 @@ defmodule Valkyrie.DatasetTest do
 
     test "When a key is in the local cache, dataset is not called" do
       allow SmartCity.Dataset.get(any()), return: {:ok, :doesnt_matter}
-      dataset = %Valkyrie.Dataset{schema: %Valkyrie.Dataset{schema: [%{"name" => "my_int", "type" => "int"}]}}
+      dataset = %Valkyrie.Dataset{schema: [%{"name" => "my_int", "type" => "int"}]}
       Cachex.put(@cache, "id-1", dataset)
 
       assert Valkyrie.Dataset.get("id-1") == dataset
-      assert_called SmartCity.Dataset.get(any()), times(0)
+      refute_called SmartCity.Dataset.get(any())
     end
 
     test "When dataset is not available get returns nil" do
