@@ -3,14 +3,12 @@ defmodule Flair.Stats do
 
   alias SmartCity.Data
 
-  @spec reducer(%Data{}, %{}) :: %{}
   def reducer(%Data{dataset_id: id, operational: %{timing: timing}}, acc) do
     Map.update(acc, id, List.wrap(timing), fn x ->
       timing ++ x
     end)
   end
 
-  @spec calculate_stats({String.t(), List.t()}) :: {String.t(), %{}}
   def calculate_stats({dataset_id, raw_metrics}) do
     calculated_metrics =
       raw_metrics
@@ -21,11 +19,8 @@ defmodule Flair.Stats do
     {dataset_id, calculated_metrics}
   end
 
-  @spec stats_key_fn(%{required(:app) => String.t(), required(:label) => String.t()}) :: tuple
   defp stats_key_fn(%{app: app, label: label}), do: {app, label}
 
-  @spec stats_val_fn(%{required(:start_time) => String.t(), required(:end_time) => String.t()}) ::
-          integer
   defp stats_val_fn(%{start_time: start_time, end_time: end_time}) do
     {:ok, start_time, 0} = DateTime.from_iso8601(start_time)
     {:ok, end_time, 0} = DateTime.from_iso8601(end_time)

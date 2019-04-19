@@ -37,18 +37,19 @@ defmodule Flair.Quality do
     end
   end
 
-  def reducer(%Data{dataset_id: id, payload: data}, acc) do
-    existing_map = Map.get(acc, id, %{})
+  def reducer(%Data{dataset_id: id, version: version, payload: data}, acc) do
+    existing_dataset_map = Map.get(acc, id, %{})
+    existing_version_map = Map.get(existing_dataset_map, version, %{})
 
     updated_map =
       id
       |> get_required_fields()
-      |> Enum.reduce(existing_map, fn field_name, acc ->
+      |> Enum.reduce(existing_version_map, fn field_name, acc ->
         update_field_count(acc, field_name, data)
       end)
       |> Map.update(:record_count, 1, fn value -> value + 1 end)
 
-    Map.put(acc, id, updated_map)
+    Map.put(acc, id, Map.put(existing_dataset_map, version, updated_map))
   end
 
   defp update_field_count(acc, field_name, data) do
@@ -59,5 +60,33 @@ defmodule Flair.Quality do
     else
       Map.update(acc, field_name, 0, fn existing_value -> existing_value end)
     end
+  end
+
+  def calculate_quality({dataset_id, raw_quality}) do
+    calculated_quality =
+      raw_quality
+      |> Map.keys()
+      |> Enum.map(fn version -> explode_version(dataset_id, version, raw_quality) end)
+      |> List.flatten()
+
+    {dataset_id, calculated_quality}
+  end
+
+  defp explode_version(dataset_id, version, full_map) do
+    version_map = Map.get(full_map, version)
+    record_count = Map.get(version_map, :record_count)
+    fields = Map.get(version_map, :fields)
+
+    fields
+    |> Map.keys()
+    |> Enum.map(fn key ->
+      %{
+        dataset_id: dataset_id,
+        schema_version: version,
+        field: key,
+        valid_values: Map.get(fields, key),
+        records: record_count
+      }
+    end)
   end
 end
