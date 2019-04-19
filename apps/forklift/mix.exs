@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "0.1.3",
+      version: "0.1.4",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -40,7 +40,8 @@ defmodule Forklift.MixProject do
       {:redix, "~> 0.9.3"},
       {:faker, "~> 0.12", only: [:dev, :test, :integration]},
       {:distillery, "~> 2.0"},
-      {:yeet, "~> 0.2.0", organization: "smartcolumbus_os"}
+      {:yeet, "~> 0.2.0", organization: "smartcolumbus_os"},
+      {:observer_cli, "~> 1.4"}
     ]
   end
 
