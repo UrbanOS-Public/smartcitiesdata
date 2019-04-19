@@ -55,7 +55,10 @@ defmodule YeetTest do
     end
 
     test "returns formatted DLQ message with a reason" do
-      actual = Yeet.format_message("forklift", @default_original_message, reason: "Failed to parse something")
+      actual =
+        Yeet.format_message("forklift", @default_original_message,
+          reason: "Failed to parse something"
+        )
 
       assert "Failed to parse something" == Map.get(actual, :reason)
     end
@@ -69,7 +72,8 @@ defmodule YeetTest do
     end
 
     test "returns formatted DLQ message with a stacktrace from System.stacktrace" do
-      actual = Yeet.format_message(@default_original_message, "forklift", stacktrace: @default_stacktrace)
+      actual =
+        Yeet.format_message(@default_original_message, "forklift", stacktrace: @default_stacktrace)
 
       assert Map.get(actual, :stacktrace) == Exception.format_stacktrace(@default_stacktrace)
     end
@@ -102,3 +106,5 @@ defmodule YeetTest do
     end
   end
 end
+
+# <<80, 75, 3, 4, 20, 0, 6, 0, 8, 0, 0, 0, 33, 0, 235, 122, 210, 147, 98, 1, 0, 0, 144, 4, 0, 0, 19, 0, 220, 1, 91, 67, 111, 110, 116, 101, 110, 116, 95, 84, 121, 112, 101, 115, 93, 46, 120, 109, 108, 32>>
