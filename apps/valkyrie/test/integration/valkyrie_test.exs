@@ -56,7 +56,7 @@ defmodule ValkyrieTest do
 
     Patiently.wait_for!(
       fn ->
-        data_messages = fetch_and_unwrap("streaming-dead-letters")
+        data_messages = fetch_and_unwrap("dead-letters")
 
         Enum.any?(data_messages, fn data_message ->
           assert String.contains?(data_message.reason, "Invalid data message")

@@ -32,11 +32,11 @@ defmodule Valkyrie.MessageHandler do
     end
   end
 
-  defp validate(new_value) do
-    # ----
-    # Do validations here
-    # ----
-    {:ok, new_value}
+  defp validate(message) do
+    case schema_satisfied?(message, schema) do
+      true -> {:ok, message}
+      false -> Yeet.process_dead_letter(message, "Valkyrie")
+    end
   end
 
   defp set_operational_timing(start_time, validated_message) do

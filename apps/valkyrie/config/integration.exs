@@ -11,7 +11,10 @@ System.put_env("HOST", host)
 endpoint = [{to_charlist(host), 9092}]
 
 config :valkyrie,
-  divo: "./docker-compose.yaml",
+  divo: [
+    {DivoKafka, [create_topics: "raw:1:1,validated:1:1,dead-letters:1:1", outside_host: host]},
+    DivoRedis
+  ],
   divo_wait: [dwell: 700, max_tries: 50]
 
 config :kaffe,
