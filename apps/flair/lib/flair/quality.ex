@@ -6,25 +6,34 @@ defmodule Flair.Quality do
 
   def get_required_fields(dataset_id) do
     Dataset.get!(dataset_id).technical.schema
-    |> Enum.map(fn field -> get_sub_required_fields(field) end)
+    |> Enum.map(fn field -> get_sub_required_fields(field, "") end)
     |> List.flatten()
+    |> remove_dot()
   end
 
-  defp get_sub_required_fields(required_field) do
+  defp remove_dot([]), do: []
+
+  defp remove_dot(list) do
+    Enum.map(list, fn value -> String.slice(value, 1..(String.length(value) - 1)) end)
+  end
+
+  defp get_sub_required_fields(required_field, parent_name) do
     cond do
       Map.get(required_field, :required, false) == false ->
         []
 
       Map.get(required_field, :subSchema, nil) == nil ->
-        [Map.get(required_field, :name)]
+        [parent_name <> "." <> Map.get(required_field, :name)]
 
       true ->
+        name = parent_name <> "." <> Map.get(required_field, :name)
+
         sub_field =
           required_field
           |> Map.get(:subSchema)
-          |> Enum.map(fn sub_field -> get_sub_required_fields(sub_field) end)
+          |> Enum.map(fn sub_field -> get_sub_required_fields(sub_field, name) end)
 
-        sub_field ++ [Map.get(required_field, :name)]
+        sub_field ++ [name]
     end
   end
 
