@@ -37,3 +37,8 @@ config :kaffe,
 config :yeet,
   topic: "streaming-dead-letters",
   endpoint: endpoint
+
+config :smart_city_registry,
+  redis: [
+    host: host
+  ]

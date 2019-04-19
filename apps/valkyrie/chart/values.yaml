@@ -20,6 +20,9 @@ kafka:
   validatedTopic: "streaming-validated"
   dlqTopic: "streaming-dead-letters"
 
+redis:
+  host: redis.external-services
+
 nameOverride: ""
 fullnameOverride: ""
 
