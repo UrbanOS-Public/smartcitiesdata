@@ -37,7 +37,7 @@ defmodule Valkyrie.MessageHandler do
 
     case Valkyrie.Validators.schema_satisfied?(payload, schema) do
       true -> {:ok, message}
-      false -> Yeet.process_dead_letter(message, "Valkyrie")
+      false -> {:error, "Invalid data message"}
     end
   end
 

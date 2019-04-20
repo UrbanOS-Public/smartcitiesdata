@@ -2,6 +2,9 @@ use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 
+config :logger,
+  level: :warn
+
 if kafka_brokers do
   endpoints =
     kafka_brokers

@@ -10,6 +10,9 @@ System.put_env("HOST", host)
 
 endpoint = [{to_charlist(host), 9092}]
 
+config :logger,
+  level: :info
+
 config :valkyrie,
   divo: [
     {DivoKafka, [create_topics: "raw:1:1,validated:1:1,dead-letters:1:1", outside_host: host]},
@@ -35,7 +38,7 @@ config :kaffe,
   ]
 
 config :yeet,
-  topic: "streaming-dead-letters",
+  topic: "dead-letters",
   endpoint: endpoint
 
 config :smart_city_registry,
