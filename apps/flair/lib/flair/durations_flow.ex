@@ -1,10 +1,10 @@
-defmodule Flair.StatsFlow do
+defmodule Flair.DurationsFlow do
   @moduledoc false
   use Flow
 
   alias SmartCity.Data
 
-  alias Flair.Stats
+  alias Flair.Durations
   require Logger
 
   @window_length Application.get_env(:flair, :window_length, 5)
@@ -25,7 +25,7 @@ defmodule Flair.StatsFlow do
     |> Flow.each(&log_message/1)
     |> partition_by_dataset_id_and_window()
     |> aggregate_by_dataset()
-    |> Flow.map(&Stats.calculate_stats/1)
+    |> Flow.map(&Durations.calculate_durations/1)
     |> Flow.each(&log_profile/1)
     |> Flow.into_specs(consumer_spec)
   end
@@ -46,7 +46,7 @@ defmodule Flair.StatsFlow do
   end
 
   defp aggregate_by_dataset(flow) do
-    Flow.reduce(flow, fn -> %{} end, &Stats.reducer/2)
+    Flow.reduce(flow, fn -> %{} end, &Durations.reducer/2)
   end
 
   defp get_message(kafka_msg) do

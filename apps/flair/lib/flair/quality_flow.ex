@@ -25,7 +25,7 @@ defmodule Flair.QualityFlow do
     |> Flow.each(&log_message/1)
     |> partition_by_dataset_id_and_window()
     |> aggregate_by_dataset()
-    # |> Flow.map(&Quality.calculate_quality/1)
+    |> Flow.map(&Quality.calculate_quality/1)
     |> Flow.each(&log_profile/1)
     |> Flow.into_specs(consumer_spec)
   end

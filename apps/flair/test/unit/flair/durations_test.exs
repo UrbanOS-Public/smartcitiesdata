@@ -1,18 +1,18 @@
-defmodule Flair.StatsTest do
+defmodule Flair.DurationsTest do
   use ExUnit.Case
 
   alias SmartCity.Data
   alias SmartCity.Data.Timing
 
-  alias Flair.Stats
+  alias Flair.Durations
 
-  describe "stats_reducer" do
+  describe "durations_reducer" do
     test "with empty accumulator" do
       message =
         make_data_message()
         |> Data.add_timing(make_timing())
 
-      assert %{"some_id" => [%Timing{}]} = Stats.reducer(message, %{})
+      assert %{"some_id" => [%Timing{}]} = Durations.reducer(message, %{})
     end
 
     test "with existing accumulator" do
@@ -21,7 +21,7 @@ defmodule Flair.StatsTest do
         |> Data.add_timing(make_timing())
 
       assert %{"some_id" => [%Timing{}, %Timing{}]} =
-               Stats.reducer(message, Stats.reducer(message, %{}))
+               Durations.reducer(message, Durations.reducer(message, %{}))
     end
 
     test "three messages" do
@@ -31,7 +31,7 @@ defmodule Flair.StatsTest do
         |> Enum.map(&Data.add_timing(&1, make_timing()))
 
       assert %{"some_id" => [%Timing{}, %Timing{}, %Timing{}]} =
-               Enum.reduce(messages, %{}, &Stats.reducer/2)
+               Enum.reduce(messages, %{}, &Durations.reducer/2)
     end
 
     test "different dataset_ids" do
@@ -42,11 +42,11 @@ defmodule Flair.StatsTest do
         |> Enum.map(&Data.add_timing(&1, make_timing()))
 
       assert %{"1" => [%Timing{}], "2" => [%Timing{}], "3" => [%Timing{}]} =
-               Enum.reduce(messages, %{}, &Stats.reducer/2)
+               Enum.reduce(messages, %{}, &Durations.reducer/2)
     end
   end
 
-  describe "calculates statistics" do
+  describe "calculates durations" do
     test "aggregates by app and label" do
       input = {"dataset 1", [make_timing(), make_timing(), make_timing(label: "label_2")]}
 
@@ -58,10 +58,10 @@ defmodule Flair.StatsTest do
                 {"app_1", "label_2"} => %{
                   count: 1
                 }
-              }} = Stats.calculate_stats(input)
+              }} = Durations.calculate_durations(input)
     end
 
-    test "has expected keys in the stats" do
+    test "has expected keys in the durations" do
       input = {"dataset 1", [make_timing(), make_timing()]}
 
       assert {_,
@@ -73,10 +73,10 @@ defmodule Flair.StatsTest do
                   average: _,
                   stdev: _
                 }
-              }} = Stats.calculate_stats(input)
+              }} = Durations.calculate_durations(input)
     end
 
-    test "computes correct stats" do
+    test "computes correct durations" do
       input = {"dataset 1", [make_timing(offset: 1), make_timing(offset: 2)]}
 
       assert {_,
@@ -88,7 +88,7 @@ defmodule Flair.StatsTest do
                   average: 1.5e3,
                   stdev: 500.0
                 }
-              }} = Stats.calculate_stats(input)
+              }} = Durations.calculate_durations(input)
     end
   end
 

@@ -41,15 +41,26 @@ defmodule Flair.Quality do
     existing_dataset_map = Map.get(acc, id, %{})
     existing_version_map = Map.get(existing_dataset_map, version, %{})
 
-    updated_map =
-      id
-      |> get_required_fields()
-      |> Enum.reduce(existing_version_map, fn field_name, acc ->
-        update_field_count(acc, field_name, data)
-      end)
-      |> Map.update(:record_count, 1, fn value -> value + 1 end)
+    updated_fields_map =
+      Map.get(existing_version_map, :fields, %{})
+      |> update_fields_map(id, data)
 
-    Map.put(acc, id, Map.put(existing_dataset_map, version, updated_map))
+    updated_version_map =
+      existing_version_map
+      |> Map.update(:record_count, 1, fn value -> value + 1 end)
+      |> Map.put(:fields, updated_fields_map)
+
+    updated_dataset_map = Map.put(existing_dataset_map, version, updated_version_map)
+
+    Map.put(acc, id, updated_dataset_map)
+  end
+
+  defp update_fields_map(existing_field_map, id, data) do
+    id
+    |> get_required_fields()
+    |> Enum.reduce(existing_field_map, fn field_name, acc ->
+      update_field_count(acc, field_name, data)
+    end)
   end
 
   defp update_field_count(acc, field_name, data) do

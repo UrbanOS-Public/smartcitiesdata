@@ -19,7 +19,7 @@ defmodule Flair.QualityTest do
 
       data = TDG.create_data(data_override)
 
-      expected = %{"123" => %{"0.1" => %{:record_count => 1, "id" => 1}}}
+      expected = %{"123" => %{"0.1" => %{record_count: 1, fields: %{"id" => 1}}}}
 
       allow(Dataset.get!(dataset.id), return: dataset)
       assert expected == Quality.reducer(data, %{})
@@ -32,7 +32,7 @@ defmodule Flair.QualityTest do
 
       allow(Dataset.get!(dataset.id), return: dataset)
 
-      assert %{"123" => %{"0.1" => %{:record_count => 2, "id" => 2}}} ==
+      assert %{"123" => %{"0.1" => %{record_count: 2, fields: %{"id" => 2}}}} ==
                Quality.reducer(data, Quality.reducer(data, %{}))
     end
 
@@ -49,7 +49,7 @@ defmodule Flair.QualityTest do
 
       allow(Dataset.get!(dataset.id), return: dataset)
 
-      assert %{"123" => %{"0.1" => %{:record_count => 3, "id" => 2}}} ==
+      assert %{"123" => %{"0.1" => %{record_count: 3, fields: %{"id" => 2}}}} ==
                Enum.reduce(messages, %{}, &Quality.reducer/2)
     end
 
@@ -72,9 +72,9 @@ defmodule Flair.QualityTest do
       allow(Dataset.get!("789"), return: dataset3)
 
       expected = %{
-        "456" => %{"0.1" => %{:record_count => 1, "id" => 1}},
-        "123" => %{"0.1" => %{:record_count => 1, "id" => 0}},
-        "789" => %{"0.1" => %{:record_count => 1, "id" => 1}}
+        "456" => %{"0.1" => %{record_count: 1, fields: %{"id" => 1}}},
+        "123" => %{"0.1" => %{record_count: 1, fields: %{"id" => 0}}},
+        "789" => %{"0.1" => %{record_count: 1, fields: %{"id" => 1}}}
       }
 
       assert expected ==
@@ -100,9 +100,9 @@ defmodule Flair.QualityTest do
 
       expected = %{
         "123" => %{
-          "1.0" => %{:record_count => 1, "id" => 1},
-          "1.1" => %{:record_count => 1, "id" => 0},
-          "1.2" => %{:record_count => 1, "id" => 1}
+          "1.0" => %{record_count: 1, fields: %{"id" => 1}},
+          "1.1" => %{record_count: 1, fields: %{"id" => 0}},
+          "1.2" => %{record_count: 1, fields: %{"id" => 1}}
         }
       }
 
@@ -128,12 +128,14 @@ defmodule Flair.QualityTest do
       expected = %{
         "abc" => %{
           "0.1" => %{
-            :record_count => 1,
-            "required field" => 1,
-            "required parent field" => 1,
-            "required parent field.required sub field" => 1,
-            "required parent field.next_of_kin" => 1,
-            "required parent field.next_of_kin.required_sub_schema_field" => 1
+            record_count: 1,
+            fields: %{
+              "required field" => 1,
+              "required parent field" => 1,
+              "required parent field.required sub field" => 1,
+              "required parent field.next_of_kin" => 1,
+              "required parent field.next_of_kin.required_sub_schema_field" => 1
+            }
           }
         }
       }
@@ -143,8 +145,8 @@ defmodule Flair.QualityTest do
     end
   end
 
-  describe "do thing" do
-    test "thing" do
+  describe "calculate_quality/1" do
+    test "breaks window into individual events" do
       input =
         {"abc",
          %{
@@ -159,19 +161,6 @@ defmodule Flair.QualityTest do
              }
            }
          }}
-
-      # input =
-      #   {"abc",
-      #    %{
-      #      "0.1" => %{
-      #        :record_count => 5,
-      #        "id" => 1,
-      #        "name" => 2,
-      #        "super" => 3,
-      #        "happy" => 4,
-      #        "fun time" => 5
-      #      }
-      #    }}
 
       expected =
         {"abc",
