@@ -32,6 +32,10 @@ defmodule FlairTest do
       ]
       |> Enum.map(&Jason.encode!/1)
 
+    "delete from operational_stats"
+    |> Prestige.execute()
+    |> Prestige.prefetch()
+
     [messages: messages]
   end
 
@@ -47,74 +51,72 @@ defmodule FlairTest do
     )
   end
 
-  #   test "flair gracefully handles messages that don't parse in the standard format" do
-  #     messages =
-  #       [
-  #         %{
-  #           "payload" => %{"name" => "Barbosa"},
-  #           "metadata" => %{},
-  #           "dataset_id" => "pirates",
-  #           "operational" => %{"timing" => [timing()]}
-  #         }
-  #       ]
-  #       |> Enum.map(&Jason.encode!/1)
+  test "flair gracefully handles messages that don't parse in the standard format" do
+    messages =
+      [
+        %{
+          "payload" => %{"name" => "Jackie Chan"},
+          "_metadata" => %{},
+          "dataset_id" => "ninjas",
+          "operational" => %{"timing" => [timing()]}
+        },
+        %{
+          "payload" => %{"name" => "Barbosa"},
+          "not_metadata" => %{},
+          "dataset_id" => "notExisting",
+          "operational" => %{"timing" => [timing()]}
+        }
+      ]
+      |> Enum.map(&Jason.encode!/1)
 
-  #     # allow(Flair.PrestoClient.execute(any()), return: [])
-  #     # allow(Flair.PrestoClient.generate_statement_from_events(any()), return: "")
-  #     Mockaffe.send_to_kafka(messages, "streaming-transformed")
+    Mockaffe.send_to_kafka(messages, "streaming-transformed")
 
-  #     # Patiently.wait_for!(
-  #     #   &wait_for_function_not_called/0,
-  #     #   dwell: 1000,
-  #     #   max_tries: 10
-  #     # )
+    Patiently.wait_for!(
+      prestige_query("select dataset_id, app from operational_stats", [
+        ["ninjas", "valkyrie"]
+      ]),
+      dwell: 1000,
+      max_tries: 20
+    )
+  end
 
-  #     Patiently.wait_for!(
-  #       prestige_query("select dataset_id, app from operational_stats", [
-  #         []
-  #       ]),
-  #       dwell: 1000,
-  #       max_tries: 20
-  #     )
-  #   end
+  test "should insert records into Presto", context do
+    Mockaffe.send_to_kafka(context[:messages], "streaming-transformed")
 
-  #   test "should insert records into Presto", context do
-  #     Mockaffe.send_to_kafka(context[:messages], "streaming-transformed")
+    Patiently.wait_for!(
+      prestige_query("select dataset_id, app from operational_stats", [
+        ["pirates", "valkyrie"]
+      ]),
+      dwell: 1000,
+      max_tries: 20
+    )
+  end
 
-  #     Patiently.wait_for!(
-  #       prestige_query("select dataset_id, app from operational_stats", [
-  #         ["pirates", "valkyrie"]
-  #       ]),
-  #       dwell: 1000,
-  #       max_tries: 20
-  #     )
-  #   end
+  test "should send errors to DLQ", context do
+    messages =
+      [
+        %{
+          "payload" => %{"name" => "Barbosa"},
+          "metadata" => %{},
+          "dataset_id" => "pirates",
+          "operational" => %{"timing" => [timing()]}
+        }
+      ]
+      |> Enum.map(&Jason.encode!/1)
 
-  #   test "should send errors to DLQ", context do
-  #     messages =
-  #       [
-  #         %{
-  #           "payload" => %{"name" => "Barbosa"},
-  #           "metadata" => %{},
-  #           "dataset_id" => "pirates",
-  #           "operational" => %{"timing" => [timing()]}
-  #         }
-  #       ]
-  #       |> Enum.map(&Jason.encode!/1)
+    Mockaffe.send_to_kafka(messages, "streaming-transformed")
 
-  #     Mockaffe.send_to_kafka(messages, "streaming-transformed")
+    get_dead_letter = fn ->
+      fetch_and_unwrap("streaming-dead-letters")
+      |> Enum.any?()
+    end
 
-  #     get_dead_letter = fn ->
-  #       fetch_and_unwrap("streaming-dead-letters")
-  #       |> Enum.any?()
-  #     end
-
-  #     Patiently.wait_for!(
-  #       get_dead_letter,
-  #       dwell: 1000,
-  #       max_tries: 20
-  #     )
-  #   end
+    Patiently.wait_for!(
+      get_dead_letter,
+      dwell: 1000,
+      max_tries: 20
+    )
+  end
 
   defp prestige_query(statement, expected) do
     fn ->
