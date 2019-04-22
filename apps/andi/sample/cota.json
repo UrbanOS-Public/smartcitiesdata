@@ -16,6 +16,7 @@
     "technical": {
         "dataName": "cota_vehicle_positions",
         "orgName": "cota",
+        "orgId": "dab7dcfd-1191-48c5-89c6-a653b3005b07",
         "systemName": "cota__cota_vehicle_positions",
         "stream": true,
         "sourceType": "stream",
