@@ -4,44 +4,51 @@ defmodule ValkyrieTest do
 
   @messages [
               %{
-                "payload" => %{"name" => "Jack Sparrow"},
-                "operational" => %{"ship" => "Black Pearl", "timing" => []},
-                "dataset_id" => "basic",
-                "_metadata" => %{}
+                payload: %{name: "Jack Sparrow", alignment: "chaotic"},
+                operational: %{ship: "Black Pearl", timing: []},
+                dataset_id: "pirates",
+                _metadata: %{}
               },
               %{
-                "payload" => %{"name" => "I am bad"},
-                "dataset_id" => "dlq",
-                "_metadata" => %{}
+                payload: %{name: "Blackbeard"},
+                operational: %{ship: "Queen Anne's Revenge", timing: []},
+                dataset_id: "pirates",
+                _metadata: %{}
               },
               %{
-                "payload" => %{"name" => "Will Turner"},
-                "operational" => %{"ship" => "Black Pearl", "timing" => []},
-                "dataset_id" => "basic",
-                "_metadata" => %{}
+                payload: %{name: "Will Turner", alignment: "good"},
+                operational: %{ship: "Black Pearl", timing: []},
+                dataset_id: "pirates",
+                _metadata: %{}
               },
               %{
-                "payload" => %{"name" => "Barbosa"},
-                "operational" => %{"ship" => "Dead Jerks", "timing" => []},
-                "dataset_id" => "basic",
-                "_metadata" => %{}
+                payload: %{name: "Barbosa", alignment: "evil"},
+                operational: %{ship: "Dead Jerks", timing: []},
+                dataset_id: "pirates",
+                _metadata: %{}
               }
             ]
             |> Enum.map(&Jason.encode!/1)
-
+  @dataset %SmartCity.Dataset{
+    id: "pirates",
+    technical: %{schema: [%{name: "name", type: "string"}, %{name: "alignment", type: "string"}]}
+  }
   @endpoint Application.get_env(:kaffe, :consumer)[:endpoints]
 
-  test "valkyrie updates the operational struct" do
-    Mockaffe.send_to_kafka(@messages, "raw")
+  setup_all do
+    Valkyrie.Dataset.put(@dataset)
 
+    Mockaffe.send_to_kafka(@messages, "raw")
+    :ok
+  end
+
+  test "valkyrie updates the operational struct" do
     assert any_messages_where("validated", fn message ->
              Enum.any?(message.operational.timing, &(&1.app == "valkyrie"))
            end)
   end
 
   test "valkyrie does not change the content of the messages processed" do
-    Mockaffe.send_to_kafka(@messages, "raw")
-
     assert messages_as_expected(
              "validated",
              ["Jack Sparrow", "Will Turner", "Barbosa"],
@@ -52,16 +59,14 @@ defmodule ValkyrieTest do
   end
 
   test "valkyrie sends invalid data messages to the dlq" do
-    Mockaffe.send_to_kafka(@messages, "raw")
-
     Patiently.wait_for!(
       fn ->
-        data_messages = fetch_and_unwrap("streaming-dead-letters")
+        data_messages = fetch_and_unwrap("dead-letters")
 
         Enum.any?(data_messages, fn data_message ->
           assert String.contains?(data_message.reason, "Invalid data message")
           assert data_message.app == "Valkyrie"
-          assert String.contains?(data_message.original_message, "I am bad")
+          assert String.contains?(data_message.original_message, "Blackbeard")
         end)
       end,
       dwell: 1000,

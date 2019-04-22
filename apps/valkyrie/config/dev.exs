@@ -9,10 +9,6 @@ System.put_env("HOST", host)
 
 endpoint = [{to_charlist(host), 9092}]
 
-config :valkyrie,
-  divo: "./docker-compose.yaml",
-  divo_wait: [dwell: 700, max_tries: 50]
-
 config :kaffe,
   consumer: [
     endpoints: endpoint,

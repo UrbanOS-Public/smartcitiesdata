@@ -13,10 +13,10 @@ defmodule Valkyrie.MessageHandlerTest do
         %{
           key: "someKey",
           value: %{
-            "payload" => %{"name" => "Jack Sparrow"},
-            "operational" => %{"ship" => "Black Pearl", "timing" => []},
-            "dataset_id" => "basic",
-            "_metadata" => %{}
+            payload: %{name: "Jack Sparrow"},
+            operational: %{timing: []},
+            dataset_id: "basic",
+            _metadata: %{}
           }
         }
       ]
@@ -24,12 +24,12 @@ defmodule Valkyrie.MessageHandlerTest do
       allow Yeet.process_dead_letter(any(), any(), any()), return: :does_not_matter
       allow Kaffe.Producer.produce_sync(any(), any()), return: :does_not_matter
       allow SmartCity.Data.Timing.current_time(), return: "2019-04-17T19:50:06.455498Z", meck_options: [:passthrough]
-      allow Valkyrie.Dataset.get("basic"), return: %{schema: [%{"name" => "name", "type" => "string"}]}
+      allow Valkyrie.Dataset.get("basic"), return: %Valkyrie.Dataset{schema: [%{name: "name", type: "string"}]}
 
       Valkyrie.MessageHandler.handle_messages(messages)
 
       assert_called Kaffe.Producer.produce_sync("someKey", expected_message)
-      assert_called Yeet.process_dead_letter(any(), any(), any()), times(0)
+      refute_called Yeet.process_dead_letter(any(), any(), any())
     end
   end
 end

@@ -32,11 +32,13 @@ defmodule Valkyrie.MessageHandler do
     end
   end
 
-  defp validate(new_value) do
-    # ----
-    # Do validations here
-    # ----
-    {:ok, new_value}
+  defp validate(%Data{dataset_id: id, payload: payload} = message) do
+    %Valkyrie.Dataset{schema: schema} = Valkyrie.Dataset.get(id)
+
+    case Valkyrie.Validators.schema_satisfied?(payload, schema) do
+      true -> {:ok, message}
+      false -> {:error, "Invalid data message"}
+    end
   end
 
   defp set_operational_timing(start_time, validated_message) do
