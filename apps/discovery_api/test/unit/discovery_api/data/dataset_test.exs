@@ -22,4 +22,42 @@ defmodule DiscoveryApi.Data.DatasetTest do
     actual_date = DiscoveryApi.Data.Dataset.get_last_updated_date("123")
     assert expected_date = actual_date
   end
+
+  test "dataset usage metrics are retrieved from redis" do
+    keys = ["smart_registry:queries:count:123", "smart_registry:downloads:count:123"]
+    allow(Persistence.get_keys("smart_registry:*:count:123"), return: keys)
+    allow(Persistence.get_many(keys), return: ["7", "9"])
+
+    expected = %{:downloads => "9", :queries => "7"}
+    actual_metrics = DiscoveryApi.Data.Dataset.get_count_maps("123")
+    assert actual_metrics == expected
+  end
+
+  test "successfully generate dataset for given dataset_id" do
+    dataset = Helper.sample_dataset()
+    expected_date = DateTime.to_iso8601(DateTime.utc_now())
+    json_string_dataset = dataset |> Map.from_struct() |> Jason.encode!()
+    dataset = %{dataset | lastUpdatedDate: expected_date}
+    dataset = %{dataset | downloads: "9"}
+    dataset = %{dataset | queries: "7"}
+
+    count_keys = [
+      "smart_registry:queries:count:#{dataset.id}",
+      "smart_registry:downloads:count:#{dataset.id}"
+    ]
+
+    count_values = ["7", "9"]
+
+    allow(Persistence.get("discovery-api:dataset:#{dataset.id}"), return: json_string_dataset)
+
+    allow(Persistence.get("forklift:last_insert_date:#{dataset.id}"),
+      return: expected_date
+    )
+
+    allow(Persistence.get_keys("smart_registry:*:count:#{dataset.id}"), return: count_keys)
+    allow(Persistence.get_many(count_keys), return: count_values)
+
+    actual_dataset = DiscoveryApi.Data.Dataset.get(dataset.id)
+    assert actual_dataset == dataset
+  end
 end

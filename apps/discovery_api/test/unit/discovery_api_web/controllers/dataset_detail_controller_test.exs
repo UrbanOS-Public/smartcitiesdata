@@ -46,7 +46,9 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
                "language" => dataset.language,
                "referenceUrls" => dataset.referenceUrls,
                "categories" => dataset.categories,
-               "modified" => dataset.modified
+               "modified" => dataset.modified,
+               "downloads" => dataset.downloads,
+               "queries" => dataset.queries
              } == actual
     end
 

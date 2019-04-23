@@ -29,10 +29,12 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
         return: [["id", "1", "4"], ["one", "2", "5"], ["two", "3", "6"]]
       )
 
+      count_keys = ["smart_registry:queries:count:#{@dataset_id}", "smart_registry:downloads:count:#{@dataset_id}"]
       dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name, private: false})
-
       allow(Redix.command!(:redix, ["GET", "discovery-api:dataset:#{@dataset_id}"]), return: dataset_json)
       allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
+      allow(Redix.command!(:redix, ["MGET" | count_keys]), return: ["7", "9"])
+      allow(Redix.command!(:redix, ["KEYS", "smart_registry:*:count:#{@dataset_id}"]), return: count_keys)
       allow(Redix.command!(any(), any()), return: :does_not_matter)
 
       :ok
@@ -119,9 +121,12 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
         return: [%{id: 1, name: "Joe", age: 21}, %{id: 2, name: "Robby", age: 32}]
       )
 
+      count_keys = ["smart_registry:queries:count:#{@dataset_id}", "smart_registry:downloads:count:#{@dataset_id}"]
       dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name, private: false})
       allow(Redix.command!(:redix, ["GET", "discovery-api:dataset:#{@dataset_id}"]), return: dataset_json)
       allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
+      allow(Redix.command!(:redix, ["MGET" | count_keys]), return: ["7", "9"])
+      allow(Redix.command!(:redix, ["KEYS", "smart_registry:*:count:#{@dataset_id}"]), return: count_keys)
 
       allow(Redix.command!(any(), any()), return: :does_not_matter)
 

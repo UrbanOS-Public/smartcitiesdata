@@ -11,6 +11,9 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
 
       allow(Redix.command!(:redix, ["GET", "discovery-api:dataset:#{@dataset_id}"]), return: dataset_json)
       allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
+      count_keys = ["smart_registry:queries:count:#{@dataset_id}", "smart_registry:downloads:count:#{@dataset_id}"]
+      allow(Redix.command!(:redix, ["MGET" | count_keys]), return: ["7", "9"])
+      allow(Redix.command!(:redix, ["KEYS", "smart_registry:*:count:#{@dataset_id}"]), return: count_keys)
       :ok
     end
 

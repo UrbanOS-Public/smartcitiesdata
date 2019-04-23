@@ -40,7 +40,9 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
       language: dataset.language,
       referenceUrls: dataset.referenceUrls,
       categories: dataset.categories,
-      modified: dataset.modified
+      modified: dataset.modified,
+      downloads: dataset.downloads,
+      queries: dataset.queries
     }
   end
 end
