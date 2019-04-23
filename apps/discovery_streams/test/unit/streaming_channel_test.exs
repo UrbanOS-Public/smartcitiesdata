@@ -8,10 +8,10 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
 
   setup do
     CachexSupervisor.create_cache(:"shuttle-position")
-    CachexSupervisor.create_cache(:"cota-vehicle-positions")
+    CachexSupervisor.create_cache(:cota__cota_vehicle_positions)
     Cachex.clear(:"shuttle-position")
-    Cachex.clear(:"cota-vehicle-positions")
-    allow TopicSubscriber.list_subscribed_topics(), return: ["shuttle-position", "cota-vehicle-positions"]
+    Cachex.clear(:cota__cota_vehicle_positions)
+    allow TopicSubscriber.list_subscribed_topics(), return: ["shuttle-position", "cota__cota_vehicle_positions"]
     :ok
   end
 
@@ -25,7 +25,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:"cota-vehicle-positions", "vehicle_position"]
+      [:cota__cota_vehicle_positions, "vehicle_position"]
     ])
   end
 
@@ -43,7 +43,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:"cota-vehicle-positions", "vehicle_position"]
+      [:cota__cota_vehicle_positions, "vehicle_position"]
     ])
   end
 
@@ -61,7 +61,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:"cota-vehicle-positions", "vehicle_position"]
+      [:cota__cota_vehicle_positions, "vehicle_position"]
     ])
   end
 
@@ -81,7 +81,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:"cota-vehicle-positions", "vehicle_position"]
+      [:cota__cota_vehicle_positions, "vehicle_position"]
     ])
   end
 
@@ -101,7 +101,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:"cota-vehicle-positions", "vehicle_position"]
+      [:cota__cota_vehicle_positions, "vehicle_position"]
     ])
   end
 
@@ -122,7 +122,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:"cota-vehicle-positions", "vehicle_position"]
+      [:cota__cota_vehicle_positions, "vehicle_position"]
     ])
   end
 
@@ -150,7 +150,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:"cota-vehicle-positions", "vehicle_position"]
+      [:cota__cota_vehicle_positions, "vehicle_position"]
     ])
   end
 
@@ -173,7 +173,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:"cota-vehicle-positions", "vehicle_position"]
+      [:cota__cota_vehicle_positions, "vehicle_position"]
     ])
   end
 
@@ -195,7 +195,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:"cota-vehicle-positions", "vehicle_position"]
+      [:cota__cota_vehicle_positions, "vehicle_position"]
     ])
   end
 
@@ -215,7 +215,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:"cota-vehicle-positions", "vehicle_position"]
+      [:cota__cota_vehicle_positions, "vehicle_position"]
     ])
   end
 
