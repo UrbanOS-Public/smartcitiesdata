@@ -29,7 +29,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
         return: [["id", "1", "4"], ["one", "2", "5"], ["two", "3", "6"]]
       )
 
-      dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name})
+      dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name, private: false})
 
       allow(Redix.command!(:redix, ["GET", "discovery-api:dataset:#{@dataset_id}"]), return: dataset_json)
       allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
@@ -119,7 +119,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
         return: [%{id: 1, name: "Joe", age: 21}, %{id: 2, name: "Robby", age: 32}]
       )
 
-      dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name})
+      dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name, private: false})
       allow(Redix.command!(:redix, ["GET", "discovery-api:dataset:#{@dataset_id}"]), return: dataset_json)
       allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
 

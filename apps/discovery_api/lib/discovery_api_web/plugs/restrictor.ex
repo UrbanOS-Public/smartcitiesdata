@@ -1,60 +1,25 @@
 defmodule DiscoveryApiWeb.Plugs.Restrictor do
-  @moduledoc false
+  @moduledoc """
+    Authorizes access to requested dataset
+  """
   require Logger
   import Plug.Conn
-  alias DiscoveryApi.Auth.Guardian
-  alias Guardian.Plug, as: GuardianPlug
+  alias DiscoveryApiWeb.Services.AuthService
 
   def init(default), do: default
 
   def call(conn, _) do
-    case is_authorized?(conn, conn.assigns.dataset) do
-      true ->
-        conn
+    username = AuthService.get_user(conn)
 
-      false ->
-        conn
-        |> DiscoveryApiWeb.RenderError.render_error(404, "Not Found")
-        |> halt()
+    case AuthService.has_access?(conn.assigns.dataset, username) do
+      true -> conn
+      _ -> handle_unauthorized(conn)
     end
   end
 
-  defp is_authorized?(conn, %{private: true} = dataset) do
-    case GuardianPlug.current_claims(conn) do
-      %{"sub" => uid} ->
-        dataset.organizationDetails.dn
-        |> get_members()
-        |> Enum.member?(uid)
-
-      error ->
-        Logger.error(inspect(error))
-        false
-    end
-  end
-
-  defp is_authorized?(_token, _unrestricted_dataset), do: true
-
-  defp extract_uid(dn) do
-    dn
-    |> Paddle.Parsing.dn_to_kwlist()
-    |> Map.new()
-    |> Map.get("uid")
-  end
-
-  defp get_members(org_dn) do
-    %{"cn" => cn, "ou" => ou} =
-      org_dn
-      |> Paddle.Parsing.dn_to_kwlist()
-      |> Map.new()
-
-    user = Application.get_env(:discovery_api, :ldap_user)
-    pass = Application.get_env(:discovery_api, :ldap_pass)
-    Paddle.authenticate(user, pass)
-
-    Paddle.get(base: [ou: ou], filter: [cn: cn])
-    |> elem(1)
-    |> List.first()
-    |> Map.get("member", [])
-    |> Enum.map(&extract_uid/1)
+  defp handle_unauthorized(conn) do
+    conn
+    |> DiscoveryApiWeb.RenderError.render_error(404, "Not Found")
+    |> halt()
   end
 end

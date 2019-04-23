@@ -7,7 +7,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
 
   describe "preview dataset data" do
     setup do
-      dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name})
+      dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name, private: false})
 
       allow(Redix.command!(:redix, ["GET", "discovery-api:dataset:#{@dataset_id}"]), return: dataset_json)
       allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)

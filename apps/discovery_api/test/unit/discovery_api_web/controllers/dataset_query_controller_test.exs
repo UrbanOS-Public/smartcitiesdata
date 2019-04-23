@@ -13,7 +13,9 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       allow SmartCity.Organization.get(any()), return: {:ok, org}
       SystemNameCache.put(dataset)
 
-      allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:id => "test", :systemName => "coda__test_dataset"})
+      allow(DiscoveryApi.Data.Dataset.get("test"),
+        return: %Dataset{:id => "test", :systemName => "coda__test_dataset", private: false}
+      )
 
       allow(Prestige.execute("describe coda__test_dataset"),
         return: []
@@ -181,7 +183,9 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         return: []
       )
 
-      allow(DiscoveryApi.Data.Dataset.get("test"), return: %Dataset{:id => "test", :systemName => "coda__test_dataset"})
+      allow(DiscoveryApi.Data.Dataset.get("test"),
+        return: %Dataset{:id => "test", :systemName => "coda__test_dataset", private: false}
+      )
 
       allow(
         Prestige.execute("SELECT * FROM coda__test_dataset",
@@ -235,7 +239,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
   describe "error cases" do
     test "table does not exist returns Not Found", %{conn: conn} do
-      allow(DiscoveryApi.Data.Dataset.get("no_exist"), return: %Dataset{:id => "test", :systemName => "coda__no_exist"})
+      allow(DiscoveryApi.Data.Dataset.get("no_exist"),
+        return: %Dataset{:id => "test", :systemName => "coda__no_exist", private: false}
+      )
+
       allow(Prestige.execute(any()), return: [])
       allow(Prestige.prefetch(any()), return: [])
 
@@ -255,7 +262,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   describe "malice cases" do
     setup do
       allow(DiscoveryApi.Data.Dataset.get("bobber"),
-        return: %Dataset{:id => "test", :systemName => "coda__test_dataset"}
+        return: %Dataset{:id => "test", :systemName => "coda__test_dataset", private: false}
       )
 
       allow(Prestige.execute(any()), return: [])
