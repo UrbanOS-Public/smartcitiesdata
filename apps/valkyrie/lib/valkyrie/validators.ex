@@ -18,7 +18,10 @@ defmodule Valkyrie.Validators do
   end
 
   defp field_present?(%{name: name}, payload) do
-    name = name |> String.downcase() |> String.to_atom()
+    name =
+      name
+      |> String.downcase()
+      |> String.to_atom()
 
     Map.has_key?(payload, name)
   end
