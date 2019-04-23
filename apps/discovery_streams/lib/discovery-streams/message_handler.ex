@@ -68,6 +68,16 @@ defmodule DiscoveryStreams.MessageHandler do
     DiscoveryStreamsWeb.Endpoint.broadcast("streaming:cota__cota_vehicle_positions", "update", data)
   end
 
+  defp broadcast(%{topic: "may_mobility__67faa989_63be_4060_97d0_cf75b1e27ac4", value: data}) do
+    DiscoveryStreamsWeb.Endpoint.broadcast("streaming:ceav-vehicle-locations", "update", data)
+
+    DiscoveryStreamsWeb.Endpoint.broadcast(
+      "streaming:may_mobility__67faa989_63be_4060_97d0_cf75b1e27ac4",
+      "update",
+      data
+    )
+  end
+
   defp broadcast(%{topic: channel, value: data}) do
     DiscoveryStreamsWeb.Endpoint.broadcast!("streaming:#{channel}", "update", data)
   end
