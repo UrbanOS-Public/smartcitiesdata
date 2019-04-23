@@ -38,3 +38,11 @@ config :flair,
 config :yeet,
   topic: "streaming-dead-letters",
   endpoint: endpoint
+
+config :redix,
+  host: host
+
+config :smart_city_registry,
+  redis: [
+    host: host
+  ]

@@ -55,3 +55,12 @@ services:
       interval: 10s
       timeout: 30s
       retries: 10
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "PING"]
+      interval: 5s
+      timeout: 20s
+      retries: 3

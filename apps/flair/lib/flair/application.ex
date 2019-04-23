@@ -9,7 +9,8 @@ defmodule Flair.Application do
 
   def start(_type, _args) do
     children = [
-      {Flair.DurationsFlow, []},
+      # {Flair.DurationsFlow, []},
+      {Flair.QualityFlow, []},
       kafka_ex()
     ]
 

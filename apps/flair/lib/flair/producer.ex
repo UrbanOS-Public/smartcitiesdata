@@ -5,28 +5,38 @@ defmodule Flair.Producer do
 
   use GenStage
 
+  @message_timeout 5 * 60 * 1_000
+
   defmodule State do
     @moduledoc false
     defstruct demand: 0, message_set: [], from: []
   end
 
-  ##############
-  # Client API #
-  ##############
   def start_link(args \\ nil) do
-    GenStage.start_link(__MODULE__, args, name: __MODULE__)
+    IO.inspect(GenStage.start_link(__MODULE__, args, name: __MODULE__), label: "Start Link")
   end
 
   def add_messages(messages) do
-    GenStage.call(__MODULE__, {:add, messages}, 5 * 60 * 1_000)
+    GenStage.call(__MODULE__, {:add, messages}, @message_timeout)
   end
 
-  #############
-  # Callbacks #
-  #############
+  # def start_link(name, args \\ nil) do
+  #   GenStage.start_link(__MODULE__, args, name: name)
+  # end
+
+  # def add_messages(name, messages) do
+  #   GenStage.call(name, {:add, messages}, @message_timeout)
+  # end
+
   def init(_args) do
+    # TODO - need to create both tables
     Flair.PrestoClient.get_create_timing_table_statement()
     |> Flair.PrestoClient.execute()
+
+    Flair.PrestoClient.get_create_quality_table_statement()
+    |> Flair.PrestoClient.execute()
+
+    IO.puts("PRODUCER presto table created")
 
     {:producer, %State{}}
   end

@@ -18,8 +18,9 @@ defmodule Flair.QualityFlow do
       }
     ]
 
-    [{Flair.Producer, []}]
-    |> Flow.from_specs()
+    # flow = Flow.from_specs([{Flair.Producer, :quality}])
+
+    Flow.from_specs([{Flair.Producer, []}])
     |> Flow.map(&get_message/1)
     |> Flow.reject(&is_dead_letter/1)
     |> Flow.each(&log_message/1)
@@ -28,13 +29,16 @@ defmodule Flair.QualityFlow do
     |> Flow.map(&Quality.calculate_quality/1)
     |> Flow.each(&log_profile/1)
     |> Flow.into_specs(consumer_spec)
+    |> IO.inspect(label: "pipeline")
   end
 
   defp log_profile(profile) do
+    IO.puts("Calculated profile: #{inspect(profile)}")
     Logger.info("Calculated profile: #{inspect(profile)}")
   end
 
   defp log_message(message) do
+    IO.puts("Received message: #{inspect(message)}")
     Logger.info("Received message: #{inspect(message)}")
   end
 

@@ -5,7 +5,7 @@ defmodule Flair.PrestoClient do
 
   def get_create_timing_table_statement do
     """
-    CREATE TABLE IF NOT EXISTS #{@table_name_timing()} (
+    CREATE TABLE IF NOT EXISTS #{@table_name_timing} (
       dataset_id varchar,
       app varchar,
       label varchar,
@@ -23,18 +23,14 @@ defmodule Flair.PrestoClient do
 
   def get_create_quality_table_statement do
     """
-    CREATE TABLE IF NOT EXISTS #{@table_name_quality()} (
+    CREATE TABLE IF NOT EXISTS #{@table_name_quality} (
       dataset_id varchar,
-      app varchar,
-      label varchar,
-      timestamp bigint,
-      stats row(
-        count bigint,
-        min double,
-        max double,
-        std double,
-        average double
-      )
+      schema_version varchar,
+      field varchar,
+      window_start bigint,
+      window_end bigint,
+      valid_values bigint,
+      records bigint
     )
     """
   end
@@ -72,12 +68,19 @@ defmodule Flair.PrestoClient do
     |> String.replace("\n", "")
   end
 
-  defp values_statement(map) do
+  defp values_statement(map_in) do
+    IO.inspect(map_in, label: "quality value statement input")
+
+    map =
+      map_in
+      |> Map.put(:window_start, "123")
+      |> Map.put(:window_end, "456")
+
     """
-    ('#{map.dataset_id}', #{map.schema_version}, '#{map.field}', #{map.window_start}, #{
-      map.window_end
-    }, #{map.valid_values}, #{map.records})
+    ('#{map.dataset_id}', '#{map.schema_version}', '#{map.field}', #{map.window_start},
+    #{map.window_end}, #{map.valid_values}, #{map.records})
     """
     |> String.replace("\n", "")
+    |> IO.inspect(label: "quaility value statement")
   end
 end
