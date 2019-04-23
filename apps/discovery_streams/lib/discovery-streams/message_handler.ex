@@ -62,17 +62,17 @@ defmodule DiscoveryStreams.MessageHandler do
     )
   end
 
-  defp broadcast(%{topic: "cota__cota_vehicle_positions", value: data}) do
+  defp broadcast(%{topic: "central_ohio_transit_authority__cota_stream", value: data}) do
     DiscoveryStreamsWeb.Endpoint.broadcast("vehicle_position", "update", data)
     DiscoveryStreamsWeb.Endpoint.broadcast("streaming:cota-vehicle-positions", "update", data)
-    DiscoveryStreamsWeb.Endpoint.broadcast("streaming:cota__cota_vehicle_positions", "update", data)
+    DiscoveryStreamsWeb.Endpoint.broadcast("streaming:central_ohio_transit_authority__cota_stream", "update", data)
   end
 
-  defp broadcast(%{topic: "may_mobility__67faa989_63be_4060_97d0_cf75b1e27ac4", value: data}) do
+  defp broadcast(%{topic: "may_mobility__connected_electric_autonomous_vehicle_locations", value: data}) do
     DiscoveryStreamsWeb.Endpoint.broadcast("streaming:ceav-vehicle-locations", "update", data)
 
     DiscoveryStreamsWeb.Endpoint.broadcast(
-      "streaming:may_mobility__67faa989_63be_4060_97d0_cf75b1e27ac4",
+      "streaming:may_mobility__connected_electric_autonomous_vehicle_locations",
       "update",
       data
     )
