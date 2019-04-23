@@ -27,27 +27,26 @@ defmodule Flair.PrestoClient do
       dataset_id varchar,
       schema_version varchar,
       field varchar,
-      window_start bigint,
-      window_end bigint,
+      window_start varchar,
+      window_end varchar,
       valid_values bigint,
       records bigint
     )
     """
   end
 
-  # TODO - collapse these into one message
-  def generate_timing_statement_from_events(events) do
-    events
-    |> Enum.map(&values_statement/1)
-    |> Enum.join(", ")
-    |> create_insert_statement(@table_name_timing)
-  end
-
-  def generate_quality_statement_from_events(events) do
+  def generate_statement_from_events([%{valid_values: _} | _] = events) do
     events
     |> Enum.map(&values_statement/1)
     |> Enum.join(", ")
     |> create_insert_statement(@table_name_quality)
+  end
+
+  def generate_statement_from_events(events) do
+    events
+    |> Enum.map(&values_statement/1)
+    |> Enum.join(", ")
+    |> create_insert_statement(@table_name_timing)
   end
 
   def execute(statement) do
@@ -68,19 +67,11 @@ defmodule Flair.PrestoClient do
     |> String.replace("\n", "")
   end
 
-  defp values_statement(map_in) do
-    IO.inspect(map_in, label: "quality value statement input")
-
-    map =
-      map_in
-      |> Map.put(:window_start, "123")
-      |> Map.put(:window_end, "456")
-
+  defp values_statement(map) do
     """
-    ('#{map.dataset_id}', '#{map.schema_version}', '#{map.field}', #{map.window_start},
-    #{map.window_end}, #{map.valid_values}, #{map.records})
+    ('#{map.dataset_id}', '#{map.schema_version}', '#{map.field}', '#{map.window_start}',
+    '#{map.window_end}', #{map.valid_values}, #{map.records})
     """
     |> String.replace("\n", "")
-    |> IO.inspect(label: "quaility value statement")
   end
 end

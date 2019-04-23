@@ -4,6 +4,35 @@ defmodule Flair.Quality do
   alias SmartCity.Dataset
   alias SmartCity.Data
 
+  def reducer(%Data{dataset_id: id, version: version, payload: data}, acc) do
+    existing_dataset_map = Map.get(acc, id, %{})
+
+    existing_version_map =
+      Map.get(existing_dataset_map, version, %{window_start: acc.window_start})
+
+    updated_fields_map =
+      existing_version_map
+      |> Map.get(:fields, %{})
+      |> update_fields_map(id, data)
+
+    updated_version_map =
+      existing_version_map
+      |> Map.update(:record_count, 1, fn value -> value + 1 end)
+      |> Map.put(:fields, updated_fields_map)
+
+    updated_dataset_map = Map.put(existing_dataset_map, version, updated_version_map)
+
+    Map.put(acc, id, updated_dataset_map)
+  end
+
+  defp update_fields_map(existing_field_map, id, data) do
+    id
+    |> get_required_fields()
+    |> Enum.reduce(existing_field_map, fn field_name, acc ->
+      update_field_count(acc, field_name, data)
+    end)
+  end
+
   def get_required_fields(dataset_id) do
     Dataset.get!(dataset_id).technical.schema
     |> Enum.map(fn field -> get_sub_required_fields(field, "") end)
@@ -37,32 +66,6 @@ defmodule Flair.Quality do
     end
   end
 
-  def reducer(%Data{dataset_id: id, version: version, payload: data}, acc) do
-    existing_dataset_map = Map.get(acc, id, %{})
-    existing_version_map = Map.get(existing_dataset_map, version, %{})
-
-    updated_fields_map =
-      Map.get(existing_version_map, :fields, %{})
-      |> update_fields_map(id, data)
-
-    updated_version_map =
-      existing_version_map
-      |> Map.update(:record_count, 1, fn value -> value + 1 end)
-      |> Map.put(:fields, updated_fields_map)
-
-    updated_dataset_map = Map.put(existing_dataset_map, version, updated_version_map)
-
-    Map.put(acc, id, updated_dataset_map)
-  end
-
-  defp update_fields_map(existing_field_map, id, data) do
-    id
-    |> get_required_fields()
-    |> Enum.reduce(existing_field_map, fn field_name, acc ->
-      update_field_count(acc, field_name, data)
-    end)
-  end
-
   defp update_field_count(acc, field_name, data) do
     field_path = String.split(field_name, ".")
 
@@ -72,6 +75,8 @@ defmodule Flair.Quality do
       Map.update(acc, field_name, 0, fn existing_value -> existing_value end)
     end
   end
+
+  def calculate_quality({:window_start, _timestamp}), do: nil
 
   def calculate_quality({dataset_id, raw_quality}) do
     calculated_quality =
@@ -96,6 +101,8 @@ defmodule Flair.Quality do
         schema_version: version,
         field: key,
         valid_values: Map.get(fields, key),
+        window_start: Map.get(version_map, :window_start),
+        window_end: DateTime.to_iso8601(DateTime.utc_now()),
         records: record_count
       }
     end)

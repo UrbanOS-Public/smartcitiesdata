@@ -34,84 +34,37 @@ defmodule QualityIntegrationTest do
   test "flair consumes messages and calls out to presto", context do
     Mockaffe.send_to_kafka(context[:messages], "streaming-transformed")
 
-    # Waiting for [["123", "0.1", "id", 123, 456, 0, 3]] to equal ["abc", "1", "*", "*", "*", "*"]
-
     Patiently.wait_for!(
-      prestige_query(
-        "select dataset_id, schema_version, field, window_start, window_end, valid_values, records from dataset_quality",
-        [["123", "0.1", "id", 123, 456, 0, 3]]
-      ),
+      fn ->
+        actual_result =
+          "select dataset_id, schema_version, field, window_start, window_end, valid_values, records from dataset_quality"
+          |> Prestige.execute()
+          |> Prestige.prefetch()
+
+        try do
+          actual = Enum.at(actual_result, 0)
+          Logger.info("Waiting for #{inspect(actual)} to equal expected}")
+
+          actual_start = DateTime.from_iso8601(Enum.at(actual, 3))
+          actual_end = DateTime.from_iso8601(Enum.at(actual, 4))
+
+          assert Enum.at(actual, 0) == "123" &&
+                   Enum.at(actual, 1) == "0.1" &&
+                   Enum.at(actual, 2) == "id" &&
+                   Enum.at(actual, 5) == 0 &&
+                   Enum.at(actual, 6) == 3 &&
+                   actual_end > actual_start
+
+          true
+        rescue
+          error ->
+            false
+        end
+      end,
       dwell: 1000,
       max_tries: 20
     )
   end
-
-  # test "flair gracefully handles messages that don't parse in the standard format" do
-  #   messages =
-  #     [
-  #       %{
-  #         "payload" => %{"name" => "Jackie Chan"},
-  #         "_metadata" => %{},
-  #         "dataset_id" => "ninjas",
-  #         "operational" => %{"timing" => [timing()]}
-  #       },
-  #       %{
-  #         "payload" => %{"name" => "Barbosa"},
-  #         "not_metadata" => %{},
-  #         "dataset_id" => "notExisting",
-  #         "operational" => %{"timing" => [timing()]}
-  #       }
-  #     ]
-  #     |> Enum.map(&Jason.encode!/1)
-
-  #   Mockaffe.send_to_kafka(messages, "streaming-transformed")
-
-  #   Patiently.wait_for!(
-  #     prestige_query("select dataset_id, app from operational_stats", [
-  #       ["ninjas", "valkyrie"]
-  #     ]),
-  #     dwell: 1000,
-  #     max_tries: 20
-  #   )
-  # end
-
-  # test "should insert records into Presto", context do
-  #   Mockaffe.send_to_kafka(context[:messages], "streaming-transformed")
-
-  #   Patiently.wait_for!(
-  #     prestige_query("select dataset_id, app from operational_stats", [
-  #       ["pirates", "valkyrie"]
-  #     ]),
-  #     dwell: 1000,
-  #     max_tries: 20
-  #   )
-  # end
-
-  # test "should send errors to DLQ", context do
-  #   messages =
-  #     [
-  #       %{
-  #         "payload" => %{"name" => "Barbosa"},
-  #         "metadata" => %{},
-  #         "dataset_id" => "pirates",
-  #         "operational" => %{"timing" => [timing()]}
-  #       }
-  #     ]
-  #     |> Enum.map(&Jason.encode!/1)
-
-  #   Mockaffe.send_to_kafka(messages, "streaming-transformed")
-
-  #   get_dead_letter = fn ->
-  #     fetch_and_unwrap("streaming-dead-letters")
-  #     |> Enum.any?()
-  #   end
-
-  #   Patiently.wait_for!(
-  #     get_dead_letter,
-  #     dwell: 1000,
-  #     max_tries: 20
-  #   )
-  # end
 
   defp prestige_query(statement, expected) do
     fn ->

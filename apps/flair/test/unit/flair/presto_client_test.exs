@@ -32,7 +32,7 @@ defmodule Flair.PrestoClientTest do
       assert "INSERT INTO #{@table_name_timing()} VALUES ('abc', 'app_1', 'label_1', #{timestamp}, row(2,1,2,0.7,1.5)), ('abc', 'app_1', 'label_2', #{
                timestamp
              }, row(2,2,3,0.7,2.5))" ==
-               PrestoClient.generate_timing_statement_from_events(events)
+               PrestoClient.generate_statement_from_events(events)
     end
 
     test "quality table", %{time: timestamp, end_time: end_time} do
@@ -57,10 +57,10 @@ defmodule Flair.PrestoClientTest do
         }
       ]
 
-      assert "INSERT INTO #{@table_name_quality()} VALUES ('abc', 1, 'name', #{timestamp}, #{
+      assert "INSERT INTO #{@table_name_quality()} VALUES ('abc', '1', 'name', '#{timestamp}','#{
                end_time
-             }, 49, 50), ('abc', 1, 'id', #{timestamp}, #{end_time}, 3, 4)" ==
-               PrestoClient.generate_quality_statement_from_events(events)
+             }', 49, 50), ('abc', '1', 'id', '#{timestamp}','#{end_time}', 3, 4)" ==
+               PrestoClient.generate_statement_from_events(events)
     end
   end
 

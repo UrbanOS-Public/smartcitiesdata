@@ -13,7 +13,7 @@ defmodule Flair.Producer do
   end
 
   def start_link(args \\ nil) do
-    IO.inspect(GenStage.start_link(__MODULE__, args, name: __MODULE__), label: "Start Link")
+    GenStage.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   def add_messages(messages) do
@@ -29,14 +29,11 @@ defmodule Flair.Producer do
   # end
 
   def init(_args) do
-    # TODO - need to create both tables
     Flair.PrestoClient.get_create_timing_table_statement()
     |> Flair.PrestoClient.execute()
 
     Flair.PrestoClient.get_create_quality_table_statement()
     |> Flair.PrestoClient.execute()
-
-    IO.puts("PRODUCER presto table created")
 
     {:producer, %State{}}
   end

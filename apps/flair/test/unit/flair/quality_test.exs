@@ -19,10 +19,13 @@ defmodule Flair.QualityTest do
 
       data = TDG.create_data(data_override)
 
-      expected = %{"123" => %{"0.1" => %{record_count: 1, fields: %{"id" => 1}}}}
+      expected = %{
+        :window_start => "start_time",
+        "123" => %{"0.1" => %{record_count: 1, window_start: "start_time", fields: %{"id" => 1}}}
+      }
 
       allow(Dataset.get!(dataset.id), return: dataset)
-      assert expected == Quality.reducer(data, %{})
+      assert expected == Quality.reducer(data, %{window_start: "start_time"})
     end
 
     test "with existing accumulator", %{simple_dataset: dataset} do
@@ -32,8 +35,13 @@ defmodule Flair.QualityTest do
 
       allow(Dataset.get!(dataset.id), return: dataset)
 
-      assert %{"123" => %{"0.1" => %{record_count: 2, fields: %{"id" => 2}}}} ==
-               Quality.reducer(data, Quality.reducer(data, %{}))
+      assert %{
+               "123" => %{
+                 "0.1" => %{record_count: 2, window_start: "start_time", fields: %{"id" => 2}}
+               },
+               window_start: "start_time"
+             } ==
+               Quality.reducer(data, Quality.reducer(data, %{window_start: "start_time"}))
     end
 
     test "three messages", %{simple_dataset: dataset} do
@@ -49,8 +57,13 @@ defmodule Flair.QualityTest do
 
       allow(Dataset.get!(dataset.id), return: dataset)
 
-      assert %{"123" => %{"0.1" => %{record_count: 3, fields: %{"id" => 2}}}} ==
-               Enum.reduce(messages, %{}, &Quality.reducer/2)
+      assert %{
+               "123" => %{
+                 "0.1" => %{record_count: 3, window_start: "start_time", fields: %{"id" => 2}}
+               },
+               window_start: "start_time"
+             } ==
+               Enum.reduce(messages, %{window_start: "start_time"}, &Quality.reducer/2)
     end
 
     test "different dataset_ids", %{simple_dataset: dataset, simple_overrides: simple_overrides} do
@@ -64,34 +77,42 @@ defmodule Flair.QualityTest do
         data_overrides
         |> Enum.map(fn override -> TDG.create_data(override) end)
 
-      dataset2 = TDG.create_dataset(simple_overrides) |> Map.put(:id, "456")
-      dataset3 = TDG.create_dataset(simple_overrides) |> Map.put(:id, "789")
+      dataset2 = simple_overrides |> TDG.create_dataset() |> Map.put(:id, "456")
+      dataset3 = simple_overrides |> TDG.create_dataset() |> Map.put(:id, "789")
 
       allow(Dataset.get!("123"), return: dataset)
       allow(Dataset.get!("456"), return: dataset2)
       allow(Dataset.get!("789"), return: dataset3)
 
       expected = %{
-        "456" => %{"0.1" => %{record_count: 1, fields: %{"id" => 1}}},
-        "123" => %{"0.1" => %{record_count: 1, fields: %{"id" => 0}}},
-        "789" => %{"0.1" => %{record_count: 1, fields: %{"id" => 1}}}
+        "456" => %{"0.1" => %{record_count: 1, window_start: "start_time", fields: %{"id" => 1}}},
+        "123" => %{"0.1" => %{record_count: 1, window_start: "start_time", fields: %{"id" => 0}}},
+        "789" => %{"0.1" => %{record_count: 1, window_start: "start_time", fields: %{"id" => 1}}},
+        window_start: "start_time"
       }
 
       assert expected ==
-               Enum.reduce(messages, %{}, &Quality.reducer/2)
+               Enum.reduce(messages, %{window_start: "start_time"}, &Quality.reducer/2)
     end
 
     test "different versions", %{simple_dataset: dataset} do
+      data_map1 = %{dataset_id: "123", payload: %{"id" => "123", "name" => "George Lucas"}}
+      data_map2 = %{dataset_id: "123", payload: %{"name" => "John Williams"}}
+      data_map3 = %{dataset_id: "123", payload: %{"id" => "123"}}
+
       data1 =
-        TDG.create_data(%{dataset_id: "123", payload: %{"id" => "123", "name" => "George Lucas"}})
+        data_map1
+        |> TDG.create_data()
         |> Map.update!(:version, fn _ -> "1.0" end)
 
       data2 =
-        TDG.create_data(%{dataset_id: "123", payload: %{"name" => "John Williams"}})
+        data_map2
+        |> TDG.create_data()
         |> Map.update!(:version, fn _ -> "1.1" end)
 
       data3 =
-        TDG.create_data(%{dataset_id: "123", payload: %{"id" => "123"}})
+        data_map3
+        |> TDG.create_data()
         |> Map.update!(:version, fn _ -> "1.2" end)
 
       allow(Dataset.get!("123"), return: dataset)
@@ -99,15 +120,16 @@ defmodule Flair.QualityTest do
       messages = [data1, data2, data3]
 
       expected = %{
+        :window_start => "start_time",
         "123" => %{
-          "1.0" => %{record_count: 1, fields: %{"id" => 1}},
-          "1.1" => %{record_count: 1, fields: %{"id" => 0}},
-          "1.2" => %{record_count: 1, fields: %{"id" => 1}}
+          "1.0" => %{record_count: 1, window_start: "start_time", fields: %{"id" => 1}},
+          "1.1" => %{record_count: 1, window_start: "start_time", fields: %{"id" => 0}},
+          "1.2" => %{record_count: 1, window_start: "start_time", fields: %{"id" => 1}}
         }
       }
 
       assert expected ==
-               Enum.reduce(messages, %{}, &Quality.reducer/2)
+               Enum.reduce(messages, %{window_start: "start_time"}, &Quality.reducer/2)
     end
 
     test "with nested schema accumulator", %{dataset: dataset} do
@@ -126,9 +148,11 @@ defmodule Flair.QualityTest do
       data = TDG.create_data(data_override)
 
       expected = %{
+        :window_start => "start_time",
         "abc" => %{
           "0.1" => %{
             record_count: 1,
+            window_start: "start_time",
             fields: %{
               "required field" => 1,
               "required parent field" => 1,
@@ -141,17 +165,21 @@ defmodule Flair.QualityTest do
       }
 
       allow(Dataset.get!(dataset.id), return: dataset)
-      assert expected == Quality.reducer(data, %{})
+      assert expected == Quality.reducer(data, %{window_start: "start_time"})
     end
   end
 
   describe "calculate_quality/1" do
     test "breaks window into individual events" do
+      allow(DateTime.to_iso8601(any()), return: "xyz")
+      allow(DateTime.utc_now(), return: "stu")
+
       input =
         {"abc",
          %{
            "0.1" => %{
              :record_count => 5,
+             :window_start => "abc",
              :fields => %{
                "id" => 1,
                "name" => 2,
@@ -169,6 +197,8 @@ defmodule Flair.QualityTest do
              dataset_id: "abc",
              schema_version: "0.1",
              field: "fun time",
+             window_start: "abc",
+             window_end: "xyz",
              valid_values: 5,
              records: 5
            },
@@ -176,6 +206,8 @@ defmodule Flair.QualityTest do
              dataset_id: "abc",
              schema_version: "0.1",
              field: "happy",
+             window_start: "abc",
+             window_end: "xyz",
              valid_values: 4,
              records: 5
            },
@@ -183,6 +215,8 @@ defmodule Flair.QualityTest do
              dataset_id: "abc",
              schema_version: "0.1",
              field: "id",
+             window_start: "abc",
+             window_end: "xyz",
              valid_values: 1,
              records: 5
            },
@@ -190,6 +224,8 @@ defmodule Flair.QualityTest do
              dataset_id: "abc",
              schema_version: "0.1",
              field: "name",
+             window_start: "abc",
+             window_end: "xyz",
              valid_values: 2,
              records: 5
            },
@@ -197,6 +233,8 @@ defmodule Flair.QualityTest do
              dataset_id: "abc",
              schema_version: "0.1",
              field: "super",
+             window_start: "abc",
+             window_end: "xyz",
              valid_values: 3,
              records: 5
            }
