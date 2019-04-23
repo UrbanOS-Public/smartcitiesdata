@@ -1,4 +1,5 @@
 use Mix.Config
+import_config "../test/integration/divo_sftp.ex"
 
 host =
   case System.get_env("HOST_IP") do
@@ -19,7 +20,8 @@ config :logger,
 config :reaper,
   divo: [
     {DivoKafka, [create_topics: "streaming-raw:1:1,streaming-dead-letters:1:1", outside_host: host]},
-    DivoRedis
+    DivoRedis,
+    Reaper.DivoSftp
   ],
   divo_wait: [dwell: 700, max_tries: 50]
 
@@ -37,6 +39,9 @@ config :kaffe,
 
 config :redix,
   host: host
+
+config :sftp,
+  connection: %{host: 'localhost', port: 2222, user: 'username', password: 'password'}
 
 config :yeet,
   endpoint: endpoint,
