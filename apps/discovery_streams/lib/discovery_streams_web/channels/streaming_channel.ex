@@ -75,9 +75,12 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     |> Enum.each(fn msg -> push(socket, @update_event, msg) end)
   end
 
-  defp determine_topic("vehicle_position"), do: "cota__cota_vehicle_positions"
-  defp determine_topic("streaming:cota-vehicle-positions"), do: "cota__cota_vehicle_positions"
-  defp determine_topic("streaming:ceav-vehicle-locations"), do: "may_mobility__67faa989_63be_4060_97d0_cf75b1e27ac4"
+  defp determine_topic("vehicle_position"), do: "central_ohio_transit_authority__cota_stream"
+  defp determine_topic("streaming:cota-vehicle-positions"), do: "central_ohio_transit_authority__cota_stream"
+
+  defp determine_topic("streaming:ceav-vehicle-locations"),
+    do: "may_mobility__connected_electric_autonomous_vehicle_locations"
+
   defp determine_topic("streaming:" <> topic), do: topic
 
   defp message_matches?(message, filter) do
