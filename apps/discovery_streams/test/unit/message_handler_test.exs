@@ -107,15 +107,20 @@ defmodule DiscoveryStreams.MessageHandlerTest do
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "vehicle_position")
 
     MessageHandler.handle_messages([
-      create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), key: "11604")
+      create_message(~s({"vehicle":{"vehicle":{"id":"10000"}}}), key: "11604"),
+      create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), key: "11604"),
+      create_message(~s({"vehicle":{"vehicle":{"id":"99999"}}}), key: "11604")
     ])
 
+    Process.sleep(100)
+
     cache_record_created = fn ->
+      Cachex.count(:cota__cota_vehicle_positions) |> IO.inspect(label: "CACHE SIZE FOR COTA")
+
       Cachex.stream!(:cota__cota_vehicle_positions)
       |> Enum.to_list()
-      |> Enum.map(fn {:entry, key, _create_ts, _ttl, vehicle} -> {key, vehicle} end) == [
-        {"11604", %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}}
-      ]
+      |> Enum.map(fn {:entry, _key, _create_ts, _ttl, vehicle} -> vehicle end)
+      |> Enum.member?(%{"vehicle" => %{"vehicle" => %{"id" => "11603"}}})
     end
 
     Patiently.wait_for!(
