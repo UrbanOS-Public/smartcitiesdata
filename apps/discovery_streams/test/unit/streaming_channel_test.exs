@@ -8,10 +8,13 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
 
   setup do
     CachexSupervisor.create_cache(:"shuttle-position")
-    CachexSupervisor.create_cache(:cota__cota_vehicle_positions)
+    CachexSupervisor.create_cache(:central_ohio_transit_authority__cota_stream)
     Cachex.clear(:"shuttle-position")
-    Cachex.clear(:cota__cota_vehicle_positions)
-    allow TopicSubscriber.list_subscribed_topics(), return: ["shuttle-position", "cota__cota_vehicle_positions"]
+    Cachex.clear(:central_ohio_transit_authority__cota_stream)
+
+    allow TopicSubscriber.list_subscribed_topics(),
+      return: ["shuttle-position", "central_ohio_transit_authority__cota_stream"]
+
     :ok
   end
 
@@ -25,7 +28,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:cota__cota_vehicle_positions, "vehicle_position"]
+      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
     ])
   end
 
@@ -43,7 +46,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:cota__cota_vehicle_positions, "vehicle_position"]
+      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
     ])
   end
 
@@ -61,7 +64,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:cota__cota_vehicle_positions, "vehicle_position"]
+      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
     ])
   end
 
@@ -81,7 +84,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:cota__cota_vehicle_positions, "vehicle_position"]
+      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
     ])
   end
 
@@ -101,7 +104,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:cota__cota_vehicle_positions, "vehicle_position"]
+      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
     ])
   end
 
@@ -122,7 +125,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:cota__cota_vehicle_positions, "vehicle_position"]
+      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
     ])
   end
 
@@ -150,7 +153,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:cota__cota_vehicle_positions, "vehicle_position"]
+      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
     ])
   end
 
@@ -173,7 +176,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:cota__cota_vehicle_positions, "vehicle_position"]
+      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
     ])
   end
 
@@ -195,7 +198,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:cota__cota_vehicle_positions, "vehicle_position"]
+      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
     ])
   end
 
@@ -215,7 +218,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     where([
       [:cache, :channel],
       [:"shuttle-position", "streaming:shuttle-position"],
-      [:cota__cota_vehicle_positions, "vehicle_position"]
+      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
     ])
   end
 

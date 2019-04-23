@@ -11,11 +11,14 @@ defmodule DiscoveryStreams.MessageHandlerTest do
   @outbound_records "records"
 
   setup do
-    CachexSupervisor.create_cache(:cota__cota_vehicle_positions)
+    CachexSupervisor.create_cache(:central_ohio_transit_authority__cota_stream)
     CachexSupervisor.create_cache(:"shuttle-position")
-    Cachex.clear(:cota__cota_vehicle_positions)
+    Cachex.clear(:central_ohio_transit_authority__cota_stream)
     Cachex.clear(:"shuttle-position")
-    allow TopicSubscriber.list_subscribed_topics(), return: ["shuttle-position", "cota__cota_vehicle_positions"]
+
+    allow TopicSubscriber.list_subscribed_topics(),
+      return: ["shuttle-position", "central_ohio_transit_authority__cota_stream"]
+
     :ok
   end
 
@@ -35,8 +38,8 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
     where([
       [:channel, :topic],
-      ["vehicle_position", "cota__cota_vehicle_positions"],
-      ["streaming:cota-vehicle-positions", "cota__cota_vehicle_positions"],
+      ["vehicle_position", "central_ohio_transit_authority__cota_stream"],
+      ["streaming:cota-vehicle-positions", "central_ohio_transit_authority__cota_stream"],
       ["streaming:shuttle-position", "shuttle-position"]
     ])
   end
@@ -71,11 +74,11 @@ defmodule DiscoveryStreams.MessageHandlerTest do
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "vehicle_position")
 
     MessageHandler.handle_messages([
-      create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "cota__cota_vehicle_positions"),
+      create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "central_ohio_transit_authority__cota_stream"),
       create_message(~s({"vehicle_id": 34095, "description": "Some Description"}), topic: "shuttle-position")
     ])
 
-    assert_called MetricCollector.record_metrics(any(), "cota__cota_vehicle_positions"), once()
+    assert_called MetricCollector.record_metrics(any(), "central_ohio_transit_authority__cota_stream"), once()
     assert_called MetricCollector.record_metrics(any(), "shuttle_position"), once()
 
     leave(socket)
@@ -92,7 +95,9 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
     assert capture_log([level: :warn], fn ->
              MessageHandler.handle_messages([
-               create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "cota__cota_vehicle_positions")
+               create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}),
+                 topic: "central_ohio_transit_authority__cota_stream"
+               )
              ])
            end) =~ "Unable to write application metrics: {:http_error, \"reason\"}"
 
@@ -111,7 +116,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
     ])
 
     cache_record_created = fn ->
-      Cachex.stream!(:cota__cota_vehicle_positions)
+      Cachex.stream!(:central_ohio_transit_authority__cota_stream)
       |> Enum.to_list()
       |> Enum.map(fn {:entry, key, _create_ts, _ttl, vehicle} -> {key, vehicle} end) == [
         {"11604", %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}}
@@ -156,7 +161,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
   defp create_message(data, opts \\ []) do
     %{
       key: Keyword.get(opts, :key, "some key"),
-      topic: Keyword.get(opts, :topic, "cota__cota_vehicle_positions"),
+      topic: Keyword.get(opts, :topic, "central_ohio_transit_authority__cota_stream"),
       value: data
     }
   end
