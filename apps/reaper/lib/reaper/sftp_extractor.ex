@@ -14,7 +14,7 @@ defmodule Reaper.SftpExtractor do
              user: to_charlist("username"),
              password: to_charlist("password")
            ),
-         data = SftpEx.download(conn, path) do
+         [data | _] = SftpEx.download(conn, path) do
       {:ok, data}
     else
       error -> error
