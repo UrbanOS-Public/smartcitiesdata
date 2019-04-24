@@ -35,19 +35,17 @@ defmodule Flair.PrestoClient do
     """
   end
 
-  def generate_statement_from_events([%{valid_values: _} | _] = events) do
+  def generate_statement_from_events(events) do
+    table_name = get_table(events)
+
     events
     |> Enum.map(&values_statement/1)
     |> Enum.join(", ")
-    |> create_insert_statement(@table_name_quality)
+    |> create_insert_statement(table_name)
   end
 
-  def generate_statement_from_events(events) do
-    events
-    |> Enum.map(&values_statement/1)
-    |> Enum.join(", ")
-    |> create_insert_statement(@table_name_timing)
-  end
+  defp get_table([%{valid_values: _} | _]), do: @table_name_quality
+  defp get_table(_events), do: @table_name_timing
 
   def execute(statement) do
     statement

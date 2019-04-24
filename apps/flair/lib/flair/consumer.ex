@@ -13,26 +13,6 @@ defmodule Flair.Consumer do
     {:consumer, :any}
   end
 
-  {"123",
-   [
-     %{
-       dataset_id: "123",
-       field: "id",
-       records: 3,
-       schema_version: "0.1",
-       valid_values: 0
-     }
-   ]}
-
-  def handle_events([{id, [%{valid_values: valid_values}]}] = events, _from, state) do
-    events
-    |> convert_events()
-    |> PrestoClient.generate_statement_from_events()
-    |> PrestoClient.execute()
-
-    {:noreply, [], state}
-  end
-
   def handle_events(events, _from, state) do
     events
     |> convert_events()
@@ -42,9 +22,9 @@ defmodule Flair.Consumer do
     {:noreply, [], state}
   end
 
-  defp convert_events([{id, [%{valid_values: valid_values}]}] = events) do
+  defp convert_events([{_dataset_id, [%{valid_values: _valid_values}]}] = events) do
     events
-    |> Enum.map(fn {id, event} -> event end)
+    |> Enum.map(fn {_id, event} -> event end)
     |> List.flatten()
   end
 

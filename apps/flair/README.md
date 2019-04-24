@@ -1,6 +1,7 @@
 # Flair
 
-**TODO: Add description**
+Flair profiles statistics about data.
+
 
 ## Installation
 
