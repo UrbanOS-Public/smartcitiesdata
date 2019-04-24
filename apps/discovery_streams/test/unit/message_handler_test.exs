@@ -111,19 +111,25 @@ defmodule DiscoveryStreams.MessageHandlerTest do
       socket()
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "vehicle_position")
 
+    msgs = %{
+      a: ~s({"vehicle":{"vehicle":{"id":"10000"}}}),
+      b: ~s({"vehicle":{"vehicle":{"id":"11603"}}}),
+      c: ~s({"vehicle":{"vehicle":{"id":"99999"}}})
+    }
+
     MessageHandler.handle_messages([
-      create_message(~s({"vehicle":{"vehicle":{"id":"10000"}}}), key: "11604"),
-      create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), key: "11604"),
-      create_message(~s({"vehicle":{"vehicle":{"id":"99999"}}}), key: "11604")
+      create_message(msgs.a, key: "11604"),
+      create_message(msgs.b, key: "11604"),
+      create_message(msgs.c, key: "11604")
     ])
 
-    Process.sleep(100)
-
     cache_record_created = fn ->
-      Cachex.stream!(:central_ohio_transit_authority__cota_stream)
-      |> Enum.to_list()
-      |> Enum.map(fn {:entry, _key, _create_ts, _ttl, vehicle} -> vehicle end)
-      |> Enum.member?(%{"vehicle" => %{"vehicle" => %{"id" => "11603"}}})
+      stream =
+        Cachex.stream!(:central_ohio_transit_authority__cota_stream)
+        |> Enum.to_list()
+        |> Enum.map(fn {:entry, _key, _create_ts, _ttl, vehicle} -> vehicle end)
+
+      Enum.all?([msgs.a, msgs.b, msgs.c], &Enum.member?(stream, Jason.decode!(&1)))
     end
 
     Patiently.wait_for!(
