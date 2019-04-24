@@ -65,29 +65,4 @@ defmodule QualityIntegrationTest do
       max_tries: 20
     )
   end
-
-  defp prestige_query(statement, expected) do
-    fn ->
-      actual =
-        statement
-        |> Prestige.execute()
-        |> Prestige.prefetch()
-
-      Logger.info("Waiting for #{inspect(actual)} to equal #{inspect(expected)}")
-
-      try do
-        assert actual == expected
-        true
-      rescue
-        _ -> false
-      end
-    end
-  end
-
-  defp fetch_and_unwrap(topic) do
-    {:ok, messages} = :brod.fetch(@endpoint, topic, 0, 0)
-
-    messages
-    |> Enum.map(fn {:kafka_message, _, _, _, key, body, _, _, _} -> {key, body} end)
-  end
 end

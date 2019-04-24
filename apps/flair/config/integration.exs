@@ -12,7 +12,9 @@ endpoint = [{to_charlist(host), 9094}]
 
 config :flair,
   window_unit: :millisecond,
-  window_length: 1
+  window_length: 1,
+  message_timeout: 5 * 60 * 1_000,
+  task_timeout: 5 * 60 * 1_000
 
 config :kaffe,
   producer: [

@@ -5,28 +5,20 @@ defmodule Flair.Producer do
 
   use GenStage
 
-  @message_timeout 5 * 60 * 1_000
+  @message_timeout Application.get_env(:flair, :message_timeout, 50)
 
   defmodule State do
     @moduledoc false
     defstruct demand: 0, message_set: [], from: []
   end
 
-  def start_link(args \\ nil) do
-    GenStage.start_link(__MODULE__, args, name: __MODULE__)
+  def start_link(name, args \\ nil) do
+    GenStage.start_link(__MODULE__, args, name: name)
   end
 
-  def add_messages(messages) do
-    GenStage.call(__MODULE__, {:add, messages}, @message_timeout)
+  def add_messages(name, messages) do
+    GenStage.call(name, {:add, messages}, @message_timeout)
   end
-
-  # def start_link(name, args \\ nil) do
-  #   GenStage.start_link(__MODULE__, args, name: name)
-  # end
-
-  # def add_messages(name, messages) do
-  #   GenStage.call(name, {:add, messages}, @message_timeout)
-  # end
 
   def init(_args) do
     Flair.PrestoClient.get_create_timing_table_statement()

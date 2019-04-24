@@ -13,15 +13,15 @@ defmodule Flair.QualityFlow do
   def start_link(_) do
     consumer_spec = [
       {
-        {Flair.Consumer, []},
+        {Flair.Consumer, :quality_consumer},
         []
       }
     ]
 
-    # flow = Flow.from_specs([{Flair.Producer, :quality}])
-    flow = Flow.from_specs([{Flair.Producer, []}])
+    # flow = Flow.from_specs([{Flair.Producer, []}])
 
-    flow
+    [{Flair.Producer, :quality}]
+    |> Flow.from_specs()
     |> Flow.map(&get_message/1)
     |> Flow.reject(&is_dead_letter/1)
     |> Flow.each(&log_message/1)

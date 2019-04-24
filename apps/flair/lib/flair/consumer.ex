@@ -5,8 +5,8 @@ defmodule Flair.Consumer do
 
   alias Flair.PrestoClient
 
-  def start_link(args \\ nil) do
-    GenStage.start_link(__MODULE__, args, name: __MODULE__)
+  def start_link(name, args \\ nil) do
+    GenStage.start_link(__MODULE__, args, name: name)
   end
 
   def init(_args) do

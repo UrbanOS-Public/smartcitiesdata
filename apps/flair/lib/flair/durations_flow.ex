@@ -13,12 +13,12 @@ defmodule Flair.DurationsFlow do
   def start_link(_) do
     consumer_spec = [
       {
-        {Flair.Consumer, []},
+        {Flair.Consumer, :durations_consumer},
         []
       }
     ]
 
-    [{Flair.Producer, []}]
+    [{Flair.Producer, :durations}]
     |> Flow.from_specs()
     |> Flow.map(&get_message/1)
     |> Flow.reject(&is_dead_letter/1)
