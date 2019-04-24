@@ -40,9 +40,6 @@ config :kaffe,
 config :redix,
   host: host
 
-config :sftp,
-  connection: %{host: 'localhost', port: 2222, user: 'username', password: 'password'}
-
 config :yeet,
   endpoint: endpoint,
   topic: "streaming-dead-letters"

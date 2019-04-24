@@ -5,6 +5,16 @@ defmodule Reaper.Extractor do
   plug(Tesla.Middleware.FollowRedirects)
   plug(Tesla.Middleware.Retry, delay: 500, max_retries: 10)
 
+  def extract("sftp" <> _rest = url) do
+    case Reaper.SftpExtractor.extract(url) do
+      {:ok, data} ->
+        data
+
+      {:error, reason} ->
+        raise "Failed calling '" <> url <> "': " <> inspect(reason)
+    end
+  end
+
   def extract(url) do
     case get(url) do
       {:ok, response} ->

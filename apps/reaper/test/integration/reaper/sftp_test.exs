@@ -4,11 +4,13 @@ defmodule SftpTest do
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @sftp Application.get_env(:sftp, :connection)
+  @sftp %{host: 'localhost', port: 2222, user: 'username', password: 'password'}
 
   setup _context do
     {:ok, conn} = SftpEx.connect(host: @sftp.host, port: @sftp.port, user: @sftp.user, password: @sftp.password)
-    SftpEx.upload(conn, "./upload/file.json", Jason.encode!(%{datum: "Bobber", sanctum: "Alice"}))
+    data = Jason.encode!([%{datum: "Bobber", sanctum: "Alice"}])
+    SftpEx.upload(conn, "./upload/file.json", data)
+
     :ok
   end
 
