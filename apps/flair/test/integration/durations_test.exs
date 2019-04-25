@@ -39,7 +39,7 @@ defmodule DurationsTest do
   end
 
   test "flair consumes messages and calls out to presto", context do
-    # SmartCity.Dataset.write(TestHelper.create_simple_dataset() |> Map.put(:id, "pirates"))
+    SmartCity.Dataset.write(TestHelper.create_simple_dataset() |> Map.put(:id, "pirates"))
     Mockaffe.send_to_kafka(context[:messages], "streaming-transformed")
 
     Patiently.wait_for!(

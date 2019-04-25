@@ -21,3 +21,6 @@ config :prestige,
     catalog: "hive",
     schema: "default"
   ]
+
+config :logger,
+  level: :warn
