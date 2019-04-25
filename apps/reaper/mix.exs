@@ -54,6 +54,8 @@ defmodule Reaper.MixProject do
       {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
       {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
       {:tesla, "~> 1.2"},
+      {:httpoison, "~> 1.5"},
+      {:downstream, "~> 1.0"},
       # Test/Dev Dependencies
       {:smart_city_test, "~> 0.2", organization: "smartcolumbus_os"},
       {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},

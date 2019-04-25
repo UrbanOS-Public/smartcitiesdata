@@ -3,7 +3,9 @@ defmodule Reaper.Decoder do
   require Logger
   alias TransitRealtime.FeedMessage
 
-  def decode(body, "gtfs", _schema) do
+  alias Reaper.ReaperConfig
+
+  def decode(body, %ReaperConfig{sourceFormat: "gtfs"}) do
     try do
       message = FeedMessage.decode(body)
       message.entity
@@ -14,7 +16,7 @@ defmodule Reaper.Decoder do
     end
   end
 
-  def decode(body, "json", _schema) do
+  def decode(body, %ReaperConfig{sourceFormat: "json"}) do
     case Jason.decode(body) do
       {:ok, response} ->
         response
@@ -25,7 +27,7 @@ defmodule Reaper.Decoder do
     end
   end
 
-  def decode(body, "csv", schema) do
+  def decode(body, %ReaperConfig{sourceFormat: "csv", schema: schema}) do
     try do
       keys = Enum.map(schema, fn el -> el.name end)
 
@@ -41,7 +43,7 @@ defmodule Reaper.Decoder do
     end
   end
 
-  def decode(body, other, _schema) do
+  def decode(body, %ReaperConfig{sourceFormat: other}) do
     yeet_error(body, %RuntimeError{message: "#{other} is an invalid format"})
     []
   end

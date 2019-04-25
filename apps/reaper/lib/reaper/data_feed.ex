@@ -42,7 +42,7 @@ defmodule Reaper.DataFeed do
     reaper_config
     |> UrlBuilder.build()
     |> Extractor.extract()
-    |> Decoder.decode(reaper_config.sourceFormat, reaper_config.schema)
+    |> Decoder.decode(reaper_config)
     |> Cache.dedupe(cache)
     |> Loader.load(reaper_config, generated_time_stamp)
     |> Cache.cache(cache)

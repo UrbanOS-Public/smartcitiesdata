@@ -4,12 +4,14 @@ defmodule Reaper.DecoderTest do
   alias Reaper.Decoder
   alias SmartCity.TestDataGenerator, as: TDG
 
+  alias Reaper.ReaperConfig
+
   describe(".decode") do
     test "when given GTFS protobuf body and a gtfs format it returns it as a list of entities" do
       entities =
         "test/support/gtfs-realtime.pb"
         |> File.read!()
-        |> Decoder.decode("gtfs", nil)
+        |> Decoder.decode(%ReaperConfig{sourceFormat: "gtfs"})
 
       assert Enum.count(entities) == 176
       assert entities |> List.first() |> Map.get(:id) == "1004"
@@ -17,7 +19,7 @@ defmodule Reaper.DecoderTest do
 
     test "when given a CSV string body and a csv format it returns it as a Map" do
       dataset =
-        TDG.create_dataset(%{id: "cool", technical: %{schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]}})
+        TDG.create_dataset(%{id: "cool", technical: %{sourceFormat: "csv", schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]}})
 
       reaper_config =
         FixtureHelper.new_reaper_config(%{
@@ -37,7 +39,7 @@ defmodule Reaper.DecoderTest do
 
       actual =
         ~s(1, Johnson, Spot\n2, Erin, Bella\n3, Ben, Max\n\n)
-        |> Decoder.decode("csv", reaper_config.schema)
+        |> Decoder.decode(reaper_config)
 
       assert actual == expected
     end
@@ -45,7 +47,7 @@ defmodule Reaper.DecoderTest do
     test "when given a JSON string body and a json format it returns it as a Map" do
       structure =
         ~s({"vehicle_id":22471,"update_time":"2019-01-02T16:15:50.662532+00:00","longitude":-83.0085,"latitude":39.9597})
-        |> Decoder.decode("json", nil)
+        |> Decoder.decode(%ReaperConfig{sourceFormat: "json"})
 
       assert Map.has_key?(structure, "vehicle_id")
     end
@@ -57,7 +59,7 @@ defmodule Reaper.DecoderTest do
 
       allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
 
-      assert [] == Reaper.Decoder.decode(body, "json", nil)
+      assert [] == Reaper.Decoder.decode(body, %ReaperConfig{sourceFormat: "json"})
 
       assert_called Yeet.process_dead_letter(body, "Reaper",
                       exit_code: %Jason.DecodeError{data: "baaad json", position: 0, token: nil}
@@ -71,7 +73,7 @@ defmodule Reaper.DecoderTest do
 
       allow(TransitRealtime.FeedMessage.decode(any()), exec: fn _ -> raise "this is an error" end)
 
-      assert [] == Reaper.Decoder.decode(body, "gtfs", nil)
+      assert [] == Reaper.Decoder.decode(body, %ReaperConfig{sourceFormat: "gtfs"})
 
       assert_called Yeet.process_dead_letter(body, "Reaper", exit_code: %RuntimeError{message: "this is an error"})
     end
@@ -81,7 +83,7 @@ defmodule Reaper.DecoderTest do
 
       allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
 
-      assert [] == Reaper.Decoder.decode(body, "csv", nil)
+      assert [] == Reaper.Decoder.decode(body, %ReaperConfig{sourceFormat: "csv"})
 
       assert_called Yeet.process_dead_letter(body, "Reaper",
                       exit_code: %Protocol.UndefinedError{description: "", protocol: Enumerable, value: nil}
@@ -93,7 +95,7 @@ defmodule Reaper.DecoderTest do
 
       allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
 
-      assert [] == Reaper.Decoder.decode(body, "CSY", nil)
+      assert [] == Reaper.Decoder.decode(body, %ReaperConfig{sourceFormat: "CSY"})
 
       assert_called Yeet.process_dead_letter(body, "Reaper",
                       exit_code: %RuntimeError{message: "CSY is an invalid format"}
