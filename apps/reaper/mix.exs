@@ -69,7 +69,7 @@ defmodule Reaper.MixProject do
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:excoveralls, "~> 0.10", only: :test},
       {:phoenix, "~> 1.4", only: :test},
-      {:yeet, "~> 0.3", organization: "smartcolumbus_os"}
+      {:yeet, "~> 0.4", organization: "smartcolumbus_os"}
     ]
   end
 
