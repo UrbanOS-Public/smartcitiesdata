@@ -17,6 +17,17 @@ defmodule Valkyrie.ValidatorsTest do
       assert Validators.schema_satisfied?(msg.payload, cool_schema) == true
     end
 
+    test "returns true when payload structure matches schema with different cased keys" do
+      schema = [
+        %{name: "fooBar", type: "string"},
+        %{name: "abcXyz", type: "integer"}
+      ]
+
+      [msg] = TDG.create_data(%{dataset_id: "case", payload: %{fooBar: "baz", abcXyz: 42}}, 1)
+
+      assert Validators.schema_satisfied?(msg.payload, schema) == true
+    end
+
     test "returns true when nested payload structure matches schema" do
       cooler_schema = [
         %{name: "name", type: "string"},

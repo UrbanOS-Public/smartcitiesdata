@@ -23,16 +23,33 @@ defmodule Valkyrie.Validators do
   end
 
   defp field_present?(%{name: name}, payload) do
-    name =
+    field_name =
       name
       |> String.downcase()
       |> String.to_atom()
 
-    Map.has_key?(payload, name)
+    payload_keys =
+      payload
+      |> Map.keys()
+      |> Enum.map(fn key ->
+        key
+        |> Atom.to_string()
+        |> String.downcase()
+        |> String.to_atom()
+      end)
+
+    field_name in payload_keys
   end
 
   defp not_header?(%{name: name}, payload) do
     atom_name = String.to_atom(name)
-    Map.get(payload, atom_name) != name
+
+    case Map.get(payload, atom_name) do
+      value when not is_binary(value) ->
+        true
+
+      value ->
+        String.downcase(value) != String.downcase(name)
+    end
   end
 end
