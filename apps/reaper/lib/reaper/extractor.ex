@@ -8,7 +8,11 @@ defmodule Reaper.Extractor do
   def extract(url, "csv") do
     filename = inspect(self())
     file = File.open!(filename, [:write])
-    Downstream.get!(url, file)
+
+    url
+    |> follow_redirect()
+    |> Downstream.get!(file)
+
     File.close(file)
     {:file, filename}
   end
@@ -26,5 +30,25 @@ defmodule Reaper.Extractor do
 
         raise "Failed calling '" <> target <> "': " <> inspect(reason)
     end
+  end
+
+  defp follow_redirect(url) do
+    case HTTPoison.head(url) do
+      {:ok, %HTTPoison.Response{status_code: status_code} = response} when status_code in [301, 302] ->
+        response
+        |> location()
+        |> follow_redirect()
+
+      _ ->
+        url
+    end
+  end
+
+  defp location(%HTTPoison.Response{headers: headers}) do
+    {_location, url} =
+      headers
+      |> Enum.find(fn {key, value} -> String.downcase(key) == "location" end)
+
+    url
   end
 end
