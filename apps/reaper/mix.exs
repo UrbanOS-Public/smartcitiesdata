@@ -39,7 +39,7 @@ defmodule Reaper.MixProject do
     [
       {:cachex, "~> 3.1"},
       {:checkov, "~> 0.4"},
-      {:csv, "~> 2.3"},
+      {:nimble_csv, "~> 0.6.0"},
       {:distillery, "~> 2.0"},
       {:horde, "~> 0.2.3"},
       {:horde_connector, "~> 0.1", organization: "smartcolumbus_os"},
@@ -54,6 +54,8 @@ defmodule Reaper.MixProject do
       {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
       {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
       {:tesla, "~> 1.2"},
+      {:httpoison, "~> 1.5"},
+      {:downstream, "~> 1.0"},
       # Test/Dev Dependencies
       {:smart_city_test, "~> 0.2", organization: "smartcolumbus_os"},
       {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},

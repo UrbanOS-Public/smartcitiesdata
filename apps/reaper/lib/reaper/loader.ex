@@ -5,7 +5,7 @@ defmodule Reaper.Loader do
 
   def load(payloads, reaper_config, start_time) do
     payloads
-    |> Enum.map(
+    |> Stream.map(
       &send_to_kafka(
         &1,
         partition_key(

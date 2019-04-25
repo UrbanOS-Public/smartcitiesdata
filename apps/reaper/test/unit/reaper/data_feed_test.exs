@@ -20,8 +20,8 @@ defmodule Reaper.DataFeedTest do
   describe "handle_info given a state that includes a reaper config struct" do
     test "schedules itself on the provided cadence" do
       expect(UrlBuilder.build(any()), return: :does_not_matter)
-      expect(Extractor.extract(any()), return: :does_not_matter)
-      expect(Decoder.decode(any(), any(), any()), return: :does_not_matter)
+      expect(Extractor.extract(any(), any()), return: :does_not_matter)
+      expect(Decoder.decode(any(), any()), return: :does_not_matter)
       expect(Cache.dedupe(any(), any()), return: :does_not_matter)
       expect(Loader.load(any(), any(), any()), return: :does_not_matter)
       expect(Cache.cache(any(), any()), return: [])
@@ -69,8 +69,8 @@ defmodule Reaper.DataFeedTest do
   describe "handle_info calls Persistence.record_last_fetched_timestamp" do
     setup do
       allow(UrlBuilder.build(any()), return: :does_not_matter)
-      allow(Extractor.extract(any()), return: :does_not_matter)
-      allow(Decoder.decode(any(), any(), any()), return: :does_not_matter)
+      allow(Extractor.extract(any(), any()), return: :does_not_matter)
+      allow(Decoder.decode(any(), any()), return: :does_not_matter)
       allow(Cache.dedupe(any(), any()), return: :does_not_matter)
       allow(Loader.load(any(), any(), any()), return: :does_not_matter)
 
