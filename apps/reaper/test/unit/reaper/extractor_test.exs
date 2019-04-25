@@ -18,6 +18,10 @@ defmodule Reaper.ExtractorTest do
     end
 
     test "downloads csvs to file on local filesystem", %{bypass: bypass} do
+      Bypass.stub(bypass, "HEAD", "/1.2/data.csv", fn conn ->
+        Plug.Conn.resp(conn, 200, ~s|one,two,three\n1,2,3\n|)
+      end)
+
       Bypass.stub(bypass, "GET", "/1.2/data.csv", fn conn ->
         Plug.Conn.resp(conn, 200, ~s|one,two,three\n1,2,3\n|)
       end)
@@ -25,6 +29,46 @@ defmodule Reaper.ExtractorTest do
       {:file, filename} = Extractor.extract("http://localhost:#{bypass.port}/1.2/data.csv", "csv")
 
       assert ~s|one,two,three\n1,2,3\n| == File.read!(filename)
+    end
+
+    test "follows 302 redirects and downloads csv file to local filesystem", %{bypass: bypass} do
+      Bypass.expect(bypass, "HEAD", "/some/csv-file.csv", fn conn ->
+        Phoenix.Controller.redirect(conn, external: "http://localhost:#{bypass.port}/some/other/csv-file.csv")
+      end)
+
+      Bypass.expect(bypass, "HEAD", "/some/other/csv-file.csv", fn conn ->
+        conn
+        |> Plug.Conn.resp(200, "")
+      end)
+
+      Bypass.expect(bypass, "GET", "/some/other/csv-file.csv", fn conn ->
+        Plug.Conn.resp(conn, 200, ~s|one,two,three\n4,5,6\n|)
+      end)
+
+      {:file, filename} = Extractor.extract("http://localhost:#{bypass.port}/some/csv-file.csv", "csv")
+
+      assert ~s|one,two,three\n4,5,6\n| == File.read!(filename)
+    end
+
+    test "follows 301 redirects and downloads csv file to local filesystem", %{bypass: bypass} do
+      Bypass.expect(bypass, "HEAD", "/some/csv-file.csv", fn conn ->
+        conn
+        |> Plug.Conn.put_resp_header("location", "http://localhost:#{bypass.port}/some/other/csv-file.csv")
+        |> Plug.Conn.resp(301, "")
+      end)
+
+      Bypass.expect(bypass, "HEAD", "/some/other/csv-file.csv", fn conn ->
+        conn
+        |> Plug.Conn.resp(200, "")
+      end)
+
+      Bypass.expect(bypass, "GET", "/some/other/csv-file.csv", fn conn ->
+        Plug.Conn.resp(conn, 200, ~s|one,two,three\n4,5,6\n|)
+      end)
+
+      {:file, filename} = Extractor.extract("http://localhost:#{bypass.port}/some/csv-file.csv", "csv")
+
+      assert ~s|one,two,three\n4,5,6\n| == File.read!(filename)
     end
 
     test "When the extractor encounters a redirect it follows it to the source", %{
