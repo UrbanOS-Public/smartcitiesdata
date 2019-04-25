@@ -2,12 +2,15 @@ defmodule Yeet do
   alias Yeet.KafkaHelper
   @moduledoc false
 
+  require Logger
+
   def process_dead_letter(message, app_name, options \\ []) do
     dead_letter =
       message
       |> sanitize_message()
       |> format_message(app_name, options)
 
+    Logger.info(fn -> "Yeeting: #{inspect(dead_letter)}" end)
     KafkaHelper.produce(dead_letter)
   end
 
