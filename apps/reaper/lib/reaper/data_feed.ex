@@ -8,7 +8,7 @@ defmodule Reaper.DataFeed do
   """
 
   use GenServer
-  alias Reaper.{Cache, Decoder, Extractor, Loader, UrlBuilder, Util, Persistence}
+  alias Reaper.{Cache, Decoder, Extractor, Loader, UrlBuilder, Util, Persistence, ReaperConfig}
 
   ## CLIENT
 
@@ -27,15 +27,9 @@ defmodule Reaper.DataFeed do
   end
 
   def init(%{pids: %{name: name}, reaper_config: reaper_config} = args) do
-    case reaper_config.cadence do
-      "once" ->
-        Process.send_after(self(), :work, 1)
-
-      _ ->
-        reaper_config
-        |> calculate_next_run_time()
-        |> schedule_work()
-    end
+    reaper_config
+    |> calculate_next_run_time()
+    |> schedule_work()
 
     Horde.Registry.register(Reaper.Registry, name)
 
@@ -65,6 +59,7 @@ defmodule Reaper.DataFeed do
     end
   end
 
+  defp schedule_work(nil), do: nil
   defp schedule_work("once"), do: nil
 
   defp schedule_work(cadence) do
@@ -77,6 +72,13 @@ defmodule Reaper.DataFeed do
 
   def handle_call(:get, _from, state) do
     {:reply, state, state}
+  end
+
+  def calculate_next_run_time(%ReaperConfig{dataset_id: id, cadence: "once"}) do
+    case Persistence.get_last_fetched_timestamp(id) do
+      nil -> 0
+      _last -> nil
+    end
   end
 
   def calculate_next_run_time(reaper_config) do

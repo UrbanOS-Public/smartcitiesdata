@@ -4,7 +4,11 @@ defmodule Reaper.DataFeedTest do
   alias Reaper.{Cache, DataFeed, Decoder, Extractor, Loader, UrlBuilder, Persistence}
 
   @dataset_id "12345-6789"
-  @reaper_config FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id, sourceType: "batch", cadence: 100})
+  @reaper_config FixtureHelper.new_reaper_config(%{
+                   dataset_id: @dataset_id,
+                   sourceType: "batch",
+                   cadence: 100
+                 })
   @data_feed_args %{
     pids: %{
       name: String.to_atom("#{@dataset_id}_feed"),
@@ -38,13 +42,22 @@ defmodule Reaper.DataFeedTest do
 
     test "reaper config updates replace old state" do
       allow(Redix.command!(any(), any()), return: ~s({"timestamp": "2019-03-21 17:12:51.585273Z"}))
+
       {:ok, pid} = DataFeed.start_link(@data_feed_args)
 
       reaper_config_update =
-        FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id, sourceUrl: "persisted", sourceFormat: "Success"})
+        FixtureHelper.new_reaper_config(%{
+          dataset_id: @dataset_id,
+          sourceUrl: "persisted",
+          sourceFormat: "Success"
+        })
 
       expected_reaper_config =
-        FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id, sourceUrl: "persisted", sourceFormat: "Success"})
+        FixtureHelper.new_reaper_config(%{
+          dataset_id: @dataset_id,
+          sourceUrl: "persisted",
+          sourceFormat: "Success"
+        })
 
       DataFeed.update(pid, reaper_config_update)
 
@@ -116,15 +129,16 @@ defmodule Reaper.DataFeedTest do
     end
   end
 
-  describe "When calculating the next runtime" do
-    test "it is scheduled instantly if it has not be scheduled for a period of time longer than the cadence" do
+  describe "calculate_next_run_time/1" do
+    test "calculates immediate runtime if time since last fetch exceeds cadence" do
       one_hundred_seconds_ago = DateTime.add(DateTime.utc_now(), -100, :second)
       allow(Persistence.get_last_fetched_timestamp(any()), return: one_hundred_seconds_ago)
       new_dataset = FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id, cadence: 100_000})
+
       assert DataFeed.calculate_next_run_time(new_dataset) == 0
     end
 
-    test "it is scheduled based upon the difference between now and cadence" do
+    test "calculates milliseconds until next runtime if time since last fetch doesn't exceed cadence" do
       ten_seconds_ago = DateTime.add(DateTime.utc_now(), -10, :second)
       allow(Persistence.get_last_fetched_timestamp(any()), return: ten_seconds_ago)
       new_dataset = FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id, cadence: 100_000})
@@ -132,11 +146,26 @@ defmodule Reaper.DataFeedTest do
       assert abs(DataFeed.calculate_next_run_time(new_dataset) - 90_000) < 50
     end
 
-    test "it is scheduled instantly if it has not be fetched before" do
+    test "calculates immediate runtime if never previously fetched" do
       allow(Persistence.get_last_fetched_timestamp(any()), return: nil)
       new_dataset = FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id, cadence: 100_000})
 
       assert DataFeed.calculate_next_run_time(new_dataset) == 0
+    end
+
+    test "calculates immediate runtime if cadence is 'once' and never previously fetched" do
+      allow(Persistence.get_last_fetched_timestamp(any()), return: nil)
+      new_dataset = FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id, cadence: "once"})
+
+      assert DataFeed.calculate_next_run_time(new_dataset) == 0
+    end
+
+    test "calculates no runtime if cadence is 'once' and has been previously fetched" do
+      previously = DateTime.add(DateTime.utc_now(), -3600, :second)
+      allow(Persistence.get_last_fetched_timestamp(any()), return: previously)
+      new_dataset = FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id, cadence: "once"})
+
+      assert DataFeed.calculate_next_run_time(new_dataset) == nil
     end
   end
 end
