@@ -6,7 +6,12 @@ defmodule Valkyrie.ValidatorsTest do
 
   describe "schema_satisfied?/2" do
     test "returns true when payload structure matches schema" do
-      cool_schema = [%{name: "id", type: "integer"}, %{name: "name", type: "string"}, %{name: "age", type: "integer"}]
+      cool_schema = [
+        %{name: "id", type: "integer"},
+        %{name: "name", type: "string"},
+        %{name: "age", type: "integer"}
+      ]
+
       [msg] = TDG.create_data([dataset_id: "cool_data", payload: %{id: 123, name: "Benji", age: 31}], 1)
 
       assert Validators.schema_satisfied?(msg.payload, cool_schema) == true
@@ -50,7 +55,10 @@ defmodule Valkyrie.ValidatorsTest do
           itemType: "map",
           subSchema: [
             [%{name: "hometown", type: "string"}, %{name: "pet", type: "string"}],
-            [%{name: "birth_month", type: "string"}, %{name: "books", type: "list", itemType: "string"}]
+            [
+              %{name: "birth_month", type: "string"},
+              %{name: "books", type: "list", itemType: "string"}
+            ]
           ]
         }
       ]
@@ -83,6 +91,17 @@ defmodule Valkyrie.ValidatorsTest do
       [msg] = TDG.create_data([dataset_id: "sad_data", payload: %{name: "Peggy", age: 37}], 1)
 
       assert Validators.schema_satisfied?(msg.payload, sad_schema) == false
+    end
+
+    test "returns false when a payload value matches the field name" do
+      header_schema = [
+        %{name: "col1", type: "string"},
+        %{name: "col2", type: "string"}
+      ]
+
+      [msg] = TDG.create_data(%{dataset_id: "foo", payload: %{col1: "col1", col2: "col2"}}, 1)
+
+      assert Validators.schema_satisfied?(msg.payload, header_schema) == false
     end
   end
 end
