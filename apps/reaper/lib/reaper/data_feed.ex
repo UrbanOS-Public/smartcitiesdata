@@ -41,7 +41,7 @@ defmodule Reaper.DataFeed do
 
     reaper_config
     |> UrlBuilder.build()
-    |> Extractor.extract()
+    |> Extractor.extract(reaper_config.sourceFormat)
     |> Decoder.decode(reaper_config)
     |> Cache.dedupe(cache)
     |> Loader.load(reaper_config, generated_time_stamp)
@@ -98,10 +98,17 @@ defmodule Reaper.DataFeed do
     do: Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
 
   defp record_last_fetched_timestamp(records, dataset_id, timestamp) do
-    success = Enum.any?(records, fn {status, _} -> status == :ok end)
-
-    if success do
+    if any_successful?(records) do
       Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
     end
+  end
+
+  defp any_successful?(records) do
+    Enum.reduce(records, false, fn {status, _}, acc ->
+      case status do
+        :ok -> true
+        _ -> acc
+      end
+    end)
   end
 end

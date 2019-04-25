@@ -6,6 +6,16 @@ defmodule Reaper.DecoderTest do
 
   alias Reaper.ReaperConfig
 
+  setup do
+    filename = inspect(self())
+
+    on_exit(fn ->
+      File.rm(filename)
+    end)
+
+    :ok
+  end
+
   describe(".decode") do
     test "when given GTFS protobuf body and a gtfs format it returns it as a list of entities" do
       entities =
@@ -19,7 +29,10 @@ defmodule Reaper.DecoderTest do
 
     test "when given a CSV string body and a csv format it returns it as a Map" do
       dataset =
-        TDG.create_dataset(%{id: "cool", technical: %{sourceFormat: "csv", schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]}})
+        TDG.create_dataset(%{
+          id: "cool",
+          technical: %{sourceFormat: "csv", schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]}
+        })
 
       reaper_config =
         FixtureHelper.new_reaper_config(%{
@@ -32,16 +45,18 @@ defmodule Reaper.DecoderTest do
         })
 
       expected = [
-        %{"id" => "1", "name" => "Johnson", "pet" => "Spot"},
-        %{"id" => "2", "name" => "Erin", "pet" => "Bella"},
-        %{"id" => "3", "name" => "Ben", "pet" => "Max"}
+        %{"id" => "1", "name" => " Johnson", "pet" => " Spot"},
+        %{"id" => "2", "name" => " Erin", "pet" => " Bella"},
+        %{"id" => "3", "name" => " Ben", "pet" => " Max"}
       ]
 
+      File.write!(inspect(self()), ~s|1, Johnson, Spot\n2, Erin, Bella\n3, Ben, Max\n\n|)
+
       actual =
-        ~s(1, Johnson, Spot\n2, Erin, Bella\n3, Ben, Max\n\n)
+        {:file, inspect(self())}
         |> Decoder.decode(reaper_config)
 
-      assert actual == expected
+      assert Enum.into(actual, []) == expected
     end
 
     test "when given a JSON string body and a json format it returns it as a Map" do
@@ -80,12 +95,14 @@ defmodule Reaper.DecoderTest do
 
     test "csv messages yoted and raises error" do
       body = "baaad csv"
+      File.write(inspect(self()), body)
 
       allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
 
-      assert [] == Reaper.Decoder.decode(body, %ReaperConfig{sourceFormat: "csv"})
+      assert [] ==
+               Reaper.Decoder.decode({:file, inspect(self())}, %ReaperConfig{dataset_id: "ds1", sourceFormat: "csv"})
 
-      assert_called Yeet.process_dead_letter(body, "Reaper",
+      assert_called Yeet.process_dead_letter("DatasetId : ds1", "Reaper",
                       exit_code: %Protocol.UndefinedError{description: "", protocol: Enumerable, value: nil}
                     )
     end

@@ -1,3 +1,5 @@
+NimbleCSV.define(CsvParser, [])
+
 defmodule Reaper.Decoder do
   @moduledoc false
   require Logger
@@ -27,18 +29,19 @@ defmodule Reaper.Decoder do
     end
   end
 
-  def decode(body, %ReaperConfig{sourceFormat: "csv", schema: schema}) do
+  def decode({:file, filename}, %ReaperConfig{sourceFormat: "csv", dataset_id: dataset_id, schema: schema}) do
     try do
       keys = Enum.map(schema, fn el -> el.name end)
 
-      body
-      |> String.trim()
-      |> String.split("\n")
-      |> CSV.decode!(headers: keys, strip_fields: true)
-      |> Enum.to_list()
+      filename
+      |> File.stream!()
+      |> setup_after_hook_for_deletion(filename)
+      |> Stream.reject(fn line -> String.trim(line) == "" end)
+      |> CsvParser.parse_stream(skip_headers: false)
+      |> Stream.map(fn row -> keys |> Enum.zip(row) |> Map.new() end)
     rescue
       error ->
-        yeet_error(body, error)
+        yeet_error("DatasetId : #{dataset_id}", error)
         []
     end
   end
@@ -52,5 +55,18 @@ defmodule Reaper.Decoder do
     dlq_topic = Application.get_env(:yeet, :topic)
     Logger.warn("Unable to decode message; re-routing to DLQ topic '#{dlq_topic}'")
     Yeet.process_dead_letter(message, "Reaper", exit_code: error)
+  end
+
+  defp setup_after_hook_for_deletion(stream, filename) do
+    Stream.resource(
+      fn -> :init end,
+      fn state ->
+        case state do
+          :init -> {stream, :done}
+          :done -> {:halt, :done}
+        end
+      end,
+      fn _ -> File.rm(filename) end
+    )
   end
 end

@@ -5,7 +5,15 @@ defmodule Reaper.Extractor do
   plug(Tesla.Middleware.FollowRedirects)
   plug(Tesla.Middleware.Retry, delay: 500, max_retries: 10)
 
-  def extract(url) do
+  def extract(url, "csv") do
+    filename = inspect(self())
+    file = File.open!(filename, [:write])
+    Downstream.get!(url, file)
+    File.close(file)
+    {:file, filename}
+  end
+
+  def extract(url, _format) do
     case get(url) do
       {:ok, response} ->
         response.body

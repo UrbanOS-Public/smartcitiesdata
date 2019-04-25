@@ -40,7 +40,9 @@ defmodule Reaper.LoaderTest do
     expect(Producer.produce_sync(expected_key_one, any()), return: :ok)
     expect(Producer.produce_sync(expected_key_two, any()), return: :error)
 
-    assert Loader.load(test_payloads, reaper_config, good_date) ==
+    results = Loader.load(test_payloads, reaper_config, good_date)
+
+    assert Enum.into(results, []) ==
              [
                {:ok, test_payload_one},
                {:error, test_payload_two}
@@ -60,7 +62,8 @@ defmodule Reaper.LoaderTest do
     good_date = DateTime.utc_now()
     reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: "123"})
 
-    Loader.load([test_payload], reaper_config, good_date)
+    results = Loader.load([test_payload], reaper_config, good_date)
+    Stream.run(results)
 
     assert_called Yeet.process_dead_letter(test_payload, "Reaper", exit_code: {:error, "Bad stuff happened"})
   end

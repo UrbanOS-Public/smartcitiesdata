@@ -39,7 +39,7 @@ defmodule Reaper.MixProject do
     [
       {:cachex, "~> 3.1"},
       {:checkov, "~> 0.4"},
-      {:csv, "~> 2.3"},
+      {:nimble_csv, "~> 0.6.0"},
       {:distillery, "~> 2.0"},
       {:horde, "~> 0.2.3"},
       {:horde_connector, "~> 0.1", organization: "smartcolumbus_os"},

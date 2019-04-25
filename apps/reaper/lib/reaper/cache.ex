@@ -3,12 +3,14 @@ defmodule Reaper.Cache do
   require Logger
 
   def dedupe(messages, cache_name) do
-    Enum.filter(messages, fn message -> is_not_cached(message, cache_name) end)
+    Stream.filter(messages, fn message -> is_not_cached(message, cache_name) end)
   end
 
   def cache(messages, cache_name) do
-    Enum.each(messages, fn result -> add_to_cache(result, cache_name) end)
-    messages
+    Stream.map(messages, fn result ->
+      add_to_cache(result, cache_name)
+      result
+    end)
   end
 
   defp is_not_cached(value, cache) do
