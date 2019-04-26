@@ -1,9 +1,18 @@
 defmodule Forklift.DatasetWriter do
   @moduledoc false
+  require Logger
 
   alias Forklift.{DataBuffer, PersistenceClient, RetryTracker, DeadLetterQueue}
 
+  @jobs_registry Forklift.Application.dataset_jobs_registry()
+
   def perform(dataset_id) do
+    if get_lock(dataset_id) do
+      upload_data(dataset_id)
+    end
+  end
+
+  defp upload_data(dataset_id) do
     pending = DataBuffer.get_pending_data(dataset_id)
 
     case upload_pending_data(dataset_id, pending) do
@@ -60,5 +69,16 @@ defmodule Forklift.DatasetWriter do
     DataBuffer.mark_complete(dataset_id, data)
     DataBuffer.cleanup_dataset(dataset_id)
     RetryTracker.reset_retries(dataset_id)
+  end
+
+  defp get_lock(dataset_id) do
+    case Registry.register(@jobs_registry, dataset_id, :running) do
+      {:ok, _pid} ->
+        true
+
+      {:error, {:already_registered, pid}} ->
+        Logger.info("Dataset: #{dataset_id} is already being processed by #{inspect(pid)}")
+        false
+    end
   end
 end

@@ -5,9 +5,12 @@ defmodule Forklift.Application do
 
   def redis_client(), do: Forklift.Redix
 
+  def dataset_jobs_registry(), do: :dataset_jobs
+
   def start(_type, _args) do
     children =
       [
+        {Registry, [keys: :unique, name: dataset_jobs_registry()]},
         exq(),
         redis(),
         kaffe(),

@@ -3,8 +3,6 @@ defmodule PersistenceTest do
   require Logger
   use Divo
 
-  alias Forklift.DatasetSchema
-
   alias SmartCity.TestDataGenerator, as: TDG
 
   @redis Forklift.Application.redis_client()

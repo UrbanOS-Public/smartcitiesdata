@@ -95,5 +95,14 @@ defmodule Forklift.DatasetWriterTest do
 
       assert_called DataBuffer.cleanup_dataset("ds1")
     end
+
+    test "does not query DataBuffer if the dataset_id is already registered as running" do
+      allow DataBuffer.get_pending_data(any()), return: []
+      Registry.register(Forklift.Application.dataset_jobs_registry(), "ds1", :running)
+
+      DatasetWriter.perform("ds1")
+
+      assert_called DataBuffer.get_pending_data("ds1"), never()
+    end
   end
 end
