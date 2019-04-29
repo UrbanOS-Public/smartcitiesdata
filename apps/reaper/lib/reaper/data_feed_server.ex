@@ -8,7 +8,7 @@ defmodule Reaper.DataFeedServer do
   """
 
   use GenServer
-  alias Reaper.{Cache, Decoder, Extractor, Loader, UrlBuilder, Util, Persistence, ReaperConfig}
+  alias Reaper.{Persistence, Util, ReaperConfig}
 
   ## CLIENT
 
@@ -37,16 +37,7 @@ defmodule Reaper.DataFeedServer do
   end
 
   def handle_info(:work, %{pids: %{cache: cache}, reaper_config: reaper_config} = state) do
-    generated_time_stamp = DateTime.utc_now()
-
-    reaper_config
-    |> UrlBuilder.build()
-    |> Extractor.extract(reaper_config.sourceFormat)
-    |> Decoder.decode(reaper_config)
-    |> Cache.dedupe(cache)
-    |> Loader.load(reaper_config, generated_time_stamp)
-    |> Cache.cache(cache)
-    |> record_last_fetched_timestamp(reaper_config.dataset_id, generated_time_stamp)
+    Reaper.DataFeed.process(reaper_config, cache)
 
     timer_ref = schedule_work(reaper_config.cadence)
 
@@ -92,23 +83,5 @@ defmodule Reaper.DataFeedServer do
     remaining_wait_time = DateTime.diff(expected_run_time, DateTime.utc_now(), :millisecond)
 
     max(0, remaining_wait_time)
-  end
-
-  defp record_last_fetched_timestamp([], dataset_id, timestamp),
-    do: Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
-
-  defp record_last_fetched_timestamp(records, dataset_id, timestamp) do
-    if any_successful?(records) do
-      Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
-    end
-  end
-
-  defp any_successful?(records) do
-    Enum.reduce(records, false, fn {status, _}, acc ->
-      case status do
-        :ok -> true
-        _ -> acc
-      end
-    end)
   end
 end

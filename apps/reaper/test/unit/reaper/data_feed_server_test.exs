@@ -1,7 +1,7 @@
 defmodule Reaper.DataFeedServerServerTest do
   use ExUnit.Case
   use Placebo
-  alias Reaper.{Cache, DataFeedServer, Decoder, Extractor, Loader, UrlBuilder, Persistence}
+  alias Reaper.{DataFeedServer, Persistence}
 
   @dataset_id "12345-6789"
   @reaper_config FixtureHelper.new_reaper_config(%{
@@ -19,13 +19,7 @@ defmodule Reaper.DataFeedServerServerTest do
 
   describe "handle_info given a state that includes a reaper config struct" do
     test "schedules itself on the provided cadence" do
-      expect(UrlBuilder.build(any()), return: :does_not_matter)
-      expect(Extractor.extract(any(), any()), return: :does_not_matter)
-      expect(Decoder.decode(any(), any()), return: :does_not_matter)
-      expect(Cache.dedupe(any(), any()), return: :does_not_matter)
-      expect(Loader.load(any(), any(), any()), return: :does_not_matter)
-      expect(Cache.cache(any(), any()), return: [])
-      expect(Persistence.record_last_fetched_timestamp(any(), any()), return: :does_not_matter)
+      expect Reaper.DataFeed.process(any(), any()), return: :does_not_matter
 
       {:noreply, %{timer_ref: timer_ref}} = DataFeedServer.handle_info(:work, @data_feed_args)
 
@@ -63,69 +57,6 @@ defmodule Reaper.DataFeedServerServerTest do
 
       # Force the handle cast to block inside this test
       assert expected_reaper_config == DataFeedServer.get(pid).reaper_config
-    end
-  end
-
-  describe "handle_info calls Persistence.record_last_fetched_timestamp" do
-    setup do
-      allow(UrlBuilder.build(any()), return: :does_not_matter)
-      allow(Extractor.extract(any(), any()), return: :does_not_matter)
-      allow(Decoder.decode(any(), any()), return: :does_not_matter)
-      allow(Cache.dedupe(any(), any()), return: :does_not_matter)
-      allow(Loader.load(any(), any(), any()), return: :does_not_matter)
-
-      :ok
-    end
-
-    test "when given the an empty list of dataset records" do
-      allow(Cache.cache(any(), any()), return: [])
-      allow(Persistence.record_last_fetched_timestamp(any(), any()), return: :does_not_matter)
-
-      DataFeedServer.handle_info(:work, @data_feed_args)
-
-      assert_called(Persistence.record_last_fetched_timestamp(@dataset_id, any()))
-    end
-
-    test "when given the list of dataset records with no failures" do
-      records = [
-        {:ok, %{vehicle_id: 1, description: "whatever"}},
-        {:ok, %{vehicle_id: 2, description: "more stuff"}}
-      ]
-
-      allow(Cache.cache(any(), any()), return: records)
-      allow(Persistence.record_last_fetched_timestamp(any(), any()), return: :does_not_matter)
-
-      DataFeedServer.handle_info(:work, @data_feed_args)
-
-      assert_called(Persistence.record_last_fetched_timestamp(@dataset_id, any()))
-    end
-
-    test "when given the list of dataset records with a single failure" do
-      records = [
-        {:ok, %{vehicle_id: 1, description: "whatever"}},
-        {:error, "failed to load into kafka"}
-      ]
-
-      allow(Cache.cache(any(), any()), return: records)
-      allow(Persistence.record_last_fetched_timestamp(any(), any()), return: :does_not_matter)
-
-      DataFeedServer.handle_info(:work, @data_feed_args)
-
-      assert_called(Persistence.record_last_fetched_timestamp(@dataset_id, any()))
-    end
-
-    test "when given the list of dataset records with all failures (something is really wrong), it does not record to redis" do
-      records = [
-        {:error, "failed to load into kafka"},
-        {:error, "failed to load into kafka"}
-      ]
-
-      allow(Cache.cache(any(), any()), return: records)
-      allow(Persistence.record_last_fetched_timestamp(any(), any()), return: :does_not_matter)
-
-      DataFeedServer.handle_info(:work, @data_feed_args)
-
-      assert not called?(Persistence.record_last_fetched_timestamp(any(), any()))
     end
   end
 
