@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.1.4",
+      version: "0.1.5",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -69,7 +69,7 @@ defmodule Reaper.MixProject do
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:excoveralls, "~> 0.10", only: :test},
       {:phoenix, "~> 1.4", only: :test},
-      {:yeet, "~> 0.4", organization: "smartcolumbus_os"}
+      {:yeet, "~> 1.0", organization: "smartcolumbus_os"}
     ]
   end
 
