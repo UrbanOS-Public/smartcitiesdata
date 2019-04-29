@@ -2,6 +2,8 @@ defmodule Reaper.Extractor do
   @moduledoc false
   use Tesla
 
+  @download_timeout Application.get_env(:reaper, :download_timeout, 600_000)
+
   plug(Tesla.Middleware.FollowRedirects)
   plug(Tesla.Middleware.Retry, delay: 500, max_retries: 10)
 
@@ -11,7 +13,7 @@ defmodule Reaper.Extractor do
 
     url
     |> follow_redirect()
-    |> Downstream.get!(file)
+    |> Downstream.get!(file, timeout: @download_timeout)
 
     File.close(file)
     {:file, filename}
