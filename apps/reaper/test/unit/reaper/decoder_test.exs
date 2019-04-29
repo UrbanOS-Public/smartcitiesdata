@@ -77,7 +77,7 @@ defmodule Reaper.DecoderTest do
       assert [] == Reaper.Decoder.decode(body, %ReaperConfig{dataset_id: "ds1", sourceFormat: "json"})
 
       assert_called Yeet.process_dead_letter("ds1", body, "Reaper",
-                      exit_code: %Jason.DecodeError{data: "baaad json", position: 0, token: nil}
+                      error: %Jason.DecodeError{data: "baaad json", position: 0, token: nil}
                     )
     end
 
@@ -90,7 +90,7 @@ defmodule Reaper.DecoderTest do
 
       assert [] == Reaper.Decoder.decode(body, %ReaperConfig{dataset_id: "ds2", sourceFormat: "gtfs"})
 
-      assert_called Yeet.process_dead_letter("ds2", body, "Reaper", exit_code: %RuntimeError{message: "this is an error"})
+      assert_called Yeet.process_dead_letter("ds2", body, "Reaper", error: %RuntimeError{message: "this is an error"})
     end
 
     test "csv messages yoted and raises error" do
@@ -99,10 +99,11 @@ defmodule Reaper.DecoderTest do
 
       allow(Yeet.process_dead_letter(any(), any(), any(), any()), return: nil, meck_options: [:passthrough])
 
-      assert [] == Reaper.Decoder.decode({:file, inspect(self())}, %ReaperConfig{dataset_id: "ds1", sourceFormat: "csv"})
+      assert [] ==
+               Reaper.Decoder.decode({:file, inspect(self())}, %ReaperConfig{dataset_id: "ds1", sourceFormat: "csv"})
 
       assert_called Yeet.process_dead_letter("ds1", "DatasetId : ds1", "Reaper",
-                      exit_code: %Protocol.UndefinedError{description: "", protocol: Enumerable, value: nil}
+                      error: %Protocol.UndefinedError{description: "", protocol: Enumerable, value: nil}
                     )
     end
 
@@ -114,7 +115,7 @@ defmodule Reaper.DecoderTest do
       assert [] == Reaper.Decoder.decode(body, %ReaperConfig{dataset_id: "ds1", sourceFormat: "CSY"})
 
       assert_called Yeet.process_dead_letter("ds1", body, "Reaper",
-                      exit_code: %RuntimeError{message: "CSY is an invalid format"}
+                      error: %RuntimeError{message: "CSY is an invalid format"}
                     )
     end
   end

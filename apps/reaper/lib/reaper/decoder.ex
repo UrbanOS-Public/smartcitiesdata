@@ -52,9 +52,7 @@ defmodule Reaper.Decoder do
   end
 
   defp yeet_error(%ReaperConfig{dataset_id: dataset_id}, message, error) do
-    dlq_topic = Application.get_env(:yeet, :topic)
-    Logger.warn("Unable to decode message; re-routing to DLQ topic '#{dlq_topic}'")
-    Yeet.process_dead_letter(dataset_id, message, "Reaper", exit_code: error)
+    Yeet.process_dead_letter(dataset_id, message, "Reaper", error: error)
   end
 
   defp setup_after_hook_for_deletion(stream, filename) do
