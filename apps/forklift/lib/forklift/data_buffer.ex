@@ -2,7 +2,6 @@ defmodule Forklift.DataBuffer do
   @moduledoc false
   require Logger
 
-  @key_prefix "forklift:data:"
   @number_of_empty_reads_to_delete Application.get_env(:forklift, :number_of_empty_reads_to_delete, 50)
 
   alias SmartCity.Data

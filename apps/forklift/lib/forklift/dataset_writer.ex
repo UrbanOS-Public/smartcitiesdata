@@ -49,9 +49,9 @@ defmodule Forklift.DatasetWriter do
         cleanup_pending(dataset_id, data)
         :continue
 
-      {:error, _} ->
+      {:error, reason} ->
         if RetryTracker.get_and_increment_retries(dataset_id) > 3 do
-          Enum.each(data, fn message -> DeadLetterQueue.enqueue(message) end)
+          Enum.each(data, fn message -> DeadLetterQueue.enqueue(message, reason: reason) end)
           cleanup_pending(dataset_id, data)
 
           :continue

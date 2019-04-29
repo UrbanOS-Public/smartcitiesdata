@@ -3,9 +3,17 @@ defmodule Forklift.DatasetWriterTest do
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Forklift.{DataBuffer, DatasetWriter, PersistenceClient}
+  alias Forklift.{DataBuffer, DatasetWriter, DeadLetterQueue, PersistenceClient, RetryTracker}
 
   describe "perform/1" do
+    setup do
+      allow DataBuffer.reset_empty_reads(any()), return: :ok
+      allow DataBuffer.mark_complete(any(), any()), return: :ok
+      allow DataBuffer.cleanup_dataset(any()), return: :ok
+
+      :ok
+    end
+
     test "should write new messages to peristence" do
       [data1, data2, data3] = TDG.create_data([dataset_id: "ds1", payload: %{one: 1}], 3)
 
@@ -19,8 +27,6 @@ defmodule Forklift.DatasetWriterTest do
 
       allow DataBuffer.get_unread_data("ds1"), return: entries
       allow DataBuffer.get_pending_data("ds1"), return: []
-      allow DataBuffer.mark_complete(any(), any()), return: :ok
-      allow DataBuffer.reset_empty_reads(any()), return: :ok
       allow PersistenceClient.upload_data(any(), any()), return: :ok
 
       DatasetWriter.perform("ds1")
@@ -43,9 +49,6 @@ defmodule Forklift.DatasetWriterTest do
 
       allow DataBuffer.get_unread_data("ds1"), return: []
       allow DataBuffer.get_pending_data("ds1"), return: entries
-      allow DataBuffer.mark_complete(any(), any()), return: :ok
-      allow DataBuffer.cleanup_dataset(any()), return: :ok
-      allow DataBuffer.reset_empty_reads(any()), return: :ok
       allow PersistenceClient.upload_data(any(), any()), return: :ok
 
       DatasetWriter.perform("ds1")
@@ -75,8 +78,6 @@ defmodule Forklift.DatasetWriterTest do
 
       allow DataBuffer.get_unread_data("ds1"), return: unread_entries
       allow DataBuffer.get_pending_data("ds1"), return: pending_entries
-      allow DataBuffer.mark_complete(any(), any()), return: :ok
-      allow DataBuffer.cleanup_dataset(any()), return: :ok
       allow PersistenceClient.upload_data(any(), any()), return: {:error, "Write to Presto failed"}
 
       DatasetWriter.perform("ds1")
@@ -87,9 +88,6 @@ defmodule Forklift.DatasetWriterTest do
     test "when both unread and pending messages return nothing, should cleanup dataset" do
       allow DataBuffer.get_unread_data("ds1"), return: []
       allow DataBuffer.get_pending_data("ds1"), return: []
-      allow DataBuffer.mark_complete(any(), any()), return: :ok
-      allow DataBuffer.cleanup_dataset(any()), return: :ok
-      allow DataBuffer.reset_empty_reads(any()), return: :ok
 
       DatasetWriter.perform("ds1")
 
@@ -103,6 +101,19 @@ defmodule Forklift.DatasetWriterTest do
       DatasetWriter.perform("ds1")
 
       assert_called DataBuffer.get_pending_data("ds1"), never()
+    end
+
+    test "records reason in dead letter queue when unable to upload pending data" do
+      allow DeadLetterQueue.enqueue(any(), any()), return: :ok
+      allow DataBuffer.get_pending_data("ds1"), return: [%{data: %{payload: :pending}}]
+      allow DataBuffer.get_unread_data("ds1"), return: []
+      allow PersistenceClient.upload_data("ds1", [:pending]), return: {:error, "Reason for failure"}
+      allow RetryTracker.get_and_increment_retries("ds1"), return: 4
+      allow RetryTracker.reset_retries(any()), return: :ok
+
+      DatasetWriter.perform("ds1")
+
+      assert_called DeadLetterQueue.enqueue(%{data: %{payload: :pending}}, reason: "Reason for failure")
     end
   end
 end
