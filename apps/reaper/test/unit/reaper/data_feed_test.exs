@@ -17,7 +17,7 @@ defmodule Reaper.DataFeedTest do
       allow(UrlBuilder.build(any()), return: :does_not_matter)
       allow(Extractor.extract(any(), any()), return: :does_not_matter)
       allow(Decoder.decode(any(), any()), return: :does_not_matter)
-      allow(Cache.dedupe(any(), any()), return: :does_not_matter)
+      allow(Cache.duplicate?(any(), any()), return: false)
       allow(Loader.load(any(), any(), any()), return: :does_not_matter)
 
       :ok

@@ -10,8 +10,8 @@ defmodule Reaper.DataFeed do
     |> UrlBuilder.build()
     |> Extractor.extract(config.sourceFormat)
     |> Decoder.decode(config)
-    |> Cache.dedupe(cache)
-    |> Loader.load(config, generated_time_stamp)
+    |> Stream.reject(&Cache.duplicate?(&1, cache))
+    |> Stream.map(&Loader.load(&1, config, generated_time_stamp))
     |> Cache.cache(cache)
     |> record_last_fetched_timestamp(config.dataset_id, generated_time_stamp)
   end

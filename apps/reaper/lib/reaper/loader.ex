@@ -3,20 +3,17 @@ defmodule Reaper.Loader do
   alias Kaffe.Producer
   alias SmartCity.Data
 
-  def load(payloads, reaper_config, start_time) do
-    payloads
-    |> Stream.map(
-      &send_to_kafka(
-        &1,
-        partition_key(
-          &1,
-          "Elixir.Reaper.Partitioners." <>
-            ((reaper_config.partitioner.type == nil && "Hash") || reaper_config.partitioner.type) <> "Partitioner",
-          reaper_config.partitioner.query
-        ),
-        reaper_config,
-        start_time
-      )
+  def load(payload, reaper_config, start_time) do
+    send_to_kafka(
+      payload,
+      partition_key(
+        payload,
+        "Elixir.Reaper.Partitioners." <>
+          ((reaper_config.partitioner.type == nil && "Hash") || reaper_config.partitioner.type) <> "Partitioner",
+        reaper_config.partitioner.query
+      ),
+      reaper_config,
+      start_time
     )
   end
 

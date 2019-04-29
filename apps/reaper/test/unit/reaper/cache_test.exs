@@ -1,6 +1,7 @@
 defmodule Reaper.CacheTest do
   use ExUnit.Case
   use Placebo
+  import Checkov
   alias Reaper.Cache
 
   describe ".cache" do
@@ -25,15 +26,21 @@ defmodule Reaper.CacheTest do
     end
   end
 
-  describe ".dedupe" do
-    test "it filters out data that is already in the cache (based on md5sum)" do
-      Cachex.start_link(:test_cache_three)
+  describe "duplicate?" do
+    data_test "returns #{result} with message #{inspect(message)} and cache contains #{inspect(cache_entry)}" do
+      cache_name = :test_cache_three
+      Cachex.start_link(cache_name)
 
-      Stream.run(Cache.cache([{:ok, "hello"}, {:ok, %{my: "world"}}], :test_cache_three))
+      Stream.run(Cache.cache([{:ok, cache_entry}], cache_name))
 
-      records = Cache.dedupe(["hello", %{my: "world"}, "new stuff"], :test_cache_three)
+      assert result == Cache.duplicate?(message, cache_name)
 
-      assert Enum.into(records, []) == ["new stuff"]
+      where([
+        [:cache_entry, :message, :result],
+        ["hello", "hello", true],
+        [%{my: "world"}, %{my: "world"}, true],
+        ["no_match", "new_stuff", false]
+      ])
     end
   end
 end

@@ -20,19 +20,12 @@ defmodule Reaper.LoaderTest do
       another: "payload"
     }
 
-    test_payloads = [
-      test_payload_one,
-      test_payload_two
-    ]
+    start_time = DateTime.utc_now()
+    start_time_iso8601 = DateTime.to_iso8601(start_time)
 
-    good_date = DateTime.utc_now()
-    iso8601_date = DateTime.to_iso8601(good_date)
+    allow Loader.format_date(any()), return: start_time_iso8601, meck_options: [:passthrough]
 
-    allow Loader.format_date(any()), return: iso8601_date, meck_options: [:passthrough]
-
-    test_dataset_id = "abcdef-12345"
-
-    reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: test_dataset_id})
+    reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: "abcdef-12345"})
 
     expected_key_one = "AAAE509C7162BBE7D948D141AD2EF0F5"
     expected_key_two = "2420D9AF43588C11175506A917A81567"
@@ -40,13 +33,11 @@ defmodule Reaper.LoaderTest do
     expect(Producer.produce_sync(expected_key_one, any()), return: :ok)
     expect(Producer.produce_sync(expected_key_two, any()), return: :error)
 
-    results = Loader.load(test_payloads, reaper_config, good_date)
+    result_one = Loader.load(test_payload_one, reaper_config, start_time)
+    result_two = Loader.load(test_payload_two, reaper_config, start_time)
 
-    assert Enum.into(results, []) ==
-             [
-               {:ok, test_payload_one},
-               {:error, test_payload_two}
-             ]
+    assert result_one == {:ok, test_payload_one}
+    assert result_two == {:error, test_payload_two}
   end
 
   test "load failures are yoted and raise an error" do
@@ -62,8 +53,7 @@ defmodule Reaper.LoaderTest do
     good_date = DateTime.utc_now()
     reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: "123"})
 
-    results = Loader.load([test_payload], reaper_config, good_date)
-    Stream.run(results)
+    Loader.load(test_payload, reaper_config, good_date)
 
     assert_called Yeet.process_dead_letter("123", test_payload, "Reaper", exit_code: {:error, "Bad stuff happened"})
   end

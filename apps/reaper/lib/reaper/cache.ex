@@ -2,8 +2,9 @@ defmodule Reaper.Cache do
   @moduledoc false
   require Logger
 
-  def dedupe(messages, cache_name) do
-    Stream.filter(messages, fn message -> is_not_cached(message, cache_name) end)
+  def duplicate?(value, cache) do
+    {:ok, result} = Cachex.exists?(cache, format_key(value))
+    result
   end
 
   def cache(messages, cache_name) do
@@ -13,15 +14,16 @@ defmodule Reaper.Cache do
     end)
   end
 
-  defp is_not_cached(value, cache) do
-    {:ok, result} = Cachex.exists?(cache, md5(Jason.encode!(value)))
-    not result
-  end
-
-  defp add_to_cache({:ok, value}, cache), do: Cachex.put(cache, md5(Jason.encode!(value)), true)
+  defp add_to_cache({:ok, value}, cache), do: Cachex.put(cache, format_key(value), true)
 
   defp add_to_cache({:error, reason}, _cache) do
     Logger.warn("Unable to write message to Kafka topic: #{inspect(reason)}")
+  end
+
+  defp format_key(message) do
+    message
+    |> Jason.encode!()
+    |> md5()
   end
 
   defp md5(thing) do
