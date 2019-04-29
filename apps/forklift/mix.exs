@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "0.1.4",
+      version: "0.4.4",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
