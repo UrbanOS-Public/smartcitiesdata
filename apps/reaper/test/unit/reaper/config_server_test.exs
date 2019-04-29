@@ -4,7 +4,7 @@ defmodule Reaper.ConfigServerTest do
   use Placebo
 
   alias Reaper.ConfigServer
-  alias Reaper.DataFeed
+  alias Reaper.DataFeedServer
   alias Reaper.ReaperConfig
 
   @name_space "reaper:reaper_config:"
@@ -287,6 +287,6 @@ defmodule Reaper.ConfigServerTest do
   end
 
   defp get_state(name) do
-    DataFeed.get({:via, Horde.Registry, {Reaper.Registry, name}})
+    DataFeedServer.get({:via, Horde.Registry, {Reaper.Registry, name}})
   end
 end
