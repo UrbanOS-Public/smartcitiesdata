@@ -4,11 +4,11 @@ defmodule Yeet do
 
   require Logger
 
-  def process_dead_letter(message, app_name, options \\ []) do
+  def process_dead_letter(dataset_id, message, app_name, options \\ []) do
     dead_letter =
       message
       |> sanitize_message()
-      |> format_message(app_name, options)
+      |> format_message(dataset_id, app_name, options)
 
     Logger.info(fn -> "Yeeting: #{inspect(dead_letter)}" end)
     KafkaHelper.produce(dead_letter)
@@ -21,7 +21,7 @@ defmodule Yeet do
     end
   end
 
-  def format_message(original_message, app_name, options \\ []) do
+  def format_message(original_message, dataset_id, app_name, options \\ []) do
     stacktrace =
       options
       |> Keyword.get(:stacktrace, Process.info(self(), :current_stacktrace))
@@ -39,6 +39,7 @@ defmodule Yeet do
     timestamp = Keyword.get(options, :timestamp, DateTime.utc_now())
 
     %{
+      dataset_id: dataset_id,
       app: app_name,
       original_message: original_message,
       stacktrace: stacktrace,

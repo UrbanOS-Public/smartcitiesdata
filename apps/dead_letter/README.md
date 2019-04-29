@@ -10,7 +10,7 @@ by adding `yeet` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:yeet, "~> 0.4"}
+    {:yeet, "~> 1.0"}
   ]
 end
 ```
