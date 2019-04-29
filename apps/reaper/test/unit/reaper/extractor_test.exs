@@ -91,6 +91,14 @@ defmodule Reaper.ExtractorTest do
 
       assert actual == ~s<one,two\n1,2\n>
     end
+
+    test "sets timeout when download the file" do
+      allow Downstream.get!(any(), any(), any()), return: :ok
+
+      Extractor.extract("http://some.url", "csv")
+
+      assert_called Downstream.get!("http://some.url", any(), timeout: 600_000)
+    end
   end
 
   describe "failure to extract" do
