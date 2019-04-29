@@ -43,10 +43,17 @@ defmodule Yeet do
       original_message: original_message,
       stacktrace: stacktrace,
       exit_code: exit_code,
-      error: error,
-      reason: reason,
+      error: format_exception(error),
+      reason: format_exception(reason),
       timestamp: timestamp
     }
+  end
+
+  defp format_exception(exception) do
+    case Exception.exception?(exception) do
+      true -> Exception.format(:error, exception)
+      false -> exception
+    end
   end
 
   defp get_stacktrace(stacktrace) when is_list(stacktrace) do

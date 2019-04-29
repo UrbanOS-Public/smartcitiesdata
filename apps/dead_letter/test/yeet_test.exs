@@ -75,6 +75,27 @@ defmodule YeetTest do
       assert "Failed to parse something" == Map.get(actual, :reason)
     end
 
+    test "returns formatted DLQ message with a reason exception" do
+      actual =
+        Yeet.format_message("forklift", @default_original_message,
+          reason: RuntimeError.exception("Failed to parse something")
+        )
+
+      assert "** (RuntimeError) Failed to parse something" == Map.get(actual, :reason)
+    end
+
+    test "returns formatted DLQ message with an error" do
+      actual = Yeet.format_message("forklift", @default_original_message, error: "Failed to parse something")
+
+      assert "Failed to parse something" == Map.get(actual, :error)
+    end
+
+    test "returns formatted DLQ message with an error exception" do
+      actual = Yeet.format_message("forklift", @default_original_message, error: KeyError.exception("Bad Key!"))
+
+      assert "** (KeyError) Bad Key!" == Map.get(actual, :error)
+    end
+
     test "returns formatted DLQ message with a stacktrace from Process.info" do
       stacktrace = {:current_stacktrace, @default_stacktrace}
 
