@@ -43,7 +43,7 @@ defmodule Reaper.Loader do
          {:ok, value_part} <- Jason.encode(message) do
       value_part
     else
-      error -> Yeet.process_dead_letter(payload, "Reaper", exit_code: error)
+      error -> Yeet.process_dead_letter(dataset_id, payload, "Reaper", exit_code: error)
     end
   end
 

@@ -72,11 +72,11 @@ defmodule Reaper.DecoderTest do
     test "json messages yoted and raises error" do
       body = "baaad json"
 
-      allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
+      allow(Yeet.process_dead_letter(any(), any(), any(), any()), return: nil, meck_options: [:passthrough])
 
-      assert [] == Reaper.Decoder.decode(body, %ReaperConfig{sourceFormat: "json"})
+      assert [] == Reaper.Decoder.decode(body, %ReaperConfig{dataset_id: "ds1", sourceFormat: "json"})
 
-      assert_called Yeet.process_dead_letter(body, "Reaper",
+      assert_called Yeet.process_dead_letter("ds1", body, "Reaper",
                       exit_code: %Jason.DecodeError{data: "baaad json", position: 0, token: nil}
                     )
     end
@@ -84,25 +84,24 @@ defmodule Reaper.DecoderTest do
     test "gtfs messages yoted and raises error" do
       body = "baaad gtfs"
 
-      allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
+      allow(Yeet.process_dead_letter(any(), any(), any(), any()), return: nil, meck_options: [:passthrough])
 
       allow(TransitRealtime.FeedMessage.decode(any()), exec: fn _ -> raise "this is an error" end)
 
-      assert [] == Reaper.Decoder.decode(body, %ReaperConfig{sourceFormat: "gtfs"})
+      assert [] == Reaper.Decoder.decode(body, %ReaperConfig{dataset_id: "ds2", sourceFormat: "gtfs"})
 
-      assert_called Yeet.process_dead_letter(body, "Reaper", exit_code: %RuntimeError{message: "this is an error"})
+      assert_called Yeet.process_dead_letter("ds2", body, "Reaper", exit_code: %RuntimeError{message: "this is an error"})
     end
 
     test "csv messages yoted and raises error" do
       body = "baaad csv"
       File.write(inspect(self()), body)
 
-      allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
+      allow(Yeet.process_dead_letter(any(), any(), any(), any()), return: nil, meck_options: [:passthrough])
 
-      assert [] ==
-               Reaper.Decoder.decode({:file, inspect(self())}, %ReaperConfig{dataset_id: "ds1", sourceFormat: "csv"})
+      assert [] == Reaper.Decoder.decode({:file, inspect(self())}, %ReaperConfig{dataset_id: "ds1", sourceFormat: "csv"})
 
-      assert_called Yeet.process_dead_letter("DatasetId : ds1", "Reaper",
+      assert_called Yeet.process_dead_letter("ds1", "DatasetId : ds1", "Reaper",
                       exit_code: %Protocol.UndefinedError{description: "", protocol: Enumerable, value: nil}
                     )
     end
@@ -110,11 +109,11 @@ defmodule Reaper.DecoderTest do
     test "invalid format messages yoted and raises error" do
       body = "c,s,v"
 
-      allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
+      allow(Yeet.process_dead_letter(any(), any(), any(), any()), return: nil, meck_options: [:passthrough])
 
-      assert [] == Reaper.Decoder.decode(body, %ReaperConfig{sourceFormat: "CSY"})
+      assert [] == Reaper.Decoder.decode(body, %ReaperConfig{dataset_id: "ds1", sourceFormat: "CSY"})
 
-      assert_called Yeet.process_dead_letter(body, "Reaper",
+      assert_called Yeet.process_dead_letter("ds1", body, "Reaper",
                       exit_code: %RuntimeError{message: "CSY is an invalid format"}
                     )
     end

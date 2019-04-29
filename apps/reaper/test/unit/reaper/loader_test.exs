@@ -50,7 +50,7 @@ defmodule Reaper.LoaderTest do
   end
 
   test "load failures are yoted and raise an error" do
-    allow(Yeet.process_dead_letter(any(), any(), any()), return: nil, meck_options: [:passthrough])
+    allow(Yeet.process_dead_letter(any(), any(), any(), any()), return: nil, meck_options: [:passthrough])
     allow(Producer.produce_sync(any(), any()), return: :ok)
     allow(SmartCity.Data.new(any()), return: {:error, "Bad stuff happened"})
 
@@ -65,6 +65,6 @@ defmodule Reaper.LoaderTest do
     results = Loader.load([test_payload], reaper_config, good_date)
     Stream.run(results)
 
-    assert_called Yeet.process_dead_letter(test_payload, "Reaper", exit_code: {:error, "Bad stuff happened"})
+    assert_called Yeet.process_dead_letter("123", test_payload, "Reaper", exit_code: {:error, "Bad stuff happened"})
   end
 end
