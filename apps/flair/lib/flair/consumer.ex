@@ -22,7 +22,7 @@ defmodule Flair.Consumer do
     {:noreply, [], state}
   end
 
-  defp convert_events([{_dataset_id, [%{valid_values: _valid_values}]}] = events) do
+  defp convert_events([{_dataset_id, [%{valid_values: _valid_values} | _]} | _] = events) do
     events
     |> Enum.map(fn {_id, event} -> event end)
     |> List.flatten()
