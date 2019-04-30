@@ -22,8 +22,7 @@ defmodule Reaper.LoaderTest do
 
     start_time = DateTime.utc_now()
     start_time_iso8601 = DateTime.to_iso8601(start_time)
-
-    allow Loader.format_date(any()), return: start_time_iso8601, meck_options: [:passthrough]
+    allow DateTime.to_iso8601(any()), return: start_time_iso8601, meck_options: [:passthrough]
 
     reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: "abcdef-12345"})
 
