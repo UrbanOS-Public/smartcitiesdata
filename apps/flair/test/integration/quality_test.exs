@@ -7,9 +7,6 @@ defmodule QualityIntegrationTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @endpoint Application.get_env(:kaffe, :producer)[:endpoints]
-            |> Enum.map(fn {k, v} -> {k, v} end)
-
   setup _ do
     SmartCity.Dataset.write(TestHelper.create_simple_dataset())
 
@@ -57,7 +54,7 @@ defmodule QualityIntegrationTest do
 
           true
         rescue
-          error ->
+          _ ->
             false
         end
       end,

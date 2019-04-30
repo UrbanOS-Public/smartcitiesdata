@@ -28,5 +28,24 @@ defmodule MessageProcessorTest do
         fn -> Flair.MessageProcessor.handle_message_set(message_set, state) end
       )
     end
+
+    @tag :capture_log
+    test "When a task dies due to an error, returns error and aborts commit upstream" do
+      Process.flag(:trap_exit, true)
+
+      allow(Flair.Producer.add_messages(:quality, any()), return: true)
+
+      allow(Flair.Producer.add_messages(:durations, any()),
+        exec: fn _, _ -> raise "errors and explosions" end
+      )
+
+      message_set = []
+      state = %{}
+
+      assert_raise(
+        RuntimeError,
+        fn -> Flair.MessageProcessor.handle_message_set(message_set, state) end
+      )
+    end
   end
 end

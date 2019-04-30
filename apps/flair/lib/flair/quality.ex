@@ -4,25 +4,31 @@ defmodule Flair.Quality do
   alias SmartCity.Dataset
   alias SmartCity.Data
 
-  def reducer(%Data{dataset_id: id, version: version, payload: data}, acc) do
+  def reducer(%Data{dataset_id: id, version: version, payload: data} = message, acc) do
     existing_dataset_map = Map.get(acc, id, %{})
 
     existing_version_map =
       Map.get(existing_dataset_map, version, %{window_start: acc.window_start})
 
-    updated_fields_map =
-      existing_version_map
-      |> Map.get(:fields, %{})
-      |> update_fields_map(id, data)
+    try do
+      updated_fields_map =
+        existing_version_map
+        |> Map.get(:fields, %{})
+        |> update_fields_map(id, data)
 
-    updated_version_map =
-      existing_version_map
-      |> Map.update(:record_count, 1, fn value -> value + 1 end)
-      |> Map.put(:fields, updated_fields_map)
+      updated_version_map =
+        existing_version_map
+        |> Map.update(:record_count, 1, fn value -> value + 1 end)
+        |> Map.put(:fields, updated_fields_map)
 
-    updated_dataset_map = Map.put(existing_dataset_map, version, updated_version_map)
+      updated_dataset_map = Map.put(existing_dataset_map, version, updated_version_map)
 
-    Map.put(acc, id, updated_dataset_map)
+      Map.put(acc, id, updated_dataset_map)
+    rescue
+      e ->
+        Yeet.process_dead_letter(message, "flair", error: e)
+        acc
+    end
   end
 
   defp update_fields_map(existing_field_map, id, data) do

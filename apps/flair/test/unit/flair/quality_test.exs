@@ -13,7 +13,7 @@ defmodule Flair.QualityTest do
      simple_overrides: TestHelper.create_simple_dataset_overrides()}
   end
 
-  describe "quality_reducer" do
+  describe "reducer/1" do
     test "with empty accumulator", %{simple_dataset: dataset} do
       data_override = %{dataset_id: "123", payload: %{"id" => "123", "name" => "John Smith"}}
 
@@ -166,6 +166,25 @@ defmodule Flair.QualityTest do
 
       allow(Dataset.get!(dataset.id), return: dataset)
       assert expected == Quality.reducer(data, %{window_start: "start_time"})
+    end
+
+    test "returns existing accumulator and yeets when data message errors" do
+      data_override = %{dataset_id: "123", payload: %{"id" => "123", "name" => "John Smith"}}
+
+      data = TDG.create_data(data_override)
+
+      allow(Dataset.get!(any()), return: nil)
+      allow(Yeet.process_dead_letter(any(), any(), any()), return: :ok)
+
+      acc = %{
+        "123" => %{
+          "0.1" => %{record_count: 2, window_start: "start_time", fields: %{"id" => 2}}
+        },
+        window_start: "start_time"
+      }
+
+      assert acc == Quality.reducer(data, acc)
+      assert_called(Yeet.process_dead_letter(any(), any(), any()), once())
     end
   end
 
