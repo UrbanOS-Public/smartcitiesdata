@@ -2,67 +2,90 @@ defmodule Reaper.DataFeedTest do
   use ExUnit.Case
   use Placebo
 
-  alias Reaper.{Cache, DataFeed, Decoder, Extractor, Loader, UrlBuilder, Persistence}
+  alias Reaper.{Cache, DataFeed, Persistence}
 
   @dataset_id "12345-6789"
-  @reaper_config FixtureHelper.new_reaper_config(%{
-                   dataset_id: @dataset_id,
-                   sourceType: "batch",
-                   cadence: 100
-                 })
   @cache_name String.to_atom("#{@dataset_id}_feed")
 
-  @moduletag :skip
+  @csv """
+  one,two,three
+  four,five,six
+  """
 
-  describe("handle_info calls Persistence.record_last_fetched_timestamp") do
+  setup do
+    bypass = Bypass.open()
+    Cachex.start_link(@cache_name)
+
+    Bypass.expect(bypass, "HEAD", "/api/csv", fn conn ->
+      Plug.Conn.resp(conn, 200, "")
+    end)
+
+    Bypass.expect(bypass, "GET", "/api/csv", fn conn ->
+      Plug.Conn.resp(conn, 200, @csv)
+    end)
+
+    config =
+      FixtureHelper.new_reaper_config(%{
+        dataset_id: @dataset_id,
+        sourceType: "batch",
+        sourceFormat: "csv",
+        sourceUrl: "http://localhost:#{bypass.port}/api/csv",
+        cadence: 100,
+        schema: [
+          %{name: "a", type: "string"},
+          %{name: "b", type: "string"},
+          %{name: "c", type: "string"}
+        ]
+      })
+
+    [bypass: bypass, config: config]
+  end
+
+  describe "process/2 happy path" do
     setup do
-      allow UrlBuilder.build(any()), return: :does_not_matter
-      allow Extractor.extract(any(), any()), return: :does_not_matter
-      allow Cache.mark_duplicates(any(), any()), exec: fn _, value -> value end
-      allow Cache.cache(any(), any()), return: :does_not_matter
-      allow Loader.load(any(), any(), any()), exec: fn value, _, _ -> value end
-      allow Persistence.record_last_fetched_timestamp(any(), any()), return: :does_not_matter
+      allow Kaffe.Producer.produce_sync(any(), any()), return: :ok
+      allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
 
       :ok
     end
 
-    test "when given the list of dataset records with no failures" do
-      records = [
-        {:ok, %{vehicle_id: 1, description: "whatever"}},
-        {:ok, %{vehicle_id: 2, description: "more stuff"}}
-      ]
+    test "parses turns csv into data messages and sends to kafka", %{config: config} do
+      DataFeed.process(config, @cache_name)
 
-      allow Decoder.decode(any(), any()), return: records
-
-      DataFeed.process(@reaper_config, @cache_name)
-
-      assert_called Persistence.record_last_fetched_timestamp(@dataset_id, any())
+      {:ok, data1} = SmartCity.Data.new(capture(1, Kaffe.Producer.produce_sync(any(), any()), 2))
+      assert %{a: "one", b: "two", c: "three"} == data1.payload
+      {:ok, data2} = SmartCity.Data.new(capture(2, Kaffe.Producer.produce_sync(any(), any()), 2))
+      assert %{a: "four", b: "five", c: "six"} == data2.payload
     end
 
-    test "when given the list of dataset records with a single failure" do
-      records = [
-        {:ok, %{vehicle_id: 1, description: "whatever"}},
-        {:error, "failed to load into kafka"}
-      ]
+    test "eliminates duplicates before sending to kafka", %{config: config} do
+      Cache.cache(@cache_name, %{a: "one", b: "two", c: "three"})
 
-      allow Decoder.decode(any(), any()), return: records
+      DataFeed.process(config, @cache_name)
 
-      DataFeed.process(@reaper_config, @cache_name)
-
-      assert_called Persistence.record_last_fetched_timestamp(@dataset_id, any())
+      {:ok, data} = SmartCity.Data.new(capture(1, Kaffe.Producer.produce_sync(any(), any()), 2))
+      assert %{a: "four", b: "five", c: "six"} == data.payload
+      assert_called Kaffe.Producer.produce_sync(any(), any()), once()
     end
+  end
 
-    test "when given the list of dataset records with all failures (something is really wrong), it does not record to redis" do
-      records = [
-        {:error, "failed to load into kafka"},
-        {:error, "failed to load into kafka"}
-      ]
+  test "process/2 should not record last fetched time if all records are errors", %{config: config} do
+    allow Kaffe.Producer.produce_sync(any(), any()), return: {:error, :some_kafka_error}
+    allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
+    allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :yeet
 
-      allow Decoder.decode(any(), any()), return: records
+    DataFeed.process(config, @cache_name)
 
-      DataFeed.process(@reaper_config, @cache_name)
+    refute_called Persistence.record_last_fetched_timestamp(any(), any())
+  end
 
-      assert not called?(Persistence.record_last_fetched_timestamp(any(), any()))
-    end
+  test "process/2 yeets errors", %{config: config} do
+    allow Kaffe.Producer.produce_sync(any(), any()), seq: [:ok, {:error, :kafka_test_error}]
+    allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
+    allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :yeet
+
+    DataFeed.process(config, @cache_name)
+
+    assert_called Yeet.process_dead_letter(@dataset_id, any(), "reaper", any())
   end
 end

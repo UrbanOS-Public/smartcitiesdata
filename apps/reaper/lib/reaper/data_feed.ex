@@ -10,33 +10,34 @@ defmodule Reaper.DataFeed do
     |> UrlBuilder.build()
     |> Extractor.extract(config.sourceFormat)
     |> Decoder.decode(config)
-    |> Stream.map(&Cache.mark_duplicates(cache, &1))
-    |> Stream.reject(&duplicate?/1)
-    |> Stream.map(&load(&1, config, generated_time_stamp))
-    |> Stream.map(&cache(&1, cache))
+    |> RailStream.map(&Cache.mark_duplicates(cache, &1))
+    |> RailStream.reject(&duplicate?/1)
+    |> RailStream.map(&load(&1, config, generated_time_stamp))
+    |> RailStream.map(&cache(&1, cache))
+    |> RailStream.each_error(&report_errors(&1, &2, config))
     |> record_last_fetched_timestamp(config.dataset_id, generated_time_stamp)
   end
 
   defp duplicate?({:duplicate, _message}), do: true
   defp duplicate?(_), do: false
 
-  defp cache({:ok, message}, cache) do
+  defp report_errors(reason, message, config) do
+    Yeet.process_dead_letter(config.dataset_id, message, "reaper", reason: inspect(reason))
+  end
+
+  defp cache(message, cache) do
     case Cache.cache(cache, message) do
       {:ok, _} -> {:ok, message}
       result -> result
     end
   end
 
-  defp cache({:error, _} = error, _cache), do: error
-
-  defp load({:ok, message}, config, time_stamp) do
+  defp load(message, config, time_stamp) do
     case Loader.load(message, config, time_stamp) do
       :ok -> {:ok, message}
       result -> result
     end
   end
-
-  defp load({:error, _} = error, _config, _time_stamp), do: error
 
   defp record_last_fetched_timestamp(records, dataset_id, timestamp) do
     if any_successful?(records) do
