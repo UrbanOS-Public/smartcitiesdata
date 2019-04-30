@@ -12,12 +12,13 @@ defmodule Reaper.DataFeed do
     |> Decoder.decode(config)
     |> Stream.reject(&Cache.duplicate?(&1, cache))
     |> Stream.map(&Loader.load(&1, config, generated_time_stamp))
-    |> Cache.cache(cache)
+    |> Stream.map(&cache(&1, cache))
     |> record_last_fetched_timestamp(config.dataset_id, generated_time_stamp)
   end
 
-  defp record_last_fetched_timestamp([], dataset_id, timestamp) do
-    Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
+  defp cache(message, cache) do
+    Cache.cache(cache, message)
+    message
   end
 
   defp record_last_fetched_timestamp(records, dataset_id, timestamp) do

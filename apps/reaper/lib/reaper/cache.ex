@@ -7,21 +7,16 @@ defmodule Reaper.Cache do
     result
   end
 
-  def cache(messages, cache_name) do
-    Stream.map(messages, fn result ->
-      add_to_cache(result, cache_name)
-      result
-    end)
+  def cache(cache, {:ok, value}) do
+    Cachex.put(cache, format_key(value), true)
   end
 
-  defp add_to_cache({:ok, value}, cache), do: Cachex.put(cache, format_key(value), true)
-
-  defp add_to_cache({:error, reason}, _cache) do
-    Logger.warn("Unable to write message to Kafka topic: #{inspect(reason)}")
+  def cache(_cache, {:error, _}) do
+    nil
   end
 
-  defp format_key(message) do
-    message
+  defp format_key(value) do
+    value
     |> Jason.encode!()
     |> md5()
   end

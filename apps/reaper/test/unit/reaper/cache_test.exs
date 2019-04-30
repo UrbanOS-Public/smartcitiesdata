@@ -4,36 +4,32 @@ defmodule Reaper.CacheTest do
   import Checkov
   alias Reaper.Cache
 
-  describe ".cache" do
-    test "it caches data with a md5sum of its content" do
-      Cachex.start_link(:test_cache_one)
+  @cache :test_cache_1
 
-      records = Cache.cache([{:ok, "hello"}, {:ok, %{my: "world"}}, {:ok, "hello"}], :test_cache_one)
+  setup do
+    Cachex.start_link(@cache)
+    :ok
+  end
 
-      assert Enum.into(records, []) == [{:ok, "hello"}, {:ok, %{my: "world"}}, {:ok, "hello"}]
-      assert Cachex.size!(:test_cache_one) == 2
-      assert Cachex.exists?(:test_cache_one, "5D41402ABC4B2A76B9719D911017C592")
-      assert Cachex.exists?(:test_cache_one, "078AEA799F191F012B11BA93F5E05975")
-    end
+  describe "cache/2" do
+    data_test "add md5 of value to cache" do
+      Cache.cache(@cache, value)
 
-    @tag capture_log: true
-    test "it doesn't cache data that failed to load" do
-      Cachex.start_link(:test_cache_two)
+      assert {:ok, result} == Cachex.exists?(@cache, key)
 
-      records = Cache.cache([{:error, "bad_hello"}, {:ok, "hello"}], :test_cache_two)
-      assert Enum.into(records, []) == [{:error, "bad_hello"}, {:ok, "hello"}]
-      assert Cachex.size!(:test_cache_two) == 1
+      where([
+        [:value, :key, :result],
+        [{:ok, "hello"}, "5DEAEE1C1332199E5B5BC7C5E4F7F0C2", true],
+        [{:error, "hello"}, "5DEAEE1C1332199E5B5BC7C5E4F7F0C2", false]
+      ])
     end
   end
 
-  describe "duplicate?" do
+  describe "duplicate?/2" do
     data_test "returns #{result} with message #{inspect(message)} and cache contains #{inspect(cache_entry)}" do
-      cache_name = :test_cache_three
-      Cachex.start_link(cache_name)
+      Cache.cache(@cache, {:ok, cache_entry})
 
-      Stream.run(Cache.cache([{:ok, cache_entry}], cache_name))
-
-      assert result == Cache.duplicate?(message, cache_name)
+      assert result == Cache.duplicate?(message, @cache)
 
       where([
         [:cache_entry, :message, :result],

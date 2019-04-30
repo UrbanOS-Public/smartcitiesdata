@@ -4,8 +4,8 @@ defmodule Reaper.Loader do
   alias SmartCity.Data
 
   def load(payload, reaper_config, start_time) do
-    partitioner = determine_partitioner(reaper_config)
-    key = partitioner.partition(payload, reaper_config.partitioner.query)
+    partitioner_module = determine_partitioner_module(reaper_config)
+    key = partitioner_module.partition(payload, reaper_config.partitioner.query)
 
     send_to_kafka(payload, key, reaper_config, start_time)
   end
@@ -16,7 +16,7 @@ defmodule Reaper.Loader do
     {Producer.produce_sync(key, message), payload}
   end
 
-  defp determine_partitioner(reaper_config) do
+  defp determine_partitioner_module(reaper_config) do
     type = reaper_config.partitioner.type || "Hash"
 
     "Elixir.Reaper.Partitioners.#{type}Partitioner"
