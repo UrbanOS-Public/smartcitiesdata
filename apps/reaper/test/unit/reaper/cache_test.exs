@@ -11,32 +11,48 @@ defmodule Reaper.CacheTest do
     :ok
   end
 
-  describe "cache/2" do
-    data_test "add md5 of value to cache" do
-      Cache.cache(@cache, value)
+  describe "mark_duplicates/2" do
+    data_test "returns #{inspect(result)} with message #{inspect(message)} and cache contains #{inspect(cache_entry)}" do
+      Cache.cache(@cache, cache_entry)
 
-      assert {:ok, result} == Cachex.exists?(@cache, key)
-
-      where([
-        [:value, :key, :result],
-        [{:ok, "hello"}, "5DEAEE1C1332199E5B5BC7C5E4F7F0C2", true],
-        [{:error, "hello"}, "5DEAEE1C1332199E5B5BC7C5E4F7F0C2", false]
-      ])
-    end
-  end
-
-  describe "duplicate?/2" do
-    data_test "returns #{result} with message #{inspect(message)} and cache contains #{inspect(cache_entry)}" do
-      Cache.cache(@cache, {:ok, cache_entry})
-
-      assert result == Cache.duplicate?(message, @cache)
+      assert result == Cache.mark_duplicates(@cache, message)
 
       where([
         [:cache_entry, :message, :result],
-        ["hello", "hello", true],
-        [%{my: "world"}, %{my: "world"}, true],
-        ["no_match", "new_stuff", false]
+        ["hello", "hello", {:duplicate, "hello"}],
+        [%{my: "world"}, %{my: "world"}, {:duplicate, %{my: "world"}}],
+        ["no_match", "new_stuff", {:ok, "new_stuff"}]
       ])
+    end
+
+    test "returns {:error, {:cachex, reason}} when Cachex returns an error" do
+      allow Cachex.exists?(any(), any()), return: {:error, :some_reason}
+
+      assert {:error, {:cachex, :some_reason}} == Cache.mark_duplicates(@cache, "dumb value")
+    end
+
+    test "returns {:error, {:json, reason}} when Jason.encode! returns an error" do
+      allow Jason.encode(any()), return: {:error, :some_reason}
+      assert {:error, {:json, :some_reason}} == Cache.mark_duplicates(@cache, {:un, :encodable})
+    end
+  end
+
+  describe "cache/2" do
+    test "add md5 of value to cache" do
+      assert {:ok, true} == Cache.cache(@cache, "hello")
+
+      assert {:ok, true} == Cachex.exists?(@cache, "5DEAEE1C1332199E5B5BC7C5E4F7F0C2")
+    end
+
+    test "returns {:error, {:cachex, reason}} when Cachex returns an error" do
+      allow Cachex.put(any(), any(), any()), return: {:error, :some_reason}
+
+      assert {:error, {:cachex, :some_reason}} == Cache.cache(@cache, "dumb value")
+    end
+
+    test "returns {:error, {:json, reason}} when Jason.encode! returns an error" do
+      allow Jason.encode(any()), return: {:error, :some_reason}
+      assert {:error, {:json, :some_reason}} == Cache.cache(@cache, {:un, :encodable})
     end
   end
 end
