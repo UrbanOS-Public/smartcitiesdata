@@ -1,5 +1,7 @@
 defmodule Flair.QualityFlow do
-  @moduledoc false
+  @moduledoc """
+  This flow takes in messages from the producer that it starts. It aggregates those messages per dataset/per window and then calculates their data quality, finally persisting them.
+  """
   use Flow
 
   alias SmartCity.Data
@@ -17,8 +19,6 @@ defmodule Flair.QualityFlow do
         []
       }
     ]
-
-    # flow = Flow.from_specs([{Flair.Producer, []}])
 
     [{Flair.Producer, :quality}]
     |> Flow.from_specs()

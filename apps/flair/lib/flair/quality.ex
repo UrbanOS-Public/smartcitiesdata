@@ -1,5 +1,7 @@
 defmodule Flair.Quality do
-  @moduledoc false
+  @moduledoc """
+  Calculate data quality. This is done first by reducing multiple data messages to an accumulater of data/window/schema version, and then second by calculating the converting the counts of complete/incomplete fields into events that can later be persisted.
+  """
 
   alias SmartCity.Dataset
   alias SmartCity.Data

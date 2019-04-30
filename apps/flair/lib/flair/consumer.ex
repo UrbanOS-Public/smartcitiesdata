@@ -1,5 +1,7 @@
 defmodule Flair.Consumer do
-  @moduledoc false
+  @moduledoc """
+  Consumer is called at the end of a flow; it converts events and then passess them to presto client to be persisted.
+  """
 
   use GenStage
 

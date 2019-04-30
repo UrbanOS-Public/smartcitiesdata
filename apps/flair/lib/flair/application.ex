@@ -1,5 +1,7 @@
 defmodule Flair.Application do
-  @moduledoc false
+  @moduledoc """
+  Flair starts flows for both quality and duration, as well as a connection to kafka.
+  """
 
   use Application
 

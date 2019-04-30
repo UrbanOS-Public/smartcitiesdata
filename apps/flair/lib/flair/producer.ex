@@ -1,14 +1,18 @@
 require Logger
 
 defmodule Flair.Producer do
-  @moduledoc false
+  @moduledoc """
+  Producer receives messages from kafka and then passes them to the flow as they are demanded.
+  """
 
   use GenStage
 
   @message_timeout Application.get_env(:flair, :message_timeout, 50)
 
   defmodule State do
-    @moduledoc false
+    @moduledoc """
+    The producer's state: namely it's backlog of messages and the demand requested.
+    """
     defstruct demand: 0, message_set: [], from: []
   end
 

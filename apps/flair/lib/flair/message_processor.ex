@@ -1,5 +1,7 @@
 defmodule Flair.MessageProcessor do
-  @moduledoc false
+  @moduledoc """
+  Receives messages from kafka and then process them. Uses tasks to apply both flows asynchronously, but then only commits the offset once all tasks are complete.
+  """
 
   use KafkaEx.GenConsumer
 

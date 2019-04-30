@@ -1,5 +1,7 @@
 defmodule Flair.Durations do
-  @moduledoc false
+  @moduledoc """
+  Calculate durations. This is done first by reducing multiple data messages to an accumulater, and then second by calculating the durations for those aggregate metrics.
+  """
 
   alias SmartCity.Data
 

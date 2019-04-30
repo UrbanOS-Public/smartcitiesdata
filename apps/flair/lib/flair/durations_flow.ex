@@ -1,5 +1,7 @@
 defmodule Flair.DurationsFlow do
-  @moduledoc false
+  @moduledoc """
+  This flow takes in messages from the producer that it starts. It aggregates those messages per dataset/per window and then calculates their durations, finally persisting them.
+  """
   use Flow
 
   alias SmartCity.Data
