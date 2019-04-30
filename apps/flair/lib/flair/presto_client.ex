@@ -1,6 +1,6 @@
 defmodule Flair.PrestoClient do
-  @table_name_timing "operational_stats"
-  @table_name_quality "dataset_quality"
+  @table_name_timing Application.get_env(:flair, :table_name_timing, "operational_stats")
+  @table_name_quality Application.get_env(:flair, :table_name_quality, "dataset_quality")
   @moduledoc false
 
   def get_create_timing_table_statement do

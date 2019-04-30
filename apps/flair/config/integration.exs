@@ -14,7 +14,9 @@ config :flair,
   window_unit: :millisecond,
   window_length: 1,
   message_timeout: 5 * 60 * 1_000,
-  task_timeout: 5 * 60 * 1_000
+  task_timeout: 5 * 60 * 1_000,
+  table_name_timing: "operational_stats",
+  table_name_quality: "dataset_quality"
 
 config :kaffe,
   producer: [

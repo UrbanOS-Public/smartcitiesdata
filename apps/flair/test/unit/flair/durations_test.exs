@@ -6,7 +6,7 @@ defmodule Flair.DurationsTest do
 
   alias Flair.Durations
 
-  describe "durations_reducer" do
+  describe "reducer/2" do
     test "with empty accumulator" do
       message =
         make_data_message()

@@ -13,7 +13,7 @@ defmodule Flair.QualityTest do
      simple_overrides: TestHelper.create_simple_dataset_overrides()}
   end
 
-  describe "reducer/1" do
+  describe "reducer/2" do
     test "with empty accumulator", %{simple_dataset: dataset} do
       data_override = %{dataset_id: "123", payload: %{"id" => "123", "name" => "John Smith"}}
 
