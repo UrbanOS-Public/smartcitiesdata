@@ -35,12 +35,14 @@ defmodule Flair.QualityTest do
 
       allow(Dataset.get!(dataset.id), return: dataset)
 
-      assert %{
-               "123" => %{
-                 "0.1" => %{record_count: 2, window_start: "start_time", fields: %{"id" => 2}}
-               },
-               window_start: "start_time"
-             } ==
+      expected = %{
+        "123" => %{
+          "0.1" => %{record_count: 2, window_start: "start_time", fields: %{"id" => 2}}
+        },
+        window_start: "start_time"
+      }
+
+      assert expected ==
                Quality.reducer(data, Quality.reducer(data, %{window_start: "start_time"}))
     end
 
@@ -57,12 +59,14 @@ defmodule Flair.QualityTest do
 
       allow(Dataset.get!(dataset.id), return: dataset)
 
-      assert %{
-               "123" => %{
-                 "0.1" => %{record_count: 3, window_start: "start_time", fields: %{"id" => 2}}
-               },
-               window_start: "start_time"
-             } ==
+      expected = %{
+        "123" => %{
+          "0.1" => %{record_count: 3, window_start: "start_time", fields: %{"id" => 2}}
+        },
+        window_start: "start_time"
+      }
+
+      assert expected ==
                Enum.reduce(messages, %{window_start: "start_time"}, &Quality.reducer/2)
     end
 
@@ -193,73 +197,78 @@ defmodule Flair.QualityTest do
       allow(DateTime.to_iso8601(any()), return: "xyz")
       allow(DateTime.utc_now(), return: "stu")
 
-      input =
-        {"abc",
-         %{
-           "0.1" => %{
-             :record_count => 5,
-             :window_start => "abc",
-             :fields => %{
-               "id" => 1,
-               "name" => 2,
-               "super" => 3,
-               "happy" => 4,
-               "fun time" => 5
-             }
-           }
-         }}
-
-      expected =
-        {"abc",
-         [
-           %{
-             dataset_id: "abc",
-             schema_version: "0.1",
-             field: "fun time",
-             window_start: "abc",
-             window_end: "xyz",
-             valid_values: 5,
-             records: 5
-           },
-           %{
-             dataset_id: "abc",
-             schema_version: "0.1",
-             field: "happy",
-             window_start: "abc",
-             window_end: "xyz",
-             valid_values: 4,
-             records: 5
-           },
-           %{
-             dataset_id: "abc",
-             schema_version: "0.1",
-             field: "id",
-             window_start: "abc",
-             window_end: "xyz",
-             valid_values: 1,
-             records: 5
-           },
-           %{
-             dataset_id: "abc",
-             schema_version: "0.1",
-             field: "name",
-             window_start: "abc",
-             window_end: "xyz",
-             valid_values: 2,
-             records: 5
-           },
-           %{
-             dataset_id: "abc",
-             schema_version: "0.1",
-             field: "super",
-             window_start: "abc",
-             window_end: "xyz",
-             valid_values: 3,
-             records: 5
-           }
-         ]}
+      input = calculate_quality_input()
+      expected = calculate_quality_output()
 
       assert expected == Quality.calculate_quality(input)
     end
+  end
+
+  defp calculate_quality_input() do
+    {"abc",
+     %{
+       "0.1" => %{
+         :record_count => 5,
+         :window_start => "abc",
+         :fields => %{
+           "id" => 1,
+           "name" => 2,
+           "super" => 3,
+           "happy" => 4,
+           "fun time" => 5
+         }
+       }
+     }}
+  end
+
+  defp calculate_quality_output() do
+    {"abc",
+     [
+       %{
+         dataset_id: "abc",
+         schema_version: "0.1",
+         field: "fun time",
+         window_start: "abc",
+         window_end: "xyz",
+         valid_values: 5,
+         records: 5
+       },
+       %{
+         dataset_id: "abc",
+         schema_version: "0.1",
+         field: "happy",
+         window_start: "abc",
+         window_end: "xyz",
+         valid_values: 4,
+         records: 5
+       },
+       %{
+         dataset_id: "abc",
+         schema_version: "0.1",
+         field: "id",
+         window_start: "abc",
+         window_end: "xyz",
+         valid_values: 1,
+         records: 5
+       },
+       %{
+         dataset_id: "abc",
+         schema_version: "0.1",
+         field: "name",
+         window_start: "abc",
+         window_end: "xyz",
+         valid_values: 2,
+         records: 5
+       },
+       %{
+         dataset_id: "abc",
+         schema_version: "0.1",
+         field: "super",
+         window_start: "abc",
+         window_end: "xyz",
+         valid_values: 3,
+         records: 5
+       }
+     ]}
   end
 end
