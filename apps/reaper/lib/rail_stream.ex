@@ -23,7 +23,7 @@ defmodule RailStream do
   def reject(enum, fun) when is_function(fun, 1) do
     Stream.reject(enum, fn item ->
       case item do
-        {:error, _} = error -> false
+        {:error, _} -> false
         {:ok, value} -> fun.(value)
         value -> fun.(value)
       end
