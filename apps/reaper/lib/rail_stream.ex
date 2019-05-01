@@ -3,10 +3,10 @@ defmodule RailStream do
   An abstraction over the `Stream` module to implement Railway Oriented Programming.
   """
 
-  @type element :: {:ok, any} | {:error, any} | any
-  @type modified_element :: element
-  @type original_value :: any
+  @type value :: term()
   @type reason :: any
+  @type element :: {:ok, value} | {:error, reason} | any
+  @type original_value :: value
   @type ignored :: any
 
   @doc """
@@ -15,8 +15,15 @@ defmodule RailStream do
   ## Parameters
   - enum: An `Enumerable` of values, or :ok/:error tuples
   - fun: A function that will be applied to each non-error tuple element of `enum`
+
+  ## Examples
+
+      iex> vals = [1, 2, {:ok, 3}, {:error, 4}]
+      iex> RailStream.map(vals, fn val -> val*2 end) |> Enum.to_list()
+      [{:ok, 2}, {:ok, 4}, {:ok, 6}, {:error, 4}]
   """
-  @spec map(Enumerable.t(), (element -> modified_element)) :: Enumerable.t()
+
+  @spec map(Enumerable.t(), (value -> element)) :: Enumerable.t()
   def map(enum, fun) when is_function(fun, 1) do
     Stream.map(enum, fn item ->
       case item do
@@ -29,8 +36,14 @@ defmodule RailStream do
 
   @doc """
   Creates a stream that will reject non-error tuple elements according to the given function on enumeration. Error tuples will be left in place.
+
+  ## Examples
+
+      iex> vals = [1, {:ok, 2}, {:ok, 20}, 30, {:error, 4}]
+      iex> RailStream.reject(vals, fn val -> val < 10 end) |> Enum.to_list()
+      [{:ok, 20}, 30, {:error, 4}]
   """
-  @spec reject(Enumerable.t(), (element -> boolean())) :: Enumerable.t()
+  @spec reject(Enumerable.t(), (value -> boolean())) :: Enumerable.t()
   def reject(enum, fun) when is_function(fun, 1) do
     Stream.reject(enum, fn item ->
       case item do

@@ -1,5 +1,6 @@
 defmodule RailStreamTest do
   use ExUnit.Case
+  doctest RailStream
 
   describe "map/2" do
     test "maps" do
