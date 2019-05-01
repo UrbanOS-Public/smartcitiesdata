@@ -2,6 +2,7 @@ defmodule Forklift.PersistenceClient do
   @moduledoc false
   require Logger
   alias Forklift.{DatasetRegistryServer, Statement}
+  alias SmartCity.Data
 
   @redis Forklift.Application.redis_client()
 
@@ -11,17 +12,20 @@ defmodule Forklift.PersistenceClient do
   end
 
   def upload_data(dataset_id, messages) do
+    start_time = Data.Timing.current_time()
+
     dataset_id
     |> DatasetRegistryServer.get_schema()
     |> Statement.build(messages)
     |> execute_statement()
     |> validate_result()
 
+    end_time = Data.Timing.current_time()
     @redis.command(["SET", "forklift:last_insert_date:" <> dataset_id, DateTime.to_iso8601(DateTime.utc_now())])
 
     Logger.debug("Persisting #{inspect(Enum.count(messages))} records for #{dataset_id}")
 
-    :ok
+    {:ok, SmartCity.Data.Timing.new(:forklift, "presto_insert_time", start_time, end_time)}
   rescue
     e ->
       Logger.error("Error uploading data: #{inspect(e)}")

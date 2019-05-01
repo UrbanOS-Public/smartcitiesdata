@@ -27,7 +27,16 @@ defmodule Forklift.DatasetWriterTest do
 
       allow DataBuffer.get_unread_data("ds1"), return: entries
       allow DataBuffer.get_pending_data("ds1"), return: []
-      allow PersistenceClient.upload_data(any(), any()), return: :ok
+
+      allow PersistenceClient.upload_data(any(), any()),
+        return:
+          {:ok,
+           SmartCity.Data.Timing.new(
+             :forklift,
+             "presto_insert_time",
+             SmartCity.Data.Timing.current_time(),
+             SmartCity.Data.Timing.current_time()
+           )}
 
       DatasetWriter.perform("ds1")
 
@@ -49,7 +58,16 @@ defmodule Forklift.DatasetWriterTest do
 
       allow DataBuffer.get_unread_data("ds1"), return: []
       allow DataBuffer.get_pending_data("ds1"), return: entries
-      allow PersistenceClient.upload_data(any(), any()), return: :ok
+
+      allow PersistenceClient.upload_data(any(), any()),
+        return:
+          {:ok,
+           SmartCity.Data.Timing.new(
+             :forklift,
+             "presto_insert_time",
+             SmartCity.Data.Timing.current_time(),
+             SmartCity.Data.Timing.current_time()
+           )}
 
       DatasetWriter.perform("ds1")
 

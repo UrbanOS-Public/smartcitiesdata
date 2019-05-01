@@ -3,6 +3,7 @@ defmodule Forklift.DatasetWriter do
   require Logger
 
   alias Forklift.{DataBuffer, PersistenceClient, RetryTracker, DeadLetterQueue}
+  alias SmartCity.Data
 
   @jobs_registry Forklift.Application.dataset_jobs_registry()
 
@@ -33,10 +34,21 @@ defmodule Forklift.DatasetWriter do
   defp upload_unread_data(dataset_id, data) do
     payloads = extract_payloads(data)
 
-    if PersistenceClient.upload_data(dataset_id, payloads) == :ok do
+    with {:ok, timing} <- PersistenceClient.upload_data(dataset_id, payloads) do
+      add_timing_and_send_to_kafka(timing, data)
+
       DataBuffer.mark_complete(dataset_id, data)
       DataBuffer.reset_empty_reads(dataset_id)
     end
+  end
+
+  defp add_timing_and_send_to_kafka(timing, wrapped_messages) do
+    data_messages =
+      wrapped_messages
+      |> Enum.map(fn data -> Map.get(data, :data) end)
+      |> Enum.map(fn data_message -> Data.add_timing(data_message, timing) end)
+
+    # TODO: Send to kafka?
   end
 
   defp upload_pending_data(_dataset_id, []), do: :continue
@@ -45,8 +57,10 @@ defmodule Forklift.DatasetWriter do
     payloads = extract_payloads(data)
 
     case PersistenceClient.upload_data(dataset_id, payloads) do
-      :ok ->
+      {:ok, timing} ->
         cleanup_pending(dataset_id, data)
+        add_timing_and_send_to_kafka(timing, data)
+
         :continue
 
       {:error, reason} ->
