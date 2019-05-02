@@ -15,7 +15,8 @@ defmodule DiscoveryApi.Search.DatasetSearchinator do
   end
 
   defp satisfies_search_criteria?(dataset, search_criteria) do
-    [dataset.title, dataset.description, dataset.organization]
+    [dataset.title, dataset.description, dataset.organization, dataset.keywords]
+    |> List.flatten()
     |> Enum.reject(&is_nil/1)
     |> Enum.map(&String.downcase/1)
     |> Enum.any?(&String.contains?(&1, search_criteria))
