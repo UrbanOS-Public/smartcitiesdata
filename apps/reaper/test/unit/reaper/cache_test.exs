@@ -1,39 +1,58 @@
 defmodule Reaper.CacheTest do
   use ExUnit.Case
   use Placebo
+  import Checkov
   alias Reaper.Cache
 
-  describe ".cache" do
-    test "it caches data with a md5sum of its content" do
-      Cachex.start_link(:test_cache_one)
+  @cache :test_cache_1
 
-      records = Cache.cache([{:ok, "hello"}, {:ok, %{my: "world"}}, {:ok, "hello"}], :test_cache_one)
+  setup do
+    Cachex.start_link(@cache)
+    :ok
+  end
 
-      assert Enum.into(records, []) == [{:ok, "hello"}, {:ok, %{my: "world"}}, {:ok, "hello"}]
-      assert Cachex.size!(:test_cache_one) == 2
-      assert Cachex.exists?(:test_cache_one, "5D41402ABC4B2A76B9719D911017C592")
-      assert Cachex.exists?(:test_cache_one, "078AEA799F191F012B11BA93F5E05975")
+  describe "mark_duplicates/2" do
+    data_test "returns #{inspect(result)} with message #{inspect(message)} and cache contains #{inspect(cache_entry)}" do
+      Cache.cache(@cache, cache_entry)
+
+      assert result == Cache.mark_duplicates(@cache, message)
+
+      where([
+        [:cache_entry, :message, :result],
+        ["hello", "hello", {:duplicate, "hello"}],
+        [%{my: "world"}, %{my: "world"}, {:duplicate, %{my: "world"}}],
+        ["no_match", "new_stuff", {:ok, "new_stuff"}]
+      ])
     end
 
-    @tag capture_log: true
-    test "it doesn't cache data that failed to load" do
-      Cachex.start_link(:test_cache_two)
+    test "returns {:error, {:cachex, reason}} when Cachex returns an error" do
+      allow Cachex.exists?(any(), any()), return: {:error, :some_reason}
 
-      records = Cache.cache([{:error, "bad_hello"}, {:ok, "hello"}], :test_cache_two)
-      assert Enum.into(records, []) == [{:error, "bad_hello"}, {:ok, "hello"}]
-      assert Cachex.size!(:test_cache_two) == 1
+      assert {:error, {:cachex, :some_reason}} == Cache.mark_duplicates(@cache, "dumb value")
+    end
+
+    test "returns {:error, {:json, reason}} when Jason.encode! returns an error" do
+      allow Jason.encode(any()), return: {:error, :some_reason}
+      assert {:error, {:json, :some_reason}} == Cache.mark_duplicates(@cache, {:un, :encodable})
     end
   end
 
-  describe ".dedupe" do
-    test "it filters out data that is already in the cache (based on md5sum)" do
-      Cachex.start_link(:test_cache_three)
+  describe "cache/2" do
+    test "add md5 of value to cache" do
+      assert {:ok, true} == Cache.cache(@cache, "hello")
 
-      Stream.run(Cache.cache([{:ok, "hello"}, {:ok, %{my: "world"}}], :test_cache_three))
+      assert {:ok, true} == Cachex.exists?(@cache, "5DEAEE1C1332199E5B5BC7C5E4F7F0C2")
+    end
 
-      records = Cache.dedupe(["hello", %{my: "world"}, "new stuff"], :test_cache_three)
+    test "returns {:error, {:cachex, reason}} when Cachex returns an error" do
+      allow Cachex.put(any(), any(), any()), return: {:error, :some_reason}
 
-      assert Enum.into(records, []) == ["new stuff"]
+      assert {:error, {:cachex, :some_reason}} == Cache.cache(@cache, "dumb value")
+    end
+
+    test "returns {:error, {:json, reason}} when Jason.encode! returns an error" do
+      allow Jason.encode(any()), return: {:error, :some_reason}
+      assert {:error, {:json, :some_reason}} == Cache.cache(@cache, {:un, :encodable})
     end
   end
 end
