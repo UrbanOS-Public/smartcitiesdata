@@ -2,21 +2,22 @@ defmodule DiscoveryApi.Search.DatasetSearchinator do
   @moduledoc false
   alias DiscoveryApi.Data.Dataset
 
-  def search(options \\ [query: ""]) do
-    words =
-      options[:query]
-      |> String.split(" ")
-      |> Enum.map(fn word -> String.downcase(word) end)
+  def search(query \\ "") do
+    search_criteria = extract_search_criteria(query)
 
-    result =
-      Dataset.get_all()
-      |> Enum.filter(fn dataset ->
-        [dataset.title, dataset.description, dataset.organization]
-        |> Enum.filter(fn property -> property != nil end)
-        |> Enum.map(&String.downcase/1)
-        |> Enum.any?(fn str -> String.contains?(str, words) end)
-      end)
+    Enum.filter(Dataset.get_all(), &satisfies_search_criteria?(&1, search_criteria))
+  end
 
-    {:ok, result}
+  defp extract_search_criteria(query) do
+    query
+    |> String.downcase()
+    |> String.split(" ")
+  end
+
+  defp satisfies_search_criteria?(dataset, search_criteria) do
+    [dataset.title, dataset.description, dataset.organization]
+    |> Enum.reject(&is_nil/1)
+    |> Enum.map(&String.downcase/1)
+    |> Enum.any?(&String.contains?(&1, search_criteria))
   end
 end

@@ -30,35 +30,35 @@ defmodule DiscoveryApi.Search.DatasetSearchinatorTest do
     end
 
     test "matches based on title" do
-      {:ok, results} = DatasetSearchinator.search(query: "love")
+      results = DatasetSearchinator.search("love")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0).id == 1
     end
 
     test "matches based on title with multiple words" do
-      {:ok, results} = DatasetSearchinator.search(query: "loves Jarred")
+      results = DatasetSearchinator.search("loves Jarred")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0).id == 1
     end
 
     test "matches based on title case insensitive" do
-      {:ok, results} = DatasetSearchinator.search(query: "jaRreD")
+      results = DatasetSearchinator.search("jaRreD")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0).id == 1
     end
 
     test "matches based on description" do
-      {:ok, results} = DatasetSearchinator.search(query: "super")
+      results = DatasetSearchinator.search("super")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0).id == 1
     end
 
     test "matches based on multiple" do
-      {:ok, results} = DatasetSearchinator.search(query: "loves paperwork")
+      results = DatasetSearchinator.search("loves paperwork")
 
       assert Enum.count(results) == 2
       assert Enum.at(results, 0).id == 1
@@ -66,14 +66,14 @@ defmodule DiscoveryApi.Search.DatasetSearchinatorTest do
     end
 
     test "matches when dataset has no description" do
-      {:ok, results} = DatasetSearchinator.search(query: "description")
+      results = DatasetSearchinator.search("description")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0).id == 3
     end
 
     test "matches based on organization" do
-      {:ok, results} = DatasetSearchinator.search(query: "testorg")
+      results = DatasetSearchinator.search("testorg")
 
       assert Enum.count(results) == 1
       assert Enum.at(results, 0).id == 4
