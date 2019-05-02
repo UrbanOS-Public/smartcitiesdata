@@ -6,8 +6,6 @@ host =
     defined -> defined
   end
 
-System.put_env("HOST", host)
-
 endpoint = [{to_charlist(host), 9094}]
 
 config :flair,
@@ -42,9 +40,6 @@ config :flair,
 config :yeet,
   topic: "streaming-dead-letters",
   endpoint: endpoint
-
-config :redix,
-  host: host
 
 config :smart_city_registry,
   redis: [

@@ -34,6 +34,12 @@ tolerations: []
 
 affinity: {}
 
+flair:
+  dlq_topic: streaming-dead-letters
+
 presto:
   user: "flair"
   url: http://kdp-kubernetes-data-platform-presto.kdp:8080
+
+redis:
+  host: redis.external-services

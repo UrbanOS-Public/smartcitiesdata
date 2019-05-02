@@ -51,37 +51,6 @@ defmodule DurationsTest do
     )
   end
 
-  test "flair gracefully handles messages that don't parse in the standard format" do
-    SmartCity.Dataset.write(TestHelper.create_simple_dataset() |> Map.put(:id, "ninjas"))
-
-    messages =
-      [
-        %{
-          "payload" => %{"name" => "Jackie Chan"},
-          "_metadata" => %{},
-          "dataset_id" => "ninjas",
-          "operational" => %{"timing" => [timing()]}
-        },
-        %{
-          "payload" => %{"name" => "Barbosa"},
-          "not_metadata" => %{},
-          "dataset_id" => "notExisting",
-          "operational" => %{"timing" => [timing()]}
-        }
-      ]
-      |> Enum.map(&Jason.encode!/1)
-
-    Mockaffe.send_to_kafka(messages, "streaming-transformed")
-
-    Patiently.wait_for!(
-      prestige_query("select dataset_id, app from operational_stats", [
-        ["ninjas", "valkyrie"]
-      ]),
-      dwell: 1000,
-      max_tries: 20
-    )
-  end
-
   test "should insert records into Presto", context do
     Mockaffe.send_to_kafka(context[:messages], "streaming-transformed")
 
@@ -89,32 +58,6 @@ defmodule DurationsTest do
       prestige_query("select dataset_id, app from operational_stats", [
         ["pirates", "valkyrie"]
       ]),
-      dwell: 1000,
-      max_tries: 20
-    )
-  end
-
-  test "should send errors to DLQ" do
-    messages =
-      [
-        %{
-          "payload" => %{"name" => "Barbosa"},
-          "not_metadata" => %{},
-          "dataset_id" => "pirates",
-          "operational" => %{"timing" => [timing()]}
-        }
-      ]
-      |> Enum.map(&Jason.encode!/1)
-
-    Mockaffe.send_to_kafka(messages, "streaming-transformed")
-
-    get_dead_letter = fn ->
-      fetch_and_unwrap("streaming-dead-letters")
-      |> Enum.any?()
-    end
-
-    Patiently.wait_for!(
-      get_dead_letter,
       dwell: 1000,
       max_tries: 20
     )
@@ -148,12 +91,5 @@ defmodule DurationsTest do
       "app" => :valkyrie,
       "label" => ""
     }
-  end
-
-  defp fetch_and_unwrap(topic) do
-    {:ok, messages} = :brod.fetch(@endpoint, topic, 0, 0)
-
-    messages
-    |> Enum.map(fn {:kafka_message, _, _, _, key, body, _, _, _} -> {key, body} end)
   end
 end

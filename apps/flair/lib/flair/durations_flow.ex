@@ -23,7 +23,6 @@ defmodule Flair.DurationsFlow do
     [{Flair.Producer, :durations}]
     |> Flow.from_specs()
     |> Flow.map(&get_message/1)
-    |> Flow.reject(&is_dead_letter/1)
     |> Flow.each(&log_message/1)
     |> partition_by_dataset_id_and_window()
     |> aggregate_by_dataset()
@@ -32,12 +31,12 @@ defmodule Flair.DurationsFlow do
     |> Flow.into_specs(consumer_spec)
   end
 
-  defp log_profile(profile) do
-    Logger.info("Calculated profile: #{inspect(profile)}")
+  defp log_message(message) do
+    Logger.debug("Received durations message: #{inspect(message)}")
   end
 
-  defp log_message(message) do
-    Logger.info("Received message: #{inspect(message)}")
+  defp log_profile(profile) do
+    Logger.info("Calculated durations profile: #{inspect(profile)}")
   end
 
   defp partition_by_dataset_id_and_window(flow) do
@@ -52,27 +51,10 @@ defmodule Flair.DurationsFlow do
   end
 
   defp get_message(kafka_msg) do
-    try do
-      kafka_msg
-      |> Map.get(:value)
-      |> Data.new()
-      |> ok()
-    rescue
-      e ->
-        Logger.error(
-          "Dead Message Encountered: #{inspect(kafka_msg)}. Rejecting because: #{inspect(e)}"
-        )
-
-        kafka_msg
-        |> Map.from_struct()
-        |> Yeet.process_dead_letter("flair", error_code: e)
-
-        :dead_letter
-    end
-  end
-
-  defp is_dead_letter(message) do
-    message == :dead_letter
+    kafka_msg
+    |> Map.get(:value)
+    |> Data.new()
+    |> ok()
   end
 
   defp extract_id(%Data{dataset_id: id}), do: id

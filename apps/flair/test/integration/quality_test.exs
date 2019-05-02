@@ -7,6 +7,9 @@ defmodule QualityIntegrationTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
 
+  @endpoint Application.get_env(:kaffe, :producer)[:endpoints]
+            |> Enum.map(fn {k, v} -> {k, v} end)
+
   setup _ do
     SmartCity.Dataset.write(TestHelper.create_simple_dataset())
 
@@ -61,5 +64,32 @@ defmodule QualityIntegrationTest do
       dwell: 1000,
       max_tries: 20
     )
+  end
+
+  test "should send errors to DLQ" do
+    message =
+      %{dataset_id: "NotADataset", payload: %{"id" => "NotADataset", "name" => "Fred"}}
+      |> TDG.create_data()
+      |> Jason.encode!()
+
+    Mockaffe.send_to_kafka([message], "streaming-transformed")
+
+    get_dead_letter = fn ->
+      fetch_and_unwrap("streaming-dead-letters")
+      |> Enum.any?()
+    end
+
+    Patiently.wait_for!(
+      get_dead_letter,
+      dwell: 1000,
+      max_tries: 20
+    )
+  end
+
+  defp fetch_and_unwrap(topic) do
+    {:ok, messages} = :brod.fetch(@endpoint, topic, 0, 0)
+
+    messages
+    |> Enum.map(fn {:kafka_message, _, _, _, key, body, _, _, _} -> {key, body} end)
   end
 end

@@ -28,7 +28,7 @@ defmodule Flair.Quality do
       Map.put(acc, id, updated_dataset_map)
     rescue
       e ->
-        Yeet.process_dead_letter(message, "flair", error: e)
+        Yeet.process_dead_letter(id, message, "flair", error: e)
         acc
     end
   end

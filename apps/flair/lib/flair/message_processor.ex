@@ -5,7 +5,7 @@ defmodule Flair.MessageProcessor do
 
   use KafkaEx.GenConsumer
 
-  @timeout_override Application.get_env(:flair, :timeout_override, 50)
+  @timeout_override Application.get_env(:flair, :task_timeout, 5 * 60 * 1_000)
 
   def handle_message_set(message_set, state) do
     tasks = [
@@ -30,5 +30,9 @@ defmodule Flair.MessageProcessor do
     end
 
     {:async_commit, state}
+  end
+
+  def handle_info({:EXIT, pid, :normal}, state) do
+    {:noreply, state}
   end
 end

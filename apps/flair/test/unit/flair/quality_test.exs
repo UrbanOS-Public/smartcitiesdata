@@ -177,8 +177,13 @@ defmodule Flair.QualityTest do
 
       data = TDG.create_data(data_override)
 
-      allow(Dataset.get!(any()), return: nil)
-      allow(Yeet.process_dead_letter(any(), any(), any()), return: :ok)
+      allow(Dataset.get!(any()),
+        return: %SmartCity.Dataset.NotFound{
+          message: "no dataset with given id found -- ID: pirates"
+        }
+      )
+
+      allow(Yeet.process_dead_letter(any(), any(), any(), any()), return: :ok)
 
       acc = %{
         "123" => %{
@@ -188,7 +193,7 @@ defmodule Flair.QualityTest do
       }
 
       assert acc == Quality.reducer(data, acc)
-      assert_called(Yeet.process_dead_letter(any(), any(), any()), once())
+      assert_called(Yeet.process_dead_letter(any(), any(), any(), any()), once())
     end
   end
 

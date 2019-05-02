@@ -30,6 +30,10 @@ spec:
             value: {{ .Values.presto.url }}
           - name: PRESTO_USER
             value: {{.Values.presto.user}}
+          - name: REDIS_HOST
+            value: {{ .Values.redis.host }}
+          - name: DLQ_TOPIC
+            value: {{ .Values.flair.dlq_topic }}
           - name: NAMESPACE
             valueFrom:
               fieldRef:

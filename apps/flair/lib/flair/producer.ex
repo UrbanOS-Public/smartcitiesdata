@@ -7,7 +7,7 @@ defmodule Flair.Producer do
 
   use GenStage
 
-  @message_timeout Application.get_env(:flair, :message_timeout, 50)
+  @message_timeout Application.get_env(:flair, :message_timeout, 5 * 60 * 1_000)
 
   defmodule State do
     @moduledoc """

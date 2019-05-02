@@ -50,7 +50,7 @@ defmodule Flair.MixProject do
       {:smart_city_test, "~> 0.2.3",
        only: [:test, :integration], organization: "smartcolumbus_os"},
       {:statistics, "~> 0.6"},
-      {:yeet, "~> 0.3.0", organization: "smartcolumbus_os"}
+      {:yeet, "~> 1.0", organization: "smartcolumbus_os"}
     ]
   end
 
