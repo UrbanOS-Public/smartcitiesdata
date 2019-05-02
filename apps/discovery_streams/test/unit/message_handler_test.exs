@@ -104,7 +104,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
     leave(socket)
   end
 
-  test "caches data from a kafka topic" do
+  test "caches data from a kafka topic with one item per key" do
     allow MetricCollector.record_metrics(any(), any()), return: {:ok, %{}}, meck_options: [:passthrough]
 
     {:ok, _, socket} =
@@ -119,8 +119,11 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
     MessageHandler.handle_messages([
       create_message(msgs.a, key: "11604"),
-      create_message(msgs.b, key: "11604"),
       create_message(msgs.c, key: "11603")
+    ])
+
+    MessageHandler.handle_messages([
+      create_message(msgs.b, key: "11604")
     ])
 
     cache_record_created = fn ->
@@ -129,7 +132,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
         |> Enum.to_list()
         |> Enum.map(fn {:entry, _key, _create_ts, _ttl, vehicle} -> vehicle end)
 
-      Enum.all?([msgs.a, msgs.c], &Enum.member?(stream, Jason.decode!(&1)))
+      Enum.all?([msgs.b, msgs.c], &Enum.member?(stream, Jason.decode!(&1)))
     end
 
     Patiently.wait_for!(
