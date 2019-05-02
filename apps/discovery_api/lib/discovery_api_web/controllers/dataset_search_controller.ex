@@ -15,7 +15,7 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
     with {:ok, offset} <- extract_int_from_params(params, "offset", 0),
          {:ok, limit} <- extract_int_from_params(params, "limit", 10),
          {:ok, filter_facets} <- validate_facets(facets),
-         {:ok, search_result} <- DatasetSearchinator.search(query: query),
+         search_result <- DatasetSearchinator.search(query),
          filtered_result <- FacetFilterator.filter_by_facets(search_result, filter_facets),
          authorized_results <- remove_unauthorized_datasets(conn, filtered_result),
          dataset_facets <- DatasetFacinator.get_facets(authorized_results) do
