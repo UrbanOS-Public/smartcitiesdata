@@ -50,11 +50,13 @@ defmodule Forklift.DatasetWriter do
       |> Enum.map(fn data_message -> add_total_timing(data_message) end)
       |> Enum.map(fn data_message -> remove_start_time(data_message) end)
 
-    SmartCity.KafkaHelper.send_to_kafka(data_messages, "streaming-persisted")
+    PersistenceClient.send_to_kafka(data_messages, "streaming-persisted")
   end
 
   defp remove_start_time(data_message) do
-    pop_in(Map.from_struct(data_message)[:operational][:forklift_start_time]) |> elem(1)
+    Map.from_struct(data_message)[:operational][:forklift_start_time]
+    |> pop_in()
+    |> elem(1)
   end
 
   defp add_total_timing(message) do

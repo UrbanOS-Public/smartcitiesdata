@@ -43,6 +43,48 @@ defmodule PersistenceTest do
     )
   end
 
+  test "sends messsages to streaming-persisted topic with timing information" do
+    system_name = "Organization1__TimingDataset"
+
+    dataset =
+      TDG.create_dataset(
+        id: "ds3",
+        technical: %{
+          systemName: system_name,
+          schema: [%{"name" => "id", "type" => "int"}, %{"name" => "name", "type" => "string"}]
+        }
+      )
+
+    "create table #{system_name} (id integer, name varchar)"
+    |> Prestige.execute()
+    |> Prestige.prefetch()
+
+    SmartCity.Dataset.write(dataset)
+
+    data = TDG.create_data(dataset_id: "ds3", payload: %{"id" => 1, "name" => "George"})
+    SmartCity.KafkaHelper.send_to_kafka(data, "streaming-transformed")
+
+    Patiently.wait_for!(
+      fn ->
+        {:ok, messages} = :brod.fetch(@endpoint, "streaming-persisted", 0, 0)
+
+        if length(messages) > 0 do
+          message =
+            messages
+            |> Enum.map(fn {:kafka_message, _, _, _, key, body, _, _, _} -> {key, body} end)
+            |> Enum.map(fn {_key, body} -> Jason.decode!(body, keys: :atoms) end)
+            |> List.first()
+
+          length(message.operational.timing) == 3
+        else
+          false
+        end
+      end,
+      dwell: 1000,
+      max_tries: 30
+    )
+  end
+
   test "should DLQ records which fail to insert into Presto after a set number of times" do
     system_name = "Organization1__FailingDataset"
 

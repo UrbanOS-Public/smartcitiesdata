@@ -10,6 +10,7 @@ defmodule Forklift.DatasetWriterTest do
       allow DataBuffer.reset_empty_reads(any()), return: :ok
       allow DataBuffer.mark_complete(any(), any()), return: :ok
       allow DataBuffer.cleanup_dataset(any()), return: :ok
+      allow PersistenceClient.send_to_kafka(any(), any()), return: :ok
 
       :ok
     end
@@ -29,7 +30,6 @@ defmodule Forklift.DatasetWriterTest do
 
       allow DataBuffer.get_unread_data("ds1"), return: entries
       allow DataBuffer.get_pending_data("ds1"), return: []
-      allow SmartCity.KafkaHelper.send_to_kafka(any(), any()), return: :ok
 
       allow PersistenceClient.upload_data(any(), any()),
         return:
@@ -67,7 +67,6 @@ defmodule Forklift.DatasetWriterTest do
 
       allow DataBuffer.get_unread_data("ds1"), return: []
       allow DataBuffer.get_pending_data("ds1"), return: entries
-      allow SmartCity.KafkaHelper.send_to_kafka(any(), any()), return: :ok
 
       allow PersistenceClient.upload_data(any(), any()),
         return:
