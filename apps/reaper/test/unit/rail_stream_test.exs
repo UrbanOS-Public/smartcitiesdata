@@ -34,18 +34,4 @@ defmodule RailStreamTest do
       assert result == [{:ok, 3}, {:error, :whatever}]
     end
   end
-
-  # describe "each_error/2" do
-  #   test "Invokes function for each error" do
-  #     {:ok, agent_pid} = Agent.start_link(fn -> 0 end)
-
-  #     incr_agent = fn _reason, _original -> Agent.update(agent_pid, &(&1 + 1)) end
-
-  #     [{:error, :whatever}, {:ok, 4}, {:error, :something}, {:error, :bad_things}, {:ok, 5}]
-  #     |> RailStream.each_error(incr_agent)
-  #     |> Stream.run()
-
-  #     assert 3 == Agent.get(agent_pid, & &1)
-  #   end
-  # end
 end
