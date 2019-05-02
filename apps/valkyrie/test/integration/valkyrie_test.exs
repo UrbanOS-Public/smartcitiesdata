@@ -64,9 +64,9 @@ defmodule ValkyrieTest do
         data_messages = fetch_and_unwrap("dead-letters")
 
         Enum.any?(data_messages, fn data_message ->
-          assert String.contains?(data_message.reason, "Invalid data message")
+          assert String.contains?(data_message.reason, "The following fields were invalid: alignment")
           assert data_message.app == "Valkyrie"
-          assert String.contains?(data_message.original_message, "Blackbeard")
+          assert String.contains?(inspect(data_message.original_message), "Blackbeard")
         end)
       end,
       dwell: 1000,

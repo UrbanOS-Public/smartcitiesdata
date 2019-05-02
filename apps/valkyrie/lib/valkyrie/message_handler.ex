@@ -22,6 +22,9 @@ defmodule Valkyrie.MessageHandler do
          {:ok, encoded_message} <- Jason.encode(updated_message) do
       Kaffe.Producer.produce_sync(key, encoded_message)
     else
+      {:error, "Invalid data message"} ->
+        nil
+
       {:error, reason} ->
         Logger.warn("Error handling message: #{value}")
         Yeet.process_dead_letter(value, "Valkyrie", reason: inspect(reason))
@@ -35,9 +38,17 @@ defmodule Valkyrie.MessageHandler do
   defp validate(%Data{dataset_id: id, payload: payload} = message) do
     %Valkyrie.Dataset{schema: schema} = Valkyrie.Dataset.get(id)
 
-    case Valkyrie.Validators.schema_satisfied?(payload, schema) do
-      true -> {:ok, message}
-      false -> {:error, "Invalid data message"}
+    invalid_fields = Valkyrie.Validators.get_invalid_fields(payload, schema)
+
+    cond do
+      length(invalid_fields) == 0 ->
+        {:ok, message}
+
+      length(invalid_fields) > 0 ->
+        fields = Enum.join(invalid_fields, ", ")
+        Logger.warn("The following fields were invalid: #{fields}")
+        Yeet.process_dead_letter(message, "Valkyrie", reason: "The following fields were invalid: #{fields}")
+        {:error, "Invalid data message"}
     end
   end
 
