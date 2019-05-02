@@ -55,9 +55,7 @@ defmodule DiscoveryStreams.MessageHandler do
     end
   end
 
-  defp add_to_cache(%{topic: topic, value: message}) do
-    key = 32 |> :crypto.strong_rand_bytes() |> Base.encode32()
-
+  defp add_to_cache(%{key: key, topic: topic, value: message}) do
     GenServer.abcast(
       DiscoveryStreams.CacheGenserver,
       {:put, String.to_atom(topic), key, message}
