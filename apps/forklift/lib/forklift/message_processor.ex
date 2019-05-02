@@ -11,16 +11,12 @@ defmodule Forklift.MessageProcessor do
   defp process_data_message(%{value: raw_message}) do
     case SmartCity.Data.new(raw_message) do
       {:ok, data} ->
-        data =
-          SmartCity.Data.add_timing(
-            data,
-            SmartCity.Data.Timing.new(
-              "forklift",
-              "total_time",
-              SmartCity.Data.Timing.current_time(),
-              SmartCity.Data.Timing.current_time()
-            )
-          )
+        new_oper =
+          data
+          |> Map.get(:operational)
+          |> Map.put("forklift_start_time", SmartCity.Data.Timing.current_time())
+
+        data = Map.put(data, :operational, new_oper)
 
         case DataBuffer.write(data) do
           {:ok, _} -> :ok

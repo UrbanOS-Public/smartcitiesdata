@@ -23,6 +23,10 @@ config :kaffe,
     start_with_earliest_message: true,
     max_bytes: 1_000_000,
     worker_allocation_strategy: :worker_per_topic_partition
+  ],
+  producer: [
+    endpoints: [localhost: 9094],
+    topics: ["streaming-persisted"]
   ]
 
 config :logger,

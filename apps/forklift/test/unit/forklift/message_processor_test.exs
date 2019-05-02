@@ -3,22 +3,10 @@ defmodule MessageProcessorTest do
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias SmartCity.Data
   alias Forklift.{MessageProcessor, DataBuffer, DeadLetterQueue}
 
   test "data messages are sent to cache client" do
     data = TDG.create_data(dataset_id: "ds1", payload: %{one: 1})
-
-    expected_data =
-      data
-      |> Data.add_timing(
-        Data.Timing.new(
-          "forklift",
-          "total_time",
-          Data.Timing.current_time(),
-          Data.Timing.current_time()
-        )
-      )
 
     kaffe_message = Helper.make_kafka_message(data, "streaming-transformed")
 

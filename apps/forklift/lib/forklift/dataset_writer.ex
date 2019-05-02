@@ -42,13 +42,39 @@ defmodule Forklift.DatasetWriter do
     end
   end
 
-  defp add_timing_and_send_to_kafka(timing, wrapped_messages) do
+  defp add_timing_and_send_to_kafka(presto_timing, wrapped_messages) do
     data_messages =
       wrapped_messages
-      |> Enum.map(fn data -> Map.get(data, :data) end)
-      |> Enum.map(fn data_message -> Data.add_timing(data_message, timing) end)
+      |> Enum.map(fn data_message -> Map.get(data_message, :data) end)
+      |> Enum.map(fn data_message -> Data.add_timing(data_message, presto_timing) end)
+      |> Enum.map(fn data_message -> add_total_timing(data_message) end)
+      |> Enum.map(fn data_message -> remove_start_time(data_message) end)
 
-    # TODO: Send to kafka?
+    SmartCity.KafkaHelper.send_to_kafka(data_messages, "streaming-persisted")
+  end
+
+  defp remove_start_time(data_message) do
+    pop_in(Map.from_struct(data_message)[:operational][:forklift_start_time]) |> elem(1)
+  end
+
+  defp add_total_timing(message) do
+    Data.add_timing(
+      message,
+      Data.Timing.new(
+        "forklift",
+        "total_time",
+        message.operational.forklift_start_time,
+        Data.Timing.current_time()
+      )
+    )
+  end
+
+  def make_kafka_message(value) do
+    %{
+      topic: "streaming-persisted",
+      value: value |> Jason.encode!(),
+      offset: :rand.uniform(999)
+    }
   end
 
   defp upload_pending_data(_dataset_id, []), do: :continue
