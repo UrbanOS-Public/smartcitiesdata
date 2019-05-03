@@ -8,13 +8,14 @@ defmodule Forklift.MessageProcessor do
     process_data_message(message)
   end
 
-  defp process_data_message(%{value: raw_message}) do
+  defp process_data_message(%{key: key, value: raw_message}) do
     case SmartCity.Data.new(raw_message) do
       {:ok, data} ->
         new_oper =
           data
           |> Map.get(:operational)
           |> Map.put("forklift_start_time", SmartCity.Data.Timing.current_time())
+          |> Map.put("kafka_key", key)
 
         data = Map.put(data, :operational, new_oper)
 

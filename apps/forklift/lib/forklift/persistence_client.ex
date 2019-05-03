@@ -49,15 +49,8 @@ defmodule Forklift.PersistenceClient do
     end
   end
 
-  def send_to_kafka(msg, topic) when is_list(msg) do
-    msg
-    |> Enum.map(&send_to_kafka(&1, topic))
-    |> Enum.find(:ok, &(&1 != :ok))
-  end
-
-  def send_to_kafka(msg, topic) do
+  def send_to_kafka(topic, key, msg) do
     json_msg = apply(Jason, :encode!, [msg])
-    #TODO:fix "the_key"
-    apply(Kaffe.Producer, :produce_sync, [topic, [{"the_key", json_msg}]])
+    apply(Kaffe.Producer, :produce_sync, [topic, [{key, json_msg}]])
   end
 end

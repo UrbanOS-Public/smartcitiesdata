@@ -10,7 +10,7 @@ defmodule Forklift.DatasetWriterTest do
       allow DataBuffer.reset_empty_reads(any()), return: :ok
       allow DataBuffer.mark_complete(any(), any()), return: :ok
       allow DataBuffer.cleanup_dataset(any()), return: :ok
-      allow PersistenceClient.send_to_kafka(any(), any()), return: :ok
+      allow PersistenceClient.send_to_kafka(any(), any(), any()), return: :ok
 
       :ok
     end

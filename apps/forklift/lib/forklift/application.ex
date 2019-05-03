@@ -14,7 +14,6 @@ defmodule Forklift.Application do
         exq(),
         redis(),
         kaffe_consumer(),
-        kaffe_producer(),
         {Forklift.DatasetRegistryServer, name: Forklift.DatasetRegistryServer},
         Forklift.EmptyStreamTracker,
         Forklift.RetryTracker,
@@ -55,21 +54,6 @@ defmodule Forklift.Application do
         %{
           id: Kaffe.Consumer,
           start: {Kaffe.Consumer, :start_link, []},
-          type: :supervisor
-        }
-    end
-  end
-
-  defp kaffe_producer do
-    Application.get_env(:kaffe, :producer)[:endpoints]
-    |> case do
-      nil ->
-        []
-
-      _ ->
-        %{
-          id: Kaffe.Producer,
-          start: {Kaffe.Producer, :start_link, []},
           type: :supervisor
         }
     end

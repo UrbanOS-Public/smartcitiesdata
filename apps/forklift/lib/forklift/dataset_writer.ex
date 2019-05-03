@@ -43,18 +43,33 @@ defmodule Forklift.DatasetWriter do
   end
 
   defp add_timing_and_send_to_kafka(presto_timing, wrapped_messages) do
-    data_messages =
-      wrapped_messages
-      |> Enum.map(fn data_message -> Map.get(data_message, :data) end)
-      |> Enum.map(fn data_message -> Data.add_timing(data_message, presto_timing) end)
-      |> Enum.map(fn data_message -> add_total_timing(data_message) end)
-      |> Enum.map(fn data_message -> remove_start_time(data_message) end)
-
-    PersistenceClient.send_to_kafka(data_messages, "streaming-persisted")
+    Enum.map(wrapped_messages, fn data_message -> process_data_message(data_message, presto_timing) end)
   end
 
-  defp remove_start_time(data_message) do
-    Map.from_struct(data_message)[:operational][:forklift_start_time]
+  defp process_data_message(data_message, presto_timing) do
+    data_message =
+      data_message
+      |> Map.get(:data)
+      |> Data.add_timing(presto_timing)
+      |> add_total_timing()
+      |> Map.from_struct()
+      |> unwrap_key()
+
+    PersistenceClient.send_to_kafka("streaming-persisted", data_message.kafka_key, data_message.message)
+  end
+
+  defp unwrap_key(data_message) do
+    %{
+      kafka_key: data_message.operational.kafka_key,
+      message:
+        data_message
+        |> remove_from_operational(:kafka_key)
+        |> remove_from_operational(:forklift_start_time)
+    }
+  end
+
+  defp remove_from_operational(data_message, key) do
+    data_message[:operational][key]
     |> pop_in()
     |> elem(1)
   end

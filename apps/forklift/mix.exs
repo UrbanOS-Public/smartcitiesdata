@@ -24,7 +24,7 @@ defmodule Forklift.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
+      {:smart_city_data, "~> 2.2", organization: "smartcolumbus_os"},
       {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
       {:smart_city_test, "~> 0.2.0", organization: "smartcolumbus_os", only: [:test, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},

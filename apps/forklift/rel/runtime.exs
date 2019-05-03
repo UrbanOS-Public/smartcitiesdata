@@ -28,8 +28,8 @@ config :kaffe,
     offset_reset_policy: :reset_to_earliest
   ],
   producer: [
-    endpoint: endpoints,
-    topic: ["streaming-persisted"]
+    endpoints: endpoints,
+    topics: ["streaming-persisted"]
   ]
 
 
