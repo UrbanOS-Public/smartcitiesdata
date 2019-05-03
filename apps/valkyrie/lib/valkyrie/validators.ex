@@ -1,18 +1,33 @@
 defmodule Valkyrie.Validators do
   @moduledoc false
 
+  require Logger
+  alias SmartCity.Data
+
+  def validate(%Data{dataset_id: id, payload: payload} = message) do
+    %Valkyrie.Dataset{schema: schema} = Valkyrie.Dataset.get(id)
+
+    invalid_fields = get_invalid_fields(payload, schema)
+
+    if Enum.empty?(invalid_fields) do
+      {:ok, message}
+    else
+      fields = Enum.join(invalid_fields, ", ")
+      {:error, "The following fields were invalid: #{fields}"}
+    end
+  end
+
   def get_invalid_fields(payload, schema) do
     schema
-    |> Enum.map(fn field -> get_invalid_field_or_header(field, payload) end)
+    |> Enum.map(&get_invalid_field_or_header(&1, payload))
     |> List.flatten()
-    |> Enum.reject(fn field -> field == nil end)
   end
 
   defp get_invalid_field_or_header(%{name: name} = field, payload) do
     if not_header?(field, payload) do
       get_invalid_sub_fields(field, payload)
     else
-      name
+      [name]
     end
   end
 
@@ -48,9 +63,9 @@ defmodule Valkyrie.Validators do
       end)
 
     if field_name in payload_keys do
-      nil
+      []
     else
-      Atom.to_string(field_name)
+      [Atom.to_string(field_name)]
     end
   end
 

@@ -62,7 +62,10 @@ defmodule Valkyrie.MessageHandlerTest do
       Valkyrie.MessageHandler.handle_messages(messages)
 
       refute_called Kaffe.Producer.produce_sync(any(), any())
-      assert_called Yeet.process_dead_letter(any(), any(), reason: "The following fields were invalid: weight, height")
+
+      assert_called Yeet.process_dead_letter(any(), any(),
+                      reason: "\"The following fields were invalid: weight, height\""
+                    )
     end
   end
 end

@@ -3,6 +3,7 @@ require Logger
 defmodule Valkyrie.MessageHandler do
   @moduledoc false
   alias SmartCity.Data
+  alias Valkyrie.Validators
 
   def handle_messages(messages) do
     Logger.info("#{__MODULE__}: Received #{length(messages)} messages.")
@@ -17,36 +18,18 @@ defmodule Valkyrie.MessageHandler do
     start_time = Data.Timing.current_time()
 
     with {:ok, new_value} <- Data.new(value),
-         {:ok, validated_message} <- validate(new_value),
+         {:ok, validated_message} <- Validators.validate(new_value),
          {:ok, updated_message} <- set_operational_timing(start_time, validated_message),
          {:ok, encoded_message} <- Jason.encode(updated_message) do
       Kaffe.Producer.produce_sync(key, encoded_message)
     else
-      {:error, "Invalid data message"} ->
-        nil
-
       {:error, reason} ->
-        Logger.warn("Error handling message: #{value}")
+        Logger.warn("Error handling message: #{inspect(value)}: #{inspect(reason)}")
         Yeet.process_dead_letter(value, "Valkyrie", reason: inspect(reason))
 
       _ ->
-        Logger.warn("Error handling message: #{value}")
+        Logger.warn("Error handling message: #{inspect(value)}")
         Yeet.process_dead_letter(value, "Valkyrie")
-    end
-  end
-
-  defp validate(%Data{dataset_id: id, payload: payload} = message) do
-    %Valkyrie.Dataset{schema: schema} = Valkyrie.Dataset.get(id)
-
-    invalid_fields = Valkyrie.Validators.get_invalid_fields(payload, schema)
-
-    if Enum.empty?(invalid_fields) do
-      {:ok, message}
-    else
-      fields = Enum.join(invalid_fields, ", ")
-      Logger.warn("The following fields were invalid: #{fields}")
-      Yeet.process_dead_letter(message, "Valkyrie", reason: "The following fields were invalid: #{fields}")
-      {:error, "Invalid data message"}
     end
   end
 
