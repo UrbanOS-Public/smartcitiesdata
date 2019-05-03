@@ -2,22 +2,25 @@ defmodule Valkyrie.Validators do
   @moduledoc false
 
   def get_invalid_fields(payload, schema) do
-    Enum.map(schema, fn %{name: name} = field ->
-      if not_header?(field, payload) do
-        field_present?(field, payload)
-      else
-        name
-      end
-    end)
+    schema
+    |> Enum.map(fn field -> get_invalid_field_or_header(field, payload) end)
     |> List.flatten()
     |> Enum.reject(fn field -> field == nil end)
   end
 
-  defp field_present?(%{name: name, type: "map", subSchema: sub_schema}, payload) do
+  defp get_invalid_field_or_header(%{name: name} = field, payload) do
+    if not_header?(field, payload) do
+      get_invalid_sub_fields(field, payload)
+    else
+      name
+    end
+  end
+
+  defp get_invalid_sub_fields(%{name: name, type: "map", subSchema: sub_schema}, payload) do
     get_invalid_fields(payload[String.to_atom(name)], sub_schema)
   end
 
-  defp field_present?(
+  defp get_invalid_sub_fields(
          %{name: name, type: "list", itemType: "map", subSchema: sub_schema},
          payload
        ) do
@@ -28,7 +31,7 @@ defmodule Valkyrie.Validators do
     end)
   end
 
-  defp field_present?(%{name: name}, payload) do
+  defp get_invalid_sub_fields(%{name: name}, payload) do
     field_name =
       name
       |> String.downcase()

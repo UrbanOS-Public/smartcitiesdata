@@ -40,15 +40,13 @@ defmodule Valkyrie.MessageHandler do
 
     invalid_fields = Valkyrie.Validators.get_invalid_fields(payload, schema)
 
-    cond do
-      length(invalid_fields) == 0 ->
-        {:ok, message}
-
-      length(invalid_fields) > 0 ->
-        fields = Enum.join(invalid_fields, ", ")
-        Logger.warn("The following fields were invalid: #{fields}")
-        Yeet.process_dead_letter(message, "Valkyrie", reason: "The following fields were invalid: #{fields}")
-        {:error, "Invalid data message"}
+    if Enum.empty?(invalid_fields) do
+      {:ok, message}
+    else
+      fields = Enum.join(invalid_fields, ", ")
+      Logger.warn("The following fields were invalid: #{fields}")
+      Yeet.process_dead_letter(message, "Valkyrie", reason: "The following fields were invalid: #{fields}")
+      {:error, "Invalid data message"}
     end
   end
 
