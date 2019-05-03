@@ -114,5 +114,39 @@ defmodule Valkyrie.ValidatorsTest do
 
       assert Validators.get_invalid_fields(msg.payload, header_schema) == ["col1", "col2"]
     end
+
+    test "returns a list of invalid fields when a payload containing an array of nested structure doesn't match schema" do
+      coolest_schema = [
+        %{name: "name", type: "string"},
+        %{
+          name: "bio",
+          type: "list",
+          itemType: "map",
+          subSchema: [
+            [%{name: "hometown", type: "string"}, %{name: "pet", type: "string"}],
+            [
+              %{name: "birth_month", type: "string"},
+              %{name: "books", type: "list", itemType: "string"}
+            ]
+          ]
+        }
+      ]
+
+      [msg] =
+        TDG.create_data(
+          [
+            dataset_id: "coolest_data",
+            payload: %{
+              bio: [
+                %{hometown: "Arlen"},
+                %{birth_month: "July"}
+              ]
+            }
+          ],
+          1
+        )
+
+      assert Validators.get_invalid_fields(msg.payload, coolest_schema) == ["name", "pet", "books"]
+    end
   end
 end
