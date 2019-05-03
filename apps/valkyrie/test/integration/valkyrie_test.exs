@@ -4,7 +4,7 @@ defmodule ValkyrieTest do
 
   @messages [
               %{
-                payload: %{name: "Jack Sparrow", alignment: "chaotic"},
+                payload: %{name: "Jack Sparrow", alignment: "chaotic", age: "32"},
                 operational: %{ship: "Black Pearl", timing: []},
                 dataset_id: "pirates",
                 _metadata: %{}
@@ -16,13 +16,13 @@ defmodule ValkyrieTest do
                 _metadata: %{}
               },
               %{
-                payload: %{name: "Will Turner", alignment: "good"},
+                payload: %{name: "Will Turner", alignment: "good", age: "25"},
                 operational: %{ship: "Black Pearl", timing: []},
                 dataset_id: "pirates",
                 _metadata: %{}
               },
               %{
-                payload: %{name: "Barbosa", alignment: "evil"},
+                payload: %{name: "Barbosa", alignment: "evil", age: "100"},
                 operational: %{ship: "Dead Jerks", timing: []},
                 dataset_id: "pirates",
                 _metadata: %{}
@@ -31,7 +31,13 @@ defmodule ValkyrieTest do
             |> Enum.map(&Jason.encode!/1)
   @dataset %SmartCity.Dataset{
     id: "pirates",
-    technical: %{schema: [%{name: "name", type: "string"}, %{name: "alignment", type: "string"}]}
+    technical: %{
+      schema: [
+        %{name: "name", type: "string"},
+        %{name: "alignment", type: "string"},
+        %{name: "age", type: "string"}
+      ]
+    }
   }
   @endpoint Application.get_env(:kaffe, :consumer)[:endpoints]
 
@@ -64,9 +70,10 @@ defmodule ValkyrieTest do
         data_messages = fetch_and_unwrap("dead-letters")
 
         Enum.any?(data_messages, fn data_message ->
-          assert String.contains?(data_message.reason, "Invalid data message")
+          assert String.contains?(data_message.reason, "The following fields were invalid: alignment")
+          assert String.contains?(data_message.reason, "The following fields were invalid: alignment, age")
           assert data_message.app == "Valkyrie"
-          assert String.contains?(data_message.original_message, "Blackbeard")
+          assert String.contains?(inspect(data_message.original_message), "Blackbeard")
         end)
       end,
       dwell: 1000,

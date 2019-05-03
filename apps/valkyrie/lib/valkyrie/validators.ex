@@ -1,28 +1,52 @@
 defmodule Valkyrie.Validators do
   @moduledoc false
 
-  def schema_satisfied?(payload, schema) do
-    Enum.all?(schema, fn field ->
-      field_present?(field, payload) && not_header?(field, payload)
-    end)
+  require Logger
+  alias SmartCity.Data
+
+  def validate(%Data{dataset_id: id, payload: payload} = message) do
+    %Valkyrie.Dataset{schema: schema} = Valkyrie.Dataset.get(id)
+
+    invalid_fields = get_invalid_fields(payload, schema)
+
+    if Enum.empty?(invalid_fields) do
+      {:ok, message}
+    else
+      fields = Enum.join(invalid_fields, ", ")
+      {:error, "The following fields were invalid: #{fields}"}
+    end
   end
 
-  defp field_present?(%{name: name, type: "map", subSchema: sub_schema}, payload) do
-    schema_satisfied?(payload[String.to_atom(name)], sub_schema)
+  def get_invalid_fields(payload, schema) do
+    schema
+    |> Enum.map(&get_invalid_field_or_header(&1, payload))
+    |> List.flatten()
   end
 
-  defp field_present?(
+  defp get_invalid_field_or_header(%{name: name} = field, payload) do
+    if not_header?(field, payload) do
+      get_invalid_sub_fields(field, payload)
+    else
+      [name]
+    end
+  end
+
+  defp get_invalid_sub_fields(%{name: name, type: "map", subSchema: sub_schema}, payload) do
+    get_invalid_fields(payload[String.to_atom(name)], sub_schema)
+  end
+
+  defp get_invalid_sub_fields(
          %{name: name, type: "list", itemType: "map", subSchema: sub_schema},
          payload
        ) do
     schemas_with_maps = Enum.zip(sub_schema, payload[String.to_atom(name)])
 
-    Enum.reduce_while(schemas_with_maps, true, fn {schema, map}, true ->
-      if schema_satisfied?(map, schema), do: {:cont, true}, else: {:halt, false}
+    Enum.map(schemas_with_maps, fn {schema, map} ->
+      get_invalid_fields(map, schema)
     end)
   end
 
-  defp field_present?(%{name: name}, payload) do
+  defp get_invalid_sub_fields(%{name: name}, payload) do
     field_name =
       name
       |> String.downcase()
@@ -38,7 +62,11 @@ defmodule Valkyrie.Validators do
         |> String.to_atom()
       end)
 
-    field_name in payload_keys
+    if field_name in payload_keys do
+      []
+    else
+      [Atom.to_string(field_name)]
+    end
   end
 
   defp not_header?(%{name: name}, payload) do
