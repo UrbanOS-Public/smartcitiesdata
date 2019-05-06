@@ -11,6 +11,7 @@ defmodule Reaper.Partitioners.PathPartitioner do
 
     payload
     |> get_in(filter)
+    |> to_string()
   end
 
   defp format_key(%_struct{}, path_elem) do
