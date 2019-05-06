@@ -20,6 +20,13 @@ defmodule Reaper.Partitioners.PathPartitionerTest do
     assert key == "2"
   end
 
+  test "converts integer key to string" do
+    message = %{"a" => 1}
+    key = PathPartitioner.partition(message, "a")
+
+    assert key == "1"
+  end
+
   test "Successfully returns message value at nested path" do
     message = %{"a" => "1", "b" => %{"c" => "2", "d" => %{"e" => "5"}}}
     path = "b.d.e"
@@ -78,7 +85,7 @@ defmodule Reaper.Partitioners.PathPartitionerTest do
       }
     }
 
-    assert 3 == PathPartitioner.partition(payload, "child.child.id")
+    assert "3" == PathPartitioner.partition(payload, "child.child.id")
   end
 
   test "Throws error attempting to partition a NIL path" do
