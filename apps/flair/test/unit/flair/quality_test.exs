@@ -15,7 +15,7 @@ defmodule Flair.QualityTest do
 
   describe "reducer/2" do
     test "with empty accumulator", %{simple_dataset: dataset} do
-      data_override = %{dataset_id: "123", payload: %{"id" => "123", "name" => "John Smith"}}
+      data_override = %{dataset_id: "123", payload: %{id: "123", name: "John Smith"}}
 
       data = TDG.create_data(data_override)
 
@@ -29,7 +29,7 @@ defmodule Flair.QualityTest do
     end
 
     test "with existing accumulator", %{simple_dataset: dataset} do
-      data_override = %{dataset_id: "123", payload: %{"id" => "123", "name" => "John Smith"}}
+      data_override = %{dataset_id: "123", payload: %{id: "123", name: "John Smith"}}
 
       data = TDG.create_data(data_override)
 
@@ -48,9 +48,9 @@ defmodule Flair.QualityTest do
 
     test "three messages", %{simple_dataset: dataset} do
       data_overrides = [
-        %{dataset_id: "123", payload: %{"id" => "123", "name" => "John Smith"}},
-        %{dataset_id: "123", payload: %{"name" => "John Smith"}},
-        %{dataset_id: "123", payload: %{"id" => "123"}}
+        %{dataset_id: "123", payload: %{id: "123", name: "John Smith"}},
+        %{dataset_id: "123", payload: %{id: "123"}},
+        %{dataset_id: "123", payload: %{name: "John Smith"}}
       ]
 
       messages =
@@ -72,9 +72,9 @@ defmodule Flair.QualityTest do
 
     test "different dataset_ids", %{simple_dataset: dataset, simple_overrides: simple_overrides} do
       data_overrides = [
-        %{dataset_id: "456", payload: %{"id" => "123", "name" => "George Lucas"}},
-        %{dataset_id: "123", payload: %{"name" => "John Williams"}},
-        %{dataset_id: "789", payload: %{"id" => "123"}}
+        %{dataset_id: "456", payload: %{id: "123", name: "George Lucas"}},
+        %{dataset_id: "123", payload: %{name: "John Williams"}},
+        %{dataset_id: "789", payload: %{id: "123"}}
       ]
 
       messages =
@@ -100,9 +100,9 @@ defmodule Flair.QualityTest do
     end
 
     test "different versions", %{simple_dataset: dataset} do
-      data_map1 = %{dataset_id: "123", payload: %{"id" => "123", "name" => "George Lucas"}}
-      data_map2 = %{dataset_id: "123", payload: %{"name" => "John Williams"}}
-      data_map3 = %{dataset_id: "123", payload: %{"id" => "123"}}
+      data_map1 = %{dataset_id: "123", payload: %{id: "123", name: "George Lucas"}}
+      data_map2 = %{dataset_id: "123", payload: %{name: "John Williams"}}
+      data_map3 = %{dataset_id: "123", payload: %{id: "123"}}
 
       data1 =
         data_map1
@@ -141,10 +141,10 @@ defmodule Flair.QualityTest do
         dataset_id: "abc",
         version: "1.0",
         payload: %{
-          "required field" => "123",
-          "required parent field" => %{
-            "required sub field" => "jim",
-            "next_of_kin" => %{"required_sub_schema_field" => "bob"}
+          :"required field" => "123",
+          :"required parent field" => %{
+            :"required sub field" => "jim",
+            :next_of_kin => %{:required_sub_schema_field => "bob"}
           }
         }
       }
@@ -173,7 +173,7 @@ defmodule Flair.QualityTest do
     end
 
     test "returns existing accumulator and yeets when data message errors" do
-      data_override = %{dataset_id: "123", payload: %{"id" => "123", "name" => "John Smith"}}
+      data_override = %{dataset_id: "123", payload: %{id: "123", name: "John Smith"}}
 
       data = TDG.create_data(data_override)
 

@@ -75,7 +75,10 @@ defmodule Flair.Quality do
   end
 
   defp update_field_count(acc, field_name, data) do
-    field_path = String.split(field_name, ".")
+    field_path =
+      field_name
+      |> String.split(".")
+      |> Enum.map(fn part -> String.to_atom(part) end)
 
     if get_in(data, field_path) != nil do
       Map.update(acc, field_name, 1, &(&1 + 1))

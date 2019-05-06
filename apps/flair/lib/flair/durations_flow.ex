@@ -15,7 +15,7 @@ defmodule Flair.DurationsFlow do
   def start_link(_) do
     consumer_spec = [
       {
-        {Flair.Consumer, :durations_consumer},
+        {Flair.DurationsConsumer, :durations_consumer},
         []
       }
     ]
@@ -32,11 +32,11 @@ defmodule Flair.DurationsFlow do
   end
 
   defp log_message(message) do
-    Logger.debug("Received durations message: #{inspect(message)}")
+    Logger.debug(fn -> "Received durations message: #{inspect(message)}" end)
   end
 
   defp log_profile(profile) do
-    Logger.info("Calculated durations profile: #{inspect(profile)}")
+    Logger.info(fn -> "Calculated durations profile: #{inspect(profile)}" end)
   end
 
   defp partition_by_dataset_id_and_window(flow) do

@@ -10,7 +10,7 @@ defmodule Flair.ConsumerTest do
       allow(Flair.PrestoClient.generate_statement_from_events(any()), return: :ok)
       allow(Flair.PrestoClient.execute(any()), return: :ok)
 
-      Flair.Consumer.handle_events(events, nil, nil)
+      Flair.QualityConsumer.handle_events(events, nil, nil)
       assert_called(Flair.PrestoClient.generate_statement_from_events(expected))
     end
 
@@ -21,7 +21,7 @@ defmodule Flair.ConsumerTest do
       allow(Flair.PrestoClient.generate_statement_from_events(any()), return: :ok)
       allow(Flair.PrestoClient.execute(any()), return: :ok)
 
-      Flair.Consumer.handle_events(events, nil, nil)
+      Flair.DurationsConsumer.handle_events(events, nil, nil)
       assert_called(Flair.PrestoClient.generate_statement_from_events(expected))
     end
   end

@@ -15,7 +15,7 @@ defmodule Flair.QualityFlow do
   def start_link(_) do
     consumer_spec = [
       {
-        {Flair.Consumer, :quality_consumer},
+        {Flair.QualityConsumer, :quality_consumer},
         []
       }
     ]
@@ -33,11 +33,11 @@ defmodule Flair.QualityFlow do
   end
 
   defp log_message(message) do
-    Logger.debug("Received quality message: #{inspect(message)}")
+    Logger.debug(fn -> "Received quality message: #{inspect(message)}" end)
   end
 
   defp log_profile(profile) do
-    Logger.info("Calculated quality profile: #{inspect(profile)}")
+    Logger.info(fn -> "Calculated quality profile: #{inspect(profile)}" end)
   end
 
   defp partition_by_dataset_id_and_window(flow) do

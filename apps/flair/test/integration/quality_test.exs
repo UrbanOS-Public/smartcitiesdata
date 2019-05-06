@@ -14,8 +14,8 @@ defmodule QualityIntegrationTest do
     SmartCity.Dataset.write(TestHelper.create_simple_dataset())
 
     data_overrides = [
-      %{dataset_id: "123", payload: %{"id" => "123", "name" => "John Smith"}},
-      %{dataset_id: "123", payload: %{"name" => "John Smith"}},
+      %{dataset_id: "123", payload: %{"id" => "123", "name" => "John Doe"}},
+      %{dataset_id: "123", payload: %{"name" => "Bob Smith"}},
       %{dataset_id: "123", payload: %{"id" => "123"}}
     ]
 
@@ -51,7 +51,7 @@ defmodule QualityIntegrationTest do
           assert Enum.at(actual, 0) == "123" &&
                    Enum.at(actual, 1) == "0.1" &&
                    Enum.at(actual, 2) == "id" &&
-                   Enum.at(actual, 5) == 0 &&
+                   Enum.at(actual, 5) == 2 &&
                    Enum.at(actual, 6) == 3 &&
                    actual_end > actual_start
 

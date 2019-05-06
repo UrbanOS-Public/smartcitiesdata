@@ -1,4 +1,4 @@
-defmodule Flair.Consumer do
+defmodule Flair.DurationsConsumer do
   @moduledoc """
   Consumer is called at the end of a flow; it converts events and then passess them to presto client to be persisted.
   """
@@ -22,12 +22,6 @@ defmodule Flair.Consumer do
     |> PrestoClient.execute()
 
     {:noreply, [], state}
-  end
-
-  defp convert_events([{_dataset_id, [%{valid_values: _valid_values} | _]} | _] = events) do
-    events
-    |> Enum.map(fn {_id, event} -> event end)
-    |> List.flatten()
   end
 
   defp convert_events(events) do

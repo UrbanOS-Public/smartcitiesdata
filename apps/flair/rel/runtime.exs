@@ -19,6 +19,14 @@ endpoints =
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {host, String.to_integer(port)} end)
 
+# yeet requires atom or charlist hosts, while kafka_ex expects strings
+yeet_endpoints =
+  kafka_brokers
+  |> String.split(",")
+  |> Enum.map(&String.trim/1)
+  |> Enum.map(fn entry -> String.split(entry, ":") end)
+  |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
+
 config :kafka_ex,
   brokers: endpoints
 
@@ -47,5 +55,5 @@ config :smart_city_registry,
   ]
 
 config :yeet,
-  endpoint: endpoints,
+  endpoint: yeet_endpoints,
   topic: dlq_topic
