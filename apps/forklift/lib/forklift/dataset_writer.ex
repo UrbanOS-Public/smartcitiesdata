@@ -35,8 +35,6 @@ defmodule Forklift.DatasetWriter do
     payloads = extract_payloads(data)
 
     with {:ok, timing} <- PersistenceClient.upload_data(dataset_id, payloads) do
-      # credo:disable-for-next-line Credo.Check.Warning.IoInspect
-      IO.inspect(payloads, label: "POST UPLOAD 2 (payloads) >>>>>")
       add_timing_and_send_to_kafka(timing, data)
 
       DataBuffer.mark_complete(dataset_id, data)
@@ -103,8 +101,6 @@ defmodule Forklift.DatasetWriter do
 
     case PersistenceClient.upload_data(dataset_id, payloads) do
       {:ok, timing} ->
-        # credo:disable-for-next-line Credo.Check.Warning.IoInspect
-        IO.inspect(payloads, label: "POST UPLOAD (payloads) >>>>>")
         cleanup_pending(dataset_id, data)
         add_timing_and_send_to_kafka(timing, data)
 

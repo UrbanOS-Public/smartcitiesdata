@@ -5,8 +5,6 @@ defmodule Forklift.MessageProcessor do
   alias Forklift.{DataBuffer, DeadLetterQueue}
 
   def handle_message(message) do
-    # credo:disable-for-next-line Credo.Check.Warning.IoInspect
-    IO.inspect(message, label: "HANDLE_MESSAGES >>>>>")
     process_data_message(message)
   end
 
@@ -20,9 +18,6 @@ defmodule Forklift.MessageProcessor do
           |> Map.put("kafka_key", key)
 
         data = Map.put(data, :operational, new_oper)
-
-        # credo:disable-for-next-line Credo.Check.Warning.IoInspect
-        IO.inspect(data, label: "BEFORE WRITE >>>>>")
 
         case DataBuffer.write(data) do
           {:ok, _} -> :ok
