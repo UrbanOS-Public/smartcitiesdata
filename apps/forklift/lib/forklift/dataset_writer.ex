@@ -3,6 +3,7 @@ defmodule Forklift.DatasetWriter do
   require Logger
 
   alias Forklift.{DataBuffer, PersistenceClient, RetryTracker, DeadLetterQueue}
+  alias SmartCity.Data
 
   @jobs_registry Forklift.Application.dataset_jobs_registry()
 
@@ -33,10 +34,64 @@ defmodule Forklift.DatasetWriter do
   defp upload_unread_data(dataset_id, data) do
     payloads = extract_payloads(data)
 
-    if PersistenceClient.upload_data(dataset_id, payloads) == :ok do
+    with {:ok, timing} <- PersistenceClient.upload_data(dataset_id, payloads) do
+      add_timing_and_send_to_kafka(timing, data)
+
       DataBuffer.mark_complete(dataset_id, data)
       DataBuffer.reset_empty_reads(dataset_id)
     end
+  end
+
+  defp add_timing_and_send_to_kafka(presto_timing, wrapped_messages) do
+    Enum.map(wrapped_messages, fn data_message -> process_data_message(data_message, presto_timing) end)
+  end
+
+  defp process_data_message(data_message, presto_timing) do
+    data_message =
+      data_message
+      |> Map.get(:data)
+      |> Data.add_timing(presto_timing)
+      |> add_total_timing()
+      |> Map.from_struct()
+      |> unwrap_key()
+
+    PersistenceClient.send_to_kafka("streaming-persisted", data_message.kafka_key, data_message.message)
+  end
+
+  defp unwrap_key(data_message) do
+    %{
+      kafka_key: data_message.operational.kafka_key,
+      message:
+        data_message
+        |> remove_from_operational(:kafka_key)
+        |> remove_from_operational(:forklift_start_time)
+    }
+  end
+
+  defp remove_from_operational(data_message, key) do
+    data_message[:operational][key]
+    |> pop_in()
+    |> elem(1)
+  end
+
+  defp add_total_timing(message) do
+    Data.add_timing(
+      message,
+      Data.Timing.new(
+        "forklift",
+        "total_time",
+        message.operational.forklift_start_time,
+        Data.Timing.current_time()
+      )
+    )
+  end
+
+  def make_kafka_message(value) do
+    %{
+      topic: "streaming-persisted",
+      value: value |> Jason.encode!(),
+      offset: :rand.uniform(999)
+    }
   end
 
   defp upload_pending_data(_dataset_id, []), do: :continue
@@ -45,8 +100,10 @@ defmodule Forklift.DatasetWriter do
     payloads = extract_payloads(data)
 
     case PersistenceClient.upload_data(dataset_id, payloads) do
-      :ok ->
+      {:ok, timing} ->
         cleanup_pending(dataset_id, data)
+        add_timing_and_send_to_kafka(timing, data)
+
         :continue
 
       {:error, reason} ->

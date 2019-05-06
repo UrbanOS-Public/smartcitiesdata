@@ -13,7 +13,7 @@ defmodule Forklift.Application do
         {Registry, [keys: :unique, name: dataset_jobs_registry()]},
         exq(),
         redis(),
-        kaffe(),
+        kaffe_consumer(),
         {Forklift.DatasetRegistryServer, name: Forklift.DatasetRegistryServer},
         Forklift.EmptyStreamTracker,
         Forklift.RetryTracker,
@@ -44,7 +44,7 @@ defmodule Forklift.Application do
     end
   end
 
-  defp kaffe do
+  defp kaffe_consumer do
     Application.get_env(:kaffe, :consumer)[:endpoints]
     |> case do
       nil ->

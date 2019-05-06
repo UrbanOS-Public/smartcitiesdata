@@ -10,12 +10,15 @@ defmodule Forklift.DatasetWriterTest do
       allow DataBuffer.reset_empty_reads(any()), return: :ok
       allow DataBuffer.mark_complete(any(), any()), return: :ok
       allow DataBuffer.cleanup_dataset(any()), return: :ok
+      allow PersistenceClient.send_to_kafka(any(), any(), any()), return: :ok
 
       :ok
     end
 
     test "should write new messages to peristence" do
-      [data1, data2, data3] = TDG.create_data([dataset_id: "ds1", payload: %{one: 1}], 3)
+      op_map = Helper.create_operational_map()
+
+      [data1, data2, data3] = TDG.create_data([dataset_id: "ds1", payload: %{one: 1}, operational: op_map], 3)
 
       entries = [
         %{key: 1, data: data1},
@@ -27,7 +30,16 @@ defmodule Forklift.DatasetWriterTest do
 
       allow DataBuffer.get_unread_data("ds1"), return: entries
       allow DataBuffer.get_pending_data("ds1"), return: []
-      allow PersistenceClient.upload_data(any(), any()), return: :ok
+
+      allow PersistenceClient.upload_data(any(), any()),
+        return:
+          {:ok,
+           SmartCity.Data.Timing.new(
+             :forklift,
+             "presto_insert_time",
+             SmartCity.Data.Timing.current_time(),
+             SmartCity.Data.Timing.current_time()
+           )}
 
       DatasetWriter.perform("ds1")
 
@@ -37,7 +49,13 @@ defmodule Forklift.DatasetWriterTest do
     end
 
     test "should write pending messages to peristence" do
-      [data1, data2, data3] = TDG.create_data([dataset_id: "ds1", payload: %{one: 1}], 3)
+      op_map = Helper.create_operational_map()
+
+      [data1, data2, data3] =
+        TDG.create_data(
+          [dataset_id: "ds1", payload: %{one: 1}, operational: op_map],
+          3
+        )
 
       entries = [
         %{key: 1, data: data1},
@@ -49,7 +67,16 @@ defmodule Forklift.DatasetWriterTest do
 
       allow DataBuffer.get_unread_data("ds1"), return: []
       allow DataBuffer.get_pending_data("ds1"), return: entries
-      allow PersistenceClient.upload_data(any(), any()), return: :ok
+
+      allow PersistenceClient.upload_data(any(), any()),
+        return:
+          {:ok,
+           SmartCity.Data.Timing.new(
+             :forklift,
+             "presto_insert_time",
+             SmartCity.Data.Timing.current_time(),
+             SmartCity.Data.Timing.current_time()
+           )}
 
       DatasetWriter.perform("ds1")
 

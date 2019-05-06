@@ -26,7 +26,12 @@ config :kaffe,
     consumer_group: "forklift-group",
     message_handler: Forklift.MessageProcessor,
     offset_reset_policy: :reset_to_earliest
+  ],
+  producer: [
+    endpoints: endpoints,
+    topics: ["streaming-persisted"]
   ]
+
 
 config :yeet,
   topic: "streaming-dead-letters",
