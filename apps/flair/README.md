@@ -11,7 +11,7 @@ by adding `flair` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:flair, "~> 0.1.0"}
+    {:flair, "~> 0.2.0"}
   ]
 end
 ```
