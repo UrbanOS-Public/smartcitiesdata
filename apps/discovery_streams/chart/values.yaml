@@ -14,6 +14,7 @@ ingress:
   securityGroups: ""
   certificateARN: ""
   dnsZone: "localhost"
+  root_dns_zone: "localhost"
 service:
   type: NodePort
   port: 80
