@@ -1,5 +1,8 @@
 use Mix.Config
 
+config :flair,
+  data_topic: "persisted"
+
 config :logger,
   level: :info
 

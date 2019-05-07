@@ -6,7 +6,6 @@ defmodule Flair.Application do
   use Application
 
   @consumer_group_name "flair-consumer-group"
-  @topic_names ["streaming-transformed"]
   @gen_consumer_impl Flair.MessageProcessor
 
   def start(_type, _args) do
@@ -22,12 +21,18 @@ defmodule Flair.Application do
 
   def kafka_ex do
     consumer_group_opts = []
+    topics = [Application.get_env(:flair, :data_topic)]
 
     %{
       id: KafkaEx.ConsumerGroup,
       start:
         {KafkaEx.ConsumerGroup, :start_link,
-         [@gen_consumer_impl, @consumer_group_name, @topic_names, consumer_group_opts]},
+         [
+           @gen_consumer_impl,
+           @consumer_group_name,
+           topics,
+           consumer_group_opts
+         ]},
       type: :supervisor
     }
   end

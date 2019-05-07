@@ -34,6 +34,8 @@ spec:
             value: {{ .Values.redis.host }}
           - name: DLQ_TOPIC
             value: {{ .Values.flair.dlq_topic }}
+          - name: DATA_TOPIC
+            value: {{ .Values.flair.data_topic }}
           - name: NAMESPACE
             valueFrom:
               fieldRef:

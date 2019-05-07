@@ -19,7 +19,7 @@ config :flair,
 config :kaffe,
   producer: [
     endpoints: endpoint,
-    topics: ["streaming-transformed"]
+    topics: ["persisted"]
   ]
 
 config :prestige,

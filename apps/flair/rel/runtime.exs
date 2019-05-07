@@ -1,6 +1,6 @@
 use Mix.Config
 
-required_envars = ["REDIS_HOST", "KAFKA_BROKERS", "DLQ_TOPIC"]
+required_envars = ["REDIS_HOST", "KAFKA_BROKERS", "DATA_TOPIC", "DLQ_TOPIC"]
 
 Enum.each(required_envars, fn var ->
   if is_nil(System.get_env(var)) do
@@ -11,6 +11,7 @@ end)
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
 dlq_topic = System.get_env("DLQ_TOPIC")
+topic = System.get_env("DATA_TOPIC")
 
 endpoints =
   kafka_brokers
@@ -44,7 +45,8 @@ config :flair,
   message_timeout: 5 * 60 * 1_000,
   task_timeout: 5 * 60 * 1_000,
   table_name_timing: "operational_stats",
-  table_name_quality: "dataset_quality"
+  table_name_quality: "dataset_quality",
+  data_topic: topic
 
 config :logger,
   level: :warn

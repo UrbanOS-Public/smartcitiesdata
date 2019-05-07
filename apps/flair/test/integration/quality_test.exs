@@ -32,7 +32,7 @@ defmodule QualityIntegrationTest do
   end
 
   test "flair consumes messages and calls out to presto", context do
-    Mockaffe.send_to_kafka(context[:messages], "streaming-transformed")
+    Mockaffe.send_to_kafka(context[:messages], Application.get_env(:flair, :data_topic))
 
     Patiently.wait_for!(
       fn ->
@@ -72,7 +72,7 @@ defmodule QualityIntegrationTest do
       |> TDG.create_data()
       |> Jason.encode!()
 
-    Mockaffe.send_to_kafka([message], "streaming-transformed")
+    Mockaffe.send_to_kafka([message], Application.get_env(:flair, :data_topic))
 
     get_dead_letter = fn ->
       fetch_and_unwrap("streaming-dead-letters")

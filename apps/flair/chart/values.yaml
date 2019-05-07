@@ -6,7 +6,7 @@ image:
   pullPolicy: IfNotPresent
 
 # monitoring:
-  # targetPort: 4000
+# targetPort: 4000
 # If running locally on Minikube, set to true to deploy an AWS localstack instance
 # https://github.com/localstack/localstack
 localstack:
@@ -36,6 +36,7 @@ affinity: {}
 
 flair:
   dlq_topic: streaming-dead-letters
+  data_topic: streaming-persisted
 
 presto:
   user: "flair"
