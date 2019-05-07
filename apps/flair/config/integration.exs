@@ -1,4 +1,5 @@
 use Mix.Config
+import_config "../test/integration/divo_presto.exs"
 
 host =
   case System.get_env("HOST_IP") do
@@ -6,7 +7,7 @@ host =
     defined -> defined
   end
 
-endpoint = [{to_charlist(host), 9094}]
+endpoint = [{to_charlist(host), 9092}]
 
 config :flair,
   window_unit: :millisecond,
@@ -15,6 +16,15 @@ config :flair,
   task_timeout: 5 * 60 * 1_000,
   table_name_timing: "operational_stats",
   table_name_quality: "dataset_quality"
+
+config(:flair,
+  divo: [
+    {DivoKafka, [create_topics: "persisted:1:1,streaming-dead-letters:1:1", outside_host: host]},
+    DivoRedis,
+    Flair.DivoPresto
+  ],
+  divo_wait: [dwell: 700, max_tries: 50]
+)
 
 config :kaffe,
   producer: [
@@ -31,11 +41,7 @@ config :prestige,
   ]
 
 config :kafka_ex,
-  brokers: [{host, 9094}]
-
-config :flair,
-  divo: "./docker-compose.yaml",
-  divo_wait: [dwell: 1000, max_tries: 60]
+  brokers: [{host, 9092}]
 
 config :yeet,
   topic: "streaming-dead-letters",
