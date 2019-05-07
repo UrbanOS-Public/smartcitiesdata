@@ -1,11 +1,11 @@
-defmodule DiscoveryApi.Search.DatasetSearchinator do
+defmodule DiscoveryApi.Search.DataModelSearchinator do
   @moduledoc false
-  alias DiscoveryApi.Data.Dataset
+  alias DiscoveryApi.Data.Model
 
   def search(query \\ "") do
     search_criteria = extract_search_criteria(query)
 
-    Enum.filter(Dataset.get_all(), &satisfies_search_criteria?(&1, search_criteria))
+    Enum.filter(Model.get_all(), &satisfies_search_criteria?(&1, search_criteria))
   end
 
   defp extract_search_criteria(query) do
@@ -14,8 +14,8 @@ defmodule DiscoveryApi.Search.DatasetSearchinator do
     |> String.split(" ")
   end
 
-  defp satisfies_search_criteria?(dataset, search_criteria) do
-    [dataset.title, dataset.description, dataset.organization, dataset.keywords]
+  defp satisfies_search_criteria?(%Model{} = model, search_criteria) do
+    [model.title, model.description, model.organization, model.keywords]
     |> List.flatten()
     |> Enum.reject(&is_nil/1)
     |> Enum.map(&String.downcase/1)

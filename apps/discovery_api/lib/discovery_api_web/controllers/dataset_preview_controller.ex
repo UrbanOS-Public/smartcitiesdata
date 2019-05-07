@@ -5,10 +5,10 @@ defmodule DiscoveryApiWeb.DatasetPreviewController do
 
   def fetch_preview(conn, _params) do
     columns =
-      conn.assigns.dataset.systemName
+      conn.assigns.model.systemName
       |> DatasetPrestoQueryService.preview_columns()
 
-    conn.assigns.dataset.systemName
+    conn.assigns.model.systemName
     |> DatasetPrestoQueryService.preview()
     |> return_preview(columns, conn)
   end

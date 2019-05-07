@@ -4,6 +4,8 @@ defmodule DiscoveryApi.Data.SystemNameCache do
   """
   require Logger
 
+  alias SmartCity.{Dataset, Organization}
+
   def child_spec([]) do
     Cachex.child_spec(cache_name())
   end
@@ -12,11 +14,8 @@ defmodule DiscoveryApi.Data.SystemNameCache do
     :system_name_cache
   end
 
-  def put(%SmartCity.Dataset{id: dataset_id, technical: %{orgId: org_id, dataName: data_name}}) do
-    case SmartCity.Organization.get(org_id) do
-      {:ok, org} -> Cachex.put(cache_name(), {org.orgName, data_name}, dataset_id)
-      _ -> Logger.warn("Unable to lookup organization (#{org_id}) for dataset #{dataset_id}")
-    end
+  def put(%Dataset{id: dataset_id, technical: %{dataName: data_name}}, %Organization{orgName: org_name}) do
+    Cachex.put(cache_name(), {org_name, data_name}, dataset_id)
   end
 
   def get(org_name, data_name) do

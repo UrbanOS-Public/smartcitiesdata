@@ -9,11 +9,11 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   def query(conn, params, "csv") do
-    system_name = conn.assigns.dataset.systemName
+    system_name = conn.assigns.model.systemName
 
     with {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
          {:ok, query} <- build_query(params, system_name) do
-      DatasetMetricsService.record_api_hit("queries", conn.assigns.dataset.id)
+      DatasetMetricsService.record_api_hit("queries", conn.assigns.model.id)
 
       query
       |> Prestige.execute()
@@ -26,10 +26,10 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   def query(conn, params, "json") do
-    system_name = conn.assigns.dataset.systemName
+    system_name = conn.assigns.model.systemName
 
     with {:ok, query} <- build_query(params, system_name) do
-      DatasetMetricsService.record_api_hit("queries", conn.assigns.dataset.id)
+      DatasetMetricsService.record_api_hit("queries", conn.assigns.model.id)
 
       data =
         query

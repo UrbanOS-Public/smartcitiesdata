@@ -3,67 +3,66 @@ defmodule DiscoveryApi.Data.Mapper do
   Map data from one thing to another
   """
 
-  alias SmartCity.Dataset
+  alias SmartCity.{Dataset, Organization}
+  alias DiscoveryApi.Data.Model
 
   @doc """
-  Map a `SmartCity.Dataset` to Project Open Metadata Schema format
+  Map a `SmartCity.Dataset` to a `DiscoveryApi.Data.Model`
   """
-  def to_podms(%Dataset{business: business} = dataset, base_url) do
-    %{
-      "@type" => "dcat:Dataset",
-      "title" => business.dataTitle,
-      "description" => business.description,
-      "keyword" => val_or_optional(business.keywords),
-      "modified" => business.modifiedDate,
-      "publisher" => %{
-        "@type" => "org:Organization",
-        "name" => business.orgTitle
-      },
-      "contactPoint" => %{
-        "@type" => "vcard:Contact",
-        "fn" => business.contactName,
-        "hasEmail" => "mailto:" <> business.contactEmail
-      },
-      "identifier" => dataset.id,
-      "accessLevel" => "public",
-      "license" => val_or_optional(business.license),
-      "rights" => val_or_optional(business.rights),
-      "spatial" => val_or_optional(business.spatial),
-      "temporal" => val_or_optional(business.temporal),
-      "distribution" => [
-        %{
-          "@type" => "dcat:Distribution",
-          "accessURL" => "#{base_url}/api/v1/#{dataset.id}/download?_format=json",
-          "mediaType" => "application/json"
-        },
-        %{
-          "@type" => "dcat:Distribution",
-          "accessURL" => "#{base_url}/api/v1/#{dataset.id}/download?_format=csv",
-          "mediaType" => "text/csv"
-        }
-      ],
-      "accrualPeriodicity" => val_or_optional(business.publishFrequency),
-      "conformsTo" => val_or_optional(business.conformsToUri),
-      "describedBy" => val_or_optional(business.describedByUrl),
-      "describedByType" => val_or_optional(business.describedByMimeType),
-      "isPartOf" => val_or_optional(business.parentDataset),
-      "issued" => val_or_optional(business.issuedDate),
-      "language" => val_or_optional(business.language),
-      "landingPage" => val_or_optional(business.homepage),
-      "references" => val_or_optional(business.referenceUrls),
-      "theme" => val_or_optional(business.categories)
+  def to_data_model(%Dataset{} = dataset, %Organization{} = organization) do
+    %Model{
+      id: dataset.id,
+      name: dataset.technical.dataName,
+      title: dataset.business.dataTitle,
+      keywords: dataset.business.keywords,
+      modifiedDate: dataset.business.modifiedDate,
+      fileTypes: get_file_type(dataset.technical.sourceFormat),
+      description: dataset.business.description,
+      systemName: dataset.technical.systemName,
+      sourceUrl: dataset.technical.sourceUrl,
+      sourceType: dataset.technical.sourceType,
+      sourceFormat: dataset.technical.sourceFormat,
+      private: dataset.technical.private,
+      accessLevel: ternary(dataset.technical.private, "non-public", "public"),
+      contactName: dataset.business.contactName,
+      contactEmail: dataset.business.contactEmail,
+      license:
+        ternary(dataset.technical.private, dataset.business.license, "http://opendefinition.org/licenses/cc-by/"),
+      rights: dataset.business.rights,
+      homepage: dataset.business.homepage,
+      spatial: dataset.business.spatial,
+      temporal: dataset.business.temporal,
+      publishFrequency: dataset.business.publishFrequency,
+      conformsToUri: "https://project-open-data.cio.gov/v1.1/schema/",
+      describedByUrl: dataset.business.describedByUrl,
+      describedByMimeType: dataset.business.describedByMimeType,
+      parentDataset: dataset.business.parentDataset,
+      issuedDate: dataset.business.issuedDate,
+      language: dataset.business.language,
+      referenceUrls: dataset.business.referenceUrls,
+      categories: dataset.business.categories,
+      organization: organization.orgTitle,
+      organizationDetails: %{
+        id: organization.id,
+        orgName: organization.orgName,
+        orgTitle: organization.orgTitle,
+        description: organization.description,
+        logoUrl: organization.logoUrl,
+        homepage: organization.homepage,
+        dn: organization.dn
+      }
     }
-    |> remove_optional_values()
   end
 
-  defp remove_optional_values(map) do
-    map
-    |> Enum.filter(fn {_key, value} ->
-      value != :optional
-    end)
-    |> Enum.into(Map.new())
+  defp get_file_type(source_format) do
+    upcase_source_format = String.upcase(source_format)
+
+    case upcase_source_format do
+      "GTFS" -> ["JSON"]
+      _everything_else -> [upcase_source_format]
+    end
   end
 
-  defp val_or_optional(nil), do: :optional
-  defp val_or_optional(val), do: val
+  defp ternary(condition, success, _failure) when condition, do: success
+  defp ternary(_condition, _success, failure), do: failure
 end

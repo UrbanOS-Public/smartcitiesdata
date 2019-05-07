@@ -1,38 +1,39 @@
-defmodule DiscoveryApi.Search.DatasetFacinatorTest do
+defmodule DiscoveryApi.Search.DataModelFacinatorTest do
   use ExUnit.Case
-  alias DiscoveryApi.Search.DatasetFacinator
+  alias DiscoveryApi.Search.DataModelFacinator
+  alias DiscoveryApi.Test.Helper
 
-  describe "facinate" do
+  describe "extract_facets/1" do
     setup do
       {:ok,
        [
-         datasets: [
-           %{
+         models: [
+           Helper.sample_model(%{
              title: "Ben's head canon",
              organization: "OrgA",
              keywords: ["my cool keywords", "another keywords"]
-           },
-           %{
+           }),
+           Helper.sample_model(%{
              title: "Ben's Caniac Combo",
              organization: "OrgA",
              keywords: []
-           },
-           %{
+           }),
+           Helper.sample_model(%{
              title: "Jarred's irrational attachment to natorism's",
              organization: "OrgB",
              keywords: ["my cool keywords"]
-           },
-           %{
+           }),
+           Helper.sample_model(%{
              title: "hi its erin",
              organization: "",
              keywords: ["uncool keywords"]
-           }
+           })
          ]
        ]}
     end
 
-    test "given a list of datasets, it extracts unique facets and their counts", context do
-      assert DatasetFacinator.get_facets(context[:datasets]) == %{
+    test "given a list of models, it extracts unique facets and their counts", context do
+      assert DataModelFacinator.extract_facets(context[:models]) == %{
                organization: [
                  %{name: "", count: 1},
                  %{name: "OrgA", count: 2},

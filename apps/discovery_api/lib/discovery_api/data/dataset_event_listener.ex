@@ -1,25 +1,22 @@
 defmodule DiscoveryApi.Data.DatasetEventListener do
   @moduledoc false
   require Logger
-  alias DiscoveryApi.Data.DatasetDetailsHandler
-  alias DiscoveryApi.Data.ProjectOpenDataHandler
-  alias DiscoveryApi.Data.SystemNameCache
   use SmartCity.Registry.MessageHandler
 
-  def handle_dataset(%SmartCity.Dataset{} = dataset) do
+  alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
+  alias SmartCity.{Dataset, Organization}
+
+  def handle_dataset(%Dataset{} = dataset) do
     Logger.debug(fn -> "Handling dataset: `#{dataset.technical.systemName}`" end)
 
-    SystemNameCache.put(dataset)
-
-    with {:ok, _result} <- DatasetDetailsHandler.process_dataset_details_event(dataset),
-         ProjectOpenDataHandler.process_project_open_data_event(dataset) do
+    with {:ok, organization} <- Organization.get(dataset.technical.orgId),
+         {:ok, _cached} <- SystemNameCache.put(dataset, organization),
+         model <- Mapper.to_data_model(dataset, organization),
+         {:ok, _result} <- Model.save(model) do
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
     else
-      {:error, reason} -> log_error(dataset, reason)
+      {:error, reason} ->
+        Logger.error("Unable to process message `#{inspect(dataset)}` : ERROR: #{inspect(reason)}")
     end
-  end
-
-  defp log_error(dataset, reason) do
-    Logger.error("Unable to process message `#{inspect(dataset)}` : ERROR: #{inspect(reason)}")
   end
 end

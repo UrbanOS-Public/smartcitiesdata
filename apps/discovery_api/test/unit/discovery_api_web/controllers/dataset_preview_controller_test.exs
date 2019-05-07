@@ -1,19 +1,26 @@
 defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
+  alias DiscoveryApi.Data.{Model, SystemNameCache}
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
+  @org_name "org1"
+  @data_name "data1"
 
   describe "preview dataset data" do
     setup do
-      dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name, private: false})
+      model =
+        Helper.sample_model(%{
+          id: @dataset_id,
+          systemName: @system_name,
+          private: false,
+          lastUpdatedDate: nil,
+          queries: 7,
+          downloads: 9
+        })
 
-      allow(Redix.command!(:redix, ["GET", "discovery-api:dataset:#{@dataset_id}"]), return: dataset_json)
-      allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
-      count_keys = ["smart_registry:queries:count:#{@dataset_id}", "smart_registry:downloads:count:#{@dataset_id}"]
-      allow(Redix.command!(:redix, ["MGET" | count_keys]), return: ["7", "9"])
-      allow(Redix.command!(:redix, ["KEYS", "smart_registry:*:count:#{@dataset_id}"]), return: count_keys)
+      allow(Model.get(model.id), return: model)
       :ok
     end
 
@@ -54,19 +61,23 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
 
   describe "preview restricted dataset" do
     setup do
-      organization = TDG.create_organization(%{dn: "cn=this_is_a_group,ou=Group"})
-
-      dataset =
-        Helper.sample_dataset(%{
+      model =
+        Helper.sample_model(%{
           id: @dataset_id,
+          systemName: @system_name,
+          name: @data_name,
           private: true,
-          organizationDetails: organization,
-          systemName: @system_name
+          lastUpdatedDate: nil,
+          queries: 7,
+          downloads: 9,
+          organizationDetails: %{
+            orgName: @org_name,
+            dn: "cn=this_is_a_group,ou=Group"
+          }
         })
 
-      allow DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset
-
-      allow SmartCity.Organization.get(dataset.organizationDetails.id), return: organization
+      allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
+      allow(Model.get(@dataset_id), return: model)
 
       list_of_maps = [
         %{"id" => Faker.UUID.v4(), name: Faker.Lorem.characters(3..10)},

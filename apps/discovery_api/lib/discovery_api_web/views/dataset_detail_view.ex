@@ -1,48 +1,50 @@
 defmodule DiscoveryApiWeb.DatasetDetailView do
   @moduledoc false
   use DiscoveryApiWeb, :view
+  alias DiscoveryApi.Data.Model
 
-  def render("fetch_dataset_detail.json", %{dataset: dataset}) do
-    transform_dataset_detail(dataset)
+  def render("fetch_dataset_detail.json", %{model: model}) do
+    translate_to_dataset_detail(model)
   end
 
-  defp transform_dataset_detail(dataset) do
+  defp translate_to_dataset_detail(%Model{} = model) do
     %{
-      name: dataset.name,
-      title: dataset.title,
-      description: dataset.description,
-      id: dataset.id,
-      keywords: dataset.keywords,
+      name: model.name,
+      title: model.title,
+      description: model.description,
+      id: model.id,
+      keywords: model.keywords,
       organization: %{
-        name: dataset.organizationDetails.orgName,
-        title: dataset.organizationDetails.orgTitle,
-        image: dataset.organizationDetails.logoUrl,
-        description: dataset.organizationDetails.description,
-        homepage: dataset.organizationDetails.homepage
+        name: model.organizationDetails.orgName,
+        title: model.organizationDetails.orgTitle,
+        image: model.organizationDetails.logoUrl,
+        description: model.organizationDetails.description,
+        homepage: model.organizationDetails.homepage
       },
-      sourceType: dataset.sourceType,
-      sourceFormat: dataset.sourceFormat,
-      sourceUrl: dataset.sourceUrl,
-      lastUpdatedDate: dataset.lastUpdatedDate,
-      contactName: dataset.contactName,
-      contactEmail: dataset.contactEmail,
-      license: dataset.license,
-      rights: dataset.rights,
-      homepage: dataset.homepage,
-      spatial: dataset.spatial,
-      temporal: dataset.temporal,
-      publishFrequency: dataset.publishFrequency,
-      conformsToUri: dataset.conformsToUri,
-      describedByUrl: dataset.describedByUrl,
-      describedByMimeType: dataset.describedByMimeType,
-      parentDataset: dataset.parentDataset,
-      issuedDate: dataset.issuedDate,
-      language: dataset.language,
-      referenceUrls: dataset.referenceUrls,
-      categories: dataset.categories,
-      modified: dataset.modified,
-      downloads: dataset.downloads,
-      queries: dataset.queries
+      sourceType: model.sourceType,
+      sourceFormat: model.sourceFormat,
+      sourceUrl: model.sourceUrl,
+      lastUpdatedDate: model.lastUpdatedDate,
+      contactName: model.contactName,
+      contactEmail: model.contactEmail,
+      license: model.license,
+      rights: model.rights,
+      homepage: model.homepage,
+      spatial: model.spatial,
+      temporal: model.temporal,
+      publishFrequency: model.publishFrequency,
+      conformsToUri: model.conformsToUri,
+      describedByUrl: model.describedByUrl,
+      describedByMimeType: model.describedByMimeType,
+      parentDataset: model.parentDataset,
+      issuedDate: model.issuedDate,
+      language: model.language,
+      referenceUrls: model.referenceUrls,
+      categories: model.categories,
+      modified: model.modifiedDate,
+      downloads: model.downloads,
+      queries: model.queries,
+      accessLevel: model.accessLevel
     }
   end
 end

@@ -1,17 +1,16 @@
-defmodule DiscoveryApi.Data.Dataset do
+defmodule DiscoveryApi.Data.Model do
   @moduledoc """
-  dataset utilities to persist and load.
+  utilities to persist and load discovery data models
   """
   alias DiscoveryApi.Data.Persistence
 
+  @behaviour Access
   defstruct [
     :id,
     :name,
     :title,
     :keywords,
-    :organization,
-    :organizationDetails,
-    :modified,
+    :modifiedDate,
     :fileTypes,
     :description,
     :systemName,
@@ -19,6 +18,7 @@ defmodule DiscoveryApi.Data.Dataset do
     :sourceType,
     :sourceFormat,
     :private,
+    :accessLevel,
     :lastUpdatedDate,
     :contactName,
     :contactEmail,
@@ -36,11 +36,14 @@ defmodule DiscoveryApi.Data.Dataset do
     :language,
     :referenceUrls,
     :categories,
+    :organization,
+    :organizationDetails,
+    :lastUpdatedDate,
     :downloads,
     :queries
   ]
 
-  @name_space "discovery-api:dataset:"
+  @name_space "discovery-api:model:"
 
   def get_all() do
     (@name_space <> "*")
@@ -62,13 +65,13 @@ defmodule DiscoveryApi.Data.Dataset do
     |> Persistence.get()
   end
 
-  def save(%__MODULE__{} = dataset) do
-    dataset_to_save =
-      dataset
+  def save(%__MODULE__{} = model) do
+    model_to_save =
+      model
       |> default_nil_field_to(:keywords, [])
       |> Map.from_struct()
 
-    Persistence.persist(@name_space <> dataset.id, dataset_to_save)
+    Persistence.persist(@name_space <> model.id, model_to_save)
   end
 
   defp map_from_json(nil), do: nil
@@ -77,10 +80,10 @@ defmodule DiscoveryApi.Data.Dataset do
     Jason.decode!(json, keys: :atoms)
   end
 
-  defp default_nil_field_to(dataset, field, default) do
-    case Map.get(dataset, field) do
-      nil -> Map.put(dataset, field, default)
-      _ -> dataset
+  defp default_nil_field_to(model, field, default) do
+    case Map.get(model, field) do
+      nil -> Map.put(model, field, default)
+      _ -> model
     end
   end
 
@@ -90,17 +93,17 @@ defmodule DiscoveryApi.Data.Dataset do
     struct(__MODULE__, map)
   end
 
-  defp add_counts_to_struct(dataset) when dataset == nil, do: nil
+  defp add_counts_to_struct(model) when model == nil, do: nil
 
-  defp add_counts_to_struct(dataset) do
-    values_to_add = Enum.into(get_count_maps(dataset.id), %{})
-    struct(dataset, values_to_add)
+  defp add_counts_to_struct(model) do
+    values_to_add = Enum.into(get_count_maps(model.id), %{})
+    struct(model, values_to_add)
   end
 
   defp add_last_updated_date_to_struct(nil), do: nil
 
-  defp add_last_updated_date_to_struct(dataset) do
-    struct(dataset, %{lastUpdatedDate: get_last_updated_date(dataset.id)})
+  defp add_last_updated_date_to_struct(model) do
+    struct(model, %{lastUpdatedDate: get_last_updated_date(model.id)})
   end
 
   def get_count_maps(dataset_id) do
@@ -116,4 +119,12 @@ defmodule DiscoveryApi.Data.Dataset do
         end)
     end
   end
+
+  def fetch(term, key), do: Map.fetch(term, key)
+
+  def get_and_update(data, key, func) do
+    Map.get_and_update(data, key, func)
+  end
+
+  def pop(data, key), do: Map.pop(data, key)
 end

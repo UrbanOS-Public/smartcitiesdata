@@ -1,21 +1,21 @@
-defmodule DiscoveryApi.Search.DatasetFacinator do
+defmodule DiscoveryApi.Search.DataModelFacinator do
   @moduledoc false
-  def get_facets(datasets) do
+  def extract_facets(models) do
     %{
-      organization: unique_facets_with_count(datasets, :organization),
-      keywords: unique_facets_with_count(datasets, :keywords)
+      organization: unique_facets_with_count(models, :organization),
+      keywords: unique_facets_with_count(models, :keywords)
     }
   end
 
-  defp unique_facets_with_count(datasets, facet_type) do
-    datasets
+  defp unique_facets_with_count(models, facet_type) do
+    models
     |> extract_facets(facet_type)
     |> Enum.reduce(%{}, &count_facet_occurrences/2)
     |> Enum.map(fn {facet, count} -> %{name: facet, count: count} end)
   end
 
-  defp extract_facets(datasets, facet_type) do
-    datasets
+  defp extract_facets(models, facet_type) do
+    models
     |> Enum.map(&Map.get(&1, facet_type))
     |> List.flatten()
   end

@@ -8,15 +8,15 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
   end
 
   def fetch_presto(conn, _params, "csv") do
-    table = conn.assigns.dataset.systemName
+    table = conn.assigns.model.systemName
 
     columns = fetch_columns(table)
 
-    download(conn, conn.assigns.dataset.id, table, columns)
+    download(conn, conn.assigns.model.id, table, columns)
   end
 
   def fetch_presto(conn, _params, "json") do
-    table = conn.assigns.dataset.systemName
+    table = conn.assigns.model.systemName
 
     data =
       "select * from #{table}"
@@ -24,11 +24,11 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
       |> Stream.map(&Jason.encode!/1)
       |> Stream.intersperse(",")
 
-    DatasetMetricsService.record_api_hit("downloads", conn.assigns.dataset.id)
+    DatasetMetricsService.record_api_hit("downloads", conn.assigns.model.id)
 
     [["["], data, ["]"]]
     |> Stream.concat()
-    |> stream_data(conn, conn.assigns.dataset.id, get_format(conn))
+    |> stream_data(conn, conn.assigns.model.id, get_format(conn))
   end
 
   defp fetch_columns(nil), do: nil

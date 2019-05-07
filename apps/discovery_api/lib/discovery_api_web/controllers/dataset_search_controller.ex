@@ -5,7 +5,7 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
   use DiscoveryApiWeb, :controller
   alias DiscoveryApiWeb.Services.AuthService
 
-  alias DiscoveryApi.Search.{FacetFilterator, DatasetFacinator, DatasetSearchinator}
+  alias DiscoveryApi.Search.{DataModelFilterator, DataModelFacinator, DataModelSearchinator}
 
   def search(conn, params) do
     sort_by = Map.get(params, "sort", "name_asc")
@@ -15,15 +15,15 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
     with {:ok, offset} <- extract_int_from_params(params, "offset", 0),
          {:ok, limit} <- extract_int_from_params(params, "limit", 10),
          {:ok, filter_facets} <- validate_facets(facets),
-         search_result <- DatasetSearchinator.search(query),
-         filtered_result <- FacetFilterator.filter_by_facets(search_result, filter_facets),
-         authorized_results <- remove_unauthorized_datasets(conn, filtered_result),
-         dataset_facets <- DatasetFacinator.get_facets(authorized_results) do
+         search_result <- DataModelSearchinator.search(query),
+         filtered_result <- DataModelFilterator.filter_by_facets(search_result, filter_facets),
+         authorized_results <- remove_unauthorized_models(conn, filtered_result),
+         facets <- DataModelFacinator.extract_facets(authorized_results) do
       render(
         conn,
         :search_dataset_summaries,
-        datasets: authorized_results,
-        facets: dataset_facets,
+        models: authorized_results,
+        facets: facets,
         sort: sort_by,
         offset: offset,
         limit: limit
@@ -34,9 +34,9 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
     end
   end
 
-  defp remove_unauthorized_datasets(conn, filtered_result) do
+  defp remove_unauthorized_models(conn, filtered_models) do
     username = AuthService.get_user(conn)
-    Enum.filter(filtered_result, fn dataset -> AuthService.has_access?(dataset, username) end)
+    Enum.filter(filtered_models, &AuthService.has_access?(&1, username))
   end
 
   defp validate_facets(map) do
