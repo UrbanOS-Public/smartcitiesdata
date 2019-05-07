@@ -31,6 +31,24 @@ defmodule Reaper.ExtractorTest do
       assert ~s|one,two,three\n1,2,3\n| == File.read!(filename)
     end
 
+    test "downloads csvs to file in download direction when", %{bypass: bypass} do
+      Application.put_env(:reaper, :download_dir, "/tmp/")
+      on_exit(fn -> Application.delete_env(:reaper, :download_dir) end)
+
+      Bypass.stub(bypass, "HEAD", "/1.2/data.csv", fn conn ->
+        Plug.Conn.resp(conn, 200, ~s|one,two,three\n1,2,3\n|)
+      end)
+
+      Bypass.stub(bypass, "GET", "/1.2/data.csv", fn conn ->
+        Plug.Conn.resp(conn, 200, ~s|one,two,three\n1,2,3\n|)
+      end)
+
+      {:file, filename} = Extractor.extract("http://localhost:#{bypass.port}/1.2/data.csv", "csv")
+
+      assert "/tmp/#{inspect(self())}" == filename
+      assert ~s|one,two,three\n1,2,3\n| == File.read!(filename)
+    end
+
     test "follows 302 redirects and downloads csv file to local filesystem", %{bypass: bypass} do
       Bypass.expect(bypass, "HEAD", "/some/csv-file.csv", fn conn ->
         Phoenix.Controller.redirect(conn, external: "http://localhost:#{bypass.port}/some/other/csv-file.csv")
