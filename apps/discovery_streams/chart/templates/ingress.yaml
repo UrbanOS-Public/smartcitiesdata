@@ -23,3 +23,10 @@ spec:
         backend:
           serviceName: {{ .Chart.Name }}
           servicePort: {{ .Values.service.port }}
+  - host: streams.{{ .Values.ingress.root_dns_zone }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ .Chart.Name }}
+          servicePort: {{ .Values.service.port }}
