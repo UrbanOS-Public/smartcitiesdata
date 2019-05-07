@@ -39,7 +39,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
      }}
   end
 
-  describe "to_podms with all fields" do
+  describe "GET with all fields" do
     setup %{conn: conn, model: model} do
       allow Model.get_all(), return: [model]
       [result] = conn |> get("/api/v1/data_json") |> json_response(200) |> Map.get("dataset")
@@ -93,7 +93,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
     end
   end
 
-  describe "to_podms with only required fields" do
+  describe "GET with only required fields" do
     test "drops optional fields with nil value", %{conn: conn} do
       model = %Model{
         id: "myfancydata",

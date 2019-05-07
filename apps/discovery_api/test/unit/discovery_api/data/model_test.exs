@@ -1,4 +1,4 @@
-defmodule ModelTest do
+defmodule DiscoveryApi.Data.ModelTest do
   use ExUnit.Case
   use Placebo
   alias DiscoveryApi.Data.{Model, Persistence}

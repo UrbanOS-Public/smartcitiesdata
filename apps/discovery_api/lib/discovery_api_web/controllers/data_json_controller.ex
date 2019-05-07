@@ -2,7 +2,6 @@ defmodule DiscoveryApiWeb.DataJsonController do
   use DiscoveryApiWeb, :controller
   alias DiscoveryApi.Data.Model
 
-  @spec get_data_json(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_data_json(conn, _params) do
     case Model.get_all() do
       [] ->
