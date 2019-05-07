@@ -35,8 +35,8 @@ defmodule Flair.DivoPresto do
             ~s(curl -s http://localhost:8080/v1/info | grep -q '"starting":false')
           ],
           interval: "10s",
-          timeout: "30s",
-          retries: 10
+          timeout: "60s",
+          retries: 20
         }
       }
     }
