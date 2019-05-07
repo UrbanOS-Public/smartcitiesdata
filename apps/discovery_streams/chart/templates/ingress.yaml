@@ -16,14 +16,7 @@ spec:
     serviceName: {{ .Chart.Name }}
     servicePort: {{ .Values.service.port }}
   rules:
-  - host: socket.{{ .Values.ingress.dnsZone }}
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: {{ .Chart.Name }}
-          servicePort: {{ .Values.service.port }}
-  - host: streaming.{{ .Values.ingress.dnsZone }}
+  - host: streams.{{ .Values.ingress.dnsZone }}
     http:
       paths:
       - path: /
