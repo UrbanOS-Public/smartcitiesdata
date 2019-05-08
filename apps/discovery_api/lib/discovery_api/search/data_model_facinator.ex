@@ -9,12 +9,12 @@ defmodule DiscoveryApi.Search.DataModelFacinator do
 
   defp unique_facets_with_count(models, facet_type) do
     models
-    |> extract_facets(facet_type)
+    |> extract_facet_values(facet_type)
     |> Enum.reduce(%{}, &count_facet_occurrences/2)
     |> Enum.map(fn {facet, count} -> %{name: facet, count: count} end)
   end
 
-  defp extract_facets(models, facet_type) do
+  defp extract_facet_values(models, facet_type) do
     models
     |> Enum.map(&Map.get(&1, facet_type))
     |> List.flatten()
