@@ -11,23 +11,12 @@ defmodule DiscoveryApiWeb.DataJsonController do
         render(
           conn,
           :get_data_json,
-          models: result,
-          base_url: determine_base_url()
+          models: result
         )
     end
   end
 
   defp is_public?(%Model{} = model) do
     model.private == false
-  end
-
-  defp determine_base_url() do
-    host =
-      Application.get_env(
-        :discovery_api,
-        DiscoveryApiWeb.Endpoint
-      )[:url][:host]
-
-    "https://data.#{host}"
   end
 end

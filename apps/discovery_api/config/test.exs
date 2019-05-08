@@ -3,7 +3,7 @@ use Mix.Config
 config :discovery_api, DiscoveryApiWeb.Endpoint,
   http: [port: 4001],
   server: false,
-  url: [host: "tests.example.com", port: {:system, "PORT"}]
+  url: [host: "data.tests.example.com", port: 80]
 
 config :discovery_api,
   test_mode: true

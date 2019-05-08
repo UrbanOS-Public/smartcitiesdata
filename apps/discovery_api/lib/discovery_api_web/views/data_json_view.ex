@@ -2,19 +2,19 @@ defmodule DiscoveryApiWeb.DataJsonView do
   use DiscoveryApiWeb, :view
   alias DiscoveryApi.Data.Model
 
-  def render("get_data_json.json", %{models: models, base_url: base_url}) do
-    translate_to_open_data_schema(models, base_url)
+  def render("get_data_json.json", %{models: models}) do
+    translate_to_open_data_schema(models)
   end
 
-  defp translate_to_open_data_schema(models, base_url) do
+  defp translate_to_open_data_schema(models) do
     %{
       conformsTo: "https://project-open-data.cio.gov/v1.1/schema",
       "@context": "https://project-open-data.cio.gov/v1.1/schema/catalog.jsonld",
-      dataset: Enum.map(models, &translate_to_dataset(&1, base_url))
+      dataset: Enum.map(models, &translate_to_dataset/1)
     }
   end
 
-  defp translate_to_dataset(%Model{} = model, base_url) do
+  defp translate_to_dataset(%Model{} = model) do
     %{
       "@type" => "dcat:Dataset",
       "identifier" => model.id,
@@ -39,12 +39,12 @@ defmodule DiscoveryApiWeb.DataJsonView do
       "distribution" => [
         %{
           "@type" => "dcat:Distribution",
-          "accessURL" => "#{base_url}/api/v1/dataset/#{model.id}/download?_format=json",
+          "accessURL" => "#{DiscoveryApiWeb.Endpoint.url()}/api/v1/dataset/#{model.id}/download?_format=json",
           "mediaType" => "application/json"
         },
         %{
           "@type" => "dcat:Distribution",
-          "accessURL" => "#{base_url}/api/v1/dataset/#{model.id}/download?_format=csv",
+          "accessURL" => "#{DiscoveryApiWeb.Endpoint.url()}/api/v1/dataset/#{model.id}/download?_format=csv",
           "mediaType" => "text/csv"
         }
       ],

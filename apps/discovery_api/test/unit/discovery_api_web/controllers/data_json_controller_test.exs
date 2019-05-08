@@ -92,7 +92,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
     test "correctly includes configured hostname for json distribution", %{model: model, results: [result | _]} do
       distribution = result["distribution"] |> Enum.find(fn dist -> dist["mediaType"] == "application/json" end)
 
-      assert "https://data.tests.example.com/api/v1/dataset/#{model.id}/download?_format=json" ==
+      assert "http://data.tests.example.com/api/v1/dataset/#{model.id}/download?_format=json" ==
                distribution["accessURL"]
 
       assert "dcat:Distribution" == distribution["@type"]
@@ -101,7 +101,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
     test "correctly includes configured hostname for csv distribution", %{model: model, results: [result | _]} do
       distribution = result["distribution"] |> Enum.find(fn dist -> dist["mediaType"] == "text/csv" end)
 
-      assert "https://data.tests.example.com/api/v1/dataset/#{model.id}/download?_format=csv" ==
+      assert "http://data.tests.example.com/api/v1/dataset/#{model.id}/download?_format=csv" ==
                distribution["accessURL"]
 
       assert "dcat:Distribution" == distribution["@type"]

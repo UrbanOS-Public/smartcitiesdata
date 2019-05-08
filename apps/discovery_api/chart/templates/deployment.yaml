@@ -31,7 +31,7 @@ spec:
           - name: PRESTO_SCHEMA
             value: {{ .Values.presto.schema }}
           - name: HOST
-            value: {{ .Values.ingress.dnsZone }}
+            value: data.{{ .Values.ingress.rootDnsZone }}
           - name: LDAP_HOST
             valueFrom:
               secretKeyRef:
