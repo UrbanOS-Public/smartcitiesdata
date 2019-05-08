@@ -8,7 +8,7 @@ defmodule Reaper.Extractor do
   plug(Tesla.Middleware.Retry, delay: 500, max_retries: 10)
 
   def extract(url, "csv") do
-    filename = inspect(self())
+    filename = determine_filename()
     file = File.open!(filename, [:write])
 
     url
@@ -34,6 +34,10 @@ defmodule Reaper.Extractor do
     end
   end
 
+  defp determine_filename() do
+    Application.get_env(:reaper, :download_dir, "") <> "#{inspect(self())}"
+  end
+
   defp follow_redirect(url) do
     case HTTPoison.head(url) do
       {:ok, %HTTPoison.Response{status_code: status_code} = response} when status_code in [301, 302] ->
@@ -49,7 +53,7 @@ defmodule Reaper.Extractor do
   defp location(%HTTPoison.Response{headers: headers}) do
     {_location, url} =
       headers
-      |> Enum.find(fn {key, value} -> String.downcase(key) == "location" end)
+      |> Enum.find(fn {key, _value} -> String.downcase(key) == "location" end)
 
     url
   end
