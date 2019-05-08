@@ -10,20 +10,21 @@ defmodule DiscoveryApiWeb.DatasetSearchView do
         offset: offset,
         limit: limit
       }) do
-    paged_sorted_datasets =
+    datasets =
       models
       |> sort_models(sort_by)
-      |> paginate(offset, limit)
       |> Enum.map(&translate_to_dataset/1)
+
+    paginated_datasets = paginate(datasets, offset, limit)
 
     %{
       "metadata" => %{
-        "totalDatasets" => Enum.count(paged_sorted_datasets),
+        "totalDatasets" => Enum.count(datasets),
         "facets" => facets,
         "limit" => limit,
         "offset" => offset
       },
-      "results" => paged_sorted_datasets
+      "results" => paginated_datasets
     }
   end
 

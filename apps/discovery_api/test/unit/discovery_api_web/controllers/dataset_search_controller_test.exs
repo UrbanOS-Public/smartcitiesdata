@@ -27,6 +27,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
         [:params, :selector, :result],
         [[sort: "name_asc"], ["metadata", "totalDatasets"], 2],
         [[sort: "name_asc", limit: "5"], ["metadata", "limit"], 5],
+        [[sort: "name_asc", limit: "1"], ["metadata", "totalDatasets"], 2],
         [[sort: "name_asc"], ["metadata", "limit"], 10],
         [[sort: "name_asc", offset: "5"], ["metadata", "offset"], 5],
         [[sort: "name_asc"], ["metadata", "offset"], 0],
