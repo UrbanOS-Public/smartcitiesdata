@@ -1,43 +1,44 @@
-defmodule DiscoveryApi.Search.DatasetSearchinatorTest do
+defmodule DiscoveryApi.Search.DataModelSearchinatorTest do
   use ExUnit.Case
   use Placebo
   import Checkov
 
-  alias DiscoveryApi.Search.DatasetSearchinator
+  alias DiscoveryApi.Search.DataModelSearchinator
   alias DiscoveryApi.Test.Helper
+  alias DiscoveryApi.Data.Model
 
   describe "search/1" do
     setup do
-      mock_dataset_summaries = [
-        Helper.sample_dataset(%{
+      mock_models = [
+        Helper.sample_model(%{
           id: 1,
           title: "Jarred love pdf",
           description: "Something super cool, sometimes",
           organization: "Paul Co.",
           keywords: ["stuff", "thIngs"]
         }),
-        Helper.sample_dataset(%{
+        Helper.sample_model(%{
           id: 2,
           title: "Jessie hates/loves paperwork",
           description: "Cool beans",
           organization: "Mia Co.",
           keywords: ["stuff town"]
         }),
-        Helper.sample_dataset(%{
+        Helper.sample_model(%{
           id: 3,
           title: "This one has no description, sometimes",
           organization: "Ben Co."
         }),
-        Helper.sample_dataset(%{id: 4, organization: "testOrg"}),
-        Helper.sample_dataset(%{id: 5, organization: "Bogus"})
+        Helper.sample_model(%{id: 4, organization: "testOrg"}),
+        Helper.sample_model(%{id: 5, organization: "Bogus"})
       ]
 
-      allow(DiscoveryApi.Data.Dataset.get_all(), return: mock_dataset_summaries)
+      allow(Model.get_all(), return: mock_models)
       :ok
     end
 
     data_test("partial matches #{description}") do
-      results = DatasetSearchinator.search(search_term)
+      results = DataModelSearchinator.search(search_term)
 
       actual_ids = Enum.map(results, &Map.get(&1, :id))
 
@@ -53,7 +54,7 @@ defmodule DiscoveryApi.Search.DatasetSearchinatorTest do
         ["super", [1], "based on description"],
         ["testor", [4], "based on organization"],
         ["stuff town", [1, 2], "based on keywords"],
-        ["Ben", [3], "when dataset is missing a field (description)"],
+        ["Ben", [3], "when model is missing a field (description)"],
         ["asdfasdfasdf", [], "are not returned when no matches are found"]
       ])
     end

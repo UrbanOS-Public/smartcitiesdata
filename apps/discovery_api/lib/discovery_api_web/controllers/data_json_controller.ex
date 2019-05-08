@@ -1,11 +1,22 @@
 defmodule DiscoveryApiWeb.DataJsonController do
   use DiscoveryApiWeb, :controller
-  alias DiscoveryApi.Data.ProjectOpenData
+  alias DiscoveryApi.Data.Model
 
   def get_data_json(conn, _params) do
-    case ProjectOpenData.get_all() do
-      nil -> render_error(conn, 404, "Not Found")
-      result -> render(conn, :get_data_json, datasets: result)
+    case Model.get_all() |> Enum.filter(&is_public?/1) do
+      [] ->
+        render_error(conn, 404, "Not Found")
+
+      result ->
+        render(
+          conn,
+          :get_data_json,
+          models: result
+        )
     end
+  end
+
+  defp is_public?(%Model{} = model) do
+    model.private == false
   end
 end

@@ -2,14 +2,16 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   import Checkov
+  alias DiscoveryApi.Data.Model
+  alias DiscoveryApi.Test.Helper
 
   setup do
     mock_dataset_summaries = [
-      generate_dataset("Paul", ~D(1970-01-01)),
-      generate_dataset("Richard", ~D(2001-09-09))
+      generate_model("Paul", ~D(1970-01-01)),
+      generate_model("Richard", ~D(2001-09-09))
     ]
 
-    allow(DiscoveryApi.Data.Dataset.get_all(), return: mock_dataset_summaries)
+    allow(Model.get_all(), return: mock_dataset_summaries)
     :ok
   end
 
@@ -102,14 +104,14 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
     end
   end
 
-  defp generate_dataset(id, date) do
-    %DiscoveryApi.Data.Dataset{
+  defp generate_model(id, date) do
+    Helper.sample_model(%{
       description: "#{id}-description",
       fileTypes: ["csv"],
       id: id,
       name: "#{id}-name",
       title: "#{id}-title",
-      modified: "#{date}",
+      modifiedDate: "#{date}",
       organization: "#{id} Co.",
       keywords: ["#{id} keywords"],
       organizationDetails: %{
@@ -117,6 +119,6 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
         orgName: "#{id}-org-name"
       },
       private: false
-    }
+    })
   end
 end

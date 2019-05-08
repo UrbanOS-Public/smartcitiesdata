@@ -10,7 +10,7 @@ System.put_env("HOST", host)
 
 endpoints = [{to_charlist(host), 9092}]
 
-config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: "integrationtests.example.com", port: {:system, "PORT"}]
+config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: "data.integrationtests.example.com", port: 80]
 
 config :discovery_api,
   divo: "test/integration/docker-compose.yaml",

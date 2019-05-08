@@ -1,63 +1,63 @@
 defmodule DiscoveryApiWeb.DatasetSearchView do
   @moduledoc false
   use DiscoveryApiWeb, :view
+  alias DiscoveryApi.Data.Model
 
   def render("search_dataset_summaries.json", %{
-        datasets: datasets,
+        models: models,
         facets: facets,
         sort: sort_by,
         offset: offset,
         limit: limit
       }) do
-    paged_sorted_data =
-      datasets
-      |> sort_datasets(sort_by)
+    paged_sorted_datasets =
+      models
+      |> sort_models(sort_by)
       |> paginate(offset, limit)
-      |> Enum.map(&Map.from_struct/1)
+      |> Enum.map(&translate_to_dataset/1)
 
     %{
       "metadata" => %{
-        "totalDatasets" => Enum.count(datasets),
+        "totalDatasets" => Enum.count(paged_sorted_datasets),
         "facets" => facets,
         "limit" => limit,
         "offset" => offset
       },
-      "results" => Enum.map(paged_sorted_data, fn dataset -> transform_dataset(dataset) end)
+      "results" => paged_sorted_datasets
     }
   end
 
-  defp transform_dataset(dataset) do
+  defp translate_to_dataset(%Model{} = model) do
     %{
-      id: dataset.id,
-      name: dataset.name,
-      title: dataset.title,
-      keywords: dataset.keywords,
-      systemName: dataset.systemName,
-      organization_title: dataset.organizationDetails.orgTitle,
-      organization_name: dataset.organizationDetails.orgName,
-      modified: dataset.modified,
-      fileTypes: dataset.fileTypes,
-      description: dataset.description,
-      sourceType: dataset.sourceType,
-      sourceUrl: dataset.sourceUrl,
-      lastUpdatedDate: dataset.lastUpdatedDate
+      id: model.id,
+      name: model.name,
+      title: model.title,
+      keywords: model.keywords,
+      systemName: model.systemName,
+      organization_title: model.organizationDetails.orgTitle,
+      organization_name: model.organizationDetails.orgName,
+      modified: model.modifiedDate,
+      fileTypes: model.fileTypes,
+      description: model.description,
+      sourceType: model.sourceType,
+      sourceUrl: model.sourceUrl,
+      lastUpdatedDate: model.lastUpdatedDate
     }
   end
 
-  defp sort_datasets(datasets, sort_by) do
-    case sort_by do
-      "name_asc" ->
-        Enum.sort_by(datasets, fn map -> String.downcase(map.title) end)
-
-      "name_desc" ->
-        Enum.sort_by(datasets, fn map -> String.downcase(map.title) end, &>=/2)
-
-      "last_mod" ->
-        Enum.sort_by(datasets, fn map -> map.modified end, &>=/2)
-    end
+  defp sort_models(models, "name_asc") do
+    Enum.sort_by(models, fn map -> String.downcase(map.title) end)
   end
 
-  defp paginate(datasets, offset, limit) do
-    Enum.slice(datasets, offset, limit)
+  defp sort_models(models, "name_desc") do
+    Enum.sort_by(models, fn map -> String.downcase(map.title) end, &>=/2)
+  end
+
+  defp sort_models(models, "last_mod") do
+    Enum.sort_by(models, fn map -> map.modifiedDate end, &>=/2)
+  end
+
+  defp paginate(models, offset, limit) do
+    Enum.slice(models, offset, limit)
   end
 end

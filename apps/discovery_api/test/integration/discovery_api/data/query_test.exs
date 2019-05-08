@@ -42,10 +42,6 @@ defmodule DiscoveryApi.Data.QueryTest do
     end)
 
     :ok
-
-    on_exit(fn ->
-      Redix.command!(:redix, ["FLUSHALL"])
-    end)
   end
 
   @moduletag capture_log: true

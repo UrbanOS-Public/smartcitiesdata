@@ -18,7 +18,7 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   pipeline :check_restricted do
-    plug(DiscoveryApiWeb.Plugs.GetDataset)
+    plug(DiscoveryApiWeb.Plugs.GetModel)
     plug(DiscoveryApi.Auth.Pipeline)
     plug(DiscoveryApiWeb.Plugs.Restrictor)
   end

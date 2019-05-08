@@ -1,6 +1,11 @@
 use Mix.Config
 
-config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: System.get_env("HOST"), port: System.get_env("PORT")]
+config :discovery_api, DiscoveryApiWeb.Endpoint,
+  url: [
+    scheme: "https",
+    host: System.get_env("HOST"),
+    port: 443
+  ]
 
 config :discovery_api,
   ldap_user: System.get_env("LDAP_USER"),

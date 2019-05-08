@@ -3,6 +3,8 @@ defmodule DiscoveryApiWeb.Services.AuthService do
   Provides authentication and authorization helper methods
   """
 
+  alias DiscoveryApi.Data.Model
+
   def get_user(conn) do
     case Guardian.Plug.current_claims(conn) do
       %{"sub" => uid} -> uid
@@ -10,9 +12,9 @@ defmodule DiscoveryApiWeb.Services.AuthService do
     end
   end
 
-  def has_access?(%{private: false} = _dataset, _username), do: true
+  def has_access?(%Model{private: false} = _dataset, _username), do: true
 
-  def has_access?(%{private: true, organizationDetails: %{dn: dn}} = _dataset, username) do
+  def has_access?(%Model{private: true, organizationDetails: %{dn: dn}} = _dataset, username) do
     dn
     |> get_members()
     |> Enum.member?(username)

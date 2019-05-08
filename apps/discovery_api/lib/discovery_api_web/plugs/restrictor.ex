@@ -11,7 +11,7 @@ defmodule DiscoveryApiWeb.Plugs.Restrictor do
   def call(conn, _) do
     username = AuthService.get_user(conn)
 
-    case AuthService.has_access?(conn.assigns.dataset, username) do
+    case AuthService.has_access?(conn.assigns.model, username) do
       true -> conn
       _ -> handle_unauthorized(conn)
     end

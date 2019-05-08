@@ -2,8 +2,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   import Checkov
-  alias SmartCity.TestDataGenerator, as: TDG
-  alias DiscoveryApi.Data.SystemNameCache
+  alias DiscoveryApi.Data.{Model, SystemNameCache}
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -12,10 +11,22 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
 
   describe "fetching csv data" do
     setup do
-      org = TDG.create_organization(id: "org-id", orgName: @org_name)
-      dataset = TDG.create_dataset(id: @dataset_id, technical: %{orgId: "org-id", dataName: @data_name})
-      allow SmartCity.Organization.get(any()), return: {:ok, org}
-      SystemNameCache.put(dataset)
+      model =
+        Helper.sample_model(%{
+          id: @dataset_id,
+          systemName: @system_name,
+          name: @data_name,
+          private: false,
+          lastUpdatedDate: nil,
+          queries: 7,
+          downloads: 9,
+          organizationDetails: %{
+            orgName: @org_name
+          }
+        })
+
+      allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
+      allow(Model.get(@dataset_id), return: model)
 
       allow(Prestige.execute("describe #{@system_name}"),
         return: []
@@ -29,12 +40,6 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
         return: [["id", "1", "4"], ["one", "2", "5"], ["two", "3", "6"]]
       )
 
-      count_keys = ["smart_registry:queries:count:#{@dataset_id}", "smart_registry:downloads:count:#{@dataset_id}"]
-      dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name, private: false})
-      allow(Redix.command!(:redix, ["GET", "discovery-api:dataset:#{@dataset_id}"]), return: dataset_json)
-      allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
-      allow(Redix.command!(:redix, ["MGET" | count_keys]), return: ["7", "9"])
-      allow(Redix.command!(:redix, ["KEYS", "smart_registry:*:count:#{@dataset_id}"]), return: count_keys)
       allow(Redix.command!(any(), any()), return: :does_not_matter)
 
       :ok
@@ -105,28 +110,27 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
 
   describe "fetching json data" do
     setup do
-      org = TDG.create_organization(id: "org-id", orgName: @org_name)
-
-      dataset =
-        TDG.create_dataset(
+      model =
+        Helper.sample_model(%{
           id: @dataset_id,
-          technical: %{orgId: org.id, dataName: @data_name, systemName: @system_name}
-        )
+          systemName: @system_name,
+          name: @data_name,
+          private: false,
+          lastUpdatedDate: nil,
+          queries: 7,
+          downloads: 9,
+          organizationDetails: %{
+            orgName: @org_name
+          }
+        })
 
-      allow SmartCity.Organization.get(any()), return: {:ok, org}
-      SystemNameCache.put(dataset)
+      allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
+      allow(Model.get(@dataset_id), return: model)
 
       allow(
         Prestige.execute("select * from #{@system_name}", rows_as_maps: true),
         return: [%{id: 1, name: "Joe", age: 21}, %{id: 2, name: "Robby", age: 32}]
       )
-
-      count_keys = ["smart_registry:queries:count:#{@dataset_id}", "smart_registry:downloads:count:#{@dataset_id}"]
-      dataset_json = Jason.encode!(%{id: @dataset_id, systemName: @system_name, private: false})
-      allow(Redix.command!(:redix, ["GET", "discovery-api:dataset:#{@dataset_id}"]), return: dataset_json)
-      allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
-      allow(Redix.command!(:redix, ["MGET" | count_keys]), return: ["7", "9"])
-      allow(Redix.command!(:redix, ["KEYS", "smart_registry:*:count:#{@dataset_id}"]), return: count_keys)
 
       allow(Redix.command!(any(), any()), return: :does_not_matter)
 
@@ -181,23 +185,25 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
 
   describe "download restricted dataset" do
     setup do
-      allow(Redix.command!(:redix, ["GET", "forklift:last_insert_date:#{@dataset_id}"]), return: nil)
-
       allow(Redix.command!(any(), any()), return: :does_not_matter)
 
-      organization = TDG.create_organization(%{dn: "cn=this_is_a_group,ou=Group"})
-
-      dataset =
-        Helper.sample_dataset(%{
+      model =
+        Helper.sample_model(%{
           id: @dataset_id,
+          systemName: @system_name,
+          name: @data_name,
           private: true,
-          organizationDetails: organization,
-          systemName: @system_name
+          lastUpdatedDate: nil,
+          queries: 7,
+          downloads: 9,
+          organizationDetails: %{
+            orgName: @org_name,
+            dn: "cn=this_is_a_group,ou=Group"
+          }
         })
 
-      allow DiscoveryApi.Data.Dataset.get(dataset.id), return: dataset
-
-      allow SmartCity.Organization.get(dataset.organizationDetails.id), return: organization
+      allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
+      allow(Model.get(@dataset_id), return: model)
 
       allow(Prestige.execute("describe #{@system_name}"),
         return: []

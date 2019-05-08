@@ -1,14 +1,15 @@
 defmodule DiscoveryApiWeb.DatasetSearchViewTest do
   use DiscoveryApiWeb.ConnCase, async: true
   import Phoenix.View
+  alias DiscoveryApi.Data.Model
 
   test "renders search_dataset_summaries.json" do
     actual =
       render(
         DiscoveryApiWeb.DatasetSearchView,
         "search_dataset_summaries.json",
-        datasets: [
-          %DiscoveryApi.Data.Dataset{
+        models: [
+          %Model{
             :id => 1,
             :name => "name",
             :title => "title",
@@ -16,7 +17,7 @@ defmodule DiscoveryApiWeb.DatasetSearchViewTest do
             :keywords => ["cat"],
             :organization => "org",
             :organizationDetails => %{orgName: "org_name", orgTitle: "org"},
-            :modified => "today",
+            :modifiedDate => "today",
             :fileTypes => ["csv", "pdf"],
             :description => "best ever",
             :sourceUrl => "http://example.com",
