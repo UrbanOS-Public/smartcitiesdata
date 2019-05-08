@@ -13,16 +13,17 @@ defmodule DiscoveryApi.Data.DataJsonTest do
     organization = TDG.create_organization(%{})
     Organization.write(organization)
 
-    dataset_one = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+    dataset_one = TDG.create_dataset(%{technical: %{orgId: organization.id, private: true}})
     Dataset.write(dataset_one)
 
     dataset_two = TDG.create_dataset(%{technical: %{orgId: organization.id}})
     Dataset.write(dataset_two)
 
+    dataset_three = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+    Dataset.write(dataset_three)
+
     Patiently.wait_for!(
-      fn ->
-        2 == get_map_from_url("http://localhost:4000/api/v1/data_json") |> dataset_count()
-      end,
+      fn -> public_datasets_available?(2) end,
       dwell: 1000,
       max_tries: 20
     )
@@ -37,6 +38,19 @@ defmodule DiscoveryApi.Data.DataJsonTest do
       {:error, errors} ->
         IO.puts("Failed:" <> inspect(errors))
         flunk(inspect(errors))
+    end
+  end
+
+  defp public_datasets_available?(count) do
+    datasets =
+      "http://localhost:4000/api/v1/data_json"
+      |> get_map_from_url()
+      |> Map.get("dataset")
+
+    if Enum.count(datasets) == count do
+      Enum.all?(datasets, fn dataset -> dataset["accessLevel"] == "public" end)
+    else
+      false
     end
   end
 

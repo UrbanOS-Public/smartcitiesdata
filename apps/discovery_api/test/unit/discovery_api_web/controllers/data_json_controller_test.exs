@@ -5,7 +5,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
   alias DiscoveryApi.Test.Helper
 
   setup do
-    model =
+    public_model =
       Helper.sample_model(%{
         id: "myfancydata",
         name: "my name",
@@ -30,24 +30,39 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
         language: "english or spanish or something",
         referenceUrls: ["a", "list", "of", "urls"],
         categories: ["things", "stuff", "other"],
-        accessLevel: "non-public"
+        accessLevel: "public",
+        private: false
+      })
+
+    private_model =
+      Helper.sample_model(%{
+        accessLevel: "non-public",
+        private: true
       })
 
     {:ok,
      %{
-       model: model
+       models: [private_model, public_model]
      }}
   end
 
   describe "GET with all fields" do
-    setup %{conn: conn, model: model} do
-      allow Model.get_all(), return: [model]
-      [result] = conn |> get("/api/v1/data_json") |> json_response(200) |> Map.get("dataset")
+    setup %{conn: conn, models: [_private_model, public_model] = models} do
+      allow Model.get_all(), return: models
+      results = conn |> get("/api/v1/data_json") |> json_response(200) |> Map.get("dataset")
 
-      {:ok, %{result: result}}
+      {:ok, %{model: public_model, results: results}}
     end
 
-    test "Should map fields", %{model: model, result: result} do
+    test "only a single dataset (the public one) is returned", %{results: results} do
+      assert 1 == Enum.count(results)
+    end
+
+    test "only the public dataset is exposed", %{results: [result | _]} do
+      assert "public" == result["accessLevel"]
+    end
+
+    test "maps fields of interest", %{model: model, results: [result | _]} do
       assert model.id == result["identifier"]
       assert model.title == result["title"]
       assert model.description == result["description"]
@@ -74,7 +89,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
       assert model.categories == result["theme"]
     end
 
-    test "Should create distribution for json", %{model: model, result: result} do
+    test "correctly includes configured hostname for json distribution", %{model: model, results: [result | _]} do
       distribution = result["distribution"] |> Enum.find(fn dist -> dist["mediaType"] == "application/json" end)
 
       assert "https://data.tests.example.com/api/v1/dataset/#{model.id}/download?_format=json" ==
@@ -83,7 +98,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
       assert "dcat:Distribution" == distribution["@type"]
     end
 
-    test "Should create distribution for csv", %{model: model, result: result} do
+    test "correctly includes configured hostname for csv distribution", %{model: model, results: [result | _]} do
       distribution = result["distribution"] |> Enum.find(fn dist -> dist["mediaType"] == "text/csv" end)
 
       assert "https://data.tests.example.com/api/v1/dataset/#{model.id}/download?_format=csv" ==
@@ -103,7 +118,8 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
         organization: "Organization 1",
         contactName: "Bob Jones",
         contactEmail: "bjones@example.com",
-        license: "The License"
+        license: "The License",
+        private: false
       }
 
       allow Model.get_all(), return: [model]

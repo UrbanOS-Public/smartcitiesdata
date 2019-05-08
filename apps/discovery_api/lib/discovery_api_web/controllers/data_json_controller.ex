@@ -3,7 +3,7 @@ defmodule DiscoveryApiWeb.DataJsonController do
   alias DiscoveryApi.Data.Model
 
   def get_data_json(conn, _params) do
-    case Model.get_all() do
+    case Model.get_all() |> Enum.filter(&is_public?/1) do
       [] ->
         render_error(conn, 404, "Not Found")
 
@@ -15,6 +15,10 @@ defmodule DiscoveryApiWeb.DataJsonController do
           base_url: determine_base_url()
         )
     end
+  end
+
+  defp is_public?(%Model{} = model) do
+    model.private == false
   end
 
   defp determine_base_url() do
