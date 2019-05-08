@@ -31,7 +31,7 @@
   "parse_trans": {:hex, :parse_trans, "3.3.0", "09765507a3c7590a784615cfd421d101aec25098d50b89d7aa1d66646bc571c1", [:rebar3], [], "hexpm"},
   "patiently": {:hex, :patiently, "0.2.0", "67eb139591e10c4b363ae0198e832552f191c58894731efd3bf124ec4722267a", [:mix], [], "hexpm"},
   "placebo": {:hex, :placebo, "1.2.1", "303ebb597279fd77b1f6d38ec377be4932f73246351f181d6128d0a58d3f74e9", [:mix], [{:meck, "~> 0.8.9", [hex: :meck, repo: "hexpm", optional: false]}], "hexpm"},
-  "prestige": {:hex, :prestige, "0.2.0", "e698263207ce800c908b51e191bc4926363a56fe7613ceecb1b6dd835ec03cfd", [:mix], [{:hackney, "~> 1.15", [hex: :hackney, repo: "hexpm", optional: false]}, {:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:tesla, "~> 1.2", [hex: :tesla, repo: "hexpm", optional: false]}], "hexpm:smartcolumbus_os"},
+  "prestige": {:hex, :prestige, "0.3.0", "0f7968d9313f55b5593e8f9a506aa15972088f180bed7d7f8004e4ad4e1aef77", [:mix], [{:hackney, "~> 1.15", [hex: :hackney, repo: "hexpm", optional: false]}, {:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:tesla, "~> 1.2", [hex: :tesla, repo: "hexpm", optional: false]}], "hexpm:smartcolumbus_os"},
   "recon": {:hex, :recon, "2.3.6", "2bcad0cf621fb277cabbb6413159cd3aa30265c2dee42c968697988b30108604", [:rebar3], [], "hexpm"},
   "redix": {:hex, :redix, "0.9.3", "c51d66657018a9b14f3b4496b1ba70ef6a16e8414cd19b34635242ac371beb95", [:mix], [], "hexpm"},
   "smart_city": {:hex, :smart_city, "2.1.0", "0f45d84afffd5dc0b709e8d6eccbcec0e4f5a4bd2a6920c0a7488a5cc2f2e26a", [:mix], [], "hexpm:smartcolumbus_os"},
