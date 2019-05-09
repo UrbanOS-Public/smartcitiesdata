@@ -26,8 +26,7 @@ defmodule DiscoveryApi.Data.Mapper do
       accessLevel: ternary(tech.private, "non-public", "public"),
       contactName: biz.contactName,
       contactEmail: biz.contactEmail,
-      license:
-        ternary(blank?(biz.license) and not tech.private, "http://opendefinition.org/licenses/cc-by/", biz.license),
+      license: ternary(blank?(biz.license) and not tech.private, "http://opendefinition.org/licenses/cc-by/", biz.license),
       rights: biz.rights,
       homepage: biz.homepage,
       spatial: biz.spatial,
