@@ -35,7 +35,6 @@ defmodule Reaper.Decoder do
 
       filename
       |> File.stream!()
-      |> setup_after_hook_for_deletion(filename)
       |> Stream.reject(fn line -> String.trim(line) == "" end)
       |> CsvParser.parse_stream(skip_headers: false)
       |> Stream.map(fn row -> keys |> Enum.zip(row) |> Map.new() end)
@@ -53,18 +52,5 @@ defmodule Reaper.Decoder do
 
   defp yeet_error(%ReaperConfig{dataset_id: dataset_id}, message, error) do
     Yeet.process_dead_letter(dataset_id, message, "Reaper", error: error)
-  end
-
-  defp setup_after_hook_for_deletion(stream, filename) do
-    Stream.resource(
-      fn -> :init end,
-      fn state ->
-        case state do
-          :init -> {stream, :done}
-          :done -> {:halt, :done}
-        end
-      end,
-      fn _ -> File.rm(filename) end
-    )
   end
 end

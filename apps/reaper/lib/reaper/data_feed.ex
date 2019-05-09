@@ -16,6 +16,8 @@ defmodule Reaper.DataFeed do
     |> RailStream.map(&cache(&1, cache))
     |> RailStream.each_error(&report_errors(&1, &2, config))
     |> record_last_fetched_timestamp(config.dataset_id, generated_time_stamp)
+  after
+    File.rm(config.dataset_id)
   end
 
   defp duplicate?({:duplicate, _message}), do: true
