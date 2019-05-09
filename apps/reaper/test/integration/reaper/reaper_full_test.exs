@@ -181,6 +181,8 @@ defmodule Reaper.FullTest do
         dwell: 1000,
         max_tries: 20
       )
+
+      assert false == File.exists?(dataset_id)
     end
 
     test "saves last_success_time to redis", %{bypass: bypass} do

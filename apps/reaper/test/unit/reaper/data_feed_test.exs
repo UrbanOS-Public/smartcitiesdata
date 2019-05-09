@@ -69,6 +69,16 @@ defmodule Reaper.DataFeedTest do
     end
   end
 
+  test "process/2 should remove file for dataset regardless of error being raised", %{config: config} do
+    allow Reaper.Cache.mark_duplicates(any(), any()), exec: fn _, _ -> raise "some error" end
+
+    assert_raise RuntimeError, fn ->
+      DataFeed.process(config, @cache_name)
+    end
+
+    assert false == File.exists?(config.dataset_id)
+  end
+
   test "process/2 should not record last fetched time if all records are errors", %{config: config} do
     allow Kaffe.Producer.produce_sync(any(), any()), return: {:error, :some_kafka_error}
     allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
