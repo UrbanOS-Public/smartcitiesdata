@@ -7,8 +7,8 @@ defmodule Reaper.Extractor do
   plug(Tesla.Middleware.FollowRedirects)
   plug(Tesla.Middleware.Retry, delay: 500, max_retries: 10)
 
-  def extract(url, "csv") do
-    filename = determine_filename()
+  def extract(url, dataset_id, "csv") do
+    filename = determine_filename(dataset_id)
     file = File.open!(filename, [:write])
 
     url
@@ -19,7 +19,7 @@ defmodule Reaper.Extractor do
     {:file, filename}
   end
 
-  def extract(url, _format) do
+  def extract(url, _dataset_id, _format) do
     case get(url) do
       {:ok, response} ->
         response.body
@@ -34,8 +34,8 @@ defmodule Reaper.Extractor do
     end
   end
 
-  defp determine_filename() do
-    Application.get_env(:reaper, :download_dir, "") <> "#{inspect(self())}"
+  defp determine_filename(dataset_id) do
+    Application.get_env(:reaper, :download_dir, "") <> dataset_id
   end
 
   defp follow_redirect(url) do
