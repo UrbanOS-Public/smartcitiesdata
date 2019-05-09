@@ -1,0 +1,14 @@
+FROM "vault"
+
+ENV VAULT_ADDR="http://0.0.0.0:8200" \
+    VAULT_DEV_ROOT_TOKEN=root-token
+
+RUN apk update && apk add supervisor
+RUN echo 'path "secret/*" { capabilities = ["create", "update", "read", "list"]}' > /access.hcl
+
+COPY setup-vault.sh /setup-vault.sh
+RUN chmod a+x /setup-vault.sh
+
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+CMD ["/usr/bin/supervisord"]

@@ -18,11 +18,10 @@ config :logger,
   level: :info
 
 config :reaper,
-  divo: [
-    {DivoKafka, [create_topics: "streaming-raw:1:1,streaming-dead-letters:1:1", outside_host: host]},
-    DivoRedis,
-    Reaper.DivoSftp
-  ],
+  divo: "./test/integration/docker-compose.yaml"
+    #   {DivoKafka, [create_topics: "streaming-raw:1:1,streaming-dead-letters:1:1", outside_host: host]},
+    #   DivoRedis,
+    #   Reaper.DivoSftp,
   divo_wait: [dwell: 700, max_tries: 50]
 
 config :smart_city_registry,

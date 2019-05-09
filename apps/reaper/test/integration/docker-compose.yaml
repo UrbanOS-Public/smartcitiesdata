@@ -1,0 +1,44 @@
+version: '3.4'
+services:
+  vault:
+    build:
+      context: .
+      dockerfile: Dockerfile.vault
+    image: vaulto-testo
+    environment:
+      LDAP_SERVER: ldap
+      USER_DN: ou=people,dc=example,dc=org
+      USER_ATTR: uid
+      GROUP: testgroup
+      GROUP_DN: ou=groups,dc=example,dc=org
+      GROUP_ATTR: memberOf
+      BIND_DN: uid=testuser,ou=people,dc=example,dc=org
+      BIND_PASS: testpass
+    cap_add:
+      - "IPC_LOCK"
+    ports:
+      - "8200:8200"
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "vault status -format=json | grep -q '\"sealed\": false' && vault status -format=json | grep -q '\"initialized\": true'"
+      interval: "5s"
+      timeout: "20s"
+      retries: "3"
+  ldap:
+    build:
+      context: .
+      dockerfile: Dockerfile.ldap
+    image: dapo-testo
+    command:
+      - "--copy-service"
+    ports:
+      - "389:389"
+      - "636:636"
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "ldapsearch -x -H ldap://localhost -b dc=example,dc=org -D 'cn=admin,dc=example,dc=org' -w admin"
+      interval: "5s"
+      timeout: "20s"
+      retries: "3"

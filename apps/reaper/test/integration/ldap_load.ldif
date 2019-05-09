@@ -1,0 +1,24 @@
+dn: ou=people, dc=example,dc=org
+ou: people
+description: All people in organisation
+objectclass: organizationalunit
+
+dn: ou=groups,dc=example,dc=org
+objectclass:organizationalunit
+ou: groups
+description: generic groups branch
+
+dn: cn=testgroup,ou=groups,dc=example,dc=org
+objectclass: groupofnames
+cn: testgroup
+description: Tester group
+member: cn=testuser,ou=people,dc=example,dc=com
+
+dn: cn=testuser, ou=people,dc=example,dc=org
+objectclass: inetOrgPerson
+cn: testuser
+sn: user
+uid: testuser
+userpassword: testpass
+mail: test.user@example.org
+description: swell guy
