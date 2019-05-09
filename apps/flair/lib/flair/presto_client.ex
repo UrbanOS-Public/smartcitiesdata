@@ -4,7 +4,6 @@ defmodule Flair.PrestoClient do
   """
 
   @table_name_timing Application.get_env(:flair, :table_name_timing, "operational_stats")
-  @table_name_quality Application.get_env(:flair, :table_name_quality, "dataset_quality")
 
   def get_create_timing_table_statement do
     """
@@ -24,20 +23,6 @@ defmodule Flair.PrestoClient do
     """
   end
 
-  def get_create_quality_table_statement do
-    """
-    CREATE TABLE IF NOT EXISTS #{@table_name_quality} (
-      dataset_id varchar,
-      schema_version varchar,
-      field varchar,
-      window_start varchar,
-      window_end varchar,
-      valid_values bigint,
-      records bigint
-    )
-    """
-  end
-
   def generate_statement_from_events(events) do
     table_name = get_table(events)
 
@@ -47,7 +32,6 @@ defmodule Flair.PrestoClient do
     |> create_insert_statement(table_name)
   end
 
-  defp get_table([%{valid_values: _} | _]), do: @table_name_quality
   defp get_table(_events), do: @table_name_timing
 
   def execute(statement) do
@@ -64,14 +48,6 @@ defmodule Flair.PrestoClient do
     """
     ('#{map.dataset_id}', '#{map.app}', '#{map.label}', #{map.timestamp},
      row(#{stats.count},#{stats.min},#{stats.max},#{stats.stdev},#{stats.average}))
-    """
-    |> String.replace("\n", "")
-  end
-
-  defp values_statement(map) do
-    """
-    ('#{map.dataset_id}', '#{map.schema_version}', '#{map.field}', '#{map.window_start}',
-    '#{map.window_end}', #{map.valid_values}, #{map.records})
     """
     |> String.replace("\n", "")
   end

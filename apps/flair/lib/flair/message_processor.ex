@@ -10,9 +10,6 @@ defmodule Flair.MessageProcessor do
   def handle_message_set(message_set, state) do
     tasks = [
       Task.async(fn ->
-        Flair.Producer.add_messages(:quality, message_set)
-      end),
-      Task.async(fn ->
         Flair.Producer.add_messages(:durations, message_set)
       end)
     ]
@@ -32,7 +29,7 @@ defmodule Flair.MessageProcessor do
     {:async_commit, state}
   end
 
-  def handle_info({:EXIT, pid, :normal}, state) do
+  def handle_info({:EXIT, _pid, :normal}, state) do
     {:noreply, state}
   end
 end

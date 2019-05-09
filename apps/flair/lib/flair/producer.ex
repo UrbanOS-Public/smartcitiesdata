@@ -28,9 +28,6 @@ defmodule Flair.Producer do
     Flair.PrestoClient.get_create_timing_table_statement()
     |> Flair.PrestoClient.execute()
 
-    Flair.PrestoClient.get_create_quality_table_statement()
-    |> Flair.PrestoClient.execute()
-
     {:producer, %State{}}
   end
 

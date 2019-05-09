@@ -3,17 +3,6 @@ defmodule Flair.ConsumerTest do
   use Placebo
 
   describe "handle_events/3" do
-    test "properly converts quality events" do
-      events = quality_events_input()
-      expected = quality_events_output()
-
-      allow(Flair.PrestoClient.generate_statement_from_events(any()), return: :ok)
-      allow(Flair.PrestoClient.execute(any()), return: :ok)
-
-      Flair.QualityConsumer.handle_events(events, nil, nil)
-      assert_called(Flair.PrestoClient.generate_statement_from_events(expected))
-    end
-
     test "properly converts duration events" do
       events = durations_events_input()
       expected = durations_events_output()
@@ -24,76 +13,6 @@ defmodule Flair.ConsumerTest do
       Flair.DurationsConsumer.handle_events(events, nil, nil)
       assert_called(Flair.PrestoClient.generate_statement_from_events(expected))
     end
-  end
-
-  defp quality_events_input() do
-    [
-      {"abc",
-       [
-         %{
-           dataset_id: "abc",
-           schema_version: "0.1",
-           field: "fun time",
-           window_start: "abc",
-           window_end: "xyz",
-           valid_values: 5,
-           records: 5
-         },
-         %{
-           dataset_id: "abc",
-           schema_version: "0.1",
-           field: "happy",
-           window_start: "abc",
-           window_end: "xyz",
-           valid_values: 4,
-           records: 5
-         }
-       ]},
-      {"456",
-       [
-         %{
-           dataset_id: "456",
-           schema_version: "0.1",
-           field: "id",
-           window_start: "456",
-           window_end: "xyz",
-           valid_values: 1,
-           records: 5
-         }
-       ]}
-    ]
-  end
-
-  defp quality_events_output() do
-    [
-      %{
-        dataset_id: "abc",
-        schema_version: "0.1",
-        field: "fun time",
-        window_start: "abc",
-        window_end: "xyz",
-        valid_values: 5,
-        records: 5
-      },
-      %{
-        dataset_id: "abc",
-        schema_version: "0.1",
-        field: "happy",
-        window_start: "abc",
-        window_end: "xyz",
-        valid_values: 4,
-        records: 5
-      },
-      %{
-        dataset_id: "456",
-        schema_version: "0.1",
-        field: "id",
-        window_start: "456",
-        window_end: "xyz",
-        valid_values: 1,
-        records: 5
-      }
-    ]
   end
 
   defp durations_events_input() do

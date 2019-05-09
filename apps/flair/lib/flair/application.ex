@@ -1,6 +1,6 @@
 defmodule Flair.Application do
   @moduledoc """
-  Flair starts flows for both quality and duration, as well as a connection to kafka.
+  Flair starts flows for any profiling needed, as well as a connection to kafka.
   """
 
   use Application
@@ -11,7 +11,6 @@ defmodule Flair.Application do
   def start(_type, _args) do
     children = [
       {Flair.DurationsFlow, []},
-      {Flair.QualityFlow, []},
       kafka_ex()
     ]
 

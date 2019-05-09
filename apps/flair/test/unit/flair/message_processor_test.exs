@@ -14,8 +14,6 @@ defmodule MessageProcessorTest do
     end
 
     test "When a task times out, returns error and aborts commit upstream" do
-      allow(Flair.Producer.add_messages(:quality, any()), return: true)
-
       allow(Flair.Producer.add_messages(:durations, any()),
         exec: fn _, _ -> Process.sleep(100) end
       )
@@ -32,8 +30,6 @@ defmodule MessageProcessorTest do
     @tag :capture_log
     test "When a task dies due to an error, returns error and aborts commit upstream" do
       Process.flag(:trap_exit, true)
-
-      allow(Flair.Producer.add_messages(:quality, any()), return: true)
 
       allow(Flair.Producer.add_messages(:durations, any()),
         exec: fn _, _ -> raise "errors and explosions" end
