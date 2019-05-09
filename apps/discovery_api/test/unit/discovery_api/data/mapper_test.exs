@@ -16,11 +16,14 @@ defmodule DiscoveryApi.Data.MapperTest do
 
       where([
         [:overrides, :field, :value],
-        [%{technical: %{private: false}}, [:license], "http://opendefinition.org/licenses/cc-by/"],
-        [%{technical: %{private: true}, business: %{license: "MIT"}}, [:license], "MIT"],
+        [%{technical: %{private: false}, business: %{license: nil}}, [:license], "http://opendefinition.org/licenses/cc-by/"],
+        [%{technical: %{private: true}, business: %{license: nil}}, [:license], nil],
+        [%{technical: %{private: false}, business: %{license: "overridden"}}, [:license], "overridden"],
+        [%{technical: %{private: true}, business: %{license: "overridden"}}, [:license], "overridden"],
         [%{technical: %{private: false}}, [:accessLevel], "public"],
         [%{technical: %{private: true}}, [:accessLevel], "non-public"],
-        [%{business: %{conformsToUri: "what"}}, [:conformsToUri], "https://project-open-data.cio.gov/v1.1/schema/"],
+        [%{business: %{conformsToUri: nil}}, [:conformsToUri], "https://project-open-data.cio.gov/v1.1/schema/"],
+        [%{business: %{conformsToUri: "overridden"}}, [:conformsToUri], "https://project-open-data.cio.gov/v1.1/schema/"],
         [%{technical: %{sourceFormat: "json"}}, [:fileTypes], ["JSON"]],
         [%{technical: %{sourceFormat: "gtfs"}}, [:fileTypes], ["JSON"]],
         [%{technical: %{sourceFormat: "cSv"}}, [:fileTypes], ["CSV"]]

@@ -50,7 +50,7 @@ defmodule DiscoveryApi.Mixfile do
       {:redix, "~> 0.9.3"},
       {:streaming_metrics, "~> 2.1.4", organization: "smartcolumbus_os"},
       {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
-      {:smart_city_test, "~> 0.2.3", only: [:test, :integration], organization: "smartcolumbus_os"},
+      {:smart_city_test, "~> 0.2.4", only: [:test, :integration], organization: "smartcolumbus_os"},
       {:temporary_env, "~> 2.0", only: :test, runtime: false}
     ]
   end
