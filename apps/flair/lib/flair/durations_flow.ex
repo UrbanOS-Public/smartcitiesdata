@@ -23,6 +23,7 @@ defmodule Flair.DurationsFlow do
     [{Flair.Producer, :durations}]
     |> Flow.from_specs()
     |> Flow.map(&get_message/1)
+    |> Flow.map(&add_overall_time/1)
     |> Flow.each(&log_message/1)
     |> partition_by_dataset_id_and_window()
     |> aggregate_by_dataset()
@@ -37,6 +38,25 @@ defmodule Flair.DurationsFlow do
 
   defp log_profile(profile) do
     Logger.info(fn -> "Calculated durations profile: #{inspect(profile)}" end)
+  end
+
+  defp add_overall_time(%Data{operational: %{timing: timing}} = msg) do
+    first_start = Enum.min_by(timing, &min_max(&1, :start_time))
+    last_end = Enum.max_by(timing, &min_max(&1, :end_time))
+
+    timing = Data.Timing.new("SmartCityOS", "EndToEnd", first_start.start_time, last_end.end_time)
+
+    Data.add_timing(msg, timing)
+  end
+
+  defp min_max(timing, key) do
+    timing
+    |> Map.get(key)
+    |> DateTime.from_iso8601()
+    |> case do
+      {:ok, date, 0} -> date
+      _ -> 0
+    end
   end
 
   defp partition_by_dataset_id_and_window(flow) do

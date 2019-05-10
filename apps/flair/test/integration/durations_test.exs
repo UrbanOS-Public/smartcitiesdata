@@ -44,6 +44,7 @@ defmodule DurationsTest do
 
     Patiently.wait_for!(
       prestige_query("select dataset_id, app from operational_stats", [
+        ["pirates", "SmartCityOS"],
         ["pirates", "valkyrie"]
       ]),
       dwell: 1000,
@@ -56,6 +57,7 @@ defmodule DurationsTest do
 
     Patiently.wait_for!(
       prestige_query("select dataset_id, app from operational_stats", [
+        ["pirates", "SmartCityOS"],
         ["pirates", "valkyrie"]
       ]),
       dwell: 1000,
