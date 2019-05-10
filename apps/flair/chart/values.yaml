@@ -36,7 +36,7 @@ affinity: {}
 
 flair:
   dlq_topic: streaming-dead-letters
-  data_topic: streaming-transformed
+  data_topic: streaming-persisted
 
 presto:
   user: "flair"
