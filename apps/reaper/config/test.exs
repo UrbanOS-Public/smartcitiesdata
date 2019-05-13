@@ -7,3 +7,9 @@ config :phoenix, :json_library, Jason
 
 config :yeet,
   topic: "dead-letters"
+
+config :kaffe,
+  producer: [
+    endpoints: [],
+    topics: []
+  ]
