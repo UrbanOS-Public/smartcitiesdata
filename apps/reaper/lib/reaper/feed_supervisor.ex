@@ -1,6 +1,6 @@
 defmodule Reaper.FeedSupervisor do
   @moduledoc """
-  Supervises feed ETL processes (`Reaper.DataFeedServer`) and their caches.
+  Supervises feed ETL processes (`Reaper.DataFeedScheduler`) and their caches.
   """
 
   use Supervisor
@@ -19,7 +19,7 @@ defmodule Reaper.FeedSupervisor do
 
     Logger.debug(fn -> "Starting #{__MODULE__} with children: #{inspect(children, pretty: true)}" end)
 
-    Supervisor.init(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_all)
   end
 
   def child_spec(%ReaperConfig{dataset_id: id} = reaper_config) do
@@ -35,7 +35,7 @@ defmodule Reaper.FeedSupervisor do
     "#{id}_feed"
     |> String.to_atom()
     |> find_child_by_id(supervisor_pid)
-    |> Reaper.DataFeedServer.update(reaper_config)
+    |> Reaper.DataFeedScheduler.update(reaper_config)
   end
 
   def create_child_spec(%{dataset_id: id} = reaper_config) do
@@ -59,7 +59,7 @@ defmodule Reaper.FeedSupervisor do
         id: feed_name,
         restart: restart_policy,
         start: {
-          Reaper.DataFeedServer,
+          Reaper.DataFeedScheduler,
           :start_link,
           [
             %{

@@ -1,4 +1,4 @@
-defmodule Reaper.DataFeedServer do
+defmodule Reaper.DataFeedScheduler do
   @moduledoc """
   An ETL process configured by `Reaper.ConfigServer` and supervised by `Reaper.FeedSupervisor`.
 

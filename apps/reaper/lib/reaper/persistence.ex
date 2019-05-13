@@ -45,6 +45,21 @@ defmodule Reaper.Persistence do
     Redix.command(:redix, ["SET", @name_space_derived <> dataset_id, ~s({"timestamp": "#{timestamp}"})])
   end
 
+  def get_last_processed_index(dataset_id) do
+    case Redix.command!(:redix, ["GET", "reaper:#{dataset_id}:last_processed_index"]) do
+      nil -> -1
+      last_processed_index -> String.to_integer(last_processed_index)
+    end
+  end
+
+  def record_last_processed_index(dataset_id, index) do
+    Redix.command!(:redix, ["SET", "reaper:#{dataset_id}:last_processed_index", index])
+  end
+
+  def remove_last_processed_index(dataset_id) do
+    Redix.command!(:redix, ["DEL", "reaper:#{dataset_id}:last_processed_index"])
+  end
+
   def get_last_fetched_timestamp(dataset_id) do
     json = Redix.command!(:redix, ["GET", @name_space_derived <> dataset_id])
     extract_timestamp(json)

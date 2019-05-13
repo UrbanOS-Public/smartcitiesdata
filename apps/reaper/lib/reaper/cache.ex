@@ -2,6 +2,10 @@ defmodule Reaper.Cache do
   @moduledoc false
   require Logger
 
+  defmodule CacheError do
+    defexception [:message]
+  end
+
   @spec mark_duplicates(atom(), any()) :: {:ok, any()} | {:duplicate, any()} | {:error, any()}
   def mark_duplicates(cache, value) do
     value
@@ -19,7 +23,7 @@ defmodule Reaper.Cache do
 
   defp put_in_cache({:ok, key}, cache) do
     case Cachex.put(cache, key, true) do
-      {:error, reason} -> {:error, {:cachex, reason}}
+      {:error, reason} -> raise CacheError, reason
       result -> result
     end
   end
@@ -28,7 +32,7 @@ defmodule Reaper.Cache do
 
   defp exists?({:ok, key}, cache) do
     case Cachex.exists?(cache, key) do
-      {:error, reason} -> {:error, {:cachex, reason}}
+      {:error, reason} -> raise CacheError, message: reason
       result -> result
     end
   end

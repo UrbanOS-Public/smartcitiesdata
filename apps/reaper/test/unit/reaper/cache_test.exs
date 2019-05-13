@@ -25,10 +25,12 @@ defmodule Reaper.CacheTest do
       ])
     end
 
-    test "returns {:error, {:cachex, reason}} when Cachex returns an error" do
-      allow Cachex.exists?(any(), any()), return: {:error, :some_reason}
+    test "raises exception when Cachex returns an error" do
+      allow Cachex.exists?(any(), any()), return: {:error, "some_reason"}
 
-      assert {:error, {:cachex, :some_reason}} == Cache.mark_duplicates(@cache, "dumb value")
+      assert_raise Cache.CacheError, "some_reason", fn ->
+        Cache.mark_duplicates(@cache, "dumb value")
+      end
     end
 
     test "returns {:error, {:json, reason}} when Jason.encode! returns an error" do
@@ -45,9 +47,11 @@ defmodule Reaper.CacheTest do
     end
 
     test "returns {:error, {:cachex, reason}} when Cachex returns an error" do
-      allow Cachex.put(any(), any(), any()), return: {:error, :some_reason}
+      allow Cachex.put(any(), any(), any()), return: {:error, "some_reason"}
 
-      assert {:error, {:cachex, :some_reason}} == Cache.cache(@cache, "dumb value")
+      assert_raise Cache.CacheError, "some_reason", fn ->
+        Cache.cache(@cache, "dumb value")
+      end
     end
 
     test "returns {:error, {:json, reason}} when Jason.encode! returns an error" do

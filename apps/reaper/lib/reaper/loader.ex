@@ -6,7 +6,6 @@ defmodule Reaper.Loader do
   def load(payload, reaper_config, start_time) do
     partitioner_module = determine_partitioner_module(reaper_config)
     key = partitioner_module.partition(payload, reaper_config.partitioner.query)
-
     send_to_kafka(payload, key, reaper_config, start_time)
   end
 
