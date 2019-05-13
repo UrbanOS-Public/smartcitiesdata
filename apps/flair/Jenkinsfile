@@ -76,13 +76,6 @@ node('infrastructure') {
 
 def deployTo(environment) {
     scos.withEksCredentials(environment) {
-        sh("""#!/bin/bash
-            set -e
-            helm init --client-only
-            helm upgrade --install flair \
-                ./chart \
-                --namespace=streaming-services \
-                --set image.tag="${env.GIT_COMMIT_HASH}" \
-        """.trim())
+        sh("deployment/deploy.sh ${env.GIT_COMMIT_HASH} ${environment}")
     }
 }
