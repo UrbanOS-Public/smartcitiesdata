@@ -3,15 +3,10 @@ defmodule DiscoveryApi.Search.DataModelSearchinator do
   alias DiscoveryApi.Data.Model
 
   def search(query \\ "") do
-    search_criteria = extract_search_criteria(query)
+    search_criteria = String.downcase(query)
 
-    Enum.filter(Model.get_all(), &satisfies_search_criteria?(&1, search_criteria))
-  end
-
-  defp extract_search_criteria(query) do
-    query
-    |> String.downcase()
-    |> String.split(" ")
+    Model.get_all()
+    |> Enum.filter(&satisfies_search_criteria?(&1, search_criteria))
   end
 
   defp satisfies_search_criteria?(%Model{} = model, search_criteria) do

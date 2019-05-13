@@ -15,7 +15,7 @@ defmodule DiscoveryApi.Search.DataModelSearchinatorTest do
           title: "Jarred love pdf",
           description: "Something super cool, sometimes",
           organization: "Paul Co.",
-          keywords: ["stuff", "thIngs"]
+          keywords: ["stuff", "thIngs", "town"]
         }),
         Helper.sample_model(%{
           id: 2,
@@ -47,13 +47,13 @@ defmodule DiscoveryApi.Search.DataModelSearchinatorTest do
       where([
         [:search_term, :expected_ids, :description],
         ["love", [1, 2], "based on same field (title)"],
-        ["jarred sometimes", [1, 3], "based on different field (title and description)"],
-        ["love Jarred", [1, 2], "with OR regardless of order"],
+        ["super cool", [1], "spaces are ANDs"],
+        ["jarred sometimes", [], "no total match"],
         ["jaRreD", [1], "based on a field, case insensitive"],
         ["description", [3], "based on title"],
         ["super", [1], "based on description"],
         ["testor", [4], "based on organization"],
-        ["stuff town", [1, 2], "based on keywords"],
+        ["stuff town", [2], "based on keywords, exact match"],
         ["Ben", [3], "when model is missing a field (description)"],
         ["asdfasdfasdf", [], "are not returned when no matches are found"]
       ])
