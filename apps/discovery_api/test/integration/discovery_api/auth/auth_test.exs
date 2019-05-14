@@ -187,16 +187,12 @@ defmodule DiscoveryApi.Auth.AuthTest do
       assert facets[:organization] == [%{count: 2, name: setup_map.private_model_1.organization}]
     end
 
-    test "filters out private datasets when the token is expired", setup_map do
-      %{status_code: _status_code, body: body} =
+    test "when the token is expired the response is a 404", setup_map do
+      %{status_code: status_code} =
         "http://localhost:4000/api/v1/dataset/search/"
         |> HTTPoison.get!(Authorization: "Bearer #{@inactive_token}")
 
-      %{results: results} = Jason.decode!(body, keys: :atoms)
-      result_ids = Enum.map(results, fn result -> result[:id] end)
-
-      assert Enum.member?(result_ids, setup_map[:public_model].id)
-      assert 1 == length(results)
+      assert status_code == 404
     end
 
     test "Allows access to private datasets when auth token provided and is permitted", setup_map do
