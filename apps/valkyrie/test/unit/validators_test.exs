@@ -1,6 +1,6 @@
 defmodule Valkyrie.ValidatorsTest do
   use ExUnit.Case
-
+  doctest Valkyrie.Validators
   alias Valkyrie.Validators
   alias SmartCity.TestDataGenerator, as: TDG
 

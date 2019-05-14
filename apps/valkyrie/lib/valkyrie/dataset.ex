@@ -7,10 +7,15 @@ defmodule Valkyrie.Dataset do
 
   @cache :dataset_cache
 
+  @spec cache_name() :: :dataset_cache
   def cache_name() do
     @cache
   end
 
+  @doc """
+    Insert a dataset into the cache
+  """
+  @spec put(SmartCity.Dataset.t()) :: Valkyrie.Dataset.t()
   def put(%SmartCity.Dataset{id: id} = dataset) do
     struct = to_struct(dataset)
     Cachex.put(@cache, id, struct)
@@ -18,6 +23,10 @@ defmodule Valkyrie.Dataset do
     struct
   end
 
+  @doc """
+    Retrieve a dataset from the cache
+  """
+  @spec get(String.t()) :: SmartCity.Dataset.t()
   def get(dataset_id) do
     case Cachex.get!(@cache, dataset_id) do
       nil -> sync_dataset(dataset_id)

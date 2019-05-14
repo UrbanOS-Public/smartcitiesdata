@@ -1,9 +1,15 @@
 defmodule Valkyrie.Validators do
-  @moduledoc false
+  @moduledoc """
+  Given a payload, valkyrie retrieves the schema and checks that every field in the schema has a non-null value in the payload.
+  """
 
   require Logger
   alias SmartCity.Data
 
+  @doc """
+   Check that the dataset's fields exist in the payload.
+  """
+  @spec validate(SmartCity.Data.t()) :: {:ok, SmartCity.Data.t()} | {:error, String.t()}
   def validate(%Data{dataset_id: id, payload: payload} = message) do
     %Valkyrie.Dataset{schema: schema} = Valkyrie.Dataset.get(id)
 
@@ -17,6 +23,19 @@ defmodule Valkyrie.Validators do
     end
   end
 
+  @doc """
+  Returns a list of fields that are in schema but do not exist in the payload.
+  # Examples
+        iex> schema = [
+        ...> %{name: "name", type: "string"},
+        ...> %{name: "age", type: "integer"},
+        ...> %{name: "hobbies", type: "list", itemType: "string"}
+        ...> ]
+        ...> payload = %{name: "Peggy", age: 37}
+        ...> Valkyrie.Validators.get_invalid_fields(payload, schema)
+        ["hobbies"]
+  """
+  @spec get_invalid_fields(map(), map()) :: list(String.t())
   def get_invalid_fields(payload, schema) do
     schema
     |> Enum.map(&get_invalid_field_or_header(&1, payload))

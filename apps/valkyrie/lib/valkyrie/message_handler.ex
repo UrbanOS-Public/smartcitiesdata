@@ -1,10 +1,16 @@
 require Logger
 
 defmodule Valkyrie.MessageHandler do
-  @moduledoc false
+  @moduledoc """
+  Handle incoming data messages
+  """
   alias SmartCity.Data
   alias Valkyrie.Validators
 
+  @doc """
+  Receives and validates a batch of data messages
+  """
+  @spec handle_messages(list(%{key: any(), value: any()})) :: :ok
   def handle_messages(messages) do
     Logger.info("#{__MODULE__}: Received #{length(messages)} messages.")
 
@@ -14,6 +20,10 @@ defmodule Valkyrie.MessageHandler do
     :ok
   end
 
+  @doc """
+  Validates a single data message
+  """
+  @spec handle_message(%{key: any(), value: any()}) :: any() | {:error, String.t()}
   def handle_message(%{key: key, value: value}) do
     start_time = Data.Timing.current_time()
 
