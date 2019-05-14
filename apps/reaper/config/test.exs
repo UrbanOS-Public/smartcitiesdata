@@ -13,3 +13,6 @@ config :kaffe,
     endpoints: [],
     topics: []
   ]
+
+config :reaper,
+  secrets_endpoint: "http://vault:8200"

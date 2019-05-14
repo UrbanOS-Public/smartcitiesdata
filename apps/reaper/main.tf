@@ -56,6 +56,8 @@ reaper:
 strimzi:
   kafka:
     brokers: "streaming-service-kafka-bootstrap.streaming-prime:9092"
+vault:
+  endpoint: "http://vault.vault:8200"
 EOF
 }
 

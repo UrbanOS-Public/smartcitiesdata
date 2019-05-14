@@ -40,6 +40,9 @@ if System.get_env("RUN_IN_KUBERNETES") do
     ]
 end
 
+config :reaper,
+  secrets_endpoint: System.get_env("SECRETS_ENDPOINT")
+
 config :smart_city_registry,
   redis: [
     host: redis_host
