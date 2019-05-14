@@ -10,15 +10,15 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
   def search(conn, params) do
     sort_by = Map.get(params, "sort", "name_asc")
     query = Map.get(params, "query", "")
-    facets = Map.get(params, "facets", %{})
+    selected_facets = Map.get(params, "facets", %{})
 
     with {:ok, offset} <- extract_int_from_params(params, "offset", 0),
          {:ok, limit} <- extract_int_from_params(params, "limit", 10),
-         {:ok, filter_facets} <- validate_facets(facets),
+         {:ok, filter_facets} <- validate_facets(selected_facets),
          search_result <- DataModelSearchinator.search(query),
          filtered_result <- DataModelFilterator.filter_by_facets(search_result, filter_facets),
          authorized_results <- remove_unauthorized_models(conn, filtered_result),
-         facets <- DataModelFacinator.extract_facets(authorized_results) do
+         facets <- DataModelFacinator.extract_facets(authorized_results, filter_facets) do
       render(
         conn,
         :search_dataset_summaries,

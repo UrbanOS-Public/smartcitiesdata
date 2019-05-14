@@ -85,6 +85,11 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
           [facets: %{organization: ["Richard Co."]}],
           ["results", Access.all(), "id"],
           ["Richard"]
+        ],
+        [
+          [facets: %{organization: ["Babs"], keywords: ["Fruit"]}],
+          ["metadata", "facets"],
+          %{"keywords" => [%{"name" => "Fruit", "count" => 0}], "organization" => [%{"name" => "Babs", "count" => 0}]}
         ]
       ])
     end
