@@ -22,7 +22,7 @@ config(:flair,
     DivoRedis,
     Flair.DivoPresto
   ],
-  divo_wait: [dwell: 800, max_tries: 50]
+  divo_wait: [dwell: 1000, max_tries: 60]
 )
 
 config :kaffe,
