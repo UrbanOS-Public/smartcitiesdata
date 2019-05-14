@@ -4,7 +4,7 @@ defmodule DiscoveryApi.Search.DataModelSearchinator do
 
   def search(query \\ "") do
     Model.get_all()
-    |> Enum.filter(fn model -> result?(model, query) end)
+    |> Enum.filter(&result?(&1, query))
   end
 
   defp result?(%Model{} = model, query) do
@@ -12,7 +12,7 @@ defmodule DiscoveryApi.Search.DataModelSearchinator do
 
     [model.title, model.description, model.organization, model.keywords]
     |> Enum.reject(&is_nil/1)
-    |> Enum.any?(fn value -> satisfies_search_criteria?(value, search_criteria) end)
+    |> Enum.any?(&satisfies_search_criteria?(&1, search_criteria))
   end
 
   defp satisfies_search_criteria?(value, query) when is_list(value) do
