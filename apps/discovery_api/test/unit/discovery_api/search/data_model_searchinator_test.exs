@@ -12,30 +12,30 @@ defmodule DiscoveryApi.Search.DataModelSearchinatorTest do
       models = [
         Helper.sample_model(%{
           id: 1,
-          title: "This is a testable title - FINDME",
-          description: "An wrong description",
-          organization: "My organization is a match",
+          title: "A B C findme",
+          description: "D E F",
+          organization: "G H I",
           keywords: ["one"]
         }),
         Helper.sample_model(%{
           id: 2,
-          title: "Test title should not be found",
-          description: "A description to match - FINDME",
-          organization: "My Organization",
+          title: "C D E",
+          description: "F G H findme",
+          organization: "I J K",
           keywords: ["two", "foo bar", "abc xyz"]
         }),
         Helper.sample_model(%{
           id: 3,
-          title: "This is a",
-          description: "A description",
-          organization: "Not the organization for me - FINDME",
-          keywords: ["three", "abc 123", "not the organization"]
+          title: "Blah blah blah",
+          description: nil,
+          organization: "K L M findme",
+          keywords: ["foo bar", "K", "three"]
         }),
         Helper.sample_model(%{
           id: 4,
-          title: "Blah blah blah",
+          title: "Hey hey",
           description: "",
-          organization: "",
+          organization: nil,
           keywords: ["findme"]
         })
       ]
@@ -51,17 +51,20 @@ defmodule DiscoveryApi.Search.DataModelSearchinatorTest do
 
       where([
         [:search_term, :field, :expected, :description],
-        ["this is a", "title", [1, 3], "spaces use AND logic"],
-        ["this IS a tEst", "title", [1], "case insensitive"],
-        ["a description", "description", [2, 3], "spaces use AND logic"],
-        ["a description To MATCH", "description", [2], "case insensitive"],
-        ["my organization", "organization", [1, 2], "spaces use AND logic"],
-        ["my Organization IS a Match", "organization", [1], "case insensitive"],
+        ["A C", "title", [1], "spaces use AND logic"],
+        ["A D", "title", [], "no match"],
+        ["a C", "title", [1], "case insensitive"],
+        ["c a", "title", [1], "order insensitive"],
+        ["c", "title", [1, 2], "multiple matches"],
+        ["f H", "description", [2], "spaces use AND logic"],
+        ["f H q", "description", [], "no match"],
+        ["m L", "organization", [3], "spaces use AND logic"],
+        ["m L q", "organization", [], "no match"],
         ["one three", "keywords", [1, 3], "spaces use OR logic"],
-        ["foo bar", "keywords", [2], "exact query match"],
+        ["foo bar", "keywords", [2, 3], "exact query match"],
         ["abc", "keywords", [], "no match"],
         ["findme", "all", [1, 2, 3, 4], "search across all fields"],
-        ["not the organization", "organization/keywords", [3], "one result per dataset"]
+        ["M", "organization/keywords", [3], "one result per dataset"]
       ])
     end
   end

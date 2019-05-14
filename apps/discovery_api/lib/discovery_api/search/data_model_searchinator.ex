@@ -20,9 +20,14 @@ defmodule DiscoveryApi.Search.DataModelSearchinator do
   end
 
   defp satisfies_search_criteria?(value, query) do
-    value
-    |> String.downcase()
-    |> String.contains?(query)
+    split =
+      value
+      |> String.downcase()
+      |> String.split()
+
+    query
+    |> String.split()
+    |> Enum.all?(fn search_term -> search_term in split end)
   end
 
   defp partial_match?(value, query) do
