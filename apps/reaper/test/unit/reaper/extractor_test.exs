@@ -1,7 +1,7 @@
 defmodule Reaper.ExtractorTest do
   use ExUnit.Case
   use Placebo
-  alias Reaper.Extractor
+  alias Reaper.{Extractor, ReaperConfig}
 
   describe "extract" do
     setup do
@@ -25,7 +25,7 @@ defmodule Reaper.ExtractorTest do
         )
       end)
 
-      actual = Extractor.extract("http://localhost:#{bypass.port}/1.1/statuses/update.csv")
+      actual = Extractor.extract(%ReaperConfig{sourceUrl: "http://localhost:#{bypass.port}/1.1/statuses/update.csv"})
 
       assert actual == ~s<one,two\n1,2\n>
     end
@@ -34,7 +34,7 @@ defmodule Reaper.ExtractorTest do
   describe "failure to extract" do
     test "Poison errors are bubbled up instead of masked as a match error" do
       assert_raise RuntimeError, fn ->
-        Extractor.extract("http://localhost:100/1.1/statuses/update.csv")
+        Extractor.extract(%ReaperConfig{sourceUrl: "http://localhost:100/1.1/statuses/update.csv"})
       end
     end
   end

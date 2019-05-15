@@ -5,8 +5,8 @@ defmodule Reaper.Extractor do
   plug(Tesla.Middleware.FollowRedirects)
   plug(Tesla.Middleware.Retry, delay: 500, max_retries: 10)
 
-  def extract("sftp" <> _rest = url) do
-    case Reaper.SftpExtractor.extract(url) do
+  def extract(%Reaper.ReaperConfig{dataset_id: id, sourceUrl: "sftp" <> _rest = url}) do
+    case Reaper.SftpExtractor.extract(id, url) do
       {:ok, data} ->
         data
 
@@ -15,7 +15,7 @@ defmodule Reaper.Extractor do
     end
   end
 
-  def extract(url) do
+  def extract(%Reaper.ReaperConfig{sourceUrl: url}) do
     case get(url) do
       {:ok, response} ->
         response.body

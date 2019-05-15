@@ -34,7 +34,7 @@ defmodule Reaper.CredentialRetrieverTest do
 
       assert capture_log(fn ->
                assert CredentialRetriever.retrieve(values.dataset_id) == {:error, :retrieve_credential_failed}
-             end) =~ ~s(Secret token file not found)
+             end) =~ "Secret token file not found"
     end
 
     test "returns error when vault service is unavailable", values do
@@ -42,23 +42,11 @@ defmodule Reaper.CredentialRetrieverTest do
       allow Vault.new(any()), return: values.vault
 
       allow Vault.auth(values.vault, %{role: values.role, jwt: values.jwt}),
-        return: {:error, ["Http adapter error", ":socket_closed_remotely"]}
+        return: {:error, ["Something bad happened"]}
 
       assert capture_log(fn ->
                assert CredentialRetriever.retrieve(values.dataset_id) == {:error, :retrieve_credential_failed}
-             end) =~ ~s(Http adapter error:socket_closed_remotely)
-    end
-
-    test "returns error when app role is invalid", values do
-      allow File.read("/var/run/secrets/kubernetes.io/serviceaccount/token"), return: {:ok, values.jwt}
-      allow Vault.new(any()), return: values.vault
-
-      allow Vault.auth(values.vault, %{role: values.role, jwt: values.jwt}),
-        return: {:error, ["invalid role name \"app-roe\""]}
-
-      assert capture_log(fn ->
-               assert CredentialRetriever.retrieve(values.dataset_id) == {:error, :retrieve_credential_failed}
-             end) =~ ~s(invalid role name "app-roe")
+             end) =~ "Something bad happened"
     end
   end
 end
