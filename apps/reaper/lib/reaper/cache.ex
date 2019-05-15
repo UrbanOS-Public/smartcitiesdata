@@ -2,24 +2,52 @@ defmodule Reaper.Cache do
   @moduledoc false
   require Logger
 
-  def dedupe(messages, cache_name) do
-    Enum.filter(messages, fn message -> is_not_cached(message, cache_name) end)
+  defmodule CacheError do
+    defexception [:message]
   end
 
-  def cache(messages, cache_name) do
-    Enum.each(messages, fn result -> add_to_cache(result, cache_name) end)
-    messages
+  @spec mark_duplicates(atom(), any()) :: {:ok, any()} | {:duplicate, any()} | {:error, any()}
+  def mark_duplicates(cache, value) do
+    value
+    |> format_key()
+    |> exists?(cache)
+    |> to_result(value)
   end
 
-  defp is_not_cached(value, cache) do
-    {:ok, result} = Cachex.exists?(cache, md5(Jason.encode!(value)))
-    not result
+  @spec cache(atom(), any()) :: {:ok, boolean()} | {:error, any()}
+  def cache(cache, value) do
+    value
+    |> format_key()
+    |> put_in_cache(cache)
   end
 
-  defp add_to_cache({:ok, value}, cache), do: Cachex.put(cache, md5(Jason.encode!(value)), true)
+  defp put_in_cache({:ok, key}, cache) do
+    case Cachex.put(cache, key, true) do
+      {:error, reason} -> raise CacheError, reason
+      result -> result
+    end
+  end
 
-  defp add_to_cache({:error, reason}, _cache) do
-    Logger.warn("Unable to write message to Kafka topic: #{inspect(reason)}")
+  defp put_in_cache({:error, _} = error, _cache), do: error
+
+  defp exists?({:ok, key}, cache) do
+    case Cachex.exists?(cache, key) do
+      {:error, reason} -> raise CacheError, message: reason
+      result -> result
+    end
+  end
+
+  defp exists?({:error, _} = error, _cache), do: error
+
+  defp to_result({:ok, false}, value), do: {:ok, value}
+  defp to_result({:ok, true}, value), do: {:duplicate, value}
+  defp to_result({:error, _} = error, _value), do: error
+
+  defp format_key(value) do
+    case Jason.encode(value) do
+      {:ok, value} -> {:ok, md5(value)}
+      {:error, reason} -> {:error, {:json, reason}}
+    end
   end
 
   defp md5(thing) do

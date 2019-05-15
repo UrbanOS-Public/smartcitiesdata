@@ -2,11 +2,13 @@ defmodule Reaper.FullTest do
   use ExUnit.Case
   use Divo
   use Tesla
+  use Placebo
   require Logger
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
   @pre_existing_dataset_id "00000-0000"
+  @partial_load_dataset_id "11111-1112"
 
   @json_file_name "vehicle_locations.json"
   @gtfs_file_name "gtfs-realtime.pb"
@@ -64,6 +66,60 @@ defmodule Reaper.FullTest do
             @pre_existing_dataset_id
             |> TestUtils.fetch_relevant_messages()
             |> List.last()
+
+          result == expected
+        end,
+        dwell: 1000,
+        max_tries: 20
+      )
+    end
+  end
+
+  describe "partial-existing dataset" do
+    setup %{bypass: bypass} do
+      Redix.command(:redix, ["FLUSHALL"])
+      {:ok, pid} = Agent.start_link(fn -> %{has_raised: false} end)
+
+      allow Reaper.Loader.load(any(), any(), any()),
+        meck_options: [:passthrough],
+        exec: fn value, config, timestamp ->
+          case {value, Agent.get(pid, fn s -> s.has_raised end)} do
+            {%{"my_string" => "Erin"}, false} ->
+              Agent.update(pid, fn s -> %{s | has_raised: true} end)
+              raise "Bring this thing down!"
+
+            _ ->
+              :meck.passthrough([value, config, timestamp])
+          end
+        end
+
+      pre_existing_dataset =
+        TDG.create_dataset(%{
+          id: @partial_load_dataset_id,
+          technical: %{
+            cadence: "once",
+            sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+            sourceFormat: "csv",
+            sourceType: "batch"
+          }
+        })
+
+      Dataset.write(pre_existing_dataset)
+      :ok
+    end
+
+    test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: bypass} do
+      expected = [
+        %{"my_date" => "Spot", "my_int" => "1", "my_string" => "Austin"},
+        %{"my_date" => "Bella", "my_int" => "2", "my_string" => "Erin"},
+        %{"my_date" => "Max", "my_int" => "3", "my_string" => "Ben"}
+      ]
+
+      Patiently.wait_for!(
+        fn ->
+          result =
+            @partial_load_dataset_id
+            |> fetch_relevant_messages()
 
           result == expected
         end,
@@ -175,6 +231,8 @@ defmodule Reaper.FullTest do
         dwell: 1000,
         max_tries: 20
       )
+
+      assert false == File.exists?(dataset_id)
     end
 
     test "saves last_success_time to redis", %{bypass: bypass} do

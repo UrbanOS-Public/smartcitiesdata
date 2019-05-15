@@ -51,3 +51,6 @@ config :redix,
 config :yeet,
   endpoint: endpoints,
   topic: System.get_env("DLQ_TOPIC")
+
+config :reaper,
+  download_dir: "/downloads/"

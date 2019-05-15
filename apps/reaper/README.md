@@ -99,7 +99,7 @@ by adding `reaper` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:reaper, "~> 0.1.2"}
+    {:reaper, "~> 0.1.6"}
   ]
 end
 ```

@@ -1,105 +1,105 @@
 defmodule Reaper.DataFeed do
-  @moduledoc """
-  An ETL process configured by `Reaper.ConfigServer` and supervised by `Reaper.FeedSupervisor`.
+  @moduledoc false
 
-  Extracts data from a given HTTP endpoint.
-  Transforms with a given module's `&transform/1` function.
-  Loads onto the "raw" Kafka topic.
-  """
+  alias Reaper.{Cache, Decoder, Extractor, Loader, UrlBuilder, Persistence, ReaperConfig, Persistence}
 
-  use GenServer
-  alias Reaper.{Cache, Decoder, Extractor, Loader, UrlBuilder, Util, Persistence}
-
-  ## CLIENT
-
-  def update(data_feed, state) do
-    GenServer.cast(data_feed, {:update, state})
-  end
-
-  def get(data_feed) do
-    GenServer.call(data_feed, :get)
-  end
-
-  ## SERVER
-
-  def start_link(args) do
-    GenServer.start_link(__MODULE__, args)
-  end
-
-  def init(%{pids: %{name: name}, reaper_config: reaper_config} = args) do
-    case reaper_config.cadence do
-      "once" ->
-        Process.send_after(self(), :work, 1)
-
-      _ ->
-        reaper_config
-        |> calculate_next_run_time()
-        |> schedule_work()
-    end
-
-    Horde.Registry.register(Reaper.Registry, name)
-
-    {:ok, args}
-  end
-
-  def handle_info(:work, %{pids: %{cache: cache}, reaper_config: reaper_config} = state) do
+  def process(%ReaperConfig{} = config, cache) do
     generated_time_stamp = DateTime.utc_now()
 
-    reaper_config
+    config
     |> UrlBuilder.build()
-    |> Extractor.extract()
-    |> Decoder.decode(reaper_config.sourceFormat, reaper_config.schema)
-    |> Cache.dedupe(cache)
-    |> Loader.load(reaper_config, generated_time_stamp)
-    |> Cache.cache(cache)
-    |> record_last_fetched_timestamp(reaper_config.dataset_id, generated_time_stamp)
+    |> Extractor.extract(config.dataset_id, config.sourceFormat)
+    |> Decoder.decode(config)
+    |> Stream.with_index()
+    |> RailStream.map(&mark_duplicates(cache, &1))
+    |> RailStream.reject(&duplicate?/1)
+    |> RailStream.map(&mark_processed(config, &1))
+    |> RailStream.reject(&index_processed?/1)
+    |> RailStream.map(&load(&1, config, generated_time_stamp))
+    |> RailStream.map(&save_last_processed_index(&1, config))
+    |> RailStream.map(&cache(&1, cache))
+    |> RailStream.each_error(&report_errors(&1, &2, config))
+    |> record_last_fetched_timestamp(config.dataset_id, generated_time_stamp)
 
-    timer_ref = schedule_work(reaper_config.cadence)
+    Persistence.remove_last_processed_index(config.dataset_id)
+  after
+    File.rm(config.dataset_id)
+  end
 
-    case reaper_config.cadence do
-      "once" ->
-        {:stop, {:shutdown, "transient process finished its work"}, state}
+  defp save_last_processed_index({_value, index}, config) do
+    if config.sourceType == "batch" do
+      Persistence.record_last_processed_index(config.dataset_id, index)
+    end
+  end
+
+  defp mark_duplicates(cache, {value, index}) do
+    case Cache.mark_duplicates(cache, value) do
+      {:ok, result} -> {:ok, {result, index}}
+      result -> result
+    end
+  end
+
+  defp mark_processed(config, message) do
+    case config.sourceType do
+      "stream" ->
+        {:ok, message}
+
+      "batch" ->
+        process_batch(config, message)
 
       _ ->
-        {:noreply, Util.deep_merge(state, %{timer_ref: timer_ref})}
+        nil
     end
   end
 
-  defp schedule_work("once"), do: nil
+  defp process_batch(reaper_config, {_value, index} = message) do
+    last_processed_index = Persistence.get_last_processed_index(reaper_config.dataset_id)
 
-  defp schedule_work(cadence) do
-    Process.send_after(self(), :work, cadence)
+    case index > last_processed_index do
+      true ->
+        {:ok, message}
+
+      false ->
+        {:index_processed, message}
+    end
   end
 
-  def handle_cast({:update, config}, state) do
-    {:noreply, Map.put(state, :reaper_config, config)}
+  defp index_processed?({:index_processed, _message}), do: true
+  defp index_processed?(_), do: false
+
+  defp duplicate?({:duplicate, _message}), do: true
+  defp duplicate?(_), do: false
+
+  defp report_errors(reason, message, config) do
+    Yeet.process_dead_letter(config.dataset_id, message, "reaper", reason: inspect(reason))
   end
 
-  def handle_call(:get, _from, state) do
-    {:reply, state, state}
+  defp cache(message, cache) do
+    case Cache.cache(cache, message) do
+      {:ok, _} -> {:ok, message}
+      result -> result
+    end
   end
 
-  def calculate_next_run_time(reaper_config) do
-    last_run_time =
-      case Persistence.get_last_fetched_timestamp(reaper_config.dataset_id) do
-        nil -> DateTime.from_unix!(0)
-        exists -> exists
-      end
-
-    expected_run_time = DateTime.add(last_run_time, reaper_config.cadence, :millisecond)
-    remaining_wait_time = DateTime.diff(expected_run_time, DateTime.utc_now(), :millisecond)
-
-    max(0, remaining_wait_time)
+  defp load({value, _index} = message, config, time_stamp) do
+    case Loader.load(value, config, time_stamp) do
+      :ok -> {:ok, message}
+      result -> result
+    end
   end
-
-  defp record_last_fetched_timestamp([], dataset_id, timestamp),
-    do: Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
 
   defp record_last_fetched_timestamp(records, dataset_id, timestamp) do
-    success = Enum.any?(records, fn {status, _} -> status == :ok end)
-
-    if success do
+    if any_successful?(records) do
       Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
     end
+  end
+
+  defp any_successful?(records) do
+    Enum.reduce(records, false, fn {status, _}, acc ->
+      case status do
+        :ok -> true
+        _ -> acc
+      end
+    end)
   end
 end

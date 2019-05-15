@@ -3,6 +3,8 @@ defmodule Reaper.Application do
 
   use Application
 
+  def redis_client(), do: :redix
+
   def start(_type, _args) do
     children =
       [
@@ -31,7 +33,7 @@ defmodule Reaper.Application do
     Application.get_env(:redix, :host)
     |> case do
       nil -> []
-      host -> {Redix, host: host, name: :redix}
+      host -> {Redix, host: host, name: redis_client()}
     end
   end
 

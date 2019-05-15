@@ -31,12 +31,17 @@ spec:
           limits:
             memory: 1Gi
             cpu: 300m
+            ephemeral-storage: 50G
           requests:
             memory: 1Gi
             cpu: 100m
+            ephemeral-storage: 25G
         ports:
         - containerPort: 9001
         - containerPort: 4369
+        volumeMounts:
+        - mountPath: /downloads
+          name: download-dir
         env:
         - name: TO_TOPIC
           value: {{ .Values.reaper.to_topic }}
@@ -56,3 +61,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+      volumes:
+      - name: download-dir
+        emptyDir: {}

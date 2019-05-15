@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.1.2",
+      version: "0.1.6",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -38,7 +38,8 @@ defmodule Reaper.MixProject do
   defp deps do
     [
       {:cachex, "~> 3.1"},
-      {:csv, "~> 2.3"},
+      {:checkov, "~> 0.4"},
+      {:nimble_csv, "~> 0.6.0"},
       {:distillery, "~> 2.0"},
       {:horde, "~> 0.2.3"},
       {:horde_connector, "~> 0.1", organization: "smartcolumbus_os"},
@@ -54,6 +55,8 @@ defmodule Reaper.MixProject do
       {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
       {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
       {:tesla, "~> 1.2"},
+      {:httpoison, "~> 1.5"},
+      {:downstream, "~> 1.0"},
       # Test/Dev Dependencies
       {:checkov, "~> 0.4", only: [:test, :integration]},
       {:smart_city_test, "~> 0.2", organization: "smartcolumbus_os"},
@@ -68,7 +71,7 @@ defmodule Reaper.MixProject do
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:excoveralls, "~> 0.10", only: :test},
       {:phoenix, "~> 1.4", only: :test},
-      {:yeet, "~> 0.3", organization: "smartcolumbus_os"}
+      {:yeet, "~> 1.0", organization: "smartcolumbus_os"}
     ]
   end
 
