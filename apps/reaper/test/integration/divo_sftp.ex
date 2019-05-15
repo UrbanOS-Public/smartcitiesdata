@@ -7,8 +7,10 @@ defmodule Reaper.DivoSftp do
 
   @impl Divo.Stack
   def gen_stack(envar \\ []) do
-    username = Keyword.get(envar, :username, "username")
-    password = Keyword.get(envar, :password, "password")
+    username = Keyword.get(envar, :username, "sftp_user")
+    password = Keyword.get(envar, :password, "sftp_password")
+# Host Database
+#
     port = Keyword.get(envar, :port, 2222)
 
     %{

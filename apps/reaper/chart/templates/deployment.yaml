@@ -53,6 +53,8 @@ spec:
           value: "true"
         - name: REDIS_HOST
           value: {{ .Values.redis.host }}
+        - name: SECRETS_ENDPOINT
+          value: {{ .Values.vault.endpoint }}
         - name: NAMESPACE
           valueFrom:
             fieldRef:

@@ -1,7 +1,7 @@
 defmodule Reaper.ExtractorTest do
   use ExUnit.Case
   use Placebo
-  alias Reaper.Extractor
+  alias Reaper.{Extractor, ReaperConfig}
 
   @dataset_id "ds1"
 
