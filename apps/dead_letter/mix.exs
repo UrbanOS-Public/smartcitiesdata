@@ -8,9 +8,10 @@ defmodule Yeet.MixProject do
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      docs: docs(),
       description: description(),
       package: package(),
-      source_url: "https://www.github.com/SmartColumbusOS"
+      source_url: "https://www.github.com/smartcitiesdata/yeet"
     ]
   end
 
@@ -36,9 +37,19 @@ defmodule Yeet.MixProject do
 
   defp package do
     [
-      organization: "smartcolumbus_os",
-      licenses: ["AllRightsReserved"],
-      links: %{"GitHub" => "https://www.github.com/SmartColumbusOS/yeet"}
+      maintainers: ["smartcitiesdata"],
+      licenses: ["Apache 2.0"],
+      links: %{"GitHub" => "https://www.github.com/smartcitiesdata/yeet"}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      source_url: "https://www.github.com/smartcitiesdata/yeet",
+      extras: [
+        "README.md"
+      ]
     ]
   end
 end

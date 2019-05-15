@@ -1,3 +1,6 @@
+[![Master](https://travis-ci.org/smartcitiesdata/yeet.svg?branch=master)](https://travis-ci.org/smartcitiesdata/yeet)
+[![Hex.pm Version](http://img.shields.io/hexpm/v/yeet.svg?style=flat)](https://hex.pm/packages/yeet)
+
 # YEET
 
 Generates standard messages for Dead Letter Queue
