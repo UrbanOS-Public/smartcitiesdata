@@ -1,7 +1,7 @@
 defmodule Reaper.ExtractorTest do
   use ExUnit.Case
   use Placebo
-  alias Reaper.{Extractor, ReaperConfig}
+  alias Reaper.Extractor
 
   @dataset_id "ds1"
 
@@ -28,7 +28,7 @@ defmodule Reaper.ExtractorTest do
         Plug.Conn.resp(conn, 200, ~s|one,two,three\n1,2,3\n|)
       end)
 
-      {:file, filename} = Extractor.extract("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id, "csv")
+      {:file, filename} = Extractor.extract("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id, "batch")
 
       assert ~s|one,two,three\n1,2,3\n| == File.read!(filename)
     end
@@ -45,7 +45,7 @@ defmodule Reaper.ExtractorTest do
         Plug.Conn.resp(conn, 200, ~s|one,two,three\n1,2,3\n|)
       end)
 
-      {:file, filename} = Extractor.extract("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id, "csv")
+      {:file, filename} = Extractor.extract("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id, "batch")
 
       assert "/tmp/#{@dataset_id}" == filename
       assert ~s|one,two,three\n1,2,3\n| == File.read!(filename)
@@ -65,7 +65,7 @@ defmodule Reaper.ExtractorTest do
         Plug.Conn.resp(conn, 200, ~s|one,two,three\n4,5,6\n|)
       end)
 
-      {:file, filename} = Extractor.extract("http://localhost:#{bypass.port}/some/csv-file.csv", @dataset_id, "csv")
+      {:file, filename} = Extractor.extract("http://localhost:#{bypass.port}/some/csv-file.csv", @dataset_id, "batch")
 
       assert ~s|one,two,three\n4,5,6\n| == File.read!(filename)
     end
@@ -86,7 +86,7 @@ defmodule Reaper.ExtractorTest do
         Plug.Conn.resp(conn, 200, ~s|one,two,three\n4,5,6\n|)
       end)
 
-      {:file, filename} = Extractor.extract("http://localhost:#{bypass.port}/some/csv-file.csv", @dataset_id, "csv")
+      {:file, filename} = Extractor.extract("http://localhost:#{bypass.port}/some/csv-file.csv", @dataset_id, "batch")
 
       assert ~s|one,two,three\n4,5,6\n| == File.read!(filename)
     end
@@ -107,7 +107,7 @@ defmodule Reaper.ExtractorTest do
         )
       end)
 
-      actual = Extractor.extract("http://localhost:#{bypass.port}/1.1/statuses/update.json", @dataset_id, "json")
+      actual = Extractor.extract("http://localhost:#{bypass.port}/1.1/statuses/update.json", @dataset_id, "batch")
 
       assert actual == ~s<one,two\n1,2\n>
     end
@@ -115,7 +115,7 @@ defmodule Reaper.ExtractorTest do
     test "sets timeout when download the file" do
       allow Downstream.get!(any(), any(), any()), return: :ok
 
-      Extractor.extract("http://some.url", @dataset_id, "csv")
+      Extractor.extract("http://some.url", @dataset_id, "batch")
 
       assert_called Downstream.get!("http://some.url", any(), timeout: 600_000)
     end

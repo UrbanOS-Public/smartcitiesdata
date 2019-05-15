@@ -8,7 +8,7 @@ defmodule Reaper.DataFeed do
 
     config
     |> UrlBuilder.build()
-    |> Extractor.extract(config.dataset_id, config.sourceFormat)
+    |> Extractor.extract(config.dataset_id, config.sourceType)
     |> Decoder.decode(config)
     |> Stream.with_index()
     |> RailStream.map(&mark_duplicates(cache, &1))

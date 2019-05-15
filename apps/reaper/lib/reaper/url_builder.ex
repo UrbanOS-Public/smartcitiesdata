@@ -3,7 +3,7 @@ defmodule Reaper.UrlBuilder do
   @moduledoc false
   def build(%ReaperConfig{sourceUrl: url, queryParams: query_params} = reaper_config)
       when query_params == %{},
-      do: reaper_config
+      do: url
 
   def build(%ReaperConfig{sourceUrl: url, queryParams: query_params} = reaper_config) do
     last_success_time = extract_last_success_time(reaper_config)
@@ -13,7 +13,7 @@ defmodule Reaper.UrlBuilder do
       |> evaluate_parameters(last_success_time: last_success_time)
       |> URI.encode_query()
 
-    %{reaper_config | sourceUrl: "#{url}?#{string_params}"}
+    "#{url}?#{string_params}"
   end
 
   defp extract_last_success_time(reaper_config) do

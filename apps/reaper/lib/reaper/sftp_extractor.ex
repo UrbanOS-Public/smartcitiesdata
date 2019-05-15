@@ -4,7 +4,7 @@ defmodule Reaper.SftpExtractor do
   decodable format.
   """
 
-  def extract(id, url) do
+  def extract(url, id) do
     %{host: host, path: path, port: port} = URI.parse(url)
 
     with {:ok, %{username: username, password: password}} <- Reaper.CredentialRetriever.retrieve(id),

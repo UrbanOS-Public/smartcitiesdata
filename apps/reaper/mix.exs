@@ -4,11 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-<<<<<<< HEAD
-      version: "0.1.6",
-=======
-      version: "0.3.0",
->>>>>>> ef502ee3daee2e8ae253ea9ddba1d207c568f068
+      version: "0.2.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -42,12 +38,11 @@ defmodule Reaper.MixProject do
   defp deps do
     [
       {:cachex, "~> 3.1"},
-      {:checkov, "~> 0.4"},
       {:nimble_csv, "~> 0.6.0"},
       {:distillery, "~> 2.0"},
       {:downstream, "~> 1.0"},
       {:horde, "~> 0.2.3"},
-      {:horde_connector, "~> 0.1", organization: "smartcolumbus_os"},
+      {:horde_connector, "~> 0.1"},
       {:jason, "~>1.1"},
       {:kaffe, "~> 1.11"},
       {:libcluster, "~> 3.0"},
@@ -58,8 +53,8 @@ defmodule Reaper.MixProject do
       {:redix, "~> 0.9"},
       {:sftp_ex, "~> 0.2"},
       {:sweet_xml, "~> 0.6"},
-      {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
-      {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
+      {:smart_city_data, "~> 2.1"},
+      {:smart_city_registry, "~> 2.6"},
       {:tesla, "~> 1.2"},
       {:yeet, "~> 1.0", organization: "smartcolumbus_os"},
       # Test/Dev Dependencies

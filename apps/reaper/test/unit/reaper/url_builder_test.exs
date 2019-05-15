@@ -2,11 +2,10 @@ defmodule Reaper.UrlBuilderTest do
   use ExUnit.Case
   use Placebo
   import Checkov
-  alias Reaper.{ReaperConfig, UrlBuilder}
+  alias Reaper.UrlBuilder
 
   data_test "builds #{result}" do
-    %ReaperConfig{sourceUrl: transformed_url} = UrlBuilder.build(reaper_config)
-    assert result == transformed_url
+    assert result == UrlBuilder.build(reaper_config)
 
     where([
       [:reaper_config, :result],
