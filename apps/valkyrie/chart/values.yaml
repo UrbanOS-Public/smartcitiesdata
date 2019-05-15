@@ -28,7 +28,7 @@ fullnameOverride: ""
 
 resources:
   limits:
-    cpu: 300m
+    cpu: 600m
     memory: 512Mi
   requests:
     cpu: 100m
