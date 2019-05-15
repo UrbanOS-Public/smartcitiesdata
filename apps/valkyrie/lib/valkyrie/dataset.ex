@@ -26,7 +26,7 @@ defmodule Valkyrie.Dataset do
   @doc """
     Retrieve a dataset from the cache
   """
-  @spec get(String.t()) :: SmartCity.Dataset.t()
+  @spec get(String.t()) :: Valkyrie.Dataset.t()
   def get(dataset_id) do
     case Cachex.get!(@cache, dataset_id) do
       nil -> sync_dataset(dataset_id)
