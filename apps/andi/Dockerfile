@@ -1,5 +1,4 @@
 FROM bitwalker/alpine-elixir:1.8.1 as builder
-ARG HEX_TOKEN
 COPY . /app
 WORKDIR /app
 RUN apk update && \
@@ -8,7 +7,6 @@ RUN apk update && \
     rm -rf /var/cache/**/*
 RUN mix local.hex --force && \
     mix local.rebar --force && \
-    mix hex.organization auth smartcolumbus_os --key ${HEX_TOKEN} && \
     mix deps.get && \
     mix format --check-formatted && \
     mix credo && \

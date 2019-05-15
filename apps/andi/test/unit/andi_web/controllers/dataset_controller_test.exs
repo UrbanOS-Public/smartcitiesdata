@@ -40,6 +40,7 @@ defmodule AndiWeb.DatasetControllerTest do
         "sourceFormat" => "gtfs",
         "cadence" => 9000,
         "schema" => [],
+        "private" => false,
         "headers" => %{
           "accepts" => "application/foobar"
         },

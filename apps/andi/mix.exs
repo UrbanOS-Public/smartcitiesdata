@@ -40,12 +40,12 @@ defmodule Andi.MixProject do
       {:jason, "~> 1.1"},
       {:plug_cowboy, "~> 2.0"},
       {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
-      {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
-      {:divo, "~> 1.1", only: [:dev, :integration], organization: "smartcolumbus_os"},
+      {:smart_city_registry, "~> 2.6"},
+      {:divo, "~> 1.1", only: [:dev, :integration]},
       {:paddle, "~> 0.1"},
       {:tesla, "~> 1.2", only: :integration},
       {:uuid, "~> 1.1"},
-      {:smart_city_test, "~> 0.2", organization: "smartcolumbus_os", only: [:test, :integration]}
+      {:smart_city_test, "~> 0.2", only: [:test, :integration]}
     ]
   end
 end
