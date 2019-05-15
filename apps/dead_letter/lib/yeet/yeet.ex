@@ -1,9 +1,16 @@
 defmodule Yeet do
   alias Yeet.KafkaHelper
-  @moduledoc false
+
+  @moduledoc """
+  Format, enrich and send a message to a dead letter queue.
+  """
 
   require Logger
 
+  @doc """
+  Given a message with a dataset id and app name, send a message to the dead letter queue that contains that message, along with additional metadata.
+  """
+  @spec process_dead_letter(String.t(), any(), atom(), keyword()) :: :ok | {:error, any()}
   def process_dead_letter(dataset_id, message, app_name, options \\ []) do
     dead_letter =
       message
@@ -14,6 +21,9 @@ defmodule Yeet do
     KafkaHelper.produce(dead_letter)
   end
 
+  @doc """
+  Checks that the message can be encoded to json. If it cannot, it transforms the message into an encodable format.
+  """
   def sanitize_message(message) do
     case Jason.encode(%{message: message}) do
       {:ok, _message} -> message
@@ -21,6 +31,10 @@ defmodule Yeet do
     end
   end
 
+  @doc """
+    Takes a message and formats the fields so that they can properly be encoded as json. It also enriches the message with a stack trace and timestamp.
+  """
+  @spec format_message(any(), String.t(), atom(), keyword()) :: map()
   def format_message(original_message, dataset_id, app_name, options \\ []) do
     stacktrace =
       options

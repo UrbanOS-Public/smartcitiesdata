@@ -2,6 +2,7 @@ defmodule YeetTest do
   use ExUnit.Case
   use Placebo
   alias Yeet.KafkaHelper
+  import ExUnit.CaptureLog
 
   @default_stacktrace [
     {:erlang, :/, [1, 0], []},
@@ -22,6 +23,7 @@ defmodule YeetTest do
   @dataset_id "ds1"
 
   describe "process_dead_letter/2" do
+    @tag capture_log: true
     test "sends formatted message to kafka" do
       allow KafkaHelper.produce(any()), return: :ok
 
@@ -34,6 +36,7 @@ defmodule YeetTest do
                     })
     end
 
+    @tag capture_log: true
     test "message is an unparseable binary" do
       allow KafkaHelper.produce(any()), return: :ok
 
