@@ -40,3 +40,4 @@ terraform.tfstate.d/
 *.out
 *.plan
 .elixir_ls/
+.DS_Store
