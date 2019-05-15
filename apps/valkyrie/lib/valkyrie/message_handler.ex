@@ -8,6 +8,19 @@ defmodule Valkyrie.MessageHandler do
   alias Valkyrie.Validators
 
   @doc """
+  Receives and validates a batch of data messages
+  """
+  @spec handle_messages(list(%{key: any(), value: any()})) :: :ok
+  def handle_messages(messages) do
+    Logger.info("#{__MODULE__}: Received #{length(messages)} messages.")
+
+    Enum.each(messages, &handle_message/1)
+    Logger.info("#{__MODULE__}: All messages handled without crashing.")
+
+    :ok
+  end
+
+  @doc """
   Validates a single data message
   """
   @spec handle_message(%{key: any(), value: any()}) :: any() | {:error, String.t()}
@@ -28,8 +41,6 @@ defmodule Valkyrie.MessageHandler do
         Logger.warn("Error handling message: #{inspect(value)}")
         Yeet.process_dead_letter(value, "Valkyrie")
     end
-
-    :ok
   end
 
   defp set_operational_timing(start_time, validated_message) do
