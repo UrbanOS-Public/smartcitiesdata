@@ -26,7 +26,11 @@ defmodule Valkyrie.Application do
         []
 
       _ ->
-        Supervisor.Spec.worker(Kaffe.Consumer, [])
+        %{
+          id: Kaffe.GroupMemberSupervisor,
+          start: {Kaffe.GroupMemberSupervisor, :start_link, []},
+          type: :supervisor
+        }
     end
   end
 
