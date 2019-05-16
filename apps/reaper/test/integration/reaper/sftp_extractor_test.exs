@@ -7,7 +7,7 @@ defmodule Reaper.SftpExtractorTest do
 
   @sftp %{host: 'localhost', port: 2222, user: 'sftp_user', password: 'sftp_password'}
 
-  setup _context do
+  setup do
     {:ok, conn} = SftpEx.connect(host: @sftp.host, port: @sftp.port, user: @sftp.user, password: @sftp.password)
     json_data = Jason.encode!([%{datum: "Bobber", sanctum: "Alice"}])
     SftpEx.upload(conn, "./upload/file.json", json_data)
@@ -92,56 +92,5 @@ defmodule Reaper.SftpExtractorTest do
       dwell: 1000,
       max_tries: 20
     )
-  end
-
-  test "handles failure to retrieve any dataset credentials" do
-    dataset_id = "34567-8934"
-    source_url = "sftp://localhost:#{@sftp.port}/upload/file.csv"
-    allow Reaper.CredentialRetriever.retrieve(any()), return: {:error, :retrieve_credential_failed}
-
-    dataset =
-      TDG.create_dataset(%{
-        id: dataset_id,
-        technical: %{
-          cadence: 1_000,
-          sourceUrl: source_url,
-          queryParams: %{},
-          sourceFormat: "csv",
-          schema: [
-            %{name: "datum"},
-            %{name: "sanctum"}
-          ]
-        }
-      })
-
-    Dataset.write(dataset)
-
-    assert Reaper.SftpExtractor.extract(dataset_id, source_url) == {:error, :retrieve_credential_failed}
-  end
-
-  test "handles incorrectly configured dataset credentials" do
-    dataset_id = "45678-9456"
-    source_url = "sftp://localhost:#{@sftp.port}/upload/file.csv"
-    allow Reaper.CredentialRetriever.retrieve(any()), return: {:ok, %{api_key: "q4587435o43759o47597"}}
-
-    dataset =
-      TDG.create_dataset(%{
-        id: dataset_id,
-        technical: %{
-          cadence: 1_000,
-          sourceUrl: source_url,
-          queryParams: %{},
-          sourceFormat: "csv",
-          schema: [
-            %{name: "datum"},
-            %{name: "sanctum"}
-          ]
-        }
-      })
-
-    Dataset.write(dataset)
-
-    assert Reaper.SftpExtractor.extract(dataset_id, source_url) ==
-             {:error, "Dataset credentials are not of the correct type"}
   end
 end
