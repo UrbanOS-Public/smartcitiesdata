@@ -38,6 +38,10 @@ defmodule TestUtils do
   end
 
   def bypass_file(bypass, file_name) do
+    Bypass.stub(bypass, "HEAD", "/#{file_name}", fn conn ->
+      Plug.Conn.resp(conn, 200, "")
+    end)
+
     Bypass.stub(bypass, "GET", "/#{file_name}", fn conn ->
       Plug.Conn.resp(
         conn,

@@ -14,7 +14,7 @@ defmodule Reaper.FullTest do
   @gtfs_file_name "gtfs-realtime.pb"
   @csv_file_name "random_stuff.csv"
 
-  setup_all do
+  setup do
     bypass = Bypass.open()
 
     bypass
@@ -24,7 +24,7 @@ defmodule Reaper.FullTest do
 
     Patiently.wait_for!(
       fn ->
-        {type, result} = get("http://localhost:#{bypass.port}/#{@json_file_name}")
+        {type, result} = get("http://localhost:#{bypass.port}/#{@csv_file_name}")
         type == :ok and result.status == 200
       end,
       dwell: 1000,
@@ -206,7 +206,7 @@ defmodule Reaper.FullTest do
         TDG.create_dataset(%{
           id: dataset_id,
           technical: %{
-            cadence: 1_000,
+            cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
             sourceFormat: "csv",
             sourceType: "batch",
@@ -221,11 +221,11 @@ defmodule Reaper.FullTest do
           result =
             dataset_id
             |> TestUtils.fetch_relevant_messages()
-            |> List.first()
+            |> List.last()
 
           case result do
             nil -> false
-            message -> message["name"] == "Austin"
+            message -> message["name"] == "Ben"
           end
         end,
         dwell: 1000,
