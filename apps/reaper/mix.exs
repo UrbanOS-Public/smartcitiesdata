@@ -43,6 +43,7 @@ defmodule Reaper.MixProject do
       {:downstream, "~> 1.0"},
       {:horde, "~> 0.2.3"},
       {:horde_connector, "~> 0.1"},
+      {:httpoison, "~> 1.5"},
       {:jason, "~>1.1"},
       {:kaffe, "~> 1.11"},
       {:libcluster, "~> 3.0"},

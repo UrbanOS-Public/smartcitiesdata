@@ -6,9 +6,6 @@ defmodule Reaper.YeetTest do
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @kafka_endpoint Application.get_env(:kaffe, :producer)[:endpoints]
-                  |> Enum.map(fn {k, v} -> {k, v} end)
-
   @success_topic Application.get_env(:kaffe, :producer)[:topics] |> List.first()
   @dlq_topic Application.get_env(:kaffe, :producer)[:topics] |> List.last()
 

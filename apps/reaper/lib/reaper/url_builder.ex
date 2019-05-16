@@ -1,7 +1,7 @@
 defmodule Reaper.UrlBuilder do
   alias Reaper.ReaperConfig
   @moduledoc false
-  def build(%ReaperConfig{sourceUrl: url, queryParams: query_params} = reaper_config)
+  def build(%ReaperConfig{sourceUrl: url, queryParams: query_params} = _reaper_config)
       when query_params == %{},
       do: url
 

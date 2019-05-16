@@ -1,4 +1,4 @@
-defmodule SftpTest do
+defmodule Reaper.SftpExtractorTest do
   use ExUnit.Case
   use Divo
   use Placebo

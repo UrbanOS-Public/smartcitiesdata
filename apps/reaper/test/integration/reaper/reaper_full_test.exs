@@ -108,7 +108,7 @@ defmodule Reaper.FullTest do
       :ok
     end
 
-    test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: bypass} do
+    test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: _bypass} do
       expected = [
         %{"my_date" => "Spot", "my_int" => "1", "my_string" => "Austin"},
         %{"my_date" => "Bella", "my_int" => "2", "my_string" => "Erin"},
@@ -119,7 +119,7 @@ defmodule Reaper.FullTest do
         fn ->
           result =
             @partial_load_dataset_id
-            |> fetch_relevant_messages()
+            |> TestUtils.fetch_relevant_messages()
 
           result == expected
         end,
