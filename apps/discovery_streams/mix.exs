@@ -37,7 +37,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:prometheus_phoenix, "~> 1.2.0"},
       {:prometheus_plugs, "~> 1.1.1"},
-      {:cowboy, "~> 1.0"},
+      {:plug_cowboy, "~> 1.0"},
       {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false},
       {:streaming_metrics, path: "streaming_metrics"},
       {:kaffe, "~> 1.11"},

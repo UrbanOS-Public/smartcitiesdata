@@ -18,17 +18,23 @@ To view the data on the websocket:
 Install [wsta](https://github.com/esphen/wsta)
 
 ```bash
-wsta -I --ping 50 --ping-msg '{"topic":"phoenix","event":"heartbeat","payload":{},"ref":"1"}' \
+wsta -I --ping 50 \
+--ping-msg '{"topic":"phoenix","event":"heartbeat","payload":{},"ref":"1"}' \
 'ws://localhost:4000/socket/websocket' \
 '{"topic":"vehicle_position","event":"phx_join","payload":{},"ref":"1"}'
 ```
 
 ## Setting a filter
+A filter can be provided in the `phx_join` event by giving a filter key and value as the payload:
 
-{"topic":"vehicle_position","event":"filter","payload":{"vehicle.trip.route_id":"034"},"ref":"1"}
+```bash
+# Stream only vehicles with an id of 11409
 
-
-The json is the required payload to join the `vehicle_position` channel.
+wsta -I --ping 50 \
+--ping-msg '{"topic":"vehicle_position","event":"heartbeat","payload":{},"ref":"1"}' \
+'wss://localhost:4000/socket/websocket' \
+'{"topic":"vehicle_position","event":"phx_join","payload":{"vehicle.vehicle.id":"11409"},"ref":"1"}'
+```
 
 ## Running containers locally
 
