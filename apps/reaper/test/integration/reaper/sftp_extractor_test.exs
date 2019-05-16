@@ -5,7 +5,9 @@ defmodule Reaper.SftpExtractorTest do
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @sftp %{host: 'localhost', port: 2222, user: 'sftp_user', password: 'sftp_password'}
+  @host to_charlist(System.get_env("HOST"))
+
+  @sftp %{host: @host, port: 2222, user: 'sftp_user', password: 'sftp_password'}
 
   setup do
     {:ok, conn} = SftpEx.connect(host: @sftp.host, port: @sftp.port, user: @sftp.user, password: @sftp.password)
@@ -29,7 +31,7 @@ defmodule Reaper.SftpExtractorTest do
         id: dataset_id,
         technical: %{
           cadence: 1_000,
-          sourceUrl: "sftp://localhost:#{@sftp.port}/upload/file.json",
+          sourceUrl: "sftp://#{@host}:#{@sftp.port}/upload/file.json",
           queryParams: %{},
           sourceFormat: "json"
         }
@@ -65,7 +67,7 @@ defmodule Reaper.SftpExtractorTest do
         id: dataset_id,
         technical: %{
           cadence: 1_000,
-          sourceUrl: "sftp://localhost:#{@sftp.port}/upload/file.csv",
+          sourceUrl: "sftp://#{@host}:#{@sftp.port}/upload/file.csv",
           queryParams: %{},
           sourceFormat: "csv",
           schema: [
