@@ -10,6 +10,7 @@ defmodule DiscoveryStreams.Mixfile do
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      docs: docs(),
       aliases: aliases(),
       test_paths: test_paths(Mix.env())
     ]
@@ -51,7 +52,18 @@ defmodule DiscoveryStreams.Mixfile do
       {:divo, "~> 1.1", organization: "smartcolumbus_os"},
       {:divo_kafka, "~> 0.1.0", organization: "smartcolumbus_os"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      {:temporary_env, "~> 2.0", only: [:test, :integration]}
+      {:temporary_env, "~> 2.0", only: [:test, :integration]},
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      source_url: "https://github.com/smartcitiesdata/discovery-streams",
+      extras: [
+        "README.md"
+      ]
     ]
   end
 

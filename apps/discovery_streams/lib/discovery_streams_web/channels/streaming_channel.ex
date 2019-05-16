@@ -1,7 +1,7 @@
 defmodule DiscoveryStreamsWeb.StreamingChannel do
   @moduledoc """
-    Handles websocket connections for the COTA Bus location data
-    After a client joins the channel, it pushes the vehicle_position cache to the client,
+    Handles websocket connections for streaming data.
+    After a client joins the channel, it pushes the datasets cache to the client,
     and then begins sending new data as it arrives.
   """
   use DiscoveryStreamsWeb, :channel

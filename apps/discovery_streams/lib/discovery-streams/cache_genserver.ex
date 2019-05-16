@@ -1,5 +1,9 @@
 defmodule DiscoveryStreams.CacheGenserver do
-  @moduledoc "false"
+  @moduledoc """
+  Caches data per topic so that socket subscribers
+  have the last relevant data available upon connection.
+  """
+
   use GenServer
 
   def init(_) do

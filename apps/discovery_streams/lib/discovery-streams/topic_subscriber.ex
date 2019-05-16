@@ -1,5 +1,7 @@
 defmodule DiscoveryStreams.TopicSubscriber do
-  @moduledoc false
+  @moduledoc """
+  Dynamically subscribes to Kafka topics.
+  """
   use GenServer
   require Logger
 
