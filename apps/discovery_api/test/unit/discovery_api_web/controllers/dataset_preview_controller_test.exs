@@ -57,6 +57,16 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
 
       assert expected == actual
     end
+
+    test "preview controller returns _SOMETHING_ when table does not exist", %{conn: conn} do
+      expected = %{"data" => [], "meta" => %{"columns" => []}, "message" => "Something went wrong while fetching the preview."}
+
+      allow DiscoveryApiWeb.DatasetPrestoQueryService.preview_columns(any()), return: []
+      allow DiscoveryApiWeb.DatasetPrestoQueryService.preview(any()), exec: fn _ -> raise Prestige.Error, message: "Test error" end
+      actual = conn |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
+
+      assert expected == actual
+    end
   end
 
   describe "preview restricted dataset" do
