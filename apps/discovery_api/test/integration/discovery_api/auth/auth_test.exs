@@ -187,7 +187,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       assert facets[:organization] == [%{count: 2, name: setup_map.private_model_1.organization}]
     end
 
-    test "when the token is expired the response is a 404", setup_map do
+    test "when the token is expired the response is a 404" do
       %{status_code: status_code} =
         "http://localhost:4000/api/v1/dataset/search/"
         |> HTTPoison.get!(Authorization: "Bearer #{@inactive_token}")
@@ -206,6 +206,85 @@ defmodule DiscoveryApi.Auth.AuthTest do
       assert Enum.member?(result_ids, setup_map[:private_model_1].id)
       assert Enum.member?(result_ids, setup_map[:public_model].id)
       assert 2 == length(results)
+    end
+  end
+
+  describe "CookieMonster" do
+    test "eats cookies when not from the appropriate origin (ajax)" do
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("username", %{}, token_type: "refresh")
+
+      %{status_code: status_code, body: body} =
+        "http://localhost:4000/api/v1/dataset/search/"
+        |> HTTPoison.get!(
+          Cookie: "something=true,#{Helper.default_guardian_token_key()}=#{token},somethingelse=false",
+          Origin: "jessies.house.example.com"
+        )
+
+      response = Jason.decode!(body, keys: :atoms)
+      assert response.message == "Not Found"
+      assert status_code == 404
+    end
+
+    test "eats cookies when from a similar but different origin (ajax)" do
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("username", %{}, token_type: "refresh")
+
+      %{status_code: status_code} =
+        "http://localhost:4000/api/v1/dataset/search/"
+        |> HTTPoison.get!(
+          Cookie: "something=true,#{Helper.default_guardian_token_key()}=#{token},somethingelse=false",
+          Origin: "jessies-integrationtests.example.com"
+        )
+
+      assert status_code == 404
+    end
+
+    test "does not eat cookies when origin not included (non-ajax or local file)" do
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("username", %{}, token_type: "refresh")
+
+      %{status_code: status_code} =
+        "http://localhost:4000/api/v1/dataset/search/"
+        |> HTTPoison.get!(Cookie: "something=true,#{Helper.default_guardian_token_key()}=#{token},somethingelse=false")
+
+      assert status_code == 200
+    end
+
+    test "does not eat cookies when origin=null (non-ajax or local file)" do
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("username", %{}, token_type: "refresh")
+
+      %{status_code: status_code} =
+        "http://localhost:4000/api/v1/dataset/search/"
+        |> HTTPoison.get!(
+          Cookie: "something=true,#{Helper.default_guardian_token_key()}=#{token},somethingelse=false",
+          Origin: "null"
+        )
+
+      assert status_code == 200
+    end
+
+    test "does not eat cookies when from the appropriate sub origin (ajax)" do
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("username", %{}, token_type: "refresh")
+
+      %{status_code: status_code} =
+        "http://localhost:4000/api/v1/dataset/search/"
+        |> HTTPoison.get!(
+          Cookie: "something=true,#{Helper.default_guardian_token_key()}=#{token},somethingelse=false",
+          Origin: "discovery.integrationtests.example.com"
+        )
+
+      assert status_code == 200
+    end
+
+    test "does not eat cookies when from the appropriate origin (ajax)" do
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign("username", %{}, token_type: "refresh")
+
+      %{status_code: status_code} =
+        "http://localhost:4000/api/v1/dataset/search/"
+        |> HTTPoison.get!(
+          Cookie: "something=true,#{Helper.default_guardian_token_key()}=#{token},somethingelse=false",
+          Origin: "integrationtests.example.com"
+        )
+
+      assert status_code == 200
     end
   end
 

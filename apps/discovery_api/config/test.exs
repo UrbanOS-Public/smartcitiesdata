@@ -6,6 +6,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   url: [host: "data.tests.example.com", port: 80]
 
 config :discovery_api,
+  allowed_origins: ["tests.example.com"],
   test_mode: true
 
 config :logger, level: :warn
