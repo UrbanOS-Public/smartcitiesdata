@@ -89,7 +89,7 @@ defmodule DiscoveryStreamsWeb.Presence do
     pubsub_server: DiscoveryStreams.PubSub
 
   @doc "Returns the count of current connections for the given channel"
-  @spec connections(String.t()) :: number
+  @spec connections(Phoenix.Presence.topic()) :: number
   def connections(channel) do
     __MODULE__
     |> Phoenix.Presence.list(channel)
