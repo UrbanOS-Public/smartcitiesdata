@@ -1,6 +1,7 @@
 defmodule Reaper.Extractor do
   @moduledoc false
   use Tesla
+  require Logger
 
   @download_timeout Application.get_env(:reaper, :download_timeout, 600_000)
 
@@ -35,8 +36,8 @@ defmodule Reaper.Extractor do
     {:file, filename}
   rescue
     error ->
-      Logger.debug("Unable to retrieve data for #{dataset_id}: #{error.message}")
-      reraise
+      Logger.error(fn -> "Unable to retrieve data for #{dataset_id}: #{error.message}" end)
+      reraise error, __STACKTRACE__
   end
 
   def extract(url, _dataset_id, _format) do
