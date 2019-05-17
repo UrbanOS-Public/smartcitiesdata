@@ -1,6 +1,6 @@
 defmodule DiscoveryStreams.CachexSupervisor do
   @moduledoc """
-  Supervisor that manages dyanmic caches
+  Supervisor that manages dynamic caches
   """
   use DynamicSupervisor
   require Cachex.Spec
@@ -14,7 +14,9 @@ defmodule DiscoveryStreams.CachexSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def create_cache(name) when is_atom(name) do
+  @doc "Creates a supervised cache under CachexSupervisor"
+  @spec create_cache(atom) :: DynamicSupervisor.on_start_child()
+  def(create_cache(name) when is_atom(name)) do
     ttl = Application.get_env(:discovery_streams, :ttl)
     expiration = Cachex.Spec.expiration(default: ttl)
 

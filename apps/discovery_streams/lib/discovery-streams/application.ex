@@ -1,10 +1,10 @@
 defmodule DiscoveryStreams.MetricsExporter do
-  @moduledoc "false"
+  @moduledoc false
   use Prometheus.PlugExporter
 end
 
 defmodule DiscoveryStreams.Application do
-  @moduledoc "false"
+  @moduledoc false
   use Application
 
   require Cachex.Spec
@@ -30,11 +30,6 @@ defmodule DiscoveryStreams.Application do
       |> List.flatten()
 
     Supervisor.start_link(children, opts)
-  end
-
-  def config_change(changed, _new, removed) do
-    DiscoveryStreamsWeb.Endpoint.config_change(changed, removed)
-    :ok
   end
 
   defp libcluster do

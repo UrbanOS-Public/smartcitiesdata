@@ -10,6 +10,8 @@ defmodule DiscoveryStreams.Mixfile do
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      docs: docs(),
+      package: package(),
       aliases: aliases(),
       test_paths: test_paths(Mix.env())
     ]
@@ -36,7 +38,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:prometheus_phoenix, "~> 1.2.0"},
       {:prometheus_plugs, "~> 1.1.1"},
-      {:cowboy, "~> 1.0"},
+      {:plug_cowboy, "~> 1.0"},
       {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false},
       {:streaming_metrics, path: "streaming_metrics"},
       {:kaffe, "~> 1.11"},
@@ -48,10 +50,29 @@ defmodule DiscoveryStreams.Mixfile do
       {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
       {:distillery, "~> 2.0"},
       {:checkov, "~> 0.4.0", only: :test},
-      {:divo, "~> 1.1", organization: "smartcolumbus_os"},
+      {:divo, "~> 1.1"},
       {:divo_kafka, "~> 0.1.0", organization: "smartcolumbus_os"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      {:temporary_env, "~> 2.0", only: [:test, :integration]}
+      {:temporary_env, "~> 2.0", only: [:test, :integration]},
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      source_url: "https://github.com/smartcitiesdata/discovery-streams",
+      extras: [
+        "README.md"
+      ]
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["smartcitiesdata"],
+      licenses: ["Apache 2.0"],
+      links: %{"GitHub" => "https://github.com/smartcitiesdata/discovery-streams"}
     ]
   end
 
