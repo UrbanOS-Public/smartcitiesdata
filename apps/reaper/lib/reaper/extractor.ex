@@ -33,6 +33,10 @@ defmodule Reaper.Extractor do
 
     File.close(file)
     {:file, filename}
+  rescue
+    error ->
+      Logger.debug("Unable to retrieve data for #{dataset_id}: #{error.message}")
+      reraise
   end
 
   def extract(url, _dataset_id, _format) do
