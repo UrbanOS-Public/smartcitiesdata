@@ -7,6 +7,22 @@ defmodule Reaper.Extractor do
   plug(Tesla.Middleware.FollowRedirects)
   plug(Tesla.Middleware.Retry, delay: 500, max_retries: 10)
 
+  def extract("sftp" <> _rest = url, dataset_id, format) do
+    case Reaper.SftpExtractor.extract(url, dataset_id) do
+      {:ok, data} ->
+        if format == "csv" do
+          filename = determine_filename(dataset_id)
+          File.write!(filename, data)
+          {:file, filename}
+        else
+          data
+        end
+
+      {:error, reason} ->
+        raise "Failed calling '" <> url <> "': " <> inspect(reason)
+    end
+  end
+
   def extract(url, dataset_id, "csv") do
     filename = determine_filename(dataset_id)
     file = File.open!(filename, [:write])

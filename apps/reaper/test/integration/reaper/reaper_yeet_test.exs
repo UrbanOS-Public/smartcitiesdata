@@ -6,9 +6,6 @@ defmodule Reaper.YeetTest do
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @kafka_endpoint Application.get_env(:kaffe, :producer)[:endpoints]
-                  |> Enum.map(fn {k, v} -> {k, v} end)
-
   @success_topic Application.get_env(:kaffe, :producer)[:topics] |> List.first()
   @dlq_topic Application.get_env(:kaffe, :producer)[:topics] |> List.last()
 
@@ -18,7 +15,7 @@ defmodule Reaper.YeetTest do
     bypass = Bypass.open()
 
     bypass
-    |> bypass_file(@invalid_json_file)
+    |> TestUtils.bypass_file(@invalid_json_file)
 
     Patiently.wait_for!(
       fn ->
@@ -77,44 +74,13 @@ defmodule Reaper.YeetTest do
 
   defp fetch_good_messages(dataset_id) do
     @success_topic
-    |> fetch_all_feed_messages()
+    |> TestUtils.fetch_all_feed_messages()
     |> Enum.filter(fn %{"dataset_id" => id} -> id == dataset_id end)
     |> Enum.map(fn %{"payload" => payload} -> payload end)
   end
 
   defp fetch_dlq_messages(_dataset_id) do
     @dlq_topic
-    |> fetch_all_feed_messages()
-  end
-
-  defp fetch_all_feed_messages(topic) do
-    Stream.resource(
-      fn -> 0 end,
-      fn offset ->
-        with {:ok, results} <- :brod.fetch(@kafka_endpoint, topic, 0, offset),
-             {:kafka_message, current_offset, _headers?, _partition, _key, _body, _ts, _type, _ts_type} <-
-               List.last(results) do
-          {results, current_offset + 1}
-        else
-          _ -> {:halt, offset}
-        end
-      end,
-      fn _ -> :unused end
-    )
-    |> Enum.map(fn {:kafka_message, _offset, _headers?, _partition, _key, body, _ts, _type, _ts_type} ->
-      Jason.decode!(body)
-    end)
-  end
-
-  defp bypass_file(bypass, file_name) do
-    Bypass.stub(bypass, "GET", "/#{file_name}", fn conn ->
-      Plug.Conn.resp(
-        conn,
-        200,
-        File.read!("test/support/#{file_name}")
-      )
-    end)
-
-    bypass
+    |> TestUtils.fetch_all_feed_messages()
   end
 end

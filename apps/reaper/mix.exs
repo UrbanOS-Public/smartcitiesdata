@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.1.6",
+      version: "0.2.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -38,38 +38,40 @@ defmodule Reaper.MixProject do
   defp deps do
     [
       {:cachex, "~> 3.1"},
-      {:checkov, "~> 0.4"},
       {:nimble_csv, "~> 0.6.0"},
       {:distillery, "~> 2.0"},
+      {:downstream, "~> 1.0"},
       {:horde, "~> 0.2.3"},
-      {:horde_connector, "~> 0.1", organization: "smartcolumbus_os"},
+      {:horde_connector, "~> 0.1"},
+      {:httpoison, "~> 1.5"},
       {:jason, "~>1.1"},
       {:kaffe, "~> 1.11"},
       {:libcluster, "~> 3.0"},
+      {:libvault, "~> 0.2"},
       {:observer_cli, "~> 1.4"},
       {:plug_cowboy, "~> 2.0"},
       {:protobuf, "~> 0.6"},
       {:redix, "~> 0.9"},
+      {:sftp_ex, "~> 0.2"},
       {:sweet_xml, "~> 0.6"},
-      {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
-      {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
+      {:smart_city_data, "~> 2.1"},
+      {:smart_city_registry, "~> 2.6"},
       {:tesla, "~> 1.2"},
-      {:httpoison, "~> 1.5"},
-      {:downstream, "~> 1.0"},
+      {:yeet, "~> 1.0", organization: "smartcolumbus_os"},
       # Test/Dev Dependencies
-      {:smart_city_test, "~> 0.2", organization: "smartcolumbus_os"},
-      {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
+      {:bypass, "~> 1.0", only: [:test, :integration]},
+      {:checkov, "~> 0.4", only: [:test, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false},
-      {:divo, "~> 1.1", only: [:dev, :integration], organization: "smartcolumbus_os"},
+      {:divo, "~> 1.1", only: [:dev, :integration], override: true},
       {:divo_kafka, "~> 0.1", only: [:dev, :integration], organization: "smartcolumbus_os"},
       {:divo_redis, "~> 0.1", only: [:dev, :integration], organization: "smartcolumbus_os"},
+      {:excoveralls, "~> 0.10", only: :test},
+      {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
       {:mock, "~> 0.3", only: [:test, :integration], runtime: false},
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
-      {:placebo, "~> 1.2", only: [:test, :integration]},
-      {:bypass, "~> 1.0", only: [:test, :integration]},
-      {:excoveralls, "~> 0.10", only: :test},
       {:phoenix, "~> 1.4", only: :test},
-      {:yeet, "~> 1.0", organization: "smartcolumbus_os"}
+      {:placebo, "~> 1.2", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.2"}
     ]
   end
 

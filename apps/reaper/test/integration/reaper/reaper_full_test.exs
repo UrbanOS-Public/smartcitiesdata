@@ -7,12 +7,6 @@ defmodule Reaper.FullTest do
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @kafka_endpoint Application.get_env(:kaffe, :producer)[:endpoints]
-                  |> Enum.map(fn {k, v} -> {k, v} end)
-
-  @destination_topic Application.get_env(:kaffe, :producer)[:topics]
-                     |> List.first()
-
   @pre_existing_dataset_id "00000-0000"
   @partial_load_dataset_id "11111-1112"
 
@@ -20,17 +14,17 @@ defmodule Reaper.FullTest do
   @gtfs_file_name "gtfs-realtime.pb"
   @csv_file_name "random_stuff.csv"
 
-  setup_all do
+  setup do
     bypass = Bypass.open()
 
     bypass
-    |> bypass_file(@gtfs_file_name)
-    |> bypass_file(@json_file_name)
-    |> bypass_file(@csv_file_name)
+    |> TestUtils.bypass_file(@gtfs_file_name)
+    |> TestUtils.bypass_file(@json_file_name)
+    |> TestUtils.bypass_file(@csv_file_name)
 
     Patiently.wait_for!(
       fn ->
-        {type, result} = get("http://localhost:#{bypass.port}/#{@json_file_name}")
+        {type, result} = get("http://localhost:#{bypass.port}/#{@csv_file_name}")
         type == :ok and result.status == 200
       end,
       dwell: 1000,
@@ -70,7 +64,7 @@ defmodule Reaper.FullTest do
         fn ->
           result =
             @pre_existing_dataset_id
-            |> fetch_relevant_messages()
+            |> TestUtils.fetch_relevant_messages()
             |> List.last()
 
           result == expected
@@ -114,7 +108,7 @@ defmodule Reaper.FullTest do
       :ok
     end
 
-    test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: bypass} do
+    test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: _bypass} do
       expected = [
         %{"my_date" => "Spot", "my_int" => "1", "my_string" => "Austin"},
         %{"my_date" => "Bella", "my_int" => "2", "my_string" => "Erin"},
@@ -125,7 +119,7 @@ defmodule Reaper.FullTest do
         fn ->
           result =
             @partial_load_dataset_id
-            |> fetch_relevant_messages()
+            |> TestUtils.fetch_relevant_messages()
 
           result == expected
         end,
@@ -160,7 +154,7 @@ defmodule Reaper.FullTest do
         fn ->
           result =
             dataset_id
-            |> fetch_relevant_messages()
+            |> TestUtils.fetch_relevant_messages()
             |> List.first()
 
           case result do
@@ -192,7 +186,7 @@ defmodule Reaper.FullTest do
         fn ->
           result =
             dataset_id
-            |> fetch_relevant_messages()
+            |> TestUtils.fetch_relevant_messages()
             |> List.first()
 
           case result do
@@ -212,7 +206,7 @@ defmodule Reaper.FullTest do
         TDG.create_dataset(%{
           id: dataset_id,
           technical: %{
-            cadence: 1_000,
+            cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
             sourceFormat: "csv",
             sourceType: "batch",
@@ -226,12 +220,12 @@ defmodule Reaper.FullTest do
         fn ->
           result =
             dataset_id
-            |> fetch_relevant_messages()
-            |> List.first()
+            |> TestUtils.fetch_relevant_messages()
+            |> List.last()
 
           case result do
             nil -> false
-            message -> message["name"] == "Austin"
+            message -> message["name"] == "Ben"
           end
         end,
         dwell: 1000,
@@ -309,7 +303,7 @@ defmodule Reaper.FullTest do
         fn ->
           result =
             dataset_id
-            |> fetch_relevant_messages()
+            |> TestUtils.fetch_relevant_messages()
             |> List.last()
 
           case result do
@@ -332,47 +326,5 @@ defmodule Reaper.FullTest do
         max_tries: 20
       )
     end
-  end
-
-  defp fetch_relevant_messages(dataset_id) do
-    @destination_topic
-    |> fetch_all_feed_messages()
-    |> Enum.filter(fn %{"dataset_id" => id} -> id == dataset_id end)
-    |> Enum.map(fn %{"payload" => payload} -> payload end)
-  end
-
-  defp fetch_all_feed_messages(topic) do
-    Stream.resource(
-      fn -> 0 end,
-      fn offset ->
-        with {:ok, results} <- :brod.fetch(@kafka_endpoint, topic, 0, offset),
-             {:kafka_message, current_offset, _headers?, _partition, _key, _body, _ts, _type, _ts_type} <-
-               List.last(results) do
-          {results, current_offset + 1}
-        else
-          _ -> {:halt, offset}
-        end
-      end,
-      fn _ -> :unused end
-    )
-    |> Enum.map(fn {:kafka_message, _offset, _headers?, _partition, _key, body, _ts, _type, _ts_type} ->
-      Jason.decode!(body)
-    end)
-  end
-
-  defp bypass_file(bypass, file_name) do
-    Bypass.stub(bypass, "HEAD", "/#{file_name}", fn conn ->
-      Plug.Conn.resp(conn, 200, "")
-    end)
-
-    Bypass.stub(bypass, "GET", "/#{file_name}", fn conn ->
-      Plug.Conn.resp(
-        conn,
-        200,
-        File.read!("test/support/#{file_name}")
-      )
-    end)
-
-    bypass
   end
 end
