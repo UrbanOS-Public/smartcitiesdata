@@ -36,7 +36,7 @@ defmodule Reaper.Extractor do
     {:file, filename}
   rescue
     error ->
-      Logger.error(fn -> "Unable to retrieve data for #{dataset_id}: #{error.message}" end)
+      Logger.error(fn -> "Unable to retrieve data for #{dataset_id}: #{Downstream.Error.message(error)}" end)
       reraise error, __STACKTRACE__
   end
 
