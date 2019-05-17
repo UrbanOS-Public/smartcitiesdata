@@ -11,6 +11,7 @@ defmodule DiscoveryStreams.Mixfile do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       docs: docs(),
+      package: package(),
       aliases: aliases(),
       test_paths: test_paths(Mix.env())
     ]
@@ -49,7 +50,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
       {:distillery, "~> 2.0"},
       {:checkov, "~> 0.4.0", only: :test},
-      {:divo, "~> 1.1", organization: "smartcolumbus_os"},
+      {:divo, "~> 1.1"},
       {:divo_kafka, "~> 0.1.0", organization: "smartcolumbus_os"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:temporary_env, "~> 2.0", only: [:test, :integration]},
@@ -64,6 +65,14 @@ defmodule DiscoveryStreams.Mixfile do
       extras: [
         "README.md"
       ]
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["smartcitiesdata"],
+      licenses: ["Apache 2.0"],
+      links: %{"GitHub" => "https://github.com/smartcitiesdata/discovery-streams"}
     ]
   end
 

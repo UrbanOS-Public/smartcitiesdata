@@ -1,7 +1,7 @@
-# discovery-streams
+# DiscoveryStreams
 
 Discovery Streams dynamically finds kafka topics and makes available corresponding channels on a public websocket.
-Channels are named with the form of `streaming:{dataset systemName}` (ex: `streaming:central_ohio_transit_authority__cota_stream`).
+Channels are named with the form of `streaming:{dataset systemName}` (example: `streaming:central_ohio_transit_authority__cota_stream`).
 
 ## Getting Started
 
@@ -29,9 +29,9 @@ Install [wsta](https://github.com/esphen/wsta)
 
 ```bash
 wsta -I --ping 50 \
---ping-msg '{"topic":"phoenix","event":"heartbeat","payload":{},"ref":"1"}' \
-'ws://localhost:4000/socket/websocket' \
-'{"topic":"vehicle_position","event":"phx_join","payload":{},"ref":"1"}'
+--ping-msg '{"topic":"streaming:central_ohio_transit_authority__cota_stream","event":"heartbeat","payload":{},"ref":"1"}' \
+'wss://streams.smartcolumbusos.com/socket/websocket' \
+'{"topic":"streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{},"ref":"1"}'
 ```
 
 ### Setting a Filter
@@ -41,9 +41,9 @@ A filter can be provided in the `phx_join` event by giving a filter key and valu
 # Stream only vehicles with an id of 11409
 
 wsta -I --ping 50 \
---ping-msg '{"topic":"vehicle_position","event":"heartbeat","payload":{},"ref":"1"}' \
-'wss://localhost:4000/socket/websocket' \
-'{"topic":"vehicle_position","event":"phx_join","payload":{"vehicle.vehicle.id":"11409"},"ref":"1"}'
+--ping-msg '{"topic":"streaming:central_ohio_transit_authority__cota_stream","event":"heartbeat","payload":{},"ref":"1"}' \
+'wss://streams.smartcolumbusos.com/socket/websocket' \
+'{"topic":"streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{"vehicle.vehicle.id":"11409"},"ref":"1"}'
 ```
 
 ## Environment Variables
@@ -64,5 +64,5 @@ mix test
 
 Integration Tests:
 ```bash
-MIX_ENV=integration mix test
+mix test.integration
 ```

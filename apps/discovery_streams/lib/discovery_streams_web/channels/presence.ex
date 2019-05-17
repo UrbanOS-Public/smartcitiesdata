@@ -1,6 +1,6 @@
 defmodule DiscoveryStreamsWeb.Presence.Server do
   @moduledoc """
-  Push Phoenix presence metrics to our Prometheus gauge every 1 second.
+  Push Phoenix presence metrics to a Prometheus gauge every 1 second.
   """
 
   use GenServer
