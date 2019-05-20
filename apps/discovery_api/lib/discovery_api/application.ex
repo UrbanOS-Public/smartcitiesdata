@@ -13,7 +13,8 @@ defmodule DiscoveryApi.Application do
         DiscoveryApi.Data.SystemNameCache,
         redis(),
         registry_pubsub(),
-        supervisor(DiscoveryApiWeb.Endpoint, [])
+        supervisor(DiscoveryApiWeb.Endpoint, []),
+        DiscoveryApi.Quantum.Scheduler
       ]
       |> List.flatten()
 

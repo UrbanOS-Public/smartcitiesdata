@@ -9,7 +9,8 @@ defmodule DiscoveryApi.Mixfile do
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      test_paths: test_paths(Mix.env())
+      test_paths: test_paths(Mix.env()),
+      elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
 
@@ -47,14 +48,20 @@ defmodule DiscoveryApi.Mixfile do
       {:prestige, "~> 0.3.1"},
       {:prometheus_plugs, "~> 1.1.1"},
       {:prometheus_phoenix, "~>1.2.0"},
+      {:quantum, "~>2.3"},
       {:redix, "~> 0.9.3"},
       {:streaming_metrics, "~> 2.1.4", organization: "smartcolumbus_os"},
       {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
       {:smart_city_test, "~> 0.2.4", only: [:test, :integration], organization: "smartcolumbus_os"},
-      {:temporary_env, "~> 2.0", only: :test, runtime: false}
+      {:temporary_env, "~> 2.0", only: :test, runtime: false},
+      {:timex, "~>3.0"}
     ]
   end
 
   defp test_paths(:integration), do: ["test/integration", "test/utils"]
   defp test_paths(_), do: ["test/unit", "test/utils"]
+
+  defp elixirc_paths(:test), do: ["test/utils", "lib"]
+  defp elixirc_paths(:integration), do: ["test/utils", "lib"]
+  defp elixirc_paths(_), do: ["lib"]
 end

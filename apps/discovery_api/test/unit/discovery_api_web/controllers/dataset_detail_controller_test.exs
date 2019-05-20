@@ -50,7 +50,8 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
                "modified" => model.modifiedDate,
                "downloads" => model.downloads,
                "queries" => model.queries,
-               "accessLevel" => model.accessLevel
+               "accessLevel" => model.accessLevel,
+               "completeness_score" => model.completeness_score
              } == actual
     end
 

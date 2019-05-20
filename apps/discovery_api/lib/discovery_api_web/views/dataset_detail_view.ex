@@ -44,7 +44,8 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
       modified: model.modifiedDate,
       downloads: model.downloads,
       queries: model.queries,
-      accessLevel: model.accessLevel
+      accessLevel: model.accessLevel,
+      completeness_score: model.completeness_score
     }
   end
 end

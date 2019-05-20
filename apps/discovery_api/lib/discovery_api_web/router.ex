@@ -43,6 +43,7 @@ defmodule DiscoveryApiWeb.Router do
     pipe_through([:api_json_only, :check_restricted])
 
     get("/dataset/:dataset_id/preview", DatasetPreviewController, :fetch_preview)
+    get("/dataset/:dataset_id/stats", DatasetStatsController, :fetch_dataset_stats)
     get("/organization/:org_name/dataset/:dataset_name", DatasetDetailController, :fetch_dataset_detail)
     get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
   end

@@ -29,4 +29,10 @@ config :discovery_api, DiscoveryApi.Auth.Guardian,
   issuer: "discovery_api",
   secret_key: "this_is_a_secret"
 
+config :discovery_api, DiscoveryApi.Quantum.Scheduler,
+  jobs: [
+    # Every day at 2:00am EDT or 6:00am UTC
+    {"0 6 * * *", {DiscoveryApi.Stats.StatsCalculator, :produce_completeness_stats, []}}
+  ]
+
 import_config "#{Mix.env()}.exs"
