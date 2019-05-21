@@ -1,14 +1,14 @@
 defmodule Reaper.DataFeed do
   @moduledoc false
 
-  alias Reaper.{Cache, Decoder, Extractor, Loader, UrlBuilder, Persistence, ReaperConfig, Persistence}
+  alias Reaper.{Cache, Decoder, Loader, DataSlurper, UrlBuilder, Persistence, ReaperConfig, Persistence}
 
   def process(%ReaperConfig{} = config, cache) do
     generated_time_stamp = DateTime.utc_now()
 
     config
     |> UrlBuilder.build()
-    |> Extractor.extract(config.dataset_id, config.sourceFormat)
+    |> DataSlurper.slurp(config.dataset_id)
     |> Decoder.decode(config)
     |> Stream.with_index()
     |> RailStream.map(&mark_duplicates(cache, &1))
