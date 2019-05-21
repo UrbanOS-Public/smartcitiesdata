@@ -13,8 +13,8 @@
   "delta_crdt": {:hex, :delta_crdt, "0.1.11", "03fd295c030fee540f26414ebb38783b243b20c525436d3d6e40dfbf091e9b96", [:mix], [], "hexpm"},
   "distillery": {:hex, :distillery, "2.0.13", "4b76d7071f47fd227fbcf27e8fd6f41cfbb2ed24d8867d15d455d600347f5e22", [:mix], [{:artificery, "~> 0.2", [hex: :artificery, repo: "hexpm", optional: false]}], "hexpm"},
   "divo": {:hex, :divo, "1.1.5", "99cd806438277e0e083df034cb53e3dcfcdb805fdac27a3f7783574c30031a7c", [:mix], [{:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:patiently, "~> 0.2", [hex: :patiently, repo: "hexpm", optional: false]}], "hexpm"},
-  "divo_kafka": {:hex, :divo_kafka, "0.1.0", "e32b3526abd4af52e6e82460e2fb5e48eb0be4cc633a4985435e774ded61c0f8", [:mix], [{:divo, "~> 1.1", [hex: :divo, repo: "hexpm:smartcolumbus_os", optional: false]}], "hexpm:smartcolumbus_os"},
-  "divo_redis": {:hex, :divo_redis, "0.1.0", "e6ab8aa2ec0a4b8e5b358406f0ea68d6cbed612c783f25bd54ff0910dc1bc5ef", [:mix], [{:divo, "~> 1.1", [hex: :divo, repo: "hexpm:smartcolumbus_os", optional: false]}], "hexpm:smartcolumbus_os"},
+  "divo_kafka": {:hex, :divo_kafka, "0.1.2", "be6cc46a16d78a8f95962de59dc1880ac031df277c6d3d4082a23665f51f9df3", [:mix], [{:divo, "~> 1.1", [hex: :divo, repo: "hexpm", optional: false]}], "hexpm"},
+  "divo_redis": {:hex, :divo_redis, "0.1.2", "c179b64e7eb0e6529f2acb48a6a39e32e1a2933938033f5a1a95a688b044b2b3", [:mix], [{:divo, "~> 1.1", [hex: :divo, repo: "hexpm", optional: false]}], "hexpm"},
   "download": {:hex, :download, "0.0.4", "e031589ef0503005468962de6fdbc2ac7ddeba4671b3093c619e091f4055e45d", [:mix], [{:httpoison, ">= 0.9.0", [hex: :httpoison, repo: "hexpm", optional: false]}], "hexpm"},
   "downstream": {:hex, :downstream, "1.0.0", "9217cef13202e47d309f558283b1e9a2c1ef6496a9aad02dae9961f1310246c0", [:mix], [{:httpoison, "~> 1.5.0", [hex: :httpoison, repo: "hexpm", optional: false]}], "hexpm"},
   "earmark": {:hex, :earmark, "1.3.2", "b840562ea3d67795ffbb5bd88940b1bed0ed9fa32834915125ea7d02e35888a5", [:mix], [], "hexpm"},
@@ -72,5 +72,5 @@
   "unicode_util_compat": {:hex, :unicode_util_compat, "0.4.1", "d869e4c68901dd9531385bb0c8c40444ebf624e60b6962d95952775cac5e90cd", [:rebar3], [], "hexpm"},
   "unsafe": {:hex, :unsafe, "1.0.1", "a27e1874f72ee49312e0a9ec2e0b27924214a05e3ddac90e91727bc76f8613d8", [:mix], [], "hexpm"},
   "xxhash": {:hex, :xxhash, "0.2.1", "ab0893a8124f3c11116c57e500485dc5f67817d1d4c44f0fff41f3fd3c590607", [:mix], [], "hexpm"},
-  "yeet": {:hex, :yeet, "1.0.0", "58bf9584534534dfb9decc93746d86e3aedb369bef564aff4caf18901878c0db", [:mix], [{:brod, "~> 3.4", [hex: :brod, repo: "hexpm", optional: false]}, {:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm:smartcolumbus_os"},
+  "yeet": {:hex, :yeet, "1.0.0", "cbb124e6571549aad964de5416ef90581590324cf7ca4a60c8e067a9a0597a9e", [:mix], [{:brod, "~> 3.4", [hex: :brod, repo: "hexpm", optional: false]}, {:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm"},
 }
