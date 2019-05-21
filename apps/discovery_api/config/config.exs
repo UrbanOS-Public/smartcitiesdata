@@ -32,7 +32,7 @@ config :discovery_api, DiscoveryApi.Auth.Guardian,
 config :discovery_api, DiscoveryApi.Quantum.Scheduler,
   jobs: [
     # Every day at 2:00am EDT or 6:00am UTC
-    {"13 15 * * *", {DiscoveryApi.Stats.StatsCalculator, :produce_completeness_stats, []}}
+    {"0 6 * * *", {DiscoveryApi.Stats.StatsCalculator, :produce_completeness_stats, []}}
   ]
 
 import_config "#{Mix.env()}.exs"
