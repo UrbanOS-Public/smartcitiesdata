@@ -62,7 +62,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
 
       StatsCalculator.produce_completeness_stats()
 
-      assert_called(
+      refute_called(
         Persistence.persist(
           "discovery-api:stats:#{@dataset_id}",
           %{id: @dataset_id}

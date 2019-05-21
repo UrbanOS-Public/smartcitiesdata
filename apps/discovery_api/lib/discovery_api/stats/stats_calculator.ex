@@ -33,11 +33,17 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
   end
 
   defp get_dataset(dataset) do
-    ("select * from " <> dataset.technical.systemName)
-    |> Prestige.execute(rows_as_maps: true)
+    try do
+      ("select * from " <> dataset.technical.systemName)
+      |> Prestige.execute(rows_as_maps: true)
+    rescue
+      _ -> []
+    end
   end
 
   defp save_completeness(%{id: dataset_id} = dataset_stats) do
-    DiscoveryApi.Data.Persistence.persist("discovery-api:stats:#{dataset_id}", dataset_stats)
+    if Map.get(dataset_stats, :fields, nil) != nil do
+      DiscoveryApi.Data.Persistence.persist("discovery-api:stats:#{dataset_id}", dataset_stats)
+    end
   end
 end
