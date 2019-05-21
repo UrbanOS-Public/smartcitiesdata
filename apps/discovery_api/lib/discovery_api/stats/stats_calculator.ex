@@ -33,8 +33,12 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
   end
 
   defp get_dataset(dataset) do
-    ("select * from " <> dataset.technical.systemName)
-    |> Prestige.execute(rows_as_maps: true)
+    try do
+      ("select * from " <> dataset.technical.systemName)
+      |> Prestige.execute(rows_as_maps: true)
+    rescue
+      []
+    end
   end
 
   defp save_completeness(%{id: dataset_id} = dataset_stats) do
