@@ -1,6 +1,7 @@
 defmodule Reaper.DataFeedTest do
   use ExUnit.Case
   use Placebo
+  import ExUnit.CaptureLog
 
   alias Reaper.{Cache, DataFeed, Persistence}
 
@@ -132,5 +133,23 @@ defmodule Reaper.DataFeedTest do
     refute_called Persistence.record_last_processed_index(@dataset_id, 0)
     assert_called Persistence.record_last_processed_index(@dataset_id, 1), once()
     assert_called Persistence.remove_last_processed_index(@dataset_id), once()
+  end
+
+  test "process/2 should catch log all exceptions and reraise", %{config: config} do
+    allow RailStream.map(any(), any()),
+      return: Stream.repeatedly(fn -> raise "some error" end),
+      meck_options: [:passthrough]
+
+    allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :yeet
+
+    log =
+      capture_log(fn ->
+        assert_raise RuntimeError, "some error", fn ->
+          DataFeed.process(config, @cache_name)
+        end
+      end)
+
+    assert log =~ inspect(config)
+    assert log =~ "some error"
   end
 end
