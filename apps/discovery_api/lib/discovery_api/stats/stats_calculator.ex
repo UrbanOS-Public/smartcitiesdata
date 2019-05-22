@@ -13,22 +13,27 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
 
     SmartCity.Dataset.get_all!()
     |> Enum.filter(fn dataset -> dataset.technical.sourceType != "remote" end)
-    |> Enum.map(fn dataset -> calculate_completeness_for_dataset(dataset) end)
-    |> Enum.map(&add_completeness_total/1)
-    |> Enum.each(&save_completeness/1)
+    |> Enum.each(fn dataset -> calculate_and_save_completeness(dataset) end)
 
     DiscoveryApi.Data.Persistence.persist("discovery-api:stats:end_time", DateTime.utc_now())
   end
 
+  def calculate_and_save_completeness(dataset) do
+    dataset
+    |> calculate_completeness_for_dataset()
+    |> add_completeness_total()
+    |> save_completeness()
+  rescue
+    _ -> :ok
+  end
+
   defp calculate_completeness_for_dataset(dataset) do
-    try do
-      dataset
-      |> get_dataset()
-      |> Enum.reduce(%{}, fn x, acc -> Completeness.calculate_stats_for_row(dataset, x, acc) end)
-      |> Map.put(:id, dataset.id)
-    rescue
-      _ -> %{id: dataset.id}
-    end
+    dataset
+    |> get_dataset()
+    |> Enum.reduce(%{}, fn x, acc -> Completeness.calculate_stats_for_row(dataset, x, acc) end)
+    |> Map.put(:id, dataset.id)
+  rescue
+    _ -> %{id: dataset.id}
   end
 
   defp add_completeness_total(dataset_stats) do

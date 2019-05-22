@@ -13,17 +13,14 @@ defmodule DiscoveryApi.Stats.Completeness do
   """
 
   def calculate_stats_for_row(dataset, row, dataset_stats) do
-    updated_fields =
-      dataset_stats
-      |> Map.get(:fields, %{})
-      |> update_fields_map(dataset, row)
-
     dataset_stats
     |> Map.update(:record_count, 1, fn value -> value + 1 end)
-    |> Map.put(:fields, updated_fields)
+    |> Map.put(:fields, update_fields_map(dataset_stats, dataset, row))
   end
 
-  defp update_fields_map(existing_field_map, dataset, data) do
+  defp update_fields_map(stats_map, dataset, data) do
+    existing_field_map = Map.get(stats_map, :fields, %{})
+
     dataset.technical.schema
     |> get_fields()
     |> Enum.reduce(existing_field_map, fn field, field_stats ->
@@ -35,51 +32,35 @@ defmodule DiscoveryApi.Stats.Completeness do
     field_path = String.split(field_name, ".")
 
     field_stats
-    |> ensure_field_counter(field)
-    |> evaluate_field_count(field, field_path, data)
+    |> increment_field_count(field, field_path, data)
   end
 
-  defp ensure_field_counter(field_stats, %{name: field_name} = field) do
-    if counter_has_not_been_initialized(field_stats, field_name) do
-      initialize_field_counter(field_stats, field)
-    else
-      field_stats
-    end
-  end
-
-  defp evaluate_field_count(field_stats, field, field_path, data) do
-    if field_exists_in_row(data, field_path) do
-      increment_field_count(field_stats, field)
-    else
-      field_stats
-    end
-  end
-
-  defp field_exists_in_row(data, field_path) do
+  defp field_count_in_row(data, field_path) do
     value = get_in(data, field_path)
 
     cond do
-      is_nil(value) -> false
-      is_binary(value) -> String.trim(value) != ""
-      true -> true
+      is_nil(value) ->
+        0
+
+      is_binary(value) && String.trim(value) == "" ->
+        0
+
+      true ->
+        1
     end
   end
 
-  defp counter_has_not_been_initialized(field_stats, field_name) do
-    Map.get(field_stats, field_name, nil) == nil
-  end
+  defp increment_field_count(field_stats, %{name: field_name, required: required} = field, field_path, data) do
+    count_in_row = field_count_in_row(data, field_path)
 
-  defp initialize_field_counter(field_stats, %{name: field_name} = field) do
-    Map.put(field_stats, field_name, %{required: Map.get(field, :required), count: 0})
-  end
-
-  defp increment_field_count(field_stats, %{name: field_name} = field) do
-    field_map =
-      field_stats
-      |> Map.get(field_name, %{required: Map.get(field, :required), count: 0})
-      |> Map.update(:count, 1, fn count -> count + 1 end)
-
-    Map.put(field_stats, field_name, field_map)
+    Map.update(
+      field_stats,
+      field_name,
+      %{required: required, count: count_in_row},
+      fn %{required: required, count: count} ->
+        %{required: required, count: count + count_in_row}
+      end
+    )
   end
 
   defp get_fields(schema) do
