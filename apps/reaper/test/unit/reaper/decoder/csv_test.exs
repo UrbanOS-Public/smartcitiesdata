@@ -2,7 +2,6 @@ defmodule Reaper.Decoder.CsvTest do
   use ExUnit.Case
   use Placebo
   alias Reaper.Decoder
-  alias Reaper.ReaperConfig
   alias SmartCity.TestDataGenerator, as: TDG
 
   @filename "#{__MODULE__}_temp_file"

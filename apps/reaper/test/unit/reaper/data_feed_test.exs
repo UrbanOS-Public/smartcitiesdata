@@ -16,10 +16,6 @@ defmodule Reaper.DataFeedTest do
     bypass = Bypass.open()
     Cachex.start_link(@cache_name)
 
-    Bypass.expect(bypass, "HEAD", "/api/csv", fn conn ->
-      Plug.Conn.resp(conn, 200, "")
-    end)
-
     Bypass.expect(bypass, "GET", "/api/csv", fn conn ->
       Plug.Conn.resp(conn, 200, @csv)
     end)

@@ -4,8 +4,12 @@ defmodule Reaper.DataSlurper.Http do
   """
   @behaviour Reaper.DataSlurper
   alias Reaper.DataSlurper
+  alias Reaper.Http.Downloader
   require Logger
-  @download_timeout Application.get_env(:reaper, :download_timeout, 600_000)
+
+  defmodule HttpDownloadTimeoutError do
+    defexception [:message]
+  end
 
   @impl DataSlurper
   def handle?(url) do
@@ -15,37 +19,24 @@ defmodule Reaper.DataSlurper.Http do
   @impl DataSlurper
   def slurp(url, dataset_id) do
     filename = DataSlurper.determine_filename(dataset_id)
-    file = File.open!(filename, [:write])
-
-    url
-    |> follow_redirect()
-    |> Downstream.get!(file, timeout: @download_timeout)
-
-    File.close(file)
+    download(dataset_id, url, filename)
     {:file, filename}
   rescue
     error ->
-      Logger.error(fn -> "Unable to retrieve data for #{dataset_id}: #{Downstream.Error.message(error)}" end)
+      Logger.error(fn -> "Unable to retrieve data for #{dataset_id}: #{Exception.message(error)}" end)
       reraise error, __STACKTRACE__
   end
 
-  defp follow_redirect(url) do
-    case HTTPoison.head(url) do
-      {:ok, %HTTPoison.Response{status_code: status_code} = response} when status_code in [301, 302] ->
-        response
-        |> location()
-        |> follow_redirect()
-
-      _ ->
-        url
-    end
+  defp download(dataset_id, url, filename) do
+    Task.async(fn -> Downloader.download(url, to: filename) end)
+    |> Task.await(download_timeout())
+  catch
+    :exit, _ ->
+      message = "Timed out downloading dataset #{dataset_id} at #{url} in #{download_timeout()} ms"
+      raise HttpDownloadTimeoutError, message
   end
 
-  defp location(%HTTPoison.Response{headers: headers}) do
-    {_location, url} =
-      headers
-      |> Enum.find(fn {key, _value} -> String.downcase(key) == "location" end)
-
-    url
+  defp download_timeout do
+    Application.get_env(:reaper, :http_download_timeout, 600_000)
   end
 end

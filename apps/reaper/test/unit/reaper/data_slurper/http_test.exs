@@ -5,7 +5,7 @@ defmodule Reaper.DataSlurper.HttpTest do
 
   @dataset_id "12345-23729"
 
-  describe "extract" do
+  describe "slurp" do
     setup do
       bypass = Bypass.open()
       filename = @dataset_id
@@ -57,12 +57,22 @@ defmodule Reaper.DataSlurper.HttpTest do
       assert ~s|one,two,three\n4,5,6\n| == File.read!(filename)
     end
 
-    test "sets timeout when download the file" do
-      allow Downstream.get!(any(), any(), any()), return: :ok
+    test "sets timeout when downloading the file", %{bypass: bypass} do
+      Application.put_env(:reaper, :http_download_timeout, 1)
+      on_exit(fn -> Application.delete_env(:reaper, :http_download_timeout) end)
 
-      DataSlurper.Http.slurp("http://some.url", @dataset_id)
+      allow Reaper.Http.Downloader.download(any(), any()),
+        exec: fn _, _ ->
+          Process.sleep(1_000)
+        end
 
-      assert_called Downstream.get!("http://some.url", any(), timeout: 600_000), once()
+      url = "http://localhost:#{bypass.port}/some/johnson.csv"
+
+      expected_message = "Timed out downloading dataset #{@dataset_id} at #{url} in 1 ms"
+
+      assert_raise DataSlurper.Http.HttpDownloadTimeoutError, expected_message, fn ->
+        DataSlurper.Http.slurp(url, @dataset_id)
+      end
     end
   end
 
@@ -70,7 +80,7 @@ defmodule Reaper.DataSlurper.HttpTest do
     status_code = Keyword.get(opts, :status_code, 302)
     url = "http://localhost:#{bypass.port}#{redirect_path}"
 
-    Bypass.expect(bypass, "HEAD", path, fn conn ->
+    Bypass.stub(bypass, "GET", path, fn conn ->
       case status_code do
         302 ->
           Phoenix.Controller.redirect(conn, external: url)
@@ -84,10 +94,6 @@ defmodule Reaper.DataSlurper.HttpTest do
   end
 
   defp setup_get(bypass, path, data) do
-    Bypass.stub(bypass, "HEAD", path, fn conn ->
-      Plug.Conn.resp(conn, 200, data)
-    end)
-
     Bypass.stub(bypass, "GET", path, fn conn ->
       Plug.Conn.resp(conn, 200, data)
     end)

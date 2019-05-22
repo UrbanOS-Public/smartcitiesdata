@@ -1,7 +1,6 @@
 defmodule Reaper.Decoder.JsonTest do
   use ExUnit.Case
   use Placebo
-  alias SmartCity.TestDataGenerator, as: TDG
   alias Reaper.ReaperConfig
   alias Reaper.Decoder
 
