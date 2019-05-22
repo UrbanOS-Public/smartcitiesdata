@@ -1,5 +1,6 @@
 defmodule Reaper.DataFeed do
   @moduledoc false
+  require Logger
 
   alias Reaper.{Cache, Decoder, Loader, DataSlurper, UrlBuilder, Persistence, ReaperConfig, Persistence}
 
@@ -22,6 +23,10 @@ defmodule Reaper.DataFeed do
     |> record_last_fetched_timestamp(config.dataset_id, generated_time_stamp)
 
     Persistence.remove_last_processed_index(config.dataset_id)
+  rescue
+    error ->
+      Logger.error("Unable to continue processing dataset #{inspect(config)} - Error #{inspect(error)}")
+      reraise error, __STACKTRACE__
   after
     File.rm(config.dataset_id)
   end
