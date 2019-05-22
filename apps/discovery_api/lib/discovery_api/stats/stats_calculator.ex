@@ -21,10 +21,14 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
   end
 
   defp calculate_completeness_for_dataset(dataset) do
-    dataset
-    |> get_dataset()
-    |> Enum.reduce(%{}, fn x, acc -> Completeness.calculate_stats_for_row(dataset, x, acc) end)
-    |> Map.put(:id, dataset.id)
+    try do
+      dataset
+      |> get_dataset()
+      |> Enum.reduce(%{}, fn x, acc -> Completeness.calculate_stats_for_row(dataset, x, acc) end)
+      |> Map.put(:id, dataset.id)
+    rescue
+      _ -> %{id: dataset.id}
+    end
   end
 
   defp add_completeness_total(dataset_stats) do
@@ -37,7 +41,10 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
     |> Prestige.execute(rows_as_maps: true)
   end
 
-  defp save_completeness(%{id: dataset_id} = dataset_stats) do
+  defp save_completeness(%{id: dataset_id, fields: fields} = dataset_stats) when not is_nil(fields) do
     DiscoveryApi.Data.Persistence.persist("discovery-api:stats:#{dataset_id}", dataset_stats)
+    :ok
   end
+
+  defp save_completeness(_dataset_stats), do: :ok
 end
