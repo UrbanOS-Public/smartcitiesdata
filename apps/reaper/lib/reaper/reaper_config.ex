@@ -1,7 +1,21 @@
 defmodule Reaper.ReaperConfig do
-  @moduledoc false
+  @moduledoc """
+  This module defines the structure for dataset configurations to be processed by Reaper
+  """
 
   @derive Jason.Encoder
+
+  @type t :: %__MODULE__{
+          dataset_id: integer(),
+          cadence: integer(),
+          lastSuccessTime: String.t(),
+          sourceFormat: String.t(),
+          sourceUrl: String.t(),
+          sourceType: String.t(),
+          partitioner: String.t(),
+          queryParams: list(),
+          schema: list()
+        }
 
   defstruct [
     :dataset_id,
@@ -15,6 +29,10 @@ defmodule Reaper.ReaperConfig do
     :schema
   ]
 
+  @doc """
+  Converts a `SmartCity.Dataset` to a `Reaper.ReaperConfig`
+  """
+  @spec from_dataset(%SmartCity.Dataset{}) :: {:ok, Reaper.ReaperConfig.t()}
   def from_dataset(%SmartCity.Dataset{} = dataset) do
     struct = %__MODULE__{
       dataset_id: dataset.id,
@@ -30,6 +48,10 @@ defmodule Reaper.ReaperConfig do
     {:ok, struct}
   end
 
+  @doc """
+  Convert a `Reaper.ReaperConfig` into JSON
+  """
+  @spec encode(Reaper.ReaperConfig.t()) :: String.t()
   def encode(%__MODULE__{} = reaper_config) do
     Jason.encode(reaper_config)
   end

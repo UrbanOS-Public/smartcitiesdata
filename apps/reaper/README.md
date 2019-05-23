@@ -1,6 +1,6 @@
 # Reaper
 
-Retrieves streamed data, transforms it, and loads it onto a Kafka topic -- generically
+Retrieves streaming or batch data, decodes it, and loads it onto a Kafka topic
 
 ## Environment Variables used for configuration
 
@@ -8,8 +8,17 @@ Retrieves streamed data, transforms it, and loads it onto a Kafka topic -- gener
 | -------- | ----------- | ------- |
 | KAFKA_BROKERS | comma delimited list of kafka brokers | kafka1.com:9092,kafka2.com:9092 |
 | TO_TOPIC | topic unto which we do the raw data | raw |
+| HOST_IP | local IP address; used for integration tests | 127.0.0.1 |
+| REDIS_HOST | IP address of the redis host | 10.0.0.2 |
+| DLQ_TOPIC | Kafka topic name for the dead letter queue | streaming-dlq |
+| RUN_IN_KUBERNETES | Set to "true" if running in kubernetes | true |
 
-## Running Tests
+## Installing dependancies
+```bash
+mix deps.get
+```
+
+## Running Unit Tests
 
 ```bash
 mix test
@@ -24,40 +33,82 @@ MIX_ENV=integration mix test.integration
 
 ## Running Interactively
 
-To run in series:
-
+First, to startup external dependancies in docker:
 ```bash
 MIX_ENV=integration mix docker.start
+```
+
+To run a single instance with no data in it:
+
+```bash
 MIX_ENV=integration iex -S mix
 ```
 
--or- this to check on counts after the tests have run
+To run a single instance with test data added to it:
 
 ```bash
-MIX_ENV=integration mix docker.start
 MIX_ENV=integration iex -S mix test --no-start
 ```
 
-To run a local cluster
+To run a local cluster, run the following in two different terminals:
 
 ```bash
-MIX_ENV=integration mix docker.start
 iex --name a@127.0.0.1 -S mix
+```
+
+```bash
 iex --name b@127.0.0.1 -S mix
 ```
 
-You can then verify offsets on the source and destination topic with the following commands.
+You can verify offsets on the source and destination topic with the following commands:
 
 ```elixir
-:brod_utils.resolve_offset([{'localhost', 9094}], "dataset-registry", 0, -1, [])
-:brod_utils.resolve_offset([{'localhost', 9094}], "raw", 0, -1, [])
+:brod_utils.resolve_offset([{'localhost', 9092}], "dataset-registry", 0, -1, [])
+:brod_utils.resolve_offset([{'localhost', 9092}], "raw", 0, -1, [])
 ```
 
 ### Example Messages
 
-The following message should create a datafeed which will point at the integration webserver and pull down a sample file on a cadence of 100 seconds.  This message should be posted to the `dataset-registry` topic and will cause messages to be posted to the `streaming-raw` topic on the cadence:
-```
-{"business":{"contactEmail":"something@email.example","contactName":"Jalson","dataTitle":"Stuff","description":"dataset","homepage":"","keywords":[],"license":"MIT","modifiedDate":"something","orgTitle":"SCOS","rights":""},"id":"Reaper","technical":{"cadence":100000,"dataName":"name","headers":{"Authorization":"Basic xdasdgdasgdsgd"},"orgName":"Sample_Organization","partitioner":{"query":null,"type":null},"queryParams":{},"schema":[],"sourceFormat":"json","sourceUrl":"localhost:7000/vehicle_locations.json","stream": true,"systemName":"scos","transformations":["a_transform"],"validations":[]}}
+The following code will create a datafeed which will pull down a sample file on a cadence of 100 seconds. As a result, messages containing the data to be posted to the `raw` topic on the cadence.  The sourceUrl key needs to be a publicly available csv file
+```elixir
+message = %{
+      "id" => "uuid",
+      "technical" => %{
+        "dataName" => "dataset",
+        "orgName" => "org",
+        "orgId" => "uuid",
+        "systemName" => "org__dataset",
+        "sourceUrl" => "https://example.com",
+        "sourceFormat" => "csv",
+        "sourceType" => "stream",
+        "cadence" => 100000,
+        "headers" => %{},
+        "partitioner" => %{type: nil, query: nil},
+        "queryParams" => %{},
+        "transformations" => [],
+        "validations" => [],
+        "schema" => []
+      },
+      "business" => %{
+        "dataTitle" => "dataset title",
+        "description" => "description",
+        "keywords" => ["one", "two"],
+        "modifiedDate" => "date",
+        "orgTitle" => "org title",
+        "contactName" => "contact name",
+        "contactEmail" => "contact@email.com",
+        "license" => "license",
+        "rights" => "rights information",
+        "homepage" => ""
+      },
+      "_metadata" => %{
+        "intendedUse" => ["use 1", "use 2", "use 3"],
+        "expectedBenefit" => []
+      }
+    }
+
+ {:ok, sc_message} = SmartCity.Dataset.new(message)
+ SmartCity.Dataset.write(sc_message)
 ```
 
 ## Clustering
@@ -90,20 +141,6 @@ The resulting supervision tree looks roughly like this:
     +------------------------+ +------------------+
 ```
 
+## License
 
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `reaper` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:reaper, "~> 0.1.6"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/reaper](https://hexdocs.pm/reaper).
+This application is released under the Apache 2.0 license - see the license at http://www.apache.org/licenses/LICENSE-2.0

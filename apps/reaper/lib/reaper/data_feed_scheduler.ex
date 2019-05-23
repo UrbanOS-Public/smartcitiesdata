@@ -1,10 +1,6 @@
 defmodule Reaper.DataFeedScheduler do
   @moduledoc """
   An ETL process configured by `Reaper.ConfigServer` and supervised by `Reaper.FeedSupervisor`.
-
-  Extracts data from a given HTTP endpoint.
-  Transforms with a given module's `&transform/1` function.
-  Loads onto the "raw" Kafka topic.
   """
 
   use GenServer
@@ -12,10 +8,18 @@ defmodule Reaper.DataFeedScheduler do
 
   ## CLIENT
 
+  @doc """
+  Sends an update to the given `Reaper.DataFeed` config
+  """
+  @spec update(Reaper.DataFeed, term()) :: :ok
   def update(data_feed, state) do
     GenServer.cast(data_feed, {:update, state})
   end
 
+  @doc """
+  Retrieves GenServer state from the given `Reaper.DataFeed`
+  """
+  @spec get(Reaper.DataFeed) :: term()
   def get(data_feed) do
     GenServer.call(data_feed, :get)
   end
@@ -65,6 +69,10 @@ defmodule Reaper.DataFeedScheduler do
     {:reply, state, state}
   end
 
+  @doc """
+    Returns an integer value indicating how many milliseconds until the next run time
+  """
+  @spec calculate_next_run_time(Reaper.ReaperConfig.t()) :: pos_integer()
   def calculate_next_run_time(%ReaperConfig{dataset_id: id, cadence: "once"}) do
     case Persistence.get_last_fetched_timestamp(id) do
       nil -> 0

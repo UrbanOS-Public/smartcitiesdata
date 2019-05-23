@@ -1,11 +1,16 @@
 defmodule Reaper.Cache do
-  @moduledoc false
+  @moduledoc """
+  Cache module for rows of data before it is added to the raw topic
+  """
   require Logger
 
   defmodule CacheError do
     defexception [:message]
   end
 
+  @doc """
+  Returns a tuple for a value that signifies if it exists in the cache
+  """
   @spec mark_duplicates(atom(), any()) :: {:ok, any()} | {:duplicate, any()} | {:error, any()}
   def mark_duplicates(cache, value) do
     value
@@ -14,6 +19,9 @@ defmodule Reaper.Cache do
     |> to_result(value)
   end
 
+  @doc """
+  Adds a value to the cache
+  """
   @spec cache(atom(), any()) :: {:ok, boolean()} | {:error, any()}
   def cache(cache, value) do
     value

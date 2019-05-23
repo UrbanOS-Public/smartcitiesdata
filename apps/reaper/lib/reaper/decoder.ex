@@ -1,6 +1,6 @@
 defmodule Reaper.Decoder do
   @moduledoc """
-  Decodes files from various source formats
+  This module decodes datasets of different types into JSON
   """
   require Logger
 
@@ -11,7 +11,8 @@ defmodule Reaper.Decoder do
   @type reason :: any()
   @type data :: any()
 
-  @callback decode({:file, filename()}, %ReaperConfig{}) :: {:ok, Enumerable.t()} | {:error, data(), reason()}
+  @callback decode({:file, filename()}, %ReaperConfig{}) ::
+              {:ok, Enumerable.t()} | {:error, data(), reason()}
   @callback handle?(format()) :: boolean()
 
   @implementations [
@@ -21,6 +22,9 @@ defmodule Reaper.Decoder do
     Reaper.Decoder.Unknown
   ]
 
+  @doc """
+  Converts a dataset into JSON based on it's `sourceFormat`
+  """
   def decode({:file, filename}, %ReaperConfig{sourceFormat: source_format} = config) do
     response =
       @implementations

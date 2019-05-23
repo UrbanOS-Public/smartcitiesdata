@@ -2,7 +2,7 @@ defmodule Reaper.ConfigServer do
   @moduledoc """
   A control plane.
 
-  Reaper.ConfigServer manages supervisors (`Reaper.FeedSupervisor`) for each dataset configured in dataset registry kafka topic.
+  Reaper.ConfigServer manages supervisors (`Reaper.FeedSupervisor`) for each dataset
   """
   require Logger
   use GenServer
@@ -17,6 +17,10 @@ defmodule Reaper.ConfigServer do
     {:ok, state, {:continue, :load_persisted_configs}}
   end
 
+  @doc """
+  Returns a map containing the information required to start the child process
+  """
+  @spec child_spec(any()) :: map()
   def child_spec(args) do
     config_server_spec = %{
       id: __MODULE__,
@@ -36,6 +40,10 @@ defmodule Reaper.ConfigServer do
     }
   end
 
+  @doc """
+  Loads all dataset configs and starts a supervisor for each dataset
+  """
+  @spec handle_continue(atom(), any()) :: {:noreply, any()}
   def handle_continue(:load_persisted_configs, state) do
     Persistence.get_all()
     |> Enum.each(&create_feed_supervisor/1)
@@ -43,6 +51,11 @@ defmodule Reaper.ConfigServer do
     {:noreply, state}
   end
 
+  @doc """
+  Starts a horde supervisor process for a dataset and persists it
+  """
+  @spec process_reaper_config(ReaperConfig.t()) ::
+          {:ok, String.t()} | DynamicSupervisor.on_start_child() | nil
   def process_reaper_config(%ReaperConfig{cadence: "never", sourceType: "remote"}), do: nil
 
   def process_reaper_config(%ReaperConfig{cadence: "once", sourceType: "batch"} = reaper_config) do

@@ -1,9 +1,24 @@
 defmodule Reaper.DataFeed do
-  @moduledoc false
+  @moduledoc """
+  This module processes a data source and sends its data to the output topic
+  """
   require Logger
 
-  alias Reaper.{Cache, Decoder, Loader, DataSlurper, UrlBuilder, Persistence, ReaperConfig, Persistence}
+  alias Reaper.{
+    Cache,
+    Decoder,
+    Loader,
+    DataSlurper,
+    UrlBuilder,
+    Persistence,
+    ReaperConfig,
+    Persistence
+  }
 
+  @doc """
+  Downloads, decodes, and sends data to a topic
+  """
+  @spec process(ReaperConfig.t(), atom()) :: :ok | {:error, String.t()}
   def process(%ReaperConfig{} = config, cache) do
     generated_time_stamp = DateTime.utc_now()
 
@@ -26,6 +41,7 @@ defmodule Reaper.DataFeed do
   rescue
     error ->
       Logger.error("Unable to continue processing dataset #{inspect(config)} - Error #{inspect(error)}")
+
       reraise error, __STACKTRACE__
   after
     File.rm(config.dataset_id)

@@ -1,6 +1,14 @@
 defmodule Reaper.UrlBuilder do
   alias Reaper.ReaperConfig
-  @moduledoc false
+
+  @moduledoc """
+  This module builds a URL to download a source file
+  """
+
+  @doc """
+  Returns a string containing the URL with all query string parameters based on the `Reaper.ReaperConfig`
+  """
+  @spec build(ReaperConfig.t()) :: String.t()
   def build(%ReaperConfig{sourceUrl: url, queryParams: query_params} = _reaper_config)
       when query_params == %{},
       do: url

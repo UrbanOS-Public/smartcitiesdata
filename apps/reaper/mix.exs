@@ -8,6 +8,7 @@ defmodule Reaper.MixProject do
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      docs: docs(),
       aliases: aliases(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env()),
@@ -73,6 +74,16 @@ defmodule Reaper.MixProject do
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 1.2", only: [:test, :integration]},
       {:smart_city_test, "~> 0.2"}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      source_url: "https://github.com/SmartColumbusOS/reaper",
+      extras: [
+        "README.md"
+      ]
     ]
   end
 

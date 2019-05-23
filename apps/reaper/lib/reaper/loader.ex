@@ -1,8 +1,15 @@
 defmodule Reaper.Loader do
-  @moduledoc false
+  @moduledoc """
+  This module loads data to the output topic
+  """
   alias Kaffe.Producer
   alias SmartCity.Data
+  alias Reaper.ReaperConfig
 
+  @doc """
+  Loads a data row to the output topic
+  """
+  @spec load(map(), ReaperConfig.t(), String.t()) :: :ok | {:error, String.t()}
   def load(payload, reaper_config, start_time) do
     partitioner_module = determine_partitioner_module(reaper_config)
     key = partitioner_module.partition(payload, reaper_config.partitioner.query)

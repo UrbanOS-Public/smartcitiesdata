@@ -17,11 +17,17 @@ defmodule Reaper.FeedSupervisor do
   def init(state) do
     children = create_child_spec(state[:reaper_config])
 
-    Logger.debug(fn -> "Starting #{__MODULE__} with children: #{inspect(children, pretty: true)}" end)
+    Logger.debug(fn ->
+      "Starting #{__MODULE__} with children: #{inspect(children, pretty: true)}"
+    end)
 
     Supervisor.init(children, strategy: :one_for_all)
   end
 
+  @doc """
+  Returns a map containing the information required to start the child process
+  """
+  @spec child_spec(any()) :: map()
   def child_spec(%ReaperConfig{dataset_id: id} = reaper_config) do
     %{
       id: String.to_atom(id),
@@ -31,6 +37,10 @@ defmodule Reaper.FeedSupervisor do
     }
   end
 
+  @doc """
+  Sends a `Reaper.ReaperConfig` update message to the `Reaper.DataFeedServer` responsible for that data feed
+  """
+  @spec update_data_feed(pid(), ReaperConfig.t()) :: :ok
   def update_data_feed(supervisor_pid, %{dataset_id: id} = reaper_config) do
     "#{id}_feed"
     |> String.to_atom()
@@ -38,6 +48,10 @@ defmodule Reaper.FeedSupervisor do
     |> Reaper.DataFeedScheduler.update(reaper_config)
   end
 
+  @doc """
+  Returns a map containing the information required to start the child process
+  """
+  @spec create_child_spec(any()) :: map()
   def create_child_spec(%{dataset_id: id} = reaper_config) do
     feed_name = String.to_atom("#{id}_feed")
     cache_name = String.to_atom("#{id}_cache")
