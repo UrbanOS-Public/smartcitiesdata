@@ -2,6 +2,7 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
   @moduledoc """
   Provides an interface for calculating statistics for all datasets in the Smart City Registry
   """
+  require Logger
   alias DiscoveryApi.Stats.Completeness
   alias DiscoveryApi.Stats.CompletenessTotals
 
@@ -24,7 +25,9 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
     |> add_completeness_total()
     |> save_completeness()
   rescue
-    _ -> :ok
+    e ->
+      Logger.warn("#{inspect(e)}")
+      :ok
   end
 
   defp calculate_completeness_for_dataset(dataset) do
