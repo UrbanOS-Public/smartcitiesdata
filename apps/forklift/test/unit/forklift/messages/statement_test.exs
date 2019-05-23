@@ -2,8 +2,8 @@ defmodule StatementTest do
   use ExUnit.Case
   use Placebo
 
-  alias Forklift.DatasetSchema
-  alias Forklift.Statement
+  alias Forklift.Datasets.DatasetSchema
+  alias Forklift.Messages.Statement
 
   test "build generates a valid statement when given a schema and data" do
     data = [

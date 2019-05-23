@@ -1,21 +1,29 @@
 # Forklift
 
-**TODO: Add description**
+An application for reading data off kafka topics, batching it up and sending it to Presto in a SQL insert query for long-term storage based on data retrieved from a schema registry.
 
-## Installation
+Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc).
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `forklift` to your list of dependencies in `mix.exs`:
 
-```elixir
-def deps do
-  [
-    {:forklift, "~> 0.4.4"}
-  ]
-end
+# Running Locally
+
+You can use [Divo](https://hexdocs.pm/divo/) to stand up the external dependencies locally using docker and docker-compose.
+
+```bash
+MIX_ENV=integration mix docker.start
+MIX_ENV=integration iex -S mix
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/forklift](https://hexdocs.pm/forklift).
+## Testing
 
+### Running the Unit Tests
+
+```bash
+mix test
+```
+
+### Running the Integration Tests
+
+```bash
+mix test.integration
+```

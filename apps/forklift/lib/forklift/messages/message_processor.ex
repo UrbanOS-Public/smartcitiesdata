@@ -1,9 +1,14 @@
-defmodule Forklift.MessageProcessor do
-  @moduledoc false
-  use SmartCity.Registry.MessageHandler
+defmodule Forklift.Messages.MessageProcessor do
+  @moduledoc """
+  Reads data off kafka topics, buffering it in batches.
+  """
   require Logger
-  alias Forklift.{DataBuffer, DeadLetterQueue}
+  alias Forklift.Messages.DataBuffer
+  alias Forklift.DeadLetterQueue
 
+  @doc """
+  Handle each kafka message.
+  """
   def handle_message(message) do
     process_data_message(message)
   end

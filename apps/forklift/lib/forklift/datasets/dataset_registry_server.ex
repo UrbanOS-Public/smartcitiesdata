@@ -1,9 +1,11 @@
-defmodule Forklift.DatasetRegistryServer do
-  @moduledoc false
+defmodule Forklift.Datasets.DatasetRegistryServer do
+  @moduledoc """
+  Server for the persitance and retrieval of dataset registry schemas
+  """
   require Logger
   use GenServer
 
-  alias Forklift.DatasetSchema
+  alias Forklift.Datasets.DatasetSchema
 
   ################
   ## Client API ##
@@ -12,11 +14,22 @@ defmodule Forklift.DatasetRegistryServer do
     GenServer.start_link(__MODULE__, [], Keyword.put_new(opts, :name, __MODULE__))
   end
 
+  @doc """
+  Get the schema of a dataset
+
+  Example
+
+    iex> schema = Forklift.Datasets.DatasetRegistryServer.get_schema("123")
+    %Forklift.Datasets.DatasetSchema{columns: [%{name: "id", type: "int"}, %{name: "name", type: "string"}], id: "123", system_name: "system__name" }
+  """
   def get_schema(dataset_id) do
     GenServer.call(__MODULE__, {:get_schema, dataset_id})
   end
 
-  def send_message(message) do
+  @doc """
+  Store a dataset's schema
+  """
+  def send_message(%SmartCity.Dataset{} = message) do
     GenServer.call(__MODULE__, {:ingest_message, message})
   end
 
@@ -51,7 +64,7 @@ defmodule Forklift.DatasetRegistryServer do
     :ets.new(:dataset_registry, [:set, :protected, :named_table])
   end
 
-  def get_schema_ets(dataset_id) do
+  defp get_schema_ets(dataset_id) do
     case :ets.lookup(:dataset_registry, dataset_id) do
       [{_id, schema}] ->
         schema
@@ -72,7 +85,7 @@ defmodule Forklift.DatasetRegistryServer do
 
   defp make_reply(msg), do: {:reply, msg, nil}
 
-  defp parse_schema(%{:id => id, :technical => %{:schema => schema, :systemName => system_name}}) do
+  defp parse_schema(%SmartCity.Dataset{:id => id, :technical => %{:schema => schema, :systemName => system_name}}) do
     %DatasetSchema{
       id: id,
       system_name: system_name,

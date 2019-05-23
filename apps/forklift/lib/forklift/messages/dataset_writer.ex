@@ -1,12 +1,18 @@
-defmodule Forklift.DatasetWriter do
-  @moduledoc false
+defmodule Forklift.Messages.DatasetWriter do
+  @moduledoc """
+  Upload pending and unread data for a dataset.
+  """
   require Logger
 
-  alias Forklift.{DataBuffer, PersistenceClient, RetryTracker, DeadLetterQueue}
+  alias Forklift.Messages.{DataBuffer, PersistenceClient, RetryTracker}
+  alias Forklift.DeadLetterQueue
   alias SmartCity.Data
 
   @jobs_registry Forklift.Application.dataset_jobs_registry()
 
+  @doc """
+  EXQ calls this function for each task it schedules to perform the actual data upload.
+  """
   def perform(dataset_id) do
     if get_lock(dataset_id) do
       upload_data(dataset_id)
@@ -84,14 +90,6 @@ defmodule Forklift.DatasetWriter do
         Data.Timing.current_time()
       )
     )
-  end
-
-  def make_kafka_message(value) do
-    %{
-      topic: "streaming-persisted",
-      value: value |> Jason.encode!(),
-      offset: :rand.uniform(999)
-    }
   end
 
   defp upload_pending_data(_dataset_id, []), do: :continue

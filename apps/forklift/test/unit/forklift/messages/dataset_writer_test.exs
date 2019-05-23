@@ -1,9 +1,10 @@
-defmodule Forklift.DatasetWriterTest do
+defmodule Forklift.Messages.DatasetWriterTest do
   use ExUnit.Case
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Forklift.{DataBuffer, DatasetWriter, DeadLetterQueue, PersistenceClient, RetryTracker}
+  alias Forklift.DeadLetterQueue
+  alias Forklift.Messages.{DataBuffer, DatasetWriter, PersistenceClient, RetryTracker}
 
   describe "perform/1" do
     setup do

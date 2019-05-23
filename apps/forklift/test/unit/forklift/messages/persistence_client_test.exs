@@ -2,7 +2,8 @@ defmodule PersistenceClientTest do
   use ExUnit.Case
   use Placebo
 
-  alias Forklift.{DatasetSchema, PersistenceClient, DatasetRegistryServer}
+  alias Forklift.Messages.PersistenceClient
+  alias Forklift.Datasets.{DatasetSchema, DatasetRegistryServer}
   alias Forklift.Redix, as: Redix
 
   test "upload_data sends a valid statement to prestige" do

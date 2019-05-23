@@ -1,11 +1,13 @@
-defmodule Forklift.DataBuffer do
-  @moduledoc false
+defmodule Forklift.Messages.DataBuffer do
+  @moduledoc """
+  Module for managing buffers (streams) of data messages.
+  """
   require Logger
 
   @number_of_empty_reads_to_delete Application.get_env(:forklift, :number_of_empty_reads_to_delete, 50)
 
   alias SmartCity.Data
-  alias Forklift.{RedisStreamsClient, EmptyStreamTracker}
+  alias Forklift.Messages.{RedisStreamsClient, EmptyStreamTracker}
 
   def write(%Data{} = data) do
     RedisStreamsClient.write(data)
@@ -27,6 +29,9 @@ defmodule Forklift.DataBuffer do
     RedisStreamsClient.mark_complete(dataset_id, messages)
   end
 
+  @doc """
+  Deletes the buffer for a dataset when no messages have been read for awhile (per the `number_of_empty_reads_to_delete` module attribute)
+  """
   def cleanup_dataset(dataset_id) do
     number = EmptyStreamTracker.get_and_increment_empty_reads(dataset_id)
 

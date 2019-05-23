@@ -3,7 +3,8 @@ defmodule MessageProcessorTest do
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Forklift.{MessageProcessor, DataBuffer, DeadLetterQueue}
+  alias Forklift.Messages.{MessageProcessor, DataBuffer}
+  alias Forklift.DeadLetterQueue
 
   test "data messages are sent to cache client" do
     data = TDG.create_data(dataset_id: "ds1", payload: %{one: 1})

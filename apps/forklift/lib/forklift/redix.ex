@@ -1,6 +1,6 @@
 defmodule Forklift.Redix do
   @moduledoc """
-  Pooling mechanism for redix
+  Pooling mechanism for redix.
   """
 
   @pool_size 5

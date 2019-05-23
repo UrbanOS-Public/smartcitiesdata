@@ -3,10 +3,6 @@ defmodule Forklift.Application do
 
   use Application
 
-  def redis_client(), do: Forklift.Redix
-
-  def dataset_jobs_registry(), do: :dataset_jobs
-
   def start(_type, _args) do
     children =
       [
@@ -14,17 +10,35 @@ defmodule Forklift.Application do
         exq(),
         redis(),
         kaffe_consumer(),
-        {Forklift.DatasetRegistryServer, name: Forklift.DatasetRegistryServer},
-        Forklift.EmptyStreamTracker,
-        Forklift.RetryTracker,
+        {Forklift.Datasets.DatasetRegistryServer, name: Forklift.Datasets.DatasetRegistryServer},
+        Forklift.Messages.EmptyStreamTracker,
+        Forklift.Messages.RetryTracker,
         dataset_subscriber(),
-        {Forklift.MessageWriter, name: Forklift.MessageWriter}
+        {Forklift.Messages.MessageWriter, name: Forklift.Messages.MessageWriter}
       ]
       |> List.flatten()
 
     opts = [strategy: :one_for_one, name: Forklift.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
+  def dataset_jobs_registry(), do: :dataset_jobs
+
+  defp exq do
+    case Application.get_env(:exq, :host) do
+      nil ->
+        []
+
+      _ ->
+        %{
+          id: Exq,
+          type: :supervisor,
+          start: {Exq, :start_link, []}
+        }
+    end
+  end
+
+  def redis_client(), do: Forklift.Redix
 
   defp redis do
     Application.get_env(:redix, :host)
@@ -34,13 +48,6 @@ defmodule Forklift.Application do
 
       host ->
         {Forklift.Redix, host: host}
-    end
-  end
-
-  defp dataset_subscriber() do
-    case Application.get_env(:smart_city_registry, :redis) do
-      nil -> []
-      _ -> {SmartCity.Registry.Subscriber, [message_handler: Forklift.DatasetHandler]}
     end
   end
 
@@ -59,17 +66,10 @@ defmodule Forklift.Application do
     end
   end
 
-  defp exq do
-    case Application.get_env(:exq, :host) do
-      nil ->
-        []
-
-      _ ->
-        %{
-          id: Exq,
-          type: :supervisor,
-          start: {Exq, :start_link, []}
-        }
+  defp dataset_subscriber() do
+    case Application.get_env(:smart_city_registry, :redis) do
+      nil -> []
+      _ -> {SmartCity.Registry.Subscriber, [message_handler: Forklift.Datasets.DatasetHandler]}
     end
   end
 end

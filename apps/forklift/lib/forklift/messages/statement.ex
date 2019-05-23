@@ -1,7 +1,12 @@
-defmodule Forklift.Statement do
-  @moduledoc false
+defmodule Forklift.Messages.Statement do
+  @moduledoc """
+  Builds Presto statements from data and schema
+  """
   require Logger
 
+  @doc """
+  Builds Presto statements from data and schema
+  """
   def build(schema, data) do
     columns_fragment =
       schema.columns

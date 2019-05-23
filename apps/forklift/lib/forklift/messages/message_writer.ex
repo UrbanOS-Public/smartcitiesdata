@@ -1,6 +1,8 @@
-defmodule Forklift.MessageWriter do
-  @moduledoc false
-  alias Forklift.DataBuffer
+defmodule Forklift.Messages.MessageWriter do
+  @moduledoc """
+  Genserver that on a cadence gets all pending datasets and creates a task to persist each dataset.
+  """
+  alias Forklift.Messages.DataBuffer
   use GenServer
   require Logger
 
@@ -30,7 +32,7 @@ defmodule Forklift.MessageWriter do
   end
 
   defp start_task(dataset_id) do
-    Exq.enqueue(Exq, "default", Forklift.DatasetWriter, [dataset_id])
+    Exq.enqueue(Exq, "default", Forklift.Messages.DatasetWriter, [dataset_id])
   end
 
   defp schedule_work do

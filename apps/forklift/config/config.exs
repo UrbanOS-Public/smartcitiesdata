@@ -18,7 +18,7 @@ config :kaffe,
   consumer: [
     topics: [data_topic],
     consumer_group: "forklift-group",
-    message_handler: Forklift.MessageProcessor,
+    message_handler: Forklift.Messages.MessageProcessor,
     offset_reset_policy: :reset_to_earliest,
     start_with_earliest_message: true,
     max_bytes: 1_000_000,

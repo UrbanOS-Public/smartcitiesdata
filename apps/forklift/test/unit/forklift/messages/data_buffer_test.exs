@@ -1,10 +1,10 @@
-defmodule Forklift.DataBufferTest do
+defmodule Forklift.Messages.DataBufferTest do
   use ExUnit.Case
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
 
-  alias Forklift.DataBuffer
+  alias Forklift.Messages.DataBuffer
   alias Forklift.Redix, as: Redix
 
   @moduletag capture_log: true

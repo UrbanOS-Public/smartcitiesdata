@@ -3,7 +3,7 @@ defmodule Forklift.DataBufferIntTest do
   use Divo, services: [:kafka, :redis]
 
   alias SmartCity.Data
-  alias Forklift.DataBuffer
+  alias Forklift.Messages.DataBuffer
   alias SmartCity.TestDataGenerator, as: TDG
 
   @redis Forklift.Application.redis_client()

@@ -8,6 +8,7 @@ defmodule Forklift.MixProject do
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      docs: docs(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env())
     ]
@@ -24,24 +25,35 @@ defmodule Forklift.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:smart_city_data, "~> 2.2", organization: "smartcolumbus_os"},
-      {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
-      {:smart_city_test, "~> 0.2.0", organization: "smartcolumbus_os", only: [:test, :integration]},
+      {:smart_city_data, "~> 2.1.5"},
+      {:smart_city_registry, "~> 2.6"},
+      {:smart_city_test, "~> 0.2.0", only: [:test, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:exq, "~> 0.13.2"},
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.9.1"},
-      {:divo, "~> 1.0", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
+      {:divo, "~> 1.0", only: [:dev, :test, :integration]},
       {:patiently, "~> 0.2.0", only: [:dev, :test, :integration]},
-      {:prestige, "~> 0.3.0", organization: "smartcolumbus_os"},
+      {:prestige, "~> 0.3.0"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
       {:placebo, "~> 1.2.1", only: [:dev, :test, :integration]},
       {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
       {:redix, "~> 0.9.3"},
       {:faker, "~> 0.12", only: [:dev, :test, :integration]},
       {:distillery, "~> 2.0"},
-      {:yeet, "~> 0.4", organization: "smartcolumbus_os"},
+      {:yeet, "~> 1.0"},
+      {:ex_doc, "~> 0.19"},
       {:observer_cli, "~> 1.4"}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      source_url: "https://www.github.com/smartcolumbusos/forklift",
+      extras: [
+        "README.md"
+      ]
     ]
   end
 

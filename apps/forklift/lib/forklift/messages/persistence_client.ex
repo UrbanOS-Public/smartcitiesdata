@@ -1,16 +1,25 @@
-defmodule Forklift.PersistenceClient do
-  @moduledoc false
+defmodule Forklift.Messages.PersistenceClient do
+  @moduledoc """
+  Client for persisting a dataset's messages to presto
+  """
   require Logger
-  alias Forklift.{DatasetRegistryServer, Statement}
+  alias Forklift.Datasets.DatasetRegistryServer
+  alias Forklift.Messages.Statement
   alias SmartCity.Data
 
   @redis Forklift.Application.redis_client()
 
+  @doc """
+  Uploading no data does nothing
+  """
   def upload_data(_dataset_id, []) do
     Logger.debug("No records to persist!")
     :ok
   end
 
+  @doc """
+  Uploads data for a dataset and returns the time taken for the upload.
+  """
   def upload_data(dataset_id, messages) do
     start_time = Data.Timing.current_time()
 

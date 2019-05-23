@@ -1,7 +1,9 @@
-defmodule Forklift.RedisStreamsClient do
-  @moduledoc false
+defmodule Forklift.Messages.RedisStreamsClient do
+  @moduledoc """
+  Client for interacting with Redis Streams
+  """
   alias SmartCity.Data
-  alias Forklift.EmptyStreamTracker
+  alias Forklift.Messages.EmptyStreamTracker
   require Logger
 
   @redis Forklift.Application.redis_client()
@@ -10,6 +12,9 @@ defmodule Forklift.RedisStreamsClient do
   @key_prefix "forklift:data:"
   @batch_size Application.get_env(:forklift, :cache_processing_batch_size)
 
+  @doc """
+  Write a dataset to a stream (buffer)
+  """
   def write(%Data{dataset_id: dataset_id} = data) do
     with {:json, {:ok, json}} <- {:json, Jason.encode(data)},
          {:redis, {:ok, result}} <- {:redis, xadd(dataset_id, json)} do
@@ -25,6 +30,10 @@ defmodule Forklift.RedisStreamsClient do
     end
   end
 
+  @doc """
+  Get dataset_id's of all streams with pending messages.
+  Messages are considered pending if they have been previously read by forklift but not yet inserted into presto
+  """
   def get_pending_datasets() do
     case @redis.command(["KEYS", stream_key("*")]) do
       {:ok, result} ->
@@ -36,6 +45,9 @@ defmodule Forklift.RedisStreamsClient do
     end
   end
 
+  @doc """
+  Acknowledge a dataset's messages as written to presto so that they can be removed from the stream.
+  """
   def mark_complete(dataset_id, messages) do
     key = stream_key(dataset_id)
     message_keys = Enum.map(messages, fn message -> message.key end)
@@ -49,6 +61,9 @@ defmodule Forklift.RedisStreamsClient do
     end
   end
 
+  @doc """
+  Safely delete a stream that is inactive
+  """
   def delete_inactive_stream(dataset_id) do
     case @redis.command!(["XLEN", stream_key(dataset_id)]) do
       0 ->
@@ -61,10 +76,16 @@ defmodule Forklift.RedisStreamsClient do
     end
   end
 
+  @doc """
+  Read all new messages in a stream for a given dataset
+  """
   def xread_group_new(key) do
     xread_group(key, ">")
   end
 
+  @doc """
+  Read all pending (unacknowledged) messages in a stream for a given dataset
+  """
   def xread_group_pending(key) do
     xread_group(key, "0")
   end
