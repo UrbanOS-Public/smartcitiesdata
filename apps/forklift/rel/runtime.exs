@@ -24,7 +24,7 @@ config :kaffe,
     endpoints: endpoints,
     topics: [topic],
     consumer_group: "forklift-group",
-    message_handler: Forklift.MessageProcessor,
+    message_handler: Forklift.Messages.MessageProcessor,
     offset_reset_policy: :reset_to_earliest
   ],
   producer: [
