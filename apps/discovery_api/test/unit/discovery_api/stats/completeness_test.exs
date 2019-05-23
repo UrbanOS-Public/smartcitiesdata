@@ -216,5 +216,32 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
       assert expected == Completeness.calculate_stats_for_row(dataset, row, %{})
     end
+
+    test "Looks up columns by their downcased values" do
+      dataset = %{
+        id: "123",
+        technical: %{
+          schema: [
+            %{name: "Id", type: "number", required: true},
+            %{name: "Name", type: "string", required: true}
+          ]
+        }
+      }
+
+      row = %{
+        "id" => 0,
+        "name" => "my_name"
+      }
+
+      expected = %{
+        record_count: 1,
+        fields: %{
+          "Id" => %{count: 1, required: true},
+          "Name" => %{count: 1, required: true}
+        }
+      }
+
+      assert expected == Completeness.calculate_stats_for_row(dataset, row, %{})
+    end
   end
 end

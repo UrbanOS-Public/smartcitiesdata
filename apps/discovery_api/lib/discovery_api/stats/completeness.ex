@@ -28,11 +28,35 @@ defmodule DiscoveryApi.Stats.Completeness do
     end)
   end
 
-  defp update_field_count(field_stats, %{name: field_name} = field, data) do
-    field_path = String.split(field_name, ".")
+  defp get_fields(schema) do
+    schema
+    |> Enum.map(fn field -> get_sub_fields(field, "") end)
+    |> List.flatten()
+    |> remove_dot()
+  end
 
+  defp update_field_count(field_stats, %{name: field_name} = field, data) do
     field_stats
-    |> increment_field_count(field, field_path, data)
+    |> increment_field_count(field, get_field_path(field_name), data)
+  end
+
+  defp get_field_path(field_name) do
+    field_name
+    |> String.split(".")
+    |> Enum.map(&String.downcase(&1))
+  end
+
+  defp increment_field_count(field_stats, %{name: field_name, required: required}, field_path, data) do
+    count_in_row = field_count_in_row(data, field_path)
+
+    Map.update(
+      field_stats,
+      field_name,
+      %{required: required, count: count_in_row},
+      fn %{required: required, count: count} ->
+        %{required: required, count: count + count_in_row}
+      end
+    )
   end
 
   defp field_count_in_row(data, field_path) do
@@ -48,26 +72,6 @@ defmodule DiscoveryApi.Stats.Completeness do
       true ->
         1
     end
-  end
-
-  defp increment_field_count(field_stats, %{name: field_name, required: required} = field, field_path, data) do
-    count_in_row = field_count_in_row(data, field_path)
-
-    Map.update(
-      field_stats,
-      field_name,
-      %{required: required, count: count_in_row},
-      fn %{required: required, count: count} ->
-        %{required: required, count: count + count_in_row}
-      end
-    )
-  end
-
-  defp get_fields(schema) do
-    schema
-    |> Enum.map(fn field -> get_sub_fields(field, "") end)
-    |> List.flatten()
-    |> remove_dot()
   end
 
   defp remove_dot([]), do: []
