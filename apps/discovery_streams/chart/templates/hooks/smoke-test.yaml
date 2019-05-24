@@ -14,5 +14,5 @@ spec:
       - name: smoke-test-websocket
         image: {{ .Values.smokeTestImage.repository }}:{{ .Values.smokeTestImage.tag }}
         tty: true
-        command: ["smoke-test", "streaming.{{ .Values.ingress.dnsZone }}"]
+        command: ["smoke-test", "streams.{{ .Values.ingress.dnsZone }}"]
       restartPolicy: OnFailure
