@@ -6,14 +6,13 @@ defmodule Reaper.CredentialRetrieverTest do
 
   describe "retrieve/1" do
     setup do
-      credentials = ~s({"username": "admin", "password": "1234"})
+      credentials = %{"username" => "admin", "password" => "1234"}
 
       %{
         dataset_id: 1,
         role: "app-role",
         jwt: "asjdhfsa",
         credentials: credentials,
-        credentials_decoded: Jason.decode!(credentials),
         vault: %Vault{engine: :secrets_engine, host: "http://vault:8200", auth: :auth_backend}
       }
     end
@@ -26,7 +25,7 @@ defmodule Reaper.CredentialRetrieverTest do
       allow Vault.read(values.vault, "secrets/smart_city/ingestion/#{values.dataset_id}"),
         return: {:ok, values.credentials}
 
-      assert CredentialRetriever.retrieve(values.dataset_id) == {:ok, values.credentials_decoded}
+      assert CredentialRetriever.retrieve(values.dataset_id) == {:ok, values.credentials}
     end
 
     test "returns error when kubernetes token file is not found", values do
