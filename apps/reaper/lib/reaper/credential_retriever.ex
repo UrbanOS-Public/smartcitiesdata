@@ -7,9 +7,8 @@ defmodule Reaper.CredentialRetriever do
   def retrieve(dataset_id) do
     with {:ok, jwt} <- get_kubernetes_token(),
          {:ok, vault} <- instantiate_vault_conn(jwt),
-         {:ok, credentials} <- Vault.read(vault, "secrets/smart_city/ingestion/#{dataset_id}"),
-         {:ok, decoded_credentials} <- Jason.decode(credentials) do
-      {:ok, decoded_credentials}
+         {:ok, credentials} <- Vault.read(vault, "secrets/smart_city/ingestion/#{dataset_id}") do
+      {:ok, credentials}
     else
       {:error, reason} ->
         Logger.error("Unable to retrieve dataset credential; #{reason}")
