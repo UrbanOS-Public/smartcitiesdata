@@ -19,7 +19,7 @@ defmodule Forklift.Datasets.DatasetRegistryServer do
 
   Example
 
-    iex> schema = Forklift.Datasets.DatasetRegistryServer.get_schema("123")
+    iex> Forklift.Datasets.DatasetRegistryServer.get_schema("123")
     %Forklift.Datasets.DatasetSchema{columns: [%{name: "id", type: "int"}, %{name: "name", type: "string"}], id: "123", system_name: "system__name" }
   """
   def get_schema(dataset_id) do
