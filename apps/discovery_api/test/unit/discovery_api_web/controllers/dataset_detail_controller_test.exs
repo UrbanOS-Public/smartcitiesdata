@@ -51,7 +51,7 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
                "downloads" => model.downloads,
                "queries" => model.queries,
                "accessLevel" => model.accessLevel,
-               "completeness_score" => model.completeness_score
+               "completeness" => model.completeness
              } == actual
     end
 

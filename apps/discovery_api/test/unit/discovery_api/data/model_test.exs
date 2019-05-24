@@ -50,7 +50,7 @@ defmodule DiscoveryApi.Data.ModelTest do
 
     allow(Persistence.get("discovery-api:model:#{dataset.id}"), return: json_string_dataset)
 
-    allow(Persistence.get("discovery-api:stats_totals:#{dataset.id}"), return: nil)
+    allow(Persistence.get("discovery-api:stats:#{dataset.id}"), return: ~s({"completeness": 0.95}))
 
     allow(Persistence.get("forklift:last_insert_date:#{dataset.id}"),
       return: expected_date

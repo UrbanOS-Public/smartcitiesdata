@@ -31,7 +31,8 @@ defmodule DiscoveryApi.Test.Helper do
       issuedDate: Date.to_string(Faker.Date.date_of_birth()),
       language: "en-US",
       referenceUrls: Faker.Internet.url(),
-      categories: [Faker.Lorem.word(), Faker.Lorem.word()]
+      categories: [Faker.Lorem.word(), Faker.Lorem.word()],
+      completeness: 0.95
     }
     |> Map.merge(values)
   end

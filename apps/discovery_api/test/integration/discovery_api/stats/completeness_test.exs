@@ -22,7 +22,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
         TDG.create_dataset(%{
           technical: %{
             orgId: organization.id,
-            private: true,
+            private: false,
             systemName: "test_table",
             schema: DataHelper.real_dataset_schema()
           }
@@ -32,7 +32,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
         TDG.create_dataset(%{
           technical: %{
             orgId: organization.id,
-            private: true,
+            private: false,
             systemName: "test_table2",
             schema: [
               %{name: "name", type: "varchar", required: false},
@@ -97,6 +97,21 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
       )
 
       Patiently.wait_for!(
+        fn ->
+          Map.get(get_dataset_completeness_from_details_endpoint(dataset1.id), "completeness", nil) ==
+            expected_dataset1_column_stats["completeness"]
+        end,
+        dwell: 2000,
+        max_tries: 10
+      )
+
+      Patiently.wait_for!(
+        fn -> get_dataset_completeness_from_stats_endpoint(dataset1.id) == expected_dataset1_column_stats end,
+        dwell: 2000,
+        max_tries: 10
+      )
+
+      Patiently.wait_for!(
         fn -> get_column_stats_from_redis(dataset2.id) == expected_dataset2_column_stats end,
         dwell: 2000,
         max_tries: 10
@@ -111,5 +126,23 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
       nil -> nil
       entry -> Jason.decode!(entry)
     end
+  end
+
+  defp get_dataset_completeness_from_details_endpoint(dataset_id) do
+    actual =
+      "http://localhost:4000/api/v1/dataset/#{dataset_id}"
+      |> HTTPoison.get!()
+      |> Map.from_struct()
+      |> Map.get(:body)
+      |> Jason.decode!()
+  end
+
+  defp get_dataset_completeness_from_stats_endpoint(dataset_id) do
+    actual =
+      "http://localhost:4000/api/v1/dataset/#{dataset_id}/stats"
+      |> HTTPoison.get!()
+      |> Map.from_struct()
+      |> Map.get(:body)
+      |> Jason.decode!()
   end
 end

@@ -41,7 +41,7 @@ defmodule DiscoveryApi.Data.Model do
     :lastUpdatedDate,
     :downloads,
     :queries,
-    :completeness_score
+    :completeness
   ]
 
   @name_space "discovery-api:model:"
@@ -59,7 +59,7 @@ defmodule DiscoveryApi.Data.Model do
     |> struct_from_map()
     |> add_last_updated_date_to_struct()
     |> add_counts_to_struct()
-    |> add_completeness_score_to_struct()
+    |> add_completeness_to_struct()
   end
 
   def get_last_updated_date(id) do
@@ -108,16 +108,16 @@ defmodule DiscoveryApi.Data.Model do
     struct(model, %{lastUpdatedDate: get_last_updated_date(model.id)})
   end
 
-  defp add_completeness_score_to_struct(nil), do: nil
+  defp add_completeness_to_struct(nil), do: nil
 
-  defp add_completeness_score_to_struct(model) do
-    struct(model, %{completeness_score: get_completeness_score(model.id)})
+  defp add_completeness_to_struct(model) do
+    struct(model, %{completeness: get_completeness(model.id)})
   end
 
-  def get_completeness_score(dataset_id) do
-    case Persistence.get("discovery-api:stats_totals:" <> dataset_id) do
+  def get_completeness(dataset_id) do
+    case Persistence.get("discovery-api:stats:" <> dataset_id) do
       nil -> nil
-      score -> score |> Jason.decode!() |> Map.get("total_score", nil)
+      score -> score |> Jason.decode!() |> Map.get("completeness", nil)
     end
   end
 
