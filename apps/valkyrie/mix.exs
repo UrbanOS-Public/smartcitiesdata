@@ -36,7 +36,8 @@ defmodule Valkyrie.MixProject do
       {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
       {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
       {:smart_city_test, "~> 0.2.0", organization: "smartcolumbus_os", only: [:test, :integration]},
-      {:yeet, "~> 0.4", organization: "smartcolumbus_os"}
+      {:yeet, "~> 0.4", organization: "smartcolumbus_os"},
+      {:observer_cli, "~> 1.4"}
     ]
   end
 
