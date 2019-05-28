@@ -30,3 +30,16 @@ Discovery API serves as middleware between our metadata store and our Data Disco
   * `tf workspace new {NEW_WORKSPACE_NAME}`
   * `tf plan --var=file=variables/sandbox.tfvars --out=out.out`
   * `tf apply out.out`
+
+
+### Calculating Completeness scores manually
+
+For all datasets:
+
+`DiscoveryApi.Stats.StatsCalculator.produce_completeness_stats()`
+
+For a single dataset:
+
+`SmartCity.Dataset.get!(dataset_id) |> DiscoveryApi.Stats.StatsCalculator.calculate_and_save_completeness()`
+
+Datasets will be calculated and persisted to Redis with a key of `discovery-api:stats:{{dataset_id}}`
