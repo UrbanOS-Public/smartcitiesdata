@@ -2,8 +2,11 @@ defmodule PersistenceTest do
   use ExUnit.Case
   require Logger
   use Divo
+  import Record, only: [defrecord: 2, extract: 2]
 
   alias SmartCity.TestDataGenerator, as: TDG
+
+  defrecord :kafka_message, extract(:kafka_message, from_lib: "kafka_protocol/include/kpro_public.hrl")
 
   @redis Forklift.Application.redis_client()
   @endpoint Application.get_env(:yeet, :endpoint)
@@ -66,12 +69,12 @@ defmodule PersistenceTest do
 
     Patiently.wait_for!(
       fn ->
-        {:ok, messages} = :brod.fetch(@endpoint, "streaming-persisted", 0, 0)
+        {:ok, {_offset, messages}} = :brod.fetch(@endpoint, "streaming-persisted", 0, 0)
 
         if length(messages) > 0 do
           message =
             messages
-            |> Enum.map(fn {:kafka_message, _, _, _, key, body, _, _, _} -> {key, body} end)
+            |> Enum.map(fn message -> {kafka_message(message, :key), kafka_message(message, :value)} end)
             |> Enum.map(fn {_key, body} -> Jason.decode!(body, keys: :atoms) end)
             |> List.first()
 
@@ -117,7 +120,7 @@ defmodule PersistenceTest do
 
     Patiently.wait_for!(
       fn ->
-        {:ok, messages} = :brod.fetch(@endpoint, @topic, 0, 0)
+        {:ok, {_offset, messages}} = :brod.fetch(@endpoint, @topic, 0, 0)
         length(messages) > 0
       end,
       dwell: 1000,
