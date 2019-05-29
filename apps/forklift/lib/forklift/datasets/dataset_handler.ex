@@ -4,8 +4,10 @@ defmodule Forklift.Datasets.DatasetHandler do
   """
   use SmartCity.Registry.MessageHandler
   alias Forklift.Datasets.DatasetRegistryServer
+  alias Forklift.TopicManager
 
   def handle_dataset(%SmartCity.Dataset{} = dataset) do
     DatasetRegistryServer.send_message(dataset)
+    TopicManager.create("transformed-#{dataset.id}")
   end
 end

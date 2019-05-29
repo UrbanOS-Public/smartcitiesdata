@@ -19,12 +19,11 @@ defmodule Forklift.TopicManagementTest do
   end
 
   def list_topics() do
-    {:ok, metadata} = :brod.get_metadata(@endpoints)
+    {:ok, metadata} = :brod.get_metadata(@endpoints, :all)
 
-    metadata
-    |> Keyword.get(:topic_metadata)
+    metadata.topic_metadata
     |> Enum.map(fn topic_metadata ->
-      {Keyword.get(topic_metadata, :topic), Enum.count(Keyword.get(topic_metadata, :partition_metadata))}
+      {topic_metadata.topic, Enum.count(topic_metadata.partition_metadata)}
     end)
   end
 
