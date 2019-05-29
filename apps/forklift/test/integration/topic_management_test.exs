@@ -20,8 +20,8 @@ defmodule Forklift.TopicManagementTest do
   end
 
   test "create new topic for dataset when dataset event is received and topic already exists" do
-    Forklift.TopicManager.create("transformed-bob1") |> IO.inspect(label: "first call")
-    Forklift.TopicManager.create("transformed-bob1") |> IO.inspect(label: "second call")
+    Forklift.TopicManager.create("transformed-bob1")
+    Forklift.TopicManager.create("transformed-bob1")
 
     Patiently.wait_for!(
       fn ->

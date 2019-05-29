@@ -1,6 +1,8 @@
 defmodule Forklift.TopicManager do
   import Record, only: [defrecord: 2, extract: 2]
 
+  @kafka_timeout Application.get_env(:forklift, :kafka_timeout, 5_000)
+
   defmodule Error do
     defexception [:code, :message]
   end
@@ -9,24 +11,28 @@ defmodule Forklift.TopicManager do
 
   def create(topic, opts \\ []) do
     with_connection(endpoints(), fn connection ->
-      create_topic_args = %{
-        topic: topic,
-        num_partitions: Keyword.get(opts, :partitions, 1),
-        replication_factor: Keyword.get(opts, :replicas, 1),
-        replica_assignment: [],
-        config_entries: []
-      }
+      topic_request = build_create_topic_request(connection, topic, opts)
 
-      version = get_api_version(connection, :create_topics)
-      topic_request = :kpro_req_lib.create_topics(version, [create_topic_args], %{timeout: 5_000})
-
-      case send_request(connection, topic_request, 5_000) do
+      case send_request(connection, topic_request, @kafka_timeout) do
         :ok -> :ok
         {:error, :topic_already_exists, _message} -> :ok
         {:error, code, message} -> raise Error, code: code, message: message
         {:error, error} -> raise Error, code: :kafka_error, message: error
       end
     end)
+  end
+
+  defp build_create_topic_request(connection, topic, opts) do
+    args = %{
+      topic: topic,
+      num_partitions: Keyword.get(opts, :partitions, 1),
+      replication_factor: Keyword.get(opts, :replicas, 1),
+      replica_assignment: [],
+      config_entries: []
+    }
+
+    version = get_api_version(connection, :create_topics)
+    :kpro_req_lib.create_topics(version, [args], %{timeout: @kafka_timeout})
   end
 
   defp endpoints() do
