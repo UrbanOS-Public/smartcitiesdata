@@ -17,7 +17,7 @@ endpoints =
   |> String.split(",")
   |> Enum.map(&String.trim/1)
   |> Enum.map(fn entry -> String.split(entry, ":") end)
-  |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
+  |> Enum.map(fn [host, port] -> {to_charlist(host), String.to_integer(port)} end)
 
 config :kaffe,
   consumer: [
@@ -31,7 +31,6 @@ config :kaffe,
     endpoints: endpoints,
     topics: ["streaming-persisted"]
   ]
-
 
 config :yeet,
   topic: "streaming-dead-letters",
