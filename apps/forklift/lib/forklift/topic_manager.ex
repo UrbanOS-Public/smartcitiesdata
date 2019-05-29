@@ -1,4 +1,7 @@
 defmodule Forklift.TopicManager do
+  @moduledoc """
+  Create Topics in kafka
+  """
   import Record, only: [defrecord: 2, extract: 2]
 
   @kafka_timeout Application.get_env(:forklift, :kafka_timeout, 5_000)
