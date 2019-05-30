@@ -30,8 +30,8 @@ spec:
             value: {{ .Values.presto.url }}
           - name: REDIS_HOST
             value: {{ .Values.redis.host }}
-          - name: DATA_TOPIC
-            value: {{.Values.kafka.dataTopic}}
+          - name: DATA_TOPIC_PREFIX
+            value: {{.Values.kafka.dataTopicPrefix}}
           - name: PRESTO_USER
             value: {{.Values.presto.user}}
           - name: NAMESPACE

@@ -2,7 +2,7 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-data_topic = "streaming-transformed"
+data_topic_prefix = "streaming-transformed"
 
 config :yeet,
   topic: "streaming-dead-letters",
@@ -12,11 +12,11 @@ config :forklift,
   cache_processing_batch_size: 1_000,
   message_processing_cadence: 10_000,
   number_of_empty_reads_to_delete: 50,
-  data_topic: data_topic
+  data_topic_prefix: data_topic_prefix
 
 config :kaffe,
   consumer: [
-    topics: [data_topic],
+    topics: [data_topic_prefix],
     consumer_group: "forklift-group",
     message_handler: Forklift.Messages.MessageProcessor,
     offset_reset_policy: :reset_to_earliest,
