@@ -15,5 +15,7 @@ defmodule Forklift.Datasets.DatasetHandler do
 
     topic_prefix = Application.get_env(:kaffe, :consumer)[:topics] |> hd()
     TopicManager.create("#{topic_prefix}-#{dataset.id}")
+  rescue
+    error -> Logger.error(inspect(error))
   end
 end
