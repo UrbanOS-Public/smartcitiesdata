@@ -30,9 +30,9 @@ defmodule DiscoveryApiWeb.Services.AuthService do
 
     user = Application.get_env(:discovery_api, :ldap_user)
     pass = Application.get_env(:discovery_api, :ldap_pass)
-    Paddle.authenticate(user, pass)
+    PaddleWrapper.authenticate(user, pass)
 
-    Paddle.get(base: [ou: ou], filter: [cn: cn])
+    PaddleWrapper.get(base: [ou: ou], filter: [cn: cn])
     |> elem(1)
     |> List.first()
     |> Map.get("member", [])

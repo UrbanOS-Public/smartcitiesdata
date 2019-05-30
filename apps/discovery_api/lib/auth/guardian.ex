@@ -11,9 +11,9 @@ defmodule DiscoveryApi.Auth.Guardian do
     id = claims["sub"]
     user = Application.get_env(:discovery_api, :ldap_user)
     pass = Application.get_env(:discovery_api, :ldap_pass)
-    Paddle.authenticate(user, pass)
+    PaddleWrapper.authenticate(user, pass)
 
-    case Paddle.get(filter: [uid: id]) do
+    case PaddleWrapper.get(filter: [uid: id]) do
       {:ok, resources} ->
         {:ok, List.first(resources)}
 

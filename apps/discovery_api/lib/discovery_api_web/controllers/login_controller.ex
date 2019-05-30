@@ -6,7 +6,7 @@ defmodule DiscoveryApiWeb.LoginController do
   def new(conn, _) do
     {user, password} = extract_auth(conn)
 
-    with :ok <- Paddle.authenticate(user, password) do
+    with :ok <- PaddleWrapper.authenticate(user, password) do
       {:ok, token, _claims} = Guardian.encode_and_sign(user)
 
       conn

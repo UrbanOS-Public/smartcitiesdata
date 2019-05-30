@@ -370,10 +370,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=FirstUser,ou=People"]})
 
-      allow Paddle.authenticate(any(), any()), return: :ok
+      allow PaddleWrapper.authenticate(any(), any()), return: :ok
       allow Paddle.config(:account_subdn), return: "ou=People"
-      allow Paddle.get(filter: [uid: username]), return: {:ok, [ldap_user]}
-      allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
+      allow PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]}
+      allow PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
 
@@ -389,10 +389,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
 
-      allow Paddle.authenticate(any(), any()), return: :ok
+      allow PaddleWrapper.authenticate(any(), any()), return: :ok
       allow Paddle.config(:account_subdn), return: "ou=People"
-      allow Paddle.get(filter: [uid: username]), return: {:ok, [ldap_user]}
-      allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
+      allow PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]}
+      allow PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
 
@@ -408,10 +408,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
 
-      allow Paddle.authenticate(any(), any()), return: :ok
+      allow PaddleWrapper.authenticate(any(), any()), return: :ok
       allow Paddle.config(:account_subdn), return: "ou=People"
-      allow Paddle.get(filter: [uid: username]), return: {:ok, [ldap_user]}
-      allow Paddle.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
+      allow PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]}
+      allow PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "access")
 

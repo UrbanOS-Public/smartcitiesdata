@@ -6,8 +6,8 @@ defmodule DiscoveryApiWeb.LoginControllerTest do
 
   describe "GET /login" do
     setup do
-      allow(Paddle.authenticate("bob", "12345"), return: :ok)
-      allow(Paddle.authenticate(nil, nil), return: {:error, :invalidCredentials})
+      allow(PaddleWrapper.authenticate("bob", "12345"), return: :ok)
+      allow(PaddleWrapper.authenticate(nil, nil), return: {:error, :invalidCredentials})
 
       conn =
         build_conn()
@@ -54,7 +54,7 @@ defmodule DiscoveryApiWeb.LoginControllerTest do
   end
 
   test "GET /login fails", %{conn: conn} do
-    allow(Paddle.authenticate(any(), any()), return: {:error, :invalidCredentials})
+    allow(PaddleWrapper.authenticate(any(), any()), return: {:error, :invalidCredentials})
 
     conn
     |> Conn.put_req_header("authorization", "Basic " <> Base.encode64("bob:12345"))
@@ -66,8 +66,8 @@ defmodule DiscoveryApiWeb.LoginControllerTest do
     setup do
       user = "bob"
       {:ok, token, claims} = Guardian.encode_and_sign(DiscoveryApi.Auth.Guardian, user)
-      allow Paddle.authenticate(any(), any()), return: :does_not_matter
-      allow Paddle.get(filter: any()), return: {:ok, [Helper.ldap_user()]}
+      allow PaddleWrapper.authenticate(any(), any()), return: :does_not_matter
+      allow PaddleWrapper.get(filter: any()), return: {:ok, [Helper.ldap_user()]}
       {:ok, %{user: user, jwt: token, claims: claims}}
     end
 
