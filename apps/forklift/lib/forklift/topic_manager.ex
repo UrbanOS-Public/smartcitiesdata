@@ -63,7 +63,7 @@ defmodule Forklift.TopicManager do
   defp do_with_connection({:error, reason}, function) do
     raise Error,
       code: :with_connection_error,
-      message: "Failed to execute function (#{inspect(function)}) because: #{format_reason(reason)}"
+      message: "#{format_reason(reason)}"
   end
 
   defp format_reason(reason) do
