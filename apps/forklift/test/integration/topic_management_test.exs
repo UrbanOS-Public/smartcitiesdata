@@ -12,7 +12,7 @@ defmodule Forklift.TopicManagementTest do
 
     Patiently.wait_for!(
       fn ->
-        {"transformed-ds1", 1} in list_topics()
+        {"streaming-transformed-ds1", 1} in list_topics()
       end,
       dwell: 200,
       max_tries: 20

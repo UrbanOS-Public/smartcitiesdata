@@ -60,8 +60,10 @@ defmodule Forklift.TopicManager do
     :kpro.close_connection(connection)
   end
 
-  defp do_with_connection({:error, reason}, _fun) do
-    raise Error, message: format_reason(reason)
+  defp do_with_connection({:error, reason}, function) do
+    raise Error,
+      code: :with_connection_error,
+      message: "Failed to execute function (#{inspect(function)}) because: #{format_reason(reason)}"
   end
 
   defp format_reason(reason) do
@@ -74,12 +76,12 @@ defmodule Forklift.TopicManager do
 
   defp send_request(connection, request, timeout) do
     case :kpro.request_sync(connection, request, timeout) do
-      {:ok, response} -> check_response(response)
+      {:ok, response} -> check_response_for_errors(response)
       result -> result
     end
   end
 
-  defp check_response(response) do
+  defp check_response_for_errors(response) do
     message = kpro_rsp(response, :msg)
 
     case Enum.find(message.topic_errors, fn error -> error.error_code != :no_error end) do

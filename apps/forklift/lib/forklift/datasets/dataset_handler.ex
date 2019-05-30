@@ -12,6 +12,8 @@ defmodule Forklift.Datasets.DatasetHandler do
 
   def handle_dataset(%SmartCity.Dataset{} = dataset) do
     DatasetRegistryServer.send_message(dataset)
-    TopicManager.create("transformed-#{dataset.id}")
+
+    topic_prefix = Application.get_env(:kaffe, :consumer)[:topics] |> hd()
+    TopicManager.create("#{topic_prefix}-#{dataset.id}")
   end
 end
