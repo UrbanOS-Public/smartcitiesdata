@@ -5,6 +5,7 @@ defmodule Forklift.Datasets.DatasetHandler do
   use SmartCity.Registry.MessageHandler
   alias Forklift.Datasets.DatasetRegistryServer
   alias Forklift.TopicManager
+  require Logger
 
   def handle_dataset(%SmartCity.Dataset{technical: %{sourceType: "remote"}}) do
     :ok
@@ -15,5 +16,7 @@ defmodule Forklift.Datasets.DatasetHandler do
 
     topic_prefix = Application.get_env(:kaffe, :consumer)[:topics] |> hd()
     TopicManager.create("#{topic_prefix}-#{dataset.id}")
+  rescue
+    error -> Logger.error("Error creating topic for dataset #{dataset.id}: #{inspect(error)}")
   end
 end
