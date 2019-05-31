@@ -1,9 +1,16 @@
 defmodule AndiWeb.OrganizationController do
+  @moduledoc """
+  Creates new organizations and retrieves existing ones through LDAP.
+  """
   use AndiWeb, :controller
 
   require Logger
   alias SmartCity.Organization
 
+  @doc """
+  Parse a data message to create and authenticate a new organization to store in LDAP
+  """
+  @spec create(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def create(conn, _params) do
     message = add_uuid(conn.body_params)
     pre_id = message["id"]
@@ -107,6 +114,10 @@ defmodule AndiWeb.OrganizationController do
     |> Paddle.delete()
   end
 
+  @doc """
+  Retrieve all existing organizations stored in LDAP
+  """
+  @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
     with {:ok, orgs} <- Organization.get_all() do
       conn

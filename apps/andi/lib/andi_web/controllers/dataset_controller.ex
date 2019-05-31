@@ -1,9 +1,17 @@
 defmodule AndiWeb.DatasetController do
+  @moduledoc """
+  This module handles the creation and retrieval of datasets in redis.
+  """
+
   use AndiWeb, :controller
 
   require Logger
   alias SmartCity.Dataset
 
+  @doc """
+  Parse a data message and post the created dataset to redis
+  """
+  @spec create(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def create(conn, _params) do
     with message <- add_uuid(conn.body_params),
          {:ok, parsed_message} <- parse_message(message),
@@ -21,6 +29,10 @@ defmodule AndiWeb.DatasetController do
     end
   end
 
+  @doc """
+  Return all datasets stored in redis
+  """
+  @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
     with {:ok, datasets} <- Dataset.get_all() do
       respond(conn, :ok, datasets)

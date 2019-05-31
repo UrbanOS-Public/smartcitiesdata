@@ -6,8 +6,6 @@ host =
     defined -> defined
   end
 
-System.put_env("HOST", host)
-
 config :andi,
   divo: "./docker-compose.yaml",
   divo_wait: [dwell: 700, max_tries: 50],

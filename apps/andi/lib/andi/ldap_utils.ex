@@ -4,14 +4,21 @@ defmodule Andi.LdapUtils do
   distinguished names.
   """
 
-  @spec encode_dn!(keyword()) :: String.t()
+  @doc """
+  Takes an LDAP-compatible DN as a keyword list and converts to a
+  string acceptable by LDAP systems.
+  """
+  @spec encode_dn!(keyword()) :: String.t() | none()
   def encode_dn!([{key, _} | _] = kwdn) when is_atom(key) do
     kwdn
     |> Enum.map(fn {k, v} -> "#{k}=#{v}" end)
     |> Enum.join(",")
   end
 
-  @spec decode_dn!(String.t()) :: keyword()
+  @doc """
+  Takes an LDAP DN string and breaks it into an Elixir keyword list.
+  """
+  @spec decode_dn!(String.t()) :: keyword() | none()
   def decode_dn!(dn) do
     dn
     |> String.split(",")
