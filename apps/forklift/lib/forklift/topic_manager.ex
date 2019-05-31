@@ -44,7 +44,7 @@ defmodule Forklift.TopicManager do
 
   defp with_connection(endpoints, fun) when is_function(fun) do
     endpoints
-    |> :kpro.connect_any([])
+    |> :kpro.connect_controller([])
     |> do_with_connection(fun)
   end
 
