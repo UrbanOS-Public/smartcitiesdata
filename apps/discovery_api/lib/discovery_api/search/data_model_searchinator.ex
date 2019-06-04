@@ -10,7 +10,11 @@ defmodule DiscoveryApi.Search.DataModelSearchinator do
   defp result?(%Model{} = model, query) do
     search_criteria = String.downcase(query)
 
-    [model.title, model.description, model.organization, model.keywords]
+    searchable_model_string =
+      [model.title, model.description, model.organization]
+      |> Enum.join(" ")
+
+    [searchable_model_string, model.keywords]
     |> Enum.reject(&is_nil/1)
     |> Enum.any?(&satisfies_search_criteria?(&1, search_criteria))
   end

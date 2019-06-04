@@ -52,11 +52,11 @@ defmodule DiscoveryApi.Search.DataModelSearchinatorTest do
       where([
         [:search_term, :field, :expected, :description],
         ["A C", "title", [1], "spaces use AND logic"],
-        ["A D", "title", [], "no match"],
+        ["A Z", "title", [], "no match"],
         ["a C", "title", [1], "case insensitive"],
         ["c a", "title", [1], "order insensitive"],
         ["c", "title", [1, 2], "multiple matches"],
-        ["f H", "description", [2], "spaces use AND logic"],
+        ["f J H", "description", [2], "spaces use AND logic"],
         ["f H q", "description", [], "no match"],
         ["m L", "organization", [3], "spaces use AND logic"],
         ["m L q", "organization", [], "no match"],
