@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.DatasetDetailController do
-  @moduledoc false
+  @moduledoc """
+  Controller for viewing all the details of a dataset
+  """
   use DiscoveryApiWeb, :controller
 
   def fetch_dataset_detail(conn, _params) do

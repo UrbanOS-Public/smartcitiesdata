@@ -1,5 +1,7 @@
 defmodule DiscoveryApi.Application do
-  @moduledoc false
+  @moduledoc """
+  Discovery API serves as middleware between our metadata store and our Data Discovery UI.
+  """
   use Application
 
   def start(_type, _args) do

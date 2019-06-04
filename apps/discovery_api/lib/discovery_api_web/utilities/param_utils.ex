@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.Utilities.ParamUtils do
-  @moduledoc false
+  @moduledoc """
+  Utils for extracting values from parameters
+  """
   def extract_int_from_params(params, key, default_value \\ 0) do
     params
     |> Map.get(key, default_value)

@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.Plugs.GetModel do
-  @moduledoc false
+  @moduledoc """
+  Plug to get the requested dataset (by org and dataset name or by dataset id) or return 404
+  """
 
   require Logger
   import Plug.Conn

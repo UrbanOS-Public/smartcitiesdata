@@ -2,7 +2,9 @@ alias StreamingMetrics.Hostname
 require Logger
 
 defmodule DiscoveryApiWeb.MetricsCollectorService do
-  @moduledoc false
+  @moduledoc """
+  Service that collects metrics and records them to the application's metric collector (which by default is prometheus)
+  """
   @metric_collector Application.get_env(:discovery_api, :collector)
   def record_csv_download_count_metrics(dataset_id, table_name) do
     record_metrics("downloaded_csvs", [

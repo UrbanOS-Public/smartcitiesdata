@@ -27,7 +27,7 @@ defmodule DiscoveryApiWeb.DatasetStatsControllerTest do
              } == actual
     end
 
-    test "Returns an empty response when the stats do not exist" do
+    test "Returns an empty response when the stats do not exist", %{conn: conn} do
       model = Helper.sample_model(%{id: @dataset_id})
       allow(Model.get(@dataset_id), return: model)
 

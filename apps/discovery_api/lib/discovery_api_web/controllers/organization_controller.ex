@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.OrganizationController do
-  @moduledoc false
+  @moduledoc """
+  Controller for getting Organization information
+  """
   use DiscoveryApiWeb, :controller
   alias SmartCity.Organization
 

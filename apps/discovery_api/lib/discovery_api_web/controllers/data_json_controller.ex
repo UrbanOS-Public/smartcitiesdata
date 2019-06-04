@@ -1,4 +1,8 @@
 defmodule DiscoveryApiWeb.DataJsonController do
+  @moduledoc """
+  Controller for returning Project Open Data Metadata Schema (podms) information.
+  """
+
   use DiscoveryApiWeb, :controller
   alias DiscoveryApi.Data.Model
 

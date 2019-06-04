@@ -1,5 +1,7 @@
 defmodule DiscoveryApi.Search.DataModelSearchinator do
-  @moduledoc false
+  @moduledoc """
+  Returns datasets that match the passed in query.
+  """
   alias DiscoveryApi.Data.Model
 
   def search(query \\ "") do

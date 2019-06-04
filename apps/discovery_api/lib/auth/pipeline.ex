@@ -1,5 +1,7 @@
 defmodule DiscoveryApi.Auth.Pipeline do
-  @moduledoc false
+  @moduledoc """
+  Discovery API specific implementation of Guardian Pipeline
+  """
   use Guardian.Plug.Pipeline,
     otp_app: :discovery_api,
     module: DiscoveryApi.Auth.Guardian,

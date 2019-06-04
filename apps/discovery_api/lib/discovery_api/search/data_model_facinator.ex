@@ -1,5 +1,7 @@
 defmodule DiscoveryApi.Search.DataModelFacinator do
-  @moduledoc false
+  @moduledoc """
+  Module that extracts facets (organizations and tags) from the given datasets and returns unique lists of them with their counts.
+  """
 
   def extract_facets([] = _models, selected_facets) do
     default_values = %{organization: [], keywords: []}

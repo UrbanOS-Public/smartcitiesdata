@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.HealthCheckController do
-  @moduledoc false
+  @moduledoc """
+  Simple healthcheck controller
+  """
   use DiscoveryApiWeb, :controller
 
   def index(conn, _params) do

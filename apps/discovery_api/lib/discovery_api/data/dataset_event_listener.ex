@@ -1,5 +1,7 @@
 defmodule DiscoveryApi.Data.DatasetEventListener do
-  @moduledoc false
+  @moduledoc """
+  Subscribe to changes in datasets and update the local cache with any changes.
+  """
   require Logger
   use SmartCity.Registry.MessageHandler
 

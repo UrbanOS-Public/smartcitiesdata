@@ -23,15 +23,6 @@ Discovery API serves as middleware between our metadata store and our Data Disco
   * Go to http://localhost:4000/api/v1/dataset/search
   * You can get paginated results using the url http://localhost:4000/api/v1/dataset/search?offset=10&limit=5&sort=name_asc
 
-### Deploying to Sandbox
-
-* This application can be deployed to the sandbox environment using the following Terraform commands:
-  * `tf init`
-  * `tf workspace new {NEW_WORKSPACE_NAME}`
-  * `tf plan --var=file=variables/sandbox.tfvars --out=out.out`
-  * `tf apply out.out`
-
-
 ### Calculating Completeness scores manually
 
 For all datasets:

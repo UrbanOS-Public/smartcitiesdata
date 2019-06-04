@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.DatasetDetailView do
-  @moduledoc false
+  @moduledoc """
+  View for dataset details.
+  """
   use DiscoveryApiWeb, :view
   alias DiscoveryApi.Data.Model
 

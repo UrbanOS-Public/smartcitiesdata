@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.DatasetMetricsController do
-  @moduledoc false
+  @moduledoc """
+  Controller to get metrics for a specific dataset
+  """
   use DiscoveryApiWeb, :controller
   require Logger
   alias DiscoveryApi.Data.Persistence

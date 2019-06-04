@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.Utilities.StreamUtils do
-  @moduledoc false
+  @moduledoc """
+  Utilities for streaming chunked data and converting a stream to csv
+  """
   alias Plug.Conn
 
   def map_data_stream_for_csv(stream, table_headers) do

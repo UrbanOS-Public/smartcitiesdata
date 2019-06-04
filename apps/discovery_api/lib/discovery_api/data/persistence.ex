@@ -1,5 +1,7 @@
 defmodule DiscoveryApi.Data.Persistence do
-  @moduledoc false
+  @moduledoc """
+  Module for communicating with Redis to persist and retrieve dataset information
+  """
   def get_all(key_string) do
     :redix
     |> Redix.command!(["KEYS", key_string])

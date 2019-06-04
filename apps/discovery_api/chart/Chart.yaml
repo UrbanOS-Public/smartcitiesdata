@@ -1,5 +1,0 @@
-apiVersion: v1
-appVersion: "1.1"
-description: A helm chart for the discovery-api
-name: discovery-api
-version: 0.1.0

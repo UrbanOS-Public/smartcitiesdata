@@ -1,5 +1,7 @@
 defmodule PrestoTestHelper do
-  @moduledoc false
+  @moduledoc """
+  Helper module for presto related tests
+  """
   def create_small_test_table do
     "create table if not exists hive.default.test_table2 (name varchar, age int)"
   end

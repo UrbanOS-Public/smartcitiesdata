@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.DatasetPrestoQueryService do
-  @moduledoc false
+  @moduledoc """
+  Module for executing specific queries against presto
+  """
 
   def preview(dataset_system_name) do
     "select * from #{dataset_system_name} limit 50"

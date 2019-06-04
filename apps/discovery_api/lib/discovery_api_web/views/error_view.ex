@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.ErrorView do
-  @moduledoc false
+  @moduledoc """
+  View for rendering errors
+  """
   use DiscoveryApiWeb, :view
 
   def render("error.json", %{message: message}) do

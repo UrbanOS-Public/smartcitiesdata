@@ -1,18 +1,15 @@
 defmodule DiscoveryApi.Stats.StatsCalculatorTest do
   use ExUnit.Case
   use Placebo
-  alias DiscoveryApi.Stats.CompletenessTotals
-  alias SmartCity.{Dataset, Organization}
-  alias SmartCity.TestDataGenerator, as: TDG
+  alias SmartCity.Dataset
   alias DiscoveryApi.Stats.StatsCalculator
-  alias DiscoveryApi.Stats.DataHelper
   alias DiscoveryApi.Data.Persistence
 
   @dataset_id "eaad54e8-fcb6-4f0e-99ac-bf51887ed102"
 
   describe "produce_completeness_stats/1" do
     test "Writes stats data to redis for non-remote datasets" do
-      allow(Dataset.get_all!(), return: mock_non_remote_dataset, meck_options: [:passthrough])
+      allow(Dataset.get_all!(), return: mock_non_remote_dataset(), meck_options: [:passthrough])
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
 
       allow(Prestige.execute(any(), any()),
@@ -42,7 +39,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
     end
 
     test "Does not calculate statistics for remote datasets" do
-      allow(Dataset.get_all!(), return: mock_remote_dataset, meck_options: [:passthrough])
+      allow(Dataset.get_all!(), return: mock_remote_dataset(), meck_options: [:passthrough])
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
 
       allow(Prestige.execute(any(), any()),
@@ -55,7 +52,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
     end
 
     test "Works when presto returns no data" do
-      allow(Dataset.get_all!(), return: mock_non_remote_dataset, meck_options: [:passthrough])
+      allow(Dataset.get_all!(), return: mock_non_remote_dataset(), meck_options: [:passthrough])
 
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
       allow(Prestige.execute(any(), any()), return: [])

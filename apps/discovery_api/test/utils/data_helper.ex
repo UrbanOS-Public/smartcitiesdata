@@ -1,5 +1,7 @@
 defmodule DiscoveryApi.Stats.DataHelper do
-  @moduledoc false
+  @moduledoc """
+  Helper module to create datasets for tests
+  """
   alias SmartCity.TestDataGenerator, as: TDG
 
   def create_dataset do
@@ -37,7 +39,7 @@ defmodule DiscoveryApi.Stats.DataHelper do
     TDG.create_dataset(%{
       id: "8997475d-105b-47dd-adc5-14d618423878",
       technical: %{
-        schema: real_dataset_schema
+        schema: real_dataset_schema()
       }
     })
   end

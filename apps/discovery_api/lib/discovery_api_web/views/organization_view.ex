@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.OrganizationView do
-  @moduledoc false
+  @moduledoc """
+  View for organizations
+  """
   use DiscoveryApiWeb, :view
 
   def render("fetch_organization.json", %{org: org}) do

@@ -1,4 +1,7 @@
 defmodule DiscoveryApiWeb.LoginController do
+  @moduledoc """
+  Controller for logging users in and out
+  """
   require Logger
   use DiscoveryApiWeb, :controller
   alias DiscoveryApi.Auth.Guardian
@@ -19,7 +22,7 @@ defmodule DiscoveryApiWeb.LoginController do
     end
   end
 
-  def extract_auth(conn) do
+  defp extract_auth(conn) do
     conn
     |> Plug.Conn.get_req_header("authorization")
     |> List.last()

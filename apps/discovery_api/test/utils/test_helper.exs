@@ -1,5 +1,7 @@
 defmodule DiscoveryApi.Test.Helper do
-  @moduledoc false
+  @moduledoc """
+  Utility functions for tests
+  """
   alias DiscoveryApi.Data.Model
   alias SmartCity.TestDataGenerator, as: TDG
 

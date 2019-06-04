@@ -1,5 +1,7 @@
 defmodule DiscoveryApi.Search.DataModelFilterator do
-  @moduledoc false
+  @moduledoc """
+  Filter down to datasets that have all the requested facets (tags, organizations, etc).
+  """
   alias DiscoveryApi.Data.Model
 
   def filter_by_facets(models, facets) do

@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.Router do
-  @moduledoc false
+  @moduledoc """
+  Module containing all of the app's routes and their respective controllers
+  """
   use DiscoveryApiWeb, :router
 
   pipeline :api do

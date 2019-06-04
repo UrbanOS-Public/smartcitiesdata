@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.DatasetDownloadController do
-  @moduledoc false
+  @moduledoc """
+  Controller for downloading a dataset
+  """
   use DiscoveryApiWeb, :controller
   alias DiscoveryApiWeb.DatasetMetricsService
 
