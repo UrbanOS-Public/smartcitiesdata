@@ -3,6 +3,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   use Divo
   alias SmartCity.{Dataset, Organization}
   alias SmartCity.TestDataGenerator, as: TDG
+  alias DiscoveryApi.Data.Persistence
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApi.Stats.DataHelper
 
@@ -43,21 +44,29 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
       Dataset.write(dataset1)
       Dataset.write(dataset2)
 
-      PrestoTestHelper.create_test_table()
+      dataset1
+      |> PrestoTestHelper.create_test_table()
       |> Prestige.execute()
       |> Prestige.prefetch()
 
-      PrestoTestHelper.insert_sample_data()
+      dataset1
+      |> PrestoTestHelper.insert_sample_data()
       |> Prestige.execute()
       |> Prestige.prefetch()
 
-      PrestoTestHelper.create_small_test_table()
+      Persistence.persist("forklift:last_insert_date:#{dataset1.id}", DateTime.utc_now())
+
+      dataset2
+      |> PrestoTestHelper.create_small_test_table()
       |> Prestige.execute()
       |> Prestige.prefetch()
 
-      PrestoTestHelper.insert_small_sample_data()
+      dataset2
+      |> PrestoTestHelper.insert_small_sample_data()
       |> Prestige.execute()
       |> Prestige.prefetch()
+
+      Persistence.persist("forklift:last_insert_date:#{dataset2.id}", DateTime.utc_now())
 
       expected_dataset1_column_stats = %{
         "id" => dataset1.id,
