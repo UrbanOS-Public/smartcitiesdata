@@ -2,7 +2,6 @@ defmodule YeetTest do
   use ExUnit.Case
   use Placebo
   alias Yeet.KafkaHelper
-  import ExUnit.CaptureLog
 
   @default_stacktrace [
     {:erlang, :/, [1, 0], []},

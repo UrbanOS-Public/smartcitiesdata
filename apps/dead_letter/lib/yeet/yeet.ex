@@ -10,7 +10,7 @@ defmodule Yeet do
   @doc """
   Given a message with a dataset id and app name, send a message to the dead letter queue that contains that message, along with additional metadata.
   """
-  @spec process_dead_letter(String.t(), any(), atom(), keyword()) :: :ok | {:error, any()}
+  @spec process_dead_letter(String.t(), any(), String.t(), keyword()) :: :ok | {:error, any()}
   def process_dead_letter(dataset_id, message, app_name, options \\ []) do
     dead_letter =
       message
