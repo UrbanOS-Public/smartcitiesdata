@@ -1,7 +1,4 @@
 defmodule DiscoveryApiWeb.DatasetSearchView do
-  @moduledoc """
-  View for rendering dataset search results
-  """
   use DiscoveryApiWeb, :view
   alias DiscoveryApi.Data.Model
 

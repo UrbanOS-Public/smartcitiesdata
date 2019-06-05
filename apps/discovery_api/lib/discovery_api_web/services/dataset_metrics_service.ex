@@ -1,7 +1,5 @@
 defmodule DiscoveryApiWeb.DatasetMetricsService do
-  @moduledoc """
-  Simple module to record the number of times a record is hit/queried
-  """
+  @moduledoc false
   def record_api_hit(request_type, dataset_id) do
     Redix.command!(:redix, ["INCR", "smart_registry:#{request_type}:count:#{dataset_id}"])
   end

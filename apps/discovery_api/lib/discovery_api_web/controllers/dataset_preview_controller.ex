@@ -1,7 +1,4 @@
 defmodule DiscoveryApiWeb.DatasetPreviewController do
-  @moduledoc """
-  Controller to return the preview of a dataset
-  """
   use DiscoveryApiWeb, :controller
   alias DiscoveryApiWeb.DatasetPrestoQueryService
 

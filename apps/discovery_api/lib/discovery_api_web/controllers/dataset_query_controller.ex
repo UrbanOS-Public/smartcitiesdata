@@ -1,7 +1,4 @@
 defmodule DiscoveryApiWeb.DatasetQueryController do
-  @moduledoc """
-  Controller for querying a specific dataset and getting data back.
-  """
   use DiscoveryApiWeb, :controller
   require Logger
   alias DiscoveryApiWeb.DatasetMetricsService

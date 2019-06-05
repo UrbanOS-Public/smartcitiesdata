@@ -1,6 +1,6 @@
 defmodule DiscoveryApi.Data.PrestoIngrationTest do
   use ExUnit.Case
-  use Divo
+  use Divo, services: [:redis, :presto, :metastore, :postgres, :minio]
   alias SmartCity.{Dataset, Organization}
   alias SmartCity.TestDataGenerator, as: TDG
 

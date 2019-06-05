@@ -1,13 +1,6 @@
 use Mix.Config
 
-host =
-  case System.get_env("HOST_IP") do
-    nil -> "127.0.0.1"
-    defined -> defined
-  end
-
-System.put_env("HOST", host)
-
+host = "localhost"
 endpoints = [{to_charlist(host), 9092}]
 
 config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: "data.integrationtests.example.com", port: 80]

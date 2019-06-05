@@ -1,7 +1,5 @@
 defmodule DiscoveryApi.Auth.Guardian do
-  @moduledoc """
-  Discovery API specific Guardian implementation.
-  """
+  @moduledoc false
   use Guardian, otp_app: :discovery_api, cookie_options: [secure: true, http_only: true]
   require Logger
 

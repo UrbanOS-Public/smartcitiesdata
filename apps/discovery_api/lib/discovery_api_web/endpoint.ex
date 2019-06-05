@@ -1,14 +1,9 @@
 defmodule DiscoveryApiWeb.Endpoint.Instrumenter do
-  @moduledoc """
-  Discovery implementation of the phoenix instrumentor
-  """
+  @moduledoc false
   use Prometheus.PhoenixInstrumenter
 end
 
 defmodule DiscoveryApiWeb.Endpoint do
-  @moduledoc """
-  Discovery implementation of a phoenix endpoint
-  """
   use Phoenix.Endpoint, otp_app: :discovery_api
 
   socket("/socket", DiscoveryApiWeb.UserSocket)

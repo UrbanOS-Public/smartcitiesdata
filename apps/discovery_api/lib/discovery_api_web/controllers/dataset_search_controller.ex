@@ -1,9 +1,6 @@
 require Logger
 
 defmodule DiscoveryApiWeb.DatasetSearchController do
-  @moduledoc """
-  Controller for searching datasets
-  """
   use DiscoveryApiWeb, :controller
   alias DiscoveryApiWeb.Services.AuthService
 

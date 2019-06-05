@@ -10,7 +10,7 @@ services:
       timeout: 20s
       retries: 3
   presto:
-    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/presto-testo:latest
+    image: smartcitiesdata/presto-testo:0.9.12
     depends_on:
       - metastore
       - minio
@@ -26,7 +26,7 @@ services:
       timeout: 30s
       retries: 10
   metastore:
-    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/metastore-testo:latest
+    image: smartcitiesdata/metastore-testo:0.9.12
     depends_on:
       - postgres
     ports:
@@ -41,11 +41,11 @@ services:
         /opt/hive-metastore/bin/schematool -dbType postgres -validate || /opt/hive-metastore/bin/schematool -dbType postgres -initSchema;
         /opt/hive-metastore/bin/start-metastore"
   postgres:
-    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/postgres-testo:latest
+    image: smartcitiesdata/postgres-testo:0.9.12
     ports:
-      - "5432:5432"
+      - "5455:5432"
   minio:
-    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/minio-testo:latest
+    image: smartcitiesdata/minio-testo:0.9.12
     ports:
       - "9000:9000"
   ldap:

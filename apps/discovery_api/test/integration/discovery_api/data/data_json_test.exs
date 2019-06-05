@@ -62,12 +62,6 @@ defmodule DiscoveryApi.Data.DataJsonTest do
     |> Jason.decode!()
   end
 
-  defp dataset_count(map) do
-    map
-    |> Map.get("dataset")
-    |> Enum.count()
-  end
-
   defp get_schema_from_path(path) do
     path
     |> File.read!()

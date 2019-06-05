@@ -33,11 +33,16 @@ defmodule DiscoveryApi.Data.ModelTest do
     expected_model = Helper.sample_model()
     model_json_string = to_json(expected_model)
     last_updated_date = DateTime.to_iso8601(DateTime.utc_now())
-    stats = ~s({"completeness": 0.95})
 
     Redix.command!(:redix, ["SET", "discovery-api:model:#{expected_model.id}", model_json_string])
     expected_model = %{expected_model | lastUpdatedDate: last_updated_date}
-    Redix.command!(:redix, ["SET", "forklift:last_insert_date:#{expected_model.id}", last_updated_date])
+
+    Redix.command!(:redix, [
+      "SET",
+      "forklift:last_insert_date:#{expected_model.id}",
+      last_updated_date
+    ])
+
     Redix.command!(:redix, ["SET", "discovery-api:stats:#{expected_model.id}", model_json_string])
 
     actual_model = Model.get(expected_model.id)

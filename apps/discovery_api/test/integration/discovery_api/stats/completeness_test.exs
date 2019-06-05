@@ -1,5 +1,4 @@
 defmodule DiscoveryApi.Stats.CompletenessTest do
-  import ExUnit.CaptureLog
   use ExUnit.Case
   use Divo
   alias SmartCity.{Dataset, Organization}
@@ -98,7 +97,11 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
       Patiently.wait_for!(
         fn ->
-          Map.get(get_dataset_completeness_from_details_endpoint(dataset1.id), "completeness", nil) ==
+          Map.get(
+            get_dataset_completeness_from_details_endpoint(dataset1.id),
+            "completeness",
+            nil
+          ) ==
             expected_dataset1_column_stats["completeness"]
         end,
         dwell: 2000,
@@ -106,7 +109,10 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
       )
 
       Patiently.wait_for!(
-        fn -> get_dataset_completeness_from_stats_endpoint(dataset1.id) == expected_dataset1_column_stats end,
+        fn ->
+          get_dataset_completeness_from_stats_endpoint(dataset1.id) ==
+            expected_dataset1_column_stats
+        end,
         dwell: 2000,
         max_tries: 10
       )
@@ -129,20 +135,18 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   end
 
   defp get_dataset_completeness_from_details_endpoint(dataset_id) do
-    actual =
-      "http://localhost:4000/api/v1/dataset/#{dataset_id}"
-      |> HTTPoison.get!()
-      |> Map.from_struct()
-      |> Map.get(:body)
-      |> Jason.decode!()
+    "http://localhost:4000/api/v1/dataset/#{dataset_id}"
+    |> HTTPoison.get!()
+    |> Map.from_struct()
+    |> Map.get(:body)
+    |> Jason.decode!()
   end
 
   defp get_dataset_completeness_from_stats_endpoint(dataset_id) do
-    actual =
-      "http://localhost:4000/api/v1/dataset/#{dataset_id}/stats"
-      |> HTTPoison.get!()
-      |> Map.from_struct()
-      |> Map.get(:body)
-      |> Jason.decode!()
+    "http://localhost:4000/api/v1/dataset/#{dataset_id}/stats"
+    |> HTTPoison.get!()
+    |> Map.from_struct()
+    |> Map.get(:body)
+    |> Jason.decode!()
   end
 end

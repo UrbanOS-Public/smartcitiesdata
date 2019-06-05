@@ -1,7 +1,5 @@
 defmodule DiscoveryApiWeb.Plugs.Restrictor do
-  @moduledoc """
-    Authorizes access to requested dataset
-  """
+  @moduledoc false
   require Logger
   import Plug.Conn
   alias DiscoveryApiWeb.Services.AuthService

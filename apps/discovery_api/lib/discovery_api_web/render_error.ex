@@ -1,7 +1,5 @@
 defmodule DiscoveryApiWeb.RenderError do
-  @moduledoc """
-  Module for rendering errors
-  """
+  @moduledoc false
   import Plug.Conn
   import Phoenix.Controller
   @error_module DiscoveryApiWeb.ErrorView

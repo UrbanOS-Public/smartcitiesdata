@@ -1,8 +1,5 @@
 defmodule DiscoveryApiWeb.DatasetPrestoQueryService do
-  @moduledoc """
-  Module for executing specific queries against presto
-  """
-
+  @moduledoc false
   def preview(dataset_system_name) do
     "select * from #{dataset_system_name} limit 50"
     |> Prestige.execute(rows_as_maps: true)

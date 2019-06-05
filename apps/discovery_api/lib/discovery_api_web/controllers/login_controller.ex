@@ -1,7 +1,4 @@
 defmodule DiscoveryApiWeb.LoginController do
-  @moduledoc """
-  Controller for logging users in and out
-  """
   require Logger
   use DiscoveryApiWeb, :controller
   alias DiscoveryApi.Auth.Guardian

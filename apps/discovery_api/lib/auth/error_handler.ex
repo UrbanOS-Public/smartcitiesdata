@@ -1,7 +1,5 @@
 defmodule DiscoveryApi.Auth.ErrorHandler do
-  @moduledoc """
-  Module for handling authentication errors.
-  """
+  @moduledoc false
   @behaviour Guardian.Plug.ErrorHandler
 
   require Logger
