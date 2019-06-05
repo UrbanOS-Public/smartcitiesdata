@@ -15,7 +15,6 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
     Persistence.persist("discovery-api:stats:start_time", DateTime.utc_now())
 
     Dataset.get_all!()
-    |> Enum.reject(&Dataset.is_remote?/1)
     |> Enum.filter(&calculate_completeness?/1)
     |> Enum.each(&calculate_and_save_completeness/1)
 
@@ -33,7 +32,9 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
       :ok
   end
 
-  defp calculate_completeness?(%Dataset{} = dataset) do
+  defp calculate_completeness?(%Dataset{} = dataset), do: not Dataset.is_remote?(dataset) and inserted_since_last_calculation?(dataset)
+
+  defp inserted_since_last_calculation?(%Dataset{} = dataset) do
     keys = ["forklift:last_insert_date:#{dataset.id}", "discovery_api:completion_calculated_date:#{dataset.id}"]
     [last_insert_date, completion_calculated_date] = Persistence.get_many(keys)
     last_insert_date > completion_calculated_date
