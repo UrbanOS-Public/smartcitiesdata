@@ -36,6 +36,8 @@ defmodule DiscoveryApi.Data.Persistence do
     |> Redix.command!(["KEYS", key_string])
   end
 
+  def get_many([]), do: []
+
   def get_many(keys) do
     :redix
     |> Redix.command!(["MGET" | keys])

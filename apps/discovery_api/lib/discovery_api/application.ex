@@ -13,6 +13,7 @@ defmodule DiscoveryApi.Application do
     children =
       [
         DiscoveryApi.Data.SystemNameCache,
+        DiscoveryApi.Search.Storage,
         redis(),
         registry_pubsub(),
         supervisor(DiscoveryApiWeb.Endpoint, []),

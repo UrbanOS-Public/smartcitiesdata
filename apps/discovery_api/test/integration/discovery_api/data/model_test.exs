@@ -85,6 +85,20 @@ defmodule DiscoveryApi.Data.ModelTest do
     assert [] == Model.get_all()
   end
 
+  test "get all should return the models for all the ids specified" do
+    model1 = Helper.sample_model()
+    model2 = Helper.sample_model()
+    model3 = Helper.sample_model()
+
+    [model1, model2, model3]
+    |> Enum.each(fn model -> Redix.command!(:redix, ["SET", "discovery-api:model:#{model.id}", to_json(model)]) end)
+
+    results = Model.get_all([model1.id, model3.id])
+    assert model1 in results
+    assert model3 in results
+    assert 2 == length(results)
+  end
+
   defp to_json(model) do
     model
     |> Map.from_struct()
