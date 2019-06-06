@@ -2,24 +2,26 @@ defmodule PrestoTestHelper do
   @moduledoc """
   Helper module for presto related tests
   """
-  def create_small_test_table do
-    "create table if not exists hive.default.test_table2 (name varchar, age int)"
+  alias SmartCity.Dataset
+
+  def create_small_test_table(%Dataset{technical: %{systemName: system_name}}) do
+    "create table if not exists hive.default.#{system_name} (name varchar, age int)"
   end
 
-  def insert_small_sample_data do
-    "Insert into hive.default.test_table2 (name, age) values
+  def insert_small_sample_data(%Dataset{technical: %{systemName: system_name}}) do
+    "Insert into hive.default.#{system_name} (name, age) values
     ('Alex Trebek', 78),
     ('Pat Sajak', 72),
     ('Wayne Brady', null)
     "
   end
 
-  def create_test_table do
-    "create table if not exists hive.default.test_table (bikes_allowed int, block_id int, direction_id int, route_id int, service_id int, shape_id int, trip_headsign varchar, trip_id int, trip_short_name varchar, wheelchair_accessible int)"
+  def create_test_table(%Dataset{technical: %{systemName: system_name}}) do
+    "create table if not exists hive.default.#{system_name} (bikes_allowed int, block_id int, direction_id int, route_id int, service_id int, shape_id int, trip_headsign varchar, trip_id int, trip_short_name varchar, wheelchair_accessible int)"
   end
 
-  def insert_sample_data do
-    "Insert into hive.default.test_table (route_id, service_id, trip_id, trip_headsign, trip_short_name, direction_id, block_id, shape_id, wheelchair_accessible, bikes_allowed) values
+  def insert_sample_data(%Dataset{technical: %{systemName: system_name}}) do
+    "Insert into hive.default.#{system_name} (route_id, service_id, trip_id, trip_headsign, trip_short_name, direction_id, block_id, shape_id, wheelchair_accessible, bikes_allowed) values
     (1, 1, 627426, '1 KENNY LIVINGSTON TO REYNOLDSBURG PARK AND RIDE', '', 0, 342116, 45934, 0, 0),
     (35, 1, 635098, '35 DUBLIN GRANVILLE TO EASTON TRANSIT CENTER', '', 0, 343104, 46111, 0, 0),
     (35, 1, 635099, '35 DUBLIN GRANVILLE TO EASTON TRANSIT CENTER', '', 0, 343105, 46111, 0, 0),
