@@ -35,11 +35,11 @@ defmodule Valkyrie.MessageHandler do
     else
       {:error, reason} ->
         Logger.warn("Error handling message: #{inspect(value)}: #{inspect(reason)}")
-        Yeet.process_dead_letter(value, "Valkyrie", reason: inspect(reason))
+        Yeet.process_dead_letter("unknown", value, "Valkyrie", reason: inspect(reason))
 
       _ ->
         Logger.warn("Error handling message: #{inspect(value)}")
-        Yeet.process_dead_letter(value, "Valkyrie")
+        Yeet.process_dead_letter("unknown", value, "Valkyrie")
     end
   end
 
