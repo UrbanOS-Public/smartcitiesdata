@@ -1,5 +1,7 @@
 defmodule DiscoveryApi.Search.Storage do
-  @moduledoc false
+  @moduledoc """
+  Optimize searches by looking up searched words in a table where the searched word is the key and the value is the dataset.
+  """
   use GenServer
 
   alias DiscoveryApi.Data.Model
@@ -16,9 +18,8 @@ defmodule DiscoveryApi.Search.Storage do
     query
     |> String.split()
     |> Enum.map(&remove_punctuation/1)
-    |> Enum.map(&lookup_word/1)
-    |> Enum.map(&MapSet.new/1)
-    |> Enum.reduce(&MapSet.intersection(&1, &2))
+    |> Enum.map(&get_dataset_ids_for_word/1)
+    |> get_intersection_of_datasets()
     |> Model.get_all()
   end
 
@@ -59,10 +60,16 @@ defmodule DiscoveryApi.Search.Storage do
     Regex.replace(@all_punctuation, word, "")
   end
 
-  defp lookup_word(word) do
+  defp get_dataset_ids_for_word(word) do
     __MODULE__
     |> :ets.lookup(word)
     |> Enum.map(fn {_word, dataset_id} -> dataset_id end)
+  end
+
+  defp get_intersection_of_datasets(dataset_ids) do
+    dataset_ids
+    |> Enum.map(&MapSet.new/1)
+    |> Enum.reduce(&MapSet.intersection(&1, &2))
   end
 
   defp save_word(word, id) do
