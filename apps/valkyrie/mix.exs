@@ -31,7 +31,6 @@ defmodule Valkyrie.MixProject do
       {:divo_redis, "~> 0.1", only: [:integration], organization: "smartcolumbus_os"},
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.0"},
-      {:mockaffe, "~> 0.1.1", only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:placebo, "~> 1.2", only: [:dev, :test]},
       {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
       {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},

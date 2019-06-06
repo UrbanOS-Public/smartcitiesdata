@@ -44,7 +44,7 @@ defmodule ValkyrieTest do
   setup_all do
     Valkyrie.Dataset.put(@dataset)
 
-    Mockaffe.send_to_kafka(@messages, "raw")
+    SmartCity.KafkaHelper.send_to_kafka(@messages, "raw")
     :ok
   end
 
