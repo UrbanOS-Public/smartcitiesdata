@@ -3,6 +3,7 @@ defmodule Forklift.Messages.MessageHandler do
   Reads data off kafka topics, buffering it in batches.
   """
   use Retry
+  use Elsa.Consumer.MessageHandler
   alias Forklift.Util
   require Logger
 
@@ -17,7 +18,7 @@ defmodule Forklift.Messages.MessageHandler do
     |> Forklift.handle_batch()
     |> send_to_output_topic()
 
-    :ok
+    :ack
   end
 
   defp parse(%{key: key, value: value} = message) do

@@ -69,6 +69,7 @@ defmodule Forklift.TopicManagerTest do
 
       allow :kpro.connect_controller(any(), any()), return: {:ok, :connection}
       allow :kpro.request_sync(any(), any(), any()), return: {:ok, kpro_resp}
+      allow DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
 
       none = {:ok, %{}}
 
@@ -83,11 +84,10 @@ defmodule Forklift.TopicManagerTest do
          }}
 
       allow :brod.get_metadata(any(), :all), seq: [none, none, none, topic_metadata]
-      allow Kaffe.GroupManager.subscribe_to_topics(any()), return: {:ok, ["our_topic"]}
 
-      assert {:ok, ["our_topic"]} == Forklift.TopicManager.create_and_subscribe("our_topic")
+      assert {:ok, :pid} == Forklift.TopicManager.create_and_subscribe("our_topic")
       assert_called :brod.get_metadata(any(), :all), times(4)
-      assert_called Kaffe.GroupManager.subscribe_to_topics(["our_topic"]), once()
+      assert_called DynamicSupervisor.start_child(any(), any())
     end
   end
 end

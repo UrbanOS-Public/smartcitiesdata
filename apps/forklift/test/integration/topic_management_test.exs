@@ -4,7 +4,7 @@ defmodule Forklift.TopicManagementTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @endpoints Application.get_env(:kaffe, :consumer)[:endpoints]
+  @endpoints Application.get_env(:forklift, :brod_brokers)
 
   test "create new topic for dataset when dataset event is received" do
     dataset = TDG.create_dataset(id: "ds1")

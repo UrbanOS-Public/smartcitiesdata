@@ -11,8 +11,3 @@ config :prestige,
   headers: [
     user: "foobar"
   ]
-
-config :kaffe,
-  consumer: [
-    endpoints: nil
-  ]

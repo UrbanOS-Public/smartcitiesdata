@@ -15,19 +15,6 @@ config :forklift,
   data_topic_prefix: data_topic_prefix,
   output_topic: "streaming-persisted"
 
-config :kaffe,
-  consumer: [
-    topics: [],
-    consumer_group: "forklift-group",
-    message_handler: Forklift.Messages.MessageHandler,
-    offset_reset_policy: :reset_to_earliest,
-    start_with_earliest_message: true,
-    max_bytes: 1_000_000,
-    min_bytes: 500_000,
-    max_wait_time: 10_000,
-    worker_allocation_strategy: :worker_per_topic_partition
-  ]
-
 config :logger,
   backends: [:console],
   level: :info,

@@ -2,6 +2,7 @@ defmodule Forklift.TopicManager do
   @moduledoc """
   Create Topics in kafka
   """
+  require Logger
   import Record, only: [defrecord: 2, extract: 2]
   use Retry
 
@@ -23,7 +24,7 @@ defmodule Forklift.TopicManager do
       is_topic_ready?(topic) || :error
     after
       true ->
-        Kaffe.GroupManager.subscribe_to_topics([topic])
+        start_subscriber(topic)
     else
       _ -> raise "Unable to create topic #{topic}"
     end
@@ -55,6 +56,19 @@ defmodule Forklift.TopicManager do
     |> Enum.map(fn topic_metadata -> topic_metadata.topic end)
   end
 
+  defp start_subscriber(topic) do
+    start_options = [
+      brokers: Application.get_env(:forklift, :elsa_brokers),
+      name: :"name-#{topic}",
+      group: "forklift-#{topic}",
+      topics: [topic],
+      handler: Forklift.Messages.MessageHandler,
+      config: Application.get_env(:forklift, :topic_subscriber_config, [])
+    ]
+
+    DynamicSupervisor.start_child(Forklift.Topic.Supervisor, {Elsa.Group.Supervisor, start_options})
+  end
+
   defp build_create_topic_request(connection, topic, opts) do
     args = %{
       topic: topic,
@@ -69,7 +83,7 @@ defmodule Forklift.TopicManager do
   end
 
   defp endpoints() do
-    Application.get_env(:kaffe, :consumer)[:endpoints]
+    Application.get_env(:forklift, :brod_brokers)
   end
 
   defp with_connection(endpoints, fun) when is_function(fun) do

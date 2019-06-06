@@ -7,7 +7,7 @@ defmodule Forklift.Application do
     children =
       [
         redis(),
-        kaffe_consumer(),
+        {DynamicSupervisor, strategy: :one_for_one, name: Forklift.Topic.Supervisor},
         {Forklift.Datasets.DatasetRegistryServer, name: Forklift.Datasets.DatasetRegistryServer},
         dataset_subscriber()
       ]
@@ -27,21 +27,6 @@ defmodule Forklift.Application do
 
       host ->
         {Redix, host: host, name: redis_client()}
-    end
-  end
-
-  defp kaffe_consumer do
-    Application.get_env(:kaffe, :consumer)[:endpoints]
-    |> case do
-      nil ->
-        []
-
-      _ ->
-        %{
-          id: Kaffe.GroupMemberSupervisor,
-          start: {Kaffe.GroupMemberSupervisor, :start_link, []},
-          type: :supervisor
-        }
     end
   end
 
