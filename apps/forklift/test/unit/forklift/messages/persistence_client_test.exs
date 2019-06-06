@@ -4,7 +4,6 @@ defmodule PersistenceClientTest do
 
   alias Forklift.Messages.PersistenceClient
   alias Forklift.Datasets.{DatasetSchema, DatasetRegistryServer}
-  alias Forklift.Redix, as: Redix
 
   test "upload_data sends a valid statement to prestige" do
     system_name = "placeholder_sys_name"
@@ -20,10 +19,10 @@ defmodule PersistenceClientTest do
 
     allow(Prestige.execute(any()), return: :ok)
 
-    allow(Redix.command(["SET", "forklift:last_insert_date:" <> schema.id, any()]), return: :ok)
+    allow(Redix.command(:redix, ["SET", "forklift:last_insert_date:" <> schema.id, any()]), return: :ok)
 
     allow(DatasetRegistryServer.get_schema(any()), return: schema)
-    allow(Prestige.prefetch(any()), return: :ok)
+    allow(Prestige.prefetch(any()), return: [[1]])
 
     expected_statement =
       ~s/insert into "#{system_name}" ("id","name") values row(123,'bob'),row(234,'cob'),row(345,'dob')/

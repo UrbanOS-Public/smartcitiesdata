@@ -30,7 +30,7 @@ defmodule Forklift.Messages.PersistenceClient do
     |> validate_result()
 
     end_time = Data.Timing.current_time()
-    @redis.command(["SET", "forklift:last_insert_date:" <> dataset_id, DateTime.to_iso8601(DateTime.utc_now())])
+    Redix.command(@redis, ["SET", "forklift:last_insert_date:" <> dataset_id, DateTime.to_iso8601(DateTime.utc_now())])
 
     Logger.debug("Persisting #{inspect(Enum.count(messages))} records for #{dataset_id}")
 
@@ -52,14 +52,10 @@ defmodule Forklift.Messages.PersistenceClient do
       [[_]] ->
         :ok
 
-      _ ->
+      error ->
+        Logger.error(inspect(error))
         {:error, "Write to Presto failed"}
         raise "Presto write failed"
     end
-  end
-
-  def send_to_kafka(topic, key, msg) do
-    json_msg = apply(Jason, :encode!, [msg])
-    apply(Kaffe.Producer, :produce_sync, [topic, [{key, json_msg}]])
   end
 end

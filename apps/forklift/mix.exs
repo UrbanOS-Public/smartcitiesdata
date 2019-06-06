@@ -29,7 +29,6 @@ defmodule Forklift.MixProject do
       {:smart_city_registry, "~> 2.6"},
       {:smart_city_test, "~> 0.2.0", only: [:test, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:exq, "~> 0.13.2"},
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.13"},
       {:brod, "~> 3.7", override: true},
@@ -44,7 +43,9 @@ defmodule Forklift.MixProject do
       {:distillery, "~> 2.0"},
       {:yeet, "~> 1.0"},
       {:ex_doc, "~> 0.19"},
-      {:observer_cli, "~> 1.4"}
+      {:observer_cli, "~> 1.4"},
+      {:retry, "~> 0.11.2"},
+      {:benchee, "~> 1.0", only: [:integration]}
     ]
   end
 

@@ -16,7 +16,8 @@ kafka:
   #comma delimited list of kafka seed brokers
   brokers: streaming-service-kafka-bootstrap.streaming-prime:9092
   strimziCluster: streaming-service # http://strimzi.io/docs/0.4.0/#_topic_configmap
-  dataTopicPrefix: "streaming-transformed"
+  dataTopicPrefix: "transformed"
+  outputTopic: "streaming-persisted"
 
 nameOverride: ""
 fullnameOverride: ""

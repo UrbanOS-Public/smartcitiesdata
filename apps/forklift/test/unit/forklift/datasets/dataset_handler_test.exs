@@ -9,7 +9,7 @@ defmodule Forklift.Datasets.DatasetHandlerTest do
   describe "handle_dataset/1" do
     test "ignores remote datasets" do
       allow DatasetRegistryServer.send_message(any()), return: :ignore
-      allow Forklift.TopicManager.create(any()), return: :ignore
+      allow Forklift.TopicManager.create_and_subscribe(any()), return: :ignore
 
       %{id: "1", technical: %{sourceType: "remote"}}
       |> TDG.create_dataset()

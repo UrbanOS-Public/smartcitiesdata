@@ -9,16 +9,18 @@ host =
 endpoint = [{to_charlist(host), 9094}]
 
 config :forklift,
-  message_processing_cadence: 5_000
+  message_processing_cadence: 5_000,
+  data_topic_prefix: "integration"
 
 config :kaffe,
   producer: [
     endpoints: endpoint,
-    topics: ["streaming-persisted"],
+    topics: [],
     max_retries: 30,
     retry_backoff_ms: 500
   ],
   consumer: [
+    min_bytes: 0,
     endpoints: endpoint
   ]
 
@@ -42,17 +44,3 @@ config :smart_city_registry,
   redis: [
     host: host
   ]
-
-config :exq,
-  name: Exq,
-  host: host,
-  port: 6379,
-  namespace: "forklift:exq",
-  concurrency: :infinite,
-  queues: ["default"],
-  poll_timeout: 50,
-  scheduler_poll_timeout: 200,
-  scheduler_enable: true,
-  max_retries: 25,
-  shutdown_timeout: 500,
-  start_on_application: false

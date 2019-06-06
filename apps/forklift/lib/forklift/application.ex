@@ -6,15 +6,10 @@ defmodule Forklift.Application do
   def start(_type, _args) do
     children =
       [
-        {Registry, [keys: :unique, name: dataset_jobs_registry()]},
-        exq(),
         redis(),
         kaffe_consumer(),
         {Forklift.Datasets.DatasetRegistryServer, name: Forklift.Datasets.DatasetRegistryServer},
-        Forklift.Messages.EmptyStreamTracker,
-        Forklift.Messages.RetryTracker,
-        dataset_subscriber(),
-        {Forklift.Messages.MessageWriter, name: Forklift.Messages.MessageWriter}
+        dataset_subscriber()
       ]
       |> List.flatten()
 
@@ -22,23 +17,7 @@ defmodule Forklift.Application do
     Supervisor.start_link(children, opts)
   end
 
-  def dataset_jobs_registry(), do: :dataset_jobs
-
-  defp exq do
-    case Application.get_env(:exq, :host) do
-      nil ->
-        []
-
-      _ ->
-        %{
-          id: Exq,
-          type: :supervisor,
-          start: {Exq, :start_link, []}
-        }
-    end
-  end
-
-  def redis_client(), do: Forklift.Redix
+  def redis_client(), do: :redix
 
   defp redis do
     Application.get_env(:redix, :host)
@@ -47,7 +26,7 @@ defmodule Forklift.Application do
         []
 
       host ->
-        {Forklift.Redix, host: host}
+        {Redix, host: host, name: redis_client()}
     end
   end
 
@@ -59,8 +38,8 @@ defmodule Forklift.Application do
 
       _ ->
         %{
-          id: Kaffe.Consumer,
-          start: {Kaffe.Consumer, :start_link, []},
+          id: Kaffe.GroupMemberSupervisor,
+          start: {Kaffe.GroupMemberSupervisor, :start_link, []},
           type: :supervisor
         }
     end

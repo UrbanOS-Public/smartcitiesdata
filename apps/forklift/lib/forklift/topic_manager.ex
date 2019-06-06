@@ -10,7 +10,21 @@ defmodule Forklift.TopicManager do
     defexception [:code, :message]
   end
 
+  @type topic :: String.t()
+
   defrecord :kpro_rsp, extract(:kpro_rsp, from_lib: "kafka_protocol/include/kpro.hrl")
+
+  @spec create_and_subscribe(topic(), keyword()) :: :ok | no_return()
+  def create_and_subscribe(topic, opts \\ []) do
+    create(topic, opts)
+    Patiently.wait_for!(fn -> is_topic_ready?(topic) end, dwell: 10, tries: 10)
+    Kaffe.GroupManager.subscribe_to_topics([topic])
+  end
+
+  @spec is_topic_ready?(topic()) :: boolean()
+  def is_topic_ready?(topic) do
+    topic in list_topics()
+  end
 
   def create(topic, opts \\ []) do
     with_connection(endpoints(), fn connection ->
@@ -23,6 +37,14 @@ defmodule Forklift.TopicManager do
         {:error, error} -> raise Error, code: :kafka_error, message: error
       end
     end)
+  end
+
+  def list_topics() do
+    {:ok, metadata} = :brod.get_metadata(endpoints(), :all)
+
+    metadata
+    |> Map.get(:topic_metadata, [])
+    |> Enum.map(fn topic_metadata -> topic_metadata.topic end)
   end
 
   defp build_create_topic_request(connection, topic, opts) do
@@ -60,7 +82,7 @@ defmodule Forklift.TopicManager do
     :kpro.close_connection(connection)
   end
 
-  defp do_with_connection({:error, reason}, function) do
+  defp do_with_connection({:error, reason}, _function) do
     raise Error,
       code: :with_connection_error,
       message: "#{format_reason(reason)}"

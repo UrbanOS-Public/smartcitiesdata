@@ -12,7 +12,7 @@ defmodule Forklift.TopicManagementTest do
 
     Patiently.wait_for!(
       fn ->
-        {"streaming-transformed-ds1", 1} in list_topics()
+        {"integration-ds1", 1} in list_topics()
       end,
       dwell: 200,
       max_tries: 20
@@ -20,8 +20,8 @@ defmodule Forklift.TopicManagementTest do
   end
 
   test "create new topic for dataset when dataset event is received and topic already exists" do
-    Forklift.TopicManager.create("transformed-bob1")
-    Forklift.TopicManager.create("transformed-bob1")
+    Forklift.TopicManager.create_and_subscribe("transformed-bob1")
+    Forklift.TopicManager.create_and_subscribe("transformed-bob1")
 
     Patiently.wait_for!(
       fn ->

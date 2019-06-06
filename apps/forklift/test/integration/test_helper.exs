@@ -1,4 +1,4 @@
-ExUnit.start()
+ExUnit.start(exclude: [:performance])
 Faker.start()
 
 defmodule Helper do

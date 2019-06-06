@@ -13,10 +13,13 @@ defmodule Forklift.Datasets.DatasetHandler do
 
   def handle_dataset(%SmartCity.Dataset{} = dataset) do
     DatasetRegistryServer.send_message(dataset)
-
-    topic_prefix = Application.get_env(:kaffe, :consumer)[:topics] |> hd()
-    TopicManager.create("#{topic_prefix}-#{dataset.id}")
+    TopicManager.create_and_subscribe(topic_name(dataset))
   rescue
     error -> Logger.error("Error creating topic for dataset #{dataset.id}: #{inspect(error)}")
+  end
+
+  defp topic_name(dataset) do
+    topic_prefix = Application.get_env(:forklift, :data_topic_prefix)
+    "#{topic_prefix}-#{dataset.id}"
   end
 end
