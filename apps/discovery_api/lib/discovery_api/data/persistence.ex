@@ -21,6 +21,11 @@ defmodule DiscoveryApi.Data.Persistence do
     |> Redix.command!(["GET", key_string])
   end
 
+  def persist(key_string, value) when is_binary(value) do
+    :redix
+    |> Redix.command(["SET", key_string, value])
+  end
+
   def persist(key_string, value_map) do
     :redix
     |> Redix.command(["SET", key_string, Jason.encode!(value_map)])
