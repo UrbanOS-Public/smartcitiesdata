@@ -14,6 +14,7 @@ defmodule DiscoveryApi.Application do
       [
         DiscoveryApi.Data.SystemNameCache,
         DiscoveryApi.Search.Storage,
+        DiscoveryApiWeb.Plugs.ResponseCache,
         redis(),
         registry_pubsub(),
         supervisor(DiscoveryApiWeb.Endpoint, []),

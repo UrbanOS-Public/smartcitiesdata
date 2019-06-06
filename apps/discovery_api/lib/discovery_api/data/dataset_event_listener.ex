@@ -7,6 +7,7 @@ defmodule DiscoveryApi.Data.DatasetEventListener do
 
   alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
   alias SmartCity.{Dataset, Organization}
+  alias DiscoveryApiWeb.Plugs.ResponseCache
 
   def handle_dataset(%Dataset{} = dataset) do
     Logger.debug(fn -> "Handling dataset: `#{dataset.technical.systemName}`" end)
@@ -16,6 +17,7 @@ defmodule DiscoveryApi.Data.DatasetEventListener do
          model <- Mapper.to_data_model(dataset, organization),
          {:ok, _result} <- Model.save(model) do
       DiscoveryApi.Search.Storage.index(model)
+      ResponseCache.invalidate()
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
     else
       {:error, reason} ->

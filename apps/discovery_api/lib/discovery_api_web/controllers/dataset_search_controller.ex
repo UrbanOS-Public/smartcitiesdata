@@ -6,6 +6,8 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
 
   alias DiscoveryApi.Search.{DataModelFilterator, DataModelFacinator, DataModelSearchinator}
 
+  plug DiscoveryApiWeb.Plugs.ResponseCache, %{for_params: %{"query" => "", "limit" => "10", "offset" => "0"}} when action in [:search]
+
   def search(conn, params) do
     sort_by = Map.get(params, "sort", "name_asc")
     query = Map.get(params, "query", "")

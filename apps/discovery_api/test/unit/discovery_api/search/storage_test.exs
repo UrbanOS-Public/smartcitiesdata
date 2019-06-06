@@ -67,7 +67,8 @@ defmodule DiscoveryApi.Search.StorageTest do
 
       Storage.search("science")
 
-      assert_called Model.get_all(MapSet.new())
+      arg = capture(Model.get_all(any()), 1)
+      assert arg == MapSet.new()
     end
   end
 
