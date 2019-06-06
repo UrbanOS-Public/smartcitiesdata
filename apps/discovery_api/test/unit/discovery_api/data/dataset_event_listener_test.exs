@@ -4,8 +4,15 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
   alias DiscoveryApi.Data.{DatasetEventListener, Model, SystemNameCache}
   alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG
+  alias DiscoveryApiWeb.Plugs.ResponseCache
 
   describe "handle_dataset/1" do
+    setup do
+      allow ResponseCache.invalidate(), return: :ok
+
+      :ok
+    end
+
     test "should return :ok when successful" do
       dataset = TDG.create_dataset(%{id: "123"})
       organization = TDG.create_organization(%{id: dataset.technical.orgId})
@@ -34,6 +41,17 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
       allow(SystemNameCache.put(any(), any()), return: {:error, :failure})
 
       assert :ok == DatasetEventListener.handle_dataset(dataset)
+    end
+
+    test "should invalidate the ResponseCache when dataset is received" do
+      dataset = TDG.create_dataset(%{id: "123"})
+      organization = TDG.create_organization(%{id: dataset.technical.orgId})
+
+      allow(Organization.get(dataset.technical.orgId), return: {:ok, organization})
+      allow(Model.save(any()), return: {:ok, :success})
+
+      assert :ok == DatasetEventListener.handle_dataset(dataset)
+      assert_called ResponseCache.invalidate(), once()
     end
 
     @tag capture_log: true

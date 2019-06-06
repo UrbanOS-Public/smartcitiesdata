@@ -52,6 +52,14 @@ defmodule DiscoveryApi.Data.Model do
     |> Enum.map(&struct_from_map/1)
   end
 
+  def get_all(ids) do
+    ids
+    |> Enum.map(fn id -> @name_space <> id end)
+    |> Persistence.get_many()
+    |> Enum.map(&map_from_json/1)
+    |> Enum.map(&struct_from_map/1)
+  end
+
   def get(id) do
     (@name_space <> id)
     |> Persistence.get()

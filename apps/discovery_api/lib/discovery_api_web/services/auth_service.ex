@@ -14,6 +14,8 @@ defmodule DiscoveryApiWeb.Services.AuthService do
 
   def has_access?(%Model{private: false} = _dataset, _username), do: true
 
+  def has_access?(%Model{private: true} = _dataset, nil), do: false
+
   def has_access?(%Model{private: true, organizationDetails: %{dn: dn}} = _dataset, username) do
     dn
     |> get_members()
