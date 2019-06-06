@@ -3,6 +3,7 @@ defmodule Forklift.TopicManager do
   Create Topics in kafka
   """
   import Record, only: [defrecord: 2, extract: 2]
+  use Retry
 
   @kafka_timeout Application.get_env(:forklift, :kafka_timeout, 5_000)
 
@@ -17,8 +18,15 @@ defmodule Forklift.TopicManager do
   @spec create_and_subscribe(topic(), keyword()) :: :ok | no_return()
   def create_and_subscribe(topic, opts \\ []) do
     create(topic, opts)
-    Patiently.wait_for!(fn -> is_topic_ready?(topic) end, dwell: 10, tries: 10)
-    Kaffe.GroupManager.subscribe_to_topics([topic])
+
+    retry with: [10] |> Stream.cycle() |> Stream.take(10) do
+      is_topic_ready?(topic) || :error
+    after
+      true ->
+        Kaffe.GroupManager.subscribe_to_topics([topic])
+    else
+      _ -> raise "Unable to create topic #{topic}"
+    end
   end
 
   @spec is_topic_ready?(topic()) :: boolean()
