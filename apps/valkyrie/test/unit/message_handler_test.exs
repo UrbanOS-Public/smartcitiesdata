@@ -21,7 +21,7 @@ defmodule Valkyrie.MessageHandlerTest do
         }
       ]
 
-      allow Yeet.process_dead_letter(any(), any(), any()), return: :does_not_matter
+      allow Yeet.process_dead_letter("unknown", any(), any(), any()), return: :does_not_matter
       allow Kaffe.Producer.produce_sync(any(), any()), return: :does_not_matter
       allow SmartCity.Data.Timing.current_time(), return: "2019-04-17T19:50:06.455498Z", meck_options: [:passthrough]
       allow Valkyrie.Dataset.get("basic"), return: %Valkyrie.Dataset{schema: [%{name: "name", type: "string"}]}
@@ -29,7 +29,7 @@ defmodule Valkyrie.MessageHandlerTest do
       Valkyrie.MessageHandler.handle_messages(messages)
 
       assert_called Kaffe.Producer.produce_sync("someKey", expected_message)
-      refute_called Yeet.process_dead_letter(any(), any(), any())
+      refute_called Yeet.process_dead_letter("unknown", any(), any(), any())
     end
 
     test "invalid messages are yeeted" do
@@ -45,7 +45,7 @@ defmodule Valkyrie.MessageHandlerTest do
         }
       ]
 
-      allow Yeet.process_dead_letter(any(), any(), any()), return: :does_not_matter
+      allow Yeet.process_dead_letter("unknown", any(), any(), any()), return: :does_not_matter
       allow Kaffe.Producer.produce_sync(any(), any()), return: :does_not_matter
       allow SmartCity.Data.Timing.current_time(), return: "2019-04-17T19:50:06.455498Z", meck_options: [:passthrough]
 
@@ -63,7 +63,7 @@ defmodule Valkyrie.MessageHandlerTest do
 
       refute_called Kaffe.Producer.produce_sync(any(), any())
 
-      assert_called Yeet.process_dead_letter(any(), any(),
+      assert_called Yeet.process_dead_letter("unknown", any(), any(),
                       reason: "\"The following fields were invalid: weight, height\""
                     )
     end
