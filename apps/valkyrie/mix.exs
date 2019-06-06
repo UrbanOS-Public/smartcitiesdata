@@ -31,6 +31,7 @@ defmodule Valkyrie.MixProject do
       {:divo_redis, "~> 0.1", only: [:integration]},
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.0"},
+      {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
       {:placebo, "~> 1.2", only: [:dev, :test]},
       {:smart_city_data, "~> 2.1"},
       {:smart_city_registry, "~> 2.6"},
