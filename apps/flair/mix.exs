@@ -42,6 +42,7 @@ defmodule Flair.MixProject do
       {:gen_stage, "~> 0.14"},
       {:jason, "~> 1.1"},
       {:kafka_ex, "~> 0.9"},
+      {:kaffe, "~> 1.14.1", only: [:test, :integration]},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:faker, "~> 0.12.0"},
       {:prestige, "~> 0.3.2"},

@@ -40,7 +40,11 @@ defmodule DurationsTest do
 
   test "flair consumes messages and calls out to presto", context do
     SmartCity.Dataset.write(TestHelper.create_simple_dataset() |> Map.put(:id, "pirates"))
-    Mockaffe.send_to_kafka(context[:messages], Application.get_env(:flair, :data_topic))
+
+    SmartCity.KafkaHelper.send_to_kafka(
+      context[:messages],
+      Application.get_env(:flair, :data_topic)
+    )
 
     Patiently.wait_for!(
       prestige_query("select dataset_id, app from operational_stats", [
@@ -53,7 +57,10 @@ defmodule DurationsTest do
   end
 
   test "should insert records into Presto", context do
-    Mockaffe.send_to_kafka(context[:messages], Application.get_env(:flair, :data_topic))
+    SmartCity.KafkaHelper.send_to_kafka(
+      context[:messages],
+      Application.get_env(:flair, :data_topic)
+    )
 
     Patiently.wait_for!(
       prestige_query("select dataset_id, app from operational_stats", [
