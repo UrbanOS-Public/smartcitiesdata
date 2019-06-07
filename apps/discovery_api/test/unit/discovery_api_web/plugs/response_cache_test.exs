@@ -11,7 +11,7 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCacheTest do
 
   describe "response cache plug" do
     test "non default searches return an unmodified conn" do
-      for_params = %{"offset" => "0", "limit" => "5", "query" => "search"}
+      for_params = [%{"offset" => "0", "limit" => "5", "query" => "search"}]
       conn = conn(:get, "/a/path", %{"offset" => "0", "limit" => "5", "query" => "nemesis"})
 
       actual = ResponseCache.call(conn, %{for_params: for_params})
@@ -20,7 +20,7 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCacheTest do
     end
 
     test "searches matching for_params will registrer before send hook that caches the response" do
-      for_params = %{"offset" => "0", "limit" => "5", "query" => ""}
+      for_params = [%{"offset" => "0", "limit" => "5", "query" => ""}]
       conn = conn(:get, "/a/path", %{"offset" => "0", "limit" => "5", "query" => ""})
 
       actual = ResponseCache.call(conn, %{for_params: for_params})
@@ -41,7 +41,7 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCacheTest do
     end
 
     test "searches matching for_params with entry already in the cache will return the cache immediately" do
-      for_params = %{"offset" => "0", "limit" => "10", "query" => ""}
+      for_params = [%{"offset" => "0", "limit" => "10", "query" => ""}]
       conn = conn(:get, "/a/path", %{"offset" => "0", "limit" => "10", "query" => ""})
 
       resp_headers = [{"test_header", "value_header"}]
