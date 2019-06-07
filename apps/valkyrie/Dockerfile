@@ -10,7 +10,7 @@ RUN mix local.hex --force && \
     mix deps.get
 RUN MIX_ENV=prod mix release
 
-FROM alpine:3.9
+FROM bitwalker/alpine-elixir:1.8.1
 ENV REPLACE_OS_VARS=true
 RUN apk upgrade \
     && rm -rf /var/cache/**/*
