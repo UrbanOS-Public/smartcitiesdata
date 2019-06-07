@@ -14,7 +14,7 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCache do
   end
 
   def call(conn, opts) do
-    do_call(conn, opts.for_params, conn.params)
+    do_call(conn, conn.params in opts.for_params)
   end
 
   def invalidate() do
@@ -22,14 +22,14 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCache do
     Logger.debug(fn -> "Cache cleared" end)
   end
 
-  defp do_call(conn, for_params, actual_params) when for_params == actual_params do
+  defp do_call(conn, true = _match) do
     case Cachex.get(__MODULE__, {conn.request_path, conn.params}) do
       {:ok, nil} ->
         conn
         |> register_hook()
 
       {:ok, response} ->
-        Logger.debug(fn -> "Responding to #{conn.request_path} / #{conn.params} with entry from cache" end)
+        Logger.debug(fn -> "Responding to #{conn.request_path} / #{inspect(conn.params)} with entry from cache" end)
 
         conn
         |> merge_resp_headers(response.resp_headers)
@@ -38,7 +38,7 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCache do
     end
   end
 
-  defp do_call(conn, _for_params, _params) do
+  defp do_call(conn, false = _match) do
     conn
   end
 
