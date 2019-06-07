@@ -15,12 +15,16 @@ defmodule Flair.Producer do
     """
 
     @typedoc """
-    demand: Count of messages demanded by the consumer.
-    message_set: Batch of messages waiting to be consumed.
-    from: List of blocked `MessageProcessor` pids waiting to be continued.
+    * `:demand`: Count of messages demanded by the consumer.
+    * `:message_set`: Batch of messages waiting to be consumed.
+    * `:from`: List of blocked `Flair.MessageProcessor` pids waiting to be continued.
     """
-    @type t(demand, message_set, from) :: %State{demand: demand, message_set: message_set, from: from}
-    @type t :: %State{demand: integer, message_set: list(KafkaEx.Protocol.Fetch.Message.t()), from: list(pid())}
+
+    @type t :: %State{
+            demand: integer,
+            message_set: list(%KafkaEx.Protocol.Fetch.Message{}),
+            from: list(pid())
+          }
     defstruct demand: 0, message_set: [], from: []
   end
 
@@ -28,15 +32,19 @@ defmodule Flair.Producer do
     GenStage.start_link(__MODULE__, args, name: name)
   end
 
-  def add_messages(name, messages) do
-    GenStage.call(name, {:add, messages}, @message_timeout)
-  end
-
   def init(_args) do
     Flair.PrestoClient.get_create_timing_table_statement()
     |> Flair.PrestoClient.execute()
 
     {:producer, %State{}}
+  end
+
+  @doc """
+  Add list of kafka messages to be consumed.
+  """
+  @spec add_messages(GenStage.stage(), list(%KafkaEx.Protocol.Fetch.Message{})) :: term()
+  def add_messages(name, messages) do
+    GenStage.call(name, {:add, messages}, @message_timeout)
   end
 
   def handle_call({:add, messages}, from, %State{demand: 0} = state) do

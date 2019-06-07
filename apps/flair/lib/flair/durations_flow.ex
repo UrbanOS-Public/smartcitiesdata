@@ -24,7 +24,7 @@ defmodule Flair.DurationsFlow do
     ]
 
     [{Flair.Producer, :durations}]
-
+    |> Flow.from_specs()
     |> Flow.map(&get_message/1)
     |> Flow.map(&OverallTime.add/1)
     |> Flow.each(&log_message/1)

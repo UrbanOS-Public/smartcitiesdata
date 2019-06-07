@@ -1,22 +1,28 @@
+[![Master](https://travis-ci.org/smartcitiesdata/flair.svg?branch=master)](https://travis-ci.org/smartcitiesdata/flair)
+
 # Flair
 
-Flair profiles statistics about data.
+Computes data processing statistics off of Kafka data messages and stores them in Presto.
 
+## To run the tests
 
-## Installation
+  * Run `mix test` to run the tests a single time
+  * Run `mix test.watch` to re-run the tests when a file changes
+  * Run `mix test.watch --stale` to only rerun the tests for modules that have changes
+  * Run `mix test.integration` to run the integration tests
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `flair` to your list of dependencies in `mix.exs`:
+## To run inside a container(from the root directory):
+  * `docker build . -t <image_name:tag>`
 
-```elixir
-def deps do
-  [
-    {:flair, "~> 0.2.0"}
-  ]
-end
+## Running Locally
+
+You can use [Divo](https://hexdocs.pm/divo/) to stand up the external dependencies locally using docker and docker-compose.
+
+```bash
+MIX_ENV=integration mix docker.start
+MIX_ENV=integration iex -S mix
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/flair](https://hexdocs.pm/flair).
+## License
 
+Released under [Apache 2 license](https://github.com/smartcitiesdata/flair/blob/master/LICENSE).

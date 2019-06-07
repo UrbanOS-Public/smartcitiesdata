@@ -1,11 +1,14 @@
 defmodule Flair.OverallTime do
-  @moduledoc false
+  @moduledoc """
+  Provides timing utilities
+  """
 
   alias SmartCity.Data
 
   @doc """
   Calculate the overall time for this data message by finding the lowest start time and the highest end time and adding that as a timing for SmartCityOS with label EndToEnd
   """
+  @spec add(Data.t()) :: Data.t()
   def add(%Data{operational: %{timing: []}} = msg), do: msg
 
   def add(%Data{operational: %{timing: timings}} = msg) do
