@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.Mixfile do
   def project do
     [
       app: :discovery_streams,
-      version: "2.0.1",
+      version: "2.0.2",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix] ++ Mix.compilers(),
@@ -32,6 +32,18 @@ defmodule DiscoveryStreams.Mixfile do
 
   defp deps do
     [
+      {:cachex, "~> 3.0"},
+      {:checkov, "~> 0.4.0", only: :test},
+      {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
+      {:distillery, "~> 2.0"},
+      {:divo_kafka, "~> 0.1"},
+      {:divo, "~> 1.1"},
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false},
+      {:httpoison, "~> 1.5"},
+      {:kaffe, "~> 1.12.0"},
+      {:libcluster, "~> 3.0"},
+      {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false},
+      {:patiently, "~> 0.2", only: [:test, :integration], override: true},
       {:phoenix, "~> 1.3.2"},
       {:phoenix_pubsub, "~> 1.0"},
       {:phoenix_html, "~> 2.10"},
@@ -39,22 +51,10 @@ defmodule DiscoveryStreams.Mixfile do
       {:prometheus_phoenix, "~> 1.2.0"},
       {:prometheus_plugs, "~> 1.1.1"},
       {:plug_cowboy, "~> 1.0"},
-      {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false},
-      {:streaming_metrics, path: "streaming_metrics"},
-      {:kaffe, "~> 1.11"},
-      {:httpoison, "~> 0.11.1"},
-      {:sweet_xml, "~> 0.6"},
-      {:cachex, "~> 3.0"},
-      {:libcluster, "~> 3.0"},
-      {:patiently, "~> 0.2", only: [:test, :integration], override: true},
-      {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
-      {:distillery, "~> 2.0"},
-      {:checkov, "~> 0.4.0", only: :test},
-      {:divo, "~> 1.1"},
-      {:divo_kafka, "~> 0.1.0", organization: "smartcolumbus_os"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      {:temporary_env, "~> 2.0", only: [:test, :integration]},
-      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+      {:sweet_xml, "~> 0.6"},
+      {:streaming_metrics, "~>2.1"},
+      {:temporary_env, "~> 2.0", only: [:test, :integration]}
     ]
   end
 
