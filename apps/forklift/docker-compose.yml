@@ -24,7 +24,7 @@ services:
       timeout: 20s
       retries: 3
   metastore:
-    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/metastore-testo:latest
+    image: smartcitiesdata/metastore-testo:development
     depends_on:
     - postgres
     ports:
@@ -36,18 +36,18 @@ services:
   postgres:
     logging:
       driver: none
-    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/postgres-testo:latest
+    image: smartcitiesdata/postgres-testo:development
     ports:
     - "5432:5432"
   minio:
-    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/minio-testo:latest
+    image: smartcitiesdata/minio-testo:development
     ports:
     - "9000:9000"
   presto:
     depends_on:
     - metastore
     - minio
-    image: 199837183662.dkr.ecr.us-east-2.amazonaws.com/scos/presto-testo:latest
+    image: smartcitiesdata/presto-testo:development
     ports:
     - "8080:8080"
     healthcheck:
