@@ -13,6 +13,7 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - sudo service postgresql stop
+  - docker-compose pull
 install: ./scripts/install.sh
 script:
   - docker build -t forklift:build .
