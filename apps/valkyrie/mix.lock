@@ -21,7 +21,6 @@
   "makeup_elixir": {:hex, :makeup_elixir, "0.13.0", "be7a477997dcac2e48a9d695ec730b2d22418292675c75aa2d34ba0909dcdeda", [:mix], [{:makeup, "~> 0.8", [hex: :makeup, repo: "hexpm", optional: false]}], "hexpm"},
   "meck": {:hex, :meck, "0.8.13", "ffedb39f99b0b99703b8601c6f17c7f76313ee12de6b646e671e3188401f7866", [:rebar3], [], "hexpm"},
   "mix_test_watch": {:hex, :mix_test_watch, "0.9.0", "c72132a6071261893518fa08e121e911c9358713f62794a90c95db59042af375", [:mix], [{:file_system, "~> 0.2.1 or ~> 0.3", [hex: :file_system, repo: "hexpm", optional: false]}], "hexpm"},
-  "mockaffe": {:hex, :mockaffe, "0.1.1", "c0e69e04841962156cc969d9c17ccf426128a4e564288a155960eaf4d496c8ac", [:mix], [{:faker, "~> 0.12", [hex: :faker, repo: "hexpm", optional: false]}, {:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:kaffe, "~> 1.9.1", [hex: :kaffe, repo: "hexpm", optional: false]}], "hexpm:smartcolumbus_os"},
   "nimble_parsec": {:hex, :nimble_parsec, "0.5.0", "90e2eca3d0266e5c53f8fbe0079694740b9c91b6747f2b7e3c5d21966bba8300", [:mix], [], "hexpm"},
   "observer_cli": {:hex, :observer_cli, "1.5.0", "9944882b71f55b2503663d9cb54d3f1c7bbdf7cc6dd01cc40ea8ef51207601ec", [:mix, :rebar3], [{:recon, "2.5.0", [hex: :recon, repo: "hexpm", optional: false]}], "hexpm"},
   "patiently": {:hex, :patiently, "0.2.0", "67eb139591e10c4b363ae0198e832552f191c58894731efd3bf124ec4722267a", [:mix], [], "hexpm"},
