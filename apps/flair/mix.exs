@@ -33,26 +33,24 @@ defmodule Flair.MixProject do
     [
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10"},
+      {:ex_doc, "~> 0.19.3"},
       {:distillery, "~> 2.0"},
-      {:divo, "~> 1.1", only: [:dev, :integration], organization: "smartcolumbus_os"},
-      {:divo_kafka, "~> 0.1", only: [:dev, :integration], organization: "smartcolumbus_os"},
-      {:divo_redis, "~> 0.1", only: [:dev, :integration], organization: "smartcolumbus_os"},
+      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
+      {:divo_redis, "~> 0.1", only: [:dev, :integration]},
       {:flow, "~> 0.14"},
       {:gen_stage, "~> 0.14"},
       {:jason, "~> 1.1"},
       {:kafka_ex, "~> 0.9"},
-      {:mockaffe, "~> 0.1.1",
-       only: [:dev, :test, :integration], organization: "smartcolumbus_os"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:faker, "~> 0.12.0"},
-      {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"},
-      {:smart_city, "~> 2.1", organization: "smartcolumbus_os"},
-      {:smart_city_data, "~> 2.1", organization: "smartcolumbus_os"},
-      {:smart_city_registry, "~> 2.6", organization: "smartcolumbus_os"},
-      {:smart_city_test, "~> 0.2.3",
-       only: [:test, :integration], organization: "smartcolumbus_os"},
+      {:prestige, "~> 0.3.2"},
+      {:smart_city, "~> 2.1"},
+      {:smart_city_data, "~> 2.1"},
+      {:smart_city_registry, "~> 2.6"},
+      {:smart_city_test, "~> 0.2.7", only: [:test, :integration]},
       {:statistics, "~> 0.6"},
-      {:yeet, "~> 1.0", organization: "smartcolumbus_os"}
+      {:yeet, "~> 1.0"}
     ]
   end
 

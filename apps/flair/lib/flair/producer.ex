@@ -11,8 +11,16 @@ defmodule Flair.Producer do
 
   defmodule State do
     @moduledoc """
-    The producer's state: namely it's backlog of messages and the demand requested.
+    The producer's state.
     """
+
+    @typedoc """
+    demand: Count of messages demanded by the consumer.
+    message_set: Batch of messages waiting to be consumed.
+    from: List of blocked `MessageProcessor` pids waiting to be continued.
+    """
+    @type t(demand, message_set, from) :: %State{demand: demand, message_set: message_set, from: from}
+    @type t :: %State{demand: integer, message_set: list(KafkaEx.Protocol.Fetch.Message.t()), from: list(pid())}
     defstruct demand: 0, message_set: [], from: []
   end
 

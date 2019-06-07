@@ -1,6 +1,7 @@
 defmodule Flair.DurationsFlow do
   @moduledoc """
-  This flow takes in messages from the producer that it starts. It aggregates those messages per dataset/per window and then calculates their durations, finally persisting them.
+  This flow takes in messages from the producer that it starts. 
+  It aggregates those messages per dataset/per window and then calculates their durations, finally persisting them.
   """
   require Logger
 
@@ -23,7 +24,7 @@ defmodule Flair.DurationsFlow do
     ]
 
     [{Flair.Producer, :durations}]
-    |> Flow.from_specs()
+
     |> Flow.map(&get_message/1)
     |> Flow.map(&OverallTime.add/1)
     |> Flow.each(&log_message/1)
