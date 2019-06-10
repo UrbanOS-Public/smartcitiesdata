@@ -1,6 +1,27 @@
+[![Master](https://travis-ci.org/smartcitiesdata/reaper.svg?branch=master)](https://travis-ci.org/smartcitiesdata/reaper)
+
 # Reaper
 
 Retrieves streaming or batch data, decodes it, and loads it onto a Kafka topic
+
+## To run the tests
+
+  * Run `mix test` to run the tests a single time
+  * Run `mix test.watch` to re-run the tests when a file changes
+  * Run `mix test.watch --stale` to only rerun the tests for modules that have changes
+  * Run `mix test.integration` to run the integration tests
+
+## To run inside a container(from the root directory):
+  * `docker build . -t <image_name:tag>`
+
+## Running Locally
+
+You can use [Divo](https://hexdocs.pm/divo/) to stand up the external dependencies locally using docker and docker-compose.
+
+```bash
+MIX_ENV=integration mix docker.start
+MIX_ENV=integration iex -S mix
+```
 
 ## Environment Variables used for configuration
 
@@ -9,27 +30,10 @@ Retrieves streaming or batch data, decodes it, and loads it onto a Kafka topic
 | KAFKA_BROKERS | comma delimited list of kafka brokers | kafka1.com:9092,kafka2.com:9092 |
 | TO_TOPIC | topic unto which we do the raw data | raw |
 | HOST_IP | local IP address; used for integration tests | 127.0.0.1 |
-| REDIS_HOST | IP address of the redis host | 10.0.0.2 |
+| REDIS_HOST | IP address or DNS Entry of the redis host | 10.0.0.2 |
 | DLQ_TOPIC | Kafka topic name for the dead letter queue | streaming-dlq |
 | RUN_IN_KUBERNETES | Set to "true" if running in kubernetes | true |
 
-## Installing dependancies
-```bash
-mix deps.get
-```
-
-## Running Unit Tests
-
-```bash
-mix test
-```
-
-## Running Integration Tests
-
-Make sure you have `docker-compose` installed and then
-```bash
-MIX_ENV=integration mix test.integration
-```
 
 ## Running Interactively
 
@@ -143,4 +147,4 @@ The resulting supervision tree looks roughly like this:
 
 ## License
 
-This application is released under the Apache 2.0 license - see the license at http://www.apache.org/licenses/LICENSE-2.0
+Released under [Apache 2 license](https://github.com/smartcitiesdata/reaper/blob/master/LICENSE).

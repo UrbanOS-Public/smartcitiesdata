@@ -23,7 +23,7 @@ config :reaper,
     DivoRedis,
     Reaper.DivoSftp
   ],
-  divo_wait: [dwell: 700, max_tries: 50]
+  divo_wait: [dwell: 1000, max_tries: 120]
 
 config :smart_city_registry,
   redis: [
