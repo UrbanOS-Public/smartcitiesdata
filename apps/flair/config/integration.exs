@@ -1,11 +1,7 @@
 use Mix.Config
 import_config "../test/integration/divo_presto.exs"
 
-host =
-  case System.get_env("HOST_IP") do
-    nil -> "localhost"
-    defined -> defined
-  end
+host = "localhost"
 
 endpoint = [{to_charlist(host), 9092}]
 
