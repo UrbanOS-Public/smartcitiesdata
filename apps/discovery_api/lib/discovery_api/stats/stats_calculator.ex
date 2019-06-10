@@ -8,6 +8,8 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
   alias DiscoveryApi.Data.Persistence
   alias SmartCity.Dataset
 
+  @completeness_key "discovery-api:completeness_calculated_date"
+
   @doc """
   Entry point for calculating completeness statistics.  This method will get all datasets from the SmartCity Registry and calculate their completeness stats, saving them to redis.
   """
@@ -35,7 +37,7 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
   defp calculate_completeness?(%Dataset{} = dataset), do: not Dataset.is_remote?(dataset) and inserted_since_last_calculation?(dataset)
 
   defp inserted_since_last_calculation?(%Dataset{} = dataset) do
-    keys = ["forklift:last_insert_date:#{dataset.id}", "discovery_api:completion_calculated_date:#{dataset.id}"]
+    keys = ["forklift:last_insert_date:#{dataset.id}", "#{@completeness_key}:#{dataset.id}"]
     [last_insert_date, completion_calculated_date] = Persistence.get_many(keys)
     last_insert_date > completion_calculated_date
   end
@@ -61,7 +63,7 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
 
   defp save_completeness(%{id: dataset_id, fields: fields} = dataset_stats) when not is_nil(fields) do
     Persistence.persist("discovery-api:stats:#{dataset_id}", dataset_stats)
-    Persistence.persist("discovery-api:completeness_calculated_date:#{dataset_id}", DateTime.to_iso8601(DateTime.utc_now()))
+    Persistence.persist("#{@completeness_key}:#{dataset_id}", DateTime.to_iso8601(DateTime.utc_now()))
     :ok
   end
 

@@ -6,6 +6,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
   alias DiscoveryApi.Data.Persistence
 
   @dataset_id "eaad54e8-fcb6-4f0e-99ac-bf51887ed102"
+  @completeness_key "discovery-api:completeness_calculated_date"
 
   describe "produce_completeness_stats/1 positive cases" do
     setup do
@@ -22,7 +23,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
         ]
       )
 
-      keys = ["forklift:last_insert_date:#{dataset.id}", "discovery_api:completion_calculated_date:#{dataset.id}"]
+      keys = ["forklift:last_insert_date:#{dataset.id}", "#{@completeness_key}:#{dataset.id}"]
 
       stats = %{
         id: dataset.id,
@@ -37,13 +38,21 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
       {:ok, %{dataset: dataset, keys: keys, stats: stats}}
     end
 
+    test "Interacts with persistence in the way we expect", %{keys: keys} do
+      allow(Persistence.get_many(any()), return: [nil, nil])
+
+      StatsCalculator.produce_completeness_stats()
+
+      assert_called(Persistence.get_many(keys))
+    end
+
     test "Writes stats to redis for non-remote datasets", %{dataset: dataset, keys: keys, stats: stats} do
       allow(Persistence.get_many(keys), return: ["2019-06-05T14:01:36.466729Z", "2019-06-05T13:59:09.630290Z"])
 
       StatsCalculator.produce_completeness_stats()
 
       assert_called(Persistence.persist("discovery-api:stats:#{dataset.id}", stats))
-      assert_called(Persistence.persist("discovery-api:completeness_calculated_date:#{dataset.id}", any()))
+      assert_called(Persistence.persist("#{@completeness_key}:#{dataset.id}", any()))
     end
 
     test "Writes stats to redis when data has loaded, but no stats have been calculated", %{dataset: dataset, keys: keys, stats: stats} do
@@ -52,7 +61,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
       StatsCalculator.produce_completeness_stats()
 
       assert_called(Persistence.persist("discovery-api:stats:#{dataset.id}", stats))
-      assert_called(Persistence.persist("discovery-api:completeness_calculated_date:#{dataset.id}", any()))
+      assert_called(Persistence.persist("#{@completeness_key}:#{dataset.id}", any()))
     end
   end
 
@@ -71,7 +80,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
 
       refute_called(Persistence.persist("discovery-api:stats:#{dataset.id}", any()))
 
-      refute_called(Persistence.persist("discovery-api:completeness_calculated_date:#{dataset.id}", any()))
+      refute_called(Persistence.persist("#{@completeness_key}:#{dataset.id}", any()))
     end
 
     test "Does not calculate statistics for datasets that have not been updated since last calculation date" do
@@ -88,14 +97,14 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
         ]
       )
 
-      keys = ["forklift:last_insert_date:#{dataset.id}", "discovery_api:completion_calculated_date:#{dataset.id}"]
+      keys = ["forklift:last_insert_date:#{dataset.id}", "#{@completeness_key}:#{dataset.id}"]
       allow(Persistence.get_many(keys), return: ["2019-06-05T13:59:09.630290Z", "2019-06-05T14:01:36.466729Z"])
 
       StatsCalculator.produce_completeness_stats()
 
       refute_called(Persistence.persist("discovery-api:stats:#{dataset.id}", any()))
 
-      refute_called(Persistence.persist("discovery-api:completeness_calculated_date:#{dataset.id}", any()))
+      refute_called(Persistence.persist("#{@completeness_key}:#{dataset.id}", any()))
     end
 
     test "Does not calculate statistics when presto returns no data" do
@@ -105,7 +114,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
       allow(Prestige.execute(any(), any()), return: [])
 
-      keys = ["forklift:last_insert_date:#{dataset.id}", "discovery_api:completion_calculated_date:#{dataset.id}"]
+      keys = ["forklift:last_insert_date:#{dataset.id}", "#{@completeness_key}:#{dataset.id}"]
       allow(Persistence.get_many(keys), return: [nil, nil])
 
       StatsCalculator.produce_completeness_stats()
@@ -117,7 +126,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
         )
       )
 
-      refute_called(Persistence.persist("discovery-api:completeness_calculated_date:#{dataset.id}", any()))
+      refute_called(Persistence.persist("#{@completeness_key}:#{dataset.id}", any()))
     end
   end
 
