@@ -15,6 +15,7 @@ before_install:
 install: ./scripts/install.sh
 script:
   - docker build -t discovery_streams:build .
+  - docker build -t discovery_streams_smoke_test:build ./smoke-test/
 deploy:
   - provider: script
     skip_cleanup: true
