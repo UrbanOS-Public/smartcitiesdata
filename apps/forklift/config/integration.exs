@@ -40,7 +40,7 @@ config :prestige,
     user: "foobar"
   ]
 
-config(:forklift, divo: "docker-compose.yml", divo_wait: [dwell: 1000, max_tries: 50])
+config(:forklift, divo: "docker-compose.yml", divo_wait: [dwell: 1000, max_tries: 120])
 
 config :redix,
   host: host
