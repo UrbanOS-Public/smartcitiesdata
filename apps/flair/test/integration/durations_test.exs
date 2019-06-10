@@ -46,7 +46,6 @@ defmodule DurationsTest do
       Application.get_env(:flair, :data_topic)
     )
 
-
     Patiently.wait_for!(
       prestige_query("select dataset_id, app from operational_stats", [
         ["pirates", "SmartCityOS"],
