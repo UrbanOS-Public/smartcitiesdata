@@ -45,7 +45,7 @@ defmodule Forklift.MixProject do
       {:ex_doc, "~> 0.19"},
       {:observer_cli, "~> 1.4"},
       {:retry, "~> 0.11.2"},
-      {:elsa, github: "bbalser/elsa", ref: "aa82963ff6140760440a0a527b52d5e70842fd53"},
+      {:elsa, "~> 0.1.0"},
       {:benchee, "~> 1.0", only: [:integration]}
     ]
   end
