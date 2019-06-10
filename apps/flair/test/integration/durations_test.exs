@@ -46,21 +46,6 @@ defmodule DurationsTest do
       Application.get_env(:flair, :data_topic)
     )
 
-    Patiently.wait_for!(
-      prestige_query("select dataset_id, app from operational_stats", [
-        ["pirates", "SmartCityOS"],
-        ["pirates", "valkyrie"]
-      ]),
-      dwell: 1000,
-      max_tries: 20
-    )
-  end
-
-  test "should insert records into Presto", context do
-    SmartCity.KafkaHelper.send_to_kafka(
-      context[:messages],
-      Application.get_env(:flair, :data_topic)
-    )
 
     Patiently.wait_for!(
       prestige_query("select dataset_id, app from operational_stats", [
