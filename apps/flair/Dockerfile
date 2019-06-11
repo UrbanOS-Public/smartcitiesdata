@@ -1,5 +1,4 @@
 FROM bitwalker/alpine-elixir:1.8.1 as builder
-ARG HEX_TOKEN
 COPY . /app
 WORKDIR /app
 RUN apk update && \
