@@ -1,3 +1,0 @@
-[submodule "horde_connector"]
-	path = horde_connector
-	url = git@github.com:SmartColumbusOS/horde_connector.git

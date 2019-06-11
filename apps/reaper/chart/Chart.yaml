@@ -1,5 +1,0 @@
-apiVersion: v1
-appVersion: "1.0"
-description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic 
-name: reaper
-version: 0.1.0
