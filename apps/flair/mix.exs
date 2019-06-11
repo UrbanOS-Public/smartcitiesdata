@@ -4,7 +4,7 @@ defmodule Flair.MixProject do
   def project do
     [
       app: :flair,
-      version: "0.2.0",
+      version: "1.0.0-static",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
