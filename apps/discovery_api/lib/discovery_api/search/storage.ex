@@ -16,6 +16,7 @@ defmodule DiscoveryApi.Search.Storage do
   @spec search(String.t()) :: list(%DiscoveryApi.Data.Model{})
   def search(query) do
     query
+    |> String.downcase()
     |> String.split()
     |> Enum.map(&remove_punctuation/1)
     |> Enum.map(&get_dataset_ids_for_word/1)

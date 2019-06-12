@@ -88,7 +88,7 @@ defmodule DiscoveryApi.Search.StorageTest do
 
       assert_words_indexed?("best", model4.id)
 
-      result = Storage.search("best, title")
+      result = Storage.search("best, Title")
 
       ids = capture(Model.get_all(any()), 1)
       assert ids == MapSet.new([model2.id])
