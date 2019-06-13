@@ -8,6 +8,7 @@ defmodule Valkyrie.TopicPerDatasetTest do
 
   @endpoints Application.get_env(:valkyrie, :brod_brokers)
   @elsa_endpoints Application.get_env(:valkyrie, :elsa_brokers)
+  @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
 
   import Record, only: [defrecord: 2, extract: 2]
 
@@ -54,7 +55,7 @@ defmodule Valkyrie.TopicPerDatasetTest do
       dwell: 200,
       max_tries: 100
     )
-
+    Elsa.Topic.create(@endpoints, "#{@output_topic_prefix}-#{dataset.id}")
     # Valkyrie.DatasetHandler.handle_dataset(dataset)
 
     message = %{
@@ -74,7 +75,7 @@ defmodule Valkyrie.TopicPerDatasetTest do
     expected_message = {"the_key", Jason.encode!(message)}
 
     # Test that the stopgap producer to the old transformed topic is still working
-    topic_contains("validated", expected_message)
+    topic_contains("#{@output_topic_prefix}-#{dataset.id}", expected_message)
   end
 
   defp topic_contains(topic, expected_message) do

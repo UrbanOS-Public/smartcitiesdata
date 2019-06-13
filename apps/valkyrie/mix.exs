@@ -32,7 +32,7 @@ defmodule Valkyrie.MixProject do
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.13"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
-      {:placebo, "~> 1.2", only: [:dev, :test]},
+      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:smart_city_data, "~> 2.1"},
       {:smart_city_registry, "~> 2.6"},
       {:smart_city_test, "~> 0.2.0", only: [:test, :integration]},

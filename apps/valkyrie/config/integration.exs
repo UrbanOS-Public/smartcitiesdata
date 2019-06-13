@@ -22,7 +22,10 @@ config :valkyrie,
     {DivoKafka, [create_topics: "raw:1:1,validated:1:1,dead-letters:1:1", outside_host: host, auto_topic: false]},
     DivoRedis
   ],
-  divo_wait: [dwell: 700, max_tries: 50]
+  divo_wait: [dwell: 700, max_tries: 50],
+  produce_retries: 3,
+  produce_timeout: 1500,
+  output_topic_prefix: "integration"
 
 config :kaffe,
   producer: [

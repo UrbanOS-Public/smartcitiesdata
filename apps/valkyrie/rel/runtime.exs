@@ -51,6 +51,9 @@ if kafka_brokers do
     ]
 end
 
+config :valkyrie,
+  output_topic_prefix: System.get_env("OUTPUT_TOPIC_PREFIX")
+
 redis_host = System.get_env("REDIS_HOST")
 
 if redis_host do

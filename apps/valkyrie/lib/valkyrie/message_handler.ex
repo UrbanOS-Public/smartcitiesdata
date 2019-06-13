@@ -1,13 +1,17 @@
-require Logger
-
 defmodule Valkyrie.MessageHandler do
   use Elsa.Consumer.MessageHandler
 
   @moduledoc """
   Handle incoming data messages
   """
+  use Retry
+  require Logger
   alias SmartCity.Data
   alias Valkyrie.Validators
+
+  @endpoints Application.get_env(:valkyrie, :elsa_brokers)
+  @initial_delay Application.get_env(:valkyrie, :produce_timeout)
+  @retries Application.get_env(:valkyrie, :produce_retries)
 
   @doc """
   Receives and validates a batch of data messages
@@ -32,8 +36,8 @@ defmodule Valkyrie.MessageHandler do
     with {:ok, new_value} <- Data.new(value),
          {:ok, validated_message} <- Validators.validate(new_value),
          {:ok, updated_message} <- set_operational_timing(start_time, validated_message),
-         {:ok, encoded_message} <- Jason.encode(updated_message) do
-      Kaffe.Producer.produce_sync(key, encoded_message)
+         :ok <- produce_to_output_topic(key, updated_message) do
+      :ok
     else
       {:error, reason} ->
         Logger.warn("Error handling message: #{inspect(value)}: #{inspect(reason)}")
@@ -44,6 +48,23 @@ defmodule Valkyrie.MessageHandler do
         Yeet.process_dead_letter("unknown", value, "Valkyrie")
     end
   end
+
+  defp produce_to_output_topic(key, datum) do
+    topic = outgoing_topic(datum.dataset_id)
+    message = Jason.encode!(datum)
+
+    retry with: @initial_delay |> exponential_backoff() |> Stream.take(@retries), atoms: [false] do
+      topic_ready?(topic)
+    after
+      true ->
+        Elsa.Producer.produce_sync(@endpoints, topic, 0, key, message)
+    else
+      error -> error
+    end
+  end
+
+  defp outgoing_topic_prefix(), do: Application.get_env(:valkyrie, :output_topic_prefix)
+  defp outgoing_topic(dataset_id), do: "#{outgoing_topic_prefix()}-#{dataset_id}"
 
   defp set_operational_timing(start_time, validated_message) do
     try do
@@ -62,5 +83,14 @@ defmodule Valkyrie.MessageHandler do
     rescue
       _ -> {:error, "Failed to set operational timing."}
     end
+  end
+
+  defp topic_ready?(topic) do
+    topics =
+      @endpoints
+      |> Elsa.Topic.list()
+      |> Enum.map(fn {topic, _partition_count} -> topic end)
+
+    topic in topics
   end
 end
