@@ -1,10 +1,11 @@
-defmodule Valkyrie.Dataset.MessageHandler do
+defmodule Valkyrie.DatasetHandler do
   @moduledoc """
   MessageHandler to receive updated datasets and add to the cache
   """
   use SmartCity.Registry.MessageHandler
 
   def handle_dataset(dataset) do
+    Valkyrie.TopicManager.create_and_subscribe("raw-#{dataset.id}")
     Valkyrie.Dataset.put(dataset)
   end
 end
