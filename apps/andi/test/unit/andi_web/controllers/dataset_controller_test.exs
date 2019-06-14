@@ -44,7 +44,7 @@ defmodule AndiWeb.DatasetControllerTest do
         "headers" => %{
           "accepts" => "application/foobar"
         },
-        "queryParams" => %{
+        "sourceQueryParams" => %{
           "apiKey" => "foobar"
         },
         "systemName" => "org__dataset",
