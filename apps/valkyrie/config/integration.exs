@@ -14,23 +14,17 @@ config :logger,
   level: :info
 
 config :valkyrie,
+  elsa_brokers: [{String.to_atom(host), 9092}],
+  brod_brokers: endpoint,
+  input_topic_prefix: "raw",
+  output_topic_prefix: "validated",
   divo: [
-    {DivoKafka, [create_topics: "raw:1:1,validated:1:1,dead-letters:1:1", outside_host: host]},
+    {DivoKafka, [create_topics: "raw:1:1,validated:1:1,dead-letters:1:1", outside_host: host, auto_topic: false]},
     DivoRedis
   ],
   divo_wait: [dwell: 700, max_tries: 50]
 
 config :kaffe,
-  consumer: [
-    endpoints: endpoint,
-    topics: ["raw"],
-    consumer_group: "valkyrie-consumer-group",
-    message_handler: Valkyrie.MessageHandler,
-    offset_reset_policy: :reset_to_earliest,
-    rebalance_delay_ms: 1000,
-    worker_allocation_strategy: :worker_per_topic_partition,
-    start_with_earliest_message: true
-  ],
   producer: [
     endpoints: endpoint,
     topics: ["validated"],

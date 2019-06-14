@@ -1,6 +1,8 @@
 require Logger
 
 defmodule Valkyrie.MessageHandler do
+  use Elsa.Consumer.MessageHandler
+
   @moduledoc """
   Handle incoming data messages
   """
@@ -17,7 +19,7 @@ defmodule Valkyrie.MessageHandler do
     Enum.each(messages, &handle_message/1)
     Logger.info("#{__MODULE__}: All messages handled without crashing.")
 
-    :ok
+    :ack
   end
 
   @doc """

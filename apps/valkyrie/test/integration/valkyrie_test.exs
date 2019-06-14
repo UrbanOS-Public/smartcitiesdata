@@ -2,6 +2,8 @@ defmodule ValkyrieTest do
   use ExUnit.Case
   use Divo
 
+  alias SmartCity.TestDataGenerator, as: TDG
+
   @messages [
               %{
                 payload: %{name: "Jack Sparrow", alignment: "chaotic", age: "32"},
@@ -29,22 +31,31 @@ defmodule ValkyrieTest do
               }
             ]
             |> Enum.map(&Jason.encode!/1)
-  @dataset %SmartCity.Dataset{
-    id: "pirates",
-    technical: %{
-      schema: [
-        %{name: "name", type: "string"},
-        %{name: "alignment", type: "string"},
-        %{name: "age", type: "string"}
-      ]
-    }
-  }
-  @endpoint Application.get_env(:kaffe, :consumer)[:endpoints]
+
+  @endpoints Application.get_env(:valkyrie, :brod_brokers)
 
   setup_all do
-    Valkyrie.Dataset.put(@dataset)
+    dataset =
+      TDG.create_dataset(
+        id: "pirates",
+        technical: %{
+          schema: [
+            %{name: "name", type: "string"},
+            %{name: "alignment", type: "string"},
+            %{name: "age", type: "string"}
+          ]
+        }
+      )
 
-    SmartCity.KafkaHelper.send_to_kafka(@messages, "raw")
+    SmartCity.Dataset.write(dataset)
+
+    Patiently.wait_for(
+      fn -> Valkyrie.TopicManager.is_topic_ready?("raw-pirates") end,
+      dwell: 500,
+      max_tries: 100
+    )
+
+    SmartCity.KafkaHelper.send_to_kafka(@messages, "raw-pirates")
     :ok
   end
 
@@ -58,9 +69,7 @@ defmodule ValkyrieTest do
     assert messages_as_expected(
              "validated",
              ["Jack Sparrow", "Will Turner", "Barbosa"],
-             fn message ->
-               message.payload.name
-             end
+             & &1.payload.name
            )
   end
 
@@ -112,10 +121,10 @@ defmodule ValkyrieTest do
   end
 
   defp fetch_and_unwrap(topic) do
-    {:ok, messages} = :brod.fetch(@endpoint, topic, 0, 0)
+    {:ok, {_, messages}} = :brod.fetch(@endpoints, topic, 0, 0)
 
     messages
-    |> Enum.map(fn {:kafka_message, _, _, _, key, body, _, _, _} ->
+    |> Enum.map(fn {:kafka_message, _int, key, body, _, _, _} ->
       {key, body}
     end)
     |> Enum.map(fn {_key, body} -> Jason.decode!(body, keys: :atoms) end)
