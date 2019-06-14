@@ -2,8 +2,8 @@ use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
-topic = System.get_env("DATA_TOPIC_PREFIX")
-output_topic = System.get_env("OUTPUT_TOPIC")
+input_topic_prefix = System.get_env("DATA_TOPIC_PREFIX")
+output_topic_prefix = System.get_env("OUTPUT_TOPIC_PREFIX")
 
 config :logger,
   level: :warn
@@ -23,25 +23,12 @@ if kafka_brokers do
     |> Enum.map(fn entry -> String.split(entry, ":") end)
     |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
-  config :kaffe,
-    consumer: [
-      endpoints: endpoints,
-      topics: [System.get_env("RAW_TOPIC")]
-    ],
-    producer: [
-      endpoints: endpoints,
-      topics: [System.get_env("VALIDATED_TOPIC")]
-    ]
-
   config :yeet,
     topic: System.get_env("DLQ_TOPIC"),
     endpoint: endpoints
 
   config :valkyrie,
     elsa_brokers: elsa_brokers,
-    brod_brokers: endpoints,
-    data_topic_prefix: topic,
-    output_topic: output_topic,
     topic_subscriber_config: [
       begin_offset: :earliest,
       offset_reset_policy: :reset_to_earliest,
@@ -52,7 +39,8 @@ if kafka_brokers do
 end
 
 config :valkyrie,
-  output_topic_prefix: System.get_env("OUTPUT_TOPIC_PREFIX")
+  input_topic_prefix: input_topic_prefix,
+  output_topic_prefix: output_topic_prefix
 
 redis_host = System.get_env("REDIS_HOST")
 

@@ -54,7 +54,7 @@ defmodule Valkyrie.MessageHandler do
     message = Jason.encode!(datum)
 
     retry with: @initial_delay |> exponential_backoff() |> Stream.take(@retries), atoms: [false] do
-      topic_ready?(topic)
+      Valkyrie.TopicManager.is_topic_ready?(topic)
     after
       true ->
         Elsa.Producer.produce_sync(@endpoints, topic, 0, key, message)
@@ -83,14 +83,5 @@ defmodule Valkyrie.MessageHandler do
     rescue
       _ -> {:error, "Failed to set operational timing."}
     end
-  end
-
-  defp topic_ready?(topic) do
-    topics =
-      @endpoints
-      |> Elsa.Topic.list()
-      |> Enum.map(fn {topic, _partition_count} -> topic end)
-
-    topic in topics
   end
 end

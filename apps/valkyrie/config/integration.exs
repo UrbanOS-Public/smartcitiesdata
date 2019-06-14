@@ -15,7 +15,6 @@ config :logger,
 
 config :valkyrie,
   elsa_brokers: [{String.to_atom(host), 9092}],
-  brod_brokers: endpoint,
   input_topic_prefix: "raw",
   output_topic_prefix: "validated",
   divo: [
@@ -24,15 +23,7 @@ config :valkyrie,
   ],
   divo_wait: [dwell: 700, max_tries: 50],
   produce_retries: 3,
-  produce_timeout: 1500,
-  output_topic_prefix: "integration"
-
-config :kaffe,
-  producer: [
-    endpoints: endpoint,
-    topics: ["validated"],
-    partition_strategy: :md5
-  ]
+  produce_timeout: 1500
 
 config :yeet,
   topic: "dead-letters",

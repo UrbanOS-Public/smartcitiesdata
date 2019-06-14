@@ -2,9 +2,11 @@ defmodule ValkyrieTest do
   use ExUnit.Case
   use Divo
   alias SmartCity.TestDataGenerator, as: TDG
+  import TestHelpers
 
-  @endpoints Application.get_env(:valkyrie, :brod_brokers)
+  @endpoints Application.get_env(:valkyrie, :elsa_brokers)
   @dlq_topic Application.get_env(:yeet, :topic)
+  @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
   @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
 
   setup_all do
@@ -20,85 +22,67 @@ defmodule ValkyrieTest do
         }
       })
 
+    invalid_message =
+      TestHelpers.create_data(%{
+        payload: %{name: "Blackbeard"},
+        dataset_id: dataset.id
+      })
+
     messages =
       [
-        TDG.create_data(%{
+        TestHelpers.create_data(%{
           payload: %{name: "Jack Sparrow", alignment: "chaotic", age: "32"},
           dataset_id: dataset.id
         }),
-        TDG.create_data(%{
-          payload: %{name: "Blackbeard"},
-          dataset_id: dataset.id
-        }),
-        TDG.create_data(%{
+        invalid_message,
+        TestHelpers.create_data(%{
           payload: %{name: "Will Turner", alignment: "good", age: "25"},
           dataset_id: dataset.id
         }),
-        TDG.create_data(%{
+        TestHelpers.create_data(%{
           payload: %{name: "Barbosa", alignment: "evil", age: "100"},
           dataset_id: dataset.id
         })
       ]
-      |> Enum.map(&Jason.encode!/1)
 
-    Elsa.Topic.create(@endpoints, "#{@output_topic_prefix}-#{dataset.id}")
+    input_topic = "#{@input_topic_prefix}-#{dataset.id}"
+    output_topic = "#{@output_topic_prefix}-#{dataset.id}"
+
     SmartCity.Dataset.write(dataset)
+    TestHelpers.wait_for_topic(input_topic)
+    Elsa.Topic.create(@endpoints, output_topic)
 
-    Patiently.wait_for(
-      fn -> Valkyrie.TopicManager.is_topic_ready?("raw-pirates") end,
-      dwell: 500,
-      max_tries: 100
-    )
+    TestHelpers.produce_messages(messages, input_topic, @endpoints)
 
-    SmartCity.KafkaHelper.send_to_kafka(messages, "raw-pirates")
-
-    {:ok, %{dataset: dataset}}
+    {:ok, %{output_topic: output_topic, messages: messages, invalid_message: invalid_message}}
   end
 
-  test "valkyrie updates the operational struct", %{dataset: dataset} do
-    Patiently.wait_for!(
-      fn ->
-        "#{@output_topic_prefix}-#{dataset.id}"
-        |> TestHelpers.extract_data_messages(@endpoints)
-        |> Enum.any?(fn message ->
-          "valkyrie" == message.operational.timing |> hd |> Map.get(:app)
-        end)
-      end,
-      dwell: 1000,
-      max_tries: 10
-    )
+  test "valkyrie updates the operational struct", %{output_topic: output_topic} do
+    eventually fn ->
+      [message | _] = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, @endpoints)
+
+      assert %{operational: %{timing: [%{app: "valkyrie"} | _]}} = message
+    end
   end
 
-  test "valkyrie does not change the content of the messages processed", %{dataset: dataset} do
-    Patiently.wait_for!(
-      fn ->
-        names =
-          "#{@output_topic_prefix}-#{dataset.id}"
-          |> TestHelpers.extract_data_messages(@endpoints)
-          |> Enum.map(fn message ->
-            message.payload.name
-          end)
+  test "valkyrie does not change the content of the messages processed", %{
+    output_topic: output_topic,
+    messages: messages,
+    invalid_message: invalid_message
+  } do
+    eventually fn ->
+      output_messages = TestHelpers.get_data_messages_from_kafka(output_topic, @endpoints)
 
-        names == ["Jack Sparrow", "Will Turner", "Barbosa"]
-      end,
-      dwell: 1000,
-      max_tries: 10
-    )
+      assert messages -- [invalid_message] == output_messages
+    end
   end
 
-  test "valkyrie sends invalid data messages to the dlq" do
-    Patiently.wait_for!(
-      fn ->
-        @dlq_topic
-        |> TestHelpers.extract_dlq_messages(@endpoints)
-        |> Enum.any?(fn message ->
-          String.contains?(message.reason, "The following fields were invalid: alignment, age") &&
-            message.app == "Valkyrie" &&
-            String.contains?(inspect(message.original_message), "Blackbeard")
-        end)
-      end,
-      dwell: 1000,
-      max_tries: 10
-    )
+  test "valkyrie sends invalid data messages to the dlq", %{invalid_message: invalid_message} do
+    eventually fn ->
+      [message] = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
+      encoded_og_message = invalid_message |> Jason.encode!()
+
+      assert %{app: "Valkyrie", original_message: ^encoded_og_message} = message
+    end
   end
 end
