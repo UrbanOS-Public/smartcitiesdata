@@ -9,11 +9,11 @@ defmodule Reaper.UrlBuilder do
   Returns a string containing the URL with all query string parameters based on the `Reaper.ReaperConfig`
   """
   @spec build(ReaperConfig.t()) :: String.t()
-  def build(%ReaperConfig{sourceUrl: url, queryParams: query_params} = _reaper_config)
+  def build(%ReaperConfig{sourceUrl: url, sourceQueryParams: query_params} = _reaper_config)
       when query_params == %{},
       do: url
 
-  def build(%ReaperConfig{sourceUrl: url, queryParams: query_params} = reaper_config) do
+  def build(%ReaperConfig{sourceUrl: url, sourceQueryParams: query_params} = reaper_config) do
     last_success_time = extract_last_success_time(reaper_config)
 
     string_params =

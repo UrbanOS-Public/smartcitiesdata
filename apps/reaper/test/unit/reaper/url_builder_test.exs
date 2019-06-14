@@ -13,7 +13,7 @@ defmodule Reaper.UrlBuilderTest do
         FixtureHelper.new_reaper_config(%{
           id: "",
           sourceUrl: "https://my-url.com",
-          queryParams: %{start_date: "19700101", end_date: "19700102"}
+          sourceQueryParams: %{start_date: "19700101", end_date: "19700102"}
         }),
         "https://my-url.com?end_date=19700102&start_date=19700101"
       ],
@@ -21,7 +21,7 @@ defmodule Reaper.UrlBuilderTest do
         FixtureHelper.new_reaper_config(%{
           id: "",
           sourceUrl: "https://my-url.com",
-          queryParams: %{
+          sourceQueryParams: %{
             start_date: "<%= Date.to_iso8601(~D[1970-01-01], :basic) %>",
             end_date: "<%= Date.to_iso8601(~D[1970-01-02], :basic) %>"
           }
@@ -32,7 +32,7 @@ defmodule Reaper.UrlBuilderTest do
         FixtureHelper.new_reaper_config(%{
           id: "",
           sourceUrl: "https://my-url.com",
-          queryParams: %{}
+          sourceQueryParams: %{}
         }),
         "https://my-url.com"
       ],
@@ -40,7 +40,7 @@ defmodule Reaper.UrlBuilderTest do
         FixtureHelper.new_reaper_config(%{
           id: "",
           sourceUrl: "https://my-url.com",
-          queryParams: %{
+          sourceQueryParams: %{
             start_date:
               "<%= Date.to_iso8601(last_success_time || DateTime.from_unix!(0) |> DateTime.to_date(), :basic) %>",
             end_date: "<%= Date.to_iso8601(~D[1970-01-02], :basic) %>"

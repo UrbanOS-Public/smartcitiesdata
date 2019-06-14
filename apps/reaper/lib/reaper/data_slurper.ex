@@ -6,19 +6,20 @@ defmodule Reaper.DataSlurper do
   @type url :: String.t()
   @type dataset_id :: String.t()
   @type filename :: String.t()
+  @type headers :: list()
 
   @callback handle?(url()) :: boolean()
-  @callback slurp(url(), dataset_id()) :: {:file, filename()} | no_return()
+  @callback slurp(url(), dataset_id(), headers()) :: {:file, filename()} | no_return()
 
   @implementations [
     Reaper.DataSlurper.Http,
     Reaper.DataSlurper.Sftp
   ]
 
-  def slurp(url, dataset_id) do
+  def slurp(url, dataset_id, headers \\ %{}) do
     @implementations
     |> Enum.find(&handle?(&1, url))
-    |> apply(:slurp, [url, dataset_id])
+    |> apply(:slurp, [url, dataset_id, headers])
   end
 
   def determine_filename(dataset_id) do

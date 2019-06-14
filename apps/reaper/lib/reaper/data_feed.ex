@@ -24,7 +24,7 @@ defmodule Reaper.DataFeed do
 
     config
     |> UrlBuilder.build()
-    |> DataSlurper.slurp(config.dataset_id)
+    |> DataSlurper.slurp(config.dataset_id, config.sourceHeaders)
     |> Decoder.decode(config)
     |> Stream.with_index()
     |> RailStream.map(&mark_duplicates(cache, &1))

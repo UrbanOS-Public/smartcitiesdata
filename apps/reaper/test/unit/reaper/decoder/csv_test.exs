@@ -28,7 +28,7 @@ defmodule Reaper.Decoder.CsvTest do
         sourceUrl: dataset.technical.sourceUrl,
         sourceFormat: dataset.technical.sourceFormat,
         schema: dataset.technical.schema,
-        queryParams: dataset.technical.queryParams
+        sourceQueryParams: dataset.technical.sourceQueryParams
       })
 
     expected = [

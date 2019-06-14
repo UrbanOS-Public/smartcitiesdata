@@ -107,7 +107,7 @@ defmodule Reaper.ConfigServerTest do
         sourceUrl: "www.google.com",
         sourceFormat: "Success",
         sourceType: "batch",
-        queryParams: %{param1: "value1"}
+        sourceQueryParams: %{param1: "value1"}
       })
 
     expect(

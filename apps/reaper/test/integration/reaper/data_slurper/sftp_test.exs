@@ -32,7 +32,7 @@ defmodule Reaper.SftpExtractorTest do
         technical: %{
           cadence: 1_000,
           sourceUrl: "sftp://#{@host}:#{@sftp.port}/upload/file.json",
-          queryParams: %{},
+          sourceQueryParams: %{},
           sourceFormat: "json"
         }
       })
@@ -68,7 +68,7 @@ defmodule Reaper.SftpExtractorTest do
         technical: %{
           cadence: 1_000,
           sourceUrl: "sftp://#{@host}:#{@sftp.port}/upload/file.csv",
-          queryParams: %{},
+          sourceQueryParams: %{},
           sourceFormat: "csv",
           schema: [
             %{name: "datum"},

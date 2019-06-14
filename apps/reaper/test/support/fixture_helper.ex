@@ -14,7 +14,7 @@ defmodule FixtureHelper do
           sourceType: "remote",
           sourceFormat: "gtfs",
           partitioner: %{type: nil, query: nil},
-          queryParams: %{}
+          sourceQueryParams: %{}
         },
         overrides
       )

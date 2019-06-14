@@ -136,4 +136,21 @@ defmodule Reaper.Http.DownloaderTest do
 
     assert {:error, error} == result
   end
+
+  test "evaluate paramaters in headers" do
+    allow Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection}
+    allow Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok}
+    allow Mint.HTTP.close(any()), return: :ok
+
+    headers = %{
+      "testKey" => "<%= Date.to_iso8601(~D[1970-01-02], :basic) %>",
+      "testB" => "valB"
+    }
+
+    evaluated_headers = %{"testKey" => "19700102", "testB" => "valB"}
+
+    {:ok} = Downloader.download("http://some.url", headers, to: "test.output")
+
+    assert_called Mint.HTTP.request(:connection, any(), any(), evaluated_headers), once()
+  end
 end

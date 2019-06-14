@@ -11,10 +11,13 @@ defmodule Reaper.ReaperConfig do
           lastSuccessTime: String.t(),
           sourceFormat: String.t(),
           sourceUrl: String.t(),
+          authUrl: String.t(),
           sourceType: String.t(),
           partitioner: String.t(),
-          queryParams: list(),
-          schema: list()
+          sourceQueryParams: map(),
+          schema: list(),
+          sourceHeaders: map(),
+          authHeaders: map()
         }
 
   defstruct [
@@ -23,10 +26,13 @@ defmodule Reaper.ReaperConfig do
     :lastSuccessTime,
     :sourceFormat,
     :sourceUrl,
+    :authUrl,
     :sourceType,
     :partitioner,
-    :queryParams,
-    :schema
+    :sourceQueryParams,
+    :schema,
+    sourceHeaders: %{},
+    authHeaders: %{}
   ]
 
   @doc """
@@ -39,10 +45,13 @@ defmodule Reaper.ReaperConfig do
       cadence: dataset.technical.cadence,
       sourceFormat: dataset.technical.sourceFormat,
       sourceUrl: dataset.technical.sourceUrl,
+      authUrl: dataset.technical.authUrl,
       sourceType: dataset.technical.sourceType,
       partitioner: dataset.technical.partitioner,
-      schema: dataset.technical.schema,
-      queryParams: dataset.technical.queryParams
+      sourceQueryParams: dataset.technical.sourceQueryParams,
+      sourceHeaders: dataset.technical.sourceHeaders,
+      authHeaders: dataset.technical.authHeaders,
+      schema: dataset.technical.schema
     }
 
     {:ok, struct}

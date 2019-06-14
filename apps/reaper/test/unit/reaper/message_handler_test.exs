@@ -13,11 +13,15 @@ defmodule Reaper.MessageHandlerTest do
         FixtureHelper.new_reaper_config(%{
           dataset_id: dataset.id,
           cadence: dataset.technical.cadence,
-          sourceUrl: dataset.technical.sourceUrl,
           sourceFormat: dataset.technical.sourceFormat,
+          sourceUrl: dataset.technical.sourceUrl,
+          authUrl: dataset.technical.authUrl,
           sourceType: dataset.technical.sourceType,
-          schema: dataset.technical.schema,
-          queryParams: dataset.technical.queryParams
+          partitioner: dataset.technical.partitioner,
+          sourceQueryParams: dataset.technical.sourceQueryParams,
+          sourceHeaders: dataset.technical.sourceHeaders,
+          authHeaders: dataset.technical.authHeaders,
+          schema: dataset.technical.schema
         })
 
       expect(ConfigServer.process_reaper_config(reaper_config), return: nil)

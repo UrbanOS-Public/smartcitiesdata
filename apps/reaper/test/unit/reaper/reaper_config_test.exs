@@ -15,12 +15,15 @@ defmodule Reaper.ReaperConfigTest do
         "systemName" => "org__dataset",
         "stream" => false,
         "sourceUrl" => "https://example.com",
+        "authUrl" => "https://auth.example.com",
         "sourceFormat" => "gtfs",
         "sourceType" => "batch",
         "cadence" => 9000,
         "headers" => %{},
         "partitioner" => %{type: nil, query: nil},
-        "queryParams" => %{},
+        "sourceQueryParams" => %{},
+        "sourceHeaders" => %{},
+        "authHeaders" => %{"auth" => "abar"},
         "transformations" => [],
         "validations" => [],
         "schema" => []
@@ -51,7 +54,7 @@ defmodule Reaper.ReaperConfigTest do
         "cadence" => 9000,
         "headers" => %{},
         "partitioner" => nil,
-        "queryParams" => %{},
+        "sourceQueryParams" => %{},
         "transformations" => [],
         "validations" => [],
         "schema" => []
@@ -83,10 +86,13 @@ defmodule Reaper.ReaperConfigTest do
     assert reaper_config.cadence == 9000
     assert reaper_config.sourceFormat == "gtfs"
     assert reaper_config.sourceUrl == "https://example.com"
+    assert reaper_config.authUrl == "https://auth.example.com"
     assert reaper_config.sourceType == "batch"
     assert reaper_config.partitioner.type == nil
     assert reaper_config.partitioner.query == nil
-    assert reaper_config.queryParams == %{}
+    assert reaper_config.sourceQueryParams == %{}
+    assert reaper_config.sourceHeaders == %{}
+    assert reaper_config.authHeaders == %{auth: "abar"}
   end
 
   test "Successfully fills in partitioner when registry message is missing partitioner", %{map_missing: map_missing} do
@@ -98,6 +104,6 @@ defmodule Reaper.ReaperConfigTest do
     assert reaper_config.sourceFormat == "gtfs"
     assert reaper_config.sourceUrl == "https://example.com"
     assert reaper_config.partitioner == nil
-    assert reaper_config.queryParams == %{}
+    assert reaper_config.sourceQueryParams == %{}
   end
 end

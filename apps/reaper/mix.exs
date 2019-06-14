@@ -57,7 +57,7 @@ defmodule Reaper.MixProject do
       {:sftp_ex, "~> 0.2"},
       {:sweet_xml, "~> 0.6"},
       {:smart_city_data, "~> 2.1"},
-      {:smart_city_registry, "~> 2.6"},
+      {:smart_city_registry, "~> 3.0"},
       {:tesla, "~> 1.2"},
       {:yeet, "~> 1.0"},
       # Test/Dev Dependencies

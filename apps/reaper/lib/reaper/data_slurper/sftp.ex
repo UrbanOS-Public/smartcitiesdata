@@ -11,7 +11,7 @@ defmodule Reaper.DataSlurper.Sftp do
   end
 
   @impl DataSlurper
-  def slurp(url, dataset_id) do
+  def slurp(url, dataset_id, _headers) do
     filename = DataSlurper.determine_filename(dataset_id)
     %{host: host, path: path, port: port} = URI.parse(url)
 
