@@ -4,7 +4,7 @@ defmodule Reaper.AuthRetriever do
   """
   def retrieve(dataset_id) do
     dataset = Reaper.Persistence.get(dataset_id)
-    response = HTTPoison.get!(dataset.authUrl, evaluate_headers(dataset.authHeaders))
+    response = HTTPoison.post!(dataset.authUrl, "", evaluate_headers(dataset.authHeaders))
     Jason.decode!(response.body)
   end
 

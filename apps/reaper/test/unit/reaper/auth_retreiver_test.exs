@@ -24,7 +24,7 @@ defmodule AuthRetrieverTest do
       expected = %{"api_key" => "12343523423423"}
       auth_response = Jason.encode!(expected)
 
-      Bypass.stub(bypass, "GET", "/auth", fn conn ->
+      Bypass.stub(bypass, "POST", "/auth", fn conn ->
         Plug.Conn.resp(conn, 200, auth_response)
       end)
 
@@ -53,11 +53,11 @@ defmodule AuthRetrieverTest do
       response = %{body: Jason.encode!(%{"api_key" => "12343523423423"})}
 
       allow(Reaper.Persistence.get(dataset_id), return: reaper_config)
-      allow(HTTPoison.get!(any(), any()), return: response)
+      allow(HTTPoison.post!(any(), any(), any()), return: response)
 
       Reaper.AuthRetriever.retrieve(dataset_id)
 
-      assert_called(HTTPoison.get!(url, evaluated_headers))
+      assert_called(HTTPoison.post!(url, "", evaluated_headers))
     end
   end
 end
