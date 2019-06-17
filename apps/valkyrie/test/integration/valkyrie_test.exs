@@ -1,42 +1,17 @@
 defmodule ValkyrieTest do
   use ExUnit.Case
   use Divo
-
   alias SmartCity.TestDataGenerator, as: TDG
+  import SmartCity.TestHelper
 
-  @messages [
-              %{
-                payload: %{name: "Jack Sparrow", alignment: "chaotic", age: "32"},
-                operational: %{ship: "Black Pearl", timing: []},
-                dataset_id: "pirates",
-                _metadata: %{}
-              },
-              %{
-                payload: %{name: "Blackbeard"},
-                operational: %{ship: "Queen Anne's Revenge", timing: []},
-                dataset_id: "pirates",
-                _metadata: %{}
-              },
-              %{
-                payload: %{name: "Will Turner", alignment: "good", age: "25"},
-                operational: %{ship: "Black Pearl", timing: []},
-                dataset_id: "pirates",
-                _metadata: %{}
-              },
-              %{
-                payload: %{name: "Barbosa", alignment: "evil", age: "100"},
-                operational: %{ship: "Dead Jerks", timing: []},
-                dataset_id: "pirates",
-                _metadata: %{}
-              }
-            ]
-            |> Enum.map(&Jason.encode!/1)
-
-  @endpoints Application.get_env(:valkyrie, :brod_brokers)
+  @endpoints Application.get_env(:valkyrie, :elsa_brokers)
+  @dlq_topic Application.get_env(:yeet, :topic)
+  @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
+  @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
 
   setup_all do
     dataset =
-      TDG.create_dataset(
+      TDG.create_dataset(%{
         id: "pirates",
         technical: %{
           schema: [
@@ -45,88 +20,69 @@ defmodule ValkyrieTest do
             %{name: "age", type: "string"}
           ]
         }
-      )
+      })
+
+    invalid_message =
+      TestHelpers.create_data(%{
+        payload: %{name: "Blackbeard"},
+        dataset_id: dataset.id
+      })
+
+    messages = [
+      TestHelpers.create_data(%{
+        payload: %{name: "Jack Sparrow", alignment: "chaotic", age: "32"},
+        dataset_id: dataset.id
+      }),
+      invalid_message,
+      TestHelpers.create_data(%{
+        payload: %{name: "Will Turner", alignment: "good", age: "25"},
+        dataset_id: dataset.id
+      }),
+      TestHelpers.create_data(%{
+        payload: %{name: "Barbosa", alignment: "evil", age: "100"},
+        dataset_id: dataset.id
+      })
+    ]
+
+    input_topic = "#{@input_topic_prefix}-#{dataset.id}"
+    output_topic = "#{@output_topic_prefix}-#{dataset.id}"
 
     SmartCity.Dataset.write(dataset)
+    TestHelpers.wait_for_topic(input_topic)
+    Elsa.Topic.create(@endpoints, output_topic)
 
-    Patiently.wait_for(
-      fn -> Valkyrie.TopicManager.is_topic_ready?("raw-pirates") end,
-      dwell: 500,
-      max_tries: 100
-    )
+    TestHelpers.produce_messages(messages, input_topic, @endpoints)
 
-    SmartCity.KafkaHelper.send_to_kafka(@messages, "raw-pirates")
-    :ok
+    {:ok, %{output_topic: output_topic, messages: messages, invalid_message: invalid_message}}
   end
 
-  test "valkyrie updates the operational struct" do
-    assert any_messages_where("validated", fn message ->
-             Enum.any?(message.operational.timing, &(&1.app == "valkyrie"))
-           end)
+  test "valkyrie updates the operational struct", %{output_topic: output_topic} do
+    eventually fn ->
+      [message | _] = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, @endpoints)
+
+      assert %{operational: %{timing: [%{app: "valkyrie"} | _]}} = message
+    end
   end
 
-  test "valkyrie does not change the content of the messages processed" do
-    assert messages_as_expected(
-             "validated",
-             ["Jack Sparrow", "Will Turner", "Barbosa"],
-             & &1.payload.name
-           )
+  test "valkyrie does not change the content of the messages processed", %{
+    output_topic: output_topic,
+    messages: messages,
+    invalid_message: invalid_message
+  } do
+    eventually fn ->
+      output_messages = TestHelpers.get_data_messages_from_kafka(output_topic, @endpoints)
+
+      assert messages -- [invalid_message] == output_messages
+    end
   end
 
-  test "valkyrie sends invalid data messages to the dlq" do
-    Patiently.wait_for!(
-      fn ->
-        data_messages = fetch_and_unwrap("dead-letters")
+  test "valkyrie sends invalid data messages to the dlq", %{invalid_message: invalid_message} do
+    encoded_og_message = invalid_message |> Jason.encode!()
 
-        Enum.any?(data_messages, fn data_message ->
-          assert String.contains?(data_message.reason, "The following fields were invalid: alignment")
-          assert String.contains?(data_message.reason, "The following fields were invalid: alignment, age")
-          assert data_message.app == "Valkyrie"
-          assert String.contains?(inspect(data_message.original_message), "Blackbeard")
-        end)
-      end,
-      dwell: 1000,
-      max_tries: 10
-    )
-  end
+    eventually fn ->
+      messages = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
 
-  defp any_messages_where(topic, callback) do
-    :ok ==
-      Patiently.wait_for!(
-        fn ->
-          topic
-          |> fetch_and_unwrap()
-          |> Enum.any?(callback)
-        end,
-        dwell: 1000,
-        max_tries: 10
-      )
-  end
-
-  defp messages_as_expected(topic, expected, callback) do
-    Patiently.wait_for!(
-      fn ->
-        actual =
-          topic
-          |> fetch_and_unwrap()
-          |> Enum.map(callback)
-
-        IO.puts("Waiting for actual #{inspect(actual)} to match expected #{inspect(expected)}")
-
-        actual == expected
-      end,
-      dwell: 1000,
-      max_tries: 10
-    )
-  end
-
-  defp fetch_and_unwrap(topic) do
-    {:ok, {_, messages}} = :brod.fetch(@endpoints, topic, 0, 0)
-
-    messages
-    |> Enum.map(fn {:kafka_message, _int, key, body, _, _, _} ->
-      {key, body}
-    end)
-    |> Enum.map(fn {_key, body} -> Jason.decode!(body, keys: :atoms) end)
+      assert [%{app: "Valkyrie", original_message: ^encoded_og_message}] = messages
+    end
   end
 end

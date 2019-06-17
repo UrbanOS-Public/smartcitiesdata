@@ -15,21 +15,15 @@ config :logger,
 
 config :valkyrie,
   elsa_brokers: [{String.to_atom(host), 9092}],
-  brod_brokers: endpoint,
   input_topic_prefix: "raw",
   output_topic_prefix: "validated",
   divo: [
     {DivoKafka, [create_topics: "raw:1:1,validated:1:1,dead-letters:1:1", outside_host: host, auto_topic: false]},
     DivoRedis
   ],
-  divo_wait: [dwell: 700, max_tries: 50]
-
-config :kaffe,
-  producer: [
-    endpoints: endpoint,
-    topics: ["validated"],
-    partition_strategy: :md5
-  ]
+  divo_wait: [dwell: 700, max_tries: 50],
+  produce_retries: 3,
+  produce_timeout: 1500
 
 config :yeet,
   topic: "dead-letters",
