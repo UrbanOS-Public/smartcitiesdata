@@ -6,10 +6,6 @@ host =
     defined -> defined
   end
 
-System.put_env("HOST", host)
-
-endpoint = [{to_charlist(host), 9092}]
-
 config :logger,
   level: :info
 
@@ -27,7 +23,7 @@ config :valkyrie,
 
 config :yeet,
   topic: "dead-letters",
-  endpoint: endpoint
+  endpoint: [{to_charlist(host), 9092}]
 
 config :smart_city_registry,
   redis: [
