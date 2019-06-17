@@ -80,9 +80,9 @@ defmodule ValkyrieTest do
     encoded_og_message = invalid_message |> Jason.encode!()
 
     eventually fn ->
-      [message] = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
+      messages = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
 
-      assert %{app: "Valkyrie", original_message: ^encoded_og_message} = message
+      assert [%{app: "Valkyrie", original_message: ^encoded_og_message}] = messages
     end
   end
 end

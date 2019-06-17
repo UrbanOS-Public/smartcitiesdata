@@ -71,9 +71,9 @@ defmodule Valkyrie.TopicPerDataset.OutputTest do
     TestHelpers.produce_message(original_message, input_topic, @endpoints)
 
     eventually fn ->
-      [message] = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
+      messages = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
 
-      assert %{app: "Valkyrie", original_message: ^encoded_og_message} = message
+      assert [%{app: "Valkyrie", original_message: ^encoded_og_message}] = messages
     end
   end
 end
