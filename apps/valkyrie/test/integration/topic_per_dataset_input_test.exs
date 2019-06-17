@@ -3,7 +3,7 @@ defmodule Valkyrie.TopicPerDataset.InputTest do
   use Divo
 
   alias SmartCity.TestDataGenerator, as: TDG
-  import TestHelpers
+  import SmartCity.TestHelper
 
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
   @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)

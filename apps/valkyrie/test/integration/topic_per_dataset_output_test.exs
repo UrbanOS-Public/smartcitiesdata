@@ -2,7 +2,7 @@ defmodule Valkyrie.TopicPerDataset.OutputTest do
   use ExUnit.Case
   use Divo
   alias SmartCity.TestDataGenerator, as: TDG
-  import TestHelpers
+  import SmartCity.TestHelper
 
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
   @dlq_topic Application.get_env(:yeet, :topic)
@@ -64,13 +64,14 @@ defmodule Valkyrie.TopicPerDataset.OutputTest do
         payload: %{name: %{first: "Brian", last: "Balser"}}
       })
 
+    encoded_og_message = Jason.encode!(original_message)
+
     SmartCity.Dataset.write(dataset)
     TestHelpers.wait_for_topic(input_topic)
     TestHelpers.produce_message(original_message, input_topic, @endpoints)
 
     eventually fn ->
       [message] = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
-      encoded_og_message = Jason.encode!(original_message)
 
       assert %{app: "Valkyrie", original_message: ^encoded_og_message} = message
     end

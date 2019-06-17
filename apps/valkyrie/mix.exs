@@ -34,7 +34,7 @@ defmodule Valkyrie.MixProject do
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:smart_city_data, "~> 2.1"},
       {:smart_city_registry, "~> 2.6"},
-      {:smart_city_test, "~> 0.2.0", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.3", only: [:test, :integration]},
       {:yeet, "~> 1.0"},
       {:observer_cli, "~> 1.4"},
       {:elsa, "~> 0.1.0"},

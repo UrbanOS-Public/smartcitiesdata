@@ -72,22 +72,4 @@ defmodule TestHelpers do
       max_tries: 20
     )
   end
-
-  def eventually(function, dwell \\ 2_000, max_tries \\ 20) do
-    case Patiently.wait_for(
-           fn ->
-             try do
-               function.()
-             rescue
-               _ ->
-                 false
-             end
-           end,
-           dwell: dwell,
-           max_tries: max_tries
-         ) do
-      :ok -> :ok
-      _ -> function.()
-    end
-  end
 end

@@ -2,7 +2,7 @@ defmodule ValkyrieTest do
   use ExUnit.Case
   use Divo
   alias SmartCity.TestDataGenerator, as: TDG
-  import TestHelpers
+  import SmartCity.TestHelper
 
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
   @dlq_topic Application.get_env(:yeet, :topic)
@@ -28,22 +28,21 @@ defmodule ValkyrieTest do
         dataset_id: dataset.id
       })
 
-    messages =
-      [
-        TestHelpers.create_data(%{
-          payload: %{name: "Jack Sparrow", alignment: "chaotic", age: "32"},
-          dataset_id: dataset.id
-        }),
-        invalid_message,
-        TestHelpers.create_data(%{
-          payload: %{name: "Will Turner", alignment: "good", age: "25"},
-          dataset_id: dataset.id
-        }),
-        TestHelpers.create_data(%{
-          payload: %{name: "Barbosa", alignment: "evil", age: "100"},
-          dataset_id: dataset.id
-        })
-      ]
+    messages = [
+      TestHelpers.create_data(%{
+        payload: %{name: "Jack Sparrow", alignment: "chaotic", age: "32"},
+        dataset_id: dataset.id
+      }),
+      invalid_message,
+      TestHelpers.create_data(%{
+        payload: %{name: "Will Turner", alignment: "good", age: "25"},
+        dataset_id: dataset.id
+      }),
+      TestHelpers.create_data(%{
+        payload: %{name: "Barbosa", alignment: "evil", age: "100"},
+        dataset_id: dataset.id
+      })
+    ]
 
     input_topic = "#{@input_topic_prefix}-#{dataset.id}"
     output_topic = "#{@output_topic_prefix}-#{dataset.id}"
@@ -78,9 +77,10 @@ defmodule ValkyrieTest do
   end
 
   test "valkyrie sends invalid data messages to the dlq", %{invalid_message: invalid_message} do
+    encoded_og_message = invalid_message |> Jason.encode!()
+
     eventually fn ->
       [message] = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
-      encoded_og_message = invalid_message |> Jason.encode!()
 
       assert %{app: "Valkyrie", original_message: ^encoded_og_message} = message
     end
