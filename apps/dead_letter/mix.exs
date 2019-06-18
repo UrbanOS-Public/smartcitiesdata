@@ -4,7 +4,7 @@ defmodule Yeet.MixProject do
   def project do
     [
       app: :yeet,
-      version: "1.0.1",
+      version: "1.0.2",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -24,6 +24,7 @@ defmodule Yeet.MixProject do
   defp deps do
     [
       {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 0.5.1", only: [:dev]},
       {:placebo, "~> 1.2.1", only: [:dev, :test, :integration]},
       {:ex_doc, "~> 0.19", only: :dev},
       {:jason, "~> 1.1"},

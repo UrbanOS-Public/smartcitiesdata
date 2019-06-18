@@ -34,7 +34,7 @@ defmodule Yeet do
   @doc """
     Takes a message and formats the fields so that they can properly be encoded as json. It also enriches the message with a stack trace and timestamp.
   """
-  @spec format_message(any(), String.t(), atom(), keyword()) :: map()
+  @spec format_message(any(), String.t(), String.t(), keyword()) :: map()
   def format_message(original_message, dataset_id, app_name, options \\ []) do
     stacktrace =
       options
