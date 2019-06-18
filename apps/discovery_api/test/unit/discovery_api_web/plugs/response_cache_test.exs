@@ -30,13 +30,17 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCacheTest do
       [function] = actual.before_send
 
       conn
-      |> put_resp_header("nemesis", "austin")
+      |> put_resp_header("content-type", "application/json")
+      |> put_resp_header("content-length", "823829")
+      |> put_resp_header("other-header", "some value")
       |> send_resp(200, "Howdy")
       |> function.()
 
       {:ok, cache_entry} = Cachex.get(ResponseCache, {conn.request_path, conn.params})
 
-      assert {"nemesis", "austin"} in cache_entry.resp_headers
+      assert {"content-type", "application/json"} in cache_entry.resp_headers
+      assert {"content-length", "823829"} in cache_entry.resp_headers
+      assert 2 == length(cache_entry.resp_headers)
       assert "Howdy" == cache_entry.resp_body
     end
 
