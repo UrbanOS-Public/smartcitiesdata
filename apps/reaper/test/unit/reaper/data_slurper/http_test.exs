@@ -84,10 +84,11 @@ defmodule Reaper.DataSlurper.HttpTest do
     dataset_id = "1234"
     url = "http://some.url/path/to/data"
     headers = %{"content-type" => "application/json"}
+    evaluated_headers = [{"content-type", "application/json"}]
 
     {:file, dataset_id} = DataSlurper.slurp(url, dataset_id, headers)
 
-    assert_called Mint.HTTP.request(:connection, "GET", "/path/to/data?", headers), once()
+    assert_called Mint.HTTP.request(:connection, "GET", "/path/to/data?", evaluated_headers), once()
   end
 
   defp setup_redirect(bypass, path, redirect_path, opts \\ []) do

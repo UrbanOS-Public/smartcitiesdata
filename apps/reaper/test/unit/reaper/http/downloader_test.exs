@@ -147,7 +147,7 @@ defmodule Reaper.Http.DownloaderTest do
       "testB" => "valB"
     }
 
-    evaluated_headers = %{"testKey" => "19700102", "testB" => "valB"}
+    evaluated_headers = [{"testB", "valB"}, {"testKey", "19700102"}]
 
     {:ok} = Downloader.download("http://some.url", headers, to: "test.output")
 

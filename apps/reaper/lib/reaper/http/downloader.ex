@@ -153,7 +153,6 @@ defmodule Reaper.Http.Downloader do
   defp evaluate_headers(headers) do
     headers
     |> Enum.map(&evaluate_header(&1))
-    |> Enum.into(%{})
   end
 
   defp evaluate_header({key, value}) do
