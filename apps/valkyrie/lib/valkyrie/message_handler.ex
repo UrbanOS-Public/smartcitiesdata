@@ -9,7 +9,6 @@ defmodule Valkyrie.MessageHandler do
   alias SmartCity.Data
   alias Valkyrie.Validators
 
-  @endpoints Application.get_env(:valkyrie, :elsa_brokers)
   @initial_delay Application.get_env(:valkyrie, :produce_timeout)
   @retries Application.get_env(:valkyrie, :produce_retries)
 
@@ -57,11 +56,13 @@ defmodule Valkyrie.MessageHandler do
       Valkyrie.TopicManager.is_topic_ready?(topic)
     after
       true ->
-        Elsa.Producer.produce_sync(@endpoints, topic, 0, key, message)
+        Elsa.Producer.produce_sync(endpoint(), topic, 0, key, message)
     else
       error -> error
     end
   end
+
+  defp endpoint(), do: Application.get_env(:valkyrie, :elsa_brokers)
 
   defp outgoing_topic_prefix(), do: Application.get_env(:valkyrie, :output_topic_prefix)
   defp outgoing_topic(dataset_id), do: "#{outgoing_topic_prefix()}-#{dataset_id}"
