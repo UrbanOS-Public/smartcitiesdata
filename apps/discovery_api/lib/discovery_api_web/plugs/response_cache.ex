@@ -44,8 +44,13 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCache do
 
   defp register_hook(conn) do
     register_before_send(conn, fn conn ->
-      Cachex.put(__MODULE__, {conn.request_path, conn.params}, %{resp_headers: conn.resp_headers, resp_body: conn.resp_body})
+      Cachex.put(__MODULE__, {conn.request_path, conn.params}, %{resp_headers: content_headers(conn), resp_body: conn.resp_body})
       conn
     end)
+  end
+
+  defp content_headers(conn) do
+    conn.resp_headers
+    |> Enum.filter(fn {name, _value} -> String.starts_with?(name, "content-") end)
   end
 end
