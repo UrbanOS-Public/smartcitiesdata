@@ -7,7 +7,7 @@ host =
     defined -> defined
   end
 
-endpoint = [{to_charlist(host), 9092}]
+endpoint = [{String.to_atom(host), 9092}]
 
 System.put_env("HOST", host)
 
@@ -19,22 +19,17 @@ config :logger,
 
 config :reaper,
   divo: [
-    {DivoKafka, [create_topics: "streaming-raw:1:1,streaming-dead-letters:1:1", outside_host: host]},
+    {DivoKafka, [create_topics: "streaming-dead-letters:1:1", outside_host: host]},
     DivoRedis,
     Reaper.DivoSftp
   ],
-  divo_wait: [dwell: 1000, max_tries: 120]
+  divo_wait: [dwell: 1000, max_tries: 120],
+  elsa_brokers: endpoint,
+  output_topic_prefix: "raw"
 
 config :smart_city_registry,
   redis: [
     host: host
-  ]
-
-config :kaffe,
-  producer: [
-    endpoints: endpoint,
-    topics: ["streaming-raw", "streaming-dead-letters"],
-    partition_strategy: :md5
   ]
 
 config :redix,

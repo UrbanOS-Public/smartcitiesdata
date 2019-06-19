@@ -15,4 +15,6 @@ config :kaffe,
   ]
 
 config :reaper,
+  produce_retries: 2,
+  produce_timeout: 10,
   secrets_endpoint: "http://vault:8200"

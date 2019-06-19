@@ -2,9 +2,13 @@ defmodule Reaper.Loader do
   @moduledoc """
   This module loads data to the output topic
   """
-  alias Kaffe.Producer
+  alias Elsa.Producer
   alias SmartCity.Data
   alias Reaper.ReaperConfig
+
+  use Retry
+  @initial_delay Application.get_env(:reaper, :produce_timeout)
+  @retries Application.get_env(:reaper, :produce_retries)
 
   @doc """
   Loads a data row to the output topic
@@ -19,14 +23,35 @@ defmodule Reaper.Loader do
   defp send_to_kafka(payload, key, reaper_config, start_time) do
     payload
     |> convert_to_message(reaper_config.dataset_id, start_time)
-    |> produce(key)
+    |> produce(reaper_config.dataset_id, key)
   end
 
-  defp produce({:ok, message}, key) do
-    Producer.produce_sync(key, message)
+  defp produce({:ok, message}, dataset_id, key) do
+    topic = "#{topic_prefix()}-#{dataset_id}"
+
+    retry with: produce_backoff(), atoms: [false] do
+      is_topic_ready?(topic)
+    after
+      true -> Producer.produce_sync(endpoints(), topic, 0, key, message)
+    else
+      false -> {:error, "topic #{topic} unavailable to produce to"}
+    end
   end
 
-  defp produce({:error, _} = error, _key), do: error
+  defp produce({:error, _} = error, _dataset_id, _key), do: error
+
+  defp produce_backoff() do
+    @initial_delay |> exponential_backoff() |> Stream.take(@retries)
+  end
+
+  defp is_topic_ready?(topic) do
+    topics =
+      endpoints()
+      |> Elsa.list_topics()
+      |> Enum.map(fn {topic, _partitions} -> topic end)
+
+    topic in topics
+  end
 
   defp determine_partitioner_module(reaper_config) do
     type = reaper_config.partitioner.type || "Hash"
@@ -34,6 +59,10 @@ defmodule Reaper.Loader do
     "Elixir.Reaper.Partitioners.#{type}Partitioner"
     |> String.to_existing_atom()
   end
+
+  defp endpoints(), do: Application.get_env(:reaper, :elsa_brokers)
+
+  defp topic_prefix(), do: Application.get_env(:reaper, :output_topic_prefix)
 
   defp convert_to_message(payload, dataset_id, start) do
     payload

@@ -4,7 +4,10 @@ defmodule Reaper.SftpExtractorTest do
   use Placebo
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
+  import SmartCity.TestHelper
 
+  @endpoints Application.get_env(:reaper, :elsa_brokers)
+  @output_topic_prefix Application.get_env(:reaper, :output_topic_prefix)
   @host to_charlist(System.get_env("HOST"))
 
   @sftp %{host: @host, port: 2222, user: 'sftp_user', password: 'sftp_password'}
@@ -22,6 +25,8 @@ defmodule Reaper.SftpExtractorTest do
 
   test "reaps a json file from sftp" do
     dataset_id = "23456-7891"
+    topic = "#{@output_topic_prefix}-#{dataset_id}"
+    Elsa.create_topic(@endpoints, topic)
 
     allow Reaper.CredentialRetriever.retrieve(any()),
       return: {:ok, %{username: "sftp_user", password: "sftp_password"}}
@@ -39,25 +44,19 @@ defmodule Reaper.SftpExtractorTest do
 
     Dataset.write(dataset)
 
-    Patiently.wait_for!(
-      fn ->
-        result =
-          dataset_id
-          |> TestUtils.fetch_relevant_messages()
-          |> List.first()
+    payload = %{datum: "Bobber", sanctum: "Alice"}
 
-        case result do
-          nil -> false
-          message -> message["datum"] == "Bobber"
-        end
-      end,
-      dwell: 1000,
-      max_tries: 20
-    )
+    eventually(fn ->
+      result = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+
+      assert [%{payload: ^payload} | _] = result
+    end)
   end
 
   test "reaps a csv file from sftp" do
-    dataset_id = "23456-7892"
+    dataset_id = "34567-8912"
+    topic = "#{@output_topic_prefix}-#{dataset_id}"
+    Elsa.create_topic(@endpoints, topic)
 
     allow Reaper.CredentialRetriever.retrieve(any()),
       return: {:ok, %{username: "sftp_user", password: "sftp_password"}}
@@ -78,21 +77,12 @@ defmodule Reaper.SftpExtractorTest do
       })
 
     Dataset.write(dataset)
+    payload = %{sanctum: "Bobbero", datum: "Alice"}
 
-    Patiently.wait_for!(
-      fn ->
-        result =
-          dataset_id
-          |> TestUtils.fetch_relevant_messages()
-          |> List.first()
+    eventually(fn ->
+      result = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
-        case result do
-          nil -> false
-          message -> message["datum"] == "Alice"
-        end
-      end,
-      dwell: 1000,
-      max_tries: 20
-    )
+      assert [%{payload: ^payload} | _] = result
+    end)
   end
 end

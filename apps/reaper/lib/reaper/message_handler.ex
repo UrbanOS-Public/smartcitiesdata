@@ -13,9 +13,10 @@ defmodule Reaper.MessageHandler do
   @spec handle_dataset(SmartCity.Dataset.t()) ::
           {:ok, String.t()} | DynamicSupervisor.on_start_child() | nil
   def handle_dataset(%SmartCity.Dataset{} = dataset) do
-    with {:ok, reaper_config} <- ReaperConfig.from_dataset(dataset) do
-      ConfigServer.process_reaper_config(reaper_config)
-    else
+    case ReaperConfig.from_dataset(dataset) do
+      {:ok, reaper_config} ->
+        ConfigServer.process_reaper_config(reaper_config)
+
       {:error, reason} ->
         Logger.error("Skipping registry message for this reason: #{inspect(reason)}")
 
