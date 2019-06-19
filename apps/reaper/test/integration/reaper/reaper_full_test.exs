@@ -22,6 +22,8 @@ defmodule Reaper.FullTest do
     Temp.track!()
     Application.put_env(:reaper, :download_dir, Temp.mkdir!())
 
+    # NOTE: using Bypass in setup all b/c we have no expectations.
+    # If we add any, we'll need to move this, per https://github.com/pspdfkit-labs/bypass#example
     bypass = Bypass.open()
 
     bypass
