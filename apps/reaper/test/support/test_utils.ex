@@ -1,10 +1,9 @@
 defmodule TestUtils do
   @moduledoc false
 
-  @kafka_endpoint Application.get_env(:kaffe, :producer)[:endpoints]
-                  |> Enum.map(fn {k, v} -> {k, v} end)
-  @destination_topic Application.get_env(:kaffe, :producer)[:topics]
-                     |> List.first()
+  require Elsa
+  require Logger
+  alias SmartCity.TestDataGenerator, as: TDG
 
   def feed_supervisor_count() do
     Reaper.Horde.Supervisor
@@ -30,13 +29,6 @@ defmodule TestUtils do
     |> Enum.count()
   end
 
-  def fetch_relevant_messages(dataset_id) do
-    @destination_topic
-    |> fetch_all_feed_messages()
-    |> Enum.filter(fn %{"dataset_id" => id} -> id == dataset_id end)
-    |> Enum.map(fn %{"payload" => payload} -> payload end)
-  end
-
   def bypass_file(bypass, file_name) do
     Bypass.stub(bypass, "HEAD", "/#{file_name}", fn conn ->
       Plug.Conn.resp(conn, 200, "")
@@ -53,25 +45,6 @@ defmodule TestUtils do
     bypass
   end
 
-  def fetch_all_feed_messages(topic) do
-    Stream.resource(
-      fn -> 0 end,
-      fn offset ->
-        with {:ok, results} <- :brod.fetch(@kafka_endpoint, topic, 0, offset),
-             {:kafka_message, current_offset, _headers?, _partition, _key, _body, _ts, _type, _ts_type} <-
-               List.last(results) do
-          {results, current_offset + 1}
-        else
-          _ -> {:halt, offset}
-        end
-      end,
-      fn _ -> :unused end
-    )
-    |> Enum.map(fn {:kafka_message, _offset, _headers?, _partition, _key, body, _ts, _type, _ts_type} ->
-      Jason.decode!(body)
-    end)
-  end
-
   defp is_feed_supervisor?([{_, _, _, [mod]}]) do
     mod == Reaper.FeedSupervisor
   end
@@ -83,4 +56,45 @@ defmodule TestUtils do
   end
 
   defp get_supervisor_children([]), do: []
+
+  def get_dlq_messages_from_kafka(topic, endpoints) do
+    topic
+    |> fetch_messages(endpoints)
+    |> Enum.map(&Jason.decode!(&1, keys: :atoms))
+  end
+
+  def get_data_messages_from_kafka(topic, endpoints) do
+    topic
+    |> fetch_messages(endpoints)
+    |> Enum.map(&SmartCity.Data.new/1)
+    |> Enum.map(&elem(&1, 1))
+    |> Enum.map(&clear_timing/1)
+  end
+
+  def fetch_messages(topic, endpoints) do
+    case :brod.fetch(endpoints, topic, 0, 0) do
+      {:ok, {_offset, messages}} ->
+        messages
+        |> Enum.map(&Elsa.kafka_message(&1, :value))
+
+      {:error, reason} ->
+        Logger.warn("Failed to extract messages: #{inspect(reason)}")
+        []
+    end
+  end
+
+  def create_data(overrides) do
+    overrides
+    |> TDG.create_data()
+    |> clear_timing()
+    |> clear_metadata()
+  end
+
+  def clear_metadata(%SmartCity.Data{} = data_message) do
+    Map.update!(data_message, :_metadata, fn _ -> %{} end)
+  end
+
+  def clear_timing(%SmartCity.Data{} = data_message) do
+    Map.update!(data_message, :operational, fn _ -> %{timing: []} end)
+  end
 end

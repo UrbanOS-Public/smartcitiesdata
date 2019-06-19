@@ -5,9 +5,12 @@ defmodule Reaper.YeetTest do
   require Logger
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
+  import SmartCity.TestHelper
 
-  @success_topic Application.get_env(:kaffe, :producer)[:topics] |> List.first()
-  @dlq_topic Application.get_env(:kaffe, :producer)[:topics] |> List.last()
+  @dataset_id "12345-6789"
+  @endpoints Application.get_env(:reaper, :elsa_brokers)
+  @success_topic Application.get_env(:reaper, :output_topic_prefix) <> "-" <> @dataset_id
+  @dlq_topic Application.get_env(:yeet, :topic)
 
   @invalid_json_file "includes_invalid.json"
 
@@ -26,61 +29,38 @@ defmodule Reaper.YeetTest do
       max_tries: 20
     )
 
-    {:ok, bypass: bypass}
+    Elsa.create_topic(@endpoints, @success_topic)
+
+    json_dataset =
+      TDG.create_dataset(%{
+        id: @dataset_id,
+        technical: %{
+          cadence: 1_000,
+          sourceUrl: "http://localhost:#{bypass.port}/#{@invalid_json_file}",
+          sourceFormat: "json"
+        }
+      })
+
+    Dataset.write(json_dataset)
+
+    :ok
   end
 
   describe "invalid data" do
-    test "send failed messages to the DLQ topic", %{bypass: bypass} do
-      dataset_id = "12345-6789"
+    test "send failed messages to the DLQ topic" do
+      eventually(fn ->
+        messages = TestUtils.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
 
-      json_dataset =
-        TDG.create_dataset(%{
-          id: dataset_id,
-          technical: %{
-            cadence: 1_000,
-            sourceUrl: "http://localhost:#{bypass.port}/#{@invalid_json_file}",
-            sourceFormat: "json"
-          }
-        })
-
-      Dataset.write(json_dataset)
-
-      Patiently.wait_for!(
-        fn ->
-          result =
-            dataset_id
-            |> fetch_dlq_messages()
-            |> Enum.any?(fn message -> message["original_message"] =~ "\"vehicle_id\" 15537" end)
-
-          result == true
-        end,
-        dwell: 1000,
-        max_tries: 20
-      )
-
-      Patiently.wait_for!(
-        fn ->
-          result =
-            dataset_id
-            |> fetch_good_messages()
-
-          result == []
-        end,
-        dwell: 1000,
-        max_tries: 20
-      )
+        assert [%{app: "Reaper", dataset_id: @dataset_id} | _] = messages
+      end)
     end
-  end
 
-  defp fetch_good_messages(dataset_id) do
-    @success_topic
-    |> TestUtils.fetch_all_feed_messages()
-    |> Enum.filter(fn %{"dataset_id" => id} -> id == dataset_id end)
-    |> Enum.map(fn %{"payload" => payload} -> payload end)
-  end
+    test "no messages go on to the output topic" do
+      eventually(fn ->
+        result = TestUtils.get_data_messages_from_kafka(@success_topic, @endpoints)
 
-  defp fetch_dlq_messages(_dataset_id) do
-    @dlq_topic
-    |> TestUtils.fetch_all_feed_messages()
+        assert result == []
+      end)
+    end
   end
 end

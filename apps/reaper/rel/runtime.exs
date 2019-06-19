@@ -1,6 +1,6 @@
 use Mix.Config
 
-required_envars = ["REDIS_HOST", "KAFKA_BROKERS"]
+required_envars = ["REDIS_HOST", "KAFKA_BROKERS", "OUTPUT_TOPIC_PREFIX", "DLQ_TOPIC", "SECRETS_ENDPOINT"]
 
 Enum.each(required_envars, fn var ->
   if is_nil(System.get_env(var)) do
@@ -18,13 +18,6 @@ endpoints =
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
-config :kaffe,
-  producer: [
-    endpoints: endpoints,
-    topics: [System.get_env("TO_TOPIC")],
-    partition_strategy: :md5
-  ]
-
 if System.get_env("RUN_IN_KUBERNETES") do
   config :libcluster,
     topologies: [
@@ -41,7 +34,10 @@ if System.get_env("RUN_IN_KUBERNETES") do
 end
 
 config :reaper,
-  secrets_endpoint: System.get_env("SECRETS_ENDPOINT")
+  secrets_endpoint: System.get_env("SECRETS_ENDPOINT"),
+  elsa_brokers: endpoints,
+  output_topic_prefix: System.get_env("OUTPUT_TOPIC_PREFIX"),
+  download_dir: "/downloads/"
 
 config :smart_city_registry,
   redis: [
@@ -54,6 +50,3 @@ config :redix,
 config :yeet,
   endpoint: endpoints,
   topic: System.get_env("DLQ_TOPIC")
-
-config :reaper,
-  download_dir: "/downloads/"

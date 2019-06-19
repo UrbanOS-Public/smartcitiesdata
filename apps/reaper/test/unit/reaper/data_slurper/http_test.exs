@@ -19,7 +19,7 @@ defmodule Reaper.DataSlurper.HttpTest do
       {:ok, bypass: bypass}
     end
 
-    test "downlaods http urls file on local filesystem", %{bypass: bypass} do
+    test "downloads http urls file on local filesystem", %{bypass: bypass} do
       setup_get(bypass, "/1.2/data.csv", ~s|one,two,three\n1,2,3\n|)
 
       {:file, filename} = DataSlurper.Http.slurp("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id)
@@ -86,7 +86,7 @@ defmodule Reaper.DataSlurper.HttpTest do
     headers = %{"content-type" => "application/json"}
     evaluated_headers = [{"content-type", "application/json"}]
 
-    {:file, dataset_id} = DataSlurper.slurp(url, dataset_id, headers)
+    {:file, _dataset_id} = DataSlurper.slurp(url, dataset_id, headers)
 
     assert_called Mint.HTTP.request(:connection, "GET", "/path/to/data?", evaluated_headers), once()
   end

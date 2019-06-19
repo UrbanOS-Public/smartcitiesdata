@@ -6,6 +6,10 @@ defmodule Reaper.FullTest do
   require Logger
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
+  import SmartCity.TestHelper
+
+  @endpoints Application.get_env(:reaper, :elsa_brokers)
+  @output_topic_prefix Application.get_env(:reaper, :output_topic_prefix)
 
   @pre_existing_dataset_id "00000-0000"
   @partial_load_dataset_id "11111-1112"
@@ -14,7 +18,12 @@ defmodule Reaper.FullTest do
   @gtfs_file_name "gtfs-realtime.pb"
   @csv_file_name "random_stuff.csv"
 
-  setup do
+  setup_all do
+    Temp.track!()
+    Application.put_env(:reaper, :download_dir, Temp.mkdir!())
+
+    # NOTE: using Bypass in setup all b/c we have no expectations.
+    # If we add any, we'll need to move this, per https://github.com/pspdfkit-labs/bypass#example
     bypass = Bypass.open()
 
     bypass
@@ -22,14 +31,10 @@ defmodule Reaper.FullTest do
     |> TestUtils.bypass_file(@json_file_name)
     |> TestUtils.bypass_file(@csv_file_name)
 
-    Patiently.wait_for!(
-      fn ->
-        {type, result} = get("http://localhost:#{bypass.port}/#{@csv_file_name}")
-        type == :ok and result.status == 200
-      end,
-      dwell: 1000,
-      max_tries: 20
-    )
+    eventually(fn ->
+      {type, result} = get("http://localhost:#{bypass.port}/#{@csv_file_name}")
+      type == :ok and result.status == 200
+    end)
 
     {:ok, bypass: bypass}
   end
@@ -48,30 +53,32 @@ defmodule Reaper.FullTest do
           }
         })
 
+      Elsa.create_topic(@endpoints, "#{@output_topic_prefix}-#{@pre_existing_dataset_id}")
+
       Dataset.write(pre_existing_dataset)
       :ok
     end
 
     test "configures and ingests a json-source that was added before reaper started" do
-      expected = %{
-        "latitude" => 39.9613,
-        "vehicle_id" => 41_015,
-        "update_time" => "2019-02-14T18:53:23.498889+00:00",
-        "longitude" => -83.0074
-      }
+      expected =
+        TestUtils.create_data(%{
+          dataset_id: @pre_existing_dataset_id,
+          payload: %{
+            latitude: 39.9613,
+            vehicle_id: 41_015,
+            update_time: "2019-02-14T18:53:23.498889+00:00",
+            longitude: -83.0074
+          }
+        })
 
-      Patiently.wait_for!(
-        fn ->
-          result =
-            @pre_existing_dataset_id
-            |> TestUtils.fetch_relevant_messages()
-            |> List.last()
+      topic = "#{@output_topic_prefix}-#{@pre_existing_dataset_id}"
 
-          result == expected
-        end,
-        dwell: 1000,
-        max_tries: 20
-      )
+      eventually(fn ->
+        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+        last_one = List.last(results)
+
+        assert expected == last_one
+      end)
     end
   end
 
@@ -105,27 +112,33 @@ defmodule Reaper.FullTest do
         })
 
       Dataset.write(pre_existing_dataset)
+      Elsa.create_topic(@endpoints, "#{@output_topic_prefix}-#{@partial_load_dataset_id}")
       :ok
     end
 
     test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: _bypass} do
       expected = [
-        %{"my_date" => "Spot", "my_int" => "1", "my_string" => "Austin"},
-        %{"my_date" => "Bella", "my_int" => "2", "my_string" => "Erin"},
-        %{"my_date" => "Max", "my_int" => "3", "my_string" => "Ben"}
+        TestUtils.create_data(%{
+          dataset_id: @partial_load_dataset_id,
+          payload: %{my_date: "Spot", my_int: "1", my_string: "Austin"}
+        }),
+        TestUtils.create_data(%{
+          dataset_id: @partial_load_dataset_id,
+          payload: %{my_date: "Bella", my_int: "2", my_string: "Erin"}
+        }),
+        TestUtils.create_data(%{
+          dataset_id: @partial_load_dataset_id,
+          payload: %{my_date: "Max", my_int: "3", my_string: "Ben"}
+        })
       ]
 
-      Patiently.wait_for!(
-        fn ->
-          result =
-            @partial_load_dataset_id
-            |> TestUtils.fetch_relevant_messages()
+      topic = "#{@output_topic_prefix}-#{@partial_load_dataset_id}"
 
-          result == expected
-        end,
-        dwell: 1000,
-        max_tries: 20
-      )
+      eventually(fn ->
+        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+
+        assert expected == results
+      end)
     end
   end
 
@@ -137,6 +150,7 @@ defmodule Reaper.FullTest do
 
     test "configures and ingests a gtfs source", %{bypass: bypass} do
       dataset_id = "12345-6789"
+      topic = "#{@output_topic_prefix}-#{dataset_id}"
 
       gtfs_dataset =
         TDG.create_dataset(%{
@@ -149,26 +163,18 @@ defmodule Reaper.FullTest do
         })
 
       Dataset.write(gtfs_dataset)
+      Elsa.create_topic(@endpoints, topic)
 
-      Patiently.wait_for!(
-        fn ->
-          result =
-            dataset_id
-            |> TestUtils.fetch_relevant_messages()
-            |> List.first()
+      eventually(fn ->
+        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
-          case result do
-            nil -> false
-            message -> message["id"] == "1004"
-          end
-        end,
-        dwell: 1000,
-        max_tries: 20
-      )
+        assert [%{payload: %{id: "1004"}} | _] = results
+      end)
     end
 
     test "configures and ingests a json source", %{bypass: bypass} do
       dataset_id = "23456-7891"
+      topic = "#{@output_topic_prefix}-#{dataset_id}"
 
       json_dataset =
         TDG.create_dataset(%{
@@ -181,26 +187,18 @@ defmodule Reaper.FullTest do
         })
 
       Dataset.write(json_dataset)
+      Elsa.create_topic(@endpoints, topic)
 
-      Patiently.wait_for!(
-        fn ->
-          result =
-            dataset_id
-            |> TestUtils.fetch_relevant_messages()
-            |> List.first()
+      eventually(fn ->
+        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
-          case result do
-            nil -> false
-            message -> message["vehicle_id"] == 51_127
-          end
-        end,
-        dwell: 1000,
-        max_tries: 20
-      )
+        assert [%{payload: %{vehicle_id: 51_127}} | _] = results
+      end)
     end
 
     test "configures and ingests a csv source", %{bypass: bypass} do
       dataset_id = "34567-8912"
+      topic = "#{@output_topic_prefix}-#{dataset_id}"
 
       csv_dataset =
         TDG.create_dataset(%{
@@ -215,24 +213,14 @@ defmodule Reaper.FullTest do
         })
 
       Dataset.write(csv_dataset)
+      Elsa.create_topic(@endpoints, topic)
 
-      Patiently.wait_for!(
-        fn ->
-          result =
-            dataset_id
-            |> TestUtils.fetch_relevant_messages()
-            |> List.last()
+      eventually(fn ->
+        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
-          case result do
-            nil -> false
-            message -> message["name"] == "Ben"
-          end
-        end,
-        dwell: 1000,
-        max_tries: 20
-      )
-
-      assert false == File.exists?(dataset_id)
+        assert [%{payload: %{name: "Austin"}} | _] = results
+        assert false == File.exists?(dataset_id)
+      end)
     end
 
     test "saves last_success_time to redis", %{bypass: bypass} do
@@ -249,29 +237,20 @@ defmodule Reaper.FullTest do
         })
 
       Dataset.write(gtfs_dataset)
+      Elsa.create_topic(@endpoints, "#{@output_topic_prefix}-#{dataset_id}")
 
-      Patiently.wait_for!(
-        fn ->
-          result = Redix.command!(:redix, ["GET", "reaper:derived:#{dataset_id}"])
-          result != nil
-        end,
-        dwell: 1000,
-        max_tries: 20
-      )
+      eventually(fn ->
+        {:ok, result} = Redix.command(:redix, ["GET", "reaper:derived:#{dataset_id}"])
+        assert result != nil
 
-      result =
-        Redix.command!(:redix, ["GET", "reaper:derived:#{dataset_id}"])
-        |> Jason.decode!()
+        timestamp =
+          result
+          |> Jason.decode!()
+          |> Map.get("timestamp")
+          |> DateTime.from_iso8601()
 
-      result["timestamp"]
-      |> DateTime.from_iso8601()
-      |> case do
-        {:ok, date_time_from_redis, _} ->
-          assert DateTime.diff(date_time_from_redis, DateTime.utc_now()) < 5
-
-        _ ->
-          flunk("Should have put a valid DateTime into redis")
-      end
+        assert {:ok, date_time_from_redis, 0} = timestamp
+      end)
     end
   end
 
@@ -283,6 +262,7 @@ defmodule Reaper.FullTest do
 
     test "cadence of once is only processed once", %{bypass: bypass} do
       dataset_id = "only-once"
+      topic = "#{@output_topic_prefix}-#{dataset_id}"
 
       csv_dataset =
         TDG.create_dataset(%{
@@ -297,34 +277,20 @@ defmodule Reaper.FullTest do
         })
 
       Dataset.write(csv_dataset)
+      Elsa.create_topic(@endpoints, topic)
 
-      # The data is written to kafka
-      Patiently.wait_for!(
-        fn ->
-          result =
-            dataset_id
-            |> TestUtils.fetch_relevant_messages()
-            |> List.last()
+      eventually(fn ->
+        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
-          case result do
-            nil -> false
-            message -> message["name"] == "Ben"
-          end
-        end,
-        dwell: 1000,
-        max_tries: 40
-      )
+        assert [%{payload: %{name: "Austin"}} | _] = results
+      end)
 
-      Patiently.wait_for!(
-        fn ->
-          data_feed_status =
-            Horde.Registry.lookup({:via, Horde.Registry, {Reaper.Registry, String.to_atom(dataset_id <> "_feed")}})
+      eventually(fn ->
+        data_feed_status =
+          Horde.Registry.lookup({:via, Horde.Registry, {Reaper.Registry, String.to_atom(dataset_id <> "_feed")}})
 
-          data_feed_status == :undefined
-        end,
-        dwell: 100,
-        max_tries: 20
-      )
+        assert data_feed_status == :undefined
+      end)
     end
   end
 end

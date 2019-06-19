@@ -39,31 +39,33 @@ defmodule Reaper.MixProject do
   defp deps do
     [
       {:cachex, "~> 3.1"},
-      {:nimble_csv, "~> 0.6.0"},
+      {:castore, "~> 0.1.2"},
       {:distillery, "~> 2.0"},
+      {:elsa, "~> 0.2.0"},
       {:horde, "~> 0.2.3"},
       {:horde_connector, "~> 0.1"},
       {:httpoison, "~> 1.5"},
-      {:jason, "~>1.1"},
-      {:kaffe, "~> 1.11"},
+      {:jason, "~> 1.1"},
       {:libcluster, "~> 3.0"},
       {:libvault, "~> 0.2"},
       {:mint, "~> 0.2.1"},
-      {:castore, "~> 0.1.2"},
+      {:nimble_csv, "~> 0.6.0"},
       {:observer_cli, "~> 1.4"},
       {:plug_cowboy, "~> 2.0"},
       {:protobuf, "~> 0.6"},
       {:redix, "~> 0.9"},
+      {:retry, "~> 0.11.2"},
       {:sftp_ex, "~> 0.2"},
-      {:sweet_xml, "~> 0.6"},
       {:smart_city_data, "~> 2.1"},
       {:smart_city_registry, "~> 3.0"},
+      {:sweet_xml, "~> 0.6"},
       {:tesla, "~> 1.2"},
       {:yeet, "~> 1.0"},
       # Test/Dev Dependencies
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:checkov, "~> 0.4", only: [:test, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false},
+      {:dialyxir, "~> 0.5.1", only: [:dev]},
       {:divo, "~> 1.1", only: [:dev, :integration], override: true},
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1", only: [:dev, :integration]},
@@ -73,7 +75,8 @@ defmodule Reaper.MixProject do
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 1.2", only: [:test, :integration]},
-      {:smart_city_test, "~> 0.2"}
+      {:smart_city_test, "~> 0.3", only: [:test, :integration]},
+      {:temp, "~> 0.4", only: [:test, :integration]}
     ]
   end
 

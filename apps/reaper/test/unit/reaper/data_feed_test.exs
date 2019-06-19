@@ -3,7 +3,7 @@ defmodule Reaper.DataFeedTest do
   use Placebo
   import ExUnit.CaptureLog
 
-  alias Reaper.{Cache, DataFeed, Persistence}
+  alias Reaper.{Cache, DataFeed, Loader, Persistence}
 
   @dataset_id "12345-6789"
   @cache_name String.to_atom("#{@dataset_id}_feed")
@@ -40,7 +40,7 @@ defmodule Reaper.DataFeedTest do
 
   describe "process/2 happy path" do
     setup do
-      allow Kaffe.Producer.produce_sync(any(), any()), return: :ok
+      allow Loader.load(any(), any(), any()), return: :ok
       allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
       allow Persistence.remove_last_processed_index(@dataset_id), return: :ok
 
@@ -53,10 +53,10 @@ defmodule Reaper.DataFeedTest do
 
       DataFeed.process(config, @cache_name)
 
-      {:ok, data1} = SmartCity.Data.new(capture(1, Kaffe.Producer.produce_sync(any(), any()), 2))
-      assert %{a: "one", b: "two", c: "three"} == data1.payload
-      {:ok, data2} = SmartCity.Data.new(capture(2, Kaffe.Producer.produce_sync(any(), any()), 2))
-      assert %{a: "four", b: "five", c: "six"} == data2.payload
+      data1 = capture(1, Loader.load(any(), any(), any()), 1)
+      assert %{"a" => "one", "b" => "two", "c" => "three"} == data1
+      data2 = capture(2, Loader.load(any(), any(), any()), 1)
+      assert %{"a" => "four", "b" => "five", "c" => "six"} == data2
 
       assert_called Persistence.record_last_processed_index(any(), any()), times(2)
       assert_called Persistence.remove_last_processed_index(@dataset_id), once()
@@ -69,9 +69,9 @@ defmodule Reaper.DataFeedTest do
 
       DataFeed.process(config, @cache_name)
 
-      {:ok, data} = SmartCity.Data.new(capture(1, Kaffe.Producer.produce_sync(any(), any()), 2))
-      assert %{a: "four", b: "five", c: "six"} == data.payload
-      assert_called Kaffe.Producer.produce_sync(any(), any()), once()
+      data = capture(1, Loader.load(any(), any(), any()), 1)
+      assert %{"a" => "four", "b" => "five", "c" => "six"} == data
+      assert_called Loader.load(any(), any(), any()), once()
 
       assert_called Persistence.record_last_processed_index(any(), any()), once()
       assert_called Persistence.remove_last_processed_index(@dataset_id), once()
@@ -89,7 +89,7 @@ defmodule Reaper.DataFeedTest do
   end
 
   test "process/2 should not record last fetched time if all records are errors", %{config: config} do
-    allow Kaffe.Producer.produce_sync(any(), any()), return: {:error, :some_kafka_error}
+    allow Loader.load(any(), any(), any()), return: {:error, :some_kafka_error}
     allow Persistence.get_last_processed_index(@dataset_id), seq: [-1, 0]
     allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
     allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
@@ -106,7 +106,7 @@ defmodule Reaper.DataFeedTest do
   test "process/2 yeets errors", %{config: config} do
     allow Persistence.get_last_processed_index(@dataset_id), seq: [-1, 0]
     allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
-    allow Kaffe.Producer.produce_sync(any(), any()), seq: [:ok, {:error, :kafka_test_error}]
+    allow Loader.load(any(), any(), any()), seq: [:ok, {:error, :kafka_test_error}]
     allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
     allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :yeet
     allow Persistence.remove_last_processed_index(@dataset_id), return: 0
@@ -122,7 +122,7 @@ defmodule Reaper.DataFeedTest do
   test "process/2 yeets error first, continues to procees valid record", %{config: config} do
     allow Persistence.get_last_processed_index(@dataset_id), seq: [-1, -1]
     allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
-    allow Kaffe.Producer.produce_sync(any(), any()), seq: [{:error, :kafka_test_error}, :ok]
+    allow Loader.load(any(), any(), any()), seq: [{:error, :kafka_test_error}, :ok]
     allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
     allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :yeet
     allow Persistence.remove_last_processed_index(@dataset_id), return: 0
