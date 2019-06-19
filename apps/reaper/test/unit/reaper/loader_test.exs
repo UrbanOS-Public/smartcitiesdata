@@ -33,7 +33,7 @@ defmodule Reaper.LoaderTest do
 
     key = "AAAE509C7162BBE7D948D141AD2EF0F5"
     topic = "#{@output_topic_prefix}-#{dataset_id}"
-    allow(Elsa.list_topics(@endpoints), return: [{topic, 1}])
+    allow(Elsa.topic?(@endpoints, topic), return: true)
 
     expect(Producer.produce_sync(@endpoints, topic, 0, key, any()), return: expected)
 
@@ -55,7 +55,7 @@ defmodule Reaper.LoaderTest do
     payload = %{one: 1}
     topic = "#{@output_topic_prefix}-#{dataset_id}"
 
-    allow(Elsa.list_topics(@endpoints), return: [{topic, 1}])
+    allow(Elsa.topic?(@endpoints, topic), return: true)
     allow(Producer.produce_sync(any(), any(), any(), any(), any()), return: :ok)
 
     result = Loader.load(payload, reaper_config, start_time)
@@ -77,7 +77,7 @@ defmodule Reaper.LoaderTest do
     expected_error = "Error sending payload to kafka."
 
     allow(Redix.command!(:redix, ["GET", "reaper:#{dataset_id}:last_processed_index"]), return: "15")
-    allow(Elsa.list_topics(@endpoints), return: [{topic, 1}])
+    allow(Elsa.topic?(@endpoints, topic), return: true)
     allow(Producer.produce_sync(any(), any(), any(), any(), any()), return: {:error, expected_error})
     allow(Redix.command!(:redix, ["SET", any(), any()]), return: "OK")
 
@@ -126,7 +126,7 @@ defmodule Reaper.LoaderTest do
     payload = %{one: 1}
     topic = "#{@output_topic_prefix}-#{dataset_id}"
 
-    allow(Elsa.list_topics(@endpoints), seq: [[], [{topic, 1}]])
+    allow(Elsa.topic?(@endpoints, topic), seq: [false, true])
     allow(Producer.produce_sync(any(), any(), any(), any(), any()), return: :ok)
 
     result = Loader.load(payload, reaper_config, start_time)
@@ -145,7 +145,7 @@ defmodule Reaper.LoaderTest do
     reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: dataset_id})
     payload = %{one: 1}
 
-    allow(Elsa.list_topics(@endpoints), return: [])
+    allow(Elsa.topic?(@endpoints, any()), return: false)
 
     result = Loader.load(payload, reaper_config, start_time)
 

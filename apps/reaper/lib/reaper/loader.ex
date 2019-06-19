@@ -30,11 +30,11 @@ defmodule Reaper.Loader do
     topic = "#{topic_prefix()}-#{dataset_id}"
 
     retry with: produce_backoff(), atoms: [false] do
-      is_topic_ready?(topic)
+      Elsa.topic?(endpoints(), topic)
     after
       true -> Producer.produce_sync(endpoints(), topic, 0, key, message)
     else
-      false -> {:error, "topic #{topic} unavailable to produce to"}
+      _ -> {:error, "topic #{topic} unavailable to produce to"}
     end
   end
 
@@ -42,15 +42,6 @@ defmodule Reaper.Loader do
 
   defp produce_backoff() do
     @initial_delay |> exponential_backoff() |> Stream.take(@retries)
-  end
-
-  defp is_topic_ready?(topic) do
-    topics =
-      endpoints()
-      |> Elsa.list_topics()
-      |> Enum.map(fn {topic, _partitions} -> topic end)
-
-    topic in topics
   end
 
   defp determine_partitioner_module(reaper_config) do
