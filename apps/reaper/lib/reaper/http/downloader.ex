@@ -156,6 +156,6 @@ defmodule Reaper.Http.Downloader do
   end
 
   defp evaluate_header({key, value}) do
-    {key, EEx.eval_string(value, [])}
+    {to_string(key), EEx.eval_string(value, [])}
   end
 end

@@ -144,7 +144,7 @@ defmodule Reaper.Http.DownloaderTest do
 
     headers = %{
       "testKey" => "<%= Date.to_iso8601(~D[1970-01-02], :basic) %>",
-      "testB" => "valB"
+      :testB => "valB"
     }
 
     evaluated_headers = [{"testB", "valB"}, {"testKey", "19700102"}]
