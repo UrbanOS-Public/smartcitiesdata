@@ -228,7 +228,6 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       ldap_group = Helper.ldap_group(%{"member" => ["uid=FirstUser,ou=People"]})
 
       allow PaddleWrapper.authenticate(any(), any()), return: :ok
-      allow Paddle.config(:account_subdn), return: "ou=People"
       allow PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]}
       allow PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
@@ -247,7 +246,6 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
 
       allow PaddleWrapper.authenticate(any(), any()), return: :ok
-      allow Paddle.config(:account_subdn), return: "ou=People"
       allow PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]}
       allow PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
@@ -266,7 +264,6 @@ defmodule DiscoveryApiWeb.DatasetDownloadControllerTest do
       ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
 
       allow PaddleWrapper.authenticate(any(), any()), return: :ok
-      allow Paddle.config(:account_subdn), return: "ou=People"
       allow PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]}
       allow PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
 
