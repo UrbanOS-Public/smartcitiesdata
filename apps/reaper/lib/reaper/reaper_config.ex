@@ -16,6 +16,7 @@ defmodule Reaper.ReaperConfig do
           partitioner: String.t(),
           sourceQueryParams: map(),
           schema: list(),
+          protocol: list(),
           sourceHeaders: map(),
           authHeaders: map()
         }
@@ -31,6 +32,7 @@ defmodule Reaper.ReaperConfig do
     :partitioner,
     :sourceQueryParams,
     :schema,
+    :protocol,
     sourceHeaders: %{},
     authHeaders: %{}
   ]
@@ -51,7 +53,8 @@ defmodule Reaper.ReaperConfig do
       sourceQueryParams: dataset.technical.sourceQueryParams,
       sourceHeaders: dataset.technical.sourceHeaders,
       authHeaders: dataset.technical.authHeaders,
-      schema: dataset.technical.schema
+      schema: dataset.technical.schema,
+      protocol: dataset.technical.protocol
     }
 
     {:ok, struct}

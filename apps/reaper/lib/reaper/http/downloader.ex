@@ -67,7 +67,21 @@ defmodule Reaper.Http.Downloader do
   defp connect(uri, opts) do
     scheme = String.to_atom(uri.scheme)
     connect_timeout = Keyword.get(opts, :connect_timeout, 30_000)
-    Mint.HTTP.connect(scheme, uri.host, uri.port, transport_opts: [timeout: connect_timeout])
+    protocol = format_protocol(Keyword.get(opts, :protocol, nil))
+
+    case protocol do
+      nil ->
+        Mint.HTTP.connect(scheme, uri.host, uri.port, transport_opts: [timeout: connect_timeout])
+
+      protocol ->
+        Mint.HTTP.connect(scheme, uri.host, uri.port, transport_opts: [timeout: connect_timeout], protocols: protocol)
+    end
+  end
+
+  defp format_protocol(protocol) when protocol == nil, do: nil
+
+  defp format_protocol(protocol) when is_list(protocol) do
+    Enum.map(protocol, &String.to_atom/1)
   end
 
   defp request(conn, method, uri, headers) do
@@ -101,7 +115,8 @@ defmodule Reaper.Http.Downloader do
 
   defp receive_message(response, idle_timeout) do
     receive do
-      message -> Mint.HTTP.stream(response.conn, message)
+      message ->
+        Mint.HTTP.stream(response.conn, message)
     after
       idle_timeout ->
         message = "Idle timeout was reached while attempting to download #{response.url}"

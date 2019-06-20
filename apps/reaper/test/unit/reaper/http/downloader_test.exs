@@ -41,6 +41,7 @@ defmodule Reaper.Http.DownloaderTest do
     assert reason == Mint.TransportError.exception(reason: :econnrefused)
   end
 
+  @tag capture_log: true
   test "raises an error when request returns a non 200 status code", %{bypass: bypass} do
     on_exit(fn -> File.rm("test.output") end)
 
@@ -152,5 +153,38 @@ defmodule Reaper.Http.DownloaderTest do
     {:ok} = Downloader.download("http://some.url", headers, to: "test.output")
 
     assert_called Mint.HTTP.request(:connection, any(), any(), evaluated_headers), once()
+  end
+
+  test "protocol is used for connection" do
+    allow Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection}
+    allow Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok}
+    allow Mint.HTTP.close(any()), return: :ok
+    url = "http://some.url"
+
+    {:ok} = Downloader.download(url, %{}, to: "test.output", protocol: ["http2"])
+
+    uri = URI.parse(url)
+    scheme = String.to_atom(uri.scheme)
+
+    assert_called Mint.HTTP.connect(scheme, uri.host, uri.port,
+                    transport_opts: [timeout: 30_000],
+                    protocols: [:http2]
+                  ),
+                  once()
+  end
+
+  test "nil protocol is not used" do
+    allow Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection}
+    allow Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok}
+    allow Mint.HTTP.close(any()), return: :ok
+    url = "http://some.url"
+
+    {:ok} = Downloader.download(url, %{}, to: "test.output")
+
+    uri = URI.parse(url)
+    scheme = String.to_atom(uri.scheme)
+
+    assert_called Mint.HTTP.connect(scheme, uri.host, uri.port, transport_opts: [timeout: 30_000]),
+                  once()
   end
 end

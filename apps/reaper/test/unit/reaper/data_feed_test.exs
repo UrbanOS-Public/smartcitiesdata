@@ -78,6 +78,7 @@ defmodule Reaper.DataFeedTest do
     end
   end
 
+  @tag capture_log: true
   test "process/2 should remove file for dataset regardless of error being raised", %{config: config} do
     allow Reaper.Cache.mark_duplicates(any(), any()), exec: fn _, _ -> raise "some error" end
 

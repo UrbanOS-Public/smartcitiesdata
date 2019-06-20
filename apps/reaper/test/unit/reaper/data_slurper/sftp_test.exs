@@ -14,7 +14,7 @@ defmodule Reaper.DataSlurper.SftpTest do
       assert_raise RuntimeError,
                    ~s|Failed calling '#{map.source_url}': :retrieve_credential_failed|,
                    fn ->
-                     Reaper.DataSlurper.Sftp.slurp(map.source_url, map.dataset_id, [])
+                     Reaper.DataSlurper.Sftp.slurp(map.source_url, map.dataset_id)
                    end
     end
 
@@ -26,7 +26,7 @@ defmodule Reaper.DataSlurper.SftpTest do
       assert_raise RuntimeError,
                    ~s|Failed calling '#{map.source_url}': "#{message}"|,
                    fn ->
-                     Reaper.DataSlurper.Sftp.slurp(map.source_url, map.dataset_id, [])
+                     Reaper.DataSlurper.Sftp.slurp(map.source_url, map.dataset_id)
                    end
     end
   end

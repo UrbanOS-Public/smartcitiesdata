@@ -57,6 +57,7 @@ defmodule Reaper.DataSlurper.HttpTest do
       assert ~s|one,two,three\n4,5,6\n| == File.read!(filename)
     end
 
+    @tag capture_log: true
     test "sets timeout when downloading the file", %{bypass: bypass} do
       Application.put_env(:reaper, :http_download_timeout, 1)
       on_exit(fn -> Application.delete_env(:reaper, :http_download_timeout) end)
