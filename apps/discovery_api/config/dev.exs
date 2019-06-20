@@ -36,4 +36,5 @@ config :discovery_api,
 config :paddle, Paddle,
   host: System.get_env("LDAP_HOST"),
   base: "dc=internal,dc=smartcolumbusos,dc=com",
-  timeout: 3000
+  timeout: 3000,
+  account_subdn: "cn=users,cn=accounts"

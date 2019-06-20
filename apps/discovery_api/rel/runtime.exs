@@ -19,9 +19,10 @@ Enum.each(required_envars, fn var ->
   end
 end)
 
-allowed_origins = System.get_env("ALLOWED_ORIGINS")
-|> String.split(",")
-|> Enum.map(&String.trim/1)
+allowed_origins =
+  System.get_env("ALLOWED_ORIGINS")
+  |> String.split(",")
+  |> Enum.map(&String.trim/1)
 
 config :discovery_api,
   allowed_origins: allowed_origins
@@ -40,6 +41,7 @@ config :prestige,
 
 config :paddle, Paddle,
   host: System.get_env("LDAP_HOST"),
-  base: System.get_env("LDAP_BASE")
+  base: System.get_env("LDAP_BASE"),
+  account_subdn: System.get_env("LDAP_ACCOUNT_SUBDN")
 
 config :discovery_api, DiscoveryApi.Auth.Guardian, secret_key: System.get_env("GUARDIAN_KEY")
