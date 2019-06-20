@@ -116,6 +116,7 @@ defmodule Reaper.FullTest do
       :ok
     end
 
+    @tag capture_log: true
     test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: _bypass} do
       expected = [
         TestUtils.create_data(%{

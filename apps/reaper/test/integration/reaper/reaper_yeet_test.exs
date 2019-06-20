@@ -14,6 +14,8 @@ defmodule Reaper.YeetTest do
 
   @invalid_json_file "includes_invalid.json"
 
+  @moduletag capture_log: true
+
   setup_all do
     bypass = Bypass.open()
 
