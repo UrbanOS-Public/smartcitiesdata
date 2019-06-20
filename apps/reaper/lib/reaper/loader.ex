@@ -9,7 +9,7 @@ defmodule Reaper.Loader do
   @doc """
   Loads a data row to the output topic
   """
-  @spec load(map(), ReaperConfig.t(), String.t()) :: :ok | {:error, String.t()}
+  @spec load(map(), ReaperConfig.t(), DateTime.t()) :: :ok | {:error, String.t()}
   def load(payload, reaper_config, start_time) do
     partitioner_module = determine_partitioner_module(reaper_config)
     key = partitioner_module.partition(payload, reaper_config.partitioner.query)

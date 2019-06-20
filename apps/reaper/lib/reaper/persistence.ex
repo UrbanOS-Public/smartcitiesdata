@@ -41,8 +41,8 @@ defmodule Reaper.Persistence do
   @doc """
   Save a `Reaper.ReaperConfig` to Redis
   """
-  @spec persist(ReaperConfig.t()) :: {:ok, String.t()} | {:error, String.t()}
-  def persist(%ReaperConfig{} = reaper_config) do
+  @spec persist(ReaperConfig.t()) :: Redix.Protocol.redis_value() | no_return()
+  def(persist(%ReaperConfig{} = reaper_config)) do
     reaper_config
     |> Map.from_struct()
     |> Jason.encode!()
@@ -88,7 +88,7 @@ defmodule Reaper.Persistence do
   @doc """
   Retrieve the timestamp of when data was last fetched for a dataset_id from Redis
   """
-  @spec get_last_fetched_timestamp(String.t()) :: DateTime.t()
+  @spec get_last_fetched_timestamp(String.t()) :: DateTime.t() | nil
   def get_last_fetched_timestamp(dataset_id) do
     json = Redix.command!(:redix, ["GET", @name_space_derived <> dataset_id])
     extract_timestamp(json)

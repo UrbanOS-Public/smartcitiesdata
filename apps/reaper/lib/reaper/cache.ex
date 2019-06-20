@@ -31,7 +31,7 @@ defmodule Reaper.Cache do
 
   defp put_in_cache({:ok, key}, cache) do
     case Cachex.put(cache, key, true) do
-      {:error, reason} -> raise CacheError, reason
+      {:error, reason} -> raise CacheError, message: reason
       result -> result
     end
   end

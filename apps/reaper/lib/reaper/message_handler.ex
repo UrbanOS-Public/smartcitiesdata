@@ -16,12 +16,6 @@ defmodule Reaper.MessageHandler do
     case ReaperConfig.from_dataset(dataset) do
       {:ok, reaper_config} ->
         ConfigServer.process_reaper_config(reaper_config)
-
-      {:error, reason} ->
-        Logger.error("Skipping registry message for this reason: #{inspect(reason)}")
-
-      _ ->
-        Logger.error("Unexpected response received")
     end
   end
 end
