@@ -6,10 +6,6 @@ defmodule Reaper.Loader do
   alias SmartCity.Data
   alias Reaper.ReaperConfig
 
-  use Retry
-  @initial_delay Application.get_env(:reaper, :produce_timeout)
-  @retries Application.get_env(:reaper, :produce_retries)
-
   @doc """
   Loads a data row to the output topic
   """
@@ -28,21 +24,10 @@ defmodule Reaper.Loader do
 
   defp produce({:ok, message}, dataset_id, key) do
     topic = "#{topic_prefix()}-#{dataset_id}"
-
-    retry with: produce_backoff(), atoms: [false] do
-      Elsa.topic?(endpoints(), topic)
-    after
-      true -> Producer.produce_sync(endpoints(), topic, 0, key, message)
-    else
-      _ -> {:error, "topic #{topic} unavailable to produce to"}
-    end
+    Producer.produce_sync(endpoints(), topic, 0, key, message)
   end
 
   defp produce({:error, _} = error, _dataset_id, _key), do: error
-
-  defp produce_backoff() do
-    @initial_delay |> exponential_backoff() |> Stream.take(@retries)
-  end
 
   defp determine_partitioner_module(reaper_config) do
     type = reaper_config.partitioner.type || "Hash"

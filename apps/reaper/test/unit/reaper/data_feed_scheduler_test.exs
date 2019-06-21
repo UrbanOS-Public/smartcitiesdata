@@ -36,6 +36,7 @@ defmodule Reaper.DataFeedSchedulerTest do
 
     test "reaper config updates replace old state" do
       allow(Redix.command!(any(), any()), return: ~s({"timestamp": "2019-03-21 17:12:51.585273Z"}))
+      allow  Elsa.topic?(any(), any()), return: true
 
       {:ok, pid} = DataFeedScheduler.start_link(@data_feed_args)
 

@@ -5,6 +5,9 @@ defmodule Reaper.DataFeedScheduler do
 
   use GenServer
   alias Reaper.{Persistence, Util, ReaperConfig}
+  use Retry
+  @initial_delay Application.get_env(:reaper, :produce_timeout)
+  @retries Application.get_env(:reaper, :produce_retries)
 
   ## CLIENT
 
@@ -37,7 +40,19 @@ defmodule Reaper.DataFeedScheduler do
 
     Horde.Registry.register(Reaper.Registry, name)
 
-    {:ok, args}
+    {:ok, args, {:continue, :check_topic}}
+  end
+
+  def handle_continue(:check_topic, state) do
+    topic = "#{topic_prefix()}-#{state.reaper_config.dataset_id}"
+
+    retry with: @initial_delay |> exponential_backoff() |> Stream.take(@retries), atoms: [false] do
+      Elsa.topic?(endpoints(), topic)
+    after
+      true -> {:noreply, state}
+    else
+      _ -> {:stop, "Topic #{topic} does not exist. Exiting"}
+    end
   end
 
   def handle_info(:work, %{pids: %{cache: cache}, reaper_config: reaper_config} = state) do
@@ -92,4 +107,8 @@ defmodule Reaper.DataFeedScheduler do
 
     max(0, remaining_wait_time)
   end
+
+  defp endpoints(), do: Application.get_env(:reaper, :elsa_brokers)
+
+  defp topic_prefix(), do: Application.get_env(:reaper, :output_topic_prefix)
 end
