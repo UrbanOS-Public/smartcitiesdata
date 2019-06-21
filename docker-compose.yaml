@@ -1,0 +1,36 @@
+version: '3'
+services:
+  andi:
+    image: smartcitiesdata/andi:development
+    ports:
+      - "80:80"
+    depends_on:
+      - redis
+      - ldap
+    environment:
+      - LDAP_HOST=ldap
+      - LDAP_BASE=dc=example,dc=org
+      - LDAP_USER=cn=admin
+      - LDAP_ENV=local
+      - LDAP_PASS=admin
+      - REDIS_HOST=redis
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "PING"]
+      interval: 5s
+      timeout: 20s
+      retries: 3
+  ldap:
+    image: osixia/openldap
+    ports:
+      - "389:389"
+      - "636:636"
+    healthcheck:
+      test: ["CMD-SHELL", "ldapsearch -x -H ldap://localhost -b dc=example,dc=org -D 'cn=admin,dc=example,dc=org' -w admin"]
+      interval: 5s
+      timeout: 20s
+      retries: 3
