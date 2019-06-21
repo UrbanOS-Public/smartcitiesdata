@@ -36,6 +36,9 @@ defmodule Valkyrie.Validators do
         ["hobbies"]
   """
   @spec get_invalid_fields(map(), map()) :: list(String.t())
+  def get_invalid_fields(nil, schema), do: []
+  def get_invalid_fields(payload, schema) when payload == %{}, do: []
+
   def get_invalid_fields(payload, schema) do
     schema
     |> Enum.map(&get_invalid_field_or_header(&1, payload))

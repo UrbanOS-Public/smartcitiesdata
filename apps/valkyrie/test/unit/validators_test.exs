@@ -148,5 +148,55 @@ defmodule Valkyrie.ValidatorsTest do
 
       assert Validators.get_invalid_fields(msg.payload, coolest_schema) == ["name", "pet", "books"]
     end
+
+    test "Ignore fields with subschemas that have null values" do
+      schema = [
+        %{
+          name: "info",
+          type: "map",
+          subSchema: [
+            %{name: "age", type: "integer", subSchema: [%{name: "hometown", type: "integer"}]}
+          ]
+        }
+      ]
+
+      [msg] =
+        TDG.create_data(
+          [
+            payload: %{
+              info: nil
+            }
+          ],
+          1
+        )
+
+      assert Validators.get_invalid_fields(msg.payload, schema) == []
+    end
+
+    test "Ignore fields with subschemas that are empty objects (maps)" do
+      schema = [
+        %{
+          name: "info",
+          type: "map",
+          subSchema: [
+            %{name: "age", type: "integer", subSchema: [%{name: "hometown", type: "integer"}]}
+          ]
+        }
+      ]
+
+      json = "{\"id\": \"123\", \"info\": {}}"
+      payload = Jason.decode!(json, keys: :atoms)
+
+      [msg] =
+        TDG.create_data(
+          [
+            dataset_id: "cooler_data",
+            payload: payload
+          ],
+          1
+        )
+
+      assert Validators.get_invalid_fields(msg.payload, schema) == []
+    end
   end
 end
