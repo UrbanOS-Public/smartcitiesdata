@@ -41,7 +41,7 @@ defmodule Reaper.MixProject do
       {:cachex, "~> 3.1"},
       {:castore, "~> 0.1.2"},
       {:distillery, "~> 2.0"},
-      {:elsa, "~> 0.2.0"},
+      {:elsa, "~> 0.4.0"},
       {:horde, "~> 0.2.3"},
       {:horde_connector, "~> 0.1"},
       {:httpoison, "~> 1.5"},

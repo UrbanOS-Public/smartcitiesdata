@@ -12,6 +12,7 @@ defmodule Reaper.ConfigServerTest do
   setup do
     TestHelper.start_horde(Reaper.Registry, Reaper.Horde.Supervisor)
     allow Elsa.topic?(any(), any()), return: true
+    allow Elsa.Producer.Manager.start_producer(any(), any()), return: {:ok, :pid}
 
     :ok
   end

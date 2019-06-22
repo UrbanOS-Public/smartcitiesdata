@@ -36,7 +36,8 @@ defmodule Reaper.DataFeedSchedulerTest do
 
     test "reaper config updates replace old state" do
       allow(Redix.command!(any(), any()), return: ~s({"timestamp": "2019-03-21 17:12:51.585273Z"}))
-      allow  Elsa.topic?(any(), any()), return: true
+      allow Elsa.topic?(any(), any()), return: true
+      expect Elsa.Producer.Manager.start_producer(any(), any()), return: {:ok, :pid}
 
       {:ok, pid} = DataFeedScheduler.start_link(@data_feed_args)
 
@@ -98,6 +99,24 @@ defmodule Reaper.DataFeedSchedulerTest do
       new_dataset = FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id, cadence: "once"})
 
       assert DataFeedScheduler.calculate_next_run_time(new_dataset) == nil
+    end
+  end
+
+  describe "handle_continue :check_topic" do
+    test "should stop to pid when elsa producer fails to start" do
+      reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: "ds1"})
+
+      state = %{
+        reaper_config: reaper_config
+      }
+
+      allow Elsa.topic?(any(), any()), return: true
+      allow Elsa.Producer.Manager.start_producer(any(), any()), return: {:error, "failed to start"}
+
+      result = DataFeedScheduler.handle_continue(:check_topic, state)
+
+      assert_called Elsa.Producer.Manager.start_producer(any(), "-ds1")
+      assert result == {:stop, "failed to start"}
     end
   end
 end

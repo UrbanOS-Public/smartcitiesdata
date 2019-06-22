@@ -18,7 +18,7 @@
   "divo_kafka": {:hex, :divo_kafka, "0.1.3", "d7a7ecf1b1af1c898c54aa74ba11809deda7b38086267b9576eae1b1ff9f117b", [:mix], [{:divo, "~> 1.1", [hex: :divo, repo: "hexpm", optional: false]}], "hexpm"},
   "divo_redis": {:hex, :divo_redis, "0.1.2", "c179b64e7eb0e6529f2acb48a6a39e32e1a2933938033f5a1a95a688b044b2b3", [:mix], [{:divo, "~> 1.1", [hex: :divo, repo: "hexpm", optional: false]}], "hexpm"},
   "earmark": {:hex, :earmark, "1.3.2", "b840562ea3d67795ffbb5bd88940b1bed0ed9fa32834915125ea7d02e35888a5", [:mix], [], "hexpm"},
-  "elsa": {:hex, :elsa, "0.2.0", "60ed473f5628c98548f4ea8de5ff969b81c11de0f4726dbbd4db92dbcaa1392b", [:mix], [{:brod, "~> 3.7", [hex: :brod, repo: "hexpm", optional: false]}], "hexpm"},
+  "elsa": {:hex, :elsa, "0.4.0", "808f43b83a6936609176e663a69836d2caa10504e41b2e1aae62c4a1dc8f498f", [:mix], [{:brod, "~> 3.7", [hex: :brod, repo: "hexpm", optional: false]}], "hexpm"},
   "eternal": {:hex, :eternal, "1.2.1", "d5b6b2499ba876c57be2581b5b999ee9bdf861c647401066d3eeed111d096bc4", [:mix], [], "hexpm"},
   "ex_doc": {:hex, :ex_doc, "0.19.3", "3c7b0f02851f5fc13b040e8e925051452e41248f685e40250d7e40b07b9f8c10", [:mix], [{:earmark, "~> 1.2", [hex: :earmark, repo: "hexpm", optional: false]}, {:makeup_elixir, "~> 0.10", [hex: :makeup_elixir, repo: "hexpm", optional: false]}], "hexpm"},
   "excoveralls": {:hex, :excoveralls, "0.11.1", "dd677fbdd49114fdbdbf445540ec735808250d56b011077798316505064edb2c", [:mix], [{:hackney, "~> 1.0", [hex: :hackney, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm"},

@@ -24,7 +24,7 @@ defmodule Reaper.Loader do
 
   defp produce({:ok, message}, dataset_id, key) do
     topic = "#{topic_prefix()}-#{dataset_id}"
-    Producer.produce_sync(endpoints(), topic, 0, key, message)
+    Producer.produce_sync(topic, {key, message}, partition: 0)
   end
 
   defp produce({:error, _} = error, _dataset_id, _key), do: error
@@ -35,8 +35,6 @@ defmodule Reaper.Loader do
     "Elixir.Reaper.Partitioners.#{type}Partitioner"
     |> String.to_existing_atom()
   end
-
-  defp endpoints(), do: Application.get_env(:reaper, :elsa_brokers)
 
   defp topic_prefix(), do: Application.get_env(:reaper, :output_topic_prefix)
 
