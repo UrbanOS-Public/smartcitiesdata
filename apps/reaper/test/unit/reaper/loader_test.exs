@@ -35,7 +35,7 @@ defmodule Reaper.LoaderTest do
     topic = "#{@output_topic_prefix}-#{dataset_id}"
     allow(Elsa.topic?(@endpoints, topic), return: true)
 
-    expect(Producer.produce_sync(@endpoints, topic, 0, key, any()), return: expected)
+    expect(Producer.produce_sync(topic, {key, any()}, partition: 0), return: expected)
 
     result = Loader.load(payload, reaper_config, start_time)
 
@@ -56,12 +56,12 @@ defmodule Reaper.LoaderTest do
     topic = "#{@output_topic_prefix}-#{dataset_id}"
 
     allow(Elsa.topic?(@endpoints, topic), return: true)
-    allow(Producer.produce_sync(any(), any(), any(), any(), any()), return: :ok)
+    allow(Producer.produce_sync(any(), any(), any()), return: :ok)
 
     result = Loader.load(payload, reaper_config, start_time)
 
-    assert_called Producer.produce_sync(any(), any(), any(), any(), any())
-    json_data = capture(Producer.produce_sync(any(), any(), any(), any(), any()), 5)
+    assert_called Producer.produce_sync(any(), any(), any())
+    {_key, json_data} = capture(Producer.produce_sync(any(), any(), any()), 2)
     {:ok, data} = SmartCity.Data.new(json_data)
 
     assert payload == data.payload
@@ -78,12 +78,12 @@ defmodule Reaper.LoaderTest do
 
     allow(Redix.command!(:redix, ["GET", "reaper:#{dataset_id}:last_processed_index"]), return: "15")
     allow(Elsa.topic?(@endpoints, topic), return: true)
-    allow(Producer.produce_sync(any(), any(), any(), any(), any()), return: {:error, expected_error})
+    allow(Producer.produce_sync(any(), any(), any()), return: {:error, expected_error})
     allow(Redix.command!(:redix, ["SET", any(), any()]), return: "OK")
 
     result = Loader.load(payload, reaper_config, start_time)
 
-    assert_called Producer.produce_sync(any(), any(), any(), any(), any())
+    assert_called Producer.produce_sync(any(), any(), any())
     assert result == {:error, expected_error}
   end
 
@@ -127,28 +127,15 @@ defmodule Reaper.LoaderTest do
     topic = "#{@output_topic_prefix}-#{dataset_id}"
 
     allow(Elsa.topic?(@endpoints, topic), seq: [false, true])
-    allow(Producer.produce_sync(any(), any(), any(), any(), any()), return: :ok)
+    allow(Producer.produce_sync(any(), any(), any()), return: :ok)
 
     result = Loader.load(payload, reaper_config, start_time)
 
-    assert_called Producer.produce_sync(any(), any(), any(), any(), any()), once()
-    json_data = capture(Producer.produce_sync(any(), any(), any(), any(), any()), 5)
+    assert_called Producer.produce_sync(any(), any(), any()), once()
+    {_key, json_data} = capture(Producer.produce_sync(any(), any(), any()), 2)
     {:ok, data} = SmartCity.Data.new(json_data)
 
     assert payload == data.payload
     assert result == :ok
-  end
-
-  test "retry logic returns an error when topic never gets created" do
-    dataset_id = "12345"
-    start_time = DateTime.utc_now()
-    reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: dataset_id})
-    payload = %{one: 1}
-
-    allow(Elsa.topic?(@endpoints, any()), return: false)
-
-    result = Loader.load(payload, reaper_config, start_time)
-
-    assert {:error, _} = result
   end
 end

@@ -46,12 +46,12 @@ defmodule Reaper.DataFeedScheduler do
   def handle_continue(:check_topic, state) do
     topic = "#{topic_prefix()}-#{state.reaper_config.dataset_id}"
 
-    retry with: @initial_delay |> exponential_backoff() |> Stream.take(@retries), atoms: [false] do
-      Elsa.topic?(endpoints(), topic)
-    after
-      true -> {:noreply, state}
+    with {:topic_check, true} <- {:topic_check, topic_exists?(topic)},
+         {:ok, _pid} <- start_topic_producer(topic) do
+      {:noreply, state}
     else
-      _ -> {:stop, "Topic #{topic} does not exist. Exiting"}
+      {:topic_check, false} -> {:stop, "Topic #{topic} does not exist. Exiting"}
+      {:error, reason} -> {:stop, reason}
     end
   end
 
@@ -106,6 +106,21 @@ defmodule Reaper.DataFeedScheduler do
     remaining_wait_time = DateTime.diff(expected_run_time, DateTime.utc_now(), :millisecond)
 
     max(0, remaining_wait_time)
+  end
+
+  defp topic_exists?(topic) do
+    retry with: @initial_delay |> exponential_backoff() |> Stream.take(@retries), atoms: [false] do
+      Elsa.topic?(endpoints(), topic)
+    after
+      true ->
+        true
+    else
+      _ -> false
+    end
+  end
+
+  defp start_topic_producer(topic) do
+    Elsa.Producer.Manager.start_producer(endpoints(), topic)
   end
 
   defp endpoints(), do: Application.get_env(:reaper, :elsa_brokers)
