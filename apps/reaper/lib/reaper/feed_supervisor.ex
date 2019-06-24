@@ -27,7 +27,7 @@ defmodule Reaper.FeedSupervisor do
   @doc """
   Returns a map containing the information required to start the child process
   """
-  @spec child_spec(any()) :: map()
+  @spec child_spec(%ReaperConfig{dataset_id: binary()}) :: map()
   def child_spec(%ReaperConfig{dataset_id: id} = reaper_config) do
     %{
       id: String.to_atom(id),
@@ -40,8 +40,8 @@ defmodule Reaper.FeedSupervisor do
   @doc """
   Sends a `Reaper.ReaperConfig` update message to the `Reaper.DataFeedServer` responsible for that data feed
   """
-  @spec update_data_feed(pid(), ReaperConfig.t()) :: :ok
-  def update_data_feed(supervisor_pid, %{dataset_id: id} = reaper_config) do
+  @spec update_data_feed(pid(), %ReaperConfig{dataset_id: binary()}) :: :ok
+  def update_data_feed(supervisor_pid, %ReaperConfig{dataset_id: id} = reaper_config) do
     "#{id}_feed"
     |> String.to_atom()
     |> find_child_by_id(supervisor_pid)
@@ -51,8 +51,8 @@ defmodule Reaper.FeedSupervisor do
   @doc """
   Returns a map containing the information required to start the child process
   """
-  @spec create_child_spec(any()) :: map()
-  def create_child_spec(%{dataset_id: id} = reaper_config) do
+  @spec create_child_spec(%ReaperConfig{dataset_id: binary()}) :: list(map())
+  def create_child_spec(%ReaperConfig{dataset_id: id} = reaper_config) do
     feed_name = String.to_atom("#{id}_feed")
     cache_name = String.to_atom("#{id}_cache")
     cache_limit = Spec.limit(size: 2000, policy: Policy.LRW, reclaim: 0.2)

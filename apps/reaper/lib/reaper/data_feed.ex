@@ -18,7 +18,7 @@ defmodule Reaper.DataFeed do
   @doc """
   Downloads, decodes, and sends data to a topic
   """
-  @spec process(ReaperConfig.t(), atom()) :: :ok | {:error, String.t()}
+  @spec process(ReaperConfig.t(), atom()) :: Redix.Protocol.redis_value() | no_return()
   def process(%ReaperConfig{} = config, cache) do
     generated_time_stamp = DateTime.utc_now()
 

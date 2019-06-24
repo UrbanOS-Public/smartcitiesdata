@@ -6,14 +6,14 @@ defmodule Reaper.ReaperConfig do
   @derive Jason.Encoder
 
   @type t :: %__MODULE__{
-          dataset_id: integer(),
-          cadence: integer(),
-          lastSuccessTime: String.t(),
+          dataset_id: String.t(),
+          cadence: String.t() | integer() | nil,
+          lastSuccessTime: String.t() | nil,
           sourceFormat: String.t(),
           sourceUrl: String.t(),
           authUrl: String.t(),
           sourceType: String.t(),
-          partitioner: String.t(),
+          partitioner: map(),
           sourceQueryParams: map(),
           schema: list(),
           protocol: list(),
@@ -40,7 +40,7 @@ defmodule Reaper.ReaperConfig do
   @doc """
   Converts a `SmartCity.Dataset` to a `Reaper.ReaperConfig`
   """
-  @spec from_dataset(%SmartCity.Dataset{}) :: {:ok, Reaper.ReaperConfig.t()}
+  @spec from_dataset(SmartCity.Dataset.t()) :: {:ok, Reaper.ReaperConfig.t()}
   def from_dataset(%SmartCity.Dataset{} = dataset) do
     struct = %__MODULE__{
       dataset_id: dataset.id,
@@ -63,7 +63,7 @@ defmodule Reaper.ReaperConfig do
   @doc """
   Convert a `Reaper.ReaperConfig` into JSON
   """
-  @spec encode(Reaper.ReaperConfig.t()) :: String.t()
+  @spec encode(Reaper.ReaperConfig.t()) :: {:ok, String.t()} | {:error, Jason.EncodeError.t() | Exception.t()}
   def encode(%__MODULE__{} = reaper_config) do
     Jason.encode(reaper_config)
   end

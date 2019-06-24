@@ -41,8 +41,8 @@ defmodule Reaper.Http.Downloader do
      iex>Reaper.Http.Downloader.download("http://some.url/file.txt", to: "a-file-on-disk.txt")
 
   """
-  @spec download(url(), headers(), keyword()) :: {:ok, %Response{}} | {:error, reason()}
-  def download(url, headers \\ %{}, opts) do
+  @spec download(url(), headers(), keyword()) :: {:ok, %Response{}} | {:error, reason()} | no_return()
+  def download(url, headers \\ [], opts) do
     uri = URI.parse(url)
     evaluated_headers = evaluate_headers(headers)
 
