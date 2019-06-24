@@ -34,6 +34,7 @@ defmodule Reaper.DataFeedSchedulerTest do
       :ok
     end
 
+    @tag capture_log: true
     test "reaper config updates replace old state" do
       allow(Redix.command!(any(), any()), return: ~s({"timestamp": "2019-03-21 17:12:51.585273Z"}))
       allow Elsa.topic?(any(), any()), return: true

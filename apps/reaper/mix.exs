@@ -42,6 +42,7 @@ defmodule Reaper.MixProject do
       {:castore, "~> 0.1.2"},
       {:distillery, "~> 2.0"},
       {:elsa, "~> 0.4.0"},
+      {:gen_stage, "~> 0.14.2"},
       {:horde, "~> 0.2.3"},
       {:horde_connector, "~> 0.1"},
       {:httpoison, "~> 1.5"},
@@ -62,6 +63,7 @@ defmodule Reaper.MixProject do
       {:tesla, "~> 1.2"},
       {:yeet, "~> 1.0"},
       # Test/Dev Dependencies
+      {:benchee, "~> 1.0", only: [:integration]},
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:checkov, "~> 0.4", only: [:test, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false},
