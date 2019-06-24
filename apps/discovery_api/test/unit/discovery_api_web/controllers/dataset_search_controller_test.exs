@@ -122,7 +122,8 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
       keywords: ["#{id} keywords"],
       organizationDetails: %{
         orgTitle: "#{id}-org-title",
-        orgName: "#{id}-org-name"
+        orgName: "#{id}-org-name",
+        logoUrl: "org.png"
       },
       private: false
     })

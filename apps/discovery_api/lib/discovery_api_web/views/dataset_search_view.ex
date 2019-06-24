@@ -36,6 +36,7 @@ defmodule DiscoveryApiWeb.DatasetSearchView do
       systemName: model.systemName,
       organization_title: model.organizationDetails.orgTitle,
       organization_name: model.organizationDetails.orgName,
+      organization_image_url: model.organizationDetails.logoUrl,
       modified: model.modifiedDate,
       fileTypes: model.fileTypes,
       description: model.description,
