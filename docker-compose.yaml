@@ -1,20 +1,5 @@
 version: '3'
 services:
-  andi:
-    image: smartcitiesdata/andi:development
-    ports:
-      - "80:80"
-    depends_on:
-      - redis
-      - ldap
-    environment:
-      - LDAP_HOST=ldap
-      - LDAP_BASE=dc=example,dc=org
-      - LDAP_USER=cn=admin
-      - LDAP_ENV=local
-      - LDAP_PASS=admin
-      - REDIS_HOST=redis
-
   redis:
     image: redis
     ports:
@@ -29,8 +14,30 @@ services:
     ports:
       - "389:389"
       - "636:636"
+    volumes:
+      - ./ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
+    command: --copy-service
     healthcheck:
       test: ["CMD-SHELL", "ldapsearch -x -H ldap://localhost -b dc=example,dc=org -D 'cn=admin,dc=example,dc=org' -w admin"]
       interval: 5s
       timeout: 20s
       retries: 3
+  andi:
+    image: smartcitiesdata/andi:development
+    ports:
+      - "8080:80"
+    depends_on:
+      - redis
+      - ldap
+    environment:
+      - LDAP_HOST=ldap
+      - LDAP_BASE=dc=example,dc=org
+      - LDAP_USER=cn=admin
+      - LDAP_ENV=local
+      - LDAP_PASS=admin
+      - REDIS_HOST=redis
+  # discovery_api:
+  #   image:
+  #   ports:
+  #   depends_on:
+  #   environment:
