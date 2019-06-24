@@ -22,6 +22,61 @@ services:
       interval: 5s
       timeout: 20s
       retries: 3
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+    - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka
+    depends_on:
+    - zookeeper
+    ports:
+    - "9094:9094"
+    environment:
+    - "KAFKA_ADVERTISED_LISTENERS=INSIDE://:9092,OUTSIDE://${HOST_IP:-localhost}:9094"
+    - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
+    - "KAFKA_LISTENERS=INSIDE://:9092,OUTSIDE://:9094"
+    - "KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE"
+    - "KAFKA_CREATE_TOPICS=streaming-transformed:1:1,streaming-dead-letters:1:1,streaming-persisted:1:1"
+    - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181"
+    healthcheck:
+      test: ["CMD-SHELL", "cat /opt/kafka/logs/server.log | grep \"Previous Leader Epoch was: -1\""]
+      interval: 10s
+      timeout: 20s
+      retries: 3
+  metastore:
+    image: smartcitiesdata/metastore-testo:development
+    depends_on:
+    - postgres
+    ports:
+    - "9083:9083"
+    command: >
+      /bin/bash -c "
+        /opt/hive-metastore/bin/schematool -dbType postgres -validate || /opt/hive-metastore/bin/schematool -dbType postgres -initSchema;
+        /opt/hive-metastore/bin/start-metastore"
+  postgres:
+    logging:
+      driver: none
+    image: smartcitiesdata/postgres-testo:development
+    ports:
+    - "5432:5432"
+  minio:
+    image: smartcitiesdata/minio-testo:development
+    ports:
+    - "9000:9000"
+  presto:
+    depends_on:
+    - metastore
+    - minio
+    image: smartcitiesdata/presto-testo:development
+    ports:
+    - "8081:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:8080/v1/info | grep -q '\"starting\":false'"]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+  
   andi:
     image: smartcitiesdata/andi:development
     ports:
@@ -36,8 +91,105 @@ services:
       - LDAP_ENV=local
       - LDAP_PASS=admin
       - REDIS_HOST=redis
-  # discovery_api:
-  #   image:
-  #   ports:
-  #   depends_on:
-  #   environment:
+
+  reaper:
+    image: smartcitiesdata/reaper:development
+    depends_on:
+      - redis
+      - kafka
+    environment:
+      - REDIS_HOST=redis
+      - KAFKA_BROKERS=kafka:9092
+      - OUTPUT_TOPIC_PREFIX=raw
+      - DLQ_TOPIC=streaming-dead-letters
+      - SECRETS_ENDPOINT="__UKNOWN__"
+  valkyrie:
+    image: smartcitiesdata/valkyrie:development
+    depends_on:
+      - redis
+      - kafka
+    environment:
+      - REDIS_HOST=redis
+      - KAFKA_BROKERS=kafka:9092
+      - INPUT_TOPIC_PREFIX=raw
+      - OUTPUT_TOPIC_PREFIX=validated
+  voltron:
+    image: smartcitiesdata/voltron:development
+    depends_on:
+      - kafka
+      - redis
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - REDIS_HOST=redis
+      - DATA_TOPIC_PREFIX=validated
+      - OUTPUT_TOPIC=transformed
+  forklift:
+    image: smartcitiesdata/forklift:development
+    depends_on:
+      - kafka
+      - redis
+      - presto
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - REDIS_HOST=redis
+      - DATA_TOPIC_PREFIX=transformed
+      - OUTPUT_TOPIC=streaming-persisted
+  flair:
+    image: smartcitiesdata/flair:development
+    depends_on:
+      - kafka
+      - redis
+      - presto
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - REDIS_HOST=redis
+      - DATA_TOPIC_PREFIX=transformed
+      - OUTPUT_TOPIC=streaming-persisted
+  carpenter:
+    image: smartcitiesdata/carpenter:development
+    depends_on:
+      - redis
+      - presto
+    environment:
+      - REDIS_HOST=redis
+      - PRESTO_URL=presto
+      - PRESTO_USER=carpenter
+  discovery_api:
+    image: smartcitiesdata/discovery_api:development
+    depends_on:
+      - redis
+      - presto
+      - ldap
+    environment:
+      - LDAP_HOST=ldap
+      - LDAP_BASE=dc=example,dc=org
+      - LDAP_USER=cn=admin
+      - LDAP_ENV=local
+      - LDAP_PASS=admin
+      - REDIS_HOST=redis
+  discovery_ui:
+    image: smartcitiesdata/discovery_ui:development
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+  discovery_streams:
+    image: smartcitiesdata/discovery_streams:development
+    depends_on:
+      - kafka
+      - redis
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - REDIS_HOST=redis
+      - DATA_TOPIC_PREFIX=validated
+      - OUTPUT_TOPIC=transformed
+  genesis:
+    image: smartcitiesdata/genesis:development
+    depends_on:
+      - kafka
+      - redis
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - REDIS_HOST=redis
+      - DATA_TOPIC_PREFIX=validated
+      - OUTPUT_TOPIC=transformed
