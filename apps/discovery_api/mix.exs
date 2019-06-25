@@ -54,7 +54,8 @@ defmodule DiscoveryApi.Mixfile do
       {:smart_city_registry, "~> 2.6"},
       {:smart_city_test, "~> 0.2.4", only: [:test, :integration]},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},
-      {:timex, "~>3.0"}
+      {:timex, "~>3.0"},
+      {:sobelow, "~> 0.8.0"}
     ]
   end
 

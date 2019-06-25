@@ -18,6 +18,7 @@ install:
   - mix deps.get
   - mix format --check-formatted
   - mix credo
+  - mix sobelow
 script:
   - docker build -t discovery_api:build .
   - mix test.integration
