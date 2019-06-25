@@ -76,7 +76,12 @@ services:
       interval: 10s
       timeout: 30s
       retries: 10
-  
+  data-generator:
+    image: data-generator:latest
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
   andi:
     image: smartcitiesdata/andi:development
     ports:
@@ -113,16 +118,18 @@ services:
       - KAFKA_BROKERS=kafka:9092
       - INPUT_TOPIC_PREFIX=raw
       - OUTPUT_TOPIC_PREFIX=validated
+      - DLQ_TOPIC=streaming-dead-letters
   voltron:
     image: smartcitiesdata/voltron:development
     depends_on:
       - kafka
       - redis
     environment:
-      - KAFKA_BROKERS=kafka:9092
       - REDIS_HOST=redis
-      - DATA_TOPIC_PREFIX=validated
-      - OUTPUT_TOPIC=transformed
+      - KAFKA_BROKERS=kafka:9092
+      - INPUT_TOPIC_PREFIX=validated
+      - OUTPUT_TOPIC_PREFIX=transformed
+      - TO_TOPIC=streaming-transformed
   forklift:
     image: smartcitiesdata/forklift:development
     depends_on:
@@ -130,10 +137,12 @@ services:
       - redis
       - presto
     environment:
-      - KAFKA_BROKERS=kafka:9092
       - REDIS_HOST=redis
+      - KAFKA_BROKERS=kafka:9092
       - DATA_TOPIC_PREFIX=transformed
       - OUTPUT_TOPIC=streaming-persisted
+      - PRESTO_USER=forklift
+      - PRESTO_URL=http://presto:8080
   flair:
     image: smartcitiesdata/flair:development
     depends_on:
@@ -141,10 +150,12 @@ services:
       - redis
       - presto
     environment:
-      - KAFKA_BROKERS=kafka:9092
       - REDIS_HOST=redis
-      - DATA_TOPIC_PREFIX=transformed
-      - OUTPUT_TOPIC=streaming-persisted
+      - KAFKA_BROKERS=kafka:9092
+      - DATA_TOPIC=streaming-persisted
+      - DLQ_TOPIC=streaming-dead-letters
+      - PRESTO_USER=flair
+      - PRESTO_URL=http://presto:8080
   carpenter:
     image: smartcitiesdata/carpenter:development
     depends_on:
@@ -152,7 +163,7 @@ services:
       - presto
     environment:
       - REDIS_HOST=redis
-      - PRESTO_URL=presto
+      - PRESTO_URL=http://presto:8080
       - PRESTO_USER=carpenter
   discovery_api:
     image: smartcitiesdata/discovery_api:development
@@ -167,29 +178,34 @@ services:
       - LDAP_ENV=local
       - LDAP_PASS=admin
       - REDIS_HOST=redis
-  discovery_ui:
-    image: smartcitiesdata/discovery_ui:development
-    depends_on:
-      - redis
-    environment:
-      - REDIS_HOST=redis
-  discovery_streams:
-    image: smartcitiesdata/discovery_streams:development
-    depends_on:
-      - kafka
-      - redis
-    environment:
-      - KAFKA_BROKERS=kafka:9092
-      - REDIS_HOST=redis
-      - DATA_TOPIC_PREFIX=validated
-      - OUTPUT_TOPIC=transformed
-  genesis:
-    image: smartcitiesdata/genesis:development
-    depends_on:
-      - kafka
-      - redis
-    environment:
-      - KAFKA_BROKERS=kafka:9092
-      - REDIS_HOST=redis
-      - DATA_TOPIC_PREFIX=validated
-      - OUTPUT_TOPIC=transformed
+      - PRESTO_URL=http://presto:8080
+      - ALLOWED_ORIGINS=*
+    ports:
+      - 8082:80
+      - 8083:443
+  # discovery_ui:
+  #   image: smartcitiesdata/discovery_ui:development
+  #   depends_on:
+  #     - redis
+  #   environment:
+  #     - REDIS_HOST=redis
+  # discovery_streams:
+  #   image: smartcitiesdata/discovery_streams:development
+  #   depends_on:
+  #     - kafka
+  #     - redis
+  #   environment:
+  #     - KAFKA_BROKERS=kafka:9092
+  #     - REDIS_HOST=redis
+  #     - DATA_TOPIC_PREFIX=validated
+  #     - OUTPUT_TOPIC=transformed
+  # genesis:
+  #   image: smartcitiesdata/genesis:development
+  #   depends_on:
+  #     - kafka
+  #     - redis
+  #   environment:
+  #     - KAFKA_BROKERS=kafka:9092
+  #     - REDIS_HOST=redis
+  #     - DATA_TOPIC_PREFIX=validated
+  #     - OUTPUT_TOPIC=transformed
