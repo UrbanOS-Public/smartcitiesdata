@@ -54,7 +54,8 @@ defmodule DiscoveryStreams.Mixfile do
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:sweet_xml, "~> 0.6"},
       {:streaming_metrics, "~>2.1"},
-      {:temporary_env, "~> 2.0", only: [:test, :integration]}
+      {:temporary_env, "~> 2.0", only: [:test, :integration]},
+      {:sobelow, "~> 0.8.0"}
     ]
   end
 

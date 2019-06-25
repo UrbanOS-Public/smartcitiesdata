@@ -5,5 +5,6 @@ mix local.hex --force
 mix deps.get
 mix format --check-formatted
 mix credo
+mix sobelow
 mix test
 mix test.integration

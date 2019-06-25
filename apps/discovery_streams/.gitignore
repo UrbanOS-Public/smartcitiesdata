@@ -33,3 +33,4 @@ cota_streaming_consumer-*.tar
 # Ignore VS Code config
 /.vscode/
 .DS_Store
+.sobelow
