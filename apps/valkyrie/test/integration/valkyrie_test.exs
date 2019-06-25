@@ -58,9 +58,9 @@ defmodule ValkyrieTest do
 
   test "valkyrie updates the operational struct", %{output_topic: output_topic} do
     eventually fn ->
-      [message | _] = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, @endpoints)
+      messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, @endpoints)
 
-      assert %{operational: %{timing: [%{app: "valkyrie"} | _]}} = message
+      assert [%{operational: %{timing: [%{app: "valkyrie"} | _]}} | _] = messages
     end
   end
 
