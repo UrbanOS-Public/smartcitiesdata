@@ -123,7 +123,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
       organizationDetails: %{
         orgTitle: "#{id}-org-title",
         orgName: "#{id}-org-name",
-        logoUrl: "org.png"
+        logoUrl: "#{id}-org.png"
       },
       private: false
     })
