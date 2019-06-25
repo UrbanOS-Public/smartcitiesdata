@@ -41,3 +41,4 @@ terraform.tfstate.d/
 *.plan
 .elixir_ls/
 .DS_Store
+.sobelow

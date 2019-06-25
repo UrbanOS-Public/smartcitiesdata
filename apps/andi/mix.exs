@@ -45,7 +45,8 @@ defmodule Andi.MixProject do
       {:paddle, "~> 0.1"},
       {:tesla, "~> 1.2", only: :integration},
       {:uuid, "~> 1.1"},
-      {:smart_city_test, "~> 0.2", only: [:test, :integration]}
+      {:smart_city_test, "~> 0.2", only: [:test, :integration]},
+      {:sobelow, "~> 0.8.0"}
     ]
   end
 end
