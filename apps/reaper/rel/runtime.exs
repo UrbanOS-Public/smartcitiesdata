@@ -43,7 +43,7 @@ config :reaper,
   secrets_endpoint: System.get_env("SECRETS_ENDPOINT"),
   elsa_brokers: endpoints,
   output_topic_prefix: System.get_env("OUTPUT_TOPIC_PREFIX"),
-  download_dir: System.get_env("DOWNLOAD_DIR", "/downloads/")
+  download_dir: System.get_env("DOWNLOAD_DIR") || "/downloads/"
 
 config :smart_city_registry,
   redis: [
