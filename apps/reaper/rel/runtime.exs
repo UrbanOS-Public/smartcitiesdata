@@ -1,6 +1,12 @@
 use Mix.Config
 
-required_envars = ["REDIS_HOST", "KAFKA_BROKERS", "OUTPUT_TOPIC_PREFIX", "DLQ_TOPIC", "SECRETS_ENDPOINT"]
+required_envars = [
+  "REDIS_HOST",
+  "KAFKA_BROKERS",
+  "OUTPUT_TOPIC_PREFIX",
+  "DLQ_TOPIC",
+  "SECRETS_ENDPOINT"
+]
 
 Enum.each(required_envars, fn var ->
   if is_nil(System.get_env(var)) do
@@ -37,7 +43,7 @@ config :reaper,
   secrets_endpoint: System.get_env("SECRETS_ENDPOINT"),
   elsa_brokers: endpoints,
   output_topic_prefix: System.get_env("OUTPUT_TOPIC_PREFIX"),
-  download_dir: "/downloads/"
+  download_dir: System.get_env("DOWNLOAD_DIR", "/downloads/")
 
 config :smart_city_registry,
   redis: [
