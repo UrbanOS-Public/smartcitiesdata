@@ -44,6 +44,28 @@ services:
       interval: 10s
       timeout: 20s
       retries: 3
+  zookeeper_public:
+    image: wurstmeister/zookeeper
+    # ports:
+    # - "3181:2181"
+  kafka_public:
+    image: wurstmeister/kafka
+    depends_on:
+    - zookeeper
+    # ports:
+    # - "9394:9094"
+    environment:
+    - "KAFKA_ADVERTISED_LISTENERS=INSIDE://:9092,OUTSIDE://${HOST_IP:-localhost}:9094"
+    - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
+    - "KAFKA_LISTENERS=INSIDE://:9092,OUTSIDE://:9094"
+    - "KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE"
+    - "KAFKA_CREATE_TOPICS=streaming-transformed:1:1,streaming-dead-letters:1:1,streaming-persisted:1:1"
+    - "KAFKA_ZOOKEEPER_CONNECT=zookeeper_public:2181"
+    healthcheck:
+      test: ["CMD-SHELL", "cat /opt/kafka/logs/server.log | grep \"Previous Leader Epoch was: -1\""]
+      interval: 10s
+      timeout: 20s
+      retries: 3
   metastore:
     image: smartcitiesdata/metastore-testo:development
     depends_on:
@@ -108,6 +130,7 @@ services:
       - OUTPUT_TOPIC_PREFIX=raw
       - DLQ_TOPIC=streaming-dead-letters
       - SECRETS_ENDPOINT="__UKNOWN__"
+      - DOWNLOAD_DIR=/tmp/
   valkyrie:
     image: smartcitiesdata/valkyrie:development
     depends_on:
@@ -143,6 +166,16 @@ services:
       - OUTPUT_TOPIC=streaming-persisted
       - PRESTO_USER=forklift
       - PRESTO_URL=http://presto:8080
+  streisand:
+    image: smartcitiesdata/streisand:development
+    depends_on:
+      - kafka
+      - redis
+      - kafka_public
+    environment:
+      - REDIS_HOST=redis
+      - PIPELINE_KAFKA_BROKERS=kafka:9092
+      - PUBLIC_KAFKA_BROKERS=kafka_public:9092
   flair:
     image: smartcitiesdata/flair:development
     depends_on:
@@ -165,7 +198,7 @@ services:
       - REDIS_HOST=redis
       - PRESTO_URL=http://presto:8080
       - PRESTO_USER=carpenter
-  discovery_api:
+  discovery-api:
     image: smartcitiesdata/discovery_api:development
     depends_on:
       - redis
@@ -183,29 +216,33 @@ services:
     ports:
       - 8082:80
       - 8083:443
-  # discovery_ui:
-  #   image: smartcitiesdata/discovery_ui:development
-  #   depends_on:
-  #     - redis
-  #   environment:
-  #     - REDIS_HOST=redis
-  # discovery_streams:
-  #   image: smartcitiesdata/discovery_streams:development
-  #   depends_on:
-  #     - kafka
-  #     - redis
-  #   environment:
-  #     - KAFKA_BROKERS=kafka:9092
-  #     - REDIS_HOST=redis
-  #     - DATA_TOPIC_PREFIX=validated
-  #     - OUTPUT_TOPIC=transformed
-  # genesis:
-  #   image: smartcitiesdata/genesis:development
-  #   depends_on:
-  #     - kafka
-  #     - redis
-  #   environment:
-  #     - KAFKA_BROKERS=kafka:9092
-  #     - REDIS_HOST=redis
-  #     - DATA_TOPIC_PREFIX=validated
-  #     - OUTPUT_TOPIC=transformed
+  discovery-streams:
+    image: smartcitiesdata/discovery_streams:development
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BROKERS=kafka_public:9092
+    ports:
+      - 8087:80
+  discovery_ui:
+    image: smartcitiesdata/discovery_ui:development
+    depends_on:
+      - discovery-api
+    environment:
+      - API_HOST=http://localhost:8082
+      - BASE_URL=http://localhost
+    ports:
+      - 8085:80
+      - 8086:443
+  genesis:
+    image: smartcitiesdata/genesis:development
+    depends_on:
+      - kafka
+      - redis
+      - kafka_public
+    environment:
+      - REDIS_HOST=redis
+      - PIPELINE_KAFKA_BROKERS=kafka:9092
+      - PUBLIC_KAFKA_BROKERS=kafka_public:9092
+      - TOPIC_PARTITIONS=1
+      - TOPIC_REPLICATION_FACTOR=1
