@@ -99,7 +99,7 @@ services:
       timeout: 30s
       retries: 10
   data-generator:
-    image: data-generator:latest
+    image: smartcitiesdata/data-generator:development
     depends_on:
       - redis
     environment:
