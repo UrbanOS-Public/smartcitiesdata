@@ -1,0 +1,5 @@
+# local, example.org
+dn: ou=local,dc=example,dc=org
+objectClass: top
+objectClass: organizationalUnit
+ou: local
