@@ -8,8 +8,10 @@ defmodule Forklift.Messages.Statement do
   Builds Presto statements from data and schema
   """
   def build(schema, data) do
+    columns = schema.columns
+
     columns_fragment =
-      schema.columns
+      columns
       |> Enum.map(&Map.get(&1, :name))
       |> Enum.map(&to_string/1)
       |> Enum.map(&~s("#{&1}"))
@@ -17,7 +19,8 @@ defmodule Forklift.Messages.Statement do
 
     data_fragment =
       data
-      |> Enum.map(&format_columns(schema.columns, &1))
+      |> Enum.map(fn datum -> Forklift.Messages.SchemaFiller.fill(columns, datum) end)
+      |> Enum.map(&format_columns(columns, &1))
       |> Enum.map(&to_row_string/1)
       |> Enum.join(",")
 

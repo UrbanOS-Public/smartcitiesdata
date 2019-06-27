@@ -1,4 +1,4 @@
-defmodule StatementTest do
+defmodule Forklift.Messages.StatementTest do
   use ExUnit.Case
   use Placebo
 
@@ -360,6 +360,30 @@ defmodule StatementTest do
 
     expected_result =
       ~s|insert into "rows_rivers" ("friend_groups") values row(array[row('Hayley','Person'),row('Jason','Doe')]),row(array[row('Saint-John','Johnson')])|
+
+    assert result == expected_result
+  end
+
+  test "build generates a valid statement when given a nested map with nils" do
+    schema = %DatasetSchema{
+      system_name: "rows_rivers",
+      columns: [
+        %{
+          name: "parent",
+          type: "list",
+          itemType: "map",
+          subSchema: [%{name: "childA", type: "string"}, %{name: "childB", type: "string"}]
+        }
+      ]
+    }
+
+    data = [
+      %{parent: [%{}, %{childA: "child"}, nil]}
+    ]
+
+    result = Statement.build(schema, data)
+
+    expected_result = ~s|insert into "rows_rivers" ("parent") values row(array[row('child',null)])|
 
     assert result == expected_result
   end
