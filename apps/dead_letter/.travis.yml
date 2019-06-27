@@ -7,9 +7,10 @@ install:
   - mix local.rebar --force
   - mix local.hex --force
   - mix deps.get
+script:
   - mix format --check-formatted
   - mix credo
-script:
+  - mix hex.outdated
   - mix test
 deploy:
   skip_cleanup: true
