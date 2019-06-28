@@ -95,14 +95,14 @@ defmodule Reaper.PerformanceTest do
     {:ok, path} =
       Temp.open([], fn file ->
         1..@num_records
-        |> Stream.map(fn i -> generate_record(i) end)
+        |> Stream.map(fn _ -> generate_record() end)
         |> Enum.each(fn record -> IO.puts(file, record) end)
       end)
 
     path
   end
 
-  defp generate_record(count) do
+  defp generate_record() do
     1..@num_fields_in_schema
     |> Enum.map(fn _ -> Faker.Name.name() end)
     |> Enum.join(",")

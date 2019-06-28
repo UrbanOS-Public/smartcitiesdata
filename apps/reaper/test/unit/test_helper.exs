@@ -29,3 +29,39 @@ defmodule TestHelper do
     assert_receive {:DOWN, ^ref, _, _, _}
   end
 end
+
+defmodule TempEnv do
+  @moduledoc """
+  use TempEnv, [reaper: [property: "value"]]
+
+  Will set the application environment value above in a setup_all block and
+  then reset it back to the original in an on_exit function.
+
+  """
+  require Logger
+
+  defmacro __using__(opts) do
+    quote do
+      setup_all do
+        original_values = TempEnv.set_app_values(unquote(opts))
+        on_exit(fn -> TempEnv.reset_app_values(original_values) end)
+        :ok
+      end
+    end
+  end
+
+  def set_app_values(opts) do
+    for {app, props} <- opts,
+        {prop, value} <- props do
+      og = Application.get_env(app, prop)
+      Application.put_env(app, prop, value)
+      {app, prop, og}
+    end
+  end
+
+  def reset_app_values(original_values) do
+    for {app, prop, og} <- original_values do
+      Application.put_env(app, prop, og)
+    end
+  end
+end

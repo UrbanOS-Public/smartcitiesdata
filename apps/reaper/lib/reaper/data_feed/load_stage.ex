@@ -79,11 +79,13 @@ defmodule Reaper.DataFeed.LoadStage do
     Persistence.record_last_processed_index(config.dataset_id, max_index)
   end
 
-  defp cache_batch(%{cache: cache, originals: originals}) do
+  defp cache_batch(%{cache: cache, originals: originals, config: %{allow_duplicates: false}}) do
     Enum.each(originals, fn {message, _index} ->
       Cache.cache(cache, message)
     end)
   end
+
+  defp cache_batch(_), do: nil
 
   defp batch_size() do
     Application.get_env(:reaper, :batch_size_in_bytes, 900_000)

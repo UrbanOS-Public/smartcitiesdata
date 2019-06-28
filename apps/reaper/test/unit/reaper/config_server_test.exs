@@ -19,7 +19,14 @@ defmodule Reaper.ConfigServerTest do
 
   describe "on startup" do
     test "supervisors are started for persisted reaper configs" do
-      reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: "123", sourceType: "batch", cadence: 10_000})
+      reaper_config =
+        FixtureHelper.new_reaper_config(%{
+          dataset_id: "123",
+          sourceType: "batch",
+          cadence: 10_000,
+          allow_duplicates: false
+        })
+
       reaper_config2 = FixtureHelper.new_reaper_config(%{dataset_id: "987", sourceType: "stream", cadence: 10_000})
 
       allow(Redix.command!(:redix, ["KEYS", @name_space <> "*"]), return: [@name_space <> "123", @name_space <> "987"])
@@ -42,7 +49,7 @@ defmodule Reaper.ConfigServerTest do
       )
 
       Patiently.wait_for!(
-        fn -> TestUtils.child_count(Cachex) == 2 end,
+        fn -> TestUtils.child_count(Cachex) == 1 end,
         dwell: 100,
         max_tries: 10
       )
@@ -62,7 +69,12 @@ defmodule Reaper.ConfigServerTest do
       ConfigServer.start_link([])
 
       ConfigServer.process_reaper_config(
-        FixtureHelper.new_reaper_config(%{dataset_id: "12345-6789", sourceType: "batch", cadence: 30_000})
+        FixtureHelper.new_reaper_config(%{
+          dataset_id: "12345-6789",
+          sourceType: "batch",
+          cadence: 30_000,
+          allow_duplicates: false
+        })
       )
 
       ConfigServer.process_reaper_config(
@@ -74,7 +86,7 @@ defmodule Reaper.ConfigServerTest do
       )
 
       assert TestUtils.feed_supervisor_count() == 3
-      assert TestUtils.child_count(Cachex) == 3
+      assert TestUtils.child_count(Cachex) == 1
     end
 
     test "the config server does not create supervisors for remote datasets" do
@@ -139,7 +151,14 @@ defmodule Reaper.ConfigServerTest do
       new_url = "https://first-url-part-deux.com"
 
       dataset_id = "12345-6789"
-      reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: dataset_id, sourceType: "stream", cadence: 50_000})
+
+      reaper_config =
+        FixtureHelper.new_reaper_config(%{
+          dataset_id: dataset_id,
+          sourceType: "stream",
+          cadence: 50_000,
+          allow_duplicates: false
+        })
 
       return_json =
         reaper_config
@@ -167,7 +186,8 @@ defmodule Reaper.ConfigServerTest do
           dataset_id: dataset_id,
           sourceType: "stream",
           sourceUrl: new_url,
-          cadence: 50_000
+          cadence: 50_000,
+          allow_duplicates: false
         })
       )
 
@@ -199,7 +219,12 @@ defmodule Reaper.ConfigServerTest do
       ConfigServer.start_link([])
 
       ConfigServer.process_reaper_config(
-        FixtureHelper.new_reaper_config(%{dataset_id: "12345-6789", sourceType: "batch", cadence: 10_000})
+        FixtureHelper.new_reaper_config(%{
+          dataset_id: "12345-6789",
+          sourceType: "batch",
+          cadence: 10_000,
+          allow_duplicates: false
+        })
       )
 
       assert TestUtils.feed_supervisor_count() == 1
@@ -208,7 +233,11 @@ defmodule Reaper.ConfigServerTest do
       allow Horde.Registry.lookup(any(), any()), return: :undefined, meck_options: [:passthrough]
 
       ConfigServer.process_reaper_config(
-        FixtureHelper.new_reaper_config(%{dataset_id: "12345-6789", technical: %{sourceUrl: "whatever"}})
+        FixtureHelper.new_reaper_config(%{
+          dataset_id: "12345-6789",
+          technical: %{sourceUrl: "whatever"},
+          allow_duplicates: false
+        })
       )
 
       assert TestUtils.feed_supervisor_count() == 1
