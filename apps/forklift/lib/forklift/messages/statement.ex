@@ -56,9 +56,10 @@ defmodule Forklift.Messages.Statement do
 
   defp format_data(value, %{type: "timestamp"}) do
     date_format =
-      case String.length(value) do
-        19 -> ~s|'%Y-%m-%dT%H:%i:%S'|
-        _ -> ~s|'%Y-%m-%dT%H:%i:%S.%f'|
+      cond do
+        String.length(value) == 19 -> ~s|'%Y-%m-%dT%H:%i:%S'|
+        String.ends_with?(value, "Z") -> ~s|'%Y-%m-%dT%H:%i:%S.%fZ'|
+        true -> ~s|'%Y-%m-%dT%H:%i:%S.%f'|
       end
 
     ~s|date_parse('#{value}', #{date_format})|

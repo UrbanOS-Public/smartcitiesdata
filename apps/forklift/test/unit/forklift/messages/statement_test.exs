@@ -168,6 +168,27 @@ defmodule Forklift.Messages.StatementTest do
     assert result == expected_result
   end
 
+  test "inserts using proper format when inserting a timestamp that ends in Z" do
+    schema = %DatasetSchema{
+      system_name: "rivers",
+      columns: [
+        %{name: "id", type: "number"},
+        %{name: "start_time", type: "timestamp"}
+      ]
+    }
+
+    data = [
+      %{id: 9, start_time: "2019-06-11T18:34:33.484840Z"}
+    ]
+
+    result = Statement.build(schema, data)
+
+    expected_result =
+      ~s/insert into "rivers" ("id","start_time") values row(9,date_parse('2019-06-11T18:34:33.484840Z', '%Y-%m-%dT%H:%i:%S.%fZ'))/
+
+    assert result == expected_result
+  end
+
   test "inserts time data types as strings" do
     schema = %DatasetSchema{
       system_name: "rivers",
