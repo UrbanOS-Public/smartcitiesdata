@@ -58,6 +58,7 @@ defmodule Forklift.Messages.Statement do
     date_format =
       cond do
         String.length(value) == 19 -> ~s|'%Y-%m-%dT%H:%i:%S'|
+        String.length(value) == 20 -> ~s|'%Y-%m-%dT%H:%i:%SZ'|
         String.ends_with?(value, "Z") -> ~s|'%Y-%m-%dT%H:%i:%S.%fZ'|
         true -> ~s|'%Y-%m-%dT%H:%i:%S.%f'|
       end
