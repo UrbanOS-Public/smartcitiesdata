@@ -54,7 +54,15 @@ defmodule Forklift.Messages.Statement do
 
   defp format_data(value, %{type: "date"}), do: ~s|DATE '#{value}'|
 
-  defp format_data(value, %{type: "timestamp"}), do: ~s|date_parse('#{value}', '%Y-%m-%dT%H:%i:%S.%f')|
+  defp format_data(value, %{type: "timestamp"}) do
+    date_format =
+      case String.length(value) do
+        19 -> ~s|'%Y-%m-%dT%H:%i:%S'|
+        _ -> ~s|'%Y-%m-%dT%H:%i:%S.%f'|
+      end
+
+    ~s|date_parse('#{value}', #{date_format})|
+  end
 
   defp format_data(value, %{type: "time"}), do: ~s|'#{value}'|
 
