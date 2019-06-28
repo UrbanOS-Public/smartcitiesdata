@@ -64,11 +64,26 @@ defmodule Reaper.FeedSupervisor do
       end
 
     [
+      cache_spec(reaper_config, cache_name, cache_limit, restart_policy),
+      feed_scheduler_spec(reaper_config, feed_name, cache_name, restart_policy)
+    ]
+    |> List.flatten()
+  end
+
+  defp cache_spec(%{allow_duplicates: false}, cache_name, cache_limit, restart_policy) do
+    [
       %{
         id: cache_name,
         restart: restart_policy,
         start: {Cachex, :start_link, [cache_name, [limit: cache_limit]]}
-      },
+      }
+    ]
+  end
+
+  defp cache_spec(_reaper_config, _cache_name, _cache_limit, _restart_policy), do: []
+
+  defp feed_scheduler_spec(reaper_config, feed_name, cache_name, restart_policy) do
+    [
       %{
         id: feed_name,
         restart: restart_policy,

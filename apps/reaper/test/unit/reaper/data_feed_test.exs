@@ -33,7 +33,8 @@ defmodule Reaper.DataFeedTest do
           %{name: "a", type: "string"},
           %{name: "b", type: "string"},
           %{name: "c", type: "string"}
-        ]
+        ],
+        allow_duplicates: false
       })
 
     [bypass: bypass, config: config]

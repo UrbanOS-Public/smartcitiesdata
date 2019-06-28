@@ -13,7 +13,25 @@ defmodule Reaper.DataFeed.ValidationStageTest do
   end
 
   describe "handle_events/3" do
-    test "will remove duplicates from events" do
+    test "will remove duplicates" do
+      Cache.cache(@cache, %{one: 1, two: 2})
+
+      incoming_events = [
+        {%{one: 1, two: 2}, 1},
+        {%{three: 3, four: 4}, 2}
+      ]
+
+      state = %{
+        cache: @cache,
+        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1", sourceType: "batch", allow_duplicates: false}),
+        last_processed_index: -1
+      }
+
+      {:noreply, outgoing_events, _new_state} = ValidationStage.handle_events(incoming_events, self(), state)
+      assert outgoing_events == [{%{three: 3, four: 4}, 2}]
+    end
+
+    test "will allow duplicates if configured to do so" do
       Cache.cache(@cache, %{one: 1, two: 2})
 
       incoming_events = [
@@ -28,7 +46,7 @@ defmodule Reaper.DataFeed.ValidationStageTest do
       }
 
       {:noreply, outgoing_events, _new_state} = ValidationStage.handle_events(incoming_events, self(), state)
-      assert outgoing_events == [{%{three: 3, four: 4}, 2}]
+      assert outgoing_events == [{%{one: 1, two: 2}, 1}, {%{three: 3, four: 4}, 2}]
     end
 
     test "will remove any events that have already been processed" do
@@ -55,7 +73,7 @@ defmodule Reaper.DataFeed.ValidationStageTest do
 
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds2", sourceType: "batch"}),
+        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds2", sourceType: "batch", allow_duplicates: false}),
         last_processed_index: -1
       }
 

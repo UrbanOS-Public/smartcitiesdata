@@ -30,7 +30,7 @@ defmodule Reaper.DataFeed.ValidationStage do
   end
 
   defp handle_event(state, {value, index} = message, acc) do
-    with {:ok, _} <- Cache.mark_duplicates(state.cache, value),
+    with {:ok, _} <- check_cache(state, value),
          {:index_check, true} <- {:index_check, index > state.last_processed_index} do
       [message | acc]
     else
@@ -40,6 +40,13 @@ defmodule Reaper.DataFeed.ValidationStage do
 
       _duplicate_or_index_failure ->
         acc
+    end
+  end
+
+  defp check_cache(state, value) do
+    case state.config.allow_duplicates do
+      true -> {:ok, value}
+      false -> Cache.mark_duplicates(state.cache, value)
     end
   end
 end

@@ -10,24 +10,22 @@ defmodule Reaper.DataFeed.LoadStageTest do
   @iso_output DateTime.utc_now() |> DateTime.to_iso8601()
   @cache __MODULE__
 
+  use TempEnv, reaper: [batch_size_in_bytes: 10 * @message_size, output_topic_prefix: "test"]
+
   setup do
     Cachex.start_link(@cache)
-    Application.put_env(:reaper, :batch_size_in_bytes, 10 * @message_size)
-    Application.put_env(:reaper, :output_topic_prefix, "test")
-
     allow DateTime.to_iso8601(any()), return: @iso_output, meck_options: [:passthrough]
-
     :ok
   end
 
-  describe "handle_events/3" do
+  describe "handle_events/3 check duplicates" do
     setup do
       allow Producer.produce_sync(any(), any(), any()), return: :ok
       allow Persistence.record_last_processed_index(any(), any()), return: :ok
 
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1"}),
+        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1", allow_duplicates: false}),
         batch: [],
         bytes: 0,
         originals: [],
@@ -61,6 +59,32 @@ defmodule Reaper.DataFeed.LoadStageTest do
       |> Enum.each(fn msg ->
         assert {:duplicate, msg} == Cache.mark_duplicates(@cache, msg)
       end)
+    end
+  end
+
+  describe "handle_events/3 skip duplicate cache" do
+    setup do
+      allow Producer.produce_sync(any(), any(), any()), return: :ok
+      allow Persistence.record_last_processed_index(any(), any()), return: :ok
+      allow Cache.cache(any(), any()), return: :ok
+
+      state = %{
+        cache: @cache,
+        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds2"}),
+        batch: [],
+        bytes: 0,
+        originals: [],
+        start_time: DateTime.utc_now()
+      }
+
+      incoming_events = ?a..?z |> create_messages() |> Enum.with_index()
+
+      {:noreply, [], new_state} = LoadStage.handle_events(incoming_events, self(), state)
+      [new_state: new_state]
+    end
+
+    test "messages are not cached" do
+      refute_called Cache.cache(@cache, any())
     end
   end
 
