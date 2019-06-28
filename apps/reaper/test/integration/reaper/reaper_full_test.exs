@@ -9,6 +9,7 @@ defmodule Reaper.FullTest do
   import SmartCity.TestHelper
 
   @endpoints Application.get_env(:reaper, :elsa_brokers)
+  @brod_endpoints Enum.map(@endpoints, fn {host, port} -> {to_charlist(host), port} end)
   @output_topic_prefix Application.get_env(:reaper, :output_topic_prefix)
 
   @pre_existing_dataset_id "00000-0000"
@@ -85,29 +86,40 @@ defmodule Reaper.FullTest do
   describe "partial-existing dataset" do
     setup %{bypass: bypass} do
       Redix.command(:redix, ["FLUSHALL"])
-      {:ok, pid} = Agent.start_link(fn -> %{has_raised: false} end)
+      {:ok, pid} = Agent.start_link(fn -> %{has_raised: false, invocations: 0} end)
 
-      allow Reaper.Loader.load(any(), any(), any()),
+      allow Elsa.Producer.produce_sync(any(), any(), any()),
         meck_options: [:passthrough],
-        exec: fn value, config, timestamp ->
-          case {value, Agent.get(pid, fn s -> s.has_raised end)} do
-            {%{"my_string" => "Erin"}, false} ->
-              Agent.update(pid, fn s -> %{s | has_raised: true} end)
+        exec: fn topic, messages, options ->
+          case Agent.get(pid, fn s -> {s.has_raised, s.invocations} end) do
+            {false, count} when count >= 2 ->
+              Agent.update(pid, fn _ -> %{has_raised: true, invocations: count + 1} end)
               raise "Bring this thing down!"
 
-            _ ->
-              :meck.passthrough([value, config, timestamp])
+            {_, count} ->
+              Agent.update(pid, fn s -> %{s | invocations: count + 1} end)
+              :meck.passthrough([topic, messages, options])
           end
         end
+
+      Bypass.stub(bypass, "GET", "/partial.csv", fn conn ->
+        data =
+          1..10_000
+          |> Enum.map(fn _ -> random_string(10) end)
+          |> Enum.join("\n")
+
+        Plug.Conn.send_resp(conn, 200, data)
+      end)
 
       pre_existing_dataset =
         TDG.create_dataset(%{
           id: @partial_load_dataset_id,
           technical: %{
             cadence: "once",
-            sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+            sourceUrl: "http://localhost:#{bypass.port}/partial.csv",
             sourceFormat: "csv",
-            sourceType: "batch"
+            sourceType: "batch",
+            schema: [%{name: "name", type: "string"}]
           }
         })
 
@@ -118,27 +130,11 @@ defmodule Reaper.FullTest do
 
     @tag capture_log: true
     test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: _bypass} do
-      expected = [
-        TestUtils.create_data(%{
-          dataset_id: @partial_load_dataset_id,
-          payload: %{my_date: "Spot", my_int: "1", my_string: "Austin"}
-        }),
-        TestUtils.create_data(%{
-          dataset_id: @partial_load_dataset_id,
-          payload: %{my_date: "Bella", my_int: "2", my_string: "Erin"}
-        }),
-        TestUtils.create_data(%{
-          dataset_id: @partial_load_dataset_id,
-          payload: %{my_date: "Max", my_int: "3", my_string: "Ben"}
-        })
-      ]
-
       topic = "#{@output_topic_prefix}-#{@partial_load_dataset_id}"
 
       eventually(fn ->
-        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
-
-        assert expected == results
+        {:ok, latest_offset} = :brod.resolve_offset(@brod_endpoints, topic, 0)
+        assert latest_offset == 10_000
       end)
     end
   end
@@ -293,5 +289,11 @@ defmodule Reaper.FullTest do
         assert data_feed_status == :undefined
       end)
     end
+  end
+
+  defp random_string(length) do
+    :crypto.strong_rand_bytes(length)
+    |> Base.url_encode64()
+    |> binary_part(0, length)
   end
 end

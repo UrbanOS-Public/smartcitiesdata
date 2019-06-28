@@ -56,7 +56,8 @@ defmodule Reaper.DataFeedScheduler do
   end
 
   def handle_info(:work, %{pids: %{cache: cache}, reaper_config: reaper_config} = state) do
-    Reaper.DataFeed.process(reaper_config, cache)
+    task = Task.async(Reaper.DataFeed, :process, [reaper_config, cache])
+    Task.await(task, :infinity)
 
     timer_ref = schedule_work(reaper_config.cadence)
 

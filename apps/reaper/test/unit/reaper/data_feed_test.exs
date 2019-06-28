@@ -3,7 +3,8 @@ defmodule Reaper.DataFeedTest do
   use Placebo
   import ExUnit.CaptureLog
 
-  alias Reaper.{Cache, DataFeed, Loader, Persistence}
+  alias Reaper.{Cache, DataFeed, Persistence}
+  alias Elsa.Producer
 
   @dataset_id "12345-6789"
   @cache_name String.to_atom("#{@dataset_id}_feed")
@@ -40,7 +41,7 @@ defmodule Reaper.DataFeedTest do
 
   describe "process/2 happy path" do
     setup do
-      allow Loader.load(any(), any(), any()), return: :ok
+      allow Producer.produce_sync(any(), any(), any()), return: :ok
       allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
       allow Persistence.remove_last_processed_index(@dataset_id), return: :ok
 
@@ -48,30 +49,34 @@ defmodule Reaper.DataFeedTest do
     end
 
     test "parses turns csv into data messages and sends to kafka", %{config: config} do
-      allow Persistence.get_last_processed_index(@dataset_id), seq: [-1, 0]
+      allow Persistence.get_last_processed_index(@dataset_id), return: -1
       allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
 
       DataFeed.process(config, @cache_name)
 
-      data1 = capture(1, Loader.load(any(), any(), any()), 1)
-      assert %{"a" => "one", "b" => "two", "c" => "three"} == data1
-      data2 = capture(2, Loader.load(any(), any(), any()), 1)
-      assert %{"a" => "four", "b" => "five", "c" => "six"} == data2
+      messages = capture(1, Producer.produce_sync(any(), any(), any()), 2)
 
-      assert_called Persistence.record_last_processed_index(any(), any()), times(2)
+      expected = [
+        %{a: "one", b: "two", c: "three"},
+        %{a: "four", b: "five", c: "six"}
+      ]
+
+      assert expected == get_payloads(messages)
+
+      assert_called Persistence.record_last_processed_index(any(), any()), once()
       assert_called Persistence.remove_last_processed_index(@dataset_id), once()
     end
 
     test "eliminates duplicates before sending to kafka", %{config: config} do
-      allow Persistence.get_last_processed_index(@dataset_id), seq: [-1, 0]
+      allow Persistence.get_last_processed_index(@dataset_id), return: -1
       allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
       Cache.cache(@cache_name, %{a: "one", b: "two", c: "three"})
 
       DataFeed.process(config, @cache_name)
 
-      data = capture(1, Loader.load(any(), any(), any()), 1)
-      assert %{"a" => "four", "b" => "five", "c" => "six"} == data
-      assert_called Loader.load(any(), any(), any()), once()
+      messages = capture(1, Producer.produce_sync(any(), any(), any()), 2)
+      assert [%{a: "four", b: "five", c: "six"}] == get_payloads(messages)
+      assert_called Producer.produce_sync(any(), any(), any()), once()
 
       assert_called Persistence.record_last_processed_index(any(), any()), once()
       assert_called Persistence.remove_last_processed_index(@dataset_id), once()
@@ -80,6 +85,7 @@ defmodule Reaper.DataFeedTest do
 
   @tag capture_log: true
   test "process/2 should remove file for dataset regardless of error being raised", %{config: config} do
+    allow Persistence.get_last_processed_index(any()), return: -1
     allow Reaper.Cache.mark_duplicates(any(), any()), exec: fn _, _ -> raise "some error" end
 
     assert_raise RuntimeError, fn ->
@@ -89,68 +95,27 @@ defmodule Reaper.DataFeedTest do
     assert false == File.exists?(config.dataset_id)
   end
 
-  test "process/2 should not record last fetched time if all records are errors", %{config: config} do
-    allow Loader.load(any(), any(), any()), return: {:error, :some_kafka_error}
-    allow Persistence.get_last_processed_index(@dataset_id), seq: [-1, 0]
-    allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
-    allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
-    allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :yeet
-    allow Persistence.remove_last_processed_index(@dataset_id), return: 0
-
-    DataFeed.process(config, @cache_name)
-
-    refute_called Persistence.record_last_fetched_timestamp(any(), any())
-    refute_called Persistence.record_last_processed_index(@dataset_id, any())
-    assert_called Persistence.remove_last_processed_index(@dataset_id), once()
-  end
-
-  test "process/2 yeets errors", %{config: config} do
-    allow Persistence.get_last_processed_index(@dataset_id), seq: [-1, 0]
-    allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
-    allow Loader.load(any(), any(), any()), seq: [:ok, {:error, :kafka_test_error}]
-    allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
-    allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :yeet
-    allow Persistence.remove_last_processed_index(@dataset_id), return: 0
-
-    DataFeed.process(config, @cache_name)
-
-    assert_called Yeet.process_dead_letter(@dataset_id, any(), "reaper", any())
-    assert_called Persistence.record_last_processed_index(@dataset_id, 0), once()
-    refute_called Persistence.record_last_processed_index(@dataset_id, 1)
-    assert_called Persistence.remove_last_processed_index(@dataset_id), once()
-  end
-
-  test "process/2 yeets error first, continues to procees valid record", %{config: config} do
-    allow Persistence.get_last_processed_index(@dataset_id), seq: [-1, -1]
-    allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
-    allow Loader.load(any(), any(), any()), seq: [{:error, :kafka_test_error}, :ok]
-    allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
-    allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :yeet
-    allow Persistence.remove_last_processed_index(@dataset_id), return: 0
-
-    DataFeed.process(config, @cache_name)
-
-    assert_called Yeet.process_dead_letter(@dataset_id, any(), "reaper", any())
-    refute_called Persistence.record_last_processed_index(@dataset_id, 0)
-    assert_called Persistence.record_last_processed_index(@dataset_id, 1), once()
-    assert_called Persistence.remove_last_processed_index(@dataset_id), once()
-  end
-
   test "process/2 should catch log all exceptions and reraise", %{config: config} do
-    allow RailStream.map(any(), any()),
-      return: Stream.repeatedly(fn -> raise "some error" end),
-      meck_options: [:passthrough]
+    allow Persistence.get_last_processed_index(any()), return: -1
+
+    allow Producer.produce_sync(any(), any(), any()), exec: fn _, _, _ -> raise "some error" end
 
     allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :yeet
 
     log =
       capture_log(fn ->
-        assert_raise RuntimeError, "some error", fn ->
+        assert_raise RuntimeError, fn ->
           DataFeed.process(config, @cache_name)
         end
       end)
 
     assert log =~ inspect(config)
     assert log =~ "some error"
+  end
+
+  defp get_payloads(list) do
+    list
+    |> Enum.map(&SmartCity.Data.new/1)
+    |> Enum.map(fn {:ok, data} -> data.payload end)
   end
 end

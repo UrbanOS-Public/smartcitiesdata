@@ -42,7 +42,7 @@ defmodule Reaper.Persistence do
   Save a `Reaper.ReaperConfig` to Redis
   """
   @spec persist(ReaperConfig.t()) :: Redix.Protocol.redis_value() | no_return()
-  def(persist(%ReaperConfig{} = reaper_config)) do
+  def persist(%ReaperConfig{} = reaper_config) do
     reaper_config
     |> Map.from_struct()
     |> Jason.encode!()

@@ -3,9 +3,7 @@ defmodule Reaper.DivoSftp do
   Defines a simple sftp server compatible with divo
   for building a docker-compose file.
   """
-  @behaviour Divo.Stack
 
-  @impl Divo.Stack
   def gen_stack(envar \\ []) do
     username = Keyword.get(envar, :username, "sftp_user")
     password = Keyword.get(envar, :password, "sftp_password")
