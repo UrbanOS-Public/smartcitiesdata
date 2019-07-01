@@ -10,7 +10,7 @@ install:
 script:
   - mix format --check-formatted
   - mix credo
-  - mix hex.outdated
+  - mix hex.outdated || true
   - mix test
 deploy:
   skip_cleanup: true
