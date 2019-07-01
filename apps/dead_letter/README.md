@@ -13,7 +13,7 @@ by adding `yeet` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:yeet, "~> 1.0.4"}
+    {:yeet, "~> 1.0.5"}
   ]
 end
 ```
