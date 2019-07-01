@@ -14,7 +14,7 @@ defmodule Reaper.ConfigServer do
   end
 
   def init(state \\ []) do
-    {:ok, state, {:continue, :load_persisted_configs}}
+    {:ok, state}
   end
 
   @doc """
@@ -38,17 +38,6 @@ defmodule Reaper.ConfigServer do
            end
          ]}
     }
-  end
-
-  @doc """
-  Loads all dataset configs and starts a supervisor for each dataset
-  """
-  @spec handle_continue(atom(), any()) :: {:noreply, any()}
-  def handle_continue(:load_persisted_configs, state) do
-    Persistence.get_all()
-    |> Enum.each(&create_feed_supervisor/1)
-
-    {:noreply, state}
   end
 
   @doc """
