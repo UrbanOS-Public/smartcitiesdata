@@ -29,7 +29,7 @@ defmodule Yeet.MixProject do
       {:ex_doc, "~> 0.19", only: :dev},
       {:jason, "~> 1.1"},
       {:brod, "~> 3.7"},
-      {:husky, "~> 1.0", only: :dev, runtime: false}
+      {:husky, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 
