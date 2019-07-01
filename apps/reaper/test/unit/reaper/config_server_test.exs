@@ -17,45 +17,6 @@ defmodule Reaper.ConfigServerTest do
     :ok
   end
 
-  describe "on startup" do
-    test "supervisors are started for persisted reaper configs" do
-      reaper_config =
-        FixtureHelper.new_reaper_config(%{
-          dataset_id: "123",
-          sourceType: "batch",
-          cadence: 10_000,
-          allow_duplicates: false
-        })
-
-      reaper_config2 = FixtureHelper.new_reaper_config(%{dataset_id: "987", sourceType: "stream", cadence: 10_000})
-
-      allow(Redix.command!(:redix, ["KEYS", @name_space <> "*"]), return: [@name_space <> "123", @name_space <> "987"])
-
-      allow(Redix.command!(:redix, ["MGET", @name_space <> "123", @name_space <> "987"]),
-        return: [ReaperConfig.encode!(reaper_config), ReaperConfig.encode!(reaper_config2)]
-      )
-
-      allow(Reaper.Persistence.get_last_fetched_timestamp(any()),
-        return: DateTime.utc_now(),
-        meck_options: [:passthrough]
-      )
-
-      ConfigServer.start_link([])
-
-      Patiently.wait_for!(
-        fn -> TestUtils.feed_supervisor_count() == 2 end,
-        dwell: 100,
-        max_tries: 10
-      )
-
-      Patiently.wait_for!(
-        fn -> TestUtils.child_count(Cachex) == 1 end,
-        dwell: 100,
-        max_tries: 10
-      )
-    end
-  end
-
   describe "on registry message received with no previous reaper configs" do
     test "the config server spins up several new supervisors for streaming and batch datasets" do
       allow(Redix.command!(:redix, ["KEYS", @name_space <> "*"]), return: [])
