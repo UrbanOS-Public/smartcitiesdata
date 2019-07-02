@@ -12,8 +12,16 @@ before_install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
-install: ./scripts/install.sh
+install:
+  - mix local.rebar --force
+  - mix local.hex --force
+  - mix deps.get
 script:
+  - mix format --check-formatted
+  - mix credo
+  - mix hex.outdated || true
+  - mix test
+  - mix test.integration
   - docker build -t reaper:build .
 deploy:
   - provider: script
