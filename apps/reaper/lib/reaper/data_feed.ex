@@ -52,7 +52,9 @@ defmodule Reaper.DataFeed do
 
       reraise error, __STACKTRACE__
   after
-    File.rm(config.dataset_id)
+    config.dataset_id
+    |> DataSlurper.determine_filename()
+    |> File.rm()
   end
 
   defp wait_for_completion([]), do: true

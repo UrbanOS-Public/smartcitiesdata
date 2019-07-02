@@ -14,6 +14,9 @@ defmodule Reaper.DataFeedTest do
   four,five,six
   """
 
+  @download_dir System.get_env("TMPDIR") || "/tmp/"
+  use TempEnv, reaper: [download_dir: @download_dir]
+
   setup do
     bypass = Bypass.open()
     Cachex.start_link(@cache_name)
@@ -93,7 +96,7 @@ defmodule Reaper.DataFeedTest do
       DataFeed.process(config, @cache_name)
     end
 
-    assert false == File.exists?(config.dataset_id)
+    assert false == File.exists?(@download_dir <> config.dataset_id)
   end
 
   test "process/2 should catch log all exceptions and reraise", %{config: config} do
