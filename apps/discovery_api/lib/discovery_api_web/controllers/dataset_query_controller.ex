@@ -27,20 +27,21 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   def query(conn, params, "json") do
     system_name = conn.assigns.model.systemName
 
-    with {:ok, query} <- build_query(params, system_name) do
-      DatasetMetricsService.record_api_hit("queries", conn.assigns.model.id)
+    case build_query(params, system_name) do
+      {:ok, query} ->
+        DatasetMetricsService.record_api_hit("queries", conn.assigns.model.id)
 
-      data =
-        query
-        |> Prestige.execute(rows_as_maps: true)
-        |> Stream.map(&Jason.encode!/1)
-        |> Stream.intersperse(",")
+        data =
+          query
+          |> Prestige.execute(rows_as_maps: true)
+          |> Stream.map(&Jason.encode!/1)
+          |> Stream.intersperse(",")
 
-      [["["], data, ["]"]]
-      |> Stream.concat()
-      |> stream_data(conn, system_name, get_format(conn))
-    else
-      error ->
+        [["["], data, ["]"]]
+        |> Stream.concat()
+        |> stream_data(conn, system_name, get_format(conn))
+
+      {_, error} ->
         handle_error(conn, error)
     end
   end
@@ -60,10 +61,9 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   defp get_column_names(system_name, nil), do: get_column_names(system_name)
 
   defp get_column_names(system_name, columns_string) do
-    with {:ok, _} <- get_column_names(system_name) do
-      {:ok, clean_columns(columns_string)}
-    else
-      error -> error
+    case get_column_names(system_name) do
+      {:ok, names} -> {:ok, clean_columns(columns_string)}
+      {_, error} -> {:error, error}
     end
   end
 

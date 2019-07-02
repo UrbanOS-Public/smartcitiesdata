@@ -12,9 +12,10 @@ defmodule DiscoveryApiWeb.DatasetMetricsController do
   end
 
   defp get_count_maps(dataset_id) do
-    with [] <- Persistence.get_keys("smart_registry:*:count:" <> dataset_id) do
-      %{}
-    else
+    case Persistence.get_keys("smart_registry:*:count:" <> dataset_id) do
+      [] ->
+        %{}
+
       all_keys ->
         friendly_keys = Enum.map(all_keys, fn x -> Enum.at(String.split(x, ":"), 1) end)
         all_values = Persistence.get_many(all_keys)
