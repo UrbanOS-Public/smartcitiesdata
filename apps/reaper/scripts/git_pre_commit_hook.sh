@@ -22,7 +22,6 @@ if [ $? == 1 ]; then
     echo -e "$outdated_output" | grep " No"
     echo -e "$outdated_output" | grep " Yes"
     echo -e "${NC}"
-    exit_code=1
 fi
 
 exit $exit_code
