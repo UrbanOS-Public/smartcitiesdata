@@ -61,7 +61,10 @@ defmodule TempEnv do
 
   def reset_app_values(original_values) do
     for {app, prop, og} <- original_values do
-      Application.put_env(app, prop, og)
+      case og do
+        nil -> Application.delete_env(app, prop)
+        _ -> Application.put_env(app, prop, og)
+      end
     end
   end
 end
