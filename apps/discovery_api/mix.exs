@@ -50,7 +50,7 @@ defmodule DiscoveryApi.Mixfile do
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.1"},
       {:smart_city_registry, "~> 3.3"},
-      {:smart_city_test, "~> 0.3", only: [:test, :integrmiation]},
+      {:smart_city_test, "~> 0.3", only: [:test, :integration]},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},
       {:timex, "~>3.0"},
       {:sobelow, "~> 0.8"},
