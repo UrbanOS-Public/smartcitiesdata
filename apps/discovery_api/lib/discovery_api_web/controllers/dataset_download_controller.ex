@@ -31,15 +31,13 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
     |> stream_data(conn, conn.assigns.model.id, get_format(conn))
   end
 
-  def fetch_file(conn, _params, format) do
-    Logger.warn("#{inspect conn}")
-    Logger.warn("/#{conn.assigns.model.organizationDetails.orgName}/#{conn.assigns.model.id}.#{format}")
+  def fetch_file(conn, _params, _format) do
+    format = conn |> get_req_header("accept") |> hd() |> IO.inspect(label: "Header") |> String.split(",", trim: true) |> hd() |> IO.inspect(label: "Head of headers") |> MIME.extensions |> IO.inspect(label: "MIME") |> hd()
     ExAws.S3.download_file(bucket_name(), "/#{conn.assigns.model.organizationDetails.orgName}/#{conn.assigns.model.id}.#{format}", "dataset")
     |> ExAws.stream!(region: "us-east-2")
     |> stream_data(conn, "name", get_format(conn))
-    |> IO.inspect
   rescue
-    e -> Logger.error(inspect e)
+    e -> Logger.error("Error trying to download a hosted file: #{inspect e}")
          raise e
   end
 

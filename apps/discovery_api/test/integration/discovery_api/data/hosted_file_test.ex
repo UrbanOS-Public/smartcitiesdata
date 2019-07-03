@@ -15,7 +15,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
 
     "test/integration/test-file.test"
     |> ExAws.S3.Upload.stream_file
-    |> ExAws.S3.upload(Application.get_env(:discovery_api, :hosted_bucket), "test_org/#{@dataset_id}.test")
+    |> ExAws.S3.upload(Application.get_env(:discovery_api, :hosted_bucket), "test_org/#{@dataset_id}.geojson")
     |> ExAws.request!
 
     :ok
@@ -33,23 +33,23 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     Dataset.write(dataset)
 
     Patiently.wait_for!(
-      fn -> download(organization.orgName, dataset.technical.dataName) == [] end,
+      fn -> download_and_checksum(organization.orgName, dataset.technical.dataName) == @expected_checksum end,
       dwell: 2000,
       max_tries: 10
     )
   end
 
-  defp download(org_name, dataset_name) do
+  defp download_and_checksum(org_name, dataset_name) do
     body =
       "http://localhost:4000/api/v1/organization/#{org_name}/dataset/#{dataset_name}/download"
-      |> HTTPoison.get!([{"Accept", "application/json"}])
+      |> HTTPoison.get!([{"Accept", "application/geo+json, application/json"}])
       |> Map.get(:body)
 
     if is_binary(body) do
       Logger.info("Got something: #{inspect body}")
       checksum = :crypto.hash(:md5, body) |> Base.encode16
 
-      assert checksum == @expected_checksum
+      checksum
     else
       Logger.info("Got something unexpected: #{body}")
       false

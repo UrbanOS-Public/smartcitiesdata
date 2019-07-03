@@ -6,17 +6,17 @@ defmodule DiscoveryApiWeb.Router do
 
   pipeline :api do
     plug(Plug.Logger)
-    # plug(:accepts, ["csv", "json"])
+    # plug(:accepts, ["csv", "json", "*", "html"])
   end
 
   pipeline :api_csv_only do
     plug(Plug.Logger)
-    plug(:accepts, ["csv"])
+    # plug(:accepts, ["csv"])
   end
 
   pipeline :api_json_only do
     plug(Plug.Logger)
-    plug(:accepts, ["json"])
+    # plug(:accepts, ["json"])
   end
 
   pipeline :check_restricted do
