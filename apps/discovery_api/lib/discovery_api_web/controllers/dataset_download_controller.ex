@@ -1,12 +1,13 @@
 defmodule DiscoveryApiWeb.DatasetDownloadController do
   use DiscoveryApiWeb, :controller
   alias DiscoveryApiWeb.DatasetMetricsService
+  require Logger
 
-  def fetch_presto(conn, params) do
-    fetch_presto(conn, params, get_format(conn))
+  def fetch_file(conn, params) do
+    fetch_file(conn, params, get_format(conn))
   end
 
-  def fetch_presto(conn, _params, "csv") do
+  def fetch_file(conn, _params, "csv") do
     table = conn.assigns.model.systemName
 
     columns = fetch_columns(table)
@@ -14,7 +15,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
     download(conn, conn.assigns.model.id, table, columns)
   end
 
-  def fetch_presto(conn, _params, "json") do
+  def fetch_file(conn, _params, "json") do
     table = conn.assigns.model.systemName
 
     data =
@@ -28,6 +29,18 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
     [["["], data, ["]"]]
     |> Stream.concat()
     |> stream_data(conn, conn.assigns.model.id, get_format(conn))
+  end
+
+  def fetch_file(conn, _params, format) do
+    Logger.warn("#{inspect conn}")
+    Logger.warn("/#{conn.assigns.model.organizationDetails.orgName}/#{conn.assigns.model.id}.#{format}")
+    ExAws.S3.download_file(bucket_name(), "/#{conn.assigns.model.organizationDetails.orgName}/#{conn.assigns.model.id}.#{format}", "dataset")
+    |> ExAws.stream!(region: "us-east-2")
+    |> stream_data(conn, "name", get_format(conn))
+    |> IO.inspect
+  rescue
+    e -> Logger.error(inspect e)
+         raise e
   end
 
   defp fetch_columns(nil), do: nil
@@ -48,5 +61,9 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
     |> Prestige.execute()
     |> map_data_stream_for_csv(columns)
     |> stream_data(conn, dataset_id, get_format(conn))
+  end
+
+  defp bucket_name() do
+    Application.get_env(:discovery_api, :hosted_bucket)
   end
 end

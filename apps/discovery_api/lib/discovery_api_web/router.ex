@@ -6,7 +6,7 @@ defmodule DiscoveryApiWeb.Router do
 
   pipeline :api do
     plug(Plug.Logger)
-    plug(:accepts, ["csv", "json"])
+    # plug(:accepts, ["csv", "json"])
   end
 
   pipeline :api_csv_only do
@@ -61,8 +61,8 @@ defmodule DiscoveryApiWeb.Router do
     get("/organization/:org_name/dataset/:dataset_name/query", DatasetQueryController, :query)
     get("/dataset/:dataset_id/query", DatasetQueryController, :query)
 
-    get("/organization/:org_name/dataset/:dataset_name/download", DatasetDownloadController, :fetch_presto)
-    get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_presto)
+    get("/organization/:org_name/dataset/:dataset_name/download", DatasetDownloadController, :fetch_file)
+    get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_file)
   end
 
   scope "/api/v1", DiscoveryApiWeb do
