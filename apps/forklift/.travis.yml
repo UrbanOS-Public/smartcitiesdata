@@ -14,8 +14,16 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
   - sudo service postgresql stop
   - docker-compose pull
-install: ./scripts/install.sh
+install:
+  - mix local.rebar --force
+  - mix local.hex --force
+  - mix deps.get
 script:
+  - mix format --check-formatted
+  - mix credo
+  - mix hex.outdated || true
+  - mix test
+  - mix test.integration
   - docker build -t forklift:build .
 deploy:
   - provider: script

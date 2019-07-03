@@ -25,28 +25,31 @@ defmodule Forklift.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:smart_city_data, "~> 2.1.5"},
-      {:smart_city_registry, "~> 2.6"},
-      {:smart_city_test, "~> 0.2.0", only: [:test, :integration]},
+      {:smart_city_data, "~> 2.1"},
+      {:smart_city_registry, "~> 3.3"},
+      {:smart_city_test, "~> 0.2", only: [:test, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.1"},
       {:kaffe, "~> 1.13"},
       {:brod, "~> 3.7", override: true},
       {:divo, "~> 1.0", only: [:dev, :test, :integration]},
-      {:patiently, "~> 0.2.0", only: [:dev, :test, :integration]},
+      {:patiently, "~> 0.2", only: [:dev, :test, :integration]},
       {:prestige, "~> 0.3.0"},
-      {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
-      {:placebo, "~> 1.2.1", only: [:dev, :test, :integration]},
-      {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
-      {:redix, "~> 0.9.3"},
+      {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
+      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
+      {:redix, "~> 0.10"},
       {:faker, "~> 0.12", only: [:dev, :test, :integration]},
-      {:distillery, "~> 2.0"},
       {:yeet, "~> 1.0"},
       {:ex_doc, "~> 0.19"},
       {:observer_cli, "~> 1.4"},
-      {:retry, "~> 0.11.2"},
-      {:elsa, "~> 0.1.0"},
-      {:benchee, "~> 1.0", only: [:integration]}
+      {:retry, "~> 0.12"},
+      {:elsa, "~> 0.1"},
+      {:benchee, "~> 1.0", only: [:integration]},
+      {:husky, "~> 1.0", only: :dev, runtime: false},
+      # updating version breaks
+      {:distillery, "2.0.14"}
+      # distillery breaks @ 2.1.0 due to elixir 1.9 support
     ]
   end
 
