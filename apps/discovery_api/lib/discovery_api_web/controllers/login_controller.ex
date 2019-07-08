@@ -6,16 +6,18 @@ defmodule DiscoveryApiWeb.LoginController do
   def new(conn, _) do
     {user, password} = extract_auth(conn)
 
-    with :ok <- PaddleWrapper.authenticate(user, password) do
-      {:ok, token, _claims} = Guardian.encode_and_sign(user)
+    case PaddleWrapper.authenticate(user, password) do
+      :ok ->
+        {:ok, token, _claims} = Guardian.encode_and_sign(user)
 
-      conn
-      |> Plug.Conn.put_resp_header("token", token)
-      |> Guardian.Plug.sign_in(user)
-      |> Guardian.Plug.remember_me(user)
-      |> text("#{user} logged in.")
-    else
-      {:error, :invalidCredentials} -> render_error(conn, 401, "Not Authorized")
+        conn
+        |> Plug.Conn.put_resp_header("token", token)
+        |> Guardian.Plug.sign_in(user)
+        |> Guardian.Plug.remember_me(user)
+        |> text("#{user} logged in.")
+
+      {:error, :invalidCredentials} ->
+        render_error(conn, 401, "Not Authorized")
     end
   end
 
@@ -41,11 +43,12 @@ defmodule DiscoveryApiWeb.LoginController do
   def logout(conn, _) do
     jwt = extract_token(conn)
 
-    with {:ok, _claims} <- Guardian.revoke(jwt) do
-      conn
-      |> Guardian.Plug.sign_out(clear_remember_me: true)
-      |> text("Logged out.")
-    else
+    case Guardian.revoke(jwt) do
+      {:ok, _claims} ->
+        conn
+        |> Guardian.Plug.sign_out(clear_remember_me: true)
+        |> text("Logged out.")
+
       {:error, _error} ->
         render_error(conn, 404, "Not Found")
     end
