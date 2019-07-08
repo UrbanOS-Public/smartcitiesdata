@@ -29,8 +29,7 @@ defmodule Andi.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
-      {:distillery, "~> 2.0", runtime: false},
+      {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
       {:phoenix_pubsub, "~> 1.1"},
@@ -46,7 +45,11 @@ defmodule Andi.MixProject do
       {:tesla, "~> 1.2", only: :integration},
       {:uuid, "~> 1.1"},
       {:smart_city_test, "~> 0.2", only: [:test, :integration]},
-      {:sobelow, "~> 0.8.0"}
+      {:sobelow, "~> 0.8"},
+      {:husky, "~> 1.0", only: :dev, runtime: false},
+      # updating version breaks
+      {:distillery, "2.0.14"}
+      # distillery breaks @ 2.1.0 due to elixir 1.9 support
     ]
   end
 end

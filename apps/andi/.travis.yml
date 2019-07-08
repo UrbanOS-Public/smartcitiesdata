@@ -16,12 +16,13 @@ install:
   - mix local.rebar --force
   - mix local.hex --force
   - mix deps.get
+script:
   - mix format --check-formatted
   - mix credo
   - mix sobelow
-script:
-  - docker build -t andi:build .
+  - mix hex.oudated || true
   - mix test.integration
+  - docker build -t andi:build .
 deploy:
 - provider: script
   skip_cleanup: true

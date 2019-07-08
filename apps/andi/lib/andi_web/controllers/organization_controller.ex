@@ -119,12 +119,13 @@ defmodule AndiWeb.OrganizationController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
-    with {:ok, orgs} <- Organization.get_all() do
-      conn
-      |> put_status(:ok)
-      |> json(orgs)
-    else
-      error ->
+    case Organization.get_all() do
+      {:ok, orgs} ->
+        conn
+        |> put_status(:ok)
+        |> json(orgs)
+
+      {_, error} ->
         Logger.error("Failed to retrieve organizations: #{inspect(error)}")
 
         conn

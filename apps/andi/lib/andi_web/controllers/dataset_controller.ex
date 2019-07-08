@@ -34,10 +34,11 @@ defmodule AndiWeb.DatasetController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
-    with {:ok, datasets} <- Dataset.get_all() do
-      respond(conn, :ok, datasets)
-    else
-      error ->
+    case Dataset.get_all() do
+      {:ok, datasets} ->
+        respond(conn, :ok, datasets)
+
+      {_, error} ->
         Logger.error("Failed to retrieve datasets: #{inspect(error)}")
         respond(conn, :not_found, "Unable to process your request")
     end
