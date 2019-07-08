@@ -88,7 +88,8 @@ defmodule DiscoveryApi.Auth.AuthTest do
       |> HTTPoison.get!([], hackney: [basic_auth: {@organization_1_user, "badpassword"}])
       |> Map.from_struct()
 
-    assert "Not Authorized" == body
+    result = Jason.decode!(body, keys: :atoms)
+    assert result.message == "Not Authorized"
     assert status_code == 401
   end
 

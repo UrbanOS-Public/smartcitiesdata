@@ -11,6 +11,7 @@ defmodule DiscoveryApiWeb.RenderError do
 
   def render_error(conn, status_code, assigns) do
     conn
+    |> put_private(:phoenix_format, "json")
     |> put_status(status_code)
     |> put_view(@error_module)
     |> render(@error_template, assigns)

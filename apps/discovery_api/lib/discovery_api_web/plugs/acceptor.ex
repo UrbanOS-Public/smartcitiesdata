@@ -6,7 +6,15 @@ defmodule DiscoveryApiWeb.Plugs.Acceptor do
   def init(default), do: default
 
   def call(conn, _) do
-    format = conn |> get_req_header("accept") |> hd() |> String.split(",", trim: true) |> hd() |> MIME.extensions() |> hd()
-    put_private(conn, :phoenix_format, format)
+    format =
+      conn
+      |> get_req_header("accept")
+      |> hd()
+      |> String.split(",", trim: true)
+      |> hd()
+      |> MIME.extensions()
+
+    conn
+    |> assign(:accepted_extensions, format)
   end
 end
