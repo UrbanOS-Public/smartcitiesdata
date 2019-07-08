@@ -24,22 +24,25 @@ defmodule Valkyrie.MixProject do
     [
       {:cachex, "~> 3.1"},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.19.3"},
-      {:distillery, "~> 2.0"},
+      {:ex_doc, "~> 0.19"},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:divo_kafka, "~> 0.1", only: [:integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
       {:jason, "~> 1.1"},
-      {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
+      {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:smart_city_data, "~> 2.1"},
-      {:smart_city_registry, "~> 2.6"},
+      {:smart_city_registry, "~> 3.0"},
       {:smart_city_test, "~> 0.3", only: [:test, :integration]},
       {:yeet, "~> 1.0"},
       {:observer_cli, "~> 1.4"},
       {:elsa, "~> 0.1.0"},
       {:benchee, "~> 1.0", only: [:integration]},
-      {:retry, "~> 0.11.2"}
+      {:retry, "~> 0.11"},
+      {:husky, "~> 1.0", only: :dev, runtime: false},
+      # updating version breaks
+      {:distillery, "2.0.14"}
+      # distillery breaks @ 2.1.0 due to elixir 1.9 support
     ]
   end
 
