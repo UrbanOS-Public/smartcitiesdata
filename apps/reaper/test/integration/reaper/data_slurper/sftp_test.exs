@@ -38,13 +38,20 @@ defmodule Reaper.SftpExtractorTest do
           cadence: 1_000,
           sourceUrl: "sftp://#{@host}:#{@sftp.port}/upload/file.json",
           sourceQueryParams: %{},
-          sourceFormat: "json"
+          sourceFormat: "json",
+          schema: [
+            %{name: "datum"},
+            %{name: "sanctum"}
+          ]
         }
       })
 
     Dataset.write(dataset)
 
-    payload = %{datum: "Bobber", sanctum: "Alice"}
+    payload = %{
+      datum: "Bobber",
+      sanctum: "Alice"
+    }
 
     eventually(fn ->
       result = TestUtils.get_data_messages_from_kafka(topic, @endpoints)

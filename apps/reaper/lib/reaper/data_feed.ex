@@ -13,7 +13,7 @@ defmodule Reaper.DataFeed do
     Persistence
   }
 
-  alias Reaper.DataFeed.{ValidationStage, LoadStage}
+  alias Reaper.DataFeed.{ValidationStage, SchemaStage, LoadStage}
 
   @min_demand 500
   @max_demand 1_000
@@ -36,12 +36,14 @@ defmodule Reaper.DataFeed do
       |> GenStage.from_enumerable()
 
     {:ok, validation_stage} = ValidationStage.start_link(cache: cache, config: config)
+    {:ok, schema_stage} = SchemaStage.start_link(cache: cache, config: config, start_time: generated_time_stamp)
     {:ok, load_stage} = LoadStage.start_link(cache: cache, config: config, start_time: generated_time_stamp)
 
-    GenStage.sync_subscribe(load_stage, to: validation_stage, min_demand: @min_demand, max_demand: @max_demand)
+    GenStage.sync_subscribe(load_stage, to: schema_stage, min_demand: @min_demand, max_demand: @max_demand)
+    GenStage.sync_subscribe(schema_stage, to: validation_stage, min_demand: @min_demand, max_demand: @max_demand)
     GenStage.sync_subscribe(validation_stage, to: producer_stage, min_demand: @min_demand, max_demand: @max_demand)
 
-    wait_for_completion([producer_stage, validation_stage, load_stage])
+    wait_for_completion([producer_stage, validation_stage, schema_stage, load_stage])
 
     record_last_fetched_timestamp(config.dataset_id, generated_time_stamp)
 

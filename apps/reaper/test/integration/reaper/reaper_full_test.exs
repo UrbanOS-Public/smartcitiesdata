@@ -16,6 +16,7 @@ defmodule Reaper.FullTest do
   @partial_load_dataset_id "11111-1112"
 
   @json_file_name "vehicle_locations.json"
+  @nested_data_file_name "nested_data.json"
   @gtfs_file_name "gtfs-realtime.pb"
   @csv_file_name "random_stuff.csv"
 
@@ -30,6 +31,7 @@ defmodule Reaper.FullTest do
     bypass
     |> TestUtils.bypass_file(@gtfs_file_name)
     |> TestUtils.bypass_file(@json_file_name)
+    |> TestUtils.bypass_file(@nested_data_file_name)
     |> TestUtils.bypass_file(@csv_file_name)
 
     eventually(fn ->
@@ -50,7 +52,13 @@ defmodule Reaper.FullTest do
           technical: %{
             cadence: 1_000,
             sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
-            sourceFormat: "json"
+            sourceFormat: "json",
+            schema: [
+              %{name: "latitude"},
+              %{name: "vehicle_id"},
+              %{name: "update_time"},
+              %{name: "longitude"}
+            ]
           }
         })
 
@@ -287,6 +295,48 @@ defmodule Reaper.FullTest do
           Horde.Registry.lookup({:via, Horde.Registry, {Reaper.Registry, String.to_atom(dataset_id <> "_feed")}})
 
         assert data_feed_status == :undefined
+      end)
+    end
+  end
+
+  describe "Schema Stage" do
+    test "fills nested nils", %{bypass: bypass} do
+      dataset_id = "alzenband"
+      topic = "#{@output_topic_prefix}-#{dataset_id}"
+
+      json_dataset =
+        TDG.create_dataset(%{
+          id: dataset_id,
+          technical: %{
+            cadence: 1_000,
+            sourceUrl: "http://localhost:#{bypass.port}/#{@nested_data_file_name}",
+            sourceFormat: "json",
+            schema: [
+              %{name: "id", type: "string"},
+              %{
+                name: "grandParent",
+                type: "map",
+                subSchema: [
+                  %{
+                    name: "parentMap",
+                    type: "map",
+                    subSchema: [%{name: "fieldA", type: "string"}, %{name: "fieldB", type: "string"}]
+                  }
+                ]
+              }
+            ]
+          }
+        })
+
+      Dataset.write(json_dataset)
+      Elsa.create_topic(@endpoints, topic)
+
+      eventually(fn ->
+        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+
+        assert Enum.at(results, 0).payload == %{id: nil, grandParent: %{parentMap: %{fieldA: nil, fieldB: nil}}}
+        assert Enum.at(results, 1).payload == %{id: "2", grandParent: %{parentMap: %{fieldA: "Bob", fieldB: "Purple"}}}
+        assert Enum.at(results, 2).payload == %{id: "3", grandParent: %{parentMap: %{fieldA: "Joe", fieldB: nil}}}
       end)
     end
   end
