@@ -33,8 +33,7 @@ defmodule Flair.MixProject do
     [
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10"},
-      {:ex_doc, "~> 0.19.3"},
-      {:distillery, "~> 2.0"},
+      {:ex_doc, "~> 0.19"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1", only: [:dev, :integration]},
@@ -42,16 +41,20 @@ defmodule Flair.MixProject do
       {:gen_stage, "~> 0.14"},
       {:jason, "~> 1.1"},
       {:kafka_ex, "~> 0.9"},
-      {:kaffe, "~> 1.14.1", only: [:test, :integration]},
+      {:kaffe, "~> 1.14", only: [:test, :integration]},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      {:faker, "~> 0.12.0"},
-      {:prestige, "~> 0.3.2"},
+      {:faker, "~> 0.12"},
+      {:prestige, "~> 0.3"},
       {:smart_city, "~> 2.1"},
       {:smart_city_data, "~> 2.1"},
-      {:smart_city_registry, "~> 2.6"},
-      {:smart_city_test, "~> 0.2.7", only: [:test, :integration]},
+      {:smart_city_registry, "~> 3.3"},
+      {:smart_city_test, "~> 0.2", only: [:test, :integration]},
       {:statistics, "~> 0.6"},
-      {:yeet, "~> 1.0"}
+      {:yeet, "~> 1.0"},
+      {:husky, "~> 1.0", only: :dev, runtime: false},
+      # updating version breaks
+      {:distillery, "2.0.14"}
+      # distillery breaks @ 2.1.0 due to elixir 1.9 support
     ]
   end
 

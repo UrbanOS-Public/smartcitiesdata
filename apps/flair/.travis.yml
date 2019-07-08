@@ -17,11 +17,12 @@ install:
   - mix local.rebar --force
   - mix local.hex --force
   - mix deps.get
+script:
   - mix format --check-formatted
   - mix credo
-script:
-  - docker build -t flair:build .
+  - mix hex.outdated || true
   - mix test.integration
+  - docker build -t flair:build .
 deploy:
 - provider: script
   skip_cleanup: true
