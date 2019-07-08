@@ -6,17 +6,22 @@ defmodule DiscoveryApiWeb.Router do
 
   pipeline :api do
     plug(Plug.Logger)
-    # plug(:accepts, ["csv", "json", "*", "html"])
+    plug(:accepts, ["csv", "json"])
   end
 
   pipeline :api_csv_only do
     plug(Plug.Logger)
-    # plug(:accepts, ["csv"])
+    plug(:accepts, ["csv"])
   end
 
   pipeline :api_json_only do
     plug(Plug.Logger)
-    # plug(:accepts, ["json"])
+    plug(:accepts, ["json"])
+  end
+
+  pipeline :api_any do
+    plug(Plug.Logger)
+    plug(DiscoveryApiWeb.Plugs.Acceptor)
   end
 
   pipeline :check_restricted do
@@ -60,7 +65,10 @@ defmodule DiscoveryApiWeb.Router do
 
     get("/organization/:org_name/dataset/:dataset_name/query", DatasetQueryController, :query)
     get("/dataset/:dataset_id/query", DatasetQueryController, :query)
+  end
 
+  scope "/api/v1", DiscoveryApiWeb do
+    pipe_through([:api_any, :check_restricted])
     get("/organization/:org_name/dataset/:dataset_name/download", DatasetDownloadController, :fetch_file)
     get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_file)
   end
