@@ -24,3 +24,6 @@ config :phoenix, :stacktrace_depth, 20
 
 config :ex_aws,
   debug_requests: true
+
+config :husky,
+  pre_commit: "./scripts/git_pre_commit_hook.sh"

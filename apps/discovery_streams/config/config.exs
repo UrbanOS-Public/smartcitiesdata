@@ -7,6 +7,12 @@ config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   pubsub: [name: DiscoveryStreams.PubSub, adapter: Phoenix.PubSub.PG2],
   instrumenters: [DiscoveryStreamsWeb.Endpoint.Instrumenter]
 
+# https://github.com/deadtrickster/prometheus-phoenix/issues/11
+config :prometheus, DiscoveryStreamsWeb.Endpoint.Instrumenter,
+  controller_call_labels: [:controller, :action],
+  channel_join_labels: [:channel, :topic, :transport],
+  channel_receive_labels: [:channel, :topic, :transport]
+
 config :logger,
   backends: [:console],
   level: :debug,

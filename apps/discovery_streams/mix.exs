@@ -33,29 +33,33 @@ defmodule DiscoveryStreams.Mixfile do
   defp deps do
     [
       {:cachex, "~> 3.0"},
-      {:checkov, "~> 0.4.0", only: :test},
-      {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
-      {:distillery, "~> 2.0"},
+      {:checkov, "~> 0.4", only: :test},
+      {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:divo_kafka, "~> 0.1"},
       {:divo, "~> 1.1"},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:httpoison, "~> 1.5"},
-      {:kaffe, "~> 1.12.0"},
+      {:kaffe, "~> 1.14"},
       {:libcluster, "~> 3.0"},
-      {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false},
+      {:mix_test_watch, "~> 0.6", only: :dev, runtime: false},
       {:patiently, "~> 0.2", only: [:test, :integration], override: true},
-      {:phoenix, "~> 1.3.2"},
+      {:phoenix, "~> 1.4"},
       {:phoenix_pubsub, "~> 1.0"},
       {:phoenix_html, "~> 2.10"},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
-      {:prometheus_phoenix, "~> 1.2.0"},
-      {:prometheus_plugs, "~> 1.1.1"},
-      {:plug_cowboy, "~> 1.0"},
+      {:prometheus_phoenix, "~> 1.2"},
+      {:prometheus_plugs, "~> 1.1"},
+      {:plug_cowboy, "~> 2.1"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:sweet_xml, "~> 0.6"},
       {:streaming_metrics, "~>2.1"},
       {:temporary_env, "~> 2.0", only: [:test, :integration]},
-      {:sobelow, "~> 0.8.0"}
+      {:sobelow, "~> 0.8"},
+      {:husky, "~> 1.0", only: :dev, runtime: false},
+      {:poison, "~> 4.0"},
+      # updating version breaks
+      {:distillery, "2.0.14"}
+      # distillery breaks @ 2.1.0 due to elixir 1.9 support
     ]
   end
 

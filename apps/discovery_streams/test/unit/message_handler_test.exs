@@ -51,14 +51,17 @@ defmodule DiscoveryStreams.MessageHandlerTest do
       socket()
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
 
-    assert capture_log([level: :warn], fn ->
-             MessageHandler.handle_messages([
-               create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "shuttle-position"),
-               # <- Badly formatted JSON
-               create_message(~s({"vehicle":{"vehicle":{"id:""11604"}}}), topic: "shuttle-position"),
-               create_message(~s({"vehicle":{"vehicle":{"id":"11605"}}}), topic: "shuttle-position")
-             ])
-           end) =~ ~S(Poison parse error: {:invalid, "\"", 28)
+    output =
+      capture_log([level: :warn], fn ->
+        MessageHandler.handle_messages([
+          create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "shuttle-position"),
+          # <- Badly formatted JSON
+          create_message(~s({"vehicle":{"vehicle":{"id:""11604"}}}), topic: "shuttle-position"),
+          create_message(~s({"vehicle":{"vehicle":{"id":"11605"}}}), topic: "shuttle-position")
+        ])
+      end)
+
+    assert String.contains?(output, "Poison parse error") == true
 
     assert_broadcast("update", %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}})
     assert_broadcast("update", %{"vehicle" => %{"vehicle" => %{"id" => "11605"}}})

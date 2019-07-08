@@ -51,14 +51,14 @@ defmodule DiscoveryStreams.TopicSubscriber do
     |> Enum.map(fn {host, port} -> {to_charlist(host), port} end)
   end
 
-  defp public?(topic_metadata), do: not Keyword.get(topic_metadata, :is_internal)
+  defp public?(topic_metadata), do: not Map.get(topic_metadata, :is_internal)
 
   defp public_topics() do
     {:ok, metadata} = :brod.get_metadata(get_endpoints())
 
     metadata
-    |> Keyword.get(:topic_metadata)
+    |> Map.get(:topic_metadata)
     |> Enum.filter(&public?/1)
-    |> Enum.map(fn x -> Keyword.get(x, :topic) end)
+    |> Enum.map(fn x -> Map.get(x, :topic) end)
   end
 end
