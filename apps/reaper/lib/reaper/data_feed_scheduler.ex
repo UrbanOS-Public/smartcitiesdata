@@ -40,7 +40,10 @@ defmodule Reaper.DataFeedScheduler do
 
     Horde.Registry.register(Reaper.Registry, name)
 
-    {:ok, args, {:continue, :check_topic}}
+    case reaper_config.sourceType do
+      "host" -> {:ok, args}
+      _ -> {:ok, args, {:continue, :check_topic}}
+    end
   end
 
   def handle_continue(:check_topic, state) do
@@ -56,7 +59,12 @@ defmodule Reaper.DataFeedScheduler do
   end
 
   def handle_info(:work, %{pids: %{cache: cache}, reaper_config: reaper_config} = state) do
-    task = Task.async(Reaper.DataFeed, :process, [reaper_config, cache])
+    task =
+      case reaper_config.sourceType do
+        "host" -> Task.async(Reaper.HostedFileProcessor, :process, [reaper_config])
+        _ -> Task.async(Reaper.DataFeed, :process, [reaper_config, cache])
+      end
+
     Task.await(task, :infinity)
 
     timer_ref = schedule_work(reaper_config.cadence)

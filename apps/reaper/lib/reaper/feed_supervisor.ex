@@ -80,6 +80,8 @@ defmodule Reaper.FeedSupervisor do
     ]
   end
 
+  defp cache_spec(%{sourceType: "host"} = _reaper_config, _cache_name, _cache_limit, _restart_policy), do: []
+
   defp cache_spec(_reaper_config, _cache_name, _cache_limit, _restart_policy), do: []
 
   defp feed_scheduler_spec(reaper_config, feed_name, cache_name, restart_policy) do

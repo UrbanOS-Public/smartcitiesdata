@@ -25,7 +25,8 @@ config :reaper,
   ],
   divo_wait: [dwell: 1000, max_tries: 120],
   elsa_brokers: endpoint,
-  output_topic_prefix: "raw"
+  output_topic_prefix: "raw",
+  hosted_file_bucket: "hosted-dataset-files"
 
 config :smart_city_registry,
   redis: [

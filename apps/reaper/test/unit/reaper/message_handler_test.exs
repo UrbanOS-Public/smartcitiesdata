@@ -12,6 +12,8 @@ defmodule Reaper.MessageHandlerTest do
       reaper_config =
         FixtureHelper.new_reaper_config(%{
           dataset_id: dataset.id,
+          dataName: dataset.technical.dataName,
+          orgName: dataset.technical.orgName,
           cadence: dataset.technical.cadence,
           sourceFormat: dataset.technical.sourceFormat,
           sourceUrl: dataset.technical.sourceUrl,
