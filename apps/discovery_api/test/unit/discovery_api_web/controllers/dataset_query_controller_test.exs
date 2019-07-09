@@ -287,7 +287,22 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       :ok
     end
 
-    test "queries cannot contain semicolons", %{conn: conn} do
+    test "json queries cannot contain semicolons", %{conn: conn} do
+      assert capture_log(fn ->
+               conn
+               |> put_req_header("accept", "application/json")
+               |> get("/api/v1/dataset/bobber/query", columns: "id,one; select * from system; two")
+               |> response(400)
+             end) =~
+               "Query contained illegal character(s): [SELECT id, one; select * from system; two FROM coda__test_dataset]"
+
+      assert_called(
+        Prestige.execute("SELECT id, one; select * from system; two FROM coda__test_dataset"),
+        times(0)
+      )
+    end
+
+    test "csv queries cannot contain semicolons", %{conn: conn} do
       assert capture_log(fn ->
                conn
                |> put_req_header("accept", "text/csv")

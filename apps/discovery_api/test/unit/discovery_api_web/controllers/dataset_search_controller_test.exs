@@ -16,7 +16,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
   end
 
   describe "fetch dataset summaries" do
-    data_test "request to search #{inspect(params)} has #{inspect(selector)} == #{inspect(result)}",
+    data_test "request to search with #{inspect(params)}",
               %{conn: conn} do
       response_map = conn |> get("/api/v1/dataset/search", params) |> json_response(200)
       actual = get_in(response_map, selector)

@@ -55,6 +55,7 @@ defmodule DiscoveryApi.Mixfile do
       {:timex, "~>3.0"},
       {:sobelow, "~> 0.8"},
       {:husky, "~> 1.0", only: :dev, runtime: false},
+      {:dialyxir, "~> 0.5.1", only: :dev, runtime: false},
       # updating version breaks
       {:distillery, "2.0.14"},
       # distillery breaks @ 2.1.0 due to elixir 1.9 support
