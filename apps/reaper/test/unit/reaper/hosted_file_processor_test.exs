@@ -19,7 +19,7 @@ defmodule Reaper.HostedFileProcessorTest do
       Plug.Conn.resp(conn, 200, @hosted_file)
     end)
 
-    allow(
+    expect(
       ExAws.request(any()),
       return: {:ok, :done},
       meck_options: [:passthrough]
