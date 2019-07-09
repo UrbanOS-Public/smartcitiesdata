@@ -53,6 +53,8 @@ defmodule Valkyrie.Validators do
     end
   end
 
+  defp get_invalid_field_or_header(_field, _payload), do: []
+
   defp get_invalid_sub_fields(%{name: name, type: "map", subSchema: sub_schema}, payload) do
     get_invalid_fields(payload[String.to_atom(name)], sub_schema)
   end

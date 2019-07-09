@@ -198,5 +198,43 @@ defmodule Valkyrie.ValidatorsTest do
 
       assert Validators.get_invalid_fields(msg.payload, schema) == []
     end
+
+    test "Handle map with a list of maps" do
+      schema = [
+        %{
+          name: "origin",
+          type: "map",
+          subSchema: [
+            %{
+              name: "block",
+              type: "map",
+              subSchema: [
+                %{
+                  name: "intersection",
+                  type: "list",
+                  itemType: "map",
+                  subSchema: [
+                    %{name: "fibs", biased: "no"}
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+
+      payload = %{origin: %{block: %{intersection: [%{fibs: "123"}]}}}
+
+      [msg] =
+        TDG.create_data(
+          [
+            dataset_id: "cooler_data",
+            payload: payload
+          ],
+          1
+        )
+
+      assert Validators.get_invalid_fields(msg.payload, schema) == []
+    end
   end
 end
