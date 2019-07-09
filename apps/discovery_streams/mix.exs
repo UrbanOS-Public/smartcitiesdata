@@ -56,10 +56,11 @@ defmodule DiscoveryStreams.Mixfile do
       {:temporary_env, "~> 2.0", only: [:test, :integration]},
       {:sobelow, "~> 0.8"},
       {:husky, "~> 1.0", only: :dev, runtime: false},
-      {:poison, "~> 4.0"},
       # updating version breaks
-      {:distillery, "2.0.14"}
+      {:distillery, "2.0.14"},
       # distillery breaks @ 2.1.0 due to elixir 1.9 support
+      {:poison, "3.1.0"}
+      # poison breaks @ 4.0.1 due to encode_to_iotdata missing from 4.0
     ]
   end
 
