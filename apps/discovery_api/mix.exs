@@ -24,7 +24,11 @@ defmodule DiscoveryApi.Mixfile do
   defp deps do
     [
       {:ex_aws, "~> 2.1"},
-      {:ex_aws_s3, "~> 2.0", git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"},
+      { # This commit allows us to stream files off of S3 through memory. Release pending.
+        :ex_aws_s3,
+        "~> 2.0",
+        git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"
+      },
       {:paddle, "~> 0.1.4"},
       {:sweet_xml, "~> 0.6"},
       {:cachex, "~> 3.0"},

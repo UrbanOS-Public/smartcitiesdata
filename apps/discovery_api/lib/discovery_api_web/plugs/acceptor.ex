@@ -6,15 +6,26 @@ defmodule DiscoveryApiWeb.Plugs.Acceptor do
   def init(default), do: default
 
   def call(conn, _) do
-    format =
-      conn
-      |> get_req_header("accept")
-      |> hd()
-      |> String.split(",", trim: true)
-      |> hd()
-      |> MIME.extensions()
+    conn.params
+    |> Map.get("_format", extract_accept_header(conn))
+    |> List.wrap()
+    |> set_format(conn)
+  end
 
-    conn
-    |> assign(:accepted_extensions, format)
+  defp set_format(format, conn) do
+    put_private(conn, :phoenix_format, format)
+  end
+
+  defp extract_accept_header(conn) do
+    case List.first(get_req_header(conn, "accept")) do
+      nil ->
+        []
+
+      header ->
+        header
+        |> String.split(",", trim: true)
+        |> List.first()
+        |> MIME.extensions()
+    end
   end
 end

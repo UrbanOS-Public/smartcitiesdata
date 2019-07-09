@@ -9,7 +9,9 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
 
 config :discovery_api,
   ldap_user: System.get_env("LDAP_USER"),
-  ldap_pass: System.get_env("LDAP_PASS")
+  ldap_pass: System.get_env("LDAP_PASS"),
+  hosted_bucket: System.get_env("HOSTED_BUCKET"),
+  hosted_region: System.get_env("HOSTED_REGION")
 
 required_envars = ["REDIS_HOST", "PRESTO_URL", "ALLOWED_ORIGINS"]
 

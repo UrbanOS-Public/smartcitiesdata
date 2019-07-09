@@ -4,10 +4,14 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
   require Logger
 
   def fetch_file(conn, params) do
-    fetch_file(conn, params, get_format(conn))
+    if conn.assigns.model.sourceType == "host" do
+      fetch_file_from_s3(conn, get_format(conn))
+    else
+      fetch_file(conn, params, get_format(conn))
+    end
   end
 
-  def fetch_file(conn, _params, "csv") do
+  def fetch_file(conn, _params, ["csv"]) do
     table = conn.assigns.model.systemName
 
     columns = fetch_columns(table)
@@ -15,7 +19,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
     download(conn, conn.assigns.model.id, table, columns)
   end
 
-  def fetch_file(conn, _params, "json") do
+  def fetch_file(conn, _params, ["json"]) do
     table = conn.assigns.model.systemName
 
     data =
@@ -28,39 +32,41 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
 
     [["["], data, ["]"]]
     |> Stream.concat()
-    |> stream_data(conn, conn.assigns.model.id, get_format(conn))
+    |> stream_data(conn, conn.assigns.model.id, "json")
   end
 
-  def fetch_file(conn, _params, _format) do
+  def fetch_file(conn, params, _unmatched_format) do
+    fetch_file(conn, params, ["csv"])
+  end
+
+  def fetch_file_from_s3(conn, formats) do
     available_extension =
-      conn.assigns.accepted_extensions
+      formats
       |> Enum.find(fn extension ->
         file_exists(conn.assigns.model.organizationDetails.orgName, conn.assigns.model.id, extension)
       end)
-      |> IO.inspect(label: "dataset_download_controller.ex:39")
 
     if available_extension do
-      ExAws.S3.download_file(
-        bucket_name(),
-        "/#{conn.assigns.model.organizationDetails.orgName}/#{conn.assigns.model.id}.#{available_extension}",
-        "dataset"
-      )
-      |> ExAws.stream!(region: "us-east-2")
-      |> stream_data(conn, "name", get_format(conn))
+      stream_from_s3(conn, available_extension)
     else
       conn
       |> render_error(406, "File not available in the specified format")
     end
-  rescue
-    e ->
-      Logger.error("Error trying to download a hosted file: #{inspect(e)}")
-      raise e
+  end
+
+  def stream_from_s3(conn, format) do
+    bucket_name()
+    |> ExAws.S3.download_file(
+      "/#{conn.assigns.model.organizationDetails.orgName}/#{conn.assigns.model.id}.#{format}",
+      "dataset"
+    )
+    |> ExAws.stream!(region: region())
+    |> stream_data(conn, "name", format)
   end
 
   defp file_exists(org_name, dataset_id, extension) do
-    ExAws.S3.list_objects(bucket_name(),
-      prefix: "/#{org_name}/#{dataset_id}.#{extension}"
-    )
+    bucket_name()
+    |> ExAws.S3.list_objects(prefix: "/#{org_name}/#{dataset_id}.#{extension}")
     |> ExAws.request!()
     |> Map.get(:body)
     |> Map.get(:contents)
@@ -84,10 +90,14 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
     "select * from #{table}"
     |> Prestige.execute()
     |> map_data_stream_for_csv(columns)
-    |> stream_data(conn, dataset_id, get_format(conn))
+    |> stream_data(conn, dataset_id, "csv")
   end
 
   defp bucket_name() do
     Application.get_env(:discovery_api, :hosted_bucket)
+  end
+
+  defp region() do
+    Application.get_env(:discovery_api, :hosted_region)
   end
 end

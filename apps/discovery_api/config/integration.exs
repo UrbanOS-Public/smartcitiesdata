@@ -1,5 +1,5 @@
 use Mix.Config
-
+aws_region = "us-east-1"
 host = "localhost"
 endpoints = [{to_charlist(host), 9092}]
 
@@ -11,7 +11,8 @@ config :discovery_api,
   divo_wait: [dwell: 2000, max_tries: 35],
   ldap_user: [cn: "admin"],
   ldap_pass: "admin",
-  hosted_bucket: "kdp-cloud-storage"
+  hosted_bucket: "kdp-cloud-storage",
+  hosted_region: aws_region
 
 config :smart_city_registry,
   redis: [
@@ -40,11 +41,12 @@ config :paddle, Paddle,
 config :ex_aws, :s3,
   scheme: "http://",
   host: "localhost",
-  region: "us-east-1",
+  region: aws_region,
   port: 9000
 
 System.put_env("AWS_ACCESS_KEY_ID", "testing_access_key")
 System.put_env("AWS_SECRET_ACCESS_KEY", "testing_secret_key")
+
 config :ex_aws,
   access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
   secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role]

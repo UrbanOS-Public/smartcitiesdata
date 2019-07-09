@@ -7,7 +7,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     query(conn, params, get_format(conn))
   end
 
-  def query(conn, params, "csv") do
+  def query(conn, params, "csv" = format) do
     system_name = conn.assigns.model.systemName
 
     with {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
@@ -17,14 +17,14 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       query
       |> Prestige.execute()
       |> map_data_stream_for_csv(column_names)
-      |> stream_data(conn, system_name, get_format(conn))
+      |> stream_data(conn, system_name, format)
     else
       error ->
         handle_error(conn, error)
     end
   end
 
-  def query(conn, params, "json") do
+  def query(conn, params, "json" = format) do
     system_name = conn.assigns.model.systemName
 
     with {:ok, query} <- build_query(params, system_name) do
@@ -38,7 +38,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
       [["["], data, ["]"]]
       |> Stream.concat()
-      |> stream_data(conn, system_name, get_format(conn))
+      |> stream_data(conn, system_name, format)
     else
       error ->
         handle_error(conn, error)

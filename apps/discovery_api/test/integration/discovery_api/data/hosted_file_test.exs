@@ -34,7 +34,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     organization = TDG.create_organization(%{orgName: "test_org"})
     Organization.write(organization)
 
-    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
+    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id, sourceType: "host"}})
     Dataset.write(dataset)
 
     Patiently.wait_for!(
@@ -52,11 +52,29 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     organization = TDG.create_organization(%{orgName: "test_org"})
     Organization.write(organization)
 
-    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
+    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id, sourceType: "host"}})
     Dataset.write(dataset)
 
     Patiently.wait_for!(
       fn -> download_and_checksum(organization.orgName, dataset.technical.dataName, "application/shapefile") == @expected_checksum end,
+      dwell: 200,
+      max_tries: 5
+    )
+  end
+
+  @moduletag capture_log: true
+  test "downloads a file with a explicit format" do
+    dataset_id = @dataset_id
+    system_name = "not_saved"
+
+    organization = TDG.create_organization(%{orgName: "test_org"})
+    Organization.write(organization)
+
+    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id, sourceType: "host"}})
+    Dataset.write(dataset)
+
+    Patiently.wait_for!(
+      fn -> download_and_checksum_with_format(organization.orgName, dataset.technical.dataName, "tgz") == @expected_checksum end,
       dwell: 200,
       max_tries: 5
     )
@@ -70,14 +88,14 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     organization = TDG.create_organization(%{orgName: "test_org"})
     Organization.write(organization)
 
-    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
+    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id, sourceType: "host"}})
     Dataset.write(dataset)
 
     Patiently.wait_for!(
       fn ->
         %{status_code: status_code, body: body} =
           "http://localhost:4000/api/v1/organization/#{organization.orgName}/dataset/#{dataset.technical.dataName}/download"
-          |> HTTPoison.get!([{"Accept", "audio/ATRAC3, application/json"}])
+          |> HTTPoison.get!([{"Accept", "audio/ATRAC3"}])
           |> Map.from_struct()
 
         status_code == 406
@@ -90,7 +108,24 @@ defmodule DiscoveryApi.Data.HostedFileTest do
   defp download_and_checksum(org_name, dataset_name, accept_header) do
     body =
       "http://localhost:4000/api/v1/organization/#{org_name}/dataset/#{dataset_name}/download"
-      |> HTTPoison.get!([{"Accept", "#{accept_header}, application/json"}])
+      |> HTTPoison.get!([{"Accept", "#{accept_header}"}])
+      |> Map.get(:body)
+
+    if is_binary(body) do
+      Logger.info("Got something: #{inspect(body)}")
+      checksum = :crypto.hash(:md5, body) |> Base.encode16()
+
+      checksum
+    else
+      Logger.info("Got something unexpected: #{body}")
+      false
+    end
+  end
+
+  defp download_and_checksum_with_format(org_name, dataset_name, format) do
+    body =
+      "http://localhost:4000/api/v1/organization/#{org_name}/dataset/#{dataset_name}/download?_format=#{format}"
+      |> HTTPoison.get!()
       |> Map.get(:body)
 
     if is_binary(body) do
