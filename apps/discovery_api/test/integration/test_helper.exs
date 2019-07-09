@@ -3,7 +3,7 @@ Faker.start()
 
 defmodule URLResolver do
   def resolve_url(url) do
-    url
+    "./test/integration/schemas/#{url}"
     |> String.split("#")
     |> List.last()
     |> File.read!()

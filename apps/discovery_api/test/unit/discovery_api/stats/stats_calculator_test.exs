@@ -138,12 +138,12 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
       technical: %SmartCity.Dataset.Technical{
         cadence: 4654,
         dataName: "Tawny_Laranja",
-        headers: %{accepts: "application/json"},
+        sourceHeaders: %{accepts: "application/json"},
         orgId: "orgId",
         orgName: "Rosa_Jasper",
         partitioner: %{query: nil, type: nil},
         private: true,
-        queryParams: %{apiKey: "d3b0afb2-66bc-496f-8b0c-32c6872f1515"},
+        sourceQueryParams: %{apiKey: "d3b0afb2-66bc-496f-8b0c-32c6872f1515"},
         schema: [
           %{name: "name", required: false, type: "string"},
           %{name: "age", required: false, type: "int"}
@@ -166,7 +166,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
       id: @dataset_id,
       technical: %SmartCity.Dataset.Technical{
         private: true,
-        queryParams: %{apiKey: "d3b0afb2-66bc-496f-8b0c-32c6872f1515"},
+        sourceQueryParams: %{apiKey: "d3b0afb2-66bc-496f-8b0c-32c6872f1515"},
         schema: [
           %{name: "name", required: false, type: "string"},
           %{name: "age", required: false, type: "int"}
