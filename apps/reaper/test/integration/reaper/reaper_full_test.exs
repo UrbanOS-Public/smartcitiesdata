@@ -232,6 +232,33 @@ defmodule Reaper.FullTest do
       end)
     end
 
+    test "configures and ingests a hosted dataset", %{bypass: bypass} do
+      dataset_id = "1-22-333-4444"
+
+      hosted_dataset =
+        TDG.create_dataset(%{
+          id: dataset_id,
+          technical: %{
+            cadence: "once",
+            sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+            sourceFormat: "csv",
+            sourceType: "host",
+            dataName: "some_data_csv",
+            orgName: "some_org",
+            systemName: "some_org__some_data_csv"
+          }
+        })
+
+      Dataset.write(hosted_dataset)
+
+      eventually(fn ->
+        actual = ExAws.S3.get_object("hosted-dataset-files", "some_org/some_data_csv.csv") |> ExAws.request!() |> Map.get(:body)
+        expected = File.read!("test/support/#{@csv_file_name}")
+
+        assert actual == expected
+      end)
+    end
+
     test "saves last_success_time to redis", %{bypass: bypass} do
       dataset_id = "12345-5555"
 

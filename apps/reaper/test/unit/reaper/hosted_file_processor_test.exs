@@ -26,7 +26,7 @@ defmodule Reaper.HostedFileProcessorTest do
       meck_options: [:passthrough]
     )
 
-    expect(Persistence.record_last_fetched_timestamp(any(), any()),
+    expect(Persistence.record_last_fetched_timestamp("12345", any()),
       return: :ok
     )
 

@@ -54,5 +54,6 @@ config :ex_aws, :s3,
   scheme: "http://",
   region: "local",
   host: %{
-    "local" => "localhost:9000"
-  }
+    "local" => "localhost"
+  },
+  port: 9000

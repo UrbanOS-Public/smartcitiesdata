@@ -5,9 +5,6 @@ defmodule Reaper.DivoMinio do
 
   def gen_stack(envar \\ []) do
     port = Keyword.get(envar, :port, 9000)
-    bucket_name = Keyword.get(envar, :bucket, "hosted-dataset-files")
-    access_key = Keyword.get(envar, :access_key, "access_key")
-    secret_key = Keyword.get(envar, :secret_key, "secret_key")
 
     %{
       minio: %{
