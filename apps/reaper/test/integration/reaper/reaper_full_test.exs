@@ -243,9 +243,6 @@ defmodule Reaper.FullTest do
             sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
             sourceFormat: "csv",
             sourceType: "host",
-            dataName: "some_data_csv",
-            orgName: "some_org",
-            systemName: "some_org__some_data_csv"
           }
         })
 
@@ -254,7 +251,7 @@ defmodule Reaper.FullTest do
       eventually(fn ->
         expected = File.read!("test/support/#{@csv_file_name}")
 
-        case ExAws.S3.get_object("hosted-dataset-files", "some_org/some_data_csv.csv") |> ExAws.request() do
+        case ExAws.S3.get_object("hosted-dataset-files", "#{hosted_dataset.technical.orgName}/#{hosted_dataset.technical.dataName}.#{hosted_dataset.technical.sourceFormat}") |> ExAws.request() do
           {:ok, resp} -> assert Map.get(resp, :body) == expected
           _other -> Logger.info("File not uploaded yet")
         end
