@@ -4,6 +4,7 @@ defmodule Reaper.HostedFileProcessorTest do
   import ExUnit.CaptureLog
 
   alias Reaper.HostedFileProcessor
+  alias Reaper.Persistence
 
   @dataset_id "12345"
 
@@ -23,6 +24,10 @@ defmodule Reaper.HostedFileProcessorTest do
       ExAws.request(any()),
       return: {:ok, :done},
       meck_options: [:passthrough]
+    )
+
+    expect(Persistence.record_last_fetched_timestamp(any(), any()),
+      return: :ok
     )
 
     config =

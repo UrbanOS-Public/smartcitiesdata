@@ -7,7 +7,8 @@ defmodule Reaper.HostedFileProcessor do
 
   alias Reaper.{
     UrlBuilder,
-    DataSlurper
+    DataSlurper,
+    Persistence
   }
 
   @doc """
@@ -15,6 +16,7 @@ defmodule Reaper.HostedFileProcessor do
   """
   def process(config) do
     filename = get_filename(config)
+    generated_time_stamp = DateTime.utc_now()
 
     _something =
       config
@@ -22,7 +24,16 @@ defmodule Reaper.HostedFileProcessor do
       |> DataSlurper.slurp(config.dataset_id, config.sourceHeaders, config.protocol)
       |> upload(filename)
 
-    # record_last_fetched_timestamp
+    record_last_fetched_timestamp(config.dataset_id, generated_time_stamp)
+  rescue
+    error ->
+      Logger.error("Unable to continue processing dataset #{inspect(config)} - Error #{inspect(error)}")
+
+      reraise error, __STACKTRACE__
+  after
+    config.dataset_id
+    |> DataSlurper.determine_filename()
+    |> File.rm()
   end
 
   defp upload({:file, path}, filename) do
@@ -35,4 +46,8 @@ defmodule Reaper.HostedFileProcessor do
   defp bucket_name, do: Application.get_env(:reaper, :hosted_file_bucket)
 
   defp get_filename(config), do: "#{config.orgName}/#{config.dataName}.#{config.sourceFormat}"
+
+  defp record_last_fetched_timestamp(dataset_id, timestamp) do
+    Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
+  end
 end
