@@ -19,7 +19,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
     download(conn, conn.assigns.model.id, table, columns)
   end
 
-  def fetch_file(conn, _params, ["json"]) do
+  def fetch_file(conn, _params, ["json" = format]) do
     table = conn.assigns.model.systemName
 
     data =
@@ -32,7 +32,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
 
     [["["], data, ["]"]]
     |> Stream.concat()
-    |> stream_data(conn, conn.assigns.model.id, "json")
+    |> stream_data(conn, conn.assigns.model.id, format)
   end
 
   def fetch_file(conn, params, _unmatched_format) do

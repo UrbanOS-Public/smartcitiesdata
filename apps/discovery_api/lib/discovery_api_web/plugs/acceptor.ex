@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.Plugs.Acceptor do
-  @moduledoc false
+  @moduledoc """
+  This plug is used as an unopinionated alternative to the `:accept` plug provided by Phoenix. It parses out all possible extensions provided by the first MIME type provided in the accept header. These are stored as a list in the phoenix_format assign in the connection.
+  """
   require Logger
   import Plug.Conn
 
