@@ -19,8 +19,8 @@ install:
 script:
   - mix format --check-formatted
   - mix credo
-  - mix sobelow
-  - mix hex.oudated || true
+  - mix sobelow -i Config.HTTPS --skip --compact --exit low
+  - mix hex.outdated || true
   - mix test.integration
   - docker build -t andi:build .
 deploy:

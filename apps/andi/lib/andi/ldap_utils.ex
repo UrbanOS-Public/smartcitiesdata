@@ -25,6 +25,7 @@ defmodule Andi.LdapUtils do
     |> Enum.map(&keyword_tuple/1)
   end
 
+  # sobelow_skip ["DOS.StringToAtom"]
   defp keyword_tuple(str) do
     case String.split(str, "=") do
       [key, value] -> {String.to_atom(key), value}

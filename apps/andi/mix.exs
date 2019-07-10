@@ -45,7 +45,7 @@ defmodule Andi.MixProject do
       {:tesla, "~> 1.2", only: :integration},
       {:uuid, "~> 1.1"},
       {:smart_city_test, "~> 0.2", only: [:test, :integration]},
-      {:sobelow, "~> 0.8"},
+      {:sobelow, "~> 0.8", only: :dev},
       {:husky, "~> 1.0", only: :dev, runtime: false},
       # updating version breaks
       {:distillery, "2.0.14"}
