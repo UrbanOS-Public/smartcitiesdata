@@ -47,6 +47,7 @@ defmodule Reaper.MixProject do
       {:gen_stage, "~> 0.14"},
       {:horde_connector, "~> 0.1"},
       {:httpoison, "~> 1.5"},
+      {:poison, "~> 3.0"},
       {:jason, "~> 1.1"},
       {:libcluster, "~> 3.0"},
       {:libvault, "~> 0.2"},

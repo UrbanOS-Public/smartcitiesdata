@@ -252,10 +252,12 @@ defmodule Reaper.FullTest do
       Dataset.write(hosted_dataset)
 
       eventually(fn ->
-        actual = ExAws.S3.get_object("hosted-dataset-files", "some_org/some_data_csv.csv") |> ExAws.request!() |> Map.get(:body)
         expected = File.read!("test/support/#{@csv_file_name}")
 
-        assert actual == expected
+        case ExAws.S3.get_object("hosted-dataset-files", "some_org/some_data_csv.csv") |> ExAws.request() do
+          {:ok, resp} -> assert Map.get(resp, :body) == expected
+          _other -> Logger.info("File not uploaded yet")
+        end
       end)
     end
 
