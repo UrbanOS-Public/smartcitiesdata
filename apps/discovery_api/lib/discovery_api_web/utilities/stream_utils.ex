@@ -10,6 +10,7 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
     |> CSV.encode(delimiter: "\n")
   end
 
+  # sobelow_skip ["XSS.ContentType"]
   def stream_data(stream, conn, system_name, format) do
     conn =
       conn
