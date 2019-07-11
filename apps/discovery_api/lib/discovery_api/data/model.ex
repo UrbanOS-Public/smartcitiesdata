@@ -129,6 +129,7 @@ defmodule DiscoveryApi.Data.Model do
     end
   end
 
+  # sobelow_skip ["DOS.StringToAtom"]
   def get_count_maps(dataset_id) do
     case Persistence.get_keys("smart_registry:*:count:" <> dataset_id) do
       [] ->

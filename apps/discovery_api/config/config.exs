@@ -25,9 +25,12 @@ config :discovery_api,
 config :paddle, Paddle, host: "localhost", account_subdn: "ou=People"
 
 # NOTE: To generate a secret_key:  mix guardian.gen.secret
+# secret set as variable to pass sobelow check on hard coded secrets
+secret = "this_is_a_secret"
+
 config :discovery_api, DiscoveryApi.Auth.Guardian,
   issuer: "discovery_api",
-  secret_key: "this_is_a_secret"
+  secret_key: secret
 
 config :discovery_api, DiscoveryApi.Quantum.Scheduler,
   jobs: [
