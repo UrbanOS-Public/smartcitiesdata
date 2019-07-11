@@ -50,7 +50,7 @@ defmodule DiscoveryApi.Application do
   end
 
   defp get_s3_credentials do
-    Application.get_env(:redix, :secrets_endpoint)
+    Application.get_env(:discovery_api, :secrets_endpoint)
     |> case do
       nil -> nil
       host -> DiscoveryApi.S3.CredentialRetriever.retrieve()
