@@ -1,5 +1,5 @@
 use Mix.Config
-aws_region = "us-east-1"
+aws_region = "us-west-2"
 host = "localhost"
 endpoints = [{to_charlist(host), 9092}]
 
