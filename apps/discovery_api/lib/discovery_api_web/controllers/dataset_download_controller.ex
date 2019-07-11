@@ -5,9 +5,6 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
 
   def fetch_file(conn, params) do
     if conn.assigns.model.sourceType == "host" do
-      {:ok, %{"aws_access_key_id" => access_key, "aws_secret_access_key" => secret_key}} = DiscoveryApi.CredentialRetriever.retrieve()
-      System.put_env("AWS_ACCESS_KEY_ID", access_key)
-      System.put_env("AWS_SECRET_ACCESS_KEY", secret_key)
       fetch_file_from_s3(conn, get_format(conn))
     else
       fetch_file(conn, params, get_format(conn))

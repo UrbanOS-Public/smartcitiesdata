@@ -1,18 +1,29 @@
-defmodule DiscoveryApi.CredentialRetriever do
+defmodule DiscoveryApi.S3.CredentialRetriever do
   @moduledoc """
   Retrieves credentials for use in accessing restricted datasets.
   """
+  use Task
   require Logger
+
+  def start_link(arg) do
+    Logger.warn("Starting to get credentials")
+    Task.start_link(__MODULE__, :run, [arg])
+  end
+
+  def run(arg) do
+    retrieve()
+  end
 
   def retrieve() do
     with {:ok, jwt} <- get_kubernetes_token(),
          {:ok, vault} <- instantiate_vault_conn(jwt),
          {:ok, credentials} <- Vault.read(vault, "secrets/smart_city/host_access/read") do
-      {:ok, credentials}
+      Application.put_env(:ex_aws, :aws_access_key_id, Map.get(credentials, "aws_access_key_id"))
+      Application.put_env(:ex_aws, :aws_secret_access_key, Map.get(credentials, "aws_secret_access_key"))
     else
       {:error, reason} ->
         Logger.error("Unable to retrieve dataset credential; #{reason}")
-        {:error, :retrieve_credential_failed}
+        raise reason
     end
   end
 

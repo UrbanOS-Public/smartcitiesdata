@@ -10,6 +10,8 @@ defmodule DiscoveryApi.Application do
     DiscoveryApi.MetricsExporter.setup()
     DiscoveryApiWeb.Endpoint.Instrumenter.setup()
 
+    get_s3_credentials()
+
     children =
       [
         DiscoveryApi.Data.SystemNameCache,
@@ -44,6 +46,14 @@ defmodule DiscoveryApi.Application do
     |> case do
       nil -> []
       host -> {Redix, host: host, name: :redix}
+    end
+  end
+
+  defp get_s3_credentials do
+    Application.get_env(:redix, :secrets_endpoint)
+    |> case do
+      nil -> nil
+      host -> DiscoveryApi.S3.CredentialRetriever.retrieve()
     end
   end
 end
