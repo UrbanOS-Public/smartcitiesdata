@@ -2,16 +2,7 @@ defmodule DiscoveryApi.S3.CredentialRetriever do
   @moduledoc """
   Retrieves credentials for use in accessing restricted datasets.
   """
-  use Task
   require Logger
-
-  def start_link(arg) do
-    Task.start_link(__MODULE__, :run, [arg])
-  end
-
-  def run(arg) do
-    retrieve()
-  end
 
   def retrieve() do
     with {:ok, jwt} <- get_kubernetes_token(),
