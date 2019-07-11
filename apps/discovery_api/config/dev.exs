@@ -38,3 +38,6 @@ config :paddle, Paddle,
   base: "dc=internal,dc=smartcolumbusos,dc=com",
   timeout: 3000,
   account_subdn: "cn=users,cn=accounts"
+
+config :husky,
+  pre_commit: "./scripts/git_pre_commit_hook.sh"

@@ -63,8 +63,9 @@ defmodule DiscoveryApi.Mixfile do
       {:smart_city_test, "~> 0.3", only: [:test, :integration]},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},
       {:timex, "~>3.0"},
-      {:sobelow, "~> 0.8"},
+      {:sobelow, "~> 0.8", only: :dev},
       {:husky, "~> 1.0", only: :dev, runtime: false},
+      {:dialyxir, "~> 0.5.1", only: :dev, runtime: false},
       # updating version breaks
       {:distillery, "2.0.14"},
       # distillery breaks @ 2.1.0 due to elixir 1.9 support
