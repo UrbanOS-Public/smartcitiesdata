@@ -6,7 +6,6 @@ defmodule DiscoveryApi.S3.CredentialRetriever do
   require Logger
 
   def start_link(arg) do
-    Logger.warn("Starting to get credentials")
     Task.start_link(__MODULE__, :run, [arg])
   end
 
