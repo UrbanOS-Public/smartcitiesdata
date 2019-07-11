@@ -5,8 +5,7 @@ required_envars = [
   "KAFKA_BROKERS",
   "OUTPUT_TOPIC_PREFIX",
   "DLQ_TOPIC",
-  "SECRETS_ENDPOINT",
-  "DOWNLOAD_TIMEOUT"
+  "SECRETS_ENDPOINT"
 ]
 
 Enum.each(required_envars, fn var ->
@@ -42,7 +41,6 @@ end
 
 config :reaper,
   secrets_endpoint: System.get_env("SECRETS_ENDPOINT"),
-  http_download_timeout: System.get_env("DOWNLOAD_TIMEOUT"),
   elsa_brokers: endpoints,
   output_topic_prefix: System.get_env("OUTPUT_TOPIC_PREFIX"),
   download_dir: System.get_env("DOWNLOAD_DIR") || "/downloads/"
