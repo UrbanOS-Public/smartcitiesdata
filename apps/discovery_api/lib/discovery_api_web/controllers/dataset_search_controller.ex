@@ -17,14 +17,14 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
     sort_by = Map.get(params, "sort", "name_asc")
     query = Map.get(params, "query", "")
     selected_facets = Map.get(params, "facets", %{})
-    include_remote_datasets = parse_include_remote_datasets(params)
+    api_accessible = parse_api_accessible(params)
 
     with {:ok, offset} <- extract_int_from_params(params, "offset", 0),
          {:ok, limit} <- extract_int_from_params(params, "limit", 10),
          {:ok, filter_facets} <- validate_facets(selected_facets),
          search_result <- DataModelSearchinator.search(query),
          filtered_result <- DataModelFilterator.filter_by_facets(search_result, filter_facets),
-         filtered_by_source_type_results <- filter_by_source_type(filtered_result, include_remote_datasets),
+         filtered_by_source_type_results <- filter_by_source_type(filtered_result, api_accessible),
          authorized_results <- remove_unauthorized_models(conn, filtered_by_source_type_results),
          facets <- DataModelFacinator.extract_facets(authorized_results, filter_facets) do
       render(
@@ -42,19 +42,19 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
     end
   end
 
-  defp parse_include_remote_datasets(params) do
+  defp parse_api_accessible(params) do
     params
-    |> Map.get("includeRemote", "true")
+    |> Map.get("apiAccessible", "false")
     |> String.downcase()
     |> case do
-      "false" -> false
-      _ -> true
+      "true" -> true
+      _ -> false
     end
   end
 
-  defp filter_by_source_type(datasets, true), do: datasets
+  defp filter_by_source_type(datasets, false), do: datasets
 
-  defp filter_by_source_type(datasets, false) do
+  defp filter_by_source_type(datasets, true) do
     Enum.reject(datasets, fn dataset -> dataset.sourceType == "remote" end)
   end
 

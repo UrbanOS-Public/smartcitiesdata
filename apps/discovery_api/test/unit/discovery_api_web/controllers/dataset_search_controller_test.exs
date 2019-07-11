@@ -95,17 +95,17 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
           }
         ],
         [
-          [includeRemote: "TrUe"],
-          ["results", Access.all(), "id"],
-          ["Paul", "Richard"]
-        ],
-        [
-          [includeRemote: "FaLse"],
+          [apiAccessible: "TrUe"],
           ["results", Access.all(), "id"],
           ["Richard"]
         ],
         [
-          [includeRemote: "SomethingINVALID"],
+          [apiAccessible: "FaLse"],
+          ["results", Access.all(), "id"],
+          ["Paul", "Richard"]
+        ],
+        [
+          [apiAccessible: "SomethingINVALID"],
           ["results", Access.all(), "id"],
           ["Paul", "Richard"]
         ]
