@@ -5,13 +5,18 @@ defmodule Forklift.Datasets.DatasetHandler do
   use SmartCity.Registry.MessageHandler
   alias Forklift.Datasets.DatasetRegistryServer
   alias Forklift.TopicManager
+  alias SmartCity.Dataset
   require Logger
 
-  def handle_dataset(%SmartCity.Dataset{technical: %{sourceType: "remote"}}) do
-    :ok
+  def handle_dataset(%SmartCity.Dataset{} = dataset) do
+    cond do
+      Dataset.is_ingest?(dataset) -> subscribe(dataset)
+      Dataset.is_stream?(dataset) -> subscribe(dataset)
+      true -> :ok
+    end
   end
 
-  def handle_dataset(%SmartCity.Dataset{} = dataset) do
+  def subscribe(%SmartCity.Dataset{} = dataset) do
     DatasetRegistryServer.send_message(dataset)
     TopicManager.create_and_subscribe(topic_name(dataset))
   rescue

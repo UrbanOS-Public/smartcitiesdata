@@ -26,7 +26,7 @@ defmodule Forklift.MixProject do
   defp deps do
     [
       {:smart_city_data, "~> 2.1"},
-      {:smart_city_registry, "~> 3.3"},
+      {:smart_city_registry, "~> 4.0"},
       {:smart_city_test, "~> 0.2", only: [:test, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.1"},
