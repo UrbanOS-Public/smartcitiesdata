@@ -37,6 +37,6 @@ defmodule Reaper.DataSlurper.Http do
   end
 
   defp download_timeout do
-    Application.get_env(:reaper, :http_download_timeout, 600_000)
+    Application.get_env(:reaper, :http_download_timeout, 60_000)
   end
 end
