@@ -20,7 +20,7 @@ script:
   - mix format --check-formatted
   - mix credo
   - mix hex.outdated || true
-  - mix sobelow
+  - mix sobelow -i Config.HTTPS --skip --compact --exit low
   - mix test
   - mix test.integration
   - docker build -t discovery_streams:build .

@@ -55,6 +55,7 @@ defmodule DiscoveryStreams.MessageHandler do
     end
   end
 
+  # sobelow_skip ["DOS.StringToAtom"]
   defp add_to_cache(%{key: key, topic: topic, value: message}) do
     GenServer.abcast(
       DiscoveryStreams.CacheGenserver,

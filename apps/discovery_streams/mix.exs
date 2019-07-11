@@ -54,7 +54,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:sweet_xml, "~> 0.6"},
       {:streaming_metrics, "~>2.1"},
       {:temporary_env, "~> 2.0", only: [:test, :integration]},
-      {:sobelow, "~> 0.8"},
+      {:sobelow, "~> 0.8", only: :dev, runtime: false},
       {:husky, "~> 1.0", only: :dev, runtime: false},
       # updating version breaks
       {:distillery, "2.0.14"},

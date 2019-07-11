@@ -1,3 +1,5 @@
+[![Master](https://travis-ci.org/smartcitiesdata/discovery_streams.svg?branch=master)](https://travis-ci.org/smartcitiesdata/discovery_streams)
+
 # DiscoveryStreams
 
 Discovery Streams dynamically finds kafka topics and makes available corresponding channels on a public websocket.

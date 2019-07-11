@@ -37,6 +37,7 @@ defmodule DiscoveryStreams.TopicSubscriber do
 
   defp subscribe([]), do: nil
 
+  # sobelow_skip ["DOS.StringToAtom"]
   defp subscribe(topics) do
     Logger.info("Subscribing to public topics: #{inspect(topics)}")
     Kaffe.GroupManager.subscribe_to_topics(topics)

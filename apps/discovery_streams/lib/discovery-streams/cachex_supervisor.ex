@@ -14,6 +14,7 @@ defmodule DiscoveryStreams.CachexSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
+  # sobelow_skip ["DOS.BinToAtom"]
   @doc "Creates a supervised cache under CachexSupervisor"
   @spec create_cache(atom) :: DynamicSupervisor.on_start_child()
   def(create_cache(name) when is_atom(name)) do

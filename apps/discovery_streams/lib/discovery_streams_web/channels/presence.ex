@@ -63,6 +63,7 @@ defmodule DiscoveryStreamsWeb.Presence.Instrumenter do
     :ok
   end
 
+  # sobelow_skip ["DOS.StringToAtom"]
   defp get_gauges do
     topics =
       Application.get_env(:kaffe, :consumer)

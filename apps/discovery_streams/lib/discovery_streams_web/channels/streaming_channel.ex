@@ -64,6 +64,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     end)
   end
 
+  # sobelow_skip ["DOS.StringToAtom"]
   defp push_cache_to_socket(%{topic: channel} = socket, filter) do
     query = Cachex.Query.create(true, :value)
 

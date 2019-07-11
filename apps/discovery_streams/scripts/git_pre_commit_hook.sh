@@ -24,4 +24,11 @@ if [ $? == 1 ]; then
     echo -e "${NC}"
 fi
 
+sobelow_output=$(mix sobelow -i Config.HTTPS --skip --compact --exit low)
+if [ $? == 1 ]; then
+    echo -e "Sobelow failures:"
+    echo -e "$sobelow_output"
+    exit_code=1
+fi
+
 exit $exit_code
