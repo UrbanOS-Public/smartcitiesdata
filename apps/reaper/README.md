@@ -2,7 +2,7 @@
 
 # Reaper
 
-Retrieves streaming or batch data, decodes it, and loads it onto a Kafka topic
+Retrieves data, decodes it, and loads it onto a Kafka topic
 
 ## To run the tests
 
