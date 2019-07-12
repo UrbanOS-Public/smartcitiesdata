@@ -8,7 +8,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
   setup do
     mock_dataset_summaries = [
       generate_model("Paul", ~D(1970-01-01), "remote"),
-      generate_model("Richard", ~D(2001-09-09), "batch")
+      generate_model("Richard", ~D(2001-09-09), "ingest")
     ]
 
     allow(Model.get_all(), return: mock_dataset_summaries)
