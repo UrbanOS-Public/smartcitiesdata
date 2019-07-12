@@ -24,7 +24,8 @@ defmodule Valkyrie.MixProject do
     [
       {:cachex, "~> 3.1"},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.19"},
+      {:checkov, "~> 0.4.0", only: [:test]},
+      {:ex_doc, "~> 0.19.3"},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:divo_kafka, "~> 0.1", only: [:integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
