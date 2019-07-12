@@ -7,8 +7,8 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
 
   setup do
     mock_dataset_summaries = [
-      generate_model("Paul", ~D(1970-01-01)),
-      generate_model("Richard", ~D(2001-09-09))
+      generate_model("Paul", ~D(1970-01-01), "remote"),
+      generate_model("Richard", ~D(2001-09-09), "batch")
     ]
 
     allow(Model.get_all(), return: mock_dataset_summaries)
@@ -89,7 +89,25 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
         [
           [facets: %{organization: ["Babs"], keywords: ["Fruit"]}],
           ["metadata", "facets"],
-          %{"keywords" => [%{"name" => "Fruit", "count" => 0}], "organization" => [%{"name" => "Babs", "count" => 0}]}
+          %{
+            "keywords" => [%{"name" => "Fruit", "count" => 0}],
+            "organization" => [%{"name" => "Babs", "count" => 0}]
+          }
+        ],
+        [
+          [apiAccessible: "TrUe"],
+          ["results", Access.all(), "id"],
+          ["Richard"]
+        ],
+        [
+          [apiAccessible: "FaLse"],
+          ["results", Access.all(), "id"],
+          ["Paul", "Richard"]
+        ],
+        [
+          [apiAccessible: "SomethingINVALID"],
+          ["results", Access.all(), "id"],
+          ["Paul", "Richard"]
         ]
       ])
     end
@@ -110,7 +128,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
     end
   end
 
-  defp generate_model(id, date) do
+  defp generate_model(id, date, sourceType) do
     Helper.sample_model(%{
       description: "#{id}-description",
       fileTypes: ["csv"],
@@ -120,6 +138,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
       modifiedDate: "#{date}",
       organization: "#{id} Co.",
       keywords: ["#{id} keywords"],
+      sourceType: sourceType,
       organizationDetails: %{
         orgTitle: "#{id}-org-title",
         orgName: "#{id}-org-name",
