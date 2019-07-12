@@ -22,7 +22,11 @@ defmodule ValkyrieTest do
         [:field_name, :type, :value],
         ["name", "string", "some string"],
         ["age", "integer", 1],
-        ["age", "integer", "21"]
+        ["age", "integer", "21"],
+        ["raining?", "boolean", true],
+        ["raining?", "boolean", false],
+        ["raining?", "boolean", "true"],
+        ["raining?", "boolean", "false"]
       ])
     end
 
@@ -42,7 +46,8 @@ defmodule ValkyrieTest do
         [:field_name, :type, :value, :reason],
         ["name", "string", 1, :invalid_string],
         ["age", "integer", "abc", :invalid_integer],
-        ["age", "integer", "34.5", :invalid_integer]
+        ["age", "integer", "34.5", :invalid_integer],
+        ["raining?", "boolean", "nope", :invalid_boolean]
       ])
     end
 
