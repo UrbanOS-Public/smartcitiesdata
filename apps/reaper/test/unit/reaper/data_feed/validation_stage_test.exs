@@ -23,7 +23,7 @@ defmodule Reaper.DataFeed.ValidationStageTest do
 
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1", sourceType: "batch", allow_duplicates: false}),
+        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1", sourceType: "ingest", allow_duplicates: false}),
         last_processed_index: -1
       }
 
@@ -41,7 +41,7 @@ defmodule Reaper.DataFeed.ValidationStageTest do
 
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1", sourceType: "batch"}),
+        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1", sourceType: "ingest"}),
         last_processed_index: -1
       }
 
@@ -52,7 +52,7 @@ defmodule Reaper.DataFeed.ValidationStageTest do
     test "will remove any events that have already been processed" do
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds2", sourceType: "batch"}),
+        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds2", sourceType: "ingest"}),
         last_processed_index: 5
       }
 
@@ -73,7 +73,7 @@ defmodule Reaper.DataFeed.ValidationStageTest do
 
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds2", sourceType: "batch", allow_duplicates: false}),
+        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds2", sourceType: "ingest", allow_duplicates: false}),
         last_processed_index: -1
       }
 

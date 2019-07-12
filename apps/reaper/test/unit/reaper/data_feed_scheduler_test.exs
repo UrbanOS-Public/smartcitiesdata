@@ -6,7 +6,7 @@ defmodule Reaper.DataFeedSchedulerTest do
   @dataset_id "12345-6789"
   @reaper_config FixtureHelper.new_reaper_config(%{
                    dataset_id: @dataset_id,
-                   sourceType: "batch",
+                   sourceType: "ingest",
                    cadence: 100
                  })
   @data_feed_args %{

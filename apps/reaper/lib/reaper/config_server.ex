@@ -47,11 +47,11 @@ defmodule Reaper.ConfigServer do
           {:ok, String.t()} | DynamicSupervisor.on_start_child() | nil
   def process_reaper_config(%ReaperConfig{cadence: "never", sourceType: "remote"}), do: nil
 
-  def process_reaper_config(%ReaperConfig{cadence: "once", sourceType: "batch"} = reaper_config) do
+  def process_reaper_config(%ReaperConfig{cadence: "once", sourceType: "ingest"} = reaper_config) do
     create_feed_supervisor(reaper_config)
   end
 
-  def process_reaper_config(%ReaperConfig{cadence: cadence, sourceType: "batch"} = reaper_config)
+  def process_reaper_config(%ReaperConfig{cadence: cadence, sourceType: "ingest"} = reaper_config)
       when is_integer(cadence) and cadence > 0 do
     do_process_reaper_config(reaper_config)
   end

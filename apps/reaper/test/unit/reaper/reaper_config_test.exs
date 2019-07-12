@@ -17,7 +17,7 @@ defmodule Reaper.ReaperConfigTest do
         "sourceUrl" => "https://example.com",
         "authUrl" => "https://auth.example.com",
         "sourceFormat" => "gtfs",
-        "sourceType" => "batch",
+        "sourceType" => "ingest",
         "cadence" => 9000,
         "headers" => %{},
         "partitioner" => %{type: nil, query: nil},
@@ -87,7 +87,7 @@ defmodule Reaper.ReaperConfigTest do
     assert reaper_config.sourceFormat == "gtfs"
     assert reaper_config.sourceUrl == "https://example.com"
     assert reaper_config.authUrl == "https://auth.example.com"
-    assert reaper_config.sourceType == "batch"
+    assert reaper_config.sourceType == "ingest"
     assert reaper_config.partitioner.type == nil
     assert reaper_config.partitioner.query == nil
     assert reaper_config.sourceQueryParams == %{}

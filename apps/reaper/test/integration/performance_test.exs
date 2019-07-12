@@ -64,7 +64,7 @@ defmodule Reaper.PerformanceTest do
       TDG.create_dataset(
         id: dataset_id,
         technical: %{
-          sourceType: "batch",
+          sourceType: "ingest",
           sourceFormat: "csv",
           cadence: "once",
           schema: schema,

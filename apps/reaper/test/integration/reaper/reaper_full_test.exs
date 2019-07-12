@@ -126,7 +126,7 @@ defmodule Reaper.FullTest do
             cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/partial.csv",
             sourceFormat: "csv",
-            sourceType: "batch",
+            sourceType: "ingest",
             schema: [%{name: "name", type: "string"}]
           }
         })
@@ -212,7 +212,7 @@ defmodule Reaper.FullTest do
             cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
             sourceFormat: "csv",
-            sourceType: "batch",
+            sourceType: "ingest",
             schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
           }
         })
@@ -259,7 +259,7 @@ defmodule Reaper.FullTest do
     end
   end
 
-  describe "One time Batch" do
+  describe "One time Ingest" do
     setup do
       Redix.command(:redix, ["FLUSHALL"])
       :ok
@@ -276,7 +276,7 @@ defmodule Reaper.FullTest do
             cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
             sourceFormat: "csv",
-            sourceType: "batch",
+            sourceType: "ingest",
             schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
           }
         })

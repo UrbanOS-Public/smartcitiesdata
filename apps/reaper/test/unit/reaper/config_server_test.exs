@@ -18,7 +18,7 @@ defmodule Reaper.ConfigServerTest do
   end
 
   describe "on registry message received with no previous reaper configs" do
-    test "the config server spins up several new supervisors for streaming and batch datasets" do
+    test "the config server spins up several new supervisors for streaming and ingest datasets" do
       allow(Redix.command!(:redix, ["KEYS", @name_space <> "*"]), return: [])
       allow(Redix.command!(:redix, any()), return: :does_not_matter)
 
@@ -32,7 +32,7 @@ defmodule Reaper.ConfigServerTest do
       ConfigServer.process_reaper_config(
         FixtureHelper.new_reaper_config(%{
           dataset_id: "12345-6789",
-          sourceType: "batch",
+          sourceType: "ingest",
           cadence: 30_000,
           allow_duplicates: false
         })
@@ -73,7 +73,7 @@ defmodule Reaper.ConfigServerTest do
     allow(Redix.command!(:redix, ["KEYS", @name_space <> "*"]), return: [])
     allow(Redix.command!(:redix, ["GET", any()]), return: '')
 
-    reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: "12345-6789", sourceType: "batch", cadence: 1})
+    reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: "12345-6789", sourceType: "ingest", cadence: 1})
 
     reaper_config_update =
       FixtureHelper.new_reaper_config(%{
@@ -81,7 +81,7 @@ defmodule Reaper.ConfigServerTest do
         cadence: 100,
         sourceUrl: "www.google.com",
         sourceFormat: "Success",
-        sourceType: "batch",
+        sourceType: "ingest",
         sourceQueryParams: %{param1: "value1"}
       })
 
@@ -182,7 +182,7 @@ defmodule Reaper.ConfigServerTest do
       ConfigServer.process_reaper_config(
         FixtureHelper.new_reaper_config(%{
           dataset_id: "12345-6789",
-          sourceType: "batch",
+          sourceType: "ingest",
           cadence: 10_000,
           allow_duplicates: false
         })
@@ -248,7 +248,7 @@ defmodule Reaper.ConfigServerTest do
       ConfigServer.start_link([])
 
       dataset_id = "12345-6789"
-      reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: dataset_id, sourceType: "batch", cadence: "never"})
+      reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: dataset_id, sourceType: "ingest", cadence: "never"})
 
       allow(Reaper.Persistence.get_last_fetched_timestamp(any()),
         return: DateTime.utc_now(),
@@ -265,7 +265,7 @@ defmodule Reaper.ConfigServerTest do
       ConfigServer.start_link([])
 
       dataset_id = "12345-6789"
-      reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: dataset_id, sourceType: "batch", cadence: 0})
+      reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: dataset_id, sourceType: "ingest", cadence: 0})
 
       allow(Reaper.Persistence.get_last_fetched_timestamp(any()),
         return: DateTime.utc_now(),

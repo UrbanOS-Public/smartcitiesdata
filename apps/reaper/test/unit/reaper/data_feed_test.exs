@@ -28,7 +28,7 @@ defmodule Reaper.DataFeedTest do
     config =
       FixtureHelper.new_reaper_config(%{
         dataset_id: @dataset_id,
-        sourceType: "batch",
+        sourceType: "ingest",
         sourceFormat: "csv",
         sourceUrl: "http://localhost:#{bypass.port}/api/csv",
         cadence: 100,
