@@ -149,7 +149,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
           %{name: "age", required: false, type: "int"}
         ],
         sourceFormat: "gtfs",
-        sourceType: "batch",
+        sourceType: "ingest",
         sourceUrl: "schultz.org",
         systemName: "test_table",
         transformations: ["trim", "aggregate", "rename_field"],

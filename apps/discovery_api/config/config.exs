@@ -38,4 +38,10 @@ config :discovery_api, DiscoveryApi.Quantum.Scheduler,
     {"0 6 * * 1", {DiscoveryApi.Stats.StatsCalculator, :produce_completeness_stats, []}}
   ]
 
+config :mime, :types, %{
+  "application/shapefile" => ["zip", "tgz", "tar.gz"]
+}
+
+config :ex_aws, :s3, scheme: "https://"
+
 import_config "#{Mix.env()}.exs"

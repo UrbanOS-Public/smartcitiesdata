@@ -19,6 +19,11 @@ defmodule DiscoveryApiWeb.Router do
     plug(:accepts, ["json"])
   end
 
+  pipeline :api_any do
+    plug(Plug.Logger)
+    plug(DiscoveryApiWeb.Plugs.Acceptor)
+  end
+
   pipeline :check_restricted do
     plug(DiscoveryApiWeb.Plugs.GetModel)
     plug(DiscoveryApi.Auth.Pipeline)
@@ -60,9 +65,12 @@ defmodule DiscoveryApiWeb.Router do
 
     get("/organization/:org_name/dataset/:dataset_name/query", DatasetQueryController, :query)
     get("/dataset/:dataset_id/query", DatasetQueryController, :query)
+  end
 
-    get("/organization/:org_name/dataset/:dataset_name/download", DatasetDownloadController, :fetch_presto)
-    get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_presto)
+  scope "/api/v1", DiscoveryApiWeb do
+    pipe_through([:api_any, :check_restricted])
+    get("/organization/:org_name/dataset/:dataset_name/download", DatasetDownloadController, :fetch_file)
+    get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_file)
   end
 
   scope "/api/v1", DiscoveryApiWeb do

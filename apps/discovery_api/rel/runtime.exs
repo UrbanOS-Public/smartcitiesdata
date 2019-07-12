@@ -9,7 +9,9 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
 
 config :discovery_api,
   ldap_user: System.get_env("LDAP_USER"),
-  ldap_pass: System.get_env("LDAP_PASS")
+  ldap_pass: System.get_env("LDAP_PASS"),
+  hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
+  hosted_region: System.get_env("HOSTED_FILE_REGION")
 
 required_envars = ["REDIS_HOST", "PRESTO_URL", "ALLOWED_ORIGINS"]
 
@@ -25,7 +27,8 @@ allowed_origins =
   |> Enum.map(&String.trim/1)
 
 config :discovery_api,
-  allowed_origins: allowed_origins
+  allowed_origins: allowed_origins,
+  secrets_endpoint: System.get_env("SECRETS_ENDPOINT")
 
 config :redix,
   host: System.get_env("REDIS_HOST")
@@ -45,3 +48,6 @@ config :paddle, Paddle,
   account_subdn: System.get_env("LDAP_ACCOUNT_SUBDN")
 
 config :discovery_api, DiscoveryApi.Auth.Guardian, secret_key: System.get_env("GUARDIAN_KEY")
+
+config :ex_aws, :s3,
+  region: System.get_env("HOSTED_REGION")
