@@ -140,10 +140,14 @@ defmodule Reaper.FullTest do
     test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: _bypass} do
       topic = "#{@output_topic_prefix}-#{@partial_load_dataset_id}"
 
-      eventually(fn ->
-        {:ok, latest_offset} = :brod.resolve_offset(@brod_endpoints, topic, 0)
-        assert latest_offset == 10_000
-      end)
+      eventually(
+        fn ->
+          {:ok, latest_offset} = :brod.resolve_offset(@brod_endpoints, topic, 0)
+          assert latest_offset == 10_000
+        end,
+        2_000,
+        20
+      )
     end
   end
 
