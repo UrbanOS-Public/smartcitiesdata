@@ -242,7 +242,7 @@ defmodule Reaper.FullTest do
             cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
             sourceFormat: "csv",
-            sourceType: "host",
+            sourceType: "host"
           }
         })
 
@@ -251,7 +251,13 @@ defmodule Reaper.FullTest do
       eventually(fn ->
         expected = File.read!("test/support/#{@csv_file_name}")
 
-        case ExAws.S3.get_object("hosted-dataset-files", "#{hosted_dataset.technical.orgName}/#{hosted_dataset.technical.dataName}.#{hosted_dataset.technical.sourceFormat}") |> ExAws.request() do
+        case ExAws.S3.get_object(
+               "hosted-dataset-files",
+               "#{hosted_dataset.technical.orgName}/#{hosted_dataset.technical.dataName}.#{
+                 hosted_dataset.technical.sourceFormat
+               }"
+             )
+             |> ExAws.request() do
           {:ok, resp} -> assert Map.get(resp, :body) == expected
           _other -> Logger.info("File not uploaded yet")
         end
