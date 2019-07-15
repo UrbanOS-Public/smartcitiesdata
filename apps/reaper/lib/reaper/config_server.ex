@@ -61,6 +61,15 @@ defmodule Reaper.ConfigServer do
     do_process_reaper_config(reaper_config)
   end
 
+  def process_reaper_config(%ReaperConfig{cadence: cadence, sourceType: "host"} = reaper_config)
+      when is_integer(cadence) and cadence > 0 do
+    do_process_reaper_config(reaper_config)
+  end
+
+  def process_reaper_config(%ReaperConfig{cadence: "once", sourceType: "host"} = reaper_config) do
+    create_feed_supervisor(reaper_config)
+  end
+
   def process_reaper_config(reaper_config) do
     Logger.error("Inviable configuration error #{inspect(reaper_config)}")
     nil

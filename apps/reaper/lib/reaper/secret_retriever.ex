@@ -1,13 +1,25 @@
-defmodule Reaper.CredentialRetriever do
+defmodule Reaper.SecretRetriever do
   @moduledoc """
   Retrieves credentials for use in accessing restricted datasets.
   """
   require Logger
 
-  def retrieve(dataset_id) do
+  @root_path "secrets/smart_city/"
+
+  def retrieve_dataset_credentials(dataset_id) do
+    retrieve("ingestion/#{dataset_id}")
+  end
+
+  def retrieve_aws_keys() do
+    retrieve("aws_keys/reaper")
+  end
+
+  defp retrieve(path) do
+    vault_path = "#{@root_path}#{path}"
+
     with {:ok, jwt} <- get_kubernetes_token(),
          {:ok, vault} <- instantiate_vault_conn(jwt),
-         {:ok, credentials} <- Vault.read(vault, "secrets/smart_city/ingestion/#{dataset_id}") do
+         {:ok, credentials} <- Vault.read(vault, vault_path) do
       {:ok, credentials}
     else
       {:error, reason} ->
@@ -30,7 +42,7 @@ defmodule Reaper.CredentialRetriever do
       host: get_secrets_endpoint(),
       token_expires_at: set_login_ttl(20, :second)
     )
-    |> Vault.auth(%{role: "app-role", jwt: token})
+    |> Vault.auth(%{role: "reaper-role", jwt: token})
   end
 
   defp set_login_ttl(time, interval), do: NaiveDateTime.utc_now() |> NaiveDateTime.add(time, interval)

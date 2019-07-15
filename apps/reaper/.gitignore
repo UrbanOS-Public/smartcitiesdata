@@ -23,6 +23,7 @@ erl_crash.dump
 cota_streaming_producer-*.tar
 
 /.elixir_ls/
+.mix_tasks
 
 .DS_Store
 

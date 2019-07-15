@@ -24,6 +24,8 @@ defmodule Reaper.ReaperConfig do
 
   defstruct [
     :dataset_id,
+    :dataName,
+    :orgName,
     :cadence,
     :lastSuccessTime,
     :sourceFormat,
@@ -46,6 +48,8 @@ defmodule Reaper.ReaperConfig do
   def from_dataset(%SmartCity.Dataset{} = dataset) do
     struct = %__MODULE__{
       dataset_id: dataset.id,
+      dataName: dataset.technical.dataName,
+      orgName: dataset.technical.orgName,
       cadence: dataset.technical.cadence,
       sourceFormat: dataset.technical.sourceFormat,
       sourceUrl: dataset.technical.sourceUrl,

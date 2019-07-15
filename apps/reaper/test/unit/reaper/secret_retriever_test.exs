@@ -1,7 +1,7 @@
-defmodule Reaper.CredentialRetrieverTest do
+defmodule Reaper.SecretRetrieverTest do
   use ExUnit.Case
   use Placebo
-  alias Reaper.CredentialRetriever
+  alias Reaper.SecretRetriever
   import ExUnit.CaptureLog
 
   describe "retrieve/1" do
@@ -10,7 +10,7 @@ defmodule Reaper.CredentialRetrieverTest do
 
       %{
         dataset_id: 1,
-        role: "app-role",
+        role: "reaper-role",
         jwt: "asjdhfsa",
         credentials: credentials,
         vault: %Vault{engine: :secrets_engine, host: "http://vault:8200", auth: :auth_backend}
@@ -25,14 +25,15 @@ defmodule Reaper.CredentialRetrieverTest do
       allow Vault.read(values.vault, "secrets/smart_city/ingestion/#{values.dataset_id}"),
         return: {:ok, values.credentials}
 
-      assert CredentialRetriever.retrieve(values.dataset_id) == {:ok, values.credentials}
+      assert SecretRetriever.retrieve_dataset_credentials(values.dataset_id) == {:ok, values.credentials}
     end
 
     test "returns error when kubernetes token file is not found", values do
       allow File.read("/var/run/secrets/kubernetes.io/serviceaccount/token"), return: {:error, :enoent}
 
       assert capture_log(fn ->
-               assert CredentialRetriever.retrieve(values.dataset_id) == {:error, :retrieve_credential_failed}
+               assert SecretRetriever.retrieve_dataset_credentials(values.dataset_id) ==
+                        {:error, :retrieve_credential_failed}
              end) =~ "Secret token file not found"
     end
 
@@ -44,7 +45,8 @@ defmodule Reaper.CredentialRetrieverTest do
         return: {:error, ["Something bad happened"]}
 
       assert capture_log(fn ->
-               assert CredentialRetriever.retrieve(values.dataset_id) == {:error, :retrieve_credential_failed}
+               assert SecretRetriever.retrieve_dataset_credentials(values.dataset_id) ==
+                        {:error, :retrieve_credential_failed}
              end) =~ "Something bad happened"
     end
   end

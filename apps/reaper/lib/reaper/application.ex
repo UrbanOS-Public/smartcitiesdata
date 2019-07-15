@@ -2,6 +2,7 @@ defmodule Reaper.Application do
   @moduledoc false
 
   use Application
+  require Logger
 
   def redis_client(), do: :redix
 
@@ -17,6 +18,8 @@ defmodule Reaper.Application do
         dataset_subscriber()
       ]
       |> List.flatten()
+
+    fetch_and_set_hosted_file_credentials()
 
     opts = [strategy: :one_for_one, name: Reaper.Supervisor]
     Supervisor.start_link(children, opts)
@@ -41,6 +44,25 @@ defmodule Reaper.Application do
     case Application.get_env(:libcluster, :topologies) do
       nil -> []
       topology -> {Cluster.Supervisor, [topology, [name: Cluster.ClusterSupervisor]]}
+    end
+  end
+
+  defp fetch_and_set_hosted_file_credentials do
+    if Application.get_env(:reaper, :secrets_endpoint) do
+      case Reaper.SecretRetriever.retrieve_aws_keys() do
+        nil ->
+          raise RuntimeError, message: "Could not start application, failed to retrieve AWS keys from Vault."
+
+        {:error, error} ->
+          raise RuntimeError,
+            message: "Could not start application, encountered error while retrieving AWS keys: #{error}"
+
+        creds ->
+          Application.put_env(:ex_aws, :access_key_id, Map.get(creds, "aws_access_key_id"))
+          Application.put_env(:ex_aws, :secret_access_key, Map.get(creds, "aws_secret_access_key"))
+      end
+    else
+      []
     end
   end
 end

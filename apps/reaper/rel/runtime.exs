@@ -5,7 +5,8 @@ required_envars = [
   "KAFKA_BROKERS",
   "OUTPUT_TOPIC_PREFIX",
   "DLQ_TOPIC",
-  "SECRETS_ENDPOINT"
+  "SECRETS_ENDPOINT",
+  "HOSTED_FILE_BUCKET"
 ]
 
 Enum.each(required_envars, fn var ->
@@ -43,7 +44,8 @@ config :reaper,
   secrets_endpoint: System.get_env("SECRETS_ENDPOINT"),
   elsa_brokers: endpoints,
   output_topic_prefix: System.get_env("OUTPUT_TOPIC_PREFIX"),
-  download_dir: System.get_env("DOWNLOAD_DIR") || "/downloads/"
+  download_dir: System.get_env("DOWNLOAD_DIR") || "/downloads/",
+  hosted_file_bucket: System.get_env("HOSTED_FILE_BUCKET") || "hosted-dataset-files"
 
 config :smart_city_registry,
   redis: [
@@ -56,3 +58,6 @@ config :redix,
 config :yeet,
   endpoint: endpoints,
   topic: System.get_env("DLQ_TOPIC")
+
+config :ex_aws,
+  region: System.get_env("AWS_REGION") || "us-west-2"

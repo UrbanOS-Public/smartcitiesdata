@@ -9,6 +9,8 @@ defmodule FixtureHelper do
       %ReaperConfig{},
       Util.deep_merge(
         %{
+          orgName: "SomeOrganization",
+          dataName: "SomeDataset",
           cadence: "never",
           sourceUrl: "https://does-not-matter-url.com",
           sourceType: "remote",

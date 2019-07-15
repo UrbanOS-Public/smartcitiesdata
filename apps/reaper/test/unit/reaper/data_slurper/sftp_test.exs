@@ -8,7 +8,7 @@ defmodule Reaper.DataSlurper.SftpTest do
     end
 
     test "handles failure to retrieve any dataset credentials", map do
-      allow Reaper.CredentialRetriever.retrieve(any()), return: {:error, :retrieve_credential_failed}
+      allow Reaper.SecretRetriever.retrieve_dataset_credentials(any()), return: {:error, :retrieve_credential_failed}
       allow SftpEx.connect(any())
 
       assert_raise RuntimeError,
@@ -19,7 +19,8 @@ defmodule Reaper.DataSlurper.SftpTest do
     end
 
     test "handles incorrectly configured dataset credentials", map do
-      allow Reaper.CredentialRetriever.retrieve(any()), return: {:ok, %{api_key: "q4587435o43759o47597"}}
+      allow Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
+        return: {:ok, %{api_key: "q4587435o43759o47597"}}
 
       message = "Dataset credentials are not of the correct type"
 

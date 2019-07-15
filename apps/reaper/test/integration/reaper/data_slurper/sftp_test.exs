@@ -28,7 +28,7 @@ defmodule Reaper.SftpExtractorTest do
     topic = "#{@output_topic_prefix}-#{dataset_id}"
     Elsa.create_topic(@endpoints, topic)
 
-    allow Reaper.CredentialRetriever.retrieve(any()),
+    allow Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
       return: {:ok, %{username: "sftp_user", password: "sftp_password"}}
 
     dataset =
@@ -65,7 +65,7 @@ defmodule Reaper.SftpExtractorTest do
     topic = "#{@output_topic_prefix}-#{dataset_id}"
     Elsa.create_topic(@endpoints, topic)
 
-    allow Reaper.CredentialRetriever.retrieve(any()),
+    allow Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
       return: {:ok, %{username: "sftp_user", password: "sftp_password"}}
 
     dataset =
