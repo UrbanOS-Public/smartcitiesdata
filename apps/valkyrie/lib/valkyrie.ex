@@ -73,10 +73,32 @@ defmodule Valkyrie do
     end
   end
 
+  defp validate(%{type: "map"}, value) when not is_map(value), do: :invalid_map
+
   defp validate(%{type: "map", subSchema: sub_schema}, value) do
     case validate_schema(sub_schema, value) do
       map when map == %{} -> :ok
       errors -> errors
     end
+  end
+
+  defp validate(%{type: "list"}, value) when not is_list(value), do: :invalid_list
+
+  defp validate(%{type: "list"} = field, value) do
+    case validate_list(field, value) do
+      :ok -> :ok
+      error -> {:invalid_list, error}
+    end
+  end
+
+  defp validate_list(%{itemType: item_type} = field, value) do
+    value
+    |> Enum.with_index()
+    |> Enum.reduce_while(:ok, fn {item, index}, _acc ->
+      case validate(%{type: item_type, subSchema: field[:subSchema]}, item) do
+        :ok -> {:cont, :ok}
+        error -> {:halt, "#{inspect(error)} at index #{index}"}
+      end
+    end)
   end
 end

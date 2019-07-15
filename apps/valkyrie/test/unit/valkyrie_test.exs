@@ -118,7 +118,9 @@ defmodule ValkyrieTest do
     test "returns :ok for a valid map" do
       sub_schema = [
         %{name: "name", type: "string"},
-        %{name: "age", type: "integer"}
+        %{name: "age", type: "integer"},
+        %{name: "color", type: "string"},
+        %{name: "luckyNumbers", type: "list", itemType: "integer"}
       ]
 
       dataset = %Dataset{
@@ -128,12 +130,41 @@ defmodule ValkyrieTest do
         ]
       }
 
-      data = TDG.create_data(payload: %{"name" => "Pete", "spouse" => %{"name" => "Shirley", "age" => "27"}})
+      data =
+        TDG.create_data(
+          payload: %{
+            "name" => "Pete",
+            "spouse" => %{
+              "name" => "Shirley",
+              "age" => "27",
+              "color" => nil,
+              "luckyNumbers" => [1, 2, 3]
+            }
+          }
+        )
 
       assert :ok == Valkyrie.validate_data(dataset, data)
     end
 
-    test "return error that identifies nested field that fails" do
+    test "validates that specified map is a map" do
+      sub_schema = [
+        %{name: "name", type: "string"}
+      ]
+
+      dataset = %Dataset{
+        schema: [
+          %{name: "name", type: "string"},
+          %{name: "spouse", type: "map", subSchema: sub_schema}
+        ]
+      }
+
+      data = TDG.create_data(payload: %{"name" => "Pete", "spouse" => "Shirley"})
+
+      expected = {:error, %{"spouse" => :invalid_map}}
+      assert expected == Valkyrie.validate_data(dataset, data)
+    end
+
+    test "returns error that identifies nested field that fails" do
       sub_schema = [
         %{name: "name", type: "string"},
         %{name: "age", type: "integer"}
@@ -151,5 +182,107 @@ defmodule ValkyrieTest do
       expected = {:error, %{"spouse" => %{"age" => :invalid_integer}}}
       assert expected == Valkyrie.validate_data(dataset, data)
     end
+
+    test "returns error that identifies deeply nested field that fails" do
+      sub_sub_schema = [
+        %{name: "name", type: "string"}
+      ]
+
+      sub_schema = [
+        %{name: "name", type: "string"},
+        %{name: "child", type: "map", subSchema: sub_sub_schema}
+      ]
+
+      dataset = %Dataset{
+        schema: [
+          %{name: "name", type: "string"},
+          %{name: "spouse", type: "map", subSchema: sub_schema}
+        ]
+      }
+
+      data =
+        TDG.create_data(payload: %{"name" => "Pete", "spouse" => %{"name" => "Shirley", "child" => %{"name" => 14}}})
+
+      expected = {:error, %{"spouse" => %{"child" => %{"name" => :invalid_string}}}}
+      assert expected == Valkyrie.validate_data(dataset, data)
+    end
+
+    test "returns :ok for valid lists" do
+      sub_schema = [
+        %{name: "name", type: "string"},
+        %{name: "age", type: "integer"}
+      ]
+
+      dataset = %Dataset{
+        schema: [
+          %{name: "name", type: "string"},
+          %{name: "luckyNumbers", type: "list", itemType: "integer"},
+          %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema}
+        ]
+      }
+
+      data =
+        TDG.create_data(
+          payload: %{
+            "name" => "Pete",
+            "luckyNumbers" => [2, 3, 4],
+            "spouses" => [
+              %{"name" => "Shirley", "age" => 17},
+              %{"name" => "Betty", "age" => 67}
+            ]
+          }
+        )
+
+      assert :ok == Valkyrie.validate_data(dataset, data)
+    end
+
+    test "validates the provided list is a list" do
+      dataset = %Dataset{
+        schema: [
+          %{name: "luckyNumbers", type: "list", itemType: "integer"}
+        ]
+      }
+
+      data = TDG.create_data(payload: %{"luckyNumbers" => "uh-huh"})
+
+      expected = {:error, %{"luckyNumbers" => :invalid_list}}
+      assert expected == Valkyrie.validate_data(dataset, data)
+    end
+
+    test "returns error that identifies wrong type in list" do
+      dataset = %Dataset{
+        schema: [
+          %{name: "name", type: "string"},
+          %{name: "luckyNumbers", type: "list", itemType: "integer"}
+        ]
+      }
+
+      data = TDG.create_data(payload: %{"name" => "Pete", "luckyNumbers" => [2, "three", 4]})
+
+      expected = {:error, %{"luckyNumbers" => {:invalid_list, ":invalid_integer at index 1"}}}
+      assert expected == Valkyrie.validate_data(dataset, data)
+    end
+
+    # test "returns error that identifies invalid map in list" do
+    #   sub_schema = [
+    #     %{name: "name", type: "string"},
+    #     %{name: "age", type: "integer"}
+    #   ]
+
+    #   dataset = %Dataset{
+    #     schema: [
+    #       %{name: "name", type: "string"},
+    #       %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema}
+    #     ]
+    #   }
+
+    #   data = TDG.create_data(payload: %{"name" => "Pete", "spouses" => [
+    #                                      %{"name" => "Shirley", "age" => 17},
+    #                                      %{""}
+    #                                    ]})
+
+    #   expected = {:error, %{"luckyNumbers" => {:invalid_list, ":invalid_integer at index 1"}}}
+    #   assert expected == Valkyrie.validate_data(dataset, data)
+    # end
   end
 end
