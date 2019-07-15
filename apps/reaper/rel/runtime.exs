@@ -58,3 +58,6 @@ config :redix,
 config :yeet,
   endpoint: endpoints,
   topic: System.get_env("DLQ_TOPIC")
+
+config :ex_aws,
+  region: System.get_env("AWS_REGION") || "us-west-2"

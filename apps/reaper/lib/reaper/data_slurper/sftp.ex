@@ -34,7 +34,7 @@ defmodule Reaper.DataSlurper.Sftp do
   end
 
   defp connect(host, port, dataset_id) do
-    case Reaper.CredentialRetriever.retrieve(dataset_id) do
+    case Reaper.SecretRetriever.retrieve_dataset_credentials(dataset_id) do
       {:ok, %{username: username, password: password}} ->
         SftpEx.connect(
           host: to_charlist(host),
