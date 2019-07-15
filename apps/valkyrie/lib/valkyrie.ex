@@ -37,12 +37,12 @@ defmodule Valkyrie do
     end
   end
 
-  defp validate(%{type: "integer"}, value) when is_integer(value), do: :ok
+  defp validate(%{type: type}, value) when type in ["integer", "long"] and is_integer(value), do: :ok
 
-  defp validate(%{type: "integer"}, value) do
+  defp validate(%{type: type}, value) when type in ["integer", "long"] do
     case Integer.parse(value) do
       {_value, ""} -> :ok
-      _ -> :invalid_integer
+      _ -> :"invalid_#{type}"
     end
   end
 
@@ -53,6 +53,16 @@ defmodule Valkyrie do
       "true" -> :ok
       "false" -> :ok
       _ -> :invalid_boolean
+    end
+  end
+
+  defp validate(%{type: type}, value) when type in ["float", "double"] and (is_integer(value) or is_float(value)),
+    do: :ok
+
+  defp validate(%{type: type}, value) when type in ["float", "double"] do
+    case Float.parse(value) do
+      {_value, ""} -> :ok
+      _ -> :"invalid_#{type}"
     end
   end
 end
