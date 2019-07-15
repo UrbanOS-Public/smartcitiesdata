@@ -10,7 +10,7 @@ defmodule Reaper.SecretRetrieverTest do
 
       %{
         dataset_id: 1,
-        role: "app-role",
+        role: "reaper-role",
         jwt: "asjdhfsa",
         credentials: credentials,
         vault: %Vault{engine: :secrets_engine, host: "http://vault:8200", auth: :auth_backend}
