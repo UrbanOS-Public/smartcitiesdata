@@ -12,8 +12,9 @@ defmodule DiscoveryApi.S3.CredentialRetriever do
       Application.put_env(:ex_aws, :secret_access_key, Map.get(credentials, "aws_secret_access_key"))
     else
       {:error, reason} ->
-        Logger.error("Unable to retrieve dataset credential; #{reason}")
-        raise reason
+        error_message = "Unable to retrieve dataset credential; #{inspect(reason)}"
+        Logger.error(error_message)
+        raise error_message
     end
   end
 
