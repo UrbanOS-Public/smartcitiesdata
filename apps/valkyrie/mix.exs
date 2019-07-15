@@ -39,11 +39,12 @@ defmodule Valkyrie.MixProject do
       {:observer_cli, "~> 1.4"},
       {:elsa, "~> 0.1.0"},
       {:benchee, "~> 1.0", only: [:integration]},
-      {:retry, "~> 0.11"},
       {:husky, "~> 1.0", only: :dev, runtime: false},
       # updating version breaks
-      {:distillery, "2.0.14"}
+      {:distillery, "2.0.14"},
       # distillery breaks @ 2.1.0 due to elixir 1.9 support
+      {:retry, "~> 0.11.2"},
+      {:timex, "~> 3.6"}
     ]
   end
 

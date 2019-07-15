@@ -41,6 +41,36 @@ defmodule ValkyrieTest do
       ])
     end
 
+    data_test "validates #{type} #{value} with format #{format}" do
+      dataset = %Dataset{
+        schema: [
+          %{name: "birthdate", format: format, type: type}
+        ]
+      }
+
+      data = TDG.create_data(payload: %{"birthdate" => value})
+
+      assert result == Valkyrie.validate_data(dataset, data)
+
+      where([
+        [:type, :format, :value, :result],
+        ["date", "{YYYY}-{M}-{D}", "2019-05-27", :ok],
+        ["timestamp", "{YYYY}-{M}-{D} {h12}:{m}:{s} {AM}", "2019-05-12 08:12:11 PM", :ok],
+        [
+          "date",
+          "{YYYY}-{M}-{D}",
+          "2019/05/28",
+          {:error, %{"birthdate" => {:invalid_date, "Expected `-`, but found `/` at line 1, column 5."}}}
+        ],
+        [
+          "timestamp",
+          "{YYYY}-{M}-{D} {h12}:{m}:{s} {AM}",
+          "2019-05-21 17:21:45",
+          {:error, %{"birthdate" => {:invalid_timestamp, "Expected `hour between 1 and 12` at line 1, column 12."}}}
+        ]
+      ])
+    end
+
     data_test "validates that #{value} is a not a valid #{type}" do
       dataset = %Dataset{
         schema: [
@@ -83,6 +113,43 @@ defmodule ValkyrieTest do
         ["name", "string"],
         ["age", "integer"]
       ])
+    end
+
+    test "returns :ok for a valid map" do
+      sub_schema = [
+        %{name: "name", type: "string"},
+        %{name: "age", type: "integer"}
+      ]
+
+      dataset = %Dataset{
+        schema: [
+          %{name: "name", type: "string"},
+          %{name: "spouse", type: "map", subSchema: sub_schema}
+        ]
+      }
+
+      data = TDG.create_data(payload: %{"name" => "Pete", "spouse" => %{"name" => "Shirley", "age" => "27"}})
+
+      assert :ok == Valkyrie.validate_data(dataset, data)
+    end
+
+    test "return error that identifies nested field that fails" do
+      sub_schema = [
+        %{name: "name", type: "string"},
+        %{name: "age", type: "integer"}
+      ]
+
+      dataset = %Dataset{
+        schema: [
+          %{name: "name", type: "string"},
+          %{name: "spouse", type: "map", subSchema: sub_schema}
+        ]
+      }
+
+      data = TDG.create_data(payload: %{"name" => "Pete", "spouse" => %{"name" => "Shirley", "age" => "27.8"}})
+
+      expected = {:error, %{"spouse" => %{"age" => :invalid_integer}}}
+      assert expected == Valkyrie.validate_data(dataset, data)
     end
   end
 end

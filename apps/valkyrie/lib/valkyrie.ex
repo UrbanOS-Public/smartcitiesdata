@@ -6,7 +6,7 @@ defmodule Valkyrie do
   alias SmartCity.Data
   alias Valkyrie.Dataset
 
-  @type reason :: %{String.t() => :atom}
+  @type reason :: %{String.t() => term()}
 
   @spec validate_data(%Dataset{}, %Data{}) :: :ok | {:error, reason()}
   def validate_data(%Dataset{schema: schema} = dataset, %Data{payload: payload} = data) do
@@ -63,6 +63,20 @@ defmodule Valkyrie do
     case Float.parse(value) do
       {_value, ""} -> :ok
       _ -> :"invalid_#{type}"
+    end
+  end
+
+  defp validate(%{type: type, format: format}, value) when type in ["date", "timestamp"] do
+    case Timex.parse(value, format) do
+      {:ok, _value} -> :ok
+      {:error, reason} -> {:"invalid_#{type}", reason}
+    end
+  end
+
+  defp validate(%{type: "map", subSchema: sub_schema}, value) do
+    case validate_schema(sub_schema, value) do
+      map when map == %{} -> :ok
+      errors -> errors
     end
   end
 end
