@@ -7,7 +7,7 @@ defmodule DiscoveryApi.S3.CredentialRetriever do
   def retrieve() do
     with {:ok, jwt} <- get_kubernetes_token(),
          {:ok, vault} <- instantiate_vault_conn(jwt),
-         {:ok, credentials} <- Vault.read(vault, "secrets/smart_city/host_access/read") do
+         {:ok, credentials} <- Vault.read(vault, "secrets/smart_city/aws_keys/discovery_api") do
       Application.put_env(:ex_aws, :access_key_id, Map.get(credentials, "aws_access_key_id"))
       Application.put_env(:ex_aws, :secret_access_key, Map.get(credentials, "aws_secret_access_key"))
     else
