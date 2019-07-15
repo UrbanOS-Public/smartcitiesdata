@@ -11,6 +11,9 @@ defmodule DiscoveryApi.Data.HostedFileTest do
   @dataset_id "test_id"
 
   setup do
+    Application.put_env(:ex_aws, :access_key_id, "testing_access_key")
+    Application.put_env(:ex_aws, :secret_access_key, "testing_secret_key")
+
     Redix.command!(:redix, ["FLUSHALL"])
 
     "test/integration/test-file.test"

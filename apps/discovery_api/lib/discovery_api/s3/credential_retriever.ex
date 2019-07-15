@@ -7,9 +7,9 @@ defmodule DiscoveryApi.S3.CredentialRetriever do
   def retrieve() do
     with {:ok, jwt} <- get_kubernetes_token(),
          {:ok, vault} <- instantiate_vault_conn(jwt),
-         {:ok, credentials} <- Vault.read(vault, "secrets/smart_city/host_access/read") do
-      Application.put_env(:ex_aws, :aws_access_key_id, Map.get(credentials, "aws_access_key_id"))
-      Application.put_env(:ex_aws, :aws_secret_access_key, Map.get(credentials, "aws_secret_access_key"))
+         {:ok, credentials} <- Vault.read(vault, "secrets/smart_city/aws_keys/discovery_api") do
+      Application.put_env(:ex_aws, :access_key_id, Map.get(credentials, "aws_access_key_id"))
+      Application.put_env(:ex_aws, :secret_access_key, Map.get(credentials, "aws_secret_access_key"))
     else
       {:error, reason} ->
         Logger.error("Unable to retrieve dataset credential; #{reason}")
@@ -31,7 +31,7 @@ defmodule DiscoveryApi.S3.CredentialRetriever do
       host: get_secrets_endpoint(),
       token_expires_at: set_login_ttl(20, :second)
     )
-    |> Vault.auth(%{role: "discovery-role", jwt: token})
+    |> Vault.auth(%{role: "discovery-api-role", jwt: token})
   end
 
   defp set_login_ttl(time, interval), do: NaiveDateTime.utc_now() |> NaiveDateTime.add(time, interval)
