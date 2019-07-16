@@ -57,7 +57,7 @@ defmodule Reaper.Application do
           raise RuntimeError,
             message: "Could not start application, encountered error while retrieving AWS keys: #{error}"
 
-        creds ->
+        {:ok, creds} ->
           Application.put_env(:ex_aws, :access_key_id, Map.get(creds, "aws_access_key_id"))
           Application.put_env(:ex_aws, :secret_access_key, Map.get(creds, "aws_secret_access_key"))
       end
