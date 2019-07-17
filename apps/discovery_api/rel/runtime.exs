@@ -50,4 +50,4 @@ config :paddle, Paddle,
 config :discovery_api, DiscoveryApi.Auth.Guardian, secret_key: System.get_env("GUARDIAN_KEY")
 
 config :ex_aws,
-  region: System.get_env("HOSTED_REGION")
+  region: System.get_env("HOSTED_FILE_REGION")
