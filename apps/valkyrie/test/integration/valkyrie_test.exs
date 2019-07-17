@@ -25,32 +25,41 @@ defmodule ValkyrieTest do
 
     invalid_message =
       TestHelpers.create_data(%{
-        payload: %{name: "Blackbeard"},
+        payload: %{"name" => "Blackbeard", "alignment" => 10, "age" => "thirty-two"},
         dataset_id: dataset.id
       })
 
     messages = [
       TestHelpers.create_data(%{
-        payload: %{name: "Jack Sparrow", alignment: "chaotic", age: "32"},
+        payload: %{"name" => "Jack Sparrow", "alignment" => "chaotic", "age" => "32"},
         dataset_id: dataset.id
       }),
       invalid_message,
       TestHelpers.create_data(%{
-        payload: %{name: "Will Turner", alignment: "good", age: "25"},
+        payload: %{"name" => "Will Turner", "alignment" => "good", "age" => "25"},
         dataset_id: dataset.id
       }),
       TestHelpers.create_data(%{
-        payload: %{name: "Barbosa", alignment: "evil", age: "100"},
+        payload: %{"name" => "Barbosa", "alignment" => "evil", "age" => "100"},
         dataset_id: dataset.id
       })
     ]
 
     input_topic = "#{@input_topic_prefix}-#{dataset.id}"
     output_topic = "#{@output_topic_prefix}-#{dataset.id}"
+    Elsa.Topic.create(@endpoints, output_topic)
+
+    # TODO: move to production code
+    Patiently.wait_for!(
+      fn ->
+        Elsa.topic?(@endpoints, output_topic)
+      end,
+      dwell: 200,
+      max_tries: 10
+    )
 
     SmartCity.Dataset.write(dataset)
     TestHelpers.wait_for_topic(input_topic)
-    Elsa.Topic.create(@endpoints, output_topic)
 
     TestHelpers.produce_messages(messages, input_topic, @endpoints)
 

@@ -6,6 +6,7 @@ defmodule Valkyrie.Broadway do
   use Broadway
 
   alias Broadway.Message
+  alias SmartCity.Data
   @app_name "Valkyrie"
 
   def start_link(opts) do
@@ -44,17 +45,26 @@ defmodule Valkyrie.Broadway do
     ]
   end
 
-  def handle_message(_processor, %Message{data: data} = message, %{dataset: dataset}) do
-    with {:ok, parsed_value} <- SmartCity.Data.new(data.value),
-         {:ok, standardized_payload} <- standardize_data(dataset, parsed_value.payload) do
-      %{message | data: %{message.data | value: update_payload(parsed_value, standardized_payload)}}
+  def handle_message(_processor, %Message{data: message_data} = message, %{dataset: dataset}) do
+    start_time = Data.Timing.current_time()
+
+    with {:ok, smart_city_data} <- SmartCity.Data.new(message_data.value),
+         {:ok, standardized_payload} <- standardize_data(dataset, smart_city_data.payload),
+         smart_city_data <- %{smart_city_data | payload: standardized_payload},
+         smart_city_data <- Data.add_timing(smart_city_data, create_timing(start_time)),
+         {:ok, json_data} <- Jason.encode(smart_city_data) do
+      %{message | data: %{message.data | value: json_data}}
     else
       {:failed_schema_validation, reason} ->
-        Yeet.process_dead_letter(dataset.id, data.value, @app_name, error: :failed_schema_validation, reason: reason)
+        Yeet.process_dead_letter(dataset.id, message_data.value, @app_name,
+          error: :failed_schema_validation,
+          reason: reason
+        )
+
         Message.failed(message, reason)
 
       {:error, reason} ->
-        Yeet.process_dead_letter(dataset.id, data.value, @app_name, reason: reason)
+        Yeet.process_dead_letter(dataset.id, message_data.value, @app_name, reason: reason)
         Message.failed(message, reason)
     end
   end
@@ -72,9 +82,8 @@ defmodule Valkyrie.Broadway do
     end
   end
 
-  defp update_payload(smart_city_data, new_payload) do
-    %{smart_city_data | payload: new_payload}
-    |> Jason.encode!()
+  defp create_timing(start_time) do
+    Data.Timing.new("valkyrie", "timing", start_time, Data.Timing.current_time())
   end
 
   defp processor_stages(), do: Application.get_env(:valkyrie, :processor_stages, 1)

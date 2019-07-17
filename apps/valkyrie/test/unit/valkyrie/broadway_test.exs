@@ -8,16 +8,16 @@ defmodule Valkyrie.BroadwayTest do
   @dataset_id "ds1"
   @topic "raw-ds1"
   @producer :ds1_producer
+  @current_time "2019-07-17T14:45:06.123456Z"
 
   setup do
     allow Elsa.produce_sync(any(), any(), any()), return: :ok
+    allow SmartCity.Data.Timing.current_time(), return: @current_time, meck_options: [:passthrough]
 
     schema = [
       %{name: "name", type: "string"},
       %{name: "age", type: "integer"}
     ]
-
-    topic = Keyword.fetch!(opts, :topic)
 
     dataset = TDG.create_dataset(id: @dataset_id, technical: %{schema: schema})
     {:ok, broadway} = Valkyrie.Broadway.start_link(dataset: dataset, topic: @topic, producer: @producer)
@@ -46,6 +46,31 @@ defmodule Valkyrie.BroadwayTest do
       |> Enum.map(fn data -> data.payload end)
 
     assert payloads == [%{"name" => "johnny", "age" => 21}]
+  end
+
+  test "applies valkyrie message timing", %{broadway: broadway} do
+    data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
+    kafka_message = %{value: Jason.encode!(data)}
+
+    Broadway.test_messages(broadway, [kafka_message])
+
+    assert_receive {:ack, _ref, messages, _}, 5_000
+
+    timing =
+      messages
+      |> Enum.map(fn message -> Data.new(message.data.value) end)
+      |> Enum.map(fn {:ok, data} -> data.operational.timing end)
+      |> List.flatten()
+      |> Enum.filter(fn timing -> timing.app == "valkyrie" end)
+
+    assert timing == [
+             %SmartCity.Data.Timing{
+               app: "valkyrie",
+               end_time: @current_time,
+               label: "timing",
+               start_time: @current_time
+             }
+           ]
   end
 
   test "should yeet message when it fails to parse properly", %{broadway: broadway} do
@@ -89,10 +114,12 @@ defmodule Valkyrie.BroadwayTest do
     assert_receive {:ack, _ref, messages, _}, 5_000
     assert 2 == length(messages)
 
-    assert_called Elsa.produce_sync("unit-#{@dataset_id}", [Jason.encode!(data1), Jason.encode!(data2)],
-                    partition: 0,
-                    name: :"#{@dataset_id}_producer"
-                  )
+    captured_messages =
+      capture(Elsa.produce_sync("unit-#{@dataset_id}", any(), partition: 0, name: :"#{@dataset_id}_producer"), 2)
+
+    assert 2 = length(captured_messages)
+    assert Enum.at(captured_messages, 0) |> Jason.decode!() |> Map.get("payload") == data1.payload
+    assert Enum.at(captured_messages, 1) |> Jason.decode!() |> Map.get("payload") == data2.payload
   end
 end
 

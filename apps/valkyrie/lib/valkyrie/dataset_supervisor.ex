@@ -26,7 +26,7 @@ defmodule Valkyrie.DatasetSupervisor do
   defp elsa_producer(dataset, topic, producer) do
     %{
       id: :"#{dataset.id}_elsa_producer",
-      start: {Elsa.Producer.Manager, :start_producer, [endpoints(), topic, [name: producer]]}
+      start: {Elsa.Producer.Manager, :start_producer, [endpoints(), outgoing_topic(dataset.id), [name: producer]]}
     }
   end
 
@@ -38,11 +38,14 @@ defmodule Valkyrie.DatasetSupervisor do
       endpoints: endpoints(),
       group: "valkyrie-#{dataset.id}",
       topics: [topic],
-      config: []
+      config: Application.get_env(:valkyrie, :topic_subscriber_config)
     ]
 
     {Valkyrie.Broadway, kafka_config}
   end
 
   defp endpoints(), do: Application.get_env(:valkyrie, :elsa_brokers)
+
+  defp outgoing_topic_prefix(), do: Application.get_env(:valkyrie, :output_topic_prefix)
+  defp outgoing_topic(dataset_id), do: "#{outgoing_topic_prefix()}-#{dataset_id}" |> IO.inspect(label: "outgoing_topic")
 end

@@ -18,21 +18,15 @@ defmodule Valkyrie.TopicManager do
   end
 
   def is_topic_ready?(topic) do
-    topics =
-      endpoints()
-      |> Elsa.list_topics()
-      |> Enum.map(fn {topic, _partitions} -> topic end)
-
-    topic in topics
+    Elsa.topic?(endpoints(), topic)
   end
 
   defp start_subscriber(dataset, topic) do
     start_options = [
       dataset: dataset,
-      topic: [topic]
+      topic: topic
     ]
 
-    # DynamicSupervisor.start_child(Valkyrie.Topic.Supervisor, {Elsa.Group.Supervisor, start_options})
     DynamicSupervisor.start_child(Valkyrie.Topic.Supervisor, {Valkyrie.DatasetSupervisor, start_options})
   end
 
