@@ -42,6 +42,4 @@ config :mime, :types, %{
   "application/shapefile" => ["zip", "tgz", "tar.gz"]
 }
 
-config :ex_aws, :s3, scheme: "https://"
-
 import_config "#{Mix.env()}.exs"
