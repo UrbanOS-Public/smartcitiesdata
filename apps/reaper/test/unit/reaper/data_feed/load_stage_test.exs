@@ -39,8 +39,8 @@ defmodule Reaper.DataFeed.LoadStageTest do
     end
 
     test "2 batches are sent to kafka" do
-      assert_called Producer.produce_sync("test-ds1", create_data_messages(?a..?j, "ds1"), partition: 0)
-      assert_called Producer.produce_sync("test-ds1", create_data_messages(?k..?t, "ds1"), partition: 0)
+      assert_called Producer.produce_sync("test-ds1", create_data_messages(?a..?j, "ds1"), any())
+      assert_called Producer.produce_sync("test-ds1", create_data_messages(?k..?t, "ds1"), any())
     end
 
     test "remaining partial batch in sitting in state", %{new_state: new_state} do

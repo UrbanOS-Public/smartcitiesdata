@@ -38,7 +38,7 @@ defmodule Reaper.DataFeedSchedulerTest do
     test "reaper config updates replace old state" do
       allow(Redix.command!(any(), any()), return: ~s({"timestamp": "2019-03-21 17:12:51.585273Z"}))
       allow Elsa.topic?(any(), any()), return: true
-      expect Elsa.Producer.Manager.start_producer(any(), any()), return: {:ok, :pid}
+      expect Elsa.Producer.Manager.start_producer(any(), any(), any()), return: {:ok, :pid}
 
       {:ok, pid} = DataFeedScheduler.start_link(@data_feed_args)
 
@@ -112,11 +112,11 @@ defmodule Reaper.DataFeedSchedulerTest do
       }
 
       allow Elsa.topic?(any(), any()), return: true
-      allow Elsa.Producer.Manager.start_producer(any(), any()), return: {:error, "failed to start"}
+      allow Elsa.Producer.Manager.start_producer(any(), any(), any()), return: {:error, "failed to start"}
 
       result = DataFeedScheduler.handle_continue(:check_topic, state)
 
-      assert_called Elsa.Producer.Manager.start_producer(any(), "-ds1")
+      assert_called Elsa.Producer.Manager.start_producer(any(), "raw-ds1", any())
       assert result == {:stop, "failed to start"}
     end
   end
