@@ -9,6 +9,7 @@ config :yeet,
   topic: "dead-letters"
 
 config :reaper,
+  output_topic_prefix: "raw",
   produce_retries: 2,
   produce_timeout: 10,
   secrets_endpoint: "http://vault:8200"

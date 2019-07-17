@@ -11,8 +11,9 @@ defmodule Reaper.ConfigServerTest do
 
   setup do
     TestHelper.start_horde(Reaper.Registry, Reaper.Horde.Supervisor)
-    allow Elsa.topic?(any(), any()), return: true
-    allow Elsa.Producer.Manager.start_producer(any(), any()), return: {:ok, :pid}
+
+    allow(DataFeedScheduler.start_link(any()), return: :ignore)
+    allow(DataFeedScheduler.update(any(), any()), return: :does_not_matter)
 
     :ok
   end
@@ -156,16 +157,11 @@ defmodule Reaper.ConfigServerTest do
       assert TestUtils.child_count(Cachex) == 1
 
       eventual_pids = TestUtils.get_child_pids_for_feed_supervisor(:"12345-6789")
+
       assert eventual_pids != :undefined
       assert eventual_pids == initial_pids
 
-      %{
-        reaper_config: %{
-          sourceUrl: source_url
-        }
-      } = get_state(:"12345-6789_feed")
-
-      assert source_url == new_url
+      assert_called Reaper.DataFeedScheduler.update(any(), %{sourceUrl: new_url})
     end
 
     test "when feed supervisor is not found update does not blow up" do
@@ -276,9 +272,5 @@ defmodule Reaper.ConfigServerTest do
                ConfigServer.process_reaper_config(reaper_config)
              end) =~ "Inviable configuration"
     end
-  end
-
-  defp get_state(name) do
-    DataFeedScheduler.get({:via, Horde.Registry, {Reaper.Registry, name}})
   end
 end
