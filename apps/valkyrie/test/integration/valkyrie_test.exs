@@ -14,6 +14,7 @@ defmodule ValkyrieTest do
       TDG.create_dataset(%{
         id: "pirates",
         technical: %{
+          sourceType: "ingest",
           schema: [
             %{name: "name", type: "string"},
             %{name: "alignment", type: "string"},

@@ -4,12 +4,12 @@ defmodule Valkyrie do
   Validating and transforming the payload to conform to the provided dataset schema
   """
 
-  alias Valkyrie.Dataset
+  alias SmartCity.Dataset
 
   @type reason :: %{String.t() => term()}
 
   @spec standardize_data(%Dataset{}, map()) :: {:ok, map()} | {:error, reason()}
-  def standardize_data(%Dataset{schema: schema}, payload) do
+  def standardize_data(%Dataset{technical: %{schema: schema}}, payload) do
     %{data: data, errors: errors} = standardize_schema(schema, payload)
 
     case Enum.empty?(errors) do

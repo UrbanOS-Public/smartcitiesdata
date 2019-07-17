@@ -3,14 +3,19 @@ defmodule ValkyrieTest do
   import Checkov
 
   alias Valkyrie.Dataset
+  alias SmartCity.TestDataGenerator, as: TDG
 
   describe "standardize_data/1" do
     data_test "validates that #{value} is a valid #{type}" do
-      dataset = %Dataset{
-        schema: [
-          %{name: field_name, type: type}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: field_name, type: type}
+            ]
+          }
+        )
 
       payload = %{field_name => value}
 
@@ -29,11 +34,15 @@ defmodule ValkyrieTest do
     end
 
     data_test "transforms #{value} to a valid #{type}" do
-      dataset = %Dataset{
-        schema: [
-          %{name: field_name, type: type}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: field_name, type: type}
+            ]
+          }
+        )
 
       assert {:ok, %{field_name => transformed_value}} == Valkyrie.standardize_data(dataset, %{field_name => value})
 
@@ -55,11 +64,15 @@ defmodule ValkyrieTest do
     end
 
     data_test "transforms #{value} to a valid #{type} with format #{format}" do
-      dataset = %Dataset{
-        schema: [
-          %{name: "birthdate", format: format, type: type}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "birthdate", format: format, type: type}
+            ]
+          }
+        )
 
       payload = %{"birthdate" => value}
 
@@ -74,11 +87,15 @@ defmodule ValkyrieTest do
     end
 
     data_test "validates that #{value} with format #{format} is not a valid #{type}" do
-      dataset = %Dataset{
-        schema: [
-          %{name: "birthdate", format: format, type: type}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "birthdate", format: format, type: type}
+            ]
+          }
+        )
 
       assert {:error, reason} == Valkyrie.standardize_data(dataset, %{"birthdate" => value})
 
@@ -100,11 +117,15 @@ defmodule ValkyrieTest do
     end
 
     data_test "validates that #{value} is a not a valid #{type}" do
-      dataset = %Dataset{
-        schema: [
-          %{name: field_name, type: type}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: field_name, type: type}
+            ]
+          }
+        )
 
       expected = {:error, %{field_name => reason}}
       assert expected == Valkyrie.standardize_data(dataset, %{field_name => value})
@@ -124,11 +145,15 @@ defmodule ValkyrieTest do
     end
 
     data_test "validates that nil is a valid #{type}" do
-      dataset = %Dataset{
-        schema: [
-          %{name: field_name, type: type}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: field_name, type: type}
+            ]
+          }
+        )
 
       payload = %{field_name => nil}
       assert {:ok, payload} == Valkyrie.standardize_data(dataset, payload)
@@ -149,12 +174,16 @@ defmodule ValkyrieTest do
         %{name: "luckyNumbers", type: "list", itemType: "integer"}
       ]
 
-      dataset = %Dataset{
-        schema: [
-          %{name: "name", type: "string"},
-          %{name: "spouse", type: "map", subSchema: sub_schema}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "name", type: "string"},
+              %{name: "spouse", type: "map", subSchema: sub_schema}
+            ]
+          }
+        )
 
       payload = %{
         "name" => "Pete",
@@ -188,12 +217,16 @@ defmodule ValkyrieTest do
         %{name: "name", type: "string"}
       ]
 
-      dataset = %Dataset{
-        schema: [
-          %{name: "name", type: "string"},
-          %{name: "spouse", type: "map", subSchema: sub_schema}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "name", type: "string"},
+              %{name: "spouse", type: "map", subSchema: sub_schema}
+            ]
+          }
+        )
 
       payload = %{"name" => "Pete", "spouse" => "Shirley"}
 
@@ -207,12 +240,16 @@ defmodule ValkyrieTest do
         %{name: "age", type: "integer"}
       ]
 
-      dataset = %Dataset{
-        schema: [
-          %{name: "name", type: "string"},
-          %{name: "spouse", type: "map", subSchema: sub_schema}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "name", type: "string"},
+              %{name: "spouse", type: "map", subSchema: sub_schema}
+            ]
+          }
+        )
 
       payload = %{"name" => "Pete", "spouse" => %{"name" => "Shirley", "age" => "27.8"}}
 
@@ -230,12 +267,16 @@ defmodule ValkyrieTest do
         %{name: "child", type: "map", subSchema: sub_sub_schema}
       ]
 
-      dataset = %Dataset{
-        schema: [
-          %{name: "name", type: "string"},
-          %{name: "spouse", type: "map", subSchema: sub_schema}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "name", type: "string"},
+              %{name: "spouse", type: "map", subSchema: sub_schema}
+            ]
+          }
+        )
 
       payload = %{"name" => "Pete", "spouse" => %{"name" => "Shirley", "child" => %{"name" => 14}}}
 
@@ -249,13 +290,17 @@ defmodule ValkyrieTest do
         %{name: "age", type: "integer"}
       ]
 
-      dataset = %Dataset{
-        schema: [
-          %{name: "name", type: "string"},
-          %{name: "luckyNumbers", type: "list", itemType: "integer"},
-          %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "name", type: "string"},
+              %{name: "luckyNumbers", type: "list", itemType: "integer"},
+              %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema}
+            ]
+          }
+        )
 
       payload = %{
         "name" => "Pete",
@@ -281,11 +326,15 @@ defmodule ValkyrieTest do
     end
 
     test "validates the provided list is a list" do
-      dataset = %Dataset{
-        schema: [
-          %{name: "luckyNumbers", type: "list", itemType: "integer"}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "luckyNumbers", type: "list", itemType: "integer"}
+            ]
+          }
+        )
 
       payload = %{"luckyNumbers" => "uh-huh"}
 
@@ -294,12 +343,16 @@ defmodule ValkyrieTest do
     end
 
     test "returns error that identifies wrong type in list" do
-      dataset = %Dataset{
-        schema: [
-          %{name: "name", type: "string"},
-          %{name: "luckyNumbers", type: "list", itemType: "integer"}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "name", type: "string"},
+              %{name: "luckyNumbers", type: "list", itemType: "integer"}
+            ]
+          }
+        )
 
       payload = %{"name" => "Pete", "luckyNumbers" => [2, "three", 4]}
 
@@ -313,12 +366,16 @@ defmodule ValkyrieTest do
         %{name: "age", type: "integer"}
       ]
 
-      dataset = %Dataset{
-        schema: [
-          %{name: "name", type: "string"},
-          %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema}
-        ]
-      }
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "name", type: "string"},
+              %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema}
+            ]
+          }
+        )
 
       payload = %{
         "name" => "Pete",

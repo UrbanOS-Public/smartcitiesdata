@@ -5,12 +5,13 @@ defmodule Valkyrie.DatasetHandler do
   use SmartCity.Registry.MessageHandler
   alias SmartCity.Dataset
 
-  def handle_dataset(%Dataset{technical: %{sourceType: "remote"}}) do
-    :ok
+  def handle_dataset(%Dataset{technical: %{sourceType: source_type}} = dataset)
+      when source_type in ["ingest", "streaming"] do
+    Valkyrie.TopicManager.create_and_subscribe(dataset, "raw-#{dataset.id}")
+    # Valkyrie.Dataset.put(dataset)
   end
 
-  def handle_dataset(dataset) do
-    Valkyrie.TopicManager.create_and_subscribe("raw-#{dataset.id}")
-    Valkyrie.Dataset.put(dataset)
+  def handle_dataset(_dataset) do
+    :ok
   end
 end

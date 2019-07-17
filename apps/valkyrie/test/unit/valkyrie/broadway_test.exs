@@ -5,22 +5,34 @@ defmodule Valkyrie.BroadwayTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias SmartCity.Data
 
+  @dataset_id "ds1"
+  @topic "raw-ds1"
+  @producer :ds1_producer
+
   setup do
-    {:ok, broadway} = Valkyrie.Broadway.start_link([])
+    allow Elsa.produce_sync(any(), any(), any()), return: :ok
 
-    [broadway: broadway]
-  end
-
-  test "should return transformed data", %{broadway: broadway} do
     schema = [
       %{name: "name", type: "string"},
       %{name: "age", type: "integer"}
     ]
 
-    dataset = TDG.create_dataset(id: "ds1", technical: %{schema: schema})
-    Valkyrie.Dataset.put(dataset)
+    topic = Keyword.fetch!(opts, :topic)
 
-    data = TDG.create_data(dataset_id: "ds1", payload: %{"name" => "johnny", "age" => "21"})
+    dataset = TDG.create_dataset(id: @dataset_id, technical: %{schema: schema})
+    {:ok, broadway} = Valkyrie.Broadway.start_link(dataset: dataset, topic: @topic, producer: @producer)
+
+    on_exit(fn ->
+      ref = Process.monitor(broadway)
+      Process.exit(broadway, :normal)
+      assert_receive {:DOWN, ^ref, _, _, _}, 2_000
+    end)
+
+    [broadway: broadway]
+  end
+
+  test "should return transformed data", %{broadway: broadway} do
+    data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => "21"})
     kafka_message = %{value: Jason.encode!(data)}
 
     Broadway.test_messages(broadway, [kafka_message])
@@ -47,32 +59,40 @@ defmodule Valkyrie.BroadwayTest do
     assert_receive {:ack, _ref, _, [message]}, 5_000
     assert {:failed, :something_went_badly} == message.status
 
-    assert_called Yeet.process_dead_letter("unknown", :message, "Valkyrie", reason: :something_went_badly)
+    assert_called Yeet.process_dead_letter(@dataset_id, :message, "Valkyrie", reason: :something_went_badly)
   end
 
-  test "should raise an exception when dataset is not available", %{broadway: broadway} do
-  end
-end
+  test "should yeet message is standardizing data fails do to schmea validation", %{broadway: broadway} do
+    allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :ok
 
-defmodule Fake.Broadway do
-  use Broadway
+    data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => "twenty-one"})
+    kafka_message = %{value: Jason.encode!(data)}
 
-  def start_link(opts) do
-    config = Valkyrie.Broadway.broadway_config(opts)
+    Broadway.test_messages(broadway, [kafka_message])
 
-    new_config =
-      Keyword.put(config, :producers,
-        default: [
-          module: {Fake.Producer, []},
-          stages: 1
-        ]
-      )
+    assert_receive {:ack, _ref, _, failed_messages}, 5_000
+    assert 1 == length(failed_messages)
 
-    Broadway.start_link(Valkyrie.Broadway, new_config)
+    assert_called Yeet.process_dead_letter("ds1", Jason.encode!(data), "Valkyrie",
+                    error: :failed_schema_validation,
+                    reason: %{"age" => :invalid_integer}
+                  )
   end
 
-  def handle_message(_not, _used, state) do
-    {:noreply, state}
+  test "should send the messages to the outgoing kafka topic", %{broadway: broadway} do
+    data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
+    data2 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "carl", "age" => 33})
+    kafka_messages = [%{value: Jason.encode!(data1)}, %{value: Jason.encode!(data2)}]
+
+    Broadway.test_messages(broadway, kafka_messages)
+
+    assert_receive {:ack, _ref, messages, _}, 5_000
+    assert 2 == length(messages)
+
+    assert_called Elsa.produce_sync("unit-#{@dataset_id}", [Jason.encode!(data1), Jason.encode!(data2)],
+                    partition: 0,
+                    name: :"#{@dataset_id}_producer"
+                  )
   end
 end
 

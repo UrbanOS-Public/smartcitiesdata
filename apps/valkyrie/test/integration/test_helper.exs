@@ -32,12 +32,11 @@ defmodule TestHelpers do
   end
 
   def produce_message(message, topic, endpoints) do
-    Elsa.Producer.produce_sync(
+    Elsa.Producer.produce(
       endpoints,
       topic,
-      0,
-      "jerks",
-      Jason.encode!(message)
+      {"jerks", Jason.encode!(message)},
+      parition: 0
     )
   end
 
