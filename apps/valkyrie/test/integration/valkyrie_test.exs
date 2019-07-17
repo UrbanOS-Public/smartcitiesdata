@@ -49,7 +49,7 @@ defmodule ValkyrieTest do
     output_topic = "#{@output_topic_prefix}-#{dataset.id}"
     Elsa.Topic.create(@endpoints, output_topic)
 
-    # TODO: move to production code
+    # TODO: move wait to production code
     Patiently.wait_for!(
       fn ->
         Elsa.topic?(@endpoints, output_topic)

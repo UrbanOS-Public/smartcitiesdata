@@ -8,7 +8,7 @@ defmodule Valkyrie.DatasetHandler do
   def handle_dataset(%Dataset{technical: %{sourceType: source_type}} = dataset)
       when source_type in ["ingest", "streaming"] do
     Valkyrie.TopicManager.create_and_subscribe(dataset, "raw-#{dataset.id}")
-    # Valkyrie.Dataset.put(dataset)
+    # Valkyrie.Dataset.put(dataset)  TODO - should this be removed??
   end
 
   def handle_dataset(_dataset) do

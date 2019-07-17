@@ -2,7 +2,6 @@ defmodule ValkyrieTest do
   use ExUnit.Case
   import Checkov
 
-  alias Valkyrie.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
   describe "standardize_data/1" do
