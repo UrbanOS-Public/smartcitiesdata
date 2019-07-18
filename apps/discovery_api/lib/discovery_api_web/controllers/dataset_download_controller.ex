@@ -43,7 +43,11 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
     available_extension =
       formats
       |> Enum.find(fn extension ->
-        file_exists(conn.assigns.model.organizationDetails.orgName, conn.assigns.model.id, extension)
+        file_exists(
+          conn.assigns.model.organizationDetails.orgName,
+          conn.assigns.model.name,
+          extension
+        )
       end)
 
     if available_extension do
@@ -58,20 +62,28 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
   def stream_from_s3(conn, format) do
     bucket_name()
     |> ExAws.S3.download_file(
-      "/#{conn.assigns.model.organizationDetails.orgName}/#{conn.assigns.model.id}.#{format}",
+      get_file_key(conn.assigns.model, format),
       "dataset"
     )
     |> ExAws.stream!(region: region())
-    |> stream_data(conn, "name", format)
+    |> stream_data(conn, conn.assigns.model.name, format)
   end
 
-  defp file_exists(org_name, dataset_id, extension) do
+  defp file_exists(org_name, data_name, extension) do
     bucket_name()
-    |> ExAws.S3.list_objects(prefix: "/#{org_name}/#{dataset_id}.#{extension}")
+    |> ExAws.S3.list_objects(prefix: get_file_key(org_name, data_name, extension))
     |> ExAws.request!()
     |> Map.get(:body)
     |> Map.get(:contents)
     |> length() > 0
+  end
+
+  defp get_file_key(dataset, extension) do
+    get_file_key(dataset.organizationDetails.orgName, dataset.name, extension)
+  end
+
+  defp get_file_key(org_name, data_name, extension) do
+    "#{org_name}/#{data_name}.#{extension}"
   end
 
   defp fetch_columns(nil), do: nil

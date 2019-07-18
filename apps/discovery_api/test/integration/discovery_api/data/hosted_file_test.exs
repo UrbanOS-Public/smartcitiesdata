@@ -8,7 +8,8 @@ defmodule DiscoveryApi.Data.HostedFileTest do
 
   @expected_checksum :crypto.hash(:md5, File.read!("test/integration/test-file.test")) |> Base.encode16()
 
-  @dataset_id "test_id"
+  @dataset_id "123-123"
+  @dataset_name "test_id"
 
   setup do
     Application.put_env(:ex_aws, :access_key_id, "testing_access_key")
@@ -18,12 +19,12 @@ defmodule DiscoveryApi.Data.HostedFileTest do
 
     "test/integration/test-file.test"
     |> ExAws.S3.Upload.stream_file()
-    |> ExAws.S3.upload(Application.get_env(:discovery_api, :hosted_bucket), "test_org/#{@dataset_id}.geojson")
+    |> ExAws.S3.upload(Application.get_env(:discovery_api, :hosted_bucket), "test_org/#{@dataset_name}.geojson")
     |> ExAws.request!()
 
     "test/integration/test-file.test"
     |> ExAws.S3.Upload.stream_file()
-    |> ExAws.S3.upload(Application.get_env(:discovery_api, :hosted_bucket), "test_org/#{@dataset_id}.tgz")
+    |> ExAws.S3.upload(Application.get_env(:discovery_api, :hosted_bucket), "test_org/#{@dataset_name}.tgz")
     |> ExAws.request!()
 
     :ok
@@ -32,12 +33,18 @@ defmodule DiscoveryApi.Data.HostedFileTest do
   @moduletag capture_log: true
   test "downloads a file with the geojson extension" do
     dataset_id = @dataset_id
+    dataset_name = @dataset_name
     system_name = "not_saved"
 
     organization = TDG.create_organization(%{orgName: "test_org"})
     Organization.write(organization)
 
-    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id, sourceType: "host"}})
+    dataset =
+      TDG.create_dataset(%{
+        id: dataset_id,
+        technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
+      })
+
     Dataset.write(dataset)
 
     Patiently.wait_for!(
@@ -50,12 +57,18 @@ defmodule DiscoveryApi.Data.HostedFileTest do
   @moduletag capture_log: true
   test "downloads a file with a custom mime type" do
     dataset_id = @dataset_id
+    dataset_name = @dataset_name
     system_name = "not_saved"
 
     organization = TDG.create_organization(%{orgName: "test_org"})
     Organization.write(organization)
 
-    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id, sourceType: "host"}})
+    dataset =
+      TDG.create_dataset(%{
+        id: dataset_id,
+        technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
+      })
+
     Dataset.write(dataset)
 
     Patiently.wait_for!(
@@ -68,12 +81,18 @@ defmodule DiscoveryApi.Data.HostedFileTest do
   @moduletag capture_log: true
   test "downloads a file with a explicit format" do
     dataset_id = @dataset_id
+    dataset_name = @dataset_name
     system_name = "not_saved"
 
     organization = TDG.create_organization(%{orgName: "test_org"})
     Organization.write(organization)
 
-    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id, sourceType: "host"}})
+    dataset =
+      TDG.create_dataset(%{
+        id: dataset_id,
+        technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
+      })
+
     Dataset.write(dataset)
 
     Patiently.wait_for!(
@@ -86,12 +105,18 @@ defmodule DiscoveryApi.Data.HostedFileTest do
   @moduletag capture_log: true
   test "unacceptable response if file with that type does not exist" do
     dataset_id = @dataset_id
+    dataset_name = @dataset_name
     system_name = "not_saved"
 
     organization = TDG.create_organization(%{orgName: "test_org"})
     Organization.write(organization)
 
-    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id, sourceType: "host"}})
+    dataset =
+      TDG.create_dataset(%{
+        id: dataset_id,
+        technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
+      })
+
     Dataset.write(dataset)
 
     Patiently.wait_for!(

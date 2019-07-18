@@ -39,7 +39,7 @@ config :discovery_api, DiscoveryApi.Quantum.Scheduler,
   ]
 
 config :mime, :types, %{
-  "application/shapefile" => ["zip", "tgz", "tar.gz"]
+  "application/shapefile" => ["zip", "tgz", "tar.gz", "shapefile"]
 }
 
 import_config "#{Mix.env()}.exs"
