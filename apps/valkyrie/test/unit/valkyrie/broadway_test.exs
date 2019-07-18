@@ -20,7 +20,9 @@ defmodule Valkyrie.BroadwayTest do
     ]
 
     dataset = TDG.create_dataset(id: @dataset_id, technical: %{schema: schema})
-    {:ok, broadway} = Valkyrie.Broadway.start_link(dataset: dataset, topic: @topic, producer: @producer)
+
+    {:ok, broadway} =
+      Valkyrie.Broadway.start_link(dataset: dataset, topics: [@topic], producer: @producer, output_topic: :output_topic)
 
     on_exit(fn ->
       ref = Process.monitor(broadway)
@@ -104,7 +106,7 @@ defmodule Valkyrie.BroadwayTest do
                   )
   end
 
-  test "should send the messages to the outgoing kafka topic", %{broadway: broadway} do
+  test "should send the messages to the output kafka topic", %{broadway: broadway} do
     data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
     data2 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "carl", "age" => 33})
     kafka_messages = [%{value: Jason.encode!(data1)}, %{value: Jason.encode!(data2)}]
@@ -115,7 +117,7 @@ defmodule Valkyrie.BroadwayTest do
     assert 2 == length(messages)
 
     captured_messages =
-      capture(Elsa.produce_sync("unit-#{@dataset_id}", any(), partition: 0, name: :"#{@dataset_id}_producer"), 2)
+      capture(Elsa.produce_sync(:output_topic, any(), partition: 0, name: :"#{@dataset_id}_producer"), 2)
 
     assert 2 = length(captured_messages)
     assert Enum.at(captured_messages, 0) |> Jason.decode!() |> Map.get("payload") == data1.payload

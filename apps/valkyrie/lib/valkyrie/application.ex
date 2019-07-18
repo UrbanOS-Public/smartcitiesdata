@@ -9,8 +9,7 @@ defmodule Valkyrie.Application do
   def start(_type, _args) do
     children =
       [
-        {DynamicSupervisor, strategy: :one_for_one, name: Valkyrie.Topic.Supervisor},
-        cachex(),
+        {DynamicSupervisor, strategy: :one_for_one, name: Valkyrie.Dynamic.Supervisor},
         dataset_subscriber()
       ]
       |> List.flatten()
@@ -24,14 +23,5 @@ defmodule Valkyrie.Application do
       nil -> []
       _ -> {SmartCity.Registry.Subscriber, [message_handler: Valkyrie.DatasetHandler]}
     end
-  end
-
-  defp cachex do
-    expiration = Cachex.Spec.expiration(default: @ttl)
-
-    %{
-      id: :dataset_cache,
-      start: {Cachex, :start_link, [Valkyrie.Dataset.cache_name(), [expiration: expiration]]}
-    }
   end
 end

@@ -9,9 +9,6 @@ defmodule Valkyrie.Broadway do
   alias SmartCity.Data
   @app_name "Valkyrie"
 
-  def setup_broadway() do
-  end
-
   def start_link(opts) do
     Broadway.start_link(__MODULE__, broadway_config(opts))
   end

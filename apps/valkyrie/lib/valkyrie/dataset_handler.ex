@@ -22,6 +22,6 @@ defmodule Valkyrie.DatasetHandler do
       output_topic: output_topic
     ]
 
-    DynamicSupervisor.start_child(Valkyrie.Topic.Supervisor, {Valkyrie.DatasetSupervisor, start_options})
+    DynamicSupervisor.start_child(Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options})
   end
 end

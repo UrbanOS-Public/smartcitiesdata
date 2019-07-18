@@ -3,10 +3,11 @@ defmodule Valkyrie.DatasetHandlerTest do
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Valkyrie.{Dataset, DatasetHandler, TopicManager}
+  alias Valkyrie.{DatasetHandler, TopicManager}
 
   setup do
-    Cachex.clear(Dataset.cache_name())
+    allow DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
+
     :ok
   end
 
