@@ -47,19 +47,10 @@ defmodule ValkyrieTest do
 
     input_topic = "#{@input_topic_prefix}-#{dataset.id}"
     output_topic = "#{@output_topic_prefix}-#{dataset.id}"
-    Elsa.Topic.create(@endpoints, output_topic)
-
-    # TODO: move wait to production code
-    Patiently.wait_for!(
-      fn ->
-        Elsa.topic?(@endpoints, output_topic)
-      end,
-      dwell: 200,
-      max_tries: 10
-    )
 
     SmartCity.Dataset.write(dataset)
-    TestHelpers.wait_for_topic(input_topic)
+    TestHelpers.wait_for_topic(@endpoints, input_topic)
+    Elsa.Topic.create(@endpoints, output_topic)
 
     TestHelpers.produce_messages(messages, input_topic, @endpoints)
 

@@ -62,10 +62,10 @@ defmodule TestHelpers do
     |> clear_timing()
   end
 
-  def wait_for_topic(topic) do
+  def wait_for_topic(endpoints, topic) do
     Patiently.wait_for!(
       fn ->
-        Valkyrie.TopicManager.is_topic_ready?(topic)
+        Elsa.topic?(endpoints, topic)
       end,
       dwell: 200,
       max_tries: 20

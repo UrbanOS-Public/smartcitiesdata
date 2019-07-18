@@ -18,7 +18,7 @@ config :valkyrie,
     DivoRedis
   ],
   divo_wait: [dwell: 700, max_tries: 50],
-  produce_retries: 3,
+  produce_retries: 5,
   produce_timeout: 1500
 
 config :yeet,

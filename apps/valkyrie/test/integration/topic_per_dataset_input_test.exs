@@ -21,7 +21,7 @@ defmodule Valkyrie.TopicPerDataset.InputTest do
     SmartCity.Dataset.write(dataset)
 
     eventually fn ->
-      assert Valkyrie.TopicManager.is_topic_ready?(input_topic)
+      assert Elsa.topic?(@endpoints, input_topic)
     end
   end
 
@@ -44,13 +44,13 @@ defmodule Valkyrie.TopicPerDataset.InputTest do
     input_topic = "#{@input_topic_prefix}-#{dataset.id}"
 
     SmartCity.Dataset.write(dataset)
-    TestHelpers.wait_for_topic(input_topic)
+    TestHelpers.wait_for_topic(@endpoints, input_topic)
     Elsa.Topic.create(@endpoints, output_topic)
 
     original_message =
       TestHelpers.create_data(%{
         dataset_id: dataset.id,
-        payload: %{name: %{first: "Jeff", last: "Grunewald"}}
+        payload: %{"name" => %{"first" => "Jeff", "last" => "Grunewald"}}
       })
 
     TestHelpers.produce_message(original_message, input_topic, @endpoints)

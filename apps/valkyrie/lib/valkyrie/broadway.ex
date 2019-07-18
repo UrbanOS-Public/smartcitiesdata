@@ -9,6 +9,9 @@ defmodule Valkyrie.Broadway do
   alias SmartCity.Data
   @app_name "Valkyrie"
 
+  def setup_broadway() do
+  end
+
   def start_link(opts) do
     Broadway.start_link(__MODULE__, broadway_config(opts))
   end
@@ -16,6 +19,7 @@ defmodule Valkyrie.Broadway do
   defp broadway_config(opts) do
     dataset = Keyword.fetch!(opts, :dataset)
     producer = Keyword.fetch!(opts, :producer)
+    output_topic = Keyword.fetch!(opts, :output_topic)
 
     [
       name: :"#{dataset.id}_broadway",
@@ -39,7 +43,7 @@ defmodule Valkyrie.Broadway do
       ],
       context: %{
         dataset: dataset,
-        outgoing_topic: outgoing_topic(dataset.id),
+        output_topic: output_topic,
         producer: producer
       }
     ]
@@ -71,7 +75,7 @@ defmodule Valkyrie.Broadway do
 
   def handle_batch(_batch, messages, _batch_info, context) do
     data_messages = messages |> Enum.map(fn message -> message.data.value end)
-    Elsa.produce_sync(context.outgoing_topic, data_messages, partition: 0, name: context.producer)
+    Elsa.produce_sync(context.output_topic, data_messages, partition: 0, name: context.producer)
     messages
   end
 
@@ -90,7 +94,4 @@ defmodule Valkyrie.Broadway do
   defp batch_stages(), do: Application.get_env(:valkyrie, :batch_stages, 1)
   defp batch_size(), do: Application.get_env(:valkyrie, :batch_size, 1_000)
   defp batch_timeout(), do: Application.get_env(:valkyrie, :batch_timeout, 2_000)
-
-  defp outgoing_topic_prefix(), do: Application.get_env(:valkyrie, :output_topic_prefix)
-  defp outgoing_topic(dataset_id), do: "#{outgoing_topic_prefix()}-#{dataset_id}"
 end
