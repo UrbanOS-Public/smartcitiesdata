@@ -44,28 +44,6 @@ services:
       interval: 10s
       timeout: 20s
       retries: 3
-  zookeeper_public:
-    image: wurstmeister/zookeeper
-    # ports:
-    # - "3181:2181"
-  kafka_public:
-    image: wurstmeister/kafka
-    depends_on:
-    - zookeeper
-    # ports:
-    # - "9394:9094"
-    environment:
-    - "KAFKA_ADVERTISED_LISTENERS=INSIDE://:9092,OUTSIDE://${HOST_IP:-localhost}:9094"
-    - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
-    - "KAFKA_LISTENERS=INSIDE://:9092,OUTSIDE://:9094"
-    - "KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE"
-    - "KAFKA_CREATE_TOPICS=streaming-transformed:1:1,streaming-dead-letters:1:1,streaming-persisted:1:1"
-    - "KAFKA_ZOOKEEPER_CONNECT=zookeeper_public:2181"
-    healthcheck:
-      test: ["CMD-SHELL", "cat /opt/kafka/logs/server.log | grep \"Previous Leader Epoch was: -1\""]
-      interval: 10s
-      timeout: 20s
-      retries: 3
   metastore:
     image: smartcitiesdata/metastore-testo:development
     depends_on:
@@ -118,7 +96,6 @@ services:
       - LDAP_ENV=local
       - LDAP_PASS=admin
       - REDIS_HOST=redis
-
   reaper:
     image: smartcitiesdata/reaper:development
     depends_on:
@@ -131,6 +108,7 @@ services:
       - DLQ_TOPIC=streaming-dead-letters
       - SECRETS_ENDPOINT="__UKNOWN__"
       - DOWNLOAD_DIR=/tmp/
+      - HOSTED_FILE_BUCKET=local-bucket
   valkyrie:
     image: smartcitiesdata/valkyrie:development
     depends_on:
@@ -171,11 +149,10 @@ services:
     depends_on:
       - kafka
       - redis
-      - kafka_public
     environment:
       - REDIS_HOST=redis
       - PIPELINE_KAFKA_BROKERS=kafka:9092
-      - PUBLIC_KAFKA_BROKERS=kafka_public:9092
+      - PUBLIC_KAFKA_BROKERS=kafka:9092
   flair:
     image: smartcitiesdata/flair:development
     depends_on:
@@ -215,15 +192,15 @@ services:
       - ALLOWED_ORIGINS=*
     ports:
       - 8082:80
-      - 8083:443
   discovery-streams:
     image: smartcitiesdata/discovery_streams:development
     depends_on:
       - kafka
     environment:
-      - KAFKA_BROKERS=kafka_public:9092
+      - KAFKA_BROKERS=kafka:9092
     ports:
-      - 8087:80
+      - 8087:4000
+    restart: on-failure
   discovery_ui:
     image: smartcitiesdata/discovery_ui:development
     depends_on:
@@ -233,16 +210,21 @@ services:
       - BASE_URL=http://localhost
     ports:
       - 8085:80
-      - 8086:443
   genesis:
     image: smartcitiesdata/genesis:development
     depends_on:
       - kafka
       - redis
-      - kafka_public
+    restart: on-failure
     environment:
       - REDIS_HOST=redis
       - PIPELINE_KAFKA_BROKERS=kafka:9092
-      - PUBLIC_KAFKA_BROKERS=kafka_public:9092
+      - PUBLIC_KAFKA_BROKERS=kafka:9092
       - TOPIC_PARTITIONS=1
       - TOPIC_REPLICATION_FACTOR=1
+  data-generator:
+    image: smartcitiesdata/data-generator:development
+    ports:
+      - 8083:80
+    environment:
+      - REDIS_HOST=redis
