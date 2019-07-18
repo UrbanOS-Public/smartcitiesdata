@@ -4,8 +4,6 @@ defmodule Valkyrie.Application do
   use Application
   require Cachex.Spec
 
-  @ttl Application.get_env(:valkyrie, :ttl)
-
   def start(_type, _args) do
     children =
       [
