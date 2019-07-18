@@ -14,8 +14,8 @@ defmodule Valkyrie.TopicManager do
 
     Elsa.create_topic(endpoints(), input_topic)
 
-    # wait_for_topic(input_topic)
-    # wait_for_topic(output_topic)
+    wait_for_topic(input_topic)
+    wait_for_topic(output_topic)
 
     %{input_topic: input_topic, output_topic: output_topic}
   end
