@@ -43,7 +43,7 @@ defmodule ValkyrieTest do
           }
         )
 
-      assert {:ok, %{field_name => transformed_value}} == Valkyrie.standardize_data(dataset, %{field_name => value})
+      assert {:ok, %{field_name => transformed_value}} === Valkyrie.standardize_data(dataset, %{field_name => value})
 
       where([
         [:field_name, :type, :value, :transformed_value],

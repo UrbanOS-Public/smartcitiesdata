@@ -57,7 +57,7 @@ defmodule Valkyrie do
   end
 
   defp standardize(%{type: type}, value) when type in ["float", "double"] and (is_integer(value) or is_float(value)),
-    do: {:ok, value}
+    do: {:ok, value / 1}
 
   defp standardize(%{type: type}, value) when type in ["float", "double"] do
     case Float.parse(value) do
