@@ -8,7 +8,7 @@ defmodule Odo.Application do
   def start(_type, _args) do
     children =
       [
-        {DynamicSupervisor, name: Odo.ShapefileProcessorSupervisor, strategy: :one_for_one},
+        {Task.Supervisor, name: Odo.ShapefileTaskSupervisor},
         redis(),
         dataset_subscriber()
       ]
@@ -22,7 +22,7 @@ defmodule Odo.Application do
     Application.get_env(:redix, :host)
     |> case do
       nil -> []
-      host -> {Redix, host: host, name: redis_client()}
+      host -> {Redix, host: host, name: :redix}
     end
   end
 
