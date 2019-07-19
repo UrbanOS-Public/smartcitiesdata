@@ -37,8 +37,8 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
   defp calculate_completeness?(%Dataset{} = dataset), do: not Dataset.is_remote?(dataset) and inserted_since_last_calculation?(dataset)
 
   defp inserted_since_last_calculation?(%Dataset{} = dataset) do
-    keys = ["forklift:last_insert_date:#{dataset.id}", "#{@completeness_key}:#{dataset.id}"]
-    [last_insert_date, completion_calculated_date] = Persistence.get_many(keys)
+    last_insert_date = Persistence.get("forklift:last_insert_date:#{dataset.id}")
+    completion_calculated_date = Persistence.get("#{@completeness_key}:#{dataset.id}")
     last_insert_date > completion_calculated_date
   end
 

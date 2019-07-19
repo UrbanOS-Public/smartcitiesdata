@@ -23,7 +23,8 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
         ]
       )
 
-      keys = ["forklift:last_insert_date:#{dataset.id}", "#{@completeness_key}:#{dataset.id}"]
+      last_insert_key = "forklift:last_insert_date:#{dataset.id}"
+      completeness_key = "#{@completeness_key}:#{dataset.id}"
 
       stats = %{
         id: dataset.id,
@@ -35,28 +36,31 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
         }
       }
 
-      {:ok, %{dataset: dataset, keys: keys, stats: stats}}
+      {:ok, %{dataset: dataset, last_insert_key: last_insert_key, completeness_key: completeness_key, stats: stats}}
     end
 
-    test "Interacts with persistence in the way we expect", %{keys: keys} do
-      allow(Persistence.get_many(any()), return: [nil, nil])
-
-      StatsCalculator.produce_completeness_stats()
-
-      assert_called(Persistence.get_many(keys))
-    end
-
-    test "Writes stats to redis for non-remote datasets", %{dataset: dataset, keys: keys, stats: stats} do
-      allow(Persistence.get_many(keys), return: ["2019-06-05T14:01:36.466729Z", "2019-06-05T13:59:09.630290Z"])
-
+    test "Writes stats to redis for non-remote datasets", %{
+      dataset: dataset,
+      last_insert_key: last_insert_key,
+      completeness_key: completeness_key,
+      stats: stats
+    } do
+      allow(Persistence.get(last_insert_key), return: "2019-06-05T14:01:36.466729Z")
+      allow(Persistence.get(completeness_key), return: "2019-06-05T13:59:09.630290Z")
       StatsCalculator.produce_completeness_stats()
 
       assert_called(Persistence.persist("discovery-api:stats:#{dataset.id}", stats))
       assert_called(Persistence.persist("#{@completeness_key}:#{dataset.id}", any()))
     end
 
-    test "Writes stats to redis when data has loaded, but no stats have been calculated", %{dataset: dataset, keys: keys, stats: stats} do
-      allow(Persistence.get_many(keys), return: ["2019-06-05T13:59:09.630290Z", nil])
+    test "Writes stats to redis when data has loaded, but no stats have been calculated", %{
+      dataset: dataset,
+      last_insert_key: last_insert_key,
+      completeness_key: completeness_key,
+      stats: stats
+    } do
+      allow(Persistence.get(last_insert_key), return: "2019-06-05T14:01:36.466729Z")
+      allow(Persistence.get(completeness_key), return: "2019-06-05T13:59:09.630290Z")
 
       StatsCalculator.produce_completeness_stats()
 
@@ -97,8 +101,10 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
         ]
       )
 
-      keys = ["forklift:last_insert_date:#{dataset.id}", "#{@completeness_key}:#{dataset.id}"]
-      allow(Persistence.get_many(keys), return: ["2019-06-05T13:59:09.630290Z", "2019-06-05T14:01:36.466729Z"])
+      last_inserted_key = "forklift:last_insert_date:#{dataset.id}"
+      complete_key = "#{@completeness_key}:#{dataset.id}"
+      allow(Persistence.get(last_inserted_key), return: "2019-06-05T13:59:09.630290Z")
+      allow(Persistence.get(complete_key), return: "2019-06-05T14:01:36.466729Z")
 
       StatsCalculator.produce_completeness_stats()
 
@@ -114,8 +120,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
       allow(Prestige.execute(any(), any()), return: [])
 
-      keys = ["forklift:last_insert_date:#{dataset.id}", "#{@completeness_key}:#{dataset.id}"]
-      allow(Persistence.get_many(keys), return: [nil, nil])
+      allow(Persistence.get(any()), return: nil)
 
       StatsCalculator.produce_completeness_stats()
 

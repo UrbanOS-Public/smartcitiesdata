@@ -2,18 +2,26 @@ defmodule DiscoveryApi.Data.Persistence do
   @moduledoc """
   Module for communicating with Redis to persist and retrieve dataset information
   """
-  def get_all(key_string) do
+  def get_all(key_string, reject_nil \\ false) do
     :redix
     |> Redix.command!(["KEYS", key_string])
-    |> get_items()
+    |> get_items(reject_nil)
   end
 
-  defp get_items([]), do: []
+  defp get_items([], _), do: []
 
-  defp get_items(keys) do
+  defp get_items(keys, reject_nil) do
     :redix
     |> Redix.command!(["MGET" | keys])
-    |> Enum.map(fn json -> Jason.decode!(json, keys: :atoms) end)
+    |> Enum.map(&safe_json_decode/1)
+    |> Enum.reject(fn value -> reject_nil && is_nil(value) end)
+  end
+
+  defp safe_json_decode(json) do
+    case json do
+      nil -> nil
+      decode -> Jason.decode!(decode, keys: :atoms)
+    end
   end
 
   def get(key_string) do
@@ -38,8 +46,9 @@ defmodule DiscoveryApi.Data.Persistence do
 
   def get_many([]), do: []
 
-  def get_many(keys) do
+  def get_many(keys, reject_nil \\ false) do
     :redix
     |> Redix.command!(["MGET" | keys])
+    |> Enum.reject(fn value -> reject_nil && is_nil(value) end)
   end
 end
