@@ -5,7 +5,6 @@ defmodule Valkyrie.TopicPerDataset.OutputTest do
   import SmartCity.TestHelper
 
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
-  @dlq_topic Application.get_env(:yeet, :topic)
   @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
   @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
 

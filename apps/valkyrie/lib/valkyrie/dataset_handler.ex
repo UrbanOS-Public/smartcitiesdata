@@ -4,6 +4,7 @@ defmodule Valkyrie.DatasetHandler do
   """
   use SmartCity.Registry.MessageHandler
   alias SmartCity.Dataset
+  require Logger
 
   def handle_dataset(%Dataset{technical: %{sourceType: source_type}} = dataset)
       when source_type in ["ingest", "streaming"] do
@@ -22,6 +23,16 @@ defmodule Valkyrie.DatasetHandler do
       output_topic: output_topic
     ]
 
+    stop_dataset_supervisor(dataset)
     DynamicSupervisor.start_child(Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options})
+  end
+
+  defp stop_dataset_supervisor(dataset) do
+    name = Valkyrie.DatasetSupervisor.name(dataset)
+
+    case Process.whereis(name) do
+      nil -> :ok
+      pid -> DynamicSupervisor.terminate_child(Valkyrie.Dynamic.Supervisor, pid)
+    end
   end
 end

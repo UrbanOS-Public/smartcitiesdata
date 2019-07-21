@@ -4,9 +4,20 @@ defmodule Valkyrie.DatasetSupervisor do
   """
   use Supervisor
 
+  def name(dataset) do
+    :"#{dataset.id}_supervisor"
+  end
+
+  def child_spec(args) do
+    dataset = Keyword.fetch!(args, :dataset)
+
+    super(args)
+    |> Map.put(:id, name(dataset))
+  end
+
   def start_link(opts) do
     dataset = Keyword.fetch!(opts, :dataset)
-    Supervisor.start_link(__MODULE__, opts, name: :"#{dataset.id}_supervisor")
+    Supervisor.start_link(__MODULE__, opts, name: name(dataset))
   end
 
   @impl Supervisor
