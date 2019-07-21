@@ -3,8 +3,8 @@
 use Mix.Config
 
 config :valkyrie,
-  produce_retries: 10,
-  produce_timeout: 100,
+  retry_count: 10,
+  retry_initial_delay: 100,
   max_outgoing_bytes: 900_000,
   input_topic_prefix: "raw",
   output_topic_prefix: "validated",

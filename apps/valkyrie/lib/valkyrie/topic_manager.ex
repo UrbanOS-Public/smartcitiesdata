@@ -4,8 +4,8 @@ defmodule Valkyrie.TopicManager do
   """
   use Retry
 
-  @initial_delay Application.get_env(:valkyrie, :produce_timeout)
-  @retries Application.get_env(:valkyrie, :produce_retries)
+  @initial_delay Application.get_env(:valkyrie, :retry_initial_delay)
+  @retries Application.get_env(:valkyrie, :retry_count)
 
   @spec setup_topics(%SmartCity.Dataset{}) :: %{input_topic: String.t(), output_topic: String.t()}
   def setup_topics(dataset) do

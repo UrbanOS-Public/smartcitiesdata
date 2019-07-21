@@ -18,8 +18,8 @@ config :valkyrie,
     DivoRedis
   ],
   divo_wait: [dwell: 700, max_tries: 50],
-  produce_retries: 5,
-  produce_timeout: 1500
+  retry_count: 5,
+  retry_initial_delay: 1500
 
 config :yeet,
   topic: "dead-letters",
