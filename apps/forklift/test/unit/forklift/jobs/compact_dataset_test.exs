@@ -20,7 +20,7 @@ defmodule CompactDatasetTest do
     expected_statement = "create table big_data_compact as (select * from big_data)"
     expect(Prestige.execute(expected_statement), return: :ok)
 
-    Forklift.Compactor.compact(dataset)
+    Forklift.Compactor.compact({dataset, :compaction})
 
     assert_called(Prestige.execute(expected_statement), once())
   end
@@ -35,7 +35,7 @@ defmodule CompactDatasetTest do
       return: :ok
     )
 
-    Forklift.Compactor.compact(dataset)
+    Forklift.Compactor.compact({dataset, :rename_old})
 
     assert_called(Prestige.execute(expected_statement), once())
   end
@@ -50,7 +50,7 @@ defmodule CompactDatasetTest do
       return: :ok
     )
 
-    Forklift.Compactor.compact(dataset)
+    Forklift.Compactor.compact({dataset, :rename_new})
 
     assert_called(Prestige.execute(expected_statement), once())
   end
@@ -65,7 +65,7 @@ defmodule CompactDatasetTest do
       return: :ok
     )
 
-    Forklift.Compactor.compact(dataset)
+    Forklift.Compactor.compact({dataset, :drop_table})
 
     assert_called(Prestige.execute(expected_statement), once())
   end
