@@ -23,6 +23,7 @@ defmodule Reaper.Decoder.Csv do
         |> File.stream!()
         |> Stream.reject(fn line -> String.trim(line) == "" end)
         |> CsvParser.parse_stream(skip_headers: false)
+        |> Stream.reject(&header?(&1, keys))
         |> Stream.map(fn row -> keys |> Enum.zip(row) |> Map.new() end)
 
       {:ok, stream}
@@ -30,6 +31,12 @@ defmodule Reaper.Decoder.Csv do
       error ->
         {:error, "DatasetId: #{config.dataset_id}", error}
     end
+  end
+
+  defp header?(row, keys) do
+    keys
+    |> Enum.zip(row)
+    |> Enum.all?(fn {key, val} -> key == String.trim(val) end)
   end
 
   @impl Reaper.Decoder
