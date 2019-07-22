@@ -13,7 +13,14 @@ defmodule Reaper.SftpExtractorTest do
   @sftp %{host: @host, port: 2222, user: 'sftp_user', password: 'sftp_password'}
 
   setup do
-    {:ok, conn} = SftpEx.connect(host: @sftp.host, port: @sftp.port, user: @sftp.user, password: @sftp.password)
+    {:ok, conn} =
+      SftpEx.connect(
+        host: @sftp.host,
+        port: @sftp.port,
+        user: @sftp.user,
+        password: @sftp.password
+      )
+
     json_data = Jason.encode!([%{datum: "Bobber", sanctum: "Alice"}])
     SftpEx.upload(conn, "./upload/file.json", json_data)
 
@@ -28,8 +35,9 @@ defmodule Reaper.SftpExtractorTest do
     topic = "#{@output_topic_prefix}-#{dataset_id}"
     Elsa.create_topic(@endpoints, topic)
 
-    allow Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
-      return: {:ok, %{username: "sftp_user", password: "sftp_password"}}
+    allow(Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
+      return: {:ok, %{"username" => "sftp_user", "password" => "sftp_password"}}
+    )
 
     dataset =
       TDG.create_dataset(%{
@@ -65,8 +73,9 @@ defmodule Reaper.SftpExtractorTest do
     topic = "#{@output_topic_prefix}-#{dataset_id}"
     Elsa.create_topic(@endpoints, topic)
 
-    allow Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
-      return: {:ok, %{username: "sftp_user", password: "sftp_password"}}
+    allow(Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
+      return: {:ok, %{"username" => "sftp_user", "password" => "sftp_password"}}
+    )
 
     dataset =
       TDG.create_dataset(%{
