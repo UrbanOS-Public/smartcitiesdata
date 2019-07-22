@@ -77,7 +77,7 @@ defmodule Reaper.DataFeedSchedulerTest do
       allow(Persistence.get_last_fetched_timestamp(any()), return: ten_seconds_ago)
       new_dataset = FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id, cadence: 100_000})
 
-      assert abs(DataFeedScheduler.calculate_next_run_time(new_dataset) - 90_000) < 50
+      assert abs(DataFeedScheduler.calculate_next_run_time(new_dataset) - 90_000) < 100
     end
 
     test "calculates immediate runtime if never previously fetched" do

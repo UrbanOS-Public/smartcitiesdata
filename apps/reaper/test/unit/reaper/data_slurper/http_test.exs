@@ -62,10 +62,11 @@ defmodule Reaper.DataSlurper.HttpTest do
       Application.put_env(:reaper, :http_download_timeout, 1)
       on_exit(fn -> Application.delete_env(:reaper, :http_download_timeout) end)
 
-      allow Reaper.Http.Downloader.download(any(), any(), any()),
-        exec: fn _, _ ->
+      allow(Reaper.Http.Downloader.download(any(), any(), any()),
+        exec: fn _, _, _ ->
           Process.sleep(1_000)
         end
+      )
 
       url = "http://localhost:#{bypass.port}/some/johnson.csv"
 
@@ -78,9 +79,9 @@ defmodule Reaper.DataSlurper.HttpTest do
   end
 
   test "makes call with headers" do
-    allow Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection}
-    allow Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok}
-    allow Mint.HTTP.close(any()), return: :ok
+    allow(Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection})
+    allow(Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok})
+    allow(Mint.HTTP.close(any()), return: :ok)
 
     dataset_id = "1234"
     url = "http://some.url/path/to/data"
@@ -89,7 +90,10 @@ defmodule Reaper.DataSlurper.HttpTest do
 
     {:file, _dataset_id} = DataSlurper.slurp(url, dataset_id, headers)
 
-    assert_called Mint.HTTP.request(:connection, "GET", "/path/to/data?", evaluated_headers), once()
+    assert_called(
+      Mint.HTTP.request(:connection, "GET", "/path/to/data?", evaluated_headers),
+      once()
+    )
   end
 
   defp setup_redirect(bypass, path, redirect_path, opts \\ []) do
