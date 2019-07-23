@@ -13,15 +13,17 @@ defmodule Valkyrie.TopicPerDataset.InputTest do
     dataset =
       TDG.create_dataset(
         id: "topic-create-test",
-        technical: %{schema: [%{name: "key", type: "string"}]}
+        technical: %{schema: [%{name: "key", type: "string"}], sourceType: "ingest"}
       )
 
     input_topic = "#{@input_topic_prefix}-#{dataset.id}"
+    output_topic = "#{@output_topic_prefix}-#{dataset.id}"
 
+    Elsa.Topic.create(@endpoints, output_topic)
     SmartCity.Dataset.write(dataset)
 
     eventually fn ->
-      assert Valkyrie.TopicManager.is_topic_ready?(input_topic)
+      assert Elsa.topic?(@endpoints, input_topic)
     end
   end
 
@@ -30,6 +32,7 @@ defmodule Valkyrie.TopicPerDataset.InputTest do
       TDG.create_dataset(
         id: "somevalue",
         technical: %{
+          sourceType: "ingest",
           schema: [
             %{
               name: "name",
@@ -43,22 +46,24 @@ defmodule Valkyrie.TopicPerDataset.InputTest do
     output_topic = "#{@output_topic_prefix}-#{dataset.id}"
     input_topic = "#{@input_topic_prefix}-#{dataset.id}"
 
-    SmartCity.Dataset.write(dataset)
-    TestHelpers.wait_for_topic(input_topic)
     Elsa.Topic.create(@endpoints, output_topic)
+    SmartCity.Dataset.write(dataset)
+    TestHelpers.wait_for_topic(@endpoints, input_topic)
 
     original_message =
       TestHelpers.create_data(%{
         dataset_id: dataset.id,
-        payload: %{name: %{first: "Jeff", last: "Grunewald"}}
+        payload: %{"name" => %{"first" => "Jeff", "last" => "Grunewald"}}
       })
 
     TestHelpers.produce_message(original_message, input_topic, @endpoints)
 
     eventually fn ->
-      messages = TestHelpers.get_data_messages_from_kafka(output_topic, @endpoints)
+                 messages = TestHelpers.get_data_messages_from_kafka(output_topic, @endpoints)
 
-      assert original_message in messages
-    end
+                 assert original_message in messages
+               end,
+               2000,
+               20
   end
 end

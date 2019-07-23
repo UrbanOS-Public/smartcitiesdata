@@ -14,6 +14,7 @@ defmodule ValkyrieTest do
       TDG.create_dataset(%{
         id: "pirates",
         technical: %{
+          sourceType: "ingest",
           schema: [
             %{name: "name", type: "string"},
             %{name: "alignment", type: "string"},
@@ -24,22 +25,22 @@ defmodule ValkyrieTest do
 
     invalid_message =
       TestHelpers.create_data(%{
-        payload: %{name: "Blackbeard"},
+        payload: %{"name" => "Blackbeard", "alignment" => 10, "age" => "thirty-two"},
         dataset_id: dataset.id
       })
 
     messages = [
       TestHelpers.create_data(%{
-        payload: %{name: "Jack Sparrow", alignment: "chaotic", age: "32"},
+        payload: %{"name" => "Jack Sparrow", "alignment" => "chaotic", "age" => "32"},
         dataset_id: dataset.id
       }),
       invalid_message,
       TestHelpers.create_data(%{
-        payload: %{name: "Will Turner", alignment: "good", age: "25"},
+        payload: %{"name" => "Will Turner", "alignment" => "good", "age" => "25"},
         dataset_id: dataset.id
       }),
       TestHelpers.create_data(%{
-        payload: %{name: "Barbosa", alignment: "evil", age: "100"},
+        payload: %{"name" => "Barbosa", "alignment" => "evil", "age" => "100"},
         dataset_id: dataset.id
       })
     ]
@@ -48,7 +49,7 @@ defmodule ValkyrieTest do
     output_topic = "#{@output_topic_prefix}-#{dataset.id}"
 
     SmartCity.Dataset.write(dataset)
-    TestHelpers.wait_for_topic(input_topic)
+    TestHelpers.wait_for_topic(@endpoints, input_topic)
     Elsa.Topic.create(@endpoints, output_topic)
 
     TestHelpers.produce_messages(messages, input_topic, @endpoints)

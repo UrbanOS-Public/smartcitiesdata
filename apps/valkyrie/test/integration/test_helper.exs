@@ -1,7 +1,7 @@
 ExUnit.start()
 
 defmodule TestHelpers do
-  require Elsa
+  require Elsa.Message
   require Logger
 
   alias SmartCity.TestDataGenerator, as: TDG
@@ -32,12 +32,11 @@ defmodule TestHelpers do
   end
 
   def produce_message(message, topic, endpoints) do
-    Elsa.Producer.produce_sync(
+    Elsa.Producer.produce(
       endpoints,
       topic,
-      0,
-      "jerks",
-      Jason.encode!(message)
+      {"jerks", Jason.encode!(message)},
+      parition: 0
     )
   end
 
@@ -49,7 +48,7 @@ defmodule TestHelpers do
     case :brod.fetch(endpoints, topic, 0, 0) do
       {:ok, {_offset, messages}} ->
         messages
-        |> Enum.map(&Elsa.kafka_message(&1, :value))
+        |> Enum.map(&Elsa.Message.kafka_message(&1, :value))
 
       {:error, reason} ->
         Logger.warn("Failed to extract messages: #{inspect(reason)}")
@@ -63,10 +62,10 @@ defmodule TestHelpers do
     |> clear_timing()
   end
 
-  def wait_for_topic(topic) do
+  def wait_for_topic(endpoints, topic) do
     Patiently.wait_for!(
       fn ->
-        Valkyrie.TopicManager.is_topic_ready?(topic)
+        Elsa.topic?(endpoints, topic)
       end,
       dwell: 200,
       max_tries: 20
