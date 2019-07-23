@@ -25,7 +25,7 @@ defmodule ValkyrieTest do
 
     invalid_message =
       TestHelpers.create_data(%{
-        payload: %{"name" => "Blackbeard", "alignment" => 10, "age" => "thirty-two"},
+        payload: %{"name" => "Blackbeard", "alignment" => %{"invalid" => "string"}, "age" => "thirty-two"},
         dataset_id: dataset.id
       })
 
@@ -65,7 +65,7 @@ defmodule ValkyrieTest do
     end
   end
 
-  test "valkyrie does not change the content of the messages processed", %{
+  test "valkyrie rejects unparseable messages and passes the rest through", %{
     output_topic: output_topic,
     messages: messages,
     invalid_message: invalid_message

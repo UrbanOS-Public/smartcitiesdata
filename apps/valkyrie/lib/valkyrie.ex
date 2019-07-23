@@ -31,10 +31,9 @@ defmodule Valkyrie do
   defp standardize(_field, nil), do: {:ok, nil}
 
   defp standardize(%{type: "string"}, value) do
-    case String.valid?(value) do
-      true -> {:ok, value}
-      false -> {:error, :invalid_string}
-    end
+    {:ok, to_string(value)}
+  rescue
+    Protocol.UndefinedError -> {:error, :invalid_string}
   end
 
   defp standardize(%{type: type}, value) when type in ["integer", "long"] and is_integer(value), do: {:ok, value}
