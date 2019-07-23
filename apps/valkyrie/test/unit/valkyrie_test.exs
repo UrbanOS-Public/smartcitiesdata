@@ -47,6 +47,8 @@ defmodule ValkyrieTest do
 
       where([
         [:field_name, :type, :value, :transformed_value],
+        ["age", "string", 123, "123"],
+        ["age", "string", 123.5, "123.5"],
         ["age", "integer", "21", 21],
         ["age", "long", "22", 22],
         ["age", "integer", "+25", 25],
@@ -131,7 +133,6 @@ defmodule ValkyrieTest do
 
       where([
         [:field_name, :type, :value, :reason],
-        ["name", "string", 1, :invalid_string],
         ["age", "integer", "abc", :invalid_integer],
         ["age", "integer", "34.5", :invalid_integer],
         ["age", "long", "abc", :invalid_long],
@@ -277,7 +278,7 @@ defmodule ValkyrieTest do
           }
         )
 
-      payload = %{"name" => "Pete", "spouse" => %{"name" => "Shirley", "child" => %{"name" => 14}}}
+      payload = %{"name" => "Pete", "spouse" => %{"name" => "Shirley", "child" => %{"name" => %{"stuff" => "13"}}}}
 
       expected = {:error, %{"spouse" => %{"child" => %{"name" => :invalid_string}}}}
       assert expected == Valkyrie.standardize_data(dataset, payload)
