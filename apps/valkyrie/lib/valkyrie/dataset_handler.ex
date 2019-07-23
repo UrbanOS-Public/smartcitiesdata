@@ -7,7 +7,7 @@ defmodule Valkyrie.DatasetHandler do
   require Logger
 
   def handle_dataset(%Dataset{technical: %{sourceType: source_type}} = dataset)
-      when source_type in ["ingest", "streaming"] do
+      when source_type in ["ingest", "stream"] do
     topics = Valkyrie.TopicManager.setup_topics(dataset)
     start_dataset(dataset, topics.input_topic, topics.output_topic)
   end
