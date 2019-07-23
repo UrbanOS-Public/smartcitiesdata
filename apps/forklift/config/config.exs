@@ -13,7 +13,8 @@ config :forklift,
   message_processing_cadence: 10_000,
   number_of_empty_reads_to_delete: 50,
   data_topic_prefix: data_topic_prefix,
-  output_topic: "streaming-persisted"
+  output_topic: "streaming-persisted",
+  collector: StreamingMetrics.PrometheusMetricCollector
 
 config :logger,
   backends: [:console],
@@ -27,4 +28,10 @@ config :prestige,
     catalog: "hive",
     schema: "default",
     user: "foobar"
+  ]
+
+config :forklift, Forklift.Quantum.Scheduler,
+  jobs: [
+    # Every Day at 1:00 AM
+    {"0 1 * * *", {Forklift.Compactor, :compact_datasets, []}}
   ]

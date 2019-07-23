@@ -9,7 +9,8 @@ defmodule Forklift.Application do
         redis(),
         {DynamicSupervisor, strategy: :one_for_one, name: Forklift.Topic.Supervisor},
         {Forklift.Datasets.DatasetRegistryServer, name: Forklift.Datasets.DatasetRegistryServer},
-        dataset_subscriber()
+        dataset_subscriber(),
+        Forklift.Quantum.Scheduler
       ]
       |> List.flatten()
 
