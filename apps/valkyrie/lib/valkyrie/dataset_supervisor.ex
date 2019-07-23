@@ -48,7 +48,7 @@ defmodule Valkyrie.DatasetSupervisor do
       producer: producer,
       name: :"#{dataset.id}_elsa_consumer",
       endpoints: endpoints(),
-      group: "valkyrie-#{dataset.id}",
+      group: "valkyrie-#{input_topic}",
       topics: [input_topic],
       config: Application.get_env(:valkyrie, :topic_subscriber_config),
       output_topic: output_topic
