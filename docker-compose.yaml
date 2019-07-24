@@ -100,7 +100,7 @@ services:
       - LDAP_PASS=admin
       - REDIS_HOST=redis
   reaper:
-    image: smartcitiesdata/reaper:tmptest
+    image: smartcitiesdata/reaper:development
     container_name: reaper
     depends_on:
       - redis
