@@ -52,7 +52,9 @@ defmodule Forklift.Messages.Statement do
     |> (&~s('#{&1}')).()
   end
 
-  defp format_data(value, %{type: "date"}), do: ~s|DATE '#{value}'|
+  defp format_data(value, %{type: "date"}) do
+    ~s|date(#{format_data(value, %{type: "timestamp"})})|
+  end
 
   defp format_data(value, %{type: "timestamp"}) do
     date_format =
