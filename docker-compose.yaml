@@ -108,7 +108,7 @@ services:
       - vault
     environment:
       - REDIS_HOST=redis
-      - KAFKA_BROKERS=kafka:9094
+      - KAFKA_BROKERS=kafka:9092
       - OUTPUT_TOPIC_PREFIX=raw
       - DLQ_TOPIC=streaming-dead-letters
       - DOWNLOAD_DIR=/tmp/
@@ -121,7 +121,7 @@ services:
       - kafka
     environment:
       - REDIS_HOST=redis
-      - KAFKA_BROKERS=kafka:9094
+      - KAFKA_BROKERS=kafka:9092
       - INPUT_TOPIC_PREFIX=raw
       - OUTPUT_TOPIC_PREFIX=validated
       - DLQ_TOPIC=streaming-dead-letters
@@ -133,7 +133,7 @@ services:
       - redis
     environment:
       - REDIS_HOST=redis
-      - KAFKA_BROKERS=kafka:9094
+      - KAFKA_BROKERS=kafka:9092
       - INPUT_TOPIC_PREFIX=validated
       - OUTPUT_TOPIC_PREFIX=transformed
       - TO_TOPIC=streaming-transformed
@@ -146,7 +146,7 @@ services:
       - presto
     environment:
       - REDIS_HOST=redis
-      - KAFKA_BROKERS=kafka:9094
+      - KAFKA_BROKERS=kafka:9092
       - DATA_TOPIC_PREFIX=transformed
       - OUTPUT_TOPIC=streaming-persisted
       - PRESTO_USER=forklift
@@ -159,8 +159,8 @@ services:
       - redis
     environment:
       - REDIS_HOST=redis
-      - PIPELINE_KAFKA_BROKERS=kafka:9094
-      - PUBLIC_KAFKA_BROKERS=kafka:9094
+      - PIPELINE_KAFKA_BROKERS=kafka:9092
+      - PUBLIC_KAFKA_BROKERS=kafka:9092
   flair:
     container_name: flair
     image: smartcitiesdata/flair:development
@@ -170,7 +170,7 @@ services:
       - presto
     environment:
       - REDIS_HOST=redis
-      - KAFKA_BROKERS=kafka:9094
+      - KAFKA_BROKERS=kafka:9092
       - DATA_TOPIC=streaming-persisted
       - DLQ_TOPIC=streaming-dead-letters
       - PRESTO_USER=flair
@@ -209,7 +209,7 @@ services:
     depends_on:
       - kafka
     environment:
-      - KAFKA_BROKERS=kafka:9094
+      - KAFKA_BROKERS=kafka:9092
     ports:
       - 8087:4000
     restart: on-failure
@@ -232,8 +232,8 @@ services:
     restart: on-failure
     environment:
       - REDIS_HOST=redis
-      - PIPELINE_KAFKA_BROKERS=kafka:9094
-      - PUBLIC_KAFKA_BROKERS=kafka:9094
+      - PIPELINE_KAFKA_BROKERS=kafka:9092
+      - PUBLIC_KAFKA_BROKERS=kafka:9092
       - TOPIC_PARTITIONS=1
       - TOPIC_REPLICATION_FACTOR=1
   data-generator:
