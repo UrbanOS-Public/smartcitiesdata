@@ -36,11 +36,12 @@ defmodule Forklift.Datasets.DatasetCompactor do
   def pause_ingest(dataset_id) do
     prefix = Application.get_env(:forklift, :data_topic_prefix)
 
-    with pid when is_pid(pid) <-
-           Process.whereis(:"elsa_supervisor_name-#{prefix}-#{dataset_id}") do
-      DynamicSupervisor.terminate_child(Forklift.Topic.Supervisor, pid)
-    else
-      nil -> :ok
+    case Process.whereis(:"elsa_supervisor_name-#{prefix}-#{dataset_id}") do
+      pid when is_pid(pid) ->
+        DynamicSupervisor.terminate_child(Forklift.Topic.Supervisor, pid)
+
+      _ ->
+        :ok
     end
   end
 
