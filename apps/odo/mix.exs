@@ -23,6 +23,7 @@ defmodule Odo.MixProject do
 
   defp deps do
     [
+      {:distillery, "2.0.14"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
       {:geomancer, git: "https://github.com/jdenen/geomancer.git"},
