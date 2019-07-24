@@ -2,6 +2,7 @@ version: '3'
 services:
   redis:
     image: redis
+    container_name: redis
     ports:
       - "6379:6379"
     healthcheck:
@@ -11,6 +12,7 @@ services:
       retries: 3
   ldap:
     image: osixia/openldap
+    container_name: ldap
     ports:
       - "389:389"
       - "636:636"
@@ -24,10 +26,12 @@ services:
       retries: 3
   zookeeper:
     image: wurstmeister/zookeeper
+    container_name: zookeeper
     ports:
     - "2181:2181"
   kafka:
     image: wurstmeister/kafka
+    container_name: kafka
     depends_on:
     - zookeeper
     ports:
@@ -46,6 +50,7 @@ services:
       retries: 3
   metastore:
     image: smartcitiesdata/metastore-testo:development
+    container_name: metastore
     depends_on:
     - postgres
     ports:
@@ -55,16 +60,19 @@ services:
         /opt/hive-metastore/bin/schematool -dbType postgres -validate || /opt/hive-metastore/bin/schematool -dbType postgres -initSchema;
         /opt/hive-metastore/bin/start-metastore"
   postgres:
+    container_name: postgres
     logging:
       driver: none
     image: smartcitiesdata/postgres-testo:development
     ports:
     - "5432:5432"
   minio:
+    container_name: minio
     image: smartcitiesdata/minio-testo:development
     ports:
     - "9000:9000"
   presto:
+    container_name: presto
     depends_on:
     - metastore
     - minio
@@ -76,13 +84,8 @@ services:
       interval: 10s
       timeout: 30s
       retries: 10
-  data-generator:
-    image: smartcitiesdata/data-generator:development
-    depends_on:
-      - redis
-    environment:
-      - REDIS_HOST=redis
   andi:
+    container_name: andi
     image: smartcitiesdata/andi:development
     ports:
       - "8080:80"
@@ -97,41 +100,45 @@ services:
       - LDAP_PASS=admin
       - REDIS_HOST=redis
   reaper:
-    image: smartcitiesdata/reaper:development
+    image: smartcitiesdata/reaper:tmptest
+    container_name: reaper
     depends_on:
       - redis
       - kafka
+      - vault
     environment:
       - REDIS_HOST=redis
-      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_BROKERS=kafka:9094
       - OUTPUT_TOPIC_PREFIX=raw
       - DLQ_TOPIC=streaming-dead-letters
-      - SECRETS_ENDPOINT="__UKNOWN__"
       - DOWNLOAD_DIR=/tmp/
       - HOSTED_FILE_BUCKET=local-bucket
   valkyrie:
+    container_name: valkyrie
     image: smartcitiesdata/valkyrie:development
     depends_on:
       - redis
       - kafka
     environment:
       - REDIS_HOST=redis
-      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_BROKERS=kafka:9094
       - INPUT_TOPIC_PREFIX=raw
       - OUTPUT_TOPIC_PREFIX=validated
       - DLQ_TOPIC=streaming-dead-letters
   voltron:
+    container_name: voltron
     image: smartcitiesdata/voltron:development
     depends_on:
       - kafka
       - redis
     environment:
       - REDIS_HOST=redis
-      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_BROKERS=kafka:9094
       - INPUT_TOPIC_PREFIX=validated
       - OUTPUT_TOPIC_PREFIX=transformed
       - TO_TOPIC=streaming-transformed
   forklift:
+    container_name: forklift
     image: smartcitiesdata/forklift:development
     depends_on:
       - kafka
@@ -139,21 +146,23 @@ services:
       - presto
     environment:
       - REDIS_HOST=redis
-      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_BROKERS=kafka:9094
       - DATA_TOPIC_PREFIX=transformed
       - OUTPUT_TOPIC=streaming-persisted
       - PRESTO_USER=forklift
       - PRESTO_URL=http://presto:8080
   streisand:
+    container_name: streisand
     image: smartcitiesdata/streisand:development
     depends_on:
       - kafka
       - redis
     environment:
       - REDIS_HOST=redis
-      - PIPELINE_KAFKA_BROKERS=kafka:9092
-      - PUBLIC_KAFKA_BROKERS=kafka:9092
+      - PIPELINE_KAFKA_BROKERS=kafka:9094
+      - PUBLIC_KAFKA_BROKERS=kafka:9094
   flair:
+    container_name: flair
     image: smartcitiesdata/flair:development
     depends_on:
       - kafka
@@ -161,12 +170,13 @@ services:
       - presto
     environment:
       - REDIS_HOST=redis
-      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_BROKERS=kafka:9094
       - DATA_TOPIC=streaming-persisted
       - DLQ_TOPIC=streaming-dead-letters
       - PRESTO_USER=flair
       - PRESTO_URL=http://presto:8080
   carpenter:
+    container_name: carpenter
     image: smartcitiesdata/carpenter:development
     depends_on:
       - redis
@@ -176,6 +186,7 @@ services:
       - PRESTO_URL=http://presto:8080
       - PRESTO_USER=carpenter
   discovery-api:
+    container_name: discovery-api
     image: smartcitiesdata/discovery_api:development
     depends_on:
       - redis
@@ -193,15 +204,17 @@ services:
     ports:
       - 8082:80
   discovery-streams:
+    container_name: discovery-streams
     image: smartcitiesdata/discovery_streams:development
     depends_on:
       - kafka
     environment:
-      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_BROKERS=kafka:9094
     ports:
       - 8087:4000
     restart: on-failure
   discovery_ui:
+    container_name: discovery_ui
     image: smartcitiesdata/discovery_ui:development
     depends_on:
       - discovery-api
@@ -211,6 +224,7 @@ services:
     ports:
       - 8085:80
   genesis:
+    container_name: genesis
     image: smartcitiesdata/genesis:development
     depends_on:
       - kafka
@@ -218,13 +232,19 @@ services:
     restart: on-failure
     environment:
       - REDIS_HOST=redis
-      - PIPELINE_KAFKA_BROKERS=kafka:9092
-      - PUBLIC_KAFKA_BROKERS=kafka:9092
+      - PIPELINE_KAFKA_BROKERS=kafka:9094
+      - PUBLIC_KAFKA_BROKERS=kafka:9094
       - TOPIC_PARTITIONS=1
       - TOPIC_REPLICATION_FACTOR=1
   data-generator:
+    container_name: data-generator
     image: smartcitiesdata/data-generator:development
+    depends_on:
+      - redis
     ports:
       - 8083:80
     environment:
       - REDIS_HOST=redis
+  vault:
+    container_name: vault
+    image: vault:1.1.2

@@ -3,7 +3,7 @@ Management and documentation hub for the Smart Cities Data platform and componen
 
 ## Starting master chart
 ```bash
-docker-compose up -d
+docker pull && docker-compose up -d
 ```
 
 ## Stopping resources
