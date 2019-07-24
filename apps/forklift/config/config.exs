@@ -33,5 +33,9 @@ config :prestige,
 config :forklift, Forklift.Quantum.Scheduler,
   jobs: [
     # Every Day at 1:00 AM
-    {"0 1 * * *", {Forklift.Compactor, :compact_datasets, []}}
+    compactor: [
+      schedule: "00 01 * * *",
+      task: {Forklift.Datasets.DatasetCompactor, :compact_datasets, []},
+      timezone: "America/New_York"
+    ]
   ]

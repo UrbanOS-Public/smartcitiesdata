@@ -34,8 +34,10 @@ defmodule Forklift.Datasets.DatasetCompactor do
   end
 
   def pause_ingest(dataset_id) do
+    prefix = Application.get_env(:forklift, :data_topic_prefix)
+
     with pid when is_pid(pid) <-
-           Process.whereis(:"elsa_supervisor_name-integration-#{dataset_id}") do
+           Process.whereis(:"elsa_supervisor_name-#{prefix}-#{dataset_id}") do
       DynamicSupervisor.terminate_child(Forklift.Topic.Supervisor, pid)
     else
       nil -> :ok
@@ -49,7 +51,8 @@ defmodule Forklift.Datasets.DatasetCompactor do
 
   defp clear_archive(system_name) do
     "drop table if exists #{system_name}_archive"
-    |> Prestige.execute()
+    # Pretend to be carpenter for manipulating tables
+    |> Prestige.execute(user: "carpenter")
     |> Prestige.prefetch()
 
     system_name
@@ -59,7 +62,8 @@ defmodule Forklift.Datasets.DatasetCompactor do
     start_time = Time.utc_now()
 
     "create table #{system_name}_compact as (select * from #{system_name})"
-    |> Prestige.execute()
+    # Pretend to be carpenter for manipulating tables
+    |> Prestige.execute(user: "carpenter")
     |> Prestige.prefetch()
 
     duration = Time.diff(Time.utc_now(), start_time, :millisecond)
@@ -72,7 +76,8 @@ defmodule Forklift.Datasets.DatasetCompactor do
 
   defp archive_table(system_name) do
     "alter table #{system_name} rename to #{system_name}_archive"
-    |> Prestige.execute()
+    # Pretend to be carpenter for manipulating tables
+    |> Prestige.execute(user: "carpenter")
     |> Prestige.prefetch()
 
     system_name
@@ -80,7 +85,8 @@ defmodule Forklift.Datasets.DatasetCompactor do
 
   defp rename_compact_table(system_name) do
     "alter table #{system_name}_compact rename to #{system_name}"
-    |> Prestige.execute()
+    # Pretend to be carpenter for manipulating tables
+    |> Prestige.execute(user: "carpenter")
     |> Prestige.prefetch()
 
     system_name
@@ -89,7 +95,8 @@ defmodule Forklift.Datasets.DatasetCompactor do
       Logger.error("Unable to rename compacted table #{system_name}, restoring archive table")
 
       "alter table #{system_name}_archive rename to #{system_name}"
-      |> Prestige.execute()
+      # Pretend to be carpenter for manipulating tables
+      |> Prestige.execute(user: "carpenter")
       |> Prestige.prefetch()
 
       reraise e, __STACKTRACE__
