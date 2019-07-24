@@ -10,24 +10,42 @@ defmodule Forklift.Compactor do
   end
 
   def compact_dataset(dataset) do
-    system_name = dataset.technical.systemName
+    pause_ingest(dataset.id)
 
-    # pause_ingest(dataset.id)
-    with :ok <- clear_archive(system_name),
-         :ok <- compact_table(system_name),
-         :ok <- archive_table(system_name),
-         :ok <- rename_compact_table(system_name) do
-      Logger.info("#{dataset.id} compacted successfully")
+    dataset.technical.systemName
+    |> clear_archive()
+    |> compact_table()
+    |> archive_table()
+    |> rename_compact_table()
+
+    Logger.info("#{dataset.id} compacted successfully")
+
+    resume_ingest(dataset)
+  rescue
+    e ->
+      Logger.error("Unable to compact #{dataset.id}: #{inspect(e)}")
+      resume_ingest(dataset)
+      :error
+  end
+
+  def pause_ingest(dataset_id) do
+    with pid when is_pid(pid) <-
+           Process.whereis(:"elsa_supervisor_name-integration-#{dataset_id}") do
+      DynamicSupervisor.terminate_child(Forklift.Topic.Supervisor, pid)
     else
-      :error -> :error
+      nil -> :ok
     end
-  after
-    # resume_ingest(dataset.id)
+  end
+
+  def resume_ingest(dataset) do
+    Forklift.Datasets.DatasetHandler.handle_dataset(dataset)
   end
 
   defp clear_archive(system_name) do
-    Prestige.execute("drop table #{system_name}_archive")
+    Prestige.execute("drop table if exists #{system_name}_archive")
     |> Prestige.prefetch()
+
+    system_name
   end
 
   defp compact_table(system_name) do
@@ -40,22 +58,36 @@ defmodule Forklift.Compactor do
 
     record_metrics(system_name, duration)
     Logger.info("Compaction of #{system_name} complete - #{duration}")
+
+    system_name
   end
 
   defp archive_table(system_name) do
     Prestige.execute("alter table #{system_name} rename to #{system_name}_archive")
     |> Prestige.prefetch()
+
+    system_name
   end
 
   defp rename_compact_table(system_name) do
     Prestige.execute("alter table #{system_name}_compact rename to #{system_name}")
     |> Prestige.prefetch()
+
+    system_name
+  rescue
+    e ->
+      Logger.error("Unable to rename compacted table #{system_name}, restoring archive table")
+
+      Prestige.execute("alter table #{system_name}_archive rename to #{system_name}")
+      |> Prestige.prefetch()
+
+      reraise e, __STACKTRACE__
   end
 
-  defp record_metrics(dataset_id, time) do
+  defp record_metrics(system_name, time) do
     time
     |> @metric_collector.count_metric("dataset_compaction_duration_total", [
-      {"dataset_id", "#{dataset_id}"}
+      {"system_name", "#{system_name}"}
     ])
     |> List.wrap()
     |> @metric_collector.record_metrics("forklift")
