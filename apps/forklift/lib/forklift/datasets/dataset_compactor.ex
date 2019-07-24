@@ -1,4 +1,9 @@
-defmodule Forklift.Compactor do
+defmodule Forklift.Datasets.DatasetCompactor do
+  @moduledoc """
+  Because Forklift inserts data as it receives it, and Presto creates a new partfile for each insert, Presto is left with a large number of files which slows reads from the table.
+
+  This module cleans up the fragmentation caused by this process.
+  """
   require Logger
 
   @metric_collector Application.get_env(:forklift, :collector)
@@ -38,11 +43,13 @@ defmodule Forklift.Compactor do
   end
 
   def resume_ingest(dataset) do
-    Forklift.Datasets.DatasetHandler.handle_dataset(dataset)
+    {:ok, _pid} = Forklift.Datasets.DatasetHandler.handle_dataset(dataset)
+    :ok
   end
 
   defp clear_archive(system_name) do
-    Prestige.execute("drop table if exists #{system_name}_archive")
+    "drop table if exists #{system_name}_archive"
+    |> Prestige.execute()
     |> Prestige.prefetch()
 
     system_name
@@ -51,7 +58,8 @@ defmodule Forklift.Compactor do
   defp compact_table(system_name) do
     start_time = Time.utc_now()
 
-    Prestige.execute("create table #{system_name}_compact as (select * from #{system_name})")
+    "create table #{system_name}_compact as (select * from #{system_name})"
+    |> Prestige.execute()
     |> Prestige.prefetch()
 
     duration = Time.diff(Time.utc_now(), start_time, :millisecond)
@@ -63,14 +71,16 @@ defmodule Forklift.Compactor do
   end
 
   defp archive_table(system_name) do
-    Prestige.execute("alter table #{system_name} rename to #{system_name}_archive")
+    "alter table #{system_name} rename to #{system_name}_archive"
+    |> Prestige.execute()
     |> Prestige.prefetch()
 
     system_name
   end
 
   defp rename_compact_table(system_name) do
-    Prestige.execute("alter table #{system_name}_compact rename to #{system_name}")
+    "alter table #{system_name}_compact rename to #{system_name}"
+    |> Prestige.execute()
     |> Prestige.prefetch()
 
     system_name
@@ -78,7 +88,8 @@ defmodule Forklift.Compactor do
     e ->
       Logger.error("Unable to rename compacted table #{system_name}, restoring archive table")
 
-      Prestige.execute("alter table #{system_name}_archive rename to #{system_name}")
+      "alter table #{system_name}_archive rename to #{system_name}"
+      |> Prestige.execute()
       |> Prestige.prefetch()
 
       reraise e, __STACKTRACE__

@@ -1,14 +1,15 @@
-defmodule CompactDatasetTest do
+defmodule DatasetCompactorTest do
   use ExUnit.Case
   use Placebo
 
+  alias Forklift.Datasets.DatasetCompactor
   alias SmartCity.TestDataGenerator, as: TDG
 
   @moduletag capture_log: true
 
   describe "compact_dataset/1" do
     setup do
-      allow(Forklift.Datasets.DatasetHandler.handle_dataset(any()), return: :ok)
+      allow(Forklift.Datasets.DatasetHandler.handle_dataset(any()), return: {:ok, :pid})
       :ok
     end
 
@@ -26,7 +27,7 @@ defmodule CompactDatasetTest do
       expect(Prestige.execute(expected_statement), return: :ok)
       allow(Prestige.execute(any()), return: :ok)
 
-      Forklift.Compactor.compact_dataset(dataset)
+      DatasetCompactor.compact_dataset(dataset)
 
       assert_called(Prestige.execute(expected_statement), once())
     end
@@ -37,7 +38,7 @@ defmodule CompactDatasetTest do
       expect(Prestige.execute(expected_statement), return: :ok)
       allow(Prestige.execute(any()), return: :ok)
 
-      Forklift.Compactor.compact_dataset(dataset)
+      DatasetCompactor.compact_dataset(dataset)
 
       assert_called(Prestige.execute(expected_statement), once())
     end
@@ -48,7 +49,7 @@ defmodule CompactDatasetTest do
       expect(Prestige.execute(expected_statement), return: :ok)
       allow(Prestige.execute(any()), return: :ok)
 
-      Forklift.Compactor.compact_dataset(dataset)
+      DatasetCompactor.compact_dataset(dataset)
 
       assert_called(Prestige.execute(expected_statement), once())
     end
@@ -59,19 +60,34 @@ defmodule CompactDatasetTest do
       expect(Prestige.execute(expected_statement), return: :ok)
       allow(Prestige.execute(any()), return: :ok)
 
-      Forklift.Compactor.compact_dataset(dataset)
+      DatasetCompactor.compact_dataset(dataset)
 
       assert_called(Prestige.execute(expected_statement), once())
     end
 
     test "returns ok if no ingest process to pause", %{dataset: _dataset} do
-      assert(Forklift.Compactor.pause_ingest(:no_process) == :ok)
+      assert(DatasetCompactor.pause_ingest(:no_process) == :ok)
+    end
+
+    test "records metrics for time to compact datasets", %{dataset: dataset} do
+      allow(Prestige.execute(any()), return: :ok)
+
+      expect(
+        StreamingMetrics.PrometheusMetricCollector.count_metric(
+          any(),
+          "dataset_compaction_duration_total",
+          [{"system_name", "#{dataset.technical.systemName}"}]
+        ),
+        meck_options: [:passthrough]
+      )
+
+      DatasetCompactor.compact_dataset(dataset)
     end
   end
 
   describe "compact_dataset/1 error cases" do
     setup do
-      allow(Forklift.Datasets.DatasetHandler.handle_dataset(any()), return: :ok)
+      allow(Forklift.Datasets.DatasetHandler.handle_dataset(any()), return: {:ok, :pid})
       :ok
     end
 
@@ -87,7 +103,7 @@ defmodule CompactDatasetTest do
       allow(Prestige.execute(any()), return: :ok)
       allow(Prestige.prefetch(any()), exec: fn _ -> raise :error end)
 
-      assert(Forklift.Compactor.compact_dataset(dataset) == :error)
+      assert(DatasetCompactor.compact_dataset(dataset) == :error)
     end
 
     test "puts archive table back if compact table is in a bad state", %{dataset: dataset} do
@@ -102,7 +118,7 @@ defmodule CompactDatasetTest do
       allow(Prestige.prefetch(:bad_table), exec: fn _ -> raise :error end)
       allow(Prestige.prefetch(any()), return: :ok)
 
-      assert(Forklift.Compactor.compact_dataset(dataset) == :error)
+      assert(DatasetCompactor.compact_dataset(dataset) == :error)
 
       assert_called(
         Prestige.execute("alter table #{dataset.technical.systemName}_archive
@@ -114,7 +130,7 @@ defmodule CompactDatasetTest do
 
   describe "compact_datasets/0" do
     setup do
-      allow(Forklift.Datasets.DatasetHandler.handle_dataset(any()), return: :ok)
+      allow(Forklift.Datasets.DatasetHandler.handle_dataset(any()), return: {:ok, :pid})
       :ok
     end
 
@@ -129,7 +145,7 @@ defmodule CompactDatasetTest do
       allow(Prestige.execute(any()), return: :ok)
       allow(Prestige.prefetch(any()), return: :ok)
 
-      Forklift.Compactor.compact_datasets()
+      DatasetCompactor.compact_datasets()
 
       assert_called(
         Prestige.execute("create table ingest_compact as (select * from ingest)"),

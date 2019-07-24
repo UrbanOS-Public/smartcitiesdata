@@ -1,8 +1,9 @@
-defmodule Forklift.TopicManagementTest do
+defmodule Forklift.CompactDatasetTest do
   use ExUnit.Case
   use Divo
   require Logger
 
+  alias Forklift.Datasets.DatasetCompactor
   alias SmartCity.TestDataGenerator, as: TDG
 
   test "the compactor can pause a dataset by killing its supervisor" do
@@ -22,7 +23,7 @@ defmodule Forklift.TopicManagementTest do
 
     assert supervisor_eventually_exists(dataset.id) == :ok
 
-    Forklift.Compactor.pause_ingest(dataset.id)
+    DatasetCompactor.pause_ingest(dataset.id)
 
     assert supervisor_eventually_is_gone(dataset.id) == :ok
 
@@ -55,14 +56,14 @@ defmodule Forklift.TopicManagementTest do
 
     assert supervisor_eventually_exists(dataset.id) == :ok
 
-    Forklift.Compactor.pause_ingest(dataset.id)
+    DatasetCompactor.pause_ingest(dataset.id)
 
     assert supervisor_eventually_is_gone(dataset.id) == :ok
 
     data = TDG.create_data(dataset_id: "ds2", payload: %{"id" => 1, "name" => "George"})
     SmartCity.KafkaHelper.send_to_kafka(data, "integration-ds2")
 
-    Forklift.Compactor.resume_ingest(dataset)
+    DatasetCompactor.resume_ingest(dataset)
 
     assert supervisor_eventually_exists(dataset.id) == :ok
 
@@ -99,7 +100,7 @@ defmodule Forklift.TopicManagementTest do
       max_tries: 10
     )
 
-    assert Forklift.Compactor.compact_dataset(dataset) == :ok
+    assert DatasetCompactor.compact_dataset(dataset) == :ok
 
     tables =
       "show tables"
