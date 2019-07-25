@@ -42,12 +42,16 @@ defmodule Forklift.Application do
   end
 
   defp metrics() do
-    metrics_port = Application.get_env(:forklift, :metrics_port, 9002)
+    case Application.get_env(:forklift, :metrics_port) do
+      nil ->
+        []
 
-    Plug.Cowboy.child_spec(
-      scheme: :http,
-      plug: Forklift.MetricsExporter,
-      options: [port: metrics_port]
-    )
+      metrics_port ->
+        Plug.Cowboy.child_spec(
+          scheme: :http,
+          plug: Forklift.MetricsExporter,
+          options: [port: metrics_port]
+        )
+    end
   end
 end
