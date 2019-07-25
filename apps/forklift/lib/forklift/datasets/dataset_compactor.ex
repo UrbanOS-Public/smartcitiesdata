@@ -9,15 +9,21 @@ defmodule Forklift.Datasets.DatasetCompactor do
   @metric_collector Application.get_env(:forklift, :collector)
 
   def compact_datasets() do
+    Logger.info("Beginning scheduled dataset compaction")
+
     SmartCity.Dataset.get_all!()
     |> Enum.filter(fn dataset -> dataset.technical.sourceType == "ingest" end)
-    |> Enum.map(fn dataset -> compact_dataset(dataset) end)
+    |> Enum.map(fn dataset -> {dataset.technical.systemName, compact_dataset(dataset)} end)
+    |> Enum.each(fn {system_name, status} -> Logger.info("#{system_name} -> #{status}") end)
+
+    :ok
   end
 
   def compact_dataset(dataset) do
     pause_ingest(dataset.id)
 
     dataset.technical.systemName
+    |> cleanup_old_table()
     |> clear_archive()
     |> compact_table()
     |> archive_table()
@@ -46,8 +52,31 @@ defmodule Forklift.Datasets.DatasetCompactor do
   end
 
   def resume_ingest(dataset) do
-    {:ok, _pid} = Forklift.Datasets.DatasetHandler.handle_dataset(dataset)
-    :ok
+    case Forklift.Datasets.DatasetHandler.handle_dataset(dataset) do
+      {:ok, _pid} ->
+        :ok
+
+      {:error, {:already_started, _pid}} ->
+        Logger.warn(
+          "Dataset #{dataset.id} was compacted while Forklift was still subscribed to its topic. This can result in the loss of data."
+        )
+
+        :ok
+
+      e ->
+        Logger.error("Failed to resume ingest of dataset #{dataset.id} with unhandled error: #{inspect(e)}")
+
+        :error
+    end
+  end
+
+  defp cleanup_old_table(system_name) do
+    "drop table if exists #{system_name}_compact"
+    # Pretend to be carpenter for manipulating tables
+    |> Prestige.execute(user: "carpenter")
+    |> Prestige.prefetch()
+
+    system_name
   end
 
   defp clear_archive(system_name) do

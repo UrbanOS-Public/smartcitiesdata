@@ -65,6 +65,23 @@ defmodule DatasetCompactorTest do
       assert_called(Prestige.execute(expected_statement, any()), once())
     end
 
+    test "cleans up previous _compact tables if they exist" do
+      datasets = [
+        TDG.create_dataset(%{id: "2", technical: %{systemName: "ingest", sourceType: "ingest"}})
+      ]
+
+      allow(SmartCity.Dataset.get_all!(), return: datasets, meck_options: [:passthrough])
+      allow(Prestige.execute(any(), any()), return: :ok)
+      allow(Prestige.prefetch(any()), return: :ok)
+
+      DatasetCompactor.compact_datasets()
+
+      assert_called(
+        Prestige.execute("drop table if exists ingest_compact", any()),
+        once()
+      )
+    end
+
     test "returns ok if no ingest process to pause", %{dataset: _dataset} do
       assert(DatasetCompactor.pause_ingest(:no_process) == :ok)
     end
@@ -161,6 +178,23 @@ defmodule DatasetCompactorTest do
       refute_called(Prestige.execute("create table remote_compact as (select * from remote)", any()))
 
       refute_called(Prestige.execute("create table host_compact as (select * from host)", any()))
+    end
+
+    test "does not bomb out if one of the datasets fails to compact" do
+      datasets = [
+        TDG.create_dataset(%{id: "2", technical: %{systemName: "ingest", sourceType: "ingest"}})
+      ]
+
+      allow(SmartCity.Dataset.get_all!(), return: datasets, meck_options: [:passthrough])
+      allow(Prestige.execute(any(), any()), return: :ok)
+      allow(Prestige.prefetch(any()), return: :ok)
+
+      allow(Forklift.Datasets.DatasetHandler.handle_dataset(any()),
+        return: {:error},
+        meck_options: [:passthrough]
+      )
+
+      assert(DatasetCompactor.compact_datasets() == :ok)
     end
   end
 end

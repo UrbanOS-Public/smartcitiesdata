@@ -4,13 +4,16 @@ defmodule Forklift.Application do
   use Application
 
   def start(_type, _args) do
+    Forklift.MetricsExporter.setup()
+
     children =
       [
         redis(),
         {DynamicSupervisor, strategy: :one_for_one, name: Forklift.Topic.Supervisor},
         {Forklift.Datasets.DatasetRegistryServer, name: Forklift.Datasets.DatasetRegistryServer},
         dataset_subscriber(),
-        Forklift.Quantum.Scheduler
+        Forklift.Quantum.Scheduler,
+        metrics()
       ]
       |> List.flatten()
 
@@ -36,5 +39,13 @@ defmodule Forklift.Application do
       nil -> []
       _ -> {SmartCity.Registry.Subscriber, [message_handler: Forklift.Datasets.DatasetHandler]}
     end
+  end
+
+  defp metrics() do
+    Plug.Cowboy.child_spec(
+      scheme: :http,
+      plug: Forklift.MetricsExporter,
+      options: [port: 9002]
+    )
   end
 end
