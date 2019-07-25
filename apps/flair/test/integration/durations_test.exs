@@ -4,9 +4,6 @@ defmodule DurationsTest do
   alias SmartCity.Data.Timing
   require Logger
 
-  @endpoint Application.get_env(:kaffe, :producer)[:endpoints]
-            |> Enum.map(fn {k, v} -> {k, v} end)
-
   setup _ do
     messages =
       [

@@ -3,9 +3,7 @@ defmodule Flair.DivoPresto do
   Defines a presto stack compatible with divo
   for building a docker-compose file.
   """
-  @behaviour Divo.Stack
 
-  @impl Divo.Stack
   def gen_stack(envar \\ []) do
     %{
       metastore: %{
