@@ -2,6 +2,7 @@ defmodule Odo.MessageHandler do
   @moduledoc """
   This module will process messages that are passed into odo, starting the transformation and upload
   """
+  use SmartCity.Registry.MessageHandler
 
   @doc """
   Processes a `SmartCity.Dataset` and begins transformation
