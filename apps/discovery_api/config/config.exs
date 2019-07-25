@@ -13,7 +13,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   render_errors: [view: DiscoveryApiWeb.ErrorView, accepts: ~w(json)],
   pubsub: [name: DiscoveryApi.PubSub, adapter: Phoenix.PubSub.PG2],
   instrumenters: [DiscoveryApiWeb.Endpoint.Instrumenter],
-  http: [port: 4000, protocol_options: [idle_timeout: :infinity]]
+  http: [port: 4000, protocol_options: [idle_timeout: 7_200_000]]
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
