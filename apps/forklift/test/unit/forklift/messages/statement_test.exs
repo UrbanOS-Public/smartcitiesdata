@@ -85,11 +85,13 @@ defmodule Forklift.Messages.StatementTest do
     }
 
     data = [
-      %{id: 9, start_date: "1900-01-01"}
+      %{id: 9, start_date: "1900-01-01T00:00:00"}
     ]
 
     result = Statement.build(schema, data)
-    expected_result = ~s/insert into "rivers" ("id","start_date") values row(9,DATE '1900-01-01')/
+
+    expected_result =
+      ~s/insert into "rivers" ("id","start_date") values row(9,date(date_parse('1900-01-01T00:00:00', '%Y-%m-%dT%H:%i:%S')))/
 
     assert result == expected_result
   end
@@ -374,17 +376,17 @@ defmodule Forklift.Messages.StatementTest do
 
     data = [
       %{
-        date_of_birth: "1901-01-01"
+        date_of_birth: "1901-01-01T00:00:00"
       },
       %{
-        date_of_birth: "1901-01-21"
+        date_of_birth: "1901-01-21T00:00:00"
       }
     ]
 
     result = Statement.build(schema, data)
 
     expected_result =
-      ~s|insert into "rows_rivers" ("date_of_birth") values row(DATE '1901-01-01'),row(DATE '1901-01-21')|
+      ~s|insert into "rows_rivers" ("date_of_birth") values row(date(date_parse('1901-01-01T00:00:00', '%Y-%m-%dT%H:%i:%S'))),row(date(date_parse('1901-01-21T00:00:00', '%Y-%m-%dT%H:%i:%S')))|
 
     assert result == expected_result
   end
