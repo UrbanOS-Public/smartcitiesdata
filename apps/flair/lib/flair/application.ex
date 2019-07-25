@@ -10,6 +10,7 @@ defmodule Flair.Application do
 
   def start(_type, _args) do
     children = [
+      {Flair.TableCreator, []},
       {Flair.DurationsFlow, []},
       kafka_ex()
     ]

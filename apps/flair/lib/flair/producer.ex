@@ -33,9 +33,6 @@ defmodule Flair.Producer do
   end
 
   def init(_args) do
-    Flair.PrestoClient.get_create_timing_table_statement()
-    |> Flair.PrestoClient.execute()
-
     {:producer, %State{}}
   end
 

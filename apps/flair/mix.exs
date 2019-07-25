@@ -45,6 +45,7 @@ defmodule Flair.MixProject do
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:faker, "~> 0.12"},
       {:prestige, "~> 0.3"},
+      {:retry, "~> 0.13.0"},
       {:smart_city, "~> 2.1"},
       {:smart_city_data, "~> 2.1"},
       {:smart_city_registry, "~> 3.3"},
