@@ -6,9 +6,9 @@ echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdi
 echo "Determining image tag for ${TRAVIS_BRANCH} build ..."
 
 if [[ $TRAVIS_BRANCH =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-    export TAGGED_IMAGE="smartcitiesdata/forklift:${TRAVIS_BRANCH}"
+    export TAGGED_IMAGE="smartcitiesdata/odo:${TRAVIS_BRANCH}"
 elif [[ $TRAVIS_BRANCH == "master" ]]; then
-    export TAGGED_IMAGE="smartcitiesdata/forklift:development"
+    export TAGGED_IMAGE="smartcitiesdata/odo:development"
 else
     echo "Branch should not be pushed to Dockerhub"
     exit 0
@@ -16,5 +16,5 @@ fi
 
 echo "Pushing to Dockerhub with tag ${TAGGED_IMAGE} ..."
 
-docker tag forklift:build "${TAGGED_IMAGE}"
+docker tag odo:build "${TAGGED_IMAGE}"
 docker push "${TAGGED_IMAGE}"
