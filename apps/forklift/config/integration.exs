@@ -13,6 +13,7 @@ config :forklift,
   brod_brokers: endpoint,
   message_processing_cadence: 5_000,
   data_topic_prefix: "integration",
+  metrics_port: 9002,
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,
