@@ -53,6 +53,8 @@ defmodule DiscoveryApiWeb.Endpoint do
     expose_headers: ["token"]
   )
 
+  plug(DiscoveryApiWeb.Plugs.SecureHeaders)
+
   plug(DiscoveryApi.MetricsExporter)
 
   plug(DiscoveryApiWeb.Router)
