@@ -1,6 +1,6 @@
 use Mix.Config
 
-required_envars = ["REDIS_HOST", "DOWNLOAD_DIR"]
+required_envars = ["REDIS_HOST"]
 
 Enum.each(required_envars, fn var ->
   if is_nil(System.get_env(var)) do
