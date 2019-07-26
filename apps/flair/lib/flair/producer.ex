@@ -13,6 +13,7 @@ defmodule Flair.Producer do
         }
 
   defmodule State do
+    @moduledoc false
     defstruct demand: 0, message_set: [], from: []
   end
 
