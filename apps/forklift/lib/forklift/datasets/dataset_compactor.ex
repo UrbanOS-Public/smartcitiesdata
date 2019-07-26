@@ -6,6 +6,9 @@ defmodule Forklift.Datasets.DatasetCompactor do
   """
   require Logger
 
+  # Carpenter creates tables, and is the only one who can delete them
+  @module_user "carpenter"
+
   @metric_collector Application.get_env(:forklift, :collector)
 
   def compact_datasets() do
@@ -71,19 +74,13 @@ defmodule Forklift.Datasets.DatasetCompactor do
   end
 
   defp cleanup_old_table(system_name) do
-    "drop table if exists #{system_name}_compact"
-    # Pretend to be carpenter for manipulating tables
-    |> Prestige.execute(user: "carpenter")
-    |> Prestige.prefetch()
+    execute_as_module_user("drop table if exists #{system_name}_compact")
 
     system_name
   end
 
   defp clear_archive(system_name) do
-    "drop table if exists #{system_name}_archive"
-    # Pretend to be carpenter for manipulating tables
-    |> Prestige.execute(user: "carpenter")
-    |> Prestige.prefetch()
+    execute_as_module_user("drop table if exists #{system_name}_archive")
 
     system_name
   end
@@ -91,10 +88,7 @@ defmodule Forklift.Datasets.DatasetCompactor do
   defp compact_table(system_name) do
     start_time = Time.utc_now()
 
-    "create table #{system_name}_compact as (select * from #{system_name})"
-    # Pretend to be carpenter for manipulating tables
-    |> Prestige.execute(user: "carpenter")
-    |> Prestige.prefetch()
+    execute_as_module_user("create table #{system_name}_compact as (select * from #{system_name})")
 
     duration = Time.diff(Time.utc_now(), start_time, :millisecond)
 
@@ -105,29 +99,19 @@ defmodule Forklift.Datasets.DatasetCompactor do
   end
 
   defp archive_table(system_name) do
-    "alter table #{system_name} rename to #{system_name}_archive"
-    # Pretend to be carpenter for manipulating tables
-    |> Prestige.execute(user: "carpenter")
-    |> Prestige.prefetch()
+    execute_as_module_user("alter table #{system_name} rename to #{system_name}_archive")
 
     system_name
   end
 
   defp rename_compact_table(system_name) do
-    "alter table #{system_name}_compact rename to #{system_name}"
-    # Pretend to be carpenter for manipulating tables
-    |> Prestige.execute(user: "carpenter")
-    |> Prestige.prefetch()
-
+    execute_as_module_user("alter table #{system_name}_compact rename to #{system_name}")
     system_name
   rescue
     e ->
       Logger.error("Unable to rename compacted table #{system_name}, restoring archive table")
 
-      "alter table #{system_name}_archive rename to #{system_name}"
-      # Pretend to be carpenter for manipulating tables
-      |> Prestige.execute(user: "carpenter")
-      |> Prestige.prefetch()
+      execute_as_module_user("alter table #{system_name}_archive rename to #{system_name}")
 
       reraise e, __STACKTRACE__
   end
@@ -143,5 +127,11 @@ defmodule Forklift.Datasets.DatasetCompactor do
       {:ok, _} -> {}
       {:error, reason} -> Logger.warn("Unable to write application metrics: #{inspect(reason)}")
     end
+  end
+
+  defp execute_as_module_user(statement) do
+    statement
+    |> Prestige.execute(user: @module_user)
+    |> Prestige.prefetch()
   end
 end
