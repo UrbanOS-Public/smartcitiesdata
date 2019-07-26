@@ -14,7 +14,7 @@ defmodule Forklift.Messages.Statement do
       columns
       |> Enum.map(&Map.get(&1, :name))
       |> Enum.map(&to_string/1)
-      |> Enum.map(&~s("#{&1}"))
+      |> Enum.map(&~s|"#{&1}"|)
       |> Enum.join(",")
 
     data_fragment =
@@ -24,7 +24,7 @@ defmodule Forklift.Messages.Statement do
       |> Enum.map(&to_row_string/1)
       |> Enum.join(",")
 
-    ~s/insert into "#{schema.system_name}" (#{columns_fragment}) values #{data_fragment}/
+    ~s|insert into "#{schema.system_name}" (#{columns_fragment}) values #{data_fragment}|
   rescue
     e ->
       Logger.error("Unhandled Statement Builder error: #{inspect(e)}")
@@ -41,34 +41,36 @@ defmodule Forklift.Messages.Statement do
 
   defp format_data(nil, %{type: _}), do: "null"
 
-  defp format_data("", %{type: "string"}), do: ~S|''|
+  defp format_data("", %{type: "string"}), do: "''"
+
+  defp format_data("", %{type: "json"}), do: "''"
 
   defp format_data("", %{type: _}), do: "null"
 
-  defp format_data(value, %{type: "string"}) do
+  defp format_data(value, %{type: type}) when type in ["string", "json"] do
     value
     |> to_string()
     |> escape_quote()
-    |> (&~s('#{&1}')).()
+    |> wrap_with_quote()
   end
 
   defp format_data(value, %{type: "date"}) do
-    ~s|date(#{format_data(value, %{type: "timestamp"})})|
+    "date(#{format_data(value, %{type: "timestamp"})})"
   end
 
   defp format_data(value, %{type: "timestamp"}) do
     date_format =
       cond do
-        String.length(value) == 19 -> ~s|'%Y-%m-%dT%H:%i:%S'|
-        String.length(value) == 20 -> ~s|'%Y-%m-%dT%H:%i:%SZ'|
-        String.ends_with?(value, "Z") -> ~s|'%Y-%m-%dT%H:%i:%S.%fZ'|
-        true -> ~s|'%Y-%m-%dT%H:%i:%S.%f'|
+        String.length(value) == 19 -> "'%Y-%m-%dT%H:%i:%S'"
+        String.length(value) == 20 -> "'%Y-%m-%dT%H:%i:%SZ'"
+        String.ends_with?(value, "Z") -> "'%Y-%m-%dT%H:%i:%S.%fZ'"
+        true -> "'%Y-%m-%dT%H:%i:%S.%f'"
       end
 
-    ~s|date_parse('#{value}', #{date_format})|
+    "date_parse('#{value}', #{date_format})"
   end
 
-  defp format_data(value, %{type: "time"}), do: ~s|'#{value}'|
+  defp format_data(value, %{type: "time"}), do: "'#{value}'"
 
   defp format_data(value, %{type: "integer"}) when is_binary(value) do
     value
@@ -107,14 +109,18 @@ defmodule Forklift.Messages.Statement do
   defp to_row_string(values) do
     values
     |> Enum.join(",")
-    |> (&~s|row(#{&1})|).()
+    |> wrap_with_row()
   end
 
   defp to_array_string(values) do
     values
     |> Enum.join(",")
-    |> (&~s|array[#{&1}]|).()
+    |> wrap_with_array()
   end
 
   defp escape_quote(value), do: String.replace(value, "'", "''")
+
+  defp wrap_with_quote(value), do: "'#{value}'"
+  defp wrap_with_row(value), do: "row(#{value})"
+  defp wrap_with_array(value), do: "array[#{value}]"
 end
