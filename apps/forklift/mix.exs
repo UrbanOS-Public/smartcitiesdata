@@ -47,6 +47,11 @@ defmodule Forklift.MixProject do
       {:elsa, "~> 0.1"},
       {:benchee, "~> 1.0", only: [:integration]},
       {:husky, "~> 1.0", only: :dev, runtime: false},
+      {:streaming_metrics, "~> 2.1"},
+      {:prometheus_plugs, "~> 1.1"},
+      {:plug_cowboy, "~> 2.0"},
+      {:quantum, "~>2.3"},
+      {:timex, "~> 3.0"},
       # updating version breaks
       {:distillery, "2.0.14"}
       # distillery breaks @ 2.1.0 due to elixir 1.9 support

@@ -1,6 +1,13 @@
 use Mix.Config
 
-required_envars = ["REDIS_HOST", "KAFKA_BROKERS", "DATA_TOPIC_PREFIX", "PRESTO_USER", "PRESTO_URL", "OUTPUT_TOPIC"]
+required_envars = [
+  "REDIS_HOST",
+  "KAFKA_BROKERS",
+  "DATA_TOPIC_PREFIX",
+  "PRESTO_USER",
+  "PRESTO_URL",
+  "OUTPUT_TOPIC"
+]
 
 Enum.each(required_envars, fn var ->
   if is_nil(System.get_env(var)) do
@@ -12,6 +19,7 @@ kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
 topic = System.get_env("DATA_TOPIC_PREFIX")
 output_topic = System.get_env("OUTPUT_TOPIC")
+metrics_port = System.get_env("METRICS_PORT")
 
 endpoints =
   kafka_brokers
@@ -42,6 +50,7 @@ config :forklift,
   brod_brokers: endpoints,
   data_topic_prefix: topic,
   output_topic: output_topic,
+  metrics_port: metrics_port,
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,
