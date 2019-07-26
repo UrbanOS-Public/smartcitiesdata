@@ -19,7 +19,7 @@ kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
 topic = System.get_env("DATA_TOPIC_PREFIX")
 output_topic = System.get_env("OUTPUT_TOPIC")
-metrics_port = System.get_env("METRICS_PORT")
+metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
 
 endpoints =
   kafka_brokers
