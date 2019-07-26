@@ -10,6 +10,8 @@ defmodule Odo.MessageHandler do
   @spec handle_dataset(SmartCity.Dataset.t()) ::
           {:ok, String.t()} | DynamicSupervisor.on_start_child() | nil
   def handle_dataset(%SmartCity.Dataset{technical: %{sourceFormat: "shapefile", sourceType: "host"}} = dataset) do
-    Task.Supervisor.start_child(Odo.ShapefileTaskSupervisor, fn -> Odo.ShapefileProcessor.process(dataset) end)
+    Task.Supervisor.start_child(Odo.ShapefileTaskSupervisor, Odo.ShapefileProcessor, :process, [dataset])
   end
+
+  def handle_dataset(_msg), do: nil
 end
