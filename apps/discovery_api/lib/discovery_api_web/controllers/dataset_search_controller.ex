@@ -7,8 +7,8 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
   alias DiscoveryApi.Search.{DataModelFilterator, DataModelFacinator, DataModelSearchinator}
 
   @matched_params [
-    %{"query" => "", "limit" => "10", "offset" => "0"},
-    %{"limit" => "10", "offset" => "0"}
+    %{"query" => "", "limit" => "10", "offset" => "0", "apiAccessible" => "false"},
+    %{"limit" => "10", "offset" => "0", "apiAccessible" => "false"}
   ]
 
   plug DiscoveryApiWeb.Plugs.ResponseCache, %{for_params: @matched_params} when action in [:search]
