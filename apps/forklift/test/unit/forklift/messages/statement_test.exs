@@ -246,6 +246,56 @@ defmodule Forklift.Messages.StatementTest do
     assert result == expected_result
   end
 
+  test "treats json string as varchar" do
+    data = [
+      %{
+        id: 1,
+        name: "Fred",
+        payload: "{\"parent\":{\"children\":[[-35.123,123.456]],\"id\":\"daID\"}}"
+      }
+    ]
+
+    result = Statement.build(get_json_schema(), data)
+
+    expected_result =
+      ~s/insert into "rivers" ("id","name","payload") values row(1,'Fred','{\"parent\":{\"children\":[[-35.123,123.456]],\"id\":\"daID\"}}')/
+
+    assert result == expected_result
+  end
+
+  test "escapes quotes in json" do
+    data = [
+      %{
+        id: 1,
+        name: "Fred",
+        payload: "{\"parent\":{\"children\":[[-35.123,123.456]],\"id\":\"daID\", \"name\": \"Chiggin's\"}}"
+      }
+    ]
+
+    result = Statement.build(get_json_schema(), data)
+
+    expected_result =
+      ~s|insert into "rivers" ("id","name","payload") values row(1,'Fred','{\"parent\":{\"children\":[[-35.123,123.456]],\"id\":\"daID\", \"name\": \"Chiggin''s\"}}')|
+
+    assert result == expected_result
+  end
+
+  test "treats empty string as varchar" do
+    data = [
+      %{
+        id: 1,
+        name: "Fred",
+        payload: ""
+      }
+    ]
+
+    result = Statement.build(get_json_schema(), data)
+
+    expected_result = ~s/insert into "rivers" ("id","name","payload") values row(1,'Fred','')/
+
+    assert result == expected_result
+  end
+
   test "build generates a valid statement when given a complex nested schema and complex nested data" do
     nested_data = get_complex_nested_data()
 
@@ -459,6 +509,17 @@ defmodule Forklift.Messages.StatementTest do
       columns: [
         %{name: "id", type: "integer"},
         %{name: "name", type: "string"}
+      ]
+    }
+  end
+
+  defp get_json_schema() do
+    %DatasetSchema{
+      system_name: "rivers",
+      columns: [
+        %{name: "id", type: "integer"},
+        %{name: "name", type: "string"},
+        %{name: "payload", type: "json"}
       ]
     }
   end
