@@ -32,5 +32,4 @@ defmodule Flair.Application do
 
     {Elsa.Group.Supervisor, start_options}
   end
-
 end

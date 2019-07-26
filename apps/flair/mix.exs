@@ -31,41 +31,35 @@ defmodule Flair.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:excoveralls, "~> 0.10"},
+      # App dependencies
       {:elsa, "~> 0.7.0"},
-      {:ex_doc, "~> 0.19"},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
-      {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
-      {:divo_redis, "~> 0.1", only: [:dev, :integration]},
       {:flow, "~> 0.14"},
       {:gen_stage, "~> 0.14"},
       {:jason, "~> 1.1"},
-      {:kaffe, "~> 1.14", only: [:test, :integration]},
-      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      {:faker, "~> 0.12"},
       {:prestige, "~> 0.3"},
       {:retry, "~> 0.13.0"},
       {:smart_city, "~> 2.1"},
       {:smart_city_data, "~> 2.1"},
       {:smart_city_registry, "~> 3.3"},
-      {:smart_city_test, "~> 0.2", only: [:test, :integration]},
       {:statistics, "~> 0.6"},
       {:yeet, "~> 1.0"},
+      # Additional dependencies
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:excoveralls, "~> 0.10", only: [:dev]},
+      {:ex_doc, "~> 0.19"},
+      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
+      {:divo_redis, "~> 0.1", only: [:dev, :integration]},
+      {:kaffe, "~> 1.14", only: [:integration]},
+      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:faker, "~> 0.12", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.2", only: [:test, :integration]},
       {:husky, "~> 1.0", only: :dev, runtime: false},
       # updating version breaks
       {:distillery, "2.0.14"}
       # distillery breaks @ 2.1.0 due to elixir 1.9 support
     ]
   end
-
-  # defp prod_deps do
-
-  # end
-
-  # defp test_deps do
-
-  # end
 
   defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]

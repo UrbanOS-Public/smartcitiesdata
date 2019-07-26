@@ -28,7 +28,6 @@ config :flair,
     max_wait_time: 10_000
   ]
 
-
 config :kaffe,
   producer: [
     endpoints: endpoint,

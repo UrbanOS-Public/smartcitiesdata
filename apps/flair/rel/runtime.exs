@@ -28,9 +28,6 @@ yeet_endpoints =
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
-config :kafka_ex,
-  brokers: endpoints
-
 config :prestige,
   base_url: System.get_env("PRESTO_URL"),
   headers: [
@@ -45,7 +42,16 @@ config :flair,
   message_timeout: 5 * 60 * 1_000,
   task_timeout: 5 * 60 * 1_000,
   table_name_timing: "operational_stats",
-  data_topic: topic
+  data_topic: topic,
+  elsa_brokers: endpoints,
+  message_processing_cadence: 5_000,
+  topic_subscriber_config: [
+    begin_offset: :earliest,
+    offset_reset_policy: :reset_to_earliest,
+    max_bytes: 1_000_000,
+    min_bytes: 0,
+    max_wait_time: 10_000
+  ]
 
 config :logger,
   level: :warn

@@ -8,9 +8,9 @@ defmodule Flair.Producer do
   @message_timeout Application.get_env(:flair, :message_timeout, 5 * 60 * 1_000)
 
   @type kafka_message :: %{
-    key: String.t(),
-    value: String.t()
-  }
+          key: String.t(),
+          value: String.t()
+        }
 
   defmodule State do
     defstruct demand: 0, message_set: [], from: []
@@ -27,7 +27,6 @@ defmodule Flair.Producer do
   def add_messages(name, messages) do
     GenStage.call(name, {:add, messages}, @message_timeout)
   end
-
 
   ###############
   ## Callbacks ##
