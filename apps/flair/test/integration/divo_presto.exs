@@ -4,7 +4,7 @@ defmodule Flair.DivoPresto do
   for building a docker-compose file.
   """
 
-  def gen_stack(envar \\ []) do
+  def gen_stack(_envar) do
     %{
       metastore: %{
         image: "smartcitiesdata/metastore-testo:0.9.12",

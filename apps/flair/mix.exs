@@ -33,6 +33,7 @@ defmodule Flair.MixProject do
     [
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10"},
+      {:elsa, "~> 0.7.0"},
       {:ex_doc, "~> 0.19"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
@@ -40,7 +41,6 @@ defmodule Flair.MixProject do
       {:flow, "~> 0.14"},
       {:gen_stage, "~> 0.14"},
       {:jason, "~> 1.1"},
-      {:kafka_ex, "~> 0.9"},
       {:kaffe, "~> 1.14", only: [:test, :integration]},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:faker, "~> 0.12"},
@@ -58,6 +58,14 @@ defmodule Flair.MixProject do
       # distillery breaks @ 2.1.0 due to elixir 1.9 support
     ]
   end
+
+  # defp prod_deps do
+
+  # end
+
+  # defp test_deps do
+
+  # end
 
   defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]

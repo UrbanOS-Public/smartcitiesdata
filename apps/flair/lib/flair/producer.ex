@@ -1,47 +1,39 @@
-require Logger
-
 defmodule Flair.Producer do
   @moduledoc """
   Producer receives messages from kafka and then passes them to the flow as they are demanded.
   """
-
+  require Logger
   use GenStage
 
   @message_timeout Application.get_env(:flair, :message_timeout, 5 * 60 * 1_000)
 
+  @type kafka_message :: %{
+    key: String.t(),
+    value: String.t()
+  }
+
   defmodule State do
-    @moduledoc """
-    The producer's state.
-    """
-
-    @typedoc """
-    * `:demand`: Count of messages demanded by the consumer.
-    * `:message_set`: Batch of messages waiting to be consumed.
-    * `:from`: List of blocked `Flair.MessageProcessor` pids waiting to be continued.
-    """
-
-    @type t :: %State{
-            demand: integer,
-            message_set: list(%KafkaEx.Protocol.Fetch.Message{}),
-            from: list(pid())
-          }
     defstruct demand: 0, message_set: [], from: []
   end
 
+  ################
+  ## Client API ##
+  ################
   def start_link(name, args \\ nil) do
     GenStage.start_link(__MODULE__, args, name: name)
   end
 
-  def init(_args) do
-    {:producer, %State{}}
-  end
-
-  @doc """
-  Add list of kafka messages to be consumed.
-  """
-  @spec add_messages(GenStage.stage(), list(%KafkaEx.Protocol.Fetch.Message{})) :: term()
+  @spec add_messages(GenStage.stage(), list(kafka_message())) :: term()
   def add_messages(name, messages) do
     GenStage.call(name, {:add, messages}, @message_timeout)
+  end
+
+
+  ###############
+  ## Callbacks ##
+  ###############
+  def init(_args) do
+    {:producer, %State{}}
   end
 
   def handle_call({:add, messages}, from, %State{demand: 0} = state) do
