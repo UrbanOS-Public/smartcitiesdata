@@ -31,7 +31,7 @@ defmodule Valkyrie.DatasetMutationTest do
         assert payloads == [%{"age" => "21"}]
       end,
       2_000,
-      15
+      20
     )
 
     updated_dataset = %{dataset | technical: %{dataset.technical | schema: [%{name: "age", type: "integer"}]}}
