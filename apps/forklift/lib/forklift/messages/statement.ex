@@ -19,7 +19,6 @@ defmodule Forklift.Messages.Statement do
 
     data_fragment =
       data
-      |> Enum.map(fn datum -> Forklift.Messages.SchemaFiller.fill(columns, datum) end)
       |> Enum.map(&format_columns(columns, &1))
       |> Enum.map(&to_row_string/1)
       |> Enum.join(",")

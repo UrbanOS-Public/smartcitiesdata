@@ -479,30 +479,6 @@ defmodule Forklift.Messages.StatementTest do
     assert result == expected_result
   end
 
-  test "build generates a valid statement when given a nested map with nils" do
-    schema = %DatasetSchema{
-      system_name: "rows_rivers",
-      columns: [
-        %{
-          name: "parent",
-          type: "list",
-          itemType: "map",
-          subSchema: [%{name: "childA", type: "string"}, %{name: "childB", type: "string"}]
-        }
-      ]
-    }
-
-    data = [
-      %{parent: [%{}, %{childA: "child"}, nil]}
-    ]
-
-    result = Statement.build(schema, data)
-
-    expected_result = ~s|insert into "rows_rivers" ("parent") values row(array[row('child',null)])|
-
-    assert result == expected_result
-  end
-
   defp get_schema() do
     %DatasetSchema{
       system_name: "rivers",
