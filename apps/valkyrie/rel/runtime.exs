@@ -4,6 +4,7 @@ kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
 input_topic_prefix = System.get_env("INPUT_TOPIC_PREFIX")
 output_topic_prefix = System.get_env("OUTPUT_TOPIC_PREFIX")
+processor_stages = System.get_env("PROCESSOR_STAGES") || "1"
 
 config :logger,
   level: :warn
@@ -24,6 +25,7 @@ if kafka_brokers do
     elsa_brokers: endpoints,
     input_topic_prefix: input_topic_prefix,
     output_topic_prefix: output_topic_prefix,
+    processor_stages: String.to_integer(processor_stages),
     topic_subscriber_config: [
       begin_offset: :earliest,
       offset_reset_policy: :reset_to_earliest,
