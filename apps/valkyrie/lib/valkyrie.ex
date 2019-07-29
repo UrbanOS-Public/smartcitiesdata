@@ -72,6 +72,13 @@ defmodule Valkyrie do
     end
   end
 
+  defp standardize(%{type: "json"}, value) do
+    case Jason.encode(value) do
+      {:ok, result} -> {:ok, result}
+      _ -> {:error, :invalid_json}
+    end
+  end
+
   defp standardize(%{type: "map"}, value) when not is_map(value), do: {:error, :invalid_map}
 
   defp standardize(%{type: "map", subSchema: sub_schema}, value) do
@@ -90,6 +97,10 @@ defmodule Valkyrie do
       {:ok, reversed_list} -> {:ok, Enum.reverse(reversed_list)}
       {:error, reason} -> {:error, {:invalid_list, reason}}
     end
+  end
+
+  defp standardize(_, _) do
+    {:error, :invalid_type}
   end
 
   defp standardize_list(%{itemType: item_type} = field, value) do

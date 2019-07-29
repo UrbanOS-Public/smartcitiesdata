@@ -9,7 +9,14 @@ defmodule Valkyrie.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
-      test_paths: test_paths(Mix.env())
+      test_paths: test_paths(Mix.env()),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ]
     ]
   end
 
@@ -44,7 +51,8 @@ defmodule Valkyrie.MixProject do
       # distillery breaks @ 2.1.0 due to elixir 1.9 support
       {:retry, "~> 0.11.2"},
       {:timex, "~> 3.6"},
-      {:off_broadway_kafka, "~> 0.2.1"}
+      {:off_broadway_kafka, "~> 0.2.1"},
+      {:excoveralls, "~> 0.11.1", only: :test}
     ]
   end
 

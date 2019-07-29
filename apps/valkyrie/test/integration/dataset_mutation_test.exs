@@ -10,7 +10,7 @@ defmodule Valkyrie.DatasetMutationTest do
   @output_topic "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{@dataset_id}"
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
 
-  test "stuff" do
+  test "a dataset with an updated schema properly parses new messages" do
     schema = [%{name: "age", type: "string"}]
     dataset = TDG.create_dataset(id: @dataset_id, technical: %{schema: schema})
 
@@ -34,12 +34,12 @@ defmodule Valkyrie.DatasetMutationTest do
       15
     )
 
-    dataset = %{dataset | technical: %{dataset.technical | schema: [%{name: "age", type: "integer"}]}}
-    SmartCity.Dataset.write(dataset)
+    updated_dataset = %{dataset | technical: %{dataset.technical | schema: [%{name: "age", type: "integer"}]}}
+    SmartCity.Dataset.write(updated_dataset)
 
     Process.sleep(2_000)
 
-    data2 = TDG.create_data(dataset_id: @dataset_id, payload: %{"age" => "21"})
+    data2 = TDG.create_data(dataset_id: @dataset_id, payload: %{"age" => "22"})
     Elsa.produce(@endpoints, @input_topic, Jason.encode!(data2), partition: 0)
 
     eventually(
@@ -49,7 +49,7 @@ defmodule Valkyrie.DatasetMutationTest do
         payloads =
           Enum.map(messages, fn message -> SmartCity.Data.new(message.value) |> elem(1) |> Map.get(:payload) end)
 
-        assert payloads == [%{"age" => "21"}, %{"age" => 21}]
+        assert payloads == [%{"age" => "21"}, %{"age" => 22}]
       end,
       2_000,
       10
