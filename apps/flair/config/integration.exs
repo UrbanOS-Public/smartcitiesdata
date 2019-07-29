@@ -28,12 +28,6 @@ config :flair,
     max_wait_time: 10_000
   ]
 
-config :kaffe,
-  producer: [
-    endpoints: endpoint,
-    topics: ["persisted"]
-  ]
-
 config :prestige,
   base_url: "http://#{host}:8080",
   headers: [
@@ -50,3 +44,6 @@ config :smart_city_registry,
   redis: [
     host: host
   ]
+
+config :smart_city_test,
+  endpoint: endpoint

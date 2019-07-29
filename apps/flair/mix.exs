@@ -50,10 +50,9 @@ defmodule Flair.MixProject do
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1", only: [:dev, :integration]},
-      {:kaffe, "~> 1.14", only: [:integration]},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      {:faker, "~> 0.12", only: [:test, :integration]},
-      {:smart_city_test, "~> 0.2", only: [:test, :integration]},
+      {:faker, "~> 0.12", only: [:test, :integration], override: true},
+      {:smart_city_test, "~> 0.3", only: [:test, :integration]},
       {:husky, "~> 1.0", only: :dev, runtime: false},
       # updating version breaks
       {:distillery, "2.0.14"}
