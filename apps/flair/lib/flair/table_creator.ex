@@ -8,8 +8,8 @@ defmodule Flair.TableCreator do
   use Retry
 
   # Times in milliseconds
-  @initial_delay 5_000
-  @delay_step 5_000
+  @initial_delay 10_000
+  @delay_step 10_000
   @max_retries 20
 
   def start_link(init_arg, opts \\ []) do
@@ -18,7 +18,7 @@ defmodule Flair.TableCreator do
 
   def init(_init_arg) do
     retry with: linear_backoff(@initial_delay, @delay_step) |> Stream.take(@max_retries),
-          rescue_only: [Prestige.ConnectionError] do
+          rescue_only: [Prestige.ConnectionError, Prestige.Error] do
       Flair.PrestoClient.get_create_timing_table_statement()
       |> Flair.PrestoClient.execute()
     after
