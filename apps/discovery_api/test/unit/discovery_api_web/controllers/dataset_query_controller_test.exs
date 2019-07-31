@@ -4,6 +4,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   use Placebo
   import Checkov
   alias DiscoveryApi.Data.{Model, SystemNameCache}
+  alias DiscoveryApiWeb.Services.{AuthService, PrestoService}
 
   @dataset_id "test"
   @system_name "coda__test_dataset"
@@ -341,6 +342,205 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
              end) =~ "Query contained illegal character(s): [#{query_string}]"
 
       assert_called Prestige.execute(query_string), times(0)
+    end
+  end
+
+  @moduletag capture_log: true
+  describe "query multiple datasets" do
+    setup do
+      public_one_dataset =
+        DiscoveryApi.Test.Helper.sample_model(%{
+          private: false,
+          systemName: "public__one"
+        })
+
+      public_two_dataset =
+        DiscoveryApi.Test.Helper.sample_model(%{
+          private: false,
+          systemName: "public__two"
+        })
+
+      private_one_dataset =
+        DiscoveryApi.Test.Helper.sample_model(%{
+          private: true,
+          systemName: "private__one"
+        })
+
+      private_two_dataset =
+        DiscoveryApi.Test.Helper.sample_model(%{
+          private: true,
+          systemName: "private__two"
+        })
+
+      datasets = [
+        public_one_dataset,
+        public_two_dataset,
+        private_one_dataset,
+        private_two_dataset
+      ]
+
+      username = "jessie"
+
+      json_from_execute = [
+        %{"a" => 2, "b" => 2},
+        %{"a" => 3, "b" => 3},
+        %{"a" => 1, "b" => 1}
+      ]
+
+      csv_from_execute = "a,b\n2,2\n3,3\n1,1\n"
+
+      allow(Model.get_all(), return: datasets)
+      allow(AuthService.get_user(any()), return: username)
+      allow(Prestige.execute(any(), any()), return: json_from_execute)
+
+      {
+        :ok,
+        %{
+          public_tables: [public_one_dataset, public_two_dataset] |> Enum.map(&Map.get(&1, :systemName)),
+          private_tables: [private_one_dataset, private_two_dataset] |> Enum.map(&Map.get(&1, :systemName)),
+          json_response: json_from_execute,
+          csv_response: csv_from_execute
+        }
+      }
+    end
+
+    test "can select from some public datasets as json", %{conn: conn, public_tables: public_tables, json_response: expected_response} do
+      statement = """
+        WITH public_one AS (select a from public__one), public_two AS (select b from public__two)
+        SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
+      """
+
+      request_body = %{statement: statement}
+
+      allow(PrestoService.supported?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {public_tables, []})
+      allow(AuthService.has_access?(any(), any()), return: true)
+
+      response_body =
+        conn
+        |> put_req_header("accept", "application/json")
+        |> post("/api/v1/query", request_body)
+        |> response(200)
+        |> Jason.decode!()
+
+      assert expected_response == response_body
+    end
+
+    test "can select from some public datasets as csv", %{conn: conn, public_tables: public_tables, csv_response: expected_response} do
+      statement = """
+        WITH public_one AS (select a from public__one), public_two AS (select b from public__two)
+        SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
+      """
+
+      request_body = %{statement: statement}
+
+      allow(PrestoService.supported?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {public_tables, []})
+      allow(AuthService.has_access?(any(), any()), return: true)
+
+      response_body =
+        conn
+        |> put_req_header("accept", "text/csv")
+        |> post("/api/v1/query", request_body)
+        |> response(200)
+
+      assert expected_response == response_body
+    end
+
+    test "can select from some authorized private datasets", %{conn: conn, private_tables: private_tables} do
+      statement = """
+        WITH private_one AS (select a from private__one), private_two AS (select b from private__two)
+        SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
+      """
+
+      request_body = %{statement: statement}
+
+      allow(PrestoService.supported?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {private_tables, []})
+      allow(AuthService.has_access?(any(), any()), return: true)
+
+      assert conn
+             |> put_req_header("accept", "application/json")
+             |> post("/api/v1/query", request_body)
+             |> response(200)
+    end
+
+    test "can't select from some unauthorized private datasets", %{conn: conn, private_tables: private_tables} do
+      statement = """
+        WITH private_one AS (select a from private__one), private_two AS (select b from private__two)
+        SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
+      """
+
+      request_body = %{statement: statement}
+
+      allow(PrestoService.supported?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {private_tables, []})
+      allow(AuthService.has_access?(any(), any()), seq: [false, true])
+
+      assert conn
+             |> put_req_header("accept", "application/json")
+             |> post("/api/v1/query", request_body)
+             |> response(400)
+    end
+
+    test "can't perform query if it includes writes of any sort", %{conn: conn, public_tables: public_tables} do
+      statement = """
+        INSERT INTO public__one SELECT * FROM public__two
+      """
+
+      request_body = %{statement: statement}
+
+      allow(PrestoService.supported?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {public_tables, public_tables})
+      allow(AuthService.has_access?(any(), any()), return: true)
+
+      assert conn
+             |> put_req_header("accept", "application/json")
+             |> post("/api/v1/query", request_body)
+             |> response(400)
+    end
+
+    test "can't perform query if it doesn't include any valid reads", %{conn: conn} do
+      statement = """
+        SHOW TABLES
+      """
+
+      request_body = %{statement: statement}
+
+      allow(PrestoService.supported?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {[], []})
+      allow(AuthService.has_access?(any(), any()), return: true)
+
+      assert conn
+             |> put_req_header("accept", "application/json")
+             |> post("/api/v1/query", request_body)
+             |> response(400)
+    end
+
+    test "can't perform query if it not a supported/allowed statement type", %{conn: conn, public_tables: public_tables} do
+      statement = """
+        EXPLAIN ANALYZE select * from public__one
+      """
+
+      request_body = %{statement: statement}
+
+      allow(PrestoService.supported?(statement), return: false)
+      allow(PrestoService.get_affected_tables(statement), return: {public_tables, []})
+      allow(AuthService.has_access?(any(), any()), return: true)
+
+      assert conn
+             |> put_req_header("accept", "application/json")
+             |> post("/api/v1/query", request_body)
+             |> response(400)
+    end
+
+    test "does not accept requests with no statement in the body", %{conn: conn} do
+      request_body = %{}
+
+      assert conn
+             |> put_req_header("accept", "application/json")
+             |> post("/api/v1/query", request_body)
+             |> response(400)
     end
   end
 

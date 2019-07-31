@@ -1,7 +1,7 @@
 alias StreamingMetrics.Hostname
 require Logger
 
-defmodule DiscoveryApiWeb.MetricsCollectorService do
+defmodule DiscoveryApiWeb.Services.MetricsService do
   @moduledoc """
   Service that collects metrics and records them to the application's metric collector (which by default is prometheus)
   """
@@ -19,6 +19,10 @@ defmodule DiscoveryApiWeb.MetricsCollectorService do
       {"Table", "#{table_name}"},
       {"ContentType", "#{return_type}"}
     ])
+  end
+
+  def record_api_hit(request_type, dataset_id) do
+    Redix.command!(:redix, ["INCR", "smart_registry:#{request_type}:count:#{dataset_id}"])
   end
 
   defp record_metrics(metric_name, labels) do

@@ -1,7 +1,8 @@
 defmodule DiscoveryApiWeb.DatasetQueryController do
   use DiscoveryApiWeb, :controller
   require Logger
-  alias DiscoveryApiWeb.DatasetMetricsService
+  alias DiscoveryApiWeb.Services.{AuthService, PrestoService, MetricsService}
+  alias DiscoveryApi.Data.Model
 
   def query(conn, params) do
     query(conn, params, get_format(conn))
@@ -12,7 +13,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
     with {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
          {:ok, query} <- build_query(params, system_name) do
-      DatasetMetricsService.record_api_hit("queries", conn.assigns.model.id)
+      MetricsService.record_api_hit("queries", conn.assigns.model.id)
 
       query
       |> Prestige.execute()
@@ -29,7 +30,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
     case build_query(params, system_name) do
       {:ok, query} ->
-        DatasetMetricsService.record_api_hit("queries", conn.assigns.model.id)
+        MetricsService.record_api_hit("queries", conn.assigns.model.id)
 
         data =
           query
@@ -123,5 +124,50 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     column_string
     |> String.split(",", trim: true)
     |> Enum.map(&String.trim/1)
+  end
+
+  def free_query(conn, %{"statement" => statement} = _params) do
+    with true <- PrestoService.supported?(statement),
+         {[_ | _] = read, [] = _write} <- PrestoService.get_affected_tables(statement),
+         username <- AuthService.get_user(conn),
+         models <- Model.get_all() |> Enum.filter(&model_being_read?(&1, read)),
+         true <- Enum.all?(models, &AuthService.has_access?(&1, username)) do
+      statement
+      |> Prestige.execute(rows_as_maps: true)
+      |> stream_for_format(conn, get_format(conn))
+    else
+      _ -> handle_error(conn, {:bad_request, ""})
+    end
+  end
+
+  def free_query(conn, _params), do: handle_error(conn, {:bad_request, ""})
+
+  defp model_being_read?(model, read_tables) do
+    model.systemName in read_tables
+  end
+
+  defp stream_for_format(stream, conn, "csv" = format) do
+    column_names =
+      stream
+      |> Stream.take(1)
+      |> Stream.map(&Map.keys/1)
+      |> Enum.into([])
+      |> List.flatten()
+
+    stream
+    |> Stream.map(&Map.values/1)
+    |> map_data_stream_for_csv(column_names)
+    |> stream_data(conn, "query-results", format)
+  end
+
+  defp stream_for_format(stream, conn, "json" = format) do
+    data =
+      stream
+      |> Stream.map(&Jason.encode!/1)
+      |> Stream.intersperse(",")
+
+    [["["], data, ["]"]]
+    |> Stream.concat()
+    |> stream_data(conn, "query-results", format)
   end
 end

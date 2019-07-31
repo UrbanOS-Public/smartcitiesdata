@@ -7,29 +7,30 @@ defmodule DiscoveryApi.Auth.AuthTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   @inactive_token "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkaXNjb3ZlcnlfYXBpIiwiZXhwIjoxNTU3NzczNTMzLCJpYXQiOjE1NTUzNTQzMzMsImlzcyI6ImRpc2NvdmVyeV9hcGkiLCJqdGkiOiIxYmJkMmUzMy01ZDc1LTRjNTYtYjQ4OS1mOGMxNzViZDg1NDEiLCJuYmYiOjE1NTUzNTQzMzIsInN1YiI6IkJhZFVzZXIiLCJ0eXAiOiJhY2Nlc3MifQ.TzTIVFiSJaPOioTiFYgvfg15BPzFCHx6qj1W1_vQeKPvo_Q4xuY_uA3-h1nobKq35fYu73TQdp_DYwwPQC5PDQ"
+  @organization_1_name "organization_one"
+  @organization_2_name "organization_two"
   @organization_1_user "FirstUser"
   @organization_2_user "SecondUser"
 
   setup_all do
-    Paddle.authenticate([cn: "admin"], "admin")
-    Paddle.add([ou: "People"], objectClass: ["top", "organizationalunit"], ou: "People")
-    Enum.each([@organization_1_user, @organization_2_user], fn user -> make_ldap_user(user) end)
+    membership = %{
+      @organization_1_name => [
+        @organization_1_user
+      ],
+      @organization_2_name => [
+        @organization_2_user
+      ]
+    }
 
-    Paddle.add([ou: "Group"], objectClass: ["top", "organizationalunit"], ou: "Group")
-
-    organization_1_cn = "this_is_a_group"
-    organization_2_cn = "this_is_a_second_group"
-
-    organization_1 = TDG.create_organization(%{dn: "cn=#{organization_1_cn},ou=Group"})
-    organization_2 = TDG.create_organization(%{dn: "cn=#{organization_2_cn},ou=Group"})
-
-    add_ldap_user_to_organization(@organization_1_user, organization_1_cn)
-    add_ldap_user_to_organization(@organization_2_user, organization_2_cn)
+    %{
+      @organization_1_name => organization_1,
+      @organization_2_name => organization_2
+    } = Helper.setup_ldap(membership)
 
     private_model_1 =
       Helper.sample_model(%{
         private: true,
-        organization: organization_1_cn,
+        organization: @organization_1_name,
         organizationDetails: organization_1,
         keywords: ["dataset", "facet1"]
       })
@@ -37,7 +38,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
     private_model_2 =
       Helper.sample_model(%{
         private: true,
-        organization: organization_2_cn,
+        organization: @organization_2_name,
         organizationDetails: organization_2,
         keywords: ["dataset", "facet2"]
       })
@@ -45,7 +46,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
     public_model =
       Helper.sample_model(%{
         private: false,
-        organization: organization_1_cn,
+        organization: @organization_1_name,
         organizationDetails: organization_1,
         keywords: ["dataset", "public_facet"]
       })
@@ -287,36 +288,5 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
       assert status_code == 200
     end
-  end
-
-  defp add_ldap_user_to_organization(uid, cn) do
-    dn = [cn: cn, ou: "Group"]
-
-    group = [
-      objectClass: ["top", "groupofnames"],
-      cn: cn,
-      member: ["uid=#{uid},ou=People"]
-    ]
-
-    Paddle.add(dn, group)
-  end
-
-  def make_ldap_user(name) do
-    dn = [uid: name, ou: "People"]
-
-    user = [
-      objectClass: ["account", "posixAccount"],
-      cn: name,
-      uid: name,
-      loginShell: "/bin/bash",
-      homeDirectory: "/home/user",
-      uidNumber: 501,
-      gidNumber: 100,
-      userPassword: "{SSHA}/02KaNTR+p0r0KSDfDZfFQiYgyekBsdH"
-    ]
-
-    :ok = Paddle.add(dn, user)
-    {:ok, [user | _]} = Paddle.get(base: "uid=#{name},ou=People")
-    user
   end
 end

@@ -58,6 +58,7 @@ defmodule DiscoveryApiWeb.Router do
   scope "/api/v1", DiscoveryApiWeb do
     pipe_through([:api, :add_auth_details])
     get("/logout", LoginController, :logout)
+    post("/query", DatasetQueryController, :free_query)
   end
 
   scope "/api/v1", DiscoveryApiWeb do

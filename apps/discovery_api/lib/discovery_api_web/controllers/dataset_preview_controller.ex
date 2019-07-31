@@ -1,14 +1,14 @@
 defmodule DiscoveryApiWeb.DatasetPreviewController do
   use DiscoveryApiWeb, :controller
-  alias DiscoveryApiWeb.DatasetPrestoQueryService
+  alias DiscoveryApiWeb.Services.PrestoService
 
   def fetch_preview(conn, _params) do
     columns =
       conn.assigns.model.systemName
-      |> DatasetPrestoQueryService.preview_columns()
+      |> PrestoService.preview_columns()
 
     conn.assigns.model.systemName
-    |> DatasetPrestoQueryService.preview()
+    |> PrestoService.preview()
     |> return_preview(columns, conn)
   rescue
     _e in Prestige.Error -> json(conn, %{data: [], meta: %{columns: []}, message: "Something went wrong while fetching the preview."})
