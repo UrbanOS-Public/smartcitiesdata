@@ -41,7 +41,8 @@ defmodule DiscoveryApi.Data.Model do
     :lastUpdatedDate,
     :downloads,
     :queries,
-    :completeness
+    :completeness,
+    :schema
   ]
 
   @name_space "discovery-api:model:"
