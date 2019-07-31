@@ -44,7 +44,8 @@ defmodule DiscoveryApiWeb.DatasetDetailView do
       downloads: model.downloads,
       queries: model.queries,
       accessLevel: model.accessLevel,
-      completeness: model.completeness
+      completeness: model.completeness,
+      schema: model.schema
     }
   end
 end

@@ -18,6 +18,7 @@ defmodule DiscoveryApi.Data.Mapper do
       modifiedDate: biz.modifiedDate,
       fileTypes: get_file_type(tech.sourceFormat),
       description: biz.description,
+      schema: tech.schema,
       systemName: tech.systemName,
       sourceUrl: tech.sourceUrl,
       sourceType: tech.sourceType,
