@@ -15,7 +15,9 @@ defmodule Forklift.Datasets.DatasetCompactor do
     Logger.info("Beginning scheduled dataset compaction")
 
     SmartCity.Dataset.get_all!()
-    |> Enum.filter(fn dataset -> dataset.technical.sourceType == "ingest" end)
+    |> Enum.filter(fn dataset ->
+      dataset.technical.sourceType == "ingest" || dataset.technical.sourceType == "stream"
+    end)
     |> Enum.map(fn dataset -> {dataset.technical.systemName, compact_dataset(dataset)} end)
     |> Enum.each(fn {system_name, status} -> Logger.info("#{system_name} -> #{status}") end)
 

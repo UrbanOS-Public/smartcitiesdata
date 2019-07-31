@@ -157,11 +157,12 @@ defmodule DatasetCompactorTest do
       :ok
     end
 
-    test "only processes ingest type datasets" do
+    test "only processes ingest and stream type datasets" do
       datasets = [
         TDG.create_dataset(%{id: "1", technical: %{systemName: "remote", sourceType: "remote"}}),
         TDG.create_dataset(%{id: "2", technical: %{systemName: "ingest", sourceType: "ingest"}}),
-        TDG.create_dataset(%{id: "3", technical: %{systemName: "host", sourceType: "host"}})
+        TDG.create_dataset(%{id: "3", technical: %{systemName: "host", sourceType: "host"}}),
+        TDG.create_dataset(%{id: "4", technical: %{systemName: "stream", sourceType: "stream"}})
       ]
 
       allow(SmartCity.Dataset.get_all!(), return: datasets, meck_options: [:passthrough])
@@ -172,6 +173,11 @@ defmodule DatasetCompactorTest do
 
       assert_called(
         Prestige.execute("create table ingest_compact as (select * from ingest)", any()),
+        once()
+      )
+
+      assert_called(
+        Prestige.execute("create table stream_compact as (select * from stream)", any()),
         once()
       )
 
