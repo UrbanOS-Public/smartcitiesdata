@@ -146,7 +146,7 @@ defmodule Reaper.FullTest do
           assert latest_offset == 10_000
         end,
         2_000,
-        20
+        50
       )
     end
   end

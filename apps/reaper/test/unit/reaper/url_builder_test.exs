@@ -31,6 +31,22 @@ defmodule Reaper.UrlBuilderTest do
       [
         FixtureHelper.new_reaper_config(%{
           id: "",
+          sourceUrl: "https://my-url.com/date/<%= Date.to_iso8601(~D[1941-12-07], :basic) %>/stuff"
+        }),
+        "https://my-url.com/date/19411207/stuff"
+      ],
+      [
+        FixtureHelper.new_reaper_config(%{
+          id: "",
+          sourceUrl:
+            "https://my-url.com/date/<%= Date.to_iso8601(~D[1941-12-07], :basic) %>/stuff/<%= Date.to_iso8601(~D[1999-12-31], :basic) %>/other",
+          sourceQueryParams: %{something: "value"}
+        }),
+        "https://my-url.com/date/19411207/stuff/19991231/other?something=value"
+      ],
+      [
+        FixtureHelper.new_reaper_config(%{
+          id: "",
           sourceUrl: "https://my-url.com",
           sourceQueryParams: %{}
         }),
