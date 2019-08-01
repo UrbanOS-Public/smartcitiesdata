@@ -5,7 +5,8 @@ defmodule Andi.Application do
 
   def start(_type, _args) do
     children = [
-      AndiWeb.Endpoint
+      AndiWeb.Endpoint,
+      {Brook, Application.get_env(:brook, :config)}
     ]
 
     opts = [strategy: :one_for_one, name: Andi.Supervisor]

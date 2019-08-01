@@ -19,7 +19,7 @@ defmodule AndiWeb.OrganizationController do
          {:ok, organization} <- Organization.new(message),
          :ok <- authenticate(),
          {:ok, ldap_org} <- write_to_ldap(organization),
-         :ok <- write_to_redis(ldap_org) do
+         :ok <- write(ldap_org) do
       conn
       |> put_status(:created)
       |> json(ldap_org)
@@ -34,12 +34,12 @@ defmodule AndiWeb.OrganizationController do
   end
 
   defp ensure_new_org(id) do
-    case Organization.get(id) do
+    case Brook.get(:org, id) do
       {:ok, %Organization{}} ->
         Logger.error("ID #{id} already exists")
         %RuntimeError{message: "ID #{id} already exists"}
 
-      {:error, %Organization.NotFound{}} ->
+      {:ok, nil} ->
         :ok
 
       _ ->
@@ -97,6 +97,11 @@ defmodule AndiWeb.OrganizationController do
     [cn: name, ou: Application.get_env(:andi, :ldap_env_ou)]
   end
 
+  defp write(org) do
+    write_to_redis(org)
+    write_to_event_stream(org)
+  end
+
   defp write_to_redis(org) do
     case Organization.write(org) do
       {:ok, _} ->
@@ -106,6 +111,11 @@ defmodule AndiWeb.OrganizationController do
         delete_from_ldap(org.orgName)
         error
     end
+  end
+
+  defp write_to_event_stream(org) do
+    Brook.send_event("org:update", org)
+    :ok
   end
 
   defp delete_from_ldap(orgName) do
@@ -119,11 +129,11 @@ defmodule AndiWeb.OrganizationController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
-    case Organization.get_all() do
+    case Brook.get_all(:org) do
       {:ok, orgs} ->
         conn
         |> put_status(:ok)
-        |> json(orgs)
+        |> json(Map.values(orgs))
 
       {_, error} ->
         Logger.error("Failed to retrieve organizations: #{inspect(error)}")

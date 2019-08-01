@@ -15,3 +15,10 @@ config :andi,
   ldap_env_ou: "test"
 
 config :paddle, Paddle, base: "dc=foo,dc=bar"
+
+config :brook, :config,
+  handlers: [Andi.EventHandler],
+  storage: [
+    module: Brook.Storage.Ets,
+    init_arg: []
+  ]

@@ -17,7 +17,7 @@ defmodule AndiWeb.DatasetController do
          {:ok, parsed_message} <- parse_message(message),
          {:ok, dataset} <- Dataset.new(parsed_message),
          :valid <- is_valid(dataset),
-         {:ok, _id} <- Dataset.write(dataset) do
+         {:ok, _id} <- write_dataset(dataset) do
       respond(conn, :created, dataset)
     else
       {:invalid, reason} ->
@@ -34,14 +34,19 @@ defmodule AndiWeb.DatasetController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
-    case Dataset.get_all() do
+    case Brook.get_all(:dataset) do
       {:ok, datasets} ->
-        respond(conn, :ok, datasets)
+        respond(conn, :ok, Map.values(datasets))
 
       {_, error} ->
         Logger.error("Failed to retrieve datasets: #{inspect(error)}")
         respond(conn, :not_found, "Unable to process your request")
     end
+  end
+
+  defp write_dataset(dataset) do
+    Brook.send_event("dataset:update", dataset)
+    Dataset.write(dataset)
   end
 
   defp parse_message(%{"technical" => technical} = msg) do
@@ -58,7 +63,8 @@ defmodule AndiWeb.DatasetController do
 
   defp is_valid(dataset) do
     found_match =
-      Dataset.get_all!()
+      Brook.get_all!(:dataset)
+      |> Map.values()
       |> Enum.any?(fn existing_dataset ->
         dataset.id != existing_dataset.id && dataset.technical.systemName == existing_dataset.technical.systemName
       end)

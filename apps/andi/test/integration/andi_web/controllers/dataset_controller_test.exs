@@ -3,14 +3,16 @@ defmodule Andi.CreateDatasetTest do
   use Divo
   use Tesla
 
+  import SmartCity.TestHelper, only: [eventually: 1]
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
   plug Tesla.Middleware.BaseUrl, "http://localhost:4000"
+  @kafka_broker Application.get_env(:andi, :kafka_broker)
 
-  setup do
+  setup_all do
     Redix.command!(:smart_city_registry, ["FLUSHALL"])
-    expected = TDG.create_dataset(technical: %{orgName: "org1", dataName: "data1"})
+    expected = TDG.create_dataset(technical: %{orgName: "org1"}, business: %{dataName: "controller-integration"})
     {:ok, response} = create(expected)
     {:ok, response: response, expected: expected}
   end
@@ -21,8 +23,19 @@ defmodule Andi.CreateDatasetTest do
     end
 
     test "persists dataset for downstream use", %{expected: expected} do
-      assert {:ok, actual} = Dataset.get(expected.id)
-      assert actual.technical.systemName == "org1__data1"
+      eventually(fn ->
+        assert {:ok, actual} = Brook.get(:dataset, expected.id)
+        assert actual.technical.dataName == "org1__controller-integration"
+      end)
+    end
+
+    test "sends dataset to event stream", %{expected: expected} do
+      [%{key: key, value: value}] =
+        Elsa.Fetch.search_values(@kafka_broker, "event-stream", "controller") |> Enum.to_list()
+
+      assert key == "dataset:update"
+      assert value =~ "controller"
+      assert value == Jason.encode!(expected)
     end
   end
 

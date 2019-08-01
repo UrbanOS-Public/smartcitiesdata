@@ -11,7 +11,8 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   setup do
     allow(Paddle.authenticate(any(), any()), return: :ok)
-    allow(Organization.get(any()), return: {:error, %Organization.NotFound{}}, meck_options: [:passthrough])
+    allow(Brook.get(any(), any()), return: {:ok, nil}, meck_options: [:passthrough])
+    allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
 
     request = %{
       "orgName" => "myOrg",
@@ -43,7 +44,10 @@ defmodule AndiWeb.OrganizationControllerTest do
 
     expected_orgs = [expected_org_1, expected_org_2]
 
-    allow(Organization.get_all(), return: {:ok, expected_orgs}, meck_options: [:passthrough])
+    allow(Brook.get_all(any()),
+      return: {:ok, %{expected_org_1["id"] => expected_org_1, expected_org_2["id"] => expected_org_2}},
+      meck_options: [:passthrough]
+    )
 
     {:ok, request: request, message: message, expected_orgs: expected_orgs}
   end
@@ -51,6 +55,7 @@ defmodule AndiWeb.OrganizationControllerTest do
   describe "post /api/ with valid data" do
     setup %{conn: conn, request: request} do
       allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
+      allow(Brook.send_event(any(), any()), return: :ok, meck_options: [:passthrough])
       allow(Paddle.add(any(), any()), return: :ok)
       [conn: post(conn, @route, request)]
     end
@@ -66,6 +71,10 @@ defmodule AndiWeb.OrganizationControllerTest do
       struct = capture(Organization.write(any()), 1)
       assert struct.orgName == message["orgName"]
       assert uuid?(struct.id)
+    end
+
+    test "writes organization to event stream", %{message: _message} do
+      assert_called(Brook.send_event(any(), any()), once())
     end
 
     test "writes organization to LDAP", %{message: %{"orgName" => name}} do
@@ -145,14 +154,16 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   describe "id already exists" do
     setup do
-      allow(Organization.get(any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
+      allow(Brook.get(any(), any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
       :ok
     end
 
     @tag capture_log: true
     test "post /api/v1/organization fails with explanation", %{conn: conn, request: req} do
       post(conn, @route, req)
+      # Remove after completing event streams rewrite
       refute_called(Organization.write(any()))
+      refute_called(Brook.write(any(), any()))
     end
   end
 
@@ -166,7 +177,7 @@ defmodule AndiWeb.OrganizationControllerTest do
         conn
         |> json_response(200)
 
-      assert expected_orgs == actual_orgs
+      assert MapSet.new(expected_orgs) == MapSet.new(actual_orgs)
     end
   end
 
