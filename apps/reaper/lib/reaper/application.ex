@@ -62,6 +62,7 @@ defmodule Reaper.Application do
           Application.put_env(:ex_aws, :secret_access_key, Map.get(creds, "aws_secret_access_key"))
       end
     else
+      Logger.warn("No secrets endpoint. Reaper will not be able to upload hosted files.")
       []
     end
   end

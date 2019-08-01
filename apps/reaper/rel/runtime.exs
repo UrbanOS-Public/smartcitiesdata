@@ -5,7 +5,6 @@ required_envars = [
   "KAFKA_BROKERS",
   "OUTPUT_TOPIC_PREFIX",
   "DLQ_TOPIC",
-  "SECRETS_ENDPOINT",
   "HOSTED_FILE_BUCKET"
 ]
 
