@@ -70,3 +70,14 @@ config :smart_city_registry,
   redis: [
     host: redis_host
   ]
+
+if (System.get_env("COMPACTION_SCHEDULE")) do
+  config :forklift, Forklift.Quantum.Scheduler,
+    jobs: [
+      compactor: [
+        schedule: System.get_env("COMPACTION_SCHEDULE"),
+        task: {Forklift.Datasets.DatasetCompactor, :compact_datasets, []},
+        timezone: "America/New_York"
+      ]
+    ]
+end
