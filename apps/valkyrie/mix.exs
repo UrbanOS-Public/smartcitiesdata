@@ -5,7 +5,7 @@ defmodule Valkyrie.MixProject do
     [
       app: :valkyrie,
       version: "0.2.3",
-      elixir: "~> 1.8",
+      elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
@@ -46,9 +46,8 @@ defmodule Valkyrie.MixProject do
       {:observer_cli, "~> 1.4"},
       {:benchee, "~> 1.0", only: [:integration]},
       {:husky, "~> 1.0", only: :dev, runtime: false},
+      {:distillery, "~> 2.1"},
       # updating version breaks
-      {:distillery, "2.0.14"},
-      # distillery breaks @ 2.1.0 due to elixir 1.9 support
       {:retry, "~> 0.11.2"},
       {:timex, "~> 3.6"},
       {:off_broadway_kafka, "~> 0.2.1"},

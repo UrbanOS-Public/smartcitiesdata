@@ -1,6 +1,6 @@
 language: elixir
 elixir:
-  - '1.8.1'
+  - '1.9'
 otp_release:
   - '21.3'
 services:
