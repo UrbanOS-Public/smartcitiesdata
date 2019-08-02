@@ -49,7 +49,6 @@ defmodule DiscoveryApi.Data.SearchTest do
     end
 
     test "does not error when a dataset in the search cache has been deleted from redis" do
-      # Redix.command!(:redix, ["FLUSHALL"])
       organization = TDG.create_organization(%{})
       Organization.write(organization)
 
