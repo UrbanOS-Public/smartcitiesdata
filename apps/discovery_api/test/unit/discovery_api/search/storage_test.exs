@@ -58,7 +58,7 @@ defmodule DiscoveryApi.Search.StorageTest do
       model1 = Helper.sample_model(%{title: "I love science"})
       model2 = Helper.sample_model(%{id: model1.id, title: "bicycle helmets"})
 
-      allow Model.get_all(any()), return: :doesnt_matter
+      allow Model.get_all(any()), return: []
 
       Storage.index(model1)
       Storage.index(model2)

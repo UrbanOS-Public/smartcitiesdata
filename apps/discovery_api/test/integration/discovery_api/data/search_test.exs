@@ -3,6 +3,8 @@ defmodule DiscoveryApi.Data.SearchTest do
   use Divo, services: [:redis]
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
+  alias SmartCity.TestDataGenerator, as: TDG
+  alias SmartCity.{Dataset, Organization}
 
   setup do
     Redix.command!(:redix, ["FLUSHALL"])
@@ -44,6 +46,28 @@ defmodule DiscoveryApi.Data.SearchTest do
 
       results = Jason.decode!(body)
       assert get_in(results, ["metadata", "facets", "keywords"]) == [%{"name" => "model", "count" => 0}]
+    end
+
+    test "does not error when a dataset in the search cache has been deleted from redis" do
+      # Redix.command!(:redix, ["FLUSHALL"])
+      organization = TDG.create_organization(%{})
+      Organization.write(organization)
+
+      dataset =
+        TDG.create_dataset(%{business: %{description: "Bob had a horse and this is its data"}, technical: %{orgId: organization.id}})
+
+      Dataset.write(dataset)
+      DiscoveryApi.Data.DatasetEventListener.handle_dataset(dataset)
+
+      Redix.command!(:redix, ["FLUSHALL"])
+
+      params = Plug.Conn.Query.encode(%{query: "Bob"})
+
+      %{status_code: status_code, body: body} =
+        "http://localhost:4000/api/v1/dataset/search?#{params}"
+        |> HTTPoison.get!()
+
+      assert status_code == 200
     end
   end
 end
