@@ -3,7 +3,7 @@
 |> Path.wildcard()
 |> Enum.map(&Code.eval_file(&1))
 
-use Mix.Releases.Config,
+use Distillery.Releases.Config,
     # This sets the default release built by `mix release`
     default_release: :default,
     # This sets the default environment used by `mix release`
@@ -18,7 +18,7 @@ environment :prod do
   set include_src: false
   set cookie: :"z^KU3`9hu>z[!&uU,[{}~sZFNxk(sV.IT.PB=B[;AXBU:o0:{=6!)sk2!nH$*)a)"
   set config_providers: [
-    {Mix.Releases.Config.Providers.Elixir, ["${RELEASE_ROOT_DIR}/etc/runtime.exs"]}
+    {Distillery.Releases.Config.Providers.Elixir, ["${RELEASE_ROOT_DIR}/etc/runtime.exs"]}
   ]
   set pre_configure_hooks: "rel/hooks/pre_configure.d"
   set overlays: [

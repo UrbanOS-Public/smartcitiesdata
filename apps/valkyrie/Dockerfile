@@ -1,4 +1,4 @@
-FROM bitwalker/alpine-elixir:1.8.1 as builder
+FROM bitwalker/alpine-elixir:1.9 as builder
 COPY . /app
 WORKDIR /app
 RUN apk upgrade && \
@@ -8,9 +8,9 @@ RUN apk upgrade && \
 RUN mix local.hex --force && \
     mix local.rebar --force && \
     mix deps.get
-RUN MIX_ENV=prod mix release
+RUN MIX_ENV=prod mix distillery.release
 
-FROM bitwalker/alpine-elixir:1.8.1
+FROM bitwalker/alpine-elixir:1.9
 ENV REPLACE_OS_VARS=true
 RUN apk upgrade \
     && rm -rf /var/cache/**/*
