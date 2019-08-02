@@ -10,7 +10,7 @@ defmodule Reaper.Decoder.Json do
 
     case Jason.decode(data) do
       {:ok, response} ->
-        {:ok, response}
+        {:ok, List.wrap(response)}
 
       {:error, error} ->
         {:error, data, error}
@@ -18,7 +18,9 @@ defmodule Reaper.Decoder.Json do
   end
 
   @impl Reaper.Decoder
-  def handle?(source_format) do
+  def handle?(source_format) when is_binary(source_format) do
     String.downcase(source_format) == "json"
   end
+
+  def handle?(_source_format), do: false
 end
