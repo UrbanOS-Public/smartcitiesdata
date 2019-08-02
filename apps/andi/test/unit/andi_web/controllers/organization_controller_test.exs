@@ -44,8 +44,8 @@ defmodule AndiWeb.OrganizationControllerTest do
 
     expected_orgs = [expected_org_1, expected_org_2]
 
-    allow(Brook.get_all(any()),
-      return: {:ok, %{expected_org_1["id"] => expected_org_1, expected_org_2["id"] => expected_org_2}},
+    allow(Brook.get_all_values(any()),
+      return: {:ok, [expected_org_1, expected_org_2]},
       meck_options: [:passthrough]
     )
 

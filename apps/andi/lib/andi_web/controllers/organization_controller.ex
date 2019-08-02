@@ -6,6 +6,7 @@ defmodule AndiWeb.OrganizationController do
 
   require Logger
   alias SmartCity.Organization
+  import SmartCity.Events, only: [update_organization: 0]
 
   @doc """
   Parse a data message to create and authenticate a new organization to store in LDAP
@@ -99,7 +100,7 @@ defmodule AndiWeb.OrganizationController do
 
   defp write(org) do
     with {:ok, _id} <- Organization.write(org),
-         :ok <- Brook.send_event("org:update", org) do
+         :ok <- Brook.send_event(update_organization(), org) do
       :ok
     else
       error ->
@@ -119,11 +120,11 @@ defmodule AndiWeb.OrganizationController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
-    case Brook.get_all(:org) do
+    case Brook.get_all_values(:org) do
       {:ok, orgs} ->
         conn
         |> put_status(:ok)
-        |> json(Map.values(orgs))
+        |> json(orgs)
 
       {_, error} ->
         Logger.error("Failed to retrieve organizations: #{inspect(error)}")

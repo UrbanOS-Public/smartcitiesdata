@@ -25,8 +25,8 @@ defmodule AndiWeb.DatasetControllerTest do
     example_datasets = [example_dataset_1, example_dataset_2]
     allow(Dataset.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
 
-    allow(Brook.get_all(any()),
-      return: {:ok, %{example_dataset_1["id"] => example_dataset_1, example_dataset_2["id"] => example_dataset_2}},
+    allow(Brook.get_all_values(any()),
+      return: {:ok, [example_dataset_1, example_dataset_2]},
       meck_options: [:passthrough]
     )
 
@@ -87,7 +87,7 @@ defmodule AndiWeb.DatasetControllerTest do
 
   describe "PUT /api/ without systemName" do
     setup %{conn: conn, request: request} do
-      allow Brook.get_all!(any()), return: %{}
+      allow Brook.get_all_values!(any()), return: []
       {_, request} = pop_in(request, ["technical", "systemName"])
       [conn: put(conn, @route, request)]
     end
@@ -125,7 +125,7 @@ defmodule AndiWeb.DatasetControllerTest do
         technical: %{dataName: data_name, orgName: org_name, systemName: "#{org_name}__#{data_name}"}
       )
 
-    allow Brook.get_all!(any()), return: %{existing_dataset => existing_dataset}
+    allow Brook.get_all_values!(any()), return: [existing_dataset]
 
     response =
       conn
@@ -137,7 +137,7 @@ defmodule AndiWeb.DatasetControllerTest do
 
   describe "PUT /api/ with systemName" do
     setup %{conn: conn, request: request} do
-      allow Brook.get_all!(any()), return: %{}
+      allow Brook.get_all_values!(any()), return: []
       req = put_in(request, ["technical", "systemName"], "org__dataset_akdjbas")
       [conn: put(conn, @route, req)]
     end
@@ -191,7 +191,7 @@ defmodule AndiWeb.DatasetControllerTest do
   end
 
   test "PUT /api/ dataset passed without UUID generates UUID for dataset", %{conn: conn, request: request} do
-    allow Brook.get_all!(any()), return: %{}
+    allow Brook.get_all_values!(any()), return: []
 
     {_, request} = pop_in(request, ["id"])
     conn = put(conn, @route, request)

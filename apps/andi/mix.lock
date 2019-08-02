@@ -1,6 +1,7 @@
 %{
   "artificery": {:hex, :artificery, "0.4.2", "3ded6e29e13113af52811c72f414d1e88f711410cac1b619ab3a2666bbd7efd4", [:mix], [], "hexpm"},
   "brod": {:hex, :brod, "3.8.1", "74426e2d27989cd7f973599bc209c899dca8588068d27a2a37ca1b4bf8823c2a", [:make, :rebar, :rebar3], [{:kafka_protocol, "2.2.9", [hex: :kafka_protocol, repo: "hexpm", optional: false]}, {:supervisor3, "1.1.8", [hex: :supervisor3, repo: "hexpm", optional: false]}], "hexpm"},
+  "brook": {:git, "https://github.com/bbalser/brook.git", "188122343ed59158ae8e6667ffecb346a2f6d5c1", [ref: "188122343ed59158ae8e6667ffecb346a2f6d5c1"]},
   "bunt": {:hex, :bunt, "0.2.0", "951c6e801e8b1d2cbe58ebbd3e616a869061ddadcc4863d0a2182541acae9a38", [:mix], [], "hexpm"},
   "cowboy": {:hex, :cowboy, "2.6.3", "99aa50e94e685557cad82e704457336a453d4abcb77839ad22dbe71f311fcc06", [:rebar3], [{:cowlib, "~> 2.7.3", [hex: :cowlib, repo: "hexpm", optional: false]}, {:ranch, "~> 1.7.1", [hex: :ranch, repo: "hexpm", optional: false]}], "hexpm"},
   "cowlib": {:hex, :cowlib, "2.7.3", "a7ffcd0917e6d50b4d5fb28e9e2085a0ceb3c97dea310505f7460ff5ed764ce9", [:rebar3], [], "hexpm"},
@@ -37,7 +38,7 @@
   "plug_crypto": {:hex, :plug_crypto, "1.0.0", "18e49317d3fa343f24620ed22795ec29d4a5e602d52d1513ccea0b07d8ea7d4d", [:mix], [], "hexpm"},
   "ranch": {:hex, :ranch, "1.7.1", "6b1fab51b49196860b733a49c07604465a47bdb78aa10c1c16a3d199f7f8c881", [:rebar3], [], "hexpm"},
   "redix": {:hex, :redix, "0.10.2", "a9eabf47898aa878650df36194aeb63966d74f5bd69d9caa37babb32dbb93c5d", [:mix], [{:telemetry, "~> 0.4.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm"},
-  "smart_city": {:hex, :smart_city, "2.1.6", "88180173faa62032feddcc427d80465e056c46e8b17609a86633070ff44f86a1", [:mix], [], "hexpm"},
+  "smart_city": {:hex, :smart_city, "2.2.0", "01188edf2d26d69d63ef4504cb8f7a1a93db05bbeebaf1e74ea3ff3816d3fd61", [:mix], [], "hexpm"},
   "smart_city_registry": {:hex, :smart_city_registry, "3.3.1", "3374eac68d1efe2af4e0c347386d030df241f767cba04c1b1f665a0378790d73", [:mix], [{:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:redix, "~> 0.9", [hex: :redix, repo: "hexpm", optional: false]}, {:smart_city, "~> 2.1", [hex: :smart_city, repo: "hexpm", optional: false]}], "hexpm"},
   "smart_city_test": {:hex, :smart_city_test, "0.3.3", "9670d85460ce035f08589fed42c7e2602adea83317a13f8bec9136225a31acc1", [:mix], [{:ex_doc, "~> 0.19", [hex: :ex_doc, repo: "hexpm", optional: false]}, {:faker, "~> 0.12", [hex: :faker, repo: "hexpm", optional: false]}, {:patiently, "~> 0.2", [hex: :patiently, repo: "hexpm", optional: false]}, {:smart_city, "~> 2.1", [hex: :smart_city, repo: "hexpm", optional: false]}], "hexpm"},
   "snappyer": {:hex, :snappyer, "1.2.4", "6d739c534cd2339633127a2b40279be71f149e5842c5363a4d88e66efb7c1fec", [:make, :rebar, :rebar3], [], "hexpm"},

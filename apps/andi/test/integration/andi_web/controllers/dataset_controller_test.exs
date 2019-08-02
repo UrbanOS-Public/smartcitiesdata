@@ -3,7 +3,7 @@ defmodule Andi.CreateDatasetTest do
   use Divo
   use Tesla
 
-  import SmartCity.TestHelper, only: [eventually: 1]
+  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -38,19 +38,23 @@ defmodule Andi.CreateDatasetTest do
 
   describe "dataset retrieval" do
     test "returns all datasets", %{expected: expected} do
-      eventually(fn ->
-        result = get("/api/v1/datasets")
+      eventually(
+        fn ->
+          result = get("/api/v1/datasets")
 
-        datasets =
-          elem(result, 1).body
-          |> Jason.decode!()
-          |> Enum.map(fn x ->
-            {:ok, dataset} = Dataset.new(x)
-            dataset
-          end)
+          datasets =
+            elem(result, 1).body
+            |> Jason.decode!()
+            |> Enum.map(fn x ->
+              {:ok, dataset} = Dataset.new(x)
+              dataset
+            end)
 
-        assert Enum.find(datasets, fn dataset -> expected.id == dataset.id end)
-      end)
+          assert Enum.find(datasets, fn dataset -> expected.id == dataset.id end)
+        end,
+        2000,
+        10
+      )
     end
   end
 

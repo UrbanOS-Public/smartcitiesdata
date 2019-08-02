@@ -7,6 +7,7 @@ defmodule AndiWeb.DatasetController do
 
   require Logger
   alias SmartCity.Dataset
+  import SmartCity.Events, only: [update_dataset: 0]
 
   @doc """
   Parse a data message and post the created dataset to redis
@@ -34,9 +35,9 @@ defmodule AndiWeb.DatasetController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
-    case Brook.get_all(:dataset) do
+    case Brook.get_all_values(:dataset) do
       {:ok, datasets} ->
-        respond(conn, :ok, Map.values(datasets))
+        respond(conn, :ok, datasets)
 
       {_, error} ->
         Logger.error("Failed to retrieve datasets: #{inspect(error)}")
@@ -46,7 +47,7 @@ defmodule AndiWeb.DatasetController do
 
   defp write_dataset(dataset) do
     Dataset.write(dataset)
-    Brook.send_event("dataset:update", dataset)
+    Brook.send_event(update_dataset(), dataset)
   end
 
   defp parse_message(%{"technical" => technical} = msg) do
@@ -63,8 +64,7 @@ defmodule AndiWeb.DatasetController do
 
   defp is_valid(dataset) do
     found_match =
-      Brook.get_all!(:dataset)
-      |> Map.values()
+      Brook.get_all_values!(:dataset)
       |> Enum.any?(fn existing_dataset ->
         dataset.id != existing_dataset.id && dataset.technical.systemName == existing_dataset.technical.systemName
       end)
