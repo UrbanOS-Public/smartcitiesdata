@@ -29,13 +29,3 @@ config :prestige,
     schema: "default",
     user: "foobar"
   ]
-
-config :forklift, Forklift.Quantum.Scheduler,
-  jobs: [
-    # Every Day at 1:00 AM
-    compactor: [
-      schedule: "00 01 * * *",
-      task: {Forklift.Datasets.DatasetCompactor, :compact_datasets, []},
-      timezone: "America/New_York"
-    ]
-  ]
