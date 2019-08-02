@@ -50,25 +50,24 @@ defmodule DiscoveryApi.Data.SearchTest do
     end
 
     test "does not error when a dataset in the search cache has been deleted from redis" do
-      Redix.command!(:redix, ["FLUSHALL"])
+      # Redix.command!(:redix, ["FLUSHALL"])
       organization = TDG.create_organization(%{})
       Organization.write(organization)
-      dataset = TDG.create_dataset(%{business: %{description: "Bob had a horse and this is its data"}, technical: %{orgId: organization.id}})
+
+      dataset =
+        TDG.create_dataset(%{business: %{description: "Bob had a horse and this is its data"}, technical: %{orgId: organization.id}})
+
       Dataset.write(dataset)
       DiscoveryApi.Data.DatasetEventListener.handle_dataset(dataset)
 
-      Process.sleep(5000)
-
-      :ets.lookup(DiscoveryApi.Search.Storage, "Bob") |> IO.inspect(label: "BEFORE")
       Redix.command!(:redix, ["FLUSHALL"])
-      :ets.lookup(DiscoveryApi.Search.Storage, "Bob") |> IO.inspect(label: "AFTER")
 
+      params = Plug.Conn.Query.encode(%{query: "Bob"})
 
       %{status_code: status_code, body: body} =
-        "http://localhost:4000/api/v1/dataset/search/?q=Bob"
+        "http://localhost:4000/api/v1/dataset/search?#{params}"
         |> HTTPoison.get!()
 
-      IO.inspect(body)
       assert status_code == 200
     end
   end

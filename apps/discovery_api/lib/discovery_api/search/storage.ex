@@ -22,6 +22,7 @@ defmodule DiscoveryApi.Search.Storage do
     |> Enum.map(&get_dataset_ids_for_word/1)
     |> get_intersection_of_datasets()
     |> Model.get_all()
+    |> Enum.reject(&is_nil/1) # Handles the rare case of deleted datasets still in the search cache
   end
 
   def start_link(_args \\ []) do

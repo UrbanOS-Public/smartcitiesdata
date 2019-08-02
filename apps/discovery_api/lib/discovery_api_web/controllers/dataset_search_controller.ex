@@ -38,8 +38,14 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
       )
     else
       {:request_error, reason} -> render_error(conn, 400, reason)
-      {:error, reason} -> render_error(conn, 500, reason)
+      {:error, reason} ->
+        Logger.error("Unhandled error in search #{inspect(reason)}")
+        render_error(conn, 500, reason)
     end
+  rescue
+    e ->
+      Logger.error("Unhandled error in search #{inspect(e)}")
+      reraise e, __STACKTRACE__
   end
 
   defp parse_api_accessible(params) do
