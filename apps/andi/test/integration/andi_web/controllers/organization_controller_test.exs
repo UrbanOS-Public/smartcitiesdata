@@ -66,22 +66,40 @@ defmodule Andi.CreateOrgTest do
     end
   end
 
-  # describe "failure to persist new organization" do
-  #   setup do
-  #     allow(Organization.write(any()), return: {:error, :reason}, meck_options: [:passthrough])
-  #     org = organization(%{orgName: "unhappyPath"})
-  #     {:ok, response} = create(org)
-  #     [unhappy_path: org, response: response]
-  #   end
+  # Delete after event stream integration is complete
+  describe "failure to persist new organization" do
+    setup do
+      allow(Organization.write(any()), return: {:error, :reason}, meck_options: [:passthrough])
+      org = organization(%{orgName: "unhappyPath"})
+      {:ok, response} = create(org)
+      [unhappy_path: org, response: response]
+    end
 
-  #   test "responds with a 500", %{response: response} do
-  #     assert response.status == 500
-  #   end
+    test "responds with a 500", %{response: response} do
+      assert response.status == 500
+    end
 
-  #   test "removes organization from LDAP", %{unhappy_path: expected} do
-  #     assert {:error, :noSuchObject} = Paddle.get(filter: [cn: expected.orgName, ou: @ou])
-  #   end
-  # end
+    test "removes organization from LDAP", %{unhappy_path: expected} do
+      assert {:error, :noSuchObject} = Paddle.get(filter: [cn: expected.orgName, ou: @ou])
+    end
+  end
+
+  describe "failure to send new organization to event stream" do
+    setup do
+      allow(Brook.send_event(any(), any()), return: {:error, :reason}, meck_options: [:passthrough])
+      org = organization(%{orgName: "unhappyPath"})
+      {:ok, response} = create(org)
+      [unhappy_path: org, response: response]
+    end
+
+    test "responds with a 500", %{response: response} do
+      assert response.status == 500
+    end
+
+    test "removes organization from LDAP", %{unhappy_path: expected} do
+      assert {:error, :noSuchObject} = Paddle.get(filter: [cn: expected.orgName, ou: @ou])
+    end
+  end
 
   describe "organization retrieval" do
     setup do

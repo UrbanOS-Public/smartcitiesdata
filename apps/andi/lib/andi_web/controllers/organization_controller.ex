@@ -98,24 +98,14 @@ defmodule AndiWeb.OrganizationController do
   end
 
   defp write(org) do
-    write_to_redis(org)
-    write_to_event_stream(org)
-  end
-
-  defp write_to_redis(org) do
-    case Organization.write(org) do
-      {:ok, _} ->
-        :ok
-
+    with {:ok, _id} <- Organization.write(org),
+         :ok <- Brook.send_event("org:update", org) do
+      :ok
+    else
       error ->
         delete_from_ldap(org.orgName)
         error
     end
-  end
-
-  defp write_to_event_stream(org) do
-    Brook.send_event("org:update", org)
-    :ok
   end
 
   defp delete_from_ldap(orgName) do

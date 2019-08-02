@@ -17,7 +17,7 @@ defmodule AndiWeb.DatasetController do
          {:ok, parsed_message} <- parse_message(message),
          {:ok, dataset} <- Dataset.new(parsed_message),
          :valid <- is_valid(dataset),
-         {:ok, _id} <- write_dataset(dataset) do
+         :ok <- write_dataset(dataset) do
       respond(conn, :created, dataset)
     else
       {:invalid, reason} ->
@@ -45,8 +45,8 @@ defmodule AndiWeb.DatasetController do
   end
 
   defp write_dataset(dataset) do
-    Brook.send_event("dataset:update", dataset)
     Dataset.write(dataset)
+    Brook.send_event("dataset:update", dataset)
   end
 
   defp parse_message(%{"technical" => technical} = msg) do
