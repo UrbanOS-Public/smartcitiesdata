@@ -127,10 +127,10 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   def free_query(conn, %{"statement" => statement} = _params) do
-    with true <- PrestoService.supported?(statement),
-         {[_ | _] = read, [] = _write} <- PrestoService.get_affected_tables(statement),
+    with true <- PrestoService.is_select_statement?(statement),
+         {:ok, system_names} <- PrestoService.get_affected_tables(statement),
          username <- AuthService.get_user(conn),
-         models <- Model.get_all() |> Enum.filter(&model_being_read?(&1, read)),
+         models <- Model.get_all() |> Enum.filter(fn model -> model.systemName in system_names end),
          true <- Enum.all?(models, &AuthService.has_access?(&1, username)) do
       statement
       |> Prestige.execute(rows_as_maps: true)
@@ -141,11 +141,6 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   def free_query(conn, _params), do: handle_error(conn, {:bad_request, ""})
-
-  defp model_being_read?(model, read_tables) do
-    model.systemName in read_tables
-  end
-
   defp stream_for_format(stream, conn, "csv" = format) do
     column_names =
       stream

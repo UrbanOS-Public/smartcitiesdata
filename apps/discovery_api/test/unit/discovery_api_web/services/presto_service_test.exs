@@ -42,112 +42,57 @@ defmodule DiscoveryApiWeb.Services.PrestoServiceTest do
   end
 
   describe "get_affected_tables/1" do
-    test "reflects when statement involves a select" do
+    setup do
+      public_one_model =
+        DiscoveryApi.Test.Helper.sample_model(%{
+          private: false,
+          systemName: "public__one"
+        })
+
+      public_two_model =
+        DiscoveryApi.Test.Helper.sample_model(%{
+          private: false,
+          systemName: "public__two"
+        })
+
+      public_one_table = public_one_model.systemName
+      public_two_table = public_two_model.systemName
+
+      {:ok, %{public_one_table: public_one_table, public_two_table: public_two_table}}
+    end
+
+    test "reflects when statement involves a select", %{public_one_table: public_one_table, public_two_table: public_two_table} do
       statement = """
         WITH public_one AS (select a from public__one), public_two AS (select b from public__two)
         SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
       """
 
-      public_one_dataset =
-        DiscoveryApi.Test.Helper.sample_model(%{
-          private: false,
-          systemName: "public__one"
-        })
-
-      public_two_dataset =
-        DiscoveryApi.Test.Helper.sample_model(%{
-          private: false,
-          systemName: "public__two"
-        })
-
-      query_plan = %{
-        "inputTableColumnInfos" => [
-          %{
-            "table" => %{
-              "catalog" => "hive",
-              "schemaTable" => %{
-                "schema" => "default",
-                "table" => public_one_dataset.systemName
-              }
-            },
-            "columnConstraints" => []
-          },
-          %{
-            "table" => %{
-              "catalog" => "hive",
-              "schemaTable" => %{
-                "schema" => "default",
-                "table" => public_two_dataset.systemName
-              }
-            },
-            "columnConstraints" => []
-          }
-        ]
-      }
-
-      explain_return = [
-        %{
-          "Query Plan" => Jason.encode!(query_plan)
-        }
-      ]
+      explain_return = make_explain_output(make_query_plan([%{name: public_one_table}, %{name: public_two_table}]))
 
       allow(Prestige.execute(any(), any()), return: explain_return)
 
-      expected_read_tables = [public_one_dataset.systemName, public_two_dataset.systemName]
-      assert {^expected_read_tables, []} = PrestoService.get_affected_tables(statement)
+      expected_read_tables = [public_one_table, public_two_table]
+      assert {:ok, ^expected_read_tables} = PrestoService.get_affected_tables(statement)
     end
 
-    test "reflects when statement has an insert in the query" do
+    defp make_explain_output(query_plan) do
+      [
+        %{
+          "Query Plan" => query_plan
+        }
+      ]
+    end
+
+    test "reflects when statement has an insert in the query", %{public_one_table: public_one_table, public_two_table: public_two_table} do
       statement = """
         INSERT INTO public__one SELECT * FROM public__two
       """
 
-      public_one_dataset =
-        DiscoveryApi.Test.Helper.sample_model(%{
-          private: false,
-          systemName: "public__one"
-        })
-
-      public_two_dataset =
-        DiscoveryApi.Test.Helper.sample_model(%{
-          private: false,
-          systemName: "public__two"
-        })
-
-      query_plan = %{
-        "inputTableColumnInfos" => [
-          %{
-            "table" => %{
-              "catalog" => "hive",
-              "schemaTable" => %{
-                "schema" => "default",
-                "table" => "public__two"
-              }
-            },
-            "columnConstraints" => []
-          }
-        ],
-        "outputTable" => %{
-          "catalog" => "hive",
-          "schemaTable" => %{
-            "schema" => "default",
-            "table" => "public__one"
-          }
-        }
-      }
-
-      explain_return = [
-        %{
-          "Query Plan" => Jason.encode!(query_plan)
-        }
-      ]
+      explain_return = make_explain_output(make_query_plan([%{name: public_two_table}], %{name: public_one_table}))
 
       allow(Prestige.execute(any(), any()), return: explain_return)
 
-      expected_read_tables = [public_two_dataset.systemName]
-      expected_write_tables = [public_one_dataset.systemName]
-
-      assert {^expected_read_tables, ^expected_write_tables} = PrestoService.get_affected_tables(statement)
+      assert {:error, _} = PrestoService.get_affected_tables(statement)
     end
 
     test "reflects when statement is not in the hive.default catalog and schema" do
@@ -155,30 +100,11 @@ defmodule DiscoveryApiWeb.Services.PrestoServiceTest do
         SHOW TABLES
       """
 
-      query_plan = %{
-        "inputTableColumnInfos" => [
-          %{
-            "table" => %{
-              "catalog" => "$info_schema@hive",
-              "schemaTable" => %{
-                "schema" => "information_schema",
-                "table" => "tables"
-              }
-            },
-            "columnConstraints" => []
-          }
-        ]
-      }
-
-      explain_return = [
-        %{
-          "Query Plan" => Jason.encode!(query_plan)
-        }
-      ]
+      explain_return = make_explain_output(make_query_plan([%{catalog: "$info_schema@hive", schema: "information_schema"}]))
 
       allow(Prestige.execute(any(), any()), return: explain_return)
 
-      assert {[], []} = PrestoService.get_affected_tables(statement)
+      assert {:error, _} = PrestoService.get_affected_tables(statement)
     end
 
     test "reflects when statement does not do IO operations" do
@@ -186,15 +112,11 @@ defmodule DiscoveryApiWeb.Services.PrestoServiceTest do
         DROP TABLE public__one
       """
 
-      explain_return = [
-        %{
-          "Query Plan" => "DROP TABLE public__one"
-        }
-      ]
+      explain_return = make_explain_output(make_query_plan("DROP TABLE public__one"))
 
       allow(Prestige.execute(any(), any()), return: explain_return)
 
-      assert {[], []} = PrestoService.get_affected_tables(statement)
+      assert {:error, _} = PrestoService.get_affected_tables(statement)
     end
 
     test "reflects when statement does not read or write to anything at all" do
@@ -202,19 +124,11 @@ defmodule DiscoveryApiWeb.Services.PrestoServiceTest do
         EXPLAIN SELECT * FROM public__one
       """
 
-      query_plan = %{
-        "inputTableColumnInfos" => []
-      }
-
-      explain_return = [
-        %{
-          "Query Plan" => Jason.encode!(query_plan)
-        }
-      ]
+      explain_return = make_explain_output(make_query_plan([]))
 
       allow(Prestige.execute(any(), any()), return: explain_return)
 
-      assert {[], []} = PrestoService.get_affected_tables(statement)
+      assert {:error, _} = PrestoService.get_affected_tables(statement)
     end
 
     test "reflects when presto does not like the statement at all" do
@@ -224,16 +138,16 @@ defmodule DiscoveryApiWeb.Services.PrestoServiceTest do
 
       allow(Prestige.execute(any(), any()), exec: fn _, _ -> raise Prestige.Error, message: "bad thing" end)
 
-      assert {[], []} = PrestoService.get_affected_tables(statement)
+      assert {:error, _} = PrestoService.get_affected_tables(statement)
     end
   end
 
-  describe "supported statements" do
+  describe "is_select_statement?/1" do
     data_test "statement starting with #{inspect(statement)}" do
-      assert supported == PrestoService.supported?(statement)
+      assert is_it? == PrestoService.is_select_statement?(statement)
 
       where([
-        [:statement, :supported],
+        [:statement, :is_it?],
         ["\nWITH stuff\n SELECT lines from thingy ", true],
         ["\nMORE stuff\n SELECT lines from thingy ", false],
         ["  SELECT descending from explainer ", true],
@@ -289,5 +203,46 @@ defmodule DiscoveryApiWeb.Services.PrestoServiceTest do
         ["    VALUES 1, 2, 3    ", false]
       ])
     end
+  end
+
+  defp make_query_plan_table(table) do
+    defaults = %{
+      name: "wahtever",
+      catalog: "hive",
+      schema: "default"
+    }
+
+    defaulted = Map.merge(defaults, table)
+
+    %{
+      "catalog" => defaulted.catalog,
+      "schemaTable" => %{
+        "schema" => defaulted.schema,
+        "table" => defaulted.name
+      }
+    }
+  end
+
+  defp make_query_plan(read_tables, write_table), do: Jason.encode!(do_make_query_plan(read_tables, write_table))
+  defp make_query_plan(string_based_plan) when is_binary(string_based_plan), do: string_based_plan
+  defp make_query_plan(read_tables), do: Jason.encode!(do_make_query_plan(read_tables))
+
+  defp do_make_query_plan(read_tables, write_table) do
+    query_plan = do_make_query_plan(read_tables)
+    Map.put(query_plan, "outputTable", make_query_plan_table(write_table))
+  end
+
+  defp do_make_query_plan(read_tables) when is_list(read_tables) do
+    table_infos =
+      Enum.map(read_tables, fn table ->
+        %{
+          "table" => make_query_plan_table(table),
+          "columnConstraints" => []
+        }
+      end)
+
+    %{
+      "inputTableColumnInfos" => table_infos
+    }
   end
 end

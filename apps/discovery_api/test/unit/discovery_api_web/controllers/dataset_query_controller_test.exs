@@ -389,7 +389,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       csv_from_execute = "a,b\n2,2\n3,3\n1,1\n"
 
-      allow(Model.get_all(), return: datasets)
+      allow(Model.get_all(), return: datasets, meck_options: [:passthrough])
       allow(AuthService.get_user(any()), return: username)
       allow(Prestige.execute(any(), any()), return: json_from_execute)
 
@@ -412,8 +412,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       request_body = %{statement: statement}
 
-      allow(PrestoService.supported?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {public_tables, []})
+      allow(PrestoService.is_select_statement?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
       allow(AuthService.has_access?(any(), any()), return: true)
 
       response_body =
@@ -434,8 +434,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       request_body = %{statement: statement}
 
-      allow(PrestoService.supported?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {public_tables, []})
+      allow(PrestoService.is_select_statement?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
       allow(AuthService.has_access?(any(), any()), return: true)
 
       response_body =
@@ -455,8 +455,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       request_body = %{statement: statement}
 
-      allow(PrestoService.supported?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {private_tables, []})
+      allow(PrestoService.is_select_statement?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {:ok, private_tables})
       allow(AuthService.has_access?(any(), any()), return: true)
 
       assert conn
@@ -473,8 +473,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       request_body = %{statement: statement}
 
-      allow(PrestoService.supported?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {private_tables, []})
+      allow(PrestoService.is_select_statement?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {:ok, private_tables})
       allow(AuthService.has_access?(any(), any()), seq: [false, true])
 
       assert conn
@@ -483,32 +483,15 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
              |> response(400)
     end
 
-    test "can't perform query if it includes writes of any sort", %{conn: conn, public_tables: public_tables} do
+    test "can't perform query if there is an error getting affected tables", %{conn: conn} do
       statement = """
         INSERT INTO public__one SELECT * FROM public__two
       """
 
       request_body = %{statement: statement}
 
-      allow(PrestoService.supported?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {public_tables, public_tables})
-      allow(AuthService.has_access?(any(), any()), return: true)
-
-      assert conn
-             |> put_req_header("accept", "application/json")
-             |> post("/api/v1/query", request_body)
-             |> response(400)
-    end
-
-    test "can't perform query if it doesn't include any valid reads", %{conn: conn} do
-      statement = """
-        SHOW TABLES
-      """
-
-      request_body = %{statement: statement}
-
-      allow(PrestoService.supported?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {[], []})
+      allow(PrestoService.is_select_statement?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {:error, :does_not_matter})
       allow(AuthService.has_access?(any(), any()), return: true)
 
       assert conn
@@ -524,8 +507,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       request_body = %{statement: statement}
 
-      allow(PrestoService.supported?(statement), return: false)
-      allow(PrestoService.get_affected_tables(statement), return: {public_tables, []})
+      allow(PrestoService.is_select_statement?(statement), return: false)
+      allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
       allow(AuthService.has_access?(any(), any()), return: true)
 
       assert conn

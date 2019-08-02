@@ -121,7 +121,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
 
     Patiently.wait_for!(
       fn ->
-        %{status_code: status_code, body: body} =
+        %{status_code: status_code, body: _body} =
           "http://localhost:4000/api/v1/organization/#{organization.orgName}/dataset/#{dataset.technical.dataName}/download"
           |> HTTPoison.get!([{"Accept", "audio/ATRAC3"}])
           |> Map.from_struct()
