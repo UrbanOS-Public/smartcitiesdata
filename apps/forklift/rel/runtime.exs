@@ -71,12 +71,13 @@ config :smart_city_registry,
     host: redis_host
   ]
 
-config :forklift, Forklift.Quantum.Scheduler,
-  jobs: [
-    # Default to every Day at 1:00 AM
-    compactor: [
-      schedule: System.get_env("COMPACTION_SCHEDULE") || "00 01 * * *",
-      task: {Forklift.Datasets.DatasetCompactor, :compact_datasets, []},
-      timezone: "America/New_York"
+if (System.get_env("COMPACTION_SCHEDULE")) do
+  config :forklift, Forklift.Quantum.Scheduler,
+    jobs: [
+      compactor: [
+        schedule: System.get_env("COMPACTION_SCHEDULE"),
+        task: {Forklift.Datasets.DatasetCompactor, :compact_datasets, []},
+        timezone: "America/New_York"
+      ]
     ]
-  ]
+end
