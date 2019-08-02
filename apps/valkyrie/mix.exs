@@ -4,7 +4,7 @@ defmodule Valkyrie.MixProject do
   def project do
     [
       app: :valkyrie,
-      version: "0.1.0",
+      version: "1.0.0-static",
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
       deps: deps()
