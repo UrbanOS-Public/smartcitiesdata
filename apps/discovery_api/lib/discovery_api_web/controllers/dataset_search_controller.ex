@@ -37,7 +37,9 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
         limit: limit
       )
     else
-      {:request_error, reason} -> render_error(conn, 400, reason)
+      {:request_error, reason} ->
+        render_error(conn, 400, reason)
+
       {:error, reason} ->
         Logger.error("Unhandled error in search #{inspect(reason)}")
         render_error(conn, 500, reason)

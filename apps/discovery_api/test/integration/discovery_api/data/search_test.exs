@@ -6,7 +6,6 @@ defmodule DiscoveryApi.Data.SearchTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias SmartCity.{Dataset, Organization}
 
-
   setup do
     Redix.command!(:redix, ["FLUSHALL"])
 
