@@ -1,7 +1,7 @@
 use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
-redis_host = Systen.get_env("REDIS_HOST")
+redis_host = System.get_env("REDIS_HOST")
 
 endpoint =
   kafka_brokers
