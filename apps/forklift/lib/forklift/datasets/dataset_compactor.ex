@@ -81,11 +81,20 @@ defmodule Forklift.Datasets.DatasetCompactor do
   defp compact_table(system_name) do
     start_time = Time.utc_now()
 
-    execute_as_module_user("create table #{system_name}_compact as (select * from #{system_name})")
-    [[original_rows]] = execute_as_module_user("select count(1) from #{system_name}")
-    [[compacted_rows]] = execute_as_module_user("select count(1) from #{system_name}_compact")
+    compact_task =
+      Task.async(fn ->
+        execute_as_module_user("create table #{system_name}_compact as (select * from #{system_name})")
+      end)
 
-    if original_rows == compacted_rows do
+    [[original_count]] =
+      Task.async(fn -> execute_as_module_user("select count(1) from #{system_name}") end)
+      |> Task.await(:infinity)
+
+    Task.await(compact_task, :infinity)
+
+    [[compacted_count]] = execute_as_module_user("select count(1) from #{system_name}_compact")
+
+    if original_count == compacted_count do
       system_name
       |> drop_original_table()
       |> rename_compact_table()
@@ -97,7 +106,10 @@ defmodule Forklift.Datasets.DatasetCompactor do
       :ok
     else
       cleanup_old_table(system_name)
-      error_message = "Compaction failed. Original rows #{original_rows} do not match compacted rows: #{compacted_rows}"
+
+      error_message =
+        "Compaction failed. Original rows #{original_count} do not match compacted rows: #{compacted_count}"
+
       Logger.error(error_message)
       raise error_message
     end
