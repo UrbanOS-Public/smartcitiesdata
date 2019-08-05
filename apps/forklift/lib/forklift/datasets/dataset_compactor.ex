@@ -97,7 +97,9 @@ defmodule Forklift.Datasets.DatasetCompactor do
       :ok
     else
       cleanup_old_table(system_name)
-      raise "Compaction failed, reverting and resuming ingest"
+      error_message = "Compaction failed. Original rows #{original_rows} do not match compacted rows: #{compacted_rows}"
+      Logger.error(error_message)
+      raise error_message
     end
   end
 
