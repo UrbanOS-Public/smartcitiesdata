@@ -1,47 +1,31 @@
 use Mix.Config
+
 host =
   case System.get_env("HOST_IP") do
     nil -> "127.0.0.1"
     defined -> defined
   end
-endpoint = [{to_charlist(host), 9094}]
+
+config :logger,
+  level: :info
 
 config :valkyrie,
-  docker: %{
-    version: "2",
-    services: %{
-      zookeeper: %{
-        image: "wurstmeister/zookeeper",
-        ports: ["2181:2181"]
-      },
-      kafka: %{
-        image: "wurstmeister/kafka",
-        depends_on: ["zookeeper"],
-        ports: ["9094:9094"],
-        environment: %{
-          "KAFKA_ADVERTISED_LISTENERS" => "INSIDE://:9092,OUTSIDE://#{host}:9094",
-          "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP" => "INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT",
-          "KAFKA_LISTENERS" => "INSIDE://:9092,OUTSIDE://:9094",
-          "KAFKA_INTER_BROKER_LISTENER_NAME" => "INSIDE",
-          "KAFKA_CREATE_TOPICS" => "raw:1:1,validated:1:1",
-          "KAFKA_ZOOKEEPER_CONNECT" => "zookeeper:2181"
-        },
-        volumes: ["/var/run/docker.sock:/var/run/docker.sock"]
-      }
-    }
-  },
-  docker_wait_for: "Previous Leader Epoch was: -1"  # Leader election of Kafka cluster succeeded
-
-config :kaffe,
-  consumer: [
-    endpoints: endpoint,
-    topics: ["raw"],
-    consumer_group: "valkyrie-consumer-group",
-    message_handler: Valkyrie.MessageHandler,
-    start_with_earliest_message: true
+  elsa_brokers: [{String.to_atom(host), 9092}],
+  input_topic_prefix: "raw",
+  output_topic_prefix: "validated",
+  divo: [
+    {DivoKafka, [create_topics: "raw:1:1,validated:1:1,dead-letters:1:1", outside_host: host, auto_topic: false]},
+    DivoRedis
   ],
-  producer: [
-    endpoints: endpoint,
-    topics: ["validated"],
-    partition_strategy: :md5
+  divo_wait: [dwell: 700, max_tries: 50],
+  retry_count: 5,
+  retry_initial_delay: 1500
+
+config :yeet,
+  topic: "dead-letters",
+  endpoint: [{to_charlist(host), 9092}]
+
+config :smart_city_registry,
+  redis: [
+    host: host
   ]

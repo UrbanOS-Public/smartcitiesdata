@@ -2,27 +2,20 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-raw_topic = "streaming-raw"
-validated_topic = "streaming-validated"
-
-endpoints = [localhost: 9092]
-
 config :valkyrie,
-  env: Mix.env()
-
-config :kaffe,
-  consumer: [
-    endpoints: endpoints,
-    topics: [raw_topic],
-    consumer_group: "valkyrie-group",
-    message_handler: Valkyrie.MessageHandler,
-    offset_reset_policy: :reset_earliest,
-    start_with_earliest_message: true,
-    worker_allocation_strategy: :worker_per_topic_partition
-  ],
-  producer: [
-    endpoints: endpoints,
-    topics: [validated_topic]
+  retry_count: 10,
+  retry_initial_delay: 100,
+  max_outgoing_bytes: 900_000,
+  input_topic_prefix: "raw",
+  output_topic_prefix: "validated",
+  topic_subscriber_config: [
+    begin_offset: :earliest,
+    offset_reset_policy: :reset_to_earliest,
+    max_bytes: 1_000_000,
+    min_bytes: 0,
+    max_wait_time: 10_000,
+    prefetch_count: 0,
+    prefetch_bytes: 1_000_000
   ]
 
 import_config "#{Mix.env()}.exs"
