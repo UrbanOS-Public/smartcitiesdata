@@ -4,6 +4,7 @@ defmodule Reaper.Decoder.GeoJson do
   """
   @behaviour Reaper.Decoder
 
+  @impl Reaper.Decoder
   def decode({:file, filename}, _config) do
     data = File.read!(filename)
 
@@ -23,4 +24,12 @@ defmodule Reaper.Decoder.GeoJson do
   defp extract_geojson_features(_json, data) do
     {:error, data, "Could not parse GeoJSON"}
   end
+
+  @impl Reaper.Decoder
+  def handle?(source_format) when is_binary(source_format) do
+    String.downcase(source_format) == "geojson"
+  end
+
+  @impl Reaper.Decoder
+  def handle?(_source_format), do: false
 end

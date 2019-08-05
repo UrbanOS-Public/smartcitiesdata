@@ -48,4 +48,20 @@ defmodule Reaper.Decoder.GeoJsonTest do
       ])
     end
   end
+
+  describe "handle/1" do
+    data_test "source_format of '#{format}' returns #{result}" do
+      assert result == Reaper.Decoder.GeoJson.handle?(format)
+
+      where([
+        [:format, :result],
+        ["geojson", true],
+        ["json", false],
+        ["csv", false],
+        ["GEOJSON", true],
+        ["", false],
+        [nil, false]
+      ])
+    end
+  end
 end
