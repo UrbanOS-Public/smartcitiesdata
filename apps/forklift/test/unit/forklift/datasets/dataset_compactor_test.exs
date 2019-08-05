@@ -15,7 +15,10 @@ defmodule DatasetCompactorTest do
 
     setup do
       dataset = TDG.create_dataset(%{id: "1", technical: %{systemName: "big_data"}})
+      allow(Prestige.prefetch(:count), return: [[2]])
       allow(Prestige.prefetch(any()), return: :ok)
+      allow(Prestige.execute("select count(1) from big_data", any()), return: :count)
+      allow(Prestige.execute("select count(1) from big_data_compact", any()), return: :count)
 
       [
         dataset: dataset
@@ -32,32 +35,10 @@ defmodule DatasetCompactorTest do
       assert_called(Prestige.execute(expected_statement, any()), once())
     end
 
-    test "renames old table to systemName_archive", %{dataset: dataset} do
-      expected_statement = "alter table big_data rename to big_data_archive"
-
-      expect(Prestige.execute(expected_statement, any()), return: :ok)
-      allow(Prestige.execute(any(), any()), return: :ok)
-
-      DatasetCompactor.compact_dataset(dataset)
-
-      assert_called(Prestige.execute(expected_statement, any()), once())
-    end
-
     test "renames compact table to systemName", %{dataset: dataset} do
       expected_statement = "alter table big_data_compact rename to big_data"
 
-      expect(Prestige.execute(expected_statement, any()), return: :ok)
-      allow(Prestige.execute(any(), any()), return: :ok)
-
-      DatasetCompactor.compact_dataset(dataset)
-
-      assert_called(Prestige.execute(expected_statement, any()), once())
-    end
-
-    test "drops old archive table if it exists", %{dataset: dataset} do
-      expected_statement = "drop table if exists big_data_archive"
-
-      expect(Prestige.execute(expected_statement, any()), return: :ok)
+      expect(Prestige.execute(expected_statement, any()), return: [[true]])
       allow(Prestige.execute(any(), any()), return: :ok)
 
       DatasetCompactor.compact_dataset(dataset)
@@ -78,6 +59,25 @@ defmodule DatasetCompactorTest do
 
       assert_called(
         Prestige.execute("drop table if exists ingest_compact", any()),
+        once()
+      )
+    end
+
+    test "deletes original table" do
+      datasets = [
+        TDG.create_dataset(%{id: "3", technical: %{systemName: "ingest", sourceType: "ingest"}})
+      ]
+
+      allow(SmartCity.Dataset.get_all!(), return: datasets, meck_options: [:passthrough])
+      allow(Prestige.execute("select count(1) from ingest", any()), return: :count)
+      allow(Prestige.execute("select count(1) from ingest_compact", any()), return: :count)
+      allow(Prestige.execute(any(), any()), return: :ok)
+      allow(Prestige.prefetch(any()), return: :ok)
+
+      DatasetCompactor.compact_datasets()
+
+      assert_called(
+        Prestige.execute("drop table ingest", any()),
         once()
       )
     end
@@ -123,30 +123,24 @@ defmodule DatasetCompactorTest do
       assert(DatasetCompactor.compact_dataset(dataset) == :error)
     end
 
-    test "puts archive table back if compact table is in a bad state", %{dataset: dataset} do
-      allow(
-        Prestige.execute(
-          "alter table #{dataset.technical.systemName}_compact
-            rename to #{dataset.technical.systemName}" |> String.split() |> Enum.join(" "),
-          any()
-        ),
-        return: :bad_table
-      )
+    test "does not delete original table if counts do not match" do
+      datasets = [
+        TDG.create_dataset(%{id: "3", technical: %{systemName: "ingest", sourceType: "ingest"}})
+      ]
 
+      allow(SmartCity.Dataset.get_all!(), return: datasets, meck_options: [:passthrough])
+      allow(Prestige.execute("select count(1) from ingest_compact", any()), return: :bad_count)
+      allow(Prestige.execute("select count(1) from ingest", any()), return: :count)
       allow(Prestige.execute(any(), any()), return: :ok)
-
-      allow(Prestige.prefetch(:bad_table), exec: fn _ -> raise :error end)
+      allow(Prestige.prefetch(:bad_count), return: [[1]])
+      allow(Prestige.prefetch(:count), return: [[2]])
       allow(Prestige.prefetch(any()), return: :ok)
 
-      assert(DatasetCompactor.compact_dataset(dataset) == :error)
+      DatasetCompactor.compact_datasets()
 
       assert_called(
-        Prestige.execute(
-          "alter table #{dataset.technical.systemName}_archive
-            rename to #{dataset.technical.systemName}" |> String.split() |> Enum.join(" "),
-          any()
-        ),
-        once()
+        Prestige.execute("drop table ingest", any()),
+        times(0)
       )
     end
   end

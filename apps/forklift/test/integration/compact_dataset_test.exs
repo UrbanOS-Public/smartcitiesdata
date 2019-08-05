@@ -3,6 +3,8 @@ defmodule Forklift.CompactDatasetTest do
   use Divo
   require Logger
 
+  @module_user "carpenter"
+
   alias Forklift.Datasets.DatasetCompactor
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -16,7 +18,7 @@ defmodule Forklift.CompactDatasetTest do
       )
 
     "create table #{dataset.technical.systemName} (id integer, name varchar)"
-    |> Prestige.execute()
+    |> Prestige.execute(user: @module_user)
     |> Prestige.prefetch()
 
     SmartCity.Dataset.write(dataset)
@@ -49,7 +51,7 @@ defmodule Forklift.CompactDatasetTest do
       )
 
     "create table #{dataset.technical.systemName} (id integer, name varchar)"
-    |> Prestige.execute()
+    |> Prestige.execute(user: @module_user)
     |> Prestige.prefetch()
 
     SmartCity.Dataset.write(dataset)
@@ -84,7 +86,7 @@ defmodule Forklift.CompactDatasetTest do
       )
 
     "create table #{dataset.technical.systemName} (id integer, name varchar)"
-    |> Prestige.execute()
+    |> Prestige.execute(user: @module_user)
     |> Prestige.prefetch()
 
     SmartCity.Dataset.write(dataset)
@@ -104,13 +106,12 @@ defmodule Forklift.CompactDatasetTest do
 
     tables =
       "show tables"
-      |> Prestige.execute()
+      |> Prestige.execute(user: @module_user)
       |> Prestige.prefetch()
       |> List.flatten()
 
     system_name = String.downcase(dataset.technical.systemName)
     assert "#{system_name}" in tables
-    assert "#{system_name}_archive" in tables
     refute "#{system_name}_compact" in tables
   end
 
@@ -143,7 +144,7 @@ defmodule Forklift.CompactDatasetTest do
       try do
         actual =
           statement
-          |> Prestige.execute()
+          |> Prestige.execute(user: @module_user)
           |> Prestige.prefetch()
 
         Logger.info("Waiting for #{inspect(actual)} to equal #{inspect(expected)}")
