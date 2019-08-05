@@ -29,10 +29,7 @@ defmodule Forklift.Datasets.DatasetCompactor do
 
     dataset.technical.systemName
     |> cleanup_old_table()
-    |> clear_archive()
     |> compact_table()
-    |> archive_table()
-    |> rename_compact_table()
 
     Logger.info("#{dataset.id} compacted successfully")
 
@@ -81,27 +78,45 @@ defmodule Forklift.Datasets.DatasetCompactor do
     system_name
   end
 
-  defp clear_archive(system_name) do
-    execute_as_module_user("drop table if exists #{system_name}_archive")
-
-    system_name
-  end
-
   defp compact_table(system_name) do
     start_time = Time.utc_now()
 
-    execute_as_module_user("create table #{system_name}_compact as (select * from #{system_name})")
+    compact_task =
+      Task.async(fn ->
+        execute_as_module_user("create table #{system_name}_compact as (select * from #{system_name})")
+      end)
 
-    duration = Time.diff(Time.utc_now(), start_time, :millisecond)
+    [[original_count]] =
+      Task.async(fn -> execute_as_module_user("select count(1) from #{system_name}") end)
+      |> Task.await(:infinity)
 
-    record_metrics(system_name, duration)
-    Logger.info("Compaction of #{system_name} complete - #{duration}")
+    Task.await(compact_task, :infinity)
 
-    system_name
+    [[compacted_count]] = execute_as_module_user("select count(1) from #{system_name}_compact")
+
+    if original_count == compacted_count do
+      system_name
+      |> drop_original_table()
+      |> rename_compact_table()
+
+      duration = Time.diff(Time.utc_now(), start_time, :millisecond)
+
+      record_metrics(system_name, duration)
+      Logger.info("Compaction of #{system_name} complete - #{duration}")
+      :ok
+    else
+      cleanup_old_table(system_name)
+
+      error_message =
+        "Compaction failed. Original rows #{original_count} do not match compacted rows: #{compacted_count}"
+
+      Logger.error(error_message)
+      raise error_message
+    end
   end
 
-  defp archive_table(system_name) do
-    execute_as_module_user("alter table #{system_name} rename to #{system_name}_archive")
+  defp drop_original_table(system_name) do
+    execute_as_module_user("drop table #{system_name}")
 
     system_name
   end
@@ -111,10 +126,7 @@ defmodule Forklift.Datasets.DatasetCompactor do
     system_name
   rescue
     e ->
-      Logger.error("Unable to rename compacted table #{system_name}, restoring archive table")
-
-      execute_as_module_user("alter table #{system_name}_archive rename to #{system_name}")
-
+      Logger.error("Unable to rename compacted table #{system_name}")
       reraise e, __STACKTRACE__
   end
 
