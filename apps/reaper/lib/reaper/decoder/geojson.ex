@@ -18,7 +18,8 @@ defmodule Reaper.Decoder.GeoJson do
   end
 
   defp extract_geojson_features(%{"features" => features}, _data) when is_list(features) do
-    {:ok, features}
+    mapped_features = features |> Enum.map(fn feature -> %{"feature" => feature} end)
+    {:ok, mapped_features}
   end
 
   defp extract_geojson_features(_json, data) do

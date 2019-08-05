@@ -16,8 +16,8 @@ defmodule Reaper.Decoder.GeoJsonTest do
   describe "decode/2" do
     test "should return a list of feature maps" do
       data = %{
-        "name" => "cool dataset",
-        "features" => [
+        name: "cool dataset",
+        features: [
           %{"geometry" => "data"},
           %{"geometry" => "more data"}
         ]
@@ -31,7 +31,10 @@ defmodule Reaper.Decoder.GeoJsonTest do
 
       {:ok, response} = Reaper.Decoder.GeoJson.decode({:file, @filename}, %ReaperConfig{sourceFormat: "geojson"})
 
-      assert Map.get(data, "features") == response
+      # assert Map.get(data, "features") == response
+      assert %{"feature" => Enum.at(data.features, 0)} == Enum.at(response, 0)
+      assert %{"feature" => Enum.at(data.features, 1)} == Enum.at(response, 1)
+      assert 2 == Enum.count(response)
     end
 
     data_test "throws error when given #{geojson_input}" do
