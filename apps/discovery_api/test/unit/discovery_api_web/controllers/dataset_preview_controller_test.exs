@@ -2,6 +2,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   alias DiscoveryApi.Data.{Model, SystemNameCache}
+  alias DiscoveryApiWeb.Services.PrestoService
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -40,8 +41,8 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
 
       expected = %{"data" => encoded_maps, "meta" => %{"columns" => list_of_columns}}
 
-      expect(DiscoveryApiWeb.DatasetPrestoQueryService.preview(@system_name), return: list_of_maps)
-      expect(DiscoveryApiWeb.DatasetPrestoQueryService.preview_columns(@system_name), return: list_of_columns)
+      expect(PrestoService.preview(@system_name), return: list_of_maps)
+      expect(PrestoService.preview_columns(@system_name), return: list_of_columns)
       actual = conn |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
 
       assert expected == actual
@@ -51,8 +52,8 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
       list_of_columns = ["id", "name"]
       expected = %{"data" => [], "meta" => %{"columns" => list_of_columns}}
 
-      expect(DiscoveryApiWeb.DatasetPrestoQueryService.preview(@system_name), return: [])
-      expect(DiscoveryApiWeb.DatasetPrestoQueryService.preview_columns(@system_name), return: list_of_columns)
+      expect(PrestoService.preview(@system_name), return: [])
+      expect(PrestoService.preview_columns(@system_name), return: list_of_columns)
       actual = conn |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
 
       assert expected == actual
@@ -61,8 +62,8 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
     test "preview controller returns _SOMETHING_ when table does not exist", %{conn: conn} do
       expected = %{"data" => [], "meta" => %{"columns" => []}, "message" => "Something went wrong while fetching the preview."}
 
-      allow DiscoveryApiWeb.DatasetPrestoQueryService.preview_columns(any()), return: []
-      allow DiscoveryApiWeb.DatasetPrestoQueryService.preview(any()), exec: fn _ -> raise Prestige.Error, message: "Test error" end
+      allow PrestoService.preview_columns(any()), return: []
+      allow PrestoService.preview(any()), exec: fn _ -> raise Prestige.Error, message: "Test error" end
       actual = conn |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
 
       assert expected == actual
@@ -97,8 +98,8 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
 
       list_of_columns = ["id", "name"]
 
-      allow(DiscoveryApiWeb.DatasetPrestoQueryService.preview(@system_name), return: list_of_maps)
-      allow(DiscoveryApiWeb.DatasetPrestoQueryService.preview_columns(@system_name), return: list_of_columns)
+      allow(PrestoService.preview(@system_name), return: list_of_maps)
+      allow(PrestoService.preview_columns(@system_name), return: list_of_columns)
 
       :ok
     end

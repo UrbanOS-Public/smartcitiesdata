@@ -84,6 +84,77 @@ defmodule DiscoveryApi.Test.Helper do
   end
 
   def default_guardian_token_key(), do: Guardian.Plug.Keys.token_key() |> Atom.to_string()
+
+  def setup_ldap(membership) do
+    people = "People"
+    group = "Group"
+
+    Paddle.authenticate([cn: "admin"], "admin")
+    Paddle.add([ou: people], objectClass: ["top", "organizationalunit"], ou: people)
+    Paddle.add([ou: group], objectClass: ["top", "organizationalunit"], ou: group)
+
+    Enum.map(membership, fn {organization_name, members} ->
+      organization = make_ldap_organization(organization_name, group)
+      SmartCity.Organization.write(organization)
+
+      Enum.each(members, fn member ->
+        username = make_ldap_user(member, people)
+        add_ldap_user_to_organization(username, organization_name, group, people)
+      end)
+
+      {organization_name, organization}
+    end)
+    |> Enum.into(%{})
+  end
+
+  def add_ldap_user_to_organization(uid, cn, org_ou, user_ou) do
+    dn = [cn: cn, ou: org_ou]
+
+    group = [
+      objectClass: ["top", "groupofnames"],
+      cn: cn,
+      member: ["uid=#{uid},ou=#{user_ou}"]
+    ]
+
+    Paddle.add(dn, group)
+  end
+
+  def make_ldap_organization(name, ou) do
+    TDG.create_organization(%{
+      dn: "cn=#{name},ou=#{ou}",
+      orgName: name
+    })
+  end
+
+  def make_ldap_user(name, ou) do
+    dn = [uid: name, ou: ou]
+
+    user_request = [
+      objectClass: ["account", "posixAccount"],
+      cn: name,
+      uid: name,
+      loginShell: "/bin/bash",
+      homeDirectory: "/home/user",
+      uidNumber: 501,
+      gidNumber: 100,
+      userPassword: "{SSHA}/02KaNTR+p0r0KSDfDZfFQiYgyekBsdH"
+    ]
+
+    :ok = Paddle.add(dn, user_request)
+    {:ok, [_user | _]} = Paddle.get(base: "uid=#{name},ou=#{ou}")
+
+    name
+  end
+
+  def get_token_from_login(username, password \\ "admin") do
+    %{status_code: 200, headers: headers} =
+      "http://localhost:4000/api/v1/login"
+      |> HTTPoison.get!([], hackney: [basic_auth: {username, password}])
+      |> Map.from_struct()
+
+    {"token", token} = Enum.find(headers, fn {header, _value} -> header == "token" end)
+    token
+  end
 end
 
 defmodule DiscoveryApiWeb.ConnCase do

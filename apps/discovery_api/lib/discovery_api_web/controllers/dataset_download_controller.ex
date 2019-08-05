@@ -1,6 +1,6 @@
 defmodule DiscoveryApiWeb.DatasetDownloadController do
   use DiscoveryApiWeb, :controller
-  alias DiscoveryApiWeb.DatasetMetricsService
+  alias DiscoveryApiWeb.Services.MetricsService
   require Logger
 
   def fetch_file(conn, params) do
@@ -28,7 +28,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
       |> Stream.map(&Jason.encode!/1)
       |> Stream.intersperse(",")
 
-    DatasetMetricsService.record_api_hit("downloads", conn.assigns.model.id)
+    MetricsService.record_api_hit("downloads", conn.assigns.model.id)
 
     [["["], data, ["]"]]
     |> Stream.concat()
@@ -51,7 +51,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
       end)
 
     if available_extension do
-      DatasetMetricsService.record_api_hit("downloads", conn.assigns.model.id)
+      MetricsService.record_api_hit("downloads", conn.assigns.model.id)
       stream_from_s3(conn, available_extension)
     else
       conn
@@ -98,7 +98,7 @@ defmodule DiscoveryApiWeb.DatasetDownloadController do
   defp download(_conn, _id, _table_name, nil), do: nil
 
   defp download(conn, dataset_id, table, columns) do
-    DatasetMetricsService.record_api_hit("downloads", dataset_id)
+    MetricsService.record_api_hit("downloads", dataset_id)
 
     "select * from #{table}"
     |> Prestige.execute()
