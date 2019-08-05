@@ -108,11 +108,9 @@ defmodule DiscoveryApiWeb.Services.PrestoServiceTest do
     end
 
     test "reflects when statement does not do IO operations" do
-      statement = """
-        DROP TABLE public__one
-      """
+      statement = "DROP TABLE public__one"
 
-      explain_return = make_explain_output(make_query_plan("DROP TABLE public__one"))
+      explain_return = make_explain_output(make_query_plan(statement))
 
       allow(Prestige.execute(any(), any()), return: explain_return)
 
@@ -148,10 +146,10 @@ defmodule DiscoveryApiWeb.Services.PrestoServiceTest do
 
       where([
         [:statement, :is_it?],
-        ["\nWITH stuff\n SELECT lines from thingy ", true],
+        ["\nwith stuff\n SELECT lines from thingy ", true],
         ["\nMORE stuff\n SELECT lines from thingy ", false],
         ["  SELECT descending from explainer ", true],
-        [" SELECT grantor, revoked from dogs; DROP TABLE cats ", true],
+        [" select grantor, revoked from dogs; DROP TABLE cats ", true],
         ["WITH grantor AS (select revoked, preparer, executed from cats) SELECT * from money ", true],
         ["ALTER SCHEMA explainer RENAME TO hove ", false],
         [" ALTER TABLE describer RENAME TO aloha ", false],

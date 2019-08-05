@@ -12,45 +12,49 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     system_name = conn.assigns.model.systemName
 
     with {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
-         {:ok, query} <- build_query(params, system_name) do
+         {:ok, query} <- build_query(params, system_name),
+         true <- authorized?(query, AuthService.get_user(conn)) do
       MetricsService.record_api_hit("queries", conn.assigns.model.id)
 
-      query
-      |> Prestige.execute()
-      |> map_data_stream_for_csv(column_names)
-      |> stream_data(conn, system_name, format)
+      Prestige.execute(query)
+      |> stream_for_format(conn, format, column_names)
     else
-      error ->
-        handle_error(conn, error)
+      {:error, error} -> handle_error(conn, {:error, error})
+      error -> handle_error(conn, {:bad_request, error})
     end
   end
 
   def query(conn, params, "json" = format) do
     system_name = conn.assigns.model.systemName
 
-    case build_query(params, system_name) do
-      {:ok, query} ->
-        MetricsService.record_api_hit("queries", conn.assigns.model.id)
+    with {:ok, query} <- build_query(params, system_name),
+         true <- authorized?(query, AuthService.get_user(conn)) do
+      MetricsService.record_api_hit("queries", conn.assigns.model.id)
 
-        data =
-          query
-          |> Prestige.execute(rows_as_maps: true)
-          |> Stream.map(&Jason.encode!/1)
-          |> Stream.intersperse(",")
-
-        [["["], data, ["]"]]
-        |> Stream.concat()
-        |> stream_data(conn, system_name, format)
-
-      error ->
-        handle_error(conn, error)
+      Prestige.execute(query, rows_as_maps: true)
+      |> stream_for_format(conn, format)
+    else
+      error -> handle_error(conn, {:bad_request, error})
     end
   end
+
+  def query_multiple(conn, %{"statement" => statement} = _params) do
+    case authorized?(statement, AuthService.get_user(conn)) do
+      true ->
+        Prestige.execute(statement, rows_as_maps: true)
+        |> stream_for_format(conn, get_format(conn))
+
+      false ->
+        handle_error(conn, {:bad_request, ""})
+    end
+  end
+
+  def query_multiple(conn, _params), do: handle_error(conn, {:bad_request, ""})
 
   defp handle_error(conn, {type, reason}) do
     case type do
       :bad_request ->
-        Logger.error(reason)
+        Logger.error(inspect(reason))
         render_error(conn, 400, "Bad Request")
 
       :error ->
@@ -126,21 +130,22 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     |> Enum.map(&String.trim/1)
   end
 
-  def free_query(conn, %{"statement" => statement} = _params) do
+  defp authorized?(statement, username) do
     with true <- PrestoService.is_select_statement?(statement),
          {:ok, system_names} <- PrestoService.get_affected_tables(statement),
-         username <- AuthService.get_user(conn),
-         models <- Model.get_all() |> Enum.filter(fn model -> model.systemName in system_names end),
-         true <- Enum.all?(models, &AuthService.has_access?(&1, username)) do
-      statement
-      |> Prestige.execute(rows_as_maps: true)
-      |> stream_for_format(conn, get_format(conn))
+         models <- Model.get_all() |> Enum.filter(fn model -> model.systemName in system_names end) do
+      Enum.all?(models, &AuthService.has_access?(&1, username))
     else
-      _ -> handle_error(conn, {:bad_request, ""})
+      _ -> false
     end
   end
 
-  def free_query(conn, _params), do: handle_error(conn, {:bad_request, ""})
+  defp stream_for_format(stream, conn, "csv" = format, column_names) do
+    stream
+    |> map_data_stream_for_csv(column_names)
+    |> stream_data(conn, "query-results", format)
+  end
+
   defp stream_for_format(stream, conn, "csv" = format) do
     column_names =
       stream

@@ -61,6 +61,7 @@ defmodule DiscoveryApiWeb.Services.PrestoService do
 
   defp extract_system_tables(query_plan), do: extract_read_tables(query_plan, fn t -> not in_hive_schema?(t) end)
   defp extract_read_tables(query_plan), do: extract_read_tables(query_plan, &in_hive_schema?/1)
+
   defp extract_read_tables(query_plan, filter_function) do
     query_plan
     |> get_in(["inputTableColumnInfos", Access.all(), "table"])

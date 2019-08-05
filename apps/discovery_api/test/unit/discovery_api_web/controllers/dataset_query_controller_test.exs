@@ -11,6 +11,53 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   @org_name "org1"
   @data_name "data1"
 
+  setup do
+    public_one_dataset =
+      DiscoveryApi.Test.Helper.sample_model(%{
+        private: false,
+        systemName: "public__one"
+      })
+
+    public_two_dataset =
+      DiscoveryApi.Test.Helper.sample_model(%{
+        private: false,
+        systemName: "public__two"
+      })
+
+    private_one_dataset =
+      DiscoveryApi.Test.Helper.sample_model(%{
+        private: true,
+        systemName: "private__one"
+      })
+
+    private_two_dataset =
+      DiscoveryApi.Test.Helper.sample_model(%{
+        private: true,
+        systemName: "private__two"
+      })
+
+    datasets = [
+      public_one_dataset,
+      public_two_dataset,
+      private_one_dataset,
+      private_two_dataset
+    ]
+
+    username = "bigbadbob"
+    allow(AuthService.get_user(any()), return: username, meck_options: [:passthrough])
+
+    allow(Model.get_all(), return: datasets, meck_options: [:passthrough])
+
+    {
+      :ok,
+      %{
+        public_tables: [public_one_dataset, public_two_dataset] |> Enum.map(&Map.get(&1, :systemName)),
+        private_tables: [private_one_dataset, private_two_dataset] |> Enum.map(&Map.get(&1, :systemName)),
+        username: username
+      }
+    }
+  end
+
   describe "fetching csv data" do
     setup do
       model =
@@ -44,6 +91,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       )
 
       allow(Redix.command!(any(), any()), return: :does_not_matter)
+
+      allow(PrestoService.is_select_statement?(any()), return: true)
+      allow(PrestoService.get_affected_tables(any()), return: {:ok, [@system_name]})
+      allow(AuthService.has_access?(any(), any()), return: true)
+
       :ok
     end
 
@@ -208,6 +260,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       )
 
       allow(Redix.command!(any(), any()), return: :does_not_matter)
+
+      allow(PrestoService.is_select_statement?(any()), return: true)
+      allow(PrestoService.get_affected_tables(any()), return: {:ok, [@system_name]})
+      allow(AuthService.has_access?(any(), any()), return: true)
+
       :ok
     end
 
@@ -285,6 +342,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         return: [["id", "bigint", "", ""], ["one", "bigint", "", ""], ["two", "bigint", "", ""]]
       )
 
+      allow(PrestoService.is_select_statement?(any()), return: true)
+      allow(PrestoService.get_affected_tables(any()), return: {:ok, [@system_name]})
+      allow(AuthService.has_access?(any(), any()), return: true)
+
       :ok
     end
 
@@ -348,39 +409,6 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   @moduletag capture_log: true
   describe "query multiple datasets" do
     setup do
-      public_one_dataset =
-        DiscoveryApi.Test.Helper.sample_model(%{
-          private: false,
-          systemName: "public__one"
-        })
-
-      public_two_dataset =
-        DiscoveryApi.Test.Helper.sample_model(%{
-          private: false,
-          systemName: "public__two"
-        })
-
-      private_one_dataset =
-        DiscoveryApi.Test.Helper.sample_model(%{
-          private: true,
-          systemName: "private__one"
-        })
-
-      private_two_dataset =
-        DiscoveryApi.Test.Helper.sample_model(%{
-          private: true,
-          systemName: "private__two"
-        })
-
-      datasets = [
-        public_one_dataset,
-        public_two_dataset,
-        private_one_dataset,
-        private_two_dataset
-      ]
-
-      username = "jessie"
-
       json_from_execute = [
         %{"a" => 2, "b" => 2},
         %{"a" => 3, "b" => 3},
@@ -388,16 +416,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       ]
 
       csv_from_execute = "a,b\n2,2\n3,3\n1,1\n"
-
-      allow(Model.get_all(), return: datasets, meck_options: [:passthrough])
-      allow(AuthService.get_user(any()), return: username)
       allow(Prestige.execute(any(), any()), return: json_from_execute)
 
       {
         :ok,
         %{
-          public_tables: [public_one_dataset, public_two_dataset] |> Enum.map(&Map.get(&1, :systemName)),
-          private_tables: [private_one_dataset, private_two_dataset] |> Enum.map(&Map.get(&1, :systemName)),
           json_response: json_from_execute,
           csv_response: csv_from_execute
         }
@@ -560,11 +583,13 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         return: [%{id: 1, name: "Joe"}, %{id: 2, name: "Robby"}]
       )
 
+      allow(PrestoService.is_select_statement?(any()), return: true)
+      allow(PrestoService.get_affected_tables(any()), return: {:ok, [@system_name]})
+
       :ok
     end
 
-    test "does not query a restricted dataset if the given user is not a member of the dataset's group", %{conn: conn} do
-      username = "bigbadbob"
+    test "does not query a restricted dataset if the given user is not a member of the dataset's group", %{conn: conn, username: username} do
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=FirstUser,ou=People"]})
 
@@ -581,8 +606,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> json_response(404)
     end
 
-    test "queries a restricted dataset if the given user has access to it, via cookie", %{conn: conn} do
-      username = "bigbadbob"
+    test "queries a restricted dataset if the given user has access to it, via cookie", %{conn: conn, username: username} do
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
 
@@ -599,8 +623,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> json_response(200)
     end
 
-    test "queries a restricted dataset if the given user has access to it, via token", %{conn: conn} do
-      username = "bigbadbob"
+    test "queries a restricted dataset if the given user has access to it, via token", %{conn: conn, username: username} do
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
 
