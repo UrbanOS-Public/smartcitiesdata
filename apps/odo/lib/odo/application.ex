@@ -2,15 +2,13 @@ defmodule Odo.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
-
   use Application
 
   def start(_type, _args) do
     children =
       [
-        {Task.Supervisor, name: Odo.ShapefileTaskSupervisor},
-        redis(),
-        dataset_subscriber()
+        {Task.Supervisor, name: Odo.ShapefileTaskSupervisor, max_restarts: 120, max_seconds: 60},
+        brook()
       ]
       |> List.flatten()
 
@@ -18,18 +16,11 @@ defmodule Odo.Application do
     Supervisor.start_link(children, opts)
   end
 
-  defp redis do
-    Application.get_env(:redix, :host)
+  defp brook do
+    Application.get_env(:brook, :config)
     |> case do
       nil -> []
-      host -> {Redix, host: host, name: :redix}
-    end
-  end
-
-  defp dataset_subscriber() do
-    case Application.get_env(:smart_city_registry, :redis) do
-      nil -> []
-      _ -> {SmartCity.Registry.Subscriber, [message_handler: Odo.MessageHandler]}
+      config -> {Brook, config}
     end
   end
 end

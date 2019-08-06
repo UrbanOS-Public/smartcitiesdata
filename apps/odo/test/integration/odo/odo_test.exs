@@ -2,32 +2,36 @@ defmodule Odo.OdoTest do
   use ExUnit.Case
   use Divo
   require Logger
-  alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
-  alias ExAws.S3
   import SmartCity.TestHelper
+  import SmartCity.Events, only: [file_uploaded: 0]
+  alias SmartCity.Events.FileUploaded
+
+  @kafka_broker Application.get_env(:odo, :kafka_broker)
 
   setup do
     id = 111
     org = "my-org"
-    dataName = "my-data"
+    data_name = "my-data"
     bucket = "hosted-dataset-files"
 
     on_exit(fn ->
-      File.rm!("test/support/minio_data/hosted-dataset-files/#{org}/#{dataName}.geojson")
+      File.rm!("test/support/minio_data/hosted-dataset-files/#{org}/#{data_name}.geojson")
     end)
 
     [
       id: id,
       org: org,
-      dataName: dataName,
+      data_name: data_name,
       bucket: bucket
     ]
   end
 
-  test "happy path", %{id: id, org: org, dataName: dataName, bucket: bucket} do
+  test "happy path", %{id: id, org: org, data_name: data_name, bucket: bucket} do
     Temp.track!()
-    Application.put_env(:odo, :download_dir, Temp.mkdir!())
+    Application.put_env(:odo, :working_dir, Temp.mkdir!())
+
+    IO.inspect("#{bucket}/#{org}/#{data_name}")
 
     dataset =
       TDG.create_dataset(%{
@@ -36,21 +40,38 @@ defmodule Odo.OdoTest do
           sourceFormat: "shapefile",
           sourceType: "host",
           orgName: org,
-          dataName: dataName
+          dataName: data_name
         }
       })
 
-    SmartCity.Dataset.write(dataset)
+    Brook.send_event(file_uploaded(), %FileUploaded{
+      dataset_id: id,
+      mime_type: "application/zip",
+      bucket: bucket,
+      key: "#{org}/#{data_name}.zip"
+    })
+
+    new_key = "#{org}/#{data_name}.geojson"
 
     eventually(fn ->
       fileResp =
-        ExAws.S3.get_object(bucket, "/#{org}/#{dataName}.geojson")
+        ExAws.S3.get_object(bucket, new_key)
         |> ExAws.request()
 
       assert {:ok, %{body: body}} = fileResp
       assert body != nil
 
-      assert {:ok, 1} = Redix.command(:redix, ["SISMEMBER", "smart_city:filetypes:#{id}", "geojson"])
+      actual = Elsa.Fetch.search_values(@kafka_broker, "event-stream", ".geojson") |> Enum.to_list() |> hd()
+
+      expected =
+        Jason.encode!(%FileUploaded{
+          dataset_id: id,
+          mime_type: "application/geojson",
+          bucket: bucket,
+          key: new_key
+        })
+
+      assert actual.value == expected
     end)
   end
 end

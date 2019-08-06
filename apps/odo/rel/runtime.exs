@@ -11,7 +11,7 @@ end)
 redis_host = System.get_env("REDIS_HOST")
 
 config :odo,
-  download_dir: System.get_env("DOWNLOAD_DIR") || "/downloads/"
+  working_dir: System.get_env("WORKING_DIR") || "/downloads/"
 
 config :redix,
   host: redis_host
