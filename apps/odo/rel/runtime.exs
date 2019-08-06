@@ -12,6 +12,7 @@ redis_host = System.get_env("REDIS_HOST")
 
 config :odo,
   working_dir: System.get_env("WORKING_DIR") || "/downloads/"
+  bucket_url_suffix: System.get_env("BUCKET_SUFFIX")
 
 config :redix,
   host: redis_host

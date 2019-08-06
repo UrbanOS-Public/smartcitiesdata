@@ -53,10 +53,11 @@ defmodule Odo.ShapefileProcessor do
 
   defp send_file_uploaded_event(id, bucket, key) do
     Brook.send_event(file_uploaded(), %FileUploaded{
-      dataset_id: id,
-      mime_type: "application/geojson",
       bucket: bucket,
-      key: key
+      dataset_id: id,
+      key: key,
+      mime_type: "application/geojson",
+      url: "https://#{bucket}.#{bucket_url_suffix()}/#{key}"
     })
     |> case do
       :ok ->
@@ -72,5 +73,6 @@ defmodule Odo.ShapefileProcessor do
     Enum.each(files, &File.rm!/1)
   end
 
+  defp bucket_url_suffix(), do: Application.get_env(:odo, :bucket_url_suffix)
   defp working_dir(), do: Application.get_env(:odo, :working_dir)
 end

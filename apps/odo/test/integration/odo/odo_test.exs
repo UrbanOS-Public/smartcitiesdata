@@ -31,8 +31,6 @@ defmodule Odo.OdoTest do
     Temp.track!()
     Application.put_env(:odo, :working_dir, Temp.mkdir!())
 
-    IO.inspect("#{bucket}/#{org}/#{data_name}")
-
     dataset =
       TDG.create_dataset(%{
         id: id,
@@ -48,7 +46,8 @@ defmodule Odo.OdoTest do
       dataset_id: id,
       mime_type: "application/zip",
       bucket: bucket,
-      key: "#{org}/#{data_name}.zip"
+      key: "#{org}/#{data_name}.zip",
+      url: "https://#{bucket}.minio/#{org}/#{data_name}.zip"
     })
 
     new_key = "#{org}/#{data_name}.geojson"
@@ -68,7 +67,8 @@ defmodule Odo.OdoTest do
           dataset_id: id,
           mime_type: "application/geojson",
           bucket: bucket,
-          key: new_key
+          key: new_key,
+          url: "https://#{bucket}.minio/#{new_key}"
         })
 
       assert actual.value == expected
