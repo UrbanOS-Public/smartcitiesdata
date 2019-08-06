@@ -5,7 +5,7 @@ Application.spec(:reaper, :applications)
 
 Application.ensure_all_started(:bypass)
 
-ExUnit.start(exclude: [:skip])
+ExUnit.start(exclude: [:skip], timeout: 120_000)
 
 defmodule TestHelper do
   use ExUnit.Case
