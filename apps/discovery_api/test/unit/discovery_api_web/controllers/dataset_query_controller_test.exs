@@ -433,8 +433,6 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
       """
 
-      request_body = %{statement: statement}
-
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
       allow(AuthService.has_access?(any(), any()), return: true)
@@ -442,7 +440,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       response_body =
         conn
         |> put_req_header("accept", "application/json")
-        |> post("/api/v1/query", request_body)
+        |> put_req_header("content-type", "text/plain")
+        |> post("/api/v1/query", statement)
         |> response(200)
         |> Jason.decode!()
 
@@ -455,8 +454,6 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
       """
 
-      request_body = %{statement: statement}
-
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
       allow(AuthService.has_access?(any(), any()), return: true)
@@ -464,7 +461,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       response_body =
         conn
         |> put_req_header("accept", "text/csv")
-        |> post("/api/v1/query", request_body)
+        |> put_req_header("content-type", "text/plain")
+        |> post("/api/v1/query", statement)
         |> response(200)
 
       assert expected_response == response_body
@@ -476,15 +474,14 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
       """
 
-      request_body = %{statement: statement}
-
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, private_tables})
       allow(AuthService.has_access?(any(), any()), return: true)
 
       assert conn
              |> put_req_header("accept", "application/json")
-             |> post("/api/v1/query", request_body)
+             |> put_req_header("content-type", "text/plain")
+             |> post("/api/v1/query", statement)
              |> response(200)
     end
 
@@ -494,15 +491,14 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
       """
 
-      request_body = %{statement: statement}
-
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, private_tables})
       allow(AuthService.has_access?(any(), any()), seq: [false, true])
 
       assert conn
              |> put_req_header("accept", "application/json")
-             |> post("/api/v1/query", request_body)
+             |> put_req_header("content-type", "text/plain")
+             |> post("/api/v1/query", statement)
              |> response(400)
     end
 
@@ -511,15 +507,14 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         INSERT INTO public__one SELECT * FROM public__two
       """
 
-      request_body = %{statement: statement}
-
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:error, :does_not_matter})
       allow(AuthService.has_access?(any(), any()), return: true)
 
       assert conn
              |> put_req_header("accept", "application/json")
-             |> post("/api/v1/query", request_body)
+             |> put_req_header("content-type", "text/plain")
+             |> post("/api/v1/query", statement)
              |> response(400)
     end
 
@@ -528,24 +523,24 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         EXPLAIN ANALYZE select * from public__one
       """
 
-      request_body = %{statement: statement}
-
       allow(PrestoService.is_select_statement?(statement), return: false)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
       allow(AuthService.has_access?(any(), any()), return: true)
 
       assert conn
              |> put_req_header("accept", "application/json")
-             |> post("/api/v1/query", request_body)
+             |> put_req_header("content-type", "text/plain")
+             |> post("/api/v1/query", statement)
              |> response(400)
     end
 
     test "does not accept requests with no statement in the body", %{conn: conn} do
-      request_body = %{}
+      statement = %{}
 
       assert conn
              |> put_req_header("accept", "application/json")
-             |> post("/api/v1/query", request_body)
+             |> put_req_header("content-type", "text/plain")
+             |> post("/api/v1/query", statement)
              |> response(400)
     end
   end

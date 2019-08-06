@@ -38,18 +38,16 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     end
   end
 
-  def query_multiple(conn, %{"statement" => statement} = _params) do
-    case authorized?(statement, AuthService.get_user(conn)) do
-      true ->
-        Prestige.execute(statement, rows_as_maps: true)
-        |> stream_for_format(conn, get_format(conn))
-
-      false ->
+  def query_multiple(conn, _params) do
+    with {:ok, statement, conn} = read_body(conn),
+         true <- authorized?(statement, AuthService.get_user(conn)) do
+      Prestige.execute(statement, rows_as_maps: true)
+      |> stream_for_format(conn, get_format(conn))
+    else
+      _ ->
         handle_error(conn, {:bad_request, ""})
     end
   end
-
-  def query_multiple(conn, _params), do: handle_error(conn, {:bad_request, ""})
 
   defp handle_error(conn, {type, reason}) do
     case type do

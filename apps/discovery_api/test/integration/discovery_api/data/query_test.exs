@@ -162,12 +162,10 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          WITH public_one AS (select id from #{public_table}), private_one AS (select id from #{private_table})
-          SELECT * FROM public_one JOIN private_one ON public_one.id = private_one.id
-        """
-      }
+      request_body = """
+        WITH public_one AS (select id from #{public_table}), private_one AS (select id from #{private_table})
+        SELECT * FROM public_one JOIN private_one ON public_one.id = private_one.id
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -179,12 +177,10 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       public_token: public_token
     } do
-      request_body = %{
-        statement: """
-          WITH public_one AS (select id from #{public_table}), private_one AS (select id from #{private_table})
-          SELECT * FROM public_one JOIN private_one ON public_one.id = private_one.id
-        """
-      }
+      request_body = """
+        WITH public_one AS (select id from #{public_table}), private_one AS (select id from #{private_table})
+        SELECT * FROM public_one JOIN private_one ON public_one.id = private_one.id
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, public_token)
 
@@ -195,11 +191,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       public_table: public_table,
       private_table: private_table
     } do
-      request_body = %{
-        statement: """
-          SELECT (SELECT id FROM #{private_table} LIMIT 1) FROM #{public_table}
-        """
-      }
+      request_body = """
+        SELECT (SELECT id FROM #{private_table} LIMIT 1) FROM #{public_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body)
 
@@ -211,12 +205,10 @@ defmodule DiscoveryApi.Data.QueryTest do
       public_table: public_table,
       private_table: private_table
     } do
-      request_body = %{
-        statement: """
-          WITH public_one AS (select id from #{public_table}), private_one AS (select id from #{private_table})
-          SELECT * FROM public_one JOIN private_one ON public_one.id = private_one.id
-        """
-      }
+      request_body = """
+        WITH public_one AS (select id from #{public_table}), private_one AS (select id from #{private_table})
+        SELECT * FROM public_one JOIN private_one ON public_one.id = private_one.id
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body)
 
@@ -227,11 +219,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       public_table: public_table,
       public_token: public_token
     } do
-      request_body = %{
-        statement: """
-          SELECT * FROM #{public_table} AS one JOIN #{public_table} AS two ON one.id = two.id
-        """
-      }
+      request_body = """
+        SELECT * FROM #{public_table} AS one JOIN #{public_table} AS two ON one.id = two.id
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, public_token)
 
@@ -239,11 +229,9 @@ defmodule DiscoveryApi.Data.QueryTest do
     end
 
     test "anonymous user can query public datasets in one statement", %{public_table: public_table} do
-      request_body = %{
-        statement: """
-          SELECT * FROM #{public_table} AS one JOIN #{public_table} AS two ON one.id = two.id
-        """
-      }
+      request_body = """
+        SELECT * FROM #{public_table} AS one JOIN #{public_table} AS two ON one.id = two.id
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body)
 
@@ -254,11 +242,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          SALECT * FORM #{private_table}
-        """
-      }
+      request_body = """
+        SALECT * FORM #{private_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -270,14 +256,12 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          /*
-          set session distributed_join = 'true'
-          */
-          SELECT * FROM #{private_table}
-        """
-      }
+      request_body = """
+        /*
+        set session distributed_join = 'true'
+        */
+        SELECT * FROM #{private_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -289,12 +273,10 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          /* set session distributed_join = 'true' */
-          SELECT * FROM #{private_table}
-        """
-      }
+      request_body = """
+        /* set session distributed_join = 'true' */
+        SELECT * FROM #{private_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -306,12 +288,10 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          -- set session distributed_join = 'true'
-          SELECT * FROM #{private_table}
-        """
-      }
+      request_body = """
+        -- set session distributed_join = 'true'
+        SELECT * FROM #{private_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -323,11 +303,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          EXPLAIN ANALYZE SELECT * FROM #{private_table}
-        """
-      }
+      request_body = """
+        EXPLAIN ANALYZE SELECT * FROM #{private_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -339,11 +317,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          DESCRIBE #{private_table}
-        """
-      }
+      request_body = """
+        DESCRIBE #{private_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -355,11 +331,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          DESC #{private_table}
-        """
-      }
+      request_body = """
+        DESC #{private_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -371,11 +345,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          DELETE FROM #{private_table}
-        """
-      }
+      request_body = """
+        DELETE FROM #{private_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -392,11 +364,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          DROP TABLE #{private_table}
-        """
-      }
+      request_body = """
+        DROP TABLE #{private_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -414,11 +384,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          CREATE TABLE my_own_table (id integer, name varchar) AS SELECT * FROM #{private_table}
-        """
-      }
+      request_body = """
+        CREATE TABLE my_own_table (id integer, name varchar) AS SELECT * FROM #{private_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -437,13 +405,11 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          SELECT * FROM #{public_table}
+      request_body = """
+        SELECT * FROM #{public_table}
 
-          DROP TABLE #{private_table}
-        """
-      }
+        DROP TABLE #{private_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -462,9 +428,7 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: "SELECT * FROM #{public_table}\rSELECT * FROM #{private_table}"
-      }
+      request_body = "SELECT * FROM #{public_table}\rSELECT * FROM #{private_table}"
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -477,11 +441,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          SELECT * FROM #{public_table}; DROP TABLE #{private_table}
-        """
-      }
+      request_body = """
+        SELECT * FROM #{public_table}; DROP TABLE #{private_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -500,11 +462,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       private_token: private_token
     } do
-      request_body = %{
-        statement: """
-          INSERT INTO #{private_table} SELECT * FROM #{public_table}
-        """
-      }
+      request_body = """
+        INSERT INTO #{private_table} SELECT * FROM #{public_table}
+      """
 
       actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
 
@@ -527,7 +487,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   defp post(url, body) do
     headers = %{
       "Accept" => "application/json",
-      "Content-Type" => "application/json"
+      "Content-Type" => "text/plain"
     }
 
     post(url, body, headers)
@@ -537,14 +497,14 @@ defmodule DiscoveryApi.Data.QueryTest do
     headers = %{
       "Accept" => "application/json",
       "Authorization" => "Bearer #{token}",
-      "Content-Type" => "application/json"
+      "Content-Type" => "text/plain"
     }
 
     post(url, body, headers)
   end
 
   defp post(url, body, %{} = headers) do
-    response = HTTPoison.post!(url, Jason.encode!(body), headers)
+    response = HTTPoison.post!(url, body, headers)
     Map.from_struct(response)
   end
 end
