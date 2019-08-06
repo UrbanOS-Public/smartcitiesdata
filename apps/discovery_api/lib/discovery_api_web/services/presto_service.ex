@@ -5,8 +5,8 @@ defmodule DiscoveryApiWeb.Services.PrestoService do
     ~r/^\s*WITH\s.*$/i
   ]
 
-  def preview(dataset_system_name) do
-    "select * from #{dataset_system_name} limit 50"
+  def preview(dataset_system_name, row_limit \\ 50) do
+    "select * from #{dataset_system_name} limit #{row_limit}"
     |> Prestige.execute(rows_as_maps: true)
     |> Prestige.prefetch()
   end

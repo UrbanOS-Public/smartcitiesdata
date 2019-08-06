@@ -19,6 +19,11 @@ defmodule DiscoveryApiWeb.Router do
     plug(:accepts, ["json"])
   end
 
+  pipeline :api_geojson_only do
+    plug(Plug.Logger)
+    plug(:accepts, ["geojson"])
+  end
+
   pipeline :api_any do
     plug(Plug.Logger)
     plug(DiscoveryApiWeb.Plugs.Acceptor)
@@ -53,6 +58,12 @@ defmodule DiscoveryApiWeb.Router do
     get("/dataset/:dataset_id/stats", DatasetStatsController, :fetch_dataset_stats)
     get("/organization/:org_name/dataset/:dataset_name", DatasetDetailController, :fetch_dataset_detail)
     get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
+  end
+
+  scope "/api/v1", DiscoveryApiWeb do
+    pipe_through([:api_geojson_only, :check_restricted])
+
+    get("/dataset/:dataset_id/features_preview", DatasetGeoJsonController, :get_features)
   end
 
   scope "/api/v1", DiscoveryApiWeb do
