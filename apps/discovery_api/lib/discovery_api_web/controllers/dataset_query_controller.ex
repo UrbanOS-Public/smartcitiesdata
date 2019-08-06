@@ -39,7 +39,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   def query_multiple(conn, _params) do
-    with {:ok, statement, conn} = read_body(conn),
+    with {:ok, statement, conn} <- read_body(conn),
          true <- authorized?(statement, AuthService.get_user(conn)) do
       Prestige.execute(statement, rows_as_maps: true)
       |> stream_for_format(conn, get_format(conn))
