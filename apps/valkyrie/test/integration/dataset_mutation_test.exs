@@ -10,6 +10,7 @@ defmodule Valkyrie.DatasetMutationTest do
   @output_topic "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{@dataset_id}"
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
 
+  @tag timeout: 120_000
   test "a dataset with an updated schema properly parses new messages" do
     schema = [%{name: "age", type: "string"}]
     dataset = TDG.create_dataset(id: @dataset_id, technical: %{schema: schema})
@@ -31,7 +32,7 @@ defmodule Valkyrie.DatasetMutationTest do
         assert payloads == [%{"age" => "21"}]
       end,
       2_000,
-      20
+      40
     )
 
     updated_dataset = %{dataset | technical: %{dataset.technical | schema: [%{name: "age", type: "integer"}]}}
