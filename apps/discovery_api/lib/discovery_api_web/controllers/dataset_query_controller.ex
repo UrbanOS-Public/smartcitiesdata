@@ -41,6 +41,23 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     end
   end
 
+  def query(conn, params, "geojson" = _format) do
+    system_name = conn.assigns.model.systemName
+
+    with {:ok, query} <- build_query(params, system_name),
+         true <- authorized?(query, AuthService.get_user(conn)) do
+      MetricsService.record_api_hit("queries", conn.assigns.model.id)
+
+      data =
+        Prestige.execute(query, rows_as_maps: true)
+        |> decode_presto_results()
+
+      render(conn, "features.json", %{features: data, dataset_name: conn.assigns.model.systemName})
+    else
+      error -> handle_error(conn, {:bad_request, error})
+    end
+  end
+
   def query_multiple(conn, _params) do
     with {:ok, statement, conn} <- read_body(conn),
          true <- authorized?(statement, AuthService.get_user(conn)) do
@@ -172,5 +189,26 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     [["["], data, ["]"]]
     |> Stream.concat()
     |> stream_data(conn, "query-results", format)
+  end
+
+  defp stream_for_format(stream, conn, "geojson" = format) do
+    data =
+      stream
+      |> decode_feature_result()
+
+    [["["], data, ["]"]]
+    |> Stream.concat()
+    |> stream_data(conn, "query-results", format)
+  end
+
+  defp decode_presto_results(features_list) do
+    features_list
+    |> Enum.map(&decode_feature_result(&1))
+  end
+
+  defp decode_feature_result(feature) do
+    feature
+    |> Map.get("features")
+    |> Jason.decode!()
   end
 end
