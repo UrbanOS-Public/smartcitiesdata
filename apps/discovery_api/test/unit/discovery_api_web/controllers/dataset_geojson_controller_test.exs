@@ -11,16 +11,19 @@ defmodule DiscoveryApiWeb.DatasetGeoJsonControllerTest do
       dataset_id = "the_dataset_id"
       row_limit = 10
 
-      features = [
-        "{}",
-        "{}",
-        "{}"
-      ]
-
       model = Helper.sample_model(%{id: dataset_id, name: dataset_name, sourceFormat: "geojson"})
 
       allow(Model.get(dataset_id), return: model)
-      allow(DiscoveryApiWeb.Services.PrestoService.preview(dataset_name, row_limit), return: ["{}", "{}", "{}"])
+
+      allow(DiscoveryApiWeb.Services.PrestoService.preview(dataset_name, row_limit),
+        return: [%{"features" => "{}"}, %{"features" => "{}"}, %{"features" => "{}"}]
+      )
+
+      expected = %{
+        "type" => "FeatureCollection",
+        "name" => model.name,
+        "features" => [%{}, %{}, %{}]
+      }
 
       actual =
         conn
@@ -28,11 +31,7 @@ defmodule DiscoveryApiWeb.DatasetGeoJsonControllerTest do
         |> get("/api/v1/dataset/#{dataset_id}/features_preview")
         |> json_response(200)
 
-      assert %{
-               "type" => "FeatureCollection",
-               "name" => model.name,
-               "features" => features
-             } == actual
+      assert expected == actual
     end
   end
 end

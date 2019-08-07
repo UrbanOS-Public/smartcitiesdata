@@ -4,8 +4,7 @@ defmodule DiscoveryApiWeb.DatasetGeoJsonController do
   alias DiscoveryApiWeb.Services.PrestoService
 
   def get_features(conn, _params) do
-    # change this to conn.assigns.model.name
-    dataset_name = "geojson_table"
+    dataset_name = conn.assigns.model.name
 
     features =
       PrestoService.preview(dataset_name, 10)
@@ -20,6 +19,8 @@ defmodule DiscoveryApiWeb.DatasetGeoJsonController do
   end
 
   defp decode_feature_result(feature) do
-    Map.update!(feature, "features", &Jason.decode!(&1))
+    feature
+    |> Map.get("features")
+    |> Jason.decode!()
   end
 end
