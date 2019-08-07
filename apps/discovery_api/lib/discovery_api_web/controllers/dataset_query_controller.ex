@@ -19,8 +19,9 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       Prestige.execute(query)
       |> stream_for_format(conn, format, column_names)
     else
-      {:error, error} -> handle_error(conn, {:error, error})
-      error -> handle_error(conn, {:bad_request, error})
+      {:error, error} -> handle_error(conn, :error, error)
+      {:bad_request, error} -> handle_error(conn, :bad_request, error)
+      _ -> handle_error(conn, :bad_request)
     end
   end
 
@@ -34,7 +35,9 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       Prestige.execute(query, rows_as_maps: true)
       |> stream_for_format(conn, format)
     else
-      error -> handle_error(conn, {:bad_request, error})
+      {:error, error} -> handle_error(conn, :error, error)
+      {:bad_request, error} -> handle_error(conn, :bad_request, error)
+      _ -> handle_error(conn, :bad_request)
     end
   end
 
@@ -45,19 +48,21 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       |> stream_for_format(conn, get_format(conn))
     else
       _ ->
-        handle_error(conn, {:bad_request, ""})
+        handle_error(conn, :bad_request)
     end
+  rescue
+    error in Prestige.Error -> handle_error(conn, :bad_request, error.message)
   end
 
-  defp handle_error(conn, {type, reason}) do
+  defp handle_error(conn, type, reason \\ nil) do
+    Logger.error(inspect(reason))
+
     case type do
       :bad_request ->
-        Logger.error(inspect(reason))
-        render_error(conn, 400, "Bad Request")
+        render_error(conn, 400, reason || "Bad Request")
 
       :error ->
-        Logger.error(reason)
-        render_error(conn, 404, "Not Found")
+        render_error(conn, 404, reason || "Not Found")
     end
   end
 

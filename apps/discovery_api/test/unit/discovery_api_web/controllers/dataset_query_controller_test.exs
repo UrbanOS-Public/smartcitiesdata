@@ -416,7 +416,6 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       ]
 
       csv_from_execute = "a,b\n2,2\n3,3\n1,1\n"
-      allow(Prestige.execute(any(), any()), return: json_from_execute)
 
       {
         :ok,
@@ -433,6 +432,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
       """
 
+      allow(Prestige.execute(any(), any()), return: expected_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
       allow(AuthService.has_access?(any(), any()), return: true)
@@ -448,12 +448,18 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       assert expected_response == response_body
     end
 
-    test "can select from some public datasets as csv", %{conn: conn, public_tables: public_tables, csv_response: expected_response} do
+    test "can select from some public datasets as csv", %{
+      conn: conn,
+      public_tables: public_tables,
+      json_response: allowed_response,
+      csv_response: expected_response
+    } do
       statement = """
         WITH public_one AS (select a from public__one), public_two AS (select b from public__two)
         SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
       """
 
+      allow(Prestige.execute(any(), any()), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
       allow(AuthService.has_access?(any(), any()), return: true)
@@ -468,12 +474,13 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       assert expected_response == response_body
     end
 
-    test "can select from some authorized private datasets", %{conn: conn, private_tables: private_tables} do
+    test "can select from some authorized private datasets", %{conn: conn, private_tables: private_tables, json_response: allowed_response} do
       statement = """
         WITH private_one AS (select a from private__one), private_two AS (select b from private__two)
         SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
       """
 
+      allow(Prestige.execute(any(), any()), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, private_tables})
       allow(AuthService.has_access?(any(), any()), return: true)
@@ -485,12 +492,17 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
              |> response(200)
     end
 
-    test "can't select from some unauthorized private datasets", %{conn: conn, private_tables: private_tables} do
+    test "can't select from some unauthorized private datasets", %{
+      conn: conn,
+      private_tables: private_tables,
+      json_response: allowed_response
+    } do
       statement = """
         WITH private_one AS (select a from private__one), private_two AS (select b from private__two)
         SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
       """
 
+      allow(Prestige.execute(any(), any()), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, private_tables})
       allow(AuthService.has_access?(any(), any()), seq: [false, true])
@@ -535,13 +547,32 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
     end
 
     test "does not accept requests with no statement in the body", %{conn: conn} do
-      statement = %{}
+      statement = ""
 
       assert conn
              |> put_req_header("accept", "application/json")
              |> put_req_header("content-type", "text/plain")
              |> post("/api/v1/query", statement)
              |> response(400)
+    end
+
+    test "returns prestige error details if prestige throws", %{conn: conn, public_tables: public_tables} do
+      statement = "select quantity*2131241224124412124 from public__one"
+      failure_message = "bigint multiplication overflow: 7694 * 2131241224124412124"
+      expected_response = "{\"message\":\"#{failure_message}\"}"
+
+      allow(PrestoService.is_select_statement?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
+      allow(AuthService.has_access?(any(), any()), return: true)
+
+      allow(Prestige.execute(any(), any()), exec: fn _, _ -> raise Prestige.Error, failure_message end)
+
+      assert expected_response ==
+               conn
+               |> put_req_header("accept", "application/json")
+               |> put_req_header("content-type", "text/plain")
+               |> post("/api/v1/query", statement)
+               |> response(400)
     end
   end
 
