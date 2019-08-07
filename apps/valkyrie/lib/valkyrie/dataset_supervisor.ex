@@ -36,10 +36,9 @@ defmodule Valkyrie.DatasetSupervisor do
   end
 
   defp elsa_producer(dataset, topic, producer) do
-    %{
-      id: :"#{dataset.id}_elsa_producer",
-      start: {Elsa.Producer.Manager, :start_producer, [endpoints(), topic, [name: producer]]}
-    }
+    Supervisor.child_spec({Elsa.Producer.Supervisor, [endpoints: endpoints(), topic: topic, name: producer]},
+      id: :"#{dataset.id}_elsa_producer"
+    )
   end
 
   defp broadway(dataset, input_topic, output_topic, producer) do
