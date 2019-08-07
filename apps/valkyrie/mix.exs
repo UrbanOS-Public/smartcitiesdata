@@ -50,7 +50,7 @@ defmodule Valkyrie.MixProject do
       # updating version breaks
       {:retry, "~> 0.11.2"},
       {:timex, "~> 3.6"},
-      {:off_broadway_kafka, "~> 0.2.1"},
+      {:off_broadway_kafka, "~> 0.2.2"},
       {:excoveralls, "~> 0.11.1", only: :test}
     ]
   end
