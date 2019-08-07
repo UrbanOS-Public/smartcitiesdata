@@ -56,8 +56,7 @@ defmodule Odo.ShapefileProcessor do
       bucket: bucket,
       dataset_id: id,
       key: key,
-      mime_type: "application/geojson",
-      url: "https://#{bucket}.#{bucket_url_suffix()}/#{key}"
+      mime_type: "application/geojson"
     })
     |> case do
       :ok ->
@@ -73,6 +72,5 @@ defmodule Odo.ShapefileProcessor do
     Enum.each(files, &File.rm!/1)
   end
 
-  defp bucket_url_suffix(), do: Application.get_env(:odo, :bucket_url_suffix)
   defp working_dir(), do: Application.get_env(:odo, :working_dir)
 end

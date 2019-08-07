@@ -29,6 +29,7 @@ defmodule Odo.MixProject do
       {:ex_aws_s3, "~> 2.0"},
       {:geomancer, git: "https://github.com/jdenen/geomancer.git"},
       {:hackney, "~> 1.15"},
+      {:libvault, "~> 0.2"},
       {:poison, "~> 3.0"},
       {:redix, "~> 0.9"},
       {:retry, "~> 0.11.0"},
