@@ -64,6 +64,7 @@ defmodule DiscoveryApiWeb.Router do
     pipe_through([:api_geojson_only, :check_restricted])
 
     get("/dataset/:dataset_id/features_preview", DatasetPreviewController, :fetch_geojson_features)
+    get("/organization/:org_name/dataset/:dataset_id/features_preview", DatasetPreviewController, :fetch_geojson_features)
   end
 
   scope "/api/v1", DiscoveryApiWeb do

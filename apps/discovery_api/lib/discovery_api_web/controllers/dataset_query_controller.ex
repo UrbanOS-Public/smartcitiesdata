@@ -41,20 +41,19 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     end
   end
 
-  def query(conn, params, "geojson" = _format) do
+  def query(conn, params, "geojson" = format) do
     system_name = conn.assigns.model.systemName
 
     with {:ok, query} <- build_query(params, system_name),
          true <- authorized?(query, AuthService.get_user(conn)) do
       MetricsService.record_api_hit("queries", conn.assigns.model.id)
 
-      data =
-        Prestige.execute(query, rows_as_maps: true)
-        |> decode_presto_results()
-
-      render(conn, "features.json", %{features: data, dataset_name: conn.assigns.model.systemName})
+      Prestige.execute(query, rows_as_maps: true)
+      |> stream_for_format(conn, format)
     else
-      error -> handle_error(conn, {:bad_request, error})
+      {:error, error} -> handle_error(conn, :error, error)
+      {:bad_request, error} -> handle_error(conn, :bad_request, error)
+      _ -> handle_error(conn, :bad_request)
     end
   end
 
@@ -65,7 +64,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       |> stream_for_format(conn, get_format(conn))
     else
       _ ->
-        handle_error(conn, :bad_request)
+        handle_error(conn, :bad_request, "")
     end
   rescue
     error in Prestige.Error -> handle_error(conn, :bad_request, error.message)
@@ -191,19 +190,19 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     |> stream_data(conn, "query-results", format)
   end
 
-  defp stream_for_format(stream, conn, "geojson" = format) do
-    data =
-      stream
-      |> decode_feature_result()
+  defp stream_for_format(features_list, conn, "geojson" = format) do
+    name = conn.assigns.model.systemName
+    type = "FeatureCollection"
 
-    [["["], data, ["]"]]
+    data =
+      features_list
+      |> Stream.map(&decode_feature_result(&1))
+      |> Stream.map(&Jason.encode!/1)
+      |> Stream.intersperse(",")
+
+    [["{\"type\": \"#{type}\", \"name\": \"#{name}\", \"features\": "], ["["], data, ["]"], ["}"]]
     |> Stream.concat()
     |> stream_data(conn, "query-results", format)
-  end
-
-  defp decode_presto_results(features_list) do
-    features_list
-    |> Enum.map(&decode_feature_result(&1))
   end
 
   defp decode_feature_result(feature) do
