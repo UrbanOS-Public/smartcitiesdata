@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
-      version: "0.11.0",
+      version: "1.0.0-static",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
