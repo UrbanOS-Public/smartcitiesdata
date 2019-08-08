@@ -8,7 +8,8 @@ defmodule Odo.Application do
     children =
       [
         {Task.Supervisor, name: Odo.ShapefileTaskSupervisor, max_restarts: 120, max_seconds: 60},
-        brook()
+        brook(),
+        Odo.Init
       ]
       |> List.flatten()
 

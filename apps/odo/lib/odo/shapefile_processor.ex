@@ -4,9 +4,14 @@ defmodule Odo.ShapefileProcessor do
   updates the data pipeline to be aware that the new file type is available.
   """
   require Logger
-  alias ExAws.S3
   import SmartCity.Events, only: [file_uploaded: 0]
+  alias ExAws.S3
   alias SmartCity.Events.FileUploaded
+  use Task, restart: :transient
+
+  def start_link(arg) do
+    Task.start_link(__MODULE__, :process, [arg])
+  end
 
   def process(%{"dataset_id" => id, "bucket" => bucket, "key" => key}) do
     download_destination = "#{working_dir()}/#{id}.zip"
