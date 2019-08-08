@@ -64,7 +64,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       |> stream_for_format(conn, get_format(conn))
     else
       _ ->
-        handle_error(conn, :bad_request, "")
+        handle_error(conn, :bad_request, "Bad Request")
     end
   rescue
     error in Prestige.Error -> handle_error(conn, :bad_request, error.message)
