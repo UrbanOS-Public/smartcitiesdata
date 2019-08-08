@@ -1,6 +1,13 @@
 defmodule Yeet do
   alias Yeet.KafkaHelper
 
+  defimpl Jason.Encoder, for: Tuple do
+    def encode(value, opts) do
+      Tuple.to_list(value)
+      |> Jason.Encode.list(opts)
+    end
+  end
+
   @moduledoc """
   Format, enrich and send a message to a dead letter queue.
   """

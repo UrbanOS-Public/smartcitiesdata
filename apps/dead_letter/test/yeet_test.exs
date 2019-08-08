@@ -48,6 +48,16 @@ defmodule YeetTest do
                       original_message: "<<80, 75, 3, 4, 20, 0, 6, 0, 8, 0, 0, 0, 33, 0, 235, 122, 210>>"
                     })
     end
+
+    test "properly handles tuples being passed" do
+      allow :brod.start_client(any(), :dead_letter_client, []), return: :ok
+      allow :brod.start_producer(:dead_letter_client, any(), []), return: :ok
+      allow :brod.produce_sync(:dead_letter_client, any(), any(), any(), any()), return: :ok
+
+      Yeet.process_dead_letter(@dataset_id, "some message", "valkyrie", reason: {:error, "bad date!"})
+
+      assert_called :brod.produce_sync(:dead_letter_client, any(), any(), any(), any())
+    end
   end
 
   describe "format_message/2" do
