@@ -1,4 +1,4 @@
-defmodule Reaper.SecretRetriever do
+defmodule Odo.SecretRetriever do
   @moduledoc """
   Retrieves credentials for use in accessing restricted datasets.
   """
@@ -6,7 +6,7 @@ defmodule Reaper.SecretRetriever do
 
   @root_path "secrets/smart_city/"
 
-  def retrieve_aws_keys() do
+  def retrieve_objectstore_keys() do
     retrieve("aws_keys/odo")
   end
 

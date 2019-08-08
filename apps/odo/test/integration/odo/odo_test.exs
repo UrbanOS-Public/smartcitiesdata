@@ -1,8 +1,6 @@
 defmodule Odo.OdoTest do
   use ExUnit.Case
   use Divo
-  require Logger
-  alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
   import SmartCity.Events, only: [file_uploaded: 0]
   alias SmartCity.Events.FileUploaded
@@ -31,17 +29,6 @@ defmodule Odo.OdoTest do
     Temp.track!()
     Application.put_env(:odo, :working_dir, Temp.mkdir!())
 
-    dataset =
-      TDG.create_dataset(%{
-        id: id,
-        technical: %{
-          sourceFormat: "shapefile",
-          sourceType: "host",
-          orgName: org,
-          dataName: data_name
-        }
-      })
-
     Brook.send_event(file_uploaded(), %FileUploaded{
       dataset_id: id,
       mime_type: "application/zip",
@@ -64,7 +51,7 @@ defmodule Odo.OdoTest do
       expected =
         Jason.encode!(%FileUploaded{
           dataset_id: id,
-          mime_type: "application/geojson",
+          mime_type: "application/geo+json",
           bucket: bucket,
           key: new_key
         })

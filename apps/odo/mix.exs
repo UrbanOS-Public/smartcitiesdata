@@ -33,7 +33,7 @@ defmodule Odo.MixProject do
       {:poison, "~> 3.0"},
       {:redix, "~> 0.9"},
       {:retry, "~> 0.11.0"},
-      {:smart_city, path: "../smart_city", override: true},
+      {:smart_city, "~> 2.3.0", override: true},
       {:smart_city_registry, "~> 4.0"},
       {:sweet_xml, "~> 0.6"},
       # Test/Dev Dependencies

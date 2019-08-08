@@ -52,11 +52,13 @@ defmodule Odo.ShapefileProcessor do
   end
 
   defp send_file_uploaded_event(id, bucket, key) do
+    mime_type = FileUploaded.type("geojson")
+
     Brook.send_event(file_uploaded(), %FileUploaded{
       bucket: bucket,
       dataset_id: id,
       key: key,
-      mime_type: "application/geojson"
+      mime_type: mime_type
     })
     |> case do
       :ok ->
@@ -64,7 +66,7 @@ defmodule Odo.ShapefileProcessor do
         :ok
 
       {:error, reason} ->
-        Logger.warn("File upload failed for dataset #{id}")
+        Logger.warn("File upload failed for dataset #{id}: #{reason}")
     end
   end
 
