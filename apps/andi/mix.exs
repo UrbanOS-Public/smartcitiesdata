@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.1.4",
+      version: "1.0.0-static",
       elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: Mix.env() |> test_paths(),
