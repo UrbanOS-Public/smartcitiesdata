@@ -25,7 +25,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     end
   end
 
-  def query(conn, params, "json" = format) do
+  def query(conn, params, format) when format in ["json", "geojson"] do
     system_name = conn.assigns.model.systemName
 
     with {:ok, query} <- build_query(params, system_name),
@@ -48,7 +48,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       |> stream_for_format(conn, get_format(conn))
     else
       _ ->
-        handle_error(conn, :bad_request)
+        handle_error(conn, :bad_request, "Bad Request")
     end
   rescue
     error in Prestige.Error -> handle_error(conn, :bad_request, error.message)
@@ -172,5 +172,26 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     [["["], data, ["]"]]
     |> Stream.concat()
     |> stream_data(conn, "query-results", format)
+  end
+
+  defp stream_for_format(features_list, conn, "geojson" = format) do
+    name = conn.assigns.model.systemName
+    type = "FeatureCollection"
+
+    data =
+      features_list
+      |> Stream.map(&decode_feature_result(&1))
+      |> Stream.map(&Jason.encode!/1)
+      |> Stream.intersperse(",")
+
+    [["{\"type\": \"#{type}\", \"name\": \"#{name}\", \"features\": "], ["["], data, ["]"], ["}"]]
+    |> Stream.concat()
+    |> stream_data(conn, "query-results", format)
+  end
+
+  defp decode_feature_result(feature) do
+    feature
+    |> Map.get("features")
+    |> Jason.decode!()
   end
 end

@@ -10,6 +10,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   @system_name "coda__test_dataset"
   @org_name "org1"
   @data_name "data1"
+  @feature_type "FeatureCollection"
 
   setup do
     public_one_dataset =
@@ -403,6 +404,71 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
              end) =~ "Query contained illegal character(s): [#{query_string}]"
 
       assert_called Prestige.execute(query_string), times(0)
+    end
+  end
+
+  describe "query geojson" do
+    setup do
+      model =
+        Helper.sample_model(%{
+          id: @dataset_id,
+          systemName: @system_name,
+          name: @system_name,
+          private: false,
+          lastUpdatedDate: nil,
+          queries: 7,
+          downloads: 9,
+          sourceFormat: "geojson"
+        })
+
+      allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
+      allow(Model.get(@dataset_id), return: model)
+
+      allow(Prestige.execute(any()),
+        return: []
+      )
+
+      allow(
+        Prestige.execute("SELECT * FROM #{@system_name}",
+          rows_as_maps: true
+        ),
+        return: [%{"features" => "{}"}, %{"features" => "{}"}, %{"features" => "{}"}]
+      )
+
+      allow(Redix.command!(any(), any()), return: :does_not_matter)
+
+      allow(PrestoService.is_select_statement?(any()), return: true)
+      allow(PrestoService.get_affected_tables(any()), return: {:ok, [@system_name]})
+      allow(AuthService.has_access?(any(), any()), return: true)
+
+      :ok
+    end
+
+    data_test "returns geojson", %{conn: conn} do
+      actual =
+        conn
+        |> put_req_header("accept", "application/geo+json")
+        |> get(url)
+        |> response(200)
+
+      assert Jason.decode!(actual) == %{
+               "features" => [
+                 %{},
+                 %{},
+                 %{}
+               ],
+               "name" => @system_name,
+               "type" => @feature_type
+             }
+
+      assert_called Prestige.execute("SELECT * FROM #{@system_name}", rows_as_maps: true), once()
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/organization/org1/dataset/data1/query"
+        ]
+      )
     end
   end
 

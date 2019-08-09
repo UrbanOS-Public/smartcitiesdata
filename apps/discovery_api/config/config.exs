@@ -39,7 +39,8 @@ config :discovery_api, DiscoveryApi.Quantum.Scheduler,
   ]
 
 config :mime, :types, %{
-  "application/shapefile" => ["zip", "tgz", "tar.gz", "shapefile"]
+  "application/shapefile" => ["zip", "tgz", "tar.gz", "shapefile"],
+  "application/geo+json" => ["geojson"]
 }
 
 import_config "#{Mix.env()}.exs"
