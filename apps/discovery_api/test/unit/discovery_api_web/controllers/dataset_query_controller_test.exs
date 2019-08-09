@@ -432,7 +432,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         Prestige.execute("SELECT * FROM #{@system_name}",
           rows_as_maps: true
         ),
-        return: [%{"features" => "{}"}, %{"features" => "{}"}, %{"features" => "{}"}]
+        return: [%{"feature" => "{}"}, %{"feature" => "{}"}, %{"feature" => "{}"}]
       )
 
       allow(Redix.command!(any(), any()), return: :does_not_matter)

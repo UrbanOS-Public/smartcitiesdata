@@ -26,7 +26,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewController do
 
   defp decode_feature_result(feature) do
     feature
-    |> Map.get("features")
+    |> Map.get("feature")
     |> Jason.decode!()
   end
 

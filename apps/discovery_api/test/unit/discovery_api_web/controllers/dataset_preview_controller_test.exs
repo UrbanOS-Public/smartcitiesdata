@@ -167,7 +167,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
       allow(Model.get(dataset_id), return: model)
 
       allow(DiscoveryApiWeb.Services.PrestoService.preview(dataset_name, row_limit),
-        return: [%{"features" => "{}"}, %{"features" => "{}"}, %{"features" => "{}"}]
+        return: [%{"feature" => "{}"}, %{"feature" => "{}"}, %{"feature" => "{}"}]
       )
 
       expected = %{
