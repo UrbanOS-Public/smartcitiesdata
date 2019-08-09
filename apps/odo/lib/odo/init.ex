@@ -11,7 +11,7 @@ defmodule Odo.Init do
     Task.start_link(__MODULE__, :run, [])
   end
 
-  def run() do
+  def run(_arg) do
     Brook.get_all_values!(:file_conversions)
     |> Enum.each(&Odo.FileProcessor.process/1)
   end

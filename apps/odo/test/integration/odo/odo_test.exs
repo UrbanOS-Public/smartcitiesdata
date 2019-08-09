@@ -25,16 +25,14 @@ defmodule Odo.OdoTest do
     ]
   end
 
-  test "happy path", %{id: id, org: org, data_name: data_name, bucket: bucket} do
+  test "retrieves, converts, and uploads supported file type", %{id: id, org: org, data_name: data_name, bucket: bucket} do
     Temp.track!()
     Application.put_env(:odo, :working_dir, Temp.mkdir!())
 
-    Brook.send_event(file_upload(), %FileUpload{
-      dataset_id: id,
-      mime_type: "application/zip",
-      bucket: bucket,
-      key: "#{org}/#{data_name}.zip"
-    })
+    {:ok, file_event} =
+      FileUpload.new(%{dataset_id: id, bucket: bucket, key: "#{org}/#{data_name}.zip", mime_type: "application/zip"})
+
+    Brook.send_event(file_upload(), file_event)
 
     new_key = "#{org}/#{data_name}.geojson"
 
@@ -58,5 +56,15 @@ defmodule Odo.OdoTest do
 
       assert actual.value == expected
     end)
+  end
+
+  test "raises an error on unsupported file type", %{id: id, org: org, data_name: data_name, bucket: bucket} do
+    Temp.track!()
+    Application.put_env(:odo, :working_dir, Temp.mkdir!())
+
+    {:ok, file_event} =
+      FileUpload.new(%{dataset_id: id, bucket: bucket, key: "#{org}/#{data_name}.foo", mime_type: "application/zip"})
+
+    Brook.send_event(file_upload(), file_event)
   end
 end
