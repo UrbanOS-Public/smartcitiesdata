@@ -2,8 +2,8 @@ defmodule Odo.OdoTest do
   use ExUnit.Case
   use Divo
   import SmartCity.TestHelper
-  import SmartCity.Events, only: [file_uploaded: 0]
-  alias SmartCity.Events.FileUploaded
+  import SmartCity.Event, only: [file_upload: 0]
+  alias SmartCity.Event.FileUpload
 
   @kafka_broker Application.get_env(:odo, :kafka_broker)
 
@@ -29,7 +29,7 @@ defmodule Odo.OdoTest do
     Temp.track!()
     Application.put_env(:odo, :working_dir, Temp.mkdir!())
 
-    Brook.send_event(file_uploaded(), %FileUploaded{
+    Brook.send_event(file_upload(), %FileUpload{
       dataset_id: id,
       mime_type: "application/zip",
       bucket: bucket,
@@ -49,7 +49,7 @@ defmodule Odo.OdoTest do
       actual = Elsa.Fetch.search_values(@kafka_broker, "event-stream", ".geojson") |> Enum.to_list() |> hd()
 
       expected =
-        Jason.encode!(%FileUploaded{
+        Jason.encode!(%FileUpload{
           dataset_id: id,
           mime_type: "application/geo+json",
           bucket: bucket,

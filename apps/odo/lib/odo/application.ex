@@ -7,7 +7,7 @@ defmodule Odo.Application do
   def start(_type, _args) do
     children =
       [
-        {Task.Supervisor, name: Odo.ShapefileTaskSupervisor, max_restarts: 120, max_seconds: 60},
+        {Task.Supervisor, name: Odo.TaskSupervisor, max_restarts: 120, max_seconds: 60},
         brook(),
         Odo.Init
       ]
