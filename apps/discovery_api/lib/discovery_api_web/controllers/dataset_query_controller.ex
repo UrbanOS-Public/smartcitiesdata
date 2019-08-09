@@ -25,23 +25,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     end
   end
 
-  def query(conn, params, "json" = format) do
-    system_name = conn.assigns.model.systemName
-
-    with {:ok, query} <- build_query(params, system_name),
-         true <- authorized?(query, AuthService.get_user(conn)) do
-      MetricsService.record_api_hit("queries", conn.assigns.model.id)
-
-      Prestige.execute(query, rows_as_maps: true)
-      |> stream_for_format(conn, format)
-    else
-      {:error, error} -> handle_error(conn, :error, error)
-      {:bad_request, error} -> handle_error(conn, :bad_request, error)
-      _ -> handle_error(conn, :bad_request)
-    end
-  end
-
-  def query(conn, params, "geojson" = format) do
+  def query(conn, params, format) when format in ["json", "geojson"] do
     system_name = conn.assigns.model.systemName
 
     with {:ok, query} <- build_query(params, system_name),
