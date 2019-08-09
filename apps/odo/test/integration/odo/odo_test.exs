@@ -1,4 +1,4 @@
-defmodule Odo.OdoTest do
+defmodule Odo.Integration.OdoTest do
   use ExUnit.Case
   use Divo
   import SmartCity.TestHelper
@@ -47,26 +47,15 @@ defmodule Odo.OdoTest do
       actual = Elsa.Fetch.search_values(@kafka_broker, "event-stream", ".geojson") |> Enum.to_list() |> hd()
 
       expected =
-        Jason.encode!(FileUpload.new(%{
+        FileUpload.new(%{
           dataset_id: id,
           mime_type: "application/geo+json",
           bucket: bucket,
           key: new_key
-        }))
+        })
+        |> (fn {:ok, event} -> Jason.encode!(event) end).()
 
       assert actual.value == expected
     end)
   end
-
-  # test "raises an error on unsupported file type", %{id: id, org: org, data_name: data_name, bucket: bucket} do
-  #   Temp.track!()
-  #   Application.put_env(:odo, :working_dir, Temp.mkdir!())
-
-  #   {:ok, file_event} =
-  #     FileUpload.new(%{dataset_id: id, bucket: bucket, key: "#{org}/#{data_name}.foo", mime_type: "application/zip"})
-
-  #   Brook.send_event(file_upload(), file_event)
-
-  #   assert_raise RuntimeError, "Unable to convert file; unsupported type", :process
-  # end
 end

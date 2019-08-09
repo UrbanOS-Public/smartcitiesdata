@@ -16,11 +16,16 @@ defmodule Odo.FileProcessor do
     converted_file_path = "#{working_dir()}/#{file_event.dataset_id}.#{convert.to}"
     new_key = String.replace_suffix(file_event.key, source_type, convert.to)
 
-    download(file_event.bucket, file_event.key, download_destination)
-    convert(download_destination, converted_file_path, convert)
-    upload(file_event.bucket, converted_file_path, new_key)
+    with :ok <- download(file_event.bucket, file_event.key, download_destination),
+         :ok <- convert(download_destination, converted_file_path, convert),
+         :ok <- upload(file_event.bucket, converted_file_path, new_key),
+         :ok <- send_file_upload_event(file_event.dataset_id, file_event.bucket, new_key, convert.to) do
+      Logger.info("File uploaded for dataset #{file_event.dataset_id} to #{file_event.bucket}/#{new_key}")
+    else
+      {:error, reason} ->
+        Logger.warn("File upload failed for dataset #{file_event.dataset_id}: #{reason}")
+    end
 
-    send_file_upload_event(file_event.dataset_id, file_event.bucket, new_key, convert.to)
     cleanup_files([download_destination, converted_file_path])
   end
 
@@ -59,14 +64,6 @@ defmodule Odo.FileProcessor do
     {:ok, event} = FileUpload.new(%{dataset_id: id, bucket: bucket, key: key, mime_type: new_type})
 
     Brook.send_event(file_upload(), event)
-    |> case do
-      :ok ->
-        Logger.info("File uploaded for dataset #{id} to #{bucket}/#{key}")
-        :ok
-
-      {:error, reason} ->
-        Logger.warn("File upload failed for dataset #{id}: #{reason}")
-    end
   end
 
   defp get_extension(file) do
