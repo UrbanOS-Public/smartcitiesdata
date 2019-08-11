@@ -1,5 +1,8 @@
 use Mix.Config
 
+config :odo,
+  working_dir: "tmp"
+
 config :brook, :config,
   handlers: [Odo.EventHandler],
   storage: [

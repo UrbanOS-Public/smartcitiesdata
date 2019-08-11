@@ -21,6 +21,7 @@ defmodule Odo.FileProcessor do
          :ok <- upload(file_event.bucket, converted_file_path, new_key),
          :ok <- send_file_upload_event(file_event.dataset_id, file_event.bucket, new_key, convert.to) do
       Logger.info("File uploaded for dataset #{file_event.dataset_id} to #{file_event.bucket}/#{new_key}")
+      :ok
     else
       {:error, reason} ->
         Logger.warn("File upload failed for dataset #{file_event.dataset_id}: #{reason}")
