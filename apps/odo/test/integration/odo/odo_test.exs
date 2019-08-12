@@ -56,6 +56,7 @@ defmodule Odo.Integration.OdoTest do
         |> (fn {:ok, event} -> Jason.encode!(event) end).()
 
       assert actual.value == expected
+#      assert Brook.get_all("odo:view") == {:ok, "foobar"}
     end)
   end
 end
