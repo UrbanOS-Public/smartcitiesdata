@@ -52,7 +52,8 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
                "downloads" => model.downloads,
                "queries" => model.queries,
                "accessLevel" => model.accessLevel,
-               "completeness" => model.completeness
+               "completeness" => model.completeness,
+               "systemName" => model.systemName
              } == actual
     end
 
@@ -88,16 +89,20 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
       :ok
     end
 
-    test "does not retrieve a restricted dataset if the given user is not a member of the dataset's group", %{
-      conn: conn
-    } do
+    test "does not retrieve a restricted dataset if the given user is not a member of the dataset's group",
+         %{
+           conn: conn
+         } do
       username = "bigbadbob"
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=FirstUser,ou=People"]})
 
-      allow PaddleWrapper.authenticate(any(), any()), return: :ok
-      allow PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]}
-      allow PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
+      allow(PaddleWrapper.authenticate(any(), any()), return: :ok)
+      allow(PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]})
+
+      allow(PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]),
+        return: {:ok, [ldap_group]}
+      )
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
 
@@ -107,14 +112,19 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
       |> json_response(404)
     end
 
-    test "retrieves a restricted dataset if the given user has access to it, via cookie", %{conn: conn} do
+    test "retrieves a restricted dataset if the given user has access to it, via cookie", %{
+      conn: conn
+    } do
       username = "bigbadbob"
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
 
-      allow PaddleWrapper.authenticate(any(), any()), return: :ok
-      allow PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]}
-      allow PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
+      allow(PaddleWrapper.authenticate(any(), any()), return: :ok)
+      allow(PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]})
+
+      allow(PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]),
+        return: {:ok, [ldap_group]}
+      )
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
 
@@ -124,14 +134,19 @@ defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
       |> json_response(200)
     end
 
-    test "retrieves a restricted dataset if the given user has access to it, via token", %{conn: conn} do
+    test "retrieves a restricted dataset if the given user has access to it, via token", %{
+      conn: conn
+    } do
       username = "bigbadbob"
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
 
-      allow PaddleWrapper.authenticate(any(), any()), return: :ok
-      allow PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]}
-      allow PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
+      allow(PaddleWrapper.authenticate(any(), any()), return: :ok)
+      allow(PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]})
+
+      allow(PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]),
+        return: {:ok, [ldap_group]}
+      )
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
 
