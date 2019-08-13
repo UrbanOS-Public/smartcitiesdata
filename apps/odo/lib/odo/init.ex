@@ -4,6 +4,7 @@ defmodule Odo.Init do
   that retrieves all outstanding file_conversion entries
   from the app state and schedules them for processing.
   """
+  require Logger
 
   use Task, restart: :transient
 
@@ -12,7 +13,10 @@ defmodule Odo.Init do
   end
 
   def run() do
-    Brook.get_all_values!(:file_conversions)
-    |> Enum.each(&Odo.FileProcessor.process/1)
+    pending_conversions = Brook.get_all_values!(:file_conversions)
+    pending_ids = Enum.map(pending_conversions, fn file -> file.dataset_id end)
+
+    Logger.debug("Starting file processor task for files pending conversion: #{inspect(pending_ids)}")
+    Enum.each(pending_conversions, &Odo.FileProcessor.process/1)
   end
 end

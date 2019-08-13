@@ -30,7 +30,12 @@ defmodule Odo.Integration.OdoTest do
     Application.put_env(:odo, :working_dir, Temp.mkdir!())
 
     {:ok, file_event} =
-      FileUpload.new(%{dataset_id: id, bucket: bucket, key: "#{org}/#{data_name}.zip", mime_type: "application/zip"})
+      FileUpload.new(%{
+        dataset_id: id,
+        bucket: bucket,
+        key: "#{org}/#{data_name}.shapefile",
+        mime_type: "application/zip"
+      })
 
     Brook.send_event(file_upload(), file_event)
 
@@ -44,9 +49,10 @@ defmodule Odo.Integration.OdoTest do
       assert {:ok, %{body: body}} = fileResp
       assert body != nil
 
-      actual = Elsa.Fetch.search_values(@kafka_broker, "event-stream", ".geojson") |> Enum.to_list() |> hd()
+      actual_events = Elsa.Fetch.search_values(@kafka_broker, "event-stream", ".geojson") |> Enum.to_list() |> hd()
+      actual_state = Brook.get_all_values!(:file_conversions)
 
-      expected =
+      expected_events =
         FileUpload.new(%{
           dataset_id: id,
           mime_type: "application/geo+json",
@@ -55,8 +61,8 @@ defmodule Odo.Integration.OdoTest do
         })
         |> (fn {:ok, event} -> Jason.encode!(event) end).()
 
-      assert actual.value == expected
-#      assert Brook.get_all("odo:view") == {:ok, "foobar"}
+      assert actual_events.value == expected_events
+      assert Enum.member?(actual_state, file_event) == false
     end)
   end
 end

@@ -23,11 +23,11 @@ defmodule Odo.MixProject do
 
   defp deps do
     [
-      {:brook, git: "https://github.com/bbalser/brook.git", ref: "188122343ed59158ae8e6667ffecb346a2f6d5c1"},
+      {:brook, git: "https://github.com/bbalser/brook.git", ref: "17205202ad77159d81ad62c57b406a4d98074bc8"},
       {:distillery, "2.0.14"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
-      {:geomancer, git: "https://github.com/jdenen/geomancer.git", ref: "87915142283e9432ea6b2e68c1da289837a0f2dc"},
+      {:geomancer, "~> 0.1.0"},
       {:hackney, "~> 1.15"},
       {:libvault, "~> 0.2"},
       {:poison, "~> 3.0"},

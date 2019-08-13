@@ -75,8 +75,7 @@ defmodule Odo.FileProcessor do
 
   defp get_conversion_map(type) do
     case type do
-      "zip" -> %{from: "zip", to: "geojson", function: &Geomancer.geo_json/1}
-      "shapefile" -> %{from: "zip", to: "geojson", function: &Geomancer.geo_json/1}
+      shapefile when shapefile in ["shapefile", "shp", "zip"] -> %{from: "shapefile", to: "geojson", function: &Geomancer.geo_json/1}
       _ -> raise "Unable to convert file; unsupported type"
     end
   end
