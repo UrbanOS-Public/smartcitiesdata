@@ -70,13 +70,16 @@ defmodule Odo.FileProcessor do
   defp get_extension(file) do
     file
     |> String.split(".")
-    |> Enum.at(-1)
+    |> List.last()
   end
 
   defp get_conversion_map(type) do
     case type do
-      shapefile when shapefile in ["shapefile", "shp", "zip"] -> %{from: "shapefile", to: "geojson", function: &Geomancer.geo_json/1}
-      _ -> raise "Unable to convert file; unsupported type"
+      shapefile when shapefile in ["shapefile", "shp", "zip"] ->
+        %{from: "shapefile", to: "geojson", function: &Geomancer.geo_json/1}
+
+      _ ->
+        raise "Unable to convert file; unsupported type"
     end
   end
 

@@ -25,7 +25,7 @@ config :odo,
   divo_wait: [dwell: 1000, max_tries: 120],
   hosted_file_bucket: bucket_name,
   kafka_broker: endpoint,
-  working_dir: "/downloads"
+  working_dir: "tmp"
 
 config :ex_aws,
   debug_requests: true,
