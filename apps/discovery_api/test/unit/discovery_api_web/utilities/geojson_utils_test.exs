@@ -25,7 +25,8 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtilsTest do
           "polygon",
           [[[1, 1], [1, 0], [0, 1], [1, 1]], [[3, 3], [3, 2], [2, 3], [3, 3]]],
           [0, 0, 3, 3]
-        ]
+        ],
+        ["empty coordinates", [], nil]
       ])
     end
 
@@ -46,6 +47,25 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtilsTest do
       bounding_box = GeojsonUtils.calculate_bounding_box(features)
 
       assert bounding_box == [-12, 8, 4, 13]
+    end
+
+    test "the bounding box of a list of features where one has no coordinates is not nil" do
+      features = [
+        %{
+          "geometry" => %{
+            "coordinates" => []
+          }
+        },
+        %{
+          "geometry" => %{
+            "coordinates" => [[1, 0]]
+          }
+        }
+      ]
+
+      bounding_box = GeojsonUtils.calculate_bounding_box(features)
+
+      assert bounding_box == [1, 0, 1, 0]
     end
 
     data_test "throws an exception when feature has #{error_reason}" do

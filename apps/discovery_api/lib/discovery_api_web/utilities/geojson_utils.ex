@@ -13,6 +13,7 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtils do
     |> reduce_coordinates()
     |> List.flatten()
     |> Enum.reduce([nil, nil, nil, nil], &update_bounding_box/2)
+    |> handle_empty_bounding_box()
   end
 
   defp update_bounding_box({x, y}, [min_x, min_y, max_x, max_y])
@@ -43,6 +44,9 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtils do
   defp reduce_coordinates(_) do
     raise MalformedGeometryError
   end
+
+  defp handle_empty_bounding_box([nil, nil, nil, nil]), do: nil
+  defp handle_empty_bounding_box(bbox), do: bbox
 end
 
 defmodule MalformedGeometryError do
