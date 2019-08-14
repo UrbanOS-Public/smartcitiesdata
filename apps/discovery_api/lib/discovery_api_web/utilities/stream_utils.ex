@@ -7,7 +7,15 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
   def map_data_stream_for_csv(stream, table_headers) do
     [table_headers]
     |> Stream.concat(stream)
+    |> Stream.map(&flatten_lists/1)
     |> CSV.encode(delimiter: "\n")
+  end
+
+  defp flatten_lists(row) do
+    Stream.map(row, fn
+      column when is_list(column) -> Enum.join(column, ",")
+      column -> column
+    end)
   end
 
   # sobelow_skip ["XSS.ContentType"]
