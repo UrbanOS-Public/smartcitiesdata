@@ -1,9 +1,7 @@
 defmodule DiscoveryApiWeb.DatasetQueryController do
   use DiscoveryApiWeb, :controller
   require Logger
-  alias Plug.Conn
 
-  alias DiscoveryApiWeb.Utilities.{GeojsonUtils, Hideaway}
   alias DiscoveryApiWeb.Services.{AuthService, PrestoService, MetricsService}
   alias DiscoveryApi.Data.Model
 
@@ -179,58 +177,19 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   end
 
   defp stream_for_format(features_list, conn, "geojson" = format) do
-    {:ok, agent_pid} = Hideaway.start(nil)
+    name = conn.assigns.model.systemName
+    type = "FeatureCollection"
 
-    try do
-      name = conn.assigns.model.systemName
-      type = "FeatureCollection"
+    data =
+      features_list
+      |> Stream.map(&decode_feature_result(&1))
+      |> Stream.map(&Jason.encode!/1)
+      |> Stream.intersperse(",")
 
-      conn = Conn.assign(conn, :hideaway, agent_pid)
-
-      data =
-        features_list
-        |> Stream.map(&decode_feature_result(&1))
-        |> Stream.transform(
-          fn -> [nil, nil, nil, nil] end,
-          &get_bounding_box/2,
-          fn bounding_box ->
-            Hideaway.stash(agent_pid, bounding_box)
-          end
-        )
-        |> Stream.map(&Jason.encode!/1)
-        |> Stream.intersperse(",")
-
-      [
-        [
-          "{\"type\": \"#{type}\", \"name\": \"#{name}\", \"features\": "
-        ],
-        ["["],
-        data,
-        ["],"],
-        [
-          fn ->
-            "\"bbox\": #{Jason.encode!(Hideaway.retrieve(agent_pid))}}"
-          end
-        ]
-      ]
-      |> Stream.concat()
-      |> stream_data(conn, "query-results", format)
-    after
-      Hideaway.destroy(agent_pid)
-      conn
-    end
-  rescue
-    e ->
-      Logger.info(inspect(e))
-      Logger.info(Exception.format_stacktrace(__STACKTRACE__))
-      reraise e, __STACKTRACE__
+    [["{\"type\": \"#{type}\", \"name\": \"#{name}\", \"features\": "], ["["], data, ["],"]]
+    |> Stream.concat()
+    |> stream_data_with_bounding_box(conn, "query-results", format)
   end
-
-  defp get_bounding_box(feature, acc) when is_map(feature) do
-    {[feature], GeojsonUtils.calculate_bounding_box(feature, acc)}
-  end
-
-  defp get_bounding_box(data, acc), do: {[data], acc}
 
   defp decode_feature_result(feature) do
     feature

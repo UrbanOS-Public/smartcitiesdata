@@ -497,58 +497,6 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
              }
 
       assert_called(Prestige.execute("SELECT * FROM #{@system_name}", rows_as_maps: true), once())
-      assert get_hideaway_count() == 0
-
-      where(
-        url: [
-          "/api/v1/dataset/test/query",
-          "/api/v1/organization/org1/dataset/data1/query"
-        ]
-      )
-    end
-
-    data_test "when conn.chunked returns an error, the agent is killed", %{conn: conn} do
-      allow(
-        Plug.Conn.chunk(any(), any()),
-        exec: fn conn, data ->
-          if data == "],", do: {:error, :closed}, else: :meck.passthrough([conn, data])
-        end,
-        meck_options: [:passthrough]
-      )
-
-      conn
-      |> put_req_header("accept", "application/geo+json")
-      |> get(url)
-
-      assert_called(Prestige.execute("SELECT * FROM #{@system_name}", rows_as_maps: true), once())
-      assert get_hideaway_count() == 0
-
-      where(
-        url: [
-          "/api/v1/dataset/test/query",
-          "/api/v1/organization/org1/dataset/data1/query"
-        ]
-      )
-    end
-
-    data_test "when the process encounters an exception, the agent is killed", %{conn: conn} do
-      allow(
-        Plug.Conn.put_resp_header(any(), any(), any()),
-        exec: fn _, _, _ -> raise Plug.Conn.InvalidHeaderError end,
-        meck_options: [:passthrough]
-      )
-
-      try do
-        conn
-        |> put_req_header("accept", "application/geo+json")
-        |> get(url)
-        |> response(500)
-      rescue
-        _ -> :ok
-      end
-
-      assert_called(Prestige.execute("SELECT * FROM #{@system_name}", rows_as_maps: true), once())
-      assert get_hideaway_count() == 0
 
       where(
         url: [
@@ -850,16 +798,5 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> get("/api/v1/dataset/test/query")
       |> json_response(200)
     end
-  end
-
-  defp get_hideaway_count() do
-    Process.list()
-    |> Enum.map(fn pid -> Process.info(pid) end)
-    |> Enum.map(fn info ->
-      Keyword.get(info, :dictionary) |> Keyword.get(:"$initial_call", nil)
-    end)
-    |> Enum.reject(fn x -> is_nil(x) end)
-    |> Enum.filter(fn {module, _function, _arity} -> module == Hideaway end)
-    |> length()
   end
 end
