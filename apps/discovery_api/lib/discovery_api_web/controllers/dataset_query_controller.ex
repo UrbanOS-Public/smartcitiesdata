@@ -1,8 +1,8 @@
 defmodule DiscoveryApiWeb.DatasetQueryController do
   use DiscoveryApiWeb, :controller
   require Logger
-  alias DiscoveryApiWeb.Services.{AuthService, PrestoService, MetricsService}
-  alias DiscoveryApi.Data.Model
+  alias DiscoveryApi.Services.MetricsService
+  alias DiscoveryApiWeb.Utilities.AuthUtils
 
   def query(conn, params) do
     query(conn, params, get_format(conn))
@@ -13,7 +13,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
     with {:ok, column_names} <- get_column_names(system_name, Map.get(params, "columns")),
          {:ok, query} <- build_query(params, system_name),
-         true <- authorized?(query, AuthService.get_user(conn)) do
+         true <- AuthUtils.authorized_to_query?(query, AuthUtils.get_user(conn)) do
       MetricsService.record_api_hit("queries", conn.assigns.model.id)
 
       Prestige.execute(query)
@@ -29,7 +29,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     system_name = conn.assigns.model.systemName
 
     with {:ok, query} <- build_query(params, system_name),
-         true <- authorized?(query, AuthService.get_user(conn)) do
+         true <- AuthUtils.authorized_to_query?(query, AuthUtils.get_user(conn)) do
       MetricsService.record_api_hit("queries", conn.assigns.model.id)
 
       Prestige.execute(query, rows_as_maps: true)
@@ -43,7 +43,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
 
   def query_multiple(conn, _params) do
     with {:ok, statement, conn} <- read_body(conn),
-         true <- authorized?(statement, AuthService.get_user(conn)) do
+         true <- AuthUtils.authorized_to_query?(statement, AuthUtils.get_user(conn)) do
       Prestige.execute(statement, rows_as_maps: true)
       |> stream_for_format(conn, get_format(conn))
     else
@@ -131,16 +131,6 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
     column_string
     |> String.split(",", trim: true)
     |> Enum.map(&String.trim/1)
-  end
-
-  defp authorized?(statement, username) do
-    with true <- PrestoService.is_select_statement?(statement),
-         {:ok, system_names} <- PrestoService.get_affected_tables(statement),
-         models <- Model.get_all() |> Enum.filter(fn model -> model.systemName in system_names end) do
-      Enum.all?(models, &AuthService.has_access?(&1, username))
-    else
-      _ -> false
-    end
   end
 
   defp stream_for_format(stream, conn, "csv" = format, column_names) do

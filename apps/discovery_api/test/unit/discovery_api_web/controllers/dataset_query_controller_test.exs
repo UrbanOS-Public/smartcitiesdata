@@ -4,7 +4,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
   use Placebo
   import Checkov
   alias DiscoveryApi.Data.{Model, SystemNameCache}
-  alias DiscoveryApiWeb.Services.{AuthService, PrestoService}
+  alias DiscoveryApi.Services.PrestoService
+  alias DiscoveryApiWeb.Utilities.AuthUtils
 
   @dataset_id "test"
   @system_name "coda__test_dataset"
@@ -37,15 +38,22 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         systemName: "private__two"
       })
 
+    coda_dataset =
+      DiscoveryApi.Test.Helper.sample_model(%{
+        private: false,
+        systemName: "coda__test_dataset"
+      })
+
     datasets = [
       public_one_dataset,
       public_two_dataset,
       private_one_dataset,
-      private_two_dataset
+      private_two_dataset,
+      coda_dataset
     ]
 
     username = "bigbadbob"
-    allow(AuthService.get_user(any()), return: username, meck_options: [:passthrough])
+    allow(AuthUtils.get_user(any()), return: username, meck_options: [:passthrough])
 
     allow(Model.get_all(), return: datasets, meck_options: [:passthrough])
 
@@ -95,7 +103,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       allow(PrestoService.is_select_statement?(any()), return: true)
       allow(PrestoService.get_affected_tables(any()), return: {:ok, [@system_name]})
-      allow(AuthService.has_access?(any(), any()), return: true)
+      allow(AuthUtils.has_access?(any(), any()), return: true)
 
       :ok
     end
@@ -264,7 +272,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       allow(PrestoService.is_select_statement?(any()), return: true)
       allow(PrestoService.get_affected_tables(any()), return: {:ok, [@system_name]})
-      allow(AuthService.has_access?(any(), any()), return: true)
+      allow(AuthUtils.has_access?(any(), any()), return: true)
 
       :ok
     end
@@ -345,7 +353,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       allow(PrestoService.is_select_statement?(any()), return: true)
       allow(PrestoService.get_affected_tables(any()), return: {:ok, [@system_name]})
-      allow(AuthService.has_access?(any(), any()), return: true)
+      allow(AuthUtils.has_access?(any(), any()), return: true)
 
       :ok
     end
@@ -439,7 +447,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       allow(PrestoService.is_select_statement?(any()), return: true)
       allow(PrestoService.get_affected_tables(any()), return: {:ok, [@system_name]})
-      allow(AuthService.has_access?(any(), any()), return: true)
+      allow(AuthUtils.has_access?(any(), any()), return: true)
 
       :ok
     end
@@ -501,7 +509,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       allow(Prestige.execute(any(), any()), return: expected_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
-      allow(AuthService.has_access?(any(), any()), return: true)
+      allow(AuthUtils.has_access?(any(), any()), return: true)
 
       response_body =
         conn
@@ -528,7 +536,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       allow(Prestige.execute(any(), any()), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
-      allow(AuthService.has_access?(any(), any()), return: true)
+      allow(AuthUtils.has_access?(any(), any()), return: true)
 
       response_body =
         conn
@@ -549,7 +557,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       allow(Prestige.execute(any(), any()), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, private_tables})
-      allow(AuthService.has_access?(any(), any()), return: true)
+      allow(AuthUtils.authorized_to_query?(any(), any()), return: true, meck_options: [:passthrough])
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -571,7 +579,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       allow(Prestige.execute(any(), any()), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, private_tables})
-      allow(AuthService.has_access?(any(), any()), seq: [false, true])
+      allow(AuthUtils.authorized_to_query?(any(), any()), seq: [false, true])
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -587,13 +595,38 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:error, :does_not_matter})
-      allow(AuthService.has_access?(any(), any()), return: true)
+      allow(AuthUtils.has_access?(any(), any()), return: true)
 
       assert conn
              |> put_req_header("accept", "application/json")
              |> put_req_header("content-type", "text/plain")
              |> post("/api/v1/query", statement)
              |> response(400)
+    end
+
+    test "unable to query datasets which are not in redis", %{
+      conn: conn,
+      public_tables: _public_tables,
+      json_response: allowed_response,
+      csv_response: _expected_response
+    } do
+      statement = """
+        SELECT * FROM not_in_redis
+      """
+
+      allow(Prestige.execute(any(), any()), return: allowed_response)
+      allow(PrestoService.is_select_statement?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {:ok, ["not_in_redis"]})
+      allow(AuthUtils.has_access?(any(), any()), return: true)
+
+      _response_body =
+        conn
+        |> put_req_header("accept", "text/csv")
+        |> put_req_header("content-type", "text/plain")
+        |> post("/api/v1/query", statement)
+        |> response(400)
+
+      assert not called?(Prestige.execute(any(), any()))
     end
 
     test "can't perform query if it not a supported/allowed statement type", %{conn: conn, public_tables: public_tables} do
@@ -603,7 +636,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       allow(PrestoService.is_select_statement?(statement), return: false)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
-      allow(AuthService.has_access?(any(), any()), return: true)
+      allow(AuthUtils.has_access?(any(), any()), return: true)
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -629,7 +662,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
-      allow(AuthService.has_access?(any(), any()), return: true)
+      allow(AuthUtils.has_access?(any(), any()), return: true)
 
       allow(Prestige.execute(any(), any()), exec: fn _, _ -> raise Prestige.Error, failure_message end)
 

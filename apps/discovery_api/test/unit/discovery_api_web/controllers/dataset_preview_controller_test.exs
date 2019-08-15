@@ -2,7 +2,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   alias DiscoveryApi.Data.{Model, SystemNameCache}
-  alias DiscoveryApiWeb.Services.PrestoService
+  alias DiscoveryApi.Services.PrestoService
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -166,7 +166,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
 
       allow(Model.get(dataset_id), return: model)
 
-      allow(DiscoveryApiWeb.Services.PrestoService.preview(dataset_name, row_limit),
+      allow(DiscoveryApi.Services.PrestoService.preview(dataset_name, row_limit),
         return: [%{"feature" => "{}"}, %{"feature" => "{}"}, %{"feature" => "{}"}]
       )
 

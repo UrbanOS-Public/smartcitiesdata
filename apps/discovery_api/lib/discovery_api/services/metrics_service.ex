@@ -1,7 +1,7 @@
 alias StreamingMetrics.Hostname
 require Logger
 
-defmodule DiscoveryApiWeb.Services.MetricsService do
+defmodule DiscoveryApi.Services.MetricsService do
   @moduledoc """
   Service that collects metrics and records them to the application's metric collector (which by default is prometheus)
   """

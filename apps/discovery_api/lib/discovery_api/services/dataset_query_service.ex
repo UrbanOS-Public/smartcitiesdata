@@ -1,4 +1,4 @@
-defmodule DiscoveryApiWeb.DatasetQueryService do
+defmodule DiscoveryApi.DatasetQueryService do
   @moduledoc false
   def map_data_stream_to_obj(stream, table_headers, dataset_id) do
     stream
