@@ -16,11 +16,14 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtils do
     |> handle_empty_bounding_box()
   end
 
-  def calculate_bounding_box(%{"geometry" => %{"coordinates" => coordinates}}) do
+  def calculate_bounding_box(
+        %{"geometry" => %{"coordinates" => coordinates}},
+        bounding_box \\ [nil, nil, nil, nil]
+      ) do
     coordinates
     |> reduce_coordinates()
     |> List.flatten()
-    |> Enum.reduce([nil, nil, nil, nil], &update_bounding_box/2)
+    |> Enum.reduce(bounding_box, &update_bounding_box/2)
     |> handle_empty_bounding_box()
   end
 
@@ -34,16 +37,7 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtils do
     ]
   end
 
-  def update_bounding_box(data, acc) when is_binary(data) do
-    IO.inspect(data, label: "data not a list")
-    acc
-  end
-
-  def update_bounding_box(x, acc) do
-    IO.inspect(x, label: "data not a list")
-    # raise MalformedGeometryError
-    acc
-  end
+  def update_bounding_box(_, _), do: raise(MalformedGeometryError)
 
   defp get_max(a, nil), do: a
   defp get_max(a, b), do: max(a, b)

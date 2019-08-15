@@ -181,7 +181,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
   end
 
   describe "fetch geojson dataset" do
-    test "retrieves geojson dataset with bounding box" do
+    test "retrieves geojson dataset with bounding box", %{conn: conn} do
       dataset_name = "the_dataset"
       dataset_id = "the_dataset_id"
       row_limit = 10
@@ -226,7 +226,9 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
       assert actual == expected
     end
 
-    test "retrieves geojson dataset with no bounding box when coordinates list is empty" do
+    test "retrieves geojson dataset with no bounding box when coordinates list is empty", %{
+      conn: conn
+    } do
       dataset_name = "the_dataset"
       dataset_id = "the_dataset_id"
       row_limit = 10

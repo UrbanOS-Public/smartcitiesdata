@@ -3,7 +3,7 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
   require Logger
   alias Plug.Conn
 
-  alias DiscoveryApiWeb.Utilities.GeojsonUtils
+  alias DiscoveryApiWeb.Utilities.{GeojsonUtils, Hideaway}
   alias DiscoveryApiWeb.Services.{AuthService, PrestoService, MetricsService}
   alias DiscoveryApi.Data.Model
 
@@ -185,68 +185,56 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       name = conn.assigns.model.systemName
       type = "FeatureCollection"
 
-      conn = Plug.Conn.assign(conn, :hideaway, agent_pid)
+      conn = Conn.assign(conn, :hideaway, agent_pid)
 
       data =
         features_list
         |> Stream.map(&decode_feature_result(&1))
-        |> Stream.map(&Jason.encode!/1)
-        |> Stream.intersperse(",")
         |> Stream.transform(
           fn -> [nil, nil, nil, nil] end,
-          &decode_and_calculate_bounding_box/2,
+          &get_bounding_box/2,
           fn bounding_box ->
             Hideaway.stash(agent_pid, bounding_box)
           end
         )
+        |> Stream.map(&Jason.encode!/1)
+        |> Stream.intersperse(",")
 
-      conn =
+      [
         [
-          [
-            "{\"type\": \"#{type}\", \"name\": \"#{name}\", \"features\": "
-          ],
-          ["["],
-          data,
-          ["],"],
-          [
-            fn ->
-              Hideaway.retrieve(agent_pid)
-            end
-          ]
+          "{\"type\": \"#{type}\", \"name\": \"#{name}\", \"features\": "
+        ],
+        ["["],
+        data,
+        ["],"],
+        [
+          fn ->
+            "\"bbox\": #{Jason.encode!(Hideaway.retrieve(agent_pid))}}"
+          end
         ]
-        |> Stream.concat()
-        |> stream_data(conn, "query-results", format)
+      ]
+      |> Stream.concat()
+      |> stream_data(conn, "query-results", format)
     after
       Hideaway.destroy(agent_pid)
       conn
     end
   rescue
     e ->
-      Logger.error(inspect(e))
-      Logger.error(Exception.format_stacktrace(__STACKTRACE__))
+      Logger.info(inspect(e))
+      Logger.info(Exception.format_stacktrace(__STACKTRACE__))
       reraise e, __STACKTRACE__
   end
 
-  defp decode_and_calculate_bounding_box(json, acc) when is_binary(json) do
-    with {:ok, feature} <- Jason.decode(json) do
-      {[json], GeojsonUtils.calculate_bounding_box(feature)}
-      |> IO.inspect(label: "Got a bounding box")
-    else
-      _ -> {[json], acc} |> IO.inspect(label: "Bad decode")
-    end
+  defp get_bounding_box(feature, acc) when is_map(feature) do
+    {[feature], GeojsonUtils.calculate_bounding_box(feature, acc)}
   end
 
-  defp decode_and_calculate_bounding_box(x, acc), do: {[x], acc}
+  defp get_bounding_box(data, acc), do: {[data], acc}
 
   defp decode_feature_result(feature) do
     feature
     |> Map.get("feature")
     |> Jason.decode!()
   end
-
-  defp execute_if_function(function) when is_function(function) do
-    ["\"bbox\": #{Jason.encode!(function.())}}"] |> IO.inspect(label: "Executed hideaway")
-  end
-
-  defp execute_if_function(not_function), do: not_function
 end

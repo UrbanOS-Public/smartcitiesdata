@@ -68,20 +68,20 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtilsTest do
       assert bounding_box == [1, 0, 1, 0]
     end
 
-    # data_test "throws an exception when feature has #{error_reason}" do
-    #   Logger.debug("Testing #{error_reason}")
-    #   features = [%{"geometry" => %{"coordinates" => coordinates}}]
+    data_test "throws an exception when feature has #{error_reason}" do
+      Logger.debug("Testing #{error_reason}")
+      features = [%{"geometry" => %{"coordinates" => coordinates}}]
 
-    #   assert_raise MalformedGeometryError, fn ->
-    #     GeojsonUtils.calculate_bounding_box(features)
-    #   end
+      assert_raise MalformedGeometryError, fn ->
+        GeojsonUtils.calculate_bounding_box(features)
+      end
 
-    #   where([
-    #     [:error_reason, :coordinates],
-    #     ["malformed geometry", [[[-1, "a"], [4, 8], [4, 13], [-1, 13], [-1, 8]]]],
-    #     ["null coordinate axes", [[[-1, nil], [4, 8], [4, 13], [nil, 13], [-1, 8]]]],
-    #     ["missing coordinate axes", [[[-1], [4, 8], [4, 13], [13], [-1, 8]]]]
-    #   ])
-    # end
+      where([
+        [:error_reason, :coordinates],
+        ["malformed geometry", [[[-1, "a"], [4, 8], [4, 13], [-1, 13], [-1, 8]]]],
+        ["null coordinate axes", [[[-1, nil], [4, 8], [4, 13], [nil, 13], [-1, 8]]]],
+        ["missing coordinate axes", [[[-1], [4, 8], [4, 13], [13], [-1, 8]]]]
+      ])
+    end
   end
 end
