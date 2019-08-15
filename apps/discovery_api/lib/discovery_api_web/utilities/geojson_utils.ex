@@ -3,7 +3,7 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtils do
     This module handles calculating the bounding box for a list of features in a GeoJson strucutre
   """
 
-  def calculate_bounding_box(features_list) do
+  def calculate_bounding_box(features_list) when is_list(features_list) do
     coords = []
 
     features_list
@@ -16,8 +16,16 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtils do
     |> handle_empty_bounding_box()
   end
 
-  defp update_bounding_box({x, y}, [min_x, min_y, max_x, max_y])
-       when is_number(x) and is_number(y) do
+  def calculate_bounding_box(%{"geometry" => %{"coordinates" => coordinates}}) do
+    coordinates
+    |> reduce_coordinates()
+    |> List.flatten()
+    |> Enum.reduce([nil, nil, nil, nil], &update_bounding_box/2)
+    |> handle_empty_bounding_box()
+  end
+
+  def update_bounding_box({x, y}, [min_x, min_y, max_x, max_y])
+      when is_number(x) and is_number(y) do
     [
       min(x, min_x),
       min(y, min_y),
@@ -26,8 +34,15 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtils do
     ]
   end
 
-  defp update_bounding_box(_, _) do
-    raise MalformedGeometryError
+  def update_bounding_box(data, acc) when is_binary(data) do
+    IO.inspect(data, label: "data not a list")
+    acc
+  end
+
+  def update_bounding_box(x, acc) do
+    IO.inspect(x, label: "data not a list")
+    # raise MalformedGeometryError
+    acc
   end
 
   defp get_max(a, nil), do: a

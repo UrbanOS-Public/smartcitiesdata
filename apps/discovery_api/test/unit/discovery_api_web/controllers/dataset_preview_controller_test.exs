@@ -225,5 +225,43 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
 
       assert actual == expected
     end
+
+    test "retrieves geojson dataset with no bounding box when coordinates list is empty" do
+      dataset_name = "the_dataset"
+      dataset_id = "the_dataset_id"
+      row_limit = 10
+
+      model =
+        Helper.sample_model(%{
+          id: dataset_id,
+          name: dataset_name,
+          sourceFormat: "geojson",
+          systemName: dataset_name
+        })
+
+      allow(Model.get(dataset_id), return: model)
+
+      allow(DiscoveryApiWeb.Services.PrestoService.preview(dataset_name, row_limit),
+        return: [
+          %{"feature" => "{\"geometry\": { \"coordinates\": [] }}"}
+        ]
+      )
+
+      expected = %{
+        "type" => "FeatureCollection",
+        "name" => model.name,
+        "features" => [
+          %{"geometry" => %{"coordinates" => []}}
+        ]
+      }
+
+      actual =
+        conn
+        |> put_resp_header("accepts", "application/geo+json")
+        |> get("/api/v1/dataset/#{dataset_id}/features_preview")
+        |> json_response(200)
+
+      assert actual == expected
+    end
   end
 end
