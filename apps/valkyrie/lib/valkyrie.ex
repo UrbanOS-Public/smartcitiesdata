@@ -31,7 +31,7 @@ defmodule Valkyrie do
   defp standardize(_field, nil), do: {:ok, nil}
 
   defp standardize(%{type: "string"}, value) do
-    {:ok, to_string(value)}
+    {:ok, value |> to_string() |> String.trim()}
   rescue
     Protocol.UndefinedError -> {:error, :invalid_string}
   end

@@ -49,6 +49,7 @@ defmodule ValkyrieTest do
         [:field_name, :type, :value, :transformed_value],
         ["age", "string", 123, "123"],
         ["age", "string", 123.5, "123.5"],
+        ["age", "string", "  42 ", "42"],
         ["age", "integer", "21", 21],
         ["age", "long", "22", 22],
         ["age", "integer", "+25", 25],
