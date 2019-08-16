@@ -123,8 +123,8 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
     data_test "selects from the table specified in the dataset definition", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url) |> response(200)
 
-      assert_called Prestige.execute("describe #{@system_name}"), once()
-      assert_called Prestige.execute("SELECT * FROM #{@system_name}"), once()
+      assert_called(Prestige.execute("describe #{@system_name}"), once())
+      assert_called(Prestige.execute("SELECT * FROM #{@system_name}"), once())
 
       where(
         url: [
@@ -137,8 +137,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
     data_test "selects using the where clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, where: "one=1") |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM #{@system_name} WHERE one=1"),
-                    once()
+      assert_called(
+        Prestige.execute("SELECT * FROM #{@system_name} WHERE one=1"),
+        once()
+      )
 
       where(
         url: [
@@ -151,8 +153,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
     data_test "selects using the order by clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, orderBy: "one") |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM #{@system_name} ORDER BY one"),
-                    once()
+      assert_called(
+        Prestige.execute("SELECT * FROM #{@system_name} ORDER BY one"),
+        once()
+      )
 
       where(
         url: [
@@ -165,8 +169,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
     data_test "selects using the limit clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, limit: "200") |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM #{@system_name} LIMIT 200"),
-                    once()
+      assert_called(
+        Prestige.execute("SELECT * FROM #{@system_name} LIMIT 200"),
+        once()
+      )
 
       where(
         url: [
@@ -179,8 +185,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
     data_test "selects using the group by clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, groupBy: "one") |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM #{@system_name} GROUP BY one"),
-                    once()
+      assert_called(
+        Prestige.execute("SELECT * FROM #{@system_name} GROUP BY one"),
+        once()
+      )
 
       where(
         url: [
@@ -196,8 +204,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> get(url, where: "one=1", orderBy: "one", limit: "200", groupBy: "one")
       |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM #{@system_name} WHERE one=1 GROUP BY one ORDER BY one LIMIT 200"),
-                    once()
+      assert_called(
+        Prestige.execute("SELECT * FROM #{@system_name} WHERE one=1 GROUP BY one ORDER BY one LIMIT 200"),
+        once()
+      )
 
       where(
         url: [
@@ -289,7 +299,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
                %{"id" => 2, "name" => "Robby"}
              ]
 
-      assert_called Prestige.execute("SELECT * FROM #{@system_name}", rows_as_maps: true), once()
+      assert_called(Prestige.execute("SELECT * FROM #{@system_name}", rows_as_maps: true), once())
 
       where(
         url: [
@@ -334,7 +344,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
                |> response(404)
              end) =~ "Table coda__no_exist not found"
 
-      assert_called Prestige.execute(query_string), times(0)
+      assert_called(Prestige.execute(query_string), times(0))
     end
   end
 
@@ -398,7 +408,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
                |> response(400)
              end) =~ "Query contained illegal character(s): [#{query_string}]"
 
-      assert_called Prestige.execute(query_string), times(0)
+      assert_called(Prestige.execute(query_string), times(0))
     end
 
     test "queries cannot contain single-line comments", %{conn: conn} do
@@ -411,7 +421,7 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
                |> response(400)
              end) =~ "Query contained illegal character(s): [#{query_string}]"
 
-      assert_called Prestige.execute(query_string), times(0)
+      assert_called(Prestige.execute(query_string), times(0))
     end
   end
 
@@ -440,7 +450,24 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         Prestige.execute("SELECT * FROM #{@system_name}",
           rows_as_maps: true
         ),
-        return: [%{"feature" => "{}"}, %{"feature" => "{}"}, %{"feature" => "{}"}]
+        return: [
+          %{
+            "feature" =>
+              Jason.encode!(%{
+                "geometry" => %{
+                  "coordinates" => [[1, 0]]
+                }
+              })
+          },
+          %{
+            "feature" =>
+              Jason.encode!(%{
+                "geometry" => %{
+                  "coordinates" => [[0, 1]]
+                }
+              })
+          }
+        ]
       )
 
       allow(Redix.command!(any(), any()), return: :does_not_matter)
@@ -461,15 +488,23 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
 
       assert Jason.decode!(actual) == %{
                "features" => [
-                 %{},
-                 %{},
-                 %{}
+                 %{
+                   "geometry" => %{
+                     "coordinates" => [[1, 0]]
+                   }
+                 },
+                 %{
+                   "geometry" => %{
+                     "coordinates" => [[0, 1]]
+                   }
+                 }
                ],
+               "bbox" => [0, 0, 1, 1],
                "name" => @system_name,
                "type" => @feature_type
              }
 
-      assert_called Prestige.execute("SELECT * FROM #{@system_name}", rows_as_maps: true), once()
+      assert_called(Prestige.execute("SELECT * FROM #{@system_name}", rows_as_maps: true), once())
 
       where(
         url: [
@@ -500,7 +535,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       }
     end
 
-    test "can select from some public datasets as json", %{conn: conn, public_tables: public_tables, json_response: expected_response} do
+    test "can select from some public datasets as json", %{
+      conn: conn,
+      public_tables: public_tables,
+      json_response: expected_response
+    } do
       statement = """
         WITH public_one AS (select a from public__one), public_two AS (select b from public__two)
         SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
@@ -548,7 +587,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       assert expected_response == response_body
     end
 
-    test "can select from some authorized private datasets", %{conn: conn, private_tables: private_tables, json_response: allowed_response} do
+    test "can select from some authorized private datasets", %{
+      conn: conn,
+      private_tables: private_tables,
+      json_response: allowed_response
+    } do
       statement = """
         WITH private_one AS (select a from private__one), private_two AS (select b from private__two)
         SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
@@ -557,7 +600,16 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       allow(Prestige.execute(any(), any()), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, private_tables})
-      allow(AuthUtils.authorized_to_query?(any(), any()), return: true, meck_options: [:passthrough])
+
+      allow(AuthUtils.authorized_to_query?(any(), any()),
+        return: true,
+        meck_options: [:passthrough]
+      )
+
+      allow(AuthUtils.authorized_to_query?(any(), any()),
+        return: true,
+        meck_options: [:passthrough]
+      )
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -629,7 +681,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       assert not called?(Prestige.execute(any(), any()))
     end
 
-    test "can't perform query if it not a supported/allowed statement type", %{conn: conn, public_tables: public_tables} do
+    test "can't perform query if it not a supported/allowed statement type", %{
+      conn: conn,
+      public_tables: public_tables
+    } do
       statement = """
         EXPLAIN ANALYZE select * from public__one
       """
@@ -655,7 +710,10 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
              |> response(400)
     end
 
-    test "returns prestige error details if prestige throws", %{conn: conn, public_tables: public_tables} do
+    test "returns prestige error details if prestige throws", %{
+      conn: conn,
+      public_tables: public_tables
+    } do
       statement = "select quantity*2131241224124412124 from public__one"
       failure_message = "bigint multiplication overflow: 7694 * 2131241224124412124"
       expected_response = "{\"message\":\"#{failure_message}\"}"
@@ -664,7 +722,9 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
       allow(AuthUtils.has_access?(any(), any()), return: true)
 
-      allow(Prestige.execute(any(), any()), exec: fn _, _ -> raise Prestige.Error, failure_message end)
+      allow(Prestige.execute(any(), any()),
+        exec: fn _, _ -> raise Prestige.Error, failure_message end
+      )
 
       assert expected_response ==
                conn
@@ -714,13 +774,17 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       :ok
     end
 
-    test "does not query a restricted dataset if the given user is not a member of the dataset's group", %{conn: conn, username: username} do
+    test "does not query a restricted dataset if the given user is not a member of the dataset's group",
+         %{conn: conn, username: username} do
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=FirstUser,ou=People"]})
 
-      allow PaddleWrapper.authenticate(any(), any()), return: :ok
-      allow PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]}
-      allow PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
+      allow(PaddleWrapper.authenticate(any(), any()), return: :ok)
+      allow(PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]})
+
+      allow(PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]),
+        return: {:ok, [ldap_group]}
+      )
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
 
@@ -731,13 +795,19 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> json_response(404)
     end
 
-    test "queries a restricted dataset if the given user has access to it, via cookie", %{conn: conn, username: username} do
+    test "queries a restricted dataset if the given user has access to it, via cookie", %{
+      conn: conn,
+      username: username
+    } do
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
 
-      allow PaddleWrapper.authenticate(any(), any()), return: :ok
-      allow PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]}
-      allow PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
+      allow(PaddleWrapper.authenticate(any(), any()), return: :ok)
+      allow(PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]})
+
+      allow(PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]),
+        return: {:ok, [ldap_group]}
+      )
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
 
@@ -748,13 +818,19 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
       |> json_response(200)
     end
 
-    test "queries a restricted dataset if the given user has access to it, via token", %{conn: conn, username: username} do
+    test "queries a restricted dataset if the given user has access to it, via token", %{
+      conn: conn,
+      username: username
+    } do
       ldap_user = Helper.ldap_user()
       ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
 
-      allow PaddleWrapper.authenticate(any(), any()), return: :ok
-      allow PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]}
-      allow PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]}
+      allow(PaddleWrapper.authenticate(any(), any()), return: :ok)
+      allow(PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]})
+
+      allow(PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]),
+        return: {:ok, [ldap_group]}
+      )
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "access")
 

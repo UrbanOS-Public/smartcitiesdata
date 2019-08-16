@@ -174,9 +174,9 @@ defmodule DiscoveryApiWeb.DatasetQueryController do
       |> Stream.map(&Jason.encode!/1)
       |> Stream.intersperse(",")
 
-    [["{\"type\": \"#{type}\", \"name\": \"#{name}\", \"features\": "], ["["], data, ["]"], ["}"]]
+    [["{\"type\": \"#{type}\", \"name\": \"#{name}\", \"features\": "], ["["], data, ["],"]]
     |> Stream.concat()
-    |> stream_data(conn, "query-results", format)
+    |> stream_data_with_bounding_box(conn, "query-results", format)
   end
 
   defp decode_feature_result(feature) do
