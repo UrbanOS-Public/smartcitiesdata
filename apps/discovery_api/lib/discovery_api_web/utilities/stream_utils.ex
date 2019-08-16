@@ -12,6 +12,7 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
     |> CSV.encode(delimiter: "\n")
   end
 
+  # sobelow_skip ["XSS.ContentType"]
   def stream_data_with_bounding_box(stream, conn, system_name, "geojson" = format) do
     conn =
       conn
