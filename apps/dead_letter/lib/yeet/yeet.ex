@@ -3,7 +3,8 @@ defmodule Yeet do
 
   defimpl Jason.Encoder, for: Tuple do
     def encode(value, opts) do
-      Tuple.to_list(value)
+      value
+      |> Tuple.to_list()
       |> Jason.Encode.list(opts)
     end
   end

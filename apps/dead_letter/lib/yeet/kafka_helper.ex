@@ -1,4 +1,6 @@
 defmodule Yeet.KafkaHelper do
+  require Logger
+
   @moduledoc """
     Helper module for sending messages to Kafka.
   """
@@ -8,9 +10,11 @@ defmodule Yeet.KafkaHelper do
   """
   @spec produce(any()) :: :ok | {:error, any()}
   def produce(message) do
-    :brod.start_client(endpoint(), :dead_letter_client, [])
-    :brod.start_producer(:dead_letter_client, topic(), [])
-    :brod.produce_sync(:dead_letter_client, topic(), 0, message.app, Jason.encode!(message))
+    :ok = :brod.start_client(endpoint(), :dead_letter_client, [])
+    :ok = :brod.start_producer(:dead_letter_client, topic(), [])
+    :ok = :brod.produce_sync(:dead_letter_client, topic(), 0, message.app, Jason.encode!(message))
+  rescue
+    e -> Logger.error("Unable to yeet message: #{inspect(message)}\n\treason: #{inspect(e)}")
   end
 
   defp endpoint do
