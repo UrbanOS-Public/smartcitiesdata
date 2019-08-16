@@ -243,7 +243,7 @@ defmodule DiscoveryApiWeb.DatasetPreviewControllerTest do
 
       allow(Model.get(dataset_id), return: model)
 
-      allow(DiscoveryApiWeb.Services.PrestoService.preview(dataset_name, row_limit),
+      allow(DiscoveryApi.Services.PrestoService.preview(dataset_name, row_limit),
         return: [
           %{"feature" => "{\"geometry\": { \"coordinates\": [] }}"}
         ]

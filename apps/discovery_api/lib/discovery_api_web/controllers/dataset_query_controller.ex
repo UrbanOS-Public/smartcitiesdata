@@ -1,7 +1,6 @@
 defmodule DiscoveryApiWeb.DatasetQueryController do
   use DiscoveryApiWeb, :controller
   require Logger
-
   alias DiscoveryApi.Services.MetricsService
   alias DiscoveryApiWeb.Utilities.AuthUtils
 

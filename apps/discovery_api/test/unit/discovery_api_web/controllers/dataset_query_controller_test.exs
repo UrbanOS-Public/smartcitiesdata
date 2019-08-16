@@ -606,6 +606,11 @@ defmodule DiscoveryApiWeb.DatasetQueryControllerTest do
         meck_options: [:passthrough]
       )
 
+      allow(AuthUtils.authorized_to_query?(any(), any()),
+        return: true,
+        meck_options: [:passthrough]
+      )
+
       assert conn
              |> put_req_header("accept", "application/json")
              |> put_req_header("content-type", "text/plain")
