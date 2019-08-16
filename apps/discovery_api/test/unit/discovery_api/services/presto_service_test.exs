@@ -1,9 +1,9 @@
-defmodule DiscoveryApiWeb.Services.PrestoServiceTest do
+defmodule DiscoveryApi.Services.PrestoServiceTest do
   use ExUnit.Case
   use Placebo
   import Checkov
 
-  alias DiscoveryApiWeb.Services.PrestoService
+  alias DiscoveryApi.Services.PrestoService
 
   test "preview should query presto for given table" do
     dataset = "things_in_the_fire"

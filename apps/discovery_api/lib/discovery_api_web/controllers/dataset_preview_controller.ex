@@ -1,6 +1,6 @@
 defmodule DiscoveryApiWeb.DatasetPreviewController do
   use DiscoveryApiWeb, :controller
-  alias DiscoveryApiWeb.Services.PrestoService
+  alias DiscoveryApi.Services.PrestoService
 
   def fetch_preview(conn, _params) do
     columns =

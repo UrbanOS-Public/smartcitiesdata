@@ -1,4 +1,4 @@
-defmodule DiscoveryApiWeb.Services.PrestoService do
+defmodule DiscoveryApi.Services.PrestoService do
   @moduledoc false
   @supported_statements [
     ~r/^\s*SELECT\s.*$/i,

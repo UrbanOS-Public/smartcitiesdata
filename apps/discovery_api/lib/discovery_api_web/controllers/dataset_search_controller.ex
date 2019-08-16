@@ -2,7 +2,7 @@ require Logger
 
 defmodule DiscoveryApiWeb.DatasetSearchController do
   use DiscoveryApiWeb, :controller
-  alias DiscoveryApiWeb.Services.AuthService
+  alias DiscoveryApiWeb.Utilities.AuthUtils
 
   alias DiscoveryApi.Search.{DataModelFilterator, DataModelFacinator, DataModelSearchinator}
 
@@ -67,8 +67,8 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
   end
 
   defp remove_unauthorized_models(conn, filtered_models) do
-    username = AuthService.get_user(conn)
-    Enum.filter(filtered_models, &AuthService.has_access?(&1, username))
+    username = AuthUtils.get_user(conn)
+    Enum.filter(filtered_models, &AuthUtils.has_access?(&1, username))
   end
 
   defp validate_facets(map) do

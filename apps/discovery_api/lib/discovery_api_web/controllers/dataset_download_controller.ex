@@ -1,6 +1,6 @@
 defmodule DiscoveryApiWeb.DatasetDownloadController do
   use DiscoveryApiWeb, :controller
-  alias DiscoveryApiWeb.Services.MetricsService
+  alias DiscoveryApi.Services.MetricsService
   require Logger
 
   def fetch_file(conn, params) do
