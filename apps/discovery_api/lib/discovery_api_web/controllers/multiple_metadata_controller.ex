@@ -1,16 +1,18 @@
 require Logger
 
-defmodule DiscoveryApiWeb.DatasetSearchController do
+defmodule DiscoveryApiWeb.MultipleMetadataController do
   use DiscoveryApiWeb, :controller
   alias DiscoveryApiWeb.Utilities.AuthUtils
-
+  alias DiscoveryApiWeb.MultipleMetadataView
   alias DiscoveryApi.Search.{DataModelFilterator, DataModelFacinator, DataModelSearchinator}
+  alias DiscoveryApi.Data.Model
 
   @matched_params [
     %{"query" => "", "limit" => "10", "offset" => "0", "apiAccessible" => "false"},
     %{"limit" => "10", "offset" => "0", "apiAccessible" => "false"}
   ]
 
+  plug(:accepts, MultipleMetadataView.accepted_formats())
   plug DiscoveryApiWeb.Plugs.ResponseCache, %{for_params: @matched_params} when action in [:search]
 
   def search(conn, params) do
@@ -50,6 +52,24 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
       reraise e, __STACKTRACE__
   end
 
+  def fetch_data_json(conn, _params) do
+    case Model.get_all() |> Enum.filter(&is_public?/1) do
+      [] ->
+        render_error(conn, 404, "Not Found")
+
+      result ->
+        render(
+          conn,
+          :get_data_json,
+          models: result
+        )
+    end
+  end
+
+  defp is_public?(%Model{} = model) do
+    model.private == false
+  end
+
   defp parse_api_accessible(params) do
     params
     |> Map.get("apiAccessible", "false")
@@ -67,8 +87,8 @@ defmodule DiscoveryApiWeb.DatasetSearchController do
   end
 
   defp remove_unauthorized_models(conn, filtered_models) do
-    username = AuthUtils.get_user(conn)
-    Enum.filter(filtered_models, &AuthUtils.has_access?(&1, username))
+    current_user = conn.assigns.current_user
+    Enum.filter(filtered_models, &AuthUtils.has_access?(&1, current_user))
   end
 
   defp validate_facets(map) do

@@ -1,4 +1,4 @@
-defmodule DiscoveryApiWeb.DatasetSearchViewTest do
+defmodule DiscoveryApiWeb.MultipleMetadataViewTest do
   use DiscoveryApiWeb.ConnCase, async: true
   import Phoenix.View
   alias DiscoveryApi.Data.Model
@@ -6,7 +6,7 @@ defmodule DiscoveryApiWeb.DatasetSearchViewTest do
   test "renders search_dataset_summaries.json" do
     actual =
       render(
-        DiscoveryApiWeb.DatasetSearchView,
+        DiscoveryApiWeb.MultipleMetadataView,
         "search_dataset_summaries.json",
         models: [
           %Model{

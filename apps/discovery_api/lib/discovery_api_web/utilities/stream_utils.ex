@@ -20,14 +20,15 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
     end)
   end
 
+  def resp_as_stream(conn, stream, format, dataset_id \\ "query-results", hosted? \\ false)
   # sobelow_skip ["XSS.ContentType"]
-  def stream_data_with_bounding_box(stream, conn, system_name, "geojson" = format) do
+  def resp_as_stream(conn, stream, "geojson" = format, dataset_id, false = _hosted?) do
     conn =
       conn
       |> Conn.put_resp_content_type(MIME.type(format))
       |> Conn.put_resp_header(
         "content-disposition",
-        "attachment; filename=#{system_name}.#{format}"
+        "attachment; filename=#{dataset_id}.#{format}"
       )
       |> Conn.send_chunked(200)
 
@@ -47,23 +48,17 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
   end
 
   # sobelow_skip ["XSS.ContentType"]
-  def stream_data(stream, conn, system_name, format) do
+  def resp_as_stream(conn, stream, format, dataset_id, _hosted?) do
     conn =
       conn
       |> Conn.put_resp_content_type(MIME.type(format))
-      |> Conn.put_resp_header(
-        "content-disposition",
-        "attachment; filename=#{system_name}.#{format}"
-      )
+      |> Conn.put_resp_header("content-disposition", "attachment; filename=#{dataset_id}.#{format}")
       |> Conn.send_chunked(200)
 
     Enum.reduce_while(stream, conn, fn data, conn ->
       case Conn.chunk(conn, data) do
-        {:ok, conn} ->
-          {:cont, conn}
-
-        {:error, :closed} ->
-          {:halt, conn}
+        {:ok, conn} -> {:cont, conn}
+        {:error, :closed} -> {:halt, conn}
       end
     end)
   end

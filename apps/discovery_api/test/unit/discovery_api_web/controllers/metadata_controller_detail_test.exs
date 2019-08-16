@@ -1,4 +1,4 @@
-defmodule DiscoveryApiWeb.DatasetDetailControllerTest do
+defmodule DiscoveryApiWeb.MetadataController.DetailTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   alias DiscoveryApi.Test.Helper

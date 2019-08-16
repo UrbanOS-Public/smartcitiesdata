@@ -4,39 +4,21 @@ defmodule DiscoveryApiWeb.Router do
   """
   use DiscoveryApiWeb, :router
 
-  pipeline :api do
-    plug(Plug.Logger)
-    plug(:accepts, ["csv", "json", "geojson"])
+  pipeline :add_user_details do
+    plug(Guardian.Plug.Pipeline,
+      otp_app: :discovery_api,
+      module: DiscoveryApi.Auth.Guardian,
+      error_handler: DiscoveryApi.Auth.ErrorHandler
+    )
+
+    plug(Guardian.Plug.VerifyHeader, claims: %{iss: "discovery_api"}, realm: "Bearer")
+    plug(Guardian.Plug.VerifyCookie)
+    plug(Guardian.Plug.LoadResource, allow_blank: true)
+    plug(DiscoveryApiWeb.Plugs.SetCurrentUser)
   end
 
-  pipeline :api_csv_only do
-    plug(Plug.Logger)
-    plug(:accepts, ["csv"])
-  end
-
-  pipeline :api_json_only do
-    plug(Plug.Logger)
-    plug(:accepts, ["json"])
-  end
-
-  pipeline :api_geojson_only do
-    plug(Plug.Logger)
-    plug(:accepts, ["geojson"])
-  end
-
-  pipeline :api_any do
-    plug(Plug.Logger)
-    plug(DiscoveryApiWeb.Plugs.Acceptor)
-  end
-
-  pipeline :check_restricted do
-    plug(DiscoveryApiWeb.Plugs.GetModel)
-    plug(DiscoveryApi.Auth.Pipeline)
-    plug(DiscoveryApiWeb.Plugs.Restrictor)
-  end
-
-  pipeline :add_auth_details do
-    plug(DiscoveryApi.Auth.Pipeline)
+  pipeline :reject_cookies_from_ajax do
+    plug(DiscoveryApiWeb.Plugs.CookieMonster)
   end
 
   scope "/", DiscoveryApiWeb do
@@ -44,51 +26,27 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:api_json_only, :add_auth_details])
+    pipe_through([:reject_cookies_from_ajax, :add_user_details])
 
-    get("/dataset/search", DatasetSearchController, :search)
-    get("/data_json", DataJsonController, :get_data_json)
-    get("/organization/:id", OrganizationController, :fetch_organization)
-  end
-
-  scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:api_json_only, :check_restricted])
-
-    get("/dataset/:dataset_id/preview", DatasetPreviewController, :fetch_preview)
-    get("/dataset/:dataset_id/stats", DatasetStatsController, :fetch_dataset_stats)
-    get("/organization/:org_name/dataset/:dataset_name", DatasetDetailController, :fetch_dataset_detail)
-    get("/dataset/:dataset_id", DatasetDetailController, :fetch_dataset_detail)
-  end
-
-  scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:api_geojson_only, :check_restricted])
-
-    get("/dataset/:dataset_id/features_preview", DatasetPreviewController, :fetch_geojson_features)
-    get("/organization/:org_name/dataset/:dataset_id/features_preview", DatasetPreviewController, :fetch_geojson_features)
-  end
-
-  scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:api, :add_auth_details])
+    get("/login", LoginController, :login)
     get("/logout", LoginController, :logout)
-    post("/query", DatasetQueryController, :query_multiple)
-  end
 
-  scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:api, :check_restricted])
+    get("/dataset/search", MultipleMetadataController, :search)
+    get("/data_json", MultipleMetadataController, :fetch_data_json)
+    post("/query", MultipleDataController, :query)
 
-    get("/organization/:org_name/dataset/:dataset_name/query", DatasetQueryController, :query)
-    get("/dataset/:dataset_id/query", DatasetQueryController, :query)
-  end
+    get("/organization/:id", OrganizationController, :fetch_detail)
 
-  scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:api_any, :check_restricted])
-    get("/organization/:org_name/dataset/:dataset_name/download", DatasetDownloadController, :fetch_file)
-    get("/dataset/:dataset_id/download", DatasetDownloadController, :fetch_file)
-  end
+    get("/organization/:org_name/dataset/:dataset_name", MetadataController, :fetch_detail)
+    get("/dataset/:dataset_id", MetadataController, :fetch_detail)
+    get("/dataset/:dataset_id/stats", MetadataController, :fetch_stats)
+    get("/dataset/:dataset_id/metrics", MetadataController, :fetch_metrics)
 
-  scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:api])
-    get("/login", LoginController, :new)
-    get("/dataset/:dataset_id/metrics", DatasetMetricsController, :get)
+    get("/organization/:org_name/dataset/:dataset_name/preview", DataController, :fetch_preview)
+    get("/dataset/:dataset_id/preview", DataController, :fetch_preview)
+    get("/organization/:org_name/dataset/:dataset_name/query", DataController, :query)
+    get("/dataset/:dataset_id/query", DataController, :query)
+    get("/organization/:org_name/dataset/:dataset_name/download", DataController, :fetch_file)
+    get("/dataset/:dataset_id/download", DataController, :fetch_file)
   end
 end

@@ -76,4 +76,71 @@ defmodule DiscoveryApi.Services.PrestoService do
 
     catalog == "hive" && schema == "default"
   end
+
+  def get_column_names(system_name, nil), do: get_column_names(system_name)
+
+  def get_column_names(system_name, columns_string) do
+    case get_column_names(system_name) do
+      {:ok, _names} -> {:ok, clean_columns(columns_string)}
+      {_, error} -> {:error, error}
+    end
+  end
+
+  def get_column_names(system_name) do
+    "describe #{system_name}"
+    |> Prestige.execute()
+    |> Prestige.prefetch()
+    |> Enum.map(fn [col | _tail] -> col end)
+    |> case do
+      [] -> {:error, "Table #{system_name} not found"}
+      names -> {:ok, names}
+    end
+  end
+
+  def build_query(params, system_name) do
+    column_string = Map.get(params, "columns", "*")
+
+    ["SELECT"]
+    |> build_columns(column_string)
+    |> Enum.concat(["FROM #{system_name}"])
+    |> add_clause("where", params)
+    |> add_clause("groupBy", params)
+    |> add_clause("orderBy", params)
+    |> add_clause("limit", params)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join(" ")
+    |> validate_query()
+  end
+
+  defp validate_query(query) do
+    [";", "/*", "*/", "--"]
+    |> Enum.map(fn x -> String.contains?(query, x) end)
+    |> Enum.any?(fn contained_string -> contained_string end)
+    |> case do
+      true -> {:bad_request, "Query contained illegal character(s): [#{query}]"}
+      false -> {:ok, query}
+    end
+  end
+
+  defp add_clause(clauses, type, map) do
+    value = Map.get(map, type, "")
+    clauses ++ [build_clause(type, value)]
+  end
+
+  defp build_clause(_, ""), do: nil
+  defp build_clause("where", value), do: "WHERE #{value}"
+  defp build_clause("orderBy", value), do: "ORDER BY #{value}"
+  defp build_clause("limit", value), do: "LIMIT #{value}"
+  defp build_clause("groupBy", value), do: "GROUP BY #{value}"
+
+  defp build_columns(clauses, column_string) do
+    cleaned_columns = column_string |> clean_columns() |> Enum.join(", ")
+    clauses ++ [cleaned_columns]
+  end
+
+  defp clean_columns(column_string) do
+    column_string
+    |> String.split(",", trim: true)
+    |> Enum.map(&String.trim/1)
+  end
 end

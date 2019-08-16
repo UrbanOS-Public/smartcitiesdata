@@ -7,7 +7,7 @@ defmodule DiscoveryApiWeb.Plugs.Restrictor do
   def init(default), do: default
 
   def call(conn, _) do
-    username = AuthUtils.get_user(conn)
+    username = conn.assigns.current_user
 
     case AuthUtils.has_access?(conn.assigns.model, username) do
       true -> conn

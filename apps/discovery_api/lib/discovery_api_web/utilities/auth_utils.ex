@@ -5,13 +5,6 @@ defmodule DiscoveryApiWeb.Utilities.AuthUtils do
   alias DiscoveryApi.Services.{PaddleService, PrestoService}
   alias DiscoveryApi.Data.Model
 
-  def get_user(conn) do
-    case Guardian.Plug.current_claims(conn) do
-      %{"sub" => uid} -> uid
-      _ -> nil
-    end
-  end
-
   def authorized_to_query?(statement, username) do
     with true <- PrestoService.is_select_statement?(statement),
          {:ok, affected_tables} <- PrestoService.get_affected_tables(statement),

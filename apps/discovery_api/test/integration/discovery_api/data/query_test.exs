@@ -136,9 +136,9 @@ defmodule DiscoveryApi.Data.QueryTest do
 
       expected =
         [
-          %{"_col0" => 1, "name" => "Fred"},
-          %{"_col0" => 1, "name" => "Gred"},
-          %{"_col0" => 1, "name" => "Hred"}
+          %{"count(id)" => 1, "name" => "Fred"},
+          %{"count(id)" => 1, "name" => "Gred"},
+          %{"count(id)" => 1, "name" => "Hred"}
         ]
         |> Jason.encode!()
 

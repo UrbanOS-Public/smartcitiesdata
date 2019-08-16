@@ -3,7 +3,7 @@ defmodule DiscoveryApiWeb.LoginController do
   use DiscoveryApiWeb, :controller
   alias DiscoveryApi.Auth.Guardian
 
-  def new(conn, _) do
+  def login(conn, _) do
     {user, password} = extract_auth(conn)
 
     case PaddleWrapper.authenticate(user, password) do
@@ -18,6 +18,20 @@ defmodule DiscoveryApiWeb.LoginController do
 
       {:error, :invalidCredentials} ->
         render_error(conn, 401, "Not Authorized")
+    end
+  end
+
+  def logout(conn, _) do
+    jwt = extract_token(conn)
+
+    case Guardian.revoke(jwt) do
+      {:ok, _claims} ->
+        conn
+        |> Guardian.Plug.sign_out(clear_remember_me: true)
+        |> text("Logged out.")
+
+      {:error, _error} ->
+        render_error(conn, 404, "Not Found")
     end
   end
 
@@ -38,19 +52,5 @@ defmodule DiscoveryApiWeb.LoginController do
     |> List.last()
     |> String.split(" ")
     |> List.last()
-  end
-
-  def logout(conn, _) do
-    jwt = extract_token(conn)
-
-    case Guardian.revoke(jwt) do
-      {:ok, _claims} ->
-        conn
-        |> Guardian.Plug.sign_out(clear_remember_me: true)
-        |> text("Logged out.")
-
-      {:error, _error} ->
-        render_error(conn, 404, "Not Found")
-    end
   end
 end

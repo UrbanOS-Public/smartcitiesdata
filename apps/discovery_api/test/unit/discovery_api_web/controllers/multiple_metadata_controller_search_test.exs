@@ -1,4 +1,4 @@
-defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
+defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   import Checkov
@@ -16,8 +16,7 @@ defmodule DiscoveryApiWeb.DatasetSearchControllerTest do
   end
 
   describe "fetch dataset summaries" do
-    data_test "request to search with #{inspect(params)}",
-              %{conn: conn} do
+    data_test "request to search with #{inspect(params)}", %{conn: conn} do
       response_map = conn |> get("/api/v1/dataset/search", params) |> json_response(200)
       actual = get_in(response_map, selector)
 

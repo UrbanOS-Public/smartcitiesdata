@@ -1,8 +1,12 @@
-defmodule DiscoveryApiWeb.DatasetDetailView do
+defmodule DiscoveryApiWeb.MetadataView do
   use DiscoveryApiWeb, :view
   alias DiscoveryApi.Data.Model
 
-  def render("fetch_dataset_detail.json", %{model: model}) do
+  def accepted_formats() do
+    ["json"]
+  end
+
+  def render("detail.json", %{model: model}) do
     translate_to_dataset_detail(model)
   end
 
