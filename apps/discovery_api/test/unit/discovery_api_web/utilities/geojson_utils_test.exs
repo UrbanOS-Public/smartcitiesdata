@@ -26,6 +26,14 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtilsTest do
           [[[1, 1], [1, 0], [0, 1], [1, 1]], [[3, 3], [3, 2], [2, 3], [3, 3]]],
           [0, 0, 3, 3]
         ],
+        [
+          "multiline string",
+          [
+            [[10, 10], [20, 20], [10, 40]],
+            [[40, 40], [30, 30], [40, 20], [30, 10]]
+          ],
+          [10, 10, 40, 40]
+        ],
         ["empty coordinates", [], nil]
       ])
     end
