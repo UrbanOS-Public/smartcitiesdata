@@ -436,7 +436,8 @@ defmodule ValkyrieTest do
           }
         )
 
-      payload = %{"geometry" => {:invalid, :json}}
+      invalid_json_bitstring = <<0::1>>
+      payload = %{"geometry" => invalid_json_bitstring}
 
       assert {:error, %{"geometry" => :invalid_json}} == Valkyrie.standardize_data(dataset, payload)
     end
