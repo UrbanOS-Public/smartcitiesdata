@@ -17,15 +17,16 @@ defmodule DiscoveryApiWeb.MultipleDataView do
   end
 
   def render_as_stream(:data, "csv", %{stream: stream}) do
-    column_names =
-      stream
-      |> Stream.take(1)
-      |> Stream.map(&Map.keys/1)
-      |> Enum.into([])
-      |> List.flatten()
-
     stream
-    |> Stream.map(&Map.values/1)
-    |> map_data_stream_for_csv(column_names)
+    |> Stream.transform(false, &do_transform/2)
+    |> map_data_stream_for_csv()
+  end
+
+  defp do_transform(el, false) do
+    {[Map.keys(el), Map.values(el)], true}
+  end
+
+  defp do_transform(el, true) do
+    {[Map.values(el)], true}
   end
 end

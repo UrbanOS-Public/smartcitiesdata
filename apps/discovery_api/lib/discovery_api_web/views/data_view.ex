@@ -14,9 +14,11 @@ defmodule DiscoveryApiWeb.DataView do
   end
 
   def render("data.csv", %{rows: rows, columns: columns}) do
-    rows
-    |> Enum.map(&Map.values/1)
-    |> map_data_stream_for_csv(columns)
+    rows = Enum.map(rows, &Map.values/1)
+
+    [columns]
+    |> Enum.concat(rows)
+    |> map_data_stream_for_csv()
     |> Enum.into([])
     |> List.to_string()
   end
@@ -47,7 +49,9 @@ defmodule DiscoveryApiWeb.DataView do
   end
 
   def render_as_stream(:data, "csv", %{stream: stream, columns: columns}) do
-    map_data_stream_for_csv(stream, columns)
+    [columns]
+    |> Stream.concat(stream)
+    |> map_data_stream_for_csv()
   end
 
   def render_as_stream(:data, "json", %{stream: stream, columns: columns}) do

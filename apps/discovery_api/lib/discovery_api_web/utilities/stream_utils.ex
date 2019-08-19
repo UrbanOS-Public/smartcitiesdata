@@ -6,9 +6,8 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
   alias DiscoveryApiWeb.Utilities.GeojsonUtils
   require Logger
 
-  def map_data_stream_for_csv(stream, table_headers) do
-    [table_headers]
-    |> Stream.concat(stream)
+  def map_data_stream_for_csv(stream) do
+    stream
     |> Stream.map(&flatten_lists/1)
     |> CSV.encode(delimiter: "\n")
   end
