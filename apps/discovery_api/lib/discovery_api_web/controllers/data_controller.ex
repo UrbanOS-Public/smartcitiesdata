@@ -55,7 +55,7 @@ defmodule DiscoveryApiWeb.DataController do
     MetricsService.record_api_hit("downloads", dataset_id)
 
     data_stream = Prestige.execute("select * from #{dataset_name}")
-    rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns})
+    rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name})
 
     resp_as_stream(conn, rendered_data_stream, format, dataset_id)
   end
