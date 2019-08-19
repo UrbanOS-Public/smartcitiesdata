@@ -190,6 +190,20 @@ defmodule ValkyrieTest do
       ])
     end
 
+    test "an empty string of type string should not be converted to nil" do
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "empty_string", type: "string"}
+            ]
+          }
+        )
+
+      assert {:ok, %{"empty_string" => ""}} == Valkyrie.standardize_data(dataset, %{"empty_string" => ""})
+    end
+
     test "transforms valid values in a map" do
       sub_schema = [
         %{name: "name", type: "string"},
