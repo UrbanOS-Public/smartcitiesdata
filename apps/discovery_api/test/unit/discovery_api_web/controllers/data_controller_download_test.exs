@@ -24,9 +24,9 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
           orgName: @org_name
         },
         schema: [
-          %{description: "a number", name: "number", type: "integer"},
-          %{description: "a number", name: "number", type: "integer"},
-          %{description: "a number", name: "number", type: "integer"}
+          %{description: "a number", name: "id", type: "integer"},
+          %{description: "a number", name: "name", type: "string"},
+          %{description: "a number", name: "age", type: "integer"}
         ]
       })
 

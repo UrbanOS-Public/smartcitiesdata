@@ -79,7 +79,11 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
           id: dataset_id,
           name: dataset_name,
           sourceFormat: "geojson",
-          systemName: dataset_name
+          systemName: dataset_name,
+          schema: [
+            %{description: "a number", name: "id", type: "integer"},
+            %{description: "a number", name: "name", type: "string"}
+          ]
         })
 
       allow(Model.get(dataset_id), return: model)

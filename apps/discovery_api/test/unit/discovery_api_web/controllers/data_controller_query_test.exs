@@ -23,7 +23,11 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
         private: false,
         lastUpdatedDate: nil,
         queries: 7,
-        downloads: 9
+        downloads: 9,
+        schema: [
+          %{description: "a number", name: "id", type: "integer"},
+          %{description: "a number", name: "name", type: "string"}
+        ]
       })
 
     allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)

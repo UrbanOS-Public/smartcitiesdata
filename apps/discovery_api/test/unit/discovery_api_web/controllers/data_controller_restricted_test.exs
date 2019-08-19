@@ -26,9 +26,9 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
           dn: "cn=this_is_a_group,ou=Group"
         },
         schema: [
-          %{description: "a number", name: "number", type: "integer"},
-          %{description: "a number", name: "number", type: "integer"},
-          %{description: "a number", name: "number", type: "integer"}
+          %{description: "a number", name: "id", type: "integer"},
+          %{description: "a number", name: "name", type: "string"},
+          %{description: "a number", name: "age", type: "integer"}
         ]
       })
 

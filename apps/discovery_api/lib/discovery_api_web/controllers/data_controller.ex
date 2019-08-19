@@ -69,6 +69,7 @@ defmodule DiscoveryApiWeb.DataController do
     dataset_name = conn.assigns.model.systemName
     dataset_id = conn.assigns.model.id
     current_user = conn.assigns.current_user
+    schema = conn.assigns.model.schema
 
     with {:ok, columns} <- PrestoService.get_column_names(dataset_name, Map.get(params, "columns")),
          {:ok, query} <- PrestoService.build_query(params, dataset_name),
@@ -76,7 +77,8 @@ defmodule DiscoveryApiWeb.DataController do
       MetricsService.record_api_hit("queries", dataset_id)
 
       data_stream = Prestige.execute(query)
-      rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name})
+      decoded_json = JsonFieldDecoder.has_json_fields(schema, data_stream)
+      rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: decoded_json, columns: columns, dataset_name: dataset_name})
 
       resp_as_stream(conn, rendered_data_stream, format, dataset_id)
     else
