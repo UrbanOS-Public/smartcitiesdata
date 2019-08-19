@@ -22,7 +22,12 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
         downloads: 9,
         organizationDetails: %{
           orgName: @org_name
-        }
+        },
+        schema: [
+          %{description: "a number", name: "number", type: "integer"},
+          %{description: "a number", name: "number", type: "integer"},
+          %{description: "a number", name: "number", type: "integer"}
+        ]
       })
 
     allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
@@ -57,7 +62,12 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
           downloads: 9,
           organizationDetails: %{
             orgName: @org_name
-          }
+          },
+          schema: [
+            %{description: "a number", name: "number", type: "integer"},
+            %{description: "a number", name: "number", type: "integer"},
+            %{description: "a number", name: "number", type: "integer"}
+          ]
         })
 
       allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)

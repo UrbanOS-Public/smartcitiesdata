@@ -54,8 +54,12 @@ defmodule DiscoveryApiWeb.DataController do
 
     MetricsService.record_api_hit("downloads", dataset_id)
 
+    schema = conn.assigns.model.schema
+
     data_stream = Prestige.execute("select * from #{dataset_name}")
-    rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name})
+    decoded_json = JsonFieldDecoder.has_json_fields(schema, data_stream)
+
+    rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: decoded_json, columns: columns, dataset_name: dataset_name})
 
     resp_as_stream(conn, rendered_data_stream, format, dataset_id)
   end

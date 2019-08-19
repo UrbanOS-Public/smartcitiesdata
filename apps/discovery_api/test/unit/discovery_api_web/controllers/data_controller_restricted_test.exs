@@ -24,7 +24,12 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
         organizationDetails: %{
           orgName: @org_name,
           dn: "cn=this_is_a_group,ou=Group"
-        }
+        },
+        schema: [
+          %{description: "a number", name: "number", type: "integer"},
+          %{description: "a number", name: "number", type: "integer"},
+          %{description: "a number", name: "number", type: "integer"}
+        ]
       })
 
     allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
