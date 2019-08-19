@@ -36,6 +36,8 @@ defmodule Valkyrie do
     Protocol.UndefinedError -> {:error, :invalid_string}
   end
 
+  defp standardize(_, ""), do: {:ok, nil}
+
   defp standardize(%{type: type}, value) when type in ["integer", "long"] and is_integer(value), do: {:ok, value}
 
   defp standardize(%{type: type}, value) when type in ["integer", "long"] do

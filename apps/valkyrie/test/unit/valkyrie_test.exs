@@ -166,6 +166,30 @@ defmodule ValkyrieTest do
       ])
     end
 
+    data_test "validates that an empty string is a valid #{type}" do
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: field_name, type: type}
+            ]
+          }
+        )
+
+      assert {:ok, %{field_name => nil}} == Valkyrie.standardize_data(dataset, %{field_name => ""})
+
+      where([
+        [:field_name, :type],
+        ["age", "integer"],
+        ["numOfLives", "long"],
+        ["weight", "double"],
+        ["height", "float"],
+        ["isCool", "boolean"],
+        ["dob", "timestamp"]
+      ])
+    end
+
     test "transforms valid values in a map" do
       sub_schema = [
         %{name: "name", type: "string"},
