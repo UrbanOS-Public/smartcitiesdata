@@ -91,5 +91,17 @@ defmodule DiscoveryApiWeb.Utilities.AuthUtilsTest do
 
       refute AuthUtils.authorized_to_query?("select * from public_table", "some_user")
     end
+
+    test "matches tables to models without case sensitivity" do
+      allow PrestoService.get_affected_tables(any()), return: {:ok, ["public_table"]}
+      allow PrestoService.is_select_statement?(any()), return: true
+
+      model = Helper.sample_model(%{private: true, systemName: "PuBliC_TaBlE", organizationDetails: %{dn: "some_dn"}})
+      allow Model.get_all(), return: [model]
+
+      allow PaddleService.get_members(any()), return: ["some_user"]
+
+      assert AuthUtils.authorized_to_query?("select * from public_table", "some_user")
+    end
   end
 end

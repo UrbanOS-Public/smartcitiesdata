@@ -68,6 +68,7 @@ defmodule DiscoveryApi.Services.PrestoService do
     |> List.flatten()
     |> Enum.filter(filter_function)
     |> Enum.map(&get_in(&1, ["schemaTable", "table"]))
+    |> Enum.map(&String.downcase(&1))
   end
 
   defp in_hive_schema?(table_spec) do

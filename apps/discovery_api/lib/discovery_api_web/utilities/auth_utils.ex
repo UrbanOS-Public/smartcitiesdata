@@ -18,11 +18,14 @@ defmodule DiscoveryApiWeb.Utilities.AuthUtils do
   defp get_affected_models(affected_tables) do
     all_models = Model.get_all()
 
-    Enum.filter(all_models, &(&1.systemName in affected_tables))
+    Enum.filter(all_models, &(String.downcase(&1.systemName) in affected_tables))
   end
 
   defp valid_tables?(affected_tables, affected_models) do
-    affected_system_names = Enum.map(affected_models, & &1.systemName)
+    affected_system_names =
+      affected_models
+      |> Enum.map(& &1.systemName)
+      |> Enum.map(&String.downcase(&1))
 
     MapSet.new(affected_tables) == MapSet.new(affected_system_names)
   end
