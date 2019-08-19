@@ -23,20 +23,25 @@ defmodule Odo.MixProject do
 
   defp deps do
     [
+      {:brook, git: "https://github.com/bbalser/brook.git", ref: "17205202ad77159d81ad62c57b406a4d98074bc8"},
       {:distillery, "2.0.14"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
-      {:geomancer, git: "https://github.com/jdenen/geomancer.git"},
+      {:geomancer, "~> 0.1.0"},
       {:hackney, "~> 1.15"},
+      {:libvault, "~> 0.2"},
       {:poison, "~> 3.0"},
       {:redix, "~> 0.9"},
       {:retry, "~> 0.11.0"},
+      {:smart_city, "~> 2.4", override: true},
       {:smart_city_registry, "~> 4.0"},
       {:sweet_xml, "~> 0.6"},
       # Test/Dev Dependencies
       {:dialyxir, "~> 0.5", only: [:dev]},
       {:divo, "~> 1.1", only: [:dev, :integration], override: true},
       {:divo_redis, "~> 0.1", only: [:dev, :integration]},
+      {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
+      {:placebo, "~> 1.2", only: [:test]},
       {:smart_city_test, "~> 0.3", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]}
     ]

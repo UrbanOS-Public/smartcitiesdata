@@ -1,56 +1,68 @@
-defmodule Odo.OdoTest do
+defmodule Odo.Integration.OdoTest do
   use ExUnit.Case
   use Divo
-  require Logger
-  alias SmartCity.Dataset
-  alias SmartCity.TestDataGenerator, as: TDG
-  alias ExAws.S3
   import SmartCity.TestHelper
+  import SmartCity.Event, only: [file_upload: 0]
+  alias SmartCity.Event.FileUpload
+
+  @kafka_broker Application.get_env(:odo, :kafka_broker)
 
   setup do
     id = 111
     org = "my-org"
-    dataName = "my-data"
+    data_name = "my-data"
     bucket = "hosted-dataset-files"
 
     on_exit(fn ->
-      File.rm!("test/support/minio_data/hosted-dataset-files/#{org}/#{dataName}.geojson")
+      File.rm!("test/support/minio_data/hosted-dataset-files/#{org}/#{data_name}.geojson")
     end)
 
     [
       id: id,
       org: org,
-      dataName: dataName,
+      data_name: data_name,
       bucket: bucket
     ]
   end
 
-  test "happy path", %{id: id, org: org, dataName: dataName, bucket: bucket} do
+  test "retrieves, converts, and uploads supported file type", %{id: id, org: org, data_name: data_name, bucket: bucket} do
     Temp.track!()
-    Application.put_env(:odo, :download_dir, Temp.mkdir!())
+    Application.put_env(:odo, :working_dir, Temp.mkdir!())
 
-    dataset =
-      TDG.create_dataset(%{
-        id: id,
-        technical: %{
-          sourceFormat: "shapefile",
-          sourceType: "host",
-          orgName: org,
-          dataName: dataName
-        }
+    {:ok, file_event} =
+      FileUpload.new(%{
+        dataset_id: id,
+        bucket: bucket,
+        key: "#{org}/#{data_name}.shapefile",
+        mime_type: "application/zip"
       })
 
-    SmartCity.Dataset.write(dataset)
+    Brook.send_event(file_upload(), file_event)
+
+    new_key = "#{org}/#{data_name}.geojson"
 
     eventually(fn ->
       fileResp =
-        ExAws.S3.get_object(bucket, "/#{org}/#{dataName}.geojson")
+        ExAws.S3.get_object(bucket, new_key)
         |> ExAws.request()
 
       assert {:ok, %{body: body}} = fileResp
       assert body != nil
 
-      assert {:ok, 1} = Redix.command(:redix, ["SISMEMBER", "smart_city:filetypes:#{id}", "geojson"])
+      actual_events = Elsa.Fetch.search_values(@kafka_broker, "event-stream", ".geojson") |> Enum.to_list() |> hd()
+      actual_state = Brook.get_all_values!(:file_conversions)
+
+      expected_events =
+        FileUpload.new(%{
+          dataset_id: id,
+          mime_type: "application/geo+json",
+          bucket: bucket,
+          key: new_key
+        })
+        |> (fn {:ok, event} -> Jason.encode!(event) end).()
+
+      assert actual_events.value == expected_events
+      assert Enum.member?(actual_state, file_event) == false
     end)
   end
 end
