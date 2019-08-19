@@ -10,6 +10,10 @@ defmodule DiscoveryApiWeb.MetadataView do
     translate_to_dataset_detail(model)
   end
 
+  def render("fetch_schema.json", %{model: %{schema: schema}}) do
+    schema
+  end
+
   defp translate_to_dataset_detail(%Model{} = model) do
     %{
       name: model.name,

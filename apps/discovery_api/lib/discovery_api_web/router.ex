@@ -41,6 +41,7 @@ defmodule DiscoveryApiWeb.Router do
     get("/dataset/:dataset_id", MetadataController, :fetch_detail)
     get("/dataset/:dataset_id/stats", MetadataController, :fetch_stats)
     get("/dataset/:dataset_id/metrics", MetadataController, :fetch_metrics)
+    get("/dataset/:dataset_id/dictionary", MetadataController, :fetch_schema)
 
     get("/organization/:org_name/dataset/:dataset_name/preview", DataController, :fetch_preview)
     get("/dataset/:dataset_id/preview", DataController, :fetch_preview)

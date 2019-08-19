@@ -27,7 +27,7 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
                  "description" => model.organizationDetails.description,
                  "homepage" => model.organizationDetails.homepage
                },
-               "schema" => stringify_keys(model.schema),
+               "schema" => Helper.stringify_keys(model.schema),
                "sourceType" => model.sourceType,
                "sourceFormat" => model.sourceFormat,
                "sourceUrl" => model.sourceUrl,
@@ -155,14 +155,5 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
       |> get("/api/v1/dataset/#{@dataset_id}")
       |> json_response(200)
     end
-  end
-
-  defp stringify_keys(schema) do
-    schema
-    |> Enum.map(fn field ->
-      field
-      |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
-      |> Enum.into(%{})
-    end)
   end
 end

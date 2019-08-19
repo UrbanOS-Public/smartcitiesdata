@@ -155,6 +155,15 @@ defmodule DiscoveryApi.Test.Helper do
     {"token", token} = Enum.find(headers, fn {header, _value} -> header == "token" end)
     token
   end
+
+  def stringify_keys(map) do
+    map
+    |> Enum.map(fn field ->
+      field
+      |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
+      |> Enum.into(%{})
+    end)
+  end
 end
 
 defmodule DiscoveryApiWeb.ConnCase do

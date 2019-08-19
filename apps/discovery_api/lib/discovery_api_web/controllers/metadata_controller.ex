@@ -11,6 +11,10 @@ defmodule DiscoveryApiWeb.MetadataController do
     render(conn, :detail, model: conn.assigns.model)
   end
 
+  def fetch_schema(conn, _params) do
+    render(conn, :fetch_schema, model: conn.assigns.model)
+  end
+
   def fetch_metrics(conn, _params) do
     dataset_id = conn.assigns.model.id
     metrics = Model.get_count_maps(dataset_id)
