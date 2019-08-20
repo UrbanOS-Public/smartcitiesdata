@@ -27,21 +27,21 @@ defmodule Forklift.Datasets.DatasetCompactor do
   def compact_dataset(dataset) do
     pause_ingest(dataset.id)
 
-    dataset.technical.systemName
-    |> cleanup_old_table()
-    |> compact_table()
+    cleanup_old_table(dataset.id, dataset.technical.systemName)
+    compact_table(dataset.id, dataset.technical.systemName)
 
-    Logger.info("#{dataset.id} compacted successfully")
+    Logger.info("#{dataset.id}: compacted successfully")
 
     resume_ingest(dataset)
   rescue
     e ->
-      Logger.error("Unable to compact #{dataset.id}: #{inspect(e)}")
+      Logger.error("#{dataset.id}: compacting raised: #{inspect(e)}")
       resume_ingest(dataset)
       :error
   end
 
   def pause_ingest(dataset_id) do
+    Logger.info("#{dataset_id}: Pausing ingest")
     prefix = Application.get_env(:forklift, :data_topic_prefix)
 
     case Process.whereis(:"elsa_supervisor_name-#{prefix}-#{dataset_id}") do
@@ -54,6 +54,8 @@ defmodule Forklift.Datasets.DatasetCompactor do
   end
 
   def resume_ingest(dataset) do
+    Logger.info("#{dataset.id}: Resuming ingest")
+
     case Forklift.Datasets.DatasetHandler.handle_dataset(dataset) do
       {:ok, _pid} ->
         :ok
@@ -72,22 +74,21 @@ defmodule Forklift.Datasets.DatasetCompactor do
     end
   end
 
-  defp cleanup_old_table(system_name) do
+  defp cleanup_old_table(dataset_id, system_name) do
+    Logger.info("#{dataset_id}: Dropping compact table for #{system_name}")
     execute_as_module_user("drop table if exists #{system_name}_compact")
-
-    system_name
   end
 
-  defp compact_table(system_name) do
+  defp compact_table(dataset_id, system_name) do
     start_time = Time.utc_now()
 
     compact_task =
       Task.async(fn ->
-        execute_as_module_user("create table #{system_name}_compact as (select * from #{system_name})")
+        safe_execute_as_module_user(dataset_id, "create table #{system_name}_compact as (select * from #{system_name})")
       end)
 
     [[original_count]] =
-      Task.async(fn -> execute_as_module_user("select count(1) from #{system_name}") end)
+      Task.async(fn -> safe_execute_as_module_user(dataset_id, "select count(1) from #{system_name}") end)
       |> Task.await(:infinity)
 
     Task.await(compact_task, :infinity)
@@ -95,42 +96,44 @@ defmodule Forklift.Datasets.DatasetCompactor do
     [[compacted_count]] = execute_as_module_user("select count(1) from #{system_name}_compact")
 
     if original_count == compacted_count do
-      system_name
-      |> drop_original_table()
-      |> rename_compact_table()
+      drop_original_table(dataset_id, system_name)
+      rename_compact_table(dataset_id, system_name)
 
       duration = Time.diff(Time.utc_now(), start_time, :millisecond)
 
-      record_metrics(system_name, duration)
-      Logger.info("Compaction of #{system_name} complete - #{duration}")
+      record_metrics(dataset_id, system_name, duration)
+      Logger.info("#{dataset_id}: Compaction of #{system_name} complete - #{duration}")
       :ok
     else
-      cleanup_old_table(system_name)
+      cleanup_old_table(dataset_id, system_name)
 
       error_message =
-        "Compaction failed. Original rows #{original_count} do not match compacted rows: #{compacted_count}"
+        "#{dataset_id}: Compaction of #{system_name} failed. Original rows #{original_count} do not match compacted rows: #{
+          compacted_count
+        }"
 
       Logger.error(error_message)
       raise error_message
     end
   end
 
-  defp drop_original_table(system_name) do
+  defp drop_original_table(dataset_id, system_name) do
+    Logger.info("#{dataset_id}: Dropping original table #{system_name}")
     execute_as_module_user("drop table #{system_name}")
-
-    system_name
   end
 
-  defp rename_compact_table(system_name) do
+  defp rename_compact_table(dataset_id, system_name) do
+    Logger.info("#{dataset_id}: Renaming table")
     execute_as_module_user("alter table #{system_name}_compact rename to #{system_name}")
-    system_name
   rescue
     e ->
-      Logger.error("Unable to rename compacted table #{system_name}")
+      Logger.error("#{dataset_id}: Unable to rename compacted table #{system_name}")
       reraise e, __STACKTRACE__
   end
 
-  defp record_metrics(system_name, time) do
+  defp record_metrics(dataset_id, system_name, time) do
+    Logger.info("#{dataset_id}: Recording metrics")
+
     time
     |> @metric_collector.count_metric("dataset_compaction_duration_total", [
       {"system_name", "#{system_name}"}
@@ -139,8 +142,14 @@ defmodule Forklift.Datasets.DatasetCompactor do
     |> @metric_collector.record_metrics("forklift")
     |> case do
       {:ok, _} -> {}
-      {:error, reason} -> Logger.warn("Unable to write application metrics: #{inspect(reason)}")
+      {:error, reason} -> Logger.warn("#{dataset_id}: Unable to write application metrics: #{inspect(reason)}")
     end
+  end
+
+  defp safe_execute_as_module_user(dataset_id, statement) do
+    execute_as_module_user(statement)
+  rescue
+    e -> Logger.error("#{dataset_id}: Statement #{statement} failed to properly execute: #{inspect(e)}")
   end
 
   defp execute_as_module_user(statement) do

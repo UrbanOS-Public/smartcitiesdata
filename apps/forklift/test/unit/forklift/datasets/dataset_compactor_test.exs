@@ -116,11 +116,12 @@ defmodule DatasetCompactorTest do
       ]
     end
 
-    test "returns :error if compact fails for any reason", %{dataset: dataset} do
+    test "returns :error if compact fails for any  reason", %{dataset: dataset} do
       allow(Prestige.execute(any(), any()), return: :ok)
       allow(Prestige.prefetch(any()), exec: fn _ -> raise :error end)
 
-      assert(DatasetCompactor.compact_dataset(dataset) == :error)
+      assert DatasetCompactor.compact_dataset(dataset) == :error
+      assert_called Forklift.Datasets.DatasetHandler.handle_dataset(dataset)
     end
 
     test "does not delete original table if counts do not match" do

@@ -3,6 +3,8 @@ defmodule Forklift.CompactDatasetTest do
   use Divo
   require Logger
 
+  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+
   @module_user "carpenter"
 
   alias Forklift.Datasets.DatasetCompactor
@@ -28,17 +30,6 @@ defmodule Forklift.CompactDatasetTest do
     DatasetCompactor.pause_ingest(dataset.id)
 
     assert supervisor_eventually_is_gone(dataset.id) == :ok
-
-    data = TDG.create_data(dataset_id: "ds1", payload: %{"id" => 1, "name" => "George"})
-    SmartCity.KafkaHelper.send_to_kafka(data, "integration-ds1")
-
-    assert Patiently.wait_for(
-             prestige_query("select id, name from #{dataset.technical.systemName}", [
-               [1, "George"]
-             ]),
-             dwell: 100,
-             max_tries: 10
-           ) == :error
   end
 
   test "the compactor can resume a dataset by passing it to the handler again" do
@@ -69,10 +60,17 @@ defmodule Forklift.CompactDatasetTest do
 
     assert supervisor_eventually_exists(dataset.id) == :ok
 
-    Patiently.wait_for!(
-      prestige_query("select id, name from #{dataset.technical.systemName}", [[1, "George"]]),
-      dwell: 1000,
-      max_tries: 60
+    eventually(
+      fn ->
+        actual =
+          "select id, name from #{dataset.technical.systemName}"
+          |> Prestige.execute(user: @module_user)
+          |> Prestige.prefetch()
+
+        assert actual == [[1, "George"]]
+      end,
+      1000,
+      60
     )
   end
 
@@ -96,10 +94,17 @@ defmodule Forklift.CompactDatasetTest do
     data = TDG.create_data(dataset_id: "ds3", payload: %{"id" => 1, "name" => "George"})
     SmartCity.KafkaHelper.send_to_kafka(data, "integration-ds3")
 
-    Patiently.wait_for!(
-      prestige_query("select id, name from #{dataset.technical.systemName}", [[1, "George"]]),
-      dwell: 200,
-      max_tries: 10
+    eventually(
+      fn ->
+        actual =
+          "select id, name from #{dataset.technical.systemName}"
+          |> Prestige.execute(user: @module_user)
+          |> Prestige.prefetch()
+
+        assert actual == [[1, "George"]]
+      end,
+      200,
+      10
     )
 
     assert DatasetCompactor.compact_dataset(dataset) == :ok
@@ -113,6 +118,21 @@ defmodule Forklift.CompactDatasetTest do
     system_name = String.downcase(dataset.technical.systemName)
     assert "#{system_name}" in tables
     refute "#{system_name}_compact" in tables
+  end
+
+  test "non-existing table is handled" do
+    dataset =
+      TDG.create_dataset(
+        id: "ds3",
+        technical: %{
+          schema: [%{name: "id", type: "int"}, %{name: "name", type: "string"}]
+        }
+      )
+
+    SmartCity.Dataset.write(dataset)
+    supervisor_eventually_exists(dataset.id)
+
+    assert DatasetCompactor.compact_dataset(dataset) == :error
   end
 
   defp supervisor_eventually_exists(dataset_id) do
@@ -137,24 +157,5 @@ defmodule Forklift.CompactDatasetTest do
     )
   rescue
     _ -> flunk("Supervisor for #{dataset_id} remains when it should be gone")
-  end
-
-  defp prestige_query(statement, expected) do
-    fn ->
-      try do
-        actual =
-          statement
-          |> Prestige.execute(user: @module_user)
-          |> Prestige.prefetch()
-
-        Logger.info("Waiting for #{inspect(actual)} to equal #{inspect(expected)}")
-
-        actual == expected
-      rescue
-        e ->
-          Logger.warn("Failed querying presto : #{Exception.message(e)}")
-          false
-      end
-    end
   end
 end
