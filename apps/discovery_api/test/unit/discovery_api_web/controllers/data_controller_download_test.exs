@@ -33,14 +33,6 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
     allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
     allow(Model.get(@dataset_id), return: model)
 
-    allow(PrestoService.preview_columns(@system_name),
-      return: ["id", "name", "age"]
-    )
-
-    allow(Prestige.execute("select * from #{@system_name}"),
-      return: [[1, "Joe", 21], [2, "Robby", 32]]
-    )
-
     allow(Redix.command!(any(), any()), return: :does_not_matter)
 
     :ok
@@ -65,7 +57,6 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
           },
           schema: [
             %{description: "a number", name: "number", type: "integer"},
-            %{description: "a number", name: "number", type: "integer"},
             %{description: "a number", name: "number", type: "integer"}
           ]
         })
@@ -77,12 +68,12 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
         return: ["id", "int_array"]
       )
 
-      allow(Prestige.execute("select * from #{model.systemName}"),
-        return: [[1, [2, 3, 4]]]
+      allow(Prestige.execute("select * from #{model.systemName}", rows_as_maps: true),
+        return: [%{"id" => 1, "int_array" => [2, 3, 4]}]
       )
 
       allow(Prestige.prefetch(any()),
-        return: [["id", "1"], ["int_array", [2, 3, 4]]]
+        return: [%{"id" => "1", "int_array" => [2, 3, 4]}]
       )
 
       allow(Redix.command!(any(), any()), return: :does_not_matter)
@@ -94,6 +85,18 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
   end
 
   describe "metrics" do
+    setup do
+      allow(PrestoService.preview_columns(@system_name),
+        return: ["id", "name", "age"]
+      )
+
+      allow(Prestige.execute("select * from #{@system_name}", rows_as_maps: true),
+        return: [%{"id" => 1, "name" => "Joe", "age" => 21}, %{"id" => 2, "name" => "Robby", "age" => 32}]
+      )
+
+      :ok
+    end
+
     data_test "increments dataset download count when dataset download is requested", %{conn: conn} do
       conn |> get(url) |> response(200)
       assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"]))

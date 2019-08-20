@@ -49,17 +49,17 @@ defmodule DiscoveryApiWeb.DataView do
   end
 
   def render_as_stream(:data, "csv", %{stream: stream, columns: columns}) do
+    rows = Stream.map(stream, &Map.values/1)
+
     [columns]
-    |> Stream.concat(stream)
+    |> Stream.concat(rows)
     |> map_data_stream_for_csv()
   end
 
-  def render_as_stream(:data, "json", %{stream: stream, columns: columns}) do
+  def render_as_stream(:data, "json", %{stream: stream}) do
     data =
       stream
-      |> Stream.map(fn x ->
-        Stream.zip(columns, x) |> Enum.into(%{}) |> Jason.encode!()
-      end)
+      |> Stream.map(&Jason.encode!/1)
       |> Stream.intersperse(",")
 
     [["["], data, ["]"]]

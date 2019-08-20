@@ -16,7 +16,11 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
           private: false,
           lastUpdatedDate: nil,
           queries: 7,
-          downloads: 9
+          downloads: 9,
+          schema: [
+            %{description: "a number", name: "id", type: "integer"},
+            %{description: "a number", name: "name", type: "string"}
+          ]
         })
 
       allow(Model.get(model.id), return: model)

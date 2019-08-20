@@ -1,60 +1,94 @@
 defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
   use ExUnit.Case
   use Placebo
+  import Checkov
   alias JsonFieldDecoder
 
-  describe "has_json_fields/2" do
-    test "has_json_fields/2 returns value when schema has no json fields" do
-      no_json_schema = [
-        %{description: "a number", name: "number", type: "integer"},
-        %{description: "another number", name: "number2", type: "integer"},
-        %{description: "and yet another number", name: "number3", type: "integer"}
-      ]
+  describe "ensure_decoded/2" do
+    data_test "ensure_decoded/2 returns based on schema assigned to it" do
+      actual_value = JsonFieldDecoder.ensure_decoded(schema, input)
 
-      value = [[1, 2, 3], [4, 5, 6]]
+      assert actual_value == expected_output
 
-      result = JsonFieldDecoder.has_json_fields(no_json_schema, value)
-
-      assert result == value
-    end
-
-    test "has_json_fields/2 returns decoded json when schema has json fields" do
-      json_schema = [
-        %{description: "a json string", name: "json_string", type: "json"},
-        %{description: "a json string", name: "json_string2", type: "json"}
-      ]
-
-      value = [
-        [~s|{"json_string":"an encoded json string"}|, ~s|{"json_string":"an encoded json string"}|],
-        ["{\"json_string\":\"an encoded json string\"}", "{\"json_string\":\"an encoded json string\"}"]
-      ]
-
-      expected_value = [
-        [%{"json_string" => "an encoded json string"}, %{"json_string" => "an encoded json string"}],
-        [%{"json_string" => "an encoded json string"}, %{"json_string" => "an encoded json string"}]
-      ]
-
-      result = JsonFieldDecoder.has_json_fields(json_schema, value)
-
-      assert result == expected_value
-    end
-
-    test "has_json_fields/2 only decodes json fields" do
-      no_json_schema = [
-        %{description: "a number", name: "number", type: "integer"},
-        %{description: "a json string", name: "json_field", type: "json"}
-      ]
-
-      value = [[1, "{\"bins\":{\"day\":{},\"hour\":{},\"minute\":{}},\"streets\":{\"day\":
-      {},\"hour\":{},\"minute\":{}}}"]]
-
-      expected_value = [
-        [1, %{"bins" => %{"day" => %{}, "hour" => %{}, "minute" => %{}}, "streets" => %{"day" => %{}, "hour" => %{}, "minute" => %{}}}]
-      ]
-
-      result = JsonFieldDecoder.has_json_fields(no_json_schema, value)
-
-      assert result == expected_value
+      where([
+        [:expected_output, :input, :schema],
+        # no json in schema
+        [
+          [%{"id" => 1, "name" => "robert", "age" => 22}, %{"id" => 2, "name" => "tony", "age" => 3}],
+          [%{"id" => 1, "name" => "robert", "age" => 22}, %{"id" => 2, "name" => "tony", "age" => 3}],
+          [
+            %{description: "a number", name: "id", type: "integer"},
+            %{description: "another number", name: "name", type: "string"},
+            %{description: "and yet another number", name: "age", type: "integer"}
+          ]
+        ],
+        # json in schema
+        [
+          [
+            %{"id" => 1, "name" => %{"name" => "robert"}, "age" => 22},
+            %{"id" => 2, "name" => %{"name" => "tony"}, "age" => 3}
+          ],
+          [
+            %{"id" => 1, "name" => "{\"name\": \"robert\"}", "age" => 22},
+            %{"id" => 2, "name" => "{\"name\": \"tony\"}", "age" => 3}
+          ],
+          [
+            %{description: "a number", name: "id", type: "integer"},
+            %{description: "a json string", name: "name", type: "json"},
+            %{description: "and yet another number", name: "age", type: "integer"}
+          ]
+        ],
+        # no schema
+        [
+          [
+            %{"id" => 1, "name" => "{\"name\": \"robert\"}", "age" => 22},
+            %{"id" => 2, "name" => "{\"name\": \"tony\"}", "age" => 3}
+          ],
+          [
+            %{"id" => 1, "name" => "{\"name\": \"robert\"}", "age" => 22},
+            %{"id" => 2, "name" => "{\"name\": \"tony\"}", "age" => 3}
+          ],
+          []
+        ],
+        # nested json in schema w/ mutliple columns
+        [
+          [
+            %{
+              "id" => 1,
+              "name" => %{"name" => "robert"},
+              "bins" => %{
+                "bins" => %{"day" => %{}, "hour" => %{}, "minute" => %{}},
+                "streets" => %{"day" => %{}, "hour" => %{}, "minute" => %{}}
+              }
+            },
+            %{
+              "id" => 2,
+              "name" => %{"name" => "tony"},
+              "bins" => %{
+                "bins" => %{"day" => %{}, "hour" => %{}, "minute" => %{}},
+                "streets" => %{"day" => %{}, "hour" => %{}, "minute" => %{}}
+              }
+            }
+          ],
+          [
+            %{
+              "id" => 1,
+              "name" => "{\"name\": \"robert\"}",
+              "bins" => "{\"bins\":{\"day\":{},\"hour\":{},\"minute\":{}},\"streets\":{\"day\":{},\"hour\":{},\"minute\":{}}}"
+            },
+            %{
+              "id" => 2,
+              "name" => "{\"name\": \"tony\"}",
+              "bins" => "{\"bins\":{\"day\":{},\"hour\":{},\"minute\":{}},\"streets\":{\"day\":{},\"hour\":{},\"minute\":{}}}"
+            }
+          ],
+          [
+            %{description: "a number", name: "id", type: "integer"},
+            %{description: "a json string", name: "name", type: "json"},
+            %{description: "and yet another number", name: "bins", type: "json"}
+          ]
+        ]
+      ])
     end
   end
 end

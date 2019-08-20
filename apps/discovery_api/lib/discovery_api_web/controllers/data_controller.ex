@@ -3,6 +3,7 @@ defmodule DiscoveryApiWeb.DataController do
   alias DiscoveryApi.Services.{PrestoService, MetricsService, ObjectStorageService}
   alias DiscoveryApiWeb.DataView
   alias DiscoveryApiWeb.Utilities.AuthUtils
+  alias DiscoveryApiWeb.Utilities.JsonFieldDecoder
 
   plug(DiscoveryApiWeb.Plugs.GetModel)
   plug :conditional_accepts, DataView.accepted_formats() when action in [:fetch_file]
@@ -51,15 +52,15 @@ defmodule DiscoveryApiWeb.DataController do
     dataset_name = conn.assigns.model.systemName
     dataset_id = conn.assigns.model.id
     columns = PrestoService.preview_columns(dataset_name)
+    schema = conn.assigns.model.schema
 
     MetricsService.record_api_hit("downloads", dataset_id)
 
-    schema = conn.assigns.model.schema
+    data_stream = Prestige.execute("select * from #{dataset_name}", rows_as_maps: true)
+    decoded_data_stream = JsonFieldDecoder.ensure_decoded(schema, data_stream)
 
-    data_stream = Prestige.execute("select * from #{dataset_name}")
-    decoded_json = JsonFieldDecoder.has_json_fields(schema, data_stream)
-
-    rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: decoded_json, columns: columns, dataset_name: dataset_name})
+    rendered_data_stream =
+      DataView.render_as_stream(:data, format, %{stream: decoded_data_stream, columns: columns, dataset_name: dataset_name})
 
     resp_as_stream(conn, rendered_data_stream, format, dataset_id)
   end
@@ -69,7 +70,6 @@ defmodule DiscoveryApiWeb.DataController do
     dataset_name = conn.assigns.model.systemName
     dataset_id = conn.assigns.model.id
     current_user = conn.assigns.current_user
-    schema = conn.assigns.model.schema
 
     with {:ok, columns} <- PrestoService.get_column_names(dataset_name, Map.get(params, "columns")),
          {:ok, query} <- PrestoService.build_query(params, dataset_name),
@@ -77,8 +77,7 @@ defmodule DiscoveryApiWeb.DataController do
       MetricsService.record_api_hit("queries", dataset_id)
 
       data_stream = Prestige.execute(query)
-      decoded_json = JsonFieldDecoder.has_json_fields(schema, data_stream)
-      rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: decoded_json, columns: columns, dataset_name: dataset_name})
+      rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name})
 
       resp_as_stream(conn, rendered_data_stream, format, dataset_id)
     else
