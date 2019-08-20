@@ -36,8 +36,7 @@ defmodule Odo.Integration.OdoTest do
         key: "#{org}/#{data_name}.shapefile",
         mime_type: "application/zip"
       })
-
-    Brook.send_event(file_upload(), file_event)
+    Brook.Event.send(file_upload(), "odo", file_event)
 
     new_key = "#{org}/#{data_name}.geojson"
 
@@ -59,7 +58,7 @@ defmodule Odo.Integration.OdoTest do
           bucket: bucket,
           key: new_key
         })
-        |> (fn {:ok, event} -> Jason.encode!(event) end).()
+        |> (fn {:ok, event} -> Jason.encode!(%{author: "odo", data: event}) end).()
 
       assert actual_events.value == expected_events
       assert Enum.member?(actual_state, file_event) == false

@@ -9,7 +9,7 @@ defmodule Odo.Unit.OdoTest do
     allow(Geomancer.geo_json(any()), return: {:ok, :geo_json_data})
     allow(File.write(any(), any()), return: :ok, meck_options: [:passthrough])
     allow(File.rm!(any()), return: :ok, meck_options: [:passthrough])
-    allow(Brook.send_event(file_upload(), any()), return: :ok, meck_options: [:passthrough])
+    allow(Brook.Event.send(file_upload(), any(), any()), return: :ok, meck_options: [:passthrough])
 
     {:ok, file_event} =
       FileUpload.new(%{
@@ -29,7 +29,7 @@ defmodule Odo.Unit.OdoTest do
         key: "my-org/my-dataset.geojson"
       })
 
-    assert_called(Brook.send_event(file_upload(), expected_event), once())
+    assert_called(Brook.Event.send(file_upload(), "odo", expected_event), once())
     assert_called(File.rm!("tmp/111.shapefile"), once())
     assert_called(File.rm!("tmp/111.geojson"), once())
   end

@@ -64,7 +64,7 @@ defmodule Odo.FileProcessor do
     new_type = FileUpload.type(type)
     {:ok, event} = FileUpload.new(%{dataset_id: id, bucket: bucket, key: key, mime_type: new_type})
 
-    Brook.send_event(file_upload(), event)
+    Brook.Event.send(file_upload(), "odo", event)
   end
 
   defp get_extension(file) do
