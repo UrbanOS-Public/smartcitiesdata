@@ -25,7 +25,7 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
       ]
 
       value = [
-        ["{\"json_string\":\"an encoded json string\"}", "{\"json_string\":\"an encoded json string\"}"],
+        [~s|{"json_string":"an encoded json string"}|, ~s|{"json_string":"an encoded json string"}|],
         ["{\"json_string\":\"an encoded json string\"}", "{\"json_string\":\"an encoded json string\"}"]
       ]
 
