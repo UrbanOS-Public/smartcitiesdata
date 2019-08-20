@@ -32,14 +32,14 @@ config :redix,
 config :ex_aws,
   region: System.get_env("AWS_REGION") || "us-west-2"
 
-config :brook, :config,.
+config :brook, :config,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [
       endpoints: endpoints,
       topic: "event-stream",
       group: "odo-event-stream",
-      config:[
+      config: [
         begin_offset: :earliest
       ]
     ]
