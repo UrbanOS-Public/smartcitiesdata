@@ -14,7 +14,7 @@ config :logger,
   level: :info
 
 bucket_name = "hosted-dataset-files"
-endpoint = [{host, 9092}]
+endpoints = [{host, 9092}]
 
 config :odo,
   divo: [
@@ -23,8 +23,8 @@ config :odo,
     {Reaper.DivoMinio, [bucket_name: bucket_name]}
   ],
   divo_wait: [dwell: 1000, max_tries: 120],
+  kafka_broker: endpoints,
   hosted_file_bucket: bucket_name,
-  kafka_broker: endpoint,
   working_dir: "tmp"
 
 config :ex_aws,
@@ -45,7 +45,7 @@ config :brook, :config,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [
-      endpoints: endpoint,
+      endpoints: endpoints,
       topic: "event-stream",
       group: "odo-event-stream",
       config: [
