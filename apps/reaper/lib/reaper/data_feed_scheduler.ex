@@ -129,7 +129,7 @@ defmodule Reaper.DataFeedScheduler do
   end
 
   defp start_topic_producer(topic) do
-    Elsa.Producer.Manager.start_producer(endpoints(), topic, name: :"#{topic}_producer")
+    Elsa.Producer.Supervisor.start_link(name: :"#{topic}_producer", endpoints: endpoints(), topic: topic)
   end
 
   defp endpoints(), do: Application.get_env(:reaper, :elsa_brokers)

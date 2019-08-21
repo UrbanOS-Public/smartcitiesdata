@@ -61,8 +61,8 @@ defmodule Reaper.DataFeedTest do
       messages = capture(1, Producer.produce_sync(any(), any(), any()), 2)
 
       expected = [
-        %{a: "one", b: "two", c: "three"},
-        %{a: "four", b: "five", c: "six"}
+        %{"a" => "one", "b" => "two", "c" => "three"},
+        %{"a" => "four", "b" => "five", "c" => "six"}
       ]
 
       assert expected == get_payloads(messages)
@@ -74,12 +74,12 @@ defmodule Reaper.DataFeedTest do
     test "eliminates duplicates before sending to kafka", %{config: config} do
       allow Persistence.get_last_processed_index(@dataset_id), return: -1
       allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
-      Cache.cache(@cache_name, %{a: "one", b: "two", c: "three"})
+      Cache.cache(@cache_name, %{"a" => "one", "b" => "two", "c" => "three"})
 
       DataFeed.process(config, @cache_name)
 
       messages = capture(1, Producer.produce_sync(any(), any(), any()), 2)
-      assert [%{a: "four", b: "five", c: "six"}] == get_payloads(messages)
+      assert [%{"a" => "four", "b" => "five", "c" => "six"}] == get_payloads(messages)
       assert_called Producer.produce_sync(any(), any(), any()), once()
 
       assert_called Persistence.record_last_processed_index(any(), any()), once()

@@ -1,7 +1,7 @@
 defmodule TestUtils do
   @moduledoc false
 
-  require Elsa
+  require Elsa.Message
   require Logger
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -75,7 +75,7 @@ defmodule TestUtils do
     case :brod.fetch(endpoints, topic, 0, 0) do
       {:ok, {_offset, messages}} ->
         messages
-        |> Enum.map(&Elsa.kafka_message(&1, :value))
+        |> Enum.map(&Elsa.Message.kafka_message(&1, :value))
 
       {:error, reason} ->
         Logger.warn("Failed to extract messages: #{inspect(reason)}")

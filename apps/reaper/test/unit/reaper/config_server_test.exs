@@ -5,7 +5,6 @@ defmodule Reaper.ConfigServerTest do
 
   alias Reaper.ConfigServer
   alias Reaper.DataFeedScheduler
-  alias Reaper.ReaperConfig
 
   @name_space "reaper:reaper_config:"
 
@@ -68,41 +67,6 @@ defmodule Reaper.ConfigServerTest do
       assert TestUtils.feed_supervisor_count() == 0
       assert TestUtils.child_count(Cachex) == 0
     end
-  end
-
-  test "a reaper config is persisted when created or updated" do
-    allow(Redix.command!(:redix, ["KEYS", @name_space <> "*"]), return: [])
-    allow(Redix.command!(:redix, ["GET", any()]), return: '')
-
-    reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: "12345-6789", sourceType: "ingest", cadence: 1})
-
-    reaper_config_update =
-      FixtureHelper.new_reaper_config(%{
-        dataset_id: reaper_config.dataset_id,
-        cadence: 100,
-        sourceUrl: "www.google.com",
-        sourceFormat: "Success",
-        sourceType: "ingest",
-        sourceQueryParams: %{param1: "value1"}
-      })
-
-    expect(
-      Redix.command!(:redix, ["SET", @name_space <> reaper_config.dataset_id, ReaperConfig.encode!(reaper_config)]),
-      return: :does_not_matter
-    )
-
-    expect(
-      Redix.command!(:redix, [
-        "SET",
-        @name_space <> reaper_config.dataset_id,
-        ReaperConfig.encode!(reaper_config_update)
-      ]),
-      return: :does_not_matter
-    )
-
-    ConfigServer.start_link([])
-    ConfigServer.process_reaper_config(reaper_config)
-    ConfigServer.process_reaper_config(reaper_config_update)
   end
 
   describe "on registry message received with previous reaper configs" do

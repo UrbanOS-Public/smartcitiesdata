@@ -2,9 +2,9 @@ defmodule Reaper.SftpExtractorTest do
   use ExUnit.Case
   use Divo
   use Placebo
-  alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
+  import SmartCity.Event, only: [dataset_update: 0]
 
   @endpoints Application.get_env(:reaper, :elsa_brokers)
   @output_topic_prefix Application.get_env(:reaper, :output_topic_prefix)
@@ -54,11 +54,11 @@ defmodule Reaper.SftpExtractorTest do
         }
       })
 
-    Dataset.write(dataset)
+    Brook.Event.send(dataset_update(), :reaper, dataset)
 
     payload = %{
-      datum: "Bobber",
-      sanctum: "Alice"
+      "datum" => "Bobber",
+      "sanctum" => "Alice"
     }
 
     eventually(fn ->
@@ -92,8 +92,8 @@ defmodule Reaper.SftpExtractorTest do
         }
       })
 
-    Dataset.write(dataset)
-    payload = %{sanctum: "Bobbero", datum: "Alice"}
+    Brook.Event.send(dataset_update(), :reaper, dataset)
+    payload = %{"sanctum" => "Bobbero", "datum" => "Alice"}
 
     eventually(fn ->
       result = TestUtils.get_data_messages_from_kafka(topic, @endpoints)

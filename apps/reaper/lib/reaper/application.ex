@@ -15,7 +15,8 @@ defmodule Reaper.Application do
         {HordeConnector, [supervisor: Reaper.Horde.Supervisor, registry: Reaper.Registry]},
         Reaper.ConfigServer,
         redis(),
-        dataset_subscriber()
+        {Brook, Application.get_env(:reaper, :brook)},
+        Reaper.Init
       ]
       |> List.flatten()
 
@@ -23,13 +24,6 @@ defmodule Reaper.Application do
 
     opts = [strategy: :one_for_one, name: Reaper.Supervisor]
     Supervisor.start_link(children, opts)
-  end
-
-  defp dataset_subscriber() do
-    case Application.get_env(:smart_city_registry, :redis) do
-      nil -> []
-      _ -> {SmartCity.Registry.Subscriber, [message_handler: Reaper.MessageHandler]}
-    end
   end
 
   defp redis do

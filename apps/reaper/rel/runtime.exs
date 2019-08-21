@@ -46,6 +46,27 @@ config :reaper,
   download_dir: System.get_env("DOWNLOAD_DIR") || "/downloads/",
   hosted_file_bucket: System.get_env("HOSTED_FILE_BUCKET") || "hosted-dataset-files"
 
+config :reaper, :brook,
+  driver: [
+    module: Brook.Driver.Kafka,
+    init_arg: [
+      endpoints: endpoints,
+      topic: "event-stream",
+      group: "reaper-event-stream",
+      config: [
+        begin_offset: :earliest
+      ]
+    ]
+  ],
+  handlers: [Reaper.Event.Handler],
+  storage: [
+    module: Brook.Storage.Redis,
+    init_arg: [
+      redix_args: [host: redis_host],
+      namespace: "reaper:view"
+    ]
+  ]
+
 config :smart_city_registry,
   redis: [
     host: redis_host

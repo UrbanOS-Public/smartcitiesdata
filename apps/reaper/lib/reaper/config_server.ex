@@ -6,7 +6,6 @@ defmodule Reaper.ConfigServer do
   """
   require Logger
   use GenServer
-  alias Reaper.Persistence
   alias Reaper.ReaperConfig
 
   def start_link(args) do
@@ -78,7 +77,6 @@ defmodule Reaper.ConfigServer do
   defp do_process_reaper_config(reaper_config) do
     create_feed_supervisor(reaper_config)
     update_feed_supervisor(reaper_config)
-    Persistence.persist(reaper_config)
   end
 
   defp create_feed_supervisor(reaper_config) do

@@ -3,9 +3,9 @@ defmodule Reaper.YeetTest do
   use Divo
   use Tesla
   require Logger
-  alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
+  import SmartCity.Event, only: [dataset_update: 0]
 
   @dataset_id "12345-6789"
   @endpoints Application.get_env(:reaper, :elsa_brokers)
@@ -43,7 +43,7 @@ defmodule Reaper.YeetTest do
         }
       })
 
-    Dataset.write(json_dataset)
+    Brook.Event.send(dataset_update(), :reaper, json_dataset)
 
     :ok
   end

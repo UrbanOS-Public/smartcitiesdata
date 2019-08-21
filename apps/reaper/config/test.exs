@@ -13,3 +13,11 @@ config :reaper,
   produce_retries: 2,
   produce_timeout: 10,
   secrets_endpoint: "http://vault:8200"
+
+config :reaper, :brook,
+  handler: [Reaper.Event.Handler],
+  storage: [
+    modules: Brook.Storage.Ets,
+    init_arg: []
+  ],
+  hosted_file_bucket: "hosted-dataset-files"

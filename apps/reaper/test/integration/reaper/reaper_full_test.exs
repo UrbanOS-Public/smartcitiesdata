@@ -4,9 +4,9 @@ defmodule Reaper.FullTest do
   use Tesla
   use Placebo
   require Logger
-  alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
+  import SmartCity.Event, only: [dataset_update: 0]
 
   @endpoints Application.get_env(:reaper, :elsa_brokers)
   @brod_endpoints Enum.map(@endpoints, fn {host, port} -> {to_charlist(host), port} end)
@@ -64,7 +64,7 @@ defmodule Reaper.FullTest do
 
       Elsa.create_topic(@endpoints, "#{@output_topic_prefix}-#{@pre_existing_dataset_id}")
 
-      Dataset.write(pre_existing_dataset)
+      Brook.Event.send(dataset_update(), :reaper, pre_existing_dataset)
       :ok
     end
 
@@ -73,10 +73,10 @@ defmodule Reaper.FullTest do
         TestUtils.create_data(%{
           dataset_id: @pre_existing_dataset_id,
           payload: %{
-            latitude: 39.9613,
-            vehicle_id: 41_015,
-            update_time: "2019-02-14T18:53:23.498889+00:00",
-            longitude: -83.0074
+            "latitude" => 39.9613,
+            "vehicle_id" => 41_015,
+            "update_time" => "2019-02-14T18:53:23.498889+00:00",
+            "longitude" => -83.0074
           }
         })
 
@@ -131,7 +131,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Dataset.write(pre_existing_dataset)
+      Brook.Event.send(dataset_update(), :reaper, pre_existing_dataset)
       Elsa.create_topic(@endpoints, "#{@output_topic_prefix}-#{@partial_load_dataset_id}")
       :ok
     end
@@ -171,13 +171,13 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Dataset.write(gtfs_dataset)
+      Brook.Event.send(dataset_update(), :reaper, gtfs_dataset)
       Elsa.create_topic(@endpoints, topic)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
-        assert [%{payload: %{id: "1004"}} | _] = results
+        assert [%{payload: %{"id" => "1004"}} | _] = results
       end)
     end
 
@@ -195,13 +195,13 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Dataset.write(json_dataset)
+      Brook.Event.send(dataset_update(), :reaper, json_dataset)
       Elsa.create_topic(@endpoints, topic)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
-        assert [%{payload: %{vehicle_id: 51_127}} | _] = results
+        assert [%{payload: %{"vehicle_id" => 51_127}} | _] = results
       end)
     end
 
@@ -221,13 +221,13 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Dataset.write(csv_dataset)
+      Brook.Event.send(dataset_update(), :reaper, csv_dataset)
       Elsa.create_topic(@endpoints, topic)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
-        assert [%{payload: %{name: "Austin"}} | _] = results
+        assert [%{payload: %{"name" => "Austin"}} | _] = results
         assert false == File.exists?(dataset_id)
       end)
     end
@@ -246,7 +246,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Dataset.write(hosted_dataset)
+      Brook.Event.send(dataset_update(), :reaper, hosted_dataset)
 
       eventually(fn ->
         expected = File.read!("test/support/#{@csv_file_name}")
@@ -258,10 +258,17 @@ defmodule Reaper.FullTest do
                }"
              )
              |> ExAws.request() do
-          {:ok, resp} -> assert Map.get(resp, :body) == expected
-          _other -> Logger.info("File not uploaded yet")
+          {:ok, resp} ->
+            assert Map.get(resp, :body) == expected
+
+          _other ->
+            Logger.info("File not uploaded yet")
+            flunk("File should have been uploaded")
         end
       end)
+
+      {:ok, _, messages} = Elsa.fetch(@endpoints, "event-stream", partition: 0)
+      assert Enum.any?(messages, fn %Elsa.Message{key: key} -> key == "file:upload" end)
     end
 
     test "saves last_success_time to redis", %{bypass: bypass} do
@@ -277,7 +284,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Dataset.write(gtfs_dataset)
+      Brook.Event.send(dataset_update(), :reaper, gtfs_dataset)
       Elsa.create_topic(@endpoints, "#{@output_topic_prefix}-#{dataset_id}")
 
       eventually(fn ->
@@ -317,13 +324,13 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Dataset.write(csv_dataset)
+      Brook.Event.send(dataset_update(), :reaper, csv_dataset)
       Elsa.create_topic(@endpoints, topic)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
-        assert [%{payload: %{name: "Austin"}} | _] = results
+        assert [%{payload: %{"name" => "Austin"}} | _] = results
       end)
 
       eventually(fn ->
@@ -364,15 +371,28 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Dataset.write(json_dataset)
+      Brook.Event.send(dataset_update(), :reaper, json_dataset)
       Elsa.create_topic(@endpoints, topic)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
-        assert Enum.at(results, 0).payload == %{id: nil, grandParent: %{parentMap: %{fieldA: nil, fieldB: nil}}}
-        assert Enum.at(results, 1).payload == %{id: "2", grandParent: %{parentMap: %{fieldA: "Bob", fieldB: "Purple"}}}
-        assert Enum.at(results, 2).payload == %{id: "3", grandParent: %{parentMap: %{fieldA: "Joe", fieldB: nil}}}
+        assert 3 == length(results)
+
+        assert Enum.at(results, 0).payload == %{
+                 "id" => nil,
+                 "grandParent" => %{"parentMap" => %{"fieldA" => nil, "fieldB" => nil}}
+               }
+
+        assert Enum.at(results, 1).payload == %{
+                 "id" => "2",
+                 "grandParent" => %{"parentMap" => %{"fieldA" => "Bob", "fieldB" => "Purple"}}
+               }
+
+        assert Enum.at(results, 2).payload == %{
+                 "id" => "3",
+                 "grandParent" => %{"parentMap" => %{"fieldA" => "Joe", "fieldB" => nil}}
+               }
       end)
     end
   end

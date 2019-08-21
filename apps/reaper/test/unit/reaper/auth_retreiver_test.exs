@@ -28,7 +28,7 @@ defmodule AuthRetrieverTest do
         Plug.Conn.resp(conn, 200, auth_response)
       end)
 
-      allow(Reaper.Persistence.get(dataset_id), return: reaper_config)
+      allow Brook.get!(:reaper_config, dataset_id), return: reaper_config
       assert Reaper.AuthRetriever.retrieve(dataset_id) == expected
     end
 
@@ -52,12 +52,12 @@ defmodule AuthRetrieverTest do
 
       response = %{body: Jason.encode!(%{"api_key" => "12343523423423"})}
 
-      allow(Reaper.Persistence.get(dataset_id), return: reaper_config)
-      allow(HTTPoison.post!(any(), any(), any()), return: response)
+      allow Brook.get!(:reaper_config, dataset_id), return: reaper_config
+      allow HTTPoison.post!(any(), any(), any()), return: response
 
       Reaper.AuthRetriever.retrieve(dataset_id)
 
-      assert_called(HTTPoison.post!(url, "", evaluated_headers))
+      assert_called HTTPoison.post!(url, "", evaluated_headers)
     end
   end
 end
