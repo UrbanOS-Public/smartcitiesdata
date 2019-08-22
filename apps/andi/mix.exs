@@ -37,7 +37,7 @@ defmodule Andi.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.1"},
-      {:brook, git: "https://github.com/bbalser/brook.git", ref: "188122343ed59158ae8e6667ffecb346a2f6d5c1"},
+      {:brook, git: "https://github.com/bbalser/brook.git", ref: "4f444b0a3c1d3b2477c7db3f94f3e87d1031e566"},
       {:plug_cowboy, "~> 2.0"},
       {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
       {:smart_city, "~> 2.2", override: true},

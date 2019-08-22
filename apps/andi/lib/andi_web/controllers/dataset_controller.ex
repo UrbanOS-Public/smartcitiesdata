@@ -47,7 +47,7 @@ defmodule AndiWeb.DatasetController do
 
   defp write_dataset(dataset) do
     Dataset.write(dataset)
-    Brook.send_event(update_dataset(), dataset)
+    Brook.Event.send(update_dataset(), :andi, dataset)
   end
 
   defp parse_message(%{"technical" => technical} = msg) do

@@ -100,7 +100,7 @@ defmodule AndiWeb.OrganizationController do
 
   defp write(org) do
     with {:ok, _id} <- Organization.write(org),
-         :ok <- Brook.send_event(update_organization(), org) do
+         :ok <- Brook.Event.send(update_organization(), :andi, org) do
       :ok
     else
       error ->

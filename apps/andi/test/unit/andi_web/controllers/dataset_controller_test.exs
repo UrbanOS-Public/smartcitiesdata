@@ -30,7 +30,7 @@ defmodule AndiWeb.DatasetControllerTest do
       meck_options: [:passthrough]
     )
 
-    allow(Brook.send_event(any(), any()), return: :ok, meck_options: [:passthrough])
+    allow(Brook.Event.send(any(), :andi, any()), return: :ok, meck_options: [:passthrough])
 
     uuid = Faker.UUID.v4()
 
@@ -111,7 +111,7 @@ defmodule AndiWeb.DatasetControllerTest do
     test "writes data to event stream", %{message: message} do
       {:ok, _struct} = Dataset.new(message)
 
-      assert_called(Brook.send_event(any(), any()), once())
+      assert_called(Brook.Event.send(any(), :andi, any()), once())
     end
   end
 
@@ -159,7 +159,7 @@ defmodule AndiWeb.DatasetControllerTest do
 
     test "writes to event stream", %{message: message} do
       {:ok, struct} = Dataset.new(message)
-      assert_called(Brook.send_event(any(), struct), once())
+      assert_called(Brook.Event.send(any(), :andi, struct), once())
     end
   end
 

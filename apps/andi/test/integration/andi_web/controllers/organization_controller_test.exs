@@ -86,7 +86,7 @@ defmodule Andi.CreateOrgTest do
 
   describe "failure to send new organization to event stream" do
     setup do
-      allow(Brook.send_event(any(), any()), return: {:error, :reason}, meck_options: [:passthrough])
+      allow(Brook.Event.send(any(), :andi, any()), return: {:error, :reason}, meck_options: [:passthrough])
       org = organization(%{orgName: "unhappyPath"})
       {:ok, response} = create(org)
       [unhappy_path: org, response: response]

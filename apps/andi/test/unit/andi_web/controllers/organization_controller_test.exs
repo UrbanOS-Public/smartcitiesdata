@@ -55,7 +55,7 @@ defmodule AndiWeb.OrganizationControllerTest do
   describe "post /api/ with valid data" do
     setup %{conn: conn, request: request} do
       allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
-      allow(Brook.send_event(any(), any()), return: :ok, meck_options: [:passthrough])
+      allow(Brook.Event.send(any(), :andi, any()), return: :ok, meck_options: [:passthrough])
       allow(Paddle.add(any(), any()), return: :ok)
       [conn: post(conn, @route, request)]
     end
@@ -74,7 +74,7 @@ defmodule AndiWeb.OrganizationControllerTest do
     end
 
     test "writes organization to event stream", %{message: _message} do
-      assert_called(Brook.send_event(any(), any()), once())
+      assert_called(Brook.Event.send(any(), :andi, any()), once())
     end
 
     test "writes organization to LDAP", %{message: %{"orgName" => name}} do
