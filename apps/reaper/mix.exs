@@ -41,7 +41,7 @@ defmodule Reaper.MixProject do
       {:cachex, "~> 3.2"},
       {:castore, "~> 0.1"},
       {:distillery, "2.0.14"},
-      {:brook, github: "bbalser/brook", ref: "4b8cb3319b520402084186b59cc795d4c7e34c93"},
+      {:brook, github: "bbalser/brook", ref: "4f444b0a3c1d3b2477c7db3f94f3e87d1031e566"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
       {:gen_stage, "~> 0.14"},

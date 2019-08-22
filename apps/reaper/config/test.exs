@@ -15,6 +15,10 @@ config :reaper,
   secrets_endpoint: "http://vault:8200"
 
 config :reaper, :brook,
+  driver: [
+    module: Brook.Driver.Json,
+    init_arg: []
+  ],
   handler: [Reaper.Event.Handler],
   storage: [
     modules: Brook.Storage.Ets,
