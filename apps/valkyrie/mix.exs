@@ -48,9 +48,9 @@ defmodule Valkyrie.MixProject do
       {:husky, "~> 1.0", only: :dev, runtime: false},
       {:distillery, "~> 2.1"},
       # updating version breaks
-      {:retry, "~> 0.11.2"},
+      {:retry, "~> 0.13"},
       {:timex, "~> 3.6"},
-      {:off_broadway_kafka, "~> 0.2.2"},
+      {:off_broadway_kafka, "~> 0.3.0"},
       {:excoveralls, "~> 0.11.1", only: :test}
     ]
   end
