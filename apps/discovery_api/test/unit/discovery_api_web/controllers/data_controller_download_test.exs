@@ -24,14 +24,21 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
           orgName: @org_name
         },
         schema: [
-          %{description: "a number", name: "id", type: "integer"},
-          %{description: "a number", name: "name", type: "string"},
-          %{description: "a number", name: "age", type: "integer"}
+          %{name: "id", type: "integer"},
+          %{name: "name", type: "string"}
         ]
       })
 
     allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
     allow(Model.get(@dataset_id), return: model)
+
+    allow(PrestoService.preview_columns(@system_name),
+      return: ["id", "name"]
+    )
+
+    allow(Prestige.execute("select * from #{@system_name}", rows_as_maps: true),
+      return: [%{"id" => 1, "name" => "Joe"}, %{"id" => 2, "name" => "Robby"}]
+    )
 
     allow(Redix.command!(any(), any()), return: :does_not_matter)
 
@@ -56,8 +63,8 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
             orgName: @org_name
           },
           schema: [
-            %{description: "a number", name: "number", type: "integer"},
-            %{description: "a number", name: "number", type: "integer"}
+            %{name: "number", type: "integer"},
+            %{name: "number", type: "integer"}
           ]
         })
 
@@ -85,18 +92,6 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
   end
 
   describe "metrics" do
-    setup do
-      allow(PrestoService.preview_columns(@system_name),
-        return: ["id", "name", "age"]
-      )
-
-      allow(Prestige.execute("select * from #{@system_name}", rows_as_maps: true),
-        return: [%{"id" => 1, "name" => "Joe", "age" => 21}, %{"id" => 2, "name" => "Robby", "age" => 32}]
-      )
-
-      :ok
-    end
-
     data_test "increments dataset download count when dataset download is requested", %{conn: conn} do
       conn |> get(url) |> response(200)
       assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"]))

@@ -66,16 +66,12 @@ defmodule DiscoveryApiWeb.DataView do
     |> Stream.concat()
   end
 
-  def render_as_stream(:data, "geojson", %{stream: stream, columns: columns, dataset_name: name}) do
+  def render_as_stream(:data, "geojson", %{stream: stream, dataset_name: name}) do
     type = "FeatureCollection"
 
     data =
       stream
-      |> Stream.map(fn x ->
-        Stream.zip(columns, x) |> Enum.into(%{})
-      end)
-      |> Stream.map(&decode_feature_result(&1))
-      |> Stream.map(&Jason.encode!/1)
+      |> Stream.map(&Map.get(&1, "feature"))
       |> Stream.intersperse(",")
 
     [["{\"type\": \"#{type}\", \"name\": \"#{name}\", \"features\": "], ["["], data, ["],"]]

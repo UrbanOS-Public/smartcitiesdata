@@ -23,8 +23,10 @@ defmodule DiscoveryApiWeb.DataController do
     dataset_name = conn.assigns.model.systemName
     columns = PrestoService.preview_columns(dataset_name)
     rows = PrestoService.preview(dataset_name)
+    schema = conn.assigns.model.schema
+    decoded_rows = JsonFieldDecoder.ensure_decoded(schema, rows)
 
-    render(conn, :data, %{rows: rows, columns: columns, dataset_name: dataset_name})
+    render(conn, :data, %{rows: decoded_rows, columns: columns, dataset_name: dataset_name})
   rescue
     Prestige.Error -> render(conn, :data, %{rows: [], columns: []})
   end
@@ -70,14 +72,18 @@ defmodule DiscoveryApiWeb.DataController do
     dataset_name = conn.assigns.model.systemName
     dataset_id = conn.assigns.model.id
     current_user = conn.assigns.current_user
+    schema = conn.assigns.model.schema
 
     with {:ok, columns} <- PrestoService.get_column_names(dataset_name, Map.get(params, "columns")),
          {:ok, query} <- PrestoService.build_query(params, dataset_name),
          true <- AuthUtils.authorized_to_query?(query, current_user) do
       MetricsService.record_api_hit("queries", dataset_id)
 
-      data_stream = Prestige.execute(query)
-      rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name})
+      data_stream = Prestige.execute(query, rows_as_maps: true)
+      decoded_data_stream = JsonFieldDecoder.ensure_decoded(schema, data_stream)
+
+      rendered_data_stream =
+        DataView.render_as_stream(:data, format, %{stream: decoded_data_stream, columns: columns, dataset_name: dataset_name})
 
       resp_as_stream(conn, rendered_data_stream, format, dataset_id)
     else

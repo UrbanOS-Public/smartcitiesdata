@@ -3,7 +3,18 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtils do
     This module handles calculating the bounding box for a list of features in a GeoJson strucutre
   """
 
-  def calculate_bounding_box(features_list) when is_list(features_list) do
+  def calculate_bounding_box(
+        %{"geometry" => %{"coordinates" => coordinates}},
+        bounding_box \\ [nil, nil, nil, nil]
+      ) do
+    coordinates
+    |> reduce_coordinates()
+    |> List.flatten()
+    |> Enum.reduce(bounding_box, &update_bounding_box/2)
+    |> handle_empty_bounding_box()
+  end
+
+  def calculate_bounding_box(features_list, _) when is_list(features_list) do
     coords = []
 
     features_list
@@ -13,17 +24,6 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtils do
     |> reduce_coordinates()
     |> List.flatten()
     |> Enum.reduce([nil, nil, nil, nil], &update_bounding_box/2)
-    |> handle_empty_bounding_box()
-  end
-
-  def calculate_bounding_box(
-        %{"geometry" => %{"coordinates" => coordinates}},
-        bounding_box \\ [nil, nil, nil, nil]
-      ) do
-    coordinates
-    |> reduce_coordinates()
-    |> List.flatten()
-    |> Enum.reduce(bounding_box, &update_bounding_box/2)
     |> handle_empty_bounding_box()
   end
 

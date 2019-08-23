@@ -3,9 +3,7 @@ defmodule DiscoveryApiWeb.Utilities.JsonFieldDecoder do
   false
   """
   def ensure_decoded(schemas, data_stream) do
-    for datum <- data_stream do
-      decode_one_datum(schemas, datum)
-    end
+    Stream.map(data_stream, fn datum -> decode_one_datum(schemas, datum) end)
   end
 
   defp decode_one_datum(schemas, datum) do
