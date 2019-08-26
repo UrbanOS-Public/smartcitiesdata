@@ -26,9 +26,15 @@ allowed_origins =
   |> String.split(",")
   |> Enum.map(&String.trim/1)
 
+secrets_endpoint =
+  case System.get_env("SECRETS_ENDPOINT") do
+    "" -> nil
+    val -> val
+  end
+
 config :discovery_api,
   allowed_origins: allowed_origins,
-  secrets_endpoint: System.get_env("SECRETS_ENDPOINT")
+  secrets_endpoint: secrets_endpoint
 
 config :redix,
   host: System.get_env("REDIS_HOST")
