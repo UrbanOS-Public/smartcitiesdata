@@ -2,6 +2,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   import Checkov
+  import SmartCity.TestHelper
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApiWeb.Utilities.AuthUtils
   alias DiscoveryApi.Services.PrestoService
@@ -327,6 +328,23 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
         url: [
           "/api/v1/dataset/geojson/query",
           "/api/v1/organization/geojson/dataset/geojson/query"
+        ]
+      )
+    end
+  end
+
+  describe "metrics" do
+    data_test "increments dataset download count when user hits api", %{conn: conn} do
+      conn
+      |> get(url)
+      |> response(200)
+
+      eventually(fn -> assert_called(Redix.command!(:redix, ["INCR", "smart_registry:queries:count:#{@dataset_id}"])) end)
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/organization/org1/dataset/data1/query"
         ]
       )
     end

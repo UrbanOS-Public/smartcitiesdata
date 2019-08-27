@@ -2,6 +2,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   import Checkov
+  import SmartCity.TestHelper
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Services.PrestoService
 
@@ -92,9 +93,30 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
   end
 
   describe "metrics" do
-    data_test "increments dataset download count when dataset download is requested", %{conn: conn} do
-      conn |> get(url) |> response(200)
-      assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"]))
+    data_test "increments dataset download count when user requests download", %{conn: conn} do
+      conn
+      |> get(url)
+      |> response(200)
+
+      eventually(fn -> assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"])) end)
+
+      where(
+        url: [
+          "/api/v1/dataset/1234-4567-89101/download?_format=csv",
+          "/api/v1/organization/org1/dataset/data1/download?_format=csv",
+          "/api/v1/dataset/1234-4567-89101/download?_format=json",
+          "/api/v1/organization/org1/dataset/data1/download?_format=json"
+        ]
+      )
+    end
+
+    data_test "does not increment dataset download count when ui requests download", %{conn: conn} do
+      conn
+      |> Plug.Conn.put_req_header("origin", "data.integration.tests.example.com")
+      |> get(url)
+      |> response(200)
+
+      refute_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"]))
 
       where(
         url: [
