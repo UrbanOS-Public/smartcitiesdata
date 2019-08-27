@@ -327,11 +327,15 @@ defmodule Reaper.FullTest do
       Brook.Event.send(dataset_update(), :reaper, csv_dataset)
       Elsa.create_topic(@endpoints, topic)
 
-      eventually(fn ->
-        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+      eventually(
+        fn ->
+          results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
-        assert [%{payload: %{"name" => "Austin"}} | _] = results
-      end)
+          assert [%{payload: %{"name" => "Austin"}} | _] = results
+        end,
+        1_000,
+        60
+      )
 
       eventually(fn ->
         data_feed_status =
