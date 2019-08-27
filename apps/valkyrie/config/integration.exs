@@ -14,7 +14,13 @@ config :valkyrie,
   input_topic_prefix: "raw",
   output_topic_prefix: "validated",
   divo: [
-    {DivoKafka, [create_topics: "raw:1:1,validated:1:1,dead-letters:1:1", outside_host: host, auto_topic: false]},
+    {DivoKafka,
+     [
+       create_topics: "raw:1:1,validated:1:1,dead-letters:1:1",
+       outside_host: host,
+       auto_topic: false,
+       kafka_image_version: "2.12-2.0.1"
+     ]},
     DivoRedis
   ],
   divo_wait: [dwell: 700, max_tries: 50],
