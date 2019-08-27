@@ -319,4 +319,21 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       )
     end
   end
+
+  describe "metrics" do
+    data_test "increments dataset download count when user hits api", %{conn: conn} do
+      conn
+      |> get(url)
+      |> response(200)
+
+      assert_called(Redix.command!(:redix, ["INCR", "smart_registry:queries:count:#{@dataset_id}"]))
+
+      where(
+        url: [
+          "/api/v1/dataset/test/query",
+          "/api/v1/organization/org1/dataset/data1/query"
+        ]
+      )
+    end
+  end
 end

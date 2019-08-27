@@ -15,9 +15,11 @@ defmodule DiscoveryApiWeb.Router do
     plug(Guardian.Plug.VerifyCookie)
     plug(Guardian.Plug.LoadResource, allow_blank: true)
     plug(DiscoveryApiWeb.Plugs.SetCurrentUser)
+    plug(DiscoveryApiWeb.Plugs.SetAllowedOrigin)
   end
 
   pipeline :reject_cookies_from_ajax do
+    plug(DiscoveryApiWeb.Plugs.SetAllowedOrigin)
     plug(DiscoveryApiWeb.Plugs.CookieMonster)
   end
 
