@@ -36,7 +36,7 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
       ]
 
       schema = model.schema
-      encoded_maps = JsonFieldDecoder.ensure_decoded(schema, list_of_maps) |> Enum.into([])
+      encoded_maps = JsonFieldDecoder.ensure_decoded(list_of_maps, schema) |> Enum.into([])
 
       list_of_columns = ["id", "json_encoded"]
 

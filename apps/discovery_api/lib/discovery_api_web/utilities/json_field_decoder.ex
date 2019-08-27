@@ -2,7 +2,7 @@ defmodule DiscoveryApiWeb.Utilities.JsonFieldDecoder do
   @moduledoc """
   false
   """
-  def ensure_decoded(schemas, data_stream) do
+  def ensure_decoded(data_stream, schemas) do
     Stream.map(data_stream, fn datum -> decode_one_datum(schemas, datum) end)
   end
 

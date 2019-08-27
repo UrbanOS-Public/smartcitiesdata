@@ -6,7 +6,7 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
 
   describe "ensure_decoded/2" do
     data_test "returns based on schema assigned to it" do
-      actual_value = JsonFieldDecoder.ensure_decoded(schema, input)
+      actual_value = JsonFieldDecoder.ensure_decoded(input, schema)
 
       assert actual_value |> Enum.into([]) == expected_output
 

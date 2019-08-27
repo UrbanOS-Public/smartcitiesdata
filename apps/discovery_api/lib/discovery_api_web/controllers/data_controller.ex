@@ -24,7 +24,7 @@ defmodule DiscoveryApiWeb.DataController do
     columns = PrestoService.preview_columns(dataset_name)
     rows = PrestoService.preview(dataset_name)
     schema = conn.assigns.model.schema
-    decoded_rows = JsonFieldDecoder.ensure_decoded(schema, rows)
+    decoded_rows = JsonFieldDecoder.ensure_decoded(rows, schema)
 
     render(conn, :data, %{rows: decoded_rows, columns: columns, dataset_name: dataset_name})
   rescue
@@ -56,13 +56,9 @@ defmodule DiscoveryApiWeb.DataController do
     columns = PrestoService.preview_columns(dataset_name)
     schema = conn.assigns.model.schema
 
-    MetricsService.record_api_hit("downloads", dataset_id)
+    data_stream = get_decoded_data_stream("select * from #{dataset_name}", schema)
 
-    data_stream = Prestige.execute("select * from #{dataset_name}", rows_as_maps: true)
-    decoded_data_stream = JsonFieldDecoder.ensure_decoded(schema, data_stream)
-
-    rendered_data_stream =
-      DataView.render_as_stream(:data, format, %{stream: decoded_data_stream, columns: columns, dataset_name: dataset_name})
+    rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name})
 
     resp_as_stream(conn, rendered_data_stream, format, dataset_id)
   end
@@ -77,13 +73,9 @@ defmodule DiscoveryApiWeb.DataController do
     with {:ok, columns} <- PrestoService.get_column_names(dataset_name, Map.get(params, "columns")),
          {:ok, query} <- PrestoService.build_query(params, dataset_name),
          true <- AuthUtils.authorized_to_query?(query, current_user) do
-      MetricsService.record_api_hit("queries", dataset_id)
+      data_stream = get_decoded_data_stream(query, schema)
 
-      data_stream = Prestige.execute(query, rows_as_maps: true)
-      decoded_data_stream = JsonFieldDecoder.ensure_decoded(schema, data_stream)
-
-      rendered_data_stream =
-        DataView.render_as_stream(:data, format, %{stream: decoded_data_stream, columns: columns, dataset_name: dataset_name})
+      rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name})
 
       resp_as_stream(conn, rendered_data_stream, format, dataset_id)
     else
