@@ -2,6 +2,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   import Checkov
+  import SmartCity.TestHelper
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApiWeb.Utilities.AuthUtils
   alias DiscoveryApi.Services.PrestoService
@@ -326,7 +327,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get(url)
       |> response(200)
 
-      assert_called(Redix.command!(:redix, ["INCR", "smart_registry:queries:count:#{@dataset_id}"]))
+      eventually(fn -> assert_called(Redix.command!(:redix, ["INCR", "smart_registry:queries:count:#{@dataset_id}"])) end)
 
       where(
         url: [

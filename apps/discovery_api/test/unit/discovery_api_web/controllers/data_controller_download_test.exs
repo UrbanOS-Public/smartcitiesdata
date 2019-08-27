@@ -2,6 +2,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   import Checkov
+  import SmartCity.TestHelper
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Services.PrestoService
 
@@ -89,7 +90,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       |> get(url)
       |> response(200)
 
-      assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"]))
+      eventually(fn -> assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"])) end)
 
       where(
         url: [

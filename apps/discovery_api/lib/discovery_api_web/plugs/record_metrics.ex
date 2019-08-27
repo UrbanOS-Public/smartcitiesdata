@@ -14,7 +14,7 @@ defmodule DiscoveryApiWeb.Plugs.RecordMetrics do
         conn
 
       label ->
-        MetricsService.record_api_hit(label, id)
+        Task.start(fn -> MetricsService.record_api_hit(label, id) end)
         conn
     end
   end
