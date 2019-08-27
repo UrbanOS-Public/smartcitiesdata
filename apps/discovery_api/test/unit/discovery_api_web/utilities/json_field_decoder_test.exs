@@ -79,5 +79,19 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
         ]
       ])
     end
+
+    test "raises on invalid json" do
+      input = [
+        %{"id" => 1, "name" => "{\"name\" \"robert\"}"},
+        %{"id" => 2, "name" => "{\"name\" \"tony\"}"}
+      ]
+
+      schema = [
+        %{name: "id", type: "integer"},
+        %{name: "name", type: "json"}
+      ]
+
+      assert_raise(Jason.DecodeError, fn -> JsonFieldDecoder.ensure_decoded(input, schema) |> Enum.into([]) end)
+    end
   end
 end
