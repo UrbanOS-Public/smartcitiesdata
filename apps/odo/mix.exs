@@ -23,7 +23,6 @@ defmodule Odo.MixProject do
 
   defp deps do
     [
-      {:brook, git: "https://github.com/bbalser/brook.git", ref: "4b8cb3319b520402084186b59cc795d4c7e34c93"},
       {:distillery, "2.0.14"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
@@ -34,17 +33,17 @@ defmodule Odo.MixProject do
       {:poison, "~> 3.0"},
       {:redix, "~> 0.9"},
       {:retry, "~> 0.11.0"},
-      {:smart_city, "~> 2.4", override: true},
-      {:smart_city_registry, "~> 4.0"},
+      {:smart_city, "~> 2.6", override: true},
+      {:smart_city_registry, "~> 5.0"},
       {:sweet_xml, "~> 0.6"},
       {:tesla, "~> 1.2"},
       # Test/Dev Dependencies
       {:dialyxir, "~> 0.5", only: [:dev]},
       {:divo, "~> 1.1", only: [:dev, :integration], override: true},
-      {:divo_redis, "~> 0.1", only: [:dev, :integration]},
-      {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
+      {:divo_redis, "~> 0.1", only: :integration},
+      {:divo_kafka, "~> 0.1", only: :integration},
       {:placebo, "~> 1.2", only: [:test]},
-      {:smart_city_test, "~> 0.3", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.5", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]}
     ]
   end

@@ -7,9 +7,9 @@ defmodule Odo.FileProcessor do
   require Logger
   import SmartCity.Event, only: [file_upload: 0]
   alias ExAws.S3
-  alias SmartCity.Event.FileUpload
+  alias SmartCity.HostedFile
 
-  def process(%FileUpload{} = file_event) do
+  def process(%HostedFile{} = file_event) do
     source_type = get_extension(file_event.key)
     convert = get_conversion_map(source_type)
     download_destination = "#{working_dir()}/#{file_event.dataset_id}.#{convert.from}"
@@ -61,8 +61,8 @@ defmodule Odo.FileProcessor do
   end
 
   defp send_file_upload_event(id, bucket, key, type) do
-    new_type = FileUpload.type(type)
-    {:ok, event} = FileUpload.new(%{dataset_id: id, bucket: bucket, key: key, mime_type: new_type})
+    new_type = HostedFile.type(type)
+    {:ok, event} = HostedFile.new(%{dataset_id: id, bucket: bucket, key: key, mime_type: new_type})
 
     Brook.Event.send(file_upload(), "odo", event)
   end
