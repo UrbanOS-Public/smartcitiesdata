@@ -4,6 +4,7 @@ defmodule DiscoveryApiWeb.DataController do
   alias DiscoveryApiWeb.Plugs.{GetModel, Restrictor, RecordMetrics}
   alias DiscoveryApiWeb.DataView
   alias DiscoveryApiWeb.Utilities.AuthUtils
+  alias DiscoveryApiWeb.Utilities.JsonFieldDecoder
   require Logger
 
   plug GetModel
@@ -25,8 +26,10 @@ defmodule DiscoveryApiWeb.DataController do
     dataset_name = conn.assigns.model.systemName
     columns = PrestoService.preview_columns(dataset_name)
     rows = PrestoService.preview(dataset_name)
+    schema = conn.assigns.model.schema
+    decoded_rows = JsonFieldDecoder.ensure_decoded(rows, schema)
 
-    render(conn, :data, %{rows: rows, columns: columns, dataset_name: dataset_name})
+    render(conn, :data, %{rows: decoded_rows, columns: columns, dataset_name: dataset_name})
   rescue
     Prestige.Error -> render(conn, :data, %{rows: [], columns: []})
   end
@@ -53,8 +56,9 @@ defmodule DiscoveryApiWeb.DataController do
     dataset_name = conn.assigns.model.systemName
     dataset_id = conn.assigns.model.id
     columns = PrestoService.preview_columns(dataset_name)
+    schema = conn.assigns.model.schema
 
-    data_stream = Prestige.execute("select * from #{dataset_name}")
+    data_stream = get_decoded_data_stream("select * from #{dataset_name}", schema)
     rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name})
 
     resp_as_stream(conn, rendered_data_stream, format, dataset_id)
@@ -65,11 +69,13 @@ defmodule DiscoveryApiWeb.DataController do
     dataset_name = conn.assigns.model.systemName
     dataset_id = conn.assigns.model.id
     current_user = conn.assigns.current_user
+    schema = conn.assigns.model.schema
 
     with {:ok, columns} <- PrestoService.get_column_names(dataset_name, Map.get(params, "columns")),
          {:ok, query} <- PrestoService.build_query(params, dataset_name),
          true <- AuthUtils.authorized_to_query?(query, current_user) do
-      data_stream = Prestige.execute(query)
+      data_stream = get_decoded_data_stream(query, schema)
+
       rendered_data_stream = DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name})
 
       resp_as_stream(conn, rendered_data_stream, format, dataset_id)

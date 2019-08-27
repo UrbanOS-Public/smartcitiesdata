@@ -23,18 +23,22 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
         downloads: 9,
         organizationDetails: %{
           orgName: @org_name
-        }
+        },
+        schema: [
+          %{name: "id", type: "integer"},
+          %{name: "name", type: "string"}
+        ]
       })
 
     allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
     allow(Model.get(@dataset_id), return: model)
 
     allow(PrestoService.preview_columns(@system_name),
-      return: ["id", "name", "age"]
+      return: ["id", "name"]
     )
 
-    allow(Prestige.execute("select * from #{@system_name}"),
-      return: [[1, "Joe", 21], [2, "Robby", 32]]
+    allow(Prestige.execute("select * from #{@system_name}", rows_as_maps: true),
+      return: [%{"id" => 1, "name" => "Joe"}, %{"id" => 2, "name" => "Robby"}]
     )
 
     allow(Redix.command!(any(), any()), return: :does_not_matter)
@@ -58,7 +62,11 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
           downloads: 9,
           organizationDetails: %{
             orgName: @org_name
-          }
+          },
+          schema: [
+            %{name: "number", type: "integer"},
+            %{name: "number", type: "integer"}
+          ]
         })
 
       allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
@@ -68,12 +76,12 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
         return: ["id", "int_array"]
       )
 
-      allow(Prestige.execute("select * from #{model.systemName}"),
-        return: [[1, [2, 3, 4]]]
+      allow(Prestige.execute("select * from #{model.systemName}", rows_as_maps: true),
+        return: [%{"id" => 1, "int_array" => [2, 3, 4]}]
       )
 
       allow(Prestige.prefetch(any()),
-        return: [["id", "1"], ["int_array", [2, 3, 4]]]
+        return: [%{"id" => "1", "int_array" => [2, 3, 4]}]
       )
 
       allow(Redix.command!(any(), any()), return: :does_not_matter)

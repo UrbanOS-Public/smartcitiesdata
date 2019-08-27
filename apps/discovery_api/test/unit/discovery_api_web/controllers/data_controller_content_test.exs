@@ -51,7 +51,11 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
           private: false,
           lastUpdatedDate: nil,
           queries: 7,
-          downloads: 9
+          downloads: 9,
+          schema: [
+            %{name: "number", type: "integer"},
+            %{name: "name", type: "string"}
+          ]
         })
 
       allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
@@ -64,7 +68,15 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
       allow(PrestoService.preview_columns(@system_name), return: ["feature"])
       allow(PrestoService.preview(@system_name), return: @geo_json_features)
       allow(PrestoService.build_query(any(), any()), return: {:ok, "select * from #{@system_name}"})
-      allow(Prestige.execute("select * from #{@system_name}"), return: Enum.map(@geo_json_features_encoded, &List.wrap/1))
+
+      allow(Prestige.execute("select * from #{@system_name}", rows_as_maps: true),
+        return: [
+          %{"feature" => "{\"geometry\":{\"coordinates\":[[0,0],[0,1]]}}"},
+          %{"feature" => "{\"geometry\":{\"coordinates\":[[1,0]]}}"},
+          %{"feature" => "{\"geometry\":{\"coordinates\":[[1,1]]}}"},
+          %{"feature" => "{\"geometry\":{\"coordinates\":[[0,1]]}}"}
+        ]
+      )
 
       :ok
     end

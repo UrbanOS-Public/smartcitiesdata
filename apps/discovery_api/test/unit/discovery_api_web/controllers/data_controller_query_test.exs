@@ -24,7 +24,11 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
         private: false,
         lastUpdatedDate: nil,
         queries: 7,
-        downloads: 9
+        downloads: 9,
+        schema: [
+          %{name: "id", type: "integer"},
+          %{name: "name", type: "string"}
+        ]
       })
 
     allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
@@ -38,8 +42,8 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       return: [["id", "bigint", "", ""], ["name", "varchar", "", ""]]
     )
 
-    allow(Prestige.execute(contains_string(@system_name)),
-      return: [[1, "Joe"], [2, "Robby"]]
+    allow(Prestige.execute(contains_string(@system_name), rows_as_maps: true),
+      return: [%{"id" => 1, "name" => "Joe"}, %{"id" => 2, "name" => "Robby"}]
     )
 
     allow(Redix.command!(any(), any()), return: :does_not_matter)
@@ -52,7 +56,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       conn |> put_req_header("accept", "text/csv") |> get(url) |> response(200)
 
       assert_called Prestige.execute("describe #{@system_name}"), once()
-      assert_called Prestige.execute("SELECT * FROM #{@system_name}"), once()
+      assert_called Prestige.execute("SELECT * FROM #{@system_name}", rows_as_maps: true), once()
 
       where(
         url: [
@@ -65,7 +69,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects using the where clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, where: "name='Robby'") |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM #{@system_name} WHERE name='Robby'"),
+      assert_called Prestige.execute("SELECT * FROM #{@system_name} WHERE name='Robby'", rows_as_maps: true),
                     once()
 
       where(
@@ -79,7 +83,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects using the order by clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, orderBy: "id") |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM #{@system_name} ORDER BY id"),
+      assert_called Prestige.execute("SELECT * FROM #{@system_name} ORDER BY id", rows_as_maps: true),
                     once()
 
       where(
@@ -93,7 +97,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects using the limit clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, limit: "200") |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM #{@system_name} LIMIT 200"),
+      assert_called Prestige.execute("SELECT * FROM #{@system_name} LIMIT 200", rows_as_maps: true),
                     once()
 
       where(
@@ -107,7 +111,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects using the group by clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, groupBy: "one") |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM #{@system_name} GROUP BY one"),
+      assert_called Prestige.execute("SELECT * FROM #{@system_name} GROUP BY one", rows_as_maps: true),
                     once()
 
       where(
@@ -124,7 +128,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get(url, where: "id=1", orderBy: "name", limit: "200", groupBy: "name")
       |> response(200)
 
-      assert_called Prestige.execute("SELECT * FROM #{@system_name} WHERE id=1 GROUP BY name ORDER BY name LIMIT 200"),
+      assert_called Prestige.execute("SELECT * FROM #{@system_name} WHERE id=1 GROUP BY name ORDER BY name LIMIT 200", rows_as_maps: true),
                     once()
 
       where(
@@ -141,7 +145,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get(url, columns: "id")
       |> response(200)
 
-      assert_called Prestige.execute("SELECT id FROM #{@system_name}"), once()
+      assert_called Prestige.execute("SELECT id FROM #{@system_name}", rows_as_maps: true), once()
 
       where(
         url: [
@@ -286,6 +290,14 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     end
 
     data_test "returns geojson", %{conn: conn} do
+      allow(
+        Prestige.execute("SELECT * FROM geojson", rows_as_maps: true),
+        return: [
+          %{"feature" => "{\"geometry\": {\"coordinates\": [[1, 0]]}}"},
+          %{"feature" => "{\"geometry\": {\"coordinates\": [[0, 1]]}}"}
+        ]
+      )
+
       actual =
         conn
         |> put_req_header("accept", "application/geo+json")
@@ -310,7 +322,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
                "type" => @feature_type
              }
 
-      assert_called(Prestige.execute("SELECT * FROM geojson"), once())
+      assert_called(Prestige.execute("SELECT * FROM geojson", rows_as_maps: true), once())
 
       where(
         url: [

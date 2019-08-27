@@ -3,6 +3,7 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
   use Placebo
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Services.PrestoService
+  alias DiscoveryApiWeb.Utilities.JsonFieldDecoder
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -16,26 +17,28 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
           private: false,
           lastUpdatedDate: nil,
           queries: 7,
-          downloads: 9
+          downloads: 9,
+          schema: [
+            %{name: "id", type: "integer"},
+            %{name: "json_encoded", type: "json"}
+          ]
         })
 
       allow(Model.get(model.id), return: model)
-      :ok
+      {:ok, %{model: model}}
     end
 
-    test "preview controller returns data from preview service", %{conn: conn} do
+    test "preview controller returns data from preview service", %{conn: conn, model: model} do
       list_of_maps = [
-        %{"id" => Faker.UUID.v4(), name: Faker.Lorem.characters(3..10)},
-        %{"id" => Faker.UUID.v4(), name: Faker.Lorem.characters(3..10)},
-        %{"id" => Faker.UUID.v4(), name: Faker.Lorem.characters(3..10)}
+        %{"id" => Faker.UUID.v4(), "json_encoded" => "{\"json_encoded\": \"tony\"}"},
+        %{"id" => Faker.UUID.v4(), "json_encoded" => "{\"json_encoded\": \"andy\"}"},
+        %{"id" => Faker.UUID.v4(), "json_encoded" => "{\"json_encoded\": \"smith\"}"}
       ]
 
-      encoded_maps =
-        list_of_maps
-        |> Jason.encode!()
-        |> Jason.decode!()
+      schema = model.schema
+      encoded_maps = JsonFieldDecoder.ensure_decoded(list_of_maps, schema) |> Enum.into([])
 
-      list_of_columns = ["id", "name"]
+      list_of_columns = ["id", "json_encoded"]
 
       expected = %{"data" => encoded_maps, "meta" => %{"columns" => list_of_columns}}
 
@@ -48,7 +51,7 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
     end
 
     test "preview controller returns an empty list for an existing dataset with no data", %{conn: conn} do
-      list_of_columns = ["id", "name"]
+      list_of_columns = ["id", "json_encoded"]
       expected = %{"data" => [], "meta" => %{"columns" => list_of_columns}}
 
       expect(PrestoService.preview(@system_name), return: [])
@@ -79,7 +82,11 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
           id: dataset_id,
           name: dataset_name,
           sourceFormat: "geojson",
-          systemName: dataset_name
+          systemName: dataset_name,
+          schema: [
+            %{name: "id", type: "integer"},
+            %{name: "name", type: "string"}
+          ]
         })
 
       allow(Model.get(dataset_id), return: model)

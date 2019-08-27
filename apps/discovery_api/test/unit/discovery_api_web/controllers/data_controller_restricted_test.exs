@@ -24,7 +24,11 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
         organizationDetails: %{
           orgName: @org_name,
           dn: "cn=this_is_a_group,ou=Group"
-        }
+        },
+        schema: [
+          %{name: "id", type: "integer"},
+          %{name: "name", type: "string"}
+        ]
       })
 
     allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
@@ -33,11 +37,14 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
     allow(MetricsService.record_api_hit(any(), any()), return: :does_not_matter)
 
     # these clearly need to be condensed
-    allow(PrestoService.get_column_names(any(), any()), return: {:ok, ["id", "name", "age"]})
-    allow(PrestoService.preview_columns(@system_name), return: ["id", "name", "age"])
-    allow(PrestoService.preview(@system_name), return: [[1, "Joe", 21], [2, "Robby", 32]])
+    allow(PrestoService.get_column_names(any(), any()), return: {:ok, ["id", "name"]})
+    allow(PrestoService.preview_columns(@system_name), return: ["id", "name"])
+    allow(PrestoService.preview(@system_name), return: [[1, "Joe"], [2, "Robby"]])
     allow(PrestoService.build_query(any(), any()), return: {:ok, "select * from #{@system_name}"})
-    allow(Prestige.execute("select * from #{@system_name}"), return: [[1, "Joe", 21], [2, "Robby", 32]])
+
+    allow(Prestige.execute("select * from #{@system_name}", rows_as_maps: true),
+      return: [%{"id" => 1, "name" => "Joe"}, %{"id" => 2, "name" => "Robby"}]
+    )
 
     :ok
   end
