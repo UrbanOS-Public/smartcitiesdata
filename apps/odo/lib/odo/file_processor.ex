@@ -6,6 +6,7 @@ defmodule Odo.FileProcessor do
   """
   require Logger
   import SmartCity.Event, only: [file_upload: 0]
+  use Retry
   alias ExAws.S3
   alias SmartCity.HostedFile
 
@@ -16,26 +17,36 @@ defmodule Odo.FileProcessor do
     converted_file_path = "#{working_dir()}/#{file_event.dataset_id}.#{convert.to}"
     new_key = String.replace_suffix(file_event.key, source_type, convert.to)
 
-    with :ok <- download(file_event.bucket, file_event.key, download_destination),
-         :ok <- convert(download_destination, converted_file_path, convert),
-         :ok <- upload(file_event.bucket, converted_file_path, new_key),
-         :ok <- send_file_upload_event(file_event.dataset_id, file_event.bucket, new_key, convert.to) do
-      Logger.info("File uploaded for dataset #{file_event.dataset_id} to #{file_event.bucket}/#{new_key}")
-      :ok
-    else
-      {:error, reason} ->
-        Logger.warn("File upload failed for dataset #{file_event.dataset_id}: #{reason}")
-    end
+    conversion_result =
+      retry with: linear_backoff(1000, 10) |> Stream.take(5) do
+        with :ok <- download(file_event.bucket, file_event.key, download_destination),
+             :ok <- convert(download_destination, converted_file_path, convert),
+             :ok <- upload(file_event.bucket, converted_file_path, new_key),
+             :ok <- send_file_upload_event(file_event.dataset_id, file_event.bucket, new_key, convert.to) do
+          :ok
+        end
+      after
+        :ok ->
+          Logger.info("File uploaded for dataset #{file_event.dataset_id} to #{file_event.bucket}/#{new_key}")
+          :ok
+      else
+        {:error, reason} ->
+          explanation = "File upload failed for dataset #{file_event.dataset_id}: #{reason}"
+          Logger.warn(explanation)
+          {:error, explanation}
+      end
 
     cleanup_files([download_destination, converted_file_path])
+    conversion_result
   end
 
   defp download(bucket, key, path) do
-    S3.download_file(bucket, key, path)
+    bucket
+    |> S3.download_file(key, path)
     |> ExAws.request()
     |> case do
-      {:ok, :done} -> :ok
-      {:error, err} -> raise "Error downloading file for #{bucket}/#{key}: #{err}"
+      {:ok, _} -> :ok
+      {:error, err} -> {:error, "Error downloading file for #{bucket}/#{key}: #{err}"}
     end
   end
 
@@ -45,7 +56,7 @@ defmodule Odo.FileProcessor do
       :ok
     else
       {:error, err} ->
-        raise "Unable to convert #{converter.from} to #{converter.to} for #{source}: #{err}"
+        {:error, "Unable to convert #{converter.from} to #{converter.to} for #{source}: #{err}"}
     end
   end
 
@@ -56,7 +67,7 @@ defmodule Odo.FileProcessor do
     |> ExAws.request()
     |> case do
       {:ok, _} -> :ok
-      {:error, err} -> raise "Unable to upload file #{bucket}/#{key}: #{err}"
+      {:error, err} -> {:error, "Unable to upload file #{bucket}/#{key}: #{err}"}
     end
   end
 
@@ -85,6 +96,9 @@ defmodule Odo.FileProcessor do
 
   defp cleanup_files(files) do
     Enum.each(files, &File.rm!/1)
+  rescue
+    File.Error ->
+      Logger.warn("File removal failed")
   end
 
   defp working_dir(), do: Application.get_env(:odo, :working_dir)
