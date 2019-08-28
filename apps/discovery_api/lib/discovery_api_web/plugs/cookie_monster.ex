@@ -7,16 +7,18 @@ defmodule DiscoveryApiWeb.Plugs.CookieMonster do
   def init(default), do: default
 
   def call(%Plug.Conn{} = conn, _opts) do
-    if origin_not_allowed?(conn) && cookie_token_exists?(conn) do
+    with false <- origin_allowed?(conn),
+         true <- cookie_token_exists?(conn) do
       conn
       |> DiscoveryApiWeb.RenderError.render_error(404, "Not Found")
       |> Plug.Conn.halt()
     else
-      conn
+      _ ->
+        conn
     end
   end
 
-  defp origin_not_allowed?(conn), do: conn.assigns.allowed_origin == false
+  defp origin_allowed?(conn), do: conn.assigns.allowed_origin
 
   defp cookie_token_exists?(conn) do
     conn
