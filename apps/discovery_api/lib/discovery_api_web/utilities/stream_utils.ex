@@ -35,6 +35,8 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
 
     {conn, bounding_box} =
       Enum.reduce_while(stream, {conn, [nil, nil, nil, nil]}, fn data, {conn, bounding_box} ->
+        data |> IO.inspect(label: "stream_utils.ex:38")
+
         case Conn.chunk(conn, data) do
           {:ok, conn} ->
             {:cont, {conn, decode_and_calculate_bounding_box(data, bounding_box)}}

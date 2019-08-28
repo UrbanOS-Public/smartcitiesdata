@@ -2,6 +2,7 @@ defmodule DiscoveryApiWeb.DataView do
   use DiscoveryApiWeb, :view
   import DiscoveryApiWeb.Utilities.StreamUtils
   alias DiscoveryApiWeb.Utilities.GeojsonUtils
+  alias DiscoveryApiWeb.Utilities.JsonFieldDecoder
 
   def accepted_formats() do
     ["csv", "json", "geojson"]
@@ -56,9 +57,10 @@ defmodule DiscoveryApiWeb.DataView do
     |> map_data_stream_for_csv()
   end
 
-  def render_as_stream(:data, "json", %{stream: stream}) do
+  def render_as_stream(:data, "json", %{stream: stream, schema: schema}) do
     data =
       stream
+      |> Stream.map(fn datum -> [datum] |> JsonFieldDecoder.ensure_decoded(schema) |> Enum.into([]) |> hd() end)
       |> Stream.map(&Jason.encode!/1)
       |> Stream.intersperse(",")
 
@@ -72,7 +74,7 @@ defmodule DiscoveryApiWeb.DataView do
     data =
       stream
       |> Stream.map(&Map.get(&1, "feature"))
-      |> Stream.map(&Jason.encode!/1)
+      # |> Stream.map(&Jason.encode!/1)
       |> Stream.intersperse(",")
 
     [["{\"type\": \"#{type}\", \"name\": \"#{name}\", \"features\": "], ["["], data, ["],"]]

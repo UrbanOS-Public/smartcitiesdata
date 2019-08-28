@@ -120,11 +120,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       )
 
       allow(Prestige.execute("select * from #{model.systemName}", rows_as_maps: true),
-        return: [%{"feature" => Jason.encode!(%{geometry: %{coordinates: [0, 1]}})}]
-      )
-
-      allow(Prestige.prefetch(any()),
-        return: [%{"feature" => Jason.encode!(%{geometry: %{coordinates: [0, 1]}})}]
+        return: [%{"feature" => "{\"geometry\":{\"coordinates\":[0,1]}}"}]
       )
 
       allow(Redix.command!(any(), any()), return: :does_not_matter)
