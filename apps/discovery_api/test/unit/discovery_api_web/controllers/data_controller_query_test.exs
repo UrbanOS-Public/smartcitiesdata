@@ -264,7 +264,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
           [
             Jason.encode!(%{
               "geometry" => %{
-                "coordinates" => [[1, 0]]
+                "coordinates" => [1, 0]
               }
             })
           ],
@@ -293,7 +293,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       allow(
         Prestige.execute("SELECT * FROM geojson", rows_as_maps: true),
         return: [
-          %{"feature" => "{\"geometry\": {\"coordinates\": [[1, 0]]}}"},
+          %{"feature" => "{\"geometry\": {\"coordinates\": [1, 0]}}"},
           %{"feature" => "{\"geometry\": {\"coordinates\": [[0, 1]]}}"}
         ]
       )
@@ -308,7 +308,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
                "features" => [
                  %{
                    "geometry" => %{
-                     "coordinates" => [[1, 0]]
+                     "coordinates" => [1, 0]
                    }
                  },
                  %{

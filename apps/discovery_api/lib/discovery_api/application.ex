@@ -53,7 +53,7 @@ defmodule DiscoveryApi.Application do
     Application.get_env(:discovery_api, :secrets_endpoint)
     |> case do
       nil -> nil
-      host -> DiscoveryApi.S3.CredentialRetriever.retrieve()
+      _ -> DiscoveryApi.S3.CredentialRetriever.retrieve()
     end
   end
 end

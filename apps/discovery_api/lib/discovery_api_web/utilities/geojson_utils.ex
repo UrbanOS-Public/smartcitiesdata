@@ -9,6 +9,7 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtils do
       ) do
     coordinates
     |> reduce_coordinates()
+    |> List.wrap()
     |> List.flatten()
     |> Enum.reduce(bounding_box, &update_bounding_box/2)
     |> handle_empty_bounding_box()
