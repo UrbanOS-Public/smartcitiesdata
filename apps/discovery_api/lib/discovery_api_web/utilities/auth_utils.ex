@@ -24,8 +24,8 @@ defmodule DiscoveryApiWeb.Utilities.AuthUtils do
   defp valid_tables?(affected_tables, affected_models) do
     affected_system_names =
       affected_models
-      |> Enum.map(& &1.systemName)
-      |> Enum.map(&String.downcase(&1))
+      |> Enum.map(&Map.get(&1, :systemName))
+      |> Enum.map(&String.downcase/1)
 
     MapSet.new(affected_tables) == MapSet.new(affected_system_names)
   end
