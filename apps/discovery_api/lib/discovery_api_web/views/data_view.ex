@@ -14,10 +14,10 @@ defmodule DiscoveryApiWeb.DataView do
   end
 
   def render("data.csv", %{rows: rows, columns: columns}) do
-    rows = Enum.map(rows, &Map.values/1)
+    row_values = Enum.map(rows, &Map.values/1)
 
     [columns]
-    |> Enum.concat(rows)
+    |> Enum.concat(row_values)
     |> map_data_stream_for_csv()
     |> Enum.into([])
     |> List.to_string()
