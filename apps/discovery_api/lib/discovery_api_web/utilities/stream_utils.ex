@@ -4,7 +4,6 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
   """
   alias Plug.Conn
   alias DiscoveryApiWeb.Utilities.GeojsonUtils
-  alias DiscoveryApiWeb.Utilities.JsonFieldDecoder
 
   require Logger
 
@@ -35,8 +34,6 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
 
     {conn, bounding_box} =
       Enum.reduce_while(stream, {conn, [nil, nil, nil, nil]}, fn data, {conn, bounding_box} ->
-        data |> IO.inspect(label: "stream_utils.ex:38")
-
         case Conn.chunk(conn, data) do
           {:ok, conn} ->
             {:cont, {conn, decode_and_calculate_bounding_box(data, bounding_box)}}
@@ -64,12 +61,6 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
         {:error, :closed} -> {:halt, conn}
       end
     end)
-  end
-
-  def get_decoded_data_stream(statement, schema) do
-    statement
-    |> Prestige.execute(rows_as_maps: true)
-    |> JsonFieldDecoder.ensure_decoded(schema)
   end
 
   defp decode_and_calculate_bounding_box(feature_json, bounding_box)
