@@ -76,6 +76,18 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtilsTest do
       assert bounding_box == [1, 0, 1, 0]
     end
 
+    test "the bounding box of a single feature with a one-dimensional point does not raise an error" do
+      feature = %{
+        "geometry" => %{
+          "coordinates" => [-1, 0]
+        }
+      }
+
+      bounding_box = GeojsonUtils.calculate_bounding_box(feature)
+
+      assert bounding_box == [-1, 0, -1, 0]
+    end
+
     data_test "throws an exception when feature has #{error_reason}" do
       Logger.debug("Testing #{error_reason}")
       features = [%{"geometry" => %{"coordinates" => coordinates}}]
