@@ -23,6 +23,7 @@ defmodule Odo.MixProject do
 
   defp deps do
     [
+      {:brook, "~> 0.1.2"},
       {:distillery, "2.0.14"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
@@ -33,7 +34,7 @@ defmodule Odo.MixProject do
       {:poison, "~> 3.0"},
       {:redix, "~> 0.9"},
       {:retry, "~> 0.11.0"},
-      {:smart_city, "~> 2.6", override: true},
+      {:smart_city, "~> 2.7", override: true},
       {:smart_city_registry, "~> 5.0"},
       {:sweet_xml, "~> 0.6"},
       {:tesla, "~> 1.2"},

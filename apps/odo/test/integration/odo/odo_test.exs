@@ -41,32 +41,33 @@ defmodule Odo.Integration.OdoTest do
 
     new_key = "#{org}/#{data_name}.geojson"
 
-    eventually(
-      fn ->
-        fileResp =
-          ExAws.S3.get_object(bucket, new_key)
-          |> ExAws.request()
+    eventually(fn ->
+      fileResp =
+        ExAws.S3.get_object(bucket, new_key)
+        |> ExAws.request()
 
-        assert {:ok, %{body: body}} = fileResp
-        assert body != nil
+      assert {:ok, %{body: body}} = fileResp
+      assert body != nil
 
-        actual_events = Elsa.Fetch.search_values(@kafka_broker, "event-stream", ".geojson") |> Enum.to_list() |> hd()
-        actual_state = Brook.get_all_values!(:file_conversions)
+      actual_event =
+        Elsa.Fetch.search_values(@kafka_broker, "event-stream", ".geojson")
+        |> Enum.to_list()
+        |> hd()
+        |> (fn event -> Brook.Deserializer.deserialize(struct(Brook.Event), event.value) end).()
+        |> (fn {:ok, value} -> value.data end).()
 
-        expected_events =
-          HostedFile.new(%{
-            dataset_id: id,
-            mime_type: "application/geo+json",
-            bucket: bucket,
-            key: new_key
-          })
-          |> (fn {:ok, event} -> Jason.encode!(%{author: "odo", data: event}) end).()
+      actual_state = Brook.get_all_values!(:file_conversions)
 
-        assert actual_events.value == expected_events
-        assert Enum.member?(actual_state, file_event) == false
-      end,
-      2_000,
-      20
-    )
+      {:ok, expected_event} =
+        HostedFile.new(%{
+          dataset_id: id,
+          mime_type: "application/geo+json",
+          bucket: bucket,
+          key: new_key
+        })
+
+      assert actual_event == expected_event
+      assert Enum.member?(actual_state, file_event) == false
+    end)
   end
 end
