@@ -4,7 +4,7 @@ defmodule Reaper.HostedFileProcessorTest do
 
   alias Reaper.HostedFileProcessor
   alias Reaper.Persistence
-  alias SmartCity.Event.FileUpload
+  alias SmartCity.HostedFile
 
   @dataset_id "12345"
   @bucket Application.get_env(:reaper, :hosted_file_bucket)
@@ -36,7 +36,7 @@ defmodule Reaper.HostedFileProcessorTest do
 
       HostedFileProcessor.process(config)
 
-      expected_file_upload = %FileUpload{
+      expected_file_upload = %HostedFile{
         dataset_id: config.dataset_id,
         mime_type: "text/plain",
         bucket: @bucket,

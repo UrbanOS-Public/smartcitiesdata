@@ -21,21 +21,21 @@ defmodule Reaper.Event.HandlerTest do
     Reaper.Event.Handler.handle_event(%Brook.Event{
       type: dataset_update(),
       author: "Reaper",
-      data: Jason.encode!(dataset)
+      data: dataset
     })
 
     assert_called ConfigServer.process_reaper_config(reaper_config)
   end
 
   test "unable to parse data should log message", %{dataset: dataset} do
-    allow SmartCity.Dataset.new(any()), return: {:error, "some failure"}
+    allow Reaper.ReaperConfig.from_dataset(any()), return: {:error, "some failure"}
 
     log =
       capture_log(fn ->
         Reaper.Event.Handler.handle_event(%Brook.Event{
           type: dataset_update(),
           author: "Reaper",
-          data: Jason.encode!(dataset)
+          data: dataset
         })
       end)
 

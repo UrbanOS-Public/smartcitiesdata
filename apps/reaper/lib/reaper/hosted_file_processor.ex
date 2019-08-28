@@ -4,7 +4,7 @@ defmodule Reaper.HostedFileProcessor do
   """
   require Logger
   import SmartCity.Event, only: [file_upload: 0]
-  alias SmartCity.Event.FileUpload
+  alias SmartCity.HostedFile
   alias ExAws.S3
 
   alias Reaper.{
@@ -48,7 +48,7 @@ defmodule Reaper.HostedFileProcessor do
 
   def send_event(config, filename) do
     {:ok, file_upload} =
-      FileUpload.new(%{
+      HostedFile.new(%{
         dataset_id: config.dataset_id,
         mime_type: MIME.type(config.sourceFormat),
         bucket: bucket_name(),

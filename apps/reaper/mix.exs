@@ -38,10 +38,10 @@ defmodule Reaper.MixProject do
 
   defp deps do
     [
+      {:brook, "~> 0.1.2"},
       {:cachex, "~> 3.2"},
       {:castore, "~> 0.1"},
       {:distillery, "2.0.14"},
-      {:brook, github: "bbalser/brook", ref: "4f444b0a3c1d3b2477c7db3f94f3e87d1031e566"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
       {:gen_stage, "~> 0.14"},
@@ -59,9 +59,8 @@ defmodule Reaper.MixProject do
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
       {:sftp_ex, "~> 0.2"},
-      {:smart_city, "~> 2.4", override: true},
+      {:smart_city, "~> 2.7"},
       {:smart_city_data, "~> 3.0"},
-      {:smart_city_registry, "~> 4.0"},
       {:sweet_xml, "~> 0.6"},
       {:tesla, "~> 1.2"},
       {:yeet, "~> 1.0"},
