@@ -56,6 +56,7 @@ defmodule Reaper.MixProject do
       {:observer_cli, "~> 1.5"},
       {:plug_cowboy, "~> 2.1"},
       {:protobuf, "~> 0.6"},
+      {:quantum, "~> 2.3"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
       {:sftp_ex, "~> 0.2"},
@@ -63,6 +64,7 @@ defmodule Reaper.MixProject do
       {:smart_city_data, "~> 3.0"},
       {:sweet_xml, "~> 0.6"},
       {:tesla, "~> 1.2"},
+      {:timex, "~> 3.0"},
       {:yeet, "~> 1.0"},
       # Test/Dev Dependencies
       {:benchee, "~> 1.0", only: [:integration]},
