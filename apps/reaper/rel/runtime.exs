@@ -67,6 +67,12 @@ config :reaper, :brook,
     ]
   ]
 
+config :reaper, Reaper.Scheduler,
+  storage: Reaper.Quantum.Storage
+
+config :reaper, Reaper.Quantum.Storage,
+  redis_host: redis_host
+
 config :redix,
   host: redis_host
 

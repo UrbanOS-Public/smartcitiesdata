@@ -5,6 +5,12 @@ defmodule Reaper.Quantum.Storage do
   @behaviour Quantum.Storage.Adapter
 
   @conn :reaper_quantum_storage_redix
+
+  def child_spec(_args) do
+    config = Application.get_env(:reaper, Reaper.Quantum.Storage)
+    Supervisor.child_spec({Redix, [host: Keyword.fetch!(config, :redis_host), name: @conn]}, id: @conn)
+  end
+
   def last_execution_date(scheduler) do
     case get(date_key(scheduler)) do
       nil -> :unknown
