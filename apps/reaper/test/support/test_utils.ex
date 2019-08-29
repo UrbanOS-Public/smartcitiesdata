@@ -13,8 +13,9 @@ defmodule TestUtils do
   end
 
   def get_child_pids_for_feed_supervisor(name) do
-    Reaper.Registry
+    Reaper.Horde.Registry
     |> Horde.Registry.lookup(name)
+    |> (fn [{pid, _}] -> pid end).()
     |> Horde.Supervisor.which_children()
     |> Enum.map(fn {_, pid, _, _} -> pid end)
     |> Enum.sort()
@@ -45,17 +46,13 @@ defmodule TestUtils do
     bypass
   end
 
-  defp is_feed_supervisor?([{_, _, _, [mod]}]) do
+  defp is_feed_supervisor?({_, _, _, [mod]}) do
     mod == Reaper.FeedSupervisor
   end
 
-  defp is_feed_supervisor?([]), do: false
-
-  defp get_supervisor_children([{_, pid, _, _}]) do
+  defp get_supervisor_children({_, pid, _, _}) do
     Supervisor.which_children(pid)
   end
-
-  defp get_supervisor_children([]), do: []
 
   def get_dlq_messages_from_kafka(topic, endpoints) do
     topic

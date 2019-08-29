@@ -97,7 +97,6 @@ defmodule Reaper.SftpExtractorTest do
 
     eventually(fn ->
       result = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
-
       assert [%{payload: ^payload} | _] = result
     end)
   end

@@ -29,7 +29,7 @@ defmodule Reaper.DataFeedSchedulerTest do
 
   describe "update scenarios" do
     setup do
-      TestHelper.start_horde(Reaper.Registry, Reaper.Horde.Supervisor)
+      TestHelper.start_horde(Reaper.Horde.Registry, Reaper.Horde.Supervisor)
 
       :ok
     end

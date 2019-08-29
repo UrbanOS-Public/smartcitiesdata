@@ -38,7 +38,7 @@ defmodule Reaper.DataFeedScheduler do
     |> calculate_next_run_time()
     |> schedule_work()
 
-    Horde.Registry.register(Reaper.Registry, name)
+    Horde.Registry.register(Reaper.Horde.Registry, name, nil)
 
     case reaper_config.sourceType do
       "host" -> {:ok, args}

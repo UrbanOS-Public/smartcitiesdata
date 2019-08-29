@@ -45,7 +45,7 @@ defmodule Reaper.MixProject do
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
       {:gen_stage, "~> 0.14"},
-      {:horde_connector, "~> 0.1"},
+      {:horde, "~> 0.6.1"},
       {:httpoison, "~> 1.5"},
       {:poison, "~> 4.0", override: true},
       {:jason, "~> 1.1"},

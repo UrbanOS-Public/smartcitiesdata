@@ -10,9 +10,9 @@ defmodule Reaper.Application do
     children =
       [
         libcluster(),
-        {Horde.Registry, [name: Reaper.Registry]},
-        {Horde.Supervisor, [name: Reaper.Horde.Supervisor, strategy: :one_for_one]},
-        {HordeConnector, [supervisor: Reaper.Horde.Supervisor, registry: Reaper.Registry]},
+        {Reaper.Horde.Registry, name: Reaper.Horde.Registry, keys: :unique},
+        {Reaper.Horde.Supervisor, name: Reaper.Horde.Supervisor, strategy: :one_for_one},
+        {Reaper.Horde.NodeListener, hordes: [Reaper.Horde.Supervisor, Reaper.Horde.Registry]},
         Reaper.ConfigServer,
         redis(),
         {Brook, Application.get_env(:reaper, :brook)},

@@ -28,10 +28,5 @@ config :reaper,
   ],
   divo_wait: [dwell: 700, max_tries: 50]
 
-config :smart_city_registry,
-  redis: [
-    host: host
-  ]
-
 config :husky,
   pre_commit: "./scripts/git_pre_commit_hook.sh"

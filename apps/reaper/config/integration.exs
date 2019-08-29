@@ -19,7 +19,12 @@ bucket_name = "hosted-dataset-files"
 
 config :reaper,
   divo: [
-    {DivoKafka, [create_topics: "event-stream:1:1,streaming-dead-letters:1:1", outside_host: host]},
+    {DivoKafka,
+     [
+       create_topics: "event-stream:1:1,streaming-dead-letters:1:1",
+       outside_host: host,
+       kafka_image_version: "2.12-2.2.1"
+     ]},
     DivoRedis,
     Reaper.DivoSftp,
     {Reaper.DivoMinio, [bucket_name: bucket_name]}
@@ -48,11 +53,6 @@ config :reaper, :brook,
       redix_args: [host: host],
       namespace: "reaper:view"
     ]
-  ]
-
-config :smart_city_registry,
-  redis: [
-    host: host
   ]
 
 config :redix,
