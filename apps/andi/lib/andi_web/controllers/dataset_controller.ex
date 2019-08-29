@@ -6,8 +6,9 @@ defmodule AndiWeb.DatasetController do
   use AndiWeb, :controller
 
   require Logger
+  alias SmartCity.Registry.Dataset, as: RegDataset
   alias SmartCity.Dataset
-  import SmartCity.Events, only: [update_dataset: 0]
+  import SmartCity.Event, only: [dataset_update: 0]
 
   @doc """
   Parse a data message and post the created dataset to redis
@@ -16,8 +17,10 @@ defmodule AndiWeb.DatasetController do
   def create(conn, _params) do
     with message <- add_uuid(conn.body_params),
          {:ok, parsed_message} <- parse_message(message),
+         {:ok, old_dataset} <- RegDataset.new(parsed_message),
          {:ok, dataset} <- Dataset.new(parsed_message),
          :valid <- is_valid(dataset),
+         {:ok, _id} <- write_old_dataset(old_dataset),
          :ok <- write_dataset(dataset) do
       respond(conn, :created, dataset)
     else
@@ -45,10 +48,10 @@ defmodule AndiWeb.DatasetController do
     end
   end
 
-  defp write_dataset(dataset) do
-    Dataset.write(dataset)
-    Brook.Event.send(update_dataset(), :andi, dataset)
-  end
+  defp write_dataset(dataset), do: Brook.Event.send(dataset_update(), :andi, dataset)
+
+  # Deprecated function for backwards compatibility with SmartCity.Registry apps
+  def write_old_dataset(dataset), do: RegDataset.write(dataset)
 
   defp parse_message(%{"technical" => technical} = msg) do
     with org_name when not is_nil(org_name) <- Map.get(technical, "orgName"),

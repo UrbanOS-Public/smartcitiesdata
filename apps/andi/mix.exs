@@ -29,6 +29,7 @@ defmodule Andi.MixProject do
 
   defp deps do
     [
+      {:brook, "~> 0.1.2"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
@@ -37,23 +38,21 @@ defmodule Andi.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.1"},
-      {:brook, git: "https://github.com/bbalser/brook.git", ref: "4f444b0a3c1d3b2477c7db3f94f3e87d1031e566"},
       {:plug_cowboy, "~> 2.0"},
       {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
-      {:smart_city, "~> 2.2", override: true},
-      {:smart_city_registry, "~> 3.3"},
+      {:smart_city, "~> 2.7"},
+      {:smart_city_registry, "~> 5.0"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1.4", only: [:dev, :integration]},
       {:paddle, "~> 0.1"},
       {:tesla, "~> 1.2", only: :integration},
       {:uuid, "~> 1.1"},
-      {:smart_city_test, "~> 0.2", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.5", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:husky, "~> 1.0", only: :dev, runtime: false},
-      # updating version breaks
-      {:distillery, "2.0.14"}
       # distillery breaks @ 2.1.0 due to elixir 1.9 support
+      {:distillery, "2.0.14"}
     ]
   end
 end

@@ -4,6 +4,7 @@ defmodule Andi.CreateOrgTest do
   use Placebo
   use Tesla
 
+  alias SmartCity.Registry.Organization, as: RegOrganization
   alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper, only: [eventually: 1]
@@ -46,30 +47,29 @@ defmodule Andi.CreateOrgTest do
       assert actual["member"] == ["cn=admin"]
     end
 
-    test "persists organization for downstream use", %{happy_path: expected, response: resp} do
-      id = Jason.decode!(resp.body)["id"]
-      assert {:ok, actual} = Organization.get(id)
-      assert actual.orgName == expected.orgName
-    end
-
     test "sends organization to event stream", %{happy_path: expected} do
       eventually(fn ->
         assert Elsa.Fetch.search_values(@kafka_broker, "event-stream", expected.orgName) |> Enum.count() == 1
       end)
     end
 
-    test "persists organization with distinguished name", %{happy_path: expected, response: resp} do
+    test "persists organization for downstream use", %{happy_path: expected, response: resp} do
       base = Application.get_env(:paddle, Paddle)[:base]
       id = Jason.decode!(resp.body)["id"]
-      assert {:ok, actual} = Organization.get(id)
-      assert actual.dn == "cn=#{expected.orgName},ou=#{@ou},#{base}"
+
+      eventually(fn ->
+        with {:ok, actual} when actual != nil <- Brook.get(:org, id) do
+          assert actual.dn == "cn=#{expected.orgName},ou=#{@ou},#{base}"
+          assert actual.orgName == expected.orgName
+        end
+      end)
     end
   end
 
   # Delete after event stream integration is complete
   describe "failure to persist new organization" do
     setup do
-      allow(Organization.write(any()), return: {:error, :reason}, meck_options: [:passthrough])
+      allow(RegOrganization.write(any()), return: {:error, :reason}, meck_options: [:passthrough])
       org = organization(%{orgName: "unhappyPath"})
       {:ok, response} = create(org)
       [unhappy_path: org, response: response]

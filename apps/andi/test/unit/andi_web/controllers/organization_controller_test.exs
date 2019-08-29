@@ -7,12 +7,13 @@ defmodule AndiWeb.OrganizationControllerTest do
   @get_orgs_route "/api/v1/organizations"
   @ou Application.get_env(:andi, :ldap_env_ou)
   alias SmartCity.Organization
+  alias SmartCity.Registry.Organization, as: RegOrganization
   alias SmartCity.TestDataGenerator, as: TDG
 
   setup do
     allow(Paddle.authenticate(any(), any()), return: :ok)
     allow(Brook.get(any(), any()), return: {:ok, nil}, meck_options: [:passthrough])
-    allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
+    allow(RegOrganization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
 
     request = %{
       "orgName" => "myOrg",
@@ -54,7 +55,7 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   describe "post /api/ with valid data" do
     setup %{conn: conn, request: request} do
-      allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
+      allow(RegOrganization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
       allow(Brook.Event.send(any(), :andi, any()), return: :ok, meck_options: [:passthrough])
       allow(Paddle.add(any(), any()), return: :ok)
       [conn: post(conn, @route, request)]
@@ -68,7 +69,7 @@ defmodule AndiWeb.OrganizationControllerTest do
     end
 
     test "writes organization to registry", %{message: message} do
-      struct = capture(Organization.write(any()), 1)
+      struct = capture(RegOrganization.write(any()), 1)
       assert struct.orgName == message["orgName"]
       assert uuid?(struct.id)
     end
@@ -85,7 +86,7 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   describe "post /api/ with valid data and imported id" do
     setup %{conn: conn} do
-      allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
+      allow(RegOrganization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
       allow(Paddle.add(any(), any()), return: :ok)
 
       req_with_id = %{
@@ -107,7 +108,7 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   describe "failed write to LDAP" do
     setup do
-      allow(Organization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
+      allow(RegOrganization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
       allow(Paddle.add(any(), any()), return: {:error, :reason})
       :ok
     end
@@ -121,13 +122,13 @@ defmodule AndiWeb.OrganizationControllerTest do
     @tag capture_log: true
     test "never persists organization to registry", %{conn: conn, request: req} do
       post(conn, @route, req)
-      refute_called(Organization.write(any()))
+      refute_called(RegOrganization.write(any()))
     end
   end
 
   describe "failed write to Redis" do
     setup %{conn: conn, request: req} do
-      allow(Organization.write(any()), return: {:error, :reason}, meck_options: [:passthrough])
+      allow(Brook.Event.send(any(), :andi, any()), return: {:error, :reason}, meck_options: [:passthrough])
       allow(Paddle.add(any(), any()), return: :ok, meck_options: [:passthrough])
       allow(Paddle.delete(any()), return: :ok)
 
@@ -162,7 +163,7 @@ defmodule AndiWeb.OrganizationControllerTest do
     test "post /api/v1/organization fails with explanation", %{conn: conn, request: req} do
       post(conn, @route, req)
       # Remove after completing event streams rewrite
-      refute_called(Organization.write(any()))
+      refute_called(RegOrganization.write(any()))
       refute_called(Brook.write(any(), any()))
     end
   end

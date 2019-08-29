@@ -24,7 +24,7 @@ config :paddle, Paddle,
   host: System.get_env("LDAP_HOST"),
   base: System.get_env("LDAP_BASE")
 
-config :brook, :config,
+config :andi, :brook,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [

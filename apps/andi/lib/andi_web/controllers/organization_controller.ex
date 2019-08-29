@@ -5,8 +5,9 @@ defmodule AndiWeb.OrganizationController do
   use AndiWeb, :controller
 
   require Logger
+  alias SmartCity.Registry.Organization, as: RegOrganization
   alias SmartCity.Organization
-  import SmartCity.Events, only: [update_organization: 0]
+  import SmartCity.Event, only: [organization_update: 0]
 
   @doc """
   Parse a data message to create and authenticate a new organization to store in LDAP
@@ -17,10 +18,12 @@ defmodule AndiWeb.OrganizationController do
     pre_id = message["id"]
 
     with :ok <- ensure_new_org(pre_id),
+         {:ok, old_organization} <- RegOrganization.new(message),
          {:ok, organization} <- Organization.new(message),
          :ok <- authenticate(),
          {:ok, ldap_org} <- write_to_ldap(organization),
-         :ok <- write(ldap_org) do
+         {:ok, _id} <- write_old_organization(old_organization),
+         :ok <- write_organization(ldap_org) do
       conn
       |> put_status(:created)
       |> json(ldap_org)
@@ -98,16 +101,18 @@ defmodule AndiWeb.OrganizationController do
     [cn: name, ou: Application.get_env(:andi, :ldap_env_ou)]
   end
 
-  defp write(org) do
-    with {:ok, _id} <- Organization.write(org),
-         :ok <- Brook.Event.send(update_organization(), :andi, org) do
-      :ok
-    else
+  defp write_organization(org) do
+    case Brook.Event.send(organization_update(), :andi, org) do
+      :ok ->
+        :ok
+
       error ->
         delete_from_ldap(org.orgName)
         error
     end
   end
+
+  defp write_old_organization(org), do: RegOrganization.write(org)
 
   defp delete_from_ldap(orgName) do
     orgName

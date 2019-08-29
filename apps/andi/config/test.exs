@@ -16,9 +16,9 @@ config :andi,
 
 config :paddle, Paddle, base: "dc=foo,dc=bar"
 
-config :brook, :config,
+config :andi, :brook,
   driver: [
-    module: Brook.Driver.Json,
+    module: Brook.Driver.Default,
     init_arg: []
   ],
   handlers: [Andi.EventHandler],
