@@ -37,12 +37,19 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         systemName: "coda__test_dataset"
       })
 
+    geojson_dataset =
+      DiscoveryApi.Test.Helper.sample_model(%{
+        private: false,
+        systemName: "geojson__geojson"
+      })
+
     datasets = [
       public_one_dataset,
       public_two_dataset,
       private_one_dataset,
       private_two_dataset,
-      coda_dataset
+      coda_dataset,
+      geojson_dataset
     ]
 
     allow(Model.get_all(), return: datasets, meck_options: [:passthrough])
@@ -248,6 +255,52 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
                |> put_req_header("content-type", "text/plain")
                |> post("/api/v1/query", statement)
                |> response(400)
+    end
+  end
+
+  describe "query geojson" do
+    setup do
+      statement = "SELECT * FROM geojson__geojson"
+
+      allow(
+        Prestige.execute(statement, rows_as_maps: true),
+        return: [
+          %{"feature" => "{\"geometry\": {\"coordinates\": [1, 0]}}"},
+          %{"feature" => "{\"geometry\": {\"coordinates\": [[0, 1]]}}"}
+        ]
+      )
+
+      allow(PrestoService.is_select_statement?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {:ok, ["geojson__geojson"]})
+      allow(AuthUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+
+      %{statement: statement}
+    end
+
+    test "returns geojson with bounding box", %{conn: conn, statement: statement} do
+      actual =
+        conn
+        |> put_req_header("accept", "application/json")
+        |> put_req_header("content-type", "text/plain")
+        |> post("/api/v1/query?_format=geojson", statement)
+        |> response(200)
+
+      assert Jason.decode!(actual) == %{
+               "type" => "FeatureCollection",
+               "bbox" => [0, 0, 1, 1],
+               "features" => [
+                 %{
+                   "geometry" => %{
+                     "coordinates" => [1, 0]
+                   }
+                 },
+                 %{
+                   "geometry" => %{
+                     "coordinates" => [[0, 1]]
+                   }
+                 }
+               ]
+             }
     end
   end
 end
