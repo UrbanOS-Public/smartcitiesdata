@@ -25,7 +25,8 @@ config :odo,
   divo_wait: [dwell: 1000, max_tries: 120],
   kafka_broker: endpoints,
   hosted_file_bucket: bucket_name,
-  working_dir: "tmp"
+  working_dir: "tmp",
+  metrics_port: 9003
 
 config :ex_aws,
   debug_requests: true,

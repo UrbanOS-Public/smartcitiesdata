@@ -10,6 +10,8 @@ defmodule Odo.FileProcessor do
   alias ExAws.S3
   alias SmartCity.HostedFile
 
+  @metric_collector Application.get_env(:odo, :collector)
+
   def process(%HostedFile{} = file_event) do
     source_type = get_extension(file_event.key)
     convert = get_conversion_map(source_type)
@@ -102,4 +104,22 @@ defmodule Odo.FileProcessor do
   end
 
   defp working_dir(), do: Application.get_env(:odo, :working_dir)
+
+  defp record_metrics(success, start_time, file_event) do
+    success_value = if success, do: 1, else: 0
+    duration = Time.diff(Time.utc_now(), start_time, :millisecond)
+
+    labels = [
+      dataset_id: file_event.dataset_id,
+      file: file_event.key
+    ]
+
+    @metric_collector.record_metrics(
+      [
+        @metric_collector.gauge_metric(success_value, "file_process_success", labels),
+        @metric_collector.gauge_metric(duration, "file_process_duration", labels)
+      ],
+      "odo"
+    )
+  end
 end
