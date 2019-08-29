@@ -87,10 +87,12 @@ defmodule Reaper.ConfigServer do
   end
 
   defp update_feed_supervisor(%ReaperConfig{dataset_id: id} = reaper_config) do
-    feed_supervisor_pid = Horde.Registry.lookup(Reaper.Registry, String.to_atom(id))
+    case Horde.Registry.lookup(Reaper.Horde.Registry, String.to_atom(id)) do
+      [{feed_supervisor_pid, _value}] ->
+        Reaper.FeedSupervisor.update_data_feed(feed_supervisor_pid, reaper_config)
 
-    if feed_supervisor_pid != :undefined do
-      Reaper.FeedSupervisor.update_data_feed(feed_supervisor_pid, reaper_config)
+      _unknown ->
+        Logger.info("Unable to find Reaper.FeedSupervisor for dataset(#{id})")
     end
   end
 end

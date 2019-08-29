@@ -9,7 +9,7 @@ defmodule Reaper.ConfigServerTest do
   @name_space "reaper:reaper_config:"
 
   setup do
-    TestHelper.start_horde(Reaper.Registry, Reaper.Horde.Supervisor)
+    TestHelper.start_horde(Reaper.Horde.Registry, Reaper.Horde.Supervisor)
 
     allow(DataFeedScheduler.start_link(any()), return: :ignore)
     allow(DataFeedScheduler.update(any(), any()), return: :does_not_matter)

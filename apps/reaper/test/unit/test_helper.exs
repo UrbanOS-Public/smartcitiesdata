@@ -14,8 +14,8 @@ defmodule TestHelper do
 
   def start_horde(registry_name, supervisor_name) do
     children = [
-      {Horde.Registry, [name: registry_name]},
-      {Horde.Supervisor, [name: supervisor_name, strategy: :one_for_one]}
+      {Reaper.Horde.Registry, [name: registry_name, keys: :unique]},
+      {Reaper.Horde.Supervisor, [name: supervisor_name, strategy: :one_for_one]}
     ]
 
     {:ok, supervisor} = Supervisor.start_link(children, strategy: :one_for_one, name: Reaper.TestSupervisor)

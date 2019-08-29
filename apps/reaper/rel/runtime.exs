@@ -67,11 +67,6 @@ config :reaper, :brook,
     ]
   ]
 
-config :smart_city_registry,
-  redis: [
-    host: redis_host
-  ]
-
 config :redix,
   host: redis_host
 

@@ -339,7 +339,7 @@ defmodule Reaper.FullTest do
 
       eventually(fn ->
         data_feed_status =
-          Horde.Registry.lookup({:via, Horde.Registry, {Reaper.Registry, String.to_atom(dataset_id <> "_feed")}})
+          Horde.Registry.lookup({:via, Horde.Registry, {Reaper.Horde.Registry, String.to_atom(dataset_id <> "_feed")}})
 
         assert data_feed_status == :undefined
       end)
