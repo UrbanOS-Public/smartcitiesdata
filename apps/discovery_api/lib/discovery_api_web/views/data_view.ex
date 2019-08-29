@@ -75,7 +75,6 @@ defmodule DiscoveryApiWeb.DataView do
     data =
       stream
       |> Stream.map(&Map.get(&1, "feature"))
-      # |> Stream.map(&Jason.encode!/1)
       |> Stream.intersperse(",")
 
     [["{\"type\": \"#{type}\", \"name\": \"#{name}\", \"features\": "], ["["], data, ["],"]]

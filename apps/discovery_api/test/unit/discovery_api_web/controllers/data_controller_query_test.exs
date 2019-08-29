@@ -380,7 +380,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       allow(Prestige.execute(contains_string("nest_test"), rows_as_maps: true),
         return: [
           %{"json_field" => Jason.encode!(%{"id" => 4, "name" => "Paul"})},
-          %{"json_field" => Jason.encode!(%{"id" => 5, "name" => ["John", "Peter", "Henry"]})}
+          %{"json_field" => Jason.encode!(%{"id" => 5, "name" => ["John", "Peter", %{"name" => "Henry"}]})}
         ]
       )
 
@@ -394,7 +394,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
 
       expected_body = [
         %{"json_field" => %{"id" => 4, "name" => "Paul"}},
-        %{"json_field" => %{"id" => 5, "name" => ["John", "Peter", "Henry"]}}
+        %{"json_field" => %{"id" => 5, "name" => ["John", "Peter", %{"name" => "Henry"}]}}
       ]
 
       assert(Jason.decode!(body) == expected_body)
