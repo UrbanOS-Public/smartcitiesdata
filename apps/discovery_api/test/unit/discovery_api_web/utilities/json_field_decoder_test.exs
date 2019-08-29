@@ -6,72 +6,45 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
 
   describe "ensure_decoded/2" do
     data_test "returns based on schema assigned to it" do
-      actual_value = JsonFieldDecoder.ensure_decoded(input, schema)
+      actual_value = JsonFieldDecoder.decode_one_datum(schema, input)
 
-      assert actual_value |> Enum.into([]) == expected_output
+      assert actual_value == expected_output
 
       where([
         [:expected_output, :input, :schema],
         [
-          [%{"id" => 1, "name" => "robert"}, %{"id" => 2, "name" => "tony"}],
-          [%{"id" => 1, "name" => "robert"}, %{"id" => 2, "name" => "tony"}],
+          %{"id" => 2, "name" => "tony"},
+          %{"id" => 2, "name" => "tony"},
           [
             %{name: "id", type: "integer"},
             %{name: "name", type: "string"}
           ]
         ],
         [
-          [
-            %{"id" => 1, "name" => %{"name" => "robert"}},
-            %{"id" => 2, "name" => %{"name" => "tony"}}
-          ],
-          [
-            %{"id" => 1, "name" => "{\"name\": \"robert\"}"},
-            %{"id" => 2, "name" => "{\"name\": \"tony\"}"}
-          ],
+          %{"id" => 1, "name" => %{"name" => "robert"}},
+          %{"id" => 1, "name" => "{\"name\": \"robert\"}"},
           [
             %{name: "id", type: "integer"},
             %{name: "name", type: "json"}
           ]
         ],
         [
-          [
-            %{"id" => 1, "name" => "{\"name\": \"robert\"}"},
-            %{"id" => 2, "name" => "{\"name\": \"tony\"}"}
-          ],
-          [
-            %{"id" => 1, "name" => "{\"name\": \"robert\"}"},
-            %{"id" => 2, "name" => "{\"name\": \"tony\"}"}
-          ],
+          %{"id" => 1, "name" => "{\"name\": \"robert\"}"},
+          %{"id" => 1, "name" => "{\"name\": \"robert\"}"},
           []
         ],
         [
-          [
-            %{
-              "id" => 1,
-              "bins" => %{
-                "bins" => %{"day" => %{}, "hour" => %{}, "minute" => %{}},
-                "streets" => %{"day" => %{}, "hour" => %{}, "minute" => %{}}
-              }
-            },
-            %{
-              "id" => 2,
-              "bins" => %{
-                "bins" => %{"day" => %{}, "hour" => %{}, "minute" => %{}},
-                "streets" => %{"day" => %{}, "hour" => %{}, "minute" => %{}}
-              }
+          %{
+            "id" => 1,
+            "bins" => %{
+              "bins" => %{"day" => %{}, "hour" => %{}, "minute" => %{}},
+              "streets" => %{"day" => %{}, "hour" => %{}, "minute" => %{}}
             }
-          ],
-          [
-            %{
-              "id" => 1,
-              "bins" => "{\"bins\":{\"day\":{},\"hour\":{},\"minute\":{}},\"streets\":{\"day\":{},\"hour\":{},\"minute\":{}}}"
-            },
-            %{
-              "id" => 2,
-              "bins" => "{\"bins\":{\"day\":{},\"hour\":{},\"minute\":{}},\"streets\":{\"day\":{},\"hour\":{},\"minute\":{}}}"
-            }
-          ],
+          },
+          %{
+            "id" => 1,
+            "bins" => "{\"bins\":{\"day\":{},\"hour\":{},\"minute\":{}},\"streets\":{\"day\":{},\"hour\":{},\"minute\":{}}}"
+          },
           [
             %{name: "id", type: "integer"},
             %{name: "bins", type: "json"}
@@ -81,17 +54,14 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
     end
 
     test "raises on invalid json" do
-      input = [
-        %{"id" => 1, "name" => "{\"name\" \"robert\"}"},
-        %{"id" => 2, "name" => "{\"name\" \"tony\"}"}
-      ]
+      input = %{"id" => 1, "name" => "{\"name\" \"robert\"}"}
 
       schema = [
         %{name: "id", type: "integer"},
         %{name: "name", type: "json"}
       ]
 
-      assert_raise(Jason.DecodeError, fn -> JsonFieldDecoder.ensure_decoded(input, schema) |> Enum.into([]) end)
+      assert_raise(Jason.DecodeError, fn -> JsonFieldDecoder.decode_one_datum(schema, input) end)
     end
   end
 end

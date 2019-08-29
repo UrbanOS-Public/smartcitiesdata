@@ -349,4 +349,62 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       )
     end
   end
+
+  describe "query dataset with json type fields" do
+    setup do
+      allow(AuthUtils.authorized_to_query?(any(), any()), return: true, meck_options: [:passthrough])
+
+      model =
+        Helper.sample_model(%{
+          id: "123456",
+          systemName: "nest_test",
+          name: "nest",
+          private: false,
+          lastUpdatedDate: nil,
+          queries: 7,
+          downloads: 9,
+          schema: [
+            %{name: "id", type: "integer"},
+            %{name: "json_field", type: "json"}
+          ]
+        })
+
+      allow(SystemNameCache.get(@org_name, "nest"), return: "123456")
+
+      allow(Model.get("123456"), return: model)
+
+      allow(Prestige.execute("describe nest_test"),
+        return: :to_nest_prefetch
+      )
+
+      allow(Prestige.execute(contains_string("nest_test"), rows_as_maps: true),
+        return: [
+          %{"json_field" => Jason.encode!(%{"id" => 4, "name" => "Paul"})},
+          %{"json_field" => Jason.encode!(%{"id" => 5, "name" => ["John", "Peter", %{"name" => "Henry"}]})}
+        ]
+      )
+
+      allow(PrestoService.get_column_names(any(), any()), return: {:ok, ["json_field"]}, meck_options: [:passthrough])
+
+      :ok
+    end
+
+    data_test "returns json 'string' fields as valid json", %{conn: conn} do
+      body = conn |> put_req_header("accept", "application/json") |> get(url) |> response(200)
+
+      expected_body = [
+        %{"json_field" => %{"id" => 4, "name" => "Paul"}},
+        %{"json_field" => %{"id" => 5, "name" => ["John", "Peter", %{"name" => "Henry"}]}}
+      ]
+
+      assert(Jason.decode!(body) == expected_body)
+
+      where(
+        url: [
+          "/api/v1/dataset/123456/query",
+          "/api/v1/organization/org1/dataset/nest/query"
+        ]
+      )
+    end
+  end
 end
