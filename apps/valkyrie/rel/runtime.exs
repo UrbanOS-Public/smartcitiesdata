@@ -5,9 +5,25 @@ redis_host = System.get_env("REDIS_HOST")
 input_topic_prefix = System.get_env("INPUT_TOPIC_PREFIX")
 output_topic_prefix = System.get_env("OUTPUT_TOPIC_PREFIX")
 processor_stages = System.get_env("PROCESSOR_STAGES") || "1"
+log_level = System.get_env("LOG_LEVEL", "warn") |> String.to_atom()
 
 config :logger,
-  level: :warn
+  level: log_level
+
+if System.get_env("RUN_IN_KUBERNETES") do
+  config :libcluster,
+    topologies: [
+      valkyrie_cluster: [
+        strategy: Elixir.Cluster.Strategy.Kubernetes,
+        config: [
+          mode: :dns,
+          kubernetes_node_basename: "valkyrie",
+          kubernetes_selector: "app.kubernetes.io/name=valkyrie",
+          polling_interval: 10_000
+        ]
+      ]
+    ]
+end
 
 if kafka_brokers do
   endpoints =
@@ -16,6 +32,27 @@ if kafka_brokers do
     |> Enum.map(&String.trim/1)
     |> Enum.map(fn entry -> String.split(entry, ":") end)
     |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
+
+  config :valkyrie, :brook,
+  driver: [
+    module: Brook.Driver.Kafka,
+    init_arg: [
+      endpoints: endpoints,
+      topic: "event-stream",
+      group: "valkyrie-events",
+      config: [
+        begin_offset: :earliest
+      ]
+    ]
+  ],
+  handlers: [Valkyrie.DatasetHandler],
+  storage: [
+    module: Brook.Storage.Redis,
+    init_arg: [
+      redix_args: [host: redis_host],
+      namespace: "valkyrie:view"
+    ]
+  ]
 
   config :yeet,
     topic: System.get_env("DLQ_TOPIC"),
@@ -32,14 +69,5 @@ if kafka_brokers do
       max_bytes: 1_000_000,
       min_bytes: 500_000,
       max_wait_time: 10_000
-    ]
-end
-
-redis_host = System.get_env("REDIS_HOST")
-
-if redis_host do
-  config :smart_city_registry,
-    redis: [
-      host: redis_host
     ]
 end

@@ -7,3 +7,11 @@ config :valkyrie,
   input_topic_prefix: "raw",
   output_topic_prefix: "unit",
   broadway_producer_module: Fake.Producer
+
+config :valkyrie, :brook,
+  handlers: [Valkyrie.DatasetHandler],
+  storage: [
+    module: Brook.Storage.Ets,
+    init_arg: []
+  ],
+  hosted_file_bucket: "hosted-dataset-files"

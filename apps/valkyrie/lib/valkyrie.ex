@@ -8,7 +8,7 @@ defmodule Valkyrie do
 
   @type reason :: %{String.t() => term()}
 
-  @spec standardize_data(%Dataset{}, map()) :: {:ok, map()} | {:error, reason()}
+  @spec standardize_data(Dataset.t(), map()) :: {:ok, map()} | {:error, reason()}
   def standardize_data(%Dataset{technical: %{schema: schema}}, payload) do
     %{data: data, errors: errors} = standardize_schema(schema, payload)
 

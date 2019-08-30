@@ -7,8 +7,10 @@ defmodule Valkyrie.Application do
   def start(_type, _args) do
     children =
       [
+        libcluster(),
         {DynamicSupervisor, strategy: :one_for_one, name: Valkyrie.Dynamic.Supervisor},
-        dataset_subscriber()
+        {Brook, Application.get_env(:valkyrie, :brook)},
+        Valkyrie.Init
       ]
       |> List.flatten()
 
@@ -16,10 +18,10 @@ defmodule Valkyrie.Application do
     Supervisor.start_link(children, opts)
   end
 
-  defp dataset_subscriber() do
-    case Application.get_env(:smart_city_registry, :redis) do
+  defp libcluster() do
+    case Application.get_env(:libcluster, :topologies) do
       nil -> []
-      _ -> {SmartCity.Registry.Subscriber, [message_handler: Valkyrie.DatasetHandler]}
+      topology -> {Cluster.Supervisor, [topology, [name: Cluster.ClusterSupervisor]]}
     end
   end
 end

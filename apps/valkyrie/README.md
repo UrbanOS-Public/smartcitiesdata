@@ -1,6 +1,6 @@
 # Valkyrie
 
-Validates data by evaluating each message and verifying that it has the required fields as specified by the [`SmartCity.Dataset.Technical.schema`](https://github.com/smartcitiesdata/smart_city_registry/blob/master/lib/smart_city/dataset/technical.ex) Valid messages will be produced to the next topic, and invalid or bad messages will be sent to a dead letter queue.
+Validates data by evaluating each message and verifying that it has the required fields as specified by the [`SmartCity.Dataset.Technical.schema`](https://github.com/smartcitiesdata/smart_city/blob/master/lib/smart_city/dataset/technical.ex) Valid messages will be produced to the next topic, and invalid or bad messages will be sent to a dead letter queue.
 
 ### Setup
 

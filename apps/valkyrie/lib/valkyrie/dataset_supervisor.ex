@@ -8,6 +8,13 @@ defmodule Valkyrie.DatasetSupervisor do
     :"#{dataset.id}_supervisor"
   end
 
+  def ensure_started(start_options) do
+    Keyword.fetch!(start_options, :dataset)
+    |> stop_dataset_supervisor()
+
+    DynamicSupervisor.start_child(Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options})
+  end
+
   def child_spec(args) do
     dataset = Keyword.fetch!(args, :dataset)
 
@@ -18,6 +25,15 @@ defmodule Valkyrie.DatasetSupervisor do
   def start_link(opts) do
     dataset = Keyword.fetch!(opts, :dataset)
     Supervisor.start_link(__MODULE__, opts, name: name(dataset))
+  end
+
+  defp stop_dataset_supervisor(dataset) do
+    name = name(dataset)
+
+    case Process.whereis(name) do
+      nil -> :ok
+      pid -> DynamicSupervisor.terminate_child(Valkyrie.Dynamic.Supervisor, pid)
+    end
   end
 
   @impl Supervisor

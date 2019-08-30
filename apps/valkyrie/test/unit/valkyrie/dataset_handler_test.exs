@@ -1,39 +1,43 @@
 defmodule Valkyrie.DatasetHandlerTest do
   use ExUnit.Case
   use Placebo
+  use Brook.Event.Handler
   import Checkov
+  import SmartCity.Event, only: [dataset_update: 0]
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Valkyrie.{DatasetHandler, TopicManager}
+  alias Valkyrie.DatasetHandler
 
-  setup do
-    allow DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
+  describe "handle_event/1" do
+    setup do
+      allow(Valkyrie.DatasetProcessor.start(any()), return: :does_not_matter)
 
-    :ok
-  end
+      :ok
+    end
 
-  data_test "sets up the topics correctly for dataset with sourceType #{sourceType}" do
-    allow TopicManager.setup_topics(any()), return: %{input_topic: "input", output_topic: "output"}
+    data_test "Processes datasets with #{source_type} " do
+      dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: source_type})
 
-    dataset = TDG.create_dataset(id: dataset_id, technical: %{sourceType: sourceType})
+      DatasetHandler.handle_event(%Brook.Event{type: dataset_update(), data: dataset, author: :author})
 
-    DatasetHandler.handle_dataset(dataset)
+      assert called == called?(Valkyrie.DatasetProcessor.start(dataset))
 
-    assert_called TopicManager.setup_topics(dataset)
+      where([
+        [:source_type, :called],
+        ["ingest", true],
+        ["stream", true],
+        ["host", false],
+        ["remote", false],
+        ["invalid", false]
+      ])
+    end
 
-    where(
-      dataset_id: ["ds1", "ds2"],
-      sourceType: ["ingest", "stream"]
-    )
-  end
+    test "Should return :merge when handled" do
+      dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: "ingest"})
 
-  test "ignores remote datasets" do
-    allow TopicManager.setup_topics(any()), return: :ignore
+      actual = DatasetHandler.handle_event(%Brook.Event{type: dataset_update(), data: dataset, author: :author})
 
-    %{id: "1", technical: %{sourceType: "remote"}}
-    |> TDG.create_dataset()
-    |> DatasetHandler.handle_dataset()
-
-    refute_called TopicManager.setup_topics(any())
+      assert {:merge, :datasets, dataset.id, dataset} == actual
+    end
   end
 end

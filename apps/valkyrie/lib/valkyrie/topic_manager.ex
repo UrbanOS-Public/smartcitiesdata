@@ -13,7 +13,7 @@ defmodule Valkyrie.TopicManager do
     output_topic = output_topic(dataset.id)
 
     Elsa.create_topic(endpoints(), input_topic)
-
+    Elsa.create_topic(endpoints(), output_topic)
     wait_for_topic(input_topic)
     wait_for_topic(output_topic)
 

@@ -6,17 +6,19 @@ host =
     defined -> defined
   end
 
+endpoints = [{String.to_atom(host), 9092}]
+
 config :logger,
   level: :info
 
 config :valkyrie,
-  elsa_brokers: [{String.to_atom(host), 9092}],
+  elsa_brokers: endpoints,
   input_topic_prefix: "raw",
   output_topic_prefix: "validated",
   divo: [
     {DivoKafka,
      [
-       create_topics: "raw:1:1,validated:1:1,dead-letters:1:1",
+       create_topics: "raw:1:1,validated:1:1,dead-letters:1:1, event-stream:1:1",
        outside_host: host,
        auto_topic: false,
        kafka_image_version: "2.12-2.0.1"
@@ -27,11 +29,27 @@ config :valkyrie,
   retry_count: 5,
   retry_initial_delay: 1500
 
+config :valkyrie, :brook,
+  driver: [
+    module: Brook.Driver.Kafka,
+    init_arg: [
+      endpoints: endpoints,
+      topic: "event-stream",
+      group: "valkyrie-events",
+      config: [
+        begin_offset: :earliest
+      ]
+    ]
+  ],
+  handlers: [Valkyrie.DatasetHandler],
+  storage: [
+    module: Brook.Storage.Redis,
+    init_arg: [
+      redix_args: [host: host],
+      namespace: "valkyrie:view"
+    ]
+  ]
+
 config :yeet,
   topic: "dead-letters",
-  endpoint: [{to_charlist(host), 9092}]
-
-config :smart_city_registry,
-  redis: [
-    host: host
-  ]
+  endpoint: endpoints
