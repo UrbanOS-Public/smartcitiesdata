@@ -3,41 +3,28 @@ defmodule Forklift.TopicManagementTest do
   use Divo, services: [:kafka, :redis]
 
   alias SmartCity.TestDataGenerator, as: TDG
+  import SmartCity.TestHelper
+  import SmartCity.Event, only: [dataset_update: 0]
+  alias Forklift.TopicManager
 
-  @endpoints Application.get_env(:forklift, :brod_brokers)
+  @endpoints Application.get_env(:forklift, :elsa_brokers)
 
   test "create new topic for dataset when dataset event is received" do
     dataset = TDG.create_dataset(id: "ds1")
-    SmartCity.Dataset.write(dataset)
+    Brook.Event.send(dataset_update(), :author, dataset)
 
-    Patiently.wait_for!(
-      fn ->
-        {"integration-ds1", 1} in list_topics()
-      end,
-      dwell: 200,
-      max_tries: 20
-    )
+    eventually(fn ->
+      assert {"integration-ds1", 1} in Elsa.Topic.list(@endpoints)
+    end)
   end
 
   test "create new topic for dataset when dataset event is received and topic already exists" do
-    Forklift.TopicManager.create_and_subscribe("transformed-bob1")
-    Forklift.TopicManager.create_and_subscribe("transformed-bob1")
+    dataset = TDG.create_dataset(id: "bob1")
+    TopicManager.setup_topics(dataset)
+    TopicManager.setup_topics(dataset)
 
-    Patiently.wait_for!(
-      fn ->
-        {"transformed-bob1", 1} in list_topics()
-      end,
-      dwell: 200,
-      max_tries: 20
-    )
-  end
-
-  defp list_topics() do
-    {:ok, metadata} = :brod.get_metadata(@endpoints, :all)
-
-    metadata.topic_metadata
-    |> Enum.map(fn topic_metadata ->
-      {topic_metadata.topic, Enum.count(topic_metadata.partition_metadata)}
+    eventually(fn ->
+      assert {"integration-bob1", 1} in Elsa.Topic.list(@endpoints)
     end)
   end
 end

@@ -6,13 +6,18 @@ host =
     defined -> defined
   end
 
-endpoint = [{to_charlist(host), 9094}]
+endpoints = [{to_charlist(host), 9094}]
+
+output_topic = "streaming-persisted"
 
 config :forklift,
+  retry_count: 10,
+  retry_initial_delay: 100,
   elsa_brokers: [{String.to_atom(host), 9094}],
-  brod_brokers: endpoint,
   message_processing_cadence: 5_000,
-  data_topic_prefix: "integration",
+  input_topic_prefix: "integration",
+  output_topic: output_topic,
+  producer_name: :"#{output_topic}-producer",
   metrics_port: 9002,
   topic_subscriber_config: [
     begin_offset: :earliest,
@@ -22,16 +27,29 @@ config :forklift,
     max_wait_time: 10_000
   ]
 
-config :kaffe,
-  producer: [
-    endpoints: endpoint,
-    topics: [],
-    max_retries: 30,
-    retry_backoff_ms: 500
+config :forklift, :brook,
+  driver: [
+    module: Brook.Driver.Kafka,
+    init_arg: [
+      endpoints: endpoints,
+      topic: "event-stream",
+      group: "forklift-events",
+      config: [
+        begin_offset: :earliest
+      ]
+    ]
+  ],
+  handlers: [Forklift.Event.Handler],
+  storage: [
+    module: Brook.Storage.Redis,
+    init_arg: [
+      redix_args: [host: host],
+      namespace: "forklift:view"
+    ]
   ]
 
 config :yeet,
-  endpoint: endpoint
+  endpoint: endpoints
 
 config :prestige,
   base_url: "http://#{host}:8080",

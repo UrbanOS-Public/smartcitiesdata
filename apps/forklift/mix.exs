@@ -17,7 +17,7 @@ defmodule Forklift.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :kaffe],
+      extra_applications: [:logger],
       mod: {Forklift.Application, []}
     ]
   end
@@ -25,33 +25,32 @@ defmodule Forklift.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:smart_city_data, "~> 2.1"},
-      {:smart_city_registry, "~> 4.0"},
-      {:smart_city_test, "~> 0.2", only: [:test, :integration]},
-      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:jason, "~> 1.1"},
-      {:kaffe, "~> 1.13"},
-      {:brod, "~> 3.7", override: true},
-      {:divo, "~> 1.0", only: [:dev, :test, :integration]},
-      {:patiently, "~> 0.2", only: [:dev, :test, :integration]},
-      {:prestige, "~> 0.3.0"},
-      {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
-      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
-      {:redix, "~> 0.10"},
-      {:faker, "~> 0.12", only: [:dev, :test, :integration]},
-      {:yeet, "~> 1.0"},
-      {:ex_doc, "~> 0.19"},
-      {:observer_cli, "~> 1.4"},
-      {:retry, "~> 0.12"},
-      {:elsa, "~> 0.1"},
       {:benchee, "~> 1.0", only: [:integration]},
+      {:brod, "~> 3.7", override: true},
+      {:brook, "~> 0.1.2"},
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
+      {:divo, "~> 1.0", only: [:dev, :test, :integration]},
+      {:elsa, "~> 0.1"},
+      {:ex_doc, "~> 0.19"},
       {:husky, "~> 1.0", only: :dev, runtime: false},
-      {:streaming_metrics, "~> 2.1"},
-      {:prometheus_plugs, "~> 1.1"},
+      {:jason, "~> 1.1"},
+      {:libcluster, "~> 3.0"},
+      {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
+      {:observer_cli, "~> 1.4"},
+      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.0"},
+      {:prestige, "~> 0.3.0"},
+      {:prometheus_plugs, "~> 1.1"},
       {:quantum, "~>2.3"},
+      {:redix, "~> 0.10"},
+      {:retry, "~> 0.12"},
+      {:smart_city, "~> 2.7.0"},
+      {:smart_city_data, "~> 3.0.1"},
+      {:smart_city_test, "~> 0.5.0"},
+      {:streaming_metrics, "~> 2.1"},
       {:timex, "~> 3.0"},
+      {:yeet, "~> 1.0"},
       # updating version breaks
       {:distillery, "2.0.14"}
       # distillery breaks @ 2.1.0 due to elixir 1.9 support

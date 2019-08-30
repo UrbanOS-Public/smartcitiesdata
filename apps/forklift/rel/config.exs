@@ -13,13 +13,14 @@ use Mix.Releases.Config,
 # and environments, visit https://hexdocs.pm/distillery/config/distillery.html
 
 environment :prod do
-  set vm_args: "rel/vm.args"
+  set vm_args: "rel/prod.vm.args"
   set include_erts: true
   set include_src: false
   set cookie: :"z^KU3`9hu>z[!&uU,[{}~sZFNxk(sV.IT.PB=B[;AXBU:o0:{=6!)sk2!nH$*)a)"
   set config_providers: [
     {Mix.Releases.Config.Providers.Elixir, ["${RELEASE_ROOT_DIR}/etc/runtime.exs"]}
   ]
+  set pre_configure_hooks: "rel/hooks/pre_configure.d"
   set overlays: [
     {:copy, "rel/runtime.exs", "etc/runtime.exs"}
   ]

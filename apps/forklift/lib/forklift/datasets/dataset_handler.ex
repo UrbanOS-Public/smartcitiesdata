@@ -1,30 +1,29 @@
 defmodule Forklift.Datasets.DatasetHandler do
   @moduledoc """
-  Subscribe to SmartCity Registry and pass new and updated datasets to a persistance/caching mechanism.
+  Handler for dataset schema updates and starting and stopping dataset ingestion
   """
-  use SmartCity.Registry.MessageHandler
-  alias Forklift.Datasets.DatasetRegistryServer
+  alias Forklift.Datasets.{DatasetSchema, DatasetSupervisor}
   alias Forklift.TopicManager
-  alias SmartCity.Dataset
   require Logger
 
-  def handle_dataset(%SmartCity.Dataset{} = dataset) do
-    cond do
-      Dataset.is_ingest?(dataset) -> subscribe(dataset)
-      Dataset.is_stream?(dataset) -> subscribe(dataset)
-      true -> :ok
+  def start_dataset_ingest(%DatasetSchema{} = schema) do
+    topics = TopicManager.setup_topics(schema)
+
+    start_options = [
+      schema: schema,
+      input_topic: topics.input_topic
+    ]
+
+    stop_dataset_ingest(schema)
+    DynamicSupervisor.start_child(Forklift.Dynamic.Supervisor, {DatasetSupervisor, start_options})
+  end
+
+  def stop_dataset_ingest(%DatasetSchema{} = schema) do
+    name = DatasetSupervisor.name(schema)
+
+    case Process.whereis(name) do
+      nil -> :ok
+      pid -> DynamicSupervisor.terminate_child(Forklift.Dynamic.Supervisor, pid)
     end
-  end
-
-  def subscribe(%SmartCity.Dataset{} = dataset) do
-    DatasetRegistryServer.send_message(dataset)
-    TopicManager.create_and_subscribe(topic_name(dataset))
-  rescue
-    error -> Logger.error("Error creating topic for dataset #{dataset.id}: #{inspect(error)}")
-  end
-
-  defp topic_name(dataset) do
-    topic_prefix = Application.get_env(:forklift, :data_topic_prefix)
-    "#{topic_prefix}-#{dataset.id}"
   end
 end

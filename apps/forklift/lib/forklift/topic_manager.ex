@@ -1,136 +1,38 @@
 defmodule Forklift.TopicManager do
   @moduledoc """
-  Create Topics in kafka
+  Create Topics in kafka using the Elsa library.
   """
-  require Logger
-  import Record, only: [defrecord: 2, extract: 2]
   use Retry
 
-  @kafka_timeout Application.get_env(:forklift, :kafka_timeout, 5_000)
+  alias Forklift.Datasets.DatasetSchema
 
-  defmodule Error do
-    defexception [:code, :message]
+  @initial_delay Application.get_env(:forklift, :retry_initial_delay)
+  @retries Application.get_env(:forklift, :retry_count)
+
+  @spec setup_topics(%DatasetSchema{}) :: %{input_topic: String.t()}
+  def setup_topics(schema) do
+    input_topic = input_topic(schema.id)
+
+    Elsa.create_topic(endpoints(), input_topic)
+
+    wait_for_topic(input_topic)
+
+    %{input_topic: input_topic}
   end
 
-  @type topic :: String.t()
-
-  defrecord :kpro_rsp, extract(:kpro_rsp, from_lib: "kafka_protocol/include/kpro.hrl")
-
-  @spec create_and_subscribe(topic(), keyword()) :: :ok | no_return()
-  def create_and_subscribe(topic, opts \\ []) do
-    create(topic, opts)
-
-    retry with: [10] |> Stream.cycle() |> Stream.take(10) do
-      is_topic_ready?(topic) || :error
+  def wait_for_topic(topic) do
+    retry with: @initial_delay |> exponential_backoff() |> Stream.take(@retries), atoms: [false] do
+      Elsa.topic?(endpoints(), topic)
     after
       true ->
-        start_subscriber(topic)
+        nil
     else
-      _ -> raise "Unable to create topic #{topic}"
+      _ -> raise "Timed out waiting for #{topic} to be available"
     end
   end
 
-  @spec is_topic_ready?(topic()) :: boolean()
-  def is_topic_ready?(topic) do
-    topic in list_topics()
-  end
-
-  def create(topic, opts \\ []) do
-    with_connection(endpoints(), fn connection ->
-      topic_request = build_create_topic_request(connection, topic, opts)
-
-      case send_request(connection, topic_request, @kafka_timeout) do
-        :ok -> :ok
-        {:error, :topic_already_exists, _message} -> :ok
-        {:error, code, message} -> raise Error, code: code, message: message
-        {:error, error} -> raise Error, code: :kafka_error, message: error
-      end
-    end)
-  end
-
-  def list_topics() do
-    {:ok, metadata} = :brod.get_metadata(endpoints(), :all)
-
-    metadata
-    |> Map.get(:topic_metadata, [])
-    |> Enum.map(fn topic_metadata -> topic_metadata.topic end)
-  end
-
-  defp start_subscriber(topic) do
-    start_options = [
-      brokers: Application.get_env(:forklift, :elsa_brokers),
-      name: :"name-#{topic}",
-      group: "forklift-#{topic}",
-      topics: [topic],
-      handler: Forklift.Messages.MessageHandler,
-      config: Application.get_env(:forklift, :topic_subscriber_config, [])
-    ]
-
-    DynamicSupervisor.start_child(Forklift.Topic.Supervisor, {Elsa.Group.Supervisor, start_options})
-  end
-
-  defp build_create_topic_request(connection, topic, opts) do
-    args = %{
-      topic: topic,
-      num_partitions: Keyword.get(opts, :partitions, 1),
-      replication_factor: Keyword.get(opts, :replicas, 1),
-      replica_assignment: [],
-      config_entries: []
-    }
-
-    version = get_api_version(connection, :create_topics)
-    :kpro_req_lib.create_topics(version, [args], %{timeout: @kafka_timeout})
-  end
-
-  defp endpoints() do
-    Application.get_env(:forklift, :brod_brokers)
-  end
-
-  defp with_connection(endpoints, fun) when is_function(fun) do
-    endpoints
-    |> :kpro.connect_controller([])
-    |> do_with_connection(fun)
-  end
-
-  defp get_api_version(connection, api) do
-    {:ok, api_versions} = :kpro.get_api_versions(connection)
-    {_, version} = Map.get(api_versions, api)
-    version
-  end
-
-  defp do_with_connection({:ok, connection}, fun) do
-    fun.(connection)
-  after
-    :kpro.close_connection(connection)
-  end
-
-  defp do_with_connection({:error, reason}, _function) do
-    raise Error,
-      code: :with_connection_error,
-      message: "#{format_reason(reason)}"
-  end
-
-  defp format_reason(reason) do
-    cond do
-      is_binary(reason) -> reason
-      Exception.exception?(reason) -> Exception.format(:error, reason)
-      true -> inspect(reason)
-    end
-  end
-
-  defp send_request(connection, request, timeout) do
-    case :kpro.request_sync(connection, request, timeout) do
-      {:ok, response} -> check_response_for_errors(response)
-      result -> result
-    end
-  end
-
-  defp check_response_for_errors(response) do
-    message = kpro_rsp(response, :msg)
-
-    case Enum.find(message.topic_errors, fn error -> error.error_code != :no_error end) do
-      nil -> :ok
-      error -> {:error, error.error_code, error.error_message}
-    end
-  end
+  def endpoints(), do: Application.get_env(:forklift, :elsa_brokers)
+  def input_topic_prefix(), do: Application.get_env(:forklift, :input_topic_prefix)
+  def input_topic(dataset_id), do: "#{input_topic_prefix()}-#{dataset_id}"
+  def output_topic(), do: Application.get_env(:forklift, :output_topic)
 end

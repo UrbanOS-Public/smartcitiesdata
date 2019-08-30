@@ -2,18 +2,19 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-data_topic_prefix = "transformed"
+input_topic_prefix = "transformed"
 
 config :yeet,
   topic: "streaming-dead-letters",
   endpoint: [localhost: 9094]
 
 config :forklift,
+  retry_count: 10,
+  retry_initial_delay: 100,
   cache_processing_batch_size: 1_000,
   message_processing_cadence: 10_000,
   number_of_empty_reads_to_delete: 50,
-  data_topic_prefix: data_topic_prefix,
-  output_topic: "streaming-persisted",
+  input_topic_prefix: input_topic_prefix,
   collector: StreamingMetrics.PrometheusMetricCollector
 
 config :logger,

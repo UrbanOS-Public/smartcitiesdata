@@ -4,13 +4,15 @@ defmodule PersistenceTest do
   use Divo
   use Placebo
   import Record, only: [defrecord: 2, extract: 2]
+  import SmartCity.Event, only: [dataset_update: 0]
 
+  alias Forklift.TopicManager
   alias SmartCity.TestDataGenerator, as: TDG
 
   defrecord :kafka_message, extract(:kafka_message, from_lib: "kafka_protocol/include/kpro_public.hrl")
 
   @redis Forklift.Application.redis_client()
-  @endpoint Application.get_env(:yeet, :endpoint)
+  @endpoints Application.get_env(:forklift, :elsa_brokers)
 
   test "should insert records into Presto" do
     system_name = "Organization1__Dataset1"
@@ -20,7 +22,10 @@ defmodule PersistenceTest do
         id: "ds1",
         technical: %{
           systemName: system_name,
-          schema: [%{"name" => "id", "type" => "int"}, %{"name" => "name", "type" => "string"}]
+          schema: [
+            %{"name" => "id", "type" => "int"},
+            %{"name" => "name", "type" => "string"}
+          ]
         }
       )
 
@@ -28,23 +33,19 @@ defmodule PersistenceTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    SmartCity.Dataset.write(dataset)
-    wait_for_topic("integration-ds1")
+    Brook.Event.send(dataset_update(), :author, dataset)
+    TopicManager.wait_for_topic("integration-ds1")
 
     data = TDG.create_data(dataset_id: "ds1", payload: %{"id" => 1, "name" => "George"})
-    SmartCity.KafkaHelper.send_to_kafka(data, "integration-ds1")
+    Elsa.produce(@endpoints, "integration-ds1", [{"key", Jason.encode!(data)}])
 
-    Patiently.wait_for!(
-      prestige_query("select id, name from #{system_name}", [[1, "George"]]),
-      dwell: 1000,
-      max_tries: 30
-    )
+    eventually(fn ->
+      assert [[1, "George"]] == prestige_execute("select id, name from #{system_name}")
+    end)
 
-    Patiently.wait_for!(
-      redis_query(dataset.id),
-      dwell: 1000,
-      max_tries: 30
-    )
+    eventually(fn ->
+      assert {:ok, _} = Redix.command(@redis, ["GET", "forklift:last_insert_date:" <> dataset.id])
+    end)
   end
 
   test "sends messsages to streaming-persisted topic with timing information" do
@@ -63,31 +64,18 @@ defmodule PersistenceTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    SmartCity.Dataset.write(dataset)
-    wait_for_topic("integration-ds3")
+    Brook.Event.send(dataset_update(), :author, dataset)
+    TopicManager.wait_for_topic("integration-ds3")
 
     data = TDG.create_data(dataset_id: "ds3", payload: %{"id" => 1, "name" => "George"})
-    SmartCity.KafkaHelper.send_to_kafka(data, "integration-ds3")
+    Elsa.produce(@endpoints, "integration-ds3", [{"key", Jason.encode!(data)}])
 
-    Patiently.wait_for!(
-      fn ->
-        {:ok, {_offset, messages}} = :brod.fetch(@endpoint, "streaming-persisted", 0, 0)
+    eventually(fn ->
+      data_messages = fetch_kafka_messages("streaming-persisted")
 
-        if length(messages) > 0 do
-          message =
-            messages
-            |> Enum.map(fn message -> {kafka_message(message, :key), kafka_message(message, :value)} end)
-            |> Enum.map(fn {_key, body} -> Jason.decode!(body, keys: :atoms) end)
-            |> List.first()
-
-          length(message.operational.timing) == 3
-        else
-          false
-        end
-      end,
-      dwell: 1000,
-      max_tries: 30
-    )
+      assert [data_message | _] = data_messages
+      assert length(data_message.operational.timing) == 3
+    end)
   end
 
   @tag timeout: 120_000
@@ -118,17 +106,15 @@ defmodule PersistenceTest do
         }
       )
 
-    SmartCity.Dataset.write(dataset)
-    wait_for_topic("integration-ds2")
+    Brook.Event.send(dataset_update(), :author, dataset)
+    TopicManager.wait_for_topic("integration-ds2")
 
-    TDG.create_data(dataset_id: "ds2", payload: %{"id" => 1, "name" => "George"})
-    |> SmartCity.KafkaHelper.send_to_kafka("integration-ds2")
+    data = TDG.create_data(dataset_id: "ds2", payload: %{"id" => 1, "name" => "George"})
+    Elsa.produce(@endpoints, "integration-ds2", [{"key", Jason.encode!(data)}])
 
-    Patiently.wait_for!(
-      prestige_query("select id, name from #{system_name}", [[1, "George"]]),
-      dwell: 1000,
-      max_tries: 60
-    )
+    eventually(fn ->
+      assert [[1, "George"]] == prestige_execute("select id, name from #{system_name}")
+    end)
 
     assert InvocationTracker.count() < 10
   end
@@ -138,7 +124,7 @@ defmodule PersistenceTest do
 
     dataset =
       TDG.create_dataset(
-        id: "ds1",
+        id: "ds4",
         technical: %{
           systemName: system_name,
           schema: get_complex_nested_schema()
@@ -159,11 +145,11 @@ defmodule PersistenceTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    SmartCity.Dataset.write(dataset)
-    wait_for_topic("integration-ds1")
+    Brook.Event.send(dataset_update(), :author, dataset)
+    TopicManager.wait_for_topic("integration-ds4")
 
-    data = TDG.create_data(dataset_id: "ds1", payload: get_complex_nested_data())
-    SmartCity.KafkaHelper.send_to_kafka(data, "integration-ds1")
+    data = TDG.create_data(dataset_id: "ds4", payload: get_complex_nested_data())
+    Elsa.produce(@endpoints, "integration-ds4", [{"key", Jason.encode!(data)}])
 
     expected_record = [
       "Joe",
@@ -173,54 +159,13 @@ defmodule PersistenceTest do
       ["Susan", "female", ["Joel", "1941-07-12"]]
     ]
 
-    Patiently.wait_for!(
-      prestige_query("select * from #{system_name}", [expected_record]),
-      dwell: 1000,
-      max_tries: 30
-    )
+    eventually(fn ->
+      assert [expected_record] == prestige_execute("select * from #{system_name}")
+    end)
 
-    Patiently.wait_for!(
-      redis_query(dataset.id),
-      dwell: 1000,
-      max_tries: 30
-    )
-  end
-
-  defp redis_query(dataset_id) do
-    fn ->
-      Logger.info("Waiting for redis last_insert_date to update for dataset id " <> dataset_id)
-
-      case Redix.command(@redis, ["GET", "forklift:last_insert_date:" <> dataset_id]) do
-        {:ok, nil} ->
-          false
-
-        {:ok, _result} ->
-          true
-
-        {:error, reason} ->
-          Logger.warn("Error when talking to redis : REASON - #{inspect(reason)}")
-          false
-      end
-    end
-  end
-
-  defp prestige_query(statement, expected) do
-    fn ->
-      try do
-        actual =
-          statement
-          |> Prestige.execute()
-          |> Prestige.prefetch()
-
-        Logger.info("Waiting for #{inspect(actual)} to equal #{inspect(expected)}")
-
-        actual == expected
-      rescue
-        e ->
-          Logger.warn("Failed querying presto : #{Exception.message(e)}")
-          false
-      end
-    end
+    eventually(fn ->
+      assert {:ok, _} = Redix.command(@redis, ["GET", "forklift:last_insert_date:" <> dataset.id])
+    end)
   end
 
   defp get_complex_nested_schema() do
@@ -276,14 +221,28 @@ defmodule PersistenceTest do
     }
   end
 
-  defp wait_for_topic(topic) do
-    Patiently.wait_for!(
-      fn ->
-        Forklift.TopicManager.is_topic_ready?(topic)
-      end,
-      dwell: 200,
-      max_tries: 20
-    )
+  defp prestige_execute(statement) do
+    Prestige.execute(statement) |> Prestige.prefetch()
+  rescue
+    e ->
+      Logger.warn("Failed querying presto : #{Exception.message(e)}")
+      []
+  end
+
+  defp fetch_kafka_messages(topic) do
+    case :brod.fetch(@endpoints, topic, 0, 0) do
+      {:ok, {_offset, messages = [_ | _]}} ->
+        messages
+        |> Enum.map(fn message -> {kafka_message(message, :key), kafka_message(message, :value)} end)
+        |> Enum.map(fn {_key, body} -> Jason.decode!(body, keys: :atoms) end)
+
+      _ ->
+        []
+    end
+  end
+
+  defp eventually(block) do
+    SmartCity.TestHelper.eventually(block, 1000, 30)
   end
 end
 

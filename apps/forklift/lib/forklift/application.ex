@@ -8,12 +8,14 @@ defmodule Forklift.Application do
 
     children =
       [
+        libcluster(),
         redis(),
-        {DynamicSupervisor, strategy: :one_for_one, name: Forklift.Topic.Supervisor},
-        {Forklift.Datasets.DatasetRegistryServer, name: Forklift.Datasets.DatasetRegistryServer},
-        dataset_subscriber(),
+        elsa_producer(),
+        metrics(),
+        {DynamicSupervisor, strategy: :one_for_one, name: Forklift.Dynamic.Supervisor},
         Forklift.Quantum.Scheduler,
-        metrics()
+        {Brook, Application.get_env(:forklift, :brook)},
+        Forklift.Init
       ]
       |> List.flatten()
 
@@ -24,20 +26,9 @@ defmodule Forklift.Application do
   def redis_client(), do: :redix
 
   defp redis do
-    Application.get_env(:redix, :host)
-    |> case do
-      nil ->
-        []
-
-      host ->
-        {Redix, host: host, name: redis_client()}
-    end
-  end
-
-  defp dataset_subscriber() do
-    case Application.get_env(:smart_city_registry, :redis) do
+    case Application.get_env(:redix, :host) do
       nil -> []
-      _ -> {SmartCity.Registry.Subscriber, [message_handler: Forklift.Datasets.DatasetHandler]}
+      host -> {Redix, host: host, name: redis_client()}
     end
   end
 
@@ -52,6 +43,28 @@ defmodule Forklift.Application do
           plug: Forklift.MetricsExporter,
           options: [port: metrics_port]
         )
+    end
+  end
+
+  defp libcluster do
+    case Application.get_env(:libcluster, :topologies) do
+      nil -> []
+      topology -> {Cluster.Supervisor, [topology, [name: Cluster.ClusterSupervisor]]}
+    end
+  end
+
+  defp elsa_producer() do
+    case Application.get_env(:forklift, :output_topic) do
+      nil ->
+        []
+
+      output_topic ->
+        {
+          Elsa.Producer.Supervisor,
+          name: Application.get_env(:forklift, :producer_name),
+          endpoints: Application.get_env(:forklift, :elsa_brokers),
+          topic: output_topic
+        }
     end
   end
 end

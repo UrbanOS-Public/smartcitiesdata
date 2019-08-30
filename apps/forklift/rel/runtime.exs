@@ -35,28 +35,45 @@ elsa_brokers =
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
-config :kaffe,
-  producer: [
-    endpoints: endpoints,
-    topics: [output_topic]
-  ]
-
 config :yeet,
   topic: "streaming-dead-letters",
   endpoint: endpoints
 
 config :forklift,
   elsa_brokers: elsa_brokers,
-  brod_brokers: endpoints,
-  data_topic_prefix: topic,
+  input_topic_prefix: topic,
   output_topic: output_topic,
+  producer_name: :"#{output_topic}-producer",
   metrics_port: metrics_port,
+  retry_count: 10,
+  retry_initial_delay: 100,
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,
     max_bytes: 1_000_000,
     min_bytes: 500_000,
     max_wait_time: 10_000
+  ]
+
+config :forklift, :brook,
+  driver: [
+    module: Brook.Driver.Kafka,
+    init_arg: [
+      endpoints: elsa_brokers,
+      topic: "event-stream",
+      group: "forklift-events",
+      config: [
+        begin_offset: :earliest
+      ]
+    ]
+  ],
+  handlers: [Forklift.Event.Handler],
+  storage: [
+    module: Brook.Storage.Redis,
+    init_arg: [
+      redix_args: [host: redis_host],
+      namespace: "forklift:view"
+    ]
   ]
 
 config :prestige,
@@ -71,13 +88,28 @@ config :smart_city_registry,
     host: redis_host
   ]
 
-if (System.get_env("COMPACTION_SCHEDULE")) do
+if System.get_env("COMPACTION_SCHEDULE") do
   config :forklift, Forklift.Quantum.Scheduler,
     jobs: [
       compactor: [
         schedule: System.get_env("COMPACTION_SCHEDULE"),
         task: {Forklift.Datasets.DatasetCompactor, :compact_datasets, []},
         timezone: "America/New_York"
+      ]
+    ]
+end
+
+if System.get_env("RUN_IN_KUBERNETES") do
+  config :libcluster,
+    topologies: [
+      forklift_cluster: [
+        strategy: Elixir.Cluster.Strategy.Kubernetes,
+        config: [
+          mode: :dns,
+          kubernetes_node_basename: "forklift",
+          kubernetes_selector: "app.kubernetes.io/name=forklift",
+          polling_interval: 10_000
+        ]
       ]
     ]
 end

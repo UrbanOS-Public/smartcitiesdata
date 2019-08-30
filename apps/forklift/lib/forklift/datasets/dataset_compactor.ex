@@ -5,6 +5,7 @@ defmodule Forklift.Datasets.DatasetCompactor do
   This module cleans up the fragmentation caused by this process.
   """
   require Logger
+  alias Forklift.Datasets.{DatasetHandler, DatasetSchema}
 
   # Carpenter creates tables, and is the only one who can delete them
   @module_user "carpenter"
@@ -14,64 +15,27 @@ defmodule Forklift.Datasets.DatasetCompactor do
   def compact_datasets() do
     Logger.info("Beginning scheduled dataset compaction")
 
-    SmartCity.Dataset.get_all!()
-    |> Enum.filter(fn dataset ->
-      dataset.technical.sourceType == "ingest" || dataset.technical.sourceType == "stream"
-    end)
-    |> Enum.map(fn dataset -> {dataset.technical.systemName, compact_dataset(dataset)} end)
-    |> Enum.each(fn {system_name, status} -> Logger.info("#{system_name} -> #{status}") end)
+    Brook.get_all_values!(:datasets_to_process)
+    |> Enum.map(fn schema -> {schema.system_name, compact_dataset(schema)} end)
+    |> Enum.each(fn {system_name, status} -> Logger.info("#{system_name} -> #{inspect(status)}") end)
 
     :ok
   end
 
-  def compact_dataset(dataset) do
-    pause_ingest(dataset.id)
+  def compact_dataset(%DatasetSchema{} = schema) do
+    DatasetHandler.stop_dataset_ingest(schema)
 
-    cleanup_old_table(dataset.id, dataset.technical.systemName)
-    compact_table(dataset.id, dataset.technical.systemName)
+    cleanup_old_table(schema.id, schema.system_name)
+    compact_table(schema.id, schema.system_name)
 
-    Logger.info("#{dataset.id}: compacted successfully")
+    Logger.info("#{schema.id}: compacted successfully")
 
-    resume_ingest(dataset)
+    DatasetHandler.start_dataset_ingest(schema)
   rescue
     e ->
-      Logger.error("#{dataset.id}: compacting raised: #{inspect(e)}")
-      resume_ingest(dataset)
+      Logger.error("#{schema.id}: compacting raised: #{inspect(e)}")
+      DatasetHandler.start_dataset_ingest(schema)
       :error
-  end
-
-  def pause_ingest(dataset_id) do
-    Logger.info("#{dataset_id}: Pausing ingest")
-    prefix = Application.get_env(:forklift, :data_topic_prefix)
-
-    case Process.whereis(:"elsa_supervisor_name-#{prefix}-#{dataset_id}") do
-      pid when is_pid(pid) ->
-        DynamicSupervisor.terminate_child(Forklift.Topic.Supervisor, pid)
-
-      _ ->
-        :ok
-    end
-  end
-
-  def resume_ingest(dataset) do
-    Logger.info("#{dataset.id}: Resuming ingest")
-
-    case Forklift.Datasets.DatasetHandler.handle_dataset(dataset) do
-      {:ok, _pid} ->
-        :ok
-
-      {:error, {:already_started, _pid}} ->
-        Logger.warn(
-          "Dataset #{dataset.id} was compacted while Forklift was still subscribed to its topic. This can result in the loss of data."
-        )
-
-        :ok
-
-      e ->
-        Logger.error("Failed to resume ingest of dataset #{dataset.id} with unhandled error: #{inspect(e)}")
-
-        :error
-    end
   end
 
   defp cleanup_old_table(dataset_id, system_name) do

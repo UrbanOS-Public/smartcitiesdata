@@ -4,21 +4,30 @@ defmodule Forklift.Messages.MessageHandler do
   """
   use Retry
   use Elsa.Consumer.MessageHandler
+
   alias Forklift.Util
+  alias Forklift.TopicManager
+  alias Forklift.Datasets.DatasetSchema
   require Logger
+
+  def init(args \\ []) do
+    schema = Keyword.fetch!(args, :schema)
+
+    {:ok, %{schema: schema}}
+  end
 
   @doc """
   Handle each kafka message.
   """
-  def handle_messages(messages) do
+  def handle_messages(messages, %{schema: %DatasetSchema{} = schema}) do
     messages
     |> Enum.map(&parse/1)
     |> Enum.map(&yeet_error/1)
     |> Enum.reject(&error_tuple?/1)
-    |> Forklift.handle_batch()
+    |> Forklift.handle_batch(schema)
     |> send_to_output_topic()
 
-    :ack
+    {:ack, %{schema: schema}}
   end
 
   defp parse(%{key: key, value: value} = message) do
@@ -33,7 +42,9 @@ defmodule Forklift.Messages.MessageHandler do
     |> Enum.map(fn datum -> {datum._metadata.kafka_key, Util.remove_from_metadata(datum, :kafka_key)} end)
     |> Enum.map(fn {key, datum} -> {key, Jason.encode!(datum)} end)
     |> Util.chunk_by_byte_size(max_bytes(), fn {key, value} -> byte_size(key) + byte_size(value) end)
-    |> Enum.each(&Kaffe.Producer.produce_sync(output_topic(), &1))
+    |> Enum.each(
+      &Elsa.produce_sync(TopicManager.output_topic(), &1, name: Application.get_env(:forklift, :producer_name))
+    )
   end
 
   defp yeet_error({:error, reason, message} = error_tuple) do
@@ -45,10 +56,6 @@ defmodule Forklift.Messages.MessageHandler do
 
   defp error_tuple?({:error, _, _}), do: true
   defp error_tuple?(_), do: false
-
-  defp output_topic() do
-    Application.get_env(:forklift, :output_topic)
-  end
 
   defp max_bytes() do
     Application.get_env(:forklift, :max_outgoing_bytes, 900_000)

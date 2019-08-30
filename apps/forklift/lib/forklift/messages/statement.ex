@@ -3,11 +3,12 @@ defmodule Forklift.Messages.Statement do
   Builds Presto statements from data and schema
   """
   require Logger
+  alias Forklift.Datasets.DatasetSchema
 
   @doc """
   Builds Presto statements from data and schema
   """
-  def build(schema, data) do
+  def build(%DatasetSchema{} = schema, data) do
     columns = schema.columns
 
     columns_fragment =
@@ -33,7 +34,7 @@ defmodule Forklift.Messages.Statement do
   defp format_columns(columns, row) do
     Enum.map(columns, fn %{name: name} = column ->
       row
-      |> Map.get(String.to_atom(name))
+      |> Map.get(to_string(name))
       |> format_data(column)
     end)
   end

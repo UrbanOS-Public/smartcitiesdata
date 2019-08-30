@@ -2,57 +2,26 @@ defmodule Forklift.Datasets.DatasetHandlerTest do
   use ExUnit.Case
   use Placebo
 
-  alias Forklift.Datasets.DatasetHandler
-  alias Forklift.Datasets.DatasetRegistryServer
-  alias SmartCity.TestDataGenerator, as: TDG
+  alias Forklift.Datasets.{DatasetHandler, DatasetSchema}
+  alias Forklift.TopicManager
 
-  describe "handle_dataset/1" do
-    test "ignores remote datasets" do
-      allow DatasetRegistryServer.send_message(any()), return: :ignore
-      allow Forklift.TopicManager.create_and_subscribe(any()), return: :ignore
+  describe "start_dataset_ingest/1" do
+    test "happy path" do
+      allow TopicManager.setup_topics(any()), return: %{input_topic: :whatever}
+      allow DynamicSupervisor.start_child(Forklift.Dynamic.Supervisor, any()), return: {:ok, :success}
+      allow DynamicSupervisor.terminate_child(Forklift.Dynamic.Supervisor, any()), return: {:ok, :killed}
 
-      %{id: "1", technical: %{sourceType: "remote"}}
-      |> TDG.create_dataset()
-      |> DatasetHandler.handle_dataset()
+      schema = %DatasetSchema{id: "id", system_name: "system__name", columns: []}
 
-      refute_called DatasetRegistryServer.send_message(any())
-      refute_called Forklift.TopicManager.create_and_subscribe(any())
+      assert {:ok, :success} = DatasetHandler.start_dataset_ingest(schema)
     end
+  end
 
-    test "ignores other datasets" do
-      allow DatasetRegistryServer.send_message(any()), return: :ignore
-      allow Forklift.TopicManager.create_and_subscribe(any()), return: :ignore
+  describe "stop_dataset_ingest/1" do
+    test "returns :ok if no process found" do
+      schema = %DatasetSchema{id: "id", system_name: "system__name", columns: []}
 
-      %{id: "1", technical: %{sourceType: "unknowable"}}
-      |> TDG.create_dataset()
-      |> DatasetHandler.handle_dataset()
-
-      refute_called DatasetRegistryServer.send_message(any())
-      refute_called Forklift.TopicManager.create_and_subscribe(any())
-    end
-
-    test "handles ingest datasets" do
-      allow DatasetRegistryServer.send_message(any()), return: :ignore
-      allow Forklift.TopicManager.create_and_subscribe(any()), return: :ignore
-
-      %{id: "1", technical: %{sourceType: "ingest"}}
-      |> TDG.create_dataset()
-      |> DatasetHandler.handle_dataset()
-
-      assert_called DatasetRegistryServer.send_message(any())
-      assert_called Forklift.TopicManager.create_and_subscribe(any())
-    end
-
-    test "handles stream datasets" do
-      allow DatasetRegistryServer.send_message(any()), return: :ignore
-      allow Forklift.TopicManager.create_and_subscribe(any()), return: :ignore
-
-      %{id: "1", technical: %{sourceType: "stream"}}
-      |> TDG.create_dataset()
-      |> DatasetHandler.handle_dataset()
-
-      assert_called DatasetRegistryServer.send_message(any())
-      assert_called Forklift.TopicManager.create_and_subscribe(any())
+      assert :ok = DatasetHandler.stop_dataset_ingest(schema)
     end
   end
 end

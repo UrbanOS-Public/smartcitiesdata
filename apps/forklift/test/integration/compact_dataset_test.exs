@@ -3,14 +3,14 @@ defmodule Forklift.CompactDatasetTest do
   use Divo
   require Logger
 
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.Event, only: [dataset_update: 0]
 
   @module_user "carpenter"
 
-  alias Forklift.Datasets.DatasetCompactor
+  alias Forklift.Datasets.{DatasetSupervisor, DatasetCompactor, DatasetSchema, DatasetHandler}
   alias SmartCity.TestDataGenerator, as: TDG
 
-  test "the compactor can pause a dataset by killing its supervisor" do
+  test "the dataset handler kills the appropriate dataset supervisor when told to stop an ingest" do
     dataset =
       TDG.create_dataset(
         id: "ds1",
@@ -19,20 +19,29 @@ defmodule Forklift.CompactDatasetTest do
         }
       )
 
-    "create table #{dataset.technical.systemName} (id integer, name varchar)"
+    schema = DatasetSchema.from_dataset(dataset)
+
+    "create table #{schema.system_name} (id integer, name varchar)"
     |> Prestige.execute(user: @module_user)
     |> Prestige.prefetch()
 
-    SmartCity.Dataset.write(dataset)
+    %{active: initial_ingest_count} = DynamicSupervisor.count_children(Forklift.Dynamic.Supervisor)
 
-    assert supervisor_eventually_exists(dataset.id) == :ok
+    Brook.Event.send(dataset_update(), :author, dataset)
 
-    DatasetCompactor.pause_ingest(dataset.id)
+    eventually(fn ->
+      refute match?(%{active: ^initial_ingest_count}, DynamicSupervisor.count_children(Forklift.Dynamic.Supervisor))
+      assert child_pid(DatasetSupervisor, schema) in DynamicSupervisor.which_children(Forklift.Dynamic.Supervisor)
+    end)
 
-    assert supervisor_eventually_is_gone(dataset.id) == :ok
+    DatasetHandler.stop_dataset_ingest(schema)
+
+    eventually(fn ->
+      assert %{active: ^initial_ingest_count} = DynamicSupervisor.count_children(Forklift.Dynamic.Supervisor)
+    end)
   end
 
-  test "the compactor can resume a dataset by passing it to the handler again" do
+  test "the dataset handler starts the appropriate dataset supervisor when told to start an ingest" do
     dataset =
       TDG.create_dataset(
         id: "ds2",
@@ -41,37 +50,37 @@ defmodule Forklift.CompactDatasetTest do
         }
       )
 
-    "create table #{dataset.technical.systemName} (id integer, name varchar)"
+    schema = DatasetSchema.from_dataset(dataset)
+
+    "create table #{schema.system_name} (id integer, name varchar)"
     |> Prestige.execute(user: @module_user)
     |> Prestige.prefetch()
 
-    SmartCity.Dataset.write(dataset)
+    Brook.Event.send(dataset_update(), :author, dataset)
 
-    assert supervisor_eventually_exists(dataset.id) == :ok
+    eventually(fn ->
+      assert child_pid(DatasetSupervisor, schema) in DynamicSupervisor.which_children(Forklift.Dynamic.Supervisor)
+    end)
 
-    DatasetCompactor.pause_ingest(dataset.id)
+    DatasetHandler.stop_dataset_ingest(schema)
 
-    assert supervisor_eventually_is_gone(dataset.id) == :ok
+    data = TDG.create_data(dataset_id: "ds2", payload: %{"id" => 1, "name" => "George"}) |> Jason.encode!()
+    Elsa.Producer.produce(Application.get_env(:forklift, :elsa_brokers), "integration-ds2", data)
 
-    data = TDG.create_data(dataset_id: "ds2", payload: %{"id" => 1, "name" => "George"})
-    SmartCity.KafkaHelper.send_to_kafka(data, "integration-ds2")
+    DatasetHandler.start_dataset_ingest(schema)
 
-    DatasetCompactor.resume_ingest(dataset)
+    eventually(fn ->
+      assert child_pid(DatasetSupervisor, schema) in DynamicSupervisor.which_children(Forklift.Dynamic.Supervisor)
+    end)
 
-    assert supervisor_eventually_exists(dataset.id) == :ok
+    eventually(fn ->
+      actual =
+        "select id, name from #{schema.system_name}"
+        |> Prestige.execute(user: @module_user)
+        |> Prestige.prefetch()
 
-    eventually(
-      fn ->
-        actual =
-          "select id, name from #{dataset.technical.systemName}"
-          |> Prestige.execute(user: @module_user)
-          |> Prestige.prefetch()
-
-        assert actual == [[1, "George"]]
-      end,
-      1000,
-      60
-    )
+      assert actual == [[1, "George"]]
+    end)
   end
 
   test "queries to compact a dataset are sent and valid" do
@@ -83,31 +92,31 @@ defmodule Forklift.CompactDatasetTest do
         }
       )
 
-    "create table #{dataset.technical.systemName} (id integer, name varchar)"
+    schema = DatasetSchema.from_dataset(dataset)
+
+    "create table #{schema.system_name} (id integer, name varchar)"
     |> Prestige.execute(user: @module_user)
     |> Prestige.prefetch()
 
-    SmartCity.Dataset.write(dataset)
+    Brook.Event.send(dataset_update(), :author, dataset)
 
-    supervisor_eventually_exists(dataset.id)
+    eventually(fn ->
+      assert child_pid(DatasetSupervisor, schema) in DynamicSupervisor.which_children(Forklift.Dynamic.Supervisor)
+    end)
 
-    data = TDG.create_data(dataset_id: "ds3", payload: %{"id" => 1, "name" => "George"})
-    SmartCity.KafkaHelper.send_to_kafka(data, "integration-ds3")
+    data = TDG.create_data(dataset_id: "ds3", payload: %{"id" => 1, "name" => "George"}) |> Jason.encode!()
+    Elsa.Producer.produce(Application.get_env(:forklift, :elsa_brokers), "integration-ds3", data)
 
-    eventually(
-      fn ->
-        actual =
-          "select id, name from #{dataset.technical.systemName}"
-          |> Prestige.execute(user: @module_user)
-          |> Prestige.prefetch()
+    eventually(fn ->
+      actual =
+        "select id, name from #{schema.system_name}"
+        |> Prestige.execute(user: @module_user)
+        |> Prestige.prefetch()
 
-        assert actual == [[1, "George"]]
-      end,
-      200,
-      10
-    )
+      assert actual == [[1, "George"]]
+    end)
 
-    assert DatasetCompactor.compact_dataset(dataset) == :ok
+    assert {:ok, _} = DatasetCompactor.compact_dataset(schema)
 
     tables =
       "show tables"
@@ -115,9 +124,45 @@ defmodule Forklift.CompactDatasetTest do
       |> Prestige.prefetch()
       |> List.flatten()
 
-    system_name = String.downcase(dataset.technical.systemName)
+    system_name = String.downcase(schema.system_name)
     assert "#{system_name}" in tables
     refute "#{system_name}_compact" in tables
+  end
+
+  test "compaction of all tables does not throw an error" do
+    dataset =
+      TDG.create_dataset(
+        id: "ds4",
+        technical: %{
+          schema: [%{name: "id", type: "int"}, %{name: "name", type: "string"}]
+        }
+      )
+
+    schema = DatasetSchema.from_dataset(dataset)
+
+    "create table #{schema.system_name} (id integer, name varchar)"
+    |> Prestige.execute(user: @module_user)
+    |> Prestige.prefetch()
+
+    Brook.Event.send(dataset_update(), :author, dataset)
+
+    eventually(fn ->
+      assert child_pid(DatasetSupervisor, schema) in DynamicSupervisor.which_children(Forklift.Dynamic.Supervisor)
+    end)
+
+    data = TDG.create_data(dataset_id: "ds3", payload: %{"id" => 1, "name" => "George"}) |> Jason.encode!()
+    Elsa.Producer.produce(Application.get_env(:forklift, :elsa_brokers), "integration-ds4", data)
+
+    eventually(fn ->
+      actual =
+        "select id, name from #{schema.system_name}"
+        |> Prestige.execute(user: @module_user)
+        |> Prestige.prefetch()
+
+      assert actual == [[1, "George"]]
+    end)
+
+    assert :ok = DatasetCompactor.compact_datasets()
   end
 
   test "non-existing table is handled" do
@@ -129,33 +174,25 @@ defmodule Forklift.CompactDatasetTest do
         }
       )
 
-    SmartCity.Dataset.write(dataset)
-    supervisor_eventually_exists(dataset.id)
+    schema = DatasetSchema.from_dataset(dataset)
 
-    assert DatasetCompactor.compact_dataset(dataset) == :error
+    Brook.Event.send(dataset_update(), :author, dataset)
+
+    eventually(fn ->
+      assert child_pid(DatasetSupervisor, schema) in DynamicSupervisor.which_children(Forklift.Dynamic.Supervisor)
+    end)
+
+    assert DatasetCompactor.compact_dataset(schema) == :error,
+           "Compaction failed to produce an error even when no table was present (due to no data being loaded into the pipeline for the dataset)"
   end
 
-  defp supervisor_eventually_exists(dataset_id) do
-    Patiently.wait_for!(
-      fn ->
-        Process.whereis(:"elsa_supervisor_name-integration-#{dataset_id}") != nil
-      end,
-      dwell: 200,
-      max_tries: 20
-    )
-  rescue
-    _ -> flunk("Supervisor for #{dataset_id} was never found")
+  defp child_pid(module, schema) do
+    dataset_supervisor_name = Forklift.Datasets.DatasetSupervisor.name(schema)
+    pid = Process.whereis(dataset_supervisor_name)
+    {:undefined, pid, :supervisor, [module]}
   end
 
-  defp supervisor_eventually_is_gone(dataset_id) do
-    Patiently.wait_for!(
-      fn ->
-        Process.whereis(:"elsa_supervisor_name-integration-#{dataset_id}") == nil
-      end,
-      dwell: 200,
-      max_tries: 20
-    )
-  rescue
-    _ -> flunk("Supervisor for #{dataset_id} remains when it should be gone")
+  defp eventually(block) do
+    SmartCity.TestHelper.eventually(block, 1000, 60)
   end
 end

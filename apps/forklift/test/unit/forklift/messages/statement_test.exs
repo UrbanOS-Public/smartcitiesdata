@@ -7,9 +7,9 @@ defmodule Forklift.Messages.StatementTest do
 
   test "build generates a valid statement when given a schema and data" do
     data = [
-      %{id: 1, name: "Fred"},
-      %{id: 2, name: "Gred"},
-      %{id: 3, name: "Hred"}
+      %{"id" => 1, "name" => "Fred"},
+      %{"id" => 2, "name" => "Gred"},
+      %{"id" => 3, "name" => "Hred"}
     ]
 
     result = Statement.build(get_schema(), data)
@@ -23,9 +23,9 @@ defmodule Forklift.Messages.StatementTest do
     schema = get_schema()
 
     data = [
-      %{name: "Iom", id: 9},
-      %{name: "Jom", id: 8},
-      %{name: "Yom", id: 7}
+      %{"name" => "Iom", "id" => 9},
+      %{"name" => "Jom", "id" => 8},
+      %{"name" => "Yom", "id" => 7}
     ]
 
     result = Statement.build(schema, data)
@@ -36,7 +36,7 @@ defmodule Forklift.Messages.StatementTest do
 
   test "escapes single quotes correctly" do
     data = [
-      %{id: 9, name: "Nathaniel's test"}
+      %{"id" => 9, "name" => "Nathaniel's test"}
     ]
 
     result = Statement.build(get_schema(), data)
@@ -47,7 +47,7 @@ defmodule Forklift.Messages.StatementTest do
 
   test "inserts null when field is null" do
     data = [
-      %{id: 9, name: nil}
+      %{"id" => 9, "name" => nil}
     ]
 
     result = Statement.build(get_schema(), data)
@@ -66,7 +66,7 @@ defmodule Forklift.Messages.StatementTest do
     }
 
     data = [
-      %{id: 9, date: ""}
+      %{"id" => 9, "date" => ""}
     ]
 
     result = Statement.build(schema, data)
@@ -85,7 +85,7 @@ defmodule Forklift.Messages.StatementTest do
     }
 
     data = [
-      %{id: 9, start_date: "1900-01-01T00:00:00"}
+      %{"id" => 9, "start_date" => "1900-01-01T00:00:00"}
     ]
 
     result = Statement.build(schema, data)
@@ -98,8 +98,8 @@ defmodule Forklift.Messages.StatementTest do
 
   test "inserts 1 when integer field is a signed 1" do
     data = [
-      %{id: "+1", name: "Hroki"},
-      %{id: "-1", name: "Doki"}
+      %{"id" => "+1", "name" => "Hroki"},
+      %{"id" => "-1", "name" => "Doki"}
     ]
 
     result = Statement.build(get_schema(), data)
@@ -118,8 +118,8 @@ defmodule Forklift.Messages.StatementTest do
     }
 
     data = [
-      %{id: "1", floater: "+4.5"},
-      %{id: "1", floater: "-4.5"}
+      %{"id" => "1", "floater" => "+4.5"},
+      %{"id" => "1", "floater" => "-4.5"}
     ]
 
     result = Statement.build(schema, data)
@@ -138,7 +138,7 @@ defmodule Forklift.Messages.StatementTest do
     }
 
     data = [
-      %{id: 9, start_time: "2019-04-17T14:23:09.030939"}
+      %{"id" => 9, "start_time" => "2019-04-17T14:23:09.030939"}
     ]
 
     result = Statement.build(schema, data)
@@ -159,7 +159,7 @@ defmodule Forklift.Messages.StatementTest do
     }
 
     data = [
-      %{id: 9, start_time: "2019-06-02T16:30:17"}
+      %{"id" => 9, "start_time" => "2019-06-02T16:30:17"}
     ]
 
     result = Statement.build(schema, data)
@@ -180,7 +180,7 @@ defmodule Forklift.Messages.StatementTest do
     }
 
     data = [
-      %{id: 9, start_time: "2019-06-11T18:34:33.484840Z"}
+      %{"id" => 9, "start_time" => "2019-06-11T18:34:33.484840Z"}
     ]
 
     result = Statement.build(schema, data)
@@ -201,7 +201,7 @@ defmodule Forklift.Messages.StatementTest do
     }
 
     data = [
-      %{id: 9, start_time: "2019-06-14T18:16:32Z"}
+      %{"id" => 9, "start_time" => "2019-06-14T18:16:32Z"}
     ]
 
     result = Statement.build(schema, data)
@@ -222,7 +222,7 @@ defmodule Forklift.Messages.StatementTest do
     }
 
     data = [
-      %{id: 9, start_time: "23:00:13.001"}
+      %{"id" => 9, "start_time" => "23:00:13.001"}
     ]
 
     result = Statement.build(schema, data)
@@ -234,9 +234,9 @@ defmodule Forklift.Messages.StatementTest do
 
   test "handles empty string values with a type of string" do
     data = [
-      %{id: 1, name: "Fred"},
-      %{id: 2, name: "Gred"},
-      %{id: 3, name: ""}
+      %{"id" => 1, "name" => "Fred"},
+      %{"id" => 2, "name" => "Gred"},
+      %{"id" => 3, "name" => ""}
     ]
 
     result = Statement.build(get_schema(), data)
@@ -249,9 +249,9 @@ defmodule Forklift.Messages.StatementTest do
   test "treats json string as varchar" do
     data = [
       %{
-        id: 1,
-        name: "Fred",
-        payload: "{\"parent\":{\"children\":[[-35.123,123.456]],\"id\":\"daID\"}}"
+        "id" => 1,
+        "name" => "Fred",
+        "payload" => "{\"parent\":{\"children\":[[-35.123,123.456]],\"id\":\"daID\"}}"
       }
     ]
 
@@ -266,9 +266,9 @@ defmodule Forklift.Messages.StatementTest do
   test "escapes quotes in json" do
     data = [
       %{
-        id: 1,
-        name: "Fred",
-        payload: "{\"parent\":{\"children\":[[-35.123,123.456]],\"id\":\"daID\", \"name\": \"Chiggin's\"}}"
+        "id" => 1,
+        "name" => "Fred",
+        "payload" => "{\"parent\":{\"children\":[[-35.123,123.456]],\"id\":\"daID\", \"name\": \"Chiggin's\"}}"
       }
     ]
 
@@ -283,9 +283,9 @@ defmodule Forklift.Messages.StatementTest do
   test "treats empty string as varchar" do
     data = [
       %{
-        id: 1,
-        name: "Fred",
-        payload: ""
+        "id" => 1,
+        "name" => "Fred",
+        "payload" => ""
       }
     ]
 
@@ -324,12 +324,12 @@ defmodule Forklift.Messages.StatementTest do
 
     data = [
       %{
-        first_name: "Bob",
-        spouse: %{first_name: "Hred"}
+        "first_name" => "Bob",
+        "spouse" => %{"first_name" => "Hred"}
       },
       %{
-        first_name: "Rob",
-        spouse: %{first_name: "Freda"}
+        "first_name" => "Rob",
+        "spouse" => %{"first_name" => "Freda"}
       }
     ]
 
@@ -365,20 +365,20 @@ defmodule Forklift.Messages.StatementTest do
 
     data = [
       %{
-        spouse: %{
-          first_name: "Georgia",
-          next_of_kin: %{
-            first_name: "Bimmy",
-            date_of_birth: "01/01/1900"
+        "spouse" => %{
+          "first_name" => "Georgia",
+          "next_of_kin" => %{
+            "first_name" => "Bimmy",
+            "date_of_birth" => "01/01/1900"
           }
         }
       },
       %{
-        spouse: %{
-          first_name: "Regina",
-          next_of_kin: %{
-            first_name: "Jammy",
-            date_of_birth: "01/01/1901"
+        "spouse" => %{
+          "first_name" => "Regina",
+          "next_of_kin" => %{
+            "first_name" => "Jammy",
+            "date_of_birth" => "01/01/1901"
           }
         }
       }
@@ -402,10 +402,10 @@ defmodule Forklift.Messages.StatementTest do
 
     data = [
       %{
-        friend_names: ["Sam", "Jonesy"]
+        "friend_names" => ["Sam", "Jonesy"]
       },
       %{
-        friend_names: []
+        "friend_names" => []
       }
     ]
 
@@ -426,10 +426,10 @@ defmodule Forklift.Messages.StatementTest do
 
     data = [
       %{
-        date_of_birth: "1901-01-01T00:00:00"
+        "date_of_birth" => "1901-01-01T00:00:00"
       },
       %{
-        date_of_birth: "1901-01-21T00:00:00"
+        "date_of_birth" => "1901-01-21T00:00:00"
       }
     ]
 
@@ -459,14 +459,14 @@ defmodule Forklift.Messages.StatementTest do
 
     data = [
       %{
-        friend_groups: [
-          %{first_name: "Hayley", last_name: "Person"},
-          %{first_name: "Jason", last_name: "Doe"}
+        "friend_groups" => [
+          %{"first_name" => "Hayley", "last_name" => "Person"},
+          %{"first_name" => "Jason", "last_name" => "Doe"}
         ]
       },
       %{
-        friend_groups: [
-          %{first_name: "Saint-John", last_name: "Johnson"}
+        "friend_groups" => [
+          %{"first_name" => "Saint-John", "last_name" => "Johnson"}
         ]
       }
     ]
@@ -539,19 +539,19 @@ defmodule Forklift.Messages.StatementTest do
   defp get_complex_nested_data() do
     [
       %{
-        first_name: "Joe",
-        age: 10,
-        friend_names: ["bob", "sally"],
-        friends: [
-          %{first_name: "Bill", pet: "Bunco"},
-          %{first_name: "Sally", pet: "Bosco"}
+        "first_name" => "Joe",
+        "age" => 10,
+        "friend_names" => ["bob", "sally"],
+        "friends" => [
+          %{"first_name" => "Bill", "pet" => "Bunco"},
+          %{"first_name" => "Sally", "pet" => "Bosco"}
         ],
-        spouse: %{
-          first_name: "Susan",
-          gender: "female",
-          next_of_kin: %{
-            first_name: "Joel",
-            date_of_birth: "12/07/1941"
+        "spouse" => %{
+          "first_name" => "Susan",
+          "gender" => "female",
+          "next_of_kin" => %{
+            "first_name" => "Joel",
+            "date_of_birth" => "12/07/1941"
           }
         }
       }

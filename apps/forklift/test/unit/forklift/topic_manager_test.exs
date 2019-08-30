@@ -2,92 +2,50 @@ defmodule Forklift.TopicManagerTest do
   use ExUnit.Case
   use Placebo
 
-  describe "create_and_subscribe/1" do
-    setup do
-      allow :kpro_req_lib.create_topics(any(), any(), any()), return: :does_not_matter
-      allow :kpro.get_api_versions(any()), return: {:ok, %{create_topics: {0, 1}}}
-      allow :kpro.close_connection(any()), return: :does_not_matter
-      :ok
-    end
+  alias Forklift.TopicManager
+  alias SmartCity.TestDataGenerator, as: TDG
 
-    test "raises an exception if the topic is neither created nor already exists" do
-      kpro_resp =
-        {:kpro_rsp, :does_not_matter, :create_topics, 2,
-         %{
-           throttle_time_ms: 0,
-           topic_errors: [
-             %{
-               error_code: :some_other_error,
-               error_message: "Something else went wrong",
-               topic: "transformed-bob1"
-             }
-           ]
-         }}
+  @dataset_id "ds1"
+  @endpoints Application.get_env(:forklift, :elsa_brokers)
+  @input_topic_prefix Application.get_env(:forklift, :input_topic_prefix)
 
-      allow :kpro.connect_controller(any(), any()), return: {:ok, :does_not_matter}
-      allow :kpro.request_sync(any(), any(), any()), return: {:ok, kpro_resp}
+  test "returns the input topic name" do
+    allow Elsa.create_topic(any(), any()), return: :doesnt_matter
+    allow Elsa.topic?(any(), any()), return: true
+    dataset = TDG.create_dataset(id: @dataset_id)
 
-      assert_raise Forklift.TopicManager.Error, "Something else went wrong", fn ->
-        Forklift.TopicManager.create_and_subscribe("bob")
-      end
-    end
+    topics = TopicManager.setup_topics(dataset)
 
-    test "raises response when error tuple received from kpro:request_sync" do
-      allow :kpro.connect_controller(any(), any()), return: {:ok, :connection}
-      allow :kpro.request_sync(any(), any(), any()), return: {:error, "bad request"}
+    assert "#{@input_topic_prefix}-#{@dataset_id}" == Map.get(topics, :input_topic)
+  end
 
-      assert_raise Forklift.TopicManager.Error, "bad request", fn ->
-        Forklift.TopicManager.create_and_subscribe("bob")
-      end
+  test "creates a topic with the provided input topic name" do
+    allow Elsa.create_topic(any(), any()), return: :doesnt_matter
+    allow Elsa.topic?(any(), any()), return: true
+    dataset = TDG.create_dataset(id: @dataset_id)
 
-      assert_called :kpro.close_connection(:connection)
-    end
+    TopicManager.setup_topics(dataset)
 
-    test "raises error when there are connection issues with Kafka" do
-      allow :kpro.connect_controller(any(), any()), return: {:error, "unexplained error"}
+    assert_called Elsa.create_topic(@endpoints, "#{@input_topic_prefix}-#{@dataset_id}")
+  end
 
-      assert_raise Forklift.TopicManager.Error, "unexplained error", fn ->
-        Forklift.TopicManager.create_and_subscribe("bob")
-      end
+  test "verifies input topic is available" do
+    allow Elsa.create_topic(any(), any()), return: :doesnt_matter
+    allow Elsa.topic?(any(), "#{@input_topic_prefix}-#{@dataset_id}"), seq: [false, false, true]
+    dataset = TDG.create_dataset(id: @dataset_id)
 
-      refute_called :kpro.close_connection(any())
-    end
+    TopicManager.setup_topics(dataset)
 
-    test "waits for topic to be created before continuing" do
-      kpro_resp =
-        {:kpro_rsp, :does_not_matter, :create_topics, 2,
-         %{
-           throttle_time_ms: 0,
-           topic_errors: [
-             %{
-               error_code: :no_error,
-               error_message: "Nothing went wrong",
-               topic: "our_topic"
-             }
-           ]
-         }}
+    assert_called Elsa.topic?(@endpoints, "#{@input_topic_prefix}-#{@dataset_id}"), times(3)
+  end
 
-      allow :kpro.connect_controller(any(), any()), return: {:ok, :connection}
-      allow :kpro.request_sync(any(), any(), any()), return: {:ok, kpro_resp}
-      allow DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
+  test "raises an error when it times out waiting for a topic" do
+    allow Elsa.create_topic(any(), any()), return: :doesnt_matter
+    allow Elsa.topic?(any(), "#{@input_topic_prefix}-#{@dataset_id}"), return: false
+    dataset = TDG.create_dataset(id: @dataset_id)
 
-      none = {:ok, %{}}
-
-      topic_metadata =
-        {:ok,
-         %{
-           topic_metadata: [
-             %{
-               topic: "our_topic"
-             }
-           ]
-         }}
-
-      allow :brod.get_metadata(any(), :all), seq: [none, none, none, topic_metadata]
-
-      assert {:ok, :pid} == Forklift.TopicManager.create_and_subscribe("our_topic")
-      assert_called :brod.get_metadata(any(), :all), times(4)
-      assert_called DynamicSupervisor.start_child(any(), any())
+    assert_raise RuntimeError, "Timed out waiting for #{@input_topic_prefix}-#{@dataset_id} to be available", fn ->
+      TopicManager.setup_topics(dataset)
     end
   end
 end
