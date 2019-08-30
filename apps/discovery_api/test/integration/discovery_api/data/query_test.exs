@@ -140,9 +140,7 @@ defmodule DiscoveryApi.Data.QueryTest do
     test "Queries limited data from presto when using orgName and dataName in url", %{public_dataset: public_dataset} do
       actual =
         get(
-          "http://localhost:4000/api/v1/organization/#{public_dataset.technical.orgName}/dataset/#{
-            public_dataset.technical.dataName
-          }/query?limit=2&orderBy=name"
+          "http://localhost:4000/api/v1/organization/#{public_dataset.technical.orgName}/dataset/#{public_dataset.technical.dataName}/query?limit=2&orderBy=name"
         )
 
       assert actual.body == "id,name\n1,Fred\n2,Gred\n"
@@ -155,10 +153,7 @@ defmodule DiscoveryApi.Data.QueryTest do
     end
 
     test "Queries data from presto with an aggregator", %{public_dataset: public_dataset} do
-      actual =
-        get(
-          "http://localhost:4000/api/v1/dataset/#{public_dataset.id}/query?columns=count(id),%20name&groupBy=name&orderBy=name"
-        )
+      actual = get("http://localhost:4000/api/v1/dataset/#{public_dataset.id}/query?columns=count(id),%20name&groupBy=name&orderBy=name")
 
       assert actual.body == "count(id),name\n1,Fred\n1,Gred\n1,Hred\n"
     end
@@ -187,9 +182,7 @@ defmodule DiscoveryApi.Data.QueryTest do
     } do
       actual =
         get(
-          "http://localhost:4000/api/v1/dataset/#{public_dataset.id}/query?limit=2&columns=(SELECT%20name%20FROM%20#{
-            private_table
-          }%20LIMIT%201)%20AS%20hacked"
+          "http://localhost:4000/api/v1/dataset/#{public_dataset.id}/query?limit=2&columns=(SELECT%20name%20FROM%20#{private_table}%20LIMIT%201)%20AS%20hacked"
         )
 
       assert actual.body == "{\"message\":\"Bad Request\"}"
