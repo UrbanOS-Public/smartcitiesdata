@@ -83,7 +83,11 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       }
     end
 
-    test "can select from some public datasets as json", %{conn: conn, public_tables: public_tables, json_response: expected_response} do
+    test "can select from some public datasets as json", %{
+      conn: conn,
+      public_tables: public_tables,
+      json_response: expected_response
+    } do
       statement = """
         WITH public_one AS (select a from public__one), public_two AS (select b from public__two)
         SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
@@ -131,7 +135,11 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       assert expected_response == response_body
     end
 
-    test "can select from some authorized private datasets", %{conn: conn, private_tables: private_tables, json_response: allowed_response} do
+    test "can select from some authorized private datasets", %{
+      conn: conn,
+      private_tables: private_tables,
+      json_response: allowed_response
+    } do
       statement = """
         WITH private_one AS (select a from private__one), private_two AS (select b from private__two)
         SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
