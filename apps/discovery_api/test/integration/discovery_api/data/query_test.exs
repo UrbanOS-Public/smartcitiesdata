@@ -54,11 +54,25 @@ defmodule DiscoveryApi.Data.QueryTest do
         }
       })
 
+    geojson_dataset =
+      TDG.create_dataset(%{
+        id: "geojson_id",
+        technical: %{
+          private: false,
+          orgId: organization.id,
+          orgName: organization.orgName,
+          dataName: "some_geojson",
+          systemName: "#{organization.orgName}__some_geojson"
+        }
+      })
+
     Dataset.write(public_dataset)
     Dataset.write(private_dataset)
+    Dataset.write(geojson_dataset)
 
     public_table = public_dataset.technical.systemName
     private_table = private_dataset.technical.systemName
+    geojson_table = geojson_dataset.technical.systemName
 
     capture_log(fn ->
       ~s|create table if not exists "#{public_table}" (id integer, name varchar)|
@@ -84,17 +98,34 @@ defmodule DiscoveryApi.Data.QueryTest do
       |> Prestige.prefetch()
     end)
 
+    capture_log(fn ->
+      ~s|create table if not exists "#{geojson_table}" (feature varchar)|
+      |> Prestige.execute()
+      |> Prestige.prefetch()
+    end)
+
+    capture_log(fn ->
+      ~s|insert into "#{geojson_table}" (feature) values
+      ('{"geometry":{"coordinates":[[-1.0,1.0],[0.0,0.0]],"type":"LineString"},"properties":{"Foo":"Bar"},"type":"Feature"}'),
+      ('{"geometry":{"coordinates":[[-2.0,0.0],[3.0,0.0]],"type":"LineString"},"properties":{"Foo":"Baz"},"type":"Feature"}')|
+      |> Prestige.execute()
+      |> Prestige.prefetch()
+    end)
+
     public_token = Helper.get_token_from_login(@username_with_public_access)
     private_token = Helper.get_token_from_login(@username_with_private_access)
 
     {:ok,
      %{
+       organization: organization,
        public_token: public_token,
        private_token: private_token,
        private_table: private_table,
        public_table: public_table,
        public_dataset: public_dataset,
-       private_dataset: private_dataset
+       private_dataset: private_dataset,
+       geojson_dataset: geojson_dataset,
+       geojson_table: geojson_table
      }}
   end
 
@@ -145,7 +176,10 @@ defmodule DiscoveryApi.Data.QueryTest do
       assert actual.body == expected
     end
 
-    test "Queries can't include sub-queries of private tables", %{public_dataset: public_dataset, private_table: private_table} do
+    test "Queries can't include sub-queries of private tables", %{
+      public_dataset: public_dataset,
+      private_table: private_table
+    } do
       actual =
         get(
           "http://localhost:4000/api/v1/dataset/#{public_dataset.id}/query?limit=2&columns=(SELECT%20name%20FROM%20#{private_table}%20LIMIT%201)%20AS%20hacked"
@@ -476,6 +510,48 @@ defmodule DiscoveryApi.Data.QueryTest do
                |> Prestige.execute()
                |> Prestige.prefetch()
                |> Enum.count()
+    end
+  end
+
+  describe "geojson queries" do
+    setup do
+      %{
+        expected_body: %{
+          "bbox" => [-2.0, 0.0, 3.0, 1.0],
+          "type" => "FeatureCollection",
+          "features" => [
+            %{
+              "geometry" => %{"coordinates" => [[-1.0, 1.0], [0.0, 0.0]], "type" => "LineString"},
+              "properties" => %{"Foo" => "Bar"},
+              "type" => "Feature"
+            },
+            %{
+              "geometry" => %{"coordinates" => [[-2.0, 0.0], [3.0, 0.0]], "type" => "LineString"},
+              "properties" => %{"Foo" => "Baz"},
+              "type" => "Feature"
+            }
+          ]
+        }
+      }
+    end
+
+    test "can query a geojson dataset", %{
+      geojson_dataset: geojson_dataset,
+      expected_body: expected_body
+    } do
+      actual = get("http://localhost:4000/api/v1/dataset/#{geojson_dataset.id}/query?_format=geojson")
+
+      expected_with_name = Map.put(expected_body, "name", geojson_dataset.technical.systemName)
+      assert expected_with_name == Jason.decode!(actual.body)
+    end
+
+    test "can query geojson with SQL", %{
+      geojson_table: geojson_table,
+      expected_body: expected_body
+    } do
+      actual = post("http://localhost:4000/api/v1/query?_format=geojson", "select * from #{geojson_table}")
+
+      assert expected_body == Jason.decode!(actual.body)
     end
   end
 

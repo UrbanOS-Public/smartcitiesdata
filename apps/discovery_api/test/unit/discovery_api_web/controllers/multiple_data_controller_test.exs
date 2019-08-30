@@ -37,12 +37,19 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         systemName: "coda__test_dataset"
       })
 
+    geojson_dataset =
+      DiscoveryApi.Test.Helper.sample_model(%{
+        private: false,
+        systemName: "geojson__geojson"
+      })
+
     datasets = [
       public_one_dataset,
       public_two_dataset,
       private_one_dataset,
       private_two_dataset,
-      coda_dataset
+      coda_dataset,
+      geojson_dataset
     ]
 
     allow(Model.get_all(), return: datasets, meck_options: [:passthrough])
@@ -76,7 +83,11 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       }
     end
 
-    test "can select from some public datasets as json", %{conn: conn, public_tables: public_tables, json_response: expected_response} do
+    test "can select from some public datasets as json", %{
+      conn: conn,
+      public_tables: public_tables,
+      json_response: expected_response
+    } do
       statement = """
         WITH public_one AS (select a from public__one), public_two AS (select b from public__two)
         SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
@@ -124,7 +135,11 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       assert expected_response == response_body
     end
 
-    test "can select from some authorized private datasets", %{conn: conn, private_tables: private_tables, json_response: allowed_response} do
+    test "can select from some authorized private datasets", %{
+      conn: conn,
+      private_tables: private_tables,
+      json_response: allowed_response
+    } do
       statement = """
         WITH private_one AS (select a from private__one), private_two AS (select b from private__two)
         SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
@@ -248,6 +263,52 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
                |> put_req_header("content-type", "text/plain")
                |> post("/api/v1/query", statement)
                |> response(400)
+    end
+  end
+
+  describe "query geojson" do
+    setup do
+      statement = "SELECT * FROM geojson__geojson"
+
+      allow(
+        Prestige.execute(statement, rows_as_maps: true),
+        return: [
+          %{"feature" => "{\"geometry\": {\"coordinates\": [1, 0]}}"},
+          %{"feature" => "{\"geometry\": {\"coordinates\": [[0, 1]]}}"}
+        ]
+      )
+
+      allow(PrestoService.is_select_statement?(statement), return: true)
+      allow(PrestoService.get_affected_tables(statement), return: {:ok, ["geojson__geojson"]})
+      allow(AuthUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+
+      %{statement: statement}
+    end
+
+    test "returns geojson with bounding box", %{conn: conn, statement: statement} do
+      actual =
+        conn
+        |> put_req_header("accept", "application/json")
+        |> put_req_header("content-type", "text/plain")
+        |> post("/api/v1/query?_format=geojson", statement)
+        |> response(200)
+
+      assert Jason.decode!(actual) == %{
+               "type" => "FeatureCollection",
+               "bbox" => [0, 0, 1, 1],
+               "features" => [
+                 %{
+                   "geometry" => %{
+                     "coordinates" => [1, 0]
+                   }
+                 },
+                 %{
+                   "geometry" => %{
+                     "coordinates" => [[0, 1]]
+                   }
+                 }
+               ]
+             }
     end
   end
 end
