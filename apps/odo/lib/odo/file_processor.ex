@@ -6,46 +6,64 @@ defmodule Odo.FileProcessor do
   """
   require Logger
   import SmartCity.Event, only: [file_upload: 0]
+  use Retry
   alias ExAws.S3
-  alias SmartCity.Event.FileUpload
+  alias SmartCity.HostedFile
 
-  def process(%FileUpload{} = file_event) do
-    source_type = get_extension(file_event.key)
-    convert = get_conversion_map(source_type)
-    download_destination = "#{working_dir()}/#{file_event.dataset_id}.#{convert.from}"
-    converted_file_path = "#{working_dir()}/#{file_event.dataset_id}.#{convert.to}"
-    new_key = String.replace_suffix(file_event.key, source_type, convert.to)
+  def process(%{
+        bucket: bucket,
+        original_key: original_key,
+        converted_key: converted_key,
+        download_path: download_path,
+        converted_path: converted_path,
+        conversion: conversion,
+        id: id
+      }) do
+    conversion_result =
+      retry with: linear_backoff(retry_delay(), retry_backoff()) |> Stream.take(5) do
+        with :ok <- download(bucket, original_key, download_path),
+             :ok <- convert(download_path, converted_path, conversion),
+             :ok <- upload(bucket, converted_path, converted_key),
+             :ok <- send_file_upload_event(id, bucket, converted_key) do
+          :ok
+        end
+      after
+        :ok ->
+          Logger.info("File uploaded for dataset #{id} to #{bucket}/#{converted_key}")
+          :ok
+      else
+        {:error, reason} ->
+          explanation = "File upload failed for dataset #{id}: #{reason}"
+          Brook.Event.send("error:#{file_upload()}", :odo, %{dataset_id: id, bucket: bucket, key: original_key})
+          Logger.warn(explanation)
+          {:error, explanation}
+      end
 
-    with :ok <- download(file_event.bucket, file_event.key, download_destination),
-         :ok <- convert(download_destination, converted_file_path, convert),
-         :ok <- upload(file_event.bucket, converted_file_path, new_key),
-         :ok <- send_file_upload_event(file_event.dataset_id, file_event.bucket, new_key, convert.to) do
-      Logger.info("File uploaded for dataset #{file_event.dataset_id} to #{file_event.bucket}/#{new_key}")
-      :ok
-    else
-      {:error, reason} ->
-        Logger.warn("File upload failed for dataset #{file_event.dataset_id}: #{reason}")
-    end
+    cleanup_files([download_path, converted_path])
 
-    cleanup_files([download_destination, converted_file_path])
+    conversion_result
   end
 
   defp download(bucket, key, path) do
-    S3.download_file(bucket, key, path)
+    bucket
+    |> S3.download_file(key, path)
     |> ExAws.request()
     |> case do
-      {:ok, :done} -> :ok
-      {:error, err} -> raise "Error downloading file for #{bucket}/#{key}: #{err}"
+      {:ok, _} -> :ok
+      {:error, err} -> {:error, "Error downloading file for #{bucket}/#{key}: #{err}"}
     end
   end
 
-  defp convert(source, destination, converter) do
-    with {:ok, converted_data} <- converter.function.(source),
+  defp convert(source, destination, conversion) do
+    from = String.split(source, "/") |> List.last()
+    to = String.split(destination, "/") |> List.last()
+
+    with {:ok, converted_data} <- conversion.(source),
          :ok <- File.write(destination, converted_data) do
       :ok
     else
       {:error, err} ->
-        raise "Unable to convert #{converter.from} to #{converter.to} for #{source}: #{err}"
+        {:error, "Unable to convert #{from} to #{to} for #{source}: #{err}"}
     end
   end
 
@@ -56,36 +74,29 @@ defmodule Odo.FileProcessor do
     |> ExAws.request()
     |> case do
       {:ok, _} -> :ok
-      {:error, err} -> raise "Unable to upload file #{bucket}/#{key}: #{err}"
+      {:error, err} -> {:error, "Unable to upload file #{bucket}/#{key}: #{err}"}
     end
   end
 
-  defp send_file_upload_event(id, bucket, key, type) do
-    new_type = FileUpload.type(type)
-    {:ok, event} = FileUpload.new(%{dataset_id: id, bucket: bucket, key: key, mime_type: new_type})
+  defp send_file_upload_event(id, bucket, key) do
+    new_mime =
+      key
+      |> String.split(".")
+      |> List.last()
+      |> HostedFile.type()
 
-    Brook.Event.send(file_upload(), "odo", event)
-  end
+    {:ok, event} = HostedFile.new(%{dataset_id: id, bucket: bucket, key: key, mime_type: new_mime})
 
-  defp get_extension(file) do
-    file
-    |> String.split(".")
-    |> List.last()
-  end
-
-  defp get_conversion_map(type) do
-    case type do
-      shapefile when shapefile in ["shapefile", "shp", "zip"] ->
-        %{from: "shapefile", to: "geojson", function: &Geomancer.geo_json/1}
-
-      _ ->
-        raise "Unable to convert file; unsupported type"
-    end
+    Brook.Event.send(file_upload(), :odo, event)
   end
 
   defp cleanup_files(files) do
     Enum.each(files, &File.rm!/1)
+  rescue
+    File.Error ->
+      Logger.warn("File removal failed")
   end
 
-  defp working_dir(), do: Application.get_env(:odo, :working_dir)
+  defp retry_delay(), do: Application.get_env(:odo, :retry_delay)
+  defp retry_backoff(), do: Application.get_env(:odo, :retry_backoff)
 end

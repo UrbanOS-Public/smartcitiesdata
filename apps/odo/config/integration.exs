@@ -25,7 +25,9 @@ config :odo,
   divo_wait: [dwell: 1000, max_tries: 120],
   kafka_broker: endpoints,
   hosted_file_bucket: bucket_name,
-  working_dir: "tmp"
+  working_dir: "tmp",
+  retry_delay: 500,
+  retry_backoff: 2
 
 config :ex_aws,
   debug_requests: true,
@@ -41,7 +43,7 @@ config :ex_aws, :s3,
   },
   port: 9000
 
-config :brook, :config,
+config :odo, :brook,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [

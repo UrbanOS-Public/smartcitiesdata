@@ -24,7 +24,9 @@ endpoints =
 config :odo,
   working_dir: System.get_env("WORKING_DIR") || "/downloads/",
   secrets_endpoint: System.get_env("SECRETS_ENDPOINT"),
-  hosted_file_bucket: System.get_env("HOSTED_FILE_BUCKET") || "hosted-dataset-files"
+  hosted_file_bucket: System.get_env("HOSTED_FILE_BUCKET") || "hosted-dataset-files",
+  retry_delay: 1_000,
+  retry_backoff: 5
 
 config :redix,
   host: redis_host
@@ -32,7 +34,7 @@ config :redix,
 config :ex_aws,
   region: System.get_env("AWS_REGION") || "us-west-2"
 
-config :brook, :config,
+config :odo, :brook,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [

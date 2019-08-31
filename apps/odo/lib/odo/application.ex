@@ -20,7 +20,7 @@ defmodule Odo.Application do
   end
 
   defp brook() do
-    Application.get_env(:brook, :config)
+    Application.get_env(:odo, :brook)
     |> case do
       nil -> []
       config -> {Brook, config}
