@@ -1,7 +1,5 @@
 
-# Welcome to the Smart Cities Data Platform!
-
-We're glad you're here 😃 
+# Smart Cities Data Platform!
 
 Where to go to get started:
 * [What is the project and how it works](https://github.com/smartcitiesdata/smartcitiesdata/wiki/The-What)
