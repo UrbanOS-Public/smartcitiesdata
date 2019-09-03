@@ -10,6 +10,8 @@ defmodule Odo.FileProcessor do
   alias ExAws.S3
   alias SmartCity.HostedFile
 
+  @metric_collector Application.get_env(:odo, :collector)
+
   def process(%{
         bucket: bucket,
         original_key: original_key,
@@ -19,6 +21,8 @@ defmodule Odo.FileProcessor do
         conversion: conversion,
         id: id
       }) do
+    start_time = Time.utc_now()
+
     conversion_result =
       retry with: linear_backoff(retry_delay(), retry_backoff()) |> Stream.take(5) do
         with :ok <- download(bucket, original_key, download_path),
@@ -29,10 +33,12 @@ defmodule Odo.FileProcessor do
         end
       after
         :ok ->
+          record_metrics(true, start_time, id, original_key)
           Logger.info("File uploaded for dataset #{id} to #{bucket}/#{converted_key}")
           :ok
       else
         {:error, reason} ->
+          record_metrics(false, start_time, id, original_key)
           explanation = "File upload failed for dataset #{id}: #{reason}"
           Brook.Event.send("error:#{file_upload()}", :odo, %{dataset_id: id, bucket: bucket, key: original_key})
           Logger.warn(explanation)
@@ -97,13 +103,13 @@ defmodule Odo.FileProcessor do
       Logger.warn("File removal failed")
   end
 
-  defp record_metrics(success, start_time, file_event) do
+  defp record_metrics(success, start_time, dataset_id, file) do
     success_value = if success, do: 1, else: 0
     duration = Time.diff(Time.utc_now(), start_time, :millisecond)
 
     labels = [
-      dataset_id: file_event.dataset_id,
-      file: file_event.key
+      dataset_id: dataset_id,
+      file: file
     ]
 
     @metric_collector.record_metrics(
@@ -115,7 +121,6 @@ defmodule Odo.FileProcessor do
     )
   end
 
-  defp working_dir(), do: Application.get_env(:odo, :working_dir)
   defp retry_delay(), do: Application.get_env(:odo, :retry_delay)
   defp retry_backoff(), do: Application.get_env(:odo, :retry_backoff)
 end
