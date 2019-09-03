@@ -38,7 +38,7 @@ defmodule Reaper.MixProject do
 
   defp deps do
     [
-      {:brook, "~> 0.1.2"},
+      {:brook, path: "../brook"},
       {:cachex, "~> 3.2"},
       {:castore, "~> 0.1"},
       {:distillery, "2.0.14"},
@@ -60,7 +60,7 @@ defmodule Reaper.MixProject do
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
       {:sftp_ex, "~> 0.2"},
-      {:smart_city, "~> 2.7"},
+      {:smart_city, path: "../smart_city", override: true},
       {:smart_city_data, "~> 3.0"},
       {:sweet_xml, "~> 0.6"},
       {:tesla, "~> 1.2"},

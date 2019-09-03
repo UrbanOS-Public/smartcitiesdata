@@ -1,46 +1,34 @@
 defmodule Reaper.Event.HandlerTest do
   use ExUnit.Case
   use Placebo
-  import ExUnit.CaptureLog
-  import SmartCity.Event, only: [dataset_update: 0]
 
-  alias Reaper.{ConfigServer, ReaperConfig}
+  import SmartCity.Event, only: [dataset_extract_complete: 0, dataset_extract_start: 0]
+  import SmartCity.TestHelper, only: [eventually: 1]
+
   alias SmartCity.TestDataGenerator, as: TDG
 
   setup do
-    dataset = TDG.create_dataset(%{id: "cool", technical: %{schema: [%{name: "name", type: "string"}]}})
-
-    reaper_config = ReaperConfig.from_dataset(dataset) |> ok()
-
-    allow ConfigServer.process_reaper_config(any()), return: nil
-
-    [dataset: dataset, reaper_config: reaper_config]
+    Brook.start_link(Application.get_env(:reaper, :brook))
+    :ok
   end
 
-  test "happy path", %{dataset: dataset, reaper_config: reaper_config} do
-    Reaper.Event.Handler.handle_event(%Brook.Event{
-      type: dataset_update(),
-      author: "Reaper",
-      data: dataset
-    })
+  describe "#{dataset_extract_complete()}" do
+    test "should persist last fetched timestamp" do
+      date = NaiveDateTime.utc_now()
+      allow NaiveDateTime.utc_now(), return: date, meck_options: [:passthrough]
+      dataset = TDG.create_dataset(id: "ds1")
+      Brook.Event.send(dataset_extract_complete(), "testing", dataset)
 
-    assert_called ConfigServer.process_reaper_config(reaper_config)
-  end
-
-  test "unable to parse data should log message", %{dataset: dataset} do
-    allow Reaper.ReaperConfig.from_dataset(any()), return: {:error, "some failure"}
-
-    log =
-      capture_log(fn ->
-        Reaper.Event.Handler.handle_event(%Brook.Event{
-          type: dataset_update(),
-          author: "Reaper",
-          data: dataset
-        })
+      eventually(fn ->
+        assert Brook.get!(:last_fetched_timestamps, dataset.id) == date
       end)
 
-    assert log =~ "Failed to process dataset:update event, reason: \"some failure\""
+    end
   end
 
-  def ok({:ok, value}), do: value
+  describe "#{dataset_extract_start()}" do
+    test "should ask horde to start process and save view state"do
+
+    end
+  end
 end
