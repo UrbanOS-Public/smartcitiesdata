@@ -22,4 +22,9 @@ erl_crash.dump
 /.elixir_ls/
 .mix_tasks
 
+# Because macOS is stupid and litters these everywhere
 .DS_Store
+
+# Minio creates metadata files here we don't want to persist.
+/test/support/minio_data/.minio.sys/*
+!/test/support/minio_data/.minio.sys/config/config.json

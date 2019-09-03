@@ -1,9 +1,11 @@
 use Mix.Config
 
 config :odo,
-  working_dir: "tmp"
+  working_dir: "tmp",
+  retry_delay: 500,
+  retry_backoff: 2
 
-config :brook, :config,
+config :odo, :brook,
   handlers: [Odo.EventHandler],
   storage: [
     module: Brook.Storage.Ets,

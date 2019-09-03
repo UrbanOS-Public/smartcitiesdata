@@ -1,4 +1,4 @@
-defmodule Odo.Unit.OdoTest do
+defmodule Odo.Unit.FileProcessorTest do
   import SmartCity.Event, only: [file_upload: 0]
   import ExUnit.CaptureLog
   use ExUnit.Case
@@ -12,13 +12,15 @@ defmodule Odo.Unit.OdoTest do
     allow(File.rm!(any()), return: :ok, meck_options: [:passthrough])
     allow(Brook.Event.send(file_upload(), any(), any()), return: :ok, meck_options: [:passthrough])
 
-    {:ok, file_event} =
-      HostedFile.new(%{
-        dataset_id: 111,
-        mime_type: "application/zip",
-        bucket: "hosted-files",
-        key: "my-org/my-dataset.shapefile"
-      })
+    conversion_map = %{
+      bucket: "hosted-files",
+      original_key: "my-org/my-dataset.shapefile",
+      converted_key: "my-org/my-dataset.geojson",
+      download_path: "tmp/111.shapefile",
+      converted_path: "tmp/111.geojson",
+      conversion: &Geomancer.geo_json/1,
+      id: 111
+    }
 
     {:ok, expected_event} =
       HostedFile.new(%{
@@ -28,24 +30,10 @@ defmodule Odo.Unit.OdoTest do
         key: "my-org/my-dataset.geojson"
       })
 
-    assert Odo.FileProcessor.process(file_event) == :ok
-    assert_called(Brook.Event.send(file_upload(), "odo", expected_event), once())
+    assert Odo.FileProcessor.process(conversion_map) == :ok
+    assert_called(Brook.Event.send(file_upload(), :odo, expected_event), once())
     assert_called(File.rm!("tmp/111.shapefile"), once())
     assert_called(File.rm!("tmp/111.geojson"), once())
-  end
-
-  test "raises an error on unsupported file type" do
-    {:ok, bad_event} =
-      HostedFile.new(%{
-        dataset_id: 112,
-        mime_type: "application/zip",
-        bucket: "hosted-files",
-        key: "my-org/my-dataset.foo"
-      })
-
-    assert_raise RuntimeError, "Unable to convert file; unsupported type", fn ->
-      Odo.FileProcessor.process(bad_event)
-    end
   end
 
   test "outputs error after unsuccessful retries" do
@@ -54,16 +42,18 @@ defmodule Odo.Unit.OdoTest do
       meck_options: [:passthrough]
     )
 
-    {:ok, shapefile} =
-      HostedFile.new(%{
-        dataset_id: 113,
-        mime_type: "application/zip",
-        bucket: "hosted-files",
-        key: "my-org/my-dataset.zip"
-      })
+    shapefile_attempt = %{
+      bucket: "hosted-files",
+      original_key: "my-org/my-dataset.zip",
+      converted_key: "my-org/my-dataset.geojson",
+      download_path: "tmp/113.shapefile",
+      converted_path: "tmp/113.geojson",
+      conversion: &Geomancer.geo_json/1,
+      id: 113
+    }
 
     assert capture_log(fn ->
-             assert Odo.FileProcessor.process(shapefile) ==
+             assert Odo.FileProcessor.process(shapefile_attempt) ==
                       {:error,
                        "File upload failed for dataset 113: Error downloading file for hosted-files/my-org/my-dataset.zip: econnrefused"}
            end) =~ "econnrefused"

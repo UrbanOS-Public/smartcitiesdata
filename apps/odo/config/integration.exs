@@ -26,6 +26,8 @@ config :odo,
   kafka_broker: endpoints,
   hosted_file_bucket: bucket_name,
   working_dir: "tmp",
+  retry_delay: 500,
+  retry_backoff: 2,
   metrics_port: 9003
 
 config :ex_aws,
@@ -42,7 +44,7 @@ config :ex_aws, :s3,
   },
   port: 9000
 
-config :brook, :config,
+config :odo, :brook,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [
