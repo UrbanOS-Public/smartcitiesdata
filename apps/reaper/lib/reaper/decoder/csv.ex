@@ -9,12 +9,10 @@ defmodule Reaper.Decoder.Csv do
     defexception [:message]
   end
 
-  alias Reaper.ReaperConfig
-
   @behaviour Reaper.Decoder
 
   @impl Reaper.Decoder
-  def decode({:file, filename}, %ReaperConfig{schema: schema} = config) do
+  def decode({:file, filename}, %SmartCity.Dataset{technical: %{schema: schema}} = dataset) do
     try do
       keys = Enum.map(schema, fn el -> el.name end)
 
@@ -29,7 +27,7 @@ defmodule Reaper.Decoder.Csv do
       {:ok, stream}
     rescue
       error ->
-        {:error, "DatasetId: #{config.dataset_id}", error}
+        {:error, "DatasetId: #{dataset.id}", error}
     end
   end
 

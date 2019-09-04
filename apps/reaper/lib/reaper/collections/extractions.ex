@@ -6,11 +6,11 @@ defmodule Reaper.Collections.Extractions do
   @collection :extractions
 
   def update_dataset(%SmartCity.Dataset{} = dataset) do
-    ViewState.merge(@collection, dataset.id, %{dataset: dataset, started_timestamp: NaiveDateTime.utc_now()})
+    ViewState.merge(@collection, dataset.id, %{dataset: dataset, started_timestamp: DateTime.utc_now()})
   end
 
   def update_last_fetched_timestamp(id) do
-    ViewState.merge(@collection, id, %{last_fetched_timestamp: NaiveDateTime.utc_now()})
+    ViewState.merge(@collection, id, %{last_fetched_timestamp: DateTime.utc_now()})
   end
 
   def update_streaming_dataset_status(id) do

@@ -12,7 +12,7 @@ defmodule Reaper.DataFeed.LoadStage do
 
   def init(args) do
     state = %{
-      config: Keyword.fetch!(args, :config),
+      dataset: Keyword.fetch!(args, :dataset),
       cache: Keyword.fetch!(args, :cache),
       batch: [],
       bytes: 0,
@@ -66,20 +66,20 @@ defmodule Reaper.DataFeed.LoadStage do
     cache_batch(state)
   end
 
-  defp send_to_kafka(%{config: config, batch: batch}) do
-    topic = "#{topic_prefix()}-#{config.dataset_id}"
+  defp send_to_kafka(%{dataset: dataset, batch: batch}) do
+    topic = "#{topic_prefix()}-#{dataset.id}"
     Elsa.Producer.produce_sync(topic, Enum.reverse(batch), partition: 0, name: :"#{topic}_producer")
   end
 
-  defp mark_batch_processed(%{config: config, originals: originals}) do
+  defp mark_batch_processed(%{dataset: dataset, originals: originals}) do
     {_message, max_index} =
       originals
       |> Enum.max_by(fn {_message, index} -> index end)
 
-    Persistence.record_last_processed_index(config.dataset_id, max_index)
+    Persistence.record_last_processed_index(dataset.id, max_index)
   end
 
-  defp cache_batch(%{cache: cache, originals: originals, config: %{allow_duplicates: false}}) do
+  defp cache_batch(%{cache: cache, originals: originals, dataset: %{technical: %{allow_duplicates: false}}}) do
     Enum.each(originals, fn {message, _index} ->
       Cache.cache(cache, message)
     end)
@@ -101,7 +101,7 @@ defmodule Reaper.DataFeed.LoadStage do
     timing = %{app: "reaper", label: "Ingested", start_time: start, end_time: stop}
 
     data = %{
-      dataset_id: state.config.dataset_id,
+      dataset_id: state.dataset.id,
       operational: %{timing: [timing]},
       payload: payload,
       _metadata: %{}

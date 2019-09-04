@@ -10,7 +10,7 @@ defmodule Reaper.DataFeed.SchemaStage do
 
   def init(args) do
     state = %{
-      config: Keyword.fetch!(args, :config)
+      dataset: Keyword.fetch!(args, :dataset)
     }
 
     {:producer_consumer, state}
@@ -23,6 +23,6 @@ defmodule Reaper.DataFeed.SchemaStage do
   end
 
   defp handle_event(state, {payload, number}) do
-    {SchemaFiller.fill(state.config.schema, payload), number}
+    {SchemaFiller.fill(state.dataset.technical.schema, payload), number}
   end
 end

@@ -5,7 +5,7 @@ defmodule Reaper.Decoder.GeoJson do
   @behaviour Reaper.Decoder
 
   @impl Reaper.Decoder
-  def decode({:file, filename}, _config) do
+  def decode({:file, filename}, _dataset) do
     data = File.read!(filename)
 
     case Jason.decode(data) do

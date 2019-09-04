@@ -5,6 +5,7 @@ defmodule Reaper.DataFeed.LoadStageTest do
   alias Reaper.DataFeed.LoadStage
   alias Reaper.{Cache, Persistence}
   alias Elsa.Producer
+  alias SmartCity.TestDataGenerator, as: TDG
 
   @message_size 218
   @iso_output DateTime.utc_now() |> DateTime.to_iso8601()
@@ -25,7 +26,7 @@ defmodule Reaper.DataFeed.LoadStageTest do
 
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1", allow_duplicates: false}),
+        dataset: TDG.create_dataset(id: "ds1", technical: %{allow_duplicates: false}),
         batch: [],
         bytes: 0,
         originals: [],
@@ -70,7 +71,7 @@ defmodule Reaper.DataFeed.LoadStageTest do
 
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds2"}),
+        dataset: TDG.create_dataset(id: "ds2"),
         batch: [],
         bytes: 0,
         originals: [],

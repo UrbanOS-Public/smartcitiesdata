@@ -6,6 +6,8 @@ defmodule Reaper.DataFeedTest do
   alias Reaper.{Cache, DataFeed, Persistence}
   alias Elsa.Producer
 
+  alias SmartCity.TestDataGenerator, as: TDG
+
   @dataset_id "12345-6789"
   @cache_name String.to_atom("#{@dataset_id}_feed")
 
@@ -25,38 +27,39 @@ defmodule Reaper.DataFeedTest do
       Plug.Conn.resp(conn, 200, @csv)
     end)
 
-    config =
-      FixtureHelper.new_reaper_config(%{
-        dataset_id: @dataset_id,
-        sourceType: "ingest",
-        sourceFormat: "csv",
-        sourceUrl: "http://localhost:#{bypass.port}/api/csv",
-        cadence: 100,
-        schema: [
-          %{name: "a", type: "string"},
-          %{name: "b", type: "string"},
-          %{name: "c", type: "string"}
-        ],
-        allow_duplicates: false
-      })
+    dataset =
+      TDG.create_dataset(
+        id: @dataset_id,
+        technical: %{
+          sourceType: "ingest",
+          sourceFormat: "csv",
+          sourceUrl: "http://localhost:#{bypass.port}/api/csv",
+          cadence: 100,
+          schema: [
+            %{name: "a", type: "string"},
+            %{name: "b", type: "string"},
+            %{name: "c", type: "string"}
+          ],
+          allow_duplicates: false
+        }
+      )
 
-    [bypass: bypass, config: config]
+    [bypass: bypass, dataset: dataset]
   end
 
   describe "process/2 happy path" do
     setup do
       allow Producer.produce_sync(any(), any(), any()), return: :ok
-      allow Persistence.record_last_fetched_timestamp(any(), any()), return: :ok
       allow Persistence.remove_last_processed_index(@dataset_id), return: :ok
 
       :ok
     end
 
-    test "parses turns csv into data messages and sends to kafka", %{config: config} do
+    test "parses turns csv into data messages and sends to kafka", %{dataset: dataset} do
       allow Persistence.get_last_processed_index(@dataset_id), return: -1
       allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
 
-      DataFeed.process(config, @cache_name)
+      DataFeed.process(dataset, @cache_name)
 
       messages = capture(1, Producer.produce_sync(any(), any(), any()), 2)
 
@@ -71,12 +74,12 @@ defmodule Reaper.DataFeedTest do
       assert_called Persistence.remove_last_processed_index(@dataset_id), once()
     end
 
-    test "eliminates duplicates before sending to kafka", %{config: config} do
+    test "eliminates duplicates before sending to kafka", %{dataset: dataset} do
       allow Persistence.get_last_processed_index(@dataset_id), return: -1
       allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
       Cache.cache(@cache_name, %{"a" => "one", "b" => "two", "c" => "three"})
 
-      DataFeed.process(config, @cache_name)
+      DataFeed.process(dataset, @cache_name)
 
       messages = capture(1, Producer.produce_sync(any(), any(), any()), 2)
       assert [%{"a" => "four", "b" => "five", "c" => "six"}] == get_payloads(messages)
@@ -88,18 +91,18 @@ defmodule Reaper.DataFeedTest do
   end
 
   @tag capture_log: true
-  test "process/2 should remove file for dataset regardless of error being raised", %{config: config} do
+  test "process/2 should remove file for dataset regardless of error being raised", %{dataset: dataset} do
     allow Persistence.get_last_processed_index(any()), return: -1
     allow Reaper.Cache.mark_duplicates(any(), any()), exec: fn _, _ -> raise "some error" end
 
     assert_raise RuntimeError, fn ->
-      DataFeed.process(config, @cache_name)
+      DataFeed.process(dataset, @cache_name)
     end
 
-    assert false == File.exists?(@download_dir <> config.dataset_id)
+    assert false == File.exists?(@download_dir <> dataset.id)
   end
 
-  test "process/2 should catch log all exceptions and reraise", %{config: config} do
+  test "process/2 should catch log all exceptions and reraise", %{dataset: dataset} do
     allow Persistence.get_last_processed_index(any()), return: -1
 
     allow Producer.produce_sync(any(), any(), any()), exec: fn _, _, _ -> raise "some error" end
@@ -109,11 +112,11 @@ defmodule Reaper.DataFeedTest do
     log =
       capture_log(fn ->
         assert_raise RuntimeError, fn ->
-          DataFeed.process(config, @cache_name)
+          DataFeed.process(dataset, @cache_name)
         end
       end)
 
-    assert log =~ inspect(config)
+    assert log =~ inspect(dataset)
     assert log =~ "some error"
   end
 

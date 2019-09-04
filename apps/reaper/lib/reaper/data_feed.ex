@@ -9,7 +9,6 @@ defmodule Reaper.DataFeed do
     DataSlurper,
     UrlBuilder,
     Persistence,
-    ReaperConfig,
     Persistence
   }
 
@@ -21,23 +20,23 @@ defmodule Reaper.DataFeed do
   @doc """
   Downloads, decodes, and sends data to a topic
   """
-  @spec process(ReaperConfig.t(), atom()) :: Redix.Protocol.redis_value() | no_return()
-  def process(%ReaperConfig{} = config, cache) do
+  @spec process(SmartCity.Dataset.t(), atom()) :: Redix.Protocol.redis_value() | no_return()
+  def process(%SmartCity.Dataset{} = dataset, cache) do
     Process.flag(:trap_exit, true)
 
     generated_time_stamp = DateTime.utc_now()
 
     {:ok, producer_stage} =
-      config
+      dataset
       |> UrlBuilder.build()
-      |> DataSlurper.slurp(config.dataset_id, config.sourceHeaders, config.protocol)
-      |> Decoder.decode(config)
+      |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
+      |> Decoder.decode(dataset)
       |> Stream.with_index()
       |> GenStage.from_enumerable()
 
-    {:ok, validation_stage} = ValidationStage.start_link(cache: cache, config: config)
-    {:ok, schema_stage} = SchemaStage.start_link(cache: cache, config: config, start_time: generated_time_stamp)
-    {:ok, load_stage} = LoadStage.start_link(cache: cache, config: config, start_time: generated_time_stamp)
+    {:ok, validation_stage} = ValidationStage.start_link(cache: cache, dataset: dataset)
+    {:ok, schema_stage} = SchemaStage.start_link(cache: cache, dataset: dataset, start_time: generated_time_stamp)
+    {:ok, load_stage} = LoadStage.start_link(cache: cache, dataset: dataset, start_time: generated_time_stamp)
 
     GenStage.sync_subscribe(load_stage, to: schema_stage, min_demand: @min_demand, max_demand: @max_demand)
     GenStage.sync_subscribe(schema_stage, to: validation_stage, min_demand: @min_demand, max_demand: @max_demand)
@@ -45,16 +44,14 @@ defmodule Reaper.DataFeed do
 
     wait_for_completion([producer_stage, validation_stage, schema_stage, load_stage])
 
-    record_last_fetched_timestamp(config.dataset_id, generated_time_stamp)
-
-    Persistence.remove_last_processed_index(config.dataset_id)
+    Persistence.remove_last_processed_index(dataset.id)
   rescue
     error ->
-      Logger.error("Unable to continue processing dataset #{inspect(config)} - Error #{inspect(error)}")
+      Logger.error("Unable to continue processing dataset #{inspect(dataset)} - Error #{inspect(error)}")
 
       reraise error, __STACKTRACE__
   after
-    config.dataset_id
+    dataset.id
     |> DataSlurper.determine_filename()
     |> File.rm()
   end
@@ -73,9 +70,5 @@ defmodule Reaper.DataFeed do
         Logger.warn("Unknown message received: #{inspect(unknown)}")
         wait_for_completion(pids)
     end
-  end
-
-  defp record_last_fetched_timestamp(dataset_id, timestamp) do
-    Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
   end
 end
