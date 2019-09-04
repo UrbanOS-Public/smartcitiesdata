@@ -38,7 +38,7 @@ defmodule Reaper.MixProject do
 
   defp deps do
     [
-      {:brook, path: "../brook"},
+      {:brook, "~> 0.2.0"},
       {:cachex, "~> 3.2"},
       {:castore, "~> 0.1"},
       {:distillery, "2.0.14"},

@@ -7,19 +7,12 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   alias Quantum.Job
   alias Reaper.Collections.Extractions
 
-  defp get_last_fetched_timestamp(id) do
-    case Brook.get!(:extractions, id) do
-      nil -> nil
-      value -> value.last_fetched_timestamp
-    end
-  end
-
   def handle(%SmartCity.Dataset{technical: %{cadence: "never"}}) do
     :ok
   end
 
   def handle(%SmartCity.Dataset{technical: %{cadence: "once"}} = dataset) do
-    case get_last_fetched_timestamp(dataset.id) do
+    case Extractions.get_last_fetched_timestamp!(dataset.id) do
       nil -> Brook.Event.send(determine_event(dataset), :reaper, dataset)
       _ -> :ok
     end

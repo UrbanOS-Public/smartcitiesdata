@@ -11,7 +11,7 @@ defmodule Reaper.Init do
   end
 
   def run() do
-    Brook.get_all_values!(:reaper_config)
-    |> Enum.each(&ConfigServer.process_reaper_config/1)
+    # Brook.get_all_values!(:reaper_config)
+    # |> Enum.each(&ConfigServer.process_reaper_config/1)
   end
 end

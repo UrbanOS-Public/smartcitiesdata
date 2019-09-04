@@ -11,7 +11,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
 
   describe "handle/1" do
     data_test "sends #{event} for source type #{source_type} event when cadence is once" do
-      allow Brook.get!(:last_fetched_timestamps, any()), return: nil
+      allow Brook.get!(:extractions, any()), return: nil
       allow Brook.Event.send(any(), any(), any()), return: :ok
       dataset = TDG.create_dataset(id: "ds1", technical: %{cadence: "once", sourceType: source_type})
 
@@ -19,15 +19,15 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
 
       assert_called Brook.Event.send(event, any(), dataset)
 
-      where [
+      where([
         [:source_type, :event],
         ["ingest", "dataset:extract:start"],
         ["host", "hosted:file:start"]
-      ]
+      ])
     end
 
     data_test "does not send #{event} for source type #{source_type} when cadence is once and dataset has already been fetched" do
-      allow Brook.get!(:last_fetched_timestamps, any()), return: :last_fetched_timestamp
+      allow Brook.get!(:extractions, any()), return: %{last_fetched_timestamp: :last_fetched_timestamp}
       allow Brook.Event.send(any(), any(), any()), return: :ok
       dataset = TDG.create_dataset(id: "ds1", technical: %{cadence: "once", sourceType: source_type})
 
@@ -35,11 +35,11 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
 
       refute_called Brook.Event.send(event, any(), dataset)
 
-      where [
+      where([
         [:source_type, :event],
         ["ingest", "dataset:extract:start"],
         ["host", "hosted:file:start"]
-      ]
+      ])
     end
 
     data_test "adds job to quantum when cadence is a cron expression" do
@@ -58,11 +58,11 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
       assert_called Reaper.Scheduler.delete_job(:ds2)
       assert_called Reaper.Scheduler.add_job(job)
 
-      where [
+      where([
         [:source_type, :event],
         ["ingest", "dataset:extract:start"],
         ["host", "hosted:file:start"]
-      ]
+      ])
     end
 
     test "logs message when crontab is unable to be parsed" do
