@@ -22,8 +22,9 @@ defmodule Odo.EventHandler do
         {:merge, :file_conversions, "#{file_data.dataset_id}_#{file_data.key}", file_data}
 
       {:error, reason} ->
+        Odo.MetricsRecorder.record_file_conversion_metrics(file_data.dataset_id, file_data.key, false)
         Logger.error("Error processing file conversion: #{reason}")
-        {:error, reason}
+        :discard
     end
   end
 
