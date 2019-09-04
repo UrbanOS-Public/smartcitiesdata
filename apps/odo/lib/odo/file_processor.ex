@@ -19,6 +19,8 @@ defmodule Odo.FileProcessor do
         conversion: conversion,
         id: id
       }) do
+    start_time = DateTime.utc_now()
+
     conversion_result =
       retry with: linear_backoff(retry_delay(), retry_backoff()) |> Stream.take(5) do
         with :ok <- download(bucket, original_key, download_path),
@@ -29,10 +31,12 @@ defmodule Odo.FileProcessor do
         end
       after
         :ok ->
+          Odo.MetricsRecorder.record_file_conversion_metrics(id, original_key, true, start_time)
           Logger.info("File uploaded for dataset #{id} to #{bucket}/#{converted_key}")
           :ok
       else
         {:error, reason} ->
+          Odo.MetricsRecorder.record_file_conversion_metrics(id, original_key, false, start_time)
           explanation = "File upload failed for dataset #{id}: #{reason}"
           Brook.Event.send("error:#{file_upload()}", :odo, %{dataset_id: id, bucket: bucket, key: original_key})
           Logger.warn(explanation)

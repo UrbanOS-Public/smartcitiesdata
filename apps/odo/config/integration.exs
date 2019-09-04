@@ -27,7 +27,8 @@ config :odo,
   hosted_file_bucket: bucket_name,
   working_dir: "tmp",
   retry_delay: 500,
-  retry_backoff: 2
+  retry_backoff: 2,
+  metrics_port: 9003
 
 config :ex_aws,
   debug_requests: true,

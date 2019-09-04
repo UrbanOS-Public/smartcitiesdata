@@ -5,11 +5,14 @@ defmodule Odo.Application do
   use Application
 
   def start(_type, _args) do
+    Odo.MetricsExporter.setup()
+
     children =
       [
         {Task.Supervisor, name: Odo.TaskSupervisor, max_restarts: 120, max_seconds: 60},
         brook(),
-        Odo.Init
+        Odo.Init,
+        metrics()
       ]
       |> List.flatten()
 
@@ -49,6 +52,20 @@ defmodule Odo.Application do
           Application.put_env(:ex_aws, :access_key_id, Map.get(creds, "aws_access_key_id"))
           Application.put_env(:ex_aws, :secret_access_key, Map.get(creds, "aws_secret_access_key"))
       end
+    end
+  end
+
+  defp metrics() do
+    case Application.get_env(:odo, :metrics_port) do
+      nil ->
+        []
+
+      metrics_port ->
+        Plug.Cowboy.child_spec(
+          scheme: :http,
+          plug: Odo.MetricsExporter,
+          options: [port: metrics_port]
+        )
     end
   end
 end
