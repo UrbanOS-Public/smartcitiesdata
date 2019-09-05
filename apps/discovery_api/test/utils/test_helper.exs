@@ -15,7 +15,26 @@ defmodule DiscoveryApi.Test.Helper do
       modifiedDate: Date.to_string(Faker.Date.backward(20)),
       fileTypes: [Faker.Lorem.characters(3), Faker.Lorem.characters(4)],
       description: Enum.join(Faker.Lorem.sentences(2..3), " "),
-      schema: [%{:description => "a number", :name => "number", :type => "integer"}],
+      schema: [
+        %{
+          :description => "a number",
+          :name => "number",
+          :type => "integer",
+          :pii => "false",
+          :biased => "false",
+          :masked => "N/A",
+          :demographic => "None"
+        },
+        %{
+          :description => "a name",
+          :name => "name",
+          :type => "string",
+          :pii => "true",
+          :biased => "true",
+          :masked => "yes",
+          :demographic => "Other"
+        }
+      ],
       sourceType: "remote",
       sourceUrl: Faker.Internet.url(),
       private: false,
