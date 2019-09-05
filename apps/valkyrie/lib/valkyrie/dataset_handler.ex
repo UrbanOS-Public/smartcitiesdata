@@ -4,11 +4,11 @@ defmodule Valkyrie.DatasetHandler do
   """
   alias SmartCity.Dataset
   use Brook.Event.Handler
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [dataset_extract_start: 0]
   require Logger
 
   def handle_event(%Brook.Event{
-        type: dataset_update(),
+        type: dataset_extract_start(),
         data: %Dataset{technical: %{sourceType: source_type}} = dataset
       })
       when source_type in ["ingest", "stream"] do
