@@ -3,11 +3,19 @@ defmodule Reaper.CacheTest do
   use Placebo
   import Checkov
   alias Reaper.Cache
+  alias Reaper.Cache.Server
 
   @cache :test_cache_1
 
   setup do
-    Cachex.start_link(@cache)
+    {:ok, registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
+    {:ok, server} = Server.start_link(name: {:via, Horde.Registry, {Reaper.Cache.Registry, @cache}})
+
+    on_exit(fn ->
+      kill(server)
+      kill(registry)
+    end)
+
     :ok
   end
 
@@ -25,14 +33,6 @@ defmodule Reaper.CacheTest do
       ])
     end
 
-    test "raises exception when Cachex returns an error" do
-      allow Cachex.exists?(any(), any()), return: {:error, "some_reason"}
-
-      assert_raise Cache.CacheError, "some_reason", fn ->
-        Cache.mark_duplicates(@cache, "dumb value")
-      end
-    end
-
     test "returns {:error, {:json, reason}} when Jason.encode! returns an error" do
       allow Jason.encode(any()), return: {:error, :some_reason}
       assert {:error, {:json, :some_reason}} == Cache.mark_duplicates(@cache, {:un, :encodable})
@@ -43,20 +43,22 @@ defmodule Reaper.CacheTest do
     test "add md5 of value to cache" do
       assert {:ok, true} == Cache.cache(@cache, "hello")
 
-      assert {:ok, true} == Cachex.exists?(@cache, "5DEAEE1C1332199E5B5BC7C5E4F7F0C2")
-    end
-
-    test "returns {:error, {:cachex, reason}} when Cachex returns an error" do
-      allow Cachex.put(any(), any(), any()), return: {:error, "some_reason"}
-
-      assert_raise Cache.CacheError, "some_reason", fn ->
-        Cache.cache(@cache, "dumb value")
-      end
+      assert true ==
+               GenServer.call(
+                 {:via, Horde.Registry, {Reaper.Cache.Registry, @cache}},
+                 {:exists?, "5DEAEE1C1332199E5B5BC7C5E4F7F0C2"}
+               )
     end
 
     test "returns {:error, {:json, reason}} when Jason.encode! returns an error" do
       allow Jason.encode(any()), return: {:error, :some_reason}
       assert {:error, {:json, :some_reason}} == Cache.cache(@cache, {:un, :encodable})
     end
+  end
+
+  defp kill(pid) do
+    ref = Process.monitor(pid)
+    Process.exit(pid, :normal)
+    assert_receive {:DOWN, ^ref, _, _, _}
   end
 end

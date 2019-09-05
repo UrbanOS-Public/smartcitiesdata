@@ -19,18 +19,19 @@ defmodule Reaper.DataFeed do
   @doc """
   Downloads, decodes, and sends data to a topic
   """
-  @spec process(SmartCity.Dataset.t(), atom()) :: Redix.Protocol.redis_value() | no_return()
-  def process(%SmartCity.Dataset{} = dataset, cache) do
+  @spec process(SmartCity.Dataset.t()) :: Redix.Protocol.redis_value() | no_return()
+  def process(%SmartCity.Dataset{} = dataset) do
     Process.flag(:trap_exit, true)
 
     validate_destination(dataset)
+    validate_cache(dataset)
 
     generated_time_stamp = DateTime.utc_now()
 
     {:ok, producer_stage} = create_producer_stage(dataset)
-    {:ok, validation_stage} = ValidationStage.start_link(cache: cache, dataset: dataset)
-    {:ok, schema_stage} = SchemaStage.start_link(cache: cache, dataset: dataset, start_time: generated_time_stamp)
-    {:ok, load_stage} = LoadStage.start_link(cache: cache, dataset: dataset, start_time: generated_time_stamp)
+    {:ok, validation_stage} = ValidationStage.start_link(cache: dataset.id, dataset: dataset)
+    {:ok, schema_stage} = SchemaStage.start_link(cache: dataset.id, dataset: dataset, start_time: generated_time_stamp)
+    {:ok, load_stage} = LoadStage.start_link(cache: dataset.id, dataset: dataset, start_time: generated_time_stamp)
 
     GenStage.sync_subscribe(load_stage, to: schema_stage, min_demand: @min_demand, max_demand: @max_demand)
     GenStage.sync_subscribe(schema_stage, to: validation_stage, min_demand: @min_demand, max_demand: @max_demand)
@@ -64,6 +65,12 @@ defmodule Reaper.DataFeed do
     create_topic(topic)
     start_topic_producer(topic)
   end
+
+  defp validate_cache(%SmartCity.Dataset{id: id, technical: %{allow_duplicates: false}}) do
+    Horde.Supervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: id})
+  end
+
+  defp validate_cache(_dataset), do: nil
 
   defp wait_for_completion([]), do: true
 

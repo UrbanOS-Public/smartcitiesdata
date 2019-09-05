@@ -9,7 +9,6 @@ defmodule Reaper.DataFeedTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   @dataset_id "12345-6789"
-  @cache_name String.to_atom("#{@dataset_id}_feed")
 
   @csv """
   one,two,three
@@ -20,8 +19,15 @@ defmodule Reaper.DataFeedTest do
   use TempEnv, reaper: [download_dir: @download_dir]
 
   setup do
+    {:ok, horde_registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
+    {:ok, horde_sup} = Horde.Supervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
+
+    on_exit(fn ->
+      kill(horde_sup)
+      kill(horde_registry)
+    end)
+
     bypass = Bypass.open()
-    Cachex.start_link(@cache_name)
 
     Bypass.expect(bypass, "GET", "/api/csv", fn conn ->
       Plug.Conn.resp(conn, 200, @csv)
@@ -62,7 +68,7 @@ defmodule Reaper.DataFeedTest do
       allow Persistence.get_last_processed_index(@dataset_id), return: -1
       allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
 
-      DataFeed.process(dataset, @cache_name)
+      DataFeed.process(dataset)
 
       messages = capture(1, Producer.produce_sync(any(), any(), any()), 2)
 
@@ -80,9 +86,10 @@ defmodule Reaper.DataFeedTest do
     test "eliminates duplicates before sending to kafka", %{dataset: dataset} do
       allow Persistence.get_last_processed_index(@dataset_id), return: -1
       allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
-      Cache.cache(@cache_name, %{"a" => "one", "b" => "two", "c" => "three"})
+      Horde.Supervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: dataset.id})
+      Cache.cache(dataset.id, %{"a" => "one", "b" => "two", "c" => "three"})
 
-      DataFeed.process(dataset, @cache_name)
+      DataFeed.process(dataset)
 
       messages = capture(1, Producer.produce_sync(any(), any(), any()), 2)
       assert [%{"a" => "four", "b" => "five", "c" => "six"}] == get_payloads(messages)
@@ -96,10 +103,13 @@ defmodule Reaper.DataFeedTest do
   @tag capture_log: true
   test "process/2 should remove file for dataset regardless of error being raised", %{dataset: dataset} do
     allow Persistence.get_last_processed_index(any()), return: -1
-    allow Reaper.Cache.mark_duplicates(any(), any()), exec: fn _, _ -> raise "some error" end
+
+    allow Reaper.Cache.mark_duplicates(any(), any()),
+      exec: fn _, _ -> raise "some error" end,
+      meck_options: [:passthrough]
 
     assert_raise RuntimeError, fn ->
-      DataFeed.process(dataset, @cache_name)
+      DataFeed.process(dataset)
     end
 
     assert false == File.exists?(@download_dir <> dataset.id)
@@ -115,7 +125,7 @@ defmodule Reaper.DataFeedTest do
     log =
       capture_log(fn ->
         assert_raise RuntimeError, fn ->
-          DataFeed.process(dataset, @cache_name)
+          DataFeed.process(dataset)
         end
       end)
 
@@ -127,5 +137,11 @@ defmodule Reaper.DataFeedTest do
     list
     |> Enum.map(&SmartCity.Data.new/1)
     |> Enum.map(fn {:ok, data} -> data.payload end)
+  end
+
+  defp kill(pid) do
+    ref = Process.monitor(pid)
+    Process.exit(pid, :normal)
+    assert_receive {:DOWN, ^ref, _, _, _}
   end
 end
