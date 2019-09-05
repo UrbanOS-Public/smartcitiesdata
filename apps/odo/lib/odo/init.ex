@@ -17,6 +17,7 @@ defmodule Odo.Init do
     pending_ids = Enum.map(pending_conversions, fn file -> file.dataset_id end)
 
     Logger.debug("Starting file processor task for files pending conversion: #{inspect(pending_ids)}")
+
     Enum.each(pending_conversions, &Odo.FileProcessor.process/1)
   end
 end

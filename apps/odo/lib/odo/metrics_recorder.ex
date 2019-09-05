@@ -13,17 +13,16 @@ defmodule Odo.MetricsRecorder do
       start: DateTime.to_unix(start_date_time)
     ]
 
-    result =
-      @metric_collector.record_metrics(
-        [
-          @metric_collector.gauge_metric(success_value, "file_conversion_success", labels),
-          @metric_collector.gauge_metric(duration, "file_conversion_duration", labels)
-        ],
-        "odo"
-      )
-      |> case do
-        {:error, err} -> Logger.warn("Unable to record file conversion metrics : #{inspect(err)}")
-        _ -> :ok
-      end
+    @metric_collector.record_metrics(
+      [
+        @metric_collector.gauge_metric(success_value, "file_conversion_success", labels),
+        @metric_collector.gauge_metric(duration, "file_conversion_duration", labels)
+      ],
+      "odo"
+    )
+    |> case do
+      {:error, err} -> Logger.warn("Unable to record file conversion metrics : #{inspect(err)}")
+      _ -> :ok
+    end
   end
 end

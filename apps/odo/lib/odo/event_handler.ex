@@ -19,7 +19,7 @@ defmodule Odo.EventHandler do
         )
 
         Logger.debug("Processing file for dataset: #{file_data.dataset_id}: shapefile to geojson}")
-        {:merge, :file_conversions, "#{file_data.dataset_id}_#{file_data.key}", file_data}
+        {:merge, :file_conversions, "#{file_data.dataset_id}_#{file_data.key}", conversion_map}
 
       {:error, reason} ->
         Odo.MetricsRecorder.record_file_conversion_metrics(file_data.dataset_id, file_data.key, false)
