@@ -44,6 +44,9 @@ defmodule Reaper.DataFeedTest do
         }
       )
 
+    allow Elsa.create_topic(any(), any()), return: :ok
+    allow Elsa.Producer.Supervisor.start_link(any()), return: {:ok, :pid}
+
     [bypass: bypass, dataset: dataset]
   end
 

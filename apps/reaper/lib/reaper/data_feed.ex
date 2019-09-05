@@ -8,7 +8,6 @@ defmodule Reaper.DataFeed do
     Decoder,
     DataSlurper,
     UrlBuilder,
-    Persistence,
     Persistence
   }
 
@@ -24,16 +23,11 @@ defmodule Reaper.DataFeed do
   def process(%SmartCity.Dataset{} = dataset, cache) do
     Process.flag(:trap_exit, true)
 
+    validate_destination(dataset)
+
     generated_time_stamp = DateTime.utc_now()
 
-    {:ok, producer_stage} =
-      dataset
-      |> UrlBuilder.build()
-      |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
-      |> Decoder.decode(dataset)
-      |> Stream.with_index()
-      |> GenStage.from_enumerable()
-
+    {:ok, producer_stage} = create_producer_stage(dataset)
     {:ok, validation_stage} = ValidationStage.start_link(cache: cache, dataset: dataset)
     {:ok, schema_stage} = SchemaStage.start_link(cache: cache, dataset: dataset, start_time: generated_time_stamp)
     {:ok, load_stage} = LoadStage.start_link(cache: cache, dataset: dataset, start_time: generated_time_stamp)
@@ -56,6 +50,21 @@ defmodule Reaper.DataFeed do
     |> File.rm()
   end
 
+  defp create_producer_stage(dataset) do
+    dataset
+    |> UrlBuilder.build()
+    |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
+    |> Decoder.decode(dataset)
+    |> Stream.with_index()
+    |> GenStage.from_enumerable()
+  end
+
+  defp validate_destination(dataset) do
+    topic = "#{topic_prefix()}-#{dataset.id}"
+    create_topic(topic)
+    start_topic_producer(topic)
+  end
+
   defp wait_for_completion([]), do: true
 
   defp wait_for_completion(pids) do
@@ -71,4 +80,16 @@ defmodule Reaper.DataFeed do
         wait_for_completion(pids)
     end
   end
+
+  defp create_topic(topic) do
+    :ok = Elsa.create_topic(endpoints(), topic)
+  end
+
+  defp start_topic_producer(topic) do
+    {:ok, _pid} = Elsa.Producer.Supervisor.start_link(name: :"#{topic}_producer", endpoints: endpoints(), topic: topic)
+  end
+
+  defp endpoints(), do: Application.get_env(:reaper, :elsa_brokers)
+
+  defp topic_prefix(), do: Application.get_env(:reaper, :output_topic_prefix)
 end
