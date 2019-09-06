@@ -61,7 +61,7 @@ defmodule Reaper.DataFeedScheduler do
   def handle_info(:work, %{pids: %{cache: cache}, reaper_config: reaper_config} = state) do
     task =
       case reaper_config.sourceType do
-        "host" -> Task.async(Reaper.HostedFileProcessor, :process, [reaper_config])
+        "host" -> Task.async(Reaper.FileIngest.Processor, :process, [reaper_config])
         _ -> Task.async(Reaper.DataExtract.Processor, :process, [reaper_config])
       end
 

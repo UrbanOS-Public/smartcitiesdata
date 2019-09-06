@@ -1,4 +1,4 @@
-defmodule Reaper.HostedFileProcessor do
+defmodule Reaper.FileIngest.Processor do
   @moduledoc """
   Downloads files for hosted datasets from their source and stores them in an S3 bucket
   """
@@ -16,25 +16,25 @@ defmodule Reaper.HostedFileProcessor do
   @doc """
   Process a hosted dataset
   """
-  def process(config) do
-    filename = get_filename(config)
+  def process(dataset) do
+    filename = get_filename(dataset)
     generated_time_stamp = DateTime.utc_now()
 
     _something =
-      config
+      dataset
       |> UrlBuilder.build()
-      |> DataSlurper.slurp(config.dataset_id, config.sourceHeaders, config.protocol)
+      |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
       |> upload(filename)
 
-    send_event(config, filename)
-    record_last_fetched_timestamp(config.dataset_id, generated_time_stamp)
+    send_event(dataset, filename)
+    record_last_fetched_timestamp(dataset.id, generated_time_stamp)
   rescue
     error ->
-      Logger.error("Unable to continue processing dataset #{inspect(config)} - Error #{inspect(error)}")
+      Logger.error("Unable to continue processing dataset #{inspect(dataset)} - Error #{inspect(error)}")
 
       reraise error, __STACKTRACE__
   after
-    config.dataset_id
+    dataset.id
     |> DataSlurper.determine_filename()
     |> File.rm()
   end
@@ -46,11 +46,11 @@ defmodule Reaper.HostedFileProcessor do
     |> ExAws.request()
   end
 
-  def send_event(config, filename) do
+  def send_event(dataset, filename) do
     {:ok, file_upload} =
       HostedFile.new(%{
-        dataset_id: config.dataset_id,
-        mime_type: MIME.type(config.sourceFormat),
+        dataset_id: dataset.id,
+        mime_type: MIME.type(dataset.technical.sourceFormat),
         bucket: bucket_name(),
         key: filename
       })
@@ -61,7 +61,11 @@ defmodule Reaper.HostedFileProcessor do
 
   defp bucket_name, do: Application.get_env(:reaper, :hosted_file_bucket)
 
-  defp get_filename(config), do: "#{config.orgName}/#{config.dataName}.#{config.sourceFormat}"
+  defp get_filename(%SmartCity.Dataset{
+         technical: %{orgName: org_name, dataName: data_name, sourceFormat: source_format}
+       }) do
+    "#{org_name}/#{data_name}.#{source_format}"
+  end
 
   defp record_last_fetched_timestamp(dataset_id, timestamp) do
     Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
