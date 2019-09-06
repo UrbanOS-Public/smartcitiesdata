@@ -7,22 +7,8 @@ services:
   - docker
 env:
   - DOCKER_COMPOSE_VERSION=1.23.1
-before_install:
-  - sudo rm /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-  - chmod +x docker-compose
-  - sudo mv docker-compose /usr/local/bin
-install:
-  - mix local.rebar --force;
-  - mix local.hex --force
-  - mix deps.get
-  - mix format --check-formatted
-  - mix credo
-  - mix sobelow
 script:
-  - mix sobelow -i Config.HTTPS --skip --compact --exit low
-  - docker build -t discovery_api:build .
-  - mix test.integration
+  - bash scripts/travis-build.sh
 deploy:
   - provider: script
     skip_cleanup: true
