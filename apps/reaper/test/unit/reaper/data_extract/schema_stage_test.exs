@@ -1,8 +1,8 @@
-defmodule Reaper.DataFeed.SchemaStageTest do
+defmodule Reaper.DataExtract.SchemaStageTest do
   use ExUnit.Case
   use Placebo
 
-  alias Reaper.DataFeed.SchemaStage
+  alias Reaper.DataExtract.SchemaStage
   alias SmartCity.TestDataGenerator, as: TDG
 
   describe "handle_events/3" do

@@ -1,4 +1,4 @@
-defmodule Reaper.DataFeed.SchemaStage do
+defmodule Reaper.DataExtract.SchemaStage do
   @moduledoc false
   use GenStage
 
