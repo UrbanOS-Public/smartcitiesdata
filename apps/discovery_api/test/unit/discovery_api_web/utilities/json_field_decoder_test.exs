@@ -47,8 +47,7 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
           },
           %{
             "id" => 1,
-            "bins" =>
-              "{\"bins\":{\"day\":{},\"hour\":{},\"minute\":{}},\"streets\":{\"day\":{},\"hour\":{},\"minute\":{}}}"
+            "bins" => "{\"bins\":{\"day\":{},\"hour\":{},\"minute\":{}},\"streets\":{\"day\":{},\"hour\":{},\"minute\":{}}}"
           },
           [
             %{name: "id", type: "integer"},
