@@ -7,12 +7,15 @@ defmodule DiscoveryApiWeb.Utilities.JsonFieldDecoder do
   end
 
   def decode_one_datum([column | remaining_schema], datum) do
-    case column.type do
-      "json" ->
-        decode_one_datum(remaining_schema, Map.put(datum, column.name, Jason.decode!(datum[column.name])))
+    downcased_column_name = String.downcase(column.name)
 
-      _ ->
-        decode_one_datum(remaining_schema, datum)
+    if column.type == "json" and Map.has_key?(datum, downcased_column_name) do
+      decode_one_datum(
+        remaining_schema,
+        Map.put(datum, downcased_column_name, Jason.decode!(datum[downcased_column_name]))
+      )
+    else
+      decode_one_datum(remaining_schema, datum)
     end
   end
 end
