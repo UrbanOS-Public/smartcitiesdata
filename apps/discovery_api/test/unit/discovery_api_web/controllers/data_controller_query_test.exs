@@ -161,7 +161,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get(url, columns: "id, name")
       |> response(200)
 
-      assert_called(Redix.command!(:redix, ["INCR", "smart_registry:queries:count:test"]))
+      eventually(fn -> assert_called(Redix.command!(:redix, ["INCR", "smart_registry:queries:count:test"])) end)
 
       where(
         url: [
