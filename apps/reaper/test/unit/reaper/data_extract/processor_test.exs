@@ -1,9 +1,10 @@
-defmodule Reaper.DataFeedTest do
+defmodule Reaper.DataExtract.ProcessorTest do
   use ExUnit.Case
   use Placebo
   import ExUnit.CaptureLog
 
-  alias Reaper.{Cache, DataFeed, Persistence}
+  alias Reaper.{Cache, Persistence}
+  alias Reaper.DataExtract.Processor
   alias Elsa.Producer
 
   alias SmartCity.TestDataGenerator, as: TDG
@@ -68,7 +69,7 @@ defmodule Reaper.DataFeedTest do
       allow Persistence.get_last_processed_index(@dataset_id), return: -1
       allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
 
-      DataFeed.process(dataset)
+      Processor.process(dataset)
 
       messages = capture(1, Producer.produce_sync(any(), any(), any()), 2)
 
@@ -89,7 +90,7 @@ defmodule Reaper.DataFeedTest do
       Horde.Supervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: dataset.id})
       Cache.cache(dataset.id, %{"a" => "one", "b" => "two", "c" => "three"})
 
-      DataFeed.process(dataset)
+      Processor.process(dataset)
 
       messages = capture(1, Producer.produce_sync(any(), any(), any()), 2)
       assert [%{"a" => "four", "b" => "five", "c" => "six"}] == get_payloads(messages)
@@ -109,7 +110,7 @@ defmodule Reaper.DataFeedTest do
       meck_options: [:passthrough]
 
     assert_raise RuntimeError, fn ->
-      DataFeed.process(dataset)
+      Processor.process(dataset)
     end
 
     assert false == File.exists?(@download_dir <> dataset.id)
@@ -125,7 +126,7 @@ defmodule Reaper.DataFeedTest do
     log =
       capture_log(fn ->
         assert_raise RuntimeError, fn ->
-          DataFeed.process(dataset)
+          Processor.process(dataset)
         end
       end)
 

@@ -62,7 +62,7 @@ defmodule Reaper.DataFeedScheduler do
     task =
       case reaper_config.sourceType do
         "host" -> Task.async(Reaper.HostedFileProcessor, :process, [reaper_config])
-        _ -> Task.async(Reaper.DataFeed, :process, [reaper_config, cache])
+        _ -> Task.async(Reaper.DataExtract.Processor, :process, [reaper_config])
       end
 
     Task.await(task, :infinity)

@@ -1,4 +1,4 @@
-defmodule Reaper.DataFeed do
+defmodule Reaper.DataExtract.Processor do
   @moduledoc """
   This module processes a data source and sends its data to the output topic
   """

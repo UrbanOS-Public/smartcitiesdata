@@ -19,7 +19,7 @@ defmodule Reaper.DataFeedSchedulerTest do
 
   describe "handle_info given a state that includes a reaper config struct" do
     test "schedules itself on the provided cadence" do
-      expect Reaper.DataFeed.process(any(), any()), return: :does_not_matter
+      expect Reaper.DataExtract.Processor.process(any()), return: :does_not_matter
 
       {:noreply, %{timer_ref: timer_ref}} = DataFeedScheduler.handle_info(:work, @data_feed_args)
 
