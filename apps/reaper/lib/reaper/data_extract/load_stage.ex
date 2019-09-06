@@ -1,4 +1,4 @@
-defmodule Reaper.DataFeed.LoadStage do
+defmodule Reaper.DataExtract.LoadStage do
   @moduledoc false
   use GenStage
   require Logger

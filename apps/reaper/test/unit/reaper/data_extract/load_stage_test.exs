@@ -1,8 +1,8 @@
-defmodule Reaper.DataFeed.LoadStageTest do
+defmodule Reaper.DataExtract.LoadStageTest do
   use ExUnit.Case
   use Placebo
 
-  alias Reaper.DataFeed.LoadStage
+  alias Reaper.DataExtract.LoadStage
   alias Reaper.{Cache, Persistence}
   alias Elsa.Producer
   alias SmartCity.TestDataGenerator, as: TDG
@@ -14,7 +14,15 @@ defmodule Reaper.DataFeed.LoadStageTest do
   use TempEnv, reaper: [batch_size_in_bytes: 10 * @message_size, output_topic_prefix: "test"]
 
   setup do
-    Cachex.start_link(@cache)
+    {:ok, registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
+    {:ok, horde_sup} = Horde.Supervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
+    Horde.Supervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: @cache})
+
+    on_exit(fn ->
+      kill(horde_sup)
+      kill(registry)
+    end)
+
     allow DateTime.to_iso8601(any()), return: @iso_output, meck_options: [:passthrough]
     :ok
   end
@@ -117,5 +125,11 @@ defmodule Reaper.DataFeed.LoadStageTest do
     |> Enum.map(&SmartCity.Data.new/1)
     |> Enum.map(&elem(&1, 1))
     |> Enum.map(&Jason.encode!/1)
+  end
+
+  defp kill(pid) do
+    ref = Process.monitor(pid)
+    Process.exit(pid, :normal)
+    assert_receive {:DOWN, ^ref, _, _, _}
   end
 end

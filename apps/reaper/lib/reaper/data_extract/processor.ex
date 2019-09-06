@@ -11,8 +11,7 @@ defmodule Reaper.DataExtract.Processor do
     Persistence
   }
 
-  alias Reaper.DataFeed.LoadStage
-  alias Reaper.DataExtract.{ValidationStage, SchemaStage}
+  alias Reaper.DataExtract.{ValidationStage, SchemaStage, LoadStage}
 
   @min_demand 500
   @max_demand 1_000
