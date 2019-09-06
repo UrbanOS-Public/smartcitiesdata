@@ -1,4 +1,4 @@
-defmodule Reaper.DataFeed.ValidationStage do
+defmodule Reaper.DataExtract.ValidationStage do
   @moduledoc false
   use GenStage
 

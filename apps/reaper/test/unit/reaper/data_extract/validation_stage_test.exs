@@ -1,15 +1,23 @@
-defmodule Reaper.DataFeed.ValidationStageTest do
+defmodule Reaper.DataExtract.ValidationStageTest do
   use ExUnit.Case
   use Placebo
 
-  alias Reaper.DataFeed.ValidationStage
+  alias Reaper.DataExtract.ValidationStage
   alias Reaper.Cache
   alias SmartCity.TestDataGenerator, as: TDG
 
   @cache :validation_stage_test
 
   setup do
-    Cachex.start_link(@cache)
+    {:ok, registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
+    {:ok, horde_sup} = Horde.Supervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
+    Horde.Supervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: @cache})
+
+    on_exit(fn ->
+      kill(horde_sup)
+      kill(registry)
+    end)
+
     :ok
   end
 
@@ -97,5 +105,11 @@ defmodule Reaper.DataFeed.ValidationStageTest do
         allow_duplicates: Keyword.get(opts, :allow_duplicates, true)
       }
     )
+  end
+
+  defp kill(pid) do
+    ref = Process.monitor(pid)
+    Process.exit(pid, :normal)
+    assert_receive {:DOWN, ^ref, _, _, _}
   end
 end
