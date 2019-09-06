@@ -1,4 +1,4 @@
-defmodule Reaper.DataFeed.SchemaFiller do
+defmodule Reaper.DataExtract.SchemaFiller do
   @moduledoc false
 
   @doc """

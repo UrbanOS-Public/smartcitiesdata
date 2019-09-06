@@ -1,7 +1,7 @@
-defmodule Reaper.DataFeed.SchemaFillerTest do
+defmodule Reaper.DataExtract.SchemaFillerTest do
   use ExUnit.Case
   doctest SmartCity.Helpers
-  alias Reaper.DataFeed.SchemaFiller
+  alias Reaper.DataExtract.SchemaFiller
 
   describe "single level" do
     setup do

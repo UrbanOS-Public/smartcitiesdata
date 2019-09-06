@@ -2,7 +2,7 @@ defmodule Reaper.DataFeed.SchemaStage do
   @moduledoc false
   use GenStage
 
-  alias Reaper.DataFeed.SchemaFiller
+  alias Reaper.DataExtract.SchemaFiller
 
   def start_link(opts) do
     GenStage.start_link(__MODULE__, opts)
