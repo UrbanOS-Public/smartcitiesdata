@@ -3,7 +3,7 @@ defmodule ValkyrieTest do
   use Divo
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [dataset_extract_start: 0]
 
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
   @dlq_topic Application.get_env(:yeet, :topic)
@@ -49,7 +49,7 @@ defmodule ValkyrieTest do
     input_topic = "#{@input_topic_prefix}-#{dataset.id}"
     output_topic = "#{@output_topic_prefix}-#{dataset.id}"
 
-    Brook.Event.send(dataset_update(), :valkyrie, dataset)
+    Brook.Event.send(dataset_extract_start(), :valkyrie, dataset)
     TestHelpers.wait_for_topic(@endpoints, input_topic)
 
     TestHelpers.produce_messages(messages, input_topic, @endpoints)
