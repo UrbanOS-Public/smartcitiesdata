@@ -3,7 +3,7 @@ defmodule Valkyrie.TopicCreationTest do
   use Divo
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [dataset_extract_start: 0]
+  import SmartCity.Event, only: [dataset_update: 0]
 
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
   @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
@@ -30,7 +30,7 @@ defmodule Valkyrie.TopicCreationTest do
         payload: %{"name" => %{"first" => "Ben", "last" => "Brewer"}}
       })
 
-    Brook.Event.send(dataset_extract_start(), :author, dataset)
+    Brook.Event.send(dataset_update(), :author, dataset)
 
     TestHelpers.wait_for_topic(@endpoints, input_topic)
     TestHelpers.produce_message(data_message, input_topic, @endpoints)

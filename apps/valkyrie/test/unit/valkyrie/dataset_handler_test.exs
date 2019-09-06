@@ -3,7 +3,7 @@ defmodule Valkyrie.DatasetHandlerTest do
   use Placebo
   use Brook.Event.Handler
   import Checkov
-  import SmartCity.Event, only: [dataset_extract_start: 0]
+  import SmartCity.Event, only: [dataset_update: 0]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Valkyrie.DatasetHandler
@@ -18,7 +18,7 @@ defmodule Valkyrie.DatasetHandlerTest do
     data_test "Processes datasets with #{source_type} " do
       dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: source_type})
 
-      DatasetHandler.handle_event(%Brook.Event{type: dataset_extract_start(), data: dataset, author: :author})
+      DatasetHandler.handle_event(%Brook.Event{type: dataset_update(), data: dataset, author: :author})
 
       assert called == called?(Valkyrie.DatasetProcessor.start(dataset))
 
@@ -35,7 +35,7 @@ defmodule Valkyrie.DatasetHandlerTest do
     test "Should return :merge when handled" do
       dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: "ingest"})
 
-      actual = DatasetHandler.handle_event(%Brook.Event{type: dataset_extract_start(), data: dataset, author: :author})
+      actual = DatasetHandler.handle_event(%Brook.Event{type: dataset_update(), data: dataset, author: :author})
 
       assert {:merge, :datasets, dataset.id, dataset} == actual
     end

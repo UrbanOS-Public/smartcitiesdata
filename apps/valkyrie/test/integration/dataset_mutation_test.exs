@@ -2,7 +2,7 @@ defmodule Valkyrie.DatasetMutationTest do
   use ExUnit.Case
   use Divo
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [dataset_extract_start: 0]
+  import SmartCity.Event, only: [dataset_update: 0]
   alias SmartCity.TestDataGenerator, as: TDG
 
   @dataset_id "ds1"
@@ -17,7 +17,7 @@ defmodule Valkyrie.DatasetMutationTest do
 
     data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"age" => "21"})
 
-    Brook.Event.send(dataset_extract_start(), :author, dataset)
+    Brook.Event.send(dataset_update(), :author, dataset)
     TestHelpers.wait_for_topic(@endpoints, @input_topic)
 
     Elsa.produce(@endpoints, @input_topic, Jason.encode!(data1), partition: 0)
@@ -36,7 +36,7 @@ defmodule Valkyrie.DatasetMutationTest do
     )
 
     updated_dataset = %{dataset | technical: %{dataset.technical | schema: [%{name: "age", type: "integer"}]}}
-    Brook.Event.send(dataset_extract_start(), :author, updated_dataset)
+    Brook.Event.send(dataset_update(), :author, updated_dataset)
 
     Process.sleep(2_000)
 
