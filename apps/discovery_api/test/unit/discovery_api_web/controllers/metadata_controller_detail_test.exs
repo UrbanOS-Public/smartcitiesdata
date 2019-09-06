@@ -8,11 +8,39 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
 
   describe "fetch dataset detail" do
     test "retrieves dataset + organization from retriever when organization found", %{conn: conn} do
-      model = Helper.sample_model(%{id: @dataset_id})
+      schema = [
+        %{
+          :description => "a number",
+          :name => "number",
+          :type => "integer",
+          :pii => "false",
+          :biased => "false",
+          :masked => "N/A",
+          :demographic => "None"
+        },
+        %{
+          :description => "a name",
+          :name => "name",
+          :type => "string",
+          :pii => "true",
+          :biased => "true",
+          :masked => "yes",
+          :demographic => "Other"
+        }
+      ]
+
+      model =
+        Helper.sample_model(%{id: @dataset_id})
+        |> Map.put(:schema, schema)
 
       allow(Model.get(@dataset_id), return: model)
 
       actual = conn |> get("/api/v1/dataset/#{@dataset_id}") |> json_response(200)
+
+      expected_schema = [
+        %{"name" => "number", "type" => "integer", "description" => "a number"},
+        %{"name" => "name", "type" => "string", "description" => "a name"}
+      ]
 
       assert %{
                "id" => model.id,
@@ -27,7 +55,7 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
                  "description" => model.organizationDetails.description,
                  "homepage" => model.organizationDetails.homepage
                },
-               "schema" => Helper.stringify_keys(model.schema),
+               "schema" => expected_schema,
                "sourceType" => model.sourceType,
                "sourceFormat" => model.sourceFormat,
                "sourceUrl" => model.sourceUrl,
