@@ -38,11 +38,11 @@ defmodule Odo.Integration.OdoTest do
       Brook.Event.send(file_upload(), :odo, file_event)
 
       eventually(fn ->
-        fileResp =
+        file_resp =
           ExAws.S3.get_object(@bucket, new_key)
           |> ExAws.request()
 
-        assert {:ok, %{body: body}} = fileResp
+        assert {:ok, %{body: body}} = file_resp
         assert body != nil
 
         [actual_event] =

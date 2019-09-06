@@ -13,14 +13,14 @@ defmodule Odo.Unit.ConversionMapTest do
 
     expected =
       {:ok,
-       %{
+       %Odo.ConversionMap{
          bucket: "hosted-files",
          original_key: "my-org/my-dataset.shapefile",
          converted_key: "my-org/my-dataset.geojson",
          download_path: "tmp/111.shapefile",
          converted_path: "tmp/111.geojson",
          conversion: &Geomancer.geo_json/1,
-         id: 111
+         dataset_id: 111
        }}
 
     result = Odo.ConversionMap.generate(file_event)

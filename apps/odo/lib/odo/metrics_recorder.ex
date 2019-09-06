@@ -1,4 +1,7 @@
 defmodule Odo.MetricsRecorder do
+  @moduledoc """
+  Main interface for recording app metrics
+  """
   require Logger
 
   @metric_collector Application.get_env(:odo, :collector)
