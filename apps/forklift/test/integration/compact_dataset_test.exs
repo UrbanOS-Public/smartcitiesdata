@@ -3,7 +3,7 @@ defmodule Forklift.CompactDatasetTest do
   use Divo
   require Logger
 
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0]
 
   @module_user "carpenter"
 
@@ -27,7 +27,7 @@ defmodule Forklift.CompactDatasetTest do
 
     %{active: initial_ingest_count} = DynamicSupervisor.count_children(Forklift.Dynamic.Supervisor)
 
-    Brook.Event.send(dataset_update(), :author, dataset)
+    Brook.Event.send(data_ingest_start(), :author, dataset)
 
     eventually(fn ->
       refute match?(%{active: ^initial_ingest_count}, DynamicSupervisor.count_children(Forklift.Dynamic.Supervisor))
@@ -56,7 +56,7 @@ defmodule Forklift.CompactDatasetTest do
     |> Prestige.execute(user: @module_user)
     |> Prestige.prefetch()
 
-    Brook.Event.send(dataset_update(), :author, dataset)
+    Brook.Event.send(data_ingest_start(), :author, dataset)
 
     eventually(fn ->
       assert child_pid(DatasetSupervisor, schema) in DynamicSupervisor.which_children(Forklift.Dynamic.Supervisor)
@@ -98,7 +98,7 @@ defmodule Forklift.CompactDatasetTest do
     |> Prestige.execute(user: @module_user)
     |> Prestige.prefetch()
 
-    Brook.Event.send(dataset_update(), :author, dataset)
+    Brook.Event.send(data_ingest_start(), :author, dataset)
 
     eventually(fn ->
       assert child_pid(DatasetSupervisor, schema) in DynamicSupervisor.which_children(Forklift.Dynamic.Supervisor)
@@ -144,7 +144,7 @@ defmodule Forklift.CompactDatasetTest do
     |> Prestige.execute(user: @module_user)
     |> Prestige.prefetch()
 
-    Brook.Event.send(dataset_update(), :author, dataset)
+    Brook.Event.send(data_ingest_start(), :author, dataset)
 
     eventually(fn ->
       assert child_pid(DatasetSupervisor, schema) in DynamicSupervisor.which_children(Forklift.Dynamic.Supervisor)
@@ -176,7 +176,7 @@ defmodule Forklift.CompactDatasetTest do
 
     schema = DatasetSchema.from_dataset(dataset)
 
-    Brook.Event.send(dataset_update(), :author, dataset)
+    Brook.Event.send(data_ingest_start(), :author, dataset)
 
     eventually(fn ->
       assert child_pid(DatasetSupervisor, schema) in DynamicSupervisor.which_children(Forklift.Dynamic.Supervisor)

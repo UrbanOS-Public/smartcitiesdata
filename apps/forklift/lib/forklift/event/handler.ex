@@ -4,9 +4,9 @@ defmodule Forklift.Event.Handler do
 
   alias SmartCity.Dataset
   alias Forklift.Datasets.{DatasetHandler, DatasetSchema}
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0]
 
-  def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = dataset}) do
+  def handle_event(%Brook.Event{type: data_ingest_start(), data: %Dataset{} = dataset}) do
     with schema = %DatasetSchema{} <- DatasetSchema.from_dataset(dataset),
          {:ok, _} <- DatasetHandler.start_dataset_ingest(schema) do
       {:merge, :datasets_to_process, schema.id, schema}
