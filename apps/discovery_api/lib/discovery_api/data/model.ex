@@ -49,7 +49,7 @@ defmodule DiscoveryApi.Data.Model do
   def get_all() do
     (@name_space <> "*")
     |> Persistence.get_all()
-    |> Enum.map(&struct_from_map/1)
+    |> Enum.map(&build_model/1)
   end
 
   def get_all(ids) do

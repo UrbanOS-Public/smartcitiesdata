@@ -38,14 +38,25 @@ defmodule DiscoveryApi.Data.PersistenceTest do
       allow Redix.command!(:redix, ["KEYS", any()]), return: ["key", "keyb"]
       allow Redix.command!(:redix, ["MGET" | any()]), return: [~s|{"item": 1}|, nil, ~s|{"item": 2}|]
 
-      assert Persistence.get_all("redis_key") == [%{item: 1}, nil, %{item: 2}]
+      actual = Persistence.get_all("redis_key") |> Enum.map(&safe_json_decode/1)
+
+      assert actual == [%{item: 1}, nil, %{item: 2}]
     end
 
     test "can filter out nils" do
       allow Redix.command!(:redix, ["KEYS", any()]), return: ["key", "keyb"]
       allow Redix.command!(:redix, ["MGET" | any()]), return: [~s|{"item": 1}|, nil, ~s|{"item": 2}|]
 
-      assert Persistence.get_all("redis_key", true) == [%{item: 1}, %{item: 2}]
+      actual = Persistence.get_all("redis_key", true) |> Enum.map(&safe_json_decode/1)
+
+      assert actual == [%{item: 1}, %{item: 2}]
+    end
+  end
+
+  defp safe_json_decode(json) do
+    case json do
+      nil -> nil
+      decode -> Jason.decode!(decode, keys: :atoms)
     end
   end
 end

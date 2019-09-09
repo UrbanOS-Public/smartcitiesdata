@@ -76,17 +76,38 @@ defmodule DiscoveryApi.Data.ModelTest do
       assert result.lastUpdatedDate == "2019-06-27T00:00:00.000000Z"
     end
 
-    test "get_many/1" do
+    test "get_all/1" do
       paul = generate_model_return("Paul", ~D(1970-01-01), "remote")
       richard = generate_model_return("Richard", ~D(2001-09-09), "ingest")
+      cam = generate_model_return("Cam", ~D(2000-09-09), "ingest")
 
       allow(Persistence.get(is(fn arg -> String.starts_with?(arg, "discovery-api:stats:") end)), return: nil)
       allow(Persistence.get_keys(any()), return: [])
       allow(Persistence.get("forklift:last_insert_date:Paul"), return: "2019-07-27T00:00:00.000000Z")
       allow(Persistence.get("forklift:last_insert_date:Richard"), return: "2019-08-27T00:00:00.000000Z")
+      allow(Persistence.get("forklift:last_insert_date:Cam"), return: "2019-08-27T00:00:00.000000Z")
       allow(Persistence.get_many(any()), return: [paul, richard])
 
       results = Model.get_all(["Paul", "Richard"])
+      assert length(results) == 2
+      assert List.first(results).lastUpdatedDate == "2019-07-27T00:00:00.000000Z"
+      assert List.last(results).lastUpdatedDate == "2019-08-27T00:00:00.000000Z"
+    end
+
+    test "get_all/0" do
+      paul = generate_model_return("Paul", ~D(1970-01-01), "remote")
+      richard = generate_model_return("Richard", ~D(2001-09-09), "ingest")
+      cam = generate_model_return("Cam", ~D(2000-09-09), "ingest")
+
+      allow(Persistence.get(is(fn arg -> String.starts_with?(arg, "discovery-api:stats:") end)), return: nil)
+      allow(Persistence.get_keys(any()), return: [])
+      allow(Persistence.get("forklift:last_insert_date:Paul"), return: "2019-07-27T00:00:00.000000Z")
+      allow(Persistence.get("forklift:last_insert_date:Richard"), return: "2019-08-27T00:00:00.000000Z")
+      allow(Persistence.get("forklift:last_insert_date:Cam"), return: "2019-08-27T00:00:00.000000Z")
+      allow(Persistence.get_all(any()), return: [paul, richard, cam])
+
+      results = Model.get_all()
+      assert length(results) == 3
       assert List.first(results).lastUpdatedDate == "2019-07-27T00:00:00.000000Z"
       assert List.last(results).lastUpdatedDate == "2019-08-27T00:00:00.000000Z"
     end
