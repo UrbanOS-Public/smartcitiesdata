@@ -27,7 +27,6 @@ defmodule Reaper.FileIngest.Processor do
       |> upload(filename)
 
     send_event(dataset, filename)
-    record_last_fetched_timestamp(dataset.id, generated_time_stamp)
   rescue
     error ->
       Logger.error("Unable to continue processing dataset #{inspect(dataset)} - Error #{inspect(error)}")

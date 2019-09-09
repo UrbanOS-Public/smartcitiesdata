@@ -7,6 +7,7 @@ defmodule Reaper.Application do
   def redis_client(), do: :redix
 
   def start(_type, _args) do
+
     children =
       [
         libcluster(),
@@ -16,8 +17,8 @@ defmodule Reaper.Application do
         {Reaper.Horde.NodeListener, hordes: [Reaper.Horde.Supervisor, Reaper.Horde.Registry, Reaper.Cache.Registry]},
         Reaper.Quantum.Storage,
         Reaper.Scheduler,
-        Reaper.ConfigServer,
         redis(),
+        Reaper.Migrations,
         {Brook, Application.get_env(:reaper, :brook)},
         Reaper.Init
       ]

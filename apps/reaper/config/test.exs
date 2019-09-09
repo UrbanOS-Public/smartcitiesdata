@@ -12,7 +12,8 @@ config :reaper,
   output_topic_prefix: "raw",
   produce_retries: 2,
   produce_timeout: 10,
-  secrets_endpoint: "http://vault:8200"
+  secrets_endpoint: "http://vault:8200",
+  hosted_file_bucket: "hosted-dataset-files"
 
 config :reaper, :brook,
   driver: [
@@ -24,4 +25,4 @@ config :reaper, :brook,
     module: Brook.Storage.Ets,
     init_arg: []
   ],
-  hosted_file_bucket: "hosted-dataset-files"
+  dispatcher: Brook.Dispatcher.Noop

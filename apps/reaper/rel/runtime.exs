@@ -65,7 +65,8 @@ config :reaper, :brook,
       redix_args: [host: redis_host],
       namespace: "reaper:view"
     ]
-  ]
+  ],
+  dispatcher: Brook.Dispatcher.Noop
 
 config :reaper, Reaper.Scheduler,
   storage: Reaper.Quantum.Storage
