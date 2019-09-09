@@ -18,14 +18,14 @@ defmodule Odo.Unit.FileProcessorTest do
       meck_options: [:passthrough]
     )
 
-    conversion_map = %{
+    conversion_map = %Odo.ConversionMap{
       bucket: "hosted-files",
       original_key: "my-org/my-dataset.shapefile",
       converted_key: "my-org/my-dataset.geojson",
       download_path: "tmp/111.shapefile",
       converted_path: "tmp/111.geojson",
       conversion: &Geomancer.geo_json/1,
-      id: 111
+      dataset_id: 111
     }
 
     %{conversion_map: conversion_map}
@@ -48,7 +48,7 @@ defmodule Odo.Unit.FileProcessorTest do
     test "sends the file_upload event", %{conversion_map: conversion_map} do
       {:ok, expected_event} =
         HostedFile.new(%{
-          dataset_id: conversion_map.id,
+          dataset_id: conversion_map.dataset_id,
           mime_type: "application/geo+json",
           bucket: conversion_map.bucket,
           key: conversion_map.converted_key
@@ -64,7 +64,7 @@ defmodule Odo.Unit.FileProcessorTest do
 
     test "records correct metrics", %{conversion_map: conversion_map} do
       expected_dimensions = [
-        dataset_id: conversion_map.id,
+        dataset_id: conversion_map.dataset_id,
         file: conversion_map.original_key,
         start: DateTime.to_unix(@time)
       ]
@@ -102,7 +102,7 @@ defmodule Odo.Unit.FileProcessorTest do
       assert capture_log(fn ->
                assert Odo.FileProcessor.process(conversion_map) ==
                         {:error,
-                         "File upload failed for dataset #{conversion_map.id}: Error downloading file for #{
+                         "File upload failed for dataset #{conversion_map.dataset_id}: Error downloading file for #{
                            conversion_map.bucket
                          }/#{conversion_map.original_key}: econnrefused"}
              end) =~ "econnrefused"
@@ -112,7 +112,7 @@ defmodule Odo.Unit.FileProcessorTest do
       Odo.FileProcessor.process(conversion_map)
 
       expected_dimensions = [
-        dataset_id: conversion_map.id,
+        dataset_id: conversion_map.dataset_id,
         file: conversion_map.original_key,
         start: DateTime.to_unix(@time)
       ]
