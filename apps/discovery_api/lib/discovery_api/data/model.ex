@@ -56,13 +56,17 @@ defmodule DiscoveryApi.Data.Model do
     ids
     |> Enum.map(fn id -> @name_space <> id end)
     |> Persistence.get_many()
-    |> Enum.map(&map_from_json/1)
-    |> Enum.map(&struct_from_map/1)
+    |> Enum.map(&build_model/1)
   end
 
   def get(id) do
     (@name_space <> id)
     |> Persistence.get()
+    |> build_model()
+  end
+
+  defp build_model(proto_model) do
+    proto_model
     |> map_from_json()
     |> struct_from_map()
     |> add_last_updated_date_to_struct()

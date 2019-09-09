@@ -93,6 +93,11 @@ defmodule DiscoveryApi.Data.ModelTest do
     [model1, model2, model3]
     |> Enum.each(fn model -> Redix.command!(:redix, ["SET", "discovery-api:model:#{model.id}", to_json(model)]) end)
 
+    [model1, model2, model3]
+    |> Enum.each(fn model ->
+      Redix.command!(:redix, ["SET", "discovery-api:stats:#{model.id}", Jason.encode!(%{completeness: model.completeness})])
+    end)
+
     results = Model.get_all([model1.id, model3.id])
     assert model1 in results
     assert model3 in results
