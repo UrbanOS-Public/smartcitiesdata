@@ -50,7 +50,7 @@ defmodule Reaper.FullTest do
         TDG.create_dataset(%{
           id: @pre_existing_dataset_id,
           technical: %{
-            cadence: 1_000,
+            cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
             sourceFormat: "json",
             schema: [
@@ -61,8 +61,6 @@ defmodule Reaper.FullTest do
             ]
           }
         })
-
-      Elsa.create_topic(@endpoints, "#{@output_topic_prefix}-#{@pre_existing_dataset_id}")
 
       Brook.Event.send(dataset_update(), :reaper, pre_existing_dataset)
       :ok
@@ -132,7 +130,6 @@ defmodule Reaper.FullTest do
         })
 
       Brook.Event.send(dataset_update(), :reaper, pre_existing_dataset)
-      Elsa.create_topic(@endpoints, "#{@output_topic_prefix}-#{@partial_load_dataset_id}")
       :ok
     end
 
@@ -142,8 +139,8 @@ defmodule Reaper.FullTest do
 
       eventually(
         fn ->
-          {:ok, latest_offset} = :brod.resolve_offset(@brod_endpoints, topic, 0)
-          assert latest_offset == 10_000
+          result = :brod.resolve_offset(@brod_endpoints, topic, 0)
+          assert {:ok, 10_000} == result
         end,
         2_000,
         50
@@ -165,14 +162,13 @@ defmodule Reaper.FullTest do
         TDG.create_dataset(%{
           id: dataset_id,
           technical: %{
-            cadence: 1_000,
+            cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/#{@gtfs_file_name}",
             sourceFormat: "gtfs"
           }
         })
 
       Brook.Event.send(dataset_update(), :reaper, gtfs_dataset)
-      Elsa.create_topic(@endpoints, topic)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
@@ -189,14 +185,13 @@ defmodule Reaper.FullTest do
         TDG.create_dataset(%{
           id: dataset_id,
           technical: %{
-            cadence: 1_000,
+            cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
             sourceFormat: "json"
           }
         })
 
       Brook.Event.send(dataset_update(), :reaper, json_dataset)
-      Elsa.create_topic(@endpoints, topic)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
@@ -222,7 +217,6 @@ defmodule Reaper.FullTest do
         })
 
       Brook.Event.send(dataset_update(), :reaper, csv_dataset)
-      Elsa.create_topic(@endpoints, topic)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
@@ -248,6 +242,8 @@ defmodule Reaper.FullTest do
 
       Brook.Event.send(dataset_update(), :reaper, hosted_dataset)
 
+      Process.sleep(5_000)
+
       eventually(fn ->
         expected = File.read!("test/support/#{@csv_file_name}")
 
@@ -268,37 +264,7 @@ defmodule Reaper.FullTest do
       end)
 
       {:ok, _, messages} = Elsa.fetch(@endpoints, "event-stream", partition: 0)
-      assert Enum.any?(messages, fn %Elsa.Message{key: key} -> key == "file:upload" end)
-    end
-
-    test "saves last_success_time to redis", %{bypass: bypass} do
-      dataset_id = "12345-5555"
-
-      gtfs_dataset =
-        TDG.create_dataset(%{
-          id: dataset_id,
-          technical: %{
-            cadence: 1_000,
-            sourceUrl: "http://localhost:#{bypass.port}/#{@gtfs_file_name}",
-            sourceFormat: "gtfs"
-          }
-        })
-
-      Brook.Event.send(dataset_update(), :reaper, gtfs_dataset)
-      Elsa.create_topic(@endpoints, "#{@output_topic_prefix}-#{dataset_id}")
-
-      eventually(fn ->
-        {:ok, result} = Redix.command(:redix, ["GET", "reaper:derived:#{dataset_id}"])
-        assert result != nil
-
-        timestamp =
-          result
-          |> Jason.decode!()
-          |> Map.get("timestamp")
-          |> DateTime.from_iso8601()
-
-        assert {:ok, date_time_from_redis, 0} = timestamp
-      end)
+      assert Enum.any?(messages, fn %Elsa.Message{key: key} -> key == "file:ingest:end" end)
     end
   end
 
@@ -308,6 +274,7 @@ defmodule Reaper.FullTest do
       :ok
     end
 
+    @tag timeout: 120_000
     test "cadence of once is only processed once", %{bypass: bypass} do
       dataset_id = "only-once"
       topic = "#{@output_topic_prefix}-#{dataset_id}"
@@ -325,7 +292,6 @@ defmodule Reaper.FullTest do
         })
 
       Brook.Event.send(dataset_update(), :reaper, csv_dataset)
-      Elsa.create_topic(@endpoints, topic)
 
       eventually(
         fn ->
@@ -336,13 +302,6 @@ defmodule Reaper.FullTest do
         1_000,
         60
       )
-
-      eventually(fn ->
-        data_feed_status =
-          Horde.Registry.lookup({:via, Horde.Registry, {Reaper.Horde.Registry, String.to_atom(dataset_id <> "_feed")}})
-
-        assert data_feed_status == :undefined
-      end)
     end
   end
 
@@ -355,7 +314,7 @@ defmodule Reaper.FullTest do
         TDG.create_dataset(%{
           id: dataset_id,
           technical: %{
-            cadence: 1_000,
+            cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/#{@nested_data_file_name}",
             sourceFormat: "json",
             schema: [
@@ -376,7 +335,6 @@ defmodule Reaper.FullTest do
         })
 
       Brook.Event.send(dataset_update(), :reaper, json_dataset)
-      Elsa.create_topic(@endpoints, topic)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)

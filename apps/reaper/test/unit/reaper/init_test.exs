@@ -3,6 +3,7 @@ defmodule Reaper.InitTest do
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
+  import SmartCity.TestHelper
 
   setup do
     {:ok, horde_supervisor} = Horde.Supervisor.start_link(name: Reaper.Horde.Supervisor, strategy: :one_for_one)
@@ -27,7 +28,9 @@ defmodule Reaper.InitTest do
 
       Reaper.Init.run()
 
-      assert_called Reaper.DataExtract.Processor.process(dataset)
+      eventually(fn ->
+        assert_called Reaper.DataExtract.Processor.process(dataset)
+      end)
     end
 
     test "does not start successfully completed extract processes" do
@@ -65,7 +68,9 @@ defmodule Reaper.InitTest do
 
       Reaper.Init.run()
 
-      assert_called Reaper.DataExtract.Processor.process(dataset)
+      eventually(fn ->
+        assert_called Reaper.DataExtract.Processor.process(dataset)
+      end)
     end
   end
 
@@ -82,7 +87,9 @@ defmodule Reaper.InitTest do
 
       Reaper.Init.run()
 
-      assert_called Reaper.FileIngest.Processor.process(dataset)
+      eventually(fn ->
+        assert_called Reaper.FileIngest.Processor.process(dataset)
+      end)
     end
 
     test "does not start successfully completed ingest processes" do
@@ -120,7 +127,9 @@ defmodule Reaper.InitTest do
 
       Reaper.Init.run()
 
-      assert_called Reaper.FileIngest.Processor.process(dataset)
+      eventually(fn ->
+        assert_called Reaper.FileIngest.Processor.process(dataset)
+      end)
     end
   end
 

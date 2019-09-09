@@ -31,13 +31,11 @@ defmodule Reaper.YeetTest do
       max_tries: 20
     )
 
-    Elsa.create_topic(@endpoints, @success_topic)
-
     json_dataset =
       TDG.create_dataset(%{
         id: @dataset_id,
         technical: %{
-          cadence: 1_000,
+          cadence: "once",
           sourceUrl: "http://localhost:#{bypass.port}/#{@invalid_json_file}",
           sourceFormat: "json"
         }

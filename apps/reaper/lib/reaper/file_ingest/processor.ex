@@ -10,7 +10,6 @@ defmodule Reaper.FileIngest.Processor do
   alias Reaper.{
     UrlBuilder,
     DataSlurper,
-    Persistence
   }
 
   @doc """
@@ -18,7 +17,6 @@ defmodule Reaper.FileIngest.Processor do
   """
   def process(%SmartCity.Dataset{} = dataset) do
     filename = get_filename(dataset)
-    generated_time_stamp = DateTime.utc_now()
 
     _something =
       dataset
@@ -64,9 +62,5 @@ defmodule Reaper.FileIngest.Processor do
          technical: %{orgName: org_name, dataName: data_name, sourceFormat: source_format}
        }) do
     "#{org_name}/#{data_name}.#{source_format}"
-  end
-
-  defp record_last_fetched_timestamp(dataset_id, timestamp) do
-    Persistence.record_last_fetched_timestamp(dataset_id, timestamp)
   end
 end

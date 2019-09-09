@@ -7,6 +7,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
   alias SmartCity.HostedFile
 
   alias SmartCity.TestDataGenerator, as: TDG
+  import SmartCity.Event, only: [file_ingest_end: 0]
 
   @dataset_id "12345"
   @bucket Application.get_env(:reaper, :hosted_file_bucket)
@@ -16,8 +17,6 @@ defmodule Reaper.FileIngest.ProcessorTest do
 
   setup do
     expect ExAws.request(any()), return: {:ok, :done}, meck_options: [:passthrough]
-
-    expect Persistence.record_last_fetched_timestamp("12345", any()), return: :ok
 
     dataset =
       TDG.create_dataset(
@@ -52,7 +51,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
         key: "#{dataset.technical.orgName}/#{dataset.technical.dataName}.#{dataset.technical.sourceFormat}"
       }
 
-      assert_called Brook.Event.send("file:upload", :reaper, expected_file_upload)
+      assert_called Brook.Event.send(file_ingest_end(), :reaper, expected_file_upload)
     end
   end
 end

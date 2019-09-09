@@ -89,7 +89,7 @@ defmodule Reaper.DataExtract.Processor do
   end
 
   defp create_topic(topic) do
-    :ok = Elsa.create_topic(endpoints(), topic)
+    Elsa.create_topic(endpoints(), topic)
   end
 
   defp start_topic_producer(topic) do

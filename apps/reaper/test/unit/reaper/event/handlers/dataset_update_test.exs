@@ -21,8 +21,8 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
 
       where([
         [:source_type, :event],
-        ["ingest", "dataset:extract:start"],
-        ["host", "hosted:file:start"]
+        ["ingest", "data:extract:start"],
+        ["host", "file:ingest:start"]
       ])
     end
 
@@ -37,8 +37,8 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
 
       where([
         [:source_type, :event],
-        ["ingest", "dataset:extract:start"],
-        ["host", "hosted:file:start"]
+        ["ingest", "data:extract:start"],
+        ["host", "file:ingest:start"]
       ])
     end
 
@@ -60,8 +60,8 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
 
       where([
         [:source_type, :event],
-        ["ingest", "dataset:extract:start"],
-        ["host", "hosted:file:start"]
+        ["ingest", "data:extract:start"],
+        ["host", "file:ingest:start"]
       ])
     end
 
