@@ -2,7 +2,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   @moduledoc false
   require Logger
 
-  import SmartCity.Event, only: [dataset_extract_start: 0, hosted_file_start: 0]
+  import SmartCity.Event, only: [data_extract_start: 0, file_ingest_start: 0]
 
   alias Quantum.Job
   alias Reaper.Collections.Extractions
@@ -57,10 +57,10 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   end
 
   defp determine_event(%SmartCity.Dataset{technical: %{sourceType: "host"}}) do
-    hosted_file_start()
+    file_ingest_start()
   end
 
   defp determine_event(_) do
-    dataset_extract_start()
+    data_extract_start()
   end
 end
