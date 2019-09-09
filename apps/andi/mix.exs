@@ -4,7 +4,11 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "1.0.0-static",
+      version: "0.3.2",
+      build_path: "../../_build",
+      config_path: "../../config/config.exs",
+      deps_path: "../../deps",
+      lockfile: "../../mix.lock",
       elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: Mix.env() |> test_paths(),
@@ -31,16 +35,14 @@ defmodule Andi.MixProject do
     [
       {:brook, "~> 0.1.2"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
-      # distillery breaks @ 2.1.0 due to elixir 1.9 support
-      {:distillery, "2.0.14"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1.4", only: [:dev, :integration]},
       {:gettext, "~> 0.11"},
-      {:husky, "~> 1.0", only: :dev, runtime: false},
       {:jason, "~> 1.1"},
       {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
       {:paddle, "~> 0.1"},
+      {:sobelow, "~> 0.8", only: :dev},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
@@ -50,9 +52,10 @@ defmodule Andi.MixProject do
       {:smart_city, "~> 2.7"},
       {:smart_city_registry, "~> 5.0"},
       {:smart_city_test, "~> 0.5", only: [:test, :integration]},
-      {:sobelow, "~> 0.8", only: :dev},
       {:tesla, "~> 1.2", only: :integration},
-      {:uuid, "~> 1.1"}
+      {:uuid, "~> 1.1"},
+      {:distillery, "~> 2.1"},
+      {:tasks, in_umbrella: true, only: :dev}
     ]
   end
 end
