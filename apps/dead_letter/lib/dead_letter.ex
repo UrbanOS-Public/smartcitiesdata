@@ -1,5 +1,5 @@
-defmodule Yeet do
-  alias Yeet.KafkaHelper
+defmodule DeadLetter do
+  alias DeadLetter.KafkaDriver
 
   defimpl Jason.Encoder, for: Tuple do
     def encode(value, opts) do
@@ -18,15 +18,15 @@ defmodule Yeet do
   @doc """
   Given a message with a dataset id and app name, send a message to the dead letter queue that contains that message, along with additional metadata.
   """
-  @spec process_dead_letter(String.t(), any(), String.t(), keyword()) :: :ok | {:error, any()}
-  def process_dead_letter(dataset_id, message, app_name, options \\ []) do
+  @spec process(String.t(), any(), String.t(), keyword()) :: :ok | {:error, any()}
+  def process(dataset_id, message, app_name, options \\ []) do
     dead_letter =
       message
       |> sanitize_message()
       |> format_message(dataset_id, app_name, options)
 
-    Logger.info(fn -> "Yeeting: #{inspect(dead_letter)}" end)
-    KafkaHelper.produce(dead_letter)
+    Logger.info(fn -> "Enqueueing dead letter: #{inspect(dead_letter)}" end)
+    KafkaDriver.produce(dead_letter)
   end
 
   @doc """

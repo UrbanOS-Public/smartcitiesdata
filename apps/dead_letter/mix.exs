@@ -1,9 +1,9 @@
-defmodule Yeet.MixProject do
+defmodule DeadLetter.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :yeet,
+      app: :dead_letter,
       version: "1.0.7",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
@@ -11,7 +11,7 @@ defmodule Yeet.MixProject do
       docs: docs(),
       description: description(),
       package: package(),
-      source_url: "https://www.github.com/smartcitiesdata/yeet"
+      source_url: "https://www.github.com/smartcitiesdata/dead_letter"
     ]
   end
 
@@ -28,7 +28,7 @@ defmodule Yeet.MixProject do
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:ex_doc, "~> 0.19", only: :dev},
       {:jason, "~> 1.1"},
-      {:brod, "~> 3.7"},
+      {:elsa, "~> 0.8"},
       {:husky, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
@@ -41,14 +41,14 @@ defmodule Yeet.MixProject do
     [
       maintainers: ["smartcitiesdata"],
       licenses: ["Apache 2.0"],
-      links: %{"GitHub" => "https://www.github.com/smartcitiesdata/yeet"}
+      links: %{"GitHub" => "https://www.github.com/smartcitiesdata/dead_letter"}
     ]
   end
 
   defp docs do
     [
       main: "readme",
-      source_url: "https://www.github.com/smartcitiesdata/yeet",
+      source_url: "https://www.github.com/smartcitiesdata/dead_letter",
       extras: [
         "README.md"
       ]
