@@ -18,9 +18,8 @@ defmodule Forklift.Event.Handler do
   end
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = dataset}) do
-    case DatasetHandler.update_dataset(dataset) do
-      :ok -> :discard
-      {:error, _reason} -> :discard
-    end
+    DatasetHandler.update_dataset(dataset)
+
+    :discard
   end
 end

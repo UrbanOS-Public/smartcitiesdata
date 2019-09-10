@@ -30,10 +30,10 @@ defmodule Forklift.Datasets.DatasetHandler do
   end
 
   def update_dataset(dataset) do
-    cond do
-      Dataset.is_ingest?(dataset) -> TableCreator.create_table(dataset)
-      Dataset.is_stream?(dataset) -> TableCreator.create_table(dataset)
-      true -> :ok
+    create_table_for_dataset = Dataset.is_ingest?(dataset) || Dataset.is_stream?(dataset)
+
+    if create_table_for_dataset do
+      TableCreator.create_table(dataset)
     end
   end
 end
