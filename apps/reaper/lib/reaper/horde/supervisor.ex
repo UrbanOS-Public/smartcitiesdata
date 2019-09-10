@@ -22,6 +22,7 @@ defmodule Reaper.Horde.Supervisor do
 
   def start_data_extract(%SmartCity.Dataset{} = dataset) do
     Logger.debug(fn -> "#{__MODULE__} Start data extract process for dataset #{dataset.id}" end)
+
     send_extract_complete_event = fn ->
       Brook.Event.send(data_extract_end(), :reaper, dataset)
     end
