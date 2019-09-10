@@ -65,6 +65,32 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
       ])
     end
 
+    data_test "adds job to quantum with schedule of #{schedule} when cadence is #{cadence}" do
+      allow Reaper.Scheduler.add_job(any()), return: :ok, meck_options: [:passthrough]
+      allow Reaper.Scheduler.delete_job(any()), return: :ok, meck_options: [:passthrough]
+      dataset = TDG.create_dataset(id: "ds2", technical: %{cadence: cadence, sourceType: "ingest"})
+
+      assert :ok == DatasetUpdate.handle(dataset)
+
+      {:ok, cron_expression} = Crontab.CronExpression.Parser.parse(schedule)
+
+      job =
+        Reaper.Scheduler.new_job()
+        |> Job.set_name(:ds2)
+        |> Job.set_schedule(cron_expression)
+        |> Job.set_task({Brook.Event, :send, ["data:extract:start", :reaper, dataset]})
+
+      assert_called Reaper.Scheduler.add_job(job)
+
+      where([
+        [:cadence, :schedule],
+        [86_400_000, "0 6 * * *"],
+        [3_600_000, "0 * * * *"],
+        [30_000, "*/30 * * * *"],
+        [10_000, "*/10 * * * *"]
+      ])
+    end
+
     test "logs message when crontab is unable to be parsed" do
       allow Reaper.Scheduler.add_job(any()), return: :ok, meck_options: [:passthrough]
       dataset = TDG.create_dataset(id: "ds2", technical: %{cadence: "once per minute", sourceType: "ingest"})

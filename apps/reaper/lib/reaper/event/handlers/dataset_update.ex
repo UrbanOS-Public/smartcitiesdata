@@ -7,6 +7,13 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   alias Quantum.Job
   alias Reaper.Collections.Extractions
 
+  @cron_conversions %{
+    86_400_000 => "0 6 * * *",
+    3_600_000 => "0 * * * *",
+    30_000 => "*/30 * * * *",
+    10_000 => "*/10 * * * *"
+  }
+
   def handle(%SmartCity.Dataset{technical: %{cadence: "never"}}) do
     :ok
   end
@@ -27,6 +34,13 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
     end
 
     :ok
+  end
+
+  defp parse_cron(cron_int) when is_integer(cron_int) do
+    case Map.get(@cron_conversions, cron_int) do
+      nil -> {:error, "#Unable to convert cadence #{cron_int} to a valid cron expression: Ignoring dataset"}
+      expression -> parse_cron(expression)
+    end
   end
 
   defp parse_cron(cron_string) do

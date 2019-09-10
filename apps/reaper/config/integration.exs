@@ -42,7 +42,8 @@ config :reaper, :brook,
       topic: "event-stream",
       group: "reaper-events",
       config: [
-        begin_offset: :earliest
+        begin_offset: :earliest,
+        offset_reset_policy: :reset_to_earliest
       ]
     ]
   ],

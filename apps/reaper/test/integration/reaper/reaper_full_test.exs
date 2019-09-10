@@ -42,10 +42,13 @@ defmodule Reaper.FullTest do
     {:ok, bypass: bypass}
   end
 
+  setup do
+    Redix.command(:redix, ["FLUSHALL"])
+    :ok
+  end
+
   describe "pre-existing dataset" do
     setup %{bypass: bypass} do
-      Redix.command(:redix, ["FLUSHALL"])
-
       pre_existing_dataset =
         TDG.create_dataset(%{
           id: @pre_existing_dataset_id,
@@ -91,7 +94,6 @@ defmodule Reaper.FullTest do
 
   describe "partial-existing dataset" do
     setup %{bypass: bypass} do
-      Redix.command(:redix, ["FLUSHALL"])
       {:ok, pid} = Agent.start_link(fn -> %{has_raised: false, invocations: 0} end)
 
       allow Elsa.Producer.produce_sync(any(), any(), any()),
@@ -149,11 +151,6 @@ defmodule Reaper.FullTest do
   end
 
   describe "No pre-existing datasets" do
-    setup do
-      Redix.command(:redix, ["FLUSHALL"])
-      :ok
-    end
-
     test "configures and ingests a gtfs source", %{bypass: bypass} do
       dataset_id = "12345-6789"
       topic = "#{@output_topic_prefix}-#{dataset_id}"
@@ -269,11 +266,6 @@ defmodule Reaper.FullTest do
   end
 
   describe "One time Ingest" do
-    setup do
-      Redix.command(:redix, ["FLUSHALL"])
-      :ok
-    end
-
     @tag timeout: 120_000
     test "cadence of once is only processed once", %{bypass: bypass} do
       dataset_id = "only-once"
