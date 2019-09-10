@@ -63,6 +63,7 @@ defmodule TestUtils do
   def get_data_messages_from_kafka(topic, endpoints) do
     topic
     |> fetch_messages(endpoints)
+    |> IO.inspect(label: "#{DateTime.utc_now |> DateTime.to_iso8601()} #{topic} - fetch messages")
     |> Enum.map(&SmartCity.Data.new/1)
     |> Enum.map(&elem(&1, 1))
     |> Enum.map(&clear_timing/1)

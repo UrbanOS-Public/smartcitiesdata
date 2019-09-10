@@ -13,6 +13,8 @@ defmodule Reaper.DataExtract.Processor do
 
   alias Reaper.DataExtract.{ValidationStage, SchemaStage, LoadStage}
 
+  use Retry
+
   @min_demand 500
   @max_demand 1_000
 
@@ -90,10 +92,26 @@ defmodule Reaper.DataExtract.Processor do
 
   defp create_topic(topic) do
     Elsa.create_topic(endpoints(), topic)
+
+    retry with: constant_backoff(1_000) |> Stream.take(30), atoms: [false] do
+      Elsa.topic?(endpoints(), topic)
+    after
+      true -> true
+    else
+      _ -> raise "Topic does not exist, everything is terrible!"
+    end
   end
 
   defp start_topic_producer(topic) do
     {:ok, _pid} = Elsa.Producer.Supervisor.start_link(name: :"#{topic}_producer", endpoints: endpoints(), topic: topic)
+
+    retry with: constant_backoff(100) |> Stream.take(25) do
+      :brod.get_producer(:"#{topic}_producer", topic, 0)
+    after
+      {:ok, _pid} -> true
+    else
+      _ -> raise "Cannot verify kafka producer for topic #{topic}"
+    end
   end
 
   defp endpoints(), do: Application.get_env(:reaper, :elsa_brokers)

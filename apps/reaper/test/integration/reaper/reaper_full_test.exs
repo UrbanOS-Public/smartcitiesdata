@@ -51,7 +51,7 @@ defmodule Reaper.FullTest do
     setup %{bypass: bypass} do
       pre_existing_dataset =
         TDG.create_dataset(%{
-          id: @pre_existing_dataset_id,
+          id: "dataset-102",
           technical: %{
             cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
@@ -72,7 +72,7 @@ defmodule Reaper.FullTest do
     test "configures and ingests a json-source that was added before reaper started" do
       expected =
         TestUtils.create_data(%{
-          dataset_id: @pre_existing_dataset_id,
+          dataset_id: "dataset-102",
           payload: %{
             "latitude" => 39.9613,
             "vehicle_id" => 41_015,
@@ -81,7 +81,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      topic = "#{@output_topic_prefix}-#{@pre_existing_dataset_id}"
+      topic = "#{@output_topic_prefix}-dataset-102"
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)

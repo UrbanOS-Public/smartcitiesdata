@@ -3,6 +3,7 @@ defmodule Reaper.Horde.Supervisor do
   Module Based Horde.Supervisor
   """
   use Horde.Supervisor
+  require Logger
 
   import SmartCity.Event, only: [data_extract_end: 0, file_ingest_end: 0]
 
@@ -20,6 +21,7 @@ defmodule Reaper.Horde.Supervisor do
   end
 
   def start_data_extract(%SmartCity.Dataset{} = dataset) do
+    Logger.debug(fn -> "#{__MODULE__} Start data extract process for dataset #{dataset.id}" end)
     send_extract_complete_event = fn ->
       Brook.Event.send(data_extract_end(), :reaper, dataset)
     end

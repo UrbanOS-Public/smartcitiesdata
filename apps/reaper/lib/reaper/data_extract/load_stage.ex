@@ -68,7 +68,7 @@ defmodule Reaper.DataExtract.LoadStage do
 
   defp send_to_kafka(%{dataset: dataset, batch: batch}) do
     topic = "#{topic_prefix()}-#{dataset.id}"
-    Elsa.Producer.produce_sync(topic, Enum.reverse(batch), partition: 0, name: :"#{topic}_producer")
+    :ok = Elsa.Producer.produce_sync(topic, Enum.reverse(batch), partition: 0, name: :"#{topic}_producer")
   end
 
   defp mark_batch_processed(%{dataset: dataset, originals: originals}) do
