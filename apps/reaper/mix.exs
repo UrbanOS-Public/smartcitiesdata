@@ -61,7 +61,6 @@ defmodule Reaper.MixProject do
       {:retry, "~> 0.13"},
       {:sftp_ex, "~> 0.2"},
       {:smart_city, "~> 2.8", override: true},
-      {:smart_city_data, "~> 3.0"},
       {:sweet_xml, "~> 0.6"},
       {:tesla, "~> 1.2"},
       {:timex, "~> 3.0"},
