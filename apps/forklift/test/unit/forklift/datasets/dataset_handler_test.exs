@@ -31,7 +31,7 @@ defmodule Forklift.Datasets.DatasetHandlerTest do
       dataset = FixtureHelper.dataset(id: "id1", technical: %{sourceType: "remote"})
 
       allow(TableCreator.create_table(any()), return: {:ok, :whatever})
-      DatasetHandler.update_dataset(dataset)
+      DatasetHandler.create_table_for_dataset(dataset)
       assert not called?(TableCreator.create_table(any()))
     end
 
@@ -39,7 +39,7 @@ defmodule Forklift.Datasets.DatasetHandlerTest do
       dataset = FixtureHelper.dataset(id: "id1", technical: %{sourceType: "unknown"})
 
       allow(TableCreator.create_table(any()), return: {:ok, :whatever})
-      DatasetHandler.update_dataset(dataset)
+      DatasetHandler.create_table_for_dataset(dataset)
       assert not called?(TableCreator.create_table(any()))
     end
 
@@ -47,7 +47,7 @@ defmodule Forklift.Datasets.DatasetHandlerTest do
       dataset = FixtureHelper.dataset(id: "id1", technical: %{sourceType: "ingest"})
 
       allow(TableCreator.create_table(any()), return: :ok)
-      DatasetHandler.update_dataset(dataset)
+      DatasetHandler.create_table_for_dataset(dataset)
       assert called?(TableCreator.create_table(any()))
     end
 
@@ -55,7 +55,7 @@ defmodule Forklift.Datasets.DatasetHandlerTest do
       dataset = FixtureHelper.dataset(id: "id1", technical: %{sourceType: "stream"})
 
       allow(TableCreator.create_table(any()), return: :ok)
-      DatasetHandler.update_dataset(dataset)
+      DatasetHandler.create_table_for_dataset(dataset)
       assert called?(TableCreator.create_table(any()))
     end
   end

@@ -29,7 +29,7 @@ defmodule Forklift.Datasets.DatasetHandler do
     end
   end
 
-  def update_dataset(dataset) do
+  def create_table_for_dataset(dataset) do
     create_table_for_dataset = Dataset.is_ingest?(dataset) || Dataset.is_stream?(dataset)
 
     if create_table_for_dataset do

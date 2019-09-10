@@ -18,8 +18,6 @@ defmodule Forklift.IntegrationTest do
 
     Brook.Event.send(dataset_update(), :author, dataset)
 
-    # Dataset.write(dataset)
-
     Patiently.wait_for!(
       fn ->
         actual_schema = describe_table("hive.default.#{system_name}")
@@ -80,7 +78,6 @@ defmodule Forklift.IntegrationTest do
       )
 
     Brook.Event.send(dataset_update(), :author, dataset)
-    # Dataset.write(dataset)
 
     expected = [
       %{
