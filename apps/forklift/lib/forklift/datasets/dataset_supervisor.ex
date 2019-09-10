@@ -12,7 +12,8 @@ defmodule Forklift.Datasets.DatasetSupervisor do
   def child_spec(args) do
     schema = Keyword.fetch!(args, :schema)
 
-    super(args)
+    args
+    |> super()
     |> Map.put(:id, name(schema))
   end
 

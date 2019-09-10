@@ -4,7 +4,7 @@ defmodule PersistenceTest do
   use Divo
   use Placebo
   import Record, only: [defrecord: 2, extract: 2]
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0]
 
   alias Forklift.TopicManager
   alias SmartCity.TestDataGenerator, as: TDG
@@ -33,7 +33,7 @@ defmodule PersistenceTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    Brook.Event.send(dataset_update(), :author, dataset)
+    Brook.Event.send(data_ingest_start(), :author, dataset)
     TopicManager.wait_for_topic("integration-ds1")
 
     data = TDG.create_data(dataset_id: "ds1", payload: %{"id" => 1, "name" => "George"})
@@ -64,7 +64,7 @@ defmodule PersistenceTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    Brook.Event.send(dataset_update(), :author, dataset)
+    Brook.Event.send(data_ingest_start(), :author, dataset)
     TopicManager.wait_for_topic("integration-ds3")
 
     data = TDG.create_data(dataset_id: "ds3", payload: %{"id" => 1, "name" => "George"})
@@ -106,7 +106,7 @@ defmodule PersistenceTest do
         }
       )
 
-    Brook.Event.send(dataset_update(), :author, dataset)
+    Brook.Event.send(data_ingest_start(), :author, dataset)
     TopicManager.wait_for_topic("integration-ds2")
 
     data = TDG.create_data(dataset_id: "ds2", payload: %{"id" => 1, "name" => "George"})
@@ -145,7 +145,7 @@ defmodule PersistenceTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    Brook.Event.send(dataset_update(), :author, dataset)
+    Brook.Event.send(data_ingest_start(), :author, dataset)
     TopicManager.wait_for_topic("integration-ds4")
 
     data = TDG.create_data(dataset_id: "ds4", payload: get_complex_nested_data())
@@ -222,7 +222,9 @@ defmodule PersistenceTest do
   end
 
   defp prestige_execute(statement) do
-    Prestige.execute(statement) |> Prestige.prefetch()
+    statement
+    |> Prestige.execute()
+    |> Prestige.prefetch()
   rescue
     e ->
       Logger.warn("Failed querying presto : #{Exception.message(e)}")

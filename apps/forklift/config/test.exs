@@ -1,6 +1,6 @@
 use Mix.Config
 
-config :logger, :level, :warn
+config :logger, :level, :info
 
 config :forklift,
   retry_count: 5,

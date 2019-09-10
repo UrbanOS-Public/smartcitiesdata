@@ -5,7 +5,7 @@ defmodule Forklift.PerformanceTest do
 
   alias Forklift.TopicManager
   alias SmartCity.TestDataGenerator, as: TDG
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0]
   import SmartCity.TestHelper
 
   @moduletag :performance
@@ -52,7 +52,7 @@ defmodule Forklift.PerformanceTest do
     Benchee.run(
       %{
         "kafka" => fn {dataset, expected_count, input_topic, output_topic} = _output_from_before_each ->
-          Brook.Event.send(dataset_update(), :author, dataset)
+          Brook.Event.send(data_ingest_start(), :author, dataset)
 
           eventually(
             fn ->
@@ -190,7 +190,12 @@ defmodule Forklift.PerformanceTest do
   end
 
   defp prepare_messages({key, message}, dataset) do
-    {key, Map.put(message, :dataset_id, dataset.id) |> Jason.encode!()}
+    json =
+      message
+      |> Map.put(:dataset_id, dataset.id)
+      |> Jason.encode!()
+
+    {key, json}
   end
 
   defp spawn_producer_chunk(chunk, topic, producer_name) do
