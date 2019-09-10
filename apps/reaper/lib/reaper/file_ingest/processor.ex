@@ -9,7 +9,7 @@ defmodule Reaper.FileIngest.Processor do
 
   alias Reaper.{
     UrlBuilder,
-    DataSlurper,
+    DataSlurper
   }
 
   @doc """

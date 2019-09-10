@@ -38,7 +38,7 @@ defmodule Reaper.MixProject do
 
   defp deps do
     [
-      {:brook, "~> 0.3.0"},
+      {:brook, "~> 0.3.1"},
       {:cachex, "~> 3.2"},
       {:castore, "~> 0.1"},
       {:distillery, "2.0.14"},
@@ -60,7 +60,7 @@ defmodule Reaper.MixProject do
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
       {:sftp_ex, "~> 0.2"},
-      {:smart_city, "~> 2.7.1", override: true},
+      {:smart_city, "~> 2.8", override: true},
       {:smart_city_data, "~> 3.0"},
       {:sweet_xml, "~> 0.6"},
       {:tesla, "~> 1.2"},
@@ -82,7 +82,7 @@ defmodule Reaper.MixProject do
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 1.2", only: [:test, :integration]},
-      {:smart_city_test, path: "../smart_city_test", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.5", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]}
     ]
   end

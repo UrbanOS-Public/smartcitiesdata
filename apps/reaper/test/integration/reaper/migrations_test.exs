@@ -10,8 +10,8 @@ defmodule Reaper.MigrationsTest do
   import SmartCity.TestHelper
 
   test "should migrate reaper_config and last_fetched_timestamp to brook view state extractions" do
-    Application.ensure_all_started :redix
-    Application.ensure_all_started :faker
+    Application.ensure_all_started(:redix)
+    Application.ensure_all_started(:faker)
 
     {:ok, redix} = Redix.start_link(host: Application.get_env(:redix, :host), name: :redix)
     Process.unlink(redix)

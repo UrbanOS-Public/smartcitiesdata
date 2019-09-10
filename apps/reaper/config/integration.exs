@@ -56,7 +56,9 @@ config :reaper, :brook,
   ],
   dispatcher: Brook.Dispatcher.Noop
 
-config :reaper, Reaper.Scheduler, storage: Reaper.Quantum.Storage
+config :reaper, Reaper.Scheduler,
+  storage: Reaper.Quantum.Storage,
+  overlap: false
 
 config :reaper, Reaper.Quantum.Storage, redis_host: host
 

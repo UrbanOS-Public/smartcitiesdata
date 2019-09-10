@@ -30,7 +30,8 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   end
 
   defp parse_cron(cron_string) do
-    extended? = (String.split(cron_string, " ") |> length()) > 5
+    extended? = String.split(cron_string, " ") |> length() > 5
+
     case Crontab.CronExpression.Parser.parse(cron_string, extended?) do
       {:error, reason} ->
         {:error,

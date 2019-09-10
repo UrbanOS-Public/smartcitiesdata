@@ -27,7 +27,7 @@ defmodule Reaper.Migrations do
         dataset: find_dataset_by_reaper_config(reaper_config),
         last_fetched_timestamp: Persistence.get_last_fetched_timestamp(reaper_config.dataset_id),
         started_timestamp: DateTime.from_unix!(0)
-       }
+      }
     end)
     |> Enum.each(fn %{dataset: dataset} = map ->
       Brook.Test.save_view_state(:extractions, dataset.id, map)
@@ -41,11 +41,10 @@ defmodule Reaper.Migrations do
     {:stop, :normal, state}
   end
 
-  defp find_dataset_by_reaper_config(reaper_config)  do
+  defp find_dataset_by_reaper_config(reaper_config) do
     Brook.get_events!(:reaper_config, reaper_config.dataset_id)
     |> Enum.filter(fn event -> event.type == dataset_update() end)
     |> List.last()
     |> Map.get(:data)
   end
-
 end

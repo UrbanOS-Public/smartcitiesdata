@@ -7,7 +7,6 @@ defmodule Reaper.Application do
   def redis_client(), do: :redix
 
   def start(_type, _args) do
-
     children =
       [
         libcluster(),
