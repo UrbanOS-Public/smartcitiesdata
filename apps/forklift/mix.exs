@@ -28,6 +28,7 @@ defmodule Forklift.MixProject do
       {:benchee, "~> 1.0", only: [:integration]},
       {:brod, "~> 3.7", override: true},
       {:brook, "~> 0.3.0"},
+      {:checkov, "~> 0.4"},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:divo, "~> 1.0", only: [:dev, :test, :integration]},

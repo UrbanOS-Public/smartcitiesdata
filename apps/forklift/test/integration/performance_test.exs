@@ -190,7 +190,12 @@ defmodule Forklift.PerformanceTest do
   end
 
   defp prepare_messages({key, message}, dataset) do
-    {key, Map.put(message, :dataset_id, dataset.id) |> Jason.encode!()}
+    json =
+      message
+      |> Map.put(:dataset_id, dataset.id)
+      |> Jason.encode!()
+
+    {key, json}
   end
 
   defp spawn_producer_chunk(chunk, topic, producer_name) do

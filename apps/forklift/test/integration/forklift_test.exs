@@ -222,7 +222,9 @@ defmodule PersistenceTest do
   end
 
   defp prestige_execute(statement) do
-    Prestige.execute(statement) |> Prestige.prefetch()
+    statement
+    |> Prestige.execute()
+    |> Prestige.prefetch()
   rescue
     e ->
       Logger.warn("Failed querying presto : #{Exception.message(e)}")

@@ -30,7 +30,8 @@ defmodule FixtureHelper do
               systemName: "scos",
               source_type: "ingest",
               stream: "IDK",
-              orgName: "Whatever"
+              orgName: "Whatever",
+              schema: []
             }
           },
           Map.new(overrides)

@@ -8,12 +8,14 @@ defmodule Forklift.Tables.TableCreator do
   alias Forklift.Tables.StatementBuilder
 
   def create_table(%Dataset{id: dataset_id, technical: %{systemName: table_name, schema: schema}}) do
-    with {:ok, statement} <- StatementBuilder.build_table_create_statement(table_name, schema) do
-      result = execute(statement)
-
-      log(result, dataset_id)
-
-      result
+    with {:ok, statement} <- StatementBuilder.build_table_create_statement(table_name, schema),
+         :ok <- execute(statement) do
+      Logger.info("Created table for #{dataset_id}")
+      :ok
+    else
+      {:error, reason} = error ->
+        Logger.error("Error processing dataset #{dataset_id}: #{reason}")
+        error
     end
   end
 
@@ -28,13 +30,6 @@ defmodule Forklift.Tables.TableCreator do
     case result do
       [[true]] -> :ok
       _ -> {:error, "Write to Presto failed"}
-    end
-  end
-
-  defp log(result, dataset_id) do
-    case result do
-      {:error, error} -> Logger.error("Error processing dataset #{dataset_id}: #{error}")
-      _ -> Logger.info("Created table for #{dataset_id}")
     end
   end
 end
