@@ -11,6 +11,7 @@ defmodule Reaper.Quantum.Storage do
     Supervisor.child_spec({Redix, [host: Keyword.fetch!(config, :redis_host), name: @conn]}, id: @conn)
   end
 
+  @impl Quantum.Storage.Adapter
   def last_execution_date(scheduler) do
     case get(date_key(scheduler)) do
       nil -> :unknown
@@ -18,6 +19,7 @@ defmodule Reaper.Quantum.Storage do
     end
   end
 
+  @impl Quantum.Storage.Adapter
   def purge(scheduler) do
     base_key(scheduler, "*")
     |> keys()
@@ -26,27 +28,32 @@ defmodule Reaper.Quantum.Storage do
     :ok
   end
 
+  @impl Quantum.Storage.Adapter
   def update_job_state(scheduler, job_name, state) do
     job = get(job_key(scheduler, job_name)) |> deserialize()
     updated_job = %{job | state: state}
     set(job_key(scheduler, job_name), serialize(updated_job))
   end
 
+  @impl Quantum.Storage.Adapter
   def update_last_execution_date(scheduler, date) do
     set(date_key(scheduler), serialize(date))
     :ok
   end
 
+  @impl Quantum.Storage.Adapter
   def add_job(scheduler, job) do
     set(job_key(scheduler, job.name), serialize(job))
     :ok
   end
 
+  @impl Quantum.Storage.Adapter
   def delete_job(scheduler, job_name) do
     delete(job_key(scheduler, job_name))
     :ok
   end
 
+  @impl Quantum.Storage.Adapter
   def jobs(scheduler) do
     case keys(job_key(scheduler, "*")) do
       [] ->
