@@ -30,8 +30,6 @@ defmodule Reaper.MigrationsTest do
 
     Application.ensure_all_started(:reaper)
 
-    Process.sleep(5_000)
-
     eventually(fn ->
       assert dataset == Extractions.get_dataset!(dataset.id)
       assert date == Extractions.get_last_fetched_timestamp!(dataset.id)

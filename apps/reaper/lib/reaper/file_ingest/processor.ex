@@ -18,11 +18,10 @@ defmodule Reaper.FileIngest.Processor do
   def process(%SmartCity.Dataset{} = dataset) do
     filename = get_filename(dataset)
 
-    _something =
-      dataset
-      |> UrlBuilder.build()
-      |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
-      |> upload(filename)
+    dataset
+    |> UrlBuilder.build()
+    |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
+    |> upload(filename)
 
     send_event(dataset, filename)
   rescue

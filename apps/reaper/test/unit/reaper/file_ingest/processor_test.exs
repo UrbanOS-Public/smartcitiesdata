@@ -3,7 +3,6 @@ defmodule Reaper.FileIngest.ProcessorTest do
   use Placebo
 
   alias Reaper.FileIngest.Processor
-  alias Reaper.Persistence
   alias SmartCity.HostedFile
 
   alias SmartCity.TestDataGenerator, as: TDG

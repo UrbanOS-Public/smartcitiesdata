@@ -51,7 +51,7 @@ defmodule Reaper.FullTest do
     setup %{bypass: bypass} do
       pre_existing_dataset =
         TDG.create_dataset(%{
-          id: "dataset-102",
+          id: @pre_existing_dataset_id,
           technical: %{
             cadence: "once",
             sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
@@ -72,7 +72,7 @@ defmodule Reaper.FullTest do
     test "configures and ingests a json-source that was added before reaper started" do
       expected =
         TestUtils.create_data(%{
-          dataset_id: "dataset-102",
+          dataset_id: @pre_existing_dataset_id,
           payload: %{
             "latitude" => 39.9613,
             "vehicle_id" => 41_015,
@@ -81,7 +81,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      topic = "#{@output_topic_prefix}-dataset-102"
+      topic = "#{@output_topic_prefix}-#{@pre_existing_dataset_id}"
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
@@ -238,8 +238,6 @@ defmodule Reaper.FullTest do
         })
 
       Brook.Event.send(dataset_update(), :reaper, hosted_dataset)
-
-      Process.sleep(5_000)
 
       eventually(fn ->
         expected = File.read!("test/support/#{@csv_file_name}")

@@ -3,6 +3,7 @@ defmodule Reaper.InitTest do
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Reaper.Collections.{Extractions, FileIngestions}
   import SmartCity.TestHelper
 
   setup do
@@ -24,7 +25,7 @@ defmodule Reaper.InitTest do
       allow Reaper.DataExtract.Processor.process(any()), return: :ok
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
-      Brook.Test.save_view_state(:extractions, dataset.id, %{dataset: dataset, started_timestamp: DateTime.utc_now()})
+      Brook.Test.with_event(fn -> Extractions.update_dataset(dataset) end)
 
       Reaper.Init.run()
 
@@ -41,11 +42,10 @@ defmodule Reaper.InitTest do
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
 
-      Brook.Test.save_view_state(:extractions, dataset.id, %{
-        dataset: dataset,
-        started_timestamp: start_time,
-        last_fetched_timestamp: end_time
-      })
+      Brook.Test.with_event(fn ->
+        Extractions.update_dataset(dataset, start_time)
+        Extractions.update_last_fetched_timestamp(dataset.id, end_time)
+      end)
 
       Reaper.Init.run()
 
@@ -60,11 +60,10 @@ defmodule Reaper.InitTest do
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
 
-      Brook.Test.save_view_state(:extractions, dataset.id, %{
-        dataset: dataset,
-        started_timestamp: start_time,
-        last_fetched_timestamp: end_time
-      })
+      Brook.Test.with_event(fn ->
+        Extractions.update_dataset(dataset, start_time)
+        Extractions.update_last_fetched_timestamp(dataset.id, end_time)
+      end)
 
       Reaper.Init.run()
 
@@ -80,10 +79,9 @@ defmodule Reaper.InitTest do
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
 
-      Brook.Test.save_view_state(:file_ingestions, dataset.id, %{
-        dataset: dataset,
-        started_timestamp: DateTime.utc_now()
-      })
+      Brook.Test.with_event(fn ->
+        FileIngestions.update_dataset(dataset)
+      end)
 
       Reaper.Init.run()
 
@@ -100,11 +98,10 @@ defmodule Reaper.InitTest do
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
 
-      Brook.Test.save_view_state(:file_ingestions, dataset.id, %{
-        dataset: dataset,
-        started_timestamp: start_time,
-        last_fetched_timestamp: end_time
-      })
+      Brook.Test.with_event(fn ->
+        FileIngestions.update_dataset(dataset, start_time)
+        FileIngestions.update_last_fetched_timestamp(dataset.id, end_time)
+      end)
 
       Reaper.Init.run()
 
@@ -119,11 +116,10 @@ defmodule Reaper.InitTest do
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
 
-      Brook.Test.save_view_state(:file_ingestions, dataset.id, %{
-        dataset: dataset,
-        started_timestamp: start_time,
-        last_fetched_timestamp: end_time
-      })
+      Brook.Test.with_event(fn ->
+        FileIngestions.update_dataset(dataset, start_time)
+        FileIngestions.update_last_fetched_timestamp(dataset.id, end_time)
+      end)
 
       Reaper.Init.run()
 
