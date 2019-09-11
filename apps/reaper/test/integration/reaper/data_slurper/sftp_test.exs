@@ -43,7 +43,7 @@ defmodule Reaper.SftpExtractorTest do
       TDG.create_dataset(%{
         id: dataset_id,
         technical: %{
-          cadence: 1_000,
+          cadence: "once",
           sourceUrl: "sftp://#{@host}:#{@sftp.port}/upload/file.json",
           sourceQueryParams: %{},
           sourceFormat: "json",
@@ -81,7 +81,7 @@ defmodule Reaper.SftpExtractorTest do
       TDG.create_dataset(%{
         id: dataset_id,
         technical: %{
-          cadence: 1_000,
+          cadence: "once",
           sourceUrl: "sftp://#{@host}:#{@sftp.port}/upload/file.csv",
           sourceQueryParams: %{},
           sourceFormat: "csv",

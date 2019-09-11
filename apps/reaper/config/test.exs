@@ -12,16 +12,17 @@ config :reaper,
   output_topic_prefix: "raw",
   produce_retries: 2,
   produce_timeout: 10,
-  secrets_endpoint: "http://vault:8200"
+  secrets_endpoint: "http://vault:8200",
+  hosted_file_bucket: "hosted-dataset-files"
 
 config :reaper, :brook,
   driver: [
-    module: Brook.Driver.Json,
+    module: Brook.Driver.Test,
     init_arg: []
   ],
-  handler: [Reaper.Event.Handler],
+  handlers: [Reaper.Event.Handler],
   storage: [
-    modules: Brook.Storage.Ets,
+    module: Brook.Storage.Ets,
     init_arg: []
   ],
-  hosted_file_bucket: "hosted-dataset-files"
+  dispatcher: Brook.Dispatcher.Noop

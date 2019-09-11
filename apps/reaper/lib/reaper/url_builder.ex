@@ -1,5 +1,5 @@
 defmodule Reaper.UrlBuilder do
-  alias Reaper.ReaperConfig
+  alias Reaper.Collections.Extractions
 
   @moduledoc """
   This module builds a URL to download a source file
@@ -8,13 +8,13 @@ defmodule Reaper.UrlBuilder do
   @doc """
   Returns a string containing the URL with all query string parameters based on the `Reaper.ReaperConfig`
   """
-  @spec build(ReaperConfig.t()) :: String.t()
-  def build(%ReaperConfig{sourceUrl: url, sourceQueryParams: query_params} = _reaper_config)
+  @spec build(SmartCity.Dataset.t()) :: String.t()
+  def build(%SmartCity.Dataset{technical: %{sourceUrl: url, sourceQueryParams: query_params}} = _dataset)
       when query_params == %{},
       do: build_url_path(url)
 
-  def build(%ReaperConfig{sourceUrl: url, sourceQueryParams: query_params} = reaper_config) do
-    last_success_time = extract_last_success_time(reaper_config)
+  def build(%SmartCity.Dataset{technical: %{sourceUrl: url, sourceQueryParams: query_params}} = dataset) do
+    last_success_time = extract_last_success_time(dataset.id)
 
     string_params =
       query_params
@@ -28,16 +28,11 @@ defmodule Reaper.UrlBuilder do
     EEx.eval_string(url)
   end
 
-  defp extract_last_success_time(reaper_config) do
-    case reaper_config.lastSuccessTime do
+  defp extract_last_success_time(dataset_id) do
+    case Extractions.get_last_fetched_timestamp!(dataset_id) do
       nil -> false
-      _time -> convert_timestamp(reaper_config.lastSuccessTime)
+      time -> time
     end
-  end
-
-  defp convert_timestamp(timestamp) do
-    {:ok, dt, _} = DateTime.from_iso8601(timestamp)
-    dt
   end
 
   defp evaluate_parameters(parameters, bindings) do

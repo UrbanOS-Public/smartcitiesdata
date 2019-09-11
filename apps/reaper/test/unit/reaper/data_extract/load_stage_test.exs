@@ -1,10 +1,11 @@
-defmodule Reaper.DataFeed.LoadStageTest do
+defmodule Reaper.DataExtract.LoadStageTest do
   use ExUnit.Case
   use Placebo
 
-  alias Reaper.DataFeed.LoadStage
+  alias Reaper.DataExtract.LoadStage
   alias Reaper.{Cache, Persistence}
   alias Elsa.Producer
+  alias SmartCity.TestDataGenerator, as: TDG
 
   @message_size 218
   @iso_output DateTime.utc_now() |> DateTime.to_iso8601()
@@ -13,7 +14,15 @@ defmodule Reaper.DataFeed.LoadStageTest do
   use TempEnv, reaper: [batch_size_in_bytes: 10 * @message_size, output_topic_prefix: "test"]
 
   setup do
-    Cachex.start_link(@cache)
+    {:ok, registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
+    {:ok, horde_sup} = Horde.Supervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
+    Horde.Supervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: @cache})
+
+    on_exit(fn ->
+      kill(horde_sup)
+      kill(registry)
+    end)
+
     allow DateTime.to_iso8601(any()), return: @iso_output, meck_options: [:passthrough]
     :ok
   end
@@ -25,7 +34,7 @@ defmodule Reaper.DataFeed.LoadStageTest do
 
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1", allow_duplicates: false}),
+        dataset: TDG.create_dataset(id: "ds1", technical: %{allow_duplicates: false}),
         batch: [],
         bytes: 0,
         originals: [],
@@ -70,7 +79,7 @@ defmodule Reaper.DataFeed.LoadStageTest do
 
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds2"}),
+        dataset: TDG.create_dataset(id: "ds2"),
         batch: [],
         bytes: 0,
         originals: [],
@@ -116,5 +125,11 @@ defmodule Reaper.DataFeed.LoadStageTest do
     |> Enum.map(&SmartCity.Data.new/1)
     |> Enum.map(&elem(&1, 1))
     |> Enum.map(&Jason.encode!/1)
+  end
+
+  defp kill(pid) do
+    ref = Process.monitor(pid)
+    Process.exit(pid, :normal)
+    assert_receive {:DOWN, ^ref, _, _, _}
   end
 end

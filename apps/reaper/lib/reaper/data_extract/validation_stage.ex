@@ -1,4 +1,4 @@
-defmodule Reaper.DataFeed.ValidationStage do
+defmodule Reaper.DataExtract.ValidationStage do
   @moduledoc false
   use GenStage
 
@@ -9,12 +9,12 @@ defmodule Reaper.DataFeed.ValidationStage do
   end
 
   def init(args) do
-    config = Keyword.fetch!(args, :config)
+    dataset = Keyword.fetch!(args, :dataset)
 
     state = %{
       cache: Keyword.fetch!(args, :cache),
-      config: config,
-      last_processed_index: Persistence.get_last_processed_index(config.dataset_id)
+      dataset: dataset,
+      last_processed_index: Persistence.get_last_processed_index(dataset.id)
     }
 
     {:producer_consumer, state}
@@ -35,7 +35,7 @@ defmodule Reaper.DataFeed.ValidationStage do
       [message | acc]
     else
       {:error, reason} ->
-        Yeet.process_dead_letter(state.config.dataset_id, message, "reaper", reason: reason)
+        Yeet.process_dead_letter(state.dataset.id, message, "reaper", reason: reason)
         acc
 
       _duplicate_or_index_failure ->
@@ -44,7 +44,7 @@ defmodule Reaper.DataFeed.ValidationStage do
   end
 
   defp check_cache(state, value) do
-    case state.config.allow_duplicates do
+    case state.dataset.technical.allow_duplicates do
       true -> {:ok, value}
       false -> Cache.mark_duplicates(state.cache, value)
     end

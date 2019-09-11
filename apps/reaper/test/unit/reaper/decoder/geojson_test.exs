@@ -1,7 +1,8 @@
 defmodule Reaper.Decoder.GeoJsonTest do
   use ExUnit.Case
-  alias Reaper.ReaperConfig
   import Checkov
+
+  alias SmartCity.TestDataGenerator, as: TDG
 
   @filename "#{__MODULE__}_temp_file"
 
@@ -27,11 +28,12 @@ defmodule Reaper.Decoder.GeoJsonTest do
         data
         |> Jason.encode!()
 
+      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceFormat: "geojson"})
+
       File.write!(@filename, structure)
 
-      {:ok, response} = Reaper.Decoder.GeoJson.decode({:file, @filename}, %ReaperConfig{sourceFormat: "geojson"})
+      {:ok, response} = Reaper.Decoder.GeoJson.decode({:file, @filename}, dataset)
 
-      # assert Map.get(data, "features") == response
       assert %{"feature" => Enum.at(data.features, 0)} == Enum.at(response, 0)
       assert %{"feature" => Enum.at(data.features, 1)} == Enum.at(response, 1)
       assert 2 == Enum.count(response)
@@ -39,7 +41,8 @@ defmodule Reaper.Decoder.GeoJsonTest do
 
     data_test "throws error when given #{geojson_input}" do
       File.write!(@filename, geojson_input)
-      response = Reaper.Decoder.GeoJson.decode({:file, @filename}, %ReaperConfig{sourceFormat: "geojson"})
+      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceFormat: "geojson"})
+      response = Reaper.Decoder.GeoJson.decode({:file, @filename}, dataset)
       assert {:error, geojson_input, expected_error_message} == response
 
       where([

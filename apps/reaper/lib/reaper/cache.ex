@@ -8,6 +8,15 @@ defmodule Reaper.Cache do
     defexception [:message]
   end
 
+  def child_spec(opts) do
+    name = Keyword.fetch!(opts, :name)
+
+    %{
+      id: name,
+      start: {Reaper.Cache.Server, :start_link, [[name: via(name)]]}
+    }
+  end
+
   @doc """
   Returns a tuple for a value that signifies if it exists in the cache
   """
@@ -30,19 +39,14 @@ defmodule Reaper.Cache do
   end
 
   defp put_in_cache({:ok, key}, cache) do
-    case Cachex.put(cache, key, true) do
-      {:error, reason} -> raise CacheError, message: reason
-      result -> result
-    end
+    GenServer.cast(via(cache), {:put, key})
+    {:ok, true}
   end
 
   defp put_in_cache({:error, _} = error, _cache), do: error
 
   defp exists?({:ok, key}, cache) do
-    case Cachex.exists?(cache, key) do
-      {:error, reason} -> raise CacheError, message: reason
-      result -> result
-    end
+    {:ok, GenServer.call(via(cache), {:exists?, key})}
   end
 
   defp exists?({:error, _} = error, _cache), do: error
@@ -60,5 +64,9 @@ defmodule Reaper.Cache do
 
   defp md5(thing) do
     :crypto.hash(:md5, thing) |> Base.encode16()
+  end
+
+  defp via(name) do
+    {:via, Horde.Registry, {Reaper.Cache.Registry, name}}
   end
 end

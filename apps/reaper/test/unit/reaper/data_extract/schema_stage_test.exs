@@ -1,8 +1,9 @@
-defmodule Reaper.DataFeed.SchemaStageTest do
+defmodule Reaper.DataExtract.SchemaStageTest do
   use ExUnit.Case
   use Placebo
 
-  alias Reaper.DataFeed.SchemaStage
+  alias Reaper.DataExtract.SchemaStage
+  alias SmartCity.TestDataGenerator, as: TDG
 
   describe "handle_events/3" do
     setup do
@@ -47,7 +48,7 @@ defmodule Reaper.DataFeed.SchemaStageTest do
       ]
 
       state = %{
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1", schema: schema})
+        dataset: TDG.create_dataset(id: "ds1", technical: %{schema: schema})
       }
 
       {:noreply, outgoing_events, _new_state} = SchemaStage.handle_events(incoming_events, self(), state)
@@ -84,7 +85,7 @@ defmodule Reaper.DataFeed.SchemaStageTest do
       ]
 
       state = %{
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1", schema: schema})
+        dataset: TDG.create_dataset(id: "ds1", technical: %{schema: schema})
       }
 
       {:noreply, outgoing_events, _new_state} = SchemaStage.handle_events(incoming_events, self(), state)

@@ -1,14 +1,23 @@
-defmodule Reaper.DataFeed.ValidationStageTest do
+defmodule Reaper.DataExtract.ValidationStageTest do
   use ExUnit.Case
   use Placebo
 
-  alias Reaper.DataFeed.ValidationStage
+  alias Reaper.DataExtract.ValidationStage
   alias Reaper.Cache
+  alias SmartCity.TestDataGenerator, as: TDG
 
   @cache :validation_stage_test
 
   setup do
-    Cachex.start_link(@cache)
+    {:ok, registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
+    {:ok, horde_sup} = Horde.Supervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
+    Horde.Supervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: @cache})
+
+    on_exit(fn ->
+      kill(horde_sup)
+      kill(registry)
+    end)
+
     :ok
   end
 
@@ -23,7 +32,7 @@ defmodule Reaper.DataFeed.ValidationStageTest do
 
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1", sourceType: "ingest", allow_duplicates: false}),
+        dataset: dataset(id: "ds1", allow_duplicates: false),
         last_processed_index: -1
       }
 
@@ -41,7 +50,7 @@ defmodule Reaper.DataFeed.ValidationStageTest do
 
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds1", sourceType: "ingest"}),
+        dataset: dataset(id: "ds1"),
         last_processed_index: -1
       }
 
@@ -52,7 +61,7 @@ defmodule Reaper.DataFeed.ValidationStageTest do
     test "will remove any events that have already been processed" do
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds2", sourceType: "ingest"}),
+        dataset: dataset(id: "ds2"),
         last_processed_index: 5
       }
 
@@ -73,7 +82,7 @@ defmodule Reaper.DataFeed.ValidationStageTest do
 
       state = %{
         cache: @cache,
-        config: FixtureHelper.new_reaper_config(%{dataset_id: "ds2", sourceType: "ingest", allow_duplicates: false}),
+        dataset: dataset(id: "ds2", allow_duplicates: false),
         last_processed_index: -1
       }
 
@@ -86,5 +95,21 @@ defmodule Reaper.DataFeed.ValidationStageTest do
       assert outgoing_events == [{%{one: 1, two: 2}, 1}]
       assert_called Yeet.process_dead_letter("ds2", {%{three: 3, four: 4}, 2}, "reaper", reason: "bad stuff")
     end
+  end
+
+  defp dataset(opts) do
+    TDG.create_dataset(
+      id: Keyword.get(opts, :id, "ds1"),
+      technical: %{
+        sourceType: Keyword.get(opts, :sourceType, "ingest"),
+        allow_duplicates: Keyword.get(opts, :allow_duplicates, true)
+      }
+    )
+  end
+
+  defp kill(pid) do
+    ref = Process.monitor(pid)
+    Process.exit(pid, :normal)
+    assert_receive {:DOWN, ^ref, _, _, _}
   end
 end

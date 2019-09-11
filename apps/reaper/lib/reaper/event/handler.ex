@@ -1,21 +1,43 @@
 defmodule Reaper.Event.Handler do
-  @moduledoc "This module will process dataset:update events"
+  @moduledoc "This modules processes all events for Reaper"
   use Brook.Event.Handler
-  import SmartCity.Event, only: [dataset_update: 0]
-  require Logger
-  alias Reaper.ConfigServer
-  alias Reaper.ReaperConfig
+
+  alias Reaper.Collections.{Extractions, FileIngestions}
+
+  import SmartCity.Event,
+    only: [
+      dataset_update: 0,
+      data_ingest_start: 0,
+      data_extract_start: 0,
+      data_extract_end: 0,
+      file_ingest_start: 0,
+      file_ingest_end: 0
+    ]
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %SmartCity.Dataset{} = dataset}) do
-    case ReaperConfig.from_dataset(dataset) do
-      {:ok, reaper_config} ->
-        Logger.debug(fn -> "#{__MODULE__}: Got #{dataset_update()} event processing #{reaper_config.dataset_id}" end)
-        ConfigServer.process_reaper_config(reaper_config)
-        {:merge, :reaper_config, reaper_config.dataset_id, reaper_config}
+    Reaper.Event.Handlers.DatasetUpdate.handle(dataset)
+  end
 
-      {:error, reason} ->
-        Logger.error("Failed to process #{dataset_update()} event, reason: #{inspect(reason)}")
-        :discard
+  def handle_event(%Brook.Event{type: data_extract_start(), data: %SmartCity.Dataset{} = dataset}) do
+    Reaper.Horde.Supervisor.start_data_extract(dataset)
+
+    if Extractions.should_send_data_ingest_start?(dataset) do
+      Brook.Event.send(data_ingest_start(), :reaper, dataset)
     end
+
+    Extractions.update_dataset(dataset)
+  end
+
+  def handle_event(%Brook.Event{type: data_extract_end(), data: %SmartCity.Dataset{} = dataset}) do
+    Extractions.update_last_fetched_timestamp(dataset.id)
+  end
+
+  def handle_event(%Brook.Event{type: file_ingest_start(), data: %SmartCity.Dataset{} = dataset}) do
+    Reaper.Horde.Supervisor.start_file_ingest(dataset)
+    FileIngestions.update_dataset(dataset)
+  end
+
+  def handle_event(%Brook.Event{type: file_ingest_end(), data: %SmartCity.Dataset{} = dataset}) do
+    FileIngestions.update_last_fetched_timestamp(dataset.id)
   end
 end

@@ -22,16 +22,6 @@ defmodule Reaper.Decoder.CsvTest do
           technical: %{sourceFormat: "csv", schema: [%{name: "id"}, %{name: "name"}]}
         })
 
-      reaper_config =
-        FixtureHelper.new_reaper_config(%{
-          dataset_id: dataset.id,
-          cadence: dataset.technical.cadence,
-          sourceUrl: dataset.technical.sourceUrl,
-          sourceFormat: dataset.technical.sourceFormat,
-          schema: dataset.technical.schema,
-          sourceQueryParams: dataset.technical.sourceQueryParams
-        })
-
       expected = [
         %{"id" => "id", "name" => " something different"},
         %{"id" => "1", "name" => " Woody"},
@@ -42,7 +32,7 @@ defmodule Reaper.Decoder.CsvTest do
 
       {:ok, actual} =
         {:file, @filename}
-        |> Decoder.Csv.decode(reaper_config)
+        |> Decoder.Csv.decode(dataset)
 
       assert Enum.into(actual, []) == expected
     end
@@ -52,16 +42,6 @@ defmodule Reaper.Decoder.CsvTest do
         TDG.create_dataset(%{
           id: "cool",
           technical: %{sourceFormat: "csv", schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]}
-        })
-
-      reaper_config =
-        FixtureHelper.new_reaper_config(%{
-          dataset_id: dataset.id,
-          cadence: dataset.technical.cadence,
-          sourceUrl: dataset.technical.sourceUrl,
-          sourceFormat: dataset.technical.sourceFormat,
-          schema: dataset.technical.schema,
-          sourceQueryParams: dataset.technical.sourceQueryParams
         })
 
       expected = [
@@ -74,7 +54,7 @@ defmodule Reaper.Decoder.CsvTest do
 
       {:ok, actual} =
         {:file, @filename}
-        |> Decoder.Csv.decode(reaper_config)
+        |> Decoder.Csv.decode(dataset)
 
       assert Enum.into(actual, []) == expected
     end

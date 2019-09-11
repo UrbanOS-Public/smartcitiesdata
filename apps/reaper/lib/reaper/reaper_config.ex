@@ -55,7 +55,6 @@ defmodule Reaper.ReaperConfig do
       sourceUrl: dataset.technical.sourceUrl,
       authUrl: dataset.technical.authUrl,
       sourceType: dataset.technical.sourceType,
-      partitioner: dataset.technical.partitioner,
       sourceQueryParams: dataset.technical.sourceQueryParams,
       sourceHeaders: dataset.technical.sourceHeaders,
       authHeaders: dataset.technical.authHeaders,

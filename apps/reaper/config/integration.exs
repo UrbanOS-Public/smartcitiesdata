@@ -42,7 +42,8 @@ config :reaper, :brook,
       topic: "event-stream",
       group: "reaper-events",
       config: [
-        begin_offset: :earliest
+        begin_offset: :earliest,
+        offset_reset_policy: :reset_to_earliest
       ]
     ]
   ],
@@ -53,7 +54,14 @@ config :reaper, :brook,
       redix_args: [host: host],
       namespace: "reaper:view"
     ]
-  ]
+  ],
+  dispatcher: Brook.Dispatcher.Noop
+
+config :reaper, Reaper.Scheduler,
+  storage: Reaper.Quantum.Storage,
+  overlap: false
+
+config :reaper, Reaper.Quantum.Storage, redis_host: host
 
 config :redix,
   host: host

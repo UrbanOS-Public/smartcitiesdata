@@ -11,10 +11,13 @@ defmodule Reaper.Application do
       [
         libcluster(),
         {Reaper.Horde.Registry, name: Reaper.Horde.Registry, keys: :unique},
+        {Reaper.Cache.Registry, name: Reaper.Cache.Registry, keys: :unique},
         {Reaper.Horde.Supervisor, name: Reaper.Horde.Supervisor, strategy: :one_for_one},
-        {Reaper.Horde.NodeListener, hordes: [Reaper.Horde.Supervisor, Reaper.Horde.Registry]},
-        Reaper.ConfigServer,
+        {Reaper.Horde.NodeListener, hordes: [Reaper.Horde.Supervisor, Reaper.Horde.Registry, Reaper.Cache.Registry]},
+        Reaper.Quantum.Storage,
+        Reaper.Scheduler,
         redis(),
+        Reaper.Migrations,
         {Brook, Application.get_env(:reaper, :brook)},
         Reaper.Init
       ]
