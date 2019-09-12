@@ -72,7 +72,8 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
 
       assert :ok == DatasetUpdate.handle(dataset)
 
-      {:ok, cron_expression} = Crontab.CronExpression.Parser.parse(schedule)
+      extended = length(String.split(schedule)) > 5
+      {:ok, cron_expression} = Crontab.CronExpression.Parser.parse(schedule, extended)
 
       job =
         Reaper.Scheduler.new_job()
@@ -86,8 +87,8 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
         [:cadence, :schedule],
         [86_400_000, "0 6 * * *"],
         [3_600_000, "0 * * * *"],
-        [30_000, "*/30 * * * *"],
-        [10_000, "*/10 * * * *"]
+        [30_000, "*/30 * * * * * *"],
+        [10_000, "*/10 * * * * * *"]
       ])
     end
 

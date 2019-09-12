@@ -10,8 +10,8 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   @cron_conversions %{
     86_400_000 => "0 6 * * *",
     3_600_000 => "0 * * * *",
-    30_000 => "*/30 * * * *",
-    10_000 => "*/10 * * * *"
+    30_000 => "*/30 * * * * * *",
+    10_000 => "*/10 * * * * * *"
   }
 
   def handle(%SmartCity.Dataset{technical: %{cadence: "never"}}) do

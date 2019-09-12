@@ -70,6 +70,10 @@ defmodule Reaper.Persistence do
     ])
   end
 
+  def remove_last_fetched_timestamp(dataset_id) do
+    Redix.command(:redix, ["DEL", @name_space_derived <> dataset_id])
+  end
+
   def get_last_processed_index(dataset_id) do
     case Redix.command!(:redix, ["GET", "reaper:#{dataset_id}:last_processed_index"]) do
       nil -> -1
