@@ -83,7 +83,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   defp filter_by_source_type(datasets, false), do: datasets
 
   defp filter_by_source_type(datasets, true) do
-    Enum.reject(datasets, fn dataset -> dataset.sourceType == "remote" end)
+    Enum.filter(datasets, fn dataset -> dataset.sourceType in ["ingest", "stream"] end)
   end
 
   defp remove_unauthorized_models(conn, filtered_models) do
