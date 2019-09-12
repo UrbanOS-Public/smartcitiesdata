@@ -29,6 +29,7 @@ defmodule DeadLetter.MixProject do
       {:ex_doc, "~> 0.19", only: :dev},
       {:jason, "~> 1.1"},
       {:elsa, "~> 0.8"},
+      {:assertions, "~> 0.14.1", only: [:test, :integration]},
       {:husky, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
