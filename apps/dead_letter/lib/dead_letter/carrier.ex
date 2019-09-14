@@ -48,6 +48,7 @@ defmodule DeadLetter.Carrier.Default do
   @doc """
   Initialize the default driver and setup the queue.
   """
+  @impl GenServer
   def init(opts) do
     size = Keyword.get(opts, :size, @default_size)
     {:ok, %{size: size, queue: :queue.new()}}
@@ -70,12 +71,14 @@ defmodule DeadLetter.Carrier.Default do
     {:ok, GenServer.call(@name, :receive)}
   end
 
+  @impl GenServer
   def handle_cast({:send, message}, state) do
     new_queue = :queue.in(message, state.queue)
 
     {:noreply, %{state | queue: ensure_queue_size(new_queue, state.size)}}
   end
 
+  @impl GenServer
   def handle_call(:receive, _from, state) do
     {value, new_queue} =
       case :queue.out(state.queue) do

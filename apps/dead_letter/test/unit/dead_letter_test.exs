@@ -23,7 +23,9 @@ defmodule DeadLetterTest do
   @dataset_id "ds1"
 
   setup do
-    {:ok, dlq} = DeadLetter.start_link(driver: [module: DeadLetter.Carrier.Default, init_args: [size: 3_000]])
+    config = [driver: [module: DeadLetter.Carrier.Default, init_args: [size: 3_000]]]
+
+    {:ok, dlq} = DeadLetter.start_link(config)
 
     on_exit(fn ->
       ref = Process.monitor(dlq)
@@ -47,6 +49,7 @@ defmodule DeadLetterTest do
         {:ok, actual} = Carrier.receive()
 
         refute actual == :empty
+
         comparison =
           &(&1.dataset_id == &2.dataset_id and &1.app == &2.app and &1.original_message == &2.original_message)
 

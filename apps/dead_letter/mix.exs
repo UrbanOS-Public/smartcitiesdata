@@ -11,7 +11,9 @@ defmodule DeadLetter.MixProject do
       docs: docs(),
       description: description(),
       package: package(),
-      source_url: "https://www.github.com/smartcitiesdata/dead_letter"
+      source_url: "https://www.github.com/smartcitiesdata/dead_letter",
+      elixir_paths: elixirc_paths(Mix.env()),
+      test_paths: test_paths(Mix.env())
     ]
   end
 
@@ -29,10 +31,18 @@ defmodule DeadLetter.MixProject do
       {:ex_doc, "~> 0.19", only: :dev},
       {:jason, "~> 1.1"},
       {:elsa, "~> 0.8"},
+      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo_kafka, "~> 0.1.5", only: [:integration]},
       {:assertions, "~> 0.14.1", only: [:test, :integration]},
       {:husky, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
+
+  defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
+  defp test_paths(:integration), do: ["test/integration"]
+  defp test_paths(_), do: ["test/unit"]
 
   defp description do
     "Generates standard messages for Dead Letter Queue"

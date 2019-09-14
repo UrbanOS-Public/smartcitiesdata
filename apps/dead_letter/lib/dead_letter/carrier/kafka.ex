@@ -14,7 +14,7 @@ defmodule DeadLetter.Carrier.Kafka do
   """
   @impl DeadLetter.Carrier
   def start_link(opts) do
-    Supervisor.start_link(__MODULE__, opts)
+    Supervisor.start_link(__MODULE__, opts, name: :"#{@name}_supervisor")
   end
 
   @impl Supervisor
@@ -41,8 +41,16 @@ defmodule DeadLetter.Carrier.Kafka do
   """
   @impl DeadLetter.Carrier
   def send(message) do
-    Elsa.Producer.produce_sync(Process.get(:topic), {message.app, Jason.encode!(message)}, name: @name)
+    topic = get_topic(:"#{@name}_supervisor")
+    Elsa.Producer.produce_sync(topic, {message.app, Jason.encode!(message)}, name: @name)
   rescue
     e -> Logger.error("Unable to dead-letter message: #{inspect(message)}\n\treason: #{inspect(e)}")
+  end
+
+  defp get_topic(name) do
+    name
+    |> Process.whereis()
+    |> Process.info()
+    |> get_in([:dictionary, :topic])
   end
 end
