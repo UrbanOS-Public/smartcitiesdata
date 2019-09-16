@@ -50,8 +50,7 @@ defmodule DiscoveryApi.Data.Model do
   def get(id) do
     (@model_name_space <> id)
     |> Persistence.get()
-    |> map_from_json()
-    |> struct_from_map()
+    |> struct_from_json()
     |> add_system_attributes()
   end
 
@@ -119,21 +118,17 @@ defmodule DiscoveryApi.Data.Model do
   defp get_all_models() do
     (@model_name_space <> "*")
     |> Persistence.get_all()
-    |> convert_to_structs()
+    |> Enum.map(&struct_from_json/1)
   end
 
   defp get_models(ids) do
     ids
     |> Enum.map(&(@model_name_space <> &1))
     |> Persistence.get_many(true)
-    |> convert_to_structs()
+    |> Enum.map(&struct_from_json/1)
   end
 
-  defp convert_to_structs(models) do
-    models
-    |> Enum.map(&map_from_json/1)
-    |> Enum.map(&struct_from_map/1)
-  end
+  defp add_system_attributes(nil), do: nil
 
   defp add_system_attributes(model) when is_map(model) do
     model
@@ -177,10 +172,11 @@ defmodule DiscoveryApi.Data.Model do
     |> List.flatten()
   end
 
-  defp map_from_json(nil), do: nil
+  defp struct_from_json(nil), do: nil
 
-  defp map_from_json(json) do
-    Jason.decode!(json, keys: :atoms)
+  defp struct_from_json(json) do
+    map = Jason.decode!(json, keys: :atoms)
+    struct(__MODULE__, map)
   end
 
   defp default_nil_field_to(model, field, default) do
@@ -188,11 +184,5 @@ defmodule DiscoveryApi.Data.Model do
       nil -> Map.put(model, field, default)
       _ -> model
     end
-  end
-
-  defp struct_from_map(nil), do: nil
-
-  defp struct_from_map(map) do
-    struct(__MODULE__, map)
   end
 end
