@@ -6,7 +6,7 @@ input_topic_prefix = "transformed"
 
 config :yeet,
   topic: "streaming-dead-letters",
-  endpoint: [localhost: 9094]
+  endpoint: [localhost: 9092]
 
 config :forklift,
   retry_count: 10,
