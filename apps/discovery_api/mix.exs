@@ -23,6 +23,7 @@ defmodule DiscoveryApi.Mixfile do
 
   defp deps do
     [
+      {:assertions, "~> 0.14.1", only: [:test, :integration], runtime: false},
       {:ex_aws, "~> 2.1"},
       # This commit allows us to stream files off of S3 through memory. Release pending.
       {

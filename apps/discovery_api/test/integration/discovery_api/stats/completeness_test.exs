@@ -2,6 +2,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   use ExUnit.Case
   use Divo
   alias SmartCity.{Dataset, Organization}
+  import SmartCity.TestHelper
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Data.Persistence
   alias DiscoveryApi.Stats.StatsCalculator
@@ -98,26 +99,22 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
       StatsCalculator.produce_completeness_stats()
 
-      Patiently.wait_for!(
+      eventually(
         fn -> get_column_stats_from_redis(dataset1.id) == expected_dataset1_column_stats end,
         dwell: 2000,
         max_tries: 10
       )
 
-      Patiently.wait_for!(
-        fn ->
-          Map.get(
-            get_dataset_completeness_from_details_endpoint(dataset1.id),
-            "completeness",
-            nil
-          ) ==
-            expected_dataset1_column_stats["completeness"]
-        end,
-        dwell: 2000,
-        max_tries: 10
-      )
+      eventually(fn ->
+        Map.get(
+          get_dataset_completeness_from_details_endpoint(dataset1.id),
+          "completeness",
+          nil
+        ) ==
+          expected_dataset1_column_stats["completeness"]
+      end)
 
-      Patiently.wait_for!(
+      eventually(
         fn ->
           get_dataset_completeness_from_stats_endpoint(dataset1.id) ==
             expected_dataset1_column_stats
@@ -126,7 +123,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
         max_tries: 10
       )
 
-      Patiently.wait_for!(
+      eventually(
         fn -> get_column_stats_from_redis(dataset2.id) == expected_dataset2_column_stats end,
         dwell: 2000,
         max_tries: 10

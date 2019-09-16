@@ -1,10 +1,11 @@
 defmodule DiscoveryApi.Data.ModelTest do
   use ExUnit.Case
   use Placebo
+  require Assertions
   alias DiscoveryApi.Data.{Model, Persistence}
   alias DiscoveryApi.Test.Helper
 
-  test "Dataset saves empty list of keywords to redis" do
+  test "save/1" do
     dataset = Helper.sample_model() |> Map.put(:keywords, nil)
     allow(Persistence.persist(any(), any()), return: {:ok, "good"})
 
@@ -15,7 +16,7 @@ defmodule DiscoveryApi.Data.ModelTest do
     assert [] == actual_keywords
   end
 
-  test "dataset last_updated_date is retrieved from redis" do
+  test "get_last_updated_date/1" do
     expected_date = DateTime.utc_now()
     allow(Persistence.get(any()), return: {:last_updated_date, expected_date})
 
@@ -23,7 +24,7 @@ defmodule DiscoveryApi.Data.ModelTest do
     assert expected_date = actual_date
   end
 
-  test "dataset usage metrics are retrieved from redis" do
+  test "get_count_maps/1" do
     keys = ["smart_registry:queries:count:123", "smart_registry:downloads:count:123"]
     allow(Persistence.get_keys("smart_registry:*:count:123"), return: keys)
     allow(Persistence.get_many(keys), return: ["7", "9"])
@@ -33,105 +34,81 @@ defmodule DiscoveryApi.Data.ModelTest do
     assert actual_metrics == expected
   end
 
-  test "successfully generate dataset for given dataset_id" do
-    dataset = Helper.sample_model()
-    expected_date = DateTime.to_iso8601(DateTime.utc_now())
-    json_string_dataset = dataset |> Map.from_struct() |> Jason.encode!()
-    dataset = %{dataset | lastUpdatedDate: expected_date}
-    dataset = %{dataset | downloads: "9"}
-    dataset = %{dataset | queries: "7"}
+  test "get/1" do
+    {cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
 
-    count_keys = [
-      "smart_registry:queries:count:#{dataset.id}",
-      "smart_registry:downloads:count:#{dataset.id}"
-    ]
+    allow Persistence.get("discovery-api:model:cam"), return: cam_as_json
 
-    count_values = ["7", "9"]
+    allow Persistence.get_many_with_keys(any()), return: get_many_with_keys_result(cam_as_expected)
 
-    allow(Persistence.get("discovery-api:model:#{dataset.id}"), return: json_string_dataset)
-
-    allow(Persistence.get("discovery-api:stats:#{dataset.id}"), return: ~s({"completeness": 0.95}))
-
-    allow(Persistence.get("forklift:last_insert_date:#{dataset.id}"),
-      return: expected_date
-    )
-
-    allow(Persistence.get_keys("smart_registry:*:count:#{dataset.id}"), return: count_keys)
-    allow(Persistence.get_many(count_keys), return: count_values)
-
-    actual_dataset = Model.get(dataset.id)
-    assert actual_dataset == dataset
+    assert cam_as_expected == Model.get("cam")
   end
 
-  describe "additional model fields are added" do
-    test "get/1" do
-      cam = generate_model_return("Cam", ~D(1995-10-20), "ingest")
+  test "get_all/1" do
+    {cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
+    {paul, paul_as_json, paul_as_expected} = generate_test_data("paul")
 
-      allow(Persistence.get("forklift:last_insert_date:Cam"), return: "2019-06-27T00:00:00.000000Z")
-      allow(Persistence.get("discovery-api:model:Cam"), return: cam)
-      allow(Persistence.get(is(fn arg -> String.starts_with?(arg, "discovery-api:stats:") end)), return: nil)
-      allow(Persistence.get_keys(any()), return: [])
+    allow Persistence.get_many(["discovery-api:model:cam", "discovery-api:model:paul"], true), return: [cam_as_json, paul_as_json]
 
-      result = Model.get("Cam")
-      assert result.lastUpdatedDate == "2019-06-27T00:00:00.000000Z"
-    end
+    allow Persistence.get_many_with_keys(any()),
+      return: Map.merge(get_many_with_keys_result(cam_as_expected), get_many_with_keys_result(paul_as_expected))
 
-    test "get_all/1" do
-      paul = generate_model_return("Paul", ~D(1970-01-01), "remote")
-      richard = generate_model_return("Richard", ~D(2001-09-09), "ingest")
-      cam = generate_model_return("Cam", ~D(2000-09-09), "ingest")
-
-      allow(Persistence.get(is(fn arg -> String.starts_with?(arg, "discovery-api:stats:") end)), return: nil)
-      allow(Persistence.get_keys(any()), return: [])
-      allow(Persistence.get("forklift:last_insert_date:Paul"), return: "2019-07-27T00:00:00.000000Z")
-      allow(Persistence.get("forklift:last_insert_date:Richard"), return: "2019-08-27T00:00:00.000000Z")
-      allow(Persistence.get("forklift:last_insert_date:Cam"), return: "2019-08-27T00:00:00.000000Z")
-      allow(Persistence.get_many(any()), return: [paul, richard])
-
-      results = Model.get_all(["Paul", "Richard"])
-      assert length(results) == 2
-      assert List.first(results).lastUpdatedDate == "2019-07-27T00:00:00.000000Z"
-      assert List.last(results).lastUpdatedDate == "2019-08-27T00:00:00.000000Z"
-    end
-
-    test "get_all/0" do
-      paul = generate_model_return("Paul", ~D(1970-01-01), "remote")
-      richard = generate_model_return("Richard", ~D(2001-09-09), "ingest")
-      cam = generate_model_return("Cam", ~D(2000-09-09), "ingest")
-
-      allow(Persistence.get(is(fn arg -> String.starts_with?(arg, "discovery-api:stats:") end)), return: nil)
-      allow(Persistence.get_keys(any()), return: [])
-      allow(Persistence.get("forklift:last_insert_date:Paul"), return: "2019-07-27T00:00:00.000000Z")
-      allow(Persistence.get("forklift:last_insert_date:Richard"), return: "2019-08-27T00:00:00.000000Z")
-      allow(Persistence.get("forklift:last_insert_date:Cam"), return: "2019-08-27T00:00:00.000000Z")
-      allow(Persistence.get_all(any()), return: [paul, richard, cam])
-
-      results = Model.get_all()
-      assert length(results) == 3
-      assert List.first(results).lastUpdatedDate == "2019-07-27T00:00:00.000000Z"
-      assert List.last(results).lastUpdatedDate == "2019-08-27T00:00:00.000000Z"
-    end
+    Assertions.assert_lists_equal([cam_as_expected, paul_as_expected], Model.get_all(["cam", "paul"]))
   end
 
-  defp generate_model_return(id, date, sourceType) do
-    Helper.sample_model(%{
-      description: "#{id}-description",
-      fileTypes: ["csv"],
-      id: id,
-      name: "#{id}-name",
-      title: "#{id}-title",
-      modifiedDate: "#{date}",
-      organization: "#{id} Co.",
-      keywords: ["#{id} keywords"],
-      sourceType: sourceType,
-      organizationDetails: %{
-        orgTitle: "#{id}-org-title",
-        orgName: "#{id}-org-name",
-        logoUrl: "#{id}-org.png"
-      },
-      private: false
-    })
-    |> Map.from_struct()
-    |> Jason.encode!()
+  test "get_all/1 does not throw error when model has been deleted from redis" do
+    {cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
+    {paul, paul_as_json, paul_as_expected} = generate_test_data("paul")
+
+    allow Persistence.get_many(any(), true), return: [paul_as_json]
+
+    allow Persistence.get_many_with_keys(any()),
+      return: Map.merge(get_many_with_keys_result(nil), get_many_with_keys_result(paul_as_expected))
+
+    Assertions.assert_lists_equal([paul_as_expected], Model.get_all(["cam", "paul"]))
+  end
+
+  test "get_all/0" do
+    {cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
+
+    allow Persistence.get_all("discovery-api:model:*"), return: [cam_as_json]
+
+    allow Persistence.get_many_with_keys(any()),
+      return: get_many_with_keys_result(cam_as_expected)
+
+    Assertions.assert_lists_equal([cam_as_expected], Model.get_all())
+  end
+
+  defp get_many_with_keys_result(nil) do
+    id = "nil_id"
+
+    %{
+      "forklift:last_insert_date:#{id}" => nil,
+      "smart_registry:downloads:count:#{id}" => nil,
+      "smart_registry:queries:count:#{id}" => nil,
+      "discovery-api:stats:#{id}" => nil
+    }
+  end
+
+  defp get_many_with_keys_result(expected_model) do
+    id = expected_model.id
+
+    %{
+      "forklift:last_insert_date:#{id}" => expected_model.lastUpdatedDate,
+      "smart_registry:downloads:count:#{id}" => expected_model.downloads,
+      "smart_registry:queries:count:#{id}" => expected_model.queries,
+      "discovery-api:stats:#{id}" => expected_model.completeness
+    }
+  end
+
+  defp generate_test_data(name) do
+    model = Helper.sample_model(%{id: name})
+    model_as_json = model |> Map.from_struct() |> Jason.encode!()
+
+    [x, y, z] = Stream.repeatedly(&:rand.uniform/0) |> Enum.take(3)
+
+    expected_model = Map.merge(model, %{completeness: %{completeness: x}, downloads: y, queries: z, lastUpdatedDate: DateTime.utc_now()})
+
+    {model, model_as_json, expected_model}
   end
 end

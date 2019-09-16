@@ -22,14 +22,31 @@ defmodule DiscoveryApi.Data.PersistenceTest do
   end
 
   describe "get_many/2" do
-    test "doesnt filter nils by default" do
-      allow Redix.command!(:redix, ["MGET", any()]), return: ["item a", nil, "item c"]
-      assert Persistence.get_many(["redis_key"]) == ["item a", nil, "item c"]
+    test "does not filter nils by default" do
+      allow Redix.command!(:redix, ["MGET", any(), any(), any()]), return: [1, nil, 3]
+      assert Persistence.get_many(["a", "b", "c"]) == [1, nil, 3]
     end
 
     test "can filter out nils" do
-      allow Redix.command!(:redix, ["MGET", any()]), return: ["item a", nil, "item c"]
-      assert Persistence.get_many(["redis_key"], true) == ["item a", "item c"]
+      allow Redix.command!(:redix, ["MGET", any(), any(), any()]), return: [1, nil, 3]
+      assert Persistence.get_many(["a", "b", "c"], true) == [1, 3]
+    end
+  end
+
+  describe "get_many_with_keys/2" do
+    test "returns key value pairs" do
+      allow Redix.command!(:redix, ["MGET", any(), any(), any()]), return: ["1", "2", "3"]
+      assert Persistence.get_many_with_keys(["a", "b", "c"]) == %{"a" => 1, "b" => 2, "c" => 3}
+    end
+
+    test "decodes json" do
+      allow Redix.command!(:redix, ["MGET", any()]), return: [Jason.encode!(%{id: 1, name: "natty steves"})]
+      assert Persistence.get_many_with_keys(["a"]) == %{"a" => %{"id" => 1, "name" => "natty steves"}}
+    end
+
+    test "handles nils" do
+      allow Redix.command!(:redix, ["MGET", any(), any(), any()]), return: ["1", nil, "3"]
+      assert Persistence.get_many_with_keys(["a", "b", "c"]) == %{"a" => 1, "b" => nil, "c" => 3}
     end
   end
 
