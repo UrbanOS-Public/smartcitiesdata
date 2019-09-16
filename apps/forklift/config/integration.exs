@@ -6,14 +6,14 @@ host =
     defined -> defined
   end
 
-endpoints = [{to_charlist(host), 9094}]
+endpoints = [{to_charlist(host), 9092}]
 
 output_topic = "streaming-persisted"
 
 config :forklift,
   retry_count: 10,
   retry_initial_delay: 100,
-  elsa_brokers: [{String.to_atom(host), 9094}],
+  elsa_brokers: [{String.to_atom(host), 9092}],
   message_processing_cadence: 5_000,
   input_topic_prefix: "integration",
   output_topic: output_topic,
