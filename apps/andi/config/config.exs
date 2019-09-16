@@ -10,6 +10,7 @@ use Mix.Config
 # Configures the endpoint
 config :andi, AndiWeb.Endpoint,
   url: [host: "localhost"],
+  # You should overwrite this as part of deploying the platform.
   secret_key_base: "z7Iv1RcFiPow+/j3QKYyezhVCleXMuNBmrDO130ddUzysadB1stTt+q0JfIrm/q7",
   render_errors: [view: AndiWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: Andi.PubSub, adapter: Phoenix.PubSub.PG2]

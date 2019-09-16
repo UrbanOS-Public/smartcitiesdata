@@ -1,21 +1,33 @@
 # Tasks
 
-**TODO: Add description**
+A collection of tasks to be used across umbrella sub-projects.
+
+## app.version
+
+This task writes each sub-project's mix version to your console. Run it with `mix cmd` against all or one project.
+
+```bash
+> mix cmd mix app.version
+==> tasks
+0.1.0
+==> andi
+0.3.2
+```
+
+```bash
+> mix cmd --app andi mix app.version
+==> andi
+0.3.2
+```
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `tasks` to your list of dependencies in `mix.exs`:
+Install from the umbrella project. This should only be used in the `dev` environment.
 
 ```elixir
 def deps do
   [
-    {:tasks, "~> 0.1.0"}
+    {:tasks, in_umbrella: true, only: :dev}
   ]
 end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/tasks](https://hexdocs.pm/tasks).
-
