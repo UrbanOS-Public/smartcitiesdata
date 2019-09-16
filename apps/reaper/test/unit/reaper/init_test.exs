@@ -25,7 +25,11 @@ defmodule Reaper.InitTest do
       allow Reaper.DataExtract.Processor.process(any()), return: :ok
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
-      Brook.Test.with_event(fn -> Extractions.update_dataset(dataset) end)
+
+      Brook.Test.with_event(fn ->
+        Extractions.update_dataset(dataset)
+        Extractions.update_last_fetched_timestamp(dataset.id, nil)
+      end)
 
       Reaper.Init.run()
 

@@ -36,7 +36,8 @@ defmodule Reaper.Collections.BaseDataset do
         |> Enum.map(&Map.get(&1, :dataset))
       end
 
-      defp should_start(%{started_timestamp: start_time, last_fetched_timestamp: end_time}) do
+      defp should_start(%{started_timestamp: start_time, last_fetched_timestamp: end_time})
+           when not is_nil(start_time) and not is_nil(end_time) do
         DateTime.compare(start_time, end_time) == :gt
       end
 
