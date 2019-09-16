@@ -23,9 +23,9 @@ defmodule DeadLetter.Carrier do
   @callback send(term()) :: :ok | {:error, term()}
 end
 
-defmodule DeadLetter.Carrier.Default do
+defmodule DeadLetter.Carrier.Test do
   @moduledoc """
-  Default implementation of the `DeadLetter.Carrier` behaviour.
+  Test implementation of the `DeadLetter.Carrier` behaviour.
   Simply stores the message in an internal queue via the Erlang
   `:queue` module with a configurable cap.
 
@@ -60,8 +60,6 @@ defmodule DeadLetter.Carrier.Default do
   @impl DeadLetter.Carrier
   def send(message) do
     GenServer.cast(@name, {:send, message})
-
-    :ok
   end
 
   @doc """

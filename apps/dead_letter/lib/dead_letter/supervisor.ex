@@ -4,7 +4,6 @@ defmodule DeadLetter.Supervisor do
   the server and driver processes.
   """
   use Supervisor
-  @default_driver %{module: DeadLetter.Driver.Default, init_args: []}
 
   @doc """
   Start a DeadLetter supervisor and link it to the current process
@@ -18,7 +17,7 @@ defmodule DeadLetter.Supervisor do
   configurations for starting its children.
   """
   def init(opts) do
-    config = Keyword.get(opts, :driver, @default_driver) |> Enum.into(%{})
+    config = Keyword.fetch!(opts, :driver) |> Enum.into(%{})
 
     children =
       [

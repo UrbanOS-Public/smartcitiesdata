@@ -2,7 +2,7 @@ defmodule DeadLetterTest do
   use ExUnit.Case
   use Placebo
   import Assertions
-  alias DeadLetter.Carrier.Default, as: Carrier
+  alias DeadLetter.Carrier.Test, as: Carrier
 
   @default_stacktrace [
     {:erlang, :/, [1, 0], []},
@@ -23,7 +23,7 @@ defmodule DeadLetterTest do
   @dataset_id "ds1"
 
   setup do
-    config = [driver: [module: DeadLetter.Carrier.Default, init_args: [size: 3_000]]]
+    config = [driver: [module: DeadLetter.Carrier.Test, init_args: [size: 3_000]]]
 
     {:ok, dlq} = DeadLetter.start_link(config)
 
