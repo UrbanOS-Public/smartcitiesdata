@@ -43,7 +43,7 @@ defmodule DiscoveryApi.Data.ModelTest do
       last_updated_date
     ])
 
-    Redix.command!(:redix, ["SET", "discovery-api:stats:#{expected_model.id}", model_json_string])
+    Redix.command!(:redix, ["SET", "discovery-api:stats:#{expected_model.id}", expected_model.completeness])
 
     actual_model = Model.get(expected_model.id)
     assert actual_model == expected_model
@@ -95,7 +95,7 @@ defmodule DiscoveryApi.Data.ModelTest do
 
     [model1, model2, model3]
     |> Enum.each(fn model ->
-      Redix.command!(:redix, ["SET", "discovery-api:stats:#{model.id}", Jason.encode!(%{completeness: model.completeness})])
+      Redix.command!(:redix, ["SET", "discovery-api:stats:#{model.id}", Jason.encode!(model.completeness)])
     end)
 
     results = Model.get_all([model1.id, model3.id])
