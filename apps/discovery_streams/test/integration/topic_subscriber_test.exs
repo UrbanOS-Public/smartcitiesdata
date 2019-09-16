@@ -1,17 +1,27 @@
 defmodule DiscoveryStreams.TopicSubscriberTest do
   use ExUnit.Case
   use Divo
-
-  @topics ["cota-vehicle-positions", "shuttle-positions"]
+  alias SmartCity.TestDataGenerator, as: TDG
+  import SmartCity.Event, only: [data_ingest_start: 0]
 
   test "subscribes to any non internal use topic" do
-    validate_subscribed_topics(@topics)
-    validate_caches_exist(@topics)
+    private_dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: true})
+    Brook.Event.send(data_ingest_start(), :author, private_dataset)
+    dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
+    Brook.Event.send(data_ingest_start(), :author, dataset1)
 
-    create_topic("just_created")
+    expected = ["transformed-#{dataset1.id}"]
+    expected_cache = [dataset1.id]
+    validate_subscribed_topics(expected)
+    validate_caches_exist(expected_cache)
 
-    validate_subscribed_topics(@topics ++ ["just_created"])
-    validate_caches_exist(@topics ++ ["just_created"])
+    dataset2 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
+    Brook.Event.send(data_ingest_start(), :author, dataset2)
+
+    expected = ["transformed-#{dataset1.id}", "transformed-#{dataset2.id}"]
+    expected_cache = [dataset1.id, dataset2.id]
+    validate_subscribed_topics(expected)
+    validate_caches_exist(expected_cache)
   end
 
   defp validate_subscribed_topics(expected) do
@@ -36,14 +46,5 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
 
   defp subscribed_topics() do
     Kaffe.GroupManager.list_subscribed_topics()
-  end
-
-  defp create_topic(topic) do
-    endpoints =
-      Application.get_env(:kaffe, :consumer)[:endpoints]
-      |> Enum.map(fn {host, port} -> {to_charlist(host), port} end)
-
-    :brod.start_client(endpoints, :test_client)
-    :brod.start_producer(:test_client, topic, [])
   end
 end

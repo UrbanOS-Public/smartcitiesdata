@@ -57,30 +57,22 @@ defmodule DiscoveryStreams.MessageHandler do
 
   # sobelow_skip ["DOS.StringToAtom"]
   defp add_to_cache(%{key: key, topic: topic, value: message}) do
+    dataset_id = DiscoveryStreams.TopicHelper.dataset_id(topic)
+
     GenServer.abcast(
       DiscoveryStreams.CacheGenserver,
-      {:put, String.to_atom(topic), key, message}
+      {:put, String.to_atom(dataset_id), key, message}
     )
   end
 
-  defp broadcast(%{topic: "central_ohio_transit_authority__cota_stream", value: data}) do
-    DiscoveryStreamsWeb.Endpoint.broadcast("vehicle_position", "update", data)
-    DiscoveryStreamsWeb.Endpoint.broadcast("streaming:cota-vehicle-positions", "update", data)
-    DiscoveryStreamsWeb.Endpoint.broadcast("streaming:central_ohio_transit_authority__cota_stream", "update", data)
-  end
+  defp broadcast(%{topic: "transformed-" <> channel, value: data}) do
+    case Brook.get(:streaming_datasets_by_id, channel) do
+      {:ok, system_name} ->
+        DiscoveryStreamsWeb.Endpoint.broadcast!("streaming:#{system_name}", "update", data)
 
-  defp broadcast(%{topic: "may_mobility__connected_electric_autonomous_vehicle_locations", value: data}) do
-    DiscoveryStreamsWeb.Endpoint.broadcast("streaming:ceav-vehicle-locations", "update", data)
-
-    DiscoveryStreamsWeb.Endpoint.broadcast(
-      "streaming:may_mobility__connected_electric_autonomous_vehicle_locations",
-      "update",
-      data
-    )
-  end
-
-  defp broadcast(%{topic: channel, value: data}) do
-    DiscoveryStreamsWeb.Endpoint.broadcast!("streaming:#{channel}", "update", data)
+      _ ->
+        nil
+    end
   end
 
   defp log_message(message) do

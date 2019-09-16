@@ -7,6 +7,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   use DiscoveryStreamsWeb, :channel
   alias DiscoveryStreamsWeb.Presence
   alias DiscoveryStreams.TopicSubscriber
+  alias DiscoveryStreams.TopicHelper
 
   @update_event "update"
   @filter_event "filter"
@@ -69,20 +70,33 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     query = Cachex.Query.create(true, :value)
 
     channel
-    |> determine_topic()
+    |> determine_system_name()
+    |> get_dataset_id()
     |> String.to_atom()
     |> Cachex.stream!(query)
     |> Stream.filter(filter)
     |> Enum.each(fn msg -> push(socket, @update_event, msg) end)
   end
 
-  defp determine_topic("vehicle_position"), do: "central_ohio_transit_authority__cota_stream"
-  defp determine_topic("streaming:cota-vehicle-positions"), do: "central_ohio_transit_authority__cota_stream"
+  defp determine_system_name("streaming:" <> system_name), do: system_name
 
-  defp determine_topic("streaming:ceav-vehicle-locations"),
-    do: "may_mobility__connected_electric_autonomous_vehicle_locations"
+  defp determine_topic("streaming:" <> system_name) do
+    get_dataset_id(system_name)
+    |> TopicHelper.topic_name()
+  end
 
-  defp determine_topic("streaming:" <> topic), do: topic
+  defp determine_topic(channel) do
+    determine_system_name(channel)
+    |> get_dataset_id()
+    |> TopicHelper.topic_name()
+  end
+
+  defp get_dataset_id(system_name) do
+    case Brook.get(:streaming_datasets_by_system_name, system_name) do
+      {:ok, dataset_id} -> dataset_id
+      _ -> nil
+    end
+  end
 
   defp message_matches?(message, filter) do
     Enum.all?(filter, fn {field, value} -> field_matches?(message, field, value) end)

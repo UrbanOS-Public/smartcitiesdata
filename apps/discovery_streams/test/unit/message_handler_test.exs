@@ -9,15 +9,37 @@ defmodule DiscoveryStreams.MessageHandlerTest do
   alias DiscoveryStreams.{CachexSupervisor, MessageHandler, TopicSubscriber}
 
   @outbound_records "records"
+  @dataset_1_id "d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
+  @dataset_2_id "555ea731-d85e-4bd8-b2e4-4017366c24b0"
 
   setup do
-    CachexSupervisor.create_cache(:central_ohio_transit_authority__cota_stream)
-    CachexSupervisor.create_cache(:"shuttle-position")
-    Cachex.clear(:central_ohio_transit_authority__cota_stream)
-    Cachex.clear(:"shuttle-position")
+    CachexSupervisor.create_cache(:"#{@dataset_1_id}")
+    CachexSupervisor.create_cache(:"#{@dataset_2_id}")
+    Cachex.clear(:"#{@dataset_1_id}")
+    Cachex.clear(:"#{@dataset_2_id}")
 
     allow TopicSubscriber.list_subscribed_topics(),
-      return: ["shuttle-position", "central_ohio_transit_authority__cota_stream"]
+      return: ["transformed-#{@dataset_1_id}", "transformed-#{@dataset_2_id}"]
+
+    allow(Brook.get(:streaming_datasets_by_id, @dataset_1_id),
+      return: {:ok, "ceav__shuttles_on_a_map"}
+    )
+
+    allow(Brook.get(:streaming_datasets_by_id, @dataset_2_id),
+      return: {:ok, "central_ohio_transit_authority__cota_stream"}
+    )
+
+    allow(Brook.get(:streaming_datasets_by_system_name, "ceav__shuttles_on_a_map"),
+      return: {:ok, @dataset_1_id}
+    )
+
+    allow(Brook.get(:streaming_datasets_by_system_name, "central_ohio_transit_authority__cota_stream"),
+      return: {:ok, @dataset_2_id}
+    )
+
+    allow(Brook.get(:streaming_datasets_by_system_name, any()),
+      return: {:error, "does_not_exist"}
+    )
 
     :ok
   end
@@ -38,9 +60,8 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
     where([
       [:channel, :topic],
-      ["vehicle_position", "central_ohio_transit_authority__cota_stream"],
-      ["streaming:cota-vehicle-positions", "central_ohio_transit_authority__cota_stream"],
-      ["streaming:shuttle-position", "shuttle-position"]
+      ["streaming:central_ohio_transit_authority__cota_stream", "transformed-555ea731-d85e-4bd8-b2e4-4017366c24b0"],
+      ["streaming:ceav__shuttles_on_a_map", "transformed-d21d5af6-346c-43e5-891f-8c2c7f28e4ab"]
     ])
   end
 
@@ -49,15 +70,21 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
     {:ok, _, socket} =
       socket()
-      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
+      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:ceav__shuttles_on_a_map")
 
     output =
       capture_log([level: :warn], fn ->
         MessageHandler.handle_messages([
-          create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "shuttle-position"),
+          create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}),
+            topic: "transformed-d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
+          ),
           # <- Badly formatted JSON
-          create_message(~s({"vehicle":{"vehicle":{"id:""11604"}}}), topic: "shuttle-position"),
-          create_message(~s({"vehicle":{"vehicle":{"id":"11605"}}}), topic: "shuttle-position")
+          create_message(~s({"vehicle":{"vehicle":{"id:""11604"}}}),
+            topic: "transformed-d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
+          ),
+          create_message(~s({"vehicle":{"vehicle":{"id":"11605"}}}),
+            topic: "transformed-d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
+          )
         ])
       end)
 
@@ -74,15 +101,22 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
     {:ok, _, socket} =
       socket()
-      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "vehicle_position")
+      |> subscribe_and_join(
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:central_ohio_transit_authority__cota_stream"
+      )
 
     MessageHandler.handle_messages([
-      create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: "central_ohio_transit_authority__cota_stream"),
-      create_message(~s({"vehicle_id": 34095, "description": "Some Description"}), topic: "shuttle-position")
+      create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}),
+        topic: "transformed-555ea731-d85e-4bd8-b2e4-4017366c24b0"
+      ),
+      create_message(~s({"vehicle_id": 34095, "description": "Some Description"}),
+        topic: "transformed-d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
+      )
     ])
 
-    assert_called MetricCollector.record_metrics(any(), "central_ohio_transit_authority__cota_stream"), once()
-    assert_called MetricCollector.record_metrics(any(), "shuttle_position"), once()
+    assert_called MetricCollector.record_metrics(any(), "transformed_555ea731_d85e_4bd8_b2e4_4017366c24b0"), once()
+    assert_called MetricCollector.record_metrics(any(), "transformed_d21d5af6_346c_43e5_891f_8c2c7f28e4ab"), once()
 
     leave(socket)
   end
@@ -94,12 +128,15 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
     {:ok, _, socket} =
       socket()
-      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "vehicle_position")
+      |> subscribe_and_join(
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:central_ohio_transit_authority__cota_stream"
+      )
 
     assert capture_log([level: :warn], fn ->
              MessageHandler.handle_messages([
                create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}),
-                 topic: "central_ohio_transit_authority__cota_stream"
+                 topic: "transformed-555ea731-d85e-4bd8-b2e4-4017366c24b0"
                )
              ])
            end) =~ "Unable to write application metrics: {:http_error, \"reason\"}"
@@ -112,7 +149,10 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
     {:ok, _, socket} =
       socket()
-      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "vehicle_position")
+      |> subscribe_and_join(
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:central_ohio_transit_authority__cota_stream"
+      )
 
     msgs = %{
       a: ~s({"vehicle":{"vehicle":{"id":"10000"}}}),
@@ -131,7 +171,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
     cache_record_created = fn ->
       stream =
-        Cachex.stream!(:central_ohio_transit_authority__cota_stream)
+        Cachex.stream!(:"555ea731-d85e-4bd8-b2e4-4017366c24b0")
         |> Enum.to_list()
         |> Enum.map(fn {:entry, _key, _create_ts, _ttl, vehicle} -> vehicle end)
 
@@ -176,7 +216,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
   defp create_message(data, opts \\ []) do
     %{
       key: Keyword.get(opts, :key, "some key"),
-      topic: Keyword.get(opts, :topic, "central_ohio_transit_authority__cota_stream"),
+      topic: Keyword.get(opts, :topic, "transformed-555ea731-d85e-4bd8-b2e4-4017366c24b0"),
       value: data
     }
   end

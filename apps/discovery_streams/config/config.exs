@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
-  http: [port: 4000],
+  http: [port: 4001],
   secret_key_base: "This is a test key",
   render_errors: [view: DiscoveryStreamsWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: DiscoveryStreams.PubSub, adapter: Phoenix.PubSub.PG2],
@@ -20,7 +20,7 @@ config :logger,
   format: "$time $metadata[$level] $message\n",
   metadata: [:user_id]
 
-config :discovery_streams, ttl: 600_000
+config :discovery_streams, ttl: 600_000, topic_prefix: "transformed-"
 
 config :ex_aws,
   region: "us-east-2"

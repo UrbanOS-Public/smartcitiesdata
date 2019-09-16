@@ -8,3 +8,10 @@ config :kaffe,
   consumer: [
     topics: ["shuttle-position", "cota-vehicle-positions"]
   ]
+
+config :discovery_streams, :brook,
+  handlers: [DiscoveryStreams.EventHandler],
+  storage: [
+    module: Brook.Storage.Ets,
+    init_arg: []
+  ]

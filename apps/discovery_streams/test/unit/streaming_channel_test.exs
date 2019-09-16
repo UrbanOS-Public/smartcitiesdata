@@ -5,94 +5,78 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   import Checkov
 
   alias DiscoveryStreams.{CachexSupervisor, TopicSubscriber}
+  @dataset_1_id "d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
 
   setup do
-    CachexSupervisor.create_cache(:"shuttle-position")
-    CachexSupervisor.create_cache(:central_ohio_transit_authority__cota_stream)
-    Cachex.clear(:"shuttle-position")
-    Cachex.clear(:central_ohio_transit_authority__cota_stream)
+    CachexSupervisor.create_cache(@dataset_1_id |> String.to_atom())
+    Cachex.clear(@dataset_1_id |> String.to_atom())
 
     allow TopicSubscriber.list_subscribed_topics(),
-      return: ["shuttle-position", "central_ohio_transit_authority__cota_stream"]
+      return: ["transformed-#{@dataset_1_id}"]
+
+    allow(Brook.get(:streaming_datasets_by_system_name, "shuttle-position"),
+      return: {:ok, @dataset_1_id}
+    )
+
+    allow(Brook.get(:streaming_datasets_by_system_name, any()),
+      return: {:error, "does_not_exist"}
+    )
 
     :ok
   end
 
-  data_test "presence is tracked per channel - #{channel}" do
-    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
+  test "presence is tracked per channel" do
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
 
-    assert 1 == DiscoveryStreamsWeb.Presence.connections(channel)
+    assert 1 == DiscoveryStreamsWeb.Presence.connections("streaming:shuttle-position")
 
     leave(socket)
-
-    where([
-      [:cache, :channel],
-      [:"shuttle-position", "streaming:shuttle-position"],
-      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
-    ])
   end
 
-  data_test "sends the user the entire cache in #{cache} of a #{channel} topic stream" do
-    Cachex.put(cache, "12345", %{"shuttleid" => "12345"})
-    Cachex.put(cache, "98765", %{"shuttleid" => "98765"})
+  test "sends the user the entire cache in of a topic stream" do
+    Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "12345", %{"shuttleid" => "12345"})
+    Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "98765", %{"shuttleid" => "98765"})
 
-    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
 
     assert_push("update", %{"shuttleid" => "12345"}, 1000)
     assert_push("update", %{"shuttleid" => "98765"}, 1000)
 
     leave(socket)
-
-    where([
-      [:cache, :channel],
-      [:"shuttle-position", "streaming:shuttle-position"],
-      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
-    ])
   end
 
-  data_test "sends the user the entire cache in #{cache} when they connect with no filter to channal #{channel}" do
-    Cachex.put(cache, "12342", %{"vehicleid" => "12342"})
-    Cachex.put(cache, "54321", %{"vehicleid" => "54321"})
+  test "sends the user the entire cache when they connect with no filter to channel" do
+    Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "12342", %{"vehicleid" => "12342"})
+    Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "54321", %{"vehicleid" => "54321"})
 
-    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
 
     assert_push("update", %{"vehicleid" => "12342"}, 1000)
     assert_push("update", %{"vehicleid" => "54321"}, 1000)
 
     leave(socket)
-
-    where([
-      [:cache, :channel],
-      [:"shuttle-position", "streaming:shuttle-position"],
-      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
-    ])
   end
 
-  data_test "sends the user the cache in #{cache} that matches filter given on params when they connect to channel #{
-              channel
-            }" do
-    Cachex.put(cache, "12345", %{"vehicleid" => "12345", "type" => "car"})
-    Cachex.put(cache, "54321", %{"vehicleid" => "54321", "type" => "bus"})
+  test "sends the user the cache that matches filter given on params when they connect to channel" do
+    Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "12345", %{"vehicleid" => "12345", "type" => "car"})
+    Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "54321", %{"vehicleid" => "54321", "type" => "bus"})
 
-    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel, %{"type" => "bus"})
+    {:ok, _, socket} =
+      subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position", %{
+        "type" => "bus"
+      })
 
     refute_push("update", %{"vehicleid" => "12345", "type" => "car"}, 1000)
     assert_push("update", %{"vehicleid" => "54321", "type" => "bus"}, 1000)
 
     leave(socket)
-
-    where([
-      [:cache, :channel],
-      [:"shuttle-position", "streaming:shuttle-position"],
-      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
-    ])
   end
 
-  data_test "filter events cause all cached messages in cache #{cache} to be pushed through filter in channel #{channel}" do
-    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
+  test "filter events cause all cached messages in cache to be pushed through filter in channel" do
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
 
-    Cachex.put(cache, "12342", %{"foo" => %{"bar" => "12342"}})
-    Cachex.put(cache, "98765", %{"foo" => %{"bar" => "98765"}})
+    Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "12342", %{"foo" => %{"bar" => "12342"}})
+    Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "98765", %{"foo" => %{"bar" => "98765"}})
 
     push(socket, "filter", %{"foo.bar" => "12342"})
 
@@ -100,18 +84,10 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     refute_push("update", %{"foo" => %{"bar" => "98765"}})
 
     leave(socket)
-
-    where([
-      [:cache, :channel],
-      [:"shuttle-position", "streaming:shuttle-position"],
-      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
-    ])
   end
 
-  data_test "filter events cause all subsequent messages to be pushed to cache #{cache} through filter in channel #{
-              channel
-            }" do
-    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
+  test "filter events cause all subsequent messages to be pushed to cache through filter in channel" do
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
 
     push(socket, "filter", %{"foo.bar" => "12342"})
     broadcast_from(socket, "update", %{"foo" => %{"bar" => "12342"}})
@@ -121,18 +97,10 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     refute_push("update", %{"foo" => %{"bar" => "98765"}})
 
     leave(socket)
-
-    where([
-      [:cache, :channel],
-      [:"shuttle-position", "streaming:shuttle-position"],
-      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
-    ])
   end
 
-  data_test "filter fields on cache #{cache} with multiple values causes non-matches to be filtered out in channel #{
-              channel
-            }" do
-    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
+  test "filter fields on cache with multiple values causes non-matches to be filtered out in channel" do
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
 
     push(socket, "filter", %{"foo.bar" => ["12342", "12349"]})
     broadcast_from(socket, "update", %{"foo" => %{"bar" => "12342"}})
@@ -149,16 +117,10 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     refute_push("update", %{"foo" => %{"bar" => "55555"}})
 
     leave(socket)
-
-    where([
-      [:cache, :channel],
-      [:"shuttle-position", "streaming:shuttle-position"],
-      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
-    ])
   end
 
-  data_test "filters with multiple keys must all match for message to get pushed" do
-    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
+  test "filters with multiple keys must all match for message to get pushed" do
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
 
     push(socket, "filter", %{"foo.bar" => 1, "abc.def" => "two"})
 
@@ -172,19 +134,13 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     refute_push("update", %{"foo" => %{"bar" => 1}, "abc" => %{"def" => "three"}})
 
     leave(socket)
-
-    where([
-      [:cache, :channel],
-      [:"shuttle-position", "streaming:shuttle-position"],
-      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
-    ])
   end
 
-  data_test "empty filter events cause all cached messages to be pushed" do
-    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
+  test "empty filter events cause all cached messages to be pushed" do
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
 
-    Cachex.put(cache, "123456", %{"foo" => %{"bar" => "123456"}})
-    Cachex.put(cache, "test42", %{"foo" => %{"bar" => "test42"}})
+    Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "123456", %{"foo" => %{"bar" => "123456"}})
+    Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "test42", %{"foo" => %{"bar" => "test42"}})
 
     push(socket, "filter", %{"foo.bar" => "cyan"})
     refute_push("update", %{"foo" => _})
@@ -194,16 +150,10 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     assert_push("update", %{"foo" => %{"bar" => "test42"}})
 
     leave(socket)
-
-    where([
-      [:cache, :channel],
-      [:"shuttle-position", "streaming:shuttle-position"],
-      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
-    ])
   end
 
-  data_test "empty filter events cause all subsequent messages to be pushed" do
-    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, channel)
+  test "empty filter events cause all subsequent messages to be pushed" do
+    {:ok, _, socket} = subscribe_and_join(socket(), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
 
     push(socket, "filter", %{})
 
@@ -214,12 +164,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     assert_push("update", %{"two" => 2})
 
     leave(socket)
-
-    where([
-      [:cache, :channel],
-      [:"shuttle-position", "streaming:shuttle-position"],
-      [:central_ohio_transit_authority__cota_stream, "vehicle_position"]
-    ])
   end
 
   test "joining topic that does not exist returns error tuple" do

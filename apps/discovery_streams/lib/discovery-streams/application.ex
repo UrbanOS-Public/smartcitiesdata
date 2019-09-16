@@ -23,6 +23,7 @@ defmodule DiscoveryStreams.Application do
         supervisor(DiscoveryStreamsWeb.Endpoint, []),
         libcluster(),
         DiscoveryStreams.CacheGenserver,
+        {Brook, Application.get_env(:discovery_streams, :brook)},
         kaffe(),
         DiscoveryStreamsWeb.Presence,
         DiscoveryStreamsWeb.Presence.Server

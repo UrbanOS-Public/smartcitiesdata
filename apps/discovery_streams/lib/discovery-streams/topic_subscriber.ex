@@ -31,35 +31,42 @@ defmodule DiscoveryStreams.TopicSubscriber do
   end
 
   defp check_for_new_topics_and_subscribe() do
-    (public_topics() -- list_subscribed_topics())
+    (topics_we_should_be_consuming() -- list_subscribed_topics())
     |> subscribe()
+  end
+
+  defp topics_we_should_be_consuming() do
+    case Brook.get_all_values(:streaming_datasets_by_system_name) do
+      {:ok, items} ->
+        Enum.map(items, &DiscoveryStreams.TopicHelper.topic_name(&1))
+
+      {:error, _} ->
+        Logger.warn("Unable to get values from Brook")
+        []
+    end
   end
 
   defp subscribe([]), do: nil
 
   # sobelow_skip ["DOS.StringToAtom"]
   defp subscribe(topics) do
+    create_topics(topics)
+
     Logger.info("Subscribing to public topics: #{inspect(topics)}")
     Kaffe.GroupManager.subscribe_to_topics(topics)
 
     topics
+    |> Enum.map(&DiscoveryStreams.TopicHelper.dataset_id/1)
     |> Enum.map(&String.to_atom/1)
     |> Enum.each(&CachexSupervisor.create_cache/1)
+  end
+
+  defp create_topics(topics) do
+    Enum.each(topics, &Elsa.create_topic(get_endpoints(), &1))
   end
 
   defp get_endpoints() do
     Application.get_env(:kaffe, :consumer)[:endpoints]
     |> Enum.map(fn {host, port} -> {to_charlist(host), port} end)
-  end
-
-  defp public?(topic_metadata), do: not Map.get(topic_metadata, :is_internal)
-
-  defp public_topics() do
-    {:ok, metadata} = :brod.get_metadata(get_endpoints())
-
-    metadata
-    |> Map.get(:topic_metadata)
-    |> Enum.filter(&public?/1)
-    |> Enum.map(fn x -> Map.get(x, :topic) end)
   end
 end

@@ -17,7 +17,7 @@ defmodule DiscoveryStreams.CachexSupervisor do
   # sobelow_skip ["DOS.BinToAtom"]
   @doc "Creates a supervised cache under CachexSupervisor"
   @spec create_cache(atom) :: DynamicSupervisor.on_start_child()
-  def(create_cache(name) when is_atom(name)) do
+  def create_cache(name) when is_atom(name) do
     ttl = Application.get_env(:discovery_streams, :ttl)
     expiration = Cachex.Spec.expiration(default: ttl)
 

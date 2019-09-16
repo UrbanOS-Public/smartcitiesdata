@@ -1,6 +1,7 @@
 use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
+redis_host = System.get_env("REDIS_HOST")
 
 if kafka_brokers do
   endpoints =
@@ -10,17 +11,39 @@ if kafka_brokers do
     |> Enum.map(fn entry -> String.split(entry, ":") end)
     |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
-  config :kaffe, consumer: [
-    endpoints: endpoints,
-    topics: [],
-    consumer_group: "discovery-streams",
-    message_handler: DiscoveryStreams.MessageHandler,
-    offset_reset_policy: :reset_to_latest
-  ]
+  config :kaffe,
+    consumer: [
+      endpoints: endpoints,
+      topics: [],
+      consumer_group: "discovery-streams",
+      message_handler: DiscoveryStreams.MessageHandler,
+      offset_reset_policy: :reset_to_latest
+    ]
+
+  config :discovery_streams, :brook,
+    driver: [
+      module: Brook.Driver.Kafka,
+      init_arg: [
+        endpoints: endpoints,
+        topic: "event-stream",
+        group: "discovery_streams-events",
+        config: [
+          begin_offset: :earliest,
+          offset_reset_policy: :reset_to_earliest
+        ]
+      ]
+    ],
+    handlers: [DiscoveryStreams.EventHandler],
+    storage: [
+      module: Brook.Storage.Redis,
+      init_arg: [
+        redix_args: [host: redis_host],
+        namespace: "discovery_streams:view"
+      ]
+    ]
 end
 
 if System.get_env("RUN_IN_KUBERNETES") do
-
   config :libcluster,
     topologies: [
       consumer_cluster: [
@@ -33,5 +56,4 @@ if System.get_env("RUN_IN_KUBERNETES") do
         ]
       ]
     ]
-
 end
