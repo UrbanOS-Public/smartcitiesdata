@@ -19,7 +19,7 @@ function build_image() {
 
 function push_image() {
     local app="$1"
-    local tag="$@"
+    local tag="$2"
     docker push smartcitiesdata/${app}:${tag}
 }
 
