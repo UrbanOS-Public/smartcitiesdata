@@ -32,10 +32,10 @@ defmodule Reaper.Migrations do
 
   defp migrate_reaper_config(reaper_config) do
     dataset_update = find_dataset_update(reaper_config)
-    dataset = dataset_update.data
+    dataset = dataset_update.data |> fix_dataset()
     last_fetched_timestamp = Persistence.get_last_fetched_timestamp(dataset.id)
 
-    Brook.Test.with_event(dataset_update, fn ->
+    Brook.Test.with_event(%{dataset_update | data: dataset}, fn ->
       setup_view_state(dataset, last_fetched_timestamp)
       Brook.ViewState.delete(:reaper_config, dataset.id)
 
@@ -68,5 +68,18 @@ defmodule Reaper.Migrations do
     Brook.get_events!(:reaper_config, reaper_config.dataset_id)
     |> Enum.filter(fn event -> event.type == dataset_update() end)
     |> List.last()
+  end
+
+  defp fix_dataset(%SmartCity.Dataset{version: "0.4"} = dataset), do: dataset
+
+  defp fix_dataset(%{business: business, technical: technical} = dataset) do
+    {:ok, good_dataset} =
+      dataset
+      |> Map.from_struct()
+      |> Map.put(:technical, Map.from_struct(technical))
+      |> Map.put(:business, Map.from_struct(business))
+      |> SmartCity.Dataset.new()
+
+    good_dataset
   end
 end
