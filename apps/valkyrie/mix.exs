@@ -51,7 +51,6 @@ defmodule Valkyrie.MixProject do
       # updating version breaks
       {:retry, "~> 0.13"},
       {:smart_city, "~> 2.8"},
-      {:smart_city_data, "~> 3.0.2"},
       {:smart_city_test, "~> 0.5", only: [:test, :integration]},
       {:timex, "~> 3.6"},
       {:yeet, "~> 1.0"}
