@@ -1,0 +1,3 @@
+[submodule "prestige"]
+	path = prestige
+	url = git@github.com:SmartColumbusOS/prestige.git
