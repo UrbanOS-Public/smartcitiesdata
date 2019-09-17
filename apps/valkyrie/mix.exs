@@ -5,7 +5,7 @@ defmodule Valkyrie.MixProject do
     [
       app: :valkyrie,
       version: "0.2.3",
-      elixir: "~> 1.9",
+      elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
@@ -50,7 +50,7 @@ defmodule Valkyrie.MixProject do
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       # updating version breaks
       {:retry, "~> 0.13"},
-      {:smart_city, "~> 2.7"},
+      {:smart_city, "~> 2.8"},
       {:smart_city_data, "~> 3.0.2"},
       {:smart_city_test, "~> 0.5", only: [:test, :integration]},
       {:timex, "~> 3.6"},
