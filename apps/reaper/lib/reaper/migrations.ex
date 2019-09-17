@@ -30,6 +30,13 @@ defmodule Reaper.Migrations do
     Supervisor.stop(brook)
   end
 
+  defp migrate_reaper_config(%{dataset_id: dataset_id, cadence: cadence, sourceType: source_type})
+       when cadence == "never" or source_type == "remote" do
+    Brook.Test.with_event(%Brook.Event{type: "reaper_config:migration", author: "migration", data: dataset_id}, fn ->
+      Brook.ViewState.delete(:reaper_config, dataset_id)
+    end)
+  end
+
   defp migrate_reaper_config(reaper_config) do
     dataset_update = find_dataset_update(reaper_config)
     dataset = dataset_update.data |> fix_dataset()
