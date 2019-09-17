@@ -44,10 +44,22 @@ defmodule Reaper.Migrations do
 
     Brook.Test.with_event(%{dataset_update | data: dataset}, fn ->
       setup_view_state(dataset, last_fetched_timestamp)
-      Brook.ViewState.delete(:reaper_config, dataset.id)
-
       maybe_create_job(dataset)
-      Persistence.remove_last_fetched_timestamp(dataset.id)
+
+      commands = [
+        ["RENAME", "reaper:view:reaper_config:#{dataset.id}", "old:reaper:view:reaper_config:#{dataset.id}"],
+        ["EXPIRE", "old:reaper:view:reaper_config:#{dataset.id}", "600000"],
+        [
+          "RENAME",
+          "reaper:view:reaper_config:#{dataset.id}:events",
+          "old:reaper:view:reaper_config:#{dataset.id}:events"
+        ],
+        ["EXPIRE", "old:reaper:view:reaper_config:#{dataset.id}:events", "600000"],
+        ["RENAME", "reaper:derived:#{dataset.id}", "old:reaper:derived:#{dataset.id}"],
+        ["EXPIRE", "old:reaper:derived:#{dataset.id}", "600000"]
+      ]
+
+      Redix.pipeline!(:redix, commands)
     end)
   end
 
