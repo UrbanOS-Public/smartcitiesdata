@@ -31,7 +31,7 @@ defmodule DiscoveryApi.Data.ModelTest do
 
   test "get should return a single model" do
     expected_model = Helper.sample_model()
-    model_json_string = to_json(expected_model)
+    model_json_string = struct_to_json(expected_model)
     last_updated_date = DateTime.to_iso8601(DateTime.utc_now())
 
     Redix.command!(:redix, ["SET", "discovery-api:model:#{expected_model.id}", model_json_string])
@@ -43,7 +43,7 @@ defmodule DiscoveryApi.Data.ModelTest do
       last_updated_date
     ])
 
-    Redix.command!(:redix, ["SET", "discovery-api:stats:#{expected_model.id}", expected_model.completeness])
+    Redix.command!(:redix, ["SET", "discovery-api:stats:#{expected_model.id}", Jason.encode!(expected_model.completeness)])
 
     actual_model = Model.get(expected_model.id)
     assert actual_model == expected_model
@@ -71,7 +71,7 @@ defmodule DiscoveryApi.Data.ModelTest do
     Enum.each(
       [Helper.sample_model(%{id: model_id_1}), Helper.sample_model(%{id: model_id_2})],
       fn model ->
-        Redix.command!(:redix, ["SET", "discovery-api:model:#{model.id}", to_json(model)])
+        Redix.command!(:redix, ["SET", "discovery-api:model:#{model.id}", struct_to_json(model)])
       end
     )
 
@@ -91,7 +91,7 @@ defmodule DiscoveryApi.Data.ModelTest do
     model3 = Helper.sample_model()
 
     [model1, model2, model3]
-    |> Enum.each(fn model -> Redix.command!(:redix, ["SET", "discovery-api:model:#{model.id}", to_json(model)]) end)
+    |> Enum.each(fn model -> Redix.command!(:redix, ["SET", "discovery-api:model:#{model.id}", struct_to_json(model)]) end)
 
     [model1, model2, model3]
     |> Enum.each(fn model ->
@@ -104,7 +104,7 @@ defmodule DiscoveryApi.Data.ModelTest do
     assert 2 == length(results)
   end
 
-  defp to_json(model) do
+  defp struct_to_json(model) do
     model
     |> Map.from_struct()
     |> Jason.encode!()

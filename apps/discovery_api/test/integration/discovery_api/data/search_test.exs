@@ -62,7 +62,7 @@ defmodule DiscoveryApi.Data.SearchTest do
 
       params = Plug.Conn.Query.encode(%{query: "Bob"})
 
-      %{status_code: status_code, body: body} =
+      %{status_code: status_code, body: _body} =
         "http://localhost:4000/api/v1/dataset/search?#{params}"
         |> HTTPoison.get!()
 

@@ -28,7 +28,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
 
       stats = %{
         id: dataset.id,
-        completeness: 0.8333333333333334,
+        total_score: 0.8333333333333334,
         record_count: 3,
         fields: %{
           "name" => %{count: 3, required: false},

@@ -54,7 +54,11 @@ defmodule DiscoveryApi.Test.Helper do
       language: "en-US",
       referenceUrls: Faker.Internet.url(),
       categories: [Faker.Lorem.word(), Faker.Lorem.word()],
-      completeness: 0.95
+      completeness: %{
+        "total_score" => Faker.random_uniform(),
+        "record_count" => Faker.random_between(1, 1000),
+        "fields" => %{"one" => %{"count" => 1, "required" => false}}
+      }
     }
     |> Map.merge(values)
   end

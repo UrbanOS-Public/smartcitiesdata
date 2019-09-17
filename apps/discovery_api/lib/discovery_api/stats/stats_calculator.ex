@@ -26,7 +26,7 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
   defp calculate_and_save_completeness(%Dataset{} = dataset) do
     dataset
     |> calculate_completeness_for_dataset()
-    |> add_completeness_total()
+    |> add_total_score()
     |> save_completeness()
   rescue
     e ->
@@ -56,9 +56,9 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
     |> Prestige.execute(rows_as_maps: true)
   end
 
-  defp add_completeness_total(dataset_stats) do
+  defp add_total_score(dataset_stats) do
     score = CompletenessTotals.calculate_dataset_total(dataset_stats)
-    Map.put(dataset_stats, :completeness, score)
+    Map.put(dataset_stats, :total_score, score)
   end
 
   defp save_completeness(%{id: dataset_id, fields: fields} = dataset_stats) when not is_nil(fields) do
