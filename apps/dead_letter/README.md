@@ -1,6 +1,3 @@
-[![Master](https://travis-ci.org/smartcitiesdata/yeet.svg?branch=master)](https://travis-ci.org/smartcitiesdata/yeet)
-[![Hex.pm Version](http://img.shields.io/hexpm/v/yeet.svg?style=flat)](https://hex.pm/packages/yeet)
-
 # DEAD_LETTER
 
 Generates standard messages for Dead Letter Queue
@@ -12,7 +9,7 @@ The package can be installed by adding `dead_letter` to your list of dependencie
 ```elixir
 def deps do
   [
-    {:dead_letter, "~> 1.0.7"}
+    {:dead_letter, in_umbrella: :true}
   ]
 end
 ```

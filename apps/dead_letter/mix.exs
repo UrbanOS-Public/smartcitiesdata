@@ -5,15 +5,18 @@ defmodule DeadLetter.MixProject do
     [
       app: :dead_letter,
       version: "1.0.7",
+      build_path: "../../_build",
+      config_path: "../../config/config.exs",
+      deps_path: "../../deps",
+      lockfile: "../../mix.lock",
       elixir: "~> 1.8",
+      elixir_paths: elixirc_paths(Mix.env()),
+      test_paths: Mix.env() |> test_paths(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       docs: docs(),
       description: description(),
-      package: package(),
-      source_url: "https://www.github.com/smartcitiesdata/dead_letter",
-      elixir_paths: elixirc_paths(Mix.env()),
-      test_paths: test_paths(Mix.env())
+      package: package()
     ]
   end
 
@@ -34,7 +37,7 @@ defmodule DeadLetter.MixProject do
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:integration]},
       {:assertions, "~> 0.14.1", only: [:test, :integration]},
-      {:husky, "~> 1.0", only: [:dev, :test], runtime: false}
+      {:tasks, in_umbrella: true, only: :dev}
     ]
   end
 
@@ -52,14 +55,14 @@ defmodule DeadLetter.MixProject do
     [
       maintainers: ["smartcitiesdata"],
       licenses: ["Apache 2.0"],
-      links: %{"GitHub" => "https://www.github.com/smartcitiesdata/dead_letter"}
+      links: %{"GitHub" => "https://www.github.com/smartcitiesdata/smartcitiesdata/tree/master/apps/dead_letter"}
     ]
   end
 
   defp docs do
     [
       main: "readme",
-      source_url: "https://www.github.com/smartcitiesdata/dead_letter",
+      source_url: "https://www.github.com/smartcitiesdata/smartcitiesdata/tree/master/apps/dead_letter",
       extras: [
         "README.md"
       ]
