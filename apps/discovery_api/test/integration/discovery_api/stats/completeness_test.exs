@@ -83,7 +83,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
           "trip_short_name" => %{"count" => 0, "required" => false},
           "wheelchair_accessible" => %{"count" => 7343, "required" => false}
         },
-        "completeness" => 0.9,
+        "total_score" => 0.9,
         "record_count" => 7343
       }
 
@@ -93,7 +93,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
           "name" => %{"count" => 3, "required" => false},
           "age" => %{"count" => 2, "required" => false}
         },
-        "completeness" => 0.8333333333333334,
+        "total_score" => 0.8333333333333334,
         "record_count" => 3
       }
 
@@ -108,10 +108,10 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
       eventually(fn ->
         Map.get(
           get_dataset_completeness_from_details_endpoint(dataset1.id),
-          "completeness",
+          "total_score",
           nil
         ) ==
-          expected_dataset1_column_stats["completeness"]
+          expected_dataset1_column_stats["total_score"]
       end)
 
       eventually(

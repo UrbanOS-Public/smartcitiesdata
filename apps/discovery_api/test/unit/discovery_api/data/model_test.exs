@@ -35,7 +35,7 @@ defmodule DiscoveryApi.Data.ModelTest do
   end
 
   test "get/1" do
-    {cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
+    {_cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
 
     allow Persistence.get("discovery-api:model:cam"), return: cam_as_json
 
@@ -45,8 +45,8 @@ defmodule DiscoveryApi.Data.ModelTest do
   end
 
   test "get_all/1" do
-    {cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
-    {paul, paul_as_json, paul_as_expected} = generate_test_data("paul")
+    {_cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
+    {_paul, paul_as_json, paul_as_expected} = generate_test_data("paul")
 
     allow Persistence.get_many(["discovery-api:model:cam", "discovery-api:model:paul"], true), return: [cam_as_json, paul_as_json]
 
@@ -57,8 +57,7 @@ defmodule DiscoveryApi.Data.ModelTest do
   end
 
   test "get_all/1 does not throw error when model has been deleted from redis" do
-    {cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
-    {paul, paul_as_json, paul_as_expected} = generate_test_data("paul")
+    {_paul, paul_as_json, paul_as_expected} = generate_test_data("paul")
 
     allow Persistence.get_many(any(), true), return: [paul_as_json]
 
@@ -69,7 +68,7 @@ defmodule DiscoveryApi.Data.ModelTest do
   end
 
   test "get_all/0" do
-    {cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
+    {_cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
 
     allow Persistence.get_all("discovery-api:model:*"), return: [cam_as_json]
 

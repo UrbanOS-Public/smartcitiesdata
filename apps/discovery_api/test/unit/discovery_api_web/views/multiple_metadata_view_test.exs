@@ -197,7 +197,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataViewTest do
 
   defp create_model(%{
          title: title,
-         description: description,
+         description: _description,
          lastUpdatedDate: lastUpdatedDate,
          modifiedDate: modifiedDate,
          sourceType: sourceType
