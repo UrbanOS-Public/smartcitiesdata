@@ -7,6 +7,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
   alias StreamingMetrics.ConsoleMetricCollector, as: MetricCollector
   alias DiscoveryStreams.{CachexSupervisor, MessageHandler, TopicSubscriber}
+  alias SmartCity.TestDataGenerator, as: TDG
 
   @outbound_records "records"
   @dataset_1_id "d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
@@ -52,7 +53,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, channel)
 
     MessageHandler.handle_messages([
-      create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}), topic: topic)
+      create_message(%{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}, topic: topic)
     ])
 
     assert_broadcast("update", %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}})
@@ -75,14 +76,14 @@ defmodule DiscoveryStreams.MessageHandlerTest do
     output =
       capture_log([level: :warn], fn ->
         MessageHandler.handle_messages([
-          create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}),
+          create_message(%{"vehicle" => %{"vehicle" => %{"id" => "11603"}}},
             topic: "transformed-d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
           ),
           # <- Badly formatted JSON
           create_message(~s({"vehicle":{"vehicle":{"id:""11604"}}}),
             topic: "transformed-d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
           ),
-          create_message(~s({"vehicle":{"vehicle":{"id":"11605"}}}),
+          create_message(%{"vehicle" => %{"vehicle" => %{"id" => "11605"}}},
             topic: "transformed-d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
           )
         ])
@@ -107,10 +108,10 @@ defmodule DiscoveryStreams.MessageHandlerTest do
       )
 
     MessageHandler.handle_messages([
-      create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}),
+      create_message(%{"vehicle" => %{"vehicle" => %{"id" => "11603"}}},
         topic: "transformed-555ea731-d85e-4bd8-b2e4-4017366c24b0"
       ),
-      create_message(~s({"vehicle_id": 34095, "description": "Some Description"}),
+      create_message(%{"vehicle_id" => "34095", "description" => "Some Description"},
         topic: "transformed-d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
       )
     ])
@@ -135,7 +136,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
     assert capture_log([level: :warn], fn ->
              MessageHandler.handle_messages([
-               create_message(~s({"vehicle":{"vehicle":{"id":"11603"}}}),
+               create_message(%{"vehicle" => %{"vehicle" => %{"id" => "11603"}}},
                  topic: "transformed-555ea731-d85e-4bd8-b2e4-4017366c24b0"
                )
              ])
@@ -155,9 +156,9 @@ defmodule DiscoveryStreams.MessageHandlerTest do
       )
 
     msgs = %{
-      a: ~s({"vehicle":{"vehicle":{"id":"10000"}}}),
-      b: ~s({"vehicle":{"vehicle":{"id":"11603"}}}),
-      c: ~s({"vehicle":{"vehicle":{"id":"99999"}}})
+      a: %{"vehicle" => %{"vehicle" => %{"id" => "10000"}}},
+      b: %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}},
+      c: %{"vehicle" => %{"vehicle" => %{"id" => "99999"}}}
     }
 
     MessageHandler.handle_messages([
@@ -175,7 +176,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
         |> Enum.to_list()
         |> Enum.map(fn {:entry, _key, _create_ts, _ttl, vehicle} -> vehicle end)
 
-      Enum.all?([msgs.b, msgs.c], &Enum.member?(stream, Jason.decode!(&1)))
+      Enum.all?([msgs.b, msgs.c], &Enum.member?(stream, &1))
     end
 
     Patiently.wait_for!(
@@ -197,8 +198,8 @@ defmodule DiscoveryStreams.MessageHandlerTest do
       actual =
         capture_log(fn ->
           MessageHandler.handle_messages([
-            create_message(~s({"vehicle":{"vehicle":{"id":"11605"}}})),
-            create_message(~s({"vehicle":{"vehicle":{"id":"11608"}}}))
+            create_message(%{"vehicle" => %{"vehicle" => %{"id" => "11605"}}}),
+            create_message(%{"vehicle" => %{"vehicle" => %{"id" => "11608"}}})
           ])
         end)
 
@@ -213,7 +214,13 @@ defmodule DiscoveryStreams.MessageHandlerTest do
     end
   end
 
-  defp create_message(data, opts \\ []) do
+  defp create_message(data, opts \\ [])
+
+  defp create_message(%{} = data, opts) do
+    create_message(TDG.create_data(payload: data) |> Jason.encode!(), opts)
+  end
+
+  defp create_message(data, opts) do
     %{
       key: Keyword.get(opts, :key, "some key"),
       topic: Keyword.get(opts, :topic, "transformed-555ea731-d85e-4bd8-b2e4-4017366c24b0"),

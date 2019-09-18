@@ -47,7 +47,7 @@ defmodule DiscoveryStreams.MessageHandler do
   defp parse_message(%{value: value} = message, acc) do
     case Poison.decode(value) do
       {:ok, parsed} ->
-        [%{message | value: parsed} | acc]
+        [%{message | value: parsed["payload"]} | acc]
 
       {:error, reason} ->
         Logger.warn("Poison parse error: #{inspect(reason)}")
