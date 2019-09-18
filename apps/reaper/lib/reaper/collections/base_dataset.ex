@@ -41,7 +41,8 @@ defmodule Reaper.Collections.BaseDataset do
         DateTime.compare(start_time, end_time) == :gt
       end
 
-      defp should_start(_), do: true
+      defp should_start(%{started_timestamp: start_time}) when not is_nil(start_time), do: true
+      defp should_start(_), do: false
     end
   end
 end

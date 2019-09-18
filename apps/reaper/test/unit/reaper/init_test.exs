@@ -75,6 +75,19 @@ defmodule Reaper.InitTest do
         assert_called Reaper.DataExtract.Processor.process(dataset)
       end)
     end
+
+    test "does not start extract process when started_timestamp was not available" do
+      allow Reaper.DataExtract.Processor.process(any()), return: :ok
+      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
+
+      Brook.Test.with_event(fn ->
+        Extractions.update_last_fetched_timestamp(dataset.id, DateTime.utc_now())
+      end)
+
+      Reaper.Init.run()
+
+      refute_called Reaper.DataExtract.Processor.process(dataset)
+    end
   end
 
   describe "Ingestions" do
