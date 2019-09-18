@@ -4,8 +4,12 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "1.0.0-static",
+      version: "0.8.2",
       elixir: "~> 1.8",
+      build_path: "../../_build",
+      config_path: "../../config/config.exs",
+      deps_path: "../../deps",
+      lockfile: "../../mix.lock",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       docs: docs(),
@@ -34,7 +38,6 @@ defmodule Forklift.MixProject do
       {:divo, "~> 1.0", only: [:dev, :test, :integration]},
       {:elsa, "~> 0.1"},
       {:ex_doc, "~> 0.19"},
-      {:husky, "~> 1.0", only: :dev, runtime: false},
       {:jason, "~> 1.1"},
       {:libcluster, "~> 3.0"},
       {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
@@ -51,9 +54,8 @@ defmodule Forklift.MixProject do
       {:streaming_metrics, "~> 2.1"},
       {:timex, "~> 3.0"},
       {:yeet, "~> 1.0"},
-      # updating version breaks
-      {:distillery, "2.0.14"}
-      # distillery breaks @ 2.1.0 due to elixir 1.9 support
+      {:distillery, "~> 2.1"},
+      {:tasks, in_umbrella: true, only: :dev}
     ]
   end
 

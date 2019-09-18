@@ -33,7 +33,7 @@ defmodule Andi.MixProject do
 
   defp deps do
     [
-      {:brook, "~> 0.1.2"},
+      {:brook, "~> 0.3.0"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},

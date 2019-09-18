@@ -9,9 +9,6 @@ config :prestige, base_url: "http://127.0.0.1:8080"
 config :redix,
   host: "localhost"
 
-config :husky,
-  pre_commit: "./scripts/git_pre_commit_hook.sh"
-
 config :forklift, :brook,
   handlers: [Forklift.Event.Handler],
   storage: [
