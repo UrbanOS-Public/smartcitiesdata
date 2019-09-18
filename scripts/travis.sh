@@ -17,5 +17,5 @@ mix hex.outdated || true
 mix test
 mix format --check-formatted
 mix credo
-mix cmd mix sobelow -i Config.HTTPS --skip --compact --exit low
+mix sobelow
 mix test.integration
