@@ -2,7 +2,7 @@
 
 set -e
 
-apps=(andi)
+apps=(andi forklift)
 release_type="${1}"
 
 echo "Logging into DockerHub..."

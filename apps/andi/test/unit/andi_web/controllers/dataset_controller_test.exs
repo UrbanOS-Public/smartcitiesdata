@@ -71,7 +71,7 @@ defmodule AndiWeb.DatasetControllerTest do
         "keywords" => []
       },
       "_metadata" => %{
-        "intendedUse" => ["use 1", "use 2", "use 3"],
+        "intendedUse" => [],
         "expectedBenefit" => []
       }
     }

@@ -19,10 +19,17 @@ environment :prod do
   set cookie: :"UmFgS>>q;?q`kquWZ`G=c!4/Qrug]c]EuL}9koyB}a)=R)E|H>4Q(t$H`0f8)OZ~"
   set vm_args: "rel/vm.args"
   set config_providers: [{Distillery.Releases.Config.Providers.Elixir, ["${RELEASE_ROOT_DIR}/etc/runtime.exs"]}]
+  set pre_configure_hooks: "rel/hooks/pre_configure.d"
 end
 
 release :andi do
   set version: current_version(:andi)
   set applications: [:runtime_tools, :andi]
   set overlays: [{:copy, "apps/andi/runtime.exs", "etc/runtime.exs"}]
+end
+
+release :forklift do
+  set version: current_version(:forklift)
+  set applications: [:runtime_tools, :forklift]
+  set overlays: [{:copy, "apps/forklift/runtime.exs", "etc/runtime.exs"}]
 end
