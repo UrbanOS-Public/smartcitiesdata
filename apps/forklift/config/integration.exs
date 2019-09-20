@@ -48,8 +48,15 @@ config :forklift, :brook,
     ]
   ]
 
-config :yeet,
-  endpoint: endpoints
+config :forklift, :dead_letter,
+  driver: [
+    module: DeadLetter.Carrier.Kafka,
+    init_args: [
+      name: :forklift_dead_letters,
+      endpoints: endpoints,
+      topic: "dead-letters"
+    ]
+  ]
 
 config :prestige,
   base_url: "http://#{host}:8080",
@@ -63,8 +70,3 @@ config(:forklift, divo: "docker-compose.yml", divo_wait: [dwell: 1000, max_tries
 
 config :redix,
   host: host
-
-config :smart_city_registry,
-  redis: [
-    host: host
-  ]

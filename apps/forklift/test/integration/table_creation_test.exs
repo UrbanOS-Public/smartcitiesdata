@@ -5,8 +5,6 @@ defmodule Forklift.IntegrationTest do
   import Checkov
   import SmartCity.Event, only: [dataset_update: 0]
 
-  alias SmartCity.Dataset
-
   data_test "creates hive.default.#{system_name} with correct schema" do
     assert describe_table("hive.default.#{system_name}") == []
 

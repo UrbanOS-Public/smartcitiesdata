@@ -19,6 +19,12 @@ config :forklift, :brook,
     ]
   ]
 
+config :forklift, :dead_letter,
+  driver: [
+    module: DeadLetter.Carrier.Test,
+    init_args: []
+  ]
+
 config :prestige,
   base_url: "https://kdp-kubernetes-data-platform-presto.kdp:8080",
   headers: [

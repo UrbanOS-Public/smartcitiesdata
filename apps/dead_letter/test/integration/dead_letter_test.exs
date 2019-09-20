@@ -50,7 +50,7 @@ defmodule DeadLetterTest do
         Elsa.Fetch.search_values([localhost: 9092], "dead-letters", "valid")
         |> Enum.into([])
         |> case do
-          [msg | msgs] = messages ->
+          [_msg | _msgs] = messages ->
             Enum.map(messages, fn %Elsa.Message{value: value} -> Jason.decode!(value)["original_message"] end)
 
           [] ->
