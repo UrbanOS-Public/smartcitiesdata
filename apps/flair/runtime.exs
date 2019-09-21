@@ -1,6 +1,11 @@
 use Mix.Config
 
-required_envars = ["REDIS_HOST", "KAFKA_BROKERS", "DATA_TOPIC", "DLQ_TOPIC"]
+required_envars = [
+  "REDIS_HOST",
+  "KAFKA_BROKERS",
+  "DATA_TOPIC",
+  "DLQ_TOPIC"
+]
 
 Enum.each(required_envars, fn var ->
   if is_nil(System.get_env(var)) do
@@ -19,14 +24,6 @@ endpoints =
   |> Enum.map(&String.trim/1)
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {host, String.to_integer(port)} end)
-
-# yeet requires atom or charlist hosts, while kafka_ex expects strings
-yeet_endpoints =
-  kafka_brokers
-  |> String.split(",")
-  |> Enum.map(&String.trim/1)
-  |> Enum.map(fn entry -> String.split(entry, ":") end)
-  |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
 config :prestige,
   base_url: System.get_env("PRESTO_URL"),
@@ -55,12 +52,3 @@ config :flair,
 
 config :logger,
   level: :warn
-
-config :smart_city_registry,
-  redis: [
-    host: redis_host
-  ]
-
-config :yeet,
-  endpoint: yeet_endpoints,
-  topic: dlq_topic

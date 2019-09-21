@@ -1,3 +1,4 @@
+[![Master](https://travis-ci.org/smartcitiesdata/smartcitiesdata.svg?branch=master)](https://travis-ci.org/smartcitiesdata/smartcitiesdata)
 
 # Smart Cities Data Platform
 

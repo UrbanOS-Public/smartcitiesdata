@@ -26,3 +26,7 @@ Andi relies on the standard ExUnit test framework to run unit tests, Run with th
 For integration testing, Andi encapsulates its external dependencies in Docker images and orchestrates the test runs through the Divo library. Run with the command:
 
 `mix test.integration`
+
+## License
+
+Released under [Apache 2 license](https://github.com/smartcitiesdata/smartcitiesdata/blob/master/LICENSE).

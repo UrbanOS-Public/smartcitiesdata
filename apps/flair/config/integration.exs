@@ -13,7 +13,6 @@ config :flair,
   table_name_timing: "operational_stats",
   divo: [
     {DivoKafka, [create_topics: "persisted:1:1,dead-letters:1:1", outside_host: host]},
-    DivoRedis,
     Flair.DivoPresto
   ],
   divo_wait: [dwell: 1000, max_tries: 60],
@@ -34,15 +33,6 @@ config :prestige,
     catalog: "hive",
     schema: "default",
     user: "foobar"
-  ]
-
-config :yeet,
-  topic: "dead-letters",
-  endpoint: endpoint
-
-config :smart_city_registry,
-  redis: [
-    host: host
   ]
 
 config :smart_city_test,

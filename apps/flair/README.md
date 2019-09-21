@@ -1,5 +1,3 @@
-[![Master](https://travis-ci.org/smartcitiesdata/flair.svg?branch=master)](https://travis-ci.org/smartcitiesdata/flair)
-
 # Flair
 
 Computes data processing statistics off of Kafka data messages and stores them in Presto.
@@ -25,4 +23,4 @@ MIX_ENV=integration iex -S mix
 
 ## License
 
-Released under [Apache 2 license](https://github.com/smartcitiesdata/flair/blob/master/LICENSE).
+Released under [Apache 2 license](https://github.com/smartcitiesdata/smartcitiesdata/blob/master/LICENSE).

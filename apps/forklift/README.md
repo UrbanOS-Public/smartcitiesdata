@@ -1,5 +1,3 @@
-[![Master](https://travis-ci.org/smartcitiesdata/forklift.svg?branch=master)](https://travis-ci.org/smartcitiesdata/forklift)
-
 # Forklift
 
 An application for reading data off kafka topics, batching it up and sending it to Presto in a SQL insert query for long-term storage based on the schema supplied with the data's initial dataset definition.
@@ -26,4 +24,4 @@ MIX_ENV=integration iex -S mix
 
 ## License
 
-Released under [Apache 2 license](https://github.com/smartcitiesdata/forklift/blob/master/LICENSE).
+Released under [Apache 2 license](https://github.com/smartcitiesdata/smartcitiesdata/blob/master/LICENSE).

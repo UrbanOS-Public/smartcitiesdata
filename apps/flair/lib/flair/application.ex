@@ -2,10 +2,7 @@ defmodule Flair.Application do
   @moduledoc """
   Flair starts flows for any profiling needed, as well as a connection to kafka.
   """
-
   use Application
-
-  @message_handler Flair.MessageHandler
 
   def start(_type, _args) do
     children = [
@@ -26,7 +23,7 @@ defmodule Flair.Application do
       name: :flair_elsa_supervisor,
       group: "flair-#{topic}",
       topics: [topic],
-      handler: @message_handler,
+      handler: Flair.MessageHandler,
       config: Application.get_env(:flair, :topic_subscriber_config, [])
     ]
 

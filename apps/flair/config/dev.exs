@@ -8,6 +8,3 @@ config :flair,
   message_timeout: 5 * 60 * 1_000,
   task_timeout: 5 * 60 * 1_000,
   table_name_timing: "operational_stats"
-
-config :husky,
-  pre_prepush: "./scripts/git_pre_commit_hook.sh"

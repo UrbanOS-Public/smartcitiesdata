@@ -36,8 +36,6 @@ defmodule DurationsTest do
   end
 
   test "flair consumes messages and calls out to presto", context do
-    SmartCity.Dataset.write(TestHelper.create_simple_dataset() |> Map.put(:id, "pirates"))
-
     SmartCity.KafkaHelper.send_to_kafka(
       context[:messages],
       Application.get_env(:flair, :data_topic)

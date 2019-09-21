@@ -25,8 +25,4 @@ config :forklift, :dead_letter,
     init_args: []
   ]
 
-config :prestige,
-  base_url: "https://kdp-kubernetes-data-platform-presto.kdp:8080",
-  headers: [
-    user: "foobar"
-  ]
+config :prestige, base_url: "http://127.0.0.1:8080"
