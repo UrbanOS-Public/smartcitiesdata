@@ -165,11 +165,11 @@ defmodule AndiWeb.DatasetControllerTest do
       conn: conn,
       dataset: dataset
     } do
-      allow(Brook.get(any(), any()), return: {:error, :not_exist})
+      allow(Brook.get(any(), any()), return: {:ok, nil})
       allow(Brook.Event.send(any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/disable", %{id: dataset.id})
-      |> json_response(500)
+      |> json_response(404)
 
       refute_called(Brook.Event.send(dataset_disable(), :andi, dataset))
     end

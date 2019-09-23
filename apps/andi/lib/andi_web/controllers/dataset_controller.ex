@@ -64,6 +64,9 @@ defmodule AndiWeb.DatasetController do
       {:ok, dataset} ->
         respond(conn, 200, dataset)
 
+      {:not_found, _} ->
+        respond(conn, 404, "Dataset not found")
+
       error ->
         Logger.error("Could not disable dataset due to #{inspect(error)}")
         respond(conn, 500, "An error occurred when disabling dataset")
