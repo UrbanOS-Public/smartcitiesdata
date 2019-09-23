@@ -70,7 +70,7 @@
   "recon": {:hex, :recon, "2.5.0", "2f7fcbec2c35034bade2f9717f77059dc54eb4e929a3049ca7ba6775c0bd66cd", [:mix, :rebar3], [], "hexpm"},
   "redix": {:hex, :redix, "0.10.2", "a9eabf47898aa878650df36194aeb63966d74f5bd69d9caa37babb32dbb93c5d", [:mix], [{:telemetry, "~> 0.4.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm"},
   "retry": {:hex, :retry, "0.13.0", "bb9b2713f70f39337837852337ad280c77662574f4fb852a8386c269f3d734c4", [:mix], [], "hexpm"},
-  "smart_city": {:git, "https://github.com/smartcitiesdata/smart_city.git", "d3d339186f4784c525e5159eafb68557c2c39d4e", [branch: "new_brook"]},
+  "smart_city": {:git, "https://github.com/smartcitiesdata/smart_city.git", "ba74b5234e745ab07c5014dd8bc2ed905a61259e", [branch: "new_brook"]},
   "smart_city_registry": {:hex, :smart_city_registry, "5.0.0", "2de539ffa66021e717d39ebcc71395cdd9c36b505b36824fe642538808405fd4", [:mix], [{:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}, {:redix, "~> 0.9", [hex: :redix, repo: "hexpm", optional: false]}, {:smart_city, "~> 2.1", [hex: :smart_city, repo: "hexpm", optional: false]}], "hexpm"},
   "smart_city_test": {:hex, :smart_city_test, "0.5.0", "b78289daea919711be35829ee3a4828e92598016ca957c43516f2b6326a52bd4", [:mix], [{:brod, "~> 3.8", [hex: :brod, repo: "hexpm", optional: false]}, {:ex_doc, "~> 0.19", [hex: :ex_doc, repo: "hexpm", optional: false]}, {:faker, "~> 0.12", [hex: :faker, repo: "hexpm", optional: false]}, {:patiently, "~> 0.2", [hex: :patiently, repo: "hexpm", optional: false]}, {:smart_city, "~> 2.6", [hex: :smart_city, repo: "hexpm", optional: false]}], "hexpm"},
   "snappyer": {:hex, :snappyer, "1.2.4", "6d739c534cd2339633127a2b40279be71f149e5842c5363a4d88e66efb7c1fec", [:make, :rebar, :rebar3], [], "hexpm"},
