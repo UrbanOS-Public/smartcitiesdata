@@ -27,10 +27,6 @@ defmodule Andi.CreateOrgTest do
   end
 
   describe "successful organization creation" do
-    test "responds with a 201", %{response: response} do
-      assert response.status == 201
-    end
-
     test "writes organization to LDAP", %{happy_path: expected} do
       expected_dn = "cn=#{expected.orgName},ou=#{@ou}"
       [actual] = Paddle.get!(filter: [cn: expected.orgName])
@@ -50,18 +46,6 @@ defmodule Andi.CreateOrgTest do
     test "sends organization to event stream", %{happy_path: expected} do
       eventually(fn ->
         assert Elsa.Fetch.search_values(@kafka_broker, "event-stream", expected.orgName) |> Enum.count() == 1
-      end)
-    end
-
-    test "persists organization for downstream use", %{happy_path: expected, response: resp} do
-      base = Application.get_env(:paddle, Paddle)[:base]
-      id = Jason.decode!(resp.body)["id"]
-
-      eventually(fn ->
-        with {:ok, actual} when actual != nil <- Brook.get(:andi, :org, id) do
-          assert actual.dn == "cn=#{expected.orgName},ou=#{@ou},#{base}"
-          assert actual.orgName == expected.orgName
-        end
       end)
     end
   end
