@@ -7,6 +7,7 @@ defmodule AndiWeb.DatasetControllerTest do
   alias SmartCity.Registry.Dataset, as: RegDataset
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
+  import SmartCity.Event, only: [dataset_disable: 0]
 
   setup do
     example_dataset_1 = TDG.create_dataset(%{})
@@ -88,7 +89,7 @@ defmodule AndiWeb.DatasetControllerTest do
 
   describe "PUT /api/ without systemName" do
     setup %{conn: conn, request: request} do
-      allow Brook.get_all_values!(any()), return: []
+      allow(Brook.get_all_values!(any()), return: [])
       {_, request} = pop_in(request, ["technical", "systemName"])
       [conn: put(conn, @route, request)]
     end
@@ -116,17 +117,24 @@ defmodule AndiWeb.DatasetControllerTest do
     end
   end
 
-  test "put returns 400 when systemName matches existing systemName", %{conn: conn, request: request} do
+  test "put returns 400 when systemName matches existing systemName", %{
+    conn: conn,
+    request: request
+  } do
     org_name = request["technical"]["orgName"]
     data_name = request["technical"]["dataName"]
 
     existing_dataset =
       TDG.create_dataset(
         id: "existing-ds1",
-        technical: %{dataName: data_name, orgName: org_name, systemName: "#{org_name}__#{data_name}"}
+        technical: %{
+          dataName: data_name,
+          orgName: org_name,
+          systemName: "#{org_name}__#{data_name}"
+        }
       )
 
-    allow Brook.get_all_values!(any()), return: [existing_dataset]
+    allow(Brook.get_all_values!(any()), return: [existing_dataset])
 
     response =
       conn
@@ -136,9 +144,49 @@ defmodule AndiWeb.DatasetControllerTest do
     assert %{"reason" => "Existing dataset has the same orgName and dataName"} == response
   end
 
+  describe "POST /dataset/disable" do
+    setup %{} do
+      dataset = TDG.create_dataset(%{})
+      [dataset: dataset]
+    end
+
+    test "should send dataset:disable event", %{conn: conn, dataset: dataset} do
+      allow(Brook.get(any(), any()), return: {:ok, dataset})
+      allow(Brook.Event.send(any(), any(), any()), return: :ok)
+
+      post(conn, "#{@route}/disable", %{id: dataset.id})
+      |> json_response(200)
+
+      assert_called(Brook.Event.send(dataset_disable(), :andi, dataset))
+    end
+
+    @tag capture_log: true
+    test "does not send dataset:disable event if dataset does not exist", %{
+      conn: conn,
+      dataset: dataset
+    } do
+      allow(Brook.get(any(), any()), return: {:error, :not_exist})
+      allow(Brook.Event.send(any(), any(), any()), return: :ok)
+
+      post(conn, "#{@route}/disable", %{id: dataset.id})
+      |> json_response(500)
+
+      refute_called(Brook.Event.send(dataset_disable(), :andi, dataset))
+    end
+
+    @tag capture_log: true
+    test "handles error", %{conn: conn, dataset: dataset} do
+      allow(Brook.get(any(), any()), return: {:ok, dataset})
+      allow(Brook.Event.send(any(), any(), any()), return: {:error, "Mistakes were made"})
+
+      post(conn, "#{@route}/disable", %{id: dataset.id})
+      |> json_response(500)
+    end
+  end
+
   describe "PUT /api/ with systemName" do
     setup %{conn: conn, request: request} do
-      allow Brook.get_all_values!(any()), return: []
+      allow(Brook.get_all_values!(any()), return: [])
       req = put_in(request, ["technical", "systemName"], "org__dataset_akdjbas")
       [conn: put(conn, @route, req)]
     end
@@ -191,8 +239,11 @@ defmodule AndiWeb.DatasetControllerTest do
     end
   end
 
-  test "PUT /api/ dataset passed without UUID generates UUID for dataset", %{conn: conn, request: request} do
-    allow Brook.get_all_values!(any()), return: []
+  test "PUT /api/ dataset passed without UUID generates UUID for dataset", %{
+    conn: conn,
+    request: request
+  } do
+    allow(Brook.get_all_values!(any()), return: [])
 
     {_, request} = pop_in(request, ["id"])
     conn = put(conn, @route, request)

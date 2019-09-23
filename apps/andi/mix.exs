@@ -49,7 +49,7 @@ defmodule Andi.MixProject do
       {:phoenix_pubsub, "~> 1.1"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.0"},
-      {:smart_city, "~> 2.7"},
+      {:smart_city, "~> 2.8"},
       {:smart_city_registry, "~> 5.0"},
       {:smart_city_test, "~> 0.5", only: [:test, :integration]},
       {:tesla, "~> 1.2", only: :integration},
