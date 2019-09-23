@@ -38,7 +38,7 @@ defmodule AndiWeb.OrganizationController do
   end
 
   defp ensure_new_org(id) do
-    case Brook.get(:org, id) do
+    case Brook.get(:andi, :org, id) do
       {:ok, %Organization{}} ->
         Logger.error("ID #{id} already exists")
         %RuntimeError{message: "ID #{id} already exists"}
@@ -102,7 +102,7 @@ defmodule AndiWeb.OrganizationController do
   end
 
   defp write_organization(org) do
-    case Brook.Event.send(organization_update(), :andi, org) do
+    case Brook.Event.send(:andi, organization_update(), :andi, org) do
       :ok ->
         :ok
 
@@ -125,7 +125,7 @@ defmodule AndiWeb.OrganizationController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
-    case Brook.get_all_values(:org) do
+    case Brook.get_all_values(:andi, :org) do
       {:ok, orgs} ->
         conn
         |> put_status(:ok)

@@ -17,6 +17,7 @@ config :andi,
 config :paddle, Paddle, base: "dc=foo,dc=bar"
 
 config :andi, :brook,
+  instance: :andi,
   driver: [
     module: Brook.Driver.Default,
     init_arg: []

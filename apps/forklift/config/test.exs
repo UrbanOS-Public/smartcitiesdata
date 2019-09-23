@@ -11,6 +11,7 @@ config :forklift,
   user: "foobar"
 
 config :forklift, :brook,
+  instance: :forklift,
   handlers: [Forklift.Event.Handler],
   storage: [
     module: Brook.Storage.Ets,

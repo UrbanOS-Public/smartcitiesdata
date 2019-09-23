@@ -28,6 +28,7 @@ config :forklift,
   ]
 
 config :forklift, :brook,
+  instance: :forklift,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [

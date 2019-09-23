@@ -35,6 +35,7 @@ config :andi, AndiWeb.Endpoint,
   check_origin: false
 
 config :andi, :brook,
+  instance: :andi,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [

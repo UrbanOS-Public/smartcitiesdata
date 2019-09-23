@@ -37,13 +37,13 @@ defmodule Flair.MixProject do
   defp deps do
     [
       # App dependencies
-      {:elsa, "~> 0.7.1"},
+      {:elsa, "~> 0.9.0"},
       {:flow, "~> 0.14"},
       {:gen_stage, "~> 0.14"},
       {:jason, "~> 1.1"},
       {:prestige, "~> 0.3"},
       {:retry, "~> 0.13.0"},
-      {:smart_city, "~> 2.8"},
+      {:smart_city, github: "smartcitiesdata/smart_city", branch: "new_brook", override: true},
       {:statistics, "~> 0.6"},
       # Additional dependencies
       {:credo, "~> 1.1", only: :dev, runtime: false},

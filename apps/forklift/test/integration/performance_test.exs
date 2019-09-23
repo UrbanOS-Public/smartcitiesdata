@@ -52,7 +52,7 @@ defmodule Forklift.PerformanceTest do
     Benchee.run(
       %{
         "kafka" => fn {dataset, expected_count, input_topic, output_topic} = _output_from_before_each ->
-          Brook.Event.send(data_ingest_start(), :author, dataset)
+          Brook.Event.send(:forklift, data_ingest_start(), :author, dataset)
 
           eventually(
             fn ->
