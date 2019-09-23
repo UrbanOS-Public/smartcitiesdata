@@ -15,6 +15,7 @@ defmodule Forklift.Application do
         {DynamicSupervisor, strategy: :one_for_one, name: Forklift.Dynamic.Supervisor},
         Forklift.Quantum.Scheduler,
         {Brook, Application.get_env(:forklift, :brook)},
+        {DeadLetter, Application.get_env(:forklift, :dead_letter)},
         Forklift.Init
       ]
       |> List.flatten()

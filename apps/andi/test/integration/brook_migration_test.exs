@@ -2,9 +2,6 @@ defmodule Andi.BrookMigrationTest do
   use ExUnit.Case
   use Divo
 
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
-  alias SmartCity.Dataset
-  alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.Event, only: [dataset_update: 0]
 
   use Placebo

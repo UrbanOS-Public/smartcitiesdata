@@ -8,10 +8,10 @@ defmodule Forklift.DeadLetterQueue do
   end
 
   defp enqueue_message(%{id: dataset_id} = message, options) do
-    Yeet.process_dead_letter(dataset_id, message, "Forklift", options)
+    DeadLetter.process(dataset_id, message, "forklift", options)
   end
 
   defp enqueue_message(message, options) do
-    Yeet.process_dead_letter("Unknown", message, "Forklift", options)
+    DeadLetter.process("Unknown", message, "forklift", options)
   end
 end

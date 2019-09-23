@@ -28,6 +28,12 @@ release :andi do
   set overlays: [{:copy, "apps/andi/runtime.exs", "etc/runtime.exs"}]
 end
 
+release :flair do
+  set version: current_version(:flair)
+  set applications: [:runtime_tools, :flair]
+  set overlays: [{:copy, "apps/flair/runtime.exs", "etc/runtime.exs"}]
+end
+
 release :forklift do
   set version: current_version(:forklift)
   set applications: [:runtime_tools, :forklift]

@@ -35,10 +35,6 @@ elsa_brokers =
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
-config :yeet,
-  topic: "streaming-dead-letters",
-  endpoint: endpoints
-
 config :forklift,
   elsa_brokers: elsa_brokers,
   input_topic_prefix: topic,
@@ -76,17 +72,22 @@ config :forklift, :brook,
     ]
   ]
 
+config :forklift, :dead_letter,
+  driver: [
+    module: DeadLetter.Carrier.Kafka,
+    init_args: [
+      name: :forklift_dead_letters,
+      endpoints: endpoints,
+      topic: "streaming-dead-letters"
+    ]
+  ]
+
 config :prestige,
   base_url: System.get_env("PRESTO_URL"),
   headers: [user: System.get_env("PRESTO_USER")]
 
 config :redix,
   host: redis_host
-
-config :smart_city_registry,
-  redis: [
-    host: redis_host
-  ]
 
 if System.get_env("COMPACTION_SCHEDULE") do
   config :forklift, Forklift.Quantum.Scheduler,

@@ -31,8 +31,7 @@ defmodule Andi.CreateDatasetTest do
 
     test "persists dataset for downstream use", %{expected: expected} do
       eventually(fn ->
-        assert {:ok, %{technical: %{dataName: "controller-integration"}}} =
-                 Brook.get(:dataset, expected.id)
+        assert {:ok, %{technical: %{dataName: "controller-integration"}}} = Brook.get(:dataset, expected.id)
       end)
     end
 

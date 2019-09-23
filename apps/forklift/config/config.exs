@@ -4,10 +4,6 @@ use Mix.Config
 
 input_topic_prefix = "transformed"
 
-config :yeet,
-  topic: "streaming-dead-letters",
-  endpoint: [localhost: 9092]
-
 config :forklift,
   retry_count: 10,
   retry_initial_delay: 100,

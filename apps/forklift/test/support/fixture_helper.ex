@@ -4,7 +4,7 @@ defmodule FixtureHelper do
   alias SmartCity.Dataset
 
   def dataset(overrides) do
-    {:ok, registry_message} =
+    {:ok, dataset_message} =
       Dataset.new(
         deep_merge(
           %{
@@ -23,7 +23,6 @@ defmodule FixtureHelper do
               sourceUrl: "https://does-not-matter-url.com",
               sourceFormat: "gtfs",
               queryParams: %{},
-              transformations: ["a_transform"],
               headers: %{
                 Authorization: "Basic xdasdgdasgdsgd"
               },
@@ -38,7 +37,7 @@ defmodule FixtureHelper do
         )
       )
 
-    registry_message
+    dataset_message
   end
 
   def deep_merge(left, right), do: Map.merge(left, right, &deep_resolve/3)
