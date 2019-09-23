@@ -53,6 +53,26 @@ defmodule AndiWeb.DatasetController do
   # Deprecated function for backwards compatibility with SmartCity.Registry apps
   def write_old_dataset(dataset), do: RegDataset.write(dataset)
 
+  @doc """
+  Disable a dataset
+  """
+  @spec disable(Plug.Conn.t(), any()) :: Plug.Conn.t()
+  def disable(conn, params) do
+    dataset_id = Map.get(params, "id")
+
+    case Andi.Services.DatasetDisable.disable(dataset_id) do
+      {:ok, dataset} ->
+        respond(conn, 200, dataset)
+
+      {:not_found, _} ->
+        respond(conn, 404, "Dataset not found")
+
+      error ->
+        Logger.error("Could not disable dataset due to #{inspect(error)}")
+        respond(conn, 500, "An error occurred when disabling dataset")
+    end
+  end
+
   defp parse_message(%{"technical" => technical} = msg) do
     with org_name when not is_nil(org_name) <- Map.get(technical, "orgName"),
          data_name when not is_nil(data_name) <- Map.get(technical, "dataName"),
@@ -69,7 +89,8 @@ defmodule AndiWeb.DatasetController do
     found_match =
       Brook.get_all_values!(:dataset)
       |> Enum.any?(fn existing_dataset ->
-        dataset.id != existing_dataset.id && dataset.technical.systemName == existing_dataset.technical.systemName
+        dataset.id != existing_dataset.id &&
+          dataset.technical.systemName == existing_dataset.technical.systemName
       end)
 
     case found_match do
