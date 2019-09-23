@@ -11,7 +11,7 @@ defmodule Forklift.TopicManagementTest do
 
   test "create new topic for dataset when data ingest start event is received" do
     dataset = TDG.create_dataset(id: "ds1")
-    Brook.Event.send(data_ingest_start(), :author, dataset)
+    Brook.Event.send(:forklift, data_ingest_start(), :author, dataset)
 
     eventually(fn ->
       assert {"integration-ds1", 1} in Elsa.Topic.list(@endpoints)

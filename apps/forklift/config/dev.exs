@@ -10,6 +10,7 @@ config :redix,
   host: "localhost"
 
 config :forklift, :brook,
+  instance: :forklift,
   handlers: [Forklift.Event.Handler],
   storage: [
     module: Brook.Storage.Ets,

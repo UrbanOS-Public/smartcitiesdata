@@ -11,7 +11,7 @@ defmodule Forklift.Init do
   end
 
   def run() do
-    Brook.get_all_values!(:datasets_to_process)
+    Brook.get_all_values!(:forklift, :datasets_to_process)
     |> Enum.each(&DatasetHandler.start_dataset_ingest/1)
   end
 end

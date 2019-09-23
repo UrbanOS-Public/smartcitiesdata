@@ -58,7 +58,7 @@ defmodule Andi.CreateOrgTest do
       id = Jason.decode!(resp.body)["id"]
 
       eventually(fn ->
-        with {:ok, actual} when actual != nil <- Brook.get(:org, id) do
+        with {:ok, actual} when actual != nil <- Brook.get(:andi, :org, id) do
           assert actual.dn == "cn=#{expected.orgName},ou=#{@ou},#{base}"
           assert actual.orgName == expected.orgName
         end
@@ -86,7 +86,7 @@ defmodule Andi.CreateOrgTest do
 
   describe "failure to send new organization to event stream" do
     setup do
-      allow(Brook.Event.send(any(), :andi, any()), return: {:error, :reason}, meck_options: [:passthrough])
+      allow(Brook.Event.send(:andi, any(), :andi, any()), return: {:error, :reason}, meck_options: [:passthrough])
       org = organization(%{orgName: "unhappyPath"})
       {:ok, response} = create(org)
       [unhappy_path: org, response: response]

@@ -1,6 +1,7 @@
 use Mix.Config
 
 config :flair,
+  table_creator: nil,
   window_unit: :second,
   window_length: 1,
   message_timeout: 50,

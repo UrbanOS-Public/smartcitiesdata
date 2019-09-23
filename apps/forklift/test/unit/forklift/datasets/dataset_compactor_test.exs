@@ -69,7 +69,7 @@ defmodule DatasetCompactorTest do
         %DatasetSchema{id: "4", system_name: "org__things", columns: []}
       ]
 
-      allow(Brook.get_all_values!(:datasets_to_process), return: schemas, meck_options: [:passthrough])
+      allow(Brook.get_all_values!(:forklift, :datasets_to_process), return: schemas, meck_options: [:passthrough])
       allow(Prestige.execute("select count(1) from org__stuff", any()), return: :count)
       allow(Prestige.execute("select count(1) from org__stuff_compact", any()), return: :count)
       allow(Prestige.execute("select count(1) from org__things", any()), return: :count)
@@ -141,7 +141,7 @@ defmodule DatasetCompactorTest do
         %DatasetSchema{id: "4", system_name: "org__things", columns: []}
       ]
 
-      allow(Brook.get_all_values!(:datasets_to_process), return: schemas, meck_options: [:passthrough])
+      allow(Brook.get_all_values!(:forklift, :datasets_to_process), return: schemas, meck_options: [:passthrough])
       allow(Prestige.execute(any(), any()), return: :ok)
       allow(Prestige.prefetch(any()), return: :ok)
       allow DatasetHandler.start_dataset_ingest(any()), return: {:ok, :pid}
@@ -161,7 +161,7 @@ defmodule DatasetCompactorTest do
         %DatasetSchema{id: "3", system_name: "org__stuff", columns: []}
       ]
 
-      allow(Brook.get_all_values!(:datasets_to_process), return: schemas, meck_options: [:passthrough])
+      allow(Brook.get_all_values!(:forklift, :datasets_to_process), return: schemas, meck_options: [:passthrough])
       allow(Prestige.execute("select count(1) from org__stuff", any()), return: :bad_count)
       allow(Prestige.execute("select count(1) from org__stuff_compact", any()), return: :count)
       allow(Prestige.execute(any(), any()), return: :ok)

@@ -38,7 +38,7 @@ defmodule AndiWeb.DatasetController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
-    case Brook.get_all_values(:dataset) do
+    case Brook.get_all_values(:andi, :dataset) do
       {:ok, datasets} ->
         respond(conn, :ok, datasets)
 
@@ -59,7 +59,7 @@ defmodule AndiWeb.DatasetController do
     end
   end
 
-  defp write_dataset(dataset), do: Brook.Event.send(dataset_update(), :andi, dataset)
+  defp write_dataset(dataset), do: Brook.Event.send(:andi, dataset_update(), :andi, dataset)
 
   # Deprecated function for backwards compatibility with SmartCity.Registry apps
   def write_old_dataset(dataset), do: RegDataset.write(dataset)
@@ -98,7 +98,7 @@ defmodule AndiWeb.DatasetController do
 
   defp is_valid(dataset) do
     found_match =
-      Brook.get_all_values!(:dataset)
+      Brook.get_all_values!(:andi, :dataset)
       |> Enum.any?(fn existing_dataset ->
         dataset.id != existing_dataset.id &&
           dataset.technical.systemName == existing_dataset.technical.systemName

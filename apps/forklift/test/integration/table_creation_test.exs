@@ -14,7 +14,7 @@ defmodule Forklift.IntegrationTest do
         technical: %{systemName: system_name, schema: desired_schema, sourceType: "stream"}
       )
 
-    Brook.Event.send(dataset_update(), :author, dataset)
+    Brook.Event.send(:forklift, dataset_update(), :author, dataset)
 
     Patiently.wait_for!(
       fn ->
@@ -75,7 +75,7 @@ defmodule Forklift.IntegrationTest do
         technical: %{systemName: "org__dataset", schema: [%{name: "on", type: "boolean"}], sourceType: "stream"}
       )
 
-    Brook.Event.send(dataset_update(), :author, dataset)
+    Brook.Event.send(:forklift, dataset_update(), :author, dataset)
 
     expected = [
       %{

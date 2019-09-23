@@ -29,6 +29,6 @@ defmodule Andi.BrookMigration do
   end
 
   defp migrate_dataset_to_brook(dataset_event) do
-    Brook.Event.send(dataset_update(), :andi, dataset_event)
+    Brook.Event.send(:andi, dataset_update(), :andi, dataset_event)
   end
 end

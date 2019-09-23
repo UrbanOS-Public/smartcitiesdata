@@ -33,7 +33,7 @@ defmodule PersistenceTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    Brook.Event.send(data_ingest_start(), :author, dataset)
+    Brook.Event.send(:forklift, data_ingest_start(), :author, dataset)
     TopicManager.wait_for_topic("integration-ds1")
 
     data = TDG.create_data(dataset_id: "ds1", payload: %{"id" => 1, "name" => "George"})
@@ -64,7 +64,7 @@ defmodule PersistenceTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    Brook.Event.send(data_ingest_start(), :author, dataset)
+    Brook.Event.send(:forklift, data_ingest_start(), :author, dataset)
     TopicManager.wait_for_topic("integration-ds3")
 
     data = TDG.create_data(dataset_id: "ds3", payload: %{"id" => 1, "name" => "George"})
@@ -106,7 +106,7 @@ defmodule PersistenceTest do
         }
       )
 
-    Brook.Event.send(data_ingest_start(), :author, dataset)
+    Brook.Event.send(:forklift, data_ingest_start(), :author, dataset)
     TopicManager.wait_for_topic("integration-ds2")
 
     data = TDG.create_data(dataset_id: "ds2", payload: %{"id" => 1, "name" => "George"})
@@ -145,7 +145,7 @@ defmodule PersistenceTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    Brook.Event.send(data_ingest_start(), :author, dataset)
+    Brook.Event.send(:forklift, data_ingest_start(), :author, dataset)
     TopicManager.wait_for_topic("integration-ds4")
 
     data = TDG.create_data(dataset_id: "ds4", payload: get_complex_nested_data())
