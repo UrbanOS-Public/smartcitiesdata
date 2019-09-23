@@ -60,7 +60,7 @@ defmodule AndiWeb.DatasetController do
   def disable(conn, params) do
     dataset_id = Map.get(params, "id")
 
-    case Andi.Services.DatasetDisableService.disable(dataset_id) do
+    case Andi.Services.DatasetDisable.disable(dataset_id) do
       {:ok, dataset} ->
         respond(conn, 200, dataset)
 

@@ -1,4 +1,4 @@
-defmodule Andi.Services.DatasetDisableService do
+defmodule Andi.Services.DatasetDisable do
   @moduledoc """
   Service for disabling datasets
   """
