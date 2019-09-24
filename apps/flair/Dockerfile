@@ -4,7 +4,7 @@ RUN MIX_ENV=prod mix distillery.release --name flair
 FROM alpine:3.9
 ENV REPLACE_OS_VARS=true
 RUN apk update && \
-    apk --no-cache bash openssl && \
+    apk add --no-cache bash openssl && \
     rm -rf /var/cache/**/*
 WORKDIR /app
 COPY --from=builder /app/_build/prod/rel/flair/ .
