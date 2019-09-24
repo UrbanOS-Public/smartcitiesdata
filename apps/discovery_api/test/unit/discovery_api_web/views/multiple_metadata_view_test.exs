@@ -97,12 +97,16 @@ defmodule DiscoveryApiWeb.MultipleMetadataViewTest do
             "f_ingest_modified",
             "g_ingest_modified",
             "h_ingest_date_no_time",
-            "i_empty_dates"
+            "i_empty_dates",
+            "j_ingest_invalid_modified_formatted",
+            "k_ingest_invalid_modified_date"
           ]
         ],
         [
           "name_desc",
           [
+            "k_ingest_invalid_modified_date",
+            "j_ingest_invalid_modified_formatted",
             "i_empty_dates",
             "h_ingest_date_no_time",
             "g_ingest_modified",
@@ -122,6 +126,8 @@ defmodule DiscoveryApiWeb.MultipleMetadataViewTest do
             "f_ingest_modified",
             "g_ingest_modified",
             "h_ingest_date_no_time",
+            "k_ingest_invalid_modified_date",
+            "j_ingest_invalid_modified_formatted",
             "i_empty_dates",
             "e_nill_dates",
             "b_remote_no_time",
@@ -190,6 +196,20 @@ defmodule DiscoveryApiWeb.MultipleMetadataViewTest do
         sourceType: "ingest",
         lastUpdatedDate: "2019-12-27T00:00:00.000000Z",
         modifiedDate: "2019-06-27T00:00:00.000000Z"
+      },
+      %{
+        title: "j_ingest_invalid_modified_formatted",
+        description: "has an invalid modified date",
+        sourceType: "ingest",
+        lastUpdatedDate: "2019-05-10T14:39:37.436786Z",
+        modifiedDate: "Mar 15th 2018, 01:45:06 pm"
+      },
+      %{
+        title: "k_ingest_invalid_modified_date",
+        description: "another invalid modified date",
+        sourceType: "ingest",
+        lastUpdatedDate: nil,
+        modifiedDate: "8/1/2019"
       }
     ]
     |> Enum.map(&create_model/1)

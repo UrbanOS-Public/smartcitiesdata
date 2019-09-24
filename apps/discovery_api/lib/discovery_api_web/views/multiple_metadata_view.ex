@@ -15,7 +15,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataView do
       }) do
     datasets =
       models
-      |> sort_models(sort_by)
+      |> DiscoveryApiWeb.Utilities.ModelSorter.sort_models(sort_by)
       |> Enum.map(&translate_to_dataset/1)
 
     paginated_datasets = paginate(datasets, offset, limit)
@@ -120,31 +120,6 @@ defmodule DiscoveryApiWeb.MultipleMetadataView do
       lastUpdatedDate: model.lastUpdatedDate
     }
   end
-
-  defp sort_models(models, "name_asc") do
-    Enum.sort_by(models, fn map -> String.downcase(map.title) end)
-  end
-
-  defp sort_models(models, "name_desc") do
-    Enum.sort_by(models, fn map -> String.downcase(map.title) end, &>=/2)
-  end
-
-  defp sort_models(models, "last_mod") do
-    Enum.sort_by(models, &select_date/1, &date_sorter/2)
-  end
-
-  defp select_date(model) do
-    case model.sourceType do
-      "ingest" -> model.modifiedDate
-      "stream" -> model.lastUpdatedDate
-      "remote" -> :remote
-      _ -> nil
-    end
-  end
-
-  defp date_sorter(:remote, _model2), do: false
-  defp date_sorter(_model1, :remote), do: true
-  defp date_sorter(date1, date2), do: date1 >= date2
 
   defp paginate(models, offset, limit) do
     Enum.slice(models, offset, limit)
