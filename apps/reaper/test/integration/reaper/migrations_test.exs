@@ -2,16 +2,14 @@ defmodule Reaper.MigrationsTest do
   use ExUnit.Case
   use Divo, auto_start: false
 
-  alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.Event, only: [dataset_update: 0]
   alias Reaper.ReaperConfig
   alias Reaper.Persistence
-  alias Reaper.Collections.Extractions
-  alias Reaper.Collections.FileIngestions
+
   import SmartCity.TestHelper
 
   @tag :capture_log
-  test "should migrate reaper_config and last_fetched_timestamp to brook view state" do
+  test "should migrate extractions and enable all of them" do
     Application.ensure_all_started(:redix)
     Application.ensure_all_started(:faker)
 
@@ -20,13 +18,25 @@ defmodule Reaper.MigrationsTest do
     {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.delete(:driver))
     Process.unlink(brook)
 
-    ingest_date = DateTime.utc_now()
-    ingest_dataset = TDG.create_dataset(id: "ds-2-migrate", technical: %{sourceType: "ingest"})
-    setup_old_env(ingest_dataset, ingest_date)
+    extraction_without_enabled_flag_id = 1
+    extraction_with_enabled_true_id = 2
+    extraction_with_enabled_false_id = 3
 
-    hosted_date = DateTime.utc_now()
-    hosted_dataset = TDG.create_dataset(id: "host-2-migrate", technical: %{sourceType: "host"})
-    setup_old_env(hosted_dataset, hosted_date)
+    Brook.Test.with_event(%Brook.Event{type: "reaper_config:migration", author: "migration", data: %{}}, fn ->
+      Brook.ViewState.merge(:extractions, extraction_without_enabled_flag_id, %{
+        dataset: %{id: extraction_without_enabled_flag_id}
+      })
+
+      Brook.ViewState.merge(:extractions, extraction_with_enabled_true_id, %{
+        dataset: %{id: extraction_with_enabled_true_id},
+        enabled: true
+      })
+
+      Brook.ViewState.merge(:extractions, extraction_with_enabled_false_id, %{
+        dataset: %{id: extraction_with_enabled_false_id},
+        enabled: false
+      })
+    end)
 
     kill(brook)
     kill(redix)
@@ -36,25 +46,12 @@ defmodule Reaper.MigrationsTest do
     Process.sleep(10_000)
 
     eventually(fn ->
-      assert ingest_dataset == Extractions.get_dataset!(ingest_dataset.id)
-      assert ingest_date == Extractions.get_last_fetched_timestamp!(ingest_dataset.id)
-      assert ingest_dataset.id not in (Extractions.get_all_non_completed!() |> Enum.map(fn x -> x.dataset.id end))
-    end)
-
-    eventually(fn ->
-      assert hosted_dataset = FileIngestions.get_dataset!(hosted_dataset.id)
-      assert hosted_date = FileIngestions.get_last_fetched_timestamp!(hosted_dataset.id)
-      assert hosted_dataset.id not in (FileIngestions.get_all_non_completed!() |> Enum.map(fn x -> x.dataset.id end))
+      assert true == Map.get(Brook.get!(:extractions, extraction_without_enabled_flag_id), :enabled)
+      assert true == Brook.get!(:extractions, extraction_with_enabled_true_id).enabled
+      assert false == Brook.get!(:extractions, extraction_with_enabled_false_id).enabled
     end)
 
     Application.stop(:reaper)
-  end
-
-  defp setup_old_env(dataset, date) do
-    {:ok, reaper_config} = ReaperConfig.from_dataset(dataset)
-    event = %Brook.Event{type: dataset_update(), author: "reaper", data: dataset}
-    Brook.Test.save_view_state(event, :reaper_config, dataset.id, reaper_config)
-    Persistence.record_last_fetched_timestamp(dataset.id, date)
   end
 
   defp kill(pid) do

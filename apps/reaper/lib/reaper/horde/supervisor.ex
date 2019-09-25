@@ -20,6 +20,10 @@ defmodule Reaper.Horde.Supervisor do
     Horde.Supervisor.start_child(__MODULE__, child_spec)
   end
 
+  def terminate_child(pid) do
+    Horde.Supervisor.terminate_child(__MODULE__, pid)
+  end
+
   def start_data_extract(%SmartCity.Dataset{} = dataset) do
     Logger.debug(fn -> "#{__MODULE__} Start data extract process for dataset #{dataset.id}" end)
 

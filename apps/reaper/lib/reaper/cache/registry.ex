@@ -12,4 +12,15 @@ defmodule Reaper.Cache.Registry do
     [Node.self() | Node.list()]
     |> Enum.map(fn node -> {__MODULE__, node} end)
   end
+
+  def get_all() do
+    Horde.Registry.select(__MODULE__, [{{:"$1", :_, :_}, [], [:"$1"]}])
+  end
+
+  def lookup(key) do
+    case Horde.Registry.lookup(__MODULE__, key) do
+      [{pid, _}] -> pid
+      _ -> nil
+    end
+  end
 end

@@ -34,3 +34,7 @@ outputs
 *.out
 
 charts/
+
+# Minio creates metadata files here we don't want to persist.
+/test/support/minio_data/*
+!/test/support/minio_data/.minio.sys/config/config.json

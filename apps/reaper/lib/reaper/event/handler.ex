@@ -11,7 +11,8 @@ defmodule Reaper.Event.Handler do
       data_extract_start: 0,
       data_extract_end: 0,
       file_ingest_start: 0,
-      file_ingest_end: 0
+      file_ingest_end: 0,
+      dataset_disable: 0
     ]
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %SmartCity.Dataset{} = dataset}) do
@@ -39,5 +40,10 @@ defmodule Reaper.Event.Handler do
 
   def handle_event(%Brook.Event{type: file_ingest_end(), data: %SmartCity.Dataset{} = dataset}) do
     FileIngestions.update_last_fetched_timestamp(dataset.id)
+  end
+
+  def handle_event(%Brook.Event{type: dataset_disable(), data: %SmartCity.Dataset{} = dataset}) do
+    Reaper.Event.Handlers.DatasetDisable.handle(dataset)
+    Extractions.disable_dataset(dataset.id)
   end
 end

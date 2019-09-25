@@ -56,6 +56,23 @@ defmodule Reaper.InitTest do
       refute_called Reaper.DataExtract.Processor.process(dataset)
     end
 
+    test "does not start a dataset that is disabled" do
+      allow Reaper.DataExtract.Processor.process(any()), return: :ok
+
+      start_time = DateTime.utc_now()
+
+      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
+
+      Brook.Test.with_event(fn ->
+        Extractions.update_dataset(dataset, start_time)
+        Extractions.disable_dataset(dataset.id)
+      end)
+
+      Reaper.Init.run()
+
+      refute_called Reaper.DataExtract.Processor.process(dataset)
+    end
+
     test "starts data extract process when started_timestamp > last_fetched_timestamp" do
       allow Reaper.DataExtract.Processor.process(any()), return: :ok
 

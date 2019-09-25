@@ -8,7 +8,8 @@ defmodule Reaper.Event.HandlerTest do
       data_extract_end: 0,
       data_extract_start: 0,
       file_ingest_start: 0,
-      file_ingest_end: 0
+      file_ingest_end: 0,
+      dataset_disable: 0
     ]
 
   import SmartCity.TestHelper, only: [eventually: 1]
@@ -166,6 +167,24 @@ defmodule Reaper.Event.HandlerTest do
         view_state = Brook.get!(:file_ingestions, dataset.id)
         assert view_state != nil
         assert date == view_state.last_fetched_timestamp
+      end)
+    end
+  end
+
+  describe "#{dataset_disable()}" do
+    test "should stop and disable the dataset if it is a successful stop" do
+      allow Reaper.Event.Handlers.DatasetDisable.handle(any()), return: :result_not_relevant
+      allow Horde.Supervisor.start_child(any(), any()), return: {:ok, :pid}
+
+      dataset = TDG.create_dataset(id: Faker.UUID.v4())
+      Brook.Test.send(data_extract_start(), :author, dataset)
+      Brook.Test.send(dataset_disable(), :author, dataset)
+
+      eventually(fn ->
+        view_state = Brook.get!(:extractions, dataset.id)
+        assert view_state != nil
+        assert false == Map.get(view_state, :enabled)
+        assert_called Reaper.Event.Handlers.DatasetDisable.handle(dataset)
       end)
     end
   end

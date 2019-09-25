@@ -5,17 +5,18 @@ Application.spec(:reaper, :applications)
 
 Application.ensure_all_started(:bypass)
 
-ExUnit.start(exclude: [:skip], timeout: 120_000)
+ExUnit.start(exclude: [:skip], slowest: 5)
 
 defmodule TestHelper do
   use ExUnit.Case
   use Placebo
   require Logger
 
-  def start_horde(registry_name, supervisor_name) do
+  def start_horde() do
     children = [
-      {Reaper.Horde.Registry, [name: registry_name, keys: :unique]},
-      {Reaper.Horde.Supervisor, [name: supervisor_name, strategy: :one_for_one]}
+      {Reaper.Horde.Registry, [name: Reaper.Horde.Registry, keys: :unique]},
+      {Reaper.Cache.Registry, [name: Reaper.Cache.Registry, keys: :unique]},
+      {Reaper.Horde.Supervisor, [name: Reaper.Horde.Supervisor, strategy: :one_for_one]}
     ]
 
     {:ok, supervisor} = Supervisor.start_link(children, strategy: :one_for_one, name: Reaper.TestSupervisor)

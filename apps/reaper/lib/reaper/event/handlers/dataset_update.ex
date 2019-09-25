@@ -14,14 +14,24 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
     10_000 => "*/10 * * * * * *"
   }
 
-  def handle(%SmartCity.Dataset{technical: %{cadence: "never"}}) do
+  def handle(%SmartCity.Dataset{technical: %{cadence: "never"}} = dataset) do
+    delete_job(dataset)
+
+    if Extractions.get_dataset!(dataset.id) != nil do
+      Extractions.disable_dataset(dataset.id)
+    end
+
     :ok
   end
 
   def handle(%SmartCity.Dataset{technical: %{cadence: "once"}} = dataset) do
     case Extractions.get_last_fetched_timestamp!(dataset.id) do
-      nil -> Brook.Event.send(determine_event(dataset), :reaper, dataset)
-      _ -> :ok
+      nil ->
+        delete_job(dataset)
+        Brook.Event.send(determine_event(dataset), :reaper, dataset)
+
+      _ ->
+        :ok
     end
   end
 

@@ -96,7 +96,7 @@ defmodule Reaper.Quantum.StorageTest do
     test "updates existing job state" do
       job = job(name: :dataset_1)
       allow Redix.command!(any(), ["GET" | any()]), return: :erlang.term_to_binary(job)
-      allow Redix.command!(any(), ["SET" | any()]), return: :ok
+      allow Redix.command!(any(), ["SET" | any()]), return: "OK"
 
       assert :ok == Storage.update_job_state(Reaper.Scheduler, :dataset_1, :inactive)
 

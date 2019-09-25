@@ -42,6 +42,7 @@ defmodule Reaper.MixProject do
       {:cachex, "~> 3.2"},
       {:castore, "~> 0.1"},
       {:distillery, "2.0.14"},
+      {:elsa, "~> 0.9.0", override: true},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
       {:gen_stage, "~> 0.14"},

@@ -33,6 +33,7 @@ defmodule Reaper.Quantum.Storage do
     job = get(job_key(scheduler, job_name)) |> deserialize()
     updated_job = %{job | state: state}
     set(job_key(scheduler, job_name), serialize(updated_job))
+    :ok
   end
 
   @impl Quantum.Storage.Adapter
