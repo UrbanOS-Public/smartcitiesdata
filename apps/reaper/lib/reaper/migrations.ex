@@ -39,15 +39,17 @@ defmodule Reaper.Migrations do
     |> Enum.each(&migrate_extractions/1)
   end
 
-  defp migrate_extractions(%{dataset: %{id: dataset_id}} = extraction) do
-    Brook.Test.with_event(%Brook.Event{type: "reaper_config:migration", author: "migration", data: dataset_id}, fn ->
-      case Map.get(extraction, :enabled) do
-        nil ->
-          Brook.ViewState.merge(:extractions, dataset_id, %{enabled: true})
+  defp migrate_extractions(%{enabled: _enabled}) do
+    Logger.info("Nothing to migrate")
+  end
 
-        _ ->
-          Logger.info("Nothing to migrate")
-      end
+  defp migrate_extractions(%{dataset: %{id: dataset_id}}) do
+    Brook.Test.with_event(%Brook.Event{type: "reaper_config:migration", author: "migration", data: dataset_id}, fn ->
+      Brook.ViewState.merge(:extractions, dataset_id, %{enabled: true})
     end)
+  end
+
+  defp migrate_extractions(_dataset) do
+    Logger.info("Nothing to migrate")
   end
 end
