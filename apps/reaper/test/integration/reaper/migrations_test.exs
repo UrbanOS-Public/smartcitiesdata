@@ -21,6 +21,7 @@ defmodule Reaper.MigrationsTest do
     extraction_without_enabled_flag_id = 1
     extraction_with_enabled_true_id = 2
     extraction_with_enabled_false_id = 3
+    invalid_extraction_id = 4
 
     Brook.Test.with_event(%Brook.Event{type: "reaper_config:migration", author: "migration", data: %{}}, fn ->
       Brook.ViewState.merge(:extractions, extraction_without_enabled_flag_id, %{
@@ -36,6 +37,8 @@ defmodule Reaper.MigrationsTest do
         dataset: %{id: extraction_with_enabled_false_id},
         enabled: false
       })
+
+      Brook.ViewState.merge(:extractions, invalid_extraction_id, %{})
     end)
 
     kill(brook)
