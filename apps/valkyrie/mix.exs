@@ -38,7 +38,7 @@ defmodule Valkyrie.MixProject do
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:divo_kafka, "~> 0.1", only: [:integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
-      {:elsa, "~> 0.8.0", override: true},
+      {:elsa, "~> 0.9.0", override: true},
       {:ex_doc, "~> 0.19.3"},
       {:excoveralls, "~> 0.11.1", only: :test},
       {:husky, "~> 1.0", only: :dev, runtime: false},
