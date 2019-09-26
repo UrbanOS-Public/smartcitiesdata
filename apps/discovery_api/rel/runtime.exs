@@ -13,6 +13,13 @@ config :discovery_api,
   hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
   hosted_region: System.get_env("HOSTED_FILE_REGION")
 
+config :discovery_api, DiscoveryApi.Repo,
+  database: System.get_env("POSTGRES_NAME"),
+  username: System.get_env("POSTGRES_NAME"),
+  password: System.get_env("POSTGRES_PASSWORD"),
+  hostname: System.get_env("POSTGRES_HOST"),
+  port: System.get_env("POSTGRES_PORT")
+
 required_envars = ["REDIS_HOST", "PRESTO_URL", "ALLOWED_ORIGINS"]
 
 Enum.each(required_envars, fn var ->
@@ -36,6 +43,10 @@ config :discovery_api,
   allowed_origins: allowed_origins,
   secrets_endpoint: secrets_endpoint
 
+config :discovery_api,
+  jwks_endpoint: System.get_env("AUTH_JWKS_ENDPOINT"),
+  user_info_endpoint: System.get_env("AUTH_USER_INFO_ENDPOINT")
+
 config :redix,
   host: System.get_env("REDIS_HOST")
 
@@ -55,5 +66,8 @@ config :paddle, Paddle,
 
 config :discovery_api, DiscoveryApi.Auth.Guardian, secret_key: System.get_env("GUARDIAN_KEY")
 
+config :discovery_api, DiscoveryApi.Auth.Auth0.Guardian, issuer: System.get_env("AUTH_JWT_ISSUER")
+
 config :ex_aws,
   region: System.get_env("HOSTED_FILE_REGION")
+

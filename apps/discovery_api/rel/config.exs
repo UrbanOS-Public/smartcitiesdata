@@ -41,6 +41,9 @@ end
 
 release :discovery_api do
   set version: current_version(:discovery_api)
+  set commands: [
+    migrate: "rel/commands/migrate.sh"
+  ]
   set applications: [
     :runtime_tools
   ]

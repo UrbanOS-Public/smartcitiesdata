@@ -20,7 +20,8 @@ defmodule DiscoveryApi.Application do
         redis(),
         registry_pubsub(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
-        DiscoveryApi.Quantum.Scheduler
+        DiscoveryApi.Quantum.Scheduler,
+        ecto_repo()
       ]
       |> List.flatten()
 
@@ -54,6 +55,14 @@ defmodule DiscoveryApi.Application do
     |> case do
       nil -> nil
       _ -> DiscoveryApi.S3.CredentialRetriever.retrieve()
+    end
+  end
+
+  defp ecto_repo do
+    Application.get_env(:discovery_api, DiscoveryApi.Repo)
+    |> case do
+      nil -> []
+      _ -> Supervisor.Spec.worker(DiscoveryApi.Repo, [])
     end
   end
 end

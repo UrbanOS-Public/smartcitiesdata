@@ -16,5 +16,7 @@ config :logger, level: :info
 config :redix,
   host: "localhost"
 
+config :discovery_api, ecto_repos: [DiscoveryApi.Repo]
+
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.

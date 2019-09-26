@@ -44,6 +44,10 @@ services:
     image: smartcitiesdata/postgres-testo:0.9.12
     ports:
       - "5455:5432"
+  ecto-postgres:
+    image: postgres
+    ports:
+      - "5456:5432"
   minio:
     image: smartcitiesdata/minio-testo:0.9.12
     ports:

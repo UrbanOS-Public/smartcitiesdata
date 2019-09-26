@@ -32,6 +32,11 @@ config :discovery_api, DiscoveryApi.Auth.Guardian,
   issuer: "discovery_api",
   secret_key: secret
 
+config :discovery_api, DiscoveryApi.Auth.Auth0.Guardian,
+  allowed_algos: ["RS256"],
+  verify_issuer: true,
+  secret_fetcher: DiscoveryApi.Auth.Auth0.SecretFetcher
+
 config :discovery_api, DiscoveryApi.Quantum.Scheduler,
   jobs: [
     # Every Monday at 2:00am EDT or 6:00am UTC

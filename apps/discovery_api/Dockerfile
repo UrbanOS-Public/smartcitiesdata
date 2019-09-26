@@ -22,4 +22,5 @@ WORKDIR /app
 COPY --from=builder /app/_build/prod/rel/discovery_api/ .
 ENV PORT 80
 EXPOSE 80
-CMD ["bin/discovery_api", "foreground"]
+COPY start.sh /
+CMD ["/start.sh"]

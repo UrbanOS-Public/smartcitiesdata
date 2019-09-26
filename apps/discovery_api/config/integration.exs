@@ -14,6 +14,12 @@ config :discovery_api,
   hosted_bucket: "kdp-cloud-storage",
   hosted_region: aws_region
 
+config :discovery_api,
+  jwks_endpoint: "https://smartcolumbusos-demo.auth0.com/.well-known/jwks.json",
+  user_info_endpoint: "https://smartcolumbusos-demo.auth0.com/userinfo"
+
+config :discovery_api, DiscoveryApi.Auth.Auth0.Guardian, issuer: "https://smartcolumbusos-demo.auth0.com/"
+
 config :smart_city_registry,
   redis: [
     host: host
@@ -43,3 +49,13 @@ config :ex_aws, :s3,
   host: "localhost",
   region: aws_region,
   port: 9000
+
+config :discovery_api, ecto_repos: [DiscoveryApi.Repo]
+
+config :discovery_api, DiscoveryApi.Repo,
+  database: "discovery_api_test",
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
+  pool: Ecto.Adapters.SQL.Sandbox,
+  port: "5456"

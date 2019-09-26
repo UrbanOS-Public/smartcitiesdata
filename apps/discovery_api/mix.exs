@@ -10,14 +10,15 @@ defmodule DiscoveryApi.Mixfile do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_paths: test_paths(Mix.env()),
-      elixirc_paths: elixirc_paths(Mix.env())
+      elixirc_paths: elixirc_paths(Mix.env()),
+      aliases: aliases()
     ]
   end
 
   def application do
     [
       mod: {DiscoveryApi.Application, []},
-      extra_applications: [:logger, :runtime_tools, :corsica, :prestige]
+      extra_applications: [:logger, :runtime_tools, :corsica, :prestige, :ecto]
     ]
   end
 
@@ -35,6 +36,7 @@ defmodule DiscoveryApi.Mixfile do
       {:libvault, "~> 0.2"},
       {:sweet_xml, "~> 0.6"},
       {:paddle, "~> 0.1"},
+      {:bypass, "~> 1.0", only: [:test, :integration]},
       {:cachex, "~> 3.0"},
       {:corsica, "~> 1.0"},
       {:cowboy, "~> 1.0"},
@@ -43,6 +45,7 @@ defmodule DiscoveryApi.Mixfile do
       {:checkov, "~> 0.4", only: [:test, :integration]},
       {:divo, "~> 1.1"},
       {:ex_json_schema, "~> 0.6", only: [:test, :integration]},
+      {:ecto_sql, "~> 3.0"},
       {:guardian, "~> 1.2"},
       {:gettext, "~> 0.11"},
       {:httpoison, "~> 1.5"},
@@ -54,6 +57,7 @@ defmodule DiscoveryApi.Mixfile do
       {:phoenix_pubsub, "~> 1.0"},
       {:placebo, "~> 1.2", only: [:dev, :test]},
       {:plug_cowboy, "~> 1.0"},
+      {:postgrex, "~> 0.15.1"},
       {:prestige, "~> 0.3"},
       {:prometheus_plugs, "~> 1.1"},
       {:prometheus_phoenix, "~>1.2"},
@@ -75,10 +79,16 @@ defmodule DiscoveryApi.Mixfile do
     ]
   end
 
-  defp test_paths(:integration), do: ["test/integration", "test/utils"]
-  defp test_paths(_), do: ["test/unit", "test/utils"]
+  defp test_paths(:integration), do: ["test/integration"]
+  defp test_paths(_), do: ["test/unit"]
 
   defp elixirc_paths(:test), do: ["test/utils", "lib"]
-  defp elixirc_paths(:integration), do: ["test/utils", "lib"]
+  defp elixirc_paths(:integration), do: ["test/utils", "test/integration/support", "lib"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp aliases() do
+    [
+      start: ["ecto.create --quiet", "ecto.migrate", "phx.server"]
+    ]
+  end
 end

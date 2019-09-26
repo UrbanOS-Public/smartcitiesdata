@@ -15,5 +15,5 @@ mix local.hex --force
 mix deps.get
 mix format --check-formatted
 mix credo
-mix sobelow -i Config.HTTPS --skip --compact --exit low
+mix sobelow -i Config.HTTPS --skip --compact --exit low --ignore-files config/integration.exs
 mix test.integration

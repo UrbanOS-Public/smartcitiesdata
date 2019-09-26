@@ -1,8 +1,13 @@
 defmodule DiscoveryApi.Auth.AuthTest do
   use ExUnit.Case
-  use Divo, services: [:ldap, :redis]
+  use Divo, services: [:"ecto-postgres", :ldap, :redis]
+  use DiscoveryApi.DataCase
+
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
+  alias DiscoveryApi.Test.AuthHelper
+  alias DiscoveryApi.Schemas.Users
+  alias DiscoveryApi.Schemas.Users.User
 
   @inactive_token "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkaXNjb3ZlcnlfYXBpIiwiZXhwIjoxNTU3NzczNTMzLCJpYXQiOjE1NTUzNTQzMzMsImlzcyI6ImRpc2NvdmVyeV9hcGkiLCJqdGkiOiIxYmJkMmUzMy01ZDc1LTRjNTYtYjQ4OS1mOGMxNzViZDg1NDEiLCJuYmYiOjE1NTUzNTQzMzIsInN1YiI6IkJhZFVzZXIiLCJ0eXAiOiJhY2Nlc3MifQ.TzTIVFiSJaPOioTiFYgvfg15BPzFCHx6qj1W1_vQeKPvo_Q4xuY_uA3-h1nobKq35fYu73TQdp_DYwwPQC5PDQ"
   @organization_1_name "organization_one"
@@ -285,6 +290,66 @@ defmodule DiscoveryApi.Auth.AuthTest do
         )
 
       assert status_code == 200
+    end
+  end
+
+  describe "logged-in" do
+    setup do
+      jwks = AuthHelper.valid_jwks()
+
+      bypass = Bypass.open()
+
+      Bypass.stub(bypass, "GET", "/jwks", fn conn ->
+        Plug.Conn.resp(conn, :ok, Jason.encode!(jwks))
+      end)
+
+      Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
+        Plug.Conn.resp(conn, :ok, Jason.encode!(%{"name" => "x@y.z"}))
+      end)
+
+      really_far_in_the_future = 3_000_000_000_000
+      AuthHelper.set_allowed_guardian_drift(really_far_in_the_future)
+
+      original_jwks_endpoint = Application.get_env(:discovery_api, :jwks_endpoint)
+      original_user_info_endpoint = Application.get_env(:discovery_api, :user_info_endpoint)
+      Application.put_env(:discovery_api, :jwks_endpoint, "http://localhost:#{bypass.port}/jwks")
+      Application.put_env(:discovery_api, :user_info_endpoint, "http://localhost:#{bypass.port}/userinfo")
+
+      on_exit(fn ->
+        AuthHelper.set_allowed_guardian_drift(0)
+        Application.put_env(:discovery_api, :jwks_endpoint, original_jwks_endpoint)
+        Application.put_env(:discovery_api, :user_info_endpoint, original_user_info_endpoint)
+      end)
+    end
+
+    test "returns 'OK' when token is valid" do
+      %{status_code: status_code} =
+        "localhost:4000/api/v1/logged-in"
+        |> HTTPoison.post!("",
+          Authorization: "Bearer #{AuthHelper.valid_jwt()}"
+        )
+
+      assert status_code == 200
+    end
+
+    test "saves logged in user" do
+      subject_id = AuthHelper.valid_jwt_sub()
+      HTTPoison.post!("localhost:4000/api/v1/logged-in", "", Authorization: "Bearer #{AuthHelper.valid_jwt()}")
+
+      expected = %User{subject_id: subject_id, username: "x@y.z"}
+      actual = Users.get_user(subject_id)
+
+      assert expected = actual
+    end
+
+    test "returns 'bad request' when token is invalid" do
+      %{status_code: status_code} =
+        "localhost:4000/api/v1/logged-in"
+        |> HTTPoison.post!("",
+          Authorization: "Bearer !NOPE!"
+        )
+
+      assert status_code == 400
     end
   end
 end

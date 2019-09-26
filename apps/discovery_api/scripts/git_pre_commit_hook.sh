@@ -25,7 +25,7 @@ if [ $? == 1 ]; then
 fi
 
 echo -e "Running Sobelow Security Checks"
-mix sobelow -i Config.HTTPS --skip --compact --exit low
+mix sobelow -i Config.HTTPS --skip --compact --exit low --ignore-files config/integration.exs
 if [ $? == 1 ]; then
     exit_code=1
 fi
