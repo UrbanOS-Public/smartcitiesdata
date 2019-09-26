@@ -4,10 +4,16 @@ defmodule TestHelpers do
   require Elsa.Message
   require Logger
 
+  import SmartCity.Data, only: [end_of_data: 0]
+
   alias SmartCity.TestDataGenerator, as: TDG
 
   def clear_timing(%SmartCity.Data{} = data_message) do
     Map.update!(data_message, :operational, fn _ -> %{timing: []} end)
+  end
+
+  def clear_timing(end_of_data()) do
+    end_of_data()
   end
 
   def get_dlq_messages_from_kafka(topic, endpoints) do
@@ -19,9 +25,17 @@ defmodule TestHelpers do
   def get_data_messages_from_kafka(topic, endpoints) do
     topic
     |> fetch_messages(endpoints)
-    |> Enum.map(&SmartCity.Data.new/1)
-    |> Enum.map(&elem(&1, 1))
+    |> Enum.map(fn message -> parse_message(message) end)
     |> Enum.map(&TestHelpers.clear_timing/1)
+  end
+
+  defp parse_message(end_of_data()) do
+    end_of_data()
+  end
+
+  defp parse_message(input) do
+    {:ok, data_message} = SmartCity.Data.new(input)
+    data_message
   end
 
   def get_data_messages_from_kafka_with_timing(topic, endpoints) do

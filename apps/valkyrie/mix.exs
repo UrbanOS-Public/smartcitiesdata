@@ -30,7 +30,7 @@ defmodule Valkyrie.MixProject do
   defp deps do
     [
       {:benchee, "~> 1.0", only: [:integration]},
-      {:brook, "~> 0.1"},
+      {:brook, "~> 0.3"},
       {:cachex, "~> 3.1"},
       {:checkov, "~> 0.4.0", only: [:test]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
@@ -50,7 +50,7 @@ defmodule Valkyrie.MixProject do
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       # updating version breaks
       {:retry, "~> 0.13"},
-      {:smart_city, "~> 2.8"},
+      {:smart_city, "~> 2.9"},
       {:smart_city_test, "~> 0.5", only: [:test, :integration]},
       {:timex, "~> 3.6"},
       {:yeet, "~> 1.0"}

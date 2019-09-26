@@ -5,6 +5,9 @@ defmodule Valkyrie.BroadwayTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias SmartCity.Data
 
+  import SmartCity.Data, only: [end_of_data: 0]
+  import SmartCity.Event, only: [data_standardization_end: 0]
+
   @dataset_id "ds1"
   @topic "raw-ds1"
   @producer :ds1_producer
@@ -122,6 +125,24 @@ defmodule Valkyrie.BroadwayTest do
     assert 2 = length(captured_messages)
     assert Enum.at(captured_messages, 0) |> Jason.decode!() |> Map.get("payload") == data1.payload
     assert Enum.at(captured_messages, 1) |> Jason.decode!() |> Map.get("payload") == data2.payload
+  end
+
+  test "should emit a data standarization end event when END_OF_DATA message is recieved", %{broadway: broadway} do
+    allow(Brook.Event.send(any(), any(), any()), return: :does_not_matter)
+    data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "lou cang", "age" => "921"})
+
+    kafka_messages = [%{value: Jason.encode!(data1)}, %{value: end_of_data()}]
+
+    Broadway.test_messages(broadway, kafka_messages)
+    assert_receive {:ack, _ref, messages, _}, 5_000
+
+    captured_messages =
+      capture(Elsa.produce_sync(:output_topic, any(), partition: 0, name: :"#{@dataset_id}_producer"), 2)
+
+    assert 2 = length(captured_messages)
+    assert end_of_data() in captured_messages
+
+    assert_called(Brook.Event.send(data_standardization_end(), :valkyrie, %{"dataset_id" => @dataset_id}))
   end
 end
 

@@ -14,4 +14,8 @@ defmodule Valkyrie.DatasetProcessor do
 
     Valkyrie.DatasetSupervisor.ensure_started(start_options)
   end
+
+  def stop(dataset_id) do
+    Valkyrie.DatasetSupervisor.ensure_stopped(dataset_id)
+  end
 end

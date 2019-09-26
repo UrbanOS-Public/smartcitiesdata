@@ -5,6 +5,9 @@ defmodule Valkyrie.Broadway do
   @producer_module Application.get_env(:valkyrie, :broadway_producer_module, OffBroadway.Kafka.Producer)
   use Broadway
 
+  import SmartCity.Data, only: [end_of_data: 0]
+  import SmartCity.Event, only: [data_standardization_end: 0]
+
   alias Broadway.Message
   alias SmartCity.Data
   @app_name "Valkyrie"
@@ -44,6 +47,11 @@ defmodule Valkyrie.Broadway do
         producer: producer
       }
     ]
+  end
+
+  def handle_message(_processor, %Message{data: %{value: end_of_data()}} = message, %{dataset: dataset}) do
+    Brook.Event.send(data_standardization_end(), :valkyrie, %{"dataset_id" => dataset.id})
+    message
   end
 
   def handle_message(_processor, %Message{data: message_data} = message, %{dataset: dataset}) do
