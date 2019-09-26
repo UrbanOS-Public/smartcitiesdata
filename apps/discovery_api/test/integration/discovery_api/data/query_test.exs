@@ -155,7 +155,7 @@ defmodule DiscoveryApi.Data.QueryTest do
     test "Queries data from presto with an aggregator", %{public_dataset: public_dataset} do
       actual = get("http://localhost:4000/api/v1/dataset/#{public_dataset.id}/query?columns=count(id),%20name&groupBy=name&orderBy=name")
 
-      assert actual.body == "count(id),name\n1,Fred\n1,Gred\n1,Hred\n"
+      assert actual.body == "_col0,name\n1,Fred\n1,Gred\n1,Hred\n"
     end
 
     test "queries data from presto with non-default format", %{public_dataset: public_dataset} do

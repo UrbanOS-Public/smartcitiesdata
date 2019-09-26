@@ -142,6 +142,50 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
 
       assert expected == actual |> Jason.decode!()
     end
+
+    test "returns columns in correct order even if dictionary is out of order", %{conn: conn} do
+      dataset_id = "pedro"
+      url = "/api/v1/dataset/#{dataset_id}/download"
+
+      model =
+        Helper.sample_model(%{
+          id: dataset_id,
+          systemName: "#{@org_name}__paco",
+          name: "paco",
+          private: false,
+          lastUpdatedDate: nil,
+          queries: 7,
+          downloads: 9,
+          organizationDetails: %{
+            orgName: @org_name
+          },
+          schema: [
+            %{name: "bob", type: "integer"},
+            %{name: "andi", type: "integer"}
+          ]
+        })
+
+      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
+      allow(Model.get(dataset_id), return: model)
+
+      allow(PrestoService.preview_columns(model.systemName),
+        return: ["bob", "andi"]
+      )
+
+      allow(Prestige.execute("select * from #{model.systemName}", rows_as_maps: true),
+        return: [%{"andi" => 1, "bob" => 2}]
+      )
+
+      allow(Prestige.prefetch(any()),
+        return: [%{"andi" => 1, "bob" => 2}]
+      )
+
+      allow(Redix.command!(any(), any()), return: :does_not_matter)
+
+      actual = conn |> get(url) |> response(200)
+
+      assert "andi,bob\n1,2\n" == actual
+    end
   end
 
   describe "metrics" do

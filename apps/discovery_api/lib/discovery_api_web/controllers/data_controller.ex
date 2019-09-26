@@ -53,13 +53,12 @@ defmodule DiscoveryApiWeb.DataController do
   def fetch_file(conn, _params, format) do
     dataset_name = conn.assigns.model.systemName
     dataset_id = conn.assigns.model.id
-    columns = PrestoService.preview_columns(dataset_name)
     schema = conn.assigns.model.schema
 
     data_stream = Prestige.execute("select * from #{dataset_name}", rows_as_maps: true)
 
     rendered_data_stream =
-      DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name, schema: schema})
+      DataView.render_as_stream(:data, format, %{stream: data_stream, columns: [], dataset_name: dataset_name, schema: schema})
 
     resp_as_stream(conn, rendered_data_stream, format, dataset_id)
   end

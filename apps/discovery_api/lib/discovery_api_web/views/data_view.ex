@@ -13,10 +13,10 @@ defmodule DiscoveryApiWeb.DataView do
     ["json", "csv", "geojson"]
   end
 
-  def render("data.csv", %{rows: rows, columns: columns}) do
+  def render("data.csv", %{rows: rows}) do
     row_values = Enum.map(rows, &Map.values/1)
 
-    [columns]
+    [Map.keys(rows |> hd())]
     |> Enum.concat(row_values)
     |> map_data_stream_for_csv()
     |> Enum.into([])
@@ -50,11 +50,9 @@ defmodule DiscoveryApiWeb.DataView do
     Jason.encode!(response)
   end
 
-  def render_as_stream(:data, "csv", %{stream: stream, columns: columns}) do
-    rows = Stream.map(stream, &Map.values/1)
-
-    [columns]
-    |> Stream.concat(rows)
+  def render_as_stream(:data, "csv", %{stream: stream}) do
+    stream
+    |> Stream.transform(false, &do_transform/2)
     |> map_data_stream_for_csv()
   end
 
@@ -85,5 +83,13 @@ defmodule DiscoveryApiWeb.DataView do
     feature
     |> Map.get("feature")
     |> Jason.decode!()
+  end
+
+  defp do_transform(element, false) do
+    {[Map.keys(element), Map.values(element)], true}
+  end
+
+  defp do_transform(element, true) do
+    {[Map.values(element)], true}
   end
 end
