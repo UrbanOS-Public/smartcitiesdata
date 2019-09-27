@@ -48,8 +48,12 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
 
   defp parse_cron(cron_int) when is_integer(cron_int) do
     case Map.get(@cron_conversions, cron_int) do
-      nil -> {:error, "#Unable to convert cadence #{cron_int} to a valid cron expression: Ignoring dataset"}
-      expression -> parse_cron(expression)
+      nil ->
+        {:error,
+         "#Unable to convert cadence #{cron_int} to a valid cron expression: Ignoring dataset"}
+
+      expression ->
+        parse_cron(expression)
     end
   end
 

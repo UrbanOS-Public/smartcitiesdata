@@ -23,7 +23,8 @@ defmodule Reaper.Http.DownloaderTest do
       end)
     end)
 
-    {:ok, response} = Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
+    {:ok, response} =
+      Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
 
     assert "eachchunkasaword" == File.read!("test.output")
     assert response.status == 200
@@ -36,9 +37,9 @@ defmodule Reaper.Http.DownloaderTest do
     on_exit(fn -> File.rm("fake.file") end)
     Bypass.down(bypass)
 
-    {:error, reason} = Downloader.download("http://localhost:#{bypass.port}/file/to/download.csv", to: "fake.file")
-
-    assert reason == Mint.TransportError.exception(reason: :econnrefused)
+    assert_raise Downloader.HttpDownloadError, fn ->
+      Downloader.download("http://localhost:#{bypass.port}/file/to/download.csv", to: "fake.file")
+    end
   end
 
   @tag capture_log: true
@@ -49,33 +50,58 @@ defmodule Reaper.Http.DownloaderTest do
       Conn.send_resp(conn, 404, "Not Found")
     end)
 
-    {:error, reason} = Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
+    {:error, reason} =
+      Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
 
-    assert reason == Downloader.InvalidStatusError.exception(message: "Invalid status code: 404", status: 404)
+    assert reason ==
+             Downloader.InvalidStatusError.exception(
+               message: "Invalid status code: 404",
+               status: 404
+             )
   end
 
   test "raises an error when request is made" do
-    allow Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection}
-    allow Mint.HTTP.request(:connection, any(), any(), any()), return: {:error, :connection, "some error"}
-    allow Mint.HTTP.close(any()), return: :ok
+    allow(Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection})
 
-    {:error, reason} = Downloader.download("http://some.url", to: "test.output")
+    allow(Mint.HTTP.request(:connection, any(), any(), any()),
+      return:
+        {:error, :connection, Mint.TransportError.exception(reason: "things have gone wrong")}
+    )
 
-    assert reason == "some error"
-    assert_called Mint.HTTP.close(:connection), once()
+    allow(Mint.HTTP.close(any()), return: :ok)
+
+    assert_raise Mint.TransportError, fn ->
+      Downloader.download("http://some.url", to: "test.output")
+    end
+
+    assert_called(Mint.HTTP.close(:connection), once())
   end
 
-  test "raises an error when processing a stream message" do
+  # TODO FIX IT, not obeying the mock
+  test "raises an error when processing a stream message", %{bypass: bypass} do
     on_exit(fn -> File.rm("test.output") end)
-    allow Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection}
-    allow Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok, :connection, :ref}
-    allow Mint.HTTP.stream(:connection, any()), return: {:error, :connection, "some error", []}
-    allow Mint.HTTP.close(any()), return: :ok
+    allow(Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection})
+    allow(Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok, :connection, :ref})
 
-    send(self(), :message1)
-    {:error, reason} = Downloader.download("http://some.url", to: "test.output")
+    allow(Mint.HTTP.stream(any(), any()),
+      return: {:error, :connection, "some error", []},
+      meck_options: [:passthrough]
+    )
 
-    assert reason == "some error"
+    allow(Mint.HTTP.close(any()), return: :ok)
+
+    Process.send(self(), :msg, [])
+
+    path = "/some.url"
+    url = "http://localhost:#{bypass.port}#{path}"
+
+    # Bypass.stub(bypass, "GET", path, fn conn ->
+    #   Plug.Conn.resp(conn, 200, "data")
+    # end)
+
+    assert_raise Reaper.Http.Downloader.HttpDownloadError, "bob", fn ->
+      Downloader.download(url, to: "test.output")
+    end
   end
 
   test "handles 301 redirects", %{bypass: bypass} do
@@ -114,34 +140,57 @@ defmodule Reaper.Http.DownloaderTest do
     assert "howdy" == File.read!("test.output")
   end
 
-  test "passes connect timeout to tcp library" do
-    allow Mint.HTTP.connect(any(), any(), any(), any()), return: {:error, :not_found}
+  test "passes connect timeout to tcp library", %{bypass: bypass} do
+    allow(Mint.HTTP.connect(any(), any(), any(), any()), meck_options: [passthrough: true])
 
-    Downloader.download("http://localhost/some/file.csv", to: "test.output", connect_timeout: 60_000)
+    path = "/some.url"
+    url = "http://localhost:#{bypass.port}#{path}"
 
-    assert_called Mint.HTTP.connect(:http, "localhost", 80, transport_opts: [timeout: 60_000]), once()
+    Bypass.stub(bypass, "GET", path, fn conn ->
+      Plug.Conn.resp(conn, 200, "data")
+    end)
+
+    Downloader.download(url,
+      to: "test.output",
+      connect_timeout: 60_000
+    )
+
+    assert_called(
+      Mint.HTTP.connect(:http, "localhost", bypass.port, transport_opts: [timeout: 60_000]),
+      once()
+    )
   end
 
   test "only waits idle_timeout to receive message from process queue" do
-    allow Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection}
-    allow Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok, :connection, :ref}
-    allow Mint.HTTP.close(any()), return: :ok
+    allow(Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection})
+    allow(Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok, :connection, :ref})
+    allow(Mint.HTTP.close(any()), return: :ok)
 
-    result = Downloader.download("http://localhost/some.file", to: "test.output", idle_timeout: 50)
-
-    error =
+    expected_error =
       Downloader.IdleTimeoutError.exception(
         timeout: 50,
-        message: "Idle timeout was reached while attempting to download http://localhost/some.file"
+        message:
+          "Idle timeout was reached while attempting to download http://localhost/some.file"
       )
 
-    assert {:error, error} == result
+    try do
+      Downloader.download("http://localhost/some.file", to: "test.output", idle_timeout: 50)
+      flunk()
+    rescue
+      error ->
+        assert expected_error == error
+    end
   end
 
-  test "evaluate paramaters in headers" do
-    allow Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection}
-    allow Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok}
-    allow Mint.HTTP.close(any()), return: :ok
+  test "evaluate paramaters in headers", %{bypass: bypass} do
+    allow(Mint.HTTP.request(:connection, any(), any(), any()), meck_options: [passthrough: true])
+
+    path = "/some.url"
+    url = "http://localhost:#{bypass.port}#{path}"
+
+    Bypass.stub(bypass, "GET", path, fn conn ->
+      Plug.Conn.resp(conn, 200, "data")
+    end)
 
     headers = %{
       "testKey" => "<%= Date.to_iso8601(~D[1970-01-02], :basic) %>",
@@ -150,41 +199,58 @@ defmodule Reaper.Http.DownloaderTest do
 
     evaluated_headers = [{"testB", "valB"}, {"testKey", "19700102"}]
 
-    {:ok} = Downloader.download("http://some.url", headers, to: "test.output")
+    {:ok, _} = Downloader.download(url, headers, to: "test.output")
 
-    assert_called Mint.HTTP.request(:connection, any(), any(), evaluated_headers), once()
+    assert_called(Mint.HTTP.request(any(), any(), any(), evaluated_headers), once())
   end
 
-  test "protocol is used for connection" do
-    allow Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection}
-    allow Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok}
-    allow Mint.HTTP.close(any()), return: :ok
-    url = "http://some.url"
+  # TODO Not working b/c of http2
+  test "protocol is used for connection", %{bypass: bypass} do
+    allow(Mint.HTTP.connect(any(), any(), any(), any()), meck_options: [passthrough: true])
+    # allow(Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok})
+    # allow(Mint.HTTP.close(any()), return: :ok)
+    path = "/some.url"
+    url = "http://localhost:#{bypass.port}#{path}"
+
+    Bypass.stub(bypass, "GET", path, fn conn ->
+      Plug.Conn.resp(conn, 200, "data")
+    end)
+
+    IO.inspect(url)
+    Process.sleep(100_000)
 
     {:ok} = Downloader.download(url, %{}, to: "test.output", protocol: ["http2"])
 
     uri = URI.parse(url)
     scheme = String.to_atom(uri.scheme)
 
-    assert_called Mint.HTTP.connect(scheme, uri.host, uri.port,
-                    transport_opts: [timeout: 30_000],
-                    protocols: [:http2]
-                  ),
-                  once()
+    assert_called(
+      Mint.HTTP.connect(scheme, uri.host, uri.port,
+        transport_opts: [timeout: 30_000],
+        protocols: [:http2]
+      ),
+      once()
+    )
   end
 
-  test "nil protocol is not used" do
-    allow Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection}
-    allow Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok}
-    allow Mint.HTTP.close(any()), return: :ok
-    url = "http://some.url"
+  test "nil protocol is not used", %{bypass: bypass} do
+    path = "/some.url"
+    url = "http://localhost:#{bypass.port}#{path}"
 
-    {:ok} = Downloader.download(url, %{}, to: "test.output")
+    Bypass.stub(bypass, "GET", path, fn conn ->
+      Plug.Conn.resp(conn, 200, "data")
+    end)
+
+    allow(Mint.HTTP.connect(any(), any(), any(), any()), meck_options: [passthrough: true])
+
+    {:ok, _} = Downloader.download(url, %{}, to: "test.output")
 
     uri = URI.parse(url)
     scheme = String.to_atom(uri.scheme)
 
-    assert_called Mint.HTTP.connect(scheme, uri.host, uri.port, transport_opts: [timeout: 30_000]),
-                  once()
+    assert_called(
+      Mint.HTTP.connect(scheme, uri.host, uri.port, transport_opts: [timeout: 30_000]),
+      once()
+    )
   end
 end

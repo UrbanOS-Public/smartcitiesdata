@@ -22,7 +22,8 @@ defmodule Reaper.DataSlurper.HttpTest do
     test "downloads http urls file on local filesystem", %{bypass: bypass} do
       setup_get(bypass, "/1.2/data.csv", ~s|one,two,three\n1,2,3\n|)
 
-      {:file, filename} = DataSlurper.Http.slurp("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id)
+      {:file, filename} =
+        DataSlurper.Http.slurp("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id)
 
       assert ~s|one,two,three\n1,2,3\n| == File.read!(filename)
     end
@@ -33,7 +34,8 @@ defmodule Reaper.DataSlurper.HttpTest do
 
       setup_get(bypass, "/1.2/data.csv", ~s|one,two,three\n1,2,3\n|)
 
-      {:file, filename} = DataSlurper.Http.slurp("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id)
+      {:file, filename} =
+        DataSlurper.Http.slurp("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id)
 
       assert "/tmp/#{@dataset_id}" == filename
       assert ~s|one,two,three\n1,2,3\n| == File.read!(filename)
@@ -43,7 +45,8 @@ defmodule Reaper.DataSlurper.HttpTest do
       setup_redirect(bypass, "/some/csv-file.csv", "/some/other/csv-file.csv")
       setup_get(bypass, "/some/other/csv-file.csv", ~s|one,two,three\n4,5,6\n|)
 
-      {:file, filename} = DataSlurper.Http.slurp("http://localhost:#{bypass.port}/some/csv-file.csv", @dataset_id)
+      {:file, filename} =
+        DataSlurper.Http.slurp("http://localhost:#{bypass.port}/some/csv-file.csv", @dataset_id)
 
       assert ~s|one,two,three\n4,5,6\n| == File.read!(filename)
     end
@@ -52,7 +55,8 @@ defmodule Reaper.DataSlurper.HttpTest do
       setup_redirect(bypass, "/some/csv-file.csv", "/some/other/csv-file.csv", status_code: 301)
       setup_get(bypass, "/some/other/csv-file.csv", ~s|one,two,three\n4,5,6\n|)
 
-      {:file, filename} = DataSlurper.Http.slurp("http://localhost:#{bypass.port}/some/csv-file.csv", @dataset_id)
+      {:file, filename} =
+        DataSlurper.Http.slurp("http://localhost:#{bypass.port}/some/csv-file.csv", @dataset_id)
 
       assert ~s|one,two,three\n4,5,6\n| == File.read!(filename)
     end
@@ -76,24 +80,26 @@ defmodule Reaper.DataSlurper.HttpTest do
         DataSlurper.Http.slurp(url, @dataset_id)
       end
     end
-  end
 
-  test "makes call with headers" do
-    allow(Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection})
-    allow(Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok})
-    allow(Mint.HTTP.close(any()), return: :ok)
+    test "makes call with headers", %{bypass: bypass} do
+      file_url = "/some/other/csv-file2.csv"
 
-    dataset_id = "1234"
-    url = "http://some.url/path/to/data"
-    headers = %{"content-type" => "application/json"}
-    evaluated_headers = [{"content-type", "application/json"}]
+      allow(Mint.HTTP.request(:connection, any(), any(), any()), meck_options: [passthrough: true])
 
-    {:file, _dataset_id} = DataSlurper.slurp(url, dataset_id, headers)
+      setup_get(bypass, file_url, ~s|one,two,three\n4,5,6\n|)
 
-    assert_called(
-      Mint.HTTP.request(:connection, "GET", "/path/to/data?", evaluated_headers),
-      once()
-    )
+      dataset_id = "1234"
+      url = "http://localhost:#{bypass.port}#{file_url}"
+      headers = %{"content-type" => "text/csv"}
+      evaluated_headers = [{"content-type", "text/csv"}]
+
+      {:file, _dataset_id} = DataSlurper.slurp(url, dataset_id, headers)
+
+      assert_called(
+        Mint.HTTP.request(any(), "GET", "#{file_url}?", evaluated_headers),
+        once()
+      )
+    end
   end
 
   defp setup_redirect(bypass, path, redirect_path, opts \\ []) do

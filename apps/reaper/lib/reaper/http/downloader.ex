@@ -16,6 +16,10 @@ defmodule Reaper.Http.Downloader do
     defexception [:message, :timeout]
   end
 
+  defmodule HttpDownloadError do
+    defexception [:message]
+  end
+
   defmodule Response do
     @moduledoc false
     defstruct status: nil,
@@ -34,14 +38,15 @@ defmodule Reaper.Http.Downloader do
 
   * `:to` - path to file to write data from request. **REQUIRED**
   * `:connect_timeout` - amount of time to wait for a network connection to be established. (default 30_000)
-  * `:idle_timeout` - amount of time to wait to receive next chunk for server. (default :infinity)
+  * `:kk_timeout` - amount of time to wait to receive next chunk for server. (default :infinity)
 
   ##Example
 
      iex>Reaper.Http.Downloader.download("http://some.url/file.txt", to: "a-file-on-disk.txt")
 
   """
-  @spec download(url(), headers(), keyword()) :: {:ok, %Response{}} | {:error, reason()} | no_return()
+  @spec download(url(), headers(), keyword()) ::
+          {:ok, %Response{}} | {:error, reason()} | no_return()
   def download(url, headers \\ [], opts) do
     uri = URI.parse(url)
     evaluated_headers = evaluate_headers(headers)
@@ -55,12 +60,12 @@ defmodule Reaper.Http.Downloader do
       File.close(file)
       handle_status(response, evaluated_headers)
     else
-      {:error, conn, reason} ->
+      {:error, conn, error} ->
         Mint.HTTP.close(conn)
-        {:error, reason}
+        raise error
 
       error ->
-        error
+        raise HttpDownloadError, message: "Error downloading file from #{url}: #{inspect(error)}"
     end
   end
 
@@ -74,7 +79,11 @@ defmodule Reaper.Http.Downloader do
         Mint.HTTP.connect(scheme, uri.host, uri.port, transport_opts: [timeout: connect_timeout])
 
       protocol ->
-        Mint.HTTP.connect(scheme, uri.host, uri.port, transport_opts: [timeout: connect_timeout], protocols: protocol)
+        Mint.HTTP.connect(scheme, uri.host, uri.port,
+          transport_opts: [timeout: connect_timeout],
+          protocols: protocol
+        )
+        |> IO.inspect(label: "Connect")
     end
   end
 
@@ -89,7 +98,13 @@ defmodule Reaper.Http.Downloader do
   end
 
   defp create_initial_response(conn, request_ref, url, opts) do
-    {:ok, %Response{conn: conn, request_ref: request_ref, url: url, destination: Keyword.get(opts, :to)}}
+    {:ok,
+     %Response{
+       conn: conn,
+       request_ref: request_ref,
+       url: url,
+       destination: Keyword.get(opts, :to)
+     }}
   end
 
   defp stream_responses({%Response{done: true} = response, _file}, _opts) do
@@ -104,12 +119,13 @@ defmodule Reaper.Http.Downloader do
         http_messages
         |> Enum.reduce({%{response | conn: conn}, file}, &handle_http_message/2)
         |> stream_responses(opts)
+        |> IO.inspect(label: "WTF?MADEIT")
 
       {:error, reason} ->
-        {:error, response.conn, reason}
+        {:error, response.conn, reason} |> IO.inspect(label: "WTF?ERROR")
 
       {:error, conn, reason, _responses} ->
-        {:error, conn, reason}
+        {:error, conn, reason} |> IO.inspect(label: "WTF?REASON")
     end
   end
 
@@ -117,6 +133,7 @@ defmodule Reaper.Http.Downloader do
     receive do
       message ->
         Mint.HTTP.stream(response.conn, message)
+        |> IO.inspect(label: "WTF?")
     after
       idle_timeout ->
         message = "Idle timeout was reached while attempting to download #{response.url}"
@@ -152,8 +169,15 @@ defmodule Reaper.Http.Downloader do
   end
 
   defp handle_status(response, _headers) do
-    Logger.warn(fn -> "Invalid Status Code returned while attempting to download file : #{inspect(response)}" end)
-    {:error, InvalidStatusError.exception(status: response.status, message: "Invalid status code: #{response.status}")}
+    Logger.warn(fn ->
+      "Invalid Status Code returned while attempting to download file : #{inspect(response)}"
+    end)
+
+    {:error,
+     InvalidStatusError.exception(
+       status: response.status,
+       message: "Invalid status code: #{response.status}"
+     )}
   end
 
   defp get_location(headers) do
