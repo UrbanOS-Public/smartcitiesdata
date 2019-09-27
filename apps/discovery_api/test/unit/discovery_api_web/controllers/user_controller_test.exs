@@ -7,7 +7,7 @@ defmodule DiscoveryApiWeb.UserControllerTest do
   alias DiscoveryApi.Schemas.Users.User
 
   @valid_jwt AuthHelper.valid_jwt()
-  @user_info_body Jason.encode!(%{"name" => "x@y.z"})
+  @user_info_body Jason.encode!(%{"email" => "x@y.z"})
 
   describe "POST /logged-in" do
     setup do
@@ -20,7 +20,7 @@ defmodule DiscoveryApiWeb.UserControllerTest do
       AuthHelper.set_allowed_guardian_drift(really_far_in_the_future)
       Application.put_env(:discovery_api, :user_info_endpoint, "http://localhost:#{bypass.port}/userinfo")
 
-      allow(Users.create_or_update(any(), %{username: "x@y.z"}), return: {:ok, %User{}})
+      allow(Users.create_or_update(any(), %{email: "x@y.z"}), return: {:ok, %User{}})
 
       %{bypass: bypass}
     end
@@ -56,14 +56,14 @@ defmodule DiscoveryApiWeb.UserControllerTest do
       |> post("/api/v1/logged-in")
       |> response(200)
 
-      assert_called(Users.create_or_update(AuthHelper.valid_jwt_sub(), %{username: "x@y.z"}))
+      assert_called(Users.create_or_update(AuthHelper.valid_jwt_sub(), %{email: "x@y.z"}))
     end
 
     @moduletag capture_log: true
     test "returns internal server error when user cannot be saved", %{conn: conn, bypass: bypass} do
-      allow(Users.create_or_update(any(), %{username: "name_that_causes_error"}), return: {:error, :bad_things})
+      allow(Users.create_or_update(any(), %{email: "error_causing@e.mail"}), return: {:error, :bad_things})
 
-      Bypass.stub(bypass, "GET", "/userinfo", fn conn -> Plug.Conn.resp(conn, :ok, Jason.encode!(%{"name" => "name_that_causes_error"})) end)
+      Bypass.stub(bypass, "GET", "/userinfo", fn conn -> Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "error_causing@e.mail"})) end)
 
       conn
       |> put_req_header("authorization", "Bearer #{@valid_jwt}")

@@ -5,7 +5,7 @@ Discovery API serves as middleware between our metadata store and our Data Disco
 ### To start your Phoenix server(from the root directory):
   * `MIX_ENV=integration mix docker.start`
   * Install dependencies with `mix deps.get`
-  * Start Phoenix endpoint with `iex -S mix phx.server`
+  * Start Phoenix endpoint with `MIX_ENV=integration iex -S mix start`
   * `MIX_ENV=integration mix docker.stop`
 
 ### To run the tests

@@ -304,7 +304,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       end)
 
       Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
-        Plug.Conn.resp(conn, :ok, Jason.encode!(%{"name" => "x@y.z"}))
+        Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z"}))
       end)
 
       really_far_in_the_future = 3_000_000_000_000
@@ -336,7 +336,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       subject_id = AuthHelper.valid_jwt_sub()
       HTTPoison.post!("localhost:4000/api/v1/logged-in", "", Authorization: "Bearer #{AuthHelper.valid_jwt()}")
 
-      expected = %User{subject_id: subject_id, username: "x@y.z"}
+      expected = %User{subject_id: subject_id, email: "x@y.z"}
       actual = Users.get_user(subject_id)
 
       assert expected = actual

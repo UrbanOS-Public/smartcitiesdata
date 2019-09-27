@@ -7,7 +7,7 @@ defmodule DiscoveryApi.Schemas.Users.User do
 
   schema "users" do
     field(:subject_id, :string)
-    field(:username, :string)
+    field(:email, :string)
 
     timestamps()
   end
@@ -15,8 +15,8 @@ defmodule DiscoveryApi.Schemas.Users.User do
   @doc false
   def changeset(user, changes) do
     user
-    |> cast(changes, [:subject_id, :username])
-    |> validate_required([:subject_id, :username])
+    |> cast(changes, [:subject_id, :email])
+    |> validate_required([:subject_id, :email])
     |> unique_constraint(:subject_id)
   end
 end
