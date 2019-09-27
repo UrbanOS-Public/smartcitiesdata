@@ -71,7 +71,7 @@ defmodule Andi.CreateDatasetTest do
       {:ok, _} = create(dataset)
 
       eventually(fn ->
-        {:ok, value} = Brook.get(:dataset, dataset.id)
+        {:ok, value} = Brook.get(:andi, :dataset, dataset.id)
         assert value != nil
       end)
 

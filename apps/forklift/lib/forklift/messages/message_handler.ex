@@ -11,23 +11,22 @@ defmodule Forklift.Messages.MessageHandler do
   require Logger
 
   def init(args \\ []) do
-    schema = Keyword.fetch!(args, :schema)
-
-    {:ok, %{schema: schema}}
+    dataset = Keyword.fetch!(args, :dataset)
+    {:ok, %{dataset: dataset}}
   end
 
   @doc """
   Handle each kafka message.
   """
-  def handle_messages(messages, %{schema: %DatasetSchema{} = schema}) do
+  def handle_messages(messages, %{dataset: %SmartCity.Dataset{} = dataset}) do
     messages
     |> Enum.map(&parse/1)
     |> Enum.map(&yeet_error/1)
     |> Enum.reject(&error_tuple?/1)
-    |> Forklift.handle_batch(schema)
+    |> Forklift.handle_batch(dataset)
     |> send_to_output_topic()
 
-    {:ack, %{schema: schema}}
+    {:ack, %{dataset: dataset}}
   end
 
   defp parse(%{key: key, value: value} = message) do

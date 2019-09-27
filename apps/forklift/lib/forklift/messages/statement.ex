@@ -8,8 +8,8 @@ defmodule Forklift.Messages.Statement do
   @doc """
   Builds Presto statements from data and schema
   """
-  def build(%DatasetSchema{} = schema, data) do
-    columns = schema.columns
+  def build(%SmartCity.Dataset{} = dataset, data) do
+    columns = dataset.technical.schema
 
     columns_fragment =
       columns
@@ -24,7 +24,7 @@ defmodule Forklift.Messages.Statement do
       |> Enum.map(&to_row_string/1)
       |> Enum.join(",")
 
-    ~s|insert into "#{schema.system_name}" (#{columns_fragment}) values #{data_fragment}|
+    ~s|insert into "#{dataset.technical.systemName}" (#{columns_fragment}) values #{data_fragment}|
   rescue
     e ->
       Logger.error("Unhandled Statement Builder error: #{inspect(e)}")
