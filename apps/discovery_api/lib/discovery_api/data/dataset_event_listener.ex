@@ -17,6 +17,7 @@ defmodule DiscoveryApi.Data.DatasetEventListener do
          model <- Mapper.to_data_model(dataset, organization),
          {:ok, _result} <- Model.save(model) do
       DiscoveryApi.Search.Storage.index(model)
+      DiscoveryApi.RecommendationEngine.save(dataset)
       ResponseCache.invalidate()
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
     else
