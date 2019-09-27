@@ -21,7 +21,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
     end)
   end
 
-  describe "init/2" do
+  describe "init/1" do
     setup do
       on_exit(fn ->
         DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
