@@ -4,14 +4,23 @@ defmodule Forklift.Init do
   """
   use Task, restart: :transient
 
+  alias Pipeline.Reader.DatasetTopicReader
+  alias Forklift.Messages.MessageHandler
+
   alias Forklift.Datasets.DatasetHandler
 
   def start_link(_opts) do
-    Task.start_link(__MODULE__, :run, [])
+    data_reader = Application.get_env(:forklift, :data_reader)
+    Task.start_link(__MODULE__, :run, [data_reader])
   end
 
-  def run() do
+  def run(reader) do
     Brook.get_all_values!(:forklift, :datasets_to_process)
-    |> Enum.each(&DatasetHandler.start_dataset_ingest/1)
+    |> Enum.map(&reader_init_args/1)
+    |> Enum.each(fn args -> reader.init(args) end)
+  end
+
+  defp reader_init_args(dataset) do
+    [app: :forklift, handler: MessageHandler, dataset: dataset]
   end
 end

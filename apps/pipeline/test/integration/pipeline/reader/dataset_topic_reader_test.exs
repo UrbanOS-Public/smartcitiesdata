@@ -11,12 +11,34 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
   @prefix Application.get_env(:pipeline, :input_topic_prefix)
   @brokers Application.get_env(:pipeline, :elsa_brokers)
 
+  setup_all do
+    {:ok, pid} = Registry.start_link(keys: :unique, name: Pipeline.TestRegistry)
+
+    on_exit(fn ->
+      ref = Process.monitor(pid)
+      Process.exit(pid, :shutdown)
+      assert_receive {:DOWN, ^ref, _, _, _}
+    end)
+  end
+
   describe "init/2" do
+    setup do
+      on_exit(fn ->
+        DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
+        |> Enum.map(&elem(&1, 1))
+        |> Enum.each(fn pid ->
+          Process.monitor(pid)
+          DynamicSupervisor.terminate_child(Pipeline.DynamicSupervisor, pid)
+          assert_receive {:DOWN, _, _, ^pid, _}
+        end)
+      end)
+    end
+
     test "ensures topic exists to read from" do
       dataset = TDG.create_dataset(%{id: "test"})
       args = [app: :pipeline, dataset: dataset, handler: Pipeline.TestHandler]
 
-      assert {:ok, _pid} = DatasetTopicReader.init(args)
+      assert :ok = DatasetTopicReader.init(args)
 
       eventually(fn ->
         assert {"#{@prefix}-test", 1} in Elsa.Topic.list(@brokers)
@@ -30,13 +52,15 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
       args = [app: :pipeline, dataset: dataset, handler: Pipeline.TestHandler]
       message = TDG.create_data(%{})
 
-      assert {:ok, _pid} = DatasetTopicReader.init(args)
+      assert :ok = DatasetTopicReader.init(args)
       eventually(fn -> assert {"#{@prefix}-read", 1} in Elsa.Topic.list(@brokers) end)
 
       SmartCity.KafkaHelper.send_to_kafka(message, "#{@prefix}-read")
 
       eventually(fn ->
-        assert {:ok, [%Elsa.Message{value: json, topic: "#{@prefix}-read"}]} = Registry.meta(Pipeline.TestRegistry, :messages)
+        assert {:ok, [%Elsa.Message{value: json, topic: "#{@prefix}-read"}]} =
+                 Registry.meta(Pipeline.TestRegistry, :messages)
+
         assert Jason.decode!(json)["payload"]["my_float"] == message.payload["my_float"]
         assert Jason.decode!(json)["payload"]["my_string"] == message.payload["my_string"]
       end)
@@ -46,10 +70,13 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
       dataset = TDG.create_dataset(%{id: "idempotent"})
       args = [app: :pipeline, dataset: dataset, handler: Pipeline.TestHandler]
 
-      assert {:ok, pid1} = DatasetTopicReader.init(args)
-      Process.monitor(pid1)
+      assert :ok = DatasetTopicReader.init(args)
+      assert :ok = DatasetTopicReader.init(args)
 
-      assert {:ok, pid2} = DatasetTopicReader.init(args)
+      [{:undefined, pid1, _, _}, {:undefined, pid2, _, _}] =
+        DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
+
+      Process.monitor(pid1)
       Process.monitor(pid2)
 
       eventually(fn ->
@@ -65,7 +92,8 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
       dataset = TDG.create_dataset(%{id: "unreachable"})
       args = [app: :pipeline, dataset: dataset, handler: Pipeline.TestHandler]
 
-      assert {:ok, pid} = DatasetTopicReader.init(args)
+      assert :ok = DatasetTopicReader.init(args)
+      [{:undefined, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
       Process.monitor(pid)
 
       eventually(fn ->
@@ -81,11 +109,7 @@ defmodule Pipeline.TestHandler do
   use Elsa.Consumer.MessageHandler
 
   def init(_ \\ []) do
-    case Registry.start_link(keys: :unique, name: Pipeline.TestRegistry) do
-      {:ok, _} -> {:ok, []}
-      {:error, {:already_started, _}} -> {:ok, []}
-      error -> {:error, error}
-    end
+    {:ok, []}
   end
 
   def handle_messages(messages, state) do

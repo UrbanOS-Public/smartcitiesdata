@@ -6,7 +6,10 @@ defmodule Pipeline.Reader.DatasetTopicReader do
 
   @impl Pipeline.Reader
   def init(args) do
-    DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, {InitTask, args})
+    case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, {InitTask, args}) do
+      {:ok, _} -> :ok
+      error -> {:error, error}
+    end
   end
 end
 

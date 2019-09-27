@@ -55,7 +55,9 @@ defmodule Forklift.MixProject do
       {:streaming_metrics, "~> 2.2"},
       {:timex, "~> 3.6"},
       {:distillery, "~> 2.1"},
-      {:tasks, in_umbrella: true, only: :dev}
+      {:tasks, in_umbrella: true, only: :dev},
+      {:pipeline, in_umbrella: true},
+      {:mox, "~> 0.5.1", only: [:dev, :test]}
     ]
   end
 

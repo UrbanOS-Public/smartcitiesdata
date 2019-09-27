@@ -9,11 +9,11 @@ defmodule Forklift do
   alias Forklift.Util
   @max_wait_time 1_000 * 60 * 60
 
-  @spec handle_batch(list(%Data{}), %DatasetSchema{}) :: :ok | no_return()
-  def handle_batch(batch, schema) do
+  @spec handle_batch(list(%Data{}), %SmartCity.Dataset{}) :: :ok | no_return()
+  def handle_batch(batch, dataset) do
     batch
     |> Enum.map(&add_start_time/1)
-    |> persist_data(schema)
+    |> persist_data(dataset)
     |> Enum.map(&add_total_timing/1)
   end
 
@@ -21,11 +21,11 @@ defmodule Forklift do
     Util.add_to_metadata(datum, :forklift_start_time, Data.Timing.current_time())
   end
 
-  defp persist_data(data, %DatasetSchema{} = schema) do
+  defp persist_data(data, %SmartCity.Dataset{} = dataset) do
     payloads = Enum.map(data, fn datum -> datum.payload end)
 
     retry with: exponential_backoff(100) |> cap(@max_wait_time) do
-      PersistenceClient.upload_data(schema, payloads)
+      PersistenceClient.upload_data(dataset, payloads)
     after
       {:ok, timing} -> Enum.map(data, &Data.add_timing(&1, timing))
     else
