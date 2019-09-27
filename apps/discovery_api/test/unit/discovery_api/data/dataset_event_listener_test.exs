@@ -5,6 +5,7 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
   alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApiWeb.Plugs.ResponseCache
+  import Checkov
 
   describe "handle_dataset/1" do
     setup do
@@ -92,15 +93,22 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
       assert_called(DiscoveryApi.Search.Storage.index(expected_model))
     end
 
-    test "sends dataset to recommendation engine" do
-      dataset = TDG.create_dataset(%{id: "123"})
+    data_test "sends dataset to recommendation engine" do
+      dataset = TDG.create_dataset(dataset_map)
       organization = TDG.create_organization(%{id: dataset.technical.orgId})
       allow Organization.get(organization.id), return: {:ok, organization}
       allow(Model.save(any()), return: {:ok, :success})
 
       DatasetEventListener.handle_dataset(dataset)
 
-      assert_called(DiscoveryApi.RecommendationEngine.save(dataset))
+      assert called == called?(DiscoveryApi.RecommendationEngine.save(dataset))
+
+      where([
+        [:dataset_map, :called],
+        [%{technical: %{private: false, schema: [%{name: "id", type: "string"}]}}, true],
+        [%{technical: %{private: false, schema: []}}, false],
+        [%{technical: %{private: true}}, false],
+      ])
     end
   end
 end
