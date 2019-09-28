@@ -1,0 +1,49 @@
+* TODO [1/2] Pipeline.Reader interface
+  - [X] init
+  - [ ] terminate
+* TODO [2/3] DatasetTopicReader impl
+  - [X] init
+  - [X] no app env
+  - [ ] terminate
+* TODO [2/3] Pipeline.Writer interface
+  - [X] init
+  - [X] write
+  - [ ] terminate
+* TODO [3/4] SingleTopicWriter impl
+  - [X] init
+  - [X] write
+  - [X] no app env
+  - [ ] terminate
+* TODO [1/4] TableWriter impl
+  - [X] init
+  - [ ] write
+  - [ ] compact
+  - [ ] terminate
+* TODO [2/5] Forklift usage
+  - [X] =DatasetTopicReader= init
+  - [X] =SingleTopicWriter= init and write
+  - [ ] =TableWriter= init, write, compact
+  - [ ] =DatasetTopicReader= terminate (eof)
+  - [ ] =DatasetSchema= -> =Dataset= migration (Balser)
+* TODO [1/3] E2E usage
+  - [X] =andi= definition -> =forklift= table creation
+  - [ ] read from =kafka=, write to =presto=
+  - [ ] dataset compaction
+* TODO [0/7] Finalize
+  - [ ] clean up =divo= tests that are part of =e2e= now
+  - [ ] Rename =SingleTopicWriter= to =TopicWriter=
+  - [ ] documentation TODOs
+  - [ ] specs
+  - [ ] delete boilerplate
+  - [ ] use released versions of =brook= and =smart_city=
+  - [ ] remove TODOs.org
+* NOT IN THIS PR
+** DeadLetter instance issue
+   - [ ] use =SingleTopicWriter=?
+   - [ ] =Brook= style?
+     - start kafka carrier directly
+     - pass instance name through clients
+   - [ ] remove =mix test= alias
+** Other issues
+   - [ ] smart_city_test versions
+   - [ ] pipeline dynamic supervisor restart limit
