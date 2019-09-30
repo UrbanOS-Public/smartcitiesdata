@@ -38,7 +38,7 @@ defmodule Reaper.Http.Downloader do
 
   * `:to` - path to file to write data from request. **REQUIRED**
   * `:connect_timeout` - amount of time to wait for a network connection to be established. (default 30_000)
-  * `:kk_timeout` - amount of time to wait to receive next chunk for server. (default :infinity)
+  * `:idle_timeout` - amount of time to wait to receive next chunk for server. (default :infinity)
 
   ##Example
 
