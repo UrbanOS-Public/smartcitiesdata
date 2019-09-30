@@ -15,7 +15,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
   use TempEnv, reaper: [download_dir: @download_dir]
 
   setup do
-    expect ExAws.request(any()), return: {:ok, :done}, meck_options: [:passthrough]
+    expect(ExAws.request(any()), return: {:ok, :done}, meck_options: [:passthrough])
 
     dataset =
       TDG.create_dataset(
@@ -33,13 +33,21 @@ defmodule Reaper.FileIngest.ProcessorTest do
 
   describe "process/1 happy path" do
     test "downloads file and uploads to s3", %{dataset: dataset} do
-      expect Reaper.DataSlurper.slurp(dataset.technical.sourceUrl, dataset.id, any(), any()),
-        meck_options: [:passthrough]
+      expect(Reaper.DataSlurper.slurp(dataset.technical.sourceUrl, dataset.id, any(), any()),
+        meck_options: [:passthrough],
+        return: {:file, "filename"}
+      )
 
-      expect ExAws.S3.upload(any(), any(), "#{dataset.technical.orgName}/#{dataset.technical.dataName}.txt"),
+      expect(
+        ExAws.S3.upload(
+          any(),
+          any(),
+          "#{dataset.technical.orgName}/#{dataset.technical.dataName}.txt"
+        ),
         meck_options: [:passthrough]
+      )
 
-      expect Brook.Event.send(any(), any(), any()), return: :ok
+      expect(Brook.Event.send(any(), any(), any()), return: :ok)
 
       Processor.process(dataset)
 
@@ -50,7 +58,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
         key: "#{dataset.technical.orgName}/#{dataset.technical.dataName}.#{dataset.technical.sourceFormat}"
       }
 
-      assert_called Brook.Event.send(file_ingest_end(), :reaper, expected_file_upload)
+      assert_called(Brook.Event.send(file_ingest_end(), :reaper, expected_file_upload))
     end
   end
 end

@@ -23,7 +23,10 @@ defmodule Reaper.DataSlurper.Http do
     {:file, filename}
   rescue
     error ->
-      Logger.error(fn -> "Unable to retrieve data for #{dataset_id}: #{Exception.message(error)}" end)
+      Logger.error(fn ->
+        "Unable to retrieve data for #{dataset_id}: #{Exception.message(error)}"
+      end)
+
       reraise error, __STACKTRACE__
   end
 
@@ -31,9 +34,13 @@ defmodule Reaper.DataSlurper.Http do
     Task.async(fn -> Downloader.download(url, headers, to: filename, protocol: protocol) end)
     |> Task.await(download_timeout())
   catch
-    :exit, _ ->
+    :exit, {:timeout, _} ->
       message = "Timed out downloading dataset #{dataset_id} at #{url} in #{download_timeout()} ms"
+
       raise HttpDownloadTimeoutError, message
+
+    :exit, error ->
+      reraise error, __STACKTRACE__
   end
 
   defp download_timeout do
