@@ -35,8 +35,7 @@ defmodule Reaper.DataSlurper.Http do
     |> Task.await(download_timeout())
   catch
     :exit, {:timeout, _} ->
-      message =
-        "Timed out downloading dataset #{dataset_id} at #{url} in #{download_timeout()} ms"
+      message = "Timed out downloading dataset #{dataset_id} at #{url} in #{download_timeout()} ms"
 
       raise HttpDownloadTimeoutError, message
 

@@ -23,8 +23,7 @@ defmodule Reaper.Http.DownloaderTest do
       end)
     end)
 
-    {:ok, response} =
-      Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
+    {:ok, response} = Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
 
     assert "eachchunkasaword" == File.read!("test.output")
     assert response.status == 200
@@ -50,8 +49,7 @@ defmodule Reaper.Http.DownloaderTest do
       Conn.send_resp(conn, 404, "Not Found")
     end)
 
-    {:error, reason} =
-      Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
+    {:error, reason} = Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
 
     assert reason ==
              Downloader.InvalidStatusError.exception(
@@ -64,8 +62,7 @@ defmodule Reaper.Http.DownloaderTest do
     allow(Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection})
 
     allow(Mint.HTTP.request(:connection, any(), any(), any()),
-      return:
-        {:error, :connection, Mint.TransportError.exception(reason: "things have gone wrong")}
+      return: {:error, :connection, Mint.TransportError.exception(reason: "things have gone wrong")}
     )
 
     allow(Mint.HTTP.close(any()), return: :ok)
@@ -77,14 +74,13 @@ defmodule Reaper.Http.DownloaderTest do
     assert_called(Mint.HTTP.close(:connection), once())
   end
 
-  # TODO FIX IT, not obeying the mock
   test "raises an error when processing a stream message", %{bypass: bypass} do
     on_exit(fn -> File.rm("test.output") end)
     allow(Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection})
     allow(Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok, :connection, :ref})
 
     allow(Mint.HTTP.stream(any(), any()),
-      return: {:error, :connection, "some error", []},
+      return: {:error, :connection, %Mint.TransportError{reason: :closed}, []},
       meck_options: [:passthrough]
     )
 
@@ -95,11 +91,7 @@ defmodule Reaper.Http.DownloaderTest do
     path = "/some.url"
     url = "http://localhost:#{bypass.port}#{path}"
 
-    # Bypass.stub(bypass, "GET", path, fn conn ->
-    #   Plug.Conn.resp(conn, 200, "data")
-    # end)
-
-    assert_raise Reaper.Http.Downloader.HttpDownloadError, "bob", fn ->
+    assert_raise Mint.TransportError, fn ->
       Downloader.download(url, to: "test.output")
     end
   end
@@ -169,8 +161,7 @@ defmodule Reaper.Http.DownloaderTest do
     expected_error =
       Downloader.IdleTimeoutError.exception(
         timeout: 50,
-        message:
-          "Idle timeout was reached while attempting to download http://localhost/some.file"
+        message: "Idle timeout was reached while attempting to download http://localhost/some.file"
       )
 
     try do
@@ -204,11 +195,8 @@ defmodule Reaper.Http.DownloaderTest do
     assert_called(Mint.HTTP.request(any(), any(), any(), evaluated_headers), once())
   end
 
-  # TODO Not working b/c of http2
   test "protocol is used for connection", %{bypass: bypass} do
-    allow(Mint.HTTP.connect(any(), any(), any(), any()), meck_options: [passthrough: true])
-    # allow(Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok})
-    # allow(Mint.HTTP.close(any()), return: :ok)
+    allow(Mint.HTTP.connect(any(), any(), any(), any()), meck_options: [:passthrough])
     path = "/some.url"
     url = "http://localhost:#{bypass.port}#{path}"
 
@@ -216,10 +204,7 @@ defmodule Reaper.Http.DownloaderTest do
       Plug.Conn.resp(conn, 200, "data")
     end)
 
-    IO.inspect(url)
-    Process.sleep(100_000)
-
-    {:ok} = Downloader.download(url, %{}, to: "test.output", protocol: ["http2"])
+    {:ok, _} = Downloader.download(url, %{}, to: "test.output", protocol: ["http1"])
 
     uri = URI.parse(url)
     scheme = String.to_atom(uri.scheme)
@@ -227,7 +212,7 @@ defmodule Reaper.Http.DownloaderTest do
     assert_called(
       Mint.HTTP.connect(scheme, uri.host, uri.port,
         transport_opts: [timeout: 30_000],
-        protocols: [:http2]
+        protocols: [:http1]
       ),
       once()
     )

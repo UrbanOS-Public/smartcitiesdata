@@ -83,7 +83,6 @@ defmodule Reaper.Http.Downloader do
           transport_opts: [timeout: connect_timeout],
           protocols: protocol
         )
-        |> IO.inspect(label: "Connect")
     end
   end
 
@@ -119,13 +118,12 @@ defmodule Reaper.Http.Downloader do
         http_messages
         |> Enum.reduce({%{response | conn: conn}, file}, &handle_http_message/2)
         |> stream_responses(opts)
-        |> IO.inspect(label: "WTF?MADEIT")
 
       {:error, reason} ->
-        {:error, response.conn, reason} |> IO.inspect(label: "WTF?ERROR")
+        {:error, response.conn, reason}
 
       {:error, conn, reason, _responses} ->
-        {:error, conn, reason} |> IO.inspect(label: "WTF?REASON")
+        {:error, conn, reason}
     end
   end
 
@@ -133,7 +131,6 @@ defmodule Reaper.Http.Downloader do
     receive do
       message ->
         Mint.HTTP.stream(response.conn, message)
-        |> IO.inspect(label: "WTF?")
     after
       idle_timeout ->
         message = "Idle timeout was reached while attempting to download #{response.url}"

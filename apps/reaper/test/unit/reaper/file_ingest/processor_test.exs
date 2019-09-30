@@ -55,10 +55,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
         dataset_id: dataset.id,
         mime_type: "text/plain",
         bucket: @bucket,
-        key:
-          "#{dataset.technical.orgName}/#{dataset.technical.dataName}.#{
-            dataset.technical.sourceFormat
-          }"
+        key: "#{dataset.technical.orgName}/#{dataset.technical.dataName}.#{dataset.technical.sourceFormat}"
       }
 
       assert_called(Brook.Event.send(file_ingest_end(), :reaper, expected_file_upload))

@@ -22,8 +22,7 @@ defmodule Reaper.DataSlurper.HttpTest do
     test "downloads http urls file on local filesystem", %{bypass: bypass} do
       setup_get(bypass, "/1.2/data.csv", ~s|one,two,three\n1,2,3\n|)
 
-      {:file, filename} =
-        DataSlurper.Http.slurp("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id)
+      {:file, filename} = DataSlurper.Http.slurp("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id)
 
       assert ~s|one,two,three\n1,2,3\n| == File.read!(filename)
     end
@@ -34,8 +33,7 @@ defmodule Reaper.DataSlurper.HttpTest do
 
       setup_get(bypass, "/1.2/data.csv", ~s|one,two,three\n1,2,3\n|)
 
-      {:file, filename} =
-        DataSlurper.Http.slurp("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id)
+      {:file, filename} = DataSlurper.Http.slurp("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id)
 
       assert "/tmp/#{@dataset_id}" == filename
       assert ~s|one,two,three\n1,2,3\n| == File.read!(filename)
@@ -45,8 +43,7 @@ defmodule Reaper.DataSlurper.HttpTest do
       setup_redirect(bypass, "/some/csv-file.csv", "/some/other/csv-file.csv")
       setup_get(bypass, "/some/other/csv-file.csv", ~s|one,two,three\n4,5,6\n|)
 
-      {:file, filename} =
-        DataSlurper.Http.slurp("http://localhost:#{bypass.port}/some/csv-file.csv", @dataset_id)
+      {:file, filename} = DataSlurper.Http.slurp("http://localhost:#{bypass.port}/some/csv-file.csv", @dataset_id)
 
       assert ~s|one,two,three\n4,5,6\n| == File.read!(filename)
     end
@@ -55,8 +52,7 @@ defmodule Reaper.DataSlurper.HttpTest do
       setup_redirect(bypass, "/some/csv-file.csv", "/some/other/csv-file.csv", status_code: 301)
       setup_get(bypass, "/some/other/csv-file.csv", ~s|one,two,three\n4,5,6\n|)
 
-      {:file, filename} =
-        DataSlurper.Http.slurp("http://localhost:#{bypass.port}/some/csv-file.csv", @dataset_id)
+      {:file, filename} = DataSlurper.Http.slurp("http://localhost:#{bypass.port}/some/csv-file.csv", @dataset_id)
 
       assert ~s|one,two,three\n4,5,6\n| == File.read!(filename)
     end
