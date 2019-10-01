@@ -4,12 +4,9 @@ defmodule Reaper.Quantum.Storage do
   """
   @behaviour Quantum.Storage.Adapter
 
-  @conn :reaper_quantum_storage_redix
+  @conn Reaper.Quantum.Storage.Connection.connection()
 
-  def child_spec(_args) do
-    config = Application.get_env(:reaper, Reaper.Quantum.Storage)
-    Supervisor.child_spec({Redix, [host: Keyword.fetch!(config, :redis_host), name: @conn]}, id: @conn)
-  end
+  defdelegate child_spec(args), to: Reaper.Quantum.Storage.Connection
 
   @impl Quantum.Storage.Adapter
   def last_execution_date(scheduler) do

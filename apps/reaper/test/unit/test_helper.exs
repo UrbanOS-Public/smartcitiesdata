@@ -26,8 +26,9 @@ defmodule TestHelper do
 
   def assert_down(pid) do
     ref = Process.monitor(pid)
+    Process.exit(pid, :shutdown)
     Logger.debug(fn -> "Ensuring that #{inspect(pid)} is down via #{inspect(ref)}" end)
-    assert_receive {:DOWN, ^ref, _, _, _}
+    assert_receive {:DOWN, ^ref, _, _, _}, 2000
   end
 end
 

@@ -75,7 +75,7 @@ config :reaper, Reaper.Scheduler,
   overlap: false
 
 config :reaper, Reaper.Quantum.Storage,
-  redis_host: redis_host
+  host: redis_host
 
 config :redix,
   host: redis_host
