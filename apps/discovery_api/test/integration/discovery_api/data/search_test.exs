@@ -53,7 +53,10 @@ defmodule DiscoveryApi.Data.SearchTest do
       Organization.write(organization)
 
       dataset =
-        TDG.create_dataset(%{business: %{description: "Bob had a horse and this is its data"}, technical: %{orgId: organization.id}})
+        TDG.create_dataset(%{
+          business: %{description: "Bob had a horse and this is its data"},
+          technical: %{orgId: organization.id, schema: []}
+        })
 
       Dataset.write(dataset)
       DiscoveryApi.Data.DatasetEventListener.handle_dataset(dataset)
