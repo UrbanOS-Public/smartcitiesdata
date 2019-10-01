@@ -104,10 +104,10 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
       assert called == called?(DiscoveryApi.RecommendationEngine.save(dataset))
 
       where([
-        [:dataset_map, :called],
-        [%{technical: %{private: false, schema: [%{name: "id", type: "string"}]}}, true],
-        [%{technical: %{private: false, schema: []}}, false],
-        [%{technical: %{private: true}}, false],
+        [:called, :dataset_map],
+        [true, %{technical: %{private: false, schema: [%{name: "id", type: "string"}]}}],
+        [false, %{technical: %{private: false, schema: []}}],
+        [false, %{technical: %{private: true}}]
       ])
     end
   end

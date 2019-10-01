@@ -33,5 +33,4 @@ defmodule DiscoveryApi.Data.DatasetEventListener do
   defp save_dataset_to_recommendation_engine(_dataset) do
     :ok
   end
-
 end
