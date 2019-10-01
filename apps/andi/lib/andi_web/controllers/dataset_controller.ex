@@ -48,6 +48,17 @@ defmodule AndiWeb.DatasetController do
     end
   end
 
+  @doc """
+  Returns a dataset stored in redis
+  """
+  @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
+  def get(conn, params) do
+    case Brook.get(:dataset, Map.get(params, "dataset_id")) do
+      {:ok, nil} -> respond(conn, :not_found, "Dataset not found")
+      {:ok, dataset} -> respond(conn, :ok, dataset)
+    end
+  end
+
   defp write_dataset(dataset), do: Brook.Event.send(dataset_update(), :andi, dataset)
 
   # Deprecated function for backwards compatibility with SmartCity.Registry apps
