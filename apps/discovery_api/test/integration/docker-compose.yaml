@@ -48,6 +48,8 @@ services:
     image: postgres
     ports:
       - "5456:5432"
+    volumes:
+      - "./support/init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql"
   minio:
     image: smartcitiesdata/minio-testo:0.9.12
     ports:

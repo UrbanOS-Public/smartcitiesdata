@@ -6,15 +6,17 @@ defmodule DiscoveryApi.RecommendationEngine do
   @prefix "discovery_api:dataset_recommendations:"
 
   def save(%SmartCity.Dataset{id: id, technical: %{systemName: systemName, schema: schema}}) do
-    Persistence.persist(@prefix <> id, %{id: id, systemName: systemName, schema: schema_mapper(schema)})
+    case Persistence.persist(@prefix <> id, %{id: id, systemName: systemName, schema: schema_mapper(schema)}) do
+      {:ok, _} -> :ok
+      error -> error
+    end
   end
 
-  def get_recommendations(%SmartCity.Dataset{} = dataset_to_match) do
-    schema_to_match = dataset_to_match.technical.schema |> schema_mapper() |> MapSet.new()
-
+  def get_recommendations(%DiscoveryApi.Data.Model{} = dataset_to_match) do
     get_all_view_state_items()
-    |> find_recommendations(schema_to_match, dataset_to_match)
-    |> map_results()
+    |> Enum.filter(&recommend?(&1, dataset_to_match))
+    |> Enum.reject(&self?(&1, dataset_to_match))
+    |> Enum.map(&map_result(&1))
   end
 
   defp schema_mapper(schema) do
@@ -28,17 +30,18 @@ defmodule DiscoveryApi.RecommendationEngine do
     |> Enum.map(&Jason.decode!(&1, keys: :atoms))
   end
 
-  defp find_recommendations(all_view_state_items, schema_to_match, dataset_to_match) do
-    Enum.filter(all_view_state_items, fn view_state ->
-      this_schema = MapSet.new(view_state.schema)
-      count_of_shared_columns = MapSet.intersection(schema_to_match, this_schema) |> MapSet.size()
-      count_of_shared_columns >= 3 && view_state.id != dataset_to_match.id
-    end)
+  defp recommend?(%{schema: schema}, %{schema: schema_to_match}) do
+    schema_to_match = schema_to_match |> schema_mapper() |> MapSet.new()
+    this_schema = MapSet.new(schema)
+    count_of_shared_columns = MapSet.intersection(schema_to_match, this_schema) |> MapSet.size()
+    count_of_shared_columns >= 3
   end
 
-  defp map_results(results) do
-    Enum.map(results, fn dataset ->
-      %{id: dataset.id, systemName: dataset.systemName}
-    end)
+  defp self?(%{id: id}, %{id: id_to_match}) do
+    id == id_to_match
+  end
+
+  defp map_result(result) do
+    %{id: result.id, systemName: result.systemName}
   end
 end
