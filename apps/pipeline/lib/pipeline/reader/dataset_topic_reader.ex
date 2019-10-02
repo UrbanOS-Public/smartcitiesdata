@@ -24,57 +24,56 @@ defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
   end
 
   def run(args) do
-    app = Keyword.fetch!(args, :app)
-    dataset = Keyword.fetch!(args, :dataset)
-    handler = Keyword.fetch!(args, :handler)
-    topic = topic_name(app, dataset.id)
+    config = parse_config(args)
+    consumer_spec = consumer(config)
 
-    endpoints(app)
-    |> Elsa.create_topic(topic)
-
-    wait_for_topic!(app, topic)
-
-    consumer_spec = consumer(app, topic, handler, dataset)
+    Elsa.create_topic(config.endpoints, config.topic)
+    wait_for_topic!(config)
 
     case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, consumer_spec) do
       {:ok, _pid} -> :ok
       {:error, {:already_started, _pid}} -> :ok
-      error -> raise "Failed to supervise #{topic} consumer: #{inspect(error)}"
+      error -> raise "Failed to supervise #{config.topic} consumer: #{inspect(error)}"
     end
   end
 
-  defp consumer(app, topic, handler, dataset) do
+  defp parse_config(args) do
+    prefix = Keyword.fetch!(args, :input_topic_prefix)
+    dataset = Keyword.fetch!(args, :dataset)
+
+    %{
+      instance: Keyword.fetch!(args, :instance),
+      endpoints: Keyword.fetch!(args, :brokers),
+      dataset: dataset,
+      handler: Keyword.fetch!(args, :handler),
+      topic: "#{prefix}-#{dataset.id}",
+      retry_count: Keyword.get(args, :retry_count, 10),
+      retry_delay: Keyword.get(args, :retry_delay, 100),
+      topic_subscriber_config: Keyword.get(args, :topic_subscriber_config, [])
+    }
+  end
+
+  defp consumer(config) do
     start_options = [
-      brokers: endpoints(app),
-      name: :"#{app}-#{topic}-consumer",
-      group: "#{app}-#{topic}",
-      topics: [topic],
-      handler: handler,
-      handler_init_args: [dataset: dataset],
-      config: Application.get_env(app, :topic_subscriber_config, [])
+      brokers: config.endpoints,
+      name: :"#{config.instance}-#{config.topic}-consumer",
+      group: "#{config.instance}-#{config.topic}",
+      topics: [config.topic],
+      handler: config.handler,
+      handler_init_args: [dataset: config.dataset],
+      config: config.topic_subscriber_config
     ]
 
     {Elsa.Group.Supervisor, start_options}
   end
 
-  defp wait_for_topic!(app, topic) do
-    delay = Application.get_env(app, :retry_initial_delay)
-    count = Application.get_env(app, :retry_count)
-
-    retry with: delay |> exponential_backoff() |> Stream.take(count), atoms: [false] do
-      endpoints(app)
-      |> Elsa.topic?(topic)
+  defp wait_for_topic!(config) do
+    retry with: config.retry_delay |> exponential_backoff() |> Stream.take(config.retry_count), atoms: [false] do
+      Elsa.topic?(config.endpoints, config.topic)
     after
-      true -> topic
+      true -> config.topic
     else
-      _ -> raise "Timed out waiting for #{topic} to be available"
+      _ -> raise "Timed out waiting for #{config.topic} to be available"
     end
   end
-
-  defp topic_name(app, id) do
-    prefix = Application.get_env(app, :input_topic_prefix)
-    "#{prefix}-#{id}"
-  end
-
-  defp endpoints(app), do: Application.get_env(app, :elsa_brokers)
 end

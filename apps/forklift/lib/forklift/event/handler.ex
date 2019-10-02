@@ -12,8 +12,8 @@ defmodule Forklift.Event.Handler do
   def handle_event(%Brook.Event{type: data_ingest_start(), data: %Dataset{} = dataset}) do
     with source_type when source_type in ["ingest", "stream"] <- dataset.technical.sourceType,
          reader <- Application.get_env(:forklift, :data_reader),
-         reader_init_args <- [dataset: dataset, app: :forklift, handler: MessageHandler] do
-      :ok = apply(reader, :init, [reader_init_args])
+         init_args <- reader_init_args(dataset) do
+      :ok = apply(reader, :init, [init_args])
       {:merge, :datasets_to_process, dataset.id, dataset}
     else
       _ -> :discard
@@ -23,5 +23,18 @@ defmodule Forklift.Event.Handler do
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = dataset}) do
     DatasetHandler.create_table_for_dataset(dataset)
     :discard
+  end
+
+  defp reader_init_args(dataset) do
+    [
+      instance: :forklift,
+      brokers: Application.get_env(:forklift, :elsa_brokers),
+      dataset: dataset,
+      handler: MessageHandler,
+      input_topic_prefix: Application.get_env(:forklift, :input_topic_prefix),
+      retry_count: Application.get_env(:forklift, :retry_count),
+      retry_delay: Application.get_env(:forklift, :retry_initial_delay),
+      topic_subscriber_config: Application.get_env(:forklift, :topic_subscriber_config, [])
+    ]
   end
 end
