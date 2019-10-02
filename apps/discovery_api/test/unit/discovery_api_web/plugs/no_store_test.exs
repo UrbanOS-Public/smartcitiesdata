@@ -10,6 +10,7 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
       conn = build_conn(:get, "/doesnt/matter")
       conn = NoStore.call(conn, [])
       assert ["no-store"] == get_resp_header(conn, "cache-control")
+      assert ["no-cache"] == get_resp_header(conn, "pragma")
     end
   end
 
@@ -52,6 +53,7 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
 
       conn = get(conn, url)
       assert ["no-store"] == get_resp_header(conn, "cache-control")
+      assert ["no-cache"] == get_resp_header(conn, "pragma")
     end
   end
 end
