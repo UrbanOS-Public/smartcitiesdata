@@ -3,7 +3,6 @@ defmodule Forklift.Messages.PersistenceClient do
   Client for persisting a dataset's messages to presto
   """
   require Logger
-  alias Forklift.Datasets.DatasetSchema
   alias Forklift.Messages.Statement
   alias SmartCity.Data
 

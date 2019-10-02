@@ -5,7 +5,6 @@ defmodule Forklift.Event.Handler do
   alias SmartCity.Dataset
   alias Forklift.Messages.MessageHandler
   alias Forklift.Datasets.DatasetHandler
-  alias Pipeline.Reader.DatasetTopicReader
 
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0]
 

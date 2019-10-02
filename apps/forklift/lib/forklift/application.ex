@@ -5,12 +5,12 @@ defmodule Forklift.Application do
 
   def start(_type, _args) do
     Forklift.MetricsExporter.setup()
+    init_topic_writer()
 
     children =
       [
         libcluster(),
         redis(),
-        elsa_producer(),
         metrics(),
         {DynamicSupervisor, strategy: :one_for_one, name: Forklift.Dynamic.Supervisor},
         Forklift.Quantum.Scheduler,
@@ -25,6 +25,28 @@ defmodule Forklift.Application do
   end
 
   def redis_client(), do: :redix
+
+  defp init_topic_writer do
+    instance_name = :forklift
+
+    case Application.get_env(instance_name, :output_topic) do
+      nil -> []
+      topic -> do_init_topic_writer(instance_name, topic)
+    end
+  end
+
+  defp do_init_topic_writer(instance, topic) do
+    config = [
+      instance: instance,
+      endpoints: Application.get_env(instance, :elsa_brokers),
+      topic: topic,
+      producer_name: Application.get_env(instance, :producer_name),
+      retry_count: Application.get_env(instance, :retry_count),
+      retry_delay: Application.get_env(instance, :retry_initial_delay)
+    ]
+
+    Pipeline.Writer.SingleTopicWriter.init(config)
+  end
 
   defp redis do
     case Application.get_env(:redix, :host) do
@@ -51,21 +73,6 @@ defmodule Forklift.Application do
     case Application.get_env(:libcluster, :topologies) do
       nil -> []
       topology -> {Cluster.Supervisor, [topology, [name: Cluster.ClusterSupervisor]]}
-    end
-  end
-
-  defp elsa_producer() do
-    case Application.get_env(:forklift, :output_topic) do
-      nil ->
-        []
-
-      output_topic ->
-        {
-          Elsa.Producer.Supervisor,
-          name: Application.get_env(:forklift, :producer_name),
-          endpoints: Application.get_env(:forklift, :elsa_brokers),
-          topic: output_topic
-        }
     end
   end
 end
