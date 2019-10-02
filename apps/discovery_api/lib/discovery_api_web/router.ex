@@ -23,6 +23,10 @@ defmodule DiscoveryApiWeb.Router do
     plug(DiscoveryApiWeb.Plugs.CookieMonster)
   end
 
+  pipeline :global_headers do
+    plug(DiscoveryApiWeb.Plugs.NoStore)
+  end
+
   pipeline :add_user_auth0 do
     plug(Guardian.Plug.Pipeline,
       otp_app: :discovery_api,
@@ -40,7 +44,7 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:reject_cookies_from_ajax, :add_user_details])
+    pipe_through([:reject_cookies_from_ajax, :add_user_details, :global_headers])
 
     get("/login", LoginController, :login)
     get("/logout", LoginController, :logout)
