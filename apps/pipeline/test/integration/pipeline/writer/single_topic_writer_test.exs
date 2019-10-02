@@ -10,31 +10,29 @@ defmodule Pipeline.Writer.SingleTopicWriterTest do
   @brokers Application.get_env(:pipeline, :elsa_brokers)
   @producer :"pipeline-#{Application.get_env(:pipeline, :producer_name)}"
 
-  describe "init/2" do
-    setup do
-      on_exit(fn ->
-        DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
-        |> Enum.map(&elem(&1, 1))
-        |> Enum.each(fn pid ->
-          Process.monitor(pid)
-          DynamicSupervisor.terminate_child(Pipeline.DynamicSupervisor, pid)
-          assert_receive {:DOWN, _, _, ^pid, _}
-        end)
+  setup do
+    on_exit(fn ->
+      DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
+      |> Enum.map(&elem(&1, 1))
+      |> Enum.each(fn pid ->
+        Process.monitor(pid)
+        DynamicSupervisor.terminate_child(Pipeline.DynamicSupervisor, pid)
+        assert_receive {:DOWN, _, _, ^pid, _}
       end)
-    end
+    end)
+  end
 
+  describe "init/2" do
     test "ensures topic exists to write to" do
       assert :ok = SingleTopicWriter.init(app: :pipeline)
       eventually(fn -> assert Elsa.topic?(@brokers, @topic) end)
     end
 
-    test "sets writer up to produce messages" do
+    test "tracks topic per instance" do
       assert :ok = SingleTopicWriter.init(app: :pipeline)
-      eventually(fn -> assert Elsa.topic?(@brokers, @topic) end)
 
       eventually(fn ->
-        [{_, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
-        assert Process.alive?(pid)
+        assert Elsa.topic?(@brokers, @topic)
         assert {:ok, @topic} = Registry.meta(Pipeline.Registry, @producer)
       end)
     end
@@ -49,6 +47,23 @@ defmodule Pipeline.Writer.SingleTopicWriterTest do
       eventually(fn ->
         assert_receive {:DOWN, _, _, ^pid, {%RuntimeError{message: msg}, _}}
         assert msg == "Timed out waiting for #{@topic} to be available"
+      end)
+    end
+  end
+
+  describe "write/2" do
+    test "produces messages to single topic" do
+      assert :ok = SingleTopicWriter.init(app: :pipeline)
+
+      [{_, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
+      Process.monitor(pid)
+      assert_receive {:DOWN, _, _, ^pid, :normal}, 2_000
+
+      assert :ok = SingleTopicWriter.write(["foo"], app: :pipeline)
+
+      eventually(fn ->
+        assert {:ok, _, messages} = Elsa.fetch(@brokers, @topic)
+        assert [%Elsa.Message{value: "foo"}] = messages
       end)
     end
   end
