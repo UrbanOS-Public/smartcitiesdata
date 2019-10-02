@@ -11,6 +11,16 @@ defmodule Pipeline.Writer.SingleTopicWriter do
       error -> {:error, error}
     end
   end
+
+  @impl Pipeline.Writer
+  def write(content, opts) when is_list(content) do
+    app = Keyword.fetch!(opts, :app)
+    producer_name = Application.get_env(app, :producer_name)
+    name = :"#{app}-#{producer_name}"
+
+    {:ok, topic} = Registry.meta(Pipeline.Registry, name)
+    Elsa.produce_sync(topic, content, name: name)
+  end
 end
 
 defmodule Pipeline.Writer.SingleTopicWriter.InitTask do
