@@ -5,11 +5,9 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Services.PrestoService
 
-
   describe "call/2" do
     test "adds cache-control: no-store to connection header" do
-      conn =
-        build_conn(:get, "/doesnt/matter")
+      conn = build_conn(:get, "/doesnt/matter")
       conn = NoStore.call(conn, [])
       assert ["no-store"] == get_resp_header(conn, "cache-control")
     end
