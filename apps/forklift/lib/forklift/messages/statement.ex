@@ -3,7 +3,6 @@ defmodule Forklift.Messages.Statement do
   Builds Presto statements from data and schema
   """
   require Logger
-  alias Forklift.Datasets.DatasetSchema
 
   @doc """
   Builds Presto statements from data and schema
