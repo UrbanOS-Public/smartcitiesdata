@@ -6,6 +6,8 @@ defmodule DiscoveryApiWeb.Plugs.NoStore do
   def init(default), do: default
 
   def call(conn, _) do
-    put_resp_header(conn, "cache-control", "no-store")
+    conn
+    |> put_resp_header("cache-control", "no-store")
+    |> put_resp_header("pragma", "no-cache")
   end
 end
