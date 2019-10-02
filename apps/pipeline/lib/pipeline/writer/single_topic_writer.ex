@@ -14,12 +14,17 @@ defmodule Pipeline.Writer.SingleTopicWriter do
 
   @impl Pipeline.Writer
   def write(content, opts) when is_list(content) do
-    app = Keyword.fetch!(opts, :app)
-    producer_name = Application.get_env(app, :producer_name)
-    name = :"#{app}-#{producer_name}"
+    instance_producer = producer(opts)
 
-    {:ok, topic} = Registry.meta(Pipeline.Registry, name)
-    Elsa.produce_sync(topic, content, name: name)
+    {:ok, topic} = Registry.meta(Pipeline.Registry, instance_producer)
+    Elsa.produce_sync(topic, content, name: instance_producer)
+  end
+
+  defp producer(config) do
+    instance = Keyword.fetch!(config, :instance)
+    producer_name = Keyword.fetch!(config, :producer_name)
+
+    :"#{instance}-#{producer_name}"
   end
 end
 
@@ -34,48 +39,52 @@ defmodule Pipeline.Writer.SingleTopicWriter.InitTask do
   end
 
   def run(args) do
-    app = Keyword.fetch!(args, :app)
-    topic = Application.get_env(app, :output_topic)
+    config = parse_config(args)
+    producer_spec = producer(config)
 
-    endpoints(app)
-    |> Elsa.create_topic(topic)
-
-    wait_for_topic!(app, topic)
-    producer_spec = producer(app, topic)
+    Elsa.create_topic(config.endpoints, config.topic)
+    wait_for_topic!(config)
 
     case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, producer_spec) do
       {:ok, _pid} ->
-        :ok = Registry.put_meta(Pipeline.Registry, producer_name(app), topic)
+        :ok = Registry.put_meta(Pipeline.Registry, config.name, config.topic)
 
       {:error, {:already_started, _pid}} ->
-        :ok = Registry.put_meta(Pipeline.Registry, producer_name(app), topic)
+        :ok = Registry.put_meta(Pipeline.Registry, config.name, config.topic)
 
       error ->
         raise "TODO: #{inspect(error)}"
     end
   end
 
-  defp wait_for_topic!(app, topic) do
-    delay = Application.get_env(app, :retry_initial_delay)
-    count = Application.get_env(app, :retry_count)
+  defp parse_config(args) do
+    instance = Keyword.fetch!(args, :instance)
+    producer = Keyword.fetch!(args, :producer_name)
 
-    retry with: delay |> exponential_backoff() |> Stream.take(count), atoms: [false] do
-      endpoints(app)
-      |> Elsa.topic?(topic)
-    after
-      true -> topic
-    else
-      _ -> raise "Timed out waiting for #{topic} to be available"
-    end
-  end
-
-  defp producer(app, topic) do
-    {
-      Elsa.Producer.Supervisor,
-      name: producer_name(app), endpoints: endpoints(app), topic: topic
+    %{
+      instance: instance,
+      endpoints: Keyword.fetch!(args, :endpoints),
+      topic: Keyword.fetch!(args, :topic),
+      name: :"#{instance}-#{producer}",
+      retry_count: Keyword.get(args, :retry_count, 10),
+      retry_delay: Keyword.get(args, :retry_delay, 100)
     }
   end
 
-  defp producer_name(app), do: :"#{app}-#{Application.get_env(app, :producer_name)}"
-  defp endpoints(app), do: Application.get_env(app, :elsa_brokers)
+  defp wait_for_topic!(config) do
+    retry with: config.retry_delay |> exponential_backoff() |> Stream.take(config.retry_count), atoms: [false] do
+      Elsa.topic?(config.endpoints, config.topic)
+    after
+      true -> config.topic
+    else
+      _ -> raise "Timed out waiting for #{config.topic} to be available"
+    end
+  end
+
+  defp producer(config) do
+    {
+      Elsa.Producer.Supervisor,
+      name: config.name, endpoints: config.endpoints, topic: config.topic
+    }
+  end
 end

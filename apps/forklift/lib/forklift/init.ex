@@ -4,9 +4,7 @@ defmodule Forklift.Init do
   """
   use Task, restart: :transient
 
-  alias Pipeline.Reader.DatasetTopicReader
   alias Forklift.Messages.MessageHandler
-
   alias Forklift.Datasets.DatasetHandler
 
   def start_link(_opts) do

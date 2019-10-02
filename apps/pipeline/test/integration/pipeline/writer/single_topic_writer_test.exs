@@ -8,7 +8,7 @@ defmodule Pipeline.Writer.SingleTopicWriterTest do
 
   @topic Application.get_env(:pipeline, :output_topic)
   @brokers Application.get_env(:pipeline, :elsa_brokers)
-  @producer :"pipeline-#{Application.get_env(:pipeline, :producer_name)}"
+  @producer Application.get_env(:pipeline, :producer_name)
 
   setup do
     on_exit(fn ->
@@ -24,22 +24,46 @@ defmodule Pipeline.Writer.SingleTopicWriterTest do
 
   describe "init/2" do
     test "ensures topic exists to write to" do
-      assert :ok = SingleTopicWriter.init(app: :pipeline)
+      config = [
+        instance: :pipeline,
+        producer_name: @producer,
+        endpoints: @brokers,
+        topic: @topic
+      ]
+
+      assert :ok = SingleTopicWriter.init(config)
       eventually(fn -> assert Elsa.topic?(@brokers, @topic) end)
     end
 
     test "tracks topic per instance" do
-      assert :ok = SingleTopicWriter.init(app: :pipeline)
+      config = [
+        instance: :pipeline,
+        producer_name: @producer,
+        endpoints: @brokers,
+        topic: @topic
+      ]
+
+      assert :ok = SingleTopicWriter.init(config)
 
       eventually(fn ->
         assert Elsa.topic?(@brokers, @topic)
-        assert {:ok, @topic} = Registry.meta(Pipeline.Registry, @producer)
+        assert {:ok, @topic} = Registry.meta(Pipeline.Registry, :"pipeline-#{@producer}")
       end)
     end
 
     test "fails if it cannot connect to topic" do
       allow Elsa.topic?(any(), any()), return: false, meck_options: [:passthrough]
-      assert :ok = SingleTopicWriter.init(app: :pipeline)
+
+      config = [
+        instance: :pipeline,
+        producer_name: @producer,
+        endpoints: @brokers,
+        topic: @topic,
+        retry_count: 1,
+        retry_delay: 10
+      ]
+
+      assert :ok = SingleTopicWriter.init(config)
 
       [{:undefined, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
       Process.monitor(pid)
@@ -53,17 +77,25 @@ defmodule Pipeline.Writer.SingleTopicWriterTest do
 
   describe "write/2" do
     test "produces messages to single topic" do
-      assert :ok = SingleTopicWriter.init(app: :pipeline)
+      config = [
+        instance: :pipeline,
+        producer_name: @producer,
+        endpoints: @brokers,
+        topic: @topic
+      ]
+
+      assert :ok = SingleTopicWriter.init(config)
 
       [{_, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
       Process.monitor(pid)
       assert_receive {:DOWN, _, _, ^pid, :normal}, 2_000
 
-      assert :ok = SingleTopicWriter.write(["foo"], app: :pipeline)
+      assert :ok = SingleTopicWriter.write(["foo"], instance: :pipeline, producer_name: @producer)
+      assert :ok = SingleTopicWriter.write(["bar", "baz"], instance: :pipeline, producer_name: @producer)
 
       eventually(fn ->
         assert {:ok, _, messages} = Elsa.fetch(@brokers, @topic)
-        assert [%Elsa.Message{value: "foo"}] = messages
+        assert [%Elsa.Message{value: "foo"}, %Elsa.Message{value: "bar"}, %Elsa.Message{value: "baz"}] = messages
       end)
     end
   end

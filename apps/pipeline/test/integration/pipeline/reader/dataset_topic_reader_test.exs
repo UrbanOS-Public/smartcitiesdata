@@ -8,7 +8,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
   import SmartCity.TestHelper, only: [eventually: 1]
 
-  @prefix Application.get_env(:pipeline, :input_topic_prefix)
+  @prefix "input-prefix"
   @brokers Application.get_env(:pipeline, :elsa_brokers)
 
   setup_all do
@@ -36,7 +36,16 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
     test "ensures topic exists to read from" do
       dataset = TDG.create_dataset(%{id: "test"})
-      args = [app: :pipeline, dataset: dataset, handler: Pipeline.TestHandler]
+
+      args = [
+        instance: :pipeline,
+        brokers: @brokers,
+        dataset: dataset,
+        handler: Pipeline.TestHandler,
+        input_topic_prefix: @prefix,
+        retry_count: 10,
+        retry_delay: 1
+      ]
 
       assert :ok = DatasetTopicReader.init(args)
 
@@ -47,10 +56,18 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
     test "sets reader up to pass messages to a handler" do
       Application.put_env(:smart_city_test, :endpoint, @brokers)
-
       dataset = TDG.create_dataset(%{id: "read"})
-      args = [app: :pipeline, dataset: dataset, handler: Pipeline.TestHandler]
       message = TDG.create_data(%{})
+
+      args = [
+        instance: :pipeline,
+        brokers: @brokers,
+        dataset: dataset,
+        handler: Pipeline.TestHandler,
+        input_topic_prefix: @prefix,
+        retry_count: 10,
+        retry_delay: 1
+      ]
 
       assert :ok = DatasetTopicReader.init(args)
       eventually(fn -> assert {"#{@prefix}-read", 1} in Elsa.Topic.list(@brokers) end)
@@ -68,7 +85,16 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
     test "idempotently sets up reader infrastructure" do
       dataset = TDG.create_dataset(%{id: "idempotent"})
-      args = [app: :pipeline, dataset: dataset, handler: Pipeline.TestHandler]
+
+      args = [
+        instance: :pipeline,
+        brokers: @brokers,
+        dataset: dataset,
+        handler: Pipeline.TestHandler,
+        input_topic_prefix: @prefix,
+        retry_count: 10,
+        retry_delay: 1
+      ]
 
       assert :ok = DatasetTopicReader.init(args)
       assert :ok = DatasetTopicReader.init(args)
@@ -88,9 +114,17 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
     test "fails if it cannot connect to dataset topic" do
       allow Elsa.create_topic(any(), "#{@prefix}-unreachable"), return: :ignore, meck_options: [:passthrough]
-
       dataset = TDG.create_dataset(%{id: "unreachable"})
-      args = [app: :pipeline, dataset: dataset, handler: Pipeline.TestHandler]
+
+      args = [
+        instance: :pipeline,
+        brokers: @brokers,
+        dataset: dataset,
+        handler: Pipeline.TestHandler,
+        input_topic_prefix: @prefix,
+        retry_count: 10,
+        retry_delay: 1
+      ]
 
       assert :ok = DatasetTopicReader.init(args)
       [{:undefined, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
