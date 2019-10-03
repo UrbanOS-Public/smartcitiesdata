@@ -13,6 +13,7 @@ defmodule Forklift.Application do
         redis(),
         metrics(),
         {DynamicSupervisor, strategy: :one_for_one, name: Forklift.Dynamic.Supervisor},
+        migrations(),
         Forklift.Quantum.Scheduler,
         {Brook, Application.get_env(:forklift, :brook)},
         {DeadLetter, Application.get_env(:forklift, :dead_letter)},
@@ -52,6 +53,13 @@ defmodule Forklift.Application do
     case Application.get_env(:redix, :host) do
       nil -> []
       host -> {Redix, host: host, name: redis_client()}
+    end
+  end
+
+  defp migrations do
+    case Application.get_env(:redix, :host) do
+      nil -> []
+      _host -> Forklift.Migrations
     end
   end
 

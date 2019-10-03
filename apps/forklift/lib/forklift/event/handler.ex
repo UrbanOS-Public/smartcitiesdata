@@ -6,14 +6,15 @@ defmodule Forklift.Event.Handler do
   alias Forklift.Messages.MessageHandler
   alias Forklift.Datasets.DatasetHandler
 
+  @reader Application.get_env(:forklift, :data_reader)
+
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0]
 
   def handle_event(%Brook.Event{type: data_ingest_start(), data: %Dataset{} = dataset}) do
     with source_type when source_type in ["ingest", "stream"] <- dataset.technical.sourceType,
-         reader <- Application.get_env(:forklift, :data_reader),
          init_args <- reader_init_args(dataset) do
-      :ok = apply(reader, :init, [init_args])
-      {:merge, :datasets_to_process, dataset.id, dataset}
+      :ok = @reader.init(init_args)
+      Forklift.Datasets.update(dataset)
     else
       _ -> :discard
     end
