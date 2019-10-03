@@ -15,7 +15,7 @@ defmodule Forklift.Datasets.DatasetCompactor do
   def compact_datasets() do
     Logger.info("Beginning scheduled dataset compaction")
 
-    Brook.get_all_values!(:forklift, :datasets_to_process)
+    Forklift.Datasets.get_all!()
     |> Enum.map(fn schema -> {schema.system_name, compact_dataset(schema)} end)
     |> Enum.each(fn {system_name, status} -> Logger.info("#{system_name} -> #{inspect(status)}") end)
 
