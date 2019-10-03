@@ -1,8 +1,10 @@
 defmodule Pipeline.Writer.TableWriterTest do
   use ExUnit.Case
   use Divo
+  use Placebo
 
   alias Pipeline.Writer.TableWriter
+  alias Pipeline.Writer.TableWriter.Compaction
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper, only: [eventually: 1]
 
@@ -145,6 +147,64 @@ defmodule Pipeline.Writer.TableWriterTest do
           |> Prestige.prefetch()
 
         assert result == [expected]
+      end)
+    end
+  end
+
+  describe "compact/1" do
+    test "compacts a table without changing data" do
+      sub = [%{name: "three", type: "boolean"}]
+      schema = [%{name: "one", type: "list", itemType: "integer"}, %{name: "two", type: "map", subSchema: sub}]
+      dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "a__b"}})
+
+      TableWriter.init(name: dataset.technical.systemName, schema: schema)
+
+      Enum.each(1..10, fn n ->
+        payload = %{"one" => [n], "two" => %{"three" => false}}
+        datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
+        TableWriter.write([datum], table: dataset.technical.systemName, schema: schema)
+      end)
+
+      eventually(fn ->
+        assert [[10]] =
+                 "select count(1) from #{dataset.technical.systemName}"
+                 |> Prestige.execute()
+                 |> Prestige.prefetch()
+      end)
+
+      assert :ok = TableWriter.compact(table: dataset.technical.systemName)
+
+      eventually(fn ->
+        assert [[10]] =
+                 "select count(1) from #{dataset.technical.systemName}"
+                 |> Prestige.execute()
+                 |> Prestige.prefetch()
+      end)
+    end
+
+    test "fails without altering state if it was going to change data" do
+      allow Compaction.measure(any(), any()), return: {6, 10}, meck_options: [:passthrough]
+
+      schema = [%{name: "abc", type: "string"}]
+      dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "xyz"}})
+
+      TableWriter.init(name: dataset.technical.systemName, schema: schema)
+
+      Enum.each(1..10, fn n ->
+        payload = %{"abc" => "#{n}"}
+        datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
+        TableWriter.write([datum], table: "xyz", schema: schema)
+      end)
+
+      assert {:error, _} = TableWriter.compact(table: "xyz")
+
+      eventually(fn ->
+        [[count]] =
+          "select count(1) from xyz"
+          |> Prestige.execute()
+          |> Prestige.prefetch()
+
+        assert count == 10
       end)
     end
   end

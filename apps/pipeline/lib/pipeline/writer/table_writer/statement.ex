@@ -10,8 +10,12 @@ defmodule Pipeline.Writer.TableWriter.Statement do
     defexception message: "Encountered an unsupported field type"
   end
 
-  def create(config) do
-    {:ok, Create.compose(config.name, config.schema)}
+  def create(%{name: name, as: select}) do
+    {:ok, "create table #{name} as (#{select})"}
+  end
+
+  def create(%{name: name, schema: schema}) do
+    {:ok, Create.compose(name, schema)}
   rescue
     e in FieldTypeError ->
       {:error, e.message}
@@ -24,5 +28,13 @@ defmodule Pipeline.Writer.TableWriter.Statement do
     with {:ok, statement} <- Insert.compose(config, content) do
       statement
     end
+  end
+
+  def drop(%{table: table}) do
+    "drop table if exists #{table}"
+  end
+
+  def alter(%{table: table, alteration: change}) do
+    "alter table #{table} #{change}"
   end
 end

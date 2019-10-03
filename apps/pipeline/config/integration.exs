@@ -24,7 +24,7 @@ defmodule Pipeline.DivoPresto do
   def gen_stack(_envar) do
     %{
       metastore: %{
-        image: "smartcitiesdata/metastore-testo:0.9.12",
+        image: "smartcitiesdata/metastore-testo:development",
         depends_on: ["postgres"],
         ports: ["9083:9083"],
         command:
@@ -33,16 +33,16 @@ defmodule Pipeline.DivoPresto do
       },
       postgres: %{
         logging: %{driver: "none"},
-        image: "smartcitiesdata/postgres-testo:0.9.12",
+        image: "smartcitiesdata/postgres-testo:development",
         ports: ["5432:5432"]
       },
       minio: %{
-        image: "smartcitiesdata/minio-testo:0.9.12",
+        image: "smartcitiesdata/minio-testo:development",
         ports: ["9000:9000"]
       },
       presto: %{
         depends_on: ["metastore", "minio"],
-        image: "smartcitiesdata/presto-testo:0.9.12",
+        image: "smartcitiesdata/presto-testo:development",
         ports: ["8080:8080"],
         healthcheck: %{
           test: [

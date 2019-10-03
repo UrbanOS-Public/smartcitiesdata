@@ -2,7 +2,7 @@ defmodule Pipeline.Writer.TableWriter do
   @moduledoc "TODO"
 
   @behaviour Pipeline.Writer
-  alias Pipeline.Writer.TableWriter.Statement
+  alias Pipeline.Writer.TableWriter.{Compaction, Statement}
   require Logger
 
   @impl Pipeline.Writer
@@ -10,13 +10,13 @@ defmodule Pipeline.Writer.TableWriter do
     config = parse_config(args)
 
     with {:ok, statement} <- Statement.create(config),
-         :ok <- create_table(statement) do
+         [[true]] <- execute(statement) do
       Logger.info("Created #{config.name} table")
       :ok
     else
       error ->
         Logger.error("Error creating #{config.name} table: #{inspect(error)}")
-        error
+        {:error, "Write to Presto failed: #{inspect(error)}"}
     end
   end
 
@@ -24,7 +24,6 @@ defmodule Pipeline.Writer.TableWriter do
   def write([], opts) do
     table = Keyword.fetch!(opts, :table)
     Logger.debug("No data to write to #{table}")
-
     :ok
   end
 
@@ -33,7 +32,21 @@ defmodule Pipeline.Writer.TableWriter do
 
     %{table: Keyword.fetch!(opts, :table), schema: Keyword.fetch!(opts, :schema)}
     |> Statement.insert(payloads)
-    |> write_table()
+    |> execute()
+    |> case do
+      [[_]] -> :ok
+      error -> {:error, error}
+    end
+  end
+
+  @spec compact(keyword) :: :ok | {:error, term()}
+  def compact(args) do
+    table = Keyword.fetch!(args, :table)
+
+    Compaction.setup(table)
+    |> Compaction.run()
+    |> Compaction.measure(table)
+    |> Compaction.complete(table)
   end
 
   defp parse_config(args) do
@@ -43,23 +56,9 @@ defmodule Pipeline.Writer.TableWriter do
     }
   end
 
-  defp create_table(statement) do
+  defp execute(statement) do
     statement
     |> Prestige.execute()
     |> Prestige.prefetch()
-    |> case do
-      [[true]] -> :ok
-      error -> {:error, "Write to Presto failed: #{inspect(error)}"}
-    end
-  end
-
-  defp write_table(statement) do
-    statement
-    |> Prestige.execute()
-    |> Prestige.prefetch()
-    |> case do
-      [[_]] -> :ok
-      error -> {:error, error}
-    end
   end
 end
