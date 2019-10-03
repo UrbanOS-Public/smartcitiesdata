@@ -25,7 +25,7 @@ defmodule Pipeline.MixProject do
 
   defp deps do
     [
-      {:smart_city, github: "smartcitiesdata/smart_city", branch: "new_brook", override: true},
+      {:smart_city, "~> 3.0", override: true},
       {:elsa, "~> 0.9.0"},
       {:retry, "~> 0.13"},
       {:prestige, "~> 0.3"},
