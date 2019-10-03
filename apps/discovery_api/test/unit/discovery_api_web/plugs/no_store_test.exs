@@ -9,7 +9,7 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
     test "adds cache-control: no-store to connection header" do
       conn = build_conn(:get, "/doesnt/matter")
       conn = NoStore.call(conn, [])
-      assert ["no-store"] == get_resp_header(conn, "cache-control")
+      assert ["no-cache, no-store, must-revalidate"] == get_resp_header(conn, "cache-control")
       assert ["no-cache"] == get_resp_header(conn, "pragma")
     end
   end
@@ -52,7 +52,7 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
       allow(Redix.command!(any(), any()), return: :does_not_matter)
 
       conn = get(conn, url)
-      assert ["no-store"] == get_resp_header(conn, "cache-control")
+      assert ["no-cache, no-store, must-revalidate"] == get_resp_header(conn, "cache-control")
       assert ["no-cache"] == get_resp_header(conn, "pragma")
     end
   end
