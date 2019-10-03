@@ -43,7 +43,7 @@ defmodule Flair.MixProject do
       {:jason, "~> 1.1"},
       {:prestige, "~> 0.3"},
       {:retry, "~> 0.13.0"},
-      {:smart_city, github: "smartcitiesdata/smart_city", branch: "new_brook", override: true},
+      {:smart_city, "~> 3.0", override: true},
       {:statistics, "~> 0.6"},
       # Additional dependencies
       {:credo, "~> 1.1", only: :dev, runtime: false},

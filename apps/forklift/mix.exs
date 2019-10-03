@@ -50,7 +50,7 @@ defmodule Forklift.MixProject do
       {:quantum, "~>2.3"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
-      {:smart_city, github: "smartcitiesdata/smart_city", branch: "new_brook", override: true},
+      {:smart_city, "~> 3.0", override: true},
       {:smart_city_test, "~> 0.5"},
       {:streaming_metrics, "~> 2.2"},
       {:timex, "~> 3.6"},
