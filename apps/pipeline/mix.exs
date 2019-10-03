@@ -28,6 +28,7 @@ defmodule Pipeline.MixProject do
       {:smart_city, github: "smartcitiesdata/smart_city", branch: "new_brook", override: true},
       {:elsa, "~> 0.9.0"},
       {:retry, "~> 0.13"},
+      {:prestige, "~> 0.3"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:smart_city_test, "~> 0.5", only: [:dev, :test, :integration]},
       {:divo, "~> 1.1", only: [:dev, :integration]},
@@ -36,5 +37,5 @@ defmodule Pipeline.MixProject do
   end
 
   defp test_paths(:integration), do: ["test/integration"]
-  defp test_paths(_), do: []
+  defp test_paths(_), do: ["test/unit"]
 end
