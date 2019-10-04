@@ -12,9 +12,10 @@ defmodule Valkyrie.BroadwayTest do
   @topic "raw-ds1"
   @producer :ds1_producer
   @current_time "2019-07-17T14:45:06.123456Z"
+  @instance Valkyrie.Application.instance()
 
   setup do
-    allow Elsa.produce_sync(any(), any(), any()), return: :ok
+    allow Elsa.produce(any(), any(), any(), any()), return: :ok
     allow SmartCity.Data.Timing.current_time(), return: @current_time, meck_options: [:passthrough]
 
     schema = [
@@ -25,7 +26,16 @@ defmodule Valkyrie.BroadwayTest do
     dataset = TDG.create_dataset(id: @dataset_id, technical: %{schema: schema})
 
     {:ok, broadway} =
-      Valkyrie.Broadway.start_link(dataset: dataset, topics: [@topic], producer: @producer, output_topic: :output_topic)
+      Valkyrie.Broadway.start_link(
+        dataset: dataset,
+        output: [
+          topic: :output_topic,
+          connection: @producer
+        ],
+        input: [
+          topics: [@topic]
+        ]
+      )
 
     on_exit(fn ->
       ref = Process.monitor(broadway)
@@ -119,8 +129,7 @@ defmodule Valkyrie.BroadwayTest do
     assert_receive {:ack, _ref, messages, _}, 5_000
     assert 2 == length(messages)
 
-    captured_messages =
-      capture(Elsa.produce_sync(:output_topic, any(), partition: 0, name: :"#{@dataset_id}_producer"), 2)
+    captured_messages = capture(Elsa.produce(:"#{@dataset_id}_producer", :output_topic, any(), partition: 0), 3)
 
     assert 2 = length(captured_messages)
     assert Enum.at(captured_messages, 0) |> Jason.decode!() |> Map.get("payload") == data1.payload
@@ -128,7 +137,7 @@ defmodule Valkyrie.BroadwayTest do
   end
 
   test "should emit a data standarization end event when END_OF_DATA message is recieved", %{broadway: broadway} do
-    allow(Brook.Event.send(any(), any(), any()), return: :does_not_matter)
+    allow(Brook.Event.send(any(), any(), any(), any()), return: :does_not_matter)
     data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "lou cang", "age" => "921"})
 
     kafka_messages = [%{value: Jason.encode!(data1)}, %{value: end_of_data()}]
@@ -136,13 +145,12 @@ defmodule Valkyrie.BroadwayTest do
     Broadway.test_messages(broadway, kafka_messages)
     assert_receive {:ack, _ref, messages, _}, 5_000
 
-    captured_messages =
-      capture(Elsa.produce_sync(:output_topic, any(), partition: 0, name: :"#{@dataset_id}_producer"), 2)
+    captured_messages = capture(Elsa.produce(:"#{@dataset_id}_producer", :output_topic, any(), partition: 0), 3)
 
     assert 2 = length(captured_messages)
     assert end_of_data() in captured_messages
 
-    assert_called(Brook.Event.send(data_standardization_end(), :valkyrie, %{"dataset_id" => @dataset_id}))
+    assert_called(Brook.Event.send(@instance, data_standardization_end(), :valkyrie, %{"dataset_id" => @dataset_id}))
   end
 end
 
