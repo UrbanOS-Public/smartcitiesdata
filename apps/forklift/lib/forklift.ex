@@ -23,10 +23,13 @@ defmodule Forklift do
   end
 
   defp persist_data(data, %Dataset{} = dataset) do
-    payloads = Enum.map(data, fn datum -> datum.payload end)
-
     retry with: exponential_backoff(100) |> cap(@max_wait_time) do
-      @table_writer.write(payloads, table: dataset.technical.systemName, schema: dataset.technical.schema)
+      with start_time <- Data.Timing.current_time(),
+           :ok <- @table_writer.write(data, table: dataset.technical.systemName, schema: dataset.technical.schema),
+           end_time <- Data.Timing.current_time(),
+           total_time <- Data.Timing.new(:forklift, "presto_insert_time", start_time, end_time) do
+        {:ok, total_time}
+      end
     after
       {:ok, timing} -> Enum.map(data, &Data.add_timing(&1, timing))
     else

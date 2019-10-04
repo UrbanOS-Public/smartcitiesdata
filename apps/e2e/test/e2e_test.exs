@@ -4,13 +4,29 @@ defmodule E2ETest do
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
-  import SmartCity.TestHelper, only: [eventually: 1]
+  import SmartCity.TestHelper
+  import SmartCity.Event, only: [data_ingest_start: 0]
+
+  @brokers Application.get_env(:e2e, :elsa_brokers)
+  @overrides %{
+    technical: %{
+      orgName: "orgWithId",
+      dataName: "e2e",
+      systemName: "orgWithId__e2e",
+      schema: [%{name: "on", type: "boolean"}],
+      sourceType: "ingest"
+    }
+  }
 
   setup_all do
     user = Application.get_env(:andi, :ldap_user)
     pass = Application.get_env(:andi, :ldap_pass)
     Paddle.authenticate(user, pass)
     Paddle.add([ou: "integration"], objectClass: ["top", "organizationalunit"], ou: "integration")
+
+    dataset = TDG.create_dataset(@overrides)
+
+    [dataset: dataset]
   end
 
   describe "creating an organization" do
@@ -38,20 +54,9 @@ defmodule E2ETest do
   end
 
   describe "creating a dataset" do
-    @overrides %{
-      technical: %{
-        orgName: "orgWithId",
-        dataName: "e2e",
-        schema: [%{name: "on", type: "boolean"}],
-        sourceType: "ingest"
-      }
-    }
-
-    test "via RESTful PUT" do
-      dataset = TDG.create_dataset(@overrides)
-
+    test "via RESTful PUT", %{dataset: ds} do
       resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(dataset), [
+        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
           {"Content-Type", "application/json"}
         ])
 
@@ -73,6 +78,29 @@ defmodule E2ETest do
 
         assert table == expected
       end)
+    end
+  end
+
+  describe "ingesting data" do
+    test "persists data in PrestoDB", %{dataset: ds} do
+      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
+      table = ds.technical.systemName
+      data = TDG.create_data(dataset_id: ds.id, payload: %{"on" => true})
+
+      Brook.Event.send(:forklift, data_ingest_start(), :author, ds)
+
+      eventually(fn ->
+        assert Elsa.topic?(@brokers, topic)
+      end)
+
+      Elsa.produce(@brokers, topic, Jason.encode!(data))
+
+      eventually(
+        fn ->
+          assert [[true]] = "select * from #{table}" |> Prestige.execute() |> Prestige.prefetch()
+        end,
+        10_000
+      )
     end
   end
 end

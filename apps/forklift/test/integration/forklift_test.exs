@@ -14,40 +14,6 @@ defmodule PersistenceTest do
   @redis Forklift.Application.redis_client()
   @endpoints Application.get_env(:forklift, :elsa_brokers)
 
-  test "should insert records into Presto" do
-    system_name = "Organization1__Dataset1"
-
-    dataset =
-      TDG.create_dataset(
-        id: "ds1",
-        technical: %{
-          systemName: system_name,
-          schema: [
-            %{"name" => "id", "type" => "int"},
-            %{"name" => "name", "type" => "string"}
-          ]
-        }
-      )
-
-    "create table #{system_name} (id integer, name varchar)"
-    |> Prestige.execute()
-    |> Prestige.prefetch()
-
-    Brook.Event.send(:forklift, data_ingest_start(), :author, dataset)
-    TopicManager.wait_for_topic("integration-ds1")
-
-    data = TDG.create_data(dataset_id: "ds1", payload: %{"id" => 1, "name" => "George"})
-    Elsa.produce(@endpoints, "integration-ds1", [{"key", Jason.encode!(data)}])
-
-    eventually(fn ->
-      assert [[1, "George"]] == prestige_execute("select id, name from #{system_name}")
-    end)
-
-    eventually(fn ->
-      assert {:ok, _} = Redix.command(@redis, ["GET", "forklift:last_insert_date:" <> dataset.id])
-    end)
-  end
-
   test "sends messsages to streaming-persisted topic with timing information" do
     system_name = "Organization1__TimingDataset"
 
