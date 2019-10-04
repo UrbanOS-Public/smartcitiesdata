@@ -10,8 +10,8 @@ defmodule Forklift.MigrationsTest do
     dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
 
     events = [
-      Brook.Event.new(type: dataset_update(), author: "testing", data: dataset),
-      Brook.Event.new(type: data_ingest_start(), author: "testing", data: dataset)
+      Brook.Event.new(type: dataset_update(), author: "testing", data: dataset, create_ts: 0),
+      Brook.Event.new(type: data_ingest_start(), author: "testing", data: dataset, create_ts: 1)
     ]
 
     Enum.each(events, fn event ->
