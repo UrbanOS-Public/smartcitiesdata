@@ -52,7 +52,7 @@ config :odo, :brook,
       endpoints: endpoints,
       topic: "event-stream",
       group: "odo-event-stream",
-      config: [
+      consumer_config: [
         begin_offset: :earliest
       ]
     ]
