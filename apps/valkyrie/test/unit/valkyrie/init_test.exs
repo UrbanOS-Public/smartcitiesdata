@@ -10,13 +10,12 @@ defmodule Valkyrie.InitTest do
       allow Brook.get_all_values!(:datasets), return: [dataset1, dataset2]
       allow Valkyrie.DatasetProcessor.start(any()), return: :does_not_matter
 
-      {:ok, pid} = Valkyrie.Init.start_link([])
+      {:ok, _pid} = Valkyrie.Init.start_link(monitor: self())
 
       eventually(fn ->
         assert_called(Valkyrie.DatasetProcessor.start(dataset1))
         assert_called(Valkyrie.DatasetProcessor.start(dataset2))
         assert num_calls(Valkyrie.DatasetProcessor.start(any())) == 2
-        assert Process.alive?(pid) == false
       end)
     end
   end
