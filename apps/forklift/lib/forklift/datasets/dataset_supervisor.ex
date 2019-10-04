@@ -40,7 +40,7 @@ defmodule Forklift.Datasets.DatasetSupervisor do
       name: :"input-#{topic}",
       group: "forklift-#{topic}",
       topics: [topic],
-      handler: Forklift.Messages.MessageHandler,
+      handler: Forklift.MessageHandler,
       handler_init_args: [schema: schema],
       config: Application.get_env(:forklift, :topic_subscriber_config, [])
     ]

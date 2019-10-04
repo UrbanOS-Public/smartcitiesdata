@@ -1,4 +1,4 @@
-defmodule Forklift.Messages.MessageHandler do
+defmodule Forklift.MessageHandler do
   @moduledoc """
   Reads data off kafka topics, buffering it in batches.
   """

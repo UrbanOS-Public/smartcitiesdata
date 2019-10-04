@@ -3,8 +3,7 @@ defmodule Forklift.Event.Handler do
   use Brook.Event.Handler
 
   alias SmartCity.Dataset
-  alias Forklift.Messages.MessageHandler
-  alias Forklift.Datasets.DatasetHandler
+  alias Forklift.MessageHandler
 
   @reader Application.get_env(:forklift, :data_reader)
   @table_writer Application.get_env(:forklift, :table_writer)

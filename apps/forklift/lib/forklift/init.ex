@@ -4,7 +4,7 @@ defmodule Forklift.Init do
   """
   use Task, restart: :transient
 
-  alias Forklift.Messages.MessageHandler
+  alias Forklift.MessageHandler
 
   @reader Application.get_env(:forklift, :data_reader)
   @topic_writer Application.get_env(:forklift, :topic_writer)

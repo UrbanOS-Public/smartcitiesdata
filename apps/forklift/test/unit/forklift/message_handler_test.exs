@@ -1,9 +1,9 @@
-defmodule MessageHandlerTest do
+defmodule Forklift.MessageHandlerTest do
   use ExUnit.Case
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Forklift.Messages.MessageHandler
+  alias Forklift.MessageHandler
   alias Forklift.DeadLetterQueue
 
   @moduletag capture_log: true
