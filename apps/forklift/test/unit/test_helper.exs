@@ -1,6 +1,8 @@
 ExUnit.start(exclude: [:skip])
 Faker.start()
+
 Mox.defmock(Forklift.MockReader, for: Pipeline.Reader)
+Mox.defmock(Forklift.MockTopic, for: Pipeline.Writer)
 
 defmodule Helper do
   def make_kafka_message(value, topic) do

@@ -3,13 +3,15 @@ defmodule Forklift do
   Main business logic of Forklift. Writes batches of messages to PrestoDB.
   """
   use Retry
-  alias SmartCity.Data
+
+  alias SmartCity.{Data, Dataset}
   alias Forklift.Datasets.DatasetSchema
   alias Forklift.Messages.PersistenceClient
   alias Forklift.Util
+
   @max_wait_time 1_000 * 60 * 60
 
-  @spec handle_batch(list(%Data{}), %SmartCity.Dataset{}) :: :ok | no_return()
+  @spec handle_batch([%Data{}], %Dataset{}) :: :ok
   def handle_batch(batch, dataset) do
     batch
     |> Enum.map(&add_start_time/1)
@@ -21,7 +23,7 @@ defmodule Forklift do
     Util.add_to_metadata(datum, :forklift_start_time, Data.Timing.current_time())
   end
 
-  defp persist_data(data, %SmartCity.Dataset{} = dataset) do
+  defp persist_data(data, %Dataset{} = dataset) do
     payloads = Enum.map(data, fn datum -> datum.payload end)
 
     retry with: exponential_backoff(100) |> cap(@max_wait_time) do

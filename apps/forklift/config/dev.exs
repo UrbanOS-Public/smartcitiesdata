@@ -1,6 +1,7 @@
 use Mix.Config
 
 config :forklift,
+  topic_writer: Forklift.MockTopic,
   message_processing_cadence: 15_000,
   user: "forklift"
 
