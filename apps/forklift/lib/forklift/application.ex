@@ -46,7 +46,7 @@ defmodule Forklift.Application do
       retry_delay: Application.get_env(instance, :retry_initial_delay)
     ]
 
-    Pipeline.Writer.SingleTopicWriter.init(config)
+    Pipeline.Writer.TopicWriter.init(config)
   end
 
   defp redis do

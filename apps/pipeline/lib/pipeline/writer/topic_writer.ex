@@ -1,8 +1,8 @@
-defmodule Pipeline.Writer.SingleTopicWriter do
+defmodule Pipeline.Writer.TopicWriter do
   @moduledoc "TODO"
 
   @behaviour Pipeline.Writer
-  alias Pipeline.Writer.SingleTopicWriter.InitTask
+  alias Pipeline.Writer.TopicWriter.InitTask
 
   @impl Pipeline.Writer
   def init(args) do
@@ -28,7 +28,7 @@ defmodule Pipeline.Writer.SingleTopicWriter do
   end
 end
 
-defmodule Pipeline.Writer.SingleTopicWriter.InitTask do
+defmodule Pipeline.Writer.TopicWriter.InitTask do
   @moduledoc "TODO"
 
   use Task, restart: :transient

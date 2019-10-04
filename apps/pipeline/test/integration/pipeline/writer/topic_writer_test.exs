@@ -1,9 +1,9 @@
-defmodule Pipeline.Writer.SingleTopicWriterTest do
+defmodule Pipeline.Writer.TopicWriterTest do
   use ExUnit.Case
   use Divo
   use Placebo
 
-  alias Pipeline.Writer.SingleTopicWriter
+  alias Pipeline.Writer.TopicWriter
   import SmartCity.TestHelper, only: [eventually: 1]
 
   @topic Application.get_env(:pipeline, :output_topic)
@@ -31,7 +31,7 @@ defmodule Pipeline.Writer.SingleTopicWriterTest do
         topic: @topic
       ]
 
-      assert :ok = SingleTopicWriter.init(config)
+      assert :ok = TopicWriter.init(config)
       eventually(fn -> assert Elsa.topic?(@brokers, @topic) end)
     end
 
@@ -43,7 +43,7 @@ defmodule Pipeline.Writer.SingleTopicWriterTest do
         topic: @topic
       ]
 
-      assert :ok = SingleTopicWriter.init(config)
+      assert :ok = TopicWriter.init(config)
 
       eventually(fn ->
         assert Elsa.topic?(@brokers, @topic)
@@ -63,7 +63,7 @@ defmodule Pipeline.Writer.SingleTopicWriterTest do
         retry_delay: 10
       ]
 
-      assert :ok = SingleTopicWriter.init(config)
+      assert :ok = TopicWriter.init(config)
 
       [{:undefined, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
       Process.monitor(pid)
@@ -84,14 +84,14 @@ defmodule Pipeline.Writer.SingleTopicWriterTest do
         topic: @topic
       ]
 
-      assert :ok = SingleTopicWriter.init(config)
+      assert :ok = TopicWriter.init(config)
 
       [{_, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
       Process.monitor(pid)
       assert_receive {:DOWN, _, _, ^pid, :normal}, 2_000
 
-      assert :ok = SingleTopicWriter.write(["foo"], instance: :pipeline, producer_name: @producer)
-      assert :ok = SingleTopicWriter.write(["bar", "baz"], instance: :pipeline, producer_name: @producer)
+      assert :ok = TopicWriter.write(["foo"], instance: :pipeline, producer_name: @producer)
+      assert :ok = TopicWriter.write(["bar", "baz"], instance: :pipeline, producer_name: @producer)
 
       eventually(fn ->
         assert {:ok, _, messages} = Elsa.fetch(@brokers, @topic)

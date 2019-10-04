@@ -6,7 +6,7 @@ defmodule Forklift.Messages.MessageHandler do
   use Elsa.Consumer.MessageHandler
 
   alias Forklift.Util
-  alias Pipeline.Writer.SingleTopicWriter
+  alias Pipeline.Writer.TopicWriter
 
   require Logger
 
@@ -43,7 +43,7 @@ defmodule Forklift.Messages.MessageHandler do
     |> Enum.map(fn datum -> {datum._metadata.kafka_key, Util.remove_from_metadata(datum, :kafka_key)} end)
     |> Enum.map(fn {key, datum} -> {key, Jason.encode!(datum)} end)
     |> Util.chunk_by_byte_size(max_bytes(), fn {key, value} -> byte_size(key) + byte_size(value) end)
-    |> Enum.each(&SingleTopicWriter.write(&1, instance: :forklift, producer_name: producer))
+    |> Enum.each(&TopicWriter.write(&1, instance: :forklift, producer_name: producer))
   end
 
   defp yeet_error({:error, reason, message} = error_tuple) do
