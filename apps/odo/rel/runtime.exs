@@ -29,14 +29,12 @@ config :odo,
   retry_backoff: 5,
   metrics_port: System.get_env("METRICS_PORT") |> String.to_integer()
 
-config :redix,
-  host: redis_host
-
 config :ex_aws,
   region: System.get_env("AWS_REGION") || "us-west-2"
 
 config :odo, :brook,
-  driver: [
+  instance: :odo_brook,
+  driver: %{
     module: Brook.Driver.Kafka,
     init_arg: [
       endpoints: endpoints,
@@ -46,9 +44,9 @@ config :odo, :brook,
         begin_offset: :earliest
       ]
     ]
-  ],
+  },
   handlers: [Odo.EventHandler],
-  storage: [
+  storage: %{
     module: Brook.Storage.Redis,
     init_arg: [redix_args: [host: redis_host], namespace: "odo:view"]
-  ]
+  }

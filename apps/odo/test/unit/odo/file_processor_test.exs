@@ -1,5 +1,5 @@
 defmodule Odo.Unit.FileProcessorTest do
-  import SmartCity.Event, only: [file_upload: 0]
+  import SmartCity.Event, only: [file_ingest_start: 0, file_ingest_end: 0]
   import ExUnit.CaptureLog
   use ExUnit.Case
   use Placebo
@@ -34,7 +34,7 @@ defmodule Odo.Unit.FileProcessorTest do
   describe "successful conversion of shapefile to geojson" do
     setup %{conversion_map: conversion_map} do
       allow(ExAws.request(any()), return: {:ok, :done})
-      allow(Brook.Event.send(file_upload(), any(), any()), return: :ok, meck_options: [:passthrough])
+      allow(Brook.Event.send(Odo.event_stream_instance(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
 
       result = Odo.FileProcessor.process(conversion_map)
 
@@ -45,7 +45,7 @@ defmodule Odo.Unit.FileProcessorTest do
       assert result == :ok
     end
 
-    test "sends the file_upload event", %{conversion_map: conversion_map} do
+    test "sends the file ingest events", %{conversion_map: conversion_map} do
       {:ok, expected_event} =
         HostedFile.new(%{
           dataset_id: conversion_map.dataset_id,
@@ -54,7 +54,8 @@ defmodule Odo.Unit.FileProcessorTest do
           key: conversion_map.converted_key
         })
 
-      assert_called(Brook.Event.send(file_upload(), :odo, expected_event), once())
+      assert_called(Brook.Event.send(Odo.event_stream_instance(), file_ingest_start(), :odo, expected_event), once())
+      assert_called(Brook.Event.send(Odo.event_stream_instance(), file_ingest_end(), :odo, expected_event), once())
     end
 
     test "removes temporary files", %{conversion_map: conversion_map} do

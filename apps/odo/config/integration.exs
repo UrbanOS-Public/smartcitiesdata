@@ -45,7 +45,8 @@ config :ex_aws, :s3,
   port: 9000
 
 config :odo, :brook,
-  driver: [
+  instance: :odo_brook,
+  driver: %{
     module: Brook.Driver.Kafka,
     init_arg: [
       endpoints: endpoints,
@@ -55,9 +56,9 @@ config :odo, :brook,
         begin_offset: :earliest
       ]
     ]
-  ],
+  },
   handlers: [Odo.EventHandler],
-  storage: [
+  storage: %{
     module: Brook.Storage.Redis,
     init_arg: [redix_args: [host: host], namespace: "odo:view"]
-  ]
+  }

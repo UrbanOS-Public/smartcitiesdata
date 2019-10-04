@@ -5,7 +5,7 @@ defmodule Odo.FileProcessor do
   updates the data pipeline to be aware that the new file type is available.
   """
   require Logger
-  import SmartCity.Event, only: [file_upload: 0]
+  import SmartCity.Event, only: [file_ingest_start: 0, file_ingest_end: 0, error_file_ingest: 0]
   use Retry
   alias ExAws.S3
   alias SmartCity.HostedFile
@@ -18,7 +18,9 @@ defmodule Odo.FileProcessor do
         converted_path: converted_path,
         conversion: conversion,
         dataset_id: dataset_id
-      }) do
+}) do
+
+    send_file_ingest_event(dataset_id, bucket, converted_key, file_ingest_start())
     start_time = DateTime.utc_now()
 
     conversion_result =
@@ -26,7 +28,7 @@ defmodule Odo.FileProcessor do
         with :ok <- download(bucket, original_key, download_path),
              :ok <- convert(download_path, converted_path, conversion),
              :ok <- upload(bucket, converted_path, converted_key),
-             :ok <- send_file_upload_event(dataset_id, bucket, converted_key) do
+             :ok <- send_file_ingest_event(dataset_id, bucket, converted_key, file_ingest_end()) do
           :ok
         end
       after
@@ -38,7 +40,7 @@ defmodule Odo.FileProcessor do
         {:error, reason} ->
           Odo.MetricsRecorder.record_file_conversion_metrics(dataset_id, original_key, false, start_time)
           explanation = "File upload failed for dataset #{dataset_id}: #{reason}"
-          Brook.Event.send("error:#{file_upload()}", :odo, %{dataset_id: dataset_id, bucket: bucket, key: original_key})
+          Brook.Event.send(Odo.event_stream_instance(), error_file_ingest(), :odo, %{dataset_id: dataset_id, bucket: bucket, key: original_key})
           Logger.warn(explanation)
           {:error, explanation}
       end
@@ -82,7 +84,7 @@ defmodule Odo.FileProcessor do
     end
   end
 
-  defp send_file_upload_event(dataset_id, bucket, key) do
+  defp send_file_ingest_event(dataset_id, bucket, key, event_type) do
     new_mime =
       key
       |> String.split(".")
@@ -91,7 +93,7 @@ defmodule Odo.FileProcessor do
 
     {:ok, event} = HostedFile.new(%{dataset_id: dataset_id, bucket: bucket, key: key, mime_type: new_mime})
 
-    Brook.Event.send(file_upload(), :odo, event)
+    Brook.Event.send(Odo.event_stream_instance(), event_type, :odo, event)
   end
 
   defp cleanup_files(files) do

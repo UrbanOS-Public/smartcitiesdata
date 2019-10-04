@@ -4,7 +4,7 @@ defmodule Odo.MixProject do
   def project do
     [
       app: :odo,
-      version: "0.1.0",
+      version: "0.2.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -23,7 +23,7 @@ defmodule Odo.MixProject do
 
   defp deps do
     [
-      {:brook, "~> 0.1.2"},
+      {:brook, "~> 0.4"},
       {:credo, "~> 1.1.4"},
       {:distillery, "2.0.14"},
       {:ex_aws, "~> 2.1"},
@@ -32,16 +32,15 @@ defmodule Odo.MixProject do
       {:hackney, "~> 1.15"},
       {:jason, "~> 1.1"},
       {:libvault, "~> 0.2"},
-      {:plug_cowboy, "~> 2.0"},
+      {:plug_cowboy, "~> 2.1"},
       {:poison, "~> 3.0"},
       {:prometheus_plugs, "~> 1.1"},
-      {:redix, "~> 0.9"},
+      {:redix, "~> 0.10"},
       {:retry, "~> 0.13.0"},
-      {:smart_city, "~> 2.7", override: true},
-      {:smart_city_registry, "~> 5.0"},
+      {:smart_city, "~> 3.0"},
       {:streaming_metrics, "~> 2.2.0"},
       {:sweet_xml, "~> 0.6"},
-      {:tesla, "~> 1.2"},
+      {:tesla, "~> 1.3"},
       # Test/Dev Dependencies
       {:dialyxir, "~> 0.5", only: [:dev]},
       {:divo, "~> 1.1", only: [:dev, :integration], override: true},

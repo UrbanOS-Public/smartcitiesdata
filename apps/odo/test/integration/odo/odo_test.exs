@@ -2,7 +2,7 @@ defmodule Odo.Integration.OdoTest do
   use ExUnit.Case
   use Divo
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [file_upload: 0]
+  import SmartCity.Event, only: [file_ingest_start: 0, file_ingest_end: 0, error_file_ingest: 0]
   alias SmartCity.HostedFile
 
   @kafka_broker Application.get_env(:odo, :kafka_broker)
@@ -35,7 +35,7 @@ defmodule Odo.Integration.OdoTest do
 
       new_key = "#{@org}/#{data_name}.geojson"
 
-      Brook.Event.send(file_upload(), :odo, file_event)
+      Brook.Event.send(Odo.event_stream_instance(), file_ingest_end(), :odo, file_event)
 
       eventually(fn ->
         file_resp =
@@ -45,13 +45,13 @@ defmodule Odo.Integration.OdoTest do
         assert {:ok, %{body: body}} = file_resp
         assert body != nil
 
-        [actual_event] =
+        [start_event, end_event | _] =
           Elsa.Fetch.search_values(@kafka_broker, "event-stream", "my-data.geojson")
           |> Enum.to_list()
           |> Enum.map(fn event -> Brook.Deserializer.deserialize(struct(Brook.Event), event.value) end)
-          |> Enum.map(fn {:ok, value} -> value.data end)
+          |> Enum.map(fn {:ok, value} -> {value.data, value.type} end)
 
-        actual_state = Brook.get_all_values!(:file_conversions)
+        actual_state = Brook.get_all_values!(Odo.event_stream_instance(), :file_conversions)
 
         {:ok, expected_event} =
           HostedFile.new(%{
@@ -61,7 +61,8 @@ defmodule Odo.Integration.OdoTest do
             key: new_key
           })
 
-        assert actual_event == expected_event
+        assert start_event == {expected_event, file_ingest_start()}
+        assert end_event == {expected_event, file_ingest_end()}
         assert Enum.member?(actual_state, file_event) == false
       end)
     end
@@ -99,15 +100,15 @@ defmodule Odo.Integration.OdoTest do
           mime_type: "application/zip"
         })
 
-      Brook.Event.send(file_upload(), :odo, bad_event)
-      Brook.Event.send(file_upload(), :odo, good_event)
+      Brook.Event.send(Odo.event_stream_instance(), file_ingest_end(), :odo, bad_event)
+      Brook.Event.send(Odo.event_stream_instance(), file_ingest_end(), :odo, good_event)
 
       eventually(fn ->
         result_events =
-          Elsa.Fetch.search_values(@kafka_broker, "event-stream", "file:upload")
+          Elsa.Fetch.search_values(@kafka_broker, "event-stream", "file:ingest")
           |> Enum.to_list()
           |> Enum.filter(fn event ->
-            String.contains?(event.value, "my-data2.geojson") || String.contains?(event.value, "error:file:upload")
+            String.contains?(event.value, "my-data2.geojson") || String.contains?(event.value, error_file_ingest())
           end)
           |> Enum.map(fn event -> Brook.Deserializer.deserialize(struct(Brook.Event), event.value) end)
           |> Enum.map(fn {:ok, value} -> value.data end)

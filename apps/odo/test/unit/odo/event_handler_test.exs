@@ -1,7 +1,7 @@
 defmodule Odo.Unit.EventHandlerTest do
   use ExUnit.Case
   use Placebo
-  import SmartCity.Event, only: [file_upload: 0]
+  import SmartCity.Event, only: [file_ingest_end: 0]
   alias SmartCity.HostedFile
 
   @time DateTime.utc_now()
@@ -27,7 +27,7 @@ defmodule Odo.Unit.EventHandlerTest do
           mime_type: "application/zip"
         })
 
-      event = %Brook.Event{type: file_upload(), author: :some_author, data: hosted_file_event}
+      event = %Brook.Event{type: file_ingest_end(), author: :some_author, data: hosted_file_event, create_ts: @time}
 
       result = Odo.EventHandler.handle_event(event)
 
