@@ -38,7 +38,6 @@ defmodule Forklift.Integration.InitTest do
     assert_receive "test-topic"
   end
 
-
   test "terminates after initialization" do
     expect(Forklift.MockReader, :init, 0, fn _ -> :ok end)
     expect(Forklift.MockTopic, :init, fn _ -> :ok end)

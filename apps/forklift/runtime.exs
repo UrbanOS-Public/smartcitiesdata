@@ -38,6 +38,7 @@ elsa_brokers =
 config :forklift,
   data_reader: Pipeline.Reader.DatasetTopicReader,
   topic_writer: Pipeline.Writer.TopicWriter,
+  table_writer: Pipeline.Writer.TableWriter,
   elsa_brokers: elsa_brokers,
   input_topic_prefix: topic,
   output_topic: output_topic,

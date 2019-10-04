@@ -13,6 +13,7 @@ output_topic = "streaming-persisted"
 config :forklift,
   data_reader: Pipeline.Reader.DatasetTopicReader,
   topic_writer: Pipeline.Writer.TopicWriter,
+  table_writer: Pipeline.Writer.TableWriter,
   retry_count: 10,
   retry_initial_delay: 100,
   elsa_brokers: [{String.to_atom(host), 9092}],

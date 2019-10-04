@@ -5,10 +5,9 @@ defmodule Forklift do
   use Retry
 
   alias SmartCity.{Data, Dataset}
-  alias Forklift.Datasets.DatasetSchema
-  alias Forklift.Messages.PersistenceClient
   alias Forklift.Util
 
+  @table_writer Application.get_env(:forklift, :table_writer)
   @max_wait_time 1_000 * 60 * 60
 
   @spec handle_batch([%Data{}], %Dataset{}) :: :ok
@@ -27,7 +26,7 @@ defmodule Forklift do
     payloads = Enum.map(data, fn datum -> datum.payload end)
 
     retry with: exponential_backoff(100) |> cap(@max_wait_time) do
-      PersistenceClient.upload_data(dataset, payloads)
+      @table_writer.write(payloads, table: dataset.technical.systemName, schema: dataset.technical.schema)
     after
       {:ok, timing} -> Enum.map(data, &Data.add_timing(&1, timing))
     else

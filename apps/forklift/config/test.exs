@@ -5,6 +5,7 @@ config :logger, :level, :info
 config :forklift,
   data_reader: Forklift.MockReader,
   topic_writer: Forklift.MockTopic,
+  table_writer: Forklift.MockTable,
   retry_count: 5,
   retry_initial_delay: 10,
   # To ensure that MessageWriter never starts while testing

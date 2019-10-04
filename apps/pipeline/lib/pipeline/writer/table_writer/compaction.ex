@@ -54,14 +54,12 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
   end
 
   def count(table) do
-    IO.inspect(table, label: "FOO")
     with [[count]] <- execute("select count(1) from #{table}") do
       count
     end
   end
 
   def count_async(table) do
-    IO.inspect(table, label: "BAR")
     with task <- execute_async("select count(1) from #{table}"),
          [[count]] <- Task.await(task) do
       count
