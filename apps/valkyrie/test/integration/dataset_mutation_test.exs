@@ -19,6 +19,7 @@ defmodule Valkyrie.DatasetMutationTest do
 
     Brook.Event.send(data_ingest_start(), :author, dataset)
     TestHelpers.wait_for_topic(@endpoints, @input_topic)
+    TestHelpers.wait_for_topic(@endpoints, @output_topic)
 
     Elsa.produce(@endpoints, @input_topic, Jason.encode!(data1), partition: 0)
 
