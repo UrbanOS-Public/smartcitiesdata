@@ -15,7 +15,7 @@ defmodule Forklift.MessageHandlerTest do
 
     dataset = TDG.create_dataset(%{id: "id", technical: %{systemName: "system__name", schema: []}})
 
-    expect Forklift.handle_batch(any(), dataset), return: []
+    expect Forklift.DataWriter.write(any(), dataset: dataset), return: []
     expect DeadLetterQueue.enqueue(any(), any()), return: :ok
     allow Elsa.produce_sync(any(), any(), name: any()), return: :ok
 

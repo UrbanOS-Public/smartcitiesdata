@@ -6,7 +6,6 @@ defmodule Forklift.Event.Handler do
   alias Forklift.MessageHandler
 
   @reader Application.get_env(:forklift, :data_reader)
-  @table_writer Application.get_env(:forklift, :table_writer)
 
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0]
 
@@ -22,7 +21,7 @@ defmodule Forklift.Event.Handler do
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = dataset}) do
     [name: dataset.technical.systemName, schema: dataset.technical.schema]
-    |> @table_writer.init()
+    |> Forklift.DataWriter.init()
 
     :discard
   end
