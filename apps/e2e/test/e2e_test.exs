@@ -10,10 +10,10 @@ defmodule E2ETest do
   @brokers Application.get_env(:e2e, :elsa_brokers)
   @overrides %{
     technical: %{
-      orgName: "orgWithId",
-      dataName: "e2e",
-      systemName: "orgWithId__e2e",
-      schema: [%{name: "on", type: "boolean"}],
+      orgName: "end_to",
+      dataName: "end",
+      systemName: "end_to__end",
+      schema: [%{name: "one", type: "boolean"}, %{name: "two", type: "string"}],
       sourceType: "ingest"
     }
   }
@@ -31,7 +31,7 @@ defmodule E2ETest do
 
   describe "creating an organization" do
     test "via RESTful POST" do
-      org = TDG.create_organization(%{orgName: "orgWithId", id: "org-id"})
+      org = TDG.create_organization(%{orgName: "end_to", id: "org-id"})
 
       resp =
         HTTPoison.post!("http://localhost:4000/api/v1/organization", Jason.encode!(org), [
@@ -47,7 +47,7 @@ defmodule E2ETest do
       eventually(fn ->
         with resp <- HTTPoison.get!("http://localhost:4000/api/v1/organizations"),
              [org] <- Jason.decode!(resp.body) do
-          assert org["dn"] == "cn=orgWithId,ou=integration,#{base}"
+          assert org["dn"] == "cn=end_to,ou=integration,#{base}"
         end
       end)
     end
@@ -64,14 +64,15 @@ defmodule E2ETest do
     end
 
     test "creates a PrestoDB table" do
-      expected = [%{"Column" => "on", "Comment" => "", "Extra" => "", "Type" => "boolean"}]
+      expected = [
+        %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "boolean"},
+        %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "varchar"}
+      ]
 
       eventually(fn ->
         table =
           try do
-            "describe hive.default.orgWithId__e2e"
-            |> Prestige.execute(rows_as_maps: true)
-            |> Prestige.prefetch()
+            query("describe hive.default.end_to__end", true)
           rescue
             _ -> []
           end
@@ -81,11 +82,12 @@ defmodule E2ETest do
     end
   end
 
-  describe "ingesting data" do
-    test "persists data in PrestoDB", %{dataset: ds} do
+  # This series of tests should be extended as more apps are added to the umbrella.
+  describe "ingested data" do
+    test "persists in PrestoDB", %{dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
-      data = TDG.create_data(dataset_id: ds.id, payload: %{"on" => true})
+      data = TDG.create_data(dataset_id: ds.id, payload: %{"one" => true, "two" => "foobar"})
 
       Brook.Event.send(:forklift, data_ingest_start(), :author, ds)
 
@@ -97,10 +99,26 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert [[true]] = "select * from #{table}" |> Prestige.execute() |> Prestige.prefetch()
+          assert [[true, "foobar"]] = query("select * from #{table}")
         end,
         10_000
       )
     end
+
+    # This really should test flair itself, but we're not quite ready to hook it up.
+    test "streams to flair for profiling" do
+      topic = Application.get_env(:forklift, :output_topic)
+
+      eventually(fn ->
+        assert {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
+        assert Jason.decode!(message.value)["payload"] == %{"one" => true, "two" => "foobar"}
+      end)
+    end
+  end
+
+  def query(statement, toggle \\ false) do
+    statement
+    |> Prestige.execute(rows_as_maps: toggle)
+    |> Prestige.prefetch()
   end
 end
