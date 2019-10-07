@@ -31,8 +31,9 @@ defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
     wait_for_topic!(config)
 
     case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, consumer_spec) do
-      {:ok, _pid} -> :ok
-      {:error, {:already_started, _pid}} -> :ok
+      {:ok, _} -> :ok
+      {:error, {:already_started, _}} -> :ok
+      {:error, {_, {_, _, {:already_started, _}}}} -> :ok
       error -> raise "Failed to supervise #{config.topic} consumer: #{inspect(error)}"
     end
   end
@@ -55,16 +56,18 @@ defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
 
   defp consumer(config) do
     start_options = [
-      brokers: config.endpoints,
-      name: :"#{config.instance}-#{config.topic}-consumer",
-      group: "#{config.instance}-#{config.topic}",
-      topics: [config.topic],
-      handler: config.handler,
-      handler_init_args: [dataset: config.dataset],
-      config: config.topic_subscriber_config
+      endpoints: config.endpoints,
+      connection: :"#{config.instance}-#{config.topic}-consumer",
+      group_consumer: [
+        group: "#{config.instance}-#{config.topic}",
+        topics: [config.topic],
+        handler: config.handler,
+        handler_init_args: [dataset: config.dataset],
+        config: config.topic_subscriber_config,
+      ]
     ]
 
-    {Elsa.Group.Supervisor, start_options}
+    {Elsa.Supervisor, start_options}
   end
 
   defp wait_for_topic!(config) do

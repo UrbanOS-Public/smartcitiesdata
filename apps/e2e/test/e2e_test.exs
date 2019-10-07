@@ -50,6 +50,8 @@ defmodule E2ETest do
         with resp <- HTTPoison.get!("http://localhost:4000/api/v1/organizations"),
              [org] <- Jason.decode!(resp.body) do
           assert org["dn"] == "cn=end_to,ou=integration,#{base}"
+          assert org["id"] == "org-id"
+          assert org["orgName"] == "end_to"
         end
       end)
     end
@@ -81,6 +83,11 @@ defmodule E2ETest do
 
         assert table == expected
       end)
+    end
+
+    test "stores a definition that can be retrieved", %{dataset: expected} do
+      resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
+      assert resp.body == Jason.encode!([expected])
     end
   end
 

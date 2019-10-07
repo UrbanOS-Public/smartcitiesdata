@@ -107,8 +107,8 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
       eventually(fn ->
         assert {"#{@prefix}-idempotent", 1} in Elsa.Topic.list(@brokers)
-        assert_receive {:DOWN, _, _, ^pid1, :normal}
-        assert_receive {:DOWN, _, _, ^pid2, :normal}
+        assert_receive {:DOWN, _, _, ^pid1, :normal}, 1_000
+        assert_receive {:DOWN, _, _, ^pid2, :normal}, 1_000
       end)
     end
 

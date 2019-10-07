@@ -17,7 +17,7 @@ defmodule Pipeline.Writer.TopicWriter do
     instance_producer = producer(opts)
 
     {:ok, topic} = Registry.meta(Pipeline.Registry, instance_producer)
-    Elsa.produce_sync(topic, content, name: instance_producer)
+    Elsa.produce(instance_producer, topic, content)
   end
 
   defp producer(config) do
@@ -83,8 +83,8 @@ defmodule Pipeline.Writer.TopicWriter.InitTask do
 
   defp producer(config) do
     {
-      Elsa.Producer.Supervisor,
-      name: config.name, endpoints: config.endpoints, topic: config.topic
+      Elsa.Supervisor,
+      [endpoints: config.endpoints, connection: config.name, producer: [topic: config.topic]]
     }
   end
 end

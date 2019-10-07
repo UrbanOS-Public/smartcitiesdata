@@ -29,14 +29,16 @@ defmodule Flair.Application do
     topic = Application.get_env(:flair, :data_topic)
 
     start_options = [
-      brokers: Application.get_env(:flair, :elsa_brokers),
-      name: :flair_elsa_supervisor,
-      group: "flair-#{topic}",
-      topics: [topic],
-      handler: Flair.MessageHandler,
-      config: Application.get_env(:flair, :topic_subscriber_config, [])
+      endpoints: Application.get_env(:flair, :elsa_brokers),
+      connection: :flair_elsa_supervisor,
+      group_consumer: [
+        group: "flair-#{topic}",
+        topics: [topic],
+        handler: Flair.MessageHandler,
+        config: Application.get_env(:flair, :topic_subscriber_config, [])
+      ]
     ]
 
-    {Elsa.Group.Supervisor, start_options}
+    {Elsa.Supervisor, start_options}
   end
 end

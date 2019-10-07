@@ -37,7 +37,7 @@ defmodule Flair.MixProject do
   defp deps do
     [
       # App dependencies
-      {:elsa, "~> 0.9.0"},
+      {:elsa, "~> 0.10.0"},
       {:flow, "~> 0.14"},
       {:gen_stage, "~> 0.14"},
       {:jason, "~> 1.1"},

@@ -33,7 +33,7 @@ defmodule Andi.MixProject do
 
   defp deps do
     [
-      {:brook, github: "bbalser/brook", branch: "master"},
+      {:brook, "~> 0.4.2"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},

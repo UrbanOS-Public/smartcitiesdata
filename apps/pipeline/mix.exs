@@ -26,7 +26,7 @@ defmodule Pipeline.MixProject do
   defp deps do
     [
       {:smart_city, "~> 3.0", override: true},
-      {:elsa, "~> 0.9.0"},
+      {:elsa, "~> 0.10.0"},
       {:retry, "~> 0.13"},
       {:prestige, "~> 0.3"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},

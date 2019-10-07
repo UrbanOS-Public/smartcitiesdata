@@ -17,7 +17,7 @@ defmodule Forklift.MessageHandlerTest do
 
     expect Forklift.DataWriter.write(any(), dataset: dataset), return: []
     expect DeadLetterQueue.enqueue(any(), any()), return: :ok
-    allow Elsa.produce_sync(any(), any(), name: any()), return: :ok
+    allow Elsa.produce(any(), any(), any()), return: :ok
 
     MessageHandler.handle_messages([malformed_kafka_message], %{dataset: dataset})
 
