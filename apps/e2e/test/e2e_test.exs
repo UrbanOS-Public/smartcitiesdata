@@ -3,6 +3,8 @@ defmodule E2ETest do
   use Divo
   use Placebo
 
+  @moduletag :e2e
+
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
   import SmartCity.Event, only: [data_ingest_start: 0]
