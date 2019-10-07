@@ -11,6 +11,18 @@ defmodule Pipeline.Reader.DatasetTopicReader do
       error -> {:error, error}
     end
   end
+
+  @impl Pipeline.Reader
+  def terminate(args) do
+    instance = Keyword.fetch!(args, :instance)
+    prefix = Keyword.fetch!(args, :input_topic_prefix)
+    dataset = Keyword.fetch!(args, :dataset)
+
+    connection = :"#{instance}-#{prefix}-#{dataset.id}-consumer"
+    {:ok, pid} = Registry.meta(Pipeline.Registry, connection)
+
+    DynamicSupervisor.terminate_child(Pipeline.DynamicSupervisor, pid)
+  end
 end
 
 defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
@@ -31,7 +43,7 @@ defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
     wait_for_topic!(config)
 
     case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, consumer_spec) do
-      {:ok, _} -> :ok
+      {:ok, pid} -> Registry.put_meta(Pipeline.Registry, connection(config), pid)
       {:error, {:already_started, _}} -> :ok
       {:error, {_, {_, _, {:already_started, _}}}} -> :ok
       error -> raise "Failed to supervise #{config.topic} consumer: #{inspect(error)}"
@@ -57,13 +69,13 @@ defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
   defp consumer(config) do
     start_options = [
       endpoints: config.endpoints,
-      connection: :"#{config.instance}-#{config.topic}-consumer",
+      connection: connection(config),
       group_consumer: [
         group: "#{config.instance}-#{config.topic}",
         topics: [config.topic],
         handler: config.handler,
         handler_init_args: [dataset: config.dataset],
-        config: config.topic_subscriber_config,
+        config: config.topic_subscriber_config
       ]
     ]
 
@@ -78,5 +90,9 @@ defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
     else
       _ -> raise "Timed out waiting for #{config.topic} to be available"
     end
+  end
+
+  defp connection(config) do
+    :"#{config.instance}-#{config.topic}-consumer"
   end
 end

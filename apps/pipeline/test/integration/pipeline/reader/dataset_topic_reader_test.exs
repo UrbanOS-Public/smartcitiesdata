@@ -83,6 +83,27 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
       end)
     end
 
+    test "tracks reader infrastructure" do
+      dataset = TDG.create_dataset(%{id: "tracking"})
+
+      args = [
+        instance: :pipeline,
+        brokers: @brokers,
+        dataset: dataset,
+        handler: Pipeline.TestHandler,
+        input_topic_prefix: @prefix,
+        retry_count: 10,
+        retry_delay: 1
+      ]
+
+      assert :ok = DatasetTopicReader.init(args)
+
+      eventually(fn ->
+        assert [{:undefined, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
+        assert {:ok, ^pid} = Registry.meta(Pipeline.Registry, :"pipeline-#{@prefix}-#{dataset.id}-consumer")
+      end)
+    end
+
     test "idempotently sets up reader infrastructure" do
       dataset = TDG.create_dataset(%{id: "idempotent"})
 
@@ -135,6 +156,41 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
         assert_receive {:DOWN, _, _, ^pid, {%RuntimeError{message: msg}, _}}
         assert msg == "Timed out waiting for #{@prefix}-unreachable to be available"
       end)
+    end
+  end
+
+  describe "terminate/1" do
+    test "tears down reader infrastructure" do
+      dataset = TDG.create_dataset(%{id: "idempotent"})
+
+      args = [
+        instance: :pipeline,
+        brokers: @brokers,
+        dataset: dataset,
+        handler: Pipeline.TestHandler,
+        input_topic_prefix: @prefix,
+        retry_count: 10,
+        retry_delay: 1
+      ]
+
+      assert :ok = DatasetTopicReader.init(args)
+
+      eventually(fn ->
+        assert [{:undefined, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
+        assert {:ok, ^pid} = Registry.meta(Pipeline.Registry, :"pipeline-#{@prefix}-#{dataset.id}-consumer")
+        Process.monitor(pid)
+      end)
+
+      {:ok, pid} = Registry.meta(Pipeline.Registry, :"pipeline-#{@prefix}-#{dataset.id}-consumer")
+
+      assert :ok =
+               DatasetTopicReader.terminate(
+                 dataset: dataset,
+                 input_topic_prefix: @prefix,
+                 instance: :pipeline
+               )
+
+      assert_receive {:DOWN, _, _, ^pid, :shutdown}, 1_000
     end
   end
 end
