@@ -11,21 +11,22 @@ defmodule Valkyrie.Broadway do
   alias Broadway.Message
   alias SmartCity.Data
   @app_name "Valkyrie"
+  @instance Valkyrie.Application.instance()
 
   def start_link(opts) do
     Broadway.start_link(__MODULE__, broadway_config(opts))
   end
 
   defp broadway_config(opts) do
+    output = Keyword.fetch!(opts, :output)
     dataset = Keyword.fetch!(opts, :dataset)
-    producer = Keyword.fetch!(opts, :producer)
-    output_topic = Keyword.fetch!(opts, :output_topic)
+    input = Keyword.fetch!(opts, :input)
 
     [
       name: :"#{dataset.id}_broadway",
       producers: [
         default: [
-          module: {@producer_module, opts},
+          module: {@producer_module, input},
           stages: 1
         ]
       ],
@@ -43,14 +44,14 @@ defmodule Valkyrie.Broadway do
       ],
       context: %{
         dataset: dataset,
-        output_topic: output_topic,
-        producer: producer
+        output_topic: Keyword.fetch!(output, :topic),
+        producer: Keyword.fetch!(output, :connection)
       }
     ]
   end
 
   def handle_message(_processor, %Message{data: %{value: end_of_data()}} = message, %{dataset: dataset}) do
-    Brook.Event.send(data_standardization_end(), :valkyrie, %{"dataset_id" => dataset.id})
+    Brook.Event.send(@instance, data_standardization_end(), :valkyrie, %{"dataset_id" => dataset.id})
     message
   end
 
@@ -80,7 +81,7 @@ defmodule Valkyrie.Broadway do
 
   def handle_batch(_batch, messages, _batch_info, context) do
     data_messages = messages |> Enum.map(fn message -> message.data.value end)
-    Elsa.produce_sync(context.output_topic, data_messages, partition: 0, name: context.producer)
+    Elsa.produce(context.producer, context.output_topic, data_messages, partition: 0)
     messages
   end
 

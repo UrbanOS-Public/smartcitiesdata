@@ -9,6 +9,7 @@ defmodule Valkyrie.DatasetMutationTest do
   @input_topic "#{Application.get_env(:valkyrie, :input_topic_prefix)}-#{@dataset_id}"
   @output_topic "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{@dataset_id}"
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
+  @instance Valkyrie.Application.instance()
 
   @tag timeout: 120_000
   test "a dataset with an updated schema properly parses new messages" do
@@ -17,7 +18,7 @@ defmodule Valkyrie.DatasetMutationTest do
 
     data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"age" => "21"})
 
-    Brook.Event.send(data_ingest_start(), :author, dataset)
+    Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
     TestHelpers.wait_for_topic(@endpoints, @input_topic)
     TestHelpers.wait_for_topic(@endpoints, @output_topic)
 
@@ -37,7 +38,7 @@ defmodule Valkyrie.DatasetMutationTest do
     )
 
     updated_dataset = %{dataset | technical: %{dataset.technical | schema: [%{name: "age", type: "integer"}]}}
-    Brook.Event.send(data_ingest_start(), :author, updated_dataset)
+    Brook.Event.send(@instance, data_ingest_start(), :author, updated_dataset)
 
     Process.sleep(2_000)
 

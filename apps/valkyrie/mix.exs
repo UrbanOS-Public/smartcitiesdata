@@ -30,7 +30,7 @@ defmodule Valkyrie.MixProject do
   defp deps do
     [
       {:benchee, "~> 1.0", only: [:integration]},
-      {:brook, "~> 0.3"},
+      {:brook, "~> 0.4"},
       {:cachex, "~> 3.1"},
       {:checkov, "~> 0.4.0", only: [:test]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
@@ -38,7 +38,6 @@ defmodule Valkyrie.MixProject do
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:divo_kafka, "~> 0.1", only: [:integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
-      {:elsa, "~> 0.9.0", override: true},
       {:ex_doc, "~> 0.19.3"},
       {:excoveralls, "~> 0.11.1", only: :test},
       {:husky, "~> 1.0", only: :dev, runtime: false},
@@ -46,11 +45,11 @@ defmodule Valkyrie.MixProject do
       {:libcluster, "~> 3.1"},
       {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
       {:observer_cli, "~> 1.4"},
-      {:off_broadway_kafka, "~> 0.3.1"},
+      {:off_broadway_kafka, "~> 0.4.0"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       # updating version breaks
       {:retry, "~> 0.13"},
-      {:smart_city, "~> 2.9"},
+      {:smart_city, "~> 3.0", override: true},
       {:smart_city_test, "~> 0.5", only: [:test, :integration]},
       {:timex, "~> 3.6"},
       {:yeet, "~> 1.0"}

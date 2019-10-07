@@ -36,7 +36,7 @@ config :valkyrie, :brook,
       endpoints: endpoints,
       topic: "event-stream",
       group: "valkyrie-events",
-      config: [
+      consumer_config: [
         begin_offset: :earliest
       ]
     ]

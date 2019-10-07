@@ -9,6 +9,7 @@ defmodule ValkyrieTest do
   @dlq_topic Application.get_env(:yeet, :topic)
   @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
   @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
+  @instance Valkyrie.Application.instance()
 
   setup_all do
     dataset =
@@ -49,7 +50,7 @@ defmodule ValkyrieTest do
     input_topic = "#{@input_topic_prefix}-#{dataset.id}"
     output_topic = "#{@output_topic_prefix}-#{dataset.id}"
 
-    Brook.Event.send(data_ingest_start(), :valkyrie, dataset)
+    Brook.Event.send(@instance, data_ingest_start(), :valkyrie, dataset)
     TestHelpers.wait_for_topic(@endpoints, input_topic)
 
     TestHelpers.produce_messages(messages, input_topic, @endpoints)

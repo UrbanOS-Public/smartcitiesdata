@@ -7,7 +7,7 @@ defmodule Valkyrie.InitTest do
     test "should start all datasets in view state" do
       dataset1 = {:id, "Dataset One"}
       dataset2 = {:id, "Dataset Two"}
-      allow Brook.get_all_values!(:datasets), return: [dataset1, dataset2]
+      allow Brook.get_all_values!(any(), :datasets), return: [dataset1, dataset2]
       allow Valkyrie.DatasetProcessor.start(any()), return: :does_not_matter
 
       {:ok, _pid} = Valkyrie.Init.start_link(monitor: self())

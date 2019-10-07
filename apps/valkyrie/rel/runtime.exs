@@ -40,7 +40,7 @@ if kafka_brokers do
       endpoints: endpoints,
       topic: "event-stream",
       group: "valkyrie-events",
-      config: [
+      consumer_config: [
         begin_offset: :earliest
       ]
     ]

@@ -10,7 +10,8 @@ defmodule Valkyrie.DatasetSupervisor do
     dataset = Keyword.fetch!(start_options, :dataset)
     stop_dataset_supervisor(dataset.id)
 
-    DynamicSupervisor.start_child(Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options})
+    {:ok, _pid} =
+      DynamicSupervisor.start_child(Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options})
   end
 
   def ensure_stopped(dataset_id), do: stop_dataset_supervisor(dataset_id)
@@ -52,7 +53,7 @@ defmodule Valkyrie.DatasetSupervisor do
   end
 
   defp elsa_producer(dataset, topic, producer) do
-    Supervisor.child_spec({Elsa.Producer.Supervisor, [endpoints: endpoints(), topic: topic, name: producer]},
+    Supervisor.child_spec({Elsa.Supervisor, endpoints: endpoints(), connection: producer, producer: [topic: topic]},
       id: :"#{dataset.id}_elsa_producer"
     )
   end
@@ -60,13 +61,19 @@ defmodule Valkyrie.DatasetSupervisor do
   defp broadway(dataset, input_topic, output_topic, producer) do
     config = [
       dataset: dataset,
-      producer: producer,
-      name: :"#{dataset.id}_elsa_consumer",
-      endpoints: endpoints(),
-      group: "valkyrie-#{input_topic}",
-      topics: [input_topic],
-      config: Application.get_env(:valkyrie, :topic_subscriber_config),
-      output_topic: output_topic
+      output: [
+        connection: producer,
+        topic: output_topic
+      ],
+      input: [
+        connection: :"#{dataset.id}_elsa_consumer",
+        endpoints: endpoints(),
+        group_consumer: [
+          group: "valkyrie-#{input_topic}",
+          topics: [input_topic],
+          config: Application.get_env(:valkyrie, :topic_subscriber_config)
+        ]
+      ]
     ]
 
     {Valkyrie.Broadway, config}
