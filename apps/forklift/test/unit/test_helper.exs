@@ -4,6 +4,7 @@ Faker.start()
 Mox.defmock(Forklift.MockReader, for: Pipeline.Reader)
 Mox.defmock(Forklift.MockTopic, for: Pipeline.Writer)
 Mox.defmock(Forklift.MockTable, for: Pipeline.Writer)
+Mox.defmock(MockMetricCollector, for: StreamingMetrics.MetricCollector)
 
 defmodule Helper do
   def make_kafka_message(value, topic) do

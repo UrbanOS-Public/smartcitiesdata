@@ -4,6 +4,9 @@ defmodule Forklift.DataWriter do
 
   use Retry
   alias SmartCity.Data
+  alias Forklift.DataWriter.Metric
+
+  require Logger
 
   @topic_writer Application.get_env(:forklift, :topic_writer)
   @table_writer Application.get_env(:forklift, :table_writer)
@@ -40,6 +43,28 @@ defmodule Forklift.DataWriter do
         one_time_init_args(:forklift, topic)
         |> @topic_writer.init()
     end
+  end
+
+  @spec compact_datasets() :: :ok
+  def compact_datasets do
+    Logger.info("Beginning dataset compaction")
+
+    Forklift.Datasets.get_all!()
+    |> Enum.each(fn dataset ->
+      table = dataset.technical.systemName
+      start_time = Time.utc_now()
+
+      case @table_writer.compact(table: table) do
+        :ok -> Logger.info("#{table} compacted successfully")
+        error -> Logger.error("#{table} failed to compact: #{inspect(error)}")
+      end
+
+      Time.utc_now()
+      |> Time.diff(start_time, :millisecond)
+      |> Metric.record(table)
+    end)
+
+    Logger.info("Completed dataset compaction")
   end
 
   defp write_to_table(data, %{technical: metadata}) do

@@ -98,7 +98,7 @@ if System.get_env("COMPACTION_SCHEDULE") do
     jobs: [
       compactor: [
         schedule: System.get_env("COMPACTION_SCHEDULE"),
-        task: {Forklift.Datasets.DatasetCompactor, :compact_datasets, []},
+        task: {Forklift.DataWriter, :compact_datasets, []},
         timezone: "America/New_York"
       ]
     ]

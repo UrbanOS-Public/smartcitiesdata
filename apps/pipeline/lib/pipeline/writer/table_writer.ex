@@ -39,7 +39,7 @@ defmodule Pipeline.Writer.TableWriter do
     end
   end
 
-  @spec compact(keyword) :: :ok | {:error, term()}
+  @impl Pipeline.Writer
   def compact(args) do
     table = Keyword.fetch!(args, :table)
 
