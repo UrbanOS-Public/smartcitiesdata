@@ -161,7 +161,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
   describe "terminate/1" do
     test "tears down reader infrastructure" do
-      dataset = TDG.create_dataset(%{id: "idempotent"})
+      dataset = TDG.create_dataset(%{id: "teardown"})
 
       args = [
         instance: :pipeline,
@@ -182,13 +182,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
       end)
 
       {:ok, pid} = Registry.meta(Pipeline.Registry, :"pipeline-#{@prefix}-#{dataset.id}-consumer")
-
-      assert :ok =
-               DatasetTopicReader.terminate(
-                 dataset: dataset,
-                 input_topic_prefix: @prefix,
-                 instance: :pipeline
-               )
+      DatasetTopicReader.terminate(dataset: dataset, input_topic_prefix: @prefix, instance: :pipeline)
 
       assert_receive {:DOWN, _, _, ^pid, :shutdown}, 1_000
     end

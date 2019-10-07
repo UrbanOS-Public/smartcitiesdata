@@ -14,14 +14,18 @@ defmodule Pipeline.Reader.DatasetTopicReader do
 
   @impl Pipeline.Reader
   def terminate(args) do
+    with connection <- connection(args),
+         {:ok, pid} <- Registry.meta(Pipeline.Registry, connection) do
+      DynamicSupervisor.terminate_child(Pipeline.DynamicSupervisor, pid)
+    end
+  end
+
+  defp connection(args) do
     instance = Keyword.fetch!(args, :instance)
     prefix = Keyword.fetch!(args, :input_topic_prefix)
     dataset = Keyword.fetch!(args, :dataset)
 
-    connection = :"#{instance}-#{prefix}-#{dataset.id}-consumer"
-    {:ok, pid} = Registry.meta(Pipeline.Registry, connection)
-
-    DynamicSupervisor.terminate_child(Pipeline.DynamicSupervisor, pid)
+    :"#{instance}-#{prefix}-#{dataset.id}-consumer"
   end
 end
 
