@@ -7,6 +7,9 @@ defmodule Forklift.MessageHandler do
 
   alias Forklift.Util
   require Logger
+  import SmartCity.Data, only: [end_of_data: 0]
+
+  @reader Application.get_env(:forklift, :data_reader)
 
   def init(args \\ []) do
     dataset = Keyword.fetch!(args, :dataset)
@@ -25,6 +28,8 @@ defmodule Forklift.MessageHandler do
 
     {:ack, %{dataset: dataset}}
   end
+
+  defp parse(end_of_data() = message), do: message
 
   defp parse(%{key: key, value: value} = message) do
     case SmartCity.Data.new(value) do

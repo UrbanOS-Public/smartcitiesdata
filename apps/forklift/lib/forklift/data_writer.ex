@@ -7,6 +7,8 @@ defmodule Forklift.DataWriter do
   alias Forklift.DataWriter.Metric
 
   require Logger
+  import SmartCity.Data, only: [end_of_data: 0]
+  import SmartCity.Event, only: [data_ingest_end: 0]
 
   @topic_writer Application.get_env(:forklift, :topic_writer)
   @table_writer Application.get_env(:forklift, :table_writer)
@@ -19,10 +21,40 @@ defmodule Forklift.DataWriter do
 
   @impl Pipeline.Writer
   def write(data, opts) do
+    dataset = Keyword.fetch!(opts, :dataset)
+
+    case ingest_status(data) do
+      {:ok, batch_data} ->
+        :ok =
+          Enum.reverse(batch_data)
+          |> do_write(dataset)
+
+      {:final, batch_data} ->
+        :ok =
+          Enum.reverse(batch_data)
+          |> do_write(dataset)
+
+        Brook.Event.send(:forklift, data_ingest_end(), :forklift, dataset)
+    end
+  end
+
+  defp ingest_status(data) do
+    Enum.reduce_while(data, {:_, []}, &handle_eod/2)
+  end
+
+  defp handle_eod(end_of_data(), {_, acc}) do
+    {:halt, {:final, acc}}
+  end
+
+  defp handle_eod(message, {_, acc}) do
+    {:cont, {:ok, [message | acc]}}
+  end
+
+  defp do_write(data, dataset) do
     started_data = Enum.map(data, &add_start_time/1)
 
     retry with: exponential_backoff(100) |> cap(@max_wait_time) do
-      write_to_table(started_data, opts[:dataset])
+      write_to_table(started_data, dataset)
     after
       {:ok, write_timing} ->
         Enum.map(started_data, &Data.add_timing(&1, write_timing))

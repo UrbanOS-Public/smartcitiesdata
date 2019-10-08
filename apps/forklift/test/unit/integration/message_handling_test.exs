@@ -1,7 +1,10 @@
 defmodule Forklift.Integration.MessageHandlingTest do
   use ExUnit.Case
+  use Placebo
 
   import Mox
+  import SmartCity.Event, only: [data_ingest_end: 0]
+  import SmartCity.Data, only: [end_of_data: 0]
   alias SmartCity.TestDataGenerator, as: TDG
 
   setup :set_mox_global
@@ -33,24 +36,42 @@ defmodule Forklift.Integration.MessageHandlingTest do
       assert_receive :retry
       assert_receive ^table_name, 2_000
     end
+
+    test "writes message to topic with timing data" do
+      test = self()
+      expect(Forklift.MockTable, :write, fn _, _ -> :ok end)
+      expect(Forklift.MockTopic, :write, fn msg, _ -> send(test, msg) end)
+
+      dataset = TDG.create_dataset(%{})
+      datum = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foo" => "baz"}, operational: %{timing: []}})
+      message = %Elsa.Message{key: "key_two", value: Jason.encode!(datum)}
+
+      Forklift.MessageHandler.handle_messages([message], %{dataset: dataset})
+
+      assert_receive [{"key_two", msg}]
+
+      timing = Jason.decode!(msg)["operational"]["timing"]
+      assert Enum.count(timing) == 2
+      assert Enum.any?(timing, fn time -> time["label"] == "presto_insert_time" end)
+      assert Enum.any?(timing, fn time -> time["label"] == "total_time" end)
+    end
   end
 
-  test "writes message to topic with timing data" do
-    test = self()
-    expect(Forklift.MockTable, :write, fn _, _ -> :ok end)
-    expect(Forklift.MockTopic, :write, fn msg, _ -> send(test, msg) end)
+  describe "on receiving end-of-data message" do
+    test "shuts down dataset reader" do
+      expect(Forklift.MockTable, :write, fn [%{payload: "foobar"}, %{payload: "foobaz"}], _ -> :ok end)
+      expect(Forklift.MockTopic, :write, fn _, _ -> :ok end)
 
-    dataset = TDG.create_dataset(%{})
-    datum = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foo" => "baz"}, operational: %{timing: []}})
-    message = %Elsa.Message{key: "key_two", value: Jason.encode!(datum)}
+      dataset = TDG.create_dataset(%{})
 
-    Forklift.MessageHandler.handle_messages([message], %{dataset: dataset})
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobar"})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobaz"})
 
-    assert_receive [{"key_two", msg}]
+      message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
+      message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}
 
-    timing = Jason.decode!(msg)["operational"]["timing"]
-    assert Enum.count(timing) == 2
-    assert Enum.any?(timing, fn time -> time["label"] == "presto_insert_time" end)
-    assert Enum.any?(timing, fn time -> time["label"] == "total_time" end)
+      expect Brook.Event.send(:forklift, data_ingest_end(), :forklift, dataset), return: :ok
+      Forklift.MessageHandler.handle_messages([message1, message2, end_of_data()], %{dataset: dataset})
+    end
   end
 end
