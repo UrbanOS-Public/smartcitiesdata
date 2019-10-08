@@ -49,6 +49,9 @@ defmodule Pipeline.Writer.TableWriter do
     |> Compaction.complete(table)
   end
 
+  @impl Pipeline.Writer
+  def terminate(_), do: :ok
+
   defp parse_config(args) do
     %{
       name: Keyword.fetch!(args, :name),
