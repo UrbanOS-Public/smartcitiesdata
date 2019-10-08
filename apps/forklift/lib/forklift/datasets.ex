@@ -20,4 +20,8 @@ defmodule Forklift.Datasets do
   def get_events!(id) do
     Brook.get_events!(:forklift, @collection, id)
   end
+
+  def delete(id) do
+    Brook.ViewState.delete(@collection, id)
+  end
 end

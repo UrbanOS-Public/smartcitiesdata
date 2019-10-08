@@ -7,11 +7,11 @@ defmodule Forklift.EventHandler do
 
   @reader Application.get_env(:forklift, :data_reader)
 
-  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0]
 
   def handle_event(%Brook.Event{type: data_ingest_start(), data: %Dataset{} = dataset}) do
     with source_type when source_type in ["ingest", "stream"] <- dataset.technical.sourceType,
-         init_args <- reader_init_args(dataset) do
+         init_args <- reader_args(dataset) do
       :ok = @reader.init(init_args)
       Forklift.Datasets.update(dataset)
     else
@@ -26,7 +26,16 @@ defmodule Forklift.EventHandler do
     :discard
   end
 
-  defp reader_init_args(dataset) do
+  def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{} = dataset}) do
+    with args <- reader_args(dataset),
+         :ok <- @reader.terminate(args) do
+      Forklift.Datasets.delete(dataset.id)
+    else
+      _ -> :discard
+    end
+  end
+
+  defp reader_args(dataset) do
     [
       instance: :forklift,
       brokers: Application.get_env(:forklift, :elsa_brokers),
