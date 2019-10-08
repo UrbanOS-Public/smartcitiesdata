@@ -53,7 +53,7 @@ defmodule AndiWeb.DatasetController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get(conn, params) do
-    case Brook.get(:dataset, Map.get(params, "dataset_id")) do
+    case Brook.get(:andi, :dataset, Map.get(params, "dataset_id")) do
       {:ok, nil} -> respond(conn, :not_found, "Dataset not found")
       {:ok, dataset} -> respond(conn, :ok, dataset)
     end

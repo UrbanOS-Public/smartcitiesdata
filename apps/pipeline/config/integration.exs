@@ -5,7 +5,7 @@ config :pipeline,
   output_topic: "output-topic",
   producer_name: :"integration-producer",
   divo: [{DivoKafka, [outside_host: "localhost"]}, Pipeline.DivoPresto],
-  divo_wait: [dwell: 700, max_tries: 50]
+  divo_wait: [dwell: 1_000, max_tries: 120]
 
 config :prestige,
   base_url: "http://localhost:8080",
