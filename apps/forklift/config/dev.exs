@@ -13,7 +13,7 @@ config :redix,
 
 config :forklift, :brook,
   instance: :forklift,
-  handlers: [Forklift.Event.Handler],
+  handlers: [Forklift.EventHandler],
   storage: [
     module: Brook.Storage.Ets,
     init_arg: [

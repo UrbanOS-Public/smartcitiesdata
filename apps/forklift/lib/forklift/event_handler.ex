@@ -1,4 +1,4 @@
-defmodule Forklift.Event.Handler do
+defmodule Forklift.EventHandler do
   @moduledoc false
   use Brook.Event.Handler
 

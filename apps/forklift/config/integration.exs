@@ -42,7 +42,7 @@ config :forklift, :brook,
       ]
     ]
   ],
-  handlers: [Forklift.Event.Handler],
+  handlers: [Forklift.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [
