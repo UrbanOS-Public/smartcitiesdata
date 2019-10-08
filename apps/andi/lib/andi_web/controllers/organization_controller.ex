@@ -14,10 +14,12 @@ defmodule AndiWeb.OrganizationController do
   """
   @spec create(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def create(conn, _params) do
-    message = add_uuid(conn.body_params)
-    pre_id = message["id"]
+    message =
+      conn.body_params
+      |> remove_blank_keys()
+      |> add_uuid()
 
-    with :ok <- ensure_new_org(pre_id),
+    with :ok <- ensure_new_org(message["id"]),
          {:ok, old_organization} <- RegOrganization.new(message),
          {:ok, organization} <- Organization.new(message),
          :ok <- authenticate(),
@@ -49,6 +51,12 @@ defmodule AndiWeb.OrganizationController do
       _ ->
         %RuntimeError{message: "Unknown error for #{id}"}
     end
+  end
+
+  defp remove_blank_keys(message) do
+    message
+    |> Enum.filter(fn {_, v} -> v != "" end)
+    |> Map.new()
   end
 
   defp add_uuid(message) do
