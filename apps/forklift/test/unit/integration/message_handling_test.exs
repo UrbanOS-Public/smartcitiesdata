@@ -13,14 +13,14 @@ defmodule Forklift.Integration.MessageHandlingTest do
   describe "on receiving a data message" do
     test "retries to persist to Presto if failing" do
       test = self()
-      expect(Forklift.MockTopic, :write, fn _, _ -> :ok end)
+      expect(MockTopic, :write, fn _, _ -> :ok end)
 
-      expect(Forklift.MockTable, :write, 5, fn _, _ ->
+      expect(MockTable, :write, 5, fn _, _ ->
         send(test, :retry)
         :error
       end)
 
-      expect(Forklift.MockTable, :write, 1, fn _, args ->
+      expect(MockTable, :write, 1, fn _, args ->
         send(test, args[:table])
         :ok
       end)
@@ -39,8 +39,8 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
     test "writes message to topic with timing data" do
       test = self()
-      expect(Forklift.MockTable, :write, fn _, _ -> :ok end)
-      expect(Forklift.MockTopic, :write, fn msg, _ -> send(test, msg) end)
+      expect(MockTable, :write, fn _, _ -> :ok end)
+      expect(MockTopic, :write, fn msg, _ -> send(test, msg) end)
 
       dataset = TDG.create_dataset(%{})
       datum = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foo" => "baz"}, operational: %{timing: []}})
@@ -59,8 +59,8 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
   describe "on receiving end-of-data message" do
     test "shuts down dataset reader" do
-      expect(Forklift.MockTable, :write, fn [%{payload: "foobar"}, %{payload: "foobaz"}], _ -> :ok end)
-      expect(Forklift.MockTopic, :write, fn _, _ -> :ok end)
+      expect(MockTable, :write, fn [%{payload: "foobar"}, %{payload: "foobaz"}], _ -> :ok end)
+      expect(MockTopic, :write, fn _, _ -> :ok end)
 
       dataset = TDG.create_dataset(%{})
 

@@ -21,10 +21,10 @@ defmodule Forklift.DataWriterTest do
 
       allow Forklift.Datasets.get_all!(), return: datasets
       allow DataWriter.Metric.record(any(), any()), return: :ok
-      stub(Forklift.MockReader, :terminate, fn _ -> :ok end)
-      stub(Forklift.MockReader, :init, fn _ -> :ok end)
+      stub(MockReader, :terminate, fn _ -> :ok end)
+      stub(MockReader, :init, fn _ -> :ok end)
 
-      expect(Forklift.MockTable, :compact, 3, fn args ->
+      expect(MockTable, :compact, 3, fn args ->
         case args[:table] do
           "fail" ->
             {:error, "reason"}
@@ -42,9 +42,9 @@ defmodule Forklift.DataWriterTest do
     end
 
     test "records duration" do
-      stub(Forklift.MockTable, :compact, fn _ -> :ok end)
-      stub(Forklift.MockReader, :terminate, fn _ -> :ok end)
-      stub(Forklift.MockReader, :init, fn _ -> :ok end)
+      stub(MockTable, :compact, fn _ -> :ok end)
+      stub(MockReader, :terminate, fn _ -> :ok end)
+      stub(MockReader, :init, fn _ -> :ok end)
 
       MockMetricCollector
       |> expect(:count_metric, 2, fn dur, "dataset_compaction_duration_total", _, _ when is_integer(dur) -> [100] end)
@@ -60,10 +60,10 @@ defmodule Forklift.DataWriterTest do
     test "stops/restarts ingestion around each compaction" do
       stub(MockMetricCollector, :count_metric, fn _, _, _, _ -> [42] end)
       stub(MockMetricCollector, :record_metrics, fn [42], "forklift" -> {:ok, :ok} end)
-      stub(Forklift.MockTable, :compact, fn _ -> :ok end)
+      stub(MockTable, :compact, fn _ -> :ok end)
 
-      expect(Forklift.MockReader, :terminate, 4, fn _ -> :ok end)
-      expect(Forklift.MockReader, :init, 4, fn _ -> :ok end)
+      expect(MockReader, :terminate, 4, fn _ -> :ok end)
+      expect(MockReader, :init, 4, fn _ -> :ok end)
 
       dataset = TDG.create_dataset(%{})
       allow Forklift.Datasets.get_all!(), return: [dataset, dataset, dataset, dataset]

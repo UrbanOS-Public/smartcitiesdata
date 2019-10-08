@@ -1,8 +1,8 @@
 use Mix.Config
 
 config :forklift,
-  topic_writer: Forklift.MockTopic,
-  table_writer: Forklift.MockTable,
+  topic_writer: MockTopic,
+  table_writer: MockTable,
   message_processing_cadence: 15_000,
   user: "forklift"
 

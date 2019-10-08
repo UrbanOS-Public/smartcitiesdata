@@ -13,7 +13,7 @@ defmodule Forklift.Integration.EventHandlingTest do
   describe "on dataset:update event" do
     test "ensures table exists for a dataset" do
       test = self()
-      expect(Forklift.MockTable, :init, fn args -> send(test, args) end)
+      expect(MockTable, :init, fn args -> send(test, args) end)
 
       dataset = TDG.create_dataset(%{})
       table_name = dataset.technical.systemName
@@ -28,7 +28,7 @@ defmodule Forklift.Integration.EventHandlingTest do
     test "ensures dataset topic exists" do
       test = self()
 
-      Forklift.MockReader
+      MockReader
       |> expect(:init, fn args ->
         send(test, Keyword.get(args, :dataset))
         :ok
@@ -45,7 +45,7 @@ defmodule Forklift.Integration.EventHandlingTest do
     test "tears reader infrastructure down" do
       test = self()
 
-      expect(Forklift.MockReader, :terminate, fn args ->
+      expect(MockReader, :terminate, fn args ->
         send(test, args[:dataset])
         :ok
       end)

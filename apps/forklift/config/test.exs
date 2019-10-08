@@ -3,9 +3,9 @@ use Mix.Config
 config :logger, :level, :info
 
 config :forklift,
-  data_reader: Forklift.MockReader,
-  topic_writer: Forklift.MockTopic,
-  table_writer: Forklift.MockTable,
+  data_reader: MockReader,
+  topic_writer: MockTopic,
+  table_writer: MockTable,
   collector: MockMetricCollector,
   retry_count: 5,
   retry_initial_delay: 10,
