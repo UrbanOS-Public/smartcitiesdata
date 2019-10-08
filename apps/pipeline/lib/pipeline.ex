@@ -1,3 +1,3 @@
 defmodule Pipeline do
-  @moduledoc "TODO"
+  @moduledoc false
 end

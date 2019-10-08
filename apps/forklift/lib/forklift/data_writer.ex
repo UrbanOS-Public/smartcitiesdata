@@ -1,5 +1,8 @@
 defmodule Forklift.DataWriter do
-  @moduledoc "TODO"
+  @moduledoc """
+  Implementation of `Pipeline.Writer` for Forklift's edges.
+  """
+
   @behaviour Pipeline.Writer
 
   use Retry
@@ -16,11 +19,23 @@ defmodule Forklift.DataWriter do
   @max_wait_time 1_000 * 60 * 60
 
   @impl Pipeline.Writer
+  @doc """
+  Ensures a table exists using `:table_writer` from Forklift's application environment.
+  """
   def init(args) do
     @table_writer.init(args)
   end
 
   @impl Pipeline.Writer
+  @doc """
+  Writes data to PrestoDB and Kafka using `:table_writer` and `:topic_writer` from
+  Forklift's application environment.
+
+  Timing information is recorded for writing to the table and included in the data
+  written to Kafka.
+
+  If an end-of-data message is received, a `data:ingest:end` event is sent.
+  """
   def write(data, opts) do
     dataset = Keyword.fetch!(opts, :dataset)
 
@@ -37,6 +52,63 @@ defmodule Forklift.DataWriter do
 
         Brook.Event.send(:forklift, data_ingest_end(), :forklift, dataset)
     end
+  end
+
+  @spec one_time_init() :: :ok | {:error, term()}
+  @doc """
+  Initializes `:topic_writer` from Forklift's application environment if an
+  output_topic is configured. Includes creating the topic if necessary.
+  """
+  def one_time_init do
+    case Application.get_env(:forklift, :output_topic) do
+      nil ->
+        :ok
+
+      topic ->
+        one_time_init_args(:forklift, topic)
+        |> @topic_writer.init()
+    end
+  end
+
+  @spec compact_datasets() :: :ok
+  @doc """
+  Compacts each table in Forklift's view state using `:table_writer` from
+  Forklift's application environment.
+
+  The compaction process includes terminating a dataset's topic reader,
+  compacting its PrestoDB table, and restarting the topic reader.
+
+  Compaction time is recorded by `:collector` from Forklift's application
+  environment.
+  """
+  def compact_datasets do
+    Logger.info("Beginning dataset compaction")
+
+    Forklift.Datasets.get_all!()
+    |> Enum.each(fn dataset ->
+      table = dataset.technical.systemName
+
+      Logger.info("#{table} compaction started")
+
+      reader_args(dataset)
+      |> @reader.terminate()
+
+      start_time = Time.utc_now()
+
+      case @table_writer.compact(table: table) do
+        :ok -> Logger.info("#{table} compacted successfully")
+        error -> Logger.error("#{table} failed to compact: #{inspect(error)}")
+      end
+
+      reader_args(dataset)
+      |> @reader.init()
+
+      Time.utc_now()
+      |> Time.diff(start_time, :millisecond)
+      |> Metric.record(table)
+    end)
+
+    Logger.info("Completed dataset compaction")
   end
 
   @impl Pipeline.Writer
@@ -67,49 +139,6 @@ defmodule Forklift.DataWriter do
     else
       {:error, reason} -> raise reason
     end
-  end
-
-  @spec one_time_init() :: :ok | {:error, term()}
-  def one_time_init do
-    case Application.get_env(:forklift, :output_topic) do
-      nil ->
-        :ok
-
-      topic ->
-        one_time_init_args(:forklift, topic)
-        |> @topic_writer.init()
-    end
-  end
-
-  @spec compact_datasets() :: :ok
-  def compact_datasets do
-    Logger.info("Beginning dataset compaction")
-
-    Forklift.Datasets.get_all!()
-    |> Enum.each(fn dataset ->
-      table = dataset.technical.systemName
-
-      Logger.info("#{table} compaction started")
-
-      reader_args(dataset)
-      |> @reader.terminate()
-
-      start_time = Time.utc_now()
-
-      case @table_writer.compact(table: table) do
-        :ok -> Logger.info("#{table} compacted successfully")
-        error -> Logger.error("#{table} failed to compact: #{inspect(error)}")
-      end
-
-      reader_args(dataset)
-      |> @reader.init()
-
-      Time.utc_now()
-      |> Time.diff(start_time, :millisecond)
-      |> Metric.record(table)
-    end)
-
-    Logger.info("Completed dataset compaction")
   end
 
   defp reader_args(dataset) do
@@ -157,7 +186,7 @@ defmodule Forklift.DataWriter do
     |> Forklift.Util.remove_from_metadata(:forklift_start_time)
   end
 
-  def one_time_init_args(instance, topic) do
+  defp one_time_init_args(instance, topic) do
     [
       instance: instance,
       endpoints: Application.get_env(instance, :elsa_brokers),

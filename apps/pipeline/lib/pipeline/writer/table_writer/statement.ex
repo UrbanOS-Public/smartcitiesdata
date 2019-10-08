@@ -1,5 +1,5 @@
 defmodule Pipeline.Writer.TableWriter.Statement do
-  @moduledoc "TODO"
+  @moduledoc false
 
   alias Pipeline.Writer.TableWriter.Statement.{Create, Insert}
 

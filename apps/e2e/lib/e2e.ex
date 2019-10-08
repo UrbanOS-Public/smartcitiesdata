@@ -1,3 +1,3 @@
 defmodule E2E do
-  @moduledoc "TODO"
+  @moduledoc false
 end

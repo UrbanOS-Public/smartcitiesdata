@@ -1,5 +1,7 @@
 defmodule Pipeline.Writer do
-  @moduledoc "TODO"
+  @moduledoc """
+  Behaviour describing how to interact with system edges that receive data.
+  """
 
   @callback init(keyword()) :: :ok | {:error, term()}
   @callback write([term()], keyword()) :: :ok | {:error, term()}

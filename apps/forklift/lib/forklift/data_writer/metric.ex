@@ -1,5 +1,5 @@
 defmodule Forklift.DataWriter.Metric do
-  @moduledoc "TODO"
+  @moduledoc false
 
   require Logger
 

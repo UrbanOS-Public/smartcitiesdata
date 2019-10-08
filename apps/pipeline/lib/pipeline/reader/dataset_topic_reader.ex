@@ -1,10 +1,28 @@
 defmodule Pipeline.Reader.DatasetTopicReader do
-  @moduledoc "TODO"
+  @moduledoc """
+  Implementation of `Pipeline.Reader` for dataset Kafka topics.
+  """
 
   @behaviour Pipeline.Reader
   alias Pipeline.Reader.DatasetTopicReader.InitTask
 
   @impl Pipeline.Reader
+  @doc """
+  Sets up infrastructure to consume messages off a dataset Kafka topic. Includes creating the
+  topic if necessary.
+
+  Requires arguments:
+  * `instance` - Unique caller identity, e.g. application name
+  * `dataset` - `%SmartCity.Dataset` object
+  * `brokers` - Kafka brokers
+  * `input_topic_prefix` - Dataset topic prefix
+  * `handler` - Message handler
+
+  Optional arguments:
+  * `retry_count` - Times to retry topic creation. Defaults to 10
+  * `retry_delay` - Milliseconds to initially wait before retrying. Defaults to 100
+  * `topic_subscriber_config` - Subscriber configuration passed to underlying libraries. Defaults to `[]`
+  """
   def init(args) do
     case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, {InitTask, args}) do
       {:ok, _} -> :ok
@@ -13,6 +31,14 @@ defmodule Pipeline.Reader.DatasetTopicReader do
   end
 
   @impl Pipeline.Reader
+  @doc """
+  Destroys topic consumer infrastructure.
+
+  Requires arguments:
+  * `instance` - Unique caller identity, e.g. application name
+  * `dataset` - `%SmartCity.Dataset` object
+  * `input_topic_prefix` - Dataset topic prefix
+  """
   def terminate(args) do
     with connection <- connection(args),
          {:ok, pid} <- Registry.meta(Pipeline.Registry, connection) do
@@ -26,77 +52,5 @@ defmodule Pipeline.Reader.DatasetTopicReader do
     dataset = Keyword.fetch!(args, :dataset)
 
     :"#{instance}-#{prefix}-#{dataset.id}-consumer"
-  end
-end
-
-defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
-  @moduledoc "TODO"
-
-  use Task, restart: :transient
-  use Retry
-
-  def start_link(args) do
-    Task.start_link(__MODULE__, :run, [args])
-  end
-
-  def run(args) do
-    config = parse_config(args)
-    consumer_spec = consumer(config)
-
-    Elsa.create_topic(config.endpoints, config.topic)
-    wait_for_topic!(config)
-
-    case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, consumer_spec) do
-      {:ok, pid} -> Registry.put_meta(Pipeline.Registry, connection(config), pid)
-      {:error, {:already_started, _}} -> :ok
-      {:error, {_, {_, _, {:already_started, _}}}} -> :ok
-      error -> raise "Failed to supervise #{config.topic} consumer: #{inspect(error)}"
-    end
-  end
-
-  defp parse_config(args) do
-    prefix = Keyword.fetch!(args, :input_topic_prefix)
-    dataset = Keyword.fetch!(args, :dataset)
-
-    %{
-      instance: Keyword.fetch!(args, :instance),
-      endpoints: Keyword.fetch!(args, :brokers),
-      dataset: dataset,
-      handler: Keyword.fetch!(args, :handler),
-      topic: "#{prefix}-#{dataset.id}",
-      retry_count: Keyword.get(args, :retry_count, 10),
-      retry_delay: Keyword.get(args, :retry_delay, 100),
-      topic_subscriber_config: Keyword.get(args, :topic_subscriber_config, [])
-    }
-  end
-
-  defp consumer(config) do
-    start_options = [
-      endpoints: config.endpoints,
-      connection: connection(config),
-      group_consumer: [
-        group: "#{config.instance}-#{config.topic}",
-        topics: [config.topic],
-        handler: config.handler,
-        handler_init_args: [dataset: config.dataset],
-        config: config.topic_subscriber_config
-      ]
-    ]
-
-    {Elsa.Supervisor, start_options}
-  end
-
-  defp wait_for_topic!(config) do
-    retry with: config.retry_delay |> exponential_backoff() |> Stream.take(config.retry_count), atoms: [false] do
-      Elsa.topic?(config.endpoints, config.topic)
-    after
-      true -> config.topic
-    else
-      _ -> raise "Timed out waiting for #{config.topic} to be available"
-    end
-  end
-
-  defp connection(config) do
-    :"#{config.instance}-#{config.topic}-consumer"
   end
 end

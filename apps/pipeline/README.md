@@ -1,21 +1,16 @@
 # Pipeline
 
-**TODO: Add description**
+Behaviours describing edges of the platform with some common concrete implementations.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `pipeline` to your list of dependencies in `mix.exs`:
+Add `:pipeline` to any umbrella sub-project that implements an edge behaviour or uses one 
+of the implementations.
 
 ```elixir
 def deps do
   [
-    {:pipeline, "~> 0.1.0"}
+    {:pipeline, in_umbrella: true}
   ]
 end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/pipeline](https://hexdocs.pm/pipeline).
-

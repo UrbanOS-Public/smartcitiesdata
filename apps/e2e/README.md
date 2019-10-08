@@ -1,21 +1,23 @@
 # E2E
 
-**TODO: Add description**
+Pulls in the other sub-applications as dependencies, making end-to-end actions across the system easier.
 
-## Installation
+## Testing
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `e2e` to your list of dependencies in `mix.exs`:
+From the umbrella root:
 
-```elixir
-def deps do
-  [
-    {:e2e, "~> 0.1.0"}
-  ]
-end
+```bash
+mix test.e2e
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/e2e](https://hexdocs.pm/e2e).
+## Running locally
 
+From `apps/e2e`:
+
+```bash
+MIX_ENV=integration mix docker.start
+MIX_ENV=integration mix run --no-halt
+
+# teardown
+MIX_ENV=integration mix docker.kill
+```

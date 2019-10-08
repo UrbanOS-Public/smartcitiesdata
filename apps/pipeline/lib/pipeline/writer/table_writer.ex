@@ -1,11 +1,20 @@
 defmodule Pipeline.Writer.TableWriter do
-  @moduledoc "TODO"
+  @moduledoc """
+  Implementation of `Pipeline.Writer` for PrestoDB tables.
+  """
 
   @behaviour Pipeline.Writer
   alias Pipeline.Writer.TableWriter.{Compaction, Statement}
   require Logger
 
   @impl Pipeline.Writer
+  @doc """
+  Ensures a table exists.
+
+  Requires arguments:
+  * `name` - Table name
+  * `schema` - Table schema
+  """
   def init(args) do
     config = parse_config(args)
 
@@ -21,16 +30,23 @@ defmodule Pipeline.Writer.TableWriter do
   end
 
   @impl Pipeline.Writer
-  def write([], opts) do
-    table = Keyword.fetch!(opts, :table)
+  @doc """
+  Writes data to PrestoDB table.
+
+  Requires configuration:
+  * `table` - Table name
+  * `schema` - Table schema
+  """
+  def write([], config) do
+    table = Keyword.fetch!(config, :table)
     Logger.debug("No data to write to #{table}")
     :ok
   end
 
-  def write(content, opts) do
+  def write(content, config) do
     payloads = Enum.map(content, &Map.get(&1, :payload))
 
-    %{table: Keyword.fetch!(opts, :table), schema: Keyword.fetch!(opts, :schema)}
+    %{table: Keyword.fetch!(config, :table), schema: Keyword.fetch!(config, :schema)}
     |> Statement.insert(payloads)
     |> execute()
     |> case do
@@ -40,6 +56,13 @@ defmodule Pipeline.Writer.TableWriter do
   end
 
   @impl Pipeline.Writer
+  @doc """
+  Creates a new, compacted table from a table. Compaction reduces the number
+  of ORC files stored by object storage.
+
+  Requires arguments:
+  * `table` - Table name
+  """
   def compact(args) do
     table = Keyword.fetch!(args, :table)
 

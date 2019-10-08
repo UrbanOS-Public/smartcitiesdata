@@ -1,3 +1,3 @@
 defmodule Forklift do
-  @moduledoc "TODO"
+  @moduledoc false
 end
