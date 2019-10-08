@@ -153,6 +153,17 @@ defmodule AndiWeb.OrganizationControllerTest do
     assert json_response(conn, 500) =~ "Unable to process your request"
   end
 
+  @tag capture_log: true
+  test "post /api/ with blank id should create org with generated id", %{conn: conn} do
+    allow(Paddle.add(any(), any()), return: :ok, meck_options: [:passthrough])
+    conn = post(conn, @route, %{"id" => "", "orgName" => "blankIDOrg", "orgTitle" => "Blank ID Org Title"})
+
+    response = json_response(conn, 201)
+
+    assert response["orgName"] == "blankIDOrg"
+    assert response["id"] != ""
+  end
+
   describe "id already exists" do
     setup do
       allow(Brook.get(any(), any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
