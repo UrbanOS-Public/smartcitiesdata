@@ -10,6 +10,7 @@ defmodule Forklift.DataWriter do
   import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event, only: [data_ingest_end: 0]
 
+  @reader Application.get_env(:forklift, :data_reader)
   @topic_writer Application.get_env(:forklift, :topic_writer)
   @table_writer Application.get_env(:forklift, :table_writer)
   @max_wait_time 1_000 * 60 * 60
@@ -87,6 +88,12 @@ defmodule Forklift.DataWriter do
     Forklift.Datasets.get_all!()
     |> Enum.each(fn dataset ->
       table = dataset.technical.systemName
+
+      Logger.info("#{table} compaction started")
+
+      reader_args(dataset)
+      |> @reader.terminate()
+
       start_time = Time.utc_now()
 
       case @table_writer.compact(table: table) do
@@ -94,12 +101,28 @@ defmodule Forklift.DataWriter do
         error -> Logger.error("#{table} failed to compact: #{inspect(error)}")
       end
 
+      reader_args(dataset)
+      |> @reader.init()
+
       Time.utc_now()
       |> Time.diff(start_time, :millisecond)
       |> Metric.record(table)
     end)
 
     Logger.info("Completed dataset compaction")
+  end
+
+  defp reader_args(dataset) do
+    [
+      instance: :forklift,
+      brokers: Application.get_env(:forklift, :elsa_brokers),
+      dataset: dataset,
+      handler: MessageHandler,
+      input_topic_prefix: Application.get_env(:forklift, :input_topic_prefix),
+      retry_count: Application.get_env(:forklift, :retry_count),
+      retry_delay: Application.get_env(:forklift, :retry_initial_delay),
+      topic_subscriber_config: Application.get_env(:forklift, :topic_subscriber_config, [])
+    ]
   end
 
   defp write_to_table(data, %{technical: metadata}) do
