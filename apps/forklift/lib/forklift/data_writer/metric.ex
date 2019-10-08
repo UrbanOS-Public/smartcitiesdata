@@ -8,7 +8,8 @@ defmodule Forklift.DataWriter.Metric do
 
   @spec record(integer(), String.t()) :: :ok | {:error, term()}
   def record(duration, table) do
-    @collector.count_metric(@metric_name, [{"system_name", table}], [], DateTime.utc_now())
+    duration
+    |> @collector.count_metric(@metric_name, [{"system_name", table}], DateTime.utc_now())
     |> List.wrap()
     |> @collector.record_metrics("forklift")
     |> case do

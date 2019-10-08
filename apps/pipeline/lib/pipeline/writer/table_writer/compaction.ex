@@ -13,13 +13,10 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
   end
 
   def run(table) do
-    compact_table = "#{table}_compact"
-
-    compaction =
-      %{name: compact_table, as: "select * from #{table}"}
-      |> Statement.create()
-      |> elem(1)
-      |> execute_async()
+    %{name: "#{table}_compact", as: "select * from #{table}"}
+    |> Statement.create()
+    |> elem(1)
+    |> execute_async()
   end
 
   def measure(compaction_task, table) do
@@ -34,10 +31,12 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
   def complete({new, old}, table) when new == old do
     compact_table = "#{table}_compact"
 
-    Statement.drop(%{table: table})
+    %{table: table}
+    |> Statement.drop()
     |> execute()
 
-    Statement.alter(%{table: compact_table, alteration: "rename to #{table}"})
+    %{table: compact_table, alteration: "rename to #{table}"}
+    |> Statement.alter()
     |> execute()
 
     :ok

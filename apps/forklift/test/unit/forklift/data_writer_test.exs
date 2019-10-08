@@ -40,7 +40,10 @@ defmodule Forklift.DataWriterTest do
     end
 
     test "records duration" do
-      expect(MockMetricCollector, :count_metric, 2, fn "dataset_compaction_duration_total", _, _, _ -> [100] end)
+      expect(MockMetricCollector, :count_metric, 2, fn
+        dur, "dataset_compaction_duration_total", _, _ when is_integer(dur) -> [100]
+      end)
+
       expect(MockMetricCollector, :record_metrics, 2, fn [100], "forklift" -> {:ok, :ok} end)
       expect(Forklift.MockTable, :compact, 2, fn _ -> :ok end)
 

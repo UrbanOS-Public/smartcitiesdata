@@ -38,6 +38,9 @@ defmodule Forklift.DataWriter do
     end
   end
 
+  @impl Pipeline.Writer
+  def terminate(_), do: :ok
+
   defp ingest_status(data) do
     Enum.reduce_while(data, {:_, []}, &handle_eod/2)
   end
