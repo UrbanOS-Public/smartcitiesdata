@@ -24,7 +24,7 @@ defmodule Pipeline.Writer.TableWriterTest do
 
       dataset = TDG.create_dataset(%{technical: %{systemName: "org_name__dataset_name", schema: schema}})
 
-      TableWriter.init(name: dataset.technical.systemName, schema: dataset.technical.schema)
+      TableWriter.init(table: dataset.technical.systemName, schema: dataset.technical.schema)
 
       eventually(fn ->
         table =
@@ -40,7 +40,7 @@ defmodule Pipeline.Writer.TableWriterTest do
       expected = [%{"Column" => "on", "Comment" => "", "Extra" => "", "Type" => "boolean"}]
       schema = [%{name: "on", type: "boolean"}]
       dataset = TDG.create_dataset(%{technical: %{systemName: "foo", schema: schema}})
-      TableWriter.init(name: dataset.technical.systemName, schema: dataset.technical.schema)
+      TableWriter.init(table: dataset.technical.systemName, schema: dataset.technical.schema)
 
       eventually(fn ->
         table =
@@ -58,7 +58,7 @@ defmodule Pipeline.Writer.TableWriterTest do
       schema = [%{name: "one", type: "string"}, %{name: "two", type: "integer"}]
       dataset = TDG.create_dataset(%{technical: %{systemName: "foo__bar", schema: schema}})
 
-      TableWriter.init(name: dataset.technical.systemName, schema: schema)
+      TableWriter.init(table: dataset.technical.systemName, schema: schema)
 
       datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
       datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})
@@ -126,7 +126,7 @@ defmodule Pipeline.Writer.TableWriterTest do
       }
 
       dataset = TDG.create_dataset(%{technical: %{systemName: "foo__baz", schema: schema}})
-      TableWriter.init(name: dataset.technical.systemName, schema: schema)
+      TableWriter.init(table: dataset.technical.systemName, schema: schema)
 
       datum = TDG.create_data(dataset_id: dataset.id, payload: payload)
 
@@ -157,7 +157,7 @@ defmodule Pipeline.Writer.TableWriterTest do
       schema = [%{name: "one", type: "list", itemType: "integer"}, %{name: "two", type: "map", subSchema: sub}]
       dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "a__b"}})
 
-      TableWriter.init(name: dataset.technical.systemName, schema: schema)
+      TableWriter.init(table: dataset.technical.systemName, schema: schema)
 
       Enum.each(1..10, fn n ->
         payload = %{"one" => [n], "two" => %{"three" => false}}
@@ -188,7 +188,7 @@ defmodule Pipeline.Writer.TableWriterTest do
       schema = [%{name: "abc", type: "string"}]
       dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "xyz"}})
 
-      TableWriter.init(name: dataset.technical.systemName, schema: schema)
+      TableWriter.init(table: dataset.technical.systemName, schema: schema)
 
       Enum.each(1..10, fn n ->
         payload = %{"abc" => "#{n}"}

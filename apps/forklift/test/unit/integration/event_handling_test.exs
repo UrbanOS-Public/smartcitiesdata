@@ -20,7 +20,7 @@ defmodule Forklift.Integration.EventHandlingTest do
       schema = dataset.technical.schema
 
       Brook.Event.send(:forklift, dataset_update(), :author, dataset)
-      assert_receive name: ^table_name, schema: ^schema
+      assert_receive table: ^table_name, schema: ^schema
     end
   end
 

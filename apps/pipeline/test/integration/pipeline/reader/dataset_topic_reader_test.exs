@@ -39,7 +39,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
       args = [
         instance: :pipeline,
-        brokers: @brokers,
+        endpoints: @brokers,
         dataset: dataset,
         handler: Pipeline.TestHandler,
         input_topic_prefix: @prefix,
@@ -61,7 +61,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
       args = [
         instance: :pipeline,
-        brokers: @brokers,
+        endpoints: @brokers,
         dataset: dataset,
         handler: Pipeline.TestHandler,
         input_topic_prefix: @prefix,
@@ -88,7 +88,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
       args = [
         instance: :pipeline,
-        brokers: @brokers,
+        endpoints: @brokers,
         dataset: dataset,
         handler: Pipeline.TestHandler,
         input_topic_prefix: @prefix,
@@ -109,7 +109,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
       args = [
         instance: :pipeline,
-        brokers: @brokers,
+        endpoints: @brokers,
         dataset: dataset,
         handler: Pipeline.TestHandler,
         input_topic_prefix: @prefix,
@@ -139,7 +139,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
       args = [
         instance: :pipeline,
-        brokers: @brokers,
+        endpoints: @brokers,
         dataset: dataset,
         handler: Pipeline.TestHandler,
         input_topic_prefix: @prefix,
@@ -165,7 +165,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
       args = [
         instance: :pipeline,
-        brokers: @brokers,
+        endpoints: @brokers,
         dataset: dataset,
         handler: Pipeline.TestHandler,
         input_topic_prefix: @prefix,

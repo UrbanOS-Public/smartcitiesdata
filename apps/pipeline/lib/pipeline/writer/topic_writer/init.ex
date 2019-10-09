@@ -42,10 +42,10 @@ defmodule Pipeline.Writer.TopicWriter.InitTask do
   end
 
   defp wait_for_topic!(config) do
-    retry with: config.retry_delay |> exponential_backoff() |> Stream.take(config.retry_count), atoms: [false] do
+    wait exponential_backoff(config.retry_delay) |> Stream.take(config.retry_count) do
       Elsa.topic?(config.endpoints, config.topic)
     after
-      true -> config.topic
+      _ -> config.topic
     else
       _ -> raise "Timed out waiting for #{config.topic} to be available"
     end

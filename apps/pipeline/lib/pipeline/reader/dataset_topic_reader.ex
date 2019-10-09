@@ -6,17 +6,25 @@ defmodule Pipeline.Reader.DatasetTopicReader do
   @behaviour Pipeline.Reader
   alias Pipeline.Reader.DatasetTopicReader.InitTask
 
+  @type init_args() :: [
+          instance: atom(),
+          dataset: SmartCity.Dataset.t(),
+          endpoints: Elsa.endpoints(),
+          input_topic_prefix: String.t(),
+          handler: module()
+        ]
+
+  @type term_args() :: [
+          instance: atom(),
+          dataset: SmartCity.Dataset.t(),
+          input_topic_prefix: String.t()
+        ]
+
   @impl Pipeline.Reader
+  @spec init(init_args()) :: :ok | {:error, term()}
   @doc """
   Sets up infrastructure to consume messages off a dataset Kafka topic. Includes creating the
   topic if necessary.
-
-  Requires arguments:
-  * `instance` - Unique caller identity, e.g. application name
-  * `dataset` - `%SmartCity.Dataset` object
-  * `brokers` - Kafka brokers
-  * `input_topic_prefix` - Dataset topic prefix
-  * `handler` - Message handler
 
   Optional arguments:
   * `retry_count` - Times to retry topic creation. Defaults to 10
@@ -31,13 +39,9 @@ defmodule Pipeline.Reader.DatasetTopicReader do
   end
 
   @impl Pipeline.Reader
+  @spec terminate(term_args()) :: :ok | {:error, term()}
   @doc """
   Destroys topic consumer infrastructure.
-
-  Requires arguments:
-  * `instance` - Unique caller identity, e.g. application name
-  * `dataset` - `%SmartCity.Dataset` object
-  * `input_topic_prefix` - Dataset topic prefix
   """
   def terminate(args) do
     with connection <- connection(args),

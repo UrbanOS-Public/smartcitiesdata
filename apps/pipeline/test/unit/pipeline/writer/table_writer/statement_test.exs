@@ -18,7 +18,7 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
       expected =
         ~s|CREATE TABLE IF NOT EXISTS table_name ("first_name" varchar, "height" bigint, "weight" double, "identifier" decimal, "payload" varchar)|
 
-      assert {:ok, ^expected} = Statement.create(%{name: "table_name", schema: schema})
+      assert {:ok, ^expected} = Statement.create(%{table: "table_name", schema: schema})
     end
 
     @tag capture_log: true
@@ -44,7 +44,7 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
       expected =
         ~s|CREATE TABLE IF NOT EXISTS table_name ("spouse" row("first_name" varchar, "next_of_kin" row("first_name" varchar, "date_of_birth" date)))|
 
-      assert {:ok, ^expected} = Statement.create(%{name: "table_name", schema: schema})
+      assert {:ok, ^expected} = Statement.create(%{table: "table_name", schema: schema})
     end
 
     @tag capture_log: true
@@ -54,7 +54,7 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
       ]
 
       expected = ~s|CREATE TABLE IF NOT EXISTS table_name ("friend_names" array(varchar))|
-      assert {:ok, ^expected} = Statement.create(%{name: "table_name", schema: schema})
+      assert {:ok, ^expected} = Statement.create(%{table: "table_name", schema: schema})
     end
 
     @tag capture_log: true
@@ -74,26 +74,26 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
       expected =
         ~s|CREATE TABLE IF NOT EXISTS table_name ("friend_groups" array(row("first_name" varchar, "last_name" varchar)))|
 
-      assert {:ok, ^expected} = Statement.create(%{name: "table_name", schema: schema})
+      assert {:ok, ^expected} = Statement.create(%{table: "table_name", schema: schema})
     end
 
     @tag capture_log: true
     test "returns error tuple with type message when field cannot be mapped" do
       schema = [%{name: "my_field", type: "unsupported"}]
       expected = "unsupported Type is not supported"
-      assert {:error, ^expected} = Statement.create(%{name: "table_name", schema: schema})
+      assert {:error, ^expected} = Statement.create(%{table: "table_name", schema: schema})
     end
 
     @tag capture_log: true
     test "returns error tuple when given invalid schema" do
       schema = [%{name: "my_field"}]
       expected = "Unable to parse schema: %KeyError{key: :type, message: nil, term: %{name: \"my_field\"}}"
-      assert {:error, ^expected} = Statement.create(%{name: "table_name", schema: schema})
+      assert {:error, ^expected} = Statement.create(%{table: "table_name", schema: schema})
     end
 
     test "accepts a select statement to create table from" do
       expected = "create table one__two as (select * from three__four)"
-      assert {:ok, ^expected} = Statement.create(%{name: "one__two", as: "select * from three__four"})
+      assert {:ok, ^expected} = Statement.create(%{table: "one__two", as: "select * from three__four"})
     end
   end
 

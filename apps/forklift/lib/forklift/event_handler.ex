@@ -20,7 +20,7 @@ defmodule Forklift.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = dataset}) do
-    [name: dataset.technical.systemName, schema: dataset.technical.schema]
+    [table: dataset.technical.systemName, schema: dataset.technical.schema]
     |> Forklift.DataWriter.init()
 
     :discard
@@ -38,7 +38,7 @@ defmodule Forklift.EventHandler do
   defp reader_args(dataset) do
     [
       instance: :forklift,
-      brokers: Application.get_env(:forklift, :elsa_brokers),
+      endpoints: Application.get_env(:forklift, :elsa_brokers),
       dataset: dataset,
       handler: MessageHandler,
       input_topic_prefix: Application.get_env(:forklift, :input_topic_prefix),

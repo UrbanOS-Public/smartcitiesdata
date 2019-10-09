@@ -144,7 +144,7 @@ defmodule Forklift.DataWriter do
   defp reader_args(dataset) do
     [
       instance: :forklift,
-      brokers: Application.get_env(:forklift, :elsa_brokers),
+      endpoints: Application.get_env(:forklift, :elsa_brokers),
       dataset: dataset,
       handler: MessageHandler,
       input_topic_prefix: Application.get_env(:forklift, :input_topic_prefix),

@@ -13,7 +13,7 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
   end
 
   def run(table) do
-    %{name: "#{table}_compact", as: "select * from #{table}"}
+    %{table: "#{table}_compact", as: "select * from #{table}"}
     |> Statement.create()
     |> elem(1)
     |> execute_async()

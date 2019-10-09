@@ -7,35 +7,31 @@ defmodule Pipeline.Writer.TableWriter do
   alias Pipeline.Writer.TableWriter.{Compaction, Statement}
   require Logger
 
-  @impl Pipeline.Writer
-  @doc """
-  Ensures a table exists.
+  @type schema() :: [map()]
 
-  Requires arguments:
-  * `name` - Table name
-  * `schema` - Table schema
+  @impl Pipeline.Writer
+  @spec init(table: String.t(), schema: schema()) :: :ok | {:error, term()}
+  @doc """
+  Ensures PrestoDB table exists.
   """
   def init(args) do
     config = parse_config(args)
 
     with {:ok, statement} <- Statement.create(config),
          [[true]] <- execute(statement) do
-      Logger.info("Created #{config.name} table")
+      Logger.info("Created #{config.table} table")
       :ok
     else
       error ->
-        Logger.error("Error creating #{config.name} table: #{inspect(error)}")
+        Logger.error("Error creating #{config.table} table: #{inspect(error)}")
         {:error, "Write to Presto failed: #{inspect(error)}"}
     end
   end
 
   @impl Pipeline.Writer
+  @spec write([term()], table: String.t(), schema: schema()) :: :ok | {:error, term()}
   @doc """
   Writes data to PrestoDB table.
-
-  Requires configuration:
-  * `table` - Table name
-  * `schema` - Table schema
   """
   def write([], config) do
     table = Keyword.fetch!(config, :table)
@@ -46,7 +42,7 @@ defmodule Pipeline.Writer.TableWriter do
   def write(content, config) do
     payloads = Enum.map(content, &Map.get(&1, :payload))
 
-    %{table: Keyword.fetch!(config, :table), schema: Keyword.fetch!(config, :schema)}
+    parse_config(config)
     |> Statement.insert(payloads)
     |> execute()
     |> case do
@@ -56,12 +52,10 @@ defmodule Pipeline.Writer.TableWriter do
   end
 
   @impl Pipeline.Writer
+  @spec compact(table: String.t()) :: :ok | {:error, term()}
   @doc """
   Creates a new, compacted table from a table. Compaction reduces the number
   of ORC files stored by object storage.
-
-  Requires arguments:
-  * `table` - Table name
   """
   def compact(args) do
     table = Keyword.fetch!(args, :table)
@@ -77,7 +71,7 @@ defmodule Pipeline.Writer.TableWriter do
 
   defp parse_config(args) do
     %{
-      name: Keyword.fetch!(args, :name),
+      table: Keyword.fetch!(args, :table),
       schema: Keyword.fetch!(args, :schema)
     }
   end
