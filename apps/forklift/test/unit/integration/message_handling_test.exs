@@ -3,6 +3,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
   use Placebo
 
   import Mox
+  import Forklift
   import SmartCity.Event, only: [data_ingest_end: 0]
   import SmartCity.Data, only: [end_of_data: 0]
   alias SmartCity.TestDataGenerator, as: TDG
@@ -70,7 +71,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
       message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
       message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}
 
-      expect Brook.Event.send(:forklift, data_ingest_end(), :forklift, dataset), return: :ok
+      expect Brook.Event.send(instance_name(), data_ingest_end(), :forklift, dataset), return: :ok
       Forklift.MessageHandler.handle_messages([message1, message2, end_of_data()], %{dataset: dataset})
     end
   end

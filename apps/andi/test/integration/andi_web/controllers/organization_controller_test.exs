@@ -6,6 +6,7 @@ defmodule Andi.CreateOrgTest do
 
   alias SmartCity.Registry.Organization, as: RegOrganization
   alias SmartCity.TestDataGenerator, as: TDG
+  import Andi
 
   plug Tesla.Middleware.BaseUrl, "http://localhost:4000"
 
@@ -43,7 +44,11 @@ defmodule Andi.CreateOrgTest do
 
   describe "failure to send new organization to event stream" do
     setup do
-      allow(Brook.Event.send(:andi, any(), :andi, any()), return: {:error, :reason}, meck_options: [:passthrough])
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
+        return: {:error, :reason},
+        meck_options: [:passthrough]
+      )
+
       org = organization(%{orgName: "unhappyPath"})
       {:ok, response} = create(org)
       [unhappy_path: org, response: response]

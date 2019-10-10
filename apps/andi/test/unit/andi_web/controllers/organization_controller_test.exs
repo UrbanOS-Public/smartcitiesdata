@@ -9,10 +9,11 @@ defmodule AndiWeb.OrganizationControllerTest do
   alias SmartCity.Organization
   alias SmartCity.Registry.Organization, as: RegOrganization
   alias SmartCity.TestDataGenerator, as: TDG
+  import Andi
 
   setup do
     allow(Paddle.authenticate(any(), any()), return: :ok)
-    allow(Brook.get(:andi, any(), any()), return: {:ok, nil}, meck_options: [:passthrough])
+    allow(Brook.get(instance_name(), any(), any()), return: {:ok, nil}, meck_options: [:passthrough])
     allow(RegOrganization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
 
     request = %{
@@ -45,7 +46,7 @@ defmodule AndiWeb.OrganizationControllerTest do
 
     expected_orgs = [expected_org_1, expected_org_2]
 
-    allow(Brook.get_all_values(:andi, any()),
+    allow(Brook.get_all_values(instance_name(), any()),
       return: {:ok, [expected_org_1, expected_org_2]},
       meck_options: [:passthrough]
     )
@@ -56,7 +57,7 @@ defmodule AndiWeb.OrganizationControllerTest do
   describe "post /api/ with valid data" do
     setup %{conn: conn, request: request} do
       allow(RegOrganization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
-      allow(Brook.Event.send(:andi, any(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
       allow(Paddle.add(any(), any()), return: :ok)
       [conn: post(conn, @route, request)]
     end
@@ -75,7 +76,7 @@ defmodule AndiWeb.OrganizationControllerTest do
     end
 
     test "writes organization to event stream", %{message: _message} do
-      assert_called(Brook.Event.send(:andi, any(), :andi, any()), once())
+      assert_called(Brook.Event.send(instance_name(), any(), :andi, any()), once())
     end
 
     test "writes organization to LDAP", %{message: %{"orgName" => name}} do
@@ -128,7 +129,11 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   describe "failed write to Redis" do
     setup %{conn: conn, request: req} do
-      allow(Brook.Event.send(:andi, any(), :andi, any()), return: {:error, :reason}, meck_options: [:passthrough])
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
+        return: {:error, :reason},
+        meck_options: [:passthrough]
+      )
+
       allow(Paddle.add(any(), any()), return: :ok, meck_options: [:passthrough])
       allow(Paddle.delete(any()), return: :ok)
 
@@ -166,7 +171,7 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   describe "id already exists" do
     setup do
-      allow(Brook.get(:andi, any(), any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
+      allow(Brook.get(instance_name(), any(), any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
       :ok
     end
 
@@ -175,7 +180,7 @@ defmodule AndiWeb.OrganizationControllerTest do
       post(conn, @route, req)
       # Remove after completing event streams rewrite
       refute_called(RegOrganization.write(any()))
-      refute_called(Brook.write(:andi, any(), any()))
+      refute_called(Brook.write(instance_name(), any(), any()))
     end
   end
 

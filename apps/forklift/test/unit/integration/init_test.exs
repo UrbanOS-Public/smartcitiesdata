@@ -3,6 +3,7 @@ defmodule Forklift.Integration.InitTest do
   use Placebo
 
   import Mox
+  import Forklift
   alias SmartCity.TestDataGenerator, as: TDG
 
   setup :set_mox_global
@@ -21,7 +22,7 @@ defmodule Forklift.Integration.InitTest do
     dataset1 = TDG.create_dataset(%{id: "view-state-1"})
     dataset2 = TDG.create_dataset(%{id: "view-state-2"})
 
-    allow Brook.get_all_values!(:forklift, :datasets), return: [dataset1, dataset2]
+    allow Brook.get_all_values!(instance_name(), :datasets), return: [dataset1, dataset2]
     assert {:ok, _} = Forklift.Init.start_link([])
 
     assert_receive %SmartCity.Dataset{id: "view-state-1"}
@@ -32,7 +33,7 @@ defmodule Forklift.Integration.InitTest do
     test = self()
     expect(MockReader, :init, 0, fn _ -> :ok end)
     expect(MockTopic, :init, fn args -> send(test, args[:topic]) end)
-    allow Brook.get_all_values!(:forklift, :datasets), return: []
+    allow Brook.get_all_values!(instance_name(), :datasets), return: []
 
     assert {:ok, _} = Forklift.Init.start_link([])
     assert_receive "test-topic"
@@ -41,7 +42,7 @@ defmodule Forklift.Integration.InitTest do
   test "terminates after initialization" do
     expect(MockReader, :init, 0, fn _ -> :ok end)
     expect(MockTopic, :init, fn _ -> :ok end)
-    allow Brook.get_all_values!(:forklift, :datasets), return: []
+    allow Brook.get_all_values!(instance_name(), :datasets), return: []
 
     {:ok, pid} = Forklift.Init.start_link([])
     Process.monitor(pid)

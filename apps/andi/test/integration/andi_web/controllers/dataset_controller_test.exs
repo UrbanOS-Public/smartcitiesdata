@@ -5,6 +5,7 @@ defmodule Andi.CreateDatasetTest do
 
   import SmartCity.TestHelper, only: [eventually: 1]
   import SmartCity.Event, only: [dataset_disable: 0]
+  import Andi
   alias SmartCity.TestDataGenerator, as: TDG
 
   plug(Tesla.Middleware.BaseUrl, "http://localhost:4000")
@@ -22,7 +23,7 @@ defmodule Andi.CreateDatasetTest do
       {:ok, _} = create(dataset)
 
       eventually(fn ->
-        {:ok, value} = Brook.get(:andi, :dataset, dataset.id)
+        {:ok, value} = Brook.get(instance_name(), :dataset, dataset.id)
         assert value != nil
       end)
 

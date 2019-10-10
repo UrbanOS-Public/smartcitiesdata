@@ -4,6 +4,7 @@ defmodule Forklift.MigrationsTest do
 
   alias Forklift.Datasets.DatasetSchema
   alias SmartCity.TestDataGenerator, as: TDG
+  import Forklift
   import SmartCity.Event, only: [dataset_update: 0, data_ingest_start: 0]
 
   test "stuff gets migrated" do
@@ -15,7 +16,7 @@ defmodule Forklift.MigrationsTest do
     ]
 
     Enum.each(events, fn event ->
-      Brook.Test.with_event(:forklift, event, fn ->
+      Brook.Test.with_event(instance_name(), event, fn ->
         Brook.ViewState.merge(:datasets_to_process, dataset.id, DatasetSchema.from_dataset(dataset))
       end)
     end)
@@ -24,7 +25,7 @@ defmodule Forklift.MigrationsTest do
 
     assert dataset == Forklift.Datasets.get!(dataset.id)
     assert events == Forklift.Datasets.get_events!(dataset.id)
-    assert [] == Brook.get_all_values!(:forklift, :datasets_to_process)
+    assert [] == Brook.get_all_values!(instance_name(), :datasets_to_process)
     assert false == Process.alive?(pid)
   end
 end

@@ -3,6 +3,7 @@ defmodule Forklift.Integration.EventHandlingTest do
   use Placebo
 
   import Mox
+  import Forklift
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0]
 
   alias SmartCity.TestDataGenerator, as: TDG
@@ -19,7 +20,7 @@ defmodule Forklift.Integration.EventHandlingTest do
       table_name = dataset.technical.systemName
       schema = dataset.technical.schema
 
-      Brook.Event.send(:forklift, dataset_update(), :author, dataset)
+      Brook.Event.send(instance_name(), dataset_update(), :author, dataset)
       assert_receive table: ^table_name, schema: ^schema
     end
   end
@@ -35,7 +36,7 @@ defmodule Forklift.Integration.EventHandlingTest do
       end)
 
       dataset = TDG.create_dataset(%{id: "dataset-id"})
-      Brook.Event.send(:forklift, data_ingest_start(), :author, dataset)
+      Brook.Event.send(instance_name(), data_ingest_start(), :author, dataset)
 
       assert_receive %SmartCity.Dataset{id: "dataset-id"}
     end
@@ -53,7 +54,7 @@ defmodule Forklift.Integration.EventHandlingTest do
       expect Forklift.Datasets.delete("terminate-id"), return: :ok
 
       dataset = TDG.create_dataset(%{id: "terminate-id"})
-      Brook.Event.send(:forklift, data_ingest_end(), :author, dataset)
+      Brook.Event.send(instance_name(), data_ingest_end(), :author, dataset)
 
       assert_receive %SmartCity.Dataset{id: "terminate-id"}
     end
