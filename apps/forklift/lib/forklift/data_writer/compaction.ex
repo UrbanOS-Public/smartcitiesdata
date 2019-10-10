@@ -4,6 +4,7 @@ defmodule Forklift.DataWriter.Compaction do
   require Logger
   alias SmartCity.Dataset
   alias Forklift.DataWriter.Compaction.Metric
+  import Forklift
 
   @behaviour Pipeline.Writer
   @reader Application.get_env(:forklift, :data_reader)
@@ -59,7 +60,7 @@ defmodule Forklift.DataWriter.Compaction do
 
   defp reader_args(dataset) do
     [
-      instance: :forklift,
+      instance: instance_name(),
       endpoints: Application.get_env(:forklift, :elsa_brokers),
       dataset: dataset,
       handler: MessageHandler,

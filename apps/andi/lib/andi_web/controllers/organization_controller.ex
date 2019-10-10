@@ -7,6 +7,7 @@ defmodule AndiWeb.OrganizationController do
   require Logger
   alias SmartCity.Registry.Organization, as: RegOrganization
   alias SmartCity.Organization
+  import Andi
   import SmartCity.Event, only: [organization_update: 0]
 
   @doc """
@@ -40,7 +41,7 @@ defmodule AndiWeb.OrganizationController do
   end
 
   defp ensure_new_org(id) do
-    case Brook.get(:andi, :org, id) do
+    case Brook.get(instance_name(), :org, id) do
       {:ok, %Organization{}} ->
         Logger.error("ID #{id} already exists")
         %RuntimeError{message: "ID #{id} already exists"}
@@ -110,7 +111,7 @@ defmodule AndiWeb.OrganizationController do
   end
 
   defp write_organization(org) do
-    case Brook.Event.send(:andi, organization_update(), :andi, org) do
+    case Brook.Event.send(instance_name(), organization_update(), :andi, org) do
       :ok ->
         :ok
 
@@ -133,7 +134,7 @@ defmodule AndiWeb.OrganizationController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
-    case Brook.get_all_values(:andi, :org) do
+    case Brook.get_all_values(instance_name(), :org) do
       {:ok, orgs} ->
         conn
         |> put_status(:ok)

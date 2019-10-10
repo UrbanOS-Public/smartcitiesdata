@@ -4,6 +4,7 @@ defmodule Forklift.EventHandler do
 
   alias SmartCity.Dataset
   alias Forklift.MessageHandler
+  import Forklift
 
   @reader Application.get_env(:forklift, :data_reader)
 
@@ -37,7 +38,7 @@ defmodule Forklift.EventHandler do
 
   defp reader_args(dataset) do
     [
-      instance: :forklift,
+      instance: instance_name(),
       endpoints: Application.get_env(:forklift, :elsa_brokers),
       dataset: dataset,
       handler: MessageHandler,

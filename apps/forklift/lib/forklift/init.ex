@@ -5,6 +5,7 @@ defmodule Forklift.Init do
   use Task, restart: :transient
 
   alias Forklift.MessageHandler
+  import Forklift
 
   @reader Application.get_env(:forklift, :data_reader)
 
@@ -21,6 +22,6 @@ defmodule Forklift.Init do
   end
 
   defp reader_init_args(dataset) do
-    [app: :forklift, handler: MessageHandler, dataset: dataset]
+    [instance: instance_name(), handler: MessageHandler, dataset: dataset]
   end
 end
