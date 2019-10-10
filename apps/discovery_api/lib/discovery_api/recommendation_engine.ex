@@ -5,8 +5,17 @@ defmodule DiscoveryApi.RecommendationEngine do
 
   @prefix "discovery_api:dataset_recommendations:"
 
-  def save(%SmartCity.Dataset{id: id, technical: %{systemName: systemName, schema: schema}}) do
-    case Persistence.persist(@prefix <> id, %{id: id, systemName: systemName, schema: schema_mapper(schema)}) do
+  def save(%SmartCity.Dataset{} = dataset) do
+    recommendation_metadata = %{
+      id: dataset.id,
+      systemName: dataset.technical.systemName,
+      orgName: dataset.technical.orgName,
+      dataName: dataset.technical.dataName,
+      dataTitle: dataset.business.dataTitle,
+      schema: schema_mapper(dataset.technical.schema)
+    }
+
+    case Persistence.persist(@prefix <> dataset.id, recommendation_metadata) do
       {:ok, _} -> :ok
       error -> error
     end
@@ -42,6 +51,12 @@ defmodule DiscoveryApi.RecommendationEngine do
   end
 
   defp map_result(result) do
-    %{id: result.id, systemName: result.systemName}
+    %{
+      id: result.id,
+      systemName: result.systemName,
+      dataName: result.dataName,
+      orgName: result.orgName,
+      dataTitle: result.dataTitle
+    }
   end
 end

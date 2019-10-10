@@ -81,6 +81,14 @@ defmodule DiscoveryApi.RecommendationEngineTest do
 
     results = Jason.decode!(body, keys: :atoms)
 
-    assert [%{id: dataset_that_should_match.id, systemName: dataset_that_should_match.technical.systemName}] == results
+    assert [
+             %{
+               id: dataset_that_should_match.id,
+               systemName: dataset_that_should_match.technical.systemName,
+               dataName: dataset_that_should_match.technical.dataName,
+               orgName: dataset_that_should_match.technical.orgName,
+               dataTitle: dataset_that_should_match.business.dataTitle
+             }
+           ] == results
   end
 end
