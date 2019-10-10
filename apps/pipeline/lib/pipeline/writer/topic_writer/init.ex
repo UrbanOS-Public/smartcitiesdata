@@ -9,13 +9,13 @@ defmodule Pipeline.Writer.TopicWriter.InitTask do
   end
 
   def run(args) do
-    config = parse_config(args)
-    producer_spec = producer(config)
+    config = parse_args(args)
+    producer = producer_spec(config)
 
     Elsa.create_topic(config.endpoints, config.topic)
     wait_for_topic!(config)
 
-    case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, producer_spec) do
+    case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, producer) do
       {:ok, _pid} ->
         :ok = Registry.put_meta(Pipeline.Registry, config.name, config.topic)
 
@@ -27,7 +27,7 @@ defmodule Pipeline.Writer.TopicWriter.InitTask do
     end
   end
 
-  defp parse_config(args) do
+  defp parse_args(args) do
     instance = Keyword.fetch!(args, :instance)
     producer = Keyword.fetch!(args, :producer_name)
 
@@ -51,7 +51,7 @@ defmodule Pipeline.Writer.TopicWriter.InitTask do
     end
   end
 
-  defp producer(config) do
+  defp producer_spec(config) do
     {
       Elsa.Supervisor,
       [endpoints: config.endpoints, connection: config.name, producer: [topic: config.topic]]

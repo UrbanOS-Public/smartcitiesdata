@@ -54,18 +54,18 @@ defmodule Forklift.DataWriter do
     end
   end
 
-  @spec one_time_init() :: :ok | {:error, term()}
+  @spec bootstrap() :: :ok | {:error, term()}
   @doc """
   Initializes `:topic_writer` from Forklift's application environment if an
   output_topic is configured. Includes creating the topic if necessary.
   """
-  def one_time_init do
+  def bootstrap do
     case Application.get_env(:forklift, :output_topic) do
       nil ->
         :ok
 
       topic ->
-        one_time_init_args(:forklift, topic)
+        bootstrap_args(:forklift, topic)
         |> @topic_writer.init()
     end
   end
@@ -97,9 +97,6 @@ defmodule Forklift.DataWriter do
 
     Logger.info("Completed dataset compaction")
   end
-
-  @impl Pipeline.Writer
-  def terminate(_), do: :ok
 
   defp ingest_status(data) do
     Enum.reduce_while(data, {:_, []}, &handle_eod/2)
@@ -160,7 +157,7 @@ defmodule Forklift.DataWriter do
     |> Forklift.Util.remove_from_metadata(:forklift_start_time)
   end
 
-  defp one_time_init_args(instance, topic) do
+  defp bootstrap_args(instance, topic) do
     [
       instance: instance,
       endpoints: Application.get_env(instance, :elsa_brokers),

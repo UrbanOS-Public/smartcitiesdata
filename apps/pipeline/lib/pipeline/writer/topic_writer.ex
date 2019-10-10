@@ -36,9 +36,6 @@ defmodule Pipeline.Writer.TopicWriter do
     Elsa.produce(instance_producer, topic, content)
   end
 
-  @impl Pipeline.Writer
-  def terminate(_), do: :ok
-
   defp producer(config) do
     instance = Keyword.fetch!(config, :instance)
     producer_name = Keyword.fetch!(config, :producer_name)

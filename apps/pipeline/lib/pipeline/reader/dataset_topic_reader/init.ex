@@ -9,13 +9,13 @@ defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
   end
 
   def run(args) do
-    config = parse_config(args)
-    consumer_spec = consumer(config)
+    config = parse_args(args)
+    consumer = consumer_spec(config)
 
     Elsa.create_topic(config.endpoints, config.topic)
     wait_for_topic!(config)
 
-    case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, consumer_spec) do
+    case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, consumer) do
       {:ok, pid} -> Registry.put_meta(Pipeline.Registry, config.connection, pid)
       {:error, {:already_started, _}} -> :ok
       {:error, {_, {_, _, {:already_started, _}}}} -> :ok
@@ -23,7 +23,7 @@ defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
     end
   end
 
-  defp parse_config(args) do
+  defp parse_args(args) do
     instance = Keyword.fetch!(args, :instance)
     dataset = Keyword.fetch!(args, :dataset)
     topic = "#{Keyword.fetch!(args, :input_topic_prefix)}-#{dataset.id}"
@@ -41,7 +41,7 @@ defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
     }
   end
 
-  defp consumer(config) do
+  defp consumer_spec(config) do
     start_options = [
       endpoints: config.endpoints,
       connection: config.connection,

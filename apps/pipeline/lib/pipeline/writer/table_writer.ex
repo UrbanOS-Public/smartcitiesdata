@@ -15,7 +15,7 @@ defmodule Pipeline.Writer.TableWriter do
   Ensures PrestoDB table exists.
   """
   def init(args) do
-    config = parse_config(args)
+    config = parse_args(args)
 
     with {:ok, statement} <- Statement.create(config),
          [[true]] <- execute(statement) do
@@ -42,7 +42,7 @@ defmodule Pipeline.Writer.TableWriter do
   def write(content, config) do
     payloads = Enum.map(content, &Map.get(&1, :payload))
 
-    parse_config(config)
+    parse_args(config)
     |> Statement.insert(payloads)
     |> execute()
     |> case do
@@ -66,10 +66,7 @@ defmodule Pipeline.Writer.TableWriter do
     |> Compaction.complete(table)
   end
 
-  @impl Pipeline.Writer
-  def terminate(_), do: :ok
-
-  defp parse_config(args) do
+  defp parse_args(args) do
     %{
       table: Keyword.fetch!(args, :table),
       schema: Keyword.fetch!(args, :schema)

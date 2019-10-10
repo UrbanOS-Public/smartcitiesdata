@@ -1,6 +1,6 @@
 # Pipeline
 
-Behaviours describing edges of the platform with some common concrete implementations.
+Behaviours describing component edges with some common concrete implementations.
 
 ## Installation
 

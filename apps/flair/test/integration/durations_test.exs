@@ -36,7 +36,6 @@ defmodule DurationsTest do
   end
 
   test "flair consumes messages and calls out to presto", %{messages: messages} do
-    # Elsa.produce(:flair_test, Application.get_env(:flair, :data_topic), messages)
     SmartCity.KafkaHelper.send_to_kafka(messages, Application.get_env(:flair, :data_topic))
 
     Patiently.wait_for!(

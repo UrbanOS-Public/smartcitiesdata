@@ -14,7 +14,7 @@ defmodule Forklift.Init do
   end
 
   def run() do
-    Forklift.DataWriter.one_time_init()
+    Forklift.DataWriter.bootstrap()
 
     Forklift.Datasets.get_all!()
     |> Enum.map(&reader_init_args/1)
