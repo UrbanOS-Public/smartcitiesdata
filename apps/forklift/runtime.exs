@@ -36,16 +36,11 @@ elsa_brokers =
   |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
 config :forklift,
-  data_reader: Pipeline.Reader.DatasetTopicReader,
-  topic_writer: Pipeline.Writer.TopicWriter,
-  table_writer: Pipeline.Writer.TableWriter,
   elsa_brokers: elsa_brokers,
   input_topic_prefix: topic,
   output_topic: output_topic,
   producer_name: :"#{output_topic}-producer",
   metrics_port: metrics_port,
-  retry_count: 10,
-  retry_initial_delay: 100,
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,
