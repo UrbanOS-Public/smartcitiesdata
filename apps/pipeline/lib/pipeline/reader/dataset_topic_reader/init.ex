@@ -16,7 +16,7 @@ defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
     wait_for_topic!(config)
 
     case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, consumer_spec) do
-      {:ok, pid} -> Registry.put_meta(Pipeline.Registry, connection(config), pid)
+      {:ok, pid} -> Registry.put_meta(Pipeline.Registry, config.connection, pid)
       {:error, {:already_started, _}} -> :ok
       {:error, {_, {_, _, {:already_started, _}}}} -> :ok
       error -> raise "Failed to supervise #{config.topic} consumer: #{inspect(error)}"
@@ -24,25 +24,27 @@ defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
   end
 
   defp parse_config(args) do
-    prefix = Keyword.fetch!(args, :input_topic_prefix)
+    instance = Keyword.fetch!(args, :instance)
     dataset = Keyword.fetch!(args, :dataset)
+    topic = "#{Keyword.fetch!(args, :input_topic_prefix)}-#{dataset.id}"
 
     %{
-      instance: Keyword.fetch!(args, :instance),
+      instance: instance,
       endpoints: Keyword.fetch!(args, :endpoints),
       dataset: dataset,
       handler: Keyword.fetch!(args, :handler),
-      topic: "#{prefix}-#{dataset.id}",
+      topic: topic,
       retry_count: Keyword.get(args, :retry_count, 10),
       retry_delay: Keyword.get(args, :retry_delay, 100),
-      topic_subscriber_config: Keyword.get(args, :topic_subscriber_config, [])
+      topic_subscriber_config: Keyword.get(args, :topic_subscriber_config, []),
+      connection: :"#{instance}-#{topic}-consumer"
     }
   end
 
   defp consumer(config) do
     start_options = [
       endpoints: config.endpoints,
-      connection: connection(config),
+      connection: config.connection,
       group_consumer: [
         group: "#{config.instance}-#{config.topic}",
         topics: [config.topic],
@@ -63,9 +65,5 @@ defmodule Pipeline.Reader.DatasetTopicReader.InitTask do
     else
       _ -> raise "Timed out waiting for #{config.topic} to be available"
     end
-  end
-
-  defp connection(config) do
-    :"#{config.instance}-#{config.topic}-consumer"
   end
 end
