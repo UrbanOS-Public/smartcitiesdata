@@ -1,4 +1,4 @@
-defmodule Forklift.DataWriter.Metric do
+defmodule Forklift.DataWriter.Compaction.Metric do
   @moduledoc false
 
   require Logger

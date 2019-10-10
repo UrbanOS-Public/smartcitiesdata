@@ -20,7 +20,7 @@ defmodule Forklift.DataWriterTest do
       ]
 
       allow Forklift.Datasets.get_all!(), return: datasets
-      allow DataWriter.Metric.record(any(), any()), return: :ok
+      allow DataWriter.Compaction.Metric.record(any(), any()), return: :ok
       stub(MockReader, :terminate, fn _ -> :ok end)
       stub(MockReader, :init, fn _ -> :ok end)
 
