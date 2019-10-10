@@ -63,7 +63,7 @@ defmodule Forklift.DataWriter.Compaction do
       instance: instance_name(),
       endpoints: Application.get_env(:forklift, :elsa_brokers),
       dataset: dataset,
-      handler: MessageHandler,
+      handler: Forklift.MessageHandler,
       input_topic_prefix: Application.get_env(:forklift, :input_topic_prefix),
       retry_count: Application.get_env(:forklift, :retry_count),
       retry_delay: Application.get_env(:forklift, :retry_initial_delay),

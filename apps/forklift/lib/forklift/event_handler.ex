@@ -3,7 +3,6 @@ defmodule Forklift.EventHandler do
   use Brook.Event.Handler
 
   alias SmartCity.Dataset
-  alias Forklift.MessageHandler
   import Forklift
 
   @reader Application.get_env(:forklift, :data_reader)
@@ -41,7 +40,7 @@ defmodule Forklift.EventHandler do
       instance: instance_name(),
       endpoints: Application.get_env(:forklift, :elsa_brokers),
       dataset: dataset,
-      handler: MessageHandler,
+      handler: Forklift.MessageHandler,
       input_topic_prefix: Application.get_env(:forklift, :input_topic_prefix),
       retry_count: Application.get_env(:forklift, :retry_count),
       retry_delay: Application.get_env(:forklift, :retry_initial_delay),
