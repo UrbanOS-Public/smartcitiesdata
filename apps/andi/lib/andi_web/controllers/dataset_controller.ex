@@ -5,6 +5,8 @@ defmodule AndiWeb.DatasetController do
 
   use AndiWeb, :controller
 
+  alias AndiWeb.DatasetValidator
+
   require Logger
   alias SmartCity.Registry.Dataset, as: RegDataset
   alias SmartCity.Dataset
@@ -20,7 +22,7 @@ defmodule AndiWeb.DatasetController do
          {:ok, parsed_message} <- parse_message(message),
          {:ok, old_dataset} <- RegDataset.new(parsed_message),
          {:ok, dataset} <- Dataset.new(parsed_message),
-         :valid <- is_valid(dataset),
+         :valid <- DatasetValidator.validate(dataset),
          {:ok, _id} <- write_old_dataset(old_dataset),
          :ok <- write_dataset(dataset) do
       respond(conn, :created, dataset)
@@ -37,7 +39,6 @@ defmodule AndiWeb.DatasetController do
   @doc """
   Return all datasets stored in redis
   """
-  @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
     case Brook.get_all_values(instance_name(), :dataset) do
       {:ok, datasets} ->
@@ -96,20 +97,6 @@ defmodule AndiWeb.DatasetController do
   end
 
   defp parse_message(msg), do: {:error, "Cannot parse message: #{inspect(msg)}"}
-
-  defp is_valid(dataset) do
-    found_match =
-      Brook.get_all_values!(instance_name(), :dataset)
-      |> Enum.any?(fn existing_dataset ->
-        dataset.id != existing_dataset.id &&
-          dataset.technical.systemName == existing_dataset.technical.systemName
-      end)
-
-    case found_match do
-      true -> {:invalid, "Existing dataset has the same orgName and dataName"}
-      false -> :valid
-    end
-  end
 
   defp respond(conn, status, body) do
     conn
