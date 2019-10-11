@@ -3,6 +3,10 @@ use Mix.Config
 config :logger, :level, :info
 
 config :forklift,
+  data_reader: MockReader,
+  topic_writer: MockTopic,
+  table_writer: MockTable,
+  collector: MockMetricCollector,
   retry_count: 5,
   retry_initial_delay: 10,
   # To ensure that MessageWriter never starts while testing
@@ -11,7 +15,8 @@ config :forklift,
   user: "foobar"
 
 config :forklift, :brook,
-  handlers: [Forklift.Event.Handler],
+  instance: :forklift,
+  handlers: [Forklift.EventHandler],
   storage: [
     module: Brook.Storage.Ets,
     init_arg: [

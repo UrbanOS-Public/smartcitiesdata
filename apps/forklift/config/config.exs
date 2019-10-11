@@ -5,6 +5,9 @@ use Mix.Config
 input_topic_prefix = "transformed"
 
 config :forklift,
+  data_reader: Pipeline.Reader.DatasetTopicReader,
+  topic_writer: Pipeline.Writer.TopicWriter,
+  table_writer: Pipeline.Writer.TableWriter,
   retry_count: 10,
   retry_initial_delay: 100,
   cache_processing_batch_size: 1_000,

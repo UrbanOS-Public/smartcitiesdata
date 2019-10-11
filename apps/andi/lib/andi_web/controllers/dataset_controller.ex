@@ -8,6 +8,7 @@ defmodule AndiWeb.DatasetController do
   require Logger
   alias SmartCity.Registry.Dataset, as: RegDataset
   alias SmartCity.Dataset
+  import Andi
   import SmartCity.Event, only: [dataset_update: 0]
 
   @doc """
@@ -38,7 +39,7 @@ defmodule AndiWeb.DatasetController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
-    case Brook.get_all_values(:dataset) do
+    case Brook.get_all_values(instance_name(), :dataset) do
       {:ok, datasets} ->
         respond(conn, :ok, datasets)
 
@@ -53,13 +54,13 @@ defmodule AndiWeb.DatasetController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get(conn, params) do
-    case Brook.get(:dataset, Map.get(params, "dataset_id")) do
+    case Brook.get(instance_name(), :dataset, Map.get(params, "dataset_id")) do
       {:ok, nil} -> respond(conn, :not_found, "Dataset not found")
       {:ok, dataset} -> respond(conn, :ok, dataset)
     end
   end
 
-  defp write_dataset(dataset), do: Brook.Event.send(dataset_update(), :andi, dataset)
+  defp write_dataset(dataset), do: Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
 
   # Deprecated function for backwards compatibility with SmartCity.Registry apps
   def write_old_dataset(dataset), do: RegDataset.write(dataset)
@@ -98,7 +99,7 @@ defmodule AndiWeb.DatasetController do
 
   defp is_valid(dataset) do
     found_match =
-      Brook.get_all_values!(:dataset)
+      Brook.get_all_values!(instance_name(), :dataset)
       |> Enum.any?(fn existing_dataset ->
         dataset.id != existing_dataset.id &&
           dataset.technical.systemName == existing_dataset.technical.systemName

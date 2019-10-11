@@ -10,9 +10,9 @@ defmodule Forklift.Application do
       [
         libcluster(),
         redis(),
-        elsa_producer(),
         metrics(),
         {DynamicSupervisor, strategy: :one_for_one, name: Forklift.Dynamic.Supervisor},
+        migrations(),
         Forklift.Quantum.Scheduler,
         {Brook, Application.get_env(:forklift, :brook)},
         {DeadLetter, Application.get_env(:forklift, :dead_letter)},
@@ -30,6 +30,13 @@ defmodule Forklift.Application do
     case Application.get_env(:redix, :host) do
       nil -> []
       host -> {Redix, host: host, name: redis_client()}
+    end
+  end
+
+  defp migrations do
+    case Application.get_env(:redix, :host) do
+      nil -> []
+      _host -> Forklift.Migrations
     end
   end
 
@@ -51,21 +58,6 @@ defmodule Forklift.Application do
     case Application.get_env(:libcluster, :topologies) do
       nil -> []
       topology -> {Cluster.Supervisor, [topology, [name: Cluster.ClusterSupervisor]]}
-    end
-  end
-
-  defp elsa_producer() do
-    case Application.get_env(:forklift, :output_topic) do
-      nil ->
-        []
-
-      output_topic ->
-        {
-          Elsa.Producer.Supervisor,
-          name: Application.get_env(:forklift, :producer_name),
-          endpoints: Application.get_env(:forklift, :elsa_brokers),
-          topic: output_topic
-        }
     end
   end
 end

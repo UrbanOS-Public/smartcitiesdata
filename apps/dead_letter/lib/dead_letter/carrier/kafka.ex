@@ -21,16 +21,16 @@ defmodule DeadLetter.Carrier.Kafka do
   def init(opts) do
     topic = Keyword.fetch!(opts, :topic)
 
-    elsa_producer_config = [
-      name: @name,
+    elsa_config = [
+      connection: @name,
       endpoints: Keyword.fetch!(opts, :endpoints),
-      topic: topic
+      producer: [topic: topic]
     ]
 
     Process.put(:topic, topic)
 
     children = [
-      {Elsa.Producer.Supervisor, elsa_producer_config}
+      {Elsa.Supervisor, elsa_config}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
@@ -42,7 +42,7 @@ defmodule DeadLetter.Carrier.Kafka do
   @impl DeadLetter.Carrier
   def send(message) do
     topic = get_topic(:"#{@name}_supervisor")
-    Elsa.Producer.produce_sync(topic, {message.app, Jason.encode!(message)}, name: @name)
+    Elsa.produce(@name, topic, {message.app, Jason.encode!(message)})
   rescue
     e -> Logger.error("Unable to dead-letter message: #{inspect(message)}\n\treason: #{inspect(e)}")
   end

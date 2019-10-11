@@ -1,6 +1,7 @@
 use Mix.Config
 
 config :flair,
+  table_creator: Flair.TableCreator,
   data_topic: "persisted"
 
 config :logger,

@@ -22,6 +22,7 @@ defmodule Smartcitiesdata.MixProject do
   defp aliases do
     [
       test: "cmd mix test --color",
+      "test.e2e": "cmd --app e2e mix test.integration --seed 0 --color --include e2e",
       sobelow: "cmd --app andi mix sobelow -i Config.HTTPS --skip --compact --exit low"
     ]
   end

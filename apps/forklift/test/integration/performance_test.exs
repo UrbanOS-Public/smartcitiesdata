@@ -5,6 +5,7 @@ defmodule Forklift.PerformanceTest do
 
   alias Forklift.TopicManager
   alias SmartCity.TestDataGenerator, as: TDG
+  import Forklift
   import SmartCity.Event, only: [data_ingest_start: 0]
   import SmartCity.TestHelper
 
@@ -52,7 +53,7 @@ defmodule Forklift.PerformanceTest do
     Benchee.run(
       %{
         "kafka" => fn {dataset, expected_count, input_topic, output_topic} = _output_from_before_each ->
-          Brook.Event.send(data_ingest_start(), :author, dataset)
+          Brook.Event.send(instance_name(), data_ingest_start(), :author, dataset)
 
           eventually(
             fn ->

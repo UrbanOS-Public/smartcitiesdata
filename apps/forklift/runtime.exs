@@ -41,8 +41,6 @@ config :forklift,
   output_topic: output_topic,
   producer_name: :"#{output_topic}-producer",
   metrics_port: metrics_port,
-  retry_count: 10,
-  retry_initial_delay: 100,
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,
@@ -52,6 +50,7 @@ config :forklift,
   ]
 
 config :forklift, :brook,
+  instance: :forklift,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [
@@ -63,7 +62,7 @@ config :forklift, :brook,
       ]
     ]
   ],
-  handlers: [Forklift.Event.Handler],
+  handlers: [Forklift.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [
@@ -94,7 +93,7 @@ if System.get_env("COMPACTION_SCHEDULE") do
     jobs: [
       compactor: [
         schedule: System.get_env("COMPACTION_SCHEDULE"),
-        task: {Forklift.Datasets.DatasetCompactor, :compact_datasets, []},
+        task: {Forklift.DataWriter, :compact_datasets, []},
         timezone: "America/New_York"
       ]
     ]

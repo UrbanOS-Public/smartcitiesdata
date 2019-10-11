@@ -35,11 +35,8 @@ defmodule DurationsTest do
     [messages: messages]
   end
 
-  test "flair consumes messages and calls out to presto", context do
-    SmartCity.KafkaHelper.send_to_kafka(
-      context[:messages],
-      Application.get_env(:flair, :data_topic)
-    )
+  test "flair consumes messages and calls out to presto", %{messages: messages} do
+    SmartCity.KafkaHelper.send_to_kafka(messages, Application.get_env(:flair, :data_topic))
 
     Patiently.wait_for!(
       prestige_query("select dataset_id, app from operational_stats", [

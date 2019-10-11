@@ -5,6 +5,7 @@ defmodule Andi.BrookMigration do
 
     All events will be posted automatically with an invocation of migrate_to_brook
   """
+  import Andi
   import SmartCity.Event, only: [dataset_update: 0]
 
   def migrate_to_brook do
@@ -29,6 +30,6 @@ defmodule Andi.BrookMigration do
   end
 
   defp migrate_dataset_to_brook(dataset_event) do
-    Brook.Event.send(dataset_update(), :andi, dataset_event)
+    Brook.Event.send(instance_name(), dataset_update(), :andi, dataset_event)
   end
 end

@@ -1,6 +1,8 @@
 use Mix.Config
 
 config :forklift,
+  topic_writer: MockTopic,
+  table_writer: MockTable,
   message_processing_cadence: 15_000,
   user: "forklift"
 
@@ -10,7 +12,8 @@ config :redix,
   host: "localhost"
 
 config :forklift, :brook,
-  handlers: [Forklift.Event.Handler],
+  instance: :forklift,
+  handlers: [Forklift.EventHandler],
   storage: [
     module: Brook.Storage.Ets,
     init_arg: [

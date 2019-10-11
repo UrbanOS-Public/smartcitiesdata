@@ -11,10 +11,12 @@ endpoints = [{to_charlist(host), 9092}]
 output_topic = "streaming-persisted"
 
 config :forklift,
+  data_reader: Pipeline.Reader.DatasetTopicReader,
+  topic_writer: Pipeline.Writer.TopicWriter,
+  table_writer: Pipeline.Writer.TableWriter,
   retry_count: 10,
   retry_initial_delay: 100,
   elsa_brokers: [{String.to_atom(host), 9092}],
-  message_processing_cadence: 5_000,
   input_topic_prefix: "integration",
   output_topic: output_topic,
   producer_name: :"#{output_topic}-producer",
@@ -28,6 +30,7 @@ config :forklift,
   ]
 
 config :forklift, :brook,
+  instance: :forklift,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [
@@ -39,7 +42,7 @@ config :forklift, :brook,
       ]
     ]
   ],
-  handlers: [Forklift.Event.Handler],
+  handlers: [Forklift.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [
