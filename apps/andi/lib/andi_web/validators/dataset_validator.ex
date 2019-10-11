@@ -1,4 +1,6 @@
 defmodule AndiWeb.DatasetValidator do
+  @moduledoc "Used to validate datasets"
+
   import Andi, only: [instance_name: 0]
 
   def validate(dataset) do
