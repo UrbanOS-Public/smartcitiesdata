@@ -23,8 +23,8 @@ defmodule AndiWeb.DatasetValidator do
     existing_datasets = Brook.get_all_values!(instance_name(), :dataset)
 
     Enum.any?(existing_datasets, fn existing_dataset ->
-      different_ids(dataset, existing_dataset)
-      && same_system_name(dataset, existing_dataset)
+      different_ids(dataset, existing_dataset) &&
+        same_system_name(dataset, existing_dataset)
     end)
   end
 

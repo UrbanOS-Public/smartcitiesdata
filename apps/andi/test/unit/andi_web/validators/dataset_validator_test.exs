@@ -19,7 +19,7 @@ defmodule AndiWeb.DatasetValidatorTest do
 
     test "rejects a dataset that is already defined" do
       existing_dataset = TDG.create_dataset([])
-      new_dataset = %Dataset{ existing_dataset | id: "new_dataset"}
+      new_dataset = %Dataset{existing_dataset | id: "new_dataset"}
 
       allow Brook.get_all_values!(any(), :dataset), return: [existing_dataset]
 
