@@ -20,3 +20,5 @@ erl_crash.dump
 *.ez
 
 .sobelow
+
+.elixir_ls
