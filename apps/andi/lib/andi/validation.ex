@@ -18,7 +18,7 @@ defmodule DatasetValidator do
 
   defp is_valid_modified_date?(""), do: true
 
-  defp is_valid_modified_date?(modified_date) when modified_date != "" do
+  defp is_valid_modified_date?(modified_date) do
     case DateTime.from_iso8601(modified_date) do
       {:ok, _, _} -> true
       {:error, _} -> false
