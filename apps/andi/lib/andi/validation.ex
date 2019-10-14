@@ -1,4 +1,6 @@
 defmodule DatasetValidator do
+  @moduledoc false
+
   def validate(dataset) do
     SimplyValidate.validate(dataset, [
       modified_date_iso8601(),
