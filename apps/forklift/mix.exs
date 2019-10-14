@@ -31,7 +31,7 @@ defmodule Forklift.MixProject do
     [
       {:benchee, "~> 1.0", only: [:integration]},
       {:brod, "~> 3.8", override: true},
-      {:brook, "~> 0.4.3"},
+      {:brook, "~> 0.4.0"},
       {:checkov, "~> 0.4"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},
