@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 set -eou pipefail
 
-app="$1"
-
-cd apps/$app
-mix verify
+mix format --check-formatted
 mix test
+mix credo
+mix sobelow -i Config.HTTPS --skip --compact --exit low
 mix test.integration
-cd -
+mix test.e2e

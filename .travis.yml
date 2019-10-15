@@ -6,22 +6,14 @@ opt_release:
 services:
   - docker
 env:
-  global:
-    - DOCKER_COMPOSE_VERSION=1.23.1
-  matrix:
-    - UMBRELLA_APP=andi
-    # - UMBRELLA_APP=dead_letter
-    # - UMBRELLA_APP=flair
-    # - UMBRELLA_APP=forklift
-    # - UMBRELLA_APP=pipeline
-    # - UMBRELLA_APP=e2e
+  - DOCKER_COMPOSE_VERSION=1.23.1
 cache:
   directories:
     - deps
 install:
   - bash scripts/travis-install.sh
 script:
-  - bash scripts/travis-build.sh $UMBRELLA_APP
+  - bash scripts/travis-build.sh
 deploy:
   - provider: script
     skip_cleanup: true
