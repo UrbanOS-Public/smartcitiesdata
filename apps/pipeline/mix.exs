@@ -12,7 +12,8 @@ defmodule Pipeline.MixProject do
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       test_paths: Mix.env() |> test_paths(),
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -32,8 +33,18 @@ defmodule Pipeline.MixProject do
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:smart_city_test, "~> 0.5", only: [:dev, :test, :integration]},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
-      {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]}
+      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
+      {:divo_kafka, "~> 0.1.5", only: [:dev, :test, :integration]},
+      {:credo, "~> 1.1", only: [:dev, :test], runtime: false}
+    ]
+  end
+
+  defp aliases do
+    [
+      verify: [
+        "format --check-formatted",
+        "credo"
+      ]
     ]
   end
 

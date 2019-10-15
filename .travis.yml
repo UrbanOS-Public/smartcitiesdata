@@ -1,15 +1,27 @@
 language: elixir
 elixir:
-  - '1.8.1'
-otp_release:
-  - '21.3'
+  - 1.8.1
+opt_release:
+  - 21.3
 services:
   - docker
 env:
-  - DOCKER_COMPOSE_VERSION=1.23.1
+  global:
+    - DOCKER_COMPOSE_VERSION=1.23.1
+  matrix:
+    - UMBRELLA_APP=andi
+    # - UMBRELLA_APP=dead_letter
+    # - UMBRELLA_APP=flair
+    # - UMBRELLA_APP=forklift
+    # - UMBRELLA_APP=pipeline
+    # - UMBRELLA_APP=e2e
+cache:
+  directories:
+    - deps
+install:
+  - bash scripts/travis-install.sh
 script:
-  - bash scripts/travis-build.sh
-deploy:
+  - bash scripts/travis-build.sh $UMBRELLA_APP
 deploy:
   - provider: script
     skip_cleanup: true

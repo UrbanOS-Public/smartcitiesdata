@@ -46,11 +46,11 @@ defmodule Flair.MixProject do
       {:smart_city, "~> 3.0", override: true},
       {:statistics, "~> 0.6"},
       # Additional dependencies
-      {:credo, "~> 1.1", only: :dev, runtime: false},
+      {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.11", only: [:dev]},
       {:ex_doc, "~> 0.21"},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
-      {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
+      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
+      {:divo_kafka, "~> 0.1", only: [:dev, :test, :integration]},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:faker, "~> 0.12", only: [:test, :integration], override: true},
       {:smart_city_test, "~> 0.5", only: [:test, :integration]},
@@ -61,7 +61,11 @@ defmodule Flair.MixProject do
 
   defp aliases do
     [
-      test: ["test --no-start"]
+      test: ["test --no-start"],
+      verify: [
+        "format --check-formatted",
+        "credo"
+      ]
     ]
   end
 

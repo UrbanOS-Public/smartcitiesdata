@@ -13,6 +13,7 @@ defmodule Forklift.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       docs: docs(),
+      aliases: aliases(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env())
     ]
@@ -58,6 +59,15 @@ defmodule Forklift.MixProject do
       {:tasks, in_umbrella: true, only: :dev},
       {:pipeline, in_umbrella: true},
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]}
+    ]
+  end
+
+  defp aliases do
+    [
+      verify: [
+        "format --check-formatted",
+        "credo"
+      ]
     ]
   end
 

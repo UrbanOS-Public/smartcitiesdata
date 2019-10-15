@@ -14,7 +14,8 @@ defmodule Andi.MixProject do
       test_paths: Mix.env() |> test_paths(),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -35,14 +36,14 @@ defmodule Andi.MixProject do
     [
       {:brook, "~> 0.4.0"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
-      {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
-      {:divo_redis, "~> 0.1.4", only: [:dev, :integration]},
+      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
+      {:divo_kafka, "~> 0.1.5", only: [:dev, :test, :integration]},
+      {:divo_redis, "~> 0.1.4", only: [:dev, :test, :integration]},
       {:gettext, "~> 0.17"},
       {:jason, "~> 1.1"},
       {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
       {:paddle, "~> 0.1"},
-      {:sobelow, "~> 0.8", only: :dev},
+      {:sobelow, "~> 0.8", only: [:dev, :test]},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.13"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
@@ -57,6 +58,16 @@ defmodule Andi.MixProject do
       {:uuid, "~> 1.1"},
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev}
+    ]
+  end
+
+  defp aliases do
+    [
+      verify: [
+        "format --check-formatted",
+        "credo",
+        "sobelow -i Config.HTTPS --skip --compact --exit low"
+      ]
     ]
   end
 end

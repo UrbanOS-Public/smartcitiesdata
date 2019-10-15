@@ -15,6 +15,7 @@ defmodule DeadLetter.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       docs: docs(),
+      aliases: aliases(),
       description: description(),
       package: package()
     ]
@@ -34,10 +35,19 @@ defmodule DeadLetter.MixProject do
       {:ex_doc, "~> 0.21", only: :dev},
       {:jason, "~> 1.1"},
       {:elsa, "~> 0.10.0"},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
-      {:divo_kafka, "~> 0.1.5", only: [:integration]},
+      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
+      {:divo_kafka, "~> 0.1.5", only: [:dev, :test, :integration]},
       {:assertions, "~> 0.14", only: [:test, :integration]},
       {:tasks, in_umbrella: true, only: :dev}
+    ]
+  end
+
+  defp aliases do
+    [
+      verify: [
+        "format --check-formatted",
+        "credo"
+      ]
     ]
   end
 
