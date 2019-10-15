@@ -153,9 +153,16 @@ defmodule AndiWeb.OrganizationController do
   Reposts all of the existing organizations as organization:udpate events on the event stream
   """
   def repost_org_updates(conn, _params) do
-    Andi.Services.OrganizationReposter.repost_all_orgs()
-    conn
-    |> put_status(:ok)
-    |> json("Orgs successfully reposted")
+    case Andi.Services.OrganizationReposter.repost_all_orgs() do
+      :ok ->
+        conn
+        |> put_status(:ok)
+        |> json("Orgs successfully reposted")
+
+      {:error, _} ->
+        conn
+        |> put_status(500)
+        |> json("Failed to repost organizations")
+    end
   end
 end

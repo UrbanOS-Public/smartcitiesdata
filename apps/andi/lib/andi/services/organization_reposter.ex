@@ -27,7 +27,6 @@ defmodule Andi.Services.OrganizationReposter do
   end
 
   defp send_all_collecting_errors(organizations) do
-    # Enum.reject(organizations, fn org -> :ok == Brook.Event.send(instance_name(), organization_update(), :andi, org) end)
     organizations
     |> Enum.map(&Brook.Event.send(instance_name(), organization_update(), :andi, &1))
     |> Enum.filter(fn result -> {:error, _} = result end)
