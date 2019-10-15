@@ -5,11 +5,24 @@ otp_release:
   - '21.3'
 services:
   - docker
-env:
-  - DOCKER_COMPOSE_VERSION=1.23.1
-script:
-  - bash scripts/travis-build.sh
-deploy:
+jobs:
+  include:
+    - name: verify
+      script: bash scripts/travis-verify.sh
+    - name: unit test
+      script: mix test
+    - name: pipeline
+      script: bash scripts/travis-test.sh pipeline
+    - name: dead_letter
+      script: bash scripts/travis-test.sh dead_letter
+    - name: andi
+      script: bash scripts/travis-test.sh andi
+    - name: flair
+      script: bash scripts/travis-test.sh flair
+    - name: forklift
+      script: bash scripts/travis-test.sh forklift
+    - name: e2e
+      script: bash scripts/travis-test.sh e2e
 deploy:
   - provider: script
     skip_cleanup: true

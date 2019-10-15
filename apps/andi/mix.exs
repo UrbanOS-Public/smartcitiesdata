@@ -14,7 +14,8 @@ defmodule Andi.MixProject do
       test_paths: Mix.env() |> test_paths(),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -58,5 +59,9 @@ defmodule Andi.MixProject do
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev}
     ]
+  end
+
+  defp aliases do
+    [verify: ["format --check-formatted", "credo", "sobelow -i Config.HTTPS --skip --compact --exit low"]]
   end
 end

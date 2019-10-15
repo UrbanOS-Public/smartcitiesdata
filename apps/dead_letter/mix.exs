@@ -14,6 +14,7 @@ defmodule DeadLetter.MixProject do
       test_paths: Mix.env() |> test_paths(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
       docs: docs(),
       description: description(),
       package: package()
@@ -39,6 +40,10 @@ defmodule DeadLetter.MixProject do
       {:assertions, "~> 0.14", only: [:test, :integration]},
       {:tasks, in_umbrella: true, only: :dev}
     ]
+  end
+
+  defp aliases do
+    [verify: ["format --check-formatted", "credo"]]
   end
 
   defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/support"]
