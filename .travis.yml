@@ -8,19 +8,20 @@ services:
 env:
   - DOCKER_COMPOSE_VERSION=1.23.1
 script:
-  - bash scripts/travis.sh
+  - bash scripts/travis-build.sh
 deploy:
-- provider: script
-  skip_cleanup: true
-  script: bash scripts/deploy.sh master
-  on:
-    branch: master
-- provider: script
-  skip_cleanup: true
-  script: bash scripts/deploy.sh release
-  on:
-    tags: true
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: bash scripts/travis-publish.sh
+    on:
+      branch: master
+  - provider: script
+    skip_cleanup: true
+    script: bash scripts/travis-publish.sh
+    on:
+      tags: true
 branches:
   only:
   - master
-  - /\d{1,3}\.\d{1,3}\.\d{1,3}/
+  - /(andi|forklift|flair):\d{1,3}\.\d{1,3}\.\d{1,3}/
