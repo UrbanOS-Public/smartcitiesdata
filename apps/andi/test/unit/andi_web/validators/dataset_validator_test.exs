@@ -8,13 +8,22 @@ defmodule AndiWeb.DatasetValidatorTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   describe "validate/1 catches invalid datasets" do
-    test "rejects a dataset with dashes in the systemName" do
-      dataset = TDG.create_dataset(technical: %{systemName: "some-cool-data__so-many-dashes"})
+    test "rejects a dataset with dashes in the orgName" do
+      dataset = TDG.create_dataset(technical: %{orgName: "some-cool-data"})
 
       assert {:invalid, errors} = DatasetValidator.validate(dataset)
 
       assert length(errors) == 1
-      assert List.first(errors) |> String.contains?("systemName")
+      assert List.first(errors) |> String.contains?("orgName")
+    end
+
+    test "rejects a dataset with dashes in the dataName" do
+      dataset = TDG.create_dataset(technical: %{dataName: "so-many-dashes"})
+
+      assert {:invalid, errors} = DatasetValidator.validate(dataset)
+
+      assert length(errors) == 1
+      assert List.first(errors) |> String.contains?("dataName")
     end
 
     test "rejects a dataset that is already defined" do
