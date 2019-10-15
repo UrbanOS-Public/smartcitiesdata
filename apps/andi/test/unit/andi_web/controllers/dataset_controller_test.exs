@@ -63,7 +63,7 @@ defmodule AndiWeb.DatasetControllerTest do
       "business" => %{
         "dataTitle" => "dataset title",
         "description" => "description",
-        "modifiedDate" => "date",
+        "modifiedDate" => "",
         "orgTitle" => "org title",
         "contactName" => "contact name",
         "contactEmail" => "contact@email.com",
