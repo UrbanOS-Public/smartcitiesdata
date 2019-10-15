@@ -4,7 +4,12 @@ defmodule AndiWeb.DatasetValidator do
   import Andi, only: [instance_name: 0]
 
   def validate(dataset) do
-    case SimplyValidate.validate(dataset, [validate_system_name(), already_exists!()]) do
+    case SimplyValidate.validate(dataset, [
+           validate_system_name(),
+           already_exists!(),
+           modified_date_iso8601(),
+           description_required()
+         ]) do
       [] -> :valid
       errors -> {:invalid, errors}
     end
@@ -32,4 +37,21 @@ defmodule AndiWeb.DatasetValidator do
 
   defp same_system_name(a, b), do: a.technical.systemName == b.technical.systemName
   defp different_ids(a, b), do: a.id != b.id
+
+  defp description_required do
+    {&(&1.business.description != ""), "Description must be provided"}
+  end
+
+  defp modified_date_iso8601 do
+    {&is_valid_modified_date?(&1.business.modifiedDate), "modifiedDate must be in a valid IOS8601 timestamp format"}
+  end
+
+  defp is_valid_modified_date?(""), do: true
+
+  defp is_valid_modified_date?(modified_date) do
+    case DateTime.from_iso8601(modified_date) do
+      {:ok, _, _} -> true
+      {:error, _} -> false
+    end
+  end
 end

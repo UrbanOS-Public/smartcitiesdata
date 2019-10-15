@@ -63,7 +63,7 @@ defmodule AndiWeb.DatasetControllerTest do
       "business" => %{
         "dataTitle" => "dataset title",
         "description" => "description",
-        "modifiedDate" => "date",
+        "modifiedDate" => "",
         "orgTitle" => "org title",
         "contactName" => "contact name",
         "contactEmail" => "contact@email.com",
@@ -143,33 +143,6 @@ defmodule AndiWeb.DatasetControllerTest do
       |> json_response(400)
 
     assert %{"reason" => ["Existing dataset has the same orgName and dataName"]} == response
-  end
-
-  test "put returns 400 when systemName has dashes", %{
-    conn: conn
-  } do
-    org_name = "what-a-great"
-    data_name = "system-name"
-
-    new_dataset =
-      TDG.create_dataset(
-        id: "my-new-dataset",
-        technical: %{
-          dataName: data_name,
-          orgName: org_name,
-          systemName: "#{org_name}__#{data_name}"
-        }
-      )
-
-    allow(Brook.get_all_values!(any(), :dataset), return: [])
-
-    %{"reason" => [error | _]} =
-      conn
-      |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
-      |> json_response(400)
-
-    assert error |> String.contains?("systemName")
-    assert error |> String.contains?("dashes")
   end
 
   describe "POST /dataset/disable" do
