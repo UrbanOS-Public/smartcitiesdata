@@ -16,5 +16,4 @@ defmodule Andi.Services.OrganizationReposterTest do
     allow(Brook.Event.send(any(), any(), :andi, any()), return: {:error, "does not matter"})
     assert OrganizationReposter.repost_all_orgs() == {:error, "Failed to repost all organizations"}
   end
-
 end
