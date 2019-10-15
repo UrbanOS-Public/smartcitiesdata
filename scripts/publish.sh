@@ -8,4 +8,4 @@ version="${2}"
 echo "Logging into DockerHub..."
 echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
 
-docker push smartcitesdata/$app:$version
+docker push smartcitiesdata/$app:$version
