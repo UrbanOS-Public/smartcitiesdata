@@ -4,14 +4,18 @@ defmodule AndiWeb.DatasetValidator do
   import Andi, only: [instance_name: 0]
 
   def validate(dataset) do
-    case SimplyValidate.validate(dataset, [validate_system_name(), already_exists!()]) do
+    case SimplyValidate.validate(dataset, [validate_org_name(), validate_data_name(), already_exists!()]) do
       [] -> :valid
       errors -> {:invalid, errors}
     end
   end
 
-  def validate_system_name do
-    {&String.contains?(&1.technical.systemName, "-"), "systemName cannot contain dashes", false}
+  def validate_org_name do
+    {&String.contains?(&1.technical.orgName, "-"), "orgName cannot contain dashes", false}
+  end
+
+  def validate_data_name do
+    {&String.contains?(&1.technical.dataName, "-"), "dataName cannot contain dashes", false}
   end
 
   def already_exists! do

@@ -163,13 +163,16 @@ defmodule AndiWeb.DatasetControllerTest do
 
     allow(Brook.get_all_values!(any(), :dataset), return: [])
 
-    %{"reason" => [error | _]} =
+    %{"reason" => errors} =
       conn
       |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
       |> json_response(400)
 
-    assert error |> String.contains?("systemName")
-    assert error |> String.contains?("dashes")
+    joined_errors = Enum.join(errors, ", ")
+
+    assert String.contains?(joined_errors, "orgName")
+    assert String.contains?(joined_errors, "dataName")
+    assert String.contains?(joined_errors, "dashes")
   end
 
   describe "POST /dataset/disable" do
