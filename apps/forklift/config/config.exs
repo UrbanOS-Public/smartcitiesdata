@@ -27,5 +27,5 @@ config :prestige,
   headers: [
     catalog: "hive",
     schema: "default",
-    user: "foobar"
+    user: "carpenter"
   ]
