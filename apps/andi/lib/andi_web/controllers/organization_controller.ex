@@ -148,4 +148,14 @@ defmodule AndiWeb.OrganizationController do
         |> json("Unable to process your request")
     end
   end
+
+  @doc """
+  Reposts all of the existing organizations as organization:udpate events on the event stream
+  """
+  def repost_org_updates(conn, _params) do
+    Andi.Services.OrganizationReposter.repost_all_orgs()
+    conn
+    |> put_status(:ok)
+    |> json("Orgs successfully reposted")
+  end
 end
