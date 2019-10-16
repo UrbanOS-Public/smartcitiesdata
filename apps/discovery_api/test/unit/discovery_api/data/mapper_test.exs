@@ -2,7 +2,7 @@ defmodule DiscoveryApi.Data.MapperTest do
   use ExUnit.Case
   use Placebo
   alias DiscoveryApi.Data.{Mapper, Model}
-  alias SmartCity.TestDataGenerator, as: TDG
+  alias DiscoveryApi.TestDataGenerator, as: TDG
   import Checkov
 
   describe "to_data_model/2 hard overrides" do

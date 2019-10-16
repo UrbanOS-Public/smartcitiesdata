@@ -1,7 +1,7 @@
 defmodule DiscoveryApi.Stats.StatsCalculatorTest do
   use ExUnit.Case
   use Placebo
-  alias SmartCity.Dataset
+  alias SmartCity.Registry.Dataset
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApi.Data.Persistence
 
@@ -136,11 +136,11 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
   end
 
   defp mock_non_remote_dataset() do
-    %SmartCity.Dataset{
-      _metadata: %SmartCity.Dataset.Metadata{expectedBenefit: [], intendedUse: []},
+    %SmartCity.Registry.Dataset{
+      _metadata: %SmartCity.Registry.Dataset.Metadata{expectedBenefit: [], intendedUse: []},
       business: nil,
       id: @dataset_id,
-      technical: %SmartCity.Dataset.Technical{
+      technical: %SmartCity.Registry.Dataset.Technical{
         cadence: 4654,
         dataName: "Tawny_Laranja",
         sourceHeaders: %{accepts: "application/json"},
@@ -165,11 +165,11 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
   end
 
   defp mock_remote_dataset() do
-    %SmartCity.Dataset{
-      _metadata: %SmartCity.Dataset.Metadata{expectedBenefit: [], intendedUse: []},
+    %SmartCity.Registry.Dataset{
+      _metadata: %SmartCity.Registry.Dataset.Metadata{expectedBenefit: [], intendedUse: []},
       business: nil,
       id: @dataset_id,
-      technical: %SmartCity.Dataset.Technical{
+      technical: %SmartCity.Registry.Dataset.Technical{
         private: true,
         sourceQueryParams: %{apiKey: "d3b0afb2-66bc-496f-8b0c-32c6872f1515"},
         schema: [

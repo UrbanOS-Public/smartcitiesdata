@@ -2,7 +2,7 @@ defmodule PrestoTestHelper do
   @moduledoc """
   Helper module for presto related tests
   """
-  alias SmartCity.Dataset
+  alias SmartCity.Registry.Dataset
 
   def create_small_test_table(%Dataset{technical: %{systemName: system_name}}) do
     "create table if not exists hive.default.#{system_name} (name varchar, age int)"

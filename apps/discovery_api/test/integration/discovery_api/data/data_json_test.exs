@@ -1,8 +1,9 @@
 defmodule DiscoveryApi.Data.DataJsonTest do
   use ExUnit.Case
   use Divo, services: [:redis]
-  alias SmartCity.{Dataset, Organization}
-  alias SmartCity.TestDataGenerator, as: TDG
+  alias SmartCity.Registry.Dataset
+  alias SmartCity.Registry.Organization
+  alias DiscoveryApi.TestDataGenerator, as: TDG
 
   setup do
     Redix.command!(:redix, ["FLUSHALL"])

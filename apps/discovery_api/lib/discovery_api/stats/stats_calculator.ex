@@ -6,7 +6,7 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
   alias DiscoveryApi.Stats.Completeness
   alias DiscoveryApi.Stats.CompletenessTotals
   alias DiscoveryApi.Data.Persistence
-  alias SmartCity.Dataset
+  alias SmartCity.Registry.Dataset
 
   @completeness_key "discovery-api:completeness_calculated_date"
 

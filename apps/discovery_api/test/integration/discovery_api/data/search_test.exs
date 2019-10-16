@@ -3,8 +3,9 @@ defmodule DiscoveryApi.Data.SearchTest do
   use Divo, services: [:redis]
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
-  alias SmartCity.TestDataGenerator, as: TDG
-  alias SmartCity.{Dataset, Organization}
+  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.Registry.Dataset
+  alias SmartCity.Registry.Organization
 
   setup do
     Redix.command!(:redix, ["FLUSHALL"])

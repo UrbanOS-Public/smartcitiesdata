@@ -1,6 +1,6 @@
 defmodule DiscoveryApiWeb.OrganizationController do
   use DiscoveryApiWeb, :controller
-  alias SmartCity.Organization
+  alias SmartCity.Registry.Organization
 
   plug(:accepts, ["json"])
 

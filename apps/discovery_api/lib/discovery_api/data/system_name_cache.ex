@@ -4,7 +4,8 @@ defmodule DiscoveryApi.Data.SystemNameCache do
   """
   require Logger
 
-  alias SmartCity.{Dataset, Organization}
+  alias SmartCity.Registry.Dataset
+  alias SmartCity.Registry.Organization
 
   def child_spec([]) do
     Cachex.child_spec(cache_name())

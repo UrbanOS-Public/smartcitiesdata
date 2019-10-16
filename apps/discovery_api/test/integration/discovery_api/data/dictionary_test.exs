@@ -1,8 +1,9 @@
 defmodule DiscoveryApi.Data.DictionaryTest do
   use ExUnit.Case
   use Divo, services: [:redis]
-  alias SmartCity.TestDataGenerator, as: TDG
-  alias SmartCity.{Dataset, Organization}
+  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.Registry.Dataset
+  alias SmartCity.Registry.Organization
 
   setup do
     Redix.command!(:redix, ["FLUSHALL"])

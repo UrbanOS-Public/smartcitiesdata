@@ -2,8 +2,8 @@ defmodule DiscoveryApi.Data.QueryTest do
   import ExUnit.CaptureLog
   use ExUnit.Case
   use Divo
-  alias SmartCity.Dataset
-  alias SmartCity.TestDataGenerator, as: TDG
+  alias SmartCity.Registry.Dataset
+  alias DiscoveryApi.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
 
   @public_dataset_id "123-456-789"

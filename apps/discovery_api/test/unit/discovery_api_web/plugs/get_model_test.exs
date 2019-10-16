@@ -5,7 +5,7 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApiWeb.Plugs.GetModel
 
-  alias SmartCity.TestDataGenerator, as: TDG
+  alias DiscoveryApi.TestDataGenerator, as: TDG
 
   describe "call/2" do
     setup do

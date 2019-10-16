@@ -1,6 +1,6 @@
 defmodule DiscoveryApi.RecommendationEngineTest do
   use ExUnit.Case
-  alias SmartCity.TestDataGenerator, as: TDG
+  alias DiscoveryApi.TestDataGenerator, as: TDG
   alias DiscoveryApi.RecommendationEngine
 
   use Divo, services: [:redis]
@@ -21,7 +21,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
       })
 
     organization = TDG.create_organization(%{id: dataset_to_get_recommendations_for.technical.orgId})
-    SmartCity.Organization.write(organization)
+    SmartCity.Registry.Organization.write(organization)
 
     dataset_with_wrong_types =
       TDG.create_dataset(%{
@@ -65,7 +65,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
     RecommendationEngine.save(dataset_that_should_match)
     RecommendationEngine.save(dataset_that_doesnt_meet_column_count_threshold)
 
-    SmartCity.Dataset.write(dataset_to_get_recommendations_for)
+    SmartCity.Registry.Dataset.write(dataset_to_get_recommendations_for)
 
     Patiently.wait_for!(
       fn -> DiscoveryApi.Data.Model.get(dataset_to_get_recommendations_for.id) != nil end,
@@ -73,7 +73,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
       max_tries: 20
     )
 
-    dataset_model = DiscoveryApi.Data.Model.get(dataset_to_get_recommendations_for.id)
+    DiscoveryApi.Data.Model.get(dataset_to_get_recommendations_for.id)
 
     %{body: body, status_code: 200} =
       "http://localhost:4000/api/v1/dataset/#{dataset_to_get_recommendations_for.id}/recommendations"

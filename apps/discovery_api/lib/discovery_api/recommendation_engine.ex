@@ -5,7 +5,7 @@ defmodule DiscoveryApi.RecommendationEngine do
 
   @prefix "discovery_api:dataset_recommendations:"
 
-  def save(%SmartCity.Dataset{} = dataset) do
+  def save(%SmartCity.Registry.Dataset{} = dataset) do
     recommendation_metadata = %{
       id: dataset.id,
       systemName: dataset.technical.systemName,
