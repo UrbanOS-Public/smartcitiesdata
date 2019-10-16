@@ -186,7 +186,8 @@ defmodule AndiWeb.DatasetControllerTest do
           orgName: " the_org_name   "
         },
         business: %{
-          contactName: " some  body  "
+          contactName: " some  body  ",
+          keywords: ["  a keyword", " another keyword", "etc"]
         }
       )
 
@@ -199,6 +200,7 @@ defmodule AndiWeb.DatasetControllerTest do
 
     assert response["id"] == "my-new-dataset"
     assert response["business"]["contactName"] == "some  body"
+    assert response["business"]["keywords"] == ["a keyword", "another keyword", "etc"]
     assert response["technical"]["dataName"] == "the_data_name"
     assert response["technical"]["orgName"] == "the_org_name"
   end
