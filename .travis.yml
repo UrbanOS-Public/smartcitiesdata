@@ -15,7 +15,8 @@ before_cache:
   - bash scripts/travis-uncache.sh
 jobs:
   include:
-    - name: static analysis
+    - stage: build
+      name: static analysis
       script: bash scripts/travis-verify.sh
     - name: unit test
       script: mix test
@@ -31,17 +32,13 @@ jobs:
       script: bash scripts/travis-test.sh flair
     - name: forklift
       script: bash scripts/travis-test.sh forklift
-deploy:
-  - provider: script
-    skip_cleanup: true
-    script: bash scripts/travis-publish.sh
-    on:
-      branch: master
-  - provider: script
-    skip_cleanup: true
-    script: bash scripts/travis-publish.sh
-    on:
-      tags: true
+    - stage: publish
+      name: development
+      if: branch == master && type != pull_request
+      script: bash scripts/travis-publish.sh
+    - name: release
+      if: tag =~ /^(andi|forklift|flair):\d{1,3}\.\d{1,3}\.\d{1,3}$/
+      script: bash scripts/travis-publish.sh
 branches:
   only:
   - master
