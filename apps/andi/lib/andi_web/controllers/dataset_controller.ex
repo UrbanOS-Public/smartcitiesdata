@@ -86,8 +86,9 @@ defmodule AndiWeb.DatasetController do
     end
   end
 
-  defp parse_message(%{"technical" => technical} = msg) do
-    with org_name when not is_nil(org_name) <- Map.get(technical, "orgName"),
+  defp parse_message(%{"technical" => _technical} = msg) do
+    with %{"technical" => technical} = msg <- trim_fields(msg),
+         org_name when not is_nil(org_name) <- Map.get(technical, "orgName"),
          data_name when not is_nil(data_name) <- Map.get(technical, "dataName"),
          system_name <- "#{org_name}__#{data_name}" do
       {:ok, put_in(msg, ["technical", "systemName"], system_name)}
@@ -108,5 +109,31 @@ defmodule AndiWeb.DatasetController do
     uuid = UUID.uuid4()
 
     Map.merge(message, %{"id" => uuid}, fn _k, v1, _v2 -> v1 end)
+  end
+
+  defp trim_fields(%{"id" => id, "technical" => technical, "business" => business} = map) do
+    %{
+      map
+      | "id" => String.trim(id),
+        "technical" => trim_map(technical),
+        "business" => trim_map(business)
+    }
+  end
+
+  defp trim_map(data) do
+    data
+    |> Enum.map(fn
+      {key, val} when is_binary(val) -> {key, String.trim(val)}
+      {key, val} when is_list(val) -> {key, trim_list(val)}
+      field -> field
+    end)
+    |> Enum.into(Map.new())
+  end
+
+  defp trim_list(data) do
+    Enum.map(data, fn
+      item when is_binary(item) -> String.trim(item)
+      item -> item
+    end)
   end
 end

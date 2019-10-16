@@ -175,6 +175,36 @@ defmodule AndiWeb.DatasetControllerTest do
     assert String.contains?(joined_errors, "dashes")
   end
 
+  test "put trims fields on dataset", %{
+    conn: conn
+  } do
+    new_dataset =
+      TDG.create_dataset(
+        id: " my-new-dataset  ",
+        technical: %{
+          dataName: "   the_data_name ",
+          orgName: " the_org_name   "
+        },
+        business: %{
+          contactName: " some  body  ",
+          keywords: ["  a keyword", " another keyword", "etc"]
+        }
+      )
+
+    allow(Brook.get_all_values!(any(), :dataset), return: [])
+
+    response =
+      conn
+      |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
+      |> json_response(201)
+
+    assert response["id"] == "my-new-dataset"
+    assert response["business"]["contactName"] == "some  body"
+    assert response["business"]["keywords"] == ["a keyword", "another keyword", "etc"]
+    assert response["technical"]["dataName"] == "the_data_name"
+    assert response["technical"]["orgName"] == "the_org_name"
+  end
+
   describe "POST /dataset/disable" do
     setup %{} do
       dataset = TDG.create_dataset(%{})
