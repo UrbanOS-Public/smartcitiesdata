@@ -336,10 +336,11 @@ defmodule DiscoveryApi.Auth.AuthTest do
       subject_id = AuthHelper.valid_jwt_sub()
       HTTPoison.post!("localhost:4000/api/v1/logged-in", "", Authorization: "Bearer #{AuthHelper.valid_jwt()}")
 
-      expected = %User{subject_id: subject_id, email: "x@y.z"}
       actual = Users.get_user(subject_id)
 
-      assert expected = actual
+      assert subject_id == actual.subject_id
+      assert "x@y.z" == actual.email
+      assert actual.id != nil
     end
 
     test "returns 'bad request' when token is invalid" do
