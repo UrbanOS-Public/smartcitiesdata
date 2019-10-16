@@ -61,7 +61,8 @@ defmodule Flair.MixProject do
 
   defp aliases do
     [
-      test: ["test --no-start"]
+      test: ["test --no-start"],
+      verify: ["format --check-formatted", "credo"]
     ]
   end
 

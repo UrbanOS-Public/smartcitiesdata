@@ -12,6 +12,7 @@ defmodule E2E.MixProject do
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
       test_paths: Mix.env() |> test_paths()
     ]
   end
@@ -27,6 +28,13 @@ defmodule E2E.MixProject do
       {:andi, in_umbrella: true},
       {:forklift, in_umbrella: true},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]}
+    ]
+  end
+
+  defp aliases do
+    [
+      verify: "format --check-formatted",
+      "test.integration": "test.integration --include e2e"
     ]
   end
 

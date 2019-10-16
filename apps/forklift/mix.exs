@@ -12,6 +12,7 @@ defmodule Forklift.MixProject do
       lockfile: "../../mix.lock",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
       docs: docs(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env())
@@ -59,6 +60,10 @@ defmodule Forklift.MixProject do
       {:pipeline, in_umbrella: true},
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]}
     ]
+  end
+
+  defp aliases do
+    [verify: ["format --check-formatted", "credo"]]
   end
 
   defp docs do

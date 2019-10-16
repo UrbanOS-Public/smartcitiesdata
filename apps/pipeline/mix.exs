@@ -12,7 +12,8 @@ defmodule Pipeline.MixProject do
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       test_paths: Mix.env() |> test_paths(),
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -35,6 +36,10 @@ defmodule Pipeline.MixProject do
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]}
     ]
+  end
+
+  defp aliases do
+    [verify: "format --check-formatted"]
   end
 
   defp test_paths(:integration), do: ["test/integration"]
