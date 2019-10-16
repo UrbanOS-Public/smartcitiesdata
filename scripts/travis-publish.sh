@@ -3,8 +3,8 @@
 set -e
 
 if [ ! -z "$TRAVIS_TAG" ]; then
-    app=$(echo "$TRAVIS_TAG" | cut -d: -f1)
-    vsn=$(echo "$TRAVIS_TAG" | cut -d: -f2)
+    app=$(echo "$TRAVIS_TAG" | cut -d@ -f1)
+    vsn=$(echo "$TRAVIS_TAG" | cut -d@ -f2)
 
     echo "Building smartcitiesdata/${app:?COULD NOT DETERMINE APP}:${vsn:?COULD NOT DETERMINE VERSION}"
 
