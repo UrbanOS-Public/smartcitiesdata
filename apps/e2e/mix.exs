@@ -32,7 +32,10 @@ defmodule E2E.MixProject do
   end
 
   defp aliases do
-    [verify: ["format --check-formatted"]]
+    [
+      verify: "format --check-formatted",
+      "test.integration": "test.integration --include e2e"
+    ]
   end
 
   defp test_paths(:integration), do: ["test"]
