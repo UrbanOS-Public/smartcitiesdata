@@ -5,6 +5,7 @@ defmodule AndiWeb.OrganizationControllerTest do
 
   @route "/api/v1/organization"
   @get_orgs_route "/api/v1/organizations"
+  @get_repost_orgs_route "/api/v1/repost_org_updates"
   @ou Application.get_env(:andi, :ldap_env_ou)
   alias SmartCity.Organization
   alias SmartCity.Registry.Organization, as: RegOrganization
@@ -184,7 +185,7 @@ defmodule AndiWeb.OrganizationControllerTest do
     end
   end
 
-  describe "GET orgs from /api/organization" do
+  describe "GET orgs from /api/v1/organization" do
     setup %{conn: conn, request: request} do
       [conn: get(conn, @get_orgs_route, request)]
     end
@@ -195,6 +196,24 @@ defmodule AndiWeb.OrganizationControllerTest do
         |> json_response(200)
 
       assert MapSet.new(expected_orgs) == MapSet.new(actual_orgs)
+    end
+  end
+
+  describe "rePOSTs orgs from /api/vi/repost_org_updates" do
+    test "returns a 200", %{conn: conn_in} do
+      allow(Andi.Services.OrganizationReposter.repost_all_orgs(), return: :ok)
+      conn = post(conn, @get_repost_orgs_route)
+      response = json_response(conn, 200)
+
+      assert "Orgs successfully reposted" == response
+    end
+
+    test "returns a 500 if there was an error", %{conn: conn_in} do
+      allow(Andi.Services.OrganizationReposter.repost_all_orgs(), return: {:error, "mistakes were made"})
+      conn = post(conn, @get_repost_orgs_route)
+      response = json_response(conn, 500)
+
+      assert "Failed to repost organizations" == response
     end
   end
 

@@ -15,6 +15,7 @@ defmodule AndiWeb.Router do
     post "/v1/dataset/disable", DatasetController, :disable
     get "/v1/organizations", OrganizationController, :get_all
     post "/v1/organization", OrganizationController, :create
+    post "/v1/repost_org_updates", OrganizationController, :repost_org_updates
   end
 
   scope "/", AndiWeb do
