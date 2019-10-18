@@ -1,6 +1,6 @@
 defmodule DiscoveryApi.Auth.AuthTest do
   use ExUnit.Case
-  use Divo, services: [:"ecto-postgres", :ldap, :redis]
+  use Divo, services: [:"ecto-postgres", :ldap, :redis, :zookeeper, :kafka]
   use DiscoveryApi.DataCase
 
   alias DiscoveryApi.Data.Model

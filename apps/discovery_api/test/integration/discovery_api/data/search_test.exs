@@ -1,6 +1,6 @@
 defmodule DiscoveryApi.Data.SearchTest do
   use ExUnit.Case
-  use Divo, services: [:redis]
+  use Divo, services: [:redis, :zookeeper, :kafka, :zookeeper, :kafka]
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.TestDataGenerator, as: TDG

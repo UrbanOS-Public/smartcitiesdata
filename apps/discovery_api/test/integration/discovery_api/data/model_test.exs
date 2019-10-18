@@ -1,6 +1,6 @@
 defmodule DiscoveryApi.Data.ModelTest do
   use ExUnit.Case
-  use Divo, services: [:ldap, :redis]
+  use Divo, services: [:ldap, :redis, :zookeeper, :kafka]
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Data.Model
 

@@ -1,6 +1,6 @@
 defmodule DiscoveryApi.Data.DictionaryTest do
   use ExUnit.Case
-  use Divo, services: [:redis]
+  use Divo, services: [:redis, :zookeeper, :kafka]
   alias DiscoveryApi.TestDataGenerator, as: TDG
   alias SmartCity.Registry.Dataset
   alias SmartCity.Registry.Organization

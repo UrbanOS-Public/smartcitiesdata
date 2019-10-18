@@ -22,3 +22,15 @@ config :ex_json_schema,
 config :paddle, Paddle, base: "dc=example,dc=org"
 
 config :discovery_api, DiscoveryApi.Auth.Auth0.Guardian, issuer: "https://smartcolumbusos-demo.auth0.com/"
+
+config :discovery_api, :brook,
+  instance: :discovery_api,
+  driver: [
+    module: Brook.Driver.Default,
+    init_arg: []
+  ],
+  handlers: [DiscoveryApi.EventHandler],
+  storage: [
+    module: Brook.Storage.Ets,
+    init_arg: []
+  ]

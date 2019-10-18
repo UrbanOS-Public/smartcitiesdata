@@ -18,10 +18,11 @@ defmodule DiscoveryApi.Application do
         DiscoveryApi.Search.Storage,
         DiscoveryApiWeb.Plugs.ResponseCache,
         redis(),
+        ecto_repo(),
+        {Brook, Application.get_env(:discovery_api, :brook)},
         registry_pubsub(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
-        DiscoveryApi.Quantum.Scheduler,
-        ecto_repo()
+        DiscoveryApi.Quantum.Scheduler
       ]
       |> List.flatten()
 

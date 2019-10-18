@@ -59,3 +59,22 @@ config :discovery_api, DiscoveryApi.Repo,
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox,
   port: "5456"
+
+config :discovery_api, :brook,
+  instance: :discovery_api,
+  driver: [
+    module: Brook.Driver.Kafka,
+    init_arg: [
+      endpoints: endpoints,
+      topic: "event-stream",
+      group: "discovery-api-event-stream",
+      config: [
+        begin_offset: :earliest
+      ]
+    ]
+  ],
+  handlers: [DiscoveryApi.EventHandler],
+  storage: [
+    module: Brook.Storage.Redis,
+    init_arg: [redix_args: [host: host], namespace: "discovery-api:view"]
+  ]

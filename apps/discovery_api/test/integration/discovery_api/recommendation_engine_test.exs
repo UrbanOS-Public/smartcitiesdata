@@ -3,7 +3,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
   alias DiscoveryApi.TestDataGenerator, as: TDG
   alias DiscoveryApi.RecommendationEngine
 
-  use Divo, services: [:redis]
+  use Divo, services: [:redis, :zookeeper, :kafka]
 
   test "dataset recommendations" do
     dataset_to_get_recommendations_for =
