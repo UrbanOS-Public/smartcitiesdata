@@ -5,6 +5,7 @@ defmodule DiscoveryApiWeb.UserControllerTest do
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
+  alias DiscoveryApi.Auth.Auth0.CachedJWKS
 
   @valid_jwt AuthHelper.valid_jwt()
   @user_info_body Jason.encode!(%{"email" => "x@y.z"})
@@ -12,7 +13,7 @@ defmodule DiscoveryApiWeb.UserControllerTest do
   describe "POST /logged-in" do
     setup do
       jwks = AuthHelper.valid_jwks()
-      Application.put_env(:discovery_api, :jwks_cache, jwks)
+      CachedJWKS.set(jwks)
 
       bypass = Bypass.open()
 

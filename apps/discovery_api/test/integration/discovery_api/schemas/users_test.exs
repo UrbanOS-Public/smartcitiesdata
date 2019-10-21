@@ -4,8 +4,22 @@ defmodule DiscoveryApi.Schemas.UsersTest do
   use DiscoveryApi.DataCase
 
   alias DiscoveryApi.Repo
-  alias DiscoveryApi.Schemas.Users
+  alias DiscoveryApi.Schemas.{Generators, Users}
   alias DiscoveryApi.Schemas.Users.User
+
+  describe "get/1" do
+    test "given an existing user, it returns an :ok tuple with it" do
+      {:ok, %{id: saved_id, subject_id: saved_subject_id}} = Users.create_or_update("i|exist", %{email: "janet@example.com"})
+
+      assert {:ok, %{id: ^saved_id}} = Users.get_user(saved_subject_id)
+    end
+
+    test "given a non-existing user, it returns an :error tuple" do
+      hopefully_unique_id = Generators.generate_public_id(32)
+
+      assert {:error, _} = Users.get_user(hopefully_unique_id)
+    end
+  end
 
   describe "create_or_update/2" do
     test "creates a user" do

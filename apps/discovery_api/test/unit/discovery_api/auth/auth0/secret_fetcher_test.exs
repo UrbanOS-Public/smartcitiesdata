@@ -2,6 +2,7 @@ defmodule DiscoveryApi.Auth.Auth0.SecretFetcherTest do
   use ExUnit.Case
   use Placebo
   alias DiscoveryApi.Auth.Auth0.SecretFetcher
+  alias DiscoveryApi.Auth.Auth0.CachedJWKS
 
   @jwks DiscoveryApi.Test.AuthHelper.valid_jwks()
   @last_key Map.get(@jwks, "keys") |> List.last()
@@ -9,7 +10,7 @@ defmodule DiscoveryApi.Auth.Auth0.SecretFetcherTest do
 
   describe "fetch verifying secret" do
     test "retrieves secret from cached jwks when available" do
-      Application.put_env(:discovery_api, :jwks_cache, @jwks)
+      CachedJWKS.set(@jwks)
 
       actual = SecretFetcher.fetch_verifying_secret(:irrelevant, %{"kid" => @last_key_id}, :nope)
 
@@ -18,7 +19,7 @@ defmodule DiscoveryApi.Auth.Auth0.SecretFetcherTest do
     end
 
     test "fetches secret from jwks endpoint when not cached" do
-      Application.delete_env(:discovery_api, :jwks_cache)
+      CachedJWKS.delete()
       jwks_response = {:ok, %{body: Jason.encode!(@jwks)}}
       allow(HTTPoison.get(Application.get_env(:discovery_api, :jwks_endpoint)), return: jwks_response)
 
@@ -29,17 +30,17 @@ defmodule DiscoveryApi.Auth.Auth0.SecretFetcherTest do
     end
 
     test "caches secret from jwks endpoint after fetching" do
-      Application.delete_env(:discovery_api, :jwks_cache)
+      CachedJWKS.delete()
       jwks_response = {:ok, %{body: Jason.encode!(@jwks)}}
       allow(HTTPoison.get(Application.get_env(:discovery_api, :jwks_endpoint)), return: jwks_response)
 
       SecretFetcher.fetch_verifying_secret(:irrelevant, %{"kid" => @last_key_id}, :nope)
 
-      assert @jwks == Application.get_env(:discovery_api, :jwks_cache)
+      assert @jwks == CachedJWKS.get()
     end
 
     test "returns error when jwks endpoint returns error" do
-      Application.delete_env(:discovery_api, :jwks_cache)
+      CachedJWKS.delete()
       jwks_response = {:error, :bad_things_happened}
       allow(HTTPoison.get(Application.get_env(:discovery_api, :jwks_endpoint)), return: jwks_response)
 
@@ -50,7 +51,7 @@ defmodule DiscoveryApi.Auth.Auth0.SecretFetcherTest do
     end
 
     test "returns error when jwks endpoint doesn't have key" do
-      Application.delete_env(:discovery_api, :jwks_cache)
+      CachedJWKS.delete()
       jwks_response = {:ok, %{body: Jason.encode!(@jwks)}}
       allow(HTTPoison.get(Application.get_env(:discovery_api, :jwks_endpoint)), return: jwks_response)
 
@@ -62,7 +63,7 @@ defmodule DiscoveryApi.Auth.Auth0.SecretFetcherTest do
 
     test "fetches secret from jwks endpoint when cached jwks does not have key" do
       cached_jwks_without_key = %{"keys" => []}
-      Application.put_env(:discovery_api, :jwks_cache, cached_jwks_without_key)
+      CachedJWKS.set(cached_jwks_without_key)
 
       jwks_response = {:ok, %{body: Jason.encode!(@jwks)}}
       allow(HTTPoison.get(Application.get_env(:discovery_api, :jwks_endpoint)), return: jwks_response)

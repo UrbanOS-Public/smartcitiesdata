@@ -6,6 +6,7 @@ defmodule DiscoveryApi.Auth.Auth0.SecretFetcher do
   use Guardian.Token.Jwt.SecretFetcher
 
   alias DiscoveryApi.Services.AuthService
+  alias DiscoveryApi.Auth.Auth0.CachedJWKS
 
   def fetch_verifying_secret(_module, token_headers, _opts) do
     %{"kid" => key_id} = token_headers
@@ -14,7 +15,7 @@ defmodule DiscoveryApi.Auth.Auth0.SecretFetcher do
   end
 
   defp get_key(key_id) do
-    case cached_jwks() |> key_from_jwks(key_id) do
+    case CachedJWKS.get() |> key_from_jwks(key_id) do
       {:error, _} -> fetch_and_cache_jwks() |> key_from_jwks(key_id)
       result -> result
     end
@@ -39,15 +40,11 @@ defmodule DiscoveryApi.Auth.Auth0.SecretFetcher do
   defp fetch_and_cache_jwks() do
     case AuthService.get_jwks() do
       {:ok, jwks} ->
-        Application.put_env(:discovery_api, :jwks_cache, jwks)
+        CachedJWKS.set(jwks)
         jwks
 
       error ->
         error
     end
-  end
-
-  defp cached_jwks() do
-    Application.get_env(:discovery_api, :jwks_cache)
   end
 end

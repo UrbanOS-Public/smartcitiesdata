@@ -49,7 +49,7 @@ defmodule DiscoveryApiWeb.Endpoint do
   plug(Corsica,
     origins: "*",
     allow_credentials: true,
-    allow_headers: ["authorization"],
+    allow_headers: ["authorization", "content-type"],
     expose_headers: ["token"]
   )
 

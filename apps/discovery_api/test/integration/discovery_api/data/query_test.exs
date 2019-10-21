@@ -539,7 +539,7 @@ defmodule DiscoveryApi.Data.QueryTest do
       geojson_dataset: geojson_dataset,
       expected_body: expected_body
     } do
-      actual = get("http://localhost:4000/api/v1/dataset/#{geojson_dataset.id}/query?_format=geojson")
+      actual = get("http://localhost:4000/api/v1/dataset/#{geojson_dataset.id}/query?_format=geojson&orderBy=feature")
 
       expected_with_name = Map.put(expected_body, "name", geojson_dataset.technical.systemName)
       assert expected_with_name == Jason.decode!(actual.body)
@@ -549,7 +549,7 @@ defmodule DiscoveryApi.Data.QueryTest do
       geojson_table: geojson_table,
       expected_body: expected_body
     } do
-      actual = post("http://localhost:4000/api/v1/query?_format=geojson", "select * from #{geojson_table}")
+      actual = post("http://localhost:4000/api/v1/query?_format=geojson", "select * from #{geojson_table} order by feature")
 
       assert expected_body == Jason.decode!(actual.body)
     end

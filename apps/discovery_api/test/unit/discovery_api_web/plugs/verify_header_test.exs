@@ -4,6 +4,7 @@ defmodule DiscoveryApiWeb.Plugs.VerifyHeaderTest do
 
   use DiscoveryApiWeb.ConnCase
   alias DiscoveryApiWeb.Plugs.VerifyHeader
+  alias DiscoveryApi.Auth.Auth0.CachedJWKS
 
   @verified_conn Guardian.Plug.put_current_token(%Plug.Conn{}, "fake_token")
   @unverified_conn %Plug.Conn{}
@@ -31,7 +32,7 @@ defmodule DiscoveryApiWeb.Plugs.VerifyHeaderTest do
     end
 
     test "retries call to Guardian.Plug.VerifyHeader when verification fails the first time for a cached jwks" do
-      Application.put_env(:discovery_api, :jwks_cache, %{"keys" => []})
+      CachedJWKS.set(%{"keys" => []})
       allow(Guardian.Plug.VerifyHeader.call(any(), any()), return: @unverified_conn)
 
       result = VerifyHeader.call(@unverified_conn, @opts)
@@ -41,16 +42,16 @@ defmodule DiscoveryApiWeb.Plugs.VerifyHeaderTest do
     end
 
     test "invalidates cached jwks when verification fails" do
-      Application.put_env(:discovery_api, :jwks_cache, %{"keys" => []})
+      CachedJWKS.set(%{"keys" => []})
       allow(Guardian.Plug.VerifyHeader.call(any(), any()), return: @unverified_conn)
 
       VerifyHeader.call(@unverified_conn, @opts)
 
-      assert Application.get_env(:discovery_api, :jwks_cache) == nil
+      assert CachedJWKS.get() == nil
     end
 
     test "does not retry call to Guardian.Plug.VerifyHeader when jwks was not cached" do
-      Application.delete_env(:discovery_api, :jwks_cache)
+      CachedJWKS.delete()
       allow(Guardian.Plug.VerifyHeader.call(any(), any()), return: @unverified_conn)
 
       result = VerifyHeader.call(@unverified_conn, @opts)

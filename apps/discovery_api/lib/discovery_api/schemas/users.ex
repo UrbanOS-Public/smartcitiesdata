@@ -24,5 +24,10 @@ defmodule DiscoveryApi.Schemas.Users do
     |> Repo.insert_or_update()
   end
 
-  def get_user(subject_id), do: Repo.get_by(User, subject_id: subject_id)
+  def get_user(subject_id) do
+    case Repo.get_by(User, subject_id: subject_id) do
+      nil -> {:error, "#{subject_id} not found"}
+      user -> {:ok, user}
+    end
+  end
 end

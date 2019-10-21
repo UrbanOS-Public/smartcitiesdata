@@ -56,6 +56,7 @@ defmodule DiscoveryApi.Mixfile do
       {:patiently, "~> 0.2"},
       {:phoenix, "~> 1.4"},
       {:phoenix_pubsub, "~> 1.0"},
+      {:nanoid, "~> 2.0"},
       {:placebo, "~> 1.2", only: [:dev, :test]},
       {:plug_cowboy, "~> 1.0"},
       {:postgrex, "~> 0.15.1"},
@@ -84,7 +85,7 @@ defmodule DiscoveryApi.Mixfile do
   defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]
 
-  defp elixirc_paths(:test), do: ["test/utils", "lib"]
+  defp elixirc_paths(:test), do: ["test/utils", "test/unit/support", "lib"]
   defp elixirc_paths(:integration), do: ["test/utils", "test/integration/support", "lib"]
   defp elixirc_paths(_), do: ["lib"]
 

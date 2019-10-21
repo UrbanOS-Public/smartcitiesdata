@@ -4,10 +4,12 @@ defmodule DiscoveryApi.Schemas.Users.User do
   """
   use Ecto.Schema
   import Ecto.Changeset
+  alias DiscoveryApi.Schemas.Visualizations.Visualization
 
   schema "users" do
     field(:subject_id, :string)
     field(:email, :string)
+    has_many(:visualizations, Visualization, foreign_key: :owner_id)
 
     timestamps()
   end

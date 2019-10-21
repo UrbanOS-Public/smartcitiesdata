@@ -58,7 +58,8 @@ defmodule DiscoveryApi.Test.Helper do
         "total_score" => Faker.random_uniform(),
         "record_count" => Faker.random_between(1, 1000),
         "fields" => %{"one" => %{"count" => 1, "required" => false}}
-      }
+      },
+      systemName: "shouldnot__benil"
     }
     |> Map.merge(values)
   end
@@ -121,7 +122,7 @@ defmodule DiscoveryApi.Test.Helper do
       SmartCity.Registry.Organization.write(organization)
 
       Enum.each(members, fn member ->
-        username = make_ldap_user(member, people)
+        username = ensure_ldap_user(member, people)
         add_ldap_user_to_organization(username, organization_name, group, people)
       end)
 
@@ -149,7 +150,7 @@ defmodule DiscoveryApi.Test.Helper do
     })
   end
 
-  def make_ldap_user(name, ou) do
+  def ensure_ldap_user(name, ou) do
     dn = [uid: name, ou: ou]
 
     user_request = [
@@ -163,10 +164,14 @@ defmodule DiscoveryApi.Test.Helper do
       userPassword: "{SSHA}/02KaNTR+p0r0KSDfDZfFQiYgyekBsdH"
     ]
 
-    :ok = Paddle.add(dn, user_request)
-    {:ok, [_user | _]} = Paddle.get(base: "uid=#{name},ou=#{ou}")
+    case Paddle.add(dn, user_request) do
+      status when status in [:ok, {:error, :entryAlreadyExists}] ->
+        {:ok, [_user | _]} = Paddle.get(base: "uid=#{name},ou=#{ou}")
+        name
 
-    name
+      error ->
+        raise error
+    end
   end
 
   def get_token_from_login(username, password \\ "admin") do
@@ -186,40 +191,5 @@ defmodule DiscoveryApi.Test.Helper do
       |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
       |> Enum.into(%{})
     end)
-  end
-end
-
-defmodule DiscoveryApiWeb.ConnCase do
-  @moduledoc """
-  This module defines the test case to be used by
-  tests that require setting up a connection.
-
-  Such tests rely on `Phoenix.ConnTest` and also
-  import other functionality to make it easier
-  to build common datastructures and query the data layer.
-
-  Finally, if the test case interacts with the database,
-  it cannot be async. For this reason, every test runs
-  inside a transaction which is reset at the beginning
-  of the test unless the test case is marked as async.
-  """
-
-  use ExUnit.CaseTemplate
-
-  using do
-    quote do
-      # Import conveniences for testing with connections
-      use Phoenix.ConnTest
-      import DiscoveryApiWeb.Router.Helpers
-      alias SmartCity.TestDataGenerator, as: TDG
-      alias DiscoveryApi.Test.Helper
-
-      # The default endpoint for testing
-      @endpoint DiscoveryApiWeb.Endpoint
-    end
-  end
-
-  setup _tags do
-    {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end
