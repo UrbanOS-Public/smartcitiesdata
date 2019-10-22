@@ -8,7 +8,6 @@ defmodule AndiWeb.DatasetValidator do
            validate_org_name(),
            validate_data_name(),
            already_exists!(),
-           modified_date_iso8601(),
            description_required()
          ]) do
       [] -> :valid
@@ -45,18 +44,5 @@ defmodule AndiWeb.DatasetValidator do
 
   defp description_required do
     {&(&1.business.description != ""), "Description must be provided"}
-  end
-
-  defp modified_date_iso8601 do
-    {&is_valid_modified_date?(&1.business.modifiedDate), "modifiedDate must be in a valid IOS8601 timestamp format"}
-  end
-
-  defp is_valid_modified_date?(""), do: true
-
-  defp is_valid_modified_date?(modified_date) do
-    case DateTime.from_iso8601(modified_date) do
-      {:ok, _, _} -> true
-      {:error, _} -> false
-    end
   end
 end
