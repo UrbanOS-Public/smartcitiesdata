@@ -13,6 +13,7 @@ defmodule AndiWeb.Router do
     get "/v1/dataset/:dataset_id", DatasetController, :get
     put "/v1/dataset", DatasetController, :create
     post "/v1/dataset/disable", DatasetController, :disable
+    post "/v1/dataset/delete", DatasetController, :delete
     get "/v1/organizations", OrganizationController, :get_all
     post "/v1/organization", OrganizationController, :create
     post "/v1/repost_org_updates", OrganizationController, :repost_org_updates

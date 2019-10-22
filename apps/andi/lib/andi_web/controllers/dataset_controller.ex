@@ -86,6 +86,24 @@ defmodule AndiWeb.DatasetController do
     end
   end
 
+  @doc """
+  Delete a dataset
+  """
+  @spec delete(Plug.Conn.t(), any()) :: Plug.Conn.t()
+  def delete(conn, %{"id" => dataset_id}) do
+    case Andi.Services.DatasetDelete.delete(dataset_id) do
+      {:ok, dataset} ->
+        respond(conn, 200, dataset)
+
+      {:not_found, _} ->
+        respond(conn, 404, "Dataset not found")
+
+      error ->
+        Logger.error("Could not delete dataset due to #{inspect(error)}")
+        respond(conn, 500, "An error occcured when deleting dataset")
+    end
+  end
+
   defp parse_message(%{"technical" => _technical} = msg) do
     with %{"technical" => technical} = msg <- trim_fields(msg),
          org_name when not is_nil(org_name) <- Map.get(technical, "orgName"),

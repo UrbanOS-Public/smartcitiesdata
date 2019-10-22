@@ -8,7 +8,7 @@ defmodule AndiWeb.DatasetControllerTest do
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
   import Andi
-  import SmartCity.Event, only: [dataset_disable: 0]
+  import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0]
 
   setup do
     example_dataset_1 = TDG.create_dataset(%{})
@@ -230,6 +230,46 @@ defmodule AndiWeb.DatasetControllerTest do
       |> json_response(404)
 
       refute_called(Brook.Event.send(instance_name(), dataset_disable(), :andi, dataset))
+    end
+
+    @tag capture_log: true
+    test "handles error", %{conn: conn, dataset: dataset} do
+      allow(Brook.get(instance_name(), any(), any()), return: {:ok, dataset})
+      allow(Brook.Event.send(instance_name(), any(), any(), any()), return: {:error, "Mistakes were made"})
+
+      post(conn, "#{@route}/disable", %{id: dataset.id})
+      |> json_response(500)
+    end
+  end
+
+  describe "POST /dataset/delete" do
+    setup %{} do
+      dataset = TDG.create_dataset(%{})
+      [dataset: dataset]
+    end
+
+    test "should send dataset:delete event", %{conn: conn, dataset: dataset} do
+      allow(Brook.get(instance_name(), any(), any()), return: {:ok, dataset})
+      allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
+
+      post(conn, "#{@route}/delete", %{id: dataset.id})
+      |> json_response(200)
+
+      assert_called(Brook.Event.send(instance_name(), dataset_delete(), :andi, dataset))
+    end
+
+    @tag capture_log: true
+    test "does not send dataset:delete event if dataset does not exist", %{
+      conn: conn,
+      dataset: dataset
+    } do
+      allow(Brook.get(instance_name(), any(), any()), return: {:ok, nil})
+      allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
+
+      post(conn, "#{@route}/delete", %{id: dataset.id})
+      |> json_response(404)
+
+      refute_called(Brook.Event.send(instance_name(), dataset_delete(), :andi, dataset))
     end
 
     @tag capture_log: true
