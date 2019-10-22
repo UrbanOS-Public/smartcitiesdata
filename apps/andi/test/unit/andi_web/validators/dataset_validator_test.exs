@@ -47,29 +47,6 @@ defmodule AndiWeb.DatasetValidatorTest do
     end
   end
 
-  describe "modified_date_iso8601/1 checks date format" do
-    test "accepts null string as a valid format" do
-      dataset = TDG.create_dataset(business: %{modifiedDate: ""})
-
-      assert :valid = DatasetValidator.validate(dataset)
-    end
-
-    test "accepts valid date when in iso8601 format" do
-      dataset = TDG.create_dataset(business: %{description: "something", modifiedDate: "2019-10-14T17:30:16+0000"})
-
-      assert :valid = DatasetValidator.validate(dataset)
-    end
-
-    test "rejects dates and strings that are in other formats" do
-      dataset = TDG.create_dataset(business: %{description: "something", modifiedDate: "2019-10-14T17"})
-
-      assert {:invalid, errors} = DatasetValidator.validate(dataset)
-
-      assert length(errors) == 1
-      assert List.first(errors) |> String.contains?("modifiedDate")
-    end
-  end
-
   describe "dataset description" do
     test "rejects dataset with no description" do
       no_description_dataset =

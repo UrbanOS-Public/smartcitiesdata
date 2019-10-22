@@ -18,8 +18,8 @@ defmodule Andi.BrookMigrationTest do
       dataset1 = %SmartCity.Registry.Dataset{
         id: "dataset1",
         _metadata: %SmartCity.Registry.Dataset.Metadata{},
-        business: %SmartCity.Registry.Dataset.Business{},
-        technical: %SmartCity.Registry.Dataset.Technical{}
+        business: %SmartCity.Registry.Dataset.Business{modifiedDate: ""},
+        technical: %SmartCity.Registry.Dataset.Technical{sourceFormat: "csv"}
       }
 
       {:ok, dataset_event1} =
@@ -35,8 +35,8 @@ defmodule Andi.BrookMigrationTest do
       dataset2 = %SmartCity.Registry.Dataset{
         id: "dataset2",
         _metadata: %SmartCity.Registry.Dataset.Metadata{},
-        business: %SmartCity.Registry.Dataset.Business{},
-        technical: %SmartCity.Registry.Dataset.Technical{}
+        business: %SmartCity.Registry.Dataset.Business{modifiedDate: ""},
+        technical: %SmartCity.Registry.Dataset.Technical{sourceFormat: "csv"}
       }
 
       {:ok, dataset_event2} =

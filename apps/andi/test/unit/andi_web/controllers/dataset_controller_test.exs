@@ -26,7 +26,11 @@ defmodule AndiWeb.DatasetControllerTest do
       |> Jason.decode!()
 
     example_datasets = [example_dataset_1, example_dataset_2]
-    allow(RegDataset.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
+
+    allow(RegDataset.write(any()),
+      return: {:ok, "id"},
+      meck_options: [:passthrough]
+    )
 
     allow(Brook.get_all_values(instance_name(), any()),
       return: {:ok, [example_dataset_1, example_dataset_2]},
@@ -102,13 +106,6 @@ defmodule AndiWeb.DatasetControllerTest do
         |> get_in(["technical", "systemName"])
 
       assert system_name == "org__dataset"
-    end
-
-    # This test marked for deletion once Dataset Registry is retired
-    test "writes data to registry", %{message: message} do
-      {:ok, struct} = RegDataset.new(message)
-
-      assert_called(RegDataset.write(struct), once())
     end
 
     test "writes data to event stream", %{message: message} do
@@ -259,12 +256,6 @@ defmodule AndiWeb.DatasetControllerTest do
         |> get_in(["technical", "systemName"])
 
       assert system_name == "org__dataset"
-    end
-
-    # This test marked for deletion once Dataset Registry is retired
-    test "writes to dataset registry", %{message: message} do
-      {:ok, struct} = RegDataset.new(message)
-      assert_called(RegDataset.write(struct), once())
     end
 
     test "writes to event stream", %{message: message} do
