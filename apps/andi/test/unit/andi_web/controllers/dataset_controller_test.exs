@@ -277,7 +277,7 @@ defmodule AndiWeb.DatasetControllerTest do
       allow(Brook.get(instance_name(), any(), any()), return: {:ok, dataset})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: {:error, "Mistakes were made"})
 
-      post(conn, "#{@route}/disable", %{id: dataset.id})
+      post(conn, "#{@route}/delete", %{id: dataset.id})
       |> json_response(500)
     end
   end
