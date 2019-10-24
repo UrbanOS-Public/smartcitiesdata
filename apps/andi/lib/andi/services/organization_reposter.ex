@@ -7,9 +7,10 @@ defmodule Andi.Services.OrganizationReposter do
   require Logger
   import Andi
   import SmartCity.Event, only: [organization_update: 0]
+  alias SmartCity.Registry.Organization, as: RegOrganization
 
   def repost_all_orgs() do
-    with {:ok, orgs} <- Brook.get_all_values(instance_name(), :org),
+    with {:ok, orgs} <- RegOrganization.get_all(),
          :ok <- send_all(orgs) do
       :ok
     else
@@ -28,8 +29,16 @@ defmodule Andi.Services.OrganizationReposter do
 
   defp send_all_collecting_errors(organizations) do
     organizations
+    |> Enum.map(&to_organization/1)
     |> Enum.reject(fn organization ->
       :ok == Brook.Event.send(instance_name(), organization_update(), :andi, organization)
     end)
+  end
+
+  defp to_organization(registry_organization) do
+    registry_organization
+    |> Map.from_struct()
+    |> SmartCity.Organization.new()
+    |> elem(1)
   end
 end
