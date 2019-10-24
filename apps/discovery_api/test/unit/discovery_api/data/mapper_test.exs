@@ -8,7 +8,7 @@ defmodule DiscoveryApi.Data.MapperTest do
   describe "to_data_model/2 hard overrides" do
     data_test "with #{inspect(overrides)} should default #{inspect(field)} to #{inspect(value)}" do
       dataset = TDG.create_dataset(overrides)
-      organization = TDG.create_organization(%{})
+      organization = TDG.create_schema_organization(%{})
 
       %Model{} = result = Mapper.to_data_model(dataset, organization)
 

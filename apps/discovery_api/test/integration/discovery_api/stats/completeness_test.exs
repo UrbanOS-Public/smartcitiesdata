@@ -1,6 +1,7 @@
 defmodule DiscoveryApi.Stats.CompletenessTest do
   use ExUnit.Case
   use Divo
+  use DiscoveryApi.DataCase
   alias SmartCity.Registry.Dataset
   alias SmartCity.Registry.Organization
   import SmartCity.TestHelper
@@ -8,8 +9,10 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   alias DiscoveryApi.Data.Persistence
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApi.Stats.DataHelper
+  alias DiscoveryApi.Test.Helper
 
   setup do
+    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
     :ok
   end
@@ -17,8 +20,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   @moduletag capture_log: true
   describe "produce_completeness_stats/0" do
     test "Adds stats entries for dataset to redis" do
-      organization = TDG.create_organization(%{})
-      Organization.write(organization)
+      organization = Helper.create_persisted_organization()
 
       dataset1 =
         TDG.create_dataset(%{

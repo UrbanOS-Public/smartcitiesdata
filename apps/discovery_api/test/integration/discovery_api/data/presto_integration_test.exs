@@ -1,11 +1,13 @@
 defmodule DiscoveryApi.Data.PrestoIngrationTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :presto, :metastore, :postgres, :minio, :zookeeper, :kafka]
+  use Divo, services: [:redis, :presto, :metastore, :postgres, :minio, :zookeeper, :kafka, :"ecto-postgres"]
+  use DiscoveryApi.DataCase
   alias SmartCity.Registry.Dataset
-  alias SmartCity.Registry.Organization
   alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias DiscoveryApi.Test.Helper
 
   setup do
+    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
     :ok
   end
@@ -19,8 +21,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    organization = TDG.create_organization(%{})
-    Organization.write(organization)
+    organization = Helper.create_persisted_organization()
 
     dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
     Dataset.write(dataset)
@@ -45,8 +46,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     |> Prestige.execute()
     |> Prestige.prefetch()
 
-    organization = TDG.create_organization(%{})
-    Organization.write(organization)
+    organization = Helper.create_persisted_organization()
 
     dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
     Dataset.write(dataset)

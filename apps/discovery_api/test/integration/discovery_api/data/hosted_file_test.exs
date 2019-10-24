@@ -1,9 +1,10 @@
 defmodule DiscoveryApi.Data.HostedFileTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :presto, :metastore, :postgres, :minio, :zookeeper, :kafka]
+  use Divo
+  use DiscoveryApi.DataCase
   alias SmartCity.Registry.Dataset
-  alias SmartCity.Registry.Organization
   alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias DiscoveryApi.Test.Helper
 
   require Logger
 
@@ -16,6 +17,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     Application.put_env(:ex_aws, :access_key_id, "testing_access_key")
     Application.put_env(:ex_aws, :secret_access_key, "testing_secret_key")
 
+    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
 
     "test/integration/test-file.test"
@@ -37,8 +39,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     dataset_name = @dataset_name
     system_name = "not_saved"
 
-    organization = TDG.create_organization(%{orgName: "test_org"})
-    Organization.write(organization)
+    organization = Helper.create_persisted_organization(%{orgName: "test_org"})
 
     dataset =
       TDG.create_dataset(%{
@@ -61,8 +62,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     dataset_name = @dataset_name
     system_name = "not_saved"
 
-    organization = TDG.create_organization(%{orgName: "test_org"})
-    Organization.write(organization)
+    organization = Helper.create_persisted_organization(%{orgName: "test_org"})
 
     dataset =
       TDG.create_dataset(%{
@@ -85,8 +85,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     dataset_name = @dataset_name
     system_name = "not_saved"
 
-    organization = TDG.create_organization(%{orgName: "test_org"})
-    Organization.write(organization)
+    organization = Helper.create_persisted_organization(%{orgName: "test_org"})
 
     dataset =
       TDG.create_dataset(%{
@@ -109,8 +108,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     dataset_name = @dataset_name
     system_name = "not_saved"
 
-    organization = TDG.create_organization(%{orgName: "test_org"})
-    Organization.write(organization)
+    organization = Helper.create_persisted_organization(%{orgName: "test_org"})
 
     dataset =
       TDG.create_dataset(%{

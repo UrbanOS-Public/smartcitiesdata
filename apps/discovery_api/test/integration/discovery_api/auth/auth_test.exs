@@ -18,6 +18,8 @@ defmodule DiscoveryApi.Auth.AuthTest do
   @organization_2_user "SecondUser"
 
   setup_all do
+    Helper.wait_for_brook_to_be_ready()
+
     membership = %{
       @organization_1_name => [
         @organization_1_user

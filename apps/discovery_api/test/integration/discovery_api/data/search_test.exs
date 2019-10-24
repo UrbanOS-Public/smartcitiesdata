@@ -1,13 +1,17 @@
 defmodule DiscoveryApi.Data.SearchTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :zookeeper, :kafka, :zookeeper, :kafka]
+  use Divo, services: [:redis, :zookeeper, :kafka, :zookeeper, :kafka, :"ecto-postgres"]
+  use DiscoveryApi.DataCase
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.TestDataGenerator, as: SC_TDG
   alias SmartCity.Registry.Dataset
+  import SmartCity.TestHelper
   alias SmartCity.Registry.Organization
 
   setup do
+    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
 
     model_one =
@@ -50,8 +54,7 @@ defmodule DiscoveryApi.Data.SearchTest do
     end
 
     test "does not error when a dataset in the search cache has been deleted from redis" do
-      organization = TDG.create_organization(%{})
-      Organization.write(organization)
+      organization = Helper.create_persisted_organization()
 
       dataset =
         TDG.create_dataset(%{

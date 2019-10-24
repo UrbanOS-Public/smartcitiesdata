@@ -2,9 +2,9 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
   use ExUnit.Case
   use Placebo
   alias DiscoveryApi.Data.{DatasetEventListener, Model, SystemNameCache}
-  alias SmartCity.Registry.Organization
   alias DiscoveryApi.TestDataGenerator, as: TDG
   alias DiscoveryApiWeb.Plugs.ResponseCache
+  alias DiscoveryApi.Schemas.Organizations
   import Checkov
 
   describe "handle_dataset/1" do
@@ -13,14 +13,13 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
       allow DiscoveryApi.Search.Storage.index(any()), return: :ok
       allow DiscoveryApi.RecommendationEngine.save(any()), return: :ok
 
-      :ok
+      dataset = TDG.create_dataset(%{id: "123"})
+      organization = TDG.create_schema_organization(%{id: dataset.technical.orgId})
+      allow(Organizations.get_organization(dataset.technical.orgId), return: {:ok, organization})
+      {:ok, %{dataset: dataset, organization: organization}}
     end
 
-    test "should return :ok when successful" do
-      dataset = TDG.create_dataset(%{id: "123"})
-      organization = TDG.create_organization(%{id: dataset.technical.orgId})
-
-      allow(Organization.get(dataset.technical.orgId), return: {:ok, organization})
+    test "should return :ok when successful", %{dataset: dataset} do
       allow(Model.save(any()), return: {:ok, :success})
 
       assert :ok == DatasetEventListener.handle_dataset(dataset)
@@ -30,27 +29,19 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
     test "should return :ok and log when organization get fails" do
       dataset = TDG.create_dataset(%{id: "123"})
 
-      allow(Organization.get(dataset.technical.orgId), return: {:error, :failure})
+      allow(Organizations.get_organization(dataset.technical.orgId), return: {:error, :failure})
 
       assert :ok == DatasetEventListener.handle_dataset(dataset)
     end
 
     @tag capture_log: true
-    test "should return :ok and log when system cache put fails" do
-      dataset = TDG.create_dataset(%{id: "123"})
-      organization = TDG.create_organization(%{id: dataset.technical.orgId})
-
-      allow(Organization.get(dataset.technical.orgId), return: {:ok, organization})
+    test "should return :ok and log when system cache put fails", %{dataset: dataset} do
       allow(SystemNameCache.put(any(), any()), return: {:error, :failure})
 
       assert :ok == DatasetEventListener.handle_dataset(dataset)
     end
 
-    test "should invalidate the ResponseCache when dataset is received" do
-      dataset = TDG.create_dataset(%{id: "123"})
-      organization = TDG.create_organization(%{id: dataset.technical.orgId})
-
-      allow(Organization.get(dataset.technical.orgId), return: {:ok, organization})
+    test "should invalidate the ResponseCache when dataset is received", %{dataset: dataset} do
       allow(Model.save(any()), return: {:ok, :success})
 
       assert :ok == DatasetEventListener.handle_dataset(dataset)
@@ -58,33 +49,22 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
     end
 
     @tag capture_log: true
-    test "should return :ok and log when model save fails" do
-      dataset = TDG.create_dataset(%{id: "123"})
-      organization = TDG.create_organization(%{id: dataset.technical.orgId})
-
-      allow(Organization.get(dataset.technical.orgId), return: {:ok, organization})
+    test "should return :ok and log when model save fails", %{dataset: dataset} do
       allow(SystemNameCache.put(any(), any()), return: {:ok, :cached})
       allow(Model.save(any()), return: {:error, :failure})
 
       assert :ok == DatasetEventListener.handle_dataset(dataset)
     end
 
-    test "creates orgName/dataName mapping to dataset_id" do
-      dataset = TDG.create_dataset(%{id: "123"})
-      organization = TDG.create_organization(%{id: dataset.technical.orgId})
-
-      allow Organization.get(organization.id), return: {:ok, organization}
+    test "creates orgName/dataName mapping to dataset_id", %{dataset: dataset, organization: organization} do
       allow(Model.save(any()), return: {:ok, :success})
 
       DatasetEventListener.handle_dataset(dataset)
 
-      assert SystemNameCache.get(organization.orgName, dataset.technical.dataName) == "123"
+      assert SystemNameCache.get(organization.name, dataset.technical.dataName) == "123"
     end
 
-    test "indexes model for search" do
-      dataset = TDG.create_dataset(%{id: "123"})
-      organization = TDG.create_organization(%{id: dataset.technical.orgId})
-      allow Organization.get(organization.id), return: {:ok, organization}
+    test "indexes model for search", %{dataset: dataset, organization: organization} do
       allow(Model.save(any()), return: {:ok, :success})
       expected_model = DiscoveryApi.Data.Mapper.to_data_model(dataset, organization)
 
@@ -95,8 +75,8 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
 
     data_test "sends dataset to recommendation engine" do
       dataset = TDG.create_dataset(dataset_map)
-      organization = TDG.create_organization(%{id: dataset.technical.orgId})
-      allow Organization.get(organization.id), return: {:ok, organization}
+      organization = TDG.create_schema_organization(%{id: dataset.technical.orgId})
+      allow(Organizations.get_organization(dataset.technical.orgId), return: {:ok, organization})
       allow(Model.save(any()), return: {:ok, :success})
 
       DatasetEventListener.handle_dataset(dataset)

@@ -29,5 +29,12 @@ defmodule DiscoveryApi.Schemas.Organizations do
     |> Repo.insert_or_update()
   end
 
-  def get_organization(id), do: Repo.get(Organization, id)
+  def get_organization(id) do
+    case get_organization!(id) do
+      nil -> {:error, "Organization with id #{inspect(id)} does not exist."}
+      organization -> {:ok, organization}
+    end
+  end
+
+  def get_organization!(id), do: Repo.get(Organization, id)
 end

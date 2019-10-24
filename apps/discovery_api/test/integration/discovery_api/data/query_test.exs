@@ -2,6 +2,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   import ExUnit.CaptureLog
   use ExUnit.Case
   use Divo
+  use DiscoveryApi.DataCase
   alias SmartCity.Registry.Dataset
   alias DiscoveryApi.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
@@ -15,6 +16,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   @private_dataset_name "private_data"
 
   setup_all do
+    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
 
     membership = %{
@@ -541,8 +543,10 @@ defmodule DiscoveryApi.Data.QueryTest do
     } do
       actual = get("http://localhost:4000/api/v1/dataset/#{geojson_dataset.id}/query?_format=geojson&orderBy=feature")
 
-      expected_with_name = Map.put(expected_body, "name", geojson_dataset.technical.systemName)
-      assert expected_with_name == Jason.decode!(actual.body)
+      assert geojson_dataset.technical.systemName == Jason.decode!(actual.body) |> Map.get("name")
+      sorted_expected_features = expected_body |> Map.get("features") |> Enum.sort()
+      sorted_actual_features = Jason.decode!(actual.body) |> Map.get("features") |> Enum.sort()
+      assert sorted_expected_features == sorted_actual_features
     end
 
     test "can query geojson with SQL", %{
@@ -551,7 +555,9 @@ defmodule DiscoveryApi.Data.QueryTest do
     } do
       actual = post("http://localhost:4000/api/v1/query?_format=geojson", "select * from #{geojson_table} order by feature")
 
-      assert expected_body == Jason.decode!(actual.body)
+      sorted_expected_features = expected_body |> Map.get("features") |> Enum.sort()
+      sorted_actual_features = Jason.decode!(actual.body) |> Map.get("features") |> Enum.sort()
+      assert sorted_expected_features == sorted_actual_features
     end
   end
 

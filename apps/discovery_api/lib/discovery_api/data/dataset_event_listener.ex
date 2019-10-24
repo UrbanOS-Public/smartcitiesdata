@@ -7,13 +7,12 @@ defmodule DiscoveryApi.Data.DatasetEventListener do
 
   alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
   alias SmartCity.Registry.Dataset
-  alias SmartCity.Registry.Organization
   alias DiscoveryApiWeb.Plugs.ResponseCache
 
   def handle_dataset(%Dataset{} = dataset) do
     Logger.debug(fn -> "Handling dataset: `#{dataset.technical.systemName}`" end)
 
-    with {:ok, organization} <- Organization.get(dataset.technical.orgId),
+    with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
          {:ok, _cached} <- SystemNameCache.put(dataset, organization),
          model <- Mapper.to_data_model(dataset, organization),
          {:ok, _result} <- Model.save(model) do

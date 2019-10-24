@@ -14,7 +14,7 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
     end
 
     test "replaces the org_name and dataset_name with the correct dataset_id" do
-      org = TDG.create_organization(id: "o1", orgName: "org1")
+      org = TDG.create_schema_organization(orgName: "org1")
       dataset = TDG.create_dataset(id: "ds1", technical: %{orgId: org.id, dataName: "data1"})
 
       SystemNameCache.put(dataset, org)

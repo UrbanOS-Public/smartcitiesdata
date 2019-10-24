@@ -4,7 +4,7 @@ defmodule DiscoveryApi.Data.Mapper do
   """
 
   alias SmartCity.Registry.Dataset
-  alias SmartCity.Registry.Organization
+  alias DiscoveryApi.Schemas.Organizations.Organization
   alias DiscoveryApi.Data.Model
 
   @doc """
@@ -42,15 +42,15 @@ defmodule DiscoveryApi.Data.Mapper do
       language: biz.language,
       referenceUrls: biz.referenceUrls,
       categories: biz.categories,
-      organization: organization.orgTitle,
+      organization: organization.title,
       organizationDetails: %{
         id: organization.id,
-        orgName: organization.orgName,
-        orgTitle: organization.orgTitle,
+        orgName: organization.name,
+        orgTitle: organization.title,
         description: organization.description,
-        logoUrl: organization.logoUrl,
+        logoUrl: organization.logo_url,
         homepage: organization.homepage,
-        dn: organization.dn
+        dn: organization.ldap_dn
       }
     }
   end

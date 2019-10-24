@@ -1,18 +1,19 @@
 defmodule DiscoveryApi.Data.DataJsonTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :zookeeper, :kafka]
+  use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres"]
+  use DiscoveryApi.DataCase
   alias SmartCity.Registry.Dataset
-  alias SmartCity.Registry.Organization
   alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias DiscoveryApi.Test.Helper
 
   setup do
+    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
     :ok
   end
 
   test "Properly formatted metadata is returned after consuming registry messages" do
-    organization = TDG.create_organization(%{})
-    Organization.write(organization)
+    organization = Helper.create_persisted_organization()
 
     dataset_one = TDG.create_dataset(%{technical: %{orgId: organization.id, private: true}})
     Dataset.write(dataset_one)
@@ -46,7 +47,7 @@ defmodule DiscoveryApi.Data.DataJsonTest do
     datasets =
       "http://localhost:4000/api/v1/data_json"
       |> get_map_from_url()
-      |> Map.get("dataset")
+      |> Map.get("dataset", [])
 
     if Enum.count(datasets) == count do
       Enum.all?(datasets, fn dataset -> dataset["accessLevel"] == "public" end)

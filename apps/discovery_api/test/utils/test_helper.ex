@@ -3,7 +3,7 @@ defmodule DiscoveryApi.Test.Helper do
   Utility functions for tests
   """
   alias DiscoveryApi.Data.Model
-  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.TestDataGenerator, as: SC_TDG
 
   def sample_model(values \\ %{}) do
     %Model{
@@ -11,7 +11,7 @@ defmodule DiscoveryApi.Test.Helper do
       title: Faker.Lorem.word(),
       keywords: [Faker.Lorem.word(), Faker.Lorem.word()],
       organization: Faker.Lorem.word(),
-      organizationDetails: %{} |> TDG.create_organization() |> Map.from_struct(),
+      organizationDetails: %{} |> SC_TDG.create_organization() |> Map.from_struct(),
       modifiedDate: Date.to_string(Faker.Date.backward(20)),
       fileTypes: [Faker.Lorem.characters(3), Faker.Lorem.characters(4)],
       description: Enum.join(Faker.Lorem.sentences(2..3), " "),
@@ -119,7 +119,6 @@ defmodule DiscoveryApi.Test.Helper do
 
     Enum.map(membership, fn {organization_name, members} ->
       organization = make_ldap_organization(organization_name, group)
-      SmartCity.Registry.Organization.write(organization)
 
       Enum.each(members, fn member ->
         username = ensure_ldap_user(member, people)
@@ -144,7 +143,7 @@ defmodule DiscoveryApi.Test.Helper do
   end
 
   def make_ldap_organization(name, ou) do
-    TDG.create_organization(%{
+    create_persisted_organization(%{
       dn: "cn=#{name},ou=#{ou}",
       orgName: name
     })
@@ -191,5 +190,28 @@ defmodule DiscoveryApi.Test.Helper do
       |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
       |> Enum.into(%{})
     end)
+  end
+
+  def wait_for_brook_to_be_ready() do
+    Process.sleep(5_000)
+  end
+
+  def create_persisted_organization(map \\ %{}) do
+    organization = SC_TDG.create_organization(map)
+    Brook.Event.send(DiscoveryApi.instance(), "organization:update", :test, organization)
+
+    Patiently.wait_for(
+      fn ->
+        DiscoveryApi.Schemas.Organizations.get_organization!(organization.id) != nil
+      end,
+      dwell: 500,
+      mat_tries: 20
+    )
+    |> case do
+      :ok -> :ok
+      _ -> raise "An error occured in setting up the organization correctly in: #{__MODULE__}"
+    end
+
+    organization
   end
 end

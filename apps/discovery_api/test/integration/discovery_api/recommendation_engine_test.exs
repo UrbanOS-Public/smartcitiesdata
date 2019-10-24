@@ -2,8 +2,15 @@ defmodule DiscoveryApi.RecommendationEngineTest do
   use ExUnit.Case
   alias DiscoveryApi.TestDataGenerator, as: TDG
   alias DiscoveryApi.RecommendationEngine
+  alias DiscoveryApi.Test.Helper
 
-  use Divo, services: [:redis, :zookeeper, :kafka]
+  use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres"]
+  use DiscoveryApi.DataCase
+
+  setup do
+    Helper.wait_for_brook_to_be_ready()
+    :ok
+  end
 
   test "dataset recommendations" do
     dataset_to_get_recommendations_for =
@@ -20,8 +27,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
         }
       })
 
-    organization = TDG.create_organization(%{id: dataset_to_get_recommendations_for.technical.orgId})
-    SmartCity.Registry.Organization.write(organization)
+    organization = Helper.create_persisted_organization(%{id: dataset_to_get_recommendations_for.technical.orgId})
 
     dataset_with_wrong_types =
       TDG.create_dataset(%{
