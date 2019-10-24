@@ -38,19 +38,18 @@ defmodule Reaper.MixProject do
 
   defp deps do
     [
-      {:brook, "~> 0.3.2"},
+      {:brook, "~> 0.4.0"},
       {:cachex, "~> 3.2"},
       {:castore, "~> 0.1"},
       {:distillery, "2.0.14"},
-      {:elsa, "~> 0.9.0", override: true},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
       {:gen_stage, "~> 0.14"},
-      {:horde, "~> 0.6.1"},
-      {:httpoison, "~> 1.5"},
+      {:horde, "~> 0.7.0"},
+      {:httpoison, "~> 1.6"},
       {:poison, "~> 4.0", override: true},
       {:jason, "~> 1.1"},
-      {:libcluster, "~> 3.0"},
+      {:libcluster, "~> 3.1"},
       {:libvault, "~> 0.2"},
       {:mint, "~> 0.4"},
       {:nimble_csv, "~> 0.6.0"},
@@ -61,10 +60,10 @@ defmodule Reaper.MixProject do
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
       {:sftp_ex, "~> 0.2"},
-      {:smart_city, "~> 2.8", override: true},
+      {:smart_city, "~> 3.2.0", override: true},
       {:sweet_xml, "~> 0.6"},
-      {:tesla, "~> 1.2"},
-      {:timex, "~> 3.0"},
+      {:tesla, "~> 1.3"},
+      {:timex, "~> 3.6"},
       {:yeet, "~> 1.0"},
       # Test/Dev Dependencies
       {:benchee, "~> 1.0", only: [:integration]},
@@ -82,7 +81,7 @@ defmodule Reaper.MixProject do
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 1.2", only: [:test, :integration]},
-      {:smart_city_test, "~> 0.5", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.5.0", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]}
     ]
   end

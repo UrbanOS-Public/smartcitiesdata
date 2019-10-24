@@ -35,26 +35,26 @@ config :reaper,
   hosted_file_bucket: bucket_name
 
 config :reaper, :brook,
-  driver: [
+  driver: %{
     module: Brook.Driver.Kafka,
     init_arg: [
       endpoints: endpoints,
       topic: "event-stream",
       group: "reaper-events",
-      config: [
+      consumer_config: [
         begin_offset: :earliest,
         offset_reset_policy: :reset_to_earliest
       ]
     ]
-  ],
+  },
   handlers: [Reaper.Event.Handler],
-  storage: [
+  storage: %{
     module: Brook.Storage.Redis,
     init_arg: [
       redix_args: [host: host],
       namespace: "reaper:view"
     ]
-  ],
+  },
   dispatcher: Brook.Dispatcher.Noop
 
 config :reaper, Reaper.Scheduler,

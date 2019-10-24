@@ -10,8 +10,10 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
   alias Reaper.Collections.Extractions
   import Crontab.CronExpression
 
+  @instance Reaper.Application.instance()
+
   setup do
-    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook))
+    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance))
     {:ok, scheduler} = Reaper.Scheduler.start_link()
 
     on_exit(fn ->
@@ -19,7 +21,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
       TestHelper.assert_down(brook)
     end)
 
-    Brook.Test.register()
+    Brook.Test.register(@instance)
 
     :ok
   end
@@ -52,7 +54,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
     data_test "does not send #{event} for source type #{source_type} when cadence is once and dataset has already been fetched" do
       dataset = TDG.create_dataset(id: "ds1", technical: %{cadence: "once", sourceType: source_type})
 
-      Brook.Test.with_event(fn ->
+      Brook.Test.with_event(@instance, fn ->
         Extractions.update_last_fetched_timestamp(dataset.id)
       end)
 
@@ -140,7 +142,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
     test "updates view state and sets flag to false" do
       dataset = TDG.create_dataset(id: "ds4", technical: %{cadence: "never", sourceType: "ingest"})
 
-      Brook.Test.with_event(fn ->
+      Brook.Test.with_event(@instance, fn ->
         Extractions.update_dataset(dataset)
         :ok = DatasetUpdate.handle(dataset)
       end)

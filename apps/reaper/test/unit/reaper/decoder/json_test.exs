@@ -54,9 +54,9 @@ defmodule Reaper.Decoder.JsonTest do
 
       where([
         [:format, :result],
-        ["json", true],
+        ["application/json", true],
+        ["json", false],
         ["csv", false],
-        ["JSON", true],
         ["", false],
         [nil, false]
       ])

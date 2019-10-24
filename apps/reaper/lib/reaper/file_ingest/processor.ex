@@ -12,6 +12,8 @@ defmodule Reaper.FileIngest.Processor do
     DataSlurper
   }
 
+  @instance Reaper.Application.instance()
+
   @doc """
   Process a hosted dataset
   """
@@ -46,13 +48,13 @@ defmodule Reaper.FileIngest.Processor do
     {:ok, file_upload} =
       HostedFile.new(%{
         dataset_id: dataset.id,
-        mime_type: MIME.type(dataset.technical.sourceFormat),
+        mime_type: dataset.technical.sourceFormat,
         bucket: bucket_name(),
         key: filename
       })
 
     Logger.debug(fn -> "#{__MODULE__} : Sending event to event stream : #{inspect(file_upload)}" end)
-    Brook.Event.send(file_ingest_end(), :reaper, file_upload)
+    Brook.Event.send(@instance, file_ingest_end(), :reaper, file_upload)
   end
 
   defp bucket_name, do: Application.get_env(:reaper, :hosted_file_bucket)
@@ -60,6 +62,11 @@ defmodule Reaper.FileIngest.Processor do
   defp get_filename(%SmartCity.Dataset{
          technical: %{orgName: org_name, dataName: data_name, sourceFormat: source_format}
        }) do
-    "#{org_name}/#{data_name}.#{source_format}"
+    extension =
+      source_format
+      |> MIME.extensions()
+      |> hd()
+
+    "#{org_name}/#{data_name}.#{extension}"
   end
 end

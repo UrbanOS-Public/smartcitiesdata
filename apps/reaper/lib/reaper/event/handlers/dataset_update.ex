@@ -7,6 +7,8 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   alias Quantum.Job
   alias Reaper.Collections.Extractions
 
+  @instance Reaper.Application.instance()
+
   @cron_conversions %{
     86_400_000 => "0 6 * * *",
     3_600_000 => "0 * * * *",
@@ -28,7 +30,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
     case Extractions.get_last_fetched_timestamp!(dataset.id) do
       nil ->
         delete_job(dataset)
-        Brook.Event.send(determine_event(dataset), :reaper, dataset)
+        Brook.Event.send(@instance, determine_event(dataset), :reaper, dataset)
 
       _ ->
         :ok

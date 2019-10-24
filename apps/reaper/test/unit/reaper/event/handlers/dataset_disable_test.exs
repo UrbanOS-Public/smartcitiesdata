@@ -29,7 +29,7 @@ defmodule Reaper.Event.Handlers.DatasetDisableTest do
       assert :ok == DatasetDisable.handle(dataset)
 
       assert nil == Reaper.Horde.Registry.lookup(dataset.id)
-      assert [] == Horde.Supervisor.which_children(Reaper.Horde.Supervisor)
+      assert [] == Horde.DynamicSupervisor.which_children(Reaper.Horde.Supervisor)
     end
 
     test "does not throw errors if dataset is not running", %{dataset: dataset} do
@@ -43,18 +43,18 @@ defmodule Reaper.Event.Handlers.DatasetDisableTest do
 
       :ok = Task.await(task)
       assert nil == Reaper.Horde.Registry.lookup(dataset.id)
-      assert [] == Horde.Supervisor.which_children(Reaper.Horde.Supervisor)
+      assert [] == Horde.DynamicSupervisor.which_children(Reaper.Horde.Supervisor)
     end
 
     test "kills the cache server for the current dataset", %{dataset: dataset} do
-      Horde.Supervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: dataset.id})
+      Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: dataset.id})
       cache_pid = Reaper.Cache.Registry.lookup(dataset.id)
       assert nil != cache_pid
 
       assert :ok == DatasetDisable.handle(dataset)
 
       assert nil == Reaper.Cache.Registry.lookup(dataset.id)
-      assert [] == Horde.Supervisor.which_children(Reaper.Horde.Supervisor)
+      assert [] == Horde.DynamicSupervisor.which_children(Reaper.Horde.Supervisor)
     end
 
     test "returns error when an error occurs", %{dataset: dataset} do

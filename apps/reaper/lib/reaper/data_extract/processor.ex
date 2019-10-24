@@ -69,7 +69,7 @@ defmodule Reaper.DataExtract.Processor do
   end
 
   defp validate_cache(%SmartCity.Dataset{id: id, technical: %{allow_duplicates: false}}) do
-    Horde.Supervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: id})
+    Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: id})
   end
 
   defp validate_cache(_dataset), do: nil
@@ -103,7 +103,8 @@ defmodule Reaper.DataExtract.Processor do
   end
 
   defp start_topic_producer(topic) do
-    {:ok, _pid} = Elsa.Producer.Supervisor.start_link(name: :"#{topic}_producer", endpoints: endpoints(), topic: topic)
+    {:ok, _pid} =
+      Elsa.Supervisor.start_link(connection: :"#{topic}_producer", endpoints: endpoints(), producer: [topic: topic])
 
     retry with: constant_backoff(100) |> Stream.take(25) do
       :brod.get_producer(:"#{topic}_producer", topic, 0)

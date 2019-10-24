@@ -11,6 +11,7 @@ defmodule Reaper.YeetTest do
   @endpoints Application.get_env(:reaper, :elsa_brokers)
   @success_topic Application.get_env(:reaper, :output_topic_prefix) <> "-" <> @dataset_id
   @dlq_topic Application.get_env(:yeet, :topic)
+  @instance Reaper.Application.instance()
 
   @invalid_json_file "includes_invalid.json"
 
@@ -41,7 +42,7 @@ defmodule Reaper.YeetTest do
         }
       })
 
-    Brook.Event.send(dataset_update(), :reaper, json_dataset)
+    Brook.Event.send(@instance, dataset_update(), :reaper, json_dataset)
 
     :ok
   end

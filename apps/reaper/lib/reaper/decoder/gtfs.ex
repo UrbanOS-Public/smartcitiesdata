@@ -21,6 +21,6 @@ defmodule Reaper.Decoder.Gtfs do
 
   @impl Reaper.Decoder
   def handle?(source_format) do
-    String.downcase(source_format) == "gtfs"
+    String.downcase(source_format) == "application/gtfs+protobuf"
   end
 end

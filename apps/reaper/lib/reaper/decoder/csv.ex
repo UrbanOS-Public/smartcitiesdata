@@ -39,6 +39,6 @@ defmodule Reaper.Decoder.Csv do
 
   @impl Reaper.Decoder
   def handle?(source_format) do
-    String.downcase(source_format) == "csv"
+    String.downcase(source_format) == "text/csv"
   end
 end

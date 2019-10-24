@@ -2,6 +2,7 @@ defmodule Reaper.Collections.BaseDataset do
   @moduledoc false
 
   defmacro __using__(opts) do
+    instance = Keyword.fetch!(opts, :instance)
     collection = Keyword.fetch!(opts, :collection)
 
     quote do
@@ -24,28 +25,28 @@ defmodule Reaper.Collections.BaseDataset do
       end
 
       def is_enabled?(dataset_id) do
-        case Brook.get!(unquote(collection), dataset_id) do
+        case Brook.get!(unquote(instance), unquote(collection), dataset_id) do
           nil -> false
           value -> value.enabled
         end
       end
 
       def get_dataset!(id) do
-        case Brook.get!(unquote(collection), id) do
+        case Brook.get!(unquote(instance), unquote(collection), id) do
           nil -> nil
           value -> value.dataset
         end
       end
 
       def get_last_fetched_timestamp!(id) do
-        case Brook.get!(unquote(collection), id) do
+        case Brook.get!(unquote(instance), unquote(collection), id) do
           nil -> nil
           value -> Map.get(value, :last_fetched_timestamp, nil)
         end
       end
 
       def get_all_non_completed!() do
-        Brook.get_all_values!(unquote(collection))
+        Brook.get_all_values!(unquote(instance), unquote(collection))
         |> Enum.filter(&should_start/1)
         |> Enum.map(&Map.get(&1, :dataset))
       end

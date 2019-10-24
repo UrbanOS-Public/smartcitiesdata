@@ -2,8 +2,11 @@ defmodule Reaper.AuthRetriever do
   @moduledoc """
   Call the authUrl of a dataset, passing the authHeaders, and returning the response.
   """
+
+  @instance Reaper.Application.instance()
+
   def retrieve(dataset_id) do
-    dataset = Brook.get!(:reaper_config, dataset_id)
+    dataset = Brook.get!(@instance, :reaper_config, dataset_id)
     response = HTTPoison.post!(dataset.authUrl, "", evaluate_headers(dataset.authHeaders))
     Jason.decode!(response.body)
   end

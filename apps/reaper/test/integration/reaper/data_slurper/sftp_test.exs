@@ -9,7 +9,7 @@ defmodule Reaper.SftpExtractorTest do
   @endpoints Application.get_env(:reaper, :elsa_brokers)
   @output_topic_prefix Application.get_env(:reaper, :output_topic_prefix)
   @host to_charlist(System.get_env("HOST"))
-
+  @instance Reaper.Application.instance()
   @sftp %{host: @host, port: 2222, user: 'sftp_user', password: 'sftp_password'}
 
   setup do
@@ -54,7 +54,7 @@ defmodule Reaper.SftpExtractorTest do
         }
       })
 
-    Brook.Event.send(dataset_update(), :reaper, dataset)
+    Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
 
     payload = %{
       "datum" => "Bobber",
@@ -92,7 +92,7 @@ defmodule Reaper.SftpExtractorTest do
         }
       })
 
-    Brook.Event.send(dataset_update(), :reaper, dataset)
+    Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
     payload = %{"sanctum" => "Bobbero", "datum" => "Alice"}
 
     eventually(fn ->

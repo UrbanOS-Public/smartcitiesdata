@@ -11,6 +11,7 @@ defmodule Reaper.FullTest do
   @endpoints Application.get_env(:reaper, :elsa_brokers)
   @brod_endpoints Enum.map(@endpoints, fn {host, port} -> {to_charlist(host), port} end)
   @output_topic_prefix Application.get_env(:reaper, :output_topic_prefix)
+  @instance Reaper.Application.instance()
 
   @pre_existing_dataset_id "00000-0000"
   @partial_load_dataset_id "11111-1112"
@@ -65,7 +66,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(dataset_update(), :reaper, pre_existing_dataset)
+      Brook.Event.send(@instance, dataset_update(), :reaper, pre_existing_dataset)
       :ok
     end
 
@@ -96,7 +97,7 @@ defmodule Reaper.FullTest do
     setup %{bypass: bypass} do
       {:ok, pid} = Agent.start_link(fn -> %{has_raised: false, invocations: 0} end)
 
-      allow Elsa.Producer.produce_sync(any(), any(), any()),
+      allow Elsa.produce(any(), any(), any()),
         meck_options: [:passthrough],
         exec: fn topic, messages, options ->
           case Agent.get(pid, fn s -> {s.has_raised, s.invocations} end) do
@@ -131,7 +132,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(dataset_update(), :reaper, pre_existing_dataset)
+      Brook.Event.send(@instance, dataset_update(), :reaper, pre_existing_dataset)
       :ok
     end
 
@@ -165,7 +166,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(dataset_update(), :reaper, gtfs_dataset)
+      Brook.Event.send(@instance, dataset_update(), :reaper, gtfs_dataset)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
@@ -188,7 +189,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(dataset_update(), :reaper, json_dataset)
+      Brook.Event.send(@instance, dataset_update(), :reaper, json_dataset)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
@@ -213,7 +214,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(dataset_update(), :reaper, csv_dataset)
+      Brook.Event.send(@instance, dataset_update(), :reaper, csv_dataset)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
@@ -237,16 +238,14 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(dataset_update(), :reaper, hosted_dataset)
+      Brook.Event.send(@instance, dataset_update(), :reaper, hosted_dataset)
 
       eventually(fn ->
         expected = File.read!("test/support/#{@csv_file_name}")
 
         case ExAws.S3.get_object(
                "hosted-dataset-files",
-               "#{hosted_dataset.technical.orgName}/#{hosted_dataset.technical.dataName}.#{
-                 hosted_dataset.technical.sourceFormat
-               }"
+               "#{hosted_dataset.technical.orgName}/#{hosted_dataset.technical.dataName}.csv"
              )
              |> ExAws.request() do
           {:ok, resp} ->
@@ -281,7 +280,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(dataset_update(), :reaper, csv_dataset)
+      Brook.Event.send(@instance, dataset_update(), :reaper, csv_dataset)
 
       eventually(
         fn ->
@@ -324,7 +323,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(dataset_update(), :reaper, json_dataset)
+      Brook.Event.send(@instance, dataset_update(), :reaper, json_dataset)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)

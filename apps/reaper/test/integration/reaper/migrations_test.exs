@@ -2,11 +2,10 @@ defmodule Reaper.MigrationsTest do
   use ExUnit.Case
   use Divo, auto_start: false
 
-  import SmartCity.Event, only: [dataset_update: 0]
-  alias Reaper.ReaperConfig
-  alias Reaper.Persistence
-
   import SmartCity.TestHelper
+  alias SmartCity.TestDataGenerator, as: TDG
+
+  @instance Reaper.Application.instance()
 
   @tag :capture_log
   test "should migrate extractions and enable all of them" do
@@ -15,7 +14,14 @@ defmodule Reaper.MigrationsTest do
 
     {:ok, redix} = Redix.start_link(host: Application.get_env(:redix, :host), name: :redix)
     Process.unlink(redix)
-    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.delete(:driver))
+
+    {:ok, brook} =
+      Brook.start_link(
+        Application.get_env(:reaper, :brook)
+        |> Keyword.delete(:driver)
+        |> Keyword.put(:instance, @instance)
+      )
+
     Process.unlink(brook)
 
     extraction_without_enabled_flag_id = 1
@@ -23,23 +29,27 @@ defmodule Reaper.MigrationsTest do
     extraction_with_enabled_false_id = 3
     invalid_extraction_id = 4
 
-    Brook.Test.with_event(%Brook.Event{type: "reaper_config:migration", author: "migration", data: %{}}, fn ->
-      Brook.ViewState.merge(:extractions, extraction_without_enabled_flag_id, %{
-        dataset: %{id: extraction_without_enabled_flag_id}
-      })
+    Brook.Test.with_event(
+      @instance,
+      Brook.Event.new(type: "reaper_config:migration", author: "migration", data: %{}),
+      fn ->
+        Brook.ViewState.merge(:extractions, extraction_without_enabled_flag_id, %{
+          dataset: TDG.create_dataset(id: extraction_without_enabled_flag_id)
+        })
 
-      Brook.ViewState.merge(:extractions, extraction_with_enabled_true_id, %{
-        dataset: %{id: extraction_with_enabled_true_id},
-        enabled: true
-      })
+        Brook.ViewState.merge(:extractions, extraction_with_enabled_true_id, %{
+          dataset: TDG.create_dataset(id: extraction_with_enabled_true_id),
+          enabled: true
+        })
 
-      Brook.ViewState.merge(:extractions, extraction_with_enabled_false_id, %{
-        dataset: %{id: extraction_with_enabled_false_id},
-        enabled: false
-      })
+        Brook.ViewState.merge(:extractions, extraction_with_enabled_false_id, %{
+          dataset: TDG.create_dataset(id: extraction_with_enabled_false_id),
+          enabled: false
+        })
 
-      Brook.ViewState.merge(:extractions, invalid_extraction_id, %{})
-    end)
+        Brook.ViewState.merge(:extractions, invalid_extraction_id, %{})
+      end
+    )
 
     kill(brook)
     kill(redix)
@@ -49,9 +59,9 @@ defmodule Reaper.MigrationsTest do
     Process.sleep(10_000)
 
     eventually(fn ->
-      assert true == Map.get(Brook.get!(:extractions, extraction_without_enabled_flag_id), :enabled)
-      assert true == Brook.get!(:extractions, extraction_with_enabled_true_id).enabled
-      assert false == Brook.get!(:extractions, extraction_with_enabled_false_id).enabled
+      assert true == Brook.get!(@instance, :extractions, extraction_without_enabled_flag_id)["enabled"]
+      assert true == Brook.get!(@instance, :extractions, extraction_with_enabled_true_id)["enabled"]
+      assert false == Brook.get!(@instance, :extractions, extraction_with_enabled_false_id)["enabled"]
     end)
 
     Application.stop(:reaper)

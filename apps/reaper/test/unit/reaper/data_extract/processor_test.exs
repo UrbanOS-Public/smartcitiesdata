@@ -5,7 +5,6 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
   alias Reaper.{Cache, Persistence}
   alias Reaper.DataExtract.Processor
-  alias Elsa.Producer
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -21,7 +20,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
   setup do
     {:ok, horde_registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
-    {:ok, horde_sup} = Horde.Supervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
+    {:ok, horde_sup} = Horde.DynamicSupervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
 
     on_exit(fn ->
       kill(horde_sup)
@@ -52,7 +51,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       )
 
     allow Elsa.create_topic(any(), any()), return: :ok
-    allow Elsa.Producer.Supervisor.start_link(any()), return: {:ok, :pid}
+    allow Elsa.Supervisor.start_link(any()), return: {:ok, :pid}
     allow Elsa.topic?(any(), any()), return: true
     allow :brod.get_producer(any(), any(), any()), return: {:ok, :pid}
 
@@ -61,7 +60,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
   describe "process/2 happy path" do
     setup do
-      allow Producer.produce_sync(any(), any(), any()), return: :ok
+      allow Elsa.produce(any(), any(), any(), any()), return: :ok
       allow Persistence.remove_last_processed_index(@dataset_id), return: :ok
 
       :ok
@@ -73,7 +72,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       Processor.process(dataset)
 
-      messages = capture(1, Producer.produce_sync(any(), any(), any()), 2)
+      messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
 
       expected = [
         %{"a" => "one", "b" => "two", "c" => "three"},
@@ -89,14 +88,14 @@ defmodule Reaper.DataExtract.ProcessorTest do
     test "eliminates duplicates before sending to kafka", %{dataset: dataset} do
       allow Persistence.get_last_processed_index(@dataset_id), return: -1
       allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
-      Horde.Supervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: dataset.id})
+      Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: dataset.id})
       Cache.cache(dataset.id, %{"a" => "one", "b" => "two", "c" => "three"})
 
       Processor.process(dataset)
 
-      messages = capture(1, Producer.produce_sync(any(), any(), any()), 2)
+      messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
       assert [%{"a" => "four", "b" => "five", "c" => "six"}] == get_payloads(messages)
-      assert_called Producer.produce_sync(any(), any(), any()), once()
+      assert_called Elsa.produce(any(), any(), any(), any()), once()
 
       assert_called Persistence.record_last_processed_index(any(), any()), once()
       assert_called Persistence.remove_last_processed_index(@dataset_id), once()
@@ -121,7 +120,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
   test "process/2 should catch log all exceptions and reraise", %{dataset: dataset} do
     allow Persistence.get_last_processed_index(any()), return: -1
 
-    allow Producer.produce_sync(any(), any(), any()), exec: fn _, _, _ -> raise "some error" end
+    allow Elsa.produce(any(), any(), any(), any()), exec: fn _, _, _, _ -> raise "some error" end
 
     allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :yeet
 

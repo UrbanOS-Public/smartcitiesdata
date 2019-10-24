@@ -10,8 +10,8 @@ defmodule Reaper.DataExtract.ValidationStageTest do
 
   setup do
     {:ok, registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
-    {:ok, horde_sup} = Horde.Supervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
-    Horde.Supervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: @cache})
+    {:ok, horde_sup} = Horde.DynamicSupervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
+    Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: @cache})
 
     on_exit(fn ->
       kill(horde_sup)

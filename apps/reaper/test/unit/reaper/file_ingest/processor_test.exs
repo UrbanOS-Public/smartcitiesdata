@@ -10,6 +10,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
 
   @dataset_id "12345"
   @bucket Application.get_env(:reaper, :hosted_file_bucket)
+  @instance Reaper.Application.instance()
 
   @download_dir System.get_env("TMPDIR") || "/tmp/reaper/"
   use TempEnv, reaper: [download_dir: @download_dir]
@@ -47,7 +48,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
         meck_options: [:passthrough]
       )
 
-      expect(Brook.Event.send(any(), any(), any()), return: :ok)
+      expect(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
       Processor.process(dataset)
 
@@ -55,10 +56,10 @@ defmodule Reaper.FileIngest.ProcessorTest do
         dataset_id: dataset.id,
         mime_type: "text/plain",
         bucket: @bucket,
-        key: "#{dataset.technical.orgName}/#{dataset.technical.dataName}.#{dataset.technical.sourceFormat}"
+        key: "#{dataset.technical.orgName}/#{dataset.technical.dataName}.txt"
       }
 
-      assert_called(Brook.Event.send(file_ingest_end(), :reaper, expected_file_upload))
+      assert_called(Brook.Event.send(@instance, file_ingest_end(), :reaper, expected_file_upload))
     end
   end
 end

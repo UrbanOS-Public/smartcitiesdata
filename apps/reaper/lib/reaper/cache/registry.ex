@@ -4,8 +4,15 @@ defmodule Reaper.Cache.Registry do
   """
   use Horde.Registry
 
-  def init(options) do
-    {:ok, Keyword.put(options, :members, get_members())}
+  def start_link(init_args) do
+    Horde.Registry.start_link(__MODULE__, init_args, name: __MODULE__)
+  end
+
+  @impl Horde.Registry
+  def init(init_args) do
+    [members: get_members()]
+    |> Keyword.merge(init_args)
+    |> Horde.Registry.init()
   end
 
   defp get_members() do

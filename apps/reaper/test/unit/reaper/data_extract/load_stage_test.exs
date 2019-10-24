@@ -4,7 +4,6 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
   alias Reaper.DataExtract.LoadStage
   alias Reaper.{Cache, Persistence}
-  alias Elsa.Producer
   alias SmartCity.TestDataGenerator, as: TDG
 
   @message_size 218
@@ -15,8 +14,8 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
   setup do
     {:ok, registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
-    {:ok, horde_sup} = Horde.Supervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
-    Horde.Supervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: @cache})
+    {:ok, horde_sup} = Horde.DynamicSupervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
+    Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: @cache})
 
     on_exit(fn ->
       kill(horde_sup)
@@ -29,7 +28,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
   describe "handle_events/3 check duplicates" do
     setup do
-      allow Producer.produce_sync(any(), any(), any()), return: :ok
+      allow Elsa.produce(any(), any(), any(), any()), return: :ok
       allow Persistence.record_last_processed_index(any(), any()), return: :ok
 
       state = %{
@@ -48,8 +47,8 @@ defmodule Reaper.DataExtract.LoadStageTest do
     end
 
     test "2 batches are sent to kafka" do
-      assert_called Producer.produce_sync("test-ds1", create_data_messages(?a..?j, "ds1"), any())
-      assert_called Producer.produce_sync("test-ds1", create_data_messages(?k..?t, "ds1"), any())
+      assert_called Elsa.produce(any(), "test-ds1", create_data_messages(?a..?j, "ds1"), any())
+      assert_called Elsa.produce(any(), "test-ds1", create_data_messages(?k..?t, "ds1"), any())
     end
 
     test "remaining partial batch in sitting in state", %{new_state: new_state} do
@@ -73,7 +72,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
   describe "handle_events/3 skip duplicate cache" do
     setup do
-      allow Producer.produce_sync(any(), any(), any()), return: :ok
+      allow Elsa.produce(any(), any(), any(), any()), return: :ok
       allow Persistence.record_last_processed_index(any(), any()), return: :ok
       allow Cache.cache(any(), any()), return: :ok
 

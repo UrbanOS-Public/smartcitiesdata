@@ -5,19 +5,20 @@ defmodule Reaper.Application do
   require Logger
 
   def redis_client(), do: :redix
+  def instance(), do: :reaper_brook
 
   def start(_type, _args) do
     children =
       [
         libcluster(),
-        {Reaper.Horde.Registry, name: Reaper.Horde.Registry, keys: :unique},
-        {Reaper.Cache.Registry, name: Reaper.Cache.Registry, keys: :unique},
-        {Reaper.Horde.Supervisor, name: Reaper.Horde.Supervisor, strategy: :one_for_one},
+        {Reaper.Horde.Registry, keys: :unique},
+        {Reaper.Cache.Registry, keys: :unique},
+        Reaper.Horde.Supervisor,
         {Reaper.Horde.NodeListener, hordes: [Reaper.Horde.Supervisor, Reaper.Horde.Registry, Reaper.Cache.Registry]},
         Reaper.Scheduler.Supervisor,
         redis(),
         Reaper.Migrations,
-        {Brook, Application.get_env(:reaper, :brook)},
+        brook(),
         Reaper.Init
       ]
       |> List.flatten()
@@ -28,7 +29,14 @@ defmodule Reaper.Application do
     Supervisor.start_link(children, opts)
   end
 
-  defp redis do
+  defp libcluster() do
+    case Application.get_env(:libcluster, :topologies) do
+      nil -> []
+      topology -> {Cluster.Supervisor, [topology, [name: Cluster.ClusterSupervisor]]}
+    end
+  end
+
+  defp redis() do
     Application.get_env(:redix, :host)
     |> case do
       nil -> []
@@ -36,11 +44,9 @@ defmodule Reaper.Application do
     end
   end
 
-  defp libcluster do
-    case Application.get_env(:libcluster, :topologies) do
-      nil -> []
-      topology -> {Cluster.Supervisor, [topology, [name: Cluster.ClusterSupervisor]]}
-    end
+  defp brook() do
+    config = Application.get_env(:reaper, :brook) |> Keyword.put(:instance, instance())
+    {Brook, config}
   end
 
   defp fetch_and_set_hosted_file_credentials do

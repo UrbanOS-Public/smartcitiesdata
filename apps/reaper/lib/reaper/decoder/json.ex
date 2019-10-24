@@ -19,7 +19,7 @@ defmodule Reaper.Decoder.Json do
 
   @impl Reaper.Decoder
   def handle?(source_format) when is_binary(source_format) do
-    String.downcase(source_format) == "json"
+    String.downcase(source_format) == "application/json"
   end
 
   def handle?(_source_format), do: false

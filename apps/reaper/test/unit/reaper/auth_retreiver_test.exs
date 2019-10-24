@@ -2,6 +2,8 @@ defmodule AuthRetrieverTest do
   use ExUnit.Case
   use Placebo
 
+  @instance Reaper.Application.instance()
+
   describe "retrieve/1" do
     test "retrieve response using auth headers and url" do
       bypass = Bypass.open()
@@ -28,7 +30,7 @@ defmodule AuthRetrieverTest do
         Plug.Conn.resp(conn, 200, auth_response)
       end)
 
-      allow Brook.get!(:reaper_config, dataset_id), return: reaper_config
+      allow Brook.get!(@instance, :reaper_config, dataset_id), return: reaper_config
       assert Reaper.AuthRetriever.retrieve(dataset_id) == expected
     end
 
@@ -52,7 +54,7 @@ defmodule AuthRetrieverTest do
 
       response = %{body: Jason.encode!(%{"api_key" => "12343523423423"})}
 
-      allow Brook.get!(:reaper_config, dataset_id), return: reaper_config
+      allow Brook.get!(@instance, :reaper_config, dataset_id), return: reaper_config
       allow HTTPoison.post!(any(), any(), any()), return: response
 
       Reaper.AuthRetriever.retrieve(dataset_id)

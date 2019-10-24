@@ -7,7 +7,7 @@ defmodule TestUtils do
 
   def feed_supervisor_count() do
     Reaper.Horde.Supervisor
-    |> Horde.Supervisor.which_children()
+    |> Horde.DynamicSupervisor.which_children()
     |> Enum.filter(&is_feed_supervisor?/1)
     |> Enum.count()
   end
@@ -16,14 +16,14 @@ defmodule TestUtils do
     Reaper.Horde.Registry
     |> Horde.Registry.lookup(name)
     |> (fn [{pid, _}] -> pid end).()
-    |> Horde.Supervisor.which_children()
+    |> Horde.DynamicSupervisor.which_children()
     |> Enum.map(fn {_, pid, _, _} -> pid end)
     |> Enum.sort()
   end
 
   def child_count(module) do
     Reaper.Horde.Supervisor
-    |> Horde.Supervisor.which_children()
+    |> Horde.DynamicSupervisor.which_children()
     |> Enum.filter(&is_feed_supervisor?/1)
     |> Enum.flat_map(&get_supervisor_children/1)
     |> Enum.filter(fn {_, _, _, [mod]} -> mod == module end)
@@ -51,7 +51,7 @@ defmodule TestUtils do
   end
 
   defp get_supervisor_children({_, pid, _, _}) do
-    Supervisor.which_children(pid)
+    DynamicSupervisor.which_children(pid)
   end
 
   def get_dlq_messages_from_kafka(topic, endpoints) do

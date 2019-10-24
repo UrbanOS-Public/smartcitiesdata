@@ -61,10 +61,10 @@ defmodule Reaper.Decoder.GeoJsonTest do
 
       where([
         [:format, :result],
-        ["geojson", true],
+        ["application/geo+json", true],
+        ["geojson", false],
         ["json", false],
         ["csv", false],
-        ["GEOJSON", true],
         ["", false],
         [nil, false]
       ])

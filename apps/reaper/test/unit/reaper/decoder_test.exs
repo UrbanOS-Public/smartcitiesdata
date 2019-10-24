@@ -41,12 +41,12 @@ defmodule Reaper.DecoderTest do
 
       allow(Yeet.process_dead_letter(any(), any(), any(), any()), return: nil, meck_options: [:passthrough])
 
-      assert_raise RuntimeError, "CSY is an invalid format", fn ->
+      assert_raise RuntimeError, "application/octet-stream is an invalid format", fn ->
         Reaper.Decoder.decode({:file, @filename}, dataset)
       end
 
       assert_called Yeet.process_dead_letter("ds1", "", "Reaper",
-                      error: %RuntimeError{message: "CSY is an invalid format"}
+                      error: %RuntimeError{message: "application/octet-stream is an invalid format"}
                     )
     end
   end
