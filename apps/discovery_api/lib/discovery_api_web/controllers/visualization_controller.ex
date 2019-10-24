@@ -25,4 +25,15 @@ defmodule DiscoveryApiWeb.VisualizationController do
       _ -> render_error(conn, 400, "Bad Request")
     end
   end
+
+  def update(conn, %{"id" => id, "query" => query, "title" => title}) do
+    with {:ok, user} <- Users.get_user(conn.assigns.current_user),
+         {:ok, visualization} <- Visualizations.update(%{id: id, query: query, title: title, owner: user}) do
+      conn
+      |> put_status(:accepted)
+      |> render(:visualization, %{visualization: visualization})
+    else
+      _ -> render_error(conn, 400, "Bad Request")
+    end
+  end
 end

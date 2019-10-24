@@ -21,4 +21,11 @@ defmodule DiscoveryApi.Schemas.Visualizations do
       visualization -> {:ok, visualization}
     end
   end
+
+  def update(visualization_changeset), do: update(visualization_changeset, [])
+
+  defp update(visualization_changeset, opts) do
+    visualization_changeset
+    |> Repo.update()
+  end
 end

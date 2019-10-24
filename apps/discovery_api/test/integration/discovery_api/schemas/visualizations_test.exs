@@ -77,4 +77,48 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       assert {:ok, _} = Users.get_user("you|them")
     end
   end
+
+  describe "update/2" do
+    setup do
+      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+
+      visualization = %{title: "query title", query: "select * FROM table", owner: owner}
+      {:ok, created_visualization} = Visualizations.create(visualization)
+
+      %{created_visualization: created_visualization, owner: owner}
+    end
+
+    test "updates saved visualization given a valid id and owner",
+         %{
+           created_visualization: created_visualization,
+           owner: owner
+         } do
+      assert {:ok, updated_visualization} =
+               Visualizations.update(
+                 Visualization.changeset(created_visualization, %{
+                   title: "query title updated",
+                   query: "select * FROM table2",
+                   owner: owner
+                 })
+               )
+
+      {:ok, actual_visualization} = Visualizations.get_visualization(created_visualization.public_id)
+
+      assert updated_visualization.title == actual_visualization.title
+      assert updated_visualization.query == actual_visualization.query
+    end
+
+    test "does not update when the owner has changed", %{created_visualization: created_visualization} do
+      new_user = Users.create_or_update("me|you", %{email: "cam@example.com"})
+
+      assert {:error, _} =
+               Visualizations.update(
+                 Visualization.changeset(created_visualization, %{
+                   title: "query title updated",
+                   query: "select * FROM table2",
+                   owner: new_user
+                 })
+               )
+    end
+  end
 end

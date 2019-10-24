@@ -77,7 +77,32 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
     end
   end
 
-  describe "GET /visulaization" do
+  describe "PUT /visualization/id" do
+    test "update visualization for existing id returns accepted", %{conn: conn} do
+      id = "abcd1234"
+      query = "select * from table"
+      title = "query title"
+
+      allow(Users.get_user(@valid_jwt_subject), return: {:ok, :valid_user})
+      allow(Visualizations.update(id), return: {:ok, %Visualization{public_id: id, query: query, title: title}})
+
+      body =
+        conn
+        |> put_req_header("authorization", "Bearer #{@valid_jwt}")
+        |> put_req_header("content-type", "application/json")
+        |> put("/api/v1/visualization/#{id}")
+        |> response(202)
+        |> Jason.decode!()
+
+      assert %{
+               "query" => ^query,
+               "title" => ^title,
+               "id" => ^id
+             } = body
+    end
+  end
+
+  describe "GET /visualization" do
     test "returns OK for valid bearer token and id", %{conn: conn} do
       id = "abcdefg"
       query = "select * from stuff"
