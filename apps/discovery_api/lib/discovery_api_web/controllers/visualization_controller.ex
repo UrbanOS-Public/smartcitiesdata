@@ -4,6 +4,7 @@ defmodule DiscoveryApiWeb.VisualizationController do
 
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Visualizations
+  alias DiscoveryApi.Schemas.Visualizations.Visualization
 
   plug(:accepts, DiscoveryApiWeb.VisualizationView.accepted_formats())
 
@@ -26,9 +27,11 @@ defmodule DiscoveryApiWeb.VisualizationController do
     end
   end
 
-  def update(conn, %{"id" => id, "query" => query, "title" => title}) do
+  def update(conn, %{"id" => id, "query" => query, "title" => title} = attribute_changes) do
     with {:ok, user} <- Users.get_user(conn.assigns.current_user),
-         {:ok, visualization} <- Visualizations.update(%{id: id, query: query, title: title, owner: user}) do
+         {:ok, existing_visualization} <- Visualizations.get_visualization(id),
+         {:ok, visualization_changeset} <- Visualization.changeset(existing_visualization, attribute_changes),
+         {:ok, visualization} <- Visualizations.update(visualization_changeset) do
       conn
       |> put_status(:accepted)
       |> render(:visualization, %{visualization: visualization})

@@ -84,13 +84,15 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       title = "query title"
 
       allow(Users.get_user(@valid_jwt_subject), return: {:ok, :valid_user})
-      allow(Visualizations.update(id), return: {:ok, %Visualization{public_id: id, query: query, title: title}})
+      allow(Visualizations.get_visualization(any()), return: {:ok, %Visualization{public_id: id, query: query, title: title}})
+      allow(Visualization.changeset(any(), any()), return: {:ok, %Visualization{public_id: id, query: query, title: title}})
+      allow(Visualizations.update(any()), return: {:ok, %Visualization{public_id: id, query: query, title: title}})
 
       body =
         conn
         |> put_req_header("authorization", "Bearer #{@valid_jwt}")
         |> put_req_header("content-type", "application/json")
-        |> put("/api/v1/visualization/#{id}")
+        |> put("/api/v1/visualization/#{id}", %{"id" => id, "query" => query, "title" => title})
         |> response(202)
         |> Jason.decode!()
 
