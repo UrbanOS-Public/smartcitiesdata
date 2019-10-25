@@ -43,10 +43,16 @@ defmodule Forklift.DataWriter.Compaction do
   def compact(args) do
     config = parse_args(args)
 
-    case @writer.compact(table: config.table) do
-      :ok ->
-        Logger.info("#{config.table} compacted successfully")
+    try do
+      case @writer.compact(table: config.table) do
+        :ok ->
+          Logger.info("#{config.table} compacted successfully")
 
+        error ->
+          Logger.error("#{config.table} failed to compact: #{inspect(error)}")
+          {:error, error}
+      end
+    rescue
       error ->
         Logger.error("#{config.table} failed to compact: #{inspect(error)}")
         {:error, error}

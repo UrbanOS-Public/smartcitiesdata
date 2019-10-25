@@ -41,6 +41,34 @@ defmodule Forklift.DataWriterTest do
       refute_receive "fail"
     end
 
+    test "compacts other tables if an error is raised" do
+      test = self()
+
+      datasets = [
+        TDG.create_dataset(%{technical: %{systemName: "error"}}),
+        TDG.create_dataset(%{technical: %{systemName: "success"}})
+      ]
+
+      allow Forklift.Datasets.get_all!(), return: datasets
+      allow DataWriter.Compaction.Metric.record(any(), any()), return: :ok
+      stub(MockReader, :terminate, fn _ -> :ok end)
+      stub(MockReader, :init, fn _ -> :ok end)
+
+      expect(MockTable, :compact, 2, fn args ->
+        case args[:table] do
+          "error"
+            -> raise "hey"
+
+          table ->
+            send(test, table)
+        end
+      end)
+
+      assert :ok = DataWriter.compact_datasets()
+      assert_receive "success"
+      refute_receive "error"
+    end
+
     test "records duration" do
       stub(MockTable, :compact, fn _ -> :ok end)
       stub(MockReader, :terminate, fn _ -> :ok end)
