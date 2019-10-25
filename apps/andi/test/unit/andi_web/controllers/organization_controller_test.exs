@@ -8,6 +8,7 @@ defmodule AndiWeb.OrganizationControllerTest do
   @get_repost_orgs_route "/api/v1/repost_org_updates"
   @ou Application.get_env(:andi, :ldap_env_ou)
   alias SmartCity.Organization
+  alias SmartCity.UserOrganizationAssociate
   alias SmartCity.Registry.Organization, as: RegOrganization
   alias SmartCity.TestDataGenerator, as: TDG
   import Andi
@@ -214,6 +215,78 @@ defmodule AndiWeb.OrganizationControllerTest do
       response = json_response(conn, 500)
 
       assert "Failed to repost organizations" == response
+    end
+  end
+
+  describe "organization/:org_id/users/add" do
+    test "returns a 200", %{conn: conn} do
+      org = TDG.create_organization(%{})
+
+      allow(Brook.get(any(), any(), org.id),
+        return: {:ok, org},
+        meck_options: [:passthrough]
+      )
+
+      users = %{"users" => [1, 2, 3]}
+
+      actual =
+        conn
+        |> post("/api/v1/organization/#{org.id}/users/add", users)
+        |> json_response(200)
+
+      assert actual == users
+    end
+
+    test "returns a 400 if the organization doesn't exist", %{conn: conn} do
+      # Move to setup?
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
+        return: :ok,
+        meck_options: [:passthrough]
+      )
+
+      allow(Brook.get(any(), any(), any()),
+        return: {:ok, nil},
+        meck_options: [:passthrough]
+      )
+
+      users = %{"users" => [1]}
+      org_id = 111
+
+      actual =
+        conn
+        |> post("/api/v1/organization/#{org_id}/users/add", users)
+        |> json_response(400)
+
+      assert actual == "The organization #{org_id} does not exist"
+      refute_called(Brook.Event.send(instance_name(), any(), :andi, any()))
+    end
+
+    test "sends a user:organization:associate event" do
+      # Move to setup?
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
+        return: :ok,
+        meck_options: [:passthrough]
+      )
+
+      org = TDG.create_organization(%{})
+
+      allow(Brook.get(any(), any(), org.id),
+        return: {:ok, org},
+        meck_options: [:passthrough]
+      )
+
+      users = %{"users" => [1, 2]}
+
+      actual =
+        conn
+        |> post("/api/v1/organization/#{org.id}/users/add", users)
+        |> json_response(200)
+
+      {:ok, expected_1} = UserOrganizationAssociate.new(%{user_id: 1, org_id: org.id})
+      {:ok, expected_2} = UserOrganizationAssociate.new(%{user_id: 2, org_id: org.id})
+
+      assert_called(Brook.Event.send(instance_name(), any(), :andi, expected_1), once())
+      assert_called(Brook.Event.send(instance_name(), any(), :andi, expected_2), once())
     end
   end
 

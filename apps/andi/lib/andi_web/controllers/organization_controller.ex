@@ -165,4 +165,23 @@ defmodule AndiWeb.OrganizationController do
         |> json("Failed to repost organizations")
     end
   end
+
+  @doc """
+  Sends a user:organization:associate event
+  """
+  def add_users_to_organization(conn, %{"org_id" => org_id, "users" => users}) do
+    case Brook.get(instance_name(), :org, org_id) do
+      {:ok, %Organization{}} ->
+        Andi.Services.OrganizationAssociateService.associate(org_id, users)
+
+        conn
+        |> put_status(200)
+        |> json(conn.body_params)
+
+      {:ok, nil} ->
+        conn
+        |> put_status(400)
+        |> json("The organization #{org_id} does not exist")
+    end
+  end
 end
