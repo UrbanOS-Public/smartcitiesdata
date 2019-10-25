@@ -219,7 +219,7 @@ defmodule AndiWeb.OrganizationControllerTest do
   end
 
   describe "organization/:org_id/users/add" do
-    test "returns a 200", %{conn: conn} do
+    setup do
       org = TDG.create_organization(%{})
 
       allow(Brook.get(any(), any(), org.id),
@@ -227,8 +227,17 @@ defmodule AndiWeb.OrganizationControllerTest do
         meck_options: [:passthrough]
       )
 
-      users = %{"users" => [1, 2, 3]}
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
+        return: :ok,
+        meck_options: [:passthrough]
+      )
 
+      users = %{"users" => [1, 2]}
+
+      %{org: org, users: users}
+    end
+
+    test "returns a 200", %{org: org, users: users} do
       actual =
         conn
         |> post("/api/v1/organization/#{org.id}/users/add", users)
@@ -237,19 +246,12 @@ defmodule AndiWeb.OrganizationControllerTest do
       assert actual == users
     end
 
-    test "returns a 400 if the organization doesn't exist", %{conn: conn} do
-      # Move to setup?
-      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
-        return: :ok,
-        meck_options: [:passthrough]
-      )
-
+    test "returns a 400 if the organization doesn't exist", %{users: users} do
       allow(Brook.get(any(), any(), any()),
         return: {:ok, nil},
         meck_options: [:passthrough]
       )
 
-      users = %{"users" => [1]}
       org_id = 111
 
       actual =
@@ -261,22 +263,7 @@ defmodule AndiWeb.OrganizationControllerTest do
       refute_called(Brook.Event.send(instance_name(), any(), :andi, any()))
     end
 
-    test "sends a user:organization:associate event" do
-      # Move to setup?
-      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
-        return: :ok,
-        meck_options: [:passthrough]
-      )
-
-      org = TDG.create_organization(%{})
-
-      allow(Brook.get(any(), any(), org.id),
-        return: {:ok, org},
-        meck_options: [:passthrough]
-      )
-
-      users = %{"users" => [1, 2]}
-
+    test "sends a user:organization:associate event", %{org: org, users: users} do
       actual =
         conn
         |> post("/api/v1/organization/#{org.id}/users/add", users)
@@ -289,12 +276,7 @@ defmodule AndiWeb.OrganizationControllerTest do
       assert_called(Brook.Event.send(instance_name(), any(), :andi, expected_2), once())
     end
 
-    test "returns a 500 if unable to get organizations through Brook" do
-      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
-        return: :ok,
-        meck_options: [:passthrough]
-      )
-
+    test "returns a 500 if unable to get organizations through Brook", %{org: org, users: users} do
       allow(Brook.get(any(), any(), any()),
         return: {:error, "bad stuff happened"},
         meck_options: [:passthrough]
@@ -309,14 +291,7 @@ defmodule AndiWeb.OrganizationControllerTest do
       refute_called(Brook.Event.send(instance_name(), any(), :andi, any()))
     end
 
-    test "returns a 500 if unable to send events" do
-      org = TDG.create_organization(%{})
-
-      allow(Brook.get(any(), any(), org.id),
-        return: {:ok, org},
-        meck_options: [:passthrough]
-      )
-
+    test "returns a 500 if unable to send events", %{org: org, users: users} do
       allow(Brook.Event.send(instance_name(), any(), :andi, any()),
         return: {:error, "unable to send event"},
         meck_options: [:passthrough]
