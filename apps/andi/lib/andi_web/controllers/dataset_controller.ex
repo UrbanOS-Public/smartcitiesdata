@@ -104,19 +104,6 @@ defmodule AndiWeb.DatasetController do
     end
   end
 
-  defp parse_message(%{"technical" => _technical} = msg) do
-    with %{"technical" => technical} = msg <- trim_fields(msg),
-         org_name when not is_nil(org_name) <- Map.get(technical, "orgName"),
-         data_name when not is_nil(data_name) <- Map.get(technical, "dataName"),
-         system_name <- "#{org_name}__#{data_name}" do
-      {:ok, put_in(msg, ["technical", "systemName"], system_name)}
-    else
-      _ -> {:error, "Cannot parse message: #{inspect(msg)}"}
-    end
-  end
-
-  defp parse_message(msg), do: {:error, "Cannot parse message: #{inspect(msg)}"}
-
   defp respond(conn, status, body) do
     conn
     |> put_status(status)
@@ -128,6 +115,15 @@ defmodule AndiWeb.DatasetController do
 
     Map.merge(message, %{"id" => uuid}, fn _k, v1, _v2 -> v1 end)
   end
+
+  defp parse_message(%{"technical" => _technical} = msg) do
+    msg
+    |> trim_fields()
+    |> downcase_schema()
+    |> create_system_name()
+  end
+
+  defp parse_message(msg), do: {:error, "Cannot parse message: #{inspect(msg)}"}
 
   defp trim_fields(%{"id" => id, "technical" => technical, "business" => business} = map) do
     %{
@@ -154,4 +150,24 @@ defmodule AndiWeb.DatasetController do
       item -> item
     end)
   end
+
+  defp downcase_schema(%{"technical" => technical} = msg) do
+    downcased_schema =
+      technical
+      |> Map.get("schema")
+      |> Andi.SchemaDowncaser.downcase_schema()
+
+    put_in(msg, ["technical", "schema"], downcased_schema)
+  end
+
+  defp create_system_name(%{"technical" => technical} = msg) do
+    with org_name when not is_nil(org_name) <- Map.get(technical, "orgName"),
+         data_name when not is_nil(data_name) <- Map.get(technical, "dataName"),
+         system_name <- "#{org_name}__#{data_name}" do
+      {:ok, put_in(msg, ["technical", "systemName"], system_name)}
+    else
+      _ -> {:error, "Cannot parse message: #{inspect(msg)}"}
+    end
+  end
+
 end
