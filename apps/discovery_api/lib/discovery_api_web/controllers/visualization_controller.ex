@@ -28,7 +28,7 @@ defmodule DiscoveryApiWeb.VisualizationController do
   end
 
   def update(conn, attribute_changes) do
-    case Visualizations.update(conn.path_params.id, attribute_changes) do
+    case Visualizations.update(Map.get(conn.path_params, "id"), attribute_changes) do
       {:ok, visualization} ->
         conn
         |> put_status(:ok)
