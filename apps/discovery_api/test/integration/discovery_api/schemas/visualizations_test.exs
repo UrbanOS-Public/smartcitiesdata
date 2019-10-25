@@ -95,11 +95,12 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
          } do
       assert {:ok, updated_visualization} =
                Visualizations.update(
-                 Visualization.changeset(created_visualization, %{
+                 created_visualization.public_id,
+                 %{
                    title: "query title updated",
                    query: "select * FROM table2",
                    owner: owner
-                 })
+                 }
                )
 
       {:ok, actual_visualization} = Visualizations.get_visualization(created_visualization.public_id)
@@ -113,11 +114,12 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
       assert {:error, _} =
                Visualizations.update(
-                 Visualization.changeset(created_visualization, %{
+                 created_visualization.public_id,
+                 %{
                    title: "query title updated",
                    query: "select * FROM table2",
                    owner: new_user
-                 })
+                 }
                )
     end
   end

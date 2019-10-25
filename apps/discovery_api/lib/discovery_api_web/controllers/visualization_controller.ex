@@ -27,13 +27,15 @@ defmodule DiscoveryApiWeb.VisualizationController do
     end
   end
 
-  def update(conn, %{"query" => query, "title" => title} = attribute_changes) do
-    with {:ok, visualization} <- Visualizations.update(conn.path_params.id, attribute_changes) do
-      conn
-      |> put_status(:ok)
-      |> render(:visualization, %{visualization: visualization})
-    else
-      _ -> render_error(conn, 400, "Bad Request")
+  def update(conn, attribute_changes) do
+    case Visualizations.update(conn.path_params.id, attribute_changes) do
+      {:ok, visualization} ->
+        conn
+        |> put_status(:ok)
+        |> render(:visualization, %{visualization: visualization})
+
+      _ ->
+        render_error(conn, 400, "Bad Request")
     end
   end
 end
