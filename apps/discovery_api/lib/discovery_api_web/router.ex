@@ -76,6 +76,6 @@ defmodule DiscoveryApiWeb.Router do
 
     post("/logged-in", UserController, :logged_in)
 
-    resources("/visualization", VisualizationController, only: [:show, :create])
+    resources("/visualization", VisualizationController, only: [:show, :create, :update])
   end
 end

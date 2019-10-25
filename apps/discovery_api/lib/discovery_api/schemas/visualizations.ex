@@ -16,9 +16,17 @@ defmodule DiscoveryApi.Schemas.Visualizations do
   end
 
   def get_visualization(id) do
-    case Repo.get_by(Visualization, public_id: id) do
+    case Repo.get_by(Visualization, public_id: id) |> Repo.preload(:owner) do
       nil -> {:error, "#{id} not found"}
       visualization -> {:ok, visualization}
     end
+  end
+
+  def update(id, visualization_changes, opts \\ []) do
+    {:ok, existing_visualization} = get_visualization(id)
+
+    existing_visualization
+    |> Visualization.changeset(visualization_changes)
+    |> Repo.update(opts)
   end
 end
