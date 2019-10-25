@@ -288,6 +288,47 @@ defmodule AndiWeb.OrganizationControllerTest do
       assert_called(Brook.Event.send(instance_name(), any(), :andi, expected_1), once())
       assert_called(Brook.Event.send(instance_name(), any(), :andi, expected_2), once())
     end
+
+    test "returns a 500 if unable to get organizations through Brook" do
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
+        return: :ok,
+        meck_options: [:passthrough]
+      )
+
+      allow(Brook.get(any(), any(), any()),
+        return: {:error, "bad stuff happened"},
+        meck_options: [:passthrough]
+      )
+
+      actual =
+        conn
+        |> post("/api/v1/organization/222/users/add", %{"users" => [1, 2]})
+        |> json_response(500)
+
+      assert actual == "Internal Server Error"
+      refute_called(Brook.Event.send(instance_name(), any(), :andi, any()))
+    end
+
+    test "returns a 500 if unable to send events" do
+      org = TDG.create_organization(%{})
+
+      allow(Brook.get(any(), any(), org.id),
+        return: {:ok, org},
+        meck_options: [:passthrough]
+      )
+
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
+        return: {:error, "unable to send event"},
+        meck_options: [:passthrough]
+      )
+
+      actual =
+        conn
+        |> post("/api/v1/organization/#{org.id}/users/add", %{"users" => [1, 2]})
+        |> json_response(500)
+
+      assert actual == "Internal Server Error"
+    end
   end
 
   defp uuid?(str) do

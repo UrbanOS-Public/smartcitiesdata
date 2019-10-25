@@ -170,18 +170,22 @@ defmodule AndiWeb.OrganizationController do
   Sends a user:organization:associate event
   """
   def add_users_to_organization(conn, %{"org_id" => org_id, "users" => users}) do
-    case Brook.get(instance_name(), :org, org_id) do
-      {:ok, %Organization{}} ->
-        Andi.Services.OrganizationAssociateService.associate(org_id, users)
-
+    case Andi.Services.OrganizationAssociateService.associate(org_id, users) do
+      :ok ->
         conn
         |> put_status(200)
         |> json(conn.body_params)
 
-      {:ok, nil} ->
+      {:error, :invalid_org} ->
         conn
         |> put_status(400)
         |> json("The organization #{org_id} does not exist")
+
+      {:error, _} ->
+        conn
+        |> put_status(500)
+        |> put_view(AndiWeb.ErrorView)
+        |> render("500.json")
     end
   end
 end
