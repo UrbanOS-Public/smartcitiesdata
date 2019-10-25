@@ -33,7 +33,7 @@ defmodule DiscoveryApiWeb.VisualizationController do
          {:ok, visualization_changeset} <- Visualization.changeset(existing_visualization, attribute_changes),
          {:ok, visualization} <- Visualizations.update(visualization_changeset) do
       conn
-      |> put_status(:accepted)
+      |> put_status(:ok)
       |> render(:visualization, %{visualization: visualization})
     else
       _ -> render_error(conn, 400, "Bad Request")

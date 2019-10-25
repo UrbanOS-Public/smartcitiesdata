@@ -93,7 +93,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         |> put_req_header("authorization", "Bearer #{@valid_jwt}")
         |> put_req_header("content-type", "application/json")
         |> put("/api/v1/visualization/#{id}", %{"id" => id, "query" => query, "title" => title})
-        |> response(202)
+        |> response(200)
         |> Jason.decode!()
 
       assert %{
