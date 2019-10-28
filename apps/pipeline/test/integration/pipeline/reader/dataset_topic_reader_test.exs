@@ -65,7 +65,11 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
         handler: Pipeline.TestHandler,
         input_topic_prefix: @prefix,
         retry_count: 10,
-        retry_delay: 1
+        retry_delay: 1,
+        topic_subscriber_config: [
+          begin_offset: :earliest,
+          offset_reset_policy: :reset_to_earliest
+        ]
       ]
 
       assert :ok = DatasetTopicReader.init(args)
