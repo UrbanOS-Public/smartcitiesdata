@@ -19,6 +19,8 @@ defmodule Reaper.Migrations do
 
     stop_brook(brook)
 
+    migrate_quantum_task()
+
     {:ok, :ok, {:continue, :stop}}
   end
 
@@ -63,5 +65,30 @@ defmodule Reaper.Migrations do
 
   defp migrate_extractions(_dataset) do
     Logger.info("Nothing to migrate")
+  end
+
+  defp migrate_quantum_task() do
+    Reaper.Scheduler.jobs()
+    |> Enum.each(&migrate_brook_args/1)
+  end
+
+  defp migrate_brook_args({id, %{task: {Brook.Event, :send, args}} = job}) do
+    case length(args) do
+      3 ->
+        Reaper.Scheduler.delete_job(id)
+
+        update_task(job)
+        |> Reaper.Scheduler.add_job()
+
+      _ ->
+        :ok
+    end
+  end
+
+  defp migrate_brook_args(_), do: :ok
+
+  defp update_task(%{task: {Brook.Event, :send, args}} = job) do
+    new_args = [@instance | args]
+    %{job | task: {Brook.Event, :send, new_args}}
   end
 end

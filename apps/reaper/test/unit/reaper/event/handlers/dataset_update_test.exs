@@ -76,7 +76,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
 
       job = Reaper.Scheduler.find_job(:ds2)
       assert job.schedule == ~e[* * * * *]
-      assert job.task == {Brook.Event, :send, [event, :reaper, dataset]}
+      assert job.task == {Brook.Event, :send, [@instance, event, :reaper, dataset]}
 
       where([
         [:source_type, :event],

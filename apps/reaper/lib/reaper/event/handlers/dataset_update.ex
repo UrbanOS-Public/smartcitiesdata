@@ -83,7 +83,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
     Reaper.Scheduler.new_job()
     |> Job.set_name(String.to_atom(dataset.id))
     |> Job.set_schedule(cron_expression)
-    |> Job.set_task({Brook.Event, :send, [determine_event(dataset), :reaper, dataset]})
+    |> Job.set_task({Brook.Event, :send, [@instance, determine_event(dataset), :reaper, dataset]})
     |> Reaper.Scheduler.add_job()
   end
 
