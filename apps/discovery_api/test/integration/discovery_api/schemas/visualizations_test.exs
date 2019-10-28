@@ -112,7 +112,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     test "does not update when the owner has changed", %{created_visualization: created_visualization} do
       new_user = Users.create_or_update("me|you", %{email: "cam@example.com"})
 
-      assert {:error, _} =
+      assert :error ==
                Visualizations.update(
                  created_visualization.public_id,
                  %{

@@ -31,7 +31,7 @@ defmodule DiscoveryApi.Schemas.Visualizations do
       |> Changeset.change(visualization_changes)
       |> Repo.update(opts)
     else
-      {:error, "This user does not have permission to change this visualization"}
+      :error
     end
   end
 end
