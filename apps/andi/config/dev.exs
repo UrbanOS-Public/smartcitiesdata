@@ -11,11 +11,29 @@ config :andi, AndiWeb.Endpoint,
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  watchers: []
+  watchers: [
+    node: [
+      "node_modules/webpack/bin/webpack.js",
+      "--mode",
+      "development",
+      "--watch-stdin",
+      cd: Path.expand("../assets", __DIR__)
+    ]
+  ]
 
 config :smart_city_registry,
   redis: [
     host: "localhost"
+  ]
+
+config :andi, AndiWeb.Endpoint,
+  live_reload: [
+    patterns: [
+      ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
+      ~r{priv/gettext/.*(po)$},
+      ~r{lib/andi_web/views/.*(ex)$},
+      ~r{lib/andi_web/templates/.*(eex)$}
+    ]
   ]
 
 # Watch static and templates for browser reloading.

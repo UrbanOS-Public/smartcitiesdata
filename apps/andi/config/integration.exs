@@ -53,3 +53,25 @@ config :andi, :brook,
     module: Brook.Storage.Redis,
     init_arg: [redix_args: [host: host], namespace: "andi:view"]
   ]
+
+config :andi, AndiWeb.Endpoint,
+  code_reloader: true,
+  watchers: [
+    node: [
+      "node_modules/webpack/bin/webpack.js",
+      "--mode",
+      "development",
+      "--watch-stdin",
+      cd: Path.expand("../assets", __DIR__)
+    ]
+  ],
+  # reloadable_apps: [:andi],
+  live_reload: [
+    patterns: [
+      ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
+      ~r{priv/gettext/.*(po)$},
+      # ~r{lib/andi_web/controllers/.*(ex)$},
+      ~r{lib/andi_web/views/.*(ex)$},
+      ~r{lib/andi_web/templates/.*(eex)$}
+    ]
+  ]
