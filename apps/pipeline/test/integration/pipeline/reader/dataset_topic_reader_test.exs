@@ -6,7 +6,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
   alias Pipeline.Reader.DatasetTopicReader
   alias SmartCity.TestDataGenerator, as: TDG
 
-  import SmartCity.TestHelper, only: [eventually: 1]
+  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   @prefix "input-prefix"
   @brokers Application.get_env(:pipeline, :elsa_brokers)
@@ -55,7 +55,6 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
     end
 
     test "sets reader up to pass messages to a handler" do
-      Application.put_env(:smart_city_test, :endpoint, @brokers)
       dataset = TDG.create_dataset(%{id: "read"})
       message = TDG.create_data(%{})
 
@@ -66,12 +65,17 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
         handler: Pipeline.TestHandler,
         input_topic_prefix: @prefix,
         retry_count: 10,
-        retry_delay: 1
+        retry_delay: 1,
+        topic_subscriber_config: [
+          begin_offset: :earliest,
+          offset_reset_policy: :reset_to_earliest
+        ]
       ]
 
       assert :ok = DatasetTopicReader.init(args)
       eventually(fn -> assert {"#{@prefix}-read", 1} in Elsa.Topic.list(@brokers) end)
 
+      Application.put_env(:smart_city_test, :endpoint, @brokers)
       SmartCity.KafkaHelper.send_to_kafka(message, "#{@prefix}-read")
 
       eventually(fn ->
@@ -80,7 +84,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
 
         assert Jason.decode!(json)["payload"]["my_float"] == message.payload["my_float"]
         assert Jason.decode!(json)["payload"]["my_string"] == message.payload["my_string"]
-      end)
+      end, 5_000, 5)
     end
 
     test "tracks reader infrastructure" do
@@ -151,11 +155,9 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
       [{:undefined, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
       Process.monitor(pid)
 
-      eventually(fn ->
-        assert {"#{@prefix}-unreachable", 1} not in Elsa.Topic.list(@brokers)
-        assert_receive {:DOWN, _, _, ^pid, {%RuntimeError{message: msg}, _}}
-        assert msg == "Timed out waiting for #{@prefix}-unreachable to be available"
-      end)
+      assert_receive {:DOWN, _, _, ^pid, {%RuntimeError{message: msg}, _}}, 5_000
+      assert msg == "Timed out waiting for #{@prefix}-unreachable to be available"
+      assert {"#{@prefix}-unreachable", 1} not in Elsa.Topic.list(@brokers)
     end
   end
 
@@ -179,12 +181,12 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
         assert [{:undefined, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
         assert {:ok, ^pid} = Registry.meta(Pipeline.Registry, :"pipeline-#{@prefix}-#{dataset.id}-consumer")
         Process.monitor(pid)
-      end)
+      end, 3_000, 5)
 
       {:ok, pid} = Registry.meta(Pipeline.Registry, :"pipeline-#{@prefix}-#{dataset.id}-consumer")
       DatasetTopicReader.terminate(dataset: dataset, input_topic_prefix: @prefix, instance: :pipeline)
 
-      assert_receive {:DOWN, _, _, ^pid, :shutdown}, 1_000
+      assert_receive {:DOWN, _, _, ^pid, :shutdown}, 3_000
     end
   end
 end
