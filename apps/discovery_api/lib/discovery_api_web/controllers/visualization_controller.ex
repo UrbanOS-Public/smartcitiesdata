@@ -4,7 +4,6 @@ defmodule DiscoveryApiWeb.VisualizationController do
 
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Visualizations
-  alias DiscoveryApi.Schemas.Visualizations.Visualization
 
   plug(:accepts, DiscoveryApiWeb.VisualizationView.accepted_formats())
 
@@ -28,12 +27,15 @@ defmodule DiscoveryApiWeb.VisualizationController do
   end
 
   def update(conn, attribute_changes) do
-    case Visualizations.update(Map.get(conn.path_params, "id"), attribute_changes) do
-      {:ok, visualization} ->
-        conn
-        |> put_status(:ok)
-        |> render(:visualization, %{visualization: visualization})
+    caller = Users.get_user(conn.assigns.current_user)
+    visualization_id = Map.get(conn.path_params, "id")
 
+    with {:ok, caller} <- Users.get_user(conn.assigns.current_user),
+         {:ok, visualization} <- Visualizations.update(visualization_id, attribute_changes, caller) do
+      conn
+      |> put_status(:ok)
+      |> render(:visualization, %{visualization: visualization})
+    else
       _ ->
         render_error(conn, 400, "Bad Request")
     end

@@ -98,9 +98,9 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
                  created_visualization.public_id,
                  %{
                    title: "query title updated",
-                   query: "select * FROM table2",
-                   owner: owner
-                 }
+                   query: "select * FROM table2"
+                 },
+                 owner
                )
 
       {:ok, actual_visualization} = Visualizations.get_visualization(created_visualization.public_id)
@@ -117,9 +117,9 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
                  created_visualization.public_id,
                  %{
                    title: "query title updated",
-                   query: "select * FROM table2",
-                   owner: new_user
-                 }
+                   query: "select * FROM table2"
+                 },
+                 new_user
                )
     end
   end

@@ -3,6 +3,7 @@ defmodule DiscoveryApi.Schemas.Visualizations do
   Interface for reading and writing the Visualization schema.
   """
   alias DiscoveryApi.Repo
+  alias Ecto.Changeset
   alias DiscoveryApi.Schemas.Visualizations.Visualization
 
   def list_visualizations do
@@ -22,11 +23,15 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     end
   end
 
-  def update(id, visualization_changes, opts \\ []) do
+  def update(id, visualization_changes, caller, opts \\ []) do
     {:ok, existing_visualization} = get_visualization(id)
 
-    existing_visualization
-    |> Visualization.changeset(visualization_changes)
-    |> Repo.update(opts)
+    if caller == existing_visualization.owner do
+      existing_visualization
+      |> Changeset.change(visualization_changes)
+      |> Repo.update(opts)
+    else
+      {:error, "This user does not have permission to change this visualization"}
+    end
   end
 end

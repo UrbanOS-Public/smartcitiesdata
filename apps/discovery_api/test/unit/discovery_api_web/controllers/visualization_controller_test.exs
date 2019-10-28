@@ -86,7 +86,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       allow(Users.get_user(@valid_jwt_subject), return: {:ok, :valid_user})
       allow(Visualizations.get_visualization(any()), return: {:ok, %Visualization{public_id: id, query: query, title: title}})
       allow(Visualization.changeset(any(), any()), return: {:ok, %Visualization{public_id: id, query: query, title: title}})
-      allow(Visualizations.update(any(), any()), return: {:ok, %Visualization{public_id: id, query: query, title: title}})
+      allow(Visualizations.update(any(), any(), any()), return: {:ok, %Visualization{public_id: id, query: query, title: title}})
 
       body =
         conn
