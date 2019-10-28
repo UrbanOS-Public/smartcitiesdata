@@ -202,6 +202,48 @@ defmodule AndiWeb.DatasetControllerTest do
     assert response["technical"]["orgName"] == "the_org_name"
   end
 
+  test "put downcases schema column names", %{
+    conn: conn
+  } do
+    new_dataset =
+      TDG.create_dataset(
+        id: " my-new-dataset  ",
+        technical: %{
+          schema: [
+            %{
+              "name" => "UPPERCASE",
+              "description" => "ANOTHER"
+            },
+            %{
+              "name" => "HElloW",
+              "description" => "ANOTHER1"
+            }
+          ]
+        }
+      )
+
+    allow(Brook.get_all_values!(any(), :dataset), return: [])
+
+    response =
+      conn
+      |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
+      |> json_response(201)
+
+    expected = [
+      %{
+        "name" => "uppercase",
+        "description" => "ANOTHER"
+      },
+      %{
+        "name" => "hellow",
+        "description" => "ANOTHER1"
+      }
+    ]
+
+    assert response["id"] == "my-new-dataset"
+    assert response["technical"]["schema"] == expected
+  end
+
   describe "POST /dataset/disable" do
     setup %{} do
       dataset = TDG.create_dataset(%{})
