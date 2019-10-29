@@ -1,3 +1,18 @@
 /* This file is for your main application css. */
 
-@import "./phoenix.css";
+body {
+  background: #F6F9FF;
+}
+
+.root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.root__main {
+  flex: 1;
+  background: white;
+  box-shadow: 0 0 6px rgba(20, 20, 20, 0.2);
+  margin: 1em;
+}

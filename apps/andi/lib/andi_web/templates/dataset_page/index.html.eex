@@ -1,10 +1,10 @@
-<section class="phx-hero">
-  <h1>Hello there!!!!</h1>
-  <table>
+<table>
+    <thead>
+      <th>Dataset ID</th>
+    </thead>
     <%= for dataset <- @datasets do %>
       <tr>
         <td><%= dataset.id %></td>
       </tr>
     <% end %>
-  </table>
-</section>
+</table>
