@@ -16,3 +16,34 @@ body {
   box-shadow: 0 0 6px rgba(20, 20, 20, 0.2);
   margin: 1em;
 }
+
+/* ----------------------------------------------------------------- */
+.datasets-index {
+  /* display: flex;
+  flex-direction: column; */
+  padding: 1em;
+}
+
+.datasets-index__title {
+  font-size: 1em;
+}
+
+.datasets-index__table {
+}
+
+.datasets-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid black;
+}
+
+.datasets-table__th {
+  text-align: left;
+  padding: 0.25em;
+  border: 1px solid black;
+}
+
+.datasets-table__td {
+  padding: 0.25em;
+  border: 1px solid black;
+}

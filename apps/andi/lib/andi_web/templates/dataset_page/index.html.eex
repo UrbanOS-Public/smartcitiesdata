@@ -1,10 +1,19 @@
-<table>
-    <thead>
-      <th>Dataset ID</th>
-    </thead>
-    <%= for dataset <- @datasets do %>
-      <tr>
-        <td><%= dataset.id %></td>
-      </tr>
-    <% end %>
-</table>
+<div class="datasets-index">
+  <h1 class="datasets-index__title">All Datasets</h1>
+
+  <div class="datasets-index__table">
+    <table class="datasets-table">
+      <thead>
+        <th class="datasets-table__th">Organization</th>
+        <th class="datasets-table__th">Dataset Name</th>
+      </thead>
+      <%= for dataset <- @datasets do %>
+        <tr>
+          <td class="datasets-table__td"><%= dataset.business.orgTitle %></td>
+          <td class="datasets-table__td"><%= dataset.business.dataTitle %></td>
+        </tr>
+      <% end %>
+    </table>
+  </div>
+
+</div>
