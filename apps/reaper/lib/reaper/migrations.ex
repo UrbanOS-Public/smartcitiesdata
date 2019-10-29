@@ -19,7 +19,11 @@ defmodule Reaper.Migrations do
 
     stop_brook(brook)
 
+    {:ok, quantum} = start_quantum_storage()
+
     migrate_quantum_task()
+
+    stop_quantum_storage(quantum)
 
     {:ok, :ok, {:continue, :stop}}
   end
@@ -36,6 +40,17 @@ defmodule Reaper.Migrations do
   defp stop_brook(brook) do
     Process.unlink(brook)
     Supervisor.stop(brook)
+  end
+
+  defp start_quantum_storage() do
+    :reaper
+    |> Application.get_env(Reaper.Quantum.Storage)
+    |> Reaper.Quantum.Storage.Connection.start_link()
+  end
+
+  defp stop_quantum_storage(quantum) do
+    Process.unlink(quantum)
+    Process.exit(quantum, :kill)
   end
 
   def handle_continue(:stop, state) do
@@ -68,17 +83,20 @@ defmodule Reaper.Migrations do
   end
 
   defp migrate_quantum_task() do
-    Reaper.Scheduler.jobs()
-    |> Enum.each(&migrate_brook_args/1)
+    Reaper.Quantum.Storage.jobs(Reaper.Scheduler)
+    |> case do
+      :not_applicable -> :ok
+      jobs -> Enum.each(jobs, &migrate_brook_args/1)
+    end
   end
 
-  defp migrate_brook_args({id, %{task: {Brook.Event, :send, args}} = job}) do
+  defp migrate_brook_args(%{name: name, task: {Brook.Event, :send, args}} = job) do
     case length(args) do
       3 ->
-        Reaper.Scheduler.delete_job(id)
+        Reaper.Quantum.Storage.delete_job(Reaper.Scheduler, name)
 
-        update_task(job)
-        |> Reaper.Scheduler.add_job()
+        updated_job = update_task(job)
+        Reaper.Quantum.Storage.add_job(Reaper.Scheduler, updated_job)
 
       _ ->
         :ok
