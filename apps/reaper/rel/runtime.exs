@@ -64,7 +64,11 @@ config :reaper, :brook,
     module: Brook.Storage.Redis,
     init_arg: [
       redix_args: [host: redis_host],
-      namespace: "reaper:view"
+      namespace: "reaper:view",
+      event_limits: %{
+        "data:extract:start" => 1000,
+        "data:extract:end" => 1000
+      }
     ]
   },
   dispatcher: Brook.Dispatcher.Noop
