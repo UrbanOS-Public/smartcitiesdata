@@ -26,11 +26,11 @@ defmodule DiscoveryApiWeb.VisualizationController do
     end
   end
 
-  def update(conn, attribute_changes) do
-    visualization_id = Map.get(conn.path_params, "id")
+
+  def update(conn, %{"public_id" => visualization_id}=attribute_changes) do
 
     with {:ok, caller} <- Users.get_user(conn.assigns.current_user),
-         {:ok, visualization} <- Visualizations.update(visualization_id, attribute_changes, caller) do
+         {:ok, visualization} <- Visualizations.update(attribute_changes, caller) do
       conn
       |> put_status(:ok)
       |> render(:visualization, %{visualization: visualization})

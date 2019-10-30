@@ -16,19 +16,19 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     |> Repo.insert()
   end
 
-  def get_visualization(id) do
-    case Repo.get_by(Visualization, public_id: id) |> Repo.preload(:owner) do
-      nil -> {:error, "#{id} not found"}
+  def get_visualization(public_id) do
+    case Repo.get_by(Visualization, public_id: public_id) |> Repo.preload(:owner) do
+      nil -> {:error, "#{public_id} not found"}
       visualization -> {:ok, visualization}
     end
   end
 
-  def update(id, visualization_changes, caller, opts \\ []) do
-    {:ok, existing_visualization} = get_visualization(id)
+  def update(visualization_changes, caller, opts \\ []) do
+    {:ok, existing_visualization} = get_visualization(visualization_changes["public_id"])
 
     if caller == existing_visualization.owner do
       existing_visualization
-      |> Changeset.change(visualization_changes)
+      |> Visualization.changeset_update(visualization_changes) |> IO.inspect(label: "changeset")
       |> Repo.update(opts)
     else
       :error
