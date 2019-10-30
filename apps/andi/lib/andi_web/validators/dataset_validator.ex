@@ -7,6 +7,7 @@ defmodule AndiWeb.DatasetValidator do
     case SimplyValidate.validate(dataset, [
            validate_org_name(),
            validate_data_name(),
+           validate_modified_date_format(),
            already_exists!(),
            description_required()
          ]) do
@@ -21,6 +22,24 @@ defmodule AndiWeb.DatasetValidator do
 
   def validate_data_name do
     {&String.contains?(&1.technical.dataName, "-"), "dataName cannot contain dashes", false}
+  end
+
+  def validate_modified_date_format do
+    {&iso8601?(&1.business.modifiedDate), "modifiedDate must be iso8601 formatted, e.g. '2019-01-01T13:59:45'", true}
+  end
+
+  def iso8601?("") do
+    true
+  end
+
+  def iso8601?(date) do
+    case DateTime.from_iso8601(date) do
+      {:ok, _date, _offset} ->
+        true
+
+      _ ->
+        false
+    end
   end
 
   def already_exists! do

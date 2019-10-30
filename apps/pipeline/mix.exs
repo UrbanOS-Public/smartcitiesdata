@@ -32,7 +32,7 @@ defmodule Pipeline.MixProject do
       {:prestige, "~> 0.3"},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      {:smart_city_test, "~> 0.5", only: [:dev, :test, :integration]},
+      {:smart_city_test, "~> 0.7", only: [:dev, :test, :integration]},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]}
     ]
