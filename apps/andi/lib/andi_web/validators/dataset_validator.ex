@@ -25,21 +25,7 @@ defmodule AndiWeb.DatasetValidator do
   end
 
   def validate_modified_date_format do
-    {&iso8601?(&1.business.modifiedDate), "modifiedDate must be iso8601 formatted, e.g. '2019-01-01T13:59:45'", true}
-  end
-
-  def iso8601?("") do
-    true
-  end
-
-  def iso8601?(date) do
-    case DateTime.from_iso8601(date) do
-      {:ok, _date, _offset} ->
-        true
-
-      _ ->
-        false
-    end
+    {&check_valid_date(&1.business.modifiedDate), "modifiedDate must be iso8601 formatted, e.g. '2019-01-01T13:59:45'", true}
   end
 
   def already_exists! do
@@ -63,5 +49,17 @@ defmodule AndiWeb.DatasetValidator do
 
   defp description_required do
     {&(&1.business.description != ""), "Description must be provided"}
+  end
+
+  defp check_valid_date(""), do: true
+
+  defp check_valid_date(date) do
+    case DateTime.from_iso8601(date) do
+      {:ok, _date, _offset} ->
+        true
+
+      _ ->
+        false
+    end
   end
 end
