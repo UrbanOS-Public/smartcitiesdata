@@ -6,6 +6,7 @@ defmodule Andi.CreateOrgTest do
 
   alias SmartCity.Registry.Organization, as: RegOrganization
   alias SmartCity.TestDataGenerator, as: TDG
+  import SmartCity.TestHelper, only: [eventually: 1]
   import Andi
 
   plug Tesla.Middleware.BaseUrl, "http://localhost:4000"
@@ -13,6 +14,8 @@ defmodule Andi.CreateOrgTest do
   @ou Application.get_env(:andi, :ldap_env_ou)
 
   setup_all do
+    Redix.command!(:smart_city_registry, ["FLUSHALL"])
+
     user = Application.get_env(:andi, :ldap_user)
     pass = Application.get_env(:andi, :ldap_pass)
     Paddle.authenticate(user, pass)
@@ -21,7 +24,8 @@ defmodule Andi.CreateOrgTest do
 
     org = organization()
     {:ok, response} = create(org)
-    [happy_path: org, response: response]
+    {:ok, happy_path_org} = RegOrganization.new(response.body)
+    [happy_path: happy_path_org, response: response]
   end
 
   # Delete after event stream integration is complete
@@ -63,16 +67,37 @@ defmodule Andi.CreateOrgTest do
     end
   end
 
+  describe "user organization associate" do
+    test "happy path", %{happy_path: org} do
+      users = [1, 2]
+      body = Jason.encode!(%{org_id: org.id, users: users})
+
+      {:ok, %Tesla.Env{status: 200}} =
+        post("/api/v1/organization/#{org.id}/users/add", body, headers: [{"content-type", "application/json"}])
+
+      eventually(fn ->
+        assert Brook.get(instance_name(), :org_to_users, org.id) == {:ok, MapSet.new(users)}
+        assert Brook.get(instance_name(), :user_to_orgs, 1) == {:ok, MapSet.new([org.id])}
+        assert Brook.get(instance_name(), :user_to_orgs, 2) == {:ok, MapSet.new([org.id])}
+      end)
+    end
+  end
+
   defp create(org) do
     struct = Jason.encode!(org)
 
-    post("/api/v1/organization", struct, headers: [{"content-type", "application/json"}])
+    response = post("/api/v1/organization", struct, headers: [{"content-type", "application/json"}])
+
+    eventually(fn ->
+      {:ok, nil} != Brook.get(instance_name(), :org, org.id)
+    end)
+
+    response
   end
 
   defp organization(overrides \\ %{}) do
     overrides
     |> TDG.create_organization()
     |> Map.from_struct()
-    |> Map.delete(:id)
   end
 end

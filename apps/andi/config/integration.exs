@@ -42,8 +42,9 @@ config :andi, :brook,
       endpoints: endpoint,
       topic: "event-stream",
       group: "andi-event-stream",
-      config: [
-        begin_offset: :earliest
+      consumer_config: [
+        begin_offset: :earliest,
+        offset_reset_policy: :reset_to_earliest
       ]
     ]
   ],
