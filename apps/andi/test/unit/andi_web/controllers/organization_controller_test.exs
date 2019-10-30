@@ -8,6 +8,7 @@ defmodule AndiWeb.OrganizationControllerTest do
   @get_repost_orgs_route "/api/v1/repost_org_updates"
   @ou Application.get_env(:andi, :ldap_env_ou)
   alias SmartCity.Organization
+  alias SmartCity.UserOrganizationAssociate
   alias SmartCity.Registry.Organization, as: RegOrganization
   alias SmartCity.TestDataGenerator, as: TDG
   import Andi
@@ -214,6 +215,94 @@ defmodule AndiWeb.OrganizationControllerTest do
       response = json_response(conn, 500)
 
       assert "Failed to repost organizations" == response
+    end
+  end
+
+  describe "organization/:org_id/users/add" do
+    setup do
+      org = TDG.create_organization(%{})
+
+      allow(Brook.get(any(), any(), org.id),
+        return: {:ok, org},
+        meck_options: [:passthrough]
+      )
+
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
+        return: :ok,
+        meck_options: [:passthrough]
+      )
+
+      users = %{"users" => [1, 2]}
+
+      %{org: org, users: users}
+    end
+
+    test "returns a 200", %{org: org, users: users} do
+      actual =
+        conn
+        |> post("/api/v1/organization/#{org.id}/users/add", users)
+        |> json_response(200)
+
+      assert actual == users
+    end
+
+    test "returns a 400 if the organization doesn't exist", %{users: users} do
+      allow(Brook.get(any(), any(), any()),
+        return: {:ok, nil},
+        meck_options: [:passthrough]
+      )
+
+      org_id = 111
+
+      actual =
+        conn
+        |> post("/api/v1/organization/#{org_id}/users/add", users)
+        |> json_response(400)
+
+      assert actual == "The organization #{org_id} does not exist"
+      refute_called(Brook.Event.send(instance_name(), any(), :andi, any()))
+    end
+
+    test "sends a user:organization:associate event", %{org: org, users: users} do
+      actual =
+        conn
+        |> post("/api/v1/organization/#{org.id}/users/add", users)
+        |> json_response(200)
+
+      {:ok, expected_1} = UserOrganizationAssociate.new(%{user_id: 1, org_id: org.id})
+      {:ok, expected_2} = UserOrganizationAssociate.new(%{user_id: 2, org_id: org.id})
+
+      assert_called(Brook.Event.send(instance_name(), any(), :andi, expected_1), once())
+      assert_called(Brook.Event.send(instance_name(), any(), :andi, expected_2), once())
+    end
+
+    test "returns a 500 if unable to get organizations through Brook", %{org: org, users: users} do
+      allow(Brook.get(any(), any(), any()),
+        return: {:error, "bad stuff happened"},
+        meck_options: [:passthrough]
+      )
+
+      actual =
+        conn
+        |> post("/api/v1/organization/222/users/add", %{"users" => [1, 2]})
+        |> json_response(500)
+
+      assert actual == "Internal Server Error"
+      refute_called(Brook.Event.send(instance_name(), any(), :andi, any()))
+    end
+
+    test "returns a 500 if unable to send events", %{org: org, users: users} do
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
+        return: {:error, "unable to send event"},
+        meck_options: [:passthrough]
+      )
+
+      actual =
+        conn
+        |> post("/api/v1/organization/#{org.id}/users/add", %{"users" => [1, 2]})
+        |> json_response(500)
+
+      assert actual == "Internal Server Error"
     end
   end
 
