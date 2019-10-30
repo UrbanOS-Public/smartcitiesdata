@@ -64,8 +64,8 @@ defmodule Reaper.Event.HandlerTest do
       eventually(fn ->
         extraction = Brook.get!(@instance, :extractions, dataset.id)
         assert extraction != nil
-        assert dataset == Map.get(extraction, :dataset)
-        assert date == Map.get(extraction, :started_timestamp)
+        assert dataset == Map.get(extraction, "dataset")
+        assert date == Map.get(extraction, "started_timestamp")
       end)
     end
 
@@ -115,7 +115,7 @@ defmodule Reaper.Event.HandlerTest do
       eventually(fn ->
         extraction = Brook.get!(@instance, :extractions, dataset.id)
         assert extraction != nil
-        assert date == Map.get(extraction, :last_fetched_timestamp, nil)
+        assert date == Map.get(extraction, "last_fetched_timestamp", nil)
       end)
     end
   end
@@ -141,8 +141,8 @@ defmodule Reaper.Event.HandlerTest do
       eventually(fn ->
         view_state = Brook.get!(@instance, :file_ingestions, dataset.id)
         assert view_state != nil
-        assert dataset == Map.get(view_state, :dataset)
-        assert date == Map.get(view_state, :started_timestamp)
+        assert dataset == Map.get(view_state, "dataset")
+        assert date == Map.get(view_state, "started_timestamp")
       end)
     end
 
@@ -170,7 +170,7 @@ defmodule Reaper.Event.HandlerTest do
       eventually(fn ->
         view_state = Brook.get!(@instance, :file_ingestions, dataset.id)
         assert view_state != nil
-        assert date == view_state.last_fetched_timestamp
+        assert date == view_state["last_fetched_timestamp"]
       end)
     end
   end
@@ -187,7 +187,7 @@ defmodule Reaper.Event.HandlerTest do
       eventually(fn ->
         view_state = Brook.get!(@instance, :extractions, dataset.id)
         assert view_state != nil
-        assert false == Map.get(view_state, :enabled)
+        assert false == Map.get(view_state, "enabled")
         assert_called Reaper.Event.Handlers.DatasetDisable.handle(dataset)
       end)
     end
