@@ -201,7 +201,7 @@ defmodule AndiWeb.OrganizationControllerTest do
   end
 
   describe "rePOSTs orgs from /api/vi/repost_org_updates" do
-    test "returns a 200", %{conn: conn_in} do
+    test "returns a 200", %{conn: conn} do
       allow(Andi.Services.OrganizationReposter.repost_all_orgs(), return: :ok)
       conn = post(conn, @get_repost_orgs_route)
       response = json_response(conn, 200)
@@ -209,7 +209,7 @@ defmodule AndiWeb.OrganizationControllerTest do
       assert "Orgs successfully reposted" == response
     end
 
-    test "returns a 500 if there was an error", %{conn: conn_in} do
+    test "returns a 500 if there was an error", %{conn: conn} do
       allow(Andi.Services.OrganizationReposter.repost_all_orgs(), return: {:error, "mistakes were made"})
       conn = post(conn, @get_repost_orgs_route)
       response = json_response(conn, 500)

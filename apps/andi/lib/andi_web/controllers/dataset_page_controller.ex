@@ -5,8 +5,10 @@ defmodule AndiWeb.DatasetPageController do
 
   require Logger
 
+  alias Andi.Services.DatasetRetrieval
+
   def index(conn, _params) do
-    {:ok, datasets} = Brook.get_all_values(instance_name(), :dataset)
+    {:ok, datasets} = DatasetRetrieval.get_all()
 
     render(conn, "index.html", datasets: datasets)
   end

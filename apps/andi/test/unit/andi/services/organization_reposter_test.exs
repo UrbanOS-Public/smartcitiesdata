@@ -5,7 +5,6 @@ defmodule Andi.Services.OrganizationReposterTest do
   import SmartCity.Event, only: [organization_update: 0]
 
   alias Andi.Services.OrganizationReposter
-  alias SmartCity.TestDataGenerator, as: TDG
 
   @tag capture_log: true
   test "errors when registry cannot get all values" do

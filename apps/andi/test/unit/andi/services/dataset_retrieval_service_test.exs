@@ -1,0 +1,54 @@
+defmodule Andi.Services.DatasetRetrievalTest do
+  use ExUnit.Case
+  use Placebo
+
+  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.TestHelper, only: [eventually: 3]
+
+  alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.Services.DatasetRetrieval
+
+  @brook_instance :andi_test_brook_or_whatever
+
+  setup do
+    brook_config =
+      :andi
+      |> Application.get_env(:brook)
+      |> Keyword.put(:instance, @brook_instance)
+
+    start_supervised!({Brook, brook_config})
+
+    :ok
+  end
+
+  describe "get_all/0" do
+    test "retrieves all events from Brook" do
+      dataset1 = TDG.create_dataset(%{})
+      dataset2 = TDG.create_dataset(%{})
+
+      Brook.Event.send(@brook_instance, dataset_update(), :andi, dataset1) |> IO.inspect(label: "dataset_retrieval_service_test.exs:15")
+      Brook.Event.send(@brook_instance, dataset_update(), :andi, dataset2) |> IO.inspect(label: "dataset_retrieval_service_test.exs:16")
+
+      eventually(
+        fn ->
+          assert {:ok, datasets} = DatasetRetrieval.get_all(@brook_instance)
+
+          assert length(datasets) == 2
+          assert Enum.member?(datasets, dataset1)
+          assert Enum.member?(datasets, dataset2)
+        end,
+        200,
+        10
+      )
+    end
+
+    test "returns an error when brook returns an error" do
+      expected = {:error, "bad things"}
+      allow(Brook.get_all_values(@brook_instance, :dataset), return: expected)
+
+      actual = DatasetRetrieval.get_all(@brook_instance)
+
+      assert expected == actual
+    end
+  end
+end
