@@ -1,4 +1,4 @@
-defmodule Andi.Services.OrganizationAssociateService do
+defmodule Andi.Services.UserOrganizationAssociateService do
   @moduledoc """
   Service for associating a user with an organization
   """

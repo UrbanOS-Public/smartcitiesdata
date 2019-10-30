@@ -27,6 +27,7 @@ defmodule AndiWeb.OrganizationController do
          {:ok, ldap_org} <- write_to_ldap(organization),
          {:ok, _id} <- write_old_organization(old_organization),
          :ok <- write_organization(ldap_org) do
+
       conn
       |> put_status(:created)
       |> json(ldap_org)
@@ -170,7 +171,7 @@ defmodule AndiWeb.OrganizationController do
   Sends a user:organization:associate event
   """
   def add_users_to_organization(conn, %{"org_id" => org_id, "users" => users}) do
-    case Andi.Services.OrganizationAssociateService.associate(org_id, users) do
+    case Andi.Services.UserOrganizationAssociateService.associate(org_id, users) do
       :ok ->
         conn
         |> put_status(200)
