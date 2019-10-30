@@ -53,7 +53,7 @@ defmodule Flair.MixProject do
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:faker, "~> 0.12", only: [:test, :integration], override: true},
-      {:smart_city_test, "~> 0.5", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.7", only: [:test, :integration]},
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev}
     ]

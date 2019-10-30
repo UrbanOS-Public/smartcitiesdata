@@ -12,7 +12,7 @@ defmodule AndiWeb.DatasetValidatorTest do
       dataset =
         TDG.create_dataset(
           technical: %{orgName: "some-cool-data"},
-          business: %{description: "something", modifiedDate: "2019-10-14T17:30:16+0000"}
+          business: %{description: "something", modifiedDate: "2019-10-14T17:30:16Z"}
         )
 
       assert {:invalid, errors} = DatasetValidator.validate(dataset)
@@ -44,6 +44,33 @@ defmodule AndiWeb.DatasetValidatorTest do
       assert {:invalid, errors} = DatasetValidator.validate(new_dataset)
       assert length(errors) == 1
       assert List.first(errors) |> String.contains?("Existing")
+    end
+
+    test "rejects datasets which have invalid business.modifiedDate date times" do
+      dataset = TDG.create_dataset([])
+
+      invalid_dataset = put_in(dataset.business.modifiedDate, "13:13:13")
+
+      assert {:invalid, errors} = DatasetValidator.validate(invalid_dataset)
+      assert length(errors) == 1
+      assert List.first(errors) |> String.contains?("modifiedDate must be iso8601 formatted")
+    end
+
+    test "allows datasets to have blank business.modifiedDate datetimes" do
+      dataset = TDG.create_dataset([])
+      invalid_dataset = put_in(dataset.business.modifiedDate, "")
+
+      assert :valid = DatasetValidator.validate(invalid_dataset)
+    end
+
+    test "rejects datasets which have only date values as business.modifiedDate" do
+      dataset = TDG.create_dataset([])
+
+      invalid_dataset = put_in(dataset.business.modifiedDate, "2019-01-01")
+
+      assert {:invalid, errors} = DatasetValidator.validate(invalid_dataset)
+      assert length(errors) == 1
+      assert List.first(errors) |> String.contains?("modifiedDate must be iso8601 formatted")
     end
   end
 
