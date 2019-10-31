@@ -56,8 +56,8 @@ defmodule Forklift.DataWriterTest do
 
       expect(MockTable, :compact, 2, fn args ->
         case args[:table] do
-          "error"
-            -> raise "hey"
+          "error" ->
+            raise "hey"
 
           table ->
             send(test, table)

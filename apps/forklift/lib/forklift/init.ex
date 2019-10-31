@@ -27,7 +27,8 @@ defmodule Forklift.Init do
       dataset: dataset,
       endpoints: Application.get_env(:forklift, :elsa_brokers),
       handler: MessageHandler,
-      input_topic_prefix: Application.get_env(:forklift, :input_topic_prefix)
+      input_topic_prefix: Application.get_env(:forklift, :input_topic_prefix),
+      topic_subscriber_config: Application.get_env(:forklift, :topic_subscriber_config)
     ]
   end
 end
