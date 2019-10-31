@@ -75,9 +75,6 @@ defmodule DiscoveryApiWeb.Router do
     pipe_through([:add_user_auth0])
 
     post("/logged-in", UserController, :logged_in)
-    # resources("/visualization", VisualizationController, only: [:show, :create, :update])
-    get("/visualization/:id", VisualizationController, :show)
-    post("/visualization", VisualizationController, :create)
-    put("/visualization/:public_id", VisualizationController, :update)
+    resources("/visualization", VisualizationController, only: [:show, :create, :update])
   end
 end
