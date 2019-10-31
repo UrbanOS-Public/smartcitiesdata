@@ -51,4 +51,15 @@ defmodule Andi.Services.DatasetRetrievalTest do
       assert expected == actual
     end
   end
+
+  describe "get_all!/0" do
+    test "raises the error returned by brook" do
+      reason = "bad things"
+      allow(Brook.get_all_values(@brook_instance, :dataset), return: {:error, reason})
+
+      assert_raise RuntimeError, reason, fn ->
+        DatasetRetrieval.get_all!(@brook_instance)
+      end
+    end
+  end
 end
