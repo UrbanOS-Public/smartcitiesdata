@@ -237,7 +237,7 @@ defmodule AndiWeb.OrganizationControllerTest do
       %{org: org, users: users}
     end
 
-    test "returns a 200", %{org: org, users: users} do
+    test "returns a 200", %{conn: conn, org: org, users: users} do
       actual =
         conn
         |> post("/api/v1/organization/#{org.id}/users/add", users)
@@ -246,7 +246,7 @@ defmodule AndiWeb.OrganizationControllerTest do
       assert actual == users
     end
 
-    test "returns a 400 if the organization doesn't exist", %{users: users} do
+    test "returns a 400 if the organization doesn't exist", %{conn: conn, users: users} do
       allow(Brook.get(any(), any(), any()),
         return: {:ok, nil},
         meck_options: [:passthrough]
@@ -263,11 +263,10 @@ defmodule AndiWeb.OrganizationControllerTest do
       refute_called(Brook.Event.send(instance_name(), any(), :andi, any()))
     end
 
-    test "sends a user:organization:associate event", %{org: org, users: users} do
-      actual =
-        conn
-        |> post("/api/v1/organization/#{org.id}/users/add", users)
-        |> json_response(200)
+    test "sends a user:organization:associate event", %{conn: conn, org: org, users: users} do
+      conn
+      |> post("/api/v1/organization/#{org.id}/users/add", users)
+      |> json_response(200)
 
       {:ok, expected_1} = UserOrganizationAssociate.new(%{user_id: 1, org_id: org.id})
       {:ok, expected_2} = UserOrganizationAssociate.new(%{user_id: 2, org_id: org.id})
@@ -276,7 +275,7 @@ defmodule AndiWeb.OrganizationControllerTest do
       assert_called(Brook.Event.send(instance_name(), any(), :andi, expected_2), once())
     end
 
-    test "returns a 500 if unable to get organizations through Brook", %{org: org, users: users} do
+    test "returns a 500 if unable to get organizations through Brook", %{conn: conn} do
       allow(Brook.get(any(), any(), any()),
         return: {:error, "bad stuff happened"},
         meck_options: [:passthrough]
@@ -291,7 +290,7 @@ defmodule AndiWeb.OrganizationControllerTest do
       refute_called(Brook.Event.send(instance_name(), any(), :andi, any()))
     end
 
-    test "returns a 500 if unable to send events", %{org: org, users: users} do
+    test "returns a 500 if unable to send events", %{conn: conn, org: org} do
       allow(Brook.Event.send(instance_name(), any(), :andi, any()),
         return: {:error, "unable to send event"},
         meck_options: [:passthrough]

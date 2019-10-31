@@ -1,10 +1,6 @@
 defmodule AndiWeb.DatasetPageController do
   use AndiWeb, :controller
 
-  import Andi, only: [instance_name: 0]
-
-  require Logger
-
   alias Andi.Services.DatasetRetrieval
 
   def index(conn, _params) do
