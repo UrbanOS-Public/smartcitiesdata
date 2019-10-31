@@ -7,11 +7,15 @@
         <th class="datasets-table__th">Organization</th>
         <th class="datasets-table__th">Dataset Name</th>
       </thead>
-      <%= for dataset <- @datasets do %>
-        <tr>
-          <td class="datasets-table__td"><%= dataset.business.orgTitle %></td>
-          <td class="datasets-table__td"><%= dataset.business.dataTitle %></td>
-        </tr>
+      <%= if @datasets == [] do %>
+        <tr><td colspan="100%">No Datasets Found</td></tr>
+      <% else %>
+        <%= for dataset <- @datasets do %>
+          <tr>
+            <td class="datasets-table__td"><%= dataset.business.orgTitle %></td>
+            <td class="datasets-table__td"><%= dataset.business.dataTitle %></td>
+          </tr>
+        <% end %>
       <% end %>
     </table>
   </div>

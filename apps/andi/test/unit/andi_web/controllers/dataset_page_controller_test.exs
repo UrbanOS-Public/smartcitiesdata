@@ -44,5 +44,13 @@ defmodule AndiWeb.DatasetPageControllerTest do
       )
     end
 
+    test "displays appropriate message when no datasets are returned" do
+      response = get(conn, "/datasets")
+
+      assert html_body = html_response(response, 200)
+
+      assert html_body =~ "No Datasets Found"
+    end
+
   end
 end
