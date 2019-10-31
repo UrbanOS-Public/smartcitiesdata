@@ -27,7 +27,6 @@ defmodule AndiWeb.OrganizationController do
          {:ok, ldap_org} <- write_to_ldap(organization),
          {:ok, _id} <- write_old_organization(old_organization),
          :ok <- write_organization(ldap_org) do
-
       conn
       |> put_status(:created)
       |> json(ldap_org)
