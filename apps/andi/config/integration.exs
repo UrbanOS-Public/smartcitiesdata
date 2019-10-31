@@ -70,7 +70,7 @@ config :andi, AndiWeb.Endpoint,
     patterns: [
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
       ~r{priv/gettext/.*(po)$},
-      # ~r{lib/andi_web/controllers/.*(ex)$},
+      ~r{lib/andi_web/controllers/.*(ex)$},
       ~r{lib/andi_web/views/.*(ex)$},
       ~r{lib/andi_web/templates/.*(eex)$}
     ]
