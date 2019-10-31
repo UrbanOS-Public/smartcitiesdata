@@ -1,7 +1,7 @@
 defmodule AndiWeb.DatasetValidator do
   @moduledoc "Used to validate datasets"
 
-  import Andi, only: [instance_name: 0]
+  alias Andi.Services.DatasetRetrieval
 
   def validate(dataset) do
     case SimplyValidate.validate(dataset, [
@@ -37,7 +37,7 @@ defmodule AndiWeb.DatasetValidator do
   ##  Private Functions  ##
   #########################
   defp check_already_exists(dataset) do
-    existing_datasets = Brook.get_all_values!(instance_name(), :dataset)
+    existing_datasets = DatasetRetrieval.get_all!()
 
     Enum.any?(existing_datasets, fn existing_dataset ->
       different_ids(dataset, existing_dataset) &&
