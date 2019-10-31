@@ -28,13 +28,11 @@ defmodule DiscoveryApi.Schemas.Visualizations.Visualization do
     |> unique_constraint(:public_id)
   end
 
- @doc false
+  @doc false
   def changeset_update(visualization, changes) do
-
     visualization
     |> cast(changes, [:query, :title, :public_id])
     |> validate_required([:query, :title, :public_id])
     |> unique_constraint(:public_id)
   end
-
 end

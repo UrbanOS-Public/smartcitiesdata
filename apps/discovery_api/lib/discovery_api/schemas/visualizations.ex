@@ -28,7 +28,7 @@ defmodule DiscoveryApi.Schemas.Visualizations do
 
     if caller == existing_visualization.owner do
       existing_visualization
-      |> Visualization.changeset_update(visualization_changes) |> IO.inspect(label: "changeset")
+      |> Visualization.changeset_update(visualization_changes)
       |> Repo.update(opts)
     else
       :error
