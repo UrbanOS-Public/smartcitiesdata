@@ -1,49 +1,26 @@
 /* This file is for your main application css. */
 
+@import "./variables.scss";
+
 body {
-  background: #F6F9FF;
+  background: $color-background;
 }
 
 .root {
   height: 100vh;
   display: flex;
   flex-direction: column;
+
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75em;
+  color: $color-text-primary;
 }
 
 .root__main {
   flex: 1;
-  background: white;
-  box-shadow: 0 0 6px rgba(20, 20, 20, 0.2);
+  background: $color-content-background;
+  box-shadow: $box-shadow;
   margin: 1em;
 }
 
-/* ----------------------------------------------------------------- */
-.datasets-index {
-  /* display: flex;
-  flex-direction: column; */
-  padding: 1em;
-}
-
-.datasets-index__title {
-  font-size: 1em;
-}
-
-.datasets-index__table {
-}
-
-.datasets-table {
-  width: 100%;
-  border-collapse: collapse;
-  border: 1px solid black;
-}
-
-.datasets-table__th {
-  text-align: left;
-  padding: 0.25em;
-  border: 1px solid black;
-}
-
-.datasets-table__td {
-  padding: 0.25em;
-  border: 1px solid black;
-}
+@import "./datasets.scss";

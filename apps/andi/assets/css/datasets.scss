@@ -1,0 +1,33 @@
+.datasets-index {
+  padding: 1em 3em;
+}
+
+.datasets-index__title {
+  font-size: 1.5em;
+}
+
+.datasets-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: $table-border;
+}
+
+.datasets-table__tr:nth-child(odd) {
+  background-color: $color-table-stripe;
+}
+
+.datasets-table__th {
+  padding: $table-padding;
+  border-right: $table-border;
+  text-align: left;
+  background: $color-table-header;
+}
+
+.datasets-table__cell {
+  padding: $table-padding;
+  border-right: $table-border;
+}
+
+.datasets-table__cell--break {
+  word-break: break-word;
+}

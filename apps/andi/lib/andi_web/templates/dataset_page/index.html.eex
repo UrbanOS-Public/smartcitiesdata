@@ -4,16 +4,16 @@
   <div class="datasets-index__table">
     <table class="datasets-table">
       <thead>
-        <th class="datasets-table__th">Organization</th>
-        <th class="datasets-table__th">Dataset Name</th>
+        <th class="datasets-table__th datasets-table__cell">Organization</th>
+        <th class="datasets-table__th datasets-table__cell">Dataset Name</th>
       </thead>
       <%= if @datasets == [] do %>
-        <tr><td colspan="100%">No Datasets Found</td></tr>
+        <tr><td class="datasets-table__cell" colspan="100%">No Datasets Found</td></tr>
       <% else %>
         <%= for dataset <- @datasets do %>
-          <tr>
-            <td class="datasets-table__td"><%= dataset.business.orgTitle %></td>
-            <td class="datasets-table__td"><%= dataset.business.dataTitle %></td>
+          <tr class="datasets-table__tr">
+            <td class="datasets-table__cell datasets-table__cell--break"><%= dataset.business.orgTitle %></td>
+            <td class="datasets-table__cell datasets-table__cell--break"><%= dataset.business.dataTitle %></td>
           </tr>
         <% end %>
       <% end %>
