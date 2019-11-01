@@ -5,8 +5,13 @@ defmodule AndiWeb.Redirect do
   Based on code found at:
     https://www.viget.com/articles/how-to-redirect-from-the-phoenix-router/
   """
-  def init([to: _] = opts), do: opts
-  def init(_default), do: raise("Missing required option ':to' in redirect")
+  def init(opts) do
+    if Keyword.has_key?(opts, :to) do
+      opts
+    else
+      raise("Missing required option ':to' in redirect")
+    end
+  end
 
   def call(conn, opts) do
     conn
