@@ -74,4 +74,5 @@ config :andi, AndiWeb.Endpoint,
       ~r{lib/andi_web/views/.*(ex)$},
       ~r{lib/andi_web/templates/.*(eex)$}
     ]
-  ]
+  ],
+  reloadable_apps: [:andi]
