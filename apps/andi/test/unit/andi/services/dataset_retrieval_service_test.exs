@@ -3,7 +3,6 @@ defmodule Andi.Services.DatasetRetrievalTest do
   use Placebo
 
   import SmartCity.Event, only: [dataset_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 3]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetRetrieval
@@ -29,17 +28,11 @@ defmodule Andi.Services.DatasetRetrievalTest do
       Brook.Event.send(@brook_instance, dataset_update(), :andi, dataset1)
       Brook.Event.send(@brook_instance, dataset_update(), :andi, dataset2)
 
-      eventually(
-        fn ->
-          assert {:ok, datasets} = DatasetRetrieval.get_all(@brook_instance)
+      assert {:ok, datasets} = DatasetRetrieval.get_all(@brook_instance)
 
-          assert length(datasets) == 2
-          assert Enum.member?(datasets, dataset1)
-          assert Enum.member?(datasets, dataset2)
-        end,
-        200,
-        10
-      )
+      assert length(datasets) == 2
+      assert Enum.member?(datasets, dataset1)
+      assert Enum.member?(datasets, dataset2)
     end
 
     test "returns an error when brook returns an error" do
