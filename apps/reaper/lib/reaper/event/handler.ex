@@ -44,6 +44,24 @@ defmodule Reaper.Event.Handler do
     FileIngestions.update_last_fetched_timestamp(dataset.id)
   end
 
+  def handle_event(%Brook.Event{
+        type: file_ingest_end(),
+        data: %SmartCity.HostedFile{mime_type: "application/geo+json"} = hosted_file
+      }) do
+    shapefile_dataset = Brook.get!(@instance, :file_ingestions, hosted_file.dataset_id)
+
+    geojson_dataset = %{
+      shapefile_dataset
+      | technical: %{
+          shapefile_dataset.technical
+          | sourceFormat: hosted_file.mime_type,
+            sourceUrl: "s3://#{hosted_file.bucket}/#{hosted_file.key}"
+        }
+    }
+
+    Brook.Event.send(@instance, data_extract_start(), :reaper, geojson_dataset)
+  end
+
   def handle_event(%Brook.Event{type: dataset_disable(), data: %SmartCity.Dataset{} = dataset}) do
     Reaper.Event.Handlers.DatasetDisable.handle(dataset)
     Extractions.disable_dataset(dataset.id)

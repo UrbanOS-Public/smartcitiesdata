@@ -173,6 +173,40 @@ defmodule Reaper.Event.HandlerTest do
         assert date == view_state["last_fetched_timestamp"]
       end)
     end
+
+    test "triggers ingest of geojson from shapefile transformation" do
+      shapefile_dataset = TDG.create_dataset(id: "ds3", technical: %{sourceFormat: "zip"})
+
+      Brook.Test.with_event(
+        @instance,
+        fn ->
+          Brook.ViewState.merge(:file_ingestions, shapefile_dataset.id, shapefile_dataset)
+        end
+      )
+
+      allow Reaper.Horde.Supervisor.start_data_extract(any()), return: {:ok, :pid}
+
+      {:ok, hosted_file} =
+        SmartCity.HostedFile.new(%{
+          dataset_id: "ds3",
+          bucket: "geojson",
+          key: "file.geojson",
+          mime_type: "application/geo+json"
+        })
+
+      Brook.Test.send(@instance, file_ingest_end(), :odo, hosted_file)
+
+      geojson_dataset = %{
+        shapefile_dataset
+        | technical: %{
+            shapefile_dataset.technical
+            | sourceFormat: "application/geo+json",
+              sourceUrl: "s3://geojson/file.geojson"
+          }
+      }
+
+      assert_receive {:brook_event, %Brook.Event{type: data_extract_start(), data: ^geojson_dataset}}
+    end
   end
 
   describe "#{dataset_disable()}" do

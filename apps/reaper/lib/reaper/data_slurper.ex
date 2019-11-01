@@ -14,7 +14,8 @@ defmodule Reaper.DataSlurper do
 
   @implementations [
     Reaper.DataSlurper.Http,
-    Reaper.DataSlurper.Sftp
+    Reaper.DataSlurper.Sftp,
+    Reaper.DataSlurper.S3
   ]
 
   def slurp(url, dataset_id, headers \\ %{}, protocol \\ nil) do
