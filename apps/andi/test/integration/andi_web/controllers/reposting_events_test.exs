@@ -1,8 +1,11 @@
 defmodule Andi.RepostingEventsTest do
   use ExUnit.Case
   use Divo
-  alias SmartCity.TestDataGenerator, as: TDG
   use Tesla
+
+  alias SmartCity.TestDataGenerator, as: TDG
+
+  import Andi, only: [instance_name: 0]
   import SmartCity.TestHelper, only: [eventually: 3]
 
   plug Tesla.Middleware.BaseUrl, "http://localhost:4000"
@@ -50,7 +53,7 @@ defmodule Andi.RepostingEventsTest do
     eventually(
       fn ->
         brook_count =
-          Brook.get_all_values(Andi.instance_name(), :org)
+          Brook.get_all_values(instance_name(), :org)
           |> elem(1)
           |> length()
 
