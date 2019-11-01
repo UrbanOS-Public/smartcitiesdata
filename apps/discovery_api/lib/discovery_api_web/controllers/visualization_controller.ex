@@ -26,7 +26,6 @@ defmodule DiscoveryApiWeb.VisualizationController do
     end
   end
 
-
   def update(conn, %{"id" => public_id} = attribute_changes) do
     attribute_changes_copy = Map.delete(attribute_changes, "id") |> Map.put("public_id", attribute_changes["id"])
 
