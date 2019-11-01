@@ -37,19 +37,16 @@ defmodule Andi.DowncaseMigrationTest do
     expected_schemaA = [
       %{
         "name" => "uppercase",
-        "another_field" => "ANOTHER"
+        "description" => "ANOTHER"
       }
     ]
 
     expected_schemaB = [
       %{
         "name" => "bigname",
-        "another_field" => "ANOTHER1"
+        "description" => "ANOTHER1"
       }
     ]
-
-    # expected_datasetA = datasetA |> Map.from_struct() |> put_in([:technical, :schema], expected_schemaA) |> SmartCity.Dataset.new()
-    # expected_datasetB = datasetB |> Map.from_struct() |> put_in([:technical, :schema], expected_schemaB) |> SmartCity.Dataset.new()
 
     expected_datasetA = with_updated_schema(datasetA, expected_schemaA)
     expected_datasetB = with_updated_schema(datasetB, expected_schemaB)
