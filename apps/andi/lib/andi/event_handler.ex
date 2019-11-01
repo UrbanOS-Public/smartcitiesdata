@@ -29,4 +29,9 @@ defmodule Andi.EventHandler do
 
   defp add_to_set(nil, id), do: MapSet.new([id])
   defp add_to_set(set, id), do: MapSet.put(set, id)
+
+  # def handle_event(%Brook.Event{type: "migration:downcase_columns"}) do
+  #   Andi.DowncaseMigration.do_migration()
+  #   # {:discard, :org, data.id, data}
+  # end
 end
