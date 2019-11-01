@@ -25,8 +25,8 @@ defmodule Forklift.Integration.InitTest do
     allow Brook.get_all_values!(instance_name(), :datasets), return: [dataset1, dataset2]
     assert {:ok, _} = Forklift.Init.start_link([])
 
-    assert_receive %SmartCity.Dataset{id: "view-state-1"}
-    assert_receive %SmartCity.Dataset{id: "view-state-2"}
+    assert_receive(%SmartCity.Dataset{id: "view-state-1"}, 1000)
+    assert_receive(%SmartCity.Dataset{id: "view-state-2"}, 1000)
   end
 
   test "initializes output_topic TopicWriter" do
