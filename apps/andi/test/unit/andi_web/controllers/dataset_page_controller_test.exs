@@ -9,7 +9,7 @@ defmodule AndiWeb.DatasetPageControllerTest do
 
   setup do
     Brook.Test.with_event(:andi, "__-nuke-__", fn ->
-        instance_name()
+      instance_name()
       |> Brook.get_all!(:dataset)
       |> Enum.map(fn {key, _value} ->
         Brook.ViewState.delete(:dataset, key)
@@ -20,7 +20,6 @@ defmodule AndiWeb.DatasetPageControllerTest do
   end
 
   describe "index" do
-
     test "displays list of all datasets", %{conn: conn} do
       dataset1 = TDG.create_dataset(%{})
       dataset2 = TDG.create_dataset(%{})
@@ -51,6 +50,5 @@ defmodule AndiWeb.DatasetPageControllerTest do
 
       assert html_body =~ "No Datasets Found"
     end
-
   end
 end

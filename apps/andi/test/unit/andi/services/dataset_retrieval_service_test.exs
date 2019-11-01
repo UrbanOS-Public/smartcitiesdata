@@ -26,8 +26,8 @@ defmodule Andi.Services.DatasetRetrievalTest do
       dataset1 = TDG.create_dataset(%{})
       dataset2 = TDG.create_dataset(%{})
 
-      Brook.Event.send(@brook_instance, dataset_update(), :andi, dataset1) |> IO.inspect(label: "dataset_retrieval_service_test.exs:15")
-      Brook.Event.send(@brook_instance, dataset_update(), :andi, dataset2) |> IO.inspect(label: "dataset_retrieval_service_test.exs:16")
+      Brook.Event.send(@brook_instance, dataset_update(), :andi, dataset1)
+      Brook.Event.send(@brook_instance, dataset_update(), :andi, dataset2)
 
       eventually(
         fn ->
