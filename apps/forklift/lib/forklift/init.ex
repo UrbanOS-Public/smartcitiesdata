@@ -18,7 +18,10 @@ defmodule Forklift.Init do
 
     Forklift.Datasets.get_all!()
     |> Enum.map(&reader_init_args/1)
-    |> Enum.each(fn args -> @reader.init(args) end)
+    |> Enum.each(fn args ->
+      @reader.init(args)
+      Process.sleep(250)
+    end)
   end
 
   defp reader_init_args(dataset) do
