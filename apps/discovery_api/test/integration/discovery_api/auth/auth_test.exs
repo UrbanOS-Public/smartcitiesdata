@@ -407,7 +407,10 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
   defp create_visualization() do
     {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
-    {:ok, visualization} = Visualizations.create_visualization(%{query: "select * from table_name", title: "My first visualization", owner: owner})
+
+    {:ok, visualization} =
+      Visualizations.create_visualization(%{query: "select * from table_name", title: "My first visualization", owner: owner})
+
     visualization
   end
 

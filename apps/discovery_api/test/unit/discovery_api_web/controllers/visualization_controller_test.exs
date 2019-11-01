@@ -33,7 +33,10 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       title = "My title"
 
       allow(Users.get_user(@valid_jwt_subject), return: {:ok, :valid_user})
-      allow(Visualizations.create_visualization(any()), return: {:ok, %Visualization{public_id: generated_public_id, query: query, title: title}})
+
+      allow(Visualizations.create_visualization(any()),
+        return: {:ok, %Visualization{public_id: generated_public_id, query: query, title: title}}
+      )
 
       body =
         conn
@@ -86,7 +89,10 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       allow(Users.get_user(@valid_jwt_subject), return: {:ok, :valid_user})
       allow(Visualizations.get_visualization_by_id(any()), return: {:ok, %Visualization{public_id: id, query: query, title: title}})
       allow(Visualization.changeset_update(any(), any()), return: {:ok, %Visualization{query: query, title: title}})
-      allow(Visualizations.update_visualization_by_id(any(), any(), any()), return: {:ok, %Visualization{public_id: id, query: query, title: title}})
+
+      allow(Visualizations.update_visualization_by_id(any(), any(), any()),
+        return: {:ok, %Visualization{public_id: id, query: query, title: title}}
+      )
 
       body =
         conn

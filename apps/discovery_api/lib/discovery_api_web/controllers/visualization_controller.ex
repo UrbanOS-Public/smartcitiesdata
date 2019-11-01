@@ -27,7 +27,6 @@ defmodule DiscoveryApiWeb.VisualizationController do
   end
 
   def update(conn, %{"id" => public_id} = attribute_changes) do
-
     with {:ok, user} <- Users.get_user(conn.assigns.current_user),
          {:ok, visualization} <- Visualizations.update_visualization_by_id(public_id, attribute_changes, user) do
       conn
