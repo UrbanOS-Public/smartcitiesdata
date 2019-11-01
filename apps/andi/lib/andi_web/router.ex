@@ -18,6 +18,7 @@ defmodule AndiWeb.Router do
   scope "/", AndiWeb do
     pipe_through :browser
 
+    get "/", Redirect, to: "/datasets"
     resources "/datasets", DatasetPageController, only: [:index]
   end
 
