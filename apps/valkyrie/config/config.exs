@@ -18,4 +18,9 @@ config :valkyrie,
     prefetch_bytes: 1_000_000
   ]
 
+config :mime, :types, %{
+  "application/gtfs+protobuf" => ["gtfs"],
+  "application/vnd.ogc.wms_xml" => ["wms"]
+}
+
 import_config "#{Mix.env()}.exs"
