@@ -58,10 +58,14 @@ defmodule Andi.DatasetMigrationTest do
 
     eventually(fn ->
       assert lower_case_schema ==
-               Brook.get!(@instance, :dataset, dataset_with_lowercase_schema_id)["technical"]["schema"]
+               Brook.get!(@instance, :dataset, dataset_with_lowercase_schema_id)
+               Map.get("technical")
+               Map.get("schema")
 
       assert expected_mixed_case_schema ==
-               Brook.get!(@instance, :dataset, dataset_mixed_schema_id)["technical"]["schema"]
+               Brook.get!(@instance, :dataset, dataset_mixed_schema_id)
+               Map.get("technical")
+               Map.get("schema")
     end)
 
     Application.stop(:andi)
