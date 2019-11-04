@@ -1,9 +1,25 @@
 defmodule AndiWeb.Router do
   use AndiWeb, :router
 
+  pipeline :browser do
+    plug Plug.Logger
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_flash
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers, %{"content-security-policy" => "default-src 'self'"}
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
     plug Plug.Logger
+  end
+
+  scope "/", AndiWeb do
+    pipe_through :browser
+
+    get "/", Redirect, to: "/datasets"
+    resources "/datasets", DatasetPageController, only: [:index]
   end
 
   scope "/api", AndiWeb do

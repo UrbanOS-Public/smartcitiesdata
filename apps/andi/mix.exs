@@ -46,7 +46,7 @@ defmodule Andi.MixProject do
       {:sobelow, "~> 0.8", only: :dev},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.13"},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:phoenix_live_reload, "~> 1.2", only: [:dev, :integration]},
       {:phoenix_pubsub, "~> 1.1"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.1"},

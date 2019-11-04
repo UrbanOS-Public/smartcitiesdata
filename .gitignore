@@ -22,3 +22,5 @@ erl_crash.dump
 .sobelow
 
 .elixir_ls
+
+node_modules/

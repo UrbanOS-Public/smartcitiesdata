@@ -2,6 +2,7 @@ defmodule AndiWeb.DatasetValidatorTest do
   use ExUnit.Case
   use Placebo
 
+  alias Andi.Services.DatasetRetrieval
   alias AndiWeb.DatasetValidator
 
   alias SmartCity.Dataset
@@ -39,7 +40,7 @@ defmodule AndiWeb.DatasetValidatorTest do
           business: %{description: "something", modifiedDate: "2019-10-14T17:30:16+0000"}
       }
 
-      allow Brook.get_all_values!(any(), :dataset), return: [existing_dataset]
+      allow DatasetRetrieval.get_all!(), return: [existing_dataset]
 
       assert {:invalid, errors} = DatasetValidator.validate(new_dataset)
       assert length(errors) == 1

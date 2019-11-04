@@ -1,6 +1,18 @@
 defmodule AndiWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :andi
 
+  plug Plug.Static,
+    at: "/",
+    from: :andi,
+    gzip: false,
+    only: ~w(css fonts images js favicon.ico robots.txt)
+
+  if code_reloading? do
+    socket "/phoenix/live_reload/socket", Phoenix.LiveReloader.Socket
+    plug Phoenix.LiveReloader
+    plug Phoenix.CodeReloader
+  end
+
   plug Plug.RequestId
 
   plug Plug.Parsers,

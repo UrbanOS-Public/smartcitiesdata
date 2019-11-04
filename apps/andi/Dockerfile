@@ -1,4 +1,10 @@
 FROM smartcitiesdata:build as builder
+RUN cd apps/andi/assets/ && \
+    rm -rf node_modules && \
+    npm install && \
+    npm run deploy && \
+    cd - && \
+    mix cmd --app andi mix do compile, phx.digest
 RUN MIX_ENV=prod mix distillery.release --name andi
 
 FROM alpine:3.9

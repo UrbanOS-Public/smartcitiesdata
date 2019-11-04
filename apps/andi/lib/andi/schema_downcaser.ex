@@ -1,4 +1,5 @@
 defmodule Andi.SchemaDowncaser do
+  @moduledoc false
   def downcase_schema(schema) when is_list(schema) do
     Enum.map(schema, &downcase_field/1)
   end

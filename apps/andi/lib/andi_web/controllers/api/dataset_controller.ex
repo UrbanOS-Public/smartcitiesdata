@@ -10,6 +10,7 @@ defmodule AndiWeb.DatasetController do
   require Logger
   alias SmartCity.Registry.Dataset, as: RegDataset
   alias SmartCity.Dataset
+  alias Andi.Services.DatasetRetrieval
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
 
@@ -40,11 +41,11 @@ defmodule AndiWeb.DatasetController do
   Return all datasets stored in redis
   """
   def get_all(conn, _params) do
-    case Brook.get_all_values(instance_name(), :dataset) do
+    case DatasetRetrieval.get_all() do
       {:ok, datasets} ->
         respond(conn, :ok, datasets)
 
-      {_, error} ->
+      error ->
         Logger.error("Failed to retrieve datasets: #{inspect(error)}")
         respond(conn, :not_found, "Unable to process your request")
     end

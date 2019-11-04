@@ -22,6 +22,8 @@ defmodule AndiWeb do
       use Phoenix.Controller, namespace: AndiWeb
 
       import Plug.Conn
+      import AndiWeb.Gettext
+
       alias AndiWeb.Router.Helpers, as: Routes
     end
   end
@@ -49,6 +51,13 @@ defmodule AndiWeb do
       use Phoenix.Router
       import Plug.Conn
       import Phoenix.Controller
+    end
+  end
+
+  def channel do
+    quote do
+      use Phoenix.Channel
+      import AndiWeb.Gettext
     end
   end
 

@@ -7,6 +7,7 @@ defmodule AndiWeb.DatasetControllerTest do
   alias SmartCity.Registry.Dataset, as: RegDataset
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.Services.DatasetRetrieval
   import Andi
   import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0]
 
@@ -32,7 +33,7 @@ defmodule AndiWeb.DatasetControllerTest do
       meck_options: [:passthrough]
     )
 
-    allow(Brook.get_all_values(instance_name(), any()),
+    allow(DatasetRetrieval.get_all(),
       return: {:ok, [example_dataset_1, example_dataset_2]},
       meck_options: [:passthrough]
     )
@@ -94,7 +95,7 @@ defmodule AndiWeb.DatasetControllerTest do
 
   describe "PUT /api/ without systemName" do
     setup %{conn: conn, request: request} do
-      allow Brook.get_all_values!(instance_name(), any()), return: []
+      allow DatasetRetrieval.get_all!(), return: []
       {_, request} = pop_in(request, ["technical", "systemName"])
       [conn: put(conn, @route, request)]
     end
@@ -132,7 +133,7 @@ defmodule AndiWeb.DatasetControllerTest do
         }
       )
 
-    allow Brook.get_all_values!(instance_name(), any()), return: [existing_dataset]
+    allow DatasetRetrieval.get_all!(), return: [existing_dataset]
 
     response =
       conn
@@ -158,7 +159,7 @@ defmodule AndiWeb.DatasetControllerTest do
         }
       )
 
-    allow(Brook.get_all_values!(any(), :dataset), return: [])
+    allow(DatasetRetrieval.get_all!(), return: [])
 
     %{"reason" => errors} =
       conn
@@ -188,7 +189,7 @@ defmodule AndiWeb.DatasetControllerTest do
         }
       )
 
-    allow(Brook.get_all_values!(any(), :dataset), return: [])
+    allow(DatasetRetrieval.get_all!(), return: [])
 
     response =
       conn
@@ -222,7 +223,7 @@ defmodule AndiWeb.DatasetControllerTest do
         }
       )
 
-    allow(Brook.get_all_values!(any(), :dataset), return: [])
+    allow(DatasetRetrieval.get_all!(), return: [])
 
     response =
       conn
@@ -326,7 +327,7 @@ defmodule AndiWeb.DatasetControllerTest do
 
   describe "PUT /api/ with systemName" do
     setup %{conn: conn, request: request} do
-      allow Brook.get_all_values!(instance_name(), any()), return: []
+      allow DatasetRetrieval.get_all!(), return: []
       req = put_in(request, ["technical", "systemName"], "org__dataset_akdjbas")
       [conn: put(conn, @route, req)]
     end
@@ -374,7 +375,7 @@ defmodule AndiWeb.DatasetControllerTest do
   end
 
   test "PUT /api/ dataset passed without UUID generates UUID for dataset", %{conn: conn, request: request} do
-    allow Brook.get_all_values!(instance_name(), any()), return: []
+    allow DatasetRetrieval.get_all!(), return: []
 
     {_, request} = pop_in(request, ["id"])
     conn = put(conn, @route, request)
