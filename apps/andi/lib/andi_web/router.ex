@@ -1,13 +1,15 @@
 defmodule AndiWeb.Router do
   use AndiWeb, :router
 
+  @csp "default-src 'self'; style-src 'self' 'unsafe-inline' 'unsafe-eval'"
+
   pipeline :browser do
     plug Plug.Logger
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_flash
     plug :protect_from_forgery
-    plug :put_secure_browser_headers, %{"content-security-policy" => "default-src 'self'"}
+    plug :put_secure_browser_headers, %{"content-security-policy" => @csp}
   end
 
   pipeline :api do
@@ -19,10 +21,10 @@ defmodule AndiWeb.Router do
     pipe_through :browser
 
     get "/", Redirect, to: "/datasets"
-    resources "/datasets", DatasetPageController, only: [:index]
+    resources "/datasets", DatasetController, only: [:index]
   end
 
-  scope "/api", AndiWeb do
+  scope "/api", AndiWeb.API do
     pipe_through :api
 
     get "/v1/datasets", DatasetController, :get_all
