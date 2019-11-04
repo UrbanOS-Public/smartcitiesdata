@@ -37,7 +37,7 @@ defmodule Reaper.S3ExtractorTest do
       eventually(fn ->
         assert Brook.get!(@instance, :extractions, @id) != nil
 
-        {:ok, _, messages} = Elsa.fetch(@endpoints, "raw-#{@id}", partition: 0)
+        assert {:ok, _, messages} = Elsa.fetch(@endpoints, "raw-#{@id}", partition: 0)
         assert Enum.all?(messages, fn %Elsa.Message{value: value} -> String.contains?(value, "geojson-dataset") end)
       end)
     end

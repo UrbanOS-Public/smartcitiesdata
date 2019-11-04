@@ -91,9 +91,9 @@ defmodule Reaper.DataExtract.Processor do
   end
 
   defp create_topic(topic) do
-    Elsa.create_topic(endpoints(), topic)
-
-    retry with: constant_backoff(1_000) |> Stream.take(30), atoms: [false] do
+    retry with: exponential_backoff() |> randomize() |> cap(2_000) |> expiry(30_000), atoms: [false] do
+      Elsa.create_topic(endpoints(), topic)
+      Process.sleep(100)
       Elsa.topic?(endpoints(), topic)
     after
       true -> true
