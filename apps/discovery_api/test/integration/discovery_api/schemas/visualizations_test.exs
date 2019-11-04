@@ -9,7 +9,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
   alias DiscoveryApi.Schemas.Users.User
 
   describe "get/1" do
-    test "given an existing visualizaiton, it returns an :ok tuple with it" do
+    test "given an existing visualization, it returns an :ok tuple with it" do
       {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
 
       {:ok, %{id: saved_id, public_id: saved_public_id}} =
@@ -18,7 +18,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       assert {:ok, %{id: ^saved_id}} = Visualizations.get_visualization_by_id(saved_public_id)
     end
 
-    test "given a non-existing visualizaiton, it returns an :error tuple" do
+    test "given a non-existing visualization, it returns an :error tuple" do
       hopefully_unique_id = Generators.generate_public_id(32)
 
       assert {:error, _} = Visualizations.get_visualization_by_id(hopefully_unique_id)
@@ -110,16 +110,16 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     end
 
     test "does not update when the owner has changed", %{created_visualization: created_visualization} do
-      new_user = Users.create_or_update("me|you", %{email: "cam@example.com"})
+      new_user = Users.create_or_update("differentUser", %{email: "cam@example.com"})
 
-      assert :error ==
+      assert {:error, "Visualization failed to update"} ==
                Visualizations.update_visualization_by_id(
                  created_visualization.public_id,
                  %{
                    title: "query title updated",
                    query: "select * FROM table2"
                  },
-                 new_user
+                 elem(new_user, 1)
                )
     end
   end

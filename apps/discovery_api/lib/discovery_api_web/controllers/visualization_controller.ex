@@ -8,12 +8,11 @@ defmodule DiscoveryApiWeb.VisualizationController do
   plug(:accepts, DiscoveryApiWeb.VisualizationView.accepted_formats())
 
   def show(conn, %{"id" => id}) do
-    render_authorized_visualization(conn, Visualizations.get_visualization_by_id(id))
+    case Visualizations.get_visualization_by_id(id) do
+      {:error, _} -> render_error(conn, 404, "Not Found")
+      {:ok, visualization} -> render(conn, :visualization, %{visualization: visualization})
+    end
   end
-
-  defp render_authorized_visualization(conn, {:error, _}), do: render_error(conn, 404, "Not Found")
-
-  defp render_authorized_visualization(conn, {:ok, visualization}), do: render(conn, :visualization, %{visualization: visualization})
 
   def create(conn, %{"query" => query, "title" => title}) do
     with {:ok, user} <- Users.get_user(conn.assigns.current_user),
@@ -30,7 +29,6 @@ defmodule DiscoveryApiWeb.VisualizationController do
     with {:ok, user} <- Users.get_user(conn.assigns.current_user),
          {:ok, visualization} <- Visualizations.update_visualization_by_id(public_id, attribute_changes, user) do
       conn
-      |> put_status(:ok)
       |> render(:visualization, %{visualization: visualization})
     else
       _ ->

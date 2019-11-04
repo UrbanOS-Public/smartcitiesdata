@@ -3,7 +3,6 @@ defmodule DiscoveryApi.Schemas.Visualizations do
   Interface for reading and writing the Visualization schema.
   """
   alias DiscoveryApi.Repo
-  alias Ecto.Changeset
   alias DiscoveryApi.Schemas.Visualizations.Visualization
 
   def list_visualizations do
@@ -17,9 +16,9 @@ defmodule DiscoveryApi.Schemas.Visualizations do
   end
 
   def get_visualization_by_id(public_id) do
-    case Repo.get_by(Visualization, public_id: public_id) do
+    case Repo.get_by(Visualization, public_id: public_id) |> Repo.preload(:owner) do
       nil -> {:error, "#{public_id} not found"}
-      visualization -> {:ok, visualization |> Repo.preload(:owner)}
+      visualization -> {:ok, visualization}
     end
   end
 
