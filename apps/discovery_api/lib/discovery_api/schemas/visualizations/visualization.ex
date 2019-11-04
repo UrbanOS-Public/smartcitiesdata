@@ -27,4 +27,11 @@ defmodule DiscoveryApi.Schemas.Visualizations.Visualization do
     |> validate_required([:query, :title, :owner])
     |> unique_constraint(:public_id)
   end
+
+  @doc false
+  def changeset_update(visualization, changes) do
+    visualization
+    |> cast(changes, [:query, :title])
+    |> validate_required([:query, :title])
+  end
 end
