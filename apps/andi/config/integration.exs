@@ -65,7 +65,7 @@ config :andi, AndiWeb.Endpoint,
       cd: Path.expand("../assets", __DIR__)
     ]
   ],
-  # reloadable_apps: [:andi],
+  reloadable_apps: [:andi],
   live_reload: [
     patterns: [
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
@@ -74,5 +74,4 @@ config :andi, AndiWeb.Endpoint,
       ~r{lib/andi_web/views/.*(ex)$},
       ~r{lib/andi_web/templates/.*(eex)$}
     ]
-  ],
-  reloadable_apps: [:andi]
+  ]
