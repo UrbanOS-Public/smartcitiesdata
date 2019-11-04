@@ -28,8 +28,7 @@ defmodule DiscoveryApiWeb.VisualizationController do
   def update(conn, %{"id" => public_id} = attribute_changes) do
     with {:ok, user} <- Users.get_user(conn.assigns.current_user),
          {:ok, visualization} <- Visualizations.update_visualization_by_id(public_id, attribute_changes, user) do
-      conn
-      |> render(:visualization, %{visualization: visualization})
+      render(conn, :visualization, %{visualization: visualization})
     else
       _ ->
         render_error(conn, 400, "Bad Request")
