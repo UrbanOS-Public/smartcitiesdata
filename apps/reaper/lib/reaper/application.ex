@@ -17,8 +17,8 @@ defmodule Reaper.Application do
         {Reaper.Horde.NodeListener, hordes: [Reaper.Horde.Supervisor, Reaper.Horde.Registry, Reaper.Cache.Registry]},
         redis(),
         Reaper.Migrations,
-        Reaper.Scheduler.Supervisor,
         brook(),
+        Reaper.Scheduler.Supervisor,
         Reaper.Init
       ]
       |> List.flatten()
