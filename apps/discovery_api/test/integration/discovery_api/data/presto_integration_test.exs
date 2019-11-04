@@ -29,7 +29,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     Patiently.wait_for!(
       fn -> get_dataset_preview(dataset_id) == [] end,
       dwell: 2000,
-      max_tries: 10
+      max_tries: 20
     )
   end
 
