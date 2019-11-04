@@ -1,4 +1,4 @@
-defmodule AndiWeb.DatasetPageController do
+defmodule AndiWeb.DatasetController do
   use AndiWeb, :controller
 
   alias Andi.Services.DatasetRetrieval

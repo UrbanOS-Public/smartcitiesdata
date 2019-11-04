@@ -1,4 +1,4 @@
-defmodule AndiWeb.OrganizationControllerTest do
+defmodule AndiWeb.API.OrganizationControllerTest do
   use ExUnit.Case
   use Placebo
   use AndiWeb.ConnCase

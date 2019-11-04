@@ -1,4 +1,4 @@
-defmodule AndiWeb.OrganizationController do
+defmodule AndiWeb.API.OrganizationController do
   @moduledoc """
   Creates new organizations and retrieves existing ones through LDAP.
   """

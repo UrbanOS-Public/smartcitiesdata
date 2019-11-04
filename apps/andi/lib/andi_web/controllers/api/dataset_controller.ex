@@ -1,4 +1,4 @@
-defmodule AndiWeb.DatasetController do
+defmodule AndiWeb.API.DatasetController do
   @moduledoc """
   This module handles the creation and retrieval of datasets in redis.
   """
