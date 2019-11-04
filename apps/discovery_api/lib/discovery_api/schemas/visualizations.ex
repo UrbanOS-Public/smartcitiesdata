@@ -22,15 +22,15 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     end
   end
 
-  def update_visualization_by_id(id, visualization_changes, user, opts \\ []) do
+  def update_visualization_by_id(id, visualization_changes, user) do
     {:ok, existing_visualization} = get_visualization_by_id(id)
 
     if user.id == existing_visualization.owner_id do
       existing_visualization
       |> Visualization.changeset_update(visualization_changes)
-      |> Repo.update(opts)
+      |> Repo.update()
     else
-      {:error, "Visualization failed to update"}
+      {:error, "User does not have permission to update this visualization."}
     end
   end
 end
