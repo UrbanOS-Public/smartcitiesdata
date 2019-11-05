@@ -120,7 +120,6 @@ defmodule AndiWeb.API.DatasetController do
   defp parse_message(%{"technical" => _technical} = msg) do
     msg
     |> trim_fields()
-    |> downcase_schema()
     |> create_system_name()
   end
 
@@ -150,15 +149,6 @@ defmodule AndiWeb.API.DatasetController do
       item when is_binary(item) -> String.trim(item)
       item -> item
     end)
-  end
-
-  defp downcase_schema(%{"technical" => technical} = msg) do
-    downcased_schema =
-      technical
-      |> Map.get("schema")
-      |> Andi.SchemaDowncaser.downcase_schema()
-
-    put_in(msg, ["technical", "schema"], downcased_schema)
   end
 
   defp create_system_name(%{"technical" => technical} = msg) do
