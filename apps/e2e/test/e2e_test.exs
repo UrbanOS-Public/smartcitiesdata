@@ -93,18 +93,28 @@ defmodule E2ETest do
 
   # This series of tests should be extended as more apps are added to the umbrella.
   describe "ingested data" do
-    test "persists in PrestoDB", %{dataset: ds} do
-      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
-      table = ds.technical.systemName
+
+    test "is standardized", %{dataset: ds} do
+      topic = "#{Application.get_env(:valkyrie, :input_topic_prefix)}-#{ds.id}"
       data = TDG.create_data(dataset_id: ds.id, payload: %{"one" => true, "two" => "foobar"})
 
-      Brook.Event.send(:forklift, data_ingest_start(), :author, ds)
+      Valkyrie.Application.instance()
+      |> Brook.Event.send(data_ingest_start(), :author, ds)
 
       eventually(fn ->
         assert Elsa.topic?(@brokers, topic)
       end)
 
       Elsa.produce(@brokers, topic, Jason.encode!(data))
+    end
+
+    test "persists in PrestoDB", %{dataset: ds} do
+      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
+      table = ds.technical.systemName
+
+      eventually(fn ->
+        assert Elsa.topic?(@brokers, topic)
+      end)
 
       eventually(
         fn ->
