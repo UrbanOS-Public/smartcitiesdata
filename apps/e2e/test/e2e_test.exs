@@ -15,7 +15,7 @@ defmodule E2ETest do
       orgName: "end_to",
       dataName: "end",
       systemName: "end_to__end",
-      schema: [%{name: "one", type: "boolean"}, %{name: "two", type: "string"}],
+      schema: [%{name: "one", type: "boolean"}, %{name: "two", type: "string"}, %{name: "three", type: "integer"}],
       sourceType: "ingest"
     }
   }
@@ -70,7 +70,8 @@ defmodule E2ETest do
     test "creates a PrestoDB table" do
       expected = [
         %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "boolean"},
-        %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "varchar"}
+        %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "varchar"},
+        %{"Column" => "three", "Comment" => "", "Extra" => "", "Type" => "integer"}
       ]
 
       eventually(fn ->
@@ -96,7 +97,7 @@ defmodule E2ETest do
 
     test "is standardized", %{dataset: ds} do
       topic = "#{Application.get_env(:valkyrie, :input_topic_prefix)}-#{ds.id}"
-      data = TDG.create_data(dataset_id: ds.id, payload: %{"one" => true, "two" => "foobar"})
+      data = TDG.create_data(dataset_id: ds.id, payload: %{"one" => true, "two" => "foobar", "three" => "10"})
 
       Valkyrie.Application.instance()
       |> Brook.Event.send(data_ingest_start(), :author, ds)
@@ -118,7 +119,7 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert [[true, "foobar"]] = query("select * from #{table}")
+          assert [[true, "foobar", 10]] = query("select * from #{table}")
         end,
         10_000
       )
@@ -130,7 +131,7 @@ defmodule E2ETest do
 
       eventually(fn ->
         assert {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
-        assert Jason.decode!(message.value)["payload"] == %{"one" => true, "two" => "foobar"}
+        assert Jason.decode!(message.value)["payload"] == %{"one" => true, "two" => "foobar", "three" => 10}
       end)
     end
   end
