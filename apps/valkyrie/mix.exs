@@ -6,6 +6,10 @@ defmodule Valkyrie.MixProject do
       app: :valkyrie,
       version: "0.2.3",
       elixir: "~> 1.8",
+      build_path: "../../_build",
+      config_path: "../../config/config.exs",
+      deps_path: "../../deps",
+      lockfile: "../../mix.lock",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
@@ -38,7 +42,6 @@ defmodule Valkyrie.MixProject do
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:divo_kafka, "~> 0.1", only: [:integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
-      {:ex_doc, "~> 0.19.3"},
       {:excoveralls, "~> 0.11.1", only: :test},
       {:husky, "~> 1.0", only: :dev, runtime: false},
       {:jason, "~> 1.1"},
@@ -61,7 +64,8 @@ defmodule Valkyrie.MixProject do
 
   defp aliases do
     [
-      lint: ["format", "credo"]
+      lint: ["format", "credo"],
+      verify: ["format --check-formatted", "credo"]
     ]
   end
 end
