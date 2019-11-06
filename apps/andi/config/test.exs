@@ -4,7 +4,10 @@ use Mix.Config
 # you can enable the server option below.
 config :andi, AndiWeb.Endpoint,
   http: [port: 4002],
-  server: false
+  server: false,
+  live_view: [
+    signing_salt: "CHANGEME?"
+  ]
 
 # Print only warnings and errors during test
 config :logger, level: :warn

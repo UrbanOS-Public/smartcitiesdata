@@ -2,11 +2,14 @@ defmodule Andi.EventHandler do
   @moduledoc "Event Handler for event stream"
   use Brook.Event.Handler
   require Logger
-  alias SmartCity.{Dataset, Organization}
+
   import SmartCity.Event, only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0]
+
+  alias SmartCity.{Dataset, Organization}
   alias SmartCity.UserOrganizationAssociate
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data}) do
+    Andi.DatasetCache.put_dataset(data)
     {:merge, :dataset, data.id, data}
   end
 

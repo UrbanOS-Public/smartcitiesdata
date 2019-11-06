@@ -22,4 +22,7 @@ config :andi, AndiWeb.Endpoint,
   server: true,
   root: ".",
   cache_static_manifest: "priv/static/cache_manifest.json",
-  version: Application.spec(:andi, :vsn)
+  version: Application.spec(:andi, :vsn),
+  live_view: [
+    signing_salt: "CHANGE BEFORE PROD"
+  ]

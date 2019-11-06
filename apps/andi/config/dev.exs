@@ -19,6 +19,9 @@ config :andi, AndiWeb.Endpoint,
       "--watch-stdin",
       cd: Path.expand("../assets", __DIR__)
     ]
+  ],
+  live_view: [
+    signing_salt: "TOP SECRET!!!"
   ]
 
 config :smart_city_registry,
@@ -32,6 +35,7 @@ config :andi, AndiWeb.Endpoint,
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
       ~r{priv/gettext/.*(po)$},
       ~r{lib/andi_web/controllers/.*(ex)$},
+      ~r{lib/andi_web/live/.*(ex)$},
       ~r{lib/andi_web/views/.*(ex)$},
       ~r{lib/andi_web/templates/.*(eex)$}
     ]
