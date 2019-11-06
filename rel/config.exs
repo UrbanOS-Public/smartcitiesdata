@@ -39,3 +39,9 @@ release :forklift do
   set applications: [:runtime_tools, :forklift]
   set overlays: [{:copy, "apps/forklift/runtime.exs", "etc/runtime.exs"}]
 end
+
+release :valkyrie do
+  set version: current_version(:valkyrie)
+  set applications: [:runtime_tools, :valkyrie]
+  set overlays: [{:copy, "apps/valkyrie/runtime.exs", "etc/runtime.exs"}]
+end
