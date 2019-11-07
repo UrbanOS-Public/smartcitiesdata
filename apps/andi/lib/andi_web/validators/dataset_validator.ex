@@ -33,9 +33,6 @@ defmodule AndiWeb.DatasetValidator do
     {&check_already_exists/1, "Existing dataset has the same orgName and dataName", false}
   end
 
-  #########################
-  ##  Private Functions  ##
-  #########################
   defp check_already_exists(dataset) do
     existing_datasets = DatasetRetrieval.get_all!()
 
