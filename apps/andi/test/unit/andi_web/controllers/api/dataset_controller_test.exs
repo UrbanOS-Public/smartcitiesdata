@@ -173,6 +173,30 @@ defmodule AndiWeb.API.DatasetControllerTest do
     assert String.contains?(joined_errors, "dashes")
   end
 
+  test "put returns 400 when modifiedDate is invalid", %{
+    conn: conn
+  } do
+    new_dataset =
+      TDG.create_dataset(
+        id: "my-new-dataset",
+        technical: %{dataName: "my_little_dataset"}
+      )
+      |> Jason.encode!()
+      |> Jason.decode!()
+      |> put_in(["business", "modifiedDate"], "badDate")
+
+    allow(DatasetRetrieval.get_all!(), return: [])
+
+    %{"reason" => errors} =
+      conn
+      |> put(@route, new_dataset)
+      |> json_response(400)
+
+    joined_errors = Enum.join(errors, ", ")
+
+    assert String.contains?(joined_errors, "iso8601 formatted")
+  end
+
   test "put trims fields on dataset", %{
     conn: conn
   } do
