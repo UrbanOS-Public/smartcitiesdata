@@ -45,8 +45,15 @@ defmodule AndiWeb.DatasetValidator do
     end)
   end
 
-  defp same_system_name(a, b), do: a["technical"]["systemName"] == b["technical"]["systemName"]
-  defp different_ids(a, b), do: a.id != b.id
+  defp same_system_name(a, b), do: get_system_name(a) == get_system_name(b)
+
+  defp different_ids(a, b), do: get_id(a) != get_id(b)
+
+  defp get_id(%{id: id}), do: id
+  defp get_id(%{"id" => id}), do: id
+
+  defp get_system_name(%{technical: technical}), do: technical.systemName
+  defp get_system_name(%{"technical" => technical}), do: technical["systemName"]
 
   defp description_required do
     {&(&1["business"]["description"] != ""), "Description must be provided"}
