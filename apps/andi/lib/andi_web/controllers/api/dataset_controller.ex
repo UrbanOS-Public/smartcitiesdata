@@ -21,9 +21,9 @@ defmodule AndiWeb.API.DatasetController do
   def create(conn, _params) do
     with message <- add_uuid(conn.body_params),
          {:ok, parsed_message} <- parse_message(message),
+         :valid <- DatasetValidator.validate(parsed_message),
          {:ok, old_dataset} <- RegDataset.new(parsed_message),
          {:ok, dataset} <- Dataset.new(parsed_message),
-         :valid <- DatasetValidator.validate(dataset),
          {:ok, _id} <- write_old_dataset(old_dataset),
          :ok <- write_dataset(dataset) do
       respond(conn, :created, dataset)
