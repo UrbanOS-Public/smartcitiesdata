@@ -82,16 +82,4 @@ defmodule Andi.DowncaseMigrationTest do
 
     dataset
   end
-
-  # test "should update the view state" do
-  # end
-
-  # test "should post dataset definition update" do
-  # end
-
-  # test "should mark viewstate migration success" do
-  # end
-
-  # test "should migrate all the dataset" do
-  # end
 end
