@@ -45,3 +45,9 @@ release :valkyrie do
   set applications: [:runtime_tools, :valkyrie]
   set overlays: [{:copy, "apps/valkyrie/runtime.exs", "etc/runtime.exs"}]
 end
+
+release :reaper do
+  set version: current_version(:reaper)
+  set applications: [:runtime_tools, :reaper]
+  set overlays: [{:copy, "apps/reaper/runtime.exs", "etc/runtime.exs"}]
+end
