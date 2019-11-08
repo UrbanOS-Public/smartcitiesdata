@@ -52,9 +52,6 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   defp search_contains?(str, search_str) do
-    str = String.downcase(str)
-    search_str = String.downcase(search_str)
-
-    String.contains?(str, search_str)
+    String.downcase(str) =~ String.downcase(search_str)
   end
 end

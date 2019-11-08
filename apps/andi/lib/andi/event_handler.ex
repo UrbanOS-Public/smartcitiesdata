@@ -8,8 +8,10 @@ defmodule Andi.EventHandler do
   alias SmartCity.{Dataset, Organization}
   alias SmartCity.UserOrganizationAssociate
 
+  alias Andi.DatasetCache
+
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data}) do
-    Andi.DatasetCache.put_dataset(data)
+    DatasetCache.put_dataset(data)
     {:merge, :dataset, data.id, data}
   end
 
