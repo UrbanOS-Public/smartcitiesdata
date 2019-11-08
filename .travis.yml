@@ -34,6 +34,8 @@ jobs:
       script: bash scripts/travis-test.sh forklift
     - name: valkyrie
       script: bash scripts/travis-test.sh valkyrie
+    - name: reaper
+      script: bash scripts/travis-test.sh reaper
     - stage: publish
       name: development
       if: branch == master && type != pull_request
