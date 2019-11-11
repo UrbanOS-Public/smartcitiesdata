@@ -2,14 +2,13 @@ defmodule Andi.DatasetMigrationTest do
   use ExUnit.Case
   use Divo, auto_start: false
 
-  import Andi
   import SmartCity.TestHelper
   alias SmartCity.TestDataGenerator, as: TDG
 
   @instance Andi.instance_name()
 
   @tag :capture_log
-  test "should run the downcase migration" do
+  test "should run the modified date migration" do
     Application.ensure_all_started(:redix)
     Application.ensure_all_started(:faker)
 
@@ -25,24 +24,24 @@ defmodule Andi.DatasetMigrationTest do
 
     Process.unlink(brook)
 
-    dataset_with_lowercase_schema_id = 1
-    dataset_mixed_schema_id = 2
+    dataset_with_proper_modified_date_id = 1
+    dataset_bad_modified_date_id = 2
     invalid_dataset_id = 3
 
-    lower_case_schema = [%{name: "lowercase_name"}]
-    mixed_case_schema = [%{name: "mIxEdNam_E"}]
-    expected_mixed_case_schema = [%{name: "mixednam_e"}]
+    good_date = "2017-08-08T13:03:48.000Z"
+    bad_date = "Jan 13, 2018"
+    transformed_date = "2018-01-13T00:00:00.000Z"
 
     Brook.Test.with_event(
       @instance,
       Brook.Event.new(type: "andi_config:migration", author: "migration", data: %{}),
       fn ->
-        Brook.ViewState.merge(:dataset, dataset_with_lowercase_schema_id, %{
-          dataset: TDG.create_dataset(id: dataset_with_lowercase_schema_id, technical: %{schema: lower_case_schema})
+        Brook.ViewState.merge(:dataset, dataset_with_proper_modified_date_id, %{
+          dataset: TDG.create_dataset(id: dataset_with_proper_modified_date_id, business: %{modifiedDate: good_date})
         })
 
-        Brook.ViewState.merge(:dataset, dataset_mixed_schema_id, %{
-          dataset: TDG.create_dataset(id: dataset_mixed_schema_id, technical: %{schema: mixed_case_schema})
+        Brook.ViewState.merge(:dataset, dataset_bad_modified_date_id, %{
+          dataset: TDG.create_dataset(id: dataset_bad_modified_date_id, business: %{modifiedDate: bad_date})
         })
 
         Brook.ViewState.merge(:dataset, invalid_dataset_id, %{})
@@ -57,15 +56,9 @@ defmodule Andi.DatasetMigrationTest do
     Process.sleep(10_000)
 
     eventually(fn ->
-      assert lower_case_schema ==
-               Brook.get!(@instance, :dataset, dataset_with_lowercase_schema_id)
-               |> Map.get("technical")
-               |> Map.get("schema")
+      assert good_date == get_modified_date_from_brook(dataset_with_proper_modified_date_id)
 
-      assert expected_mixed_case_schema ==
-               Brook.get!(@instance, :dataset, dataset_mixed_schema_id)
-               |> Map.get("technical")
-               |> Map.get("schema")
+      assert transformed_date == get_modified_date_from_brook(dataset_bad_modified_date_id)
     end)
 
     Application.stop(:andi)
@@ -75,5 +68,9 @@ defmodule Andi.DatasetMigrationTest do
     ref = Process.monitor(pid)
     Process.exit(pid, :shutdown)
     assert_receive {:DOWN, ^ref, _, _, _}, 5_000
+  end
+
+  defp get_modified_date_from_brook(id) do
+    Brook.get!(@instance, :dataset, id)["dataset"].business.modifiedDate
   end
 end
