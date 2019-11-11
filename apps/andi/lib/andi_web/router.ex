@@ -1,13 +1,14 @@
 defmodule AndiWeb.Router do
   use AndiWeb, :router
 
-  @csp "default-src 'self'; style-src 'self' 'unsafe-inline' 'unsafe-eval'"
+  @csp "default-src 'self'; style-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval'"
 
   pipeline :browser do
     plug Plug.Logger
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_flash
+    plug Phoenix.LiveView.Flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers, %{"content-security-policy" => @csp}
   end
@@ -21,6 +22,7 @@ defmodule AndiWeb.Router do
     pipe_through :browser
 
     get "/", Redirect, to: "/datasets"
+    live "/datasets/live", DatasetLiveView, session: [:path_params]
     resources "/datasets", DatasetController, only: [:index]
   end
 
