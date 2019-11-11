@@ -1,7 +1,5 @@
 defmodule Andi.Migration.DateCoercer do
   def coerce_date(date) do
-    IO.inspect(date, label: "what in tarnation")
-
     case DateTime.from_iso8601(date) do
       {:ok, parsed_date, offset} -> date
       _ -> fix_date(date)
@@ -11,9 +9,31 @@ defmodule Andi.Migration.DateCoercer do
   def fix_date(""), do: ""
 
   def fix_date(date) do
-    {:ok, date} = Timex.parse(date, "%-m/%-d/%y", :strftime)
+    format_strings = [
+      "%-m/%-d/%y",
+      "%-m/%-d/%Y",
+      "%-m-%-d-%y",
+      "%-m-%-d-%Y",
+      "%B %-d, %Y",
+      "%Y-%m-%d",
+      "%b %-d, %Y",
+    ]
 
-    DateTime.from_naive!(date, "Etc/UTC")
-    |> DateTime.to_iso8601()
+    formatted_dates =
+      Enum.map(format_strings, fn format ->
+        Timex.parse(date, format, :strftime)
+      end)
+
+    ok_dates = for {:ok, date} <- formatted_dates, do: date
+
+    if length(ok_dates) > 0 do
+      ok_dates
+      |> IO.inspect()
+      |> List.first()
+      |> DateTime.from_naive!("Etc/UTC")
+      |> DateTime.to_iso8601()
+    else
+      ""
+    end
   end
 end
