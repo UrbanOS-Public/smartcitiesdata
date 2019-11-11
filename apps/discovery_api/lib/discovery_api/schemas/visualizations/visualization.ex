@@ -11,7 +11,7 @@ defmodule DiscoveryApi.Schemas.Visualizations.Visualization do
     field(:public_id, :string, autogenerate: {Generators, :generate_public_id, []})
     field(:query, :string)
     field(:title, :string)
-    belongs_to(:owner, User, foreign_key: :owner_id)
+    belongs_to(:owner, User, type: Ecto.UUID, foreign_key: :owner_id)
 
     timestamps()
   end

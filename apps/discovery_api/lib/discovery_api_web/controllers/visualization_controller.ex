@@ -15,7 +15,7 @@ defmodule DiscoveryApiWeb.VisualizationController do
   end
 
   def create(conn, %{"query" => query, "title" => title}) do
-    with {:ok, user} <- Users.get_user(conn.assigns.current_user),
+    with {:ok, user} <- Users.get_user(conn.assigns.current_user, :subject_id),
          {:ok, visualization} <- Visualizations.create_visualization(%{query: query, title: title, owner: user}) do
       conn
       |> put_status(:created)
@@ -26,7 +26,7 @@ defmodule DiscoveryApiWeb.VisualizationController do
   end
 
   def update(conn, %{"id" => public_id} = attribute_changes) do
-    with {:ok, user} <- Users.get_user(conn.assigns.current_user),
+    with {:ok, user} <- Users.get_user(conn.assigns.current_user, :subject_id),
          {:ok, visualization} <- Visualizations.update_visualization_by_id(public_id, attribute_changes, user) do
       render(conn, :visualization, %{visualization: visualization})
     else

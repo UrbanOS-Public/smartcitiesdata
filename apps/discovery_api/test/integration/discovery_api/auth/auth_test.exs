@@ -342,7 +342,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       subject_id = AuthHelper.valid_jwt_sub()
       HTTPoison.post!("localhost:4000/api/v1/logged-in", "", Authorization: "Bearer #{AuthHelper.valid_jwt()}")
 
-      assert {:ok, actual} = Users.get_user(subject_id)
+      assert {:ok, actual} = Users.get_user(subject_id, :subject_id)
 
       assert subject_id == actual.subject_id
       assert "x@y.z" == actual.email

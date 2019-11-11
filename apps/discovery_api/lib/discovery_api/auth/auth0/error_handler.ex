@@ -3,7 +3,6 @@ defmodule DiscoveryApi.Auth.Auth0.ErrorHandler do
   @behaviour Guardian.Plug.ErrorHandler
 
   require Logger
-  import Plug.Conn
 
   @impl Guardian.Plug.ErrorHandler
   def auth_error(conn, error, _opts) do

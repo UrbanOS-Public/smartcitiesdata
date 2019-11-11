@@ -4,6 +4,7 @@ defmodule DiscoveryApi.Schemas.Organizations.Organization do
   """
   use Ecto.Schema
   import Ecto.Changeset
+  alias DiscoveryApi.Schemas.Users.User
 
   @primary_key {:id, :string, autogenerate: false}
 
@@ -14,6 +15,7 @@ defmodule DiscoveryApi.Schemas.Organizations.Organization do
     field(:homepage, :string)
     field(:logo_url, :string)
     field(:ldap_dn, :string)
+    many_to_many(:users, User, join_through: DiscoveryApi.Schemas.Users.UserOrganization)
 
     timestamps()
   end
@@ -21,7 +23,7 @@ defmodule DiscoveryApi.Schemas.Organizations.Organization do
   def changeset(organization, changes) do
     organization
     |> cast(changes, [:name, :title, :description, :homepage, :logo_url, :ldap_dn])
-    |> validate_required([:name, :title, :ldap_dn])
+    |> validate_required([:id, :name, :title, :ldap_dn])
     |> unique_constraint(:id)
   end
 end
