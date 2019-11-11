@@ -6,9 +6,9 @@ defmodule Andi.DatasetMigrationTest do
   require Andi
 
   @instance Andi.instance_name()
-
+  # TODO get! raises exception
   test "send the modified date migration event if it has not succeeded yet" do
-    allow(Brook.get!(@instance, :migration, "modified_date_migration"), return: nil)
+    allow(Brook.get!(@instance, :migration, "modified_date_migration_completed"), return: nil)
     allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
     Migrations.migrate_modified_dates()
@@ -25,10 +25,4 @@ defmodule Andi.DatasetMigrationTest do
     refute_called Brook.get_all_values!(@instance, :dataset)
     refute_called Brook.Event.send(@instance, any(), any(), any())
   end
-
-  # test "do thing" do
-  #   # get("datasets") -> [TDG.generate x2]
-
-  #   # assert_called post(expected_datasets)
-  # end
 end

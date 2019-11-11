@@ -23,7 +23,7 @@ defmodule Andi.Migrations do
   end
 
   def migrate_modified_dates do
-    if is_nil(Brook.get!(@instance, :migration, "modified_date_migration")) do
+    if is_nil(Brook.get!(@instance, :migration, "modified_date_migration_completed")) do
       Brook.Event.send(@instance, "migration:modified_dates", :andi, %{})
     end
   end
