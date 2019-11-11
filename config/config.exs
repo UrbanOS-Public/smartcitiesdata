@@ -23,3 +23,6 @@ config :mime, :types, %{
   "application/gtfs+protobuf" => ["gtfs"],
   "application/vnd.ogc.wms_xml" => ["wms"]
 }
+
+config :phoenix,
+  template_engines: [leex: Phoenix.LiveView.Engine]

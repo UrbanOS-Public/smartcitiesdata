@@ -1,6 +1,8 @@
 defmodule AndiWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :andi
 
+  socket "/live", Phoenix.LiveView.Socket
+
   plug Plug.Static,
     at: "/",
     from: :andi,

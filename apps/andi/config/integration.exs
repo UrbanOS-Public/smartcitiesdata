@@ -71,7 +71,11 @@ config :andi, AndiWeb.Endpoint,
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
       ~r{priv/gettext/.*(po)$},
       ~r{lib/andi_web/controllers/.*(ex)$},
+      ~r{lib/andi_web/live/.*(ex)$},
       ~r{lib/andi_web/views/.*(ex)$},
       ~r{lib/andi_web/templates/.*(eex)$}
     ]
+  ],
+  live_view: [
+    signing_salt: "SUPER VERY TOP SECRET!!!"
   ]
