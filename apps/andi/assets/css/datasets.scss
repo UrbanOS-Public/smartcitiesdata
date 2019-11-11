@@ -6,8 +6,35 @@
   font-size: 1.5em;
 }
 
-.datasets-search {
+
+.datasets-index__search-input-container {
+  display: flex;
+  width: 50%;
   margin: 0.5em;
+  border: 1px solid $lightgray;
+}
+
+.datasets-index__search-input-container:focus-within {
+  border: 1px solid $darkgray;
+}
+
+.datasets-index__search-icon {
+  padding: 0.1em;
+  color: $lightgray;
+  text-align: center;
+}
+
+.datasets-index__search-input {
+  width: 100%;
+  padding: 0.1em;
+  outline: none;
+  border: none;
+}
+
+.datasets-index__search-input::placeholder,
+.datasets-index__search-input::-webkit-input-placeholder,
+.datasets-index__search-input::-ms-input-placeholder {
+  color: $lightgray;
 }
 
 .datasets-table {

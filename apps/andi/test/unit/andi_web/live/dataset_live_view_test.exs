@@ -164,7 +164,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   defp get_search_input_value(html) do
     html
-    |> Floki.find("input.datasets-search")
+    |> Floki.find("input.datasets-index__search-input")
     |> Floki.attribute("value")
   end
 
