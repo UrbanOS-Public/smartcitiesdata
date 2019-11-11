@@ -27,9 +27,6 @@ defmodule Andi.EventHandler do
     merge(:user_to_orgs, user_id, &add_to_set(&1, org_id))
   end
 
-  defp add_to_set(nil, id), do: MapSet.new([id])
-  defp add_to_set(set, id), do: MapSet.put(set, id)
-
   def handle_event(%Brook.Event{type: "migration:modified_dates"}) do
     IO.puts("Handling modified migration event")
     Andi.ModifiedDateMigration.do_migration()
@@ -41,4 +38,7 @@ defmodule Andi.EventHandler do
     IO.inspect(event, label: "Recieved unexpected event")
     :discard
   end
+
+  defp add_to_set(nil, id), do: MapSet.new([id])
+  defp add_to_set(set, id), do: MapSet.put(set, id)
 end

@@ -5,6 +5,7 @@ defmodule Andi.DatasetMigrationTest do
   import SmartCity.TestHelper
   alias SmartCity.TestDataGenerator, as: TDG
 
+  require Andi
   @instance Andi.instance_name()
 
   @tag :capture_log
