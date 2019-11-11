@@ -1,11 +1,13 @@
-defmodule Andi.DatasetMigrationTest do
+defmodule Andi.Migration.MigrationsTest do
   use ExUnit.Case
   use Placebo
 
-  alias Andi.Migrations
-  require Andi
+  import Andi, only: [instance_name: 0]
 
   @instance Andi.instance_name()
+
+  alias Andi.Migration.Migrations
+
   test "send the modified date migration event if it has not succeeded yet" do
     allow(Brook.get!(@instance, :migration, "modified_date_migration_completed"), return: nil)
     allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)

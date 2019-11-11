@@ -8,7 +8,7 @@ defmodule Andi.Application do
       AndiWeb.Endpoint,
       {Brook, Application.get_env(:andi, :brook)},
       Andi.DatasetCache
-      Andi.Migrations
+      Andi.Migration.Migrations
     ]
 
     opts = [strategy: :one_for_one, name: Andi.Supervisor]

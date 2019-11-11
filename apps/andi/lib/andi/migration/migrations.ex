@@ -1,10 +1,10 @@
-defmodule Andi.Migrations do
+defmodule Andi.Migration.Migrations do
   @moduledoc """
   Contains all migrations that run during bootup.
   """
   use GenServer, restart: :transient
 
-  require Andi
+  import Andi, only: [instance_name: 0]
 
   @instance Andi.instance_name()
 

@@ -28,7 +28,7 @@ defmodule Andi.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: "migration:modified_dates"}) do
-    Andi.ModifiedDateMigration.do_migration()
+    Andi.Migration.ModifiedDateMigration.do_migration()
     {:create, :migration, "modified_date_migration_completed", true}
   end
 

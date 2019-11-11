@@ -1,4 +1,4 @@
-defmodule Andi.ModifiedDateMigration do
+defmodule Andi.Migration.ModifiedDateMigration do
   alias SmartCity.Dataset
   import SmartCity.Event, only: [dataset_update: 0]
 

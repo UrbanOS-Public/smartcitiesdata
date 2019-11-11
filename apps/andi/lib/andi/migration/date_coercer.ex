@@ -16,7 +16,7 @@ defmodule Andi.Migration.DateCoercer do
       "%-m-%-d-%Y",
       "%B %-d, %Y",
       "%Y-%m-%d",
-      "%b %-d, %Y",
+      "%b %-d, %Y"
     ]
 
     formatted_dates =
@@ -28,7 +28,6 @@ defmodule Andi.Migration.DateCoercer do
 
     if length(ok_dates) > 0 do
       ok_dates
-      |> IO.inspect()
       |> List.first()
       |> DateTime.from_naive!("Etc/UTC")
       |> DateTime.to_iso8601()
