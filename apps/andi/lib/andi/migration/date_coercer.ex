@@ -1,9 +1,19 @@
 defmodule Andi.Migration.DateCoercer do
-  def fix_date("2017-08-08T13:03:48.000Z"), do: "2017-08-08T13:03:48.000Z"
-  def fix_date("Jan 13, 2018"), do: "2018-01-13T00:00:00.000Z"
+  def coerce_date(date) do
+    IO.inspect(date, label: "what in tarnation")
+
+    case DateTime.from_iso8601(date) do
+      {:ok, parsed_date, offset} -> date
+      _ -> fix_date(date)
+    end
+  end
+
+  def fix_date(""), do: ""
 
   def fix_date(date) do
-    IO.inspect(date, label: "got weird date")
-    "2019-01-01T00:00:00.000Z"
+    {:ok, date} = Timex.parse(date, "%-m/%-d/%y", :strftime)
+
+    DateTime.from_naive!(date, "Etc/UTC")
+    |> DateTime.to_iso8601()
   end
 end

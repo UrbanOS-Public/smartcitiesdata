@@ -36,6 +36,7 @@ defmodule Andi.MixProject do
     [
       {:brook, "~> 0.4.0"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
+      {:checkov, "~> 0.4.0", only: [:test]},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1.4", only: [:dev, :integration]},
@@ -57,6 +58,7 @@ defmodule Andi.MixProject do
       {:smart_city_registry, "~> 5.0"},
       {:smart_city_test, "~> 0.7", only: [:test, :integration]},
       {:tesla, "~> 1.3", only: :integration},
+      {:timex, "~> 3.6"},
       {:uuid, "~> 1.1"},
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev}

@@ -13,7 +13,7 @@ defmodule Andi.ModifiedDateMigration do
 
   defp migrate_dataset(%Dataset{} = dataset) do
     # IO.inspect(dataset, label: "migrating dataset")
-    corrected_date = Andi.Migration.DateCoercer.fix_date(dataset.business.modifiedDate)
+    corrected_date = Andi.Migration.DateCoercer.coerce_date(dataset.business.modifiedDate)
 
     updated_business =
       dataset.business
