@@ -19,7 +19,6 @@ defmodule Andi.Migration.DateCoercerTest do
       ["July 4, 2003", "2003-07-04T00:00:00Z"],
       ["2004-02-02", "2004-02-02T00:00:00Z"],
       ["Jan 4, 2005", "2005-01-04T00:00:00Z"],
-
     ])
   end
 end

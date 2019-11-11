@@ -31,7 +31,7 @@ defmodule Andi.DatasetMigrationTest do
 
     good_date = "2017-08-08T13:03:48.000Z"
     bad_date = "Jan 13, 2018"
-    transformed_date = "2018-01-13T00:00:00.000Z"
+    transformed_date = "2018-01-13T00:00:00Z"
 
     Brook.Test.with_event(
       @instance,
