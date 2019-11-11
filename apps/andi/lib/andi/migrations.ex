@@ -26,6 +26,7 @@ defmodule Andi.Migrations do
     if is_nil(Brook.get!(@instance, :migration, "modified_date_migration")) do
       IO.puts("Modified migration needs to run")
       Brook.Event.send(@instance, "migration:modified_dates", :andi, %{})
+      IO.puts("Sent migration event")
     end
   end
 end

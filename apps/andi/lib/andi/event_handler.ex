@@ -34,5 +34,11 @@ defmodule Andi.EventHandler do
     IO.puts("Handling modified migration event")
     Andi.ModifiedDateMigration.do_migration()
     :discard
+    # instead of discard, merge in the migration complete flag
+  end
+
+  def handle_event(%Brook.Event{} = event) do
+    IO.inspect(event, label: "Recieved unexpected event")
+    :discard
   end
 end

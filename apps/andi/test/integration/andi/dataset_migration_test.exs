@@ -55,11 +55,16 @@ defmodule Andi.DatasetMigrationTest do
 
     Process.sleep(10_000)
 
-    eventually(fn ->
-      assert good_date == get_modified_date_from_brook(dataset_with_proper_modified_date_id)
+    eventually(
+      fn ->
+        IO.puts("asserting results")
+        assert good_date == get_modified_date_from_brook(dataset_with_proper_modified_date_id)
 
-      assert transformed_date == get_modified_date_from_brook(dataset_bad_modified_date_id)
-    end)
+        assert transformed_date == get_modified_date_from_brook(dataset_bad_modified_date_id)
+      end,
+      1000,
+      20
+    )
 
     Application.stop(:andi)
   end
