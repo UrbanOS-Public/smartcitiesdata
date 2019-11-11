@@ -29,7 +29,7 @@ defmodule Andi.EventHandler do
 
   def handle_event(%Brook.Event{type: "migration:modified_dates"}) do
     Andi.ModifiedDateMigration.do_migration()
-    {:merge, :migration, "modified_date_migration_completed", %{completed: true}}
+    {:create, :migration, "modified_date_migration_completed", true}
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])
