@@ -37,13 +37,17 @@ defmodule Andi.DatasetMigrationTest do
       @instance,
       Brook.Event.new(type: "andi_config:migration", author: "migration", data: %{}),
       fn ->
-        Brook.ViewState.merge(:dataset, dataset_with_proper_modified_date_id, %{
-          dataset: TDG.create_dataset(id: dataset_with_proper_modified_date_id, business: %{modifiedDate: good_date})
-        })
+        Brook.ViewState.merge(
+          :dataset,
+          dataset_with_proper_modified_date_id,
+          TDG.create_dataset(id: dataset_with_proper_modified_date_id, business: %{modifiedDate: good_date})
+        )
 
-        Brook.ViewState.merge(:dataset, dataset_bad_modified_date_id, %{
-          dataset: TDG.create_dataset(id: dataset_bad_modified_date_id, business: %{modifiedDate: bad_date})
-        })
+        Brook.ViewState.merge(
+          :dataset,
+          dataset_bad_modified_date_id,
+          TDG.create_dataset(id: dataset_bad_modified_date_id, business: %{modifiedDate: bad_date})
+        )
 
         Brook.ViewState.merge(:dataset, invalid_dataset_id, %{})
       end
@@ -56,16 +60,12 @@ defmodule Andi.DatasetMigrationTest do
 
     Process.sleep(10_000)
 
-    eventually(
-      fn ->
-        IO.puts("asserting results")
-        assert good_date == get_modified_date_from_brook(dataset_with_proper_modified_date_id)
+    eventually(fn ->
+      IO.puts("asserting results")
+      assert good_date == get_modified_date_from_brook(dataset_with_proper_modified_date_id)
 
-        assert transformed_date == get_modified_date_from_brook(dataset_bad_modified_date_id)
-      end,
-      1000,
-      20
-    )
+      assert transformed_date == get_modified_date_from_brook(dataset_bad_modified_date_id)
+    end)
 
     Application.stop(:andi)
   end
@@ -77,6 +77,9 @@ defmodule Andi.DatasetMigrationTest do
   end
 
   defp get_modified_date_from_brook(id) do
-    Brook.get!(@instance, :dataset, id)["dataset"].business.modifiedDate
+    case Brook.get!(@instance, :dataset, id) do
+      nil -> nil
+      result -> result.business.modifiedDate
+    end
   end
 end
