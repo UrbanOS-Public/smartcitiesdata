@@ -3,6 +3,7 @@ defmodule Andi.DatasetMigrationTest do
   use Placebo
 
   alias Andi.Migrations
+  require Andi
 
   @instance Andi.instance_name()
 

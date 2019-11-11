@@ -4,6 +4,8 @@ defmodule Andi.Migrations do
   """
   use GenServer, restart: :transient
 
+  require Andi
+
   @instance Andi.instance_name()
 
   def start_link(args) do

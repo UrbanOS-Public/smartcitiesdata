@@ -2,6 +2,7 @@ defmodule Andi.ModifiedDateMigration do
   alias Andi.SchemaDowncaser
   import SmartCity.Event, only: [dataset_update: 0]
 
+  require Andi
   @instance Andi.instance_name()
 
   def do_migration() do
