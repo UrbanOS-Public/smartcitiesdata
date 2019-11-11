@@ -13,7 +13,7 @@ defmodule Andi.ModifiedDateMigration do
 
   defp migrate_dataset(%Dataset{} = dataset) do
     # IO.inspect(dataset, label: "migrating dataset")
-    corrected_date = fix_modified_date(dataset.business.modifiedDate)
+    corrected_date = Andi.Migration.DateCoercer.fix_date(dataset.business.modifiedDate)
 
     updated_business =
       dataset.business
@@ -33,13 +33,5 @@ defmodule Andi.ModifiedDateMigration do
 
   defp migrate_dataset(invalid_dataset) do
     Logger.warn("Could not migrate invalid dataset #{inspect(invalid_dataset)}")
-  end
-
-  defp fix_modified_date("2017-08-08T13:03:48.000Z"), do: "2017-08-08T13:03:48.000Z"
-  defp fix_modified_date("Jan 13, 2018"), do: "2018-01-13T00:00:00.000Z"
-
-  defp fix_modified_date(date) do
-    IO.inspect(date, label: "got weird date")
-    "2019-01-01T00:00:00.000Z"
   end
 end
