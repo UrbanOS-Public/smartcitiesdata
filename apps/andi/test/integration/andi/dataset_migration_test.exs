@@ -62,7 +62,7 @@ defmodule Andi.DatasetMigrationTest do
 
     eventually(fn ->
       # Migration has recorded a succesful completion
-      assert {:ok, %{"completed" => true}} == Brook.get(@instance, :migration, "modified_date_migration_completed")
+      assert %{"completed" => true} == Brook.get!(@instance, :migration, "modified_date_migration_completed")
 
       # Good date was not modified
       assert good_date == get_modified_date_from_brook(dataset_with_proper_modified_date_id)
