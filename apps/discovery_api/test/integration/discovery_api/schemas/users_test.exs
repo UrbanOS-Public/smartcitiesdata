@@ -97,6 +97,14 @@ defmodule DiscoveryApi.Schemas.UsersTest do
       assert {:error, "User with id #{user_id} does not exist."} == Users.associate_with_organization(user_id, organization.id)
     end
 
+    test "fails when user id is not a valid UUID", %{organization: organization} do
+      user_id = "just_a_string"
+      error_message = "User with id #{user_id} does not exist"
+
+      {:error, actual_message} = Users.associate_with_organization(user_id, organization.id)
+      assert actual_message =~ error_message
+    end
+
     test "fails when organization does not exist", %{user: user} do
       org_id = "nonexistent-org"
       assert {:error, "Organization with id #{inspect(org_id)} does not exist."} == Users.associate_with_organization(user.id, org_id)

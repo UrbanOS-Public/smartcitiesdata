@@ -30,6 +30,8 @@ defmodule DiscoveryApi.Schemas.Users do
       nil -> {:error, "User with #{field} #{id} does not exist."}
       user -> {:ok, user}
     end
+  rescue
+    error in Ecto.Query.CastError -> {:error, "User with #{field} #{id} does not exist: #{inspect(error)}."}
   end
 
   def get_user_with_organizations(id, field \\ :id) do

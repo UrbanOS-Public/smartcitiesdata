@@ -4,10 +4,8 @@ defmodule DiscoveryApi.EventHandler do
   use Brook.Event.Handler
   import SmartCity.Event, only: [organization_update: 0, user_organization_associate: 0]
   require Logger
-  alias SmartCity.Organization
-  alias SmartCity.UserOrganizationAssociate
-  alias DiscoveryApi.Schemas.Organizations
-  alias DiscoveryApi.Schemas.Users
+  alias SmartCity.{Organization, UserOrganizationAssociate}
+  alias DiscoveryApi.Schemas.{Organizations, Users}
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data}) do
     Organizations.create_or_update(data)
