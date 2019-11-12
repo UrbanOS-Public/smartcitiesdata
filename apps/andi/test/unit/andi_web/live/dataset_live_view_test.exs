@@ -61,6 +61,15 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert floki_get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
       refute floki_get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
+
+    test "updating search field does not override other params", %{conn: conn} do
+      conn = get(conn, "/datasets/live")
+      {:ok, view, _html} = live(conn, @url_path <> "?order-by=dataTitle&order-dir=asc")
+
+      assert_redirect(view, @url_path <> "?order-by=dataTitle&order-dir=asc&search-value=search", fn ->
+        render_change(view, :search, %{"search-value" => "search"})
+      end)
+    end
   end
 
   describe "When form change executes search" do

@@ -64,7 +64,8 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   def handle_event("search", %{"search-value" => value}, socket) do
-    {:noreply, live_redirect(socket, to: Routes.live_path(socket, __MODULE__, %{"search-value" => value}))}
+    search_params = Map.merge(socket.assigns.params, %{"search-value" => value})
+    {:noreply, live_redirect(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
   end
 
   # Private Functions
