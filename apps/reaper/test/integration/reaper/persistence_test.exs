@@ -5,9 +5,10 @@ defmodule PersistenceTest do
   use Divo
 
   @dataset_id "12345-3323"
+  @redix Reaper.Application.redis_client()
 
   setup do
-    Redix.command!(:redix, ["FLUSHALL"])
+    Redix.command!(@redix, ["FLUSHALL"])
     :ok
   end
 
@@ -20,7 +21,7 @@ defmodule PersistenceTest do
     Persistence.persist(reaper_config)
 
     actual_map =
-      Redix.command!(:redix, ["GET", "reaper:reaper_config:#{reaper_config.dataset_id}"])
+      Redix.command!(@redix, ["GET", "reaper:reaper_config:#{reaper_config.dataset_id}"])
       |> Jason.decode!(keys: :atoms)
 
     actual = struct(%ReaperConfig{}, actual_map)
@@ -31,7 +32,7 @@ defmodule PersistenceTest do
     reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id})
     reaper_config_json_string = ReaperConfig.encode!(reaper_config)
 
-    Redix.command!(:redix, [
+    Redix.command!(@redix, [
       "SET",
       "reaper:reaper_config:#{reaper_config.dataset_id}",
       reaper_config_json_string
@@ -45,13 +46,13 @@ defmodule PersistenceTest do
     reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id})
     reaper_config2 = FixtureHelper.new_reaper_config(%{dataset_id: "987"})
 
-    Redix.command!(:redix, [
+    Redix.command!(@redix, [
       "SET",
       "reaper:reaper_config:#{reaper_config.dataset_id}",
       ReaperConfig.encode!(reaper_config)
     ])
 
-    Redix.command!(:redix, [
+    Redix.command!(@redix, [
       "SET",
       "reaper:reaper_config:#{reaper_config2.dataset_id}",
       ReaperConfig.encode!(reaper_config2)

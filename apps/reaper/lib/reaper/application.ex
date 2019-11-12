@@ -4,7 +4,7 @@ defmodule Reaper.Application do
   use Application
   require Logger
 
-  def redis_client(), do: :redix
+  def redis_client(), do: :reaper_redix
   def instance(), do: :reaper_brook
 
   def start(_type, _args) do

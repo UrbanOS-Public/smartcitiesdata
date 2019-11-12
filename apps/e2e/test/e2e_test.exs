@@ -4,6 +4,7 @@ defmodule E2ETest do
   use Placebo
 
   @moduletag :e2e
+  @moduletag capture_log: true
 
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
@@ -15,18 +16,36 @@ defmodule E2ETest do
       orgName: "end_to",
       dataName: "end",
       systemName: "end_to__end",
-      schema: [%{name: "one", type: "boolean"}, %{name: "two", type: "string"}, %{name: "three", type: "integer"}],
-      sourceType: "ingest"
+      schema: [
+        %{name: "one", type: "boolean"},
+        %{name: "two", type: "string"},
+        %{name: "three", type: "integer"}
+      ],
+      sourceType: "ingest",
+      sourceFormat: "text/csv"
     }
   }
 
   setup_all do
+    bypass = Bypass.open()
     user = Application.get_env(:andi, :ldap_user)
     pass = Application.get_env(:andi, :ldap_pass)
     Paddle.authenticate(user, pass)
     Paddle.add([ou: "integration"], objectClass: ["top", "organizationalunit"], ou: "integration")
 
-    dataset = TDG.create_dataset(@overrides)
+    Bypass.stub(bypass, "GET", "/path/to/the/data.csv", fn conn ->
+      Plug.Conn.resp(conn, 200, "true,foobar,10")
+    end)
+
+    dataset =
+      @overrides
+      |> put_in(
+        [:technical, :sourceUrl],
+        "http://localhost:${bypass.port()}/path/to/the/data.csv"
+      )
+      |> TDG.create_dataset()
+
+    IO.inspect(dataset, label: "Dataset")
 
     [dataset: dataset]
   end
@@ -94,10 +113,14 @@ defmodule E2ETest do
 
   # This series of tests should be extended as more apps are added to the umbrella.
   describe "ingested data" do
-
     test "is standardized", %{dataset: ds} do
       topic = "#{Application.get_env(:valkyrie, :input_topic_prefix)}-#{ds.id}"
-      data = TDG.create_data(dataset_id: ds.id, payload: %{"one" => true, "two" => "foobar", "three" => "10"})
+
+      data =
+        TDG.create_data(
+          dataset_id: ds.id,
+          payload: %{"one" => true, "two" => "foobar", "three" => "10"}
+        )
 
       Valkyrie.Application.instance()
       |> Brook.Event.send(data_ingest_start(), :author, ds)
@@ -131,7 +154,12 @@ defmodule E2ETest do
 
       eventually(fn ->
         assert {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
-        assert Jason.decode!(message.value)["payload"] == %{"one" => true, "two" => "foobar", "three" => 10}
+
+        assert Jason.decode!(message.value)["payload"] == %{
+                 "one" => true,
+                 "two" => "foobar",
+                 "three" => 10
+               }
       end)
     end
   end
