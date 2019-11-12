@@ -19,20 +19,19 @@ defmodule Andi.Migration.DateCoercer do
       "%b %-d, %Y"
     ]
 
-    formatted_dates =
-      Enum.map(format_strings, fn format ->
-        Timex.parse(date, format, :strftime)
-      end)
+    Enum.reduce_while(format_strings, "", fn format, _acc -> parse_with_format(format, date) end)
+  end
 
-    ok_dates = for {:ok, date} <- formatted_dates, do: date
+  defp parse_with_format(format, date) do
+    case Timex.parse(date, format, :strftime) do
+      {:ok, parsed_date} ->
+        {:halt,
+         parsed_date
+         |> DateTime.from_naive!("Etc/UTC")
+         |> DateTime.to_iso8601()}
 
-    if length(ok_dates) > 0 do
-      ok_dates
-      |> List.first()
-      |> DateTime.from_naive!("Etc/UTC")
-      |> DateTime.to_iso8601()
-    else
-      ""
+      _ ->
+        {:cont, ""}
     end
   end
 end
