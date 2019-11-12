@@ -12,6 +12,7 @@ defmodule Reaper.FullTest do
   @brod_endpoints Enum.map(@endpoints, fn {host, port} -> {to_charlist(host), port} end)
   @output_topic_prefix Application.get_env(:reaper, :output_topic_prefix)
   @instance Reaper.Application.instance()
+  @redix Reaper.Application.redis_client()
 
   @pre_existing_dataset_id "00000-0000"
   @partial_load_dataset_id "11111-1112"
@@ -44,7 +45,7 @@ defmodule Reaper.FullTest do
   end
 
   setup do
-    Redix.command(:redix, ["FLUSHALL"])
+    Redix.command(@redix, ["FLUSHALL"])
     :ok
   end
 
