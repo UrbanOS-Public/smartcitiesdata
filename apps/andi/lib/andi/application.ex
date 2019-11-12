@@ -7,7 +7,7 @@ defmodule Andi.Application do
     children = [
       AndiWeb.Endpoint,
       {Brook, Application.get_env(:andi, :brook)},
-      Andi.DatasetCache
+      Andi.DatasetCache,
       Andi.Migration.Migrations
     ]
 
