@@ -50,11 +50,8 @@ defmodule AndiWeb.DatasetLiveView do
     order_dir = Map.get(params, "order-dir", "asc")
     search_text = Map.get(params, "search-value", "")
 
-    # TODO - make this conditional on if search-value changes
     datasets =
-      Andi.DatasetCache.get_datasets()
-      |> filter_datasets(search_text)
-      |> Enum.map(&to_view_model/1)
+      filter_on_search_change(search_text, socket)
       |> sort_by_dir(order_by, order_dir)
 
     # socket = Map.put(socket, :assigns, Map.drop(socket.assigns, [:search_text]))
@@ -69,6 +66,13 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   # Private Functions
+  defp filter_on_search_change(search_value, socket) do
+    case search_value != socket.assigns.search_text do
+      true -> Andi.DatasetCache.get_datasets() |> filter_datasets(search_value) |> Enum.map(&to_view_model/1)
+      _ -> socket.assigns.datasets
+    end
+  end
+
   defp filter_datasets(datasets, ""), do: datasets
 
   defp filter_datasets(datasets, value) do
