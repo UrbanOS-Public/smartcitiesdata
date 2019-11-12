@@ -1,19 +1,26 @@
 defmodule Andi.Migration.ModifiedDateMigrationTest do
   use ExUnit.Case
   use Placebo
-
+  import SmartCity.Event, only: [dataset_update: 0]
+  alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Migration.Migrations
   require Andi
 
   @instance Andi.instance_name()
 
   test "Sends dataset update event when dataset has been migrated" do
-    allow(Brook.get!(@instance, any(), any()), return: true)
+    dataset =
+      TDG.create_dataset(
+        id: "abc123",
+        business: %{modifiedDate: "2017-08-08T13:03:48.000Z"}
+      )
+
+    allow(Brook.get_all_values!(@instance, :dataset), return: [dataset])
     allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+    allow(Brook.ViewState.merge(:dataset, any(), any()), return: :ok)
 
-    Migrations.migrate_modified_dates()
+    Andi.Migration.ModifiedDateMigration.do_migration()
 
-    refute_called Brook.get_all_values!(@instance, :dataset)
-    refute_called Brook.Event.send(@instance, any(), any(), any())
+    assert_called Brook.Event.send(@instance, dataset_update(), :andi, dataset)
   end
 end

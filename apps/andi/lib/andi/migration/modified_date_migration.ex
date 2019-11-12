@@ -12,7 +12,6 @@ defmodule Andi.Migration.ModifiedDateMigration do
   end
 
   defp migrate_dataset(%Dataset{} = dataset) do
-    # IO.inspect(dataset, label: "migrating dataset")
     corrected_date = Andi.Migration.DateCoercer.coerce_date(dataset.business.modifiedDate)
 
     updated_business =
@@ -27,7 +26,7 @@ defmodule Andi.Migration.ModifiedDateMigration do
       |> Map.put(:business, updated_business)
       |> SmartCity.Dataset.new()
 
-    # Brook.Event.send(@instance, dataset_update(), :andi, updated_dataset)
+    Brook.Event.send(@instance, dataset_update(), :andi, updated_dataset)
     Brook.ViewState.merge(:dataset, updated_dataset.id, updated_dataset)
   end
 
