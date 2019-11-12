@@ -4,7 +4,6 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
   import SmartCity.Event, only: [dataset_update: 0]
   import ExUnit.CaptureLog
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.Migration.Migrations
   require Andi
 
   @instance Andi.instance_name()
