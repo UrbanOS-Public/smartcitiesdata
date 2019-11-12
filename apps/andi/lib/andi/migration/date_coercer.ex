@@ -1,7 +1,7 @@
 defmodule Andi.Migration.DateCoercer do
   def coerce_date(date) do
     case DateTime.from_iso8601(date) do
-      {:ok, parsed_date, offset} -> date
+      {:ok, _parsed_date, _offset} -> date
       _ -> fix_date(date)
     end
   end

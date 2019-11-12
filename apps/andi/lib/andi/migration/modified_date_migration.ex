@@ -14,6 +14,8 @@ defmodule Andi.Migration.ModifiedDateMigration do
   defp migrate_dataset(%Dataset{} = dataset) do
     corrected_date = Andi.Migration.DateCoercer.coerce_date(dataset.business.modifiedDate)
 
+    log_bad_date(dataset.id, dataset.business.modifiedDate, corrected_date)
+
     updated_business =
       dataset.business
       |> Map.from_struct()
@@ -32,5 +34,11 @@ defmodule Andi.Migration.ModifiedDateMigration do
 
   defp migrate_dataset(invalid_dataset) do
     Logger.warn("Could not migrate invalid dataset #{inspect(invalid_dataset)}")
+  end
+
+  defp log_bad_date(id, old_date, new_date) do
+    if new_date == "" && old_date != "" do
+      Logger.warn("[#{id}] unable to parse business.modifiedDate '#{inspect(old_date)}' in modified_date_migration")
+    end
   end
 end
