@@ -31,7 +31,7 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   def mount(_session, socket) do
-    {:ok, assign(socket, datasets: nil, search_text: nil, order: {"data-title", "asc"}, params: %{})}
+    {:ok, assign(socket, datasets: nil, search_text: nil, order: {"data_title", "asc"}, params: %{})}
   end
 
   def handle_info({:order, field}, socket) do
@@ -47,7 +47,7 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   def handle_params(params, _uri, socket) do
-    order_by = Map.get(params, "order-by", "data-title")
+    order_by = Map.get(params, "order-by", "data_title")
     order_dir = Map.get(params, "order-dir", "asc")
     search_text = Map.get(params, "search-value", "")
 
@@ -94,8 +94,8 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp to_view_model(dataset) do
     %{
-      "org-title" => dataset.business.orgTitle,
-      "data-title" => dataset.business.dataTitle
+      "org_title" => dataset.business.orgTitle,
+      "data_title" => dataset.business.dataTitle
     }
   end
 end
