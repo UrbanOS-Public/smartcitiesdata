@@ -39,7 +39,6 @@
 
 .datasets-table {
   width: 100%;
-  border-collapse: collapse;
   border: $table-border;
 }
 
@@ -63,12 +62,12 @@
   word-break: break-word;
 }
 
-.asc::after {
-    content:  '▲';
-    font-size: 0.8em;
+.datasets-table__th--asc{
+    -webkit-box-shadow: inset 0 0.2em 0 0 $fadedblack;
+    box-shadow: inset 0 0.2em 0 0 $fadedblack;
 }
 
-.desc::after {
-    content: '▼';
-    font-size: 0.8em;
+.datasets-table__th--desc {
+    -webkit-box-shadow: inset 0 -3px 0 0 $fadedblack;
+    box-shadow: inset 0 -3px 0 0 $fadedblack;
 }

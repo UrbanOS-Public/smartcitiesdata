@@ -4,8 +4,6 @@ defmodule AndiWeb.DatasetLiveView do
   alias AndiWeb.DatasetLiveView.Table
 
   def render(assigns) do
-    IO.inspect(assigns.search_text, label: "in the render")
-
     ~L"""
     <div class="datasets-index">
       <h1 class="datasets-index__title">All Datasets</h1>
@@ -27,7 +25,7 @@ defmodule AndiWeb.DatasetLiveView do
           </div>
         </form>
       </div>
-      <%= live_component(@socket, Table, id: :datasets_table, datasets: @datasets) %>
+      <%= live_component(@socket, Table, id: :datasets_table, datasets: @datasets, order: @order) %>
     </div>
     """
   end
@@ -56,8 +54,6 @@ defmodule AndiWeb.DatasetLiveView do
     datasets =
       filter_on_search_change(search_text, socket)
       |> sort_by_dir(order_by, order_dir)
-
-    # socket = Map.put(socket, :assigns, Map.drop(socket.assigns, [:search_text]))
 
     {:noreply,
      assign(socket, search_text: search_text, datasets: datasets, order: %{order_by => order_dir}, params: params)}
