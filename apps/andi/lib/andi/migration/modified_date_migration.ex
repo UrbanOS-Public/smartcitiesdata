@@ -18,22 +18,24 @@ defmodule Andi.Migration.ModifiedDateMigration do
   defp migrate_dataset(%Dataset{} = dataset) do
     corrected_date = Andi.Migration.DateCoercer.coerce_date(dataset.business.modifiedDate)
 
-    log_bad_date(dataset.id, dataset.business.modifiedDate, corrected_date)
+    if dataset.business.modifiedDate != corrected_date do
+      log_bad_date(dataset.id, dataset.business.modifiedDate, corrected_date)
 
-    updated_business =
-      dataset.business
-      |> Map.from_struct()
-      |> Map.put(:modifiedDate, corrected_date)
+      updated_business =
+        dataset.business
+        |> Map.from_struct()
+        |> Map.put(:modifiedDate, corrected_date)
 
-    {:ok, updated_dataset} =
-      dataset
-      |> Map.from_struct()
-      |> Map.put(:technical, Map.from_struct(dataset.technical))
-      |> Map.put(:business, updated_business)
-      |> SmartCity.Dataset.new()
+      {:ok, updated_dataset} =
+        dataset
+        |> Map.from_struct()
+        |> Map.put(:technical, Map.from_struct(dataset.technical))
+        |> Map.put(:business, updated_business)
+        |> SmartCity.Dataset.new()
 
-    Brook.Event.send(@instance, dataset_update(), :andi, updated_dataset)
-    Brook.ViewState.merge(:dataset, updated_dataset.id, updated_dataset)
+      Brook.Event.send(@instance, dataset_update(), :andi, updated_dataset)
+      Brook.ViewState.merge(:dataset, updated_dataset.id, updated_dataset)
+    end
   end
 
   defp migrate_dataset(invalid_dataset) do
