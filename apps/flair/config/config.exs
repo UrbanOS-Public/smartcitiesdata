@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :flair,
-  table_creator: Flair.TableCreator,
+  table_writer: Pipeline.Writer.TableWriter,
   data_topic: "persisted"
 
 config :logger,

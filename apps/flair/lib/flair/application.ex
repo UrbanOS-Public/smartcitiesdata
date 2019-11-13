@@ -5,24 +5,9 @@ defmodule Flair.Application do
   use Application
 
   def start(_type, _args) do
-    children = [
-      table_creator(),
-      {Flair.DurationsFlow, []},
-      elsa_consumer()
-    ]
-
-    opts = [strategy: :one_for_one, name: Flair.Supervisor]
-
-    children
+    [{Flair.DurationsFlow, []}, elsa_consumer()]
     |> List.flatten()
-    |> Supervisor.start_link(opts)
-  end
-
-  defp table_creator do
-    case Application.get_env(:flair, :table_creator) do
-      nil -> []
-      mod -> {mod, []}
-    end
+    |> Supervisor.start_link(strategy: :one_for_one, name: Flair.Supervisor)
   end
 
   defp elsa_consumer do

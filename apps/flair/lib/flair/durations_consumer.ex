@@ -5,21 +5,40 @@ defmodule Flair.DurationsConsumer do
 
   use GenStage
 
-  alias Flair.PrestoClient
+  @table_writer Application.get_env(:flair, :table_writer)
+  @table_name Application.get_env(:flair, :table_name_timing, "operational_stats")
+
+  @table_schema [
+    %{name: "dataset_id", type: "string"},
+    %{name: "app", type: "string"},
+    %{name: "label", type: "string"},
+    %{name: "timestamp", type: "long"},
+    %{
+      name: "stats",
+      type: "map",
+      subSchema: [
+        %{name: "count", type: "long"},
+        %{name: "min", type: "double"},
+        %{name: "max", type: "double"},
+        %{name: "std", type: "double"},
+        %{name: "average", type: "double"}
+      ]
+    }
+  ]
 
   def start_link(name, args \\ nil) do
     GenStage.start_link(__MODULE__, args, name: name)
   end
 
   def init(_args) do
+    @table_writer.init(table: @table_name, schema: @table_schema)
     {:consumer, :any}
   end
 
   def handle_events(events, _from, state) do
     events
     |> convert_events()
-    |> PrestoClient.generate_statement_from_events()
-    |> PrestoClient.execute()
+    |> @table_writer.write(table: @table_name, schema: @table_schema)
 
     {:noreply, [], state}
   end
@@ -29,11 +48,13 @@ defmodule Flair.DurationsConsumer do
     |> Enum.map(fn {dataset_id, stats_map} ->
       Enum.map(stats_map, fn {{app, label}, stats} ->
         %{
-          dataset_id: dataset_id,
-          app: app,
-          label: label,
-          timestamp: get_time(),
-          stats: stats
+          payload: %{
+            "dataset_id" => dataset_id,
+            "app" => app,
+            "label" => label,
+            "timestamp" => get_time(),
+            "stats" => stats
+          }
         }
       end)
     end)
