@@ -1,4 +1,7 @@
 defmodule Andi.Migration.DateCoercer do
+  @moduledoc """
+  Either parse to valid iso8601 or convert to empty string.
+  """
   def coerce_date(date) do
     case DateTime.from_iso8601(date) do
       {:ok, _parsed_date, _offset} -> date

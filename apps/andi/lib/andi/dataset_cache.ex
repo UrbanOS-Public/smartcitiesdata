@@ -1,5 +1,8 @@
 defmodule Andi.DatasetCache do
+  @moduledoc false
   use GenServer
+
+  require Logger
 
   alias Andi.Services.DatasetRetrieval
 
@@ -14,6 +17,10 @@ defmodule Andi.DatasetCache do
 
   def put_dataset(%SmartCity.Dataset{} = dataset) do
     :ets.insert(__MODULE__, {dataset.id, dataset})
+  end
+
+  def put_dataset(invalid_dataset) do
+    Logger.warn("Not caching dataset because it is invalid: #{inspect(invalid_dataset)}")
   end
 
   def get_datasets do

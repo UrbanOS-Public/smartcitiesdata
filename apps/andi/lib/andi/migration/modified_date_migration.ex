@@ -1,4 +1,8 @@
 defmodule Andi.Migration.ModifiedDateMigration do
+  @moduledoc """
+  For all existing dataset.business.modifiedDate, either parse to valid iso8601 or convert to empty string.
+  """
+
   alias SmartCity.Dataset
   import SmartCity.Event, only: [dataset_update: 0]
 
