@@ -8,7 +8,7 @@ defmodule AndiWeb.DatasetLiveView do
 
     ~L"""
     <div class="datasets-index">
-      <h1 id="stuff" class="datasets-index__title">All Datasets</h1>
+      <h1 class="datasets-index__title">All Datasets</h1>
       <div class="datasets-index__search">
         <form phx-change="search" phx-submit="search">
           <label for="datasets-index__search">
@@ -36,7 +36,7 @@ defmodule AndiWeb.DatasetLiveView do
   def handle_info({:order, field}, socket) do
     order_dir =
       case socket.assigns.order do
-        {^field, "asc"} -> "desc"
+        %{^field => "asc"} -> "desc"
         _ -> "asc"
       end
 
@@ -57,7 +57,7 @@ defmodule AndiWeb.DatasetLiveView do
     # socket = Map.put(socket, :assigns, Map.drop(socket.assigns, [:search_text]))
 
     {:noreply,
-     assign(socket, search_text: search_text, datasets: datasets, order: {order_by, order_dir}, params: params)}
+     assign(socket, search_text: search_text, datasets: datasets, order: %{order_by => order_dir}, params: params)}
   end
 
   def handle_event("search", %{"search-value" => value}, socket) do

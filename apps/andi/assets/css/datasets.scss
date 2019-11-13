@@ -35,3 +35,13 @@
 .datasets-table__cell--break {
   word-break: break-word;
 }
+
+.asc::after {
+    content:  '▲';
+    font-size: 0.8em;
+}
+
+.desc::after {
+    content: '▼';
+    font-size: 0.8em;
+}
