@@ -34,14 +34,16 @@ jobs:
       script: bash scripts/travis-test.sh forklift
     - name: valkyrie
       script: bash scripts/travis-test.sh valkyrie
+    - name: reaper
+      script: bash scripts/travis-test.sh reaper
     - stage: publish
       name: development
       if: branch == master && type != pull_request
       script: bash scripts/travis-publish.sh
     - name: release
-      if: tag =~ /^(andi|valkyrie|forklift|flair)@\d{1,3}\.\d{1,3}\.\d{1,3}$/
+      if: tag =~ /^(andi|reaper|valkyrie|forklift|flair)@\d{1,3}\.\d{1,3}\.\d{1,3}$/
       script: bash scripts/travis-publish.sh
 branches:
   only:
   - master
-  - /(andi|valkyrie|forklift|flair)@\d{1,3}\.\d{1,3}\.\d{1,3}/
+  - /(andi|reaper|valkyrie|forklift|flair)@\d{1,3}\.\d{1,3}\.\d{1,3}/

@@ -1,0 +1,1 @@
+Git needs a file to track a folder.

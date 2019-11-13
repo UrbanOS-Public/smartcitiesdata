@@ -1,0 +1,22 @@
+[
+    {
+        "grandParent": {}
+    },
+    {
+        "id": "2",
+        "grandParent": {
+            "parentMap": {
+                "fieldA": "Bob",
+                "fieldB": "Purple"
+            }
+        }
+    },
+    {
+        "id": "3",
+        "grandParent": {
+            "parentMap": {
+                "fieldA": "Joe"
+            }
+        }
+    }
+]

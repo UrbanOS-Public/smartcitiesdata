@@ -4,6 +4,7 @@ defmodule E2ETest do
   use Placebo
 
   @moduletag :e2e
+  @moduletag capture_log: false
 
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
@@ -15,18 +16,38 @@ defmodule E2ETest do
       orgName: "end_to",
       dataName: "end",
       systemName: "end_to__end",
-      schema: [%{name: "one", type: "boolean"}, %{name: "two", type: "string"}, %{name: "three", type: "integer"}],
-      sourceType: "ingest"
+      schema: [
+        %{name: "one", type: "boolean"},
+        %{name: "two", type: "string"},
+        %{name: "three", type: "integer"}
+      ],
+      sourceType: "ingest",
+      sourceFormat: "text/csv",
+      cadence: "once"
     }
   }
 
   setup_all do
+    bypass = Bypass.open()
     user = Application.get_env(:andi, :ldap_user)
     pass = Application.get_env(:andi, :ldap_pass)
     Paddle.authenticate(user, pass)
     Paddle.add([ou: "integration"], objectClass: ["top", "organizationalunit"], ou: "integration")
 
-    dataset = TDG.create_dataset(@overrides)
+    Bypass.stub(bypass, "GET", "/path/to/the/data.csv", fn conn ->
+      IO.inspect(conn, label: "bypass")
+      Plug.Conn.resp(conn, 200, "true,foobar,10")
+    end)
+
+    dataset =
+      @overrides
+      |> put_in(
+        [:technical, :sourceUrl],
+        "http://localhost:#{bypass.port()}/path/to/the/data.csv"
+      )
+      |> TDG.create_dataset()
+
+    IO.inspect(dataset, label: "Dataset")
 
     [dataset: dataset]
   end
@@ -34,6 +55,7 @@ defmodule E2ETest do
   describe "creating an organization" do
     test "via RESTful POST" do
       org = TDG.create_organization(%{orgName: "end_to", id: "org-id"})
+      IO.inspect(org, label: "Organization")
 
       resp =
         HTTPoison.post!("http://localhost:4000/api/v1/organization", Jason.encode!(org), [
@@ -94,22 +116,31 @@ defmodule E2ETest do
 
   # This series of tests should be extended as more apps are added to the umbrella.
   describe "ingested data" do
-
-    test "is standardized", %{dataset: ds} do
-      topic = "#{Application.get_env(:valkyrie, :input_topic_prefix)}-#{ds.id}"
-      data = TDG.create_data(dataset_id: ds.id, payload: %{"one" => true, "two" => "foobar", "three" => "10"})
-
-      Valkyrie.Application.instance()
-      |> Brook.Event.send(data_ingest_start(), :author, ds)
+    test "is written by reaper", %{dataset: ds} do
+      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ds.id}"
 
       eventually(fn ->
-        assert Elsa.topic?(@brokers, topic)
-      end)
+        {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
+        {:ok, data} = SmartCity.Data.new(message.value)
 
-      Elsa.produce(@brokers, topic, Jason.encode!(data))
+        assert %{"one" => "true", "two" => "foobar", "three" => "10"} == data.payload
+      end)
     end
 
+    test "is standardized by valkyrie", %{dataset: ds} do
+      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ds.id}"
+
+      eventually(fn ->
+        {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
+        {:ok, data} = SmartCity.Data.new(message.value)
+
+        assert %{"one" => true, "two" => "foobar", "three" => 10} == data.payload
+      end)
+    end
+
+    @tag timeout: :infinity
     test "persists in PrestoDB", %{dataset: ds} do
+      Process.sleep(30_000)
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
 
@@ -131,7 +162,12 @@ defmodule E2ETest do
 
       eventually(fn ->
         assert {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
-        assert Jason.decode!(message.value)["payload"] == %{"one" => true, "two" => "foobar", "three" => 10}
+
+        assert Jason.decode!(message.value)["payload"] == %{
+                 "one" => true,
+                 "two" => "foobar",
+                 "three" => 10
+               }
       end)
     end
   end

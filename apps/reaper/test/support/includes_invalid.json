@@ -1,0 +1,20 @@
+[
+    {
+        "latitude": 39.9556,
+        "vehicle_id": 51127,
+        "update_time": "2019-02-14T18:53:22.879021+00:00",
+        "longitude": -83.0043
+    },
+    {
+        "latitude": 39.9597,
+        "vehicle_id" 15537,
+        "update_time": "2019-02-14T18:53:23.035424+00:00",
+        "longitude": -83.0085
+    },
+    {
+        "latitude": 39.9613,
+        "vehicle_id": 41015,
+        "update_time": "2019-02-14T18:53:23.498889+00:00",
+        "longitude": -83.0074
+    }
+]
