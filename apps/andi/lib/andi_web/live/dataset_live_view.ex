@@ -11,17 +11,20 @@ defmodule AndiWeb.DatasetLiveView do
       <h1 class="datasets-index__title">All Datasets</h1>
       <div class="datasets-index__search">
         <form phx-change="search" phx-submit="search">
-          <label for="datasets-index__search">
-          Search:
-          <input
-            name="search-value"
-            phx-debounce="250"
-            class="datasets-search"
-            type="text"
-            id="datasets-index__search"
-            value="<%= @search_text %>"
-          >
-          </label>
+          <div class="datasets-index__search-input-container">
+            <label for="datasets-index__search-input">
+              <i class="material-icons datasets-index__search-icon">search</i>
+            </label>
+            <input
+              name="search-value"
+              phx-debounce="250"
+              id="datasets-index__search-input"
+              class="datasets-index__search-input"
+              type="text"
+              value="<%= @search_text %>"
+              placeholder="Search datasets"
+            >
+          </div>
         </form>
       </div>
       <%= live_component(@socket, Table, id: :datasets_table, datasets: @datasets) %>

@@ -39,7 +39,7 @@ defmodule Andi.MixProject do
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1.4", only: [:dev, :integration]},
-      {:floki, "~> 0.23"},
+      {:floki, "~> 0.23", only: [:dev, :test, :integration]},
       {:gettext, "~> 0.17"},
       {:jason, "~> 1.1"},
       {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},

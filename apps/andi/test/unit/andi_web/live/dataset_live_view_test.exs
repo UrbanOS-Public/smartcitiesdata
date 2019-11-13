@@ -32,8 +32,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
     test "shows No Datasets when there are no rows to show", %{conn: conn} do
       assert {:ok, view, html} = live(conn, @url_path)
 
-      assert html =~ "All Datasets"
-      assert html =~ "No Datasets"
+      assert floki_get_text(html, ".datasets-index__title") =~ "All Datasets"
+      assert floki_get_text(html, ".datasets-index__table") =~ "No Datasets"
     end
   end
 
@@ -173,7 +173,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   defp get_search_input_value(html) do
     html
-    |> Floki.find("input.datasets-search")
+    |> Floki.find("input.datasets-index__search-input")
     |> Floki.attribute("value")
   end
 
