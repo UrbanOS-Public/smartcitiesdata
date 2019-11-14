@@ -36,7 +36,7 @@ defmodule Forklift.Application do
   defp migrations do
     case Application.get_env(:redix, :args) do
       nil -> []
-      _host -> Forklift.Migrations
+      _args -> Forklift.Migrations
     end
   end
 
