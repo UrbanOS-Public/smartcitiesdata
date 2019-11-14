@@ -27,14 +27,14 @@ defmodule Forklift.Application do
   def redis_client(), do: :redix
 
   defp redis do
-    case Application.get_env(:redix, :host) do
+    case Application.get_env(:redix, :args) do
       nil -> []
-      host -> {Redix, host: host, name: redis_client()}
+      redix_args -> {Redix, Keyword.put(redix_args, :name, redis_client())}
     end
   end
 
   defp migrations do
-    case Application.get_env(:redix, :host) do
+    case Application.get_env(:redix, :args) do
       nil -> []
       _host -> Forklift.Migrations
     end

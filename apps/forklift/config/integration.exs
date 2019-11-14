@@ -6,6 +6,7 @@ host =
     defined -> defined
   end
 
+redis_args = [host: host]
 endpoints = [{to_charlist(host), 9092}]
 
 output_topic = "streaming-persisted"
@@ -47,7 +48,7 @@ config :forklift, :brook,
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [
-      redix_args: [host: host],
+      redix_args: redis_args,
       namespace: "forklift:view"
     ]
   ]
@@ -73,4 +74,4 @@ config :prestige,
 config(:forklift, divo: "docker-compose.yml", divo_wait: [dwell: 1000, max_tries: 120])
 
 config :redix,
-  host: host
+       args: redis_args
