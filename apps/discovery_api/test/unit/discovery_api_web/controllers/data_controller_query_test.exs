@@ -4,6 +4,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
   import Checkov
   import SmartCity.TestHelper
   alias DiscoveryApi.Data.{Model, SystemNameCache}
+  alias DiscoveryApiWeb.Utilities.LdapAccessUtils
   alias DiscoveryApiWeb.Utilities.AuthUtils
   alias DiscoveryApi.Services.PrestoService
 
@@ -284,7 +285,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       allow(PrestoService.build_query(any(), any()), return: {:ok, "SELECT * FROM geojson"})
       allow(PrestoService.is_select_statement?(any()), return: true)
       allow(PrestoService.get_affected_tables(any()), return: {:ok, ["geojson__geojson"]})
-      allow(AuthUtils.has_access?(any(), any()), return: true)
+      allow(LdapAccessUtils.has_access?(any(), any()), return: true)
 
       :ok
     end

@@ -59,7 +59,7 @@ defmodule DiscoveryApi.Test.Helper do
         "record_count" => Faker.random_between(1, 1000),
         "fields" => %{"one" => %{"count" => 1, "required" => false}}
       },
-      systemName: "shouldnot__benil"
+      systemName: "#{Faker.Lorem.word()}__#{Faker.Lorem.word()}"
     }
     |> Map.merge(values)
   end
@@ -213,5 +213,28 @@ defmodule DiscoveryApi.Test.Helper do
     end
 
     organization
+  end
+
+  def associate_user_with_organization(user_id, organization_id) do
+    {:ok, event} = SmartCity.UserOrganizationAssociate.new(%{user_id: user_id, org_id: organization_id})
+
+    Brook.Event.send(DiscoveryApi.instance(), "user:organization:associate", :test, event)
+
+    Patiently.wait_for(
+      fn -> user_associated_with_organization?(user_id, organization_id) end,
+      dwell: 500,
+      mat_tries: 10
+    )
+    |> case do
+      :ok -> :ok
+      _ -> raise "An error occured in setting up the user-organization association correctly in: #{__MODULE__}"
+    end
+  end
+
+  defp user_associated_with_organization?(user_id, organization_id) do
+    case DiscoveryApi.Schemas.Users.get_user_with_organizations(user_id) do
+      {:ok, user} -> user.organizations |> Enum.any?(fn org -> org.id == organization_id end)
+      _ -> false
+    end
   end
 end

@@ -3,7 +3,6 @@ defmodule DiscoveryApi.OrganizationUpdateTest do
   use Divo
   use DiscoveryApi.DataCase
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [organization_update: 0]
   alias DiscoveryApi.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
 

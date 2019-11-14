@@ -2,14 +2,14 @@ defmodule DiscoveryApiWeb.Plugs.Restrictor do
   @moduledoc false
   require Logger
   import Plug.Conn
-  alias DiscoveryApiWeb.Utilities.AuthUtils
+  alias DiscoveryApiWeb.Utilities.LdapAccessUtils
 
   def init(default), do: default
 
   def call(conn, _) do
     username = conn.assigns.current_user
 
-    case AuthUtils.has_access?(conn.assigns.model, username) do
+    case LdapAccessUtils.has_access?(conn.assigns.model, username) do
       true -> conn
       _ -> handle_unauthorized(conn)
     end

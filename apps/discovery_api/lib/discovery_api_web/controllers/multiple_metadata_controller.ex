@@ -2,7 +2,7 @@ require Logger
 
 defmodule DiscoveryApiWeb.MultipleMetadataController do
   use DiscoveryApiWeb, :controller
-  alias DiscoveryApiWeb.Utilities.AuthUtils
+  alias DiscoveryApiWeb.Utilities.LdapAccessUtils
   alias DiscoveryApiWeb.MultipleMetadataView
   alias DiscoveryApi.Search.{DataModelFilterator, DataModelFacinator, DataModelSearchinator}
   alias DiscoveryApi.Data.Model
@@ -88,7 +88,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
 
   defp remove_unauthorized_models(conn, filtered_models) do
     current_user = conn.assigns.current_user
-    Enum.filter(filtered_models, &AuthUtils.has_access?(&1, current_user))
+    Enum.filter(filtered_models, &LdapAccessUtils.has_access?(&1, current_user))
   end
 
   defp validate_facets(map) do

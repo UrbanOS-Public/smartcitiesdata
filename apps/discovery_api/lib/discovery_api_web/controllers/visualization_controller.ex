@@ -4,13 +4,19 @@ defmodule DiscoveryApiWeb.VisualizationController do
 
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Visualizations
+  alias DiscoveryApiWeb.Utilities.AuthUtils
+  alias DiscoveryApiWeb.Utilities.EctoAccessUtils
 
   plug(:accepts, DiscoveryApiWeb.VisualizationView.accepted_formats())
 
   def show(conn, %{"id" => id}) do
-    case Visualizations.get_visualization_by_id(id) do
+    with {:ok, %{query: query} = visualization} <- Visualizations.get_visualization_by_id(id),
+         user <- Map.get(conn.assigns, :current_user, nil),
+         true <- owns_visualization(visualization, user) || AuthUtils.authorized_to_query?(query, user, EctoAccessUtils) do
+      render(conn, :visualization, %{visualization: visualization})
+    else
       {:error, _} -> render_error(conn, 404, "Not Found")
-      {:ok, visualization} -> render(conn, :visualization, %{visualization: visualization})
+      false -> render_error(conn, 404, "Not Found")
     end
   end
 
@@ -32,6 +38,15 @@ defmodule DiscoveryApiWeb.VisualizationController do
     else
       _ ->
         render_error(conn, 400, "Bad Request")
+    end
+  end
+
+  defp owns_visualization(_visualization, nil), do: false
+
+  defp owns_visualization(visualization, subject_id) do
+    case Users.get_user(subject_id, :subject_id) do
+      {:ok, user} -> user.id == visualization.owner_id
+      _ -> false
     end
   end
 end

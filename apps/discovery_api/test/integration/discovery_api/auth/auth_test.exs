@@ -3,11 +3,12 @@ defmodule DiscoveryApi.Auth.AuthTest do
   use Divo, services: [:"ecto-postgres", :ldap, :redis, :presto, :zookeeper, :kafka]
   use DiscoveryApi.DataCase
 
+  import ExUnit.CaptureLog
+
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users
-  alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Schemas.Visualizations
   alias DiscoveryApi.Repo
 
@@ -299,36 +300,13 @@ defmodule DiscoveryApi.Auth.AuthTest do
     end
   end
 
-  describe "auth0 pipeline" do
+  describe "POST /logged-in" do
     setup do
-      jwks = AuthHelper.valid_jwks()
-
-      bypass = Bypass.open()
-
-      Bypass.stub(bypass, "GET", "/jwks", fn conn ->
-        Plug.Conn.resp(conn, :ok, Jason.encode!(jwks))
-      end)
-
-      Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
-        Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z"}))
-      end)
-
-      really_far_in_the_future = 3_000_000_000_000
-      AuthHelper.set_allowed_guardian_drift(really_far_in_the_future)
-
-      original_jwks_endpoint = Application.get_env(:discovery_api, :jwks_endpoint)
-      original_user_info_endpoint = Application.get_env(:discovery_api, :user_info_endpoint)
-      Application.put_env(:discovery_api, :jwks_endpoint, "http://localhost:#{bypass.port}/jwks")
-      Application.put_env(:discovery_api, :user_info_endpoint, "http://localhost:#{bypass.port}/userinfo")
-
-      on_exit(fn ->
-        AuthHelper.set_allowed_guardian_drift(0)
-        Application.put_env(:discovery_api, :jwks_endpoint, original_jwks_endpoint)
-        Application.put_env(:discovery_api, :user_info_endpoint, original_user_info_endpoint)
-      end)
+      auth0_setup()
+      |> on_exit()
     end
 
-    test "/logged-in returns 'OK' when token is valid" do
+    test "returns 'OK' when token is valid" do
       %{status_code: status_code} =
         "localhost:4000/api/v1/logged-in"
         |> HTTPoison.post!("",
@@ -338,8 +316,9 @@ defmodule DiscoveryApi.Auth.AuthTest do
       assert status_code == 200
     end
 
-    test "/logged-in saves logged in user" do
+    test "saves logged in user" do
       subject_id = AuthHelper.valid_jwt_sub()
+
       HTTPoison.post!("localhost:4000/api/v1/logged-in", "", Authorization: "Bearer #{AuthHelper.valid_jwt()}")
 
       assert {:ok, actual} = Users.get_user(subject_id, :subject_id)
@@ -349,7 +328,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       assert actual.id != nil
     end
 
-    test "/logged-in returns 'bad request' when token is invalid" do
+    test "returns 'bad request' when token is invalid" do
       %{status_code: status_code} =
         "localhost:4000/api/v1/logged-in"
         |> HTTPoison.post!("",
@@ -358,9 +337,16 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
       assert status_code == 400
     end
+  end
 
-    test "POST /visualization adds owner data to the newly created visualization" do
-      subject_id = log_valid_user_in()
+  describe "POST /visualization" do
+    setup do
+      auth0_setup()
+      |> on_exit()
+    end
+
+    test "adds owner data to the newly created visualization" do
+      {:ok, user} = Users.create_or_update(AuthHelper.valid_jwt_sub(), %{email: "thing@thing.thing"})
 
       %{status_code: status_code, body: body} =
         post_with_authentication(
@@ -370,11 +356,13 @@ defmodule DiscoveryApi.Auth.AuthTest do
         )
 
       assert status_code == 201
+
       visualization = Visualizations.get_visualization_by_id(body.id) |> elem(1) |> Repo.preload(:owner)
-      assert visualization.owner.subject_id == subject_id
+
+      assert visualization.owner.subject_id == user.subject_id
     end
 
-    test "POST /visualization returns 'bad request' when token is invalid" do
+    test "returns 'bad request' when token is invalid" do
       %{status_code: status_code, body: body} =
         post_with_authentication(
           "localhost:4000/api/v1/visualization",
@@ -385,10 +373,49 @@ defmodule DiscoveryApi.Auth.AuthTest do
       assert status_code == 400
       assert body.message == "Bad Request"
     end
+  end
 
-    test "GET /visualization/:id returns visualization when token is valid" do
-      log_valid_user_in()
-      visualization = create_visualization()
+  describe "GET /visualization/:id" do
+    setup do
+      auth0_setup()
+      |> on_exit()
+    end
+
+    test "returns visualization for public table when user is anonymous",
+         %{
+           public_model_that_belongs_to_org_1: model
+         } do
+      capture_log(fn ->
+        ~s|create table if not exists "#{model.systemName}" (id integer, name varchar)|
+        |> Prestige.execute()
+        |> Prestige.prefetch()
+      end)
+
+      visualization = create_visualization(model.systemName)
+
+      %{status_code: status_code} =
+        HTTPoison.get!(
+          "localhost:4000/api/v1/visualization/#{visualization.public_id}",
+          "Content-Type": "application/json"
+        )
+
+      assert status_code == 200
+    end
+
+    test "returns visualization for private table when user has access", %{
+      private_model_that_belongs_to_org_1: model
+    } do
+      {:ok, user} = Users.create_or_update(AuthHelper.valid_jwt_sub(), %{email: "thing@thing.thing"})
+
+      Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
+
+      capture_log(fn ->
+        ~s|create table if not exists "#{model.systemName}" (id integer, name varchar)|
+        |> Prestige.execute()
+        |> Prestige.prefetch()
+      end)
+
+      visualization = create_visualization(model.systemName)
 
       %{status_code: status_code} =
         get_with_authentication(
@@ -398,18 +425,37 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
       assert status_code == 200
     end
+
+    test "returns not found for private table when user is anonymous", %{
+      private_model_that_belongs_to_org_1: model
+    } do
+      capture_log(fn ->
+        ~s|create table if not exists "#{model.systemName}" (id integer, name varchar)|
+        |> Prestige.execute()
+        |> Prestige.prefetch()
+      end)
+
+      visualization = create_visualization(model.systemName)
+
+      %{status_code: status_code} =
+        HTTPoison.get!(
+          "localhost:4000/api/v1/visualization/#{visualization.public_id}",
+          "Content-Type": "application/json"
+        )
+
+      assert status_code == 404
+    end
   end
 
-  defp log_valid_user_in() do
-    HTTPoison.post!("localhost:4000/api/v1/logged-in", "", Authorization: "Bearer #{AuthHelper.valid_jwt()}")
-    AuthHelper.valid_jwt_sub()
-  end
-
-  defp create_visualization() do
+  defp create_visualization(table_name) do
     {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
 
     {:ok, visualization} =
-      Visualizations.create_visualization(%{query: "select * from table_name", title: "My first visualization", owner: owner})
+      Visualizations.create_visualization(%{
+        query: "select * from #{table_name}",
+        title: "My first visualization",
+        owner: owner
+      })
 
     visualization
   end
@@ -441,5 +487,38 @@ defmodule DiscoveryApi.Auth.AuthTest do
       )
 
     %{status_code: status_code, body: Jason.decode!(body_json, keys: :atoms)}
+  end
+
+  defp auth0_setup do
+    jwks = AuthHelper.valid_jwks()
+
+    bypass = Bypass.open()
+
+    Bypass.stub(bypass, "GET", "/jwks", fn conn ->
+      Plug.Conn.resp(conn, :ok, Jason.encode!(jwks))
+    end)
+
+    Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
+      Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z"}))
+    end)
+
+    really_far_in_the_future = 3_000_000_000_000
+    AuthHelper.set_allowed_guardian_drift(really_far_in_the_future)
+
+    original_jwks_endpoint = Application.get_env(:discovery_api, :jwks_endpoint)
+    original_user_info_endpoint = Application.get_env(:discovery_api, :user_info_endpoint)
+    Application.put_env(:discovery_api, :jwks_endpoint, "http://localhost:#{bypass.port}/jwks")
+
+    Application.put_env(
+      :discovery_api,
+      :user_info_endpoint,
+      "http://localhost:#{bypass.port}/userinfo"
+    )
+
+    fn ->
+      AuthHelper.set_allowed_guardian_drift(0)
+      Application.put_env(:discovery_api, :jwks_endpoint, original_jwks_endpoint)
+      Application.put_env(:discovery_api, :user_info_endpoint, original_user_info_endpoint)
+    end
   end
 end

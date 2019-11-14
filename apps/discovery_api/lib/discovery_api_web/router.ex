@@ -35,8 +35,11 @@ defmodule DiscoveryApiWeb.Router do
     )
 
     plug(DiscoveryApiWeb.Plugs.VerifyHeader)
-    plug(Guardian.Plug.EnsureAuthenticated)
     plug(DiscoveryApiWeb.Plugs.SetCurrentUser)
+  end
+
+  pipeline :ensure_user_auth0 do
+    plug(Guardian.Plug.EnsureAuthenticated)
   end
 
   scope "/", DiscoveryApiWeb do
@@ -72,9 +75,15 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:add_user_auth0])
+    pipe_through([:add_user_auth0, :ensure_user_auth0])
 
     post("/logged-in", UserController, :logged_in)
-    resources("/visualization", VisualizationController, only: [:show, :create, :update])
+    resources("/visualization", VisualizationController, only: [:create, :update])
+  end
+
+  scope "/api/v1", DiscoveryApiWeb do
+    pipe_through([:add_user_auth0])
+
+    resources("/visualization", VisualizationController, only: [:show])
   end
 end

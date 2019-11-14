@@ -27,7 +27,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
         }
       })
 
-    organization = Helper.create_persisted_organization(%{id: dataset_to_get_recommendations_for.technical.orgId})
+    Helper.create_persisted_organization(%{id: dataset_to_get_recommendations_for.technical.orgId})
 
     dataset_with_wrong_types =
       TDG.create_dataset(%{

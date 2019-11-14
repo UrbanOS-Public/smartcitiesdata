@@ -6,7 +6,7 @@ endpoints = [{to_charlist(host), 9092}]
 config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: "data.integrationtests.example.com", port: 80]
 
 config :discovery_api,
-  allowed_origins: ["integrationtests.example.com"],
+  allowed_origins: ["integrationtests.example.com", "localhost:9001"],
   divo: "test/integration/docker-compose.yaml",
   divo_wait: [dwell: 2000, max_tries: 35],
   ldap_user: [cn: "admin"],

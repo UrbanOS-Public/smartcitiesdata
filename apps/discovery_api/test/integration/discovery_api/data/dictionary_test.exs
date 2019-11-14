@@ -3,10 +3,7 @@ defmodule DiscoveryApi.Data.DictionaryTest do
   use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres"]
   use DiscoveryApi.DataCase
   alias DiscoveryApi.TestDataGenerator, as: TDG
-  alias SmartCity.TestDataGenerator, as: SC_TDG
   alias SmartCity.Registry.Dataset
-  import SmartCity.TestHelper
-  alias SmartCity.Registry.Organization
   alias DiscoveryApi.Test.Helper
 
   setup do

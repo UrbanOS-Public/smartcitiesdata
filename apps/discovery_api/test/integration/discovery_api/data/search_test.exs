@@ -5,10 +5,7 @@ defmodule DiscoveryApi.Data.SearchTest do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.TestDataGenerator, as: TDG
-  alias SmartCity.TestDataGenerator, as: SC_TDG
   alias SmartCity.Registry.Dataset
-  import SmartCity.TestHelper
-  alias SmartCity.Registry.Organization
 
   setup do
     Helper.wait_for_brook_to_be_ready()

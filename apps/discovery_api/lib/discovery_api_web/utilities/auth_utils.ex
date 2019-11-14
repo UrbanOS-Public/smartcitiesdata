@@ -2,14 +2,14 @@ defmodule DiscoveryApiWeb.Utilities.AuthUtils do
   @moduledoc """
   Provides authentication and authorization helper methods
   """
-  alias DiscoveryApi.Services.{PaddleService, PrestoService}
+  alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApi.Data.Model
 
-  def authorized_to_query?(statement, username) do
+  def authorized_to_query?(statement, username, access_module \\ DiscoveryApiWeb.Utilities.LdapAccessUtils) do
     with true <- PrestoService.is_select_statement?(statement),
          {:ok, affected_tables} <- PrestoService.get_affected_tables(statement),
          affected_models <- get_affected_models(affected_tables) do
-      valid_tables?(affected_tables, affected_models) && can_access_models?(affected_models, username)
+      valid_tables?(affected_tables, affected_models) && can_access_models?(affected_models, username, access_module)
     else
       _ -> false
     end
@@ -30,19 +30,7 @@ defmodule DiscoveryApiWeb.Utilities.AuthUtils do
     MapSet.new(affected_tables) == MapSet.new(affected_system_names)
   end
 
-  defp can_access_models?(affected_models, username) do
-    Enum.all?(affected_models, &has_access?(&1, username))
+  defp can_access_models?(affected_models, username, access_module) do
+    Enum.all?(affected_models, &access_module.has_access?(&1, username))
   end
-
-  def has_access?(%Model{private: false} = _dataset, _username), do: true
-
-  def has_access?(%Model{private: true} = _dataset, nil), do: false
-
-  def has_access?(%Model{private: true, organizationDetails: %{dn: dn}} = _dataset, username) do
-    dn
-    |> PaddleService.get_members()
-    |> Enum.member?(username)
-  end
-
-  def has_access?(_base, _case), do: false
 end

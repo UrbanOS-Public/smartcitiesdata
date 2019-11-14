@@ -4,7 +4,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApiWeb.Utilities.AuthUtils
-  alias DiscoveryApiWeb.Utilities.AuthUtils
+  alias DiscoveryApiWeb.Utilities.LdapAccessUtils
 
   setup do
     public_one_dataset =
@@ -96,7 +96,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       allow(Prestige.execute(any(), any()), return: expected_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
-      allow(AuthUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       response_body =
         conn
@@ -123,7 +123,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       allow(Prestige.execute(any(), any()), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
-      allow(AuthUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       response_body =
         conn
@@ -186,7 +186,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:error, :does_not_matter})
-      allow(AuthUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -208,7 +208,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       allow(Prestige.execute(any(), any()), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, ["not_in_redis"]})
-      allow(AuthUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       _response_body =
         conn
@@ -227,7 +227,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
       allow(PrestoService.is_select_statement?(statement), return: false)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
-      allow(AuthUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -253,7 +253,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
-      allow(AuthUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       allow(Prestige.execute(any(), any()), exec: fn _, _ -> raise Prestige.Error, failure_message end)
 
@@ -280,7 +280,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(statement), return: {:ok, ["geojson__geojson"]})
-      allow(AuthUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       %{statement: statement}
     end
