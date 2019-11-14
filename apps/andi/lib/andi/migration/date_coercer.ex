@@ -17,6 +17,10 @@ defmodule Andi.Migration.DateCoercer do
       "%-m/%-d/%Y",
       "%-m-%-d-%y",
       "%-m-%-d-%Y",
+      "%-d/%-m/%y",
+      "%-d/%-m/%Y",
+      "%-d-%-m-%y",
+      "%-d-%-m-%Y",
       "%B %-d, %Y",
       "%Y-%m-%d",
       "%b %-d, %Y"
