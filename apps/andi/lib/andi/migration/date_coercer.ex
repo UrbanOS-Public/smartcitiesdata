@@ -9,9 +9,9 @@ defmodule Andi.Migration.DateCoercer do
     end
   end
 
-  def fix_date(""), do: ""
+  defp fix_date(""), do: ""
 
-  def fix_date(date) do
+  defp fix_date(date) do
     format_strings = [
       "%-m/%-d/%y",
       "%-m/%-d/%Y",
