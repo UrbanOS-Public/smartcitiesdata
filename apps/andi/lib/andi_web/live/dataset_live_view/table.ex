@@ -5,9 +5,6 @@ defmodule AndiWeb.DatasetLiveView.Table do
   use Phoenix.LiveComponent
 
   def render(assigns) do
-    down_arrow = '&#9660;'
-    up_arrow = '&#9650;'
-
     ~L"""
     <div id="<%= @id %>" class="datasets-index__table">
       <table class="datasets-table">
