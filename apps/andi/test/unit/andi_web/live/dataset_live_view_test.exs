@@ -41,7 +41,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     test "populates search box", %{conn: conn} do
       search_text = "Where's Waldo?"
 
-      assert {:ok, view, html} = live(conn, @url_path <> "?search-value=" <> search_text)
+      assert {:ok, view, html} = live(conn, @url_path <> "?search=" <> search_text)
       assert [search_text] = get_search_input_value(html)
     end
 
@@ -56,7 +56,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       # steps separately fixes the issue.
       conn = get(conn, "/datasets/live")
 
-      assert {:ok, view, html} = live(conn, @url_path <> "?search-value=" <> dataset_a.business.dataTitle)
+      assert {:ok, view, html} = live(conn, @url_path <> "?search=" <> dataset_a.business.dataTitle)
 
       assert floki_get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
       refute floki_get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
@@ -66,7 +66,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       conn = get(conn, "/datasets/live")
       {:ok, view, _html} = live(conn, @url_path <> "?order-by=dataTitle&order-dir=asc")
 
-      assert_redirect(view, @url_path <> "?order-by=dataTitle&order-dir=asc&search-value=search", fn ->
+      assert_redirect(view, @url_path <> "?order-by=dataTitle&order-dir=asc&search=search", fn ->
         render_change(view, :search, %{"search-value" => "search"})
       end)
     end
@@ -119,7 +119,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       search_text = "Some search"
 
-      assert_redirect(view, @url_path <> "?search-value=" <> search_text, fn ->
+      assert_redirect(view, @url_path <> "?search=" <> search_text, fn ->
         assert [search_text] ==
                  view
                  |> render_change(:search, %{"search-value" => search_text})
@@ -162,7 +162,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       search_text = "Some text"
 
-      assert_redirect(view, @url_path <> "?search-value=" <> search_text, fn ->
+      assert_redirect(view, @url_path <> "?search=" <> search_text, fn ->
         assert [search_text] ==
                  view
                  |> render_submit(:search, %{"search-value" => search_text})
