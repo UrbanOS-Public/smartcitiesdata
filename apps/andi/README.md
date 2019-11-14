@@ -10,6 +10,8 @@ Interactions with Redis are abstracted with `smartcitiesdata.smart_city*` functi
 ## Running Andi
 
   * Install dependencies with `mix deps.get`
+  * `cd assets` and `npm i`
+  * `mix docker.start`
   * Start Phoenix endpoint locally with `mix phx.server`
 
 

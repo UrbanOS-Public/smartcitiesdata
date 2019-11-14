@@ -3,7 +3,8 @@ defmodule Andi.EventHandler do
   use Brook.Event.Handler
   require Logger
 
-  import SmartCity.Event, only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0]
+  import SmartCity.Event,
+    only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0, data_ingest_end: 0]
 
   alias SmartCity.{Dataset, Organization}
   alias SmartCity.UserOrganizationAssociate
@@ -30,6 +31,10 @@ defmodule Andi.EventHandler do
   def handle_event(%Brook.Event{type: "migration:modified_date:start"}) do
     Andi.Migration.ModifiedDateMigration.do_migration()
     {:create, :migration, "modified_date_migration_completed", true}
+  end
+
+  def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{id: id}, create_ts: create_ts}) do
+    {:create, :ingest_complete, id, create_ts}
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])
