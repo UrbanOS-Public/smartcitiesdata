@@ -71,7 +71,8 @@ config :reaper, :brook,
       }
     ]
   },
-  dispatcher: Brook.Dispatcher.Noop
+  dispatcher: Brook.Dispatcher.Noop,
+  event_processing_timeout: 10_000
 
 config :reaper, Reaper.Scheduler,
   storage: Reaper.Quantum.Storage,
