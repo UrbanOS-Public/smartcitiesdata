@@ -27,7 +27,7 @@ defmodule Andi.EventHandler do
     merge(:user_to_orgs, user_id, &add_to_set(&1, org_id))
   end
 
-  def handle_event(%Brook.Event{type: "migration:modified_dates"}) do
+  def handle_event(%Brook.Event{type: "migration:modified_date:start"}) do
     Andi.Migration.ModifiedDateMigration.do_migration()
     {:create, :migration, "modified_date_migration_completed", true}
   end

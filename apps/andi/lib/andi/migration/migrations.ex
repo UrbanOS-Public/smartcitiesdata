@@ -13,7 +13,7 @@ defmodule Andi.Migration.Migrations do
   end
 
   def init(_args) do
-    migrate_modified_dates()
+    migrate_once("modified_date_migration_completed", "migration:modified_date:start")
 
     {:ok, :ok, {:continue, :stop}}
   end
@@ -22,16 +22,16 @@ defmodule Andi.Migration.Migrations do
     {:stop, :normal, state}
   end
 
-  def migrate_modified_dates do
-    has_migration_run?("modified_date_migration_completed")
-    |> migrate_modified_dates()
+  def migrate_once(completed_flag_name, event_name) do
+    get_completed_flag(completed_flag_name)
+    |> send_brook_event(event_name)
   end
 
-  defp has_migration_run?(migration_name) do
-    Brook.get!(@instance, :migration, migration_name)
+  defp get_completed_flag(completed_flag_name) do
+    Brook.get!(@instance, :migration, completed_flag_name)
   end
 
-  defp migrate_modified_dates(nil), do: Brook.Event.send(@instance, "migration:modified_dates", :andi, %{})
+  defp send_brook_event(nil, event_name), do: Brook.Event.send(@instance, event_name, :andi, %{})
 
-  defp migrate_modified_dates(_), do: nil
+  defp send_brook_event(_completed_flag, _event_name), do: nil
 end
