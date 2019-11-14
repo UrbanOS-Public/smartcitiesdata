@@ -54,7 +54,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       # For most of our tests, we can let live/2 handle both the static connection
       # and the live update. That wasn't working correctly for this one so doing the
       # steps separately fixes the issue.
-      conn = get(conn, "/datasets/live")
+      conn = get(conn, @url_path)
 
       assert {:ok, view, html} = live(conn, @url_path <> "?search=" <> dataset_a.business.dataTitle)
 
@@ -63,7 +63,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "updating search field does not override other params", %{conn: conn} do
-      conn = get(conn, "/datasets/live")
+      conn = get(conn, @url_path)
       {:ok, view, _html} = live(conn, @url_path <> "?order-by=dataTitle&order-dir=asc")
 
       assert_redirect(view, @url_path <> "?order-by=dataTitle&order-dir=asc&search=search", fn ->
