@@ -9,7 +9,8 @@ defmodule AndiWeb.DatasetValidator do
            validate_data_name(),
            validate_modified_date_format(),
            already_exists!(),
-           description_required()
+           description_required(),
+           validate_top_level_selector_if_required()
          ]) do
       [] -> :valid
       errors -> {:invalid, errors}
@@ -41,6 +42,16 @@ defmodule AndiWeb.DatasetValidator do
         same_system_name(dataset, existing_dataset)
     end)
   end
+
+  def validate_top_level_selector_if_required() do
+    {&has_top_level_selector_if_required/1, "topLevelSelector required for xml datasets", true}
+  end
+
+  defp has_top_level_selector_if_required(%{"technical" => %{"topLevelSelector" => topLevelSelector, "sourceFormat" => "text/xml"}}) do
+    topLevelSelector != nil
+  end
+
+  defp has_top_level_selector_if_required(_), do: true
 
   defp same_system_name(a, b), do: get_system_name(a) == get_system_name(b)
 

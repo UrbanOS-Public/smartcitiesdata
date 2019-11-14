@@ -99,6 +99,26 @@ defmodule AndiWeb.DatasetValidatorTest do
     end
   end
 
+  describe "xml dataset validation" do
+    test "requires topLevelSelector" do
+      dataset =
+        TDG.create_dataset(technical: %{sourceFormat: "xml"})
+        |> struct_to_map_with_string_keys()
+
+      assert {:invalid, errors} = DatasetValidator.validate(dataset)
+      assert length(errors) == 1
+      assert List.first(errors) |> String.contains?("topLevelSelector")
+    end
+
+    test "validates topLevelSelector when xml" do
+      dataset =
+        TDG.create_dataset(technical: %{sourceFormat: "xml", topLevelSelector: "this/is/a/selector"})
+        |> struct_to_map_with_string_keys()
+
+      assert :valid = DatasetValidator.validate(dataset)
+    end
+  end
+
   defp struct_to_map_with_string_keys(dataset) do
     dataset
     |> Jason.encode!()
