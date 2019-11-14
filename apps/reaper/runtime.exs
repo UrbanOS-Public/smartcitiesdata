@@ -16,6 +16,7 @@ end)
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
+redis_password = System.get_env("REDIS_PASSWORD")
 
 endpoints =
   kafka_brokers
@@ -73,6 +74,8 @@ config :reaper, :brook,
   },
   dispatcher: Brook.Dispatcher.Noop
 
+#if (redis_password == ""), do: [host: redis_host], else: [host: redis_host, password: redis_password]
+
 config :reaper, Reaper.Scheduler,
   storage: Reaper.Quantum.Storage,
   global: true,
@@ -81,8 +84,9 @@ config :reaper, Reaper.Scheduler,
 config :reaper, Reaper.Quantum.Storage,
   host: redis_host
 
-config :redix,
-  host: redis_host
+config :redix, :args
+  host: redis_host,
+	password: redis_password
 
 config :yeet,
   endpoint: endpoints,

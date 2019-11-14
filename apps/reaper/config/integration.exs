@@ -61,10 +61,13 @@ config :reaper, Reaper.Scheduler,
   storage: Reaper.Quantum.Storage,
   overlap: false
 
-config :reaper, Reaper.Quantum.Storage, host: host
+config :reaper, Reaper.Quantum.Storage,
+ 	host: host,
+	password: ""
 
-config :redix,
-  args: [host: host]
+config :redix, :args,
+  host: host,
+	password: ""
 
 config :yeet,
   endpoint: endpoints,

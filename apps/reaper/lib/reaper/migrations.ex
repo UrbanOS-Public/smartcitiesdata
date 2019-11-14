@@ -43,8 +43,7 @@ defmodule Reaper.Migrations do
   end
 
   defp start_quantum_storage() do
-    :reaper
-    |> Application.get_env(Reaper.Quantum.Storage)
+    Reaper.redis_quantum_storage()
     |> Reaper.Quantum.Storage.Connection.start_link()
   end
 
