@@ -6,6 +6,10 @@ use Mix.Config
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we use it
 # with webpack to recompile .js and .css sources.
+
+host = "localhost"
+redix_args = [host: host]
+
 config :andi, AndiWeb.Endpoint,
   http: [port: 4000],
   debug_errors: true,
@@ -25,9 +29,7 @@ config :andi, AndiWeb.Endpoint,
   ]
 
 config :smart_city_registry,
-  redis: [
-    host: "localhost"
-  ]
+  redis: redix_args
 
 config :andi, AndiWeb.Endpoint,
   live_reload: [
