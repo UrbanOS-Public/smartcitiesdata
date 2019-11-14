@@ -4,14 +4,18 @@ defmodule AndiWeb.DatasetValidator do
   alias Andi.Services.DatasetRetrieval
 
   def validate(dataset) do
-    case SimplyValidate.validate(dataset, [
-           validate_org_name(),
-           validate_data_name(),
-           validate_modified_date_format(),
-           already_exists!(),
-           description_required(),
-           validate_top_level_selector_if_required()
-         ]) do
+    result =
+      SimplyValidate.validate(dataset, [
+        validate_org_name(),
+        validate_data_name(),
+        validate_modified_date_format(),
+        already_exists!(),
+        description_required(),
+        validate_top_level_selector_if_required()
+      ])
+      ++ validate_dataset_schema(dataset)
+
+    case result do
       [] -> :valid
       errors -> {:invalid, errors}
     end
@@ -78,4 +82,39 @@ defmodule AndiWeb.DatasetValidator do
         false
     end
   end
+
+  defp validate_dataset_schema(%{"technical" => %{"schema" => schema, "sourceFormat" => "text/xml"}}) do
+    validate_schema(schema)
+  end
+
+  defp validate_dataset_schema(_), do: []
+
+  def validate_schema(schema) do
+    results =
+      schema
+      |> Enum.map(fn item -> SimplyValidate.validate(item, [
+        selector_required(item)
+      ]) end)
+      |> List.flatten()
+
+    results
+  end
+
+  defp selector_required(item) do
+    {&has_selector?/1, "a selector property is required for field: '#{get_name(item)}' in the schema", true}
+  end
+
+  defp get_name(%{name: name}), do: name
+  defp get_name(%{"name" => name}), do: name
+
+  defp has_selector?(schema_item) do
+    case get_selector(schema_item) do
+      nil -> false
+      selector -> String.trim(selector) != ""
+    end
+  end
+
+  defp get_selector(%{selector: selector}), do: selector
+  defp get_selector(%{"selector" => selector}), do: selector
+  defp get_selector(_), do: nil
 end

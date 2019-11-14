@@ -100,9 +100,14 @@ defmodule AndiWeb.DatasetValidatorTest do
   end
 
   describe "xml dataset validation" do
+    @valid_xml_schema [
+      %{name: "field_name", selector: "selector"},
+      %{name: "other_field", selector: "other_selector"}
+    ]
+
     test "requires topLevelSelector" do
       dataset =
-        TDG.create_dataset(technical: %{sourceFormat: "xml"})
+        TDG.create_dataset(technical: %{sourceFormat: "xml", schema: @valid_xml_schema})
         |> struct_to_map_with_string_keys()
 
       assert {:invalid, errors} = DatasetValidator.validate(dataset)
@@ -112,10 +117,41 @@ defmodule AndiWeb.DatasetValidatorTest do
 
     test "validates topLevelSelector when xml" do
       dataset =
-        TDG.create_dataset(technical: %{sourceFormat: "xml", topLevelSelector: "this/is/a/selector"})
+        TDG.create_dataset(technical: %{sourceFormat: "xml", topLevelSelector: "this/is/a/selector", schema: @valid_xml_schema})
         |> struct_to_map_with_string_keys()
 
       assert :valid = DatasetValidator.validate(dataset)
+    end
+
+    test "requires a single field in the schema to have a selector" do
+      schema = [
+        %{name: "field_name"}
+      ]
+
+      dataset =
+        TDG.create_dataset(technical: %{sourceFormat: "xml", schema: schema, topLevelSelector: "this/is/a/selector"})
+        |> struct_to_map_with_string_keys()
+
+      assert {:invalid, errors} = DatasetValidator.validate(dataset)
+      assert length(errors) == 1
+      assert List.first(errors) |> String.contains?("selector")
+    end
+
+    test "requires all fields in the schema to have selectors" do
+      schema = [
+        %{name: "field_name"},
+        %{name: "other_field", selector: "this is the only selector"},
+        %{name: "another_field", selector: ""}
+      ]
+
+      dataset =
+        TDG.create_dataset(technical: %{sourceFormat: "xml", schema: schema, topLevelSelector: "this/is/a/selector"})
+        |> struct_to_map_with_string_keys()
+
+      assert {:invalid, errors} = DatasetValidator.validate(dataset)
+      assert length(errors) == 2
+      assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+field_name/) end)
+      assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+another_field/) end)
     end
   end
 
