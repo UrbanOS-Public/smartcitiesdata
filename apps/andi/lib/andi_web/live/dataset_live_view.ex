@@ -49,7 +49,7 @@ defmodule AndiWeb.DatasetLiveView do
   def handle_params(params, _uri, socket) do
     order_by = Map.get(params, "order-by", "data_title")
     order_dir = Map.get(params, "order-dir", "asc")
-    search_text = Map.get(params, "search-value", "")
+    search_text = Map.get(params, "search", "")
 
     datasets =
       filter_on_search_change(search_text, socket)
@@ -60,7 +60,7 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   def handle_event("search", %{"search-value" => value}, socket) do
-    search_params = Map.merge(socket.assigns.params, %{"search-value" => value})
+    search_params = Map.merge(socket.assigns.params, %{"search" => value})
     {:noreply, live_redirect(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
   end
 

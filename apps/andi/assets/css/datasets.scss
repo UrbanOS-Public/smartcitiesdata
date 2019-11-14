@@ -71,3 +71,7 @@
   -webkit-box-shadow: inset 0 -0.2rem 0 0 $header-shadow;
   box-shadow: inset 0 -0.2rem 0 0 $header-shadow;
 }
+
+.datasets-table__th--sortable {
+    cursor: pointer;
+}
