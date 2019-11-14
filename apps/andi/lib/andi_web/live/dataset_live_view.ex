@@ -25,27 +25,53 @@ defmodule AndiWeb.DatasetLiveView do
           </div>
         </form>
       </div>
-      <%= live_component(@socket, Table, datasets: @datasets) %>
+      <%= live_component(@socket, Table, id: :datasets_table, datasets: @datasets, order: @order) %>
     </div>
     """
   end
 
   def mount(_session, socket) do
-    {:ok, assign(socket, datasets: nil, search_text: "")}
+    {:ok, assign(socket, datasets: nil, search_text: nil, order: {"data_title", "asc"}, params: %{})}
+  end
+
+  def handle_info({:order, field}, socket) do
+    order_dir =
+      case socket.assigns.order do
+        %{^field => "asc"} -> "desc"
+        _ -> "asc"
+      end
+
+    params = Map.merge(socket.assigns.params, %{"order-by" => field, "order-dir" => order_dir})
+
+    {:noreply, live_redirect(socket, to: Routes.live_path(socket, __MODULE__, params))}
   end
 
   def handle_params(params, _uri, socket) do
+    order_by = Map.get(params, "order-by", "data_title")
+    order_dir = Map.get(params, "order-dir", "asc")
     search_text = Map.get(params, "search-value", "")
-    datasets = Andi.DatasetCache.get_datasets()
 
-    {:noreply, assign(socket, search_text: search_text, datasets: filter_datasets(datasets, search_text))}
+    datasets =
+      filter_on_search_change(search_text, socket)
+      |> sort_by_dir(order_by, order_dir)
+
+    {:noreply,
+     assign(socket, search_text: search_text, datasets: datasets, order: %{order_by => order_dir}, params: params)}
   end
 
   def handle_event("search", %{"search-value" => value}, socket) do
-    {:noreply, live_redirect(socket, to: Routes.live_path(socket, __MODULE__, %{"search-value": value}))}
+    search_params = Map.merge(socket.assigns.params, %{"search-value" => value})
+    {:noreply, live_redirect(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
   end
 
   # Private Functions
+  defp filter_on_search_change(search_value, socket) do
+    case search_value != socket.assigns.search_text do
+      true -> Andi.DatasetCache.get_datasets() |> filter_datasets(search_value) |> Enum.map(&to_view_model/1)
+      _ -> socket.assigns.datasets
+    end
+  end
+
   defp filter_datasets(datasets, ""), do: datasets
 
   defp filter_datasets(datasets, value) do
@@ -56,5 +82,20 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp search_contains?(str, search_str) do
     String.downcase(str) =~ String.downcase(search_str)
+  end
+
+  defp sort_by_dir(datasets, order_by, order_dir) do
+    case order_dir do
+      "asc" -> Enum.sort_by(datasets, fn dataset -> Map.get(dataset, order_by) end)
+      "desc" -> Enum.sort_by(datasets, fn dataset -> Map.get(dataset, order_by) end, &>=/2)
+      _ -> datasets
+    end
+  end
+
+  defp to_view_model(dataset) do
+    %{
+      "org_title" => dataset.business.orgTitle,
+      "data_title" => dataset.business.dataTitle
+    }
   end
 end
