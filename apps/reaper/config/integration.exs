@@ -64,7 +64,7 @@ config :reaper, Reaper.Scheduler,
 config :reaper, Reaper.Quantum.Storage, host: host
 
 config :redix,
-  host: host
+  args: [host: host]
 
 config :yeet,
   endpoint: endpoints,

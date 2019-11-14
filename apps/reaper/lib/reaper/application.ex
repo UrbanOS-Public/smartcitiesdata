@@ -37,10 +37,10 @@ defmodule Reaper.Application do
   end
 
   defp redis() do
-    Application.get_env(:redix, :host)
+    Application.get_env(:redix, :args)
     |> case do
       nil -> []
-      host -> {Redix, host: host, name: redis_client()}
+      redix_args -> {Redix, Keyword.put(redix_args, :name, redis_client())}
     end
   end
 
