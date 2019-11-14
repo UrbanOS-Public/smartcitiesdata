@@ -23,7 +23,22 @@ defmodule Andi.DatasetCacheTest do
       results = DatasetCache.get_datasets()
 
       Enum.each(datasets, fn dataset ->
-        assert Enum.member?(results, dataset)
+        assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
+      end)
+    end
+
+    test "ingested times passed to put_ingested_times/2 are returned by get_datasets/0" do
+      time_stamps = [
+        %{id: "abc", ingested_time: "122323"},
+        %{id: "def", ingested_time: "332343"},
+        %{id: "ghi", ingested_time: "4544564"}
+      ]
+
+      DatasetCache.put_ingested_times(time_stamps)
+      results = DatasetCache.get_datasets()
+
+      Enum.each(time_stamps, fn time_stamp ->
+        assert Enum.member?(results, time_stamp)
       end)
     end
 
@@ -32,7 +47,15 @@ defmodule Andi.DatasetCacheTest do
 
       DatasetCache.put_dataset(dataset)
 
-      assert DatasetCache.get_datasets() |> Enum.member?(dataset)
+      assert DatasetCache.get_datasets() |> Enum.member?(%{id: dataset.id, dataset: dataset})
+    end
+
+    test "ingested time passed to put_ingested_time/2 is returned by get_datasets/0" do
+      id = "123"
+      time_stamp = "11322232"
+      DatasetCache.put_ingested_time(%{id: id, ingested_time: time_stamp})
+
+      assert DatasetCache.get_datasets() |> Enum.member?(%{id: id, ingested_time: time_stamp})
     end
   end
 
@@ -51,26 +74,26 @@ defmodule Andi.DatasetCacheTest do
       results = DatasetCache.get_datasets()
 
       Enum.each(datasets, fn dataset ->
-        assert Enum.member?(results, dataset)
+        assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
       end)
     end
-  end
 
-  test "Event handler adds datasets to cache on dataset_update event" do
-    GenServer.call(DatasetCache, :reset)
+    test "Event handler adds datasets to cache on dataset_update event" do
+      GenServer.call(DatasetCache, :reset)
 
-    datasets =
-      Enum.map(1..3, fn _ ->
-        dataset = TDG.create_dataset([])
-        Brook.Event.send(instance_name(), dataset_update(), :andi_test, dataset)
+      datasets =
+        Enum.map(1..3, fn _ ->
+          dataset = TDG.create_dataset([])
+          Brook.Event.send(instance_name(), dataset_update(), :andi_test, dataset)
 
-        dataset
+          dataset
+        end)
+
+      results = DatasetCache.get_datasets()
+
+      Enum.each(datasets, fn dataset ->
+        assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
       end)
-
-    results = DatasetCache.get_datasets()
-
-    Enum.each(datasets, fn dataset ->
-      assert Enum.member?(results, dataset)
-    end)
+    end
   end
 end

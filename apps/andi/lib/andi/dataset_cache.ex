@@ -16,11 +16,19 @@ defmodule Andi.DatasetCache do
   end
 
   def put_dataset(%SmartCity.Dataset{} = dataset) do
-    :ets.insert(__MODULE__, {dataset.id, dataset})
+    :ets.insert(__MODULE__, {dataset.id, %{id: dataset.id, dataset: dataset}})
   end
 
   def put_dataset(invalid_dataset) do
     Logger.warn("Not caching dataset because it is invalid: #{inspect(invalid_dataset)}")
+  end
+
+  def put_ingested_times(timestamps) do
+    Enum.each(timestamps, &put_ingested_time/1)
+  end
+
+  def put_ingested_time(%{id: id, ingested_time: time_stamp}) do
+    :ets.insert(__MODULE__, {id, %{id: id, ingested_time: time_stamp}})
   end
 
   def get_datasets do
