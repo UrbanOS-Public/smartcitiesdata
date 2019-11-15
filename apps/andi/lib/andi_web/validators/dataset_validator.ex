@@ -12,8 +12,8 @@ defmodule AndiWeb.DatasetValidator do
         already_exists!(),
         description_required(),
         validate_top_level_selector_if_required()
-      ])
-      ++ validate_dataset_schema(dataset)
+      ]) ++
+        validate_dataset_schema(dataset)
 
     case result do
       [] -> :valid
@@ -51,7 +51,9 @@ defmodule AndiWeb.DatasetValidator do
     {&has_top_level_selector_if_required/1, "topLevelSelector required for xml datasets", true}
   end
 
-  defp has_top_level_selector_if_required(%{"technical" => %{"topLevelSelector" => topLevelSelector, "sourceFormat" => "text/xml"}}) do
+  defp has_top_level_selector_if_required(%{
+         "technical" => %{"topLevelSelector" => topLevelSelector, "sourceFormat" => "text/xml"}
+       }) do
     topLevelSelector != nil
   end
 
@@ -92,9 +94,7 @@ defmodule AndiWeb.DatasetValidator do
   def validate_schema(schema) do
     results =
       schema
-      |> Enum.map(fn item -> SimplyValidate.validate(item, [
-        selector_required(item)
-      ]) end)
+      |> Enum.map(&build_field_validator/1)
       |> List.flatten()
 
     results
@@ -117,4 +117,10 @@ defmodule AndiWeb.DatasetValidator do
   defp get_selector(%{selector: selector}), do: selector
   defp get_selector(%{"selector" => selector}), do: selector
   defp get_selector(_), do: nil
+
+  defp build_field_validator(%{"type" => "map", "subSchema" => subSchema} = field) do
+    validate_schema(subSchema) ++ SimplyValidate.validate(field, [selector_required(field)])
+  end
+
+  defp build_field_validator(field), do: SimplyValidate.validate(field, [selector_required(field)])
 end

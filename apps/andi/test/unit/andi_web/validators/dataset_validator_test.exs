@@ -153,6 +153,28 @@ defmodule AndiWeb.DatasetValidatorTest do
       assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+field_name/) end)
       assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+another_field/) end)
     end
+
+    test "requires all fields in a nested schema to have selectors" do
+      schema = [
+        %{name: "other_field", selector: "some selector"},
+        %{name: "another_field", selector: "bob", type: "map", subSchema: [
+          %{name: "deep_field"},
+          %{name: "deep_map", type: "map", subSchema: [
+            %{name: "deeper_field"}
+          ]}
+        ]}
+      ]
+
+      dataset =
+        TDG.create_dataset(technical: %{sourceFormat: "xml", schema: schema, topLevelSelector: "this/is/a/selector"})
+        |> struct_to_map_with_string_keys()
+
+      assert {:invalid, errors} = DatasetValidator.validate(dataset)
+      assert length(errors) == 3
+      assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+deep_field/) end)
+      assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+deep_map/) end)
+      assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+deeper_field/) end)
+    end
   end
 
   defp struct_to_map_with_string_keys(dataset) do
