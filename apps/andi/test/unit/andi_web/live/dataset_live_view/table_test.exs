@@ -33,8 +33,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
         get(conn, @url_path)
         |> live()
 
-      row_a = [@ingested_time_a, dataset_a.business.dataTitle, dataset_a.business.orgTitle]
-      row_b = [@ingested_time_b, dataset_b.business.dataTitle, dataset_b.business.orgTitle]
+      row_a = ["check", dataset_a.business.dataTitle, dataset_a.business.orgTitle]
+      row_b = ["check", dataset_b.business.dataTitle, dataset_b.business.orgTitle]
 
       {:ok, %{view: view, row_a: row_a, row_b: row_b}}
     end
@@ -91,8 +91,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
       conn = get(conn, @url_path)
 
-      row_a = [@ingested_time_a, dataset_a.business.dataTitle, dataset_a.business.orgTitle]
-      row_b = [@ingested_time_b, dataset_b.business.dataTitle, dataset_b.business.orgTitle]
+      row_a = ["check", dataset_a.business.dataTitle, dataset_a.business.orgTitle]
+      row_b = ["check", dataset_b.business.dataTitle, dataset_b.business.orgTitle]
 
       {:ok, %{conn: conn, row_a: row_a, row_b: row_b}}
     end

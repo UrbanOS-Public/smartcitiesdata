@@ -4,6 +4,7 @@ defmodule AndiWeb.DatasetLiveView.Table do
   """
 
   use Phoenix.LiveComponent
+  import Phoenix.HTML
 
   def render(assigns) do
     ~L"""
@@ -20,7 +21,7 @@ defmodule AndiWeb.DatasetLiveView.Table do
         <% else %>
           <%= for dataset <- @datasets do %>
           <tr class="datasets-table__tr">
-            <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["ingested_time"] %></td>
+            <td class="datasets-table__cell datasets-table__cell--break"><%= ingest_status(dataset) %></td>
             <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["data_title"] %></td>
             <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["org_title"] %></td>
           </tr>
@@ -34,5 +35,12 @@ defmodule AndiWeb.DatasetLiveView.Table do
   def handle_event("order-by", %{"field" => field}, socket) do
     send(self(), {:order, field})
     {:noreply, socket}
+  end
+
+  defp ingest_status(dataset) do
+    case dataset["ingested_time"] do
+      nil -> ""
+      _ -> ~E(<i class="material-icons">check</i>)
+    end
   end
 end
