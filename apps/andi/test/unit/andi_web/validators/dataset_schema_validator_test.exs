@@ -25,6 +25,20 @@ defmodule AndiWeb.DatasetSchemaValidatorTest do
       assert length(errors) == 1
       assert List.first(errors) |> String.contains?("schema cannot be missing or empty")
     end
+
+    test "requires a schema key to be present" do
+      %{"technical" => technical} =
+        dataset =
+        TDG.create_dataset(technical: %{sourceType: "stream", topLevelSelector: "this/is/a/selector"})
+        |> struct_to_map_with_string_keys()
+
+      technical = Map.delete(technical, "schema")
+      dataset = Map.put(dataset, "technical", technical)
+
+      errors = DatasetSchemaValidator.validate(dataset)
+      assert length(errors) == 1
+      assert List.first(errors) |> String.contains?("schema cannot be missing or empty")
+    end
   end
 
   describe "xml dataset validation" do

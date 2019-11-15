@@ -4,14 +4,10 @@ defmodule AndiWeb.DatasetSchemaValidator do
   """
 
   def validate(%{"technical" => %{"sourceType" => source_type}} = dataset) when source_type in ["ingest", "stream"] do
-    validate_schema(dataset)
+    SimplyValidate.validate(dataset, [validate_schema_required()]) ++ validate_schema(dataset)
   end
 
   def validate(_), do: []
-
-  def validate_schema(%{"technical" => %{"schema" => schema}}) when schema in [nil, []] do
-    ["schema cannot be missing or empty"]
-  end
 
   def validate_schema(%{"technical" => %{"sourceFormat" => source_format, "schema" => schema}})
       when source_format in ["xml", "text/xml"] do
@@ -20,30 +16,34 @@ defmodule AndiWeb.DatasetSchemaValidator do
 
   def validate_schema(_), do: []
 
-  defp validate_schema_has_selectors(schema) do
-    results =
-      schema
-      |> Enum.map(&build_field_validator/1)
-      |> List.flatten()
+  defp validate_schema_required do
+    {&has_schema?/1, "schema cannot be missing or empty", true}
+  end
 
-    results
+  defp has_schema?(%{"technical" => technical}) do
+    case Map.get(technical, "schema") do
+      nil -> false
+      [] -> false
+      _ -> true
+    end
+  end
+
+  defp validate_schema_has_selectors(schema) do
+    schema
+    |> Enum.map(&build_field_validator/1)
+    |> List.flatten()
   end
 
   defp selector_required(item) do
-    {&has_selector?/1, "a selector property is required for field: '#{get_name(item)}' in the schema", true}
+    {&has_selector?/1, "a selector property is required for field: '#{item["name"]}' in the schema", true}
   end
 
-  defp get_name(%{"name" => name}), do: name
-
   defp has_selector?(schema_item) do
-    case get_selector(schema_item) do
+    case schema_item["selector"] do
       nil -> false
       selector -> String.trim(selector) != ""
     end
   end
-
-  defp get_selector(%{"selector" => selector}), do: selector
-  defp get_selector(_), do: nil
 
   defp build_field_validator(%{"subSchema" => sub_schema} = field) do
     validate_schema_has_selectors(sub_schema) ++ SimplyValidate.validate(field, [selector_required(field)])
