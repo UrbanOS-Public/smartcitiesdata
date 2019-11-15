@@ -19,7 +19,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
       dataset_a = TDG.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
       dataset_b = TDG.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
 
-      DatasetCache.put_datasets([dataset_a, dataset_b])
+      DatasetCache.put([dataset_a, dataset_b])
 
       {:ok, view, _} =
         get(conn, @url_path)
@@ -89,7 +89,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
       dataset_a = TDG.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
       dataset_b = TDG.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
 
-      DatasetCache.put_datasets([dataset_a, dataset_b])
+      DatasetCache.put([dataset_a, dataset_b])
 
       conn = get(conn, @url_path)
 
@@ -152,7 +152,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     dataset_a = TDG.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
     dataset_b = TDG.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
 
-    DatasetCache.put_datasets([dataset_a, dataset_b])
+    DatasetCache.put([dataset_a, dataset_b])
 
     conn = get(conn, @url_path)
     {:ok, view, html} = live(conn, @url_path <> "?foo=bar")

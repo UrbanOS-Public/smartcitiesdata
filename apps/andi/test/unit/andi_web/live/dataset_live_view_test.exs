@@ -18,7 +18,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     test "loads all datasets", %{conn: conn} do
       datasets = Enum.map(1..3, fn _x -> TDG.create_dataset([]) end)
 
-      DatasetCache.put_datasets(datasets)
+      DatasetCache.put(datasets)
 
       assert {:ok, _view, html} = live(conn, @url_path)
 
@@ -49,7 +49,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset_a = TDG.create_dataset(business: %{dataTitle: "data_a"})
       dataset_b = TDG.create_dataset(business: %{dataTitle: "data_b"})
 
-      DatasetCache.put_datasets([dataset_a, dataset_b])
+      DatasetCache.put([dataset_a, dataset_b])
 
       # For most of our tests, we can let live/2 handle both the static connection
       # and the live update. That wasn't working correctly for this one so doing the
@@ -77,7 +77,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset_a = TDG.create_dataset(business: %{orgTitle: "org_a"})
       dataset_b = TDG.create_dataset(business: %{orgTitle: "org_b"})
 
-      DatasetCache.put_datasets([dataset_a, dataset_b])
+      DatasetCache.put([dataset_a, dataset_b])
 
       {:ok, view, _html} = live(conn, @url_path)
 
@@ -91,7 +91,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset_a = TDG.create_dataset(business: %{dataTitle: "data_a"})
       dataset_b = TDG.create_dataset(business: %{dataTitle: "data_b"})
 
-      DatasetCache.put_datasets([dataset_a, dataset_b])
+      DatasetCache.put([dataset_a, dataset_b])
 
       {:ok, view, _html} = live(conn, @url_path)
 
@@ -105,7 +105,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset_a = TDG.create_dataset(business: %{dataTitle: "data_a"})
       dataset_b = TDG.create_dataset(business: %{dataTitle: "data_b"})
 
-      DatasetCache.put_datasets([dataset_a, dataset_b])
+      DatasetCache.put([dataset_a, dataset_b])
 
       {:ok, view, _html} = live(conn, @url_path)
 
@@ -133,7 +133,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset_a = TDG.create_dataset(business: %{orgTitle: "org_a"})
       dataset_b = TDG.create_dataset(business: %{orgTitle: "org_b"})
 
-      DatasetCache.put_datasets([dataset_a, dataset_b])
+      DatasetCache.put([dataset_a, dataset_b])
 
       {:ok, view, _html} = live(conn, @url_path)
 
@@ -147,7 +147,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset_a = TDG.create_dataset(business: %{dataTitle: "data_a"})
       dataset_b = TDG.create_dataset(business: %{dataTitle: "data_b"})
 
-      DatasetCache.put_datasets([dataset_a, dataset_b])
+      DatasetCache.put([dataset_a, dataset_b])
 
       {:ok, view, _html} = live(conn, @url_path)
 

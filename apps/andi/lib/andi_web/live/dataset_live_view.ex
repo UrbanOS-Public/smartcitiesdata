@@ -67,7 +67,7 @@ defmodule AndiWeb.DatasetLiveView do
   # Private Functions
   defp filter_on_search_change(search_value, socket) do
     case search_value != socket.assigns.search_text do
-      true -> Andi.DatasetCache.get_datasets() |> filter_datasets(search_value) |> Enum.map(&to_view_model/1)
+      true -> Andi.DatasetCache.get_all() |> filter_datasets(search_value) |> Enum.map(&to_view_model/1)
       _ -> socket.assigns.datasets
     end
   end

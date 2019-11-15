@@ -16,46 +16,46 @@ defmodule Andi.DatasetCacheTest do
       :ok
     end
 
-    test "datasets passed to put_datasets/1 are returned by get_datasets/0" do
+    test "datasets passed to put/1 are returned by get_all/0" do
       datasets = Enum.map(1..3, fn _ -> TDG.create_dataset([]) end)
 
-      DatasetCache.put_datasets(datasets)
-      results = DatasetCache.get_datasets()
+      DatasetCache.put(datasets)
+      results = DatasetCache.get_all()
 
       Enum.each(datasets, fn dataset ->
         assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
       end)
     end
 
-    test "ingested times passed to put_ingested_times/2 are returned by get_datasets/0" do
+    test "ingested times passed to put/2 are returned by get_all/0" do
       time_stamps = [
         %{id: "abc", ingested_time: "122323"},
         %{id: "def", ingested_time: "332343"},
         %{id: "ghi", ingested_time: "4544564"}
       ]
 
-      DatasetCache.put_ingested_times(time_stamps)
-      results = DatasetCache.get_datasets()
+      DatasetCache.put(time_stamps)
+      results = DatasetCache.get_all()
 
       Enum.each(time_stamps, fn time_stamp ->
         assert Enum.member?(results, time_stamp)
       end)
     end
 
-    test "dataset passed to put_dataset/1 is returned by get_datasets/0" do
+    test "dataset passed to put/1 is returned by get_all/0" do
       dataset = TDG.create_dataset([])
 
-      DatasetCache.put_dataset(dataset)
+      DatasetCache.put(dataset)
 
-      assert DatasetCache.get_datasets() |> Enum.member?(%{id: dataset.id, dataset: dataset})
+      assert DatasetCache.get_all() |> Enum.member?(%{id: dataset.id, dataset: dataset})
     end
 
-    test "ingested time passed to put_ingested_time/2 is returned by get_datasets/0" do
+    test "ingested time passed to put/2 is returned by get_all/0" do
       id = "123"
       time_stamp = "11322232"
-      DatasetCache.put_ingested_time(%{id: id, ingested_time: time_stamp})
+      DatasetCache.put(%{id: id, ingested_time: time_stamp})
 
-      assert DatasetCache.get_datasets() |> Enum.member?(%{id: id, ingested_time: time_stamp})
+      assert DatasetCache.get_all() |> Enum.member?(%{id: id, ingested_time: time_stamp})
     end
   end
 
@@ -71,7 +71,7 @@ defmodule Andi.DatasetCacheTest do
 
       GenServer.call(DatasetCache, :reset)
 
-      results = DatasetCache.get_datasets()
+      results = DatasetCache.get_all()
 
       Enum.each(datasets, fn dataset ->
         assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
@@ -89,7 +89,7 @@ defmodule Andi.DatasetCacheTest do
           dataset
         end)
 
-      results = DatasetCache.get_datasets()
+      results = DatasetCache.get_all()
 
       Enum.each(datasets, fn dataset ->
         assert Enum.member?(results, %{id: dataset.id, dataset: dataset})

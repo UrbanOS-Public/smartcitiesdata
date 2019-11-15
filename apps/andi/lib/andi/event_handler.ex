@@ -12,7 +12,7 @@ defmodule Andi.EventHandler do
   alias Andi.DatasetCache
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data}) do
-    DatasetCache.put_dataset(data)
+    DatasetCache.put(data)
     {:merge, :dataset, data.id, data}
   end
 
