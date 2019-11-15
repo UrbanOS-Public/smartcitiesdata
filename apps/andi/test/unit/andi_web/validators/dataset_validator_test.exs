@@ -125,7 +125,7 @@ defmodule AndiWeb.DatasetValidatorTest do
       assert :valid = DatasetValidator.validate(dataset)
     end
 
-    test "requires a single field in the schema to have a selector" do
+    test "requires fields in the schema to have a selector" do
       schema = [
         %{name: "field_name"}
       ]
@@ -137,54 +137,6 @@ defmodule AndiWeb.DatasetValidatorTest do
       assert {:invalid, errors} = DatasetValidator.validate(dataset)
       assert length(errors) == 1
       assert List.first(errors) |> String.contains?("selector")
-    end
-
-    test "requires all fields in the schema to have selectors" do
-      schema = [
-        %{name: "field_name"},
-        %{name: "other_field", selector: "this is the only selector"},
-        %{name: "another_field", selector: ""}
-      ]
-
-      dataset =
-        TDG.create_dataset(technical: %{sourceFormat: "xml", schema: schema, topLevelSelector: "this/is/a/selector"})
-        |> struct_to_map_with_string_keys()
-
-      assert {:invalid, errors} = DatasetValidator.validate(dataset)
-      assert length(errors) == 2
-      assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+field_name/) end)
-      assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+another_field/) end)
-    end
-
-    test "requires all fields in a nested schema to have selectors" do
-      schema = [
-        %{name: "other_field", selector: "some selector"},
-        %{
-          name: "another_field",
-          selector: "bob",
-          type: "map",
-          subSchema: [
-            %{name: "deep_field"},
-            %{
-              name: "deep_map",
-              type: "map",
-              subSchema: [
-                %{name: "deeper_field"}
-              ]
-            }
-          ]
-        }
-      ]
-
-      dataset =
-        TDG.create_dataset(technical: %{sourceFormat: "xml", schema: schema, topLevelSelector: "this/is/a/selector"})
-        |> struct_to_map_with_string_keys()
-
-      assert {:invalid, errors} = DatasetValidator.validate(dataset)
-      assert length(errors) == 3
-      assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+deep_field/) end)
-      assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+deep_map/) end)
-      assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+deeper_field/) end)
     end
   end
 
