@@ -16,6 +16,13 @@ end)
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
+redis_password = System.get_env("REDIS_PASSWORD", "")
+all_redis_args = [host: redis_host, password: redis_password]
+redix_args = Enum.filter(redix_args, fn
+	{_, nil} -> false
+	{_, ""} -> false
+	_ -> true
+end)
 
 endpoints =
   kafka_brokers
@@ -63,7 +70,7 @@ config :reaper, :brook,
   storage: %{
     module: Brook.Storage.Redis,
     init_arg: [
-      redix_args: [host: redis_host],
+      redix_args: redix_args,
       namespace: "reaper:view",
       event_limits: %{
         "data:extract:start" => 1000,
@@ -79,10 +86,10 @@ config :reaper, Reaper.Scheduler,
   overlap: false
 
 config :reaper, Reaper.Quantum.Storage,
-  host: redis_host
+  redix_args
 
-config :redix,
-  host: redis_host
+config :redix, :args,
+  redix_args
 
 config :yeet,
   endpoint: endpoints,
