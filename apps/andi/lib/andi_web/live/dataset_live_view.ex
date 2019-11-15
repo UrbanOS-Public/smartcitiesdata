@@ -96,7 +96,7 @@ defmodule AndiWeb.DatasetLiveView do
     %{
       "org_title" => model.dataset.business.orgTitle,
       "data_title" => model.dataset.business.dataTitle,
-      "ingested_time" => model.ingested_time
+      "ingested_time" => Map.get(model, :ingested_time)
     }
   end
 end

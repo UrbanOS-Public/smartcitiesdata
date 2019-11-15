@@ -7,7 +7,6 @@ defmodule AndiWeb.DatasetLiveView.Table do
 
   def render(assigns) do
     ~L"""
-    hello
     <div id="<%= @id %>" class="datasets-index__table">
       <table class="datasets-table">
         <thead>
@@ -21,9 +20,9 @@ defmodule AndiWeb.DatasetLiveView.Table do
         <% else %>
           <%= for dataset <- @datasets do %>
           <tr class="datasets-table__tr">
+            <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["ingested_time"] %></td>
             <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["data_title"] %></td>
             <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["org_title"] %></td>
-            <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["ingested_time"] %></td>
           </tr>
           <% end %>
         <% end %>
