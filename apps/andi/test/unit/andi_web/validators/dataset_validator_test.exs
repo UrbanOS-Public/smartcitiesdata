@@ -117,7 +117,9 @@ defmodule AndiWeb.DatasetValidatorTest do
 
     test "validates topLevelSelector when xml" do
       dataset =
-        TDG.create_dataset(technical: %{sourceFormat: "xml", topLevelSelector: "this/is/a/selector", schema: @valid_xml_schema})
+        TDG.create_dataset(
+          technical: %{sourceFormat: "xml", topLevelSelector: "this/is/a/selector", schema: @valid_xml_schema}
+        )
         |> struct_to_map_with_string_keys()
 
       assert :valid = DatasetValidator.validate(dataset)
@@ -157,12 +159,21 @@ defmodule AndiWeb.DatasetValidatorTest do
     test "requires all fields in a nested schema to have selectors" do
       schema = [
         %{name: "other_field", selector: "some selector"},
-        %{name: "another_field", selector: "bob", type: "map", subSchema: [
-          %{name: "deep_field"},
-          %{name: "deep_map", type: "map", subSchema: [
-            %{name: "deeper_field"}
-          ]}
-        ]}
+        %{
+          name: "another_field",
+          selector: "bob",
+          type: "map",
+          subSchema: [
+            %{name: "deep_field"},
+            %{
+              name: "deep_map",
+              type: "map",
+              subSchema: [
+                %{name: "deeper_field"}
+              ]
+            }
+          ]
+        }
       ]
 
       dataset =

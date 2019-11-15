@@ -118,8 +118,8 @@ defmodule AndiWeb.DatasetValidator do
   defp get_selector(%{"selector" => selector}), do: selector
   defp get_selector(_), do: nil
 
-  defp build_field_validator(%{"type" => "map", "subSchema" => subSchema} = field) do
-    validate_schema(subSchema) ++ SimplyValidate.validate(field, [selector_required(field)])
+  defp build_field_validator(%{"type" => "map", "subSchema" => sub_schema} = field) do
+    validate_schema(sub_schema) ++ SimplyValidate.validate(field, [selector_required(field)])
   end
 
   defp build_field_validator(field), do: SimplyValidate.validate(field, [selector_required(field)])
