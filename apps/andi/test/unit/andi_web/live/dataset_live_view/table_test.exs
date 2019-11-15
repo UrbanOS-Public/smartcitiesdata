@@ -60,6 +60,21 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
       assert get_rendered_table_cells(html) == [row_a, row_b]
     end
+
+    test "ingested status ascending", %{view: view, row_a: row_a, row_b: row_b} do
+      render_click([view, "datasets_table"], "order-by", %{"field" => "ingested_time"})
+      html = render(view)
+
+      assert get_rendered_table_cells(html) == [row_a, row_b]
+    end
+
+    test "ingested status descending", %{view: view, row_a: row_a, row_b: row_b} do
+      render_click([view, "datasets_table"], "order-by", %{"field" => "ingested_time"})
+      render_click([view, "datasets_table"], "order-by", %{"field" => "ingested_time"})
+      html = render(view)
+
+      assert get_rendered_table_cells(html) == [row_b, row_a]
+    end
   end
 
   describe "order by url params" do
