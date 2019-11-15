@@ -6,9 +6,6 @@ defmodule Andi.DatasetCache do
 
   import Andi, only: [instance_name: 0]
 
-  alias Andi.Services.DatasetRetrieval
-
-  # Client
   def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
@@ -18,15 +15,32 @@ defmodule Andi.DatasetCache do
   end
 
   def put(%SmartCity.Dataset{} = dataset) do
-    :ets.insert(__MODULE__, {dataset.id, %{id: dataset.id, dataset: dataset}})
+    updated =
+      dataset.id
+      |> get()
+      |> Map.merge(%{id: dataset.id, dataset: dataset})
+
+    :ets.insert(__MODULE__, {dataset.id, updated})
   end
 
   def put(%{id: id, ingested_time: time_stamp}) do
-    :ets.insert(__MODULE__, {id, %{id: id, ingested_time: time_stamp}})
+    updated =
+      id
+      |> get()
+      |> Map.merge(%{id: id, ingested_time: time_stamp})
+
+    :ets.insert(__MODULE__, {id, updated})
   end
 
   def put(invalid_dataset) do
     Logger.warn("Not caching dataset because it is invalid: #{inspect(invalid_dataset)}")
+  end
+
+  defp get(id) do
+    case :ets.match(__MODULE__, {id, :"$1"}) do
+      [[h | _inner_t] | _t] -> h
+      _ -> %{}
+    end
   end
 
   def get_all do

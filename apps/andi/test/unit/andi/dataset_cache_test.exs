@@ -57,6 +57,32 @@ defmodule Andi.DatasetCacheTest do
 
       assert DatasetCache.get_all() |> Enum.member?(%{id: id, ingested_time: time_stamp})
     end
+
+    test "a dataset and ingested time for the same id are returned by get_all/0 as a single, merged object" do
+      dataset = TDG.create_dataset([])
+      time_stamp = "11322232"
+
+      DatasetCache.put(%{id: dataset.id, ingested_time: time_stamp})
+      DatasetCache.put(dataset)
+
+      expected = %{id: dataset.id, dataset: dataset, ingested_time: time_stamp}
+
+      assert 1 == length(DatasetCache.get_all())
+      assert expected == DatasetCache.get_all() |> List.first()
+    end
+
+    test "a dataset and ingested time for the same id are returned by get_all/0 as a single, merged object, regardless of order" do
+      dataset = TDG.create_dataset([])
+      time_stamp = "113222332"
+
+      DatasetCache.put(dataset)
+      DatasetCache.put(%{id: dataset.id, ingested_time: time_stamp})
+
+      expected = %{id: dataset.id, dataset: dataset, ingested_time: time_stamp}
+
+      assert 1 == length(DatasetCache.get_all())
+      assert expected == DatasetCache.get_all() |> List.first()
+    end
   end
 
   describe "init/0 callback" do
@@ -76,6 +102,12 @@ defmodule Andi.DatasetCacheTest do
       Enum.each(datasets, fn dataset ->
         assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
       end)
+
+      Brook.Test.with_event(instance_name(), fn ->
+        Enum.each(datasets, fn dataset ->
+          ViewState.delete(:dataset, dataset.id)
+        end)
+      end)
     end
 
     test "Event handler adds datasets to cache on dataset_update event" do
@@ -93,6 +125,12 @@ defmodule Andi.DatasetCacheTest do
 
       Enum.each(datasets, fn dataset ->
         assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
+      end)
+
+      Brook.Test.with_event(instance_name(), fn ->
+        Enum.each(datasets, fn dataset ->
+          ViewState.delete(:dataset, dataset.id)
+        end)
       end)
     end
   end
