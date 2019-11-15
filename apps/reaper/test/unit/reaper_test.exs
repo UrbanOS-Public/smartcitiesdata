@@ -31,22 +31,4 @@ defmodule ReaperTests do
       assert [dataset_1.id, dataset_2.id] == result |> Enum.sort()
     end
   end
-
-	describe("filtering empty redis args") do
-		test "redis_args should return no password when empty string" do
-			Application.put_env(:redix, :args, [host: "host", password: ""])
-
-			result = Reaper.redis_args()
-
-			assert result == [host: "host"]
-		end
-
-		test "reaper quantum storage should return no password when empty string" do
-			Application.put_env(:reaper, Reaper.Quantum.Storage, [host: "host", password: ""])
-
-			result = Reaper.redis_quantum_storage()
-
-			assert result == [host: "host"]
-		end
-	end
 end

@@ -7,7 +7,7 @@ defmodule Reaper.Quantum.Storage do
   require Logger
 
   @conn Reaper.Quantum.Storage.Connection.connection()
-  @config Reaper.redis_quantum_storage()
+  @config Application.get_env(:reaper, Reaper.Quantum.Storage, [])
   @retry_delay Keyword.get(@config, :retry_delay, 1_000)
   @max_retries Keyword.get(@config, :max_retries, 60)
 

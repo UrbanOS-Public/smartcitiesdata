@@ -9,6 +9,7 @@ host =
   end
 
 endpoints = [{String.to_atom(host), 9092}]
+redix_args = [host: host]
 
 System.put_env("HOST", host)
 
@@ -51,7 +52,7 @@ config :reaper, :brook,
   storage: %{
     module: Brook.Storage.Redis,
     init_arg: [
-      redix_args: [host: host],
+      redix_args: redix_args,
       namespace: "reaper:view"
     ]
   },
@@ -62,12 +63,10 @@ config :reaper, Reaper.Scheduler,
   overlap: false
 
 config :reaper, Reaper.Quantum.Storage,
- 	host: host,
-	password: ""
+ 	redix_args
 
 config :redix, :args,
-  host: host,
-	password: ""
+  redix_args
 
 config :yeet,
   endpoint: endpoints,
