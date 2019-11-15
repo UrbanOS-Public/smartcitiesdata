@@ -10,6 +10,9 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/live"
 
+  @ingested_time_a "123123213"
+  @ingested_time_b "454699234"
+
   setup do
     GenServer.call(DatasetCache, :reset)
   end
@@ -20,6 +23,11 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
       dataset_b = TDG.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
 
       DatasetCache.put([dataset_a, dataset_b])
+
+      DatasetCache.put([
+        %{id: dataset_a.id, ingested_time: @ingested_time_a},
+        %{id: dataset_b.id, ingested_time: @ingested_time_b}
+      ])
 
       {:ok, view, _} =
         get(conn, @url_path)
@@ -40,9 +48,11 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
           end)
         end)
 
+      IO.inspect(table_rows_and_cells, label: "children")
+
       assert table_rows_and_cells == [
-               [dataset_b.business.dataTitle, dataset_b.business.orgTitle],
-               [dataset_a.business.dataTitle, dataset_a.business.orgTitle]
+               [dataset_b.business.dataTitle, dataset_b.business.orgTitle, @ingested_time_b],
+               [dataset_a.business.dataTitle, dataset_a.business.orgTitle, @ingested_time_a]
              ]
     end
 

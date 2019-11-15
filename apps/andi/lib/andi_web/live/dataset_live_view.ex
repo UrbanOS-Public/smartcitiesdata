@@ -51,12 +51,12 @@ defmodule AndiWeb.DatasetLiveView do
     order_dir = Map.get(params, "order-dir", "asc")
     search_text = Map.get(params, "search", "")
 
-    datasets =
+    view_models =
       filter_on_search_change(search_text, socket)
       |> sort_by_dir(order_by, order_dir)
 
     {:noreply,
-     assign(socket, search_text: search_text, datasets: datasets, order: %{order_by => order_dir}, params: params)}
+     assign(socket, search_text: search_text, datasets: view_models, order: %{order_by => order_dir}, params: params)}
   end
 
   def handle_event("search", %{"search-value" => value}, socket) do
@@ -64,20 +64,19 @@ defmodule AndiWeb.DatasetLiveView do
     {:noreply, live_redirect(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
   end
 
-  # Private Functions
   defp filter_on_search_change(search_value, socket) do
-    case search_value != socket.assigns.search_text do
-      true -> Andi.DatasetCache.get_all() |> filter_datasets(search_value) |> Enum.map(&to_view_model/1)
+    case search_value == socket.assigns.search_text do
+      false -> Andi.DatasetCache.get_all() |> filter_models(search_value) |> Enum.map(&to_view_model/1)
       _ -> socket.assigns.datasets
     end
   end
 
-  defp filter_datasets(datasets, ""), do: datasets
+  defp filter_models(models, ""), do: models
 
-  defp filter_datasets(datasets, value) do
-    Enum.filter(datasets, fn dataset ->
-      search_contains?(dataset.dataset.business.orgTitle, value) ||
-        search_contains?(dataset.dataset.business.dataTitle, value)
+  defp filter_models(models, value) do
+    Enum.filter(models, fn model ->
+      search_contains?(model.dataset.business.orgTitle, value) ||
+        search_contains?(model.dataset.business.dataTitle, value)
     end)
   end
 
@@ -85,18 +84,19 @@ defmodule AndiWeb.DatasetLiveView do
     String.downcase(str) =~ String.downcase(search_str)
   end
 
-  defp sort_by_dir(datasets, order_by, order_dir) do
+  defp sort_by_dir(models, order_by, order_dir) do
     case order_dir do
-      "asc" -> Enum.sort_by(datasets, fn dataset -> Map.get(dataset, order_by) end)
-      "desc" -> Enum.sort_by(datasets, fn dataset -> Map.get(dataset, order_by) end, &>=/2)
-      _ -> datasets
+      "asc" -> Enum.sort_by(models, fn model -> Map.get(model, order_by) end)
+      "desc" -> Enum.sort_by(models, fn model -> Map.get(model, order_by) end, &>=/2)
+      _ -> models
     end
   end
 
-  defp to_view_model(dataset) do
+  defp to_view_model(model) do
     %{
-      "org_title" => dataset.dataset.business.orgTitle,
-      "data_title" => dataset.dataset.business.dataTitle
+      "org_title" => model.dataset.business.orgTitle,
+      "data_title" => model.dataset.business.dataTitle,
+      "ingested_time" => model.ingested_time
     }
   end
 end
