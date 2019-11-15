@@ -4,7 +4,6 @@ defmodule AndiWeb.DatasetValidator do
   alias Andi.Services.DatasetRetrieval
   alias AndiWeb.DatasetSchemaValidator
 
-  # TODO: first convert entire dataset to string keys so we don't have to match on atom AND string keys
   def validate(dataset) do
     stringified = stringify_keys(dataset)
     result =
