@@ -5,9 +5,6 @@ defmodule AndiWeb.DatasetSchemaValidatorTest do
   alias AndiWeb.DatasetSchemaValidator
   alias SmartCity.TestDataGenerator, as: TDG
 
-  # TODO: validate existence of schema for ingest/streaming
-  # TODO: happy path test
-
   describe "schema existance validation" do
     test "requires a schema to be present if the dataset source type is ingest" do
       dataset =
@@ -43,6 +40,20 @@ defmodule AndiWeb.DatasetSchemaValidatorTest do
       errors = DatasetSchemaValidator.validate(dataset)
       assert length(errors) == 1
       assert List.first(errors) |> String.contains?("selector")
+    end
+
+    test "returns no errors when all fields have selectors" do
+      schema = [
+        %{name: "field_name", selector: "selector1"},
+        %{name: "other_field", selector: "selector2"}
+      ]
+
+      dataset =
+        TDG.create_dataset(technical: %{sourceType: "ingest", sourceFormat: "xml", schema: schema, topLevelSelector: "this/is/a/selector"})
+        |> struct_to_map_with_string_keys()
+
+      errors = DatasetSchemaValidator.validate(dataset)
+      assert length(errors) == 0
     end
 
     test "requires all fields in the schema to have selectors" do

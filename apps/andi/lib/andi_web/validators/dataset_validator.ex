@@ -6,8 +6,9 @@ defmodule AndiWeb.DatasetValidator do
 
   # TODO: first convert entire dataset to string keys so we don't have to match on atom AND string keys
   def validate(dataset) do
+    stringified = stringify_keys(dataset)
     result =
-      SimplyValidate.validate(dataset, [
+      SimplyValidate.validate(stringified, [
         validate_org_name(),
         validate_data_name(),
         validate_modified_date_format(),
@@ -15,7 +16,7 @@ defmodule AndiWeb.DatasetValidator do
         description_required(),
         validate_top_level_selector_if_required()
       ]) ++
-      DatasetSchemaValidator.validate(dataset)
+      DatasetSchemaValidator.validate(stringified)
 
     case result do
       [] -> :valid
@@ -44,8 +45,10 @@ defmodule AndiWeb.DatasetValidator do
     existing_datasets = DatasetRetrieval.get_all!()
 
     Enum.any?(existing_datasets, fn existing_dataset ->
-      different_ids(dataset, existing_dataset) &&
-        same_system_name(dataset, existing_dataset)
+      stringified_existing_dataset = stringify_keys(existing_dataset)
+
+      different_ids(dataset, stringified_existing_dataset) &&
+        same_system_name(dataset, stringified_existing_dataset)
     end)
   end
 
@@ -61,15 +64,9 @@ defmodule AndiWeb.DatasetValidator do
 
   defp has_top_level_selector_if_required(_), do: true
 
-  defp same_system_name(a, b), do: get_system_name(a) == get_system_name(b)
+  defp same_system_name(%{"technical" => %{"systemName" => left}}, %{"technical" => %{"systemName" => right}}), do: left == right
 
-  defp different_ids(a, b), do: get_id(a) != get_id(b)
-
-  defp get_id(%{id: id}), do: id
-  defp get_id(%{"id" => id}), do: id
-
-  defp get_system_name(%{technical: technical}), do: technical.systemName
-  defp get_system_name(%{"technical" => technical}), do: technical["systemName"]
+  defp different_ids(%{"id" => left}, %{"id" => right}), do: left != right
 
   defp description_required do
     {&(&1["business"]["description"] != ""), "Description must be provided"}
@@ -86,4 +83,25 @@ defmodule AndiWeb.DatasetValidator do
         false
     end
   end
+
+  # Handles preconverting datasets from structs to maps for comparison purposes
+  defp stringify_keys(%{__struct__: _} = struct), do: struct |> Map.from_struct() |> stringify_keys()
+
+  defp stringify_keys(map = %{}) do
+    map
+    |> Enum.map(fn {key, value} -> {key_to_string(key), stringify_keys(value)} end)
+    |> Enum.into(%{})
+  end
+
+  defp stringify_keys([head | rest]) do
+    [stringify_keys(head) | stringify_keys(rest)]
+  end
+
+  defp stringify_keys(not_a_map) do
+    not_a_map
+  end
+
+  defp key_to_string(key) when is_atom(key), do: Atom.to_string(key)
+
+  defp key_to_string(key), do: key
 end
