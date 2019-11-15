@@ -17,6 +17,13 @@ end)
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
+redis_password = System.get_env("REDIS_PASSWORD", "")
+all_redis_args = [host: redis_host, password: redis_password]
+redix_args = Enum.filter(all_redis_args, fn
+  {_, nil} -> false
+  {_, ""} -> false
+  _ -> true
+end)
 topic = System.get_env("DATA_TOPIC_PREFIX")
 output_topic = System.get_env("OUTPUT_TOPIC")
 metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
@@ -66,7 +73,7 @@ config :forklift, :brook,
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [
-      redix_args: [host: redis_host],
+      redix_args: redix_args,
       namespace: "forklift:view"
     ]
   ]
@@ -86,7 +93,7 @@ config :prestige,
   headers: [user: System.get_env("PRESTO_USER")]
 
 config :redix,
-  host: redis_host
+  args: redix_args
 
 if System.get_env("COMPACTION_SCHEDULE") do
   config :forklift, Forklift.Quantum.Scheduler,

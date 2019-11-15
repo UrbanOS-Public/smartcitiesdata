@@ -6,6 +6,8 @@ host =
     defined -> defined
   end
 
+  redix_args = [host: host]
+
 endpoints = [{String.to_atom(host), 9092}]
 
 config :logger,
@@ -45,7 +47,7 @@ config :valkyrie, :brook,
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [
-      redix_args: [host: host],
+      redix_args: redix_args,
       namespace: "valkyrie:view"
     ]
   ]
