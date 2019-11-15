@@ -9,6 +9,16 @@ defmodule Andi.DatasetCacheTest do
   alias Brook.ViewState
   alias SmartCity.TestDataGenerator, as: TDG
 
+  setup do
+    datasets = Brook.get_all_values!(instance_name(), :dataset)
+
+    Brook.Test.with_event(instance_name(), fn ->
+      Enum.each(datasets, fn dataset ->
+        ViewState.delete(:dataset, dataset.id)
+      end)
+    end)
+  end
+
   describe "with cache started" do
     setup do
       GenServer.call(DatasetCache, :reset)
@@ -102,12 +112,6 @@ defmodule Andi.DatasetCacheTest do
       Enum.each(datasets, fn dataset ->
         assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
       end)
-
-      Brook.Test.with_event(instance_name(), fn ->
-        Enum.each(datasets, fn dataset ->
-          ViewState.delete(:dataset, dataset.id)
-        end)
-      end)
     end
 
     test "Event handler adds datasets to cache on dataset_update event" do
@@ -125,12 +129,6 @@ defmodule Andi.DatasetCacheTest do
 
       Enum.each(datasets, fn dataset ->
         assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
-      end)
-
-      Brook.Test.with_event(instance_name(), fn ->
-        Enum.each(datasets, fn dataset ->
-          ViewState.delete(:dataset, dataset.id)
-        end)
       end)
     end
   end

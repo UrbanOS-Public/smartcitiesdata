@@ -76,7 +76,8 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp filter_datasets(datasets, value) do
     Enum.filter(datasets, fn dataset ->
-      search_contains?(dataset.business.orgTitle, value) || search_contains?(dataset.business.dataTitle, value)
+      search_contains?(dataset.dataset.business.orgTitle, value) ||
+        search_contains?(dataset.dataset.business.dataTitle, value)
     end)
   end
 
@@ -94,8 +95,8 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp to_view_model(dataset) do
     %{
-      "org_title" => dataset.business.orgTitle,
-      "data_title" => dataset.business.dataTitle
+      "org_title" => dataset.dataset.business.orgTitle,
+      "data_title" => dataset.dataset.business.dataTitle
     }
   end
 end
