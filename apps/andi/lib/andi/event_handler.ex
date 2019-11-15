@@ -34,8 +34,8 @@ defmodule Andi.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{id: id}, create_ts: create_ts}) do
-    # DatasetCache.put_ingested_time(%{id: id, ingested_time: create_ts})
-    {:create, :ingest_complete, id, create_ts}
+    DatasetCache.put(%{id: id, ingested_time: create_ts})
+    {:create, :ingested_time, id, %{id: id, ingested_time: create_ts}}
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])

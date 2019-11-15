@@ -54,6 +54,7 @@ defmodule Andi.DatasetCache do
     pid = :ets.new(__MODULE__, [:set, :public, :named_table])
 
     Brook.get_all_values!(instance_name(), :dataset) |> put()
+    Brook.get_all_values!(instance_name(), :ingested_time) |> put()
 
     {:ok, pid}
   end

@@ -14,6 +14,15 @@ Interactions with Redis are abstracted with `smartcitiesdata.smart_city*` functi
   * `mix docker.start`
   * Start Phoenix endpoint locally with `MIX_ENV=integration mix phx.server`
 
+###
+
+These two commands can be run within an `MIX_ENV=integration iex -S mix` to create sample data for testing things like the datasets list page.
+```
+datasets = Enum.map(1..3, fn _ -> SmartCity.TestDataGenerator.create_dataset([]) end)
+```
+```
+Brook.Test.with_event(:andi, fn -> Enum.each(datasets, fn dataset ->  Brook.ViewState.merge(:dataset, dataset.id, dataset)  end) end)
+```
 
 ## Testing
 

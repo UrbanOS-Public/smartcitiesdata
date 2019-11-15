@@ -2,7 +2,7 @@ defmodule Andi.DatasetCacheTest do
   use ExUnit.Case
 
   import Andi, only: [instance_name: 0]
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [dataset_update: 0, data_ingest_end: 0]
 
   alias Andi.DatasetCache
 
@@ -11,10 +11,15 @@ defmodule Andi.DatasetCacheTest do
 
   setup do
     datasets = Brook.get_all_values!(instance_name(), :dataset)
+    timestamps = Brook.get_all_values!(instance_name(), :ingested_time)
 
     Brook.Test.with_event(instance_name(), fn ->
       Enum.each(datasets, fn dataset ->
         ViewState.delete(:dataset, dataset.id)
+      end)
+
+      Enum.each(timestamps, fn timestamp ->
+        ViewState.delete(:ingested_time, timestamp.id)
       end)
     end)
   end
@@ -96,12 +101,21 @@ defmodule Andi.DatasetCacheTest do
   end
 
   describe "init/0 callback" do
-    test "inserts datasets from the view state" do
+    test "inserts datasets and ingest times from the view state" do
       datasets = Enum.map(1..3, fn _ -> TDG.create_dataset([]) end)
+
+      timestamps =
+        Enum.map(datasets, fn dataset ->
+          %{id: dataset.id, ingested_time: DateTime.utc_now() |> DateTime.to_string()}
+        end)
 
       Brook.Test.with_event(instance_name(), fn ->
         Enum.each(datasets, fn dataset ->
           ViewState.merge(:dataset, dataset.id, dataset)
+        end)
+
+        Enum.each(timestamps, fn timestamp ->
+          ViewState.create(:ingested_time, timestamp.id, %{id: timestamp.id, ingested_time: timestamp.ingested_time})
         end)
       end)
 
@@ -110,7 +124,8 @@ defmodule Andi.DatasetCacheTest do
       results = DatasetCache.get_all()
 
       Enum.each(datasets, fn dataset ->
-        assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
+        timestamp = Enum.find(timestamps, "none", fn timestamp -> timestamp.id == dataset.id end)
+        assert Enum.member?(results, %{id: dataset.id, dataset: dataset, ingested_time: timestamp.ingested_time})
       end)
     end
 
@@ -129,6 +144,27 @@ defmodule Andi.DatasetCacheTest do
 
       Enum.each(datasets, fn dataset ->
         assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
+      end)
+    end
+
+    test "Event handler adds ingested_times to cache on data_ingest_end event" do
+      GenServer.call(DatasetCache, :reset)
+
+      timestamps =
+        Enum.map(1..3, fn id ->
+          dataset = SmartCity.TestDataGenerator.create_dataset(%{id: id})
+          Brook.Event.send(instance_name(), data_ingest_end(), :andi_test, dataset)
+
+          id
+        end)
+
+      results = DatasetCache.get_all()
+
+      Enum.each(timestamps, fn id ->
+        # It's tricky to get the actual timestamp of the brook event, so just look up the result by the id and make sure it has some timestamp.
+        result = Enum.find(results, fn saved -> saved.id == id end)
+        assert not is_nil(result)
+        assert not is_nil(result.ingested_time)
       end)
     end
   end
