@@ -18,16 +18,16 @@ defmodule Andi.DatasetCache do
     updated =
       dataset.id
       |> get()
-      |> Map.merge(%{id: dataset.id, dataset: dataset})
+      |> Map.merge(%{"id" => dataset.id, "dataset" => dataset})
 
     :ets.insert(__MODULE__, {dataset.id, updated})
   end
 
-  def put(%{id: id, ingested_time: time_stamp}) do
+  def put(%{"id" => id, "ingested_time" => time_stamp}) do
     updated =
       id
       |> get()
-      |> Map.merge(%{id: id, ingested_time: time_stamp})
+      |> Map.merge(%{"id" => id, "ingested_time" => time_stamp})
 
     :ets.insert(__MODULE__, {id, updated})
   end

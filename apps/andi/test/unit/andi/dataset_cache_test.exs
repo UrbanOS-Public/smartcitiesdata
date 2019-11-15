@@ -19,7 +19,7 @@ defmodule Andi.DatasetCacheTest do
       end)
 
       Enum.each(timestamps, fn timestamp ->
-        ViewState.delete(:ingested_time, timestamp.id)
+        ViewState.delete(:ingested_time, timestamp["id"])
       end)
     end)
   end
@@ -38,15 +38,15 @@ defmodule Andi.DatasetCacheTest do
       results = DatasetCache.get_all()
 
       Enum.each(datasets, fn dataset ->
-        assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
+        assert Enum.member?(results, %{"id" => dataset.id, "dataset" => dataset})
       end)
     end
 
     test "ingested times passed to put/2 are returned by get_all/0" do
       time_stamps = [
-        %{id: "abc", ingested_time: "122323"},
-        %{id: "def", ingested_time: "332343"},
-        %{id: "ghi", ingested_time: "4544564"}
+        %{"id" => "abc", "ingested_time" => "122323"},
+        %{"id" => "def", "ingested_time" => "332343"},
+        %{"id" => "ghi", "ingested_time" => "4544564"}
       ]
 
       DatasetCache.put(time_stamps)
@@ -62,25 +62,25 @@ defmodule Andi.DatasetCacheTest do
 
       DatasetCache.put(dataset)
 
-      assert DatasetCache.get_all() |> Enum.member?(%{id: dataset.id, dataset: dataset})
+      assert DatasetCache.get_all() |> Enum.member?(%{"id" => dataset.id, "dataset" => dataset})
     end
 
     test "ingested time passed to put/2 is returned by get_all/0" do
       id = "123"
       time_stamp = "11322232"
-      DatasetCache.put(%{id: id, ingested_time: time_stamp})
+      DatasetCache.put(%{"id" => id, "ingested_time" => time_stamp})
 
-      assert DatasetCache.get_all() |> Enum.member?(%{id: id, ingested_time: time_stamp})
+      assert DatasetCache.get_all() |> Enum.member?(%{"id" => id, "ingested_time" => time_stamp})
     end
 
     test "a dataset and ingested time for the same id are returned by get_all/0 as a single, merged object" do
       dataset = TDG.create_dataset([])
       time_stamp = "11322232"
 
-      DatasetCache.put(%{id: dataset.id, ingested_time: time_stamp})
+      DatasetCache.put(%{"id" => dataset.id, "ingested_time" => time_stamp})
       DatasetCache.put(dataset)
 
-      expected = %{id: dataset.id, dataset: dataset, ingested_time: time_stamp}
+      expected = %{"id" => dataset.id, "dataset" => dataset, "ingested_time" => time_stamp}
 
       assert 1 == length(DatasetCache.get_all())
       assert expected == DatasetCache.get_all() |> List.first()
@@ -91,9 +91,9 @@ defmodule Andi.DatasetCacheTest do
       time_stamp = "113222332"
 
       DatasetCache.put(dataset)
-      DatasetCache.put(%{id: dataset.id, ingested_time: time_stamp})
+      DatasetCache.put(%{"id" => dataset.id, "ingested_time" => time_stamp})
 
-      expected = %{id: dataset.id, dataset: dataset, ingested_time: time_stamp}
+      expected = %{"id" => dataset.id, "dataset" => dataset, "ingested_time" => time_stamp}
 
       assert 1 == length(DatasetCache.get_all())
       assert expected == DatasetCache.get_all() |> List.first()
@@ -106,7 +106,7 @@ defmodule Andi.DatasetCacheTest do
 
       timestamps =
         Enum.map(datasets, fn dataset ->
-          %{id: dataset.id, ingested_time: DateTime.utc_now() |> DateTime.to_string()}
+          %{"id" => dataset.id, "ingested_time" => DateTime.utc_now() |> DateTime.to_string()}
         end)
 
       Brook.Test.with_event(instance_name(), fn ->
@@ -115,7 +115,10 @@ defmodule Andi.DatasetCacheTest do
         end)
 
         Enum.each(timestamps, fn timestamp ->
-          ViewState.create(:ingested_time, timestamp.id, %{id: timestamp.id, ingested_time: timestamp.ingested_time})
+          ViewState.create(:ingested_time, timestamp["id"], %{
+            "id" => timestamp["id"],
+            "ingested_time" => timestamp["ingested_time"]
+          })
         end)
       end)
 
@@ -124,8 +127,13 @@ defmodule Andi.DatasetCacheTest do
       results = DatasetCache.get_all()
 
       Enum.each(datasets, fn dataset ->
-        timestamp = Enum.find(timestamps, "none", fn timestamp -> timestamp.id == dataset.id end)
-        assert Enum.member?(results, %{id: dataset.id, dataset: dataset, ingested_time: timestamp.ingested_time})
+        timestamp = Enum.find(timestamps, "none", fn timestamp -> timestamp["id"] == dataset.id end)
+
+        assert Enum.member?(results, %{
+                 "id" => dataset.id,
+                 "dataset" => dataset,
+                 "ingested_time" => timestamp["ingested_time"]
+               })
       end)
     end
 
@@ -143,7 +151,7 @@ defmodule Andi.DatasetCacheTest do
       results = DatasetCache.get_all()
 
       Enum.each(datasets, fn dataset ->
-        assert Enum.member?(results, %{id: dataset.id, dataset: dataset})
+        assert Enum.member?(results, %{"id" => dataset.id, "dataset" => dataset})
       end)
     end
 
@@ -162,9 +170,9 @@ defmodule Andi.DatasetCacheTest do
 
       Enum.each(timestamps, fn id ->
         # It's tricky to get the actual timestamp of the brook event, so just look up the result by the id and make sure it has some timestamp.
-        result = Enum.find(results, fn saved -> saved.id == id end)
+        result = Enum.find(results, fn saved -> saved["id"] == id end)
         assert not is_nil(result)
-        assert not is_nil(result.ingested_time)
+        assert not is_nil(result["ingested_time"])
       end)
     end
   end

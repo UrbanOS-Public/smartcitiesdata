@@ -25,8 +25,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
       DatasetCache.put([dataset_a, dataset_b])
 
       DatasetCache.put([
-        %{id: dataset_a.id, ingested_time: @ingested_time_a},
-        %{id: dataset_b.id, ingested_time: @ingested_time_b}
+        %{"id" => dataset_a.id, "ingested_time" => @ingested_time_a},
+        %{"id" => dataset_b.id, "ingested_time" => @ingested_time_b}
       ])
 
       {:ok, view, _} =
@@ -70,8 +70,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
       DatasetCache.put([dataset_a, dataset_b])
 
       DatasetCache.put([
-        %{id: dataset_a.id, ingested_time: @ingested_time_a},
-        %{id: dataset_b.id, ingested_time: @ingested_time_b}
+        %{"id" => dataset_a.id, "ingested_time" => @ingested_time_a},
+        %{"id" => dataset_b.id, "ingested_time" => @ingested_time_b}
       ])
 
       conn = get(conn, @url_path)
@@ -108,14 +108,14 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     DatasetCache.put([dataset_a, dataset_b])
 
     conn = get(conn, @url_path)
-    {:ok, view, html} = live(conn, @url_path <> "?foo=bar")
+    {:ok, view, _html} = live(conn, @url_path <> "?foo=bar")
 
     assert_redirect(view, @url_path <> "?foo=bar&order-by=data_title&order-dir=desc", fn ->
       render_click([view, "datasets_table"], "order-by", %{"field" => "data_title"})
     end)
   end
 
-  test "ingested_time is optional" do
+  test "ingested_time is optional", %{conn: conn} do
     dataset = TDG.create_dataset(%{})
 
     DatasetCache.put(dataset)
