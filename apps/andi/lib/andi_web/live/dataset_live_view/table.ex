@@ -10,8 +10,8 @@ defmodule AndiWeb.DatasetLiveView.Table do
     <div id="<%= @id %>" class="datasets-index__table">
       <table class="datasets-table">
         <thead>
-        <th class="datasets-table__th datasets-table__cell datasets-table__th--<%= Map.get(@order, "data_title", "unsorted") %>" phx-click="order-by" phx-value-field="data_title">Dataset Name </th>
-        <th class="datasets-table__th datasets-table__cell datasets-table__th--<%= Map.get(@order, "org_title", "unsorted") %>" phx-click="order-by" phx-value-field="org_title">Organization </th>
+        <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "data_title", "unsorted") %>" phx-click="order-by" phx-value-field="data_title">Dataset Name </th>
+        <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "org_title", "unsorted") %>" phx-click="order-by" phx-value-field="org_title">Organization </th>
         </thead>
         <%= if @datasets == [] do %>
           <tr><td class="datasets-table__cell" colspan="100%">No Datasets Found</td></tr>
