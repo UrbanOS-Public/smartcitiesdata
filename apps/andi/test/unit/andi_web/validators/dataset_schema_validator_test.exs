@@ -34,8 +34,40 @@ defmodule AndiWeb.DatasetSchemaValidatorTest do
       ]
 
       dataset =
-        TDG.create_dataset(technical: %{sourceType: "ingest", sourceFormat: "xml", schema: schema, topLevelSelector: "this/is/a/selector"})
+        TDG.create_dataset(
+          technical: %{
+            sourceType: "ingest",
+            sourceFormat: "xml",
+            schema: schema,
+            topLevelSelector: "this/is/a/selector"
+          }
+        )
         |> struct_to_map_with_string_keys()
+
+      errors = DatasetSchemaValidator.validate(dataset)
+      assert length(errors) == 1
+      assert List.first(errors) |> String.contains?("selector")
+    end
+
+    test "runs xml specific validation when source type is an extension and not a mime type" do
+      schema = [
+        %{name: "field_name"}
+      ]
+
+      %{"technical" => technical} =
+        dataset =
+        TDG.create_dataset(
+          technical: %{
+            sourceType: "ingest",
+            sourceFormat: "xml",
+            schema: schema,
+            topLevelSelector: "this/is/a/selector"
+          }
+        )
+        |> struct_to_map_with_string_keys()
+
+      technical = Map.put(technical, "sourceFormat", "xml")
+      dataset = Map.put(dataset, "technical", technical)
 
       errors = DatasetSchemaValidator.validate(dataset)
       assert length(errors) == 1
@@ -49,11 +81,18 @@ defmodule AndiWeb.DatasetSchemaValidatorTest do
       ]
 
       dataset =
-        TDG.create_dataset(technical: %{sourceType: "ingest", sourceFormat: "xml", schema: schema, topLevelSelector: "this/is/a/selector"})
+        TDG.create_dataset(
+          technical: %{
+            sourceType: "ingest",
+            sourceFormat: "xml",
+            schema: schema,
+            topLevelSelector: "this/is/a/selector"
+          }
+        )
         |> struct_to_map_with_string_keys()
 
       errors = DatasetSchemaValidator.validate(dataset)
-      assert length(errors) == 0
+      assert Enum.empty?(errors)
     end
 
     test "requires all fields in the schema to have selectors" do
@@ -64,7 +103,14 @@ defmodule AndiWeb.DatasetSchemaValidatorTest do
       ]
 
       dataset =
-        TDG.create_dataset(technical: %{sourceType: "ingest", sourceFormat: "xml", schema: schema, topLevelSelector: "this/is/a/selector"})
+        TDG.create_dataset(
+          technical: %{
+            sourceType: "ingest",
+            sourceFormat: "xml",
+            schema: schema,
+            topLevelSelector: "this/is/a/selector"
+          }
+        )
         |> struct_to_map_with_string_keys()
 
       errors = DatasetSchemaValidator.validate(dataset)
@@ -94,7 +140,14 @@ defmodule AndiWeb.DatasetSchemaValidatorTest do
       ]
 
       dataset =
-        TDG.create_dataset(technical: %{sourceType: "ingest", sourceFormat: "xml", schema: schema, topLevelSelector: "this/is/a/selector"})
+        TDG.create_dataset(
+          technical: %{
+            sourceType: "ingest",
+            sourceFormat: "xml",
+            schema: schema,
+            topLevelSelector: "this/is/a/selector"
+          }
+        )
         |> struct_to_map_with_string_keys()
 
       errors = DatasetSchemaValidator.validate(dataset)
@@ -113,13 +166,20 @@ defmodule AndiWeb.DatasetSchemaValidatorTest do
           selector: "bob",
           itemType: "map",
           subSchema: [
-            %{name: "deep_field"},
+            %{name: "deep_field"}
           ]
         }
       ]
 
       dataset =
-        TDG.create_dataset(technical: %{sourceType: "ingest", sourceFormat: "xml", schema: schema, topLevelSelector: "this/is/a/selector"})
+        TDG.create_dataset(
+          technical: %{
+            sourceType: "ingest",
+            sourceFormat: "xml",
+            schema: schema,
+            topLevelSelector: "this/is/a/selector"
+          }
+        )
         |> struct_to_map_with_string_keys()
 
       errors = DatasetSchemaValidator.validate(dataset)

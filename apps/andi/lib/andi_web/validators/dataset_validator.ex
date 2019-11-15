@@ -6,6 +6,7 @@ defmodule AndiWeb.DatasetValidator do
 
   def validate(dataset) do
     stringified = stringify_keys(dataset)
+
     result =
       SimplyValidate.validate(stringified, [
         validate_org_name(),
@@ -15,7 +16,7 @@ defmodule AndiWeb.DatasetValidator do
         description_required(),
         validate_top_level_selector_if_required()
       ]) ++
-      DatasetSchemaValidator.validate(stringified)
+        DatasetSchemaValidator.validate(stringified)
 
     case result do
       [] -> :valid
@@ -55,15 +56,18 @@ defmodule AndiWeb.DatasetValidator do
     {&has_top_level_selector_if_required/1, "topLevelSelector required for xml datasets", true}
   end
 
-  defp has_top_level_selector_if_required(%{
-         "technical" => %{"topLevelSelector" => topLevelSelector, "sourceFormat" => "text/xml"}
-       }) do
-    topLevelSelector != nil
+  defp has_top_level_selector_if_required(%{"technical" => %{"sourceFormat" => source_format} = technical})
+       when source_format in ["xml", "text/xml"] do
+    case Map.get(technical, "topLevelSelector") do
+      nil -> false
+      top_level_selector -> String.trim(top_level_selector) != ""
+    end
   end
 
   defp has_top_level_selector_if_required(_), do: true
 
-  defp same_system_name(%{"technical" => %{"systemName" => left}}, %{"technical" => %{"systemName" => right}}), do: left == right
+  defp same_system_name(%{"technical" => %{"systemName" => left}}, %{"technical" => %{"systemName" => right}}),
+    do: left == right
 
   defp different_ids(%{"id" => left}, %{"id" => right}), do: left != right
 
@@ -86,7 +90,7 @@ defmodule AndiWeb.DatasetValidator do
   # Handles preconverting datasets from structs to maps for comparison purposes
   defp stringify_keys(%{__struct__: _} = struct), do: struct |> Map.from_struct() |> stringify_keys()
 
-  defp stringify_keys(map = %{}) do
+  defp stringify_keys(%{} = map) do
     map
     |> Enum.map(fn {key, value} -> {key_to_string(key), stringify_keys(value)} end)
     |> Enum.into(%{})

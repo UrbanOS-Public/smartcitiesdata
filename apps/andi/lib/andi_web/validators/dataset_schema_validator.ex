@@ -3,7 +3,7 @@ defmodule AndiWeb.DatasetSchemaValidator do
   Used to validate dataset schemas
   """
 
-  def validate(%{"technical" => %{"sourceType" => source_type}}  = dataset) when source_type in ["ingest", "stream"] do
+  def validate(%{"technical" => %{"sourceType" => source_type}} = dataset) when source_type in ["ingest", "stream"] do
     validate_schema(dataset)
   end
 
@@ -13,7 +13,8 @@ defmodule AndiWeb.DatasetSchemaValidator do
     ["schema cannot be missing or empty"]
   end
 
-  def validate_schema(%{"technical" => %{"sourceFormat" => "text/xml", "schema" => schema}}) do
+  def validate_schema(%{"technical" => %{"sourceFormat" => source_format, "schema" => schema}})
+      when source_format in ["xml", "text/xml"] do
     validate_schema_has_selectors(schema)
   end
 
