@@ -15,7 +15,8 @@ config :libcluster,
       ]
     ]
   ]
-
+	
+config :redix, :args,
   [host: "localhost"]
 
 System.put_env("HOST", "localhost")

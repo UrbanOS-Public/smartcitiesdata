@@ -80,8 +80,6 @@ config :reaper, :brook,
   },
   dispatcher: Brook.Dispatcher.Noop
 
-#if (redis_password == ""), do: [host: redis_host], else: [host: redis_host, password: redis_password]
-
 config :reaper, Reaper.Scheduler,
   storage: Reaper.Quantum.Storage,
   global: true,
