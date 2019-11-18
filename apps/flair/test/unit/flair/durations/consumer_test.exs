@@ -17,7 +17,7 @@ defmodule Flair.ConsumerTest do
         assert payloads == expected
       end)
 
-      Flair.DurationsConsumer.handle_events(events, nil, nil)
+      Flair.Durations.Consumer.handle_events(events, nil, nil)
     end
   end
 

@@ -1,4 +1,4 @@
-defmodule Flair.DurationsConsumer do
+defmodule Flair.Durations.Consumer do
   @moduledoc """
   Consumer is called at the end of a flow; it converts events and then passes them to presto client to be persisted.
   """
