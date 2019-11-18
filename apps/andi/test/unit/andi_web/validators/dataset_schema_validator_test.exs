@@ -42,6 +42,23 @@ defmodule AndiWeb.DatasetSchemaValidatorTest do
   end
 
   describe "xml dataset validation" do
+    test "requires a schema not to be nil" do
+      dataset =
+        TDG.create_dataset(
+          technical: %{
+            sourceType: "ingest",
+            sourceFormat: "xml",
+            schema: nil,
+            topLevelSelector: "this/is/a/selector"
+          }
+        )
+        |> struct_to_map_with_string_keys()
+
+      errors = DatasetSchemaValidator.validate(dataset)
+      assert length(errors) == 1
+      assert List.first(errors) |> String.contains?("schema cannot be missing or empty")
+    end
+
     test "requires a single field in the schema to have a selector" do
       schema = [
         %{name: "field_name"}
