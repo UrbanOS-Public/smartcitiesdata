@@ -2,6 +2,9 @@ defmodule AndiWeb.DatasetLiveViewTest do
   use AndiWeb.ConnCase
   use Phoenix.ConnTest
   import Phoenix.LiveViewTest
+  import Andi, only: [instance_name: 0]
+  import SmartCity.Event, only: [data_ingest_end: 0]
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   alias Andi.DatasetCache
 
@@ -169,6 +172,24 @@ defmodule AndiWeb.DatasetLiveViewTest do
                  |> get_search_input_value()
       end)
     end
+  end
+
+  test "data_ingest_end events update ingested time", %{conn: conn} do
+    dataset = TDG.create_dataset(%{})
+
+    DatasetCache.put(dataset)
+    assert {:ok, view, _html} = live(conn, @url_path)
+    table_text = floki_get_text(render(view), ".datasets-index__table")
+    IO.inspect(table_text, label: "table text")
+    assert not (table_text =~ "check")
+
+    Brook.Test.send(instance_name(), data_ingest_end(), :andi, dataset)
+
+    eventually(fn ->
+      table_text = floki_get_text(render(view), ".datasets-index__table")
+      IO.inspect(table_text, label: "table text - after")
+      assert table_text =~ "check"
+    end)
   end
 
   defp get_search_input_value(html) do
