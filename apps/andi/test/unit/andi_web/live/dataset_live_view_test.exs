@@ -52,6 +52,23 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert floki_get_text(html, ".datasets-index__title") =~ "All Datasets"
       assert floki_get_text(html, ".datasets-index__table") =~ "No Datasets"
     end
+
+    test "does not load datasets that only contain a timestamp", %{conn: conn} do
+      datasets = Enum.map(1..3, fn _x -> TDG.create_dataset([]) end)
+      timestamp = %{"id" => "timestamp_id", "ingested_time" => "create_ts"}
+
+      DatasetCache.put(datasets)
+      DatasetCache.put(timestamp)
+
+      assert {:ok, _view, html} = live(conn, @url_path)
+      table_text = floki_get_text(html, ".datasets-index__table")
+
+      assert 3 == Floki.find(html, ".datasets-index__table tr") |> Enum.count()
+
+      Enum.each(datasets, fn dataset ->
+        assert table_text =~ dataset.business.dataTitle
+      end)
+    end
   end
 
   describe "Live connection with search params in URL" do

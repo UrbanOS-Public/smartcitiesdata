@@ -76,9 +76,19 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp filter_on_search_change(search_value, socket) do
     case search_value == socket.assigns.search_text do
-      false -> Andi.DatasetCache.get_all() |> filter_models(search_value) |> Enum.map(&to_view_model/1)
-      _ -> socket.assigns.datasets
+      false ->
+        Andi.DatasetCache.get_all()
+        |> ignore_timestamp_only
+        |> filter_models(search_value)
+        |> Enum.map(&to_view_model/1)
+
+      _ ->
+        socket.assigns.datasets
     end
+  end
+
+  defp ignore_timestamp_only(models) do
+    Enum.reject(models, fn model -> is_nil(model["dataset"]) end)
   end
 
   defp filter_models(models, ""), do: models
