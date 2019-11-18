@@ -14,6 +14,20 @@ defmodule AndiWeb.DatasetLiveViewTest do
   @url_path "/datasets/live"
 
   setup do
+    Brook.Test.with_event(instance_name(), fn ->
+      instance_name()
+      |> Brook.get_all_values!(:dataset)
+      |> Enum.each(fn dataset ->
+        Brook.ViewState.delete(:dataset, dataset.id)
+      end)
+
+      instance_name()
+      |> Brook.get_all_values!(:ingested_time)
+      |> Enum.each(fn timestamp ->
+        Brook.ViewState.delete(:ingested_time, timestamp["id"])
+      end)
+    end)
+
     GenServer.call(DatasetCache, :reset)
   end
 
@@ -180,14 +194,12 @@ defmodule AndiWeb.DatasetLiveViewTest do
     DatasetCache.put(dataset)
     assert {:ok, view, _html} = live(conn, @url_path)
     table_text = floki_get_text(render(view), ".datasets-index__table")
-    IO.inspect(table_text, label: "table text")
     assert not (table_text =~ "check")
 
     Brook.Test.send(instance_name(), data_ingest_end(), :andi, dataset)
 
     eventually(fn ->
       table_text = floki_get_text(render(view), ".datasets-index__table")
-      IO.inspect(table_text, label: "table text - after")
       assert table_text =~ "check"
     end)
   end

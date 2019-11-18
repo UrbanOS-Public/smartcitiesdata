@@ -6,8 +6,6 @@ defmodule AndiWeb.DatasetLiveView do
   @ingested_time_topic "ingested_time_topic"
 
   def render(assigns) do
-    IO.inspect(assigns, label: "I'm rendering")
-
     ~L"""
     <div class="datasets-index">
       <h1 class="datasets-index__title">All Datasets</h1>
@@ -36,7 +34,7 @@ defmodule AndiWeb.DatasetLiveView do
 
   def mount(_session, socket) do
     AndiWeb.Endpoint.subscribe(@ingested_time_topic)
-    {:ok, assign(socket, datasets: nil, search_text: nil, order: {"data_title", "asc"}, params: %{}, name: "not me")}
+    {:ok, assign(socket, datasets: nil, search_text: nil, order: {"data_title", "asc"}, params: %{})}
   end
 
   def handle_info({:order, field}, socket) do
@@ -53,25 +51,8 @@ defmodule AndiWeb.DatasetLiveView do
 
   def handle_info(%{topic: @ingested_time_topic, payload: %{"id" => id, "ingested_time" => ingested_time}}, socket) do
     updated_datasets = update_ingest_time(id, ingested_time, socket.assigns.datasets)
-
-    # updated_state = %{socket | assigns: %{socket.assigns | datasets: %{datasets: updated_datasets}}}
     updated_state = assign(socket, :datasets, updated_datasets)
 
-    updated_state =
-      assign(updated_state, :datasets, [
-        %{
-          "id" => "myID",
-          "newField" => "NattyLight",
-          "org_title" => "my title",
-          "data_title" => "data title",
-          "ingested_time" => "ingested time"
-        }
-      ])
-
-    updated_state = assign(updated_state, :name, "nattyloight")
-
-    IO.inspect(updated_state, label: "updated state")
-    IO.inspect(self(), label: "updated state - view")
     {:noreply, updated_state}
   end
 
@@ -130,8 +111,7 @@ defmodule AndiWeb.DatasetLiveView do
 
       _ ->
         updated_dataset = Map.put(existing_dataset, "ingested_time", ingested_time)
-
-        List.delete(datasets, existing_dataset) ++ updated_dataset
+        List.delete(datasets, existing_dataset) ++ [updated_dataset]
     end
   end
 

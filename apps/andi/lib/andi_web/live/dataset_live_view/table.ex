@@ -38,8 +38,6 @@ defmodule AndiWeb.DatasetLiveView.Table do
   end
 
   defp ingest_status(dataset) do
-    IO.inspect(dataset, label: "table")
-
     case dataset["ingested_time"] do
       nil -> ""
       _ -> ~E(<i class="material-icons">check</i>)

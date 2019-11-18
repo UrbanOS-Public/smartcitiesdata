@@ -2,6 +2,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   use AndiWeb.ConnCase
   use Phoenix.ConnTest
   import Phoenix.LiveViewTest
+  import Andi, only: [instance_name: 0]
 
   alias Andi.DatasetCache
 
@@ -14,11 +15,27 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   @ingested_time_b "454699234"
 
   setup do
+    Brook.Test.with_event(instance_name(), fn ->
+      instance_name()
+      |> Brook.get_all_values!(:dataset)
+      |> Enum.each(fn dataset ->
+        Brook.ViewState.delete(:dataset, dataset.id)
+      end)
+
+      instance_name()
+      |> Brook.get_all_values!(:ingested_time)
+      |> Enum.each(fn timestamp ->
+        Brook.ViewState.delete(:ingested_time, timestamp["id"])
+      end)
+    end)
+
     GenServer.call(DatasetCache, :reset)
   end
 
   describe "order by click" do
     setup %{conn: conn} do
+      GenServer.call(DatasetCache, :reset)
+
       dataset_a = TDG.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
       dataset_b = TDG.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
 
