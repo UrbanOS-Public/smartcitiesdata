@@ -28,6 +28,8 @@ defmodule AndiWeb.DatasetSchemaValidator do
     end
   end
 
+  defp validate_schema_has_selectors(nil), do: []
+
   defp validate_schema_has_selectors(schema) do
     schema
     |> Enum.map(&build_field_validator/1)
