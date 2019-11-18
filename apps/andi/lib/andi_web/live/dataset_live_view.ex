@@ -113,15 +113,19 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   defp update_ingest_time(id, ingested_time, datasets) do
-    existing_dataset = Enum.find(datasets, fn dataset -> id == dataset["id"] end)
+    exisiting_index = Enum.find_index(datasets, fn dataset -> id == dataset["id"] end)
 
-    case is_nil(existing_dataset) do
+    case is_nil(exisiting_index) do
       true ->
         datasets
 
       _ ->
-        updated_dataset = Map.put(existing_dataset, "ingested_time", ingested_time)
-        List.delete(datasets, existing_dataset) ++ [updated_dataset]
+        updated_dataset =
+          datasets
+          |> Enum.at(exisiting_index)
+          |> Map.put("ingested_time", ingested_time)
+
+        List.replace_at(datasets, exisiting_index, updated_dataset)
     end
   end
 

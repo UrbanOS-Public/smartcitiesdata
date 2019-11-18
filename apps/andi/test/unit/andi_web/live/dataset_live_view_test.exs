@@ -221,6 +221,25 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end)
   end
 
+  test "data_ingest_end events does not change dataset order", %{conn: conn} do
+    datasets = Enum.map(1..3, fn _x -> TDG.create_dataset(%{}) end)
+    dataset = Enum.at(datasets, 1)
+
+    DatasetCache.put(datasets)
+
+    assert {:ok, view, _html} = live(conn, @url_path)
+    initial_table_text = floki_get_text(render(view), ".datasets-index__table")
+
+    Brook.Test.send(instance_name(), data_ingest_end(), :andi, dataset)
+
+    eventually(fn ->
+      table_text = floki_get_text(render(view), ".datasets-index__table")
+      assert table_text =~ "check"
+      # If we remove the check that was added, is everything else the same?
+      assert initial_table_text == String.replace(table_text, "check", "")
+    end)
+  end
+
   defp get_search_input_value(html) do
     html
     |> Floki.find("input.datasets-index__search-input")
