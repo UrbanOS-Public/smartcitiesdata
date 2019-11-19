@@ -78,7 +78,7 @@ defmodule AndiWeb.DatasetLiveView do
     case search_value == socket.assigns.search_text do
       false ->
         Andi.DatasetCache.get_all()
-        |> ignore_timestamp_only
+        |> ignore_incomplete_models
         |> filter_models(search_value)
         |> Enum.map(&to_view_model/1)
 
@@ -87,7 +87,7 @@ defmodule AndiWeb.DatasetLiveView do
     end
   end
 
-  defp ignore_timestamp_only(models) do
+  defp ignore_incomplete_models(models) do
     Enum.reject(models, fn model -> is_nil(model["dataset"]) end)
   end
 

@@ -36,7 +36,7 @@ defmodule Andi.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{id: id}, create_ts: create_ts}) do
-    # Brook converts all maps to string keys, so we must make sure that's what we're expecting
+    # Brook converts all maps to string keys when it retrieves a value from its state, even if they're inserted as atom keys. For that reason, make sure to insert as string keys so that we're consistent.
     DatasetCache.put(%{"id" => id, "ingested_time" => create_ts})
 
     AndiWeb.Endpoint.broadcast!(@ingested_time_topic, "ingested_time_update", %{
