@@ -2,8 +2,7 @@ use Mix.Config
 
 config :flair,
   topic_reader: Pipeline.Reader.TopicReader,
-  table_writer: Pipeline.Writer.TableWriter,
-  data_topic: "persisted"
+  table_writer: Pipeline.Writer.TableWriter
 
 config :logger,
   level: :info

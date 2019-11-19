@@ -31,7 +31,6 @@ defmodule Flair.Durations.Consumer do
   end
 
   def init(_args) do
-    @table_writer.init(table: @table_name, schema: @table_schema)
     {:consumer, :any}
   end
 
@@ -41,6 +40,13 @@ defmodule Flair.Durations.Consumer do
     |> @table_writer.write(table: @table_name, schema: @table_schema)
 
     {:noreply, [], state}
+  end
+
+  def bootstrap() do
+    case Application.get_env(:flair, :table_name_timing) do
+      nil -> :ok
+      _ -> @table_writer.init(table: @table_name, schema: @table_schema)
+    end
   end
 
   defp convert_events(events) do

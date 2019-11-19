@@ -1,5 +1,3 @@
-ExUnit.start()
-Application.ensure_all_started(:faker)
-Application.ensure_all_started(:placebo)
-Application.ensure_all_started(:mox)
 Mox.defmock(MockTableWriter, for: Pipeline.Writer)
+Mox.defmock(MockTopicReader, for: Pipeline.Reader)
+ExUnit.start()
