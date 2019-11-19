@@ -37,8 +37,8 @@ defmodule Andi.DatasetCache do
   end
 
   defp get(id) do
-    case :ets.match(__MODULE__, {id, :"$1"}) do
-      [[h | _inner_t] | _t] -> h
+    case :ets.match_object(__MODULE__, {id, :"$1"}) do
+      [{_key, value} | _t] -> value
       _ -> %{}
     end
   end
