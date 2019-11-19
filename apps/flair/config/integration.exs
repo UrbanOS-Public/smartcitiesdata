@@ -1,5 +1,4 @@
 use Mix.Config
-import_config "../test/integration/divo_presto.exs"
 
 host = "localhost"
 
@@ -18,7 +17,7 @@ config :flair,
   divo_wait: [dwell: 1000, max_tries: 60],
   elsa_brokers: endpoint,
   message_processing_cadence: 5_000,
-  data_topic: "persisted",
+  data_topic: "streaming-persisted",
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,
