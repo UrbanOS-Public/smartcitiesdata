@@ -123,7 +123,7 @@ defmodule Pipeline.Reader.TopicReaderTest do
       assert [{^pid, _}] = Registry.lookup(Pipeline.Registry, :"pipeline-init-3-pipeline-supervisor")
     end
 
-    test "fails if it cannot connect to topic" do
+    test "returns error tuple if topic not available" do
       allow(Elsa.create_topic(any(), "init-fail"), return: :ignore, meck_options: [:passthrough])
 
       args = [
@@ -136,9 +136,7 @@ defmodule Pipeline.Reader.TopicReaderTest do
         retry_delay: 1
       ]
 
-      assert_raise RuntimeError, "Timed out waiting for init-fail to be available", fn ->
-        TopicReader.init(args)
-      end
+      assert {:error, "Timed out waiting for init-fail to be available"} = TopicReader.init(args)
     end
   end
 

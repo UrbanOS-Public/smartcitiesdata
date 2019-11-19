@@ -26,15 +26,15 @@ defmodule Pipeline.Reader.TopicReader do
   * `retry_delay` - Milliseconds to initially wait before retry. Defaults to 100.
   """
   def init(args) do
-    config = parse_args(args)
-    consumer = consumer_spec(config)
-
-    create_topic!(config)
-
-    case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, consumer) do
-      {:ok, _} -> :ok
-      {:error, {:already_started, _}} -> :ok
-      error -> {:error, error}
+    with name <- parse_name(args),
+         config <- parse_args(args),
+         consumer <- consumer_spec(name, config),
+         :ok <- create_topic(config) do
+      case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, consumer) do
+        {:ok, _} -> :ok
+        {:error, {:already_started, _}} -> :ok
+        error -> {:error, error}
+      end
     end
   end
 
@@ -44,7 +44,7 @@ defmodule Pipeline.Reader.TopicReader do
   Destroys topic consumer infrastructure.
   """
   def terminate(args) do
-    with name <- :"#{args[:instance]}-#{args[:topic]}-pipeline-supervisor",
+    with name <- parse_name(args),
          [{pid, _}] <- Registry.lookup(Pipeline.Registry, name),
          :ok <- DynamicSupervisor.terminate_child(Pipeline.DynamicSupervisor, pid) do
       Registry.unregister(Pipeline.Registry, name)
@@ -71,24 +71,31 @@ defmodule Pipeline.Reader.TopicReader do
     }
   end
 
-  defp create_topic!(config) do
-    Elsa.create_topic(config.endpoints, config.topic)
-    wait_for_topic!(config)
+  defp parse_name(args) do
+    instance = Keyword.fetch!(args, :instance)
+    topic = Keyword.fetch!(args, :topic)
+
+    :"#{instance}-#{topic}-pipeline-supervisor"
   end
 
-  defp wait_for_topic!(config) do
+  defp create_topic(config) do
+    Elsa.create_topic(config.endpoints, config.topic)
+    wait_for_topic(config)
+  end
+
+  defp wait_for_topic(config) do
     wait exponential_backoff(config.retry_delay) |> Stream.take(config.retry_count) do
       Elsa.topic?(config.endpoints, config.topic)
     after
-      _ -> config.topic
+      _ -> :ok
     else
-      _ -> raise "Timed out waiting for #{config.topic} to be available"
+      _ -> {:error, "Timed out waiting for #{config.topic} to be available"}
     end
   end
 
-  defp consumer_spec(config) do
+  defp consumer_spec(name, config) do
     start_options = [
-      name: via(:"#{config.instance}-#{config.topic}-pipeline-supervisor"),
+      name: via(name),
       endpoints: config.endpoints,
       connection: config.connection,
       group_consumer: [
