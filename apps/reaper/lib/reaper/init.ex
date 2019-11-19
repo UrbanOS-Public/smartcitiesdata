@@ -17,6 +17,7 @@ defmodule Reaper.Init do
     |> Enum.each(fn dataset ->
       Logger.debug("Migrating extraction dataset #{dataset.id}")
       Reaper.Horde.Supervisor.start_data_extract(dataset)
+      Process.sleep(250)
     end)
 
     FileIngestions.get_all_non_completed!()

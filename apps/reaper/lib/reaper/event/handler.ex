@@ -48,7 +48,7 @@ defmodule Reaper.Event.Handler do
         type: file_ingest_end(),
         data: %SmartCity.HostedFile{mime_type: "application/geo+json"} = hosted_file
       }) do
-    shapefile_dataset = Brook.get!(@instance, :file_ingestions, hosted_file.dataset_id)
+    shapefile_dataset = FileIngestions.get_dataset!(hosted_file.dataset_id)
 
     geojson_dataset = %{
       shapefile_dataset

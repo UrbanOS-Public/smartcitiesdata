@@ -4,6 +4,7 @@ defmodule Reaper.S3ExtractorTest do
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
   import SmartCity.Event, only: [file_ingest_end: 0]
+  alias Reaper.Collections.FileIngestions
 
   @bucket Application.get_env(:reaper, :hosted_file_bucket)
   @org "my-org"
@@ -15,12 +16,9 @@ defmodule Reaper.S3ExtractorTest do
     setup do
       shapefile_dataset = TDG.create_dataset(id: @id, technical: %{sourceFormat: "zip"})
 
-      Brook.Test.with_event(
-        @instance,
-        fn ->
-          Brook.ViewState.merge(:file_ingestions, shapefile_dataset.id, shapefile_dataset)
-        end
-      )
+      Brook.Test.with_event(@instance, fn ->
+        FileIngestions.update_dataset(shapefile_dataset)
+      end)
 
       {:ok, file} =
         SmartCity.HostedFile.new(%{
