@@ -6,7 +6,6 @@
   font-size: 1.5rem;
 }
 
-
 .datasets-index__search-input-container {
   display: flex;
   width: 50%;
@@ -56,13 +55,19 @@
 .datasets-table__cell {
   padding: $table-padding;
   border-right: $table-border;
+  height: $table-height;
+}
+
+.datasets-table__ingested-cell {
+  text-align: center;
+  color: green;
 }
 
 .datasets-table__cell--break {
   word-break: break-word;
 }
 
-.datasets-table__th--asc{
+.datasets-table__th--asc {
   -webkit-box-shadow: inset 0 0.2rem 0 0 $header-shadow;
   box-shadow: inset 0 0.2rem 0 0 $header-shadow;
 }
@@ -73,5 +78,5 @@
 }
 
 .datasets-table__th--sortable {
-    cursor: pointer;
+  cursor: pointer;
 }
