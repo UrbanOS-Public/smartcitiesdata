@@ -9,7 +9,8 @@ defmodule DiscoveryApiWeb.VisualizationView do
     %{
       id: visualization.public_id,
       title: visualization.title,
-      query: visualization.query
+      query: visualization.query,
+      chart: visualization.chart
     }
   end
 end
