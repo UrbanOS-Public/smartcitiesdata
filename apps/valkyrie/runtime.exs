@@ -2,7 +2,7 @@ use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
-redis_password = System.get_env("REDIS_PASSWORD", "")
+redis_password = System.get_env("REDIS_PASSWORD")
 all_redis_args = [host: redis_host, password: redis_password]
 redix_args = Enum.filter(all_redis_args, fn
   {_, nil} -> false
