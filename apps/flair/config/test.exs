@@ -1,7 +1,8 @@
 use Mix.Config
 
 config :flair,
-  table_creator: nil,
+  table_writer: MockTableWriter,
+  topic_reader: MockTopicReader,
   window_unit: :second,
   window_length: 1,
   message_timeout: 50,

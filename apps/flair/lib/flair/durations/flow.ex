@@ -1,4 +1,4 @@
-defmodule Flair.DurationsFlow do
+defmodule Flair.Durations.Flow do
   @moduledoc """
   This flow takes in messages from the producer that it starts. 
   It aggregates those messages per dataset/per window and then calculates their durations, finally persisting them.
@@ -18,7 +18,7 @@ defmodule Flair.DurationsFlow do
   def start_link(_) do
     consumer_spec = [
       {
-        {Flair.DurationsConsumer, :durations_consumer},
+        {Flair.Durations.Consumer, :durations_consumer},
         []
       }
     ]
