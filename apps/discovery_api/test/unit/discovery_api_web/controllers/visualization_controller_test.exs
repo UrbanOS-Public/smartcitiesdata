@@ -17,6 +17,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
   @id "abcdefg"
   @title "My title"
   @query "select * from stuff"
+  @chart "{data: []}"
 
   setup do
     jwks = AuthHelper.valid_jwks()
@@ -45,21 +46,22 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       allow(Users.get_user(@valid_jwt_subject, :subject_id), return: {:ok, %{id: @user_id}})
 
       allow(Visualizations.create_visualization(any()),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title}}
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}}
       )
 
       body =
         conn
         |> put_req_header("authorization", "Bearer #{@valid_jwt}")
         |> put_req_header("content-type", "application/json")
-        |> post("/api/v1/visualization", ~s({"query": "#{@query}", "title": "#{@title}"}))
+        |> post("/api/v1/visualization", ~s({"query": "#{@query}", "title": "#{@title}", "chart": "#{@chart}"}))
         |> response(201)
         |> Jason.decode!()
 
       assert %{
                "query" => @query,
                "title" => @title,
-               "id" => @id
+               "id" => @id,
+               "chart" => @chart
              } = body
     end
 
@@ -71,7 +73,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       conn
       |> put_req_header("authorization", "Bearer #{@valid_jwt}")
       |> put_req_header("content-type", "application/json")
-      |> post("/api/v1/visualization", ~s({"query": "#{@query}", "title": "#{@title}"}))
+      |> post("/api/v1/visualization", ~s({"query": "#{@query}", "title": "#{@title}", "chart": "#{@chart}"}))
       |> response(400)
     end
 
@@ -82,7 +84,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       conn
       |> put_req_header("authorization", "Bearer #{@valid_jwt}")
       |> put_req_header("content-type", "application/json")
-      |> post("/api/v1/visualization", ~s({"query": "#{@query}", "title": "#{@title}"}))
+      |> post("/api/v1/visualization", ~s({"query": "#{@query}", "title": "#{@title}", "chart": "#{@chart}"}))
       |> response(400)
     end
   end
@@ -94,25 +96,26 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
     end
 
     test "update visualization for existing id returns accepted", %{conn: conn} do
-      allow(Visualizations.get_visualization_by_id(any()), return: {:ok, %Visualization{public_id: @id, query: @query, title: @title}})
-      allow(Visualization.changeset(any(), any()), return: {:ok, %Visualization{public_id: @id, query: @query, title: @title}})
+      allow(Visualizations.get_visualization_by_id(any()), return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}})
+      allow(Visualization.changeset(any(), any()), return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}})
 
       allow(Visualizations.update_visualization_by_id(any(), any(), any()),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title}}
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}}
       )
 
       body =
         conn
         |> put_req_header("authorization", "Bearer #{@valid_jwt}")
         |> put_req_header("content-type", "application/json")
-        |> put("/api/v1/visualization/#{@id}", %{"query" => @query, "title" => @title, "public_id" => @id})
+        |> put("/api/v1/visualization/#{@id}", %{"query" => @query, "title" => @title, "public_id" => @id, "chart" => @chart})
         |> response(200)
         |> Jason.decode!()
 
       assert %{
                "query" => @query,
                "title" => @title,
-               "id" => @id
+               "id" => @id,
+               "chart" => @chart
              } = body
     end
   end
@@ -125,7 +128,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
 
     test "returns OK for valid bearer token and id" do
       allow(Visualizations.get_visualization_by_id(@id),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant"}}
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart, owner_id: "irrelevant"}}
       )
 
       allow(DiscoveryApiWeb.Utilities.AuthUtils.authorized_to_query?(@query, any(), any()), return: true)
@@ -135,7 +138,8 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       assert %{
                "query" => @query,
                "title" => @title,
-               "id" => @id
+               "id" => @id,
+               "chart" => @chart
              } = body
     end
 
@@ -152,7 +156,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       allow(DiscoveryApi.Data.Model.get_all(), return: [private_dataset], meck_options: [:passthrough])
 
       allow(Visualizations.get_visualization_by_id(@id),
-        return: {:ok, %Visualization{public_id: @id, query: query, title: @title, owner_id: "irrelevant"}}
+        return: {:ok, %Visualization{public_id: @id, query: query, title: @title, chart: @chart, owner_id: "irrelevant"}}
       )
 
       allow(DiscoveryApiWeb.Utilities.AuthUtils.authorized_to_query?(query, @valid_jwt_subject, any()), return: false)
@@ -174,7 +178,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       query = "select * from garbage"
 
       allow(Visualizations.get_visualization_by_id(@id),
-        return: {:ok, %Visualization{public_id: @id, query: query, title: @title, owner_id: @user_id}}
+        return: {:ok, %Visualization{public_id: @id, query: query, title: @title, chart: @chart, owner_id: @user_id}}
       )
 
       body = get_visualization_body_with_code(200)
@@ -182,7 +186,8 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       assert %{
                "query" => ^query,
                "title" => @title,
-               "id" => @id
+               "id" => @id,
+               "chart" => @chart
              } = body
     end
   end
