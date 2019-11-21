@@ -96,8 +96,13 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
     end
 
     test "update visualization for existing id returns accepted", %{conn: conn} do
-      allow(Visualizations.get_visualization_by_id(any()), return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}})
-      allow(Visualization.changeset(any(), any()), return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}})
+      allow(Visualizations.get_visualization_by_id(any()),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}}
+      )
+
+      allow(Visualization.changeset(any(), any()),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}}
+      )
 
       allow(Visualizations.update_visualization_by_id(any(), any(), any()),
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}}
