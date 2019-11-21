@@ -91,6 +91,7 @@
   "recon": {:hex, :recon, "2.5.0", "2f7fcbec2c35034bade2f9717f77059dc54eb4e929a3049ca7ba6775c0bd66cd", [:mix, :rebar3], [], "hexpm"},
   "redix": {:hex, :redix, "0.10.2", "a9eabf47898aa878650df36194aeb63966d74f5bd69d9caa37babb32dbb93c5d", [:mix], [{:telemetry, "~> 0.4.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm"},
   "retry": {:hex, :retry, "0.13.0", "bb9b2713f70f39337837852337ad280c77662574f4fb852a8386c269f3d734c4", [:mix], [], "hexpm"},
+  "saxy": {:hex, :saxy, "0.10.0", "38879f46a595862c22114792c71379355ecfcfa0f713b1cfcc59e1d4127f1f55", [:mix], [], "hexpm"},
   "sftp_ex": {:hex, :sftp_ex, "0.2.6", "89cbb3985791c902ab002f7a619490108f1b4dbec7cdc2424450602f0493de32", [:mix], [], "hexpm"},
   "simply_validate": {:hex, :simply_validate, "0.2.0", "d4b5b4a677ba70272bd55670ac216700a9704788b3074ac490cb02ee94f5b0c2", [:mix], [], "hexpm"},
   "sleeplocks": {:hex, :sleeplocks, "1.1.1", "3d462a0639a6ef36cc75d6038b7393ae537ab394641beb59830a1b8271faeed3", [:rebar3], [], "hexpm"},
