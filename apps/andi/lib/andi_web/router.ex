@@ -22,8 +22,7 @@ defmodule AndiWeb.Router do
     pipe_through :browser
 
     get "/", Redirect, to: "/datasets"
-    live "/datasets/live", DatasetLiveView, session: [:path_params]
-    resources "/datasets", DatasetController, only: [:index]
+    live "/datasets", DatasetLiveView, session: [:path_params]
   end
 
   scope "/api", AndiWeb.API do

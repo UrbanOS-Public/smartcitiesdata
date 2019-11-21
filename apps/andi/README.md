@@ -22,7 +22,7 @@ datasets = Enum.map(1..3, fn _ -> SmartCity.TestDataGenerator.create_dataset([])
 ```
 
 ```
-Brook.Test.with_event(:andi, fn -> Enum.each(datasets, fn dataset ->  Brook.ViewState.merge(:dataset, dataset.id, dataset)  end) end)
+Enum.each(datasets, &(Brook.Event.send(:andi, "dataset:update", :andi, &1)))
 ```
 
 ## Testing

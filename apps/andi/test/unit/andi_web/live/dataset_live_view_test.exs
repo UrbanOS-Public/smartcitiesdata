@@ -11,7 +11,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/datasets/live"
+  @url_path "/datasets"
 
   setup do
     Brook.Test.with_event(instance_name(), fn ->

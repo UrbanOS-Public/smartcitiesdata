@@ -9,7 +9,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/datasets/live"
+  @url_path "/datasets"
 
   @ingested_time_a "123123213"
   @ingested_time_b "454699234"
