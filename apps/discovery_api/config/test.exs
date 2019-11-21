@@ -34,3 +34,6 @@ config :discovery_api, :brook,
     module: Brook.Storage.Ets,
     init_arg: []
   ]
+
+config :discovery_api,
+  user_visualization_limit: 4

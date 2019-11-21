@@ -48,4 +48,7 @@ config :mime, :types, %{
   "application/geo+json" => ["geojson"]
 }
 
+config :discovery_api,
+  user_visualization_limit: 1_000
+
 import_config "#{Mix.env()}.exs"

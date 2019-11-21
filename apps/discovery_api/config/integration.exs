@@ -78,3 +78,6 @@ config :discovery_api, :brook,
     module: Brook.Storage.Redis,
     init_arg: [redix_args: [host: host], namespace: "discovery-api:view"]
   ]
+
+config :discovery_api,
+  user_visualization_limit: 4

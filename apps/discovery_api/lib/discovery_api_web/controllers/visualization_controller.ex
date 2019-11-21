@@ -21,8 +21,9 @@ defmodule DiscoveryApiWeb.VisualizationController do
   end
 
   def create(conn, %{"query" => query, "title" => title, "chart" => chart}) do
-    with {:ok, user} <- Users.get_user(conn.assigns.current_user, :subject_id),
+    with {:ok, user} <- Users.get_user_with_visualizations(conn.assigns.current_user, :subject_id),
          {:ok, json_chart} <- Jason.encode(chart),
+         true <- under_visualizations_limit?(user),
          {:ok, visualization} <- Visualizations.create_visualization(%{query: query, title: title, chart: json_chart, owner: user}) do
       conn
       |> put_status(:created)
@@ -49,5 +50,9 @@ defmodule DiscoveryApiWeb.VisualizationController do
       {:ok, user} -> user.id == visualization.owner_id
       _ -> false
     end
+  end
+
+  defp under_visualizations_limit?(%{visualizations: visualizations}) do
+    Enum.count(visualizations) <= Application.get_env(:discovery_api, :user_visualization_limit)
   end
 end

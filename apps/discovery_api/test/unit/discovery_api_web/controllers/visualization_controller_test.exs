@@ -43,7 +43,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
 
   describe "POST /visualization" do
     test "returns CREATED for valid bearer token and visualization setup", %{conn: conn} do
-      allow(Users.get_user(@valid_jwt_subject, :subject_id), return: {:ok, %{id: @user_id}})
+      allow(Users.get_user_with_visualizations(@valid_jwt_subject, :subject_id), return: {:ok, %{id: @user_id, visualizations: []}})
 
       allow(Visualizations.create_visualization(any()),
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}}
@@ -68,7 +68,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
     test "returns BAD REQUEST for valid bearer token but missing user for visualization setup", %{
       conn: conn
     } do
-      allow(Users.get_user(@valid_jwt_subject, :subject_id), return: {:error, :not_found})
+      allow(Users.get_user_with_visualizations(@valid_jwt_subject, :subject_id), return: {:error, :not_found})
 
       conn
       |> put_req_header("authorization", "Bearer #{@valid_jwt}")
@@ -79,7 +79,23 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
 
     test "returns BAD REQUEST for valid bearer token and but missing user for visualization setup",
          %{conn: conn} do
-      allow(Users.get_user(@valid_jwt_subject, :subject_id), return: {:error, :not_found})
+      allow(Users.get_user_with_visualizations(@valid_jwt_subject, :subject_id), return: {:error, :not_found})
+
+      conn
+      |> put_req_header("authorization", "Bearer #{@valid_jwt}")
+      |> put_req_header("content-type", "application/json")
+      |> post("/api/v1/visualization", ~s({"query": "#{@query}", "title": "#{@title}", "chart": "#{@chart}"}))
+      |> response(400)
+    end
+
+    test "returns BAD REQUEST when user creates more than the limit of visualizations for their account" do
+      allow(Users.get_user_with_visualizations(@valid_jwt_subject, :subject_id),
+        return: {:ok, %{id: @user_id, visualizations: [1, 2, 3, 4, 5]}}
+      )
+
+      allow(Visualizations.create_visualization(any()),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}}
+      )
 
       conn
       |> put_req_header("authorization", "Bearer #{@valid_jwt}")
