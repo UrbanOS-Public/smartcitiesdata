@@ -99,6 +99,75 @@ defmodule AndiWeb.DatasetValidatorTest do
     end
   end
 
+  describe "xml dataset validation" do
+    @valid_xml_schema [
+      %{name: "field_name", selector: "selector"},
+      %{name: "other_field", selector: "other_selector"}
+    ]
+
+    test "requires topLevelSelector not to be empty" do
+      dataset =
+        TDG.create_dataset(technical: %{sourceFormat: "xml", schema: @valid_xml_schema, topLevelSelector: ""})
+        |> struct_to_map_with_string_keys()
+
+      assert {:invalid, errors} = DatasetValidator.validate(dataset)
+      assert length(errors) == 1
+      assert List.first(errors) |> String.contains?("topLevelSelector")
+    end
+
+    test "requires topLevelSelector key to be present" do
+      %{"technical" => technical} =
+        dataset =
+        TDG.create_dataset(technical: %{sourceFormat: "xml", schema: @valid_xml_schema})
+        |> struct_to_map_with_string_keys()
+
+      technical = Map.delete(technical, "topLevelSelector")
+      dataset = Map.put(dataset, "technical", technical)
+
+      assert {:invalid, errors} = DatasetValidator.validate(dataset)
+      assert length(errors) == 1
+      assert List.first(errors) |> String.contains?("topLevelSelector")
+    end
+
+    test "requires topLevelSelector when the source format is an extension rather than a mime type" do
+      %{"technical" => technical} =
+        dataset =
+        TDG.create_dataset(technical: %{sourceType: "ingest", sourceFormat: "xml", schema: @valid_xml_schema})
+        |> struct_to_map_with_string_keys()
+
+      technical = Map.put(technical, "sourceFormat", "xml")
+      dataset = Map.put(dataset, "technical", technical)
+
+      assert {:invalid, errors} = DatasetValidator.validate(dataset)
+      assert length(errors) == 1
+      assert List.first(errors) |> String.contains?("topLevelSelector")
+    end
+
+    test "validates topLevelSelector when xml" do
+      dataset =
+        TDG.create_dataset(
+          technical: %{sourceFormat: "xml", topLevelSelector: "this/is/a/selector", schema: @valid_xml_schema}
+        )
+        |> struct_to_map_with_string_keys()
+
+      assert :valid = DatasetValidator.validate(dataset)
+    end
+
+    test "requires fields in the schema to have a selector" do
+      schema = [
+        %{name: "field_name"}
+      ]
+
+      dataset =
+        TDG.create_dataset(technical: %{sourceFormat: "xml", schema: schema, topLevelSelector: "this/is/a/selector"})
+        |> struct_to_map_with_string_keys()
+
+      assert {:invalid, errors} = DatasetValidator.validate(dataset)
+      assert length(errors) == 1
+      assert List.first(errors) |> String.contains?("selector")
+    end
+  end
+
   defp struct_to_map_with_string_keys(dataset) do
     dataset
     |> Jason.encode!()
