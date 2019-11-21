@@ -2,13 +2,14 @@ use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
-redis_password = System.get_env("REDIS_PASSWORD", "")
+redis_password = System.get_env("REDIS_PASSWORD")
 all_redis_args = [host: redis_host, password: redis_password]
 redix_args = Enum.filter(all_redis_args, fn
   {_, nil} -> false
   {_, ""} -> false
   _ -> true
 end)
+
 endpoint =
   kafka_brokers
   |> String.split(",")
@@ -16,8 +17,7 @@ endpoint =
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
-config :smart_city_registry,
-       args: redix_args
+config :smart_city_registry, :redis, redix_args
 
 config :andi,
   ldap_user: System.get_env("LDAP_USER") |> Andi.LdapUtils.decode_dn!(),
