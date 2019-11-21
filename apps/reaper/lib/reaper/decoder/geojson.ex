@@ -28,7 +28,8 @@ defmodule Reaper.Decoder.GeoJson do
 
   @impl Reaper.Decoder
   def handle?(source_format) when is_binary(source_format) do
-    String.downcase(source_format) == "application/geo+json"
+    String.downcase(source_format) == "application/geo+json" ||
+      String.downcase(source_format) == "application/zip"
   end
 
   @impl Reaper.Decoder
