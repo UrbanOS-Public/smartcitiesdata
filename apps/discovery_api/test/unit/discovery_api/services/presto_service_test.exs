@@ -5,9 +5,13 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
 
   alias DiscoveryApi.Services.PrestoService
 
+  setup do
+    allow(Prestige.new_session(any()), return: :connection)
+    :ok
+  end
+
   test "preview should query presto for given table" do
     dataset = "things_in_the_fire"
-    response_from_execute = %{something: "Unique", id: Faker.UUID.v4()}
 
     list_of_maps = [
       %{"id" => Faker.UUID.v4(), name: Faker.Lorem.characters(3..10)},
@@ -15,29 +19,27 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
       %{"id" => Faker.UUID.v4(), name: Faker.Lorem.characters(3..10)}
     ]
 
-    expect(Prestige.execute("select * from #{dataset} limit 50", rows_as_maps: true),
-      return: response_from_execute
-    )
+    allow(Prestige.query!(:connection, "select * from #{dataset} limit 50"), return: :result)
+    expect(Prestige.Result.as_maps(:result), return: list_of_maps)
 
-    expect(Prestige.prefetch(response_from_execute), return: list_of_maps)
-
-    result = PrestoService.preview(dataset)
+    result = PrestoService.preview(:connection, dataset)
     assert list_of_maps == result
   end
 
   test "preview_columns should query presto for given columns" do
     dataset = "things_in_the_fire"
-    response_from_execute = %{something: "Unique", id: Faker.UUID.v4()}
 
     list_of_columns = ["col_a", "col_b", "col_c"]
 
-    unprocessed_columns = [["col_a", "varchar", "", ""], ["col_b", "varchar", "", ""], ["col_c", "integer", "", ""]]
+    unprocessed_columns = %Prestige.Result{
+      columns: :doesnt_matter,
+      presto_headers: :doesnt_matter,
+      rows: [["col_a", "varchar", "", ""], ["col_b", "varchar", "", ""], ["col_c", "integer", "", ""]]
+    }
 
-    expect(Prestige.execute("show columns from #{dataset}"), return: response_from_execute)
+    allow(Prestige.query!(:connection, "show columns from #{dataset}"), return: unprocessed_columns)
 
-    expect(Prestige.prefetch(response_from_execute), return: unprocessed_columns)
-
-    result = PrestoService.preview_columns(dataset)
+    result = PrestoService.preview_columns(:connection, dataset)
     assert list_of_columns == result
   end
 
@@ -69,18 +71,11 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
 
       explain_return = make_explain_output(make_query_plan([%{name: public_one_table}, %{name: public_two_table}]))
 
-      allow(Prestige.execute(any(), any()), return: explain_return)
+      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.Result.as_maps(any()), return: explain_return)
 
       expected_read_tables = [public_one_table, public_two_table]
-      assert {:ok, ^expected_read_tables} = PrestoService.get_affected_tables(statement)
-    end
-
-    defp make_explain_output(query_plan) do
-      [
-        %{
-          "Query Plan" => query_plan
-        }
-      ]
+      assert {:ok, ^expected_read_tables} = PrestoService.get_affected_tables(any(), statement)
     end
 
     test "reflects when statement has an insert in the query", %{public_one_table: public_one_table, public_two_table: public_two_table} do
@@ -90,9 +85,10 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
 
       explain_return = make_explain_output(make_query_plan([%{name: public_two_table}], %{name: public_one_table}))
 
-      allow(Prestige.execute(any(), any()), return: explain_return)
+      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.Result.as_maps(:result), return: explain_return)
 
-      assert {:error, _} = PrestoService.get_affected_tables(statement)
+      assert {:error, _} = PrestoService.get_affected_tables(any(), statement)
     end
 
     test "reflects when statement is not in the hive.default catalog and schema" do
@@ -102,9 +98,10 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
 
       explain_return = make_explain_output(make_query_plan([%{catalog: "$info_schema@hive", schema: "information_schema"}]))
 
-      allow(Prestige.execute(any(), any()), return: explain_return)
+      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.Result.as_maps(:result), return: explain_return)
 
-      assert {:error, _} = PrestoService.get_affected_tables(statement)
+      assert {:error, _} = PrestoService.get_affected_tables(any(), statement)
     end
 
     test "reflects when statement does not do IO operations" do
@@ -112,9 +109,10 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
 
       explain_return = make_explain_output(make_query_plan(statement))
 
-      allow(Prestige.execute(any(), any()), return: explain_return)
+      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.Result.as_maps(:result), return: explain_return)
 
-      assert {:error, _} = PrestoService.get_affected_tables(statement)
+      assert {:error, _} = PrestoService.get_affected_tables(any(), statement)
     end
 
     test "reflects when statement does not read or write to anything at all" do
@@ -124,9 +122,10 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
 
       explain_return = make_explain_output(make_query_plan([]))
 
-      allow(Prestige.execute(any(), any()), return: explain_return)
+      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.Result.as_maps(:result), return: explain_return)
 
-      assert {:error, _} = PrestoService.get_affected_tables(statement)
+      assert {:error, _} = PrestoService.get_affected_tables(any(), statement)
     end
 
     test "reflects when presto does not like the statement at all" do
@@ -134,9 +133,9 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
         THIS WILL NOT WORK
       """
 
-      allow(Prestige.execute(any(), any()), exec: fn _, _ -> raise Prestige.Error, message: "bad thing" end)
+      allow(Prestige.query!(any(), any()), exec: fn _, _ -> raise Prestige.Error, message: "bad thing" end)
 
-      assert {:error, _} = PrestoService.get_affected_tables(statement)
+      assert {:error, _} = PrestoService.get_affected_tables(any(), statement)
     end
   end
 
@@ -201,6 +200,14 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
         ["    VALUES 1, 2, 3    ", false]
       ])
     end
+  end
+
+  defp make_explain_output(query_plan) do
+    [
+      %{
+        "Query Plan" => query_plan
+      }
+    ]
   end
 
   defp make_query_plan_table(table) do

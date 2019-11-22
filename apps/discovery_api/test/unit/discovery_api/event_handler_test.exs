@@ -14,7 +14,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   describe "handle_event/1 organization_update" do
     test "should save organization to ecto" do
       org = TDG.create_organization(%{})
-      allow(Organizations.create_or_update(any()), return: :dontcare)
+      allow Organizations.create_or_update(any()), return: :dontcare
 
       EventHandler.handle_event(Brook.Event.new(type: organization_update(), data: org, author: :author))
 
@@ -30,7 +30,7 @@ defmodule DiscoveryApi.EventHandlerTest do
     end
 
     test "should save user/organization association to ecto", %{association_event: association_event} do
-      allow(Users.associate_with_organization(any(), any()), return: {:ok, %User{}})
+      allow Users.associate_with_organization(any(), any()), return: {:ok, %User{}}
 
       EventHandler.handle_event(Brook.Event.new(type: user_organization_associate(), data: association_event, author: :author))
 
@@ -39,7 +39,7 @@ defmodule DiscoveryApi.EventHandlerTest do
 
     test "logs errors when save fails", %{association_event: association_event} do
       error_message = "you're a huge embarrassing failure"
-      allow(Users.associate_with_organization(any(), any()), return: {:error, error_message})
+      allow Users.associate_with_organization(any(), any()), return: {:error, error_message}
 
       assert capture_log(fn ->
                EventHandler.handle_event(Brook.Event.new(type: user_organization_associate(), data: association_event, author: :author))

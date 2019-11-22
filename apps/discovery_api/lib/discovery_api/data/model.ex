@@ -143,9 +143,8 @@ defmodule DiscoveryApi.Data.Model do
       |> get_all_keys()
       |> Persistence.get_many_with_keys()
 
-    new_models =
-      models
-      |> Enum.map(fn model ->
+    _new_models =
+      Enum.map(models, fn model ->
         completeness = redis_kv_results["discovery-api:stats:#{model.id}"]
         downloads = redis_kv_results["smart_registry:downloads:count:#{model.id}"]
         queries = redis_kv_results["smart_registry:queries:count:#{model.id}"]

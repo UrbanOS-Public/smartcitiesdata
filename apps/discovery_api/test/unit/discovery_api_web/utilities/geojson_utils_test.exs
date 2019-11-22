@@ -7,7 +7,7 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtilsTest do
 
   describe("calculate_bounding_box/1") do
     data_test "calculates bounding box for #{geometry_type}" do
-      Logger.debug("Testing #{geometry_type}")
+      Logger.debug(fn -> "Testing #{geometry_type}" end)
 
       features = [
         %{"geometry" => %{"coordinates" => coordinates}}
@@ -89,7 +89,7 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtilsTest do
     end
 
     data_test "throws an exception when feature has #{error_reason}" do
-      Logger.debug("Testing #{error_reason}")
+      Logger.debug(fn -> "Testing #{error_reason}" end)
       features = [%{"geometry" => %{"coordinates" => coordinates}}]
 
       assert_raise MalformedGeometryError, fn ->

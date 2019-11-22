@@ -1,12 +1,9 @@
 use Mix.Config
 
-config :prestige,
-  headers: [
-    user: "discovery-api",
-    catalog: "hive",
-    schema: "default"
-  ],
-  log_level: :info
+config :prestige, :session_opts,
+  user: "discovery-api",
+  catalog: "hive",
+  schema: "default"
 
 config :discovery_api, DiscoveryApiWeb.Endpoint,
   secret_key_base: "7Qfvr6quFJ6Qks3FGiLMnm/eNV8K66yMVpkU46lCZ2rKj0YR9ksjxsB+SX3qHZre",
@@ -44,8 +41,7 @@ config :discovery_api, DiscoveryApi.Quantum.Scheduler,
   ]
 
 config :mime, :types, %{
-  "application/shapefile" => ["zip", "tgz", "tar.gz", "shapefile"],
-  "application/geo+json" => ["geojson"]
+  "application/zip" => ["zip", "shp", "shapefile"]
 }
 
 import_config "#{Mix.env()}.exs"

@@ -37,12 +37,15 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
     allow(MetricsService.record_api_hit(any(), any()), return: :does_not_matter)
 
     # these clearly need to be condensed
-    allow(PrestoService.get_column_names(any(), any()), return: {:ok, ["id", "name"]})
-    allow(PrestoService.preview_columns(@system_name), return: ["id", "name"])
-    allow(PrestoService.preview(@system_name), return: [[1, "Joe"], [2, "Robby"]])
+    allow(PrestoService.get_column_names(any(), any(), any()), return: {:ok, ["id", "name"]})
+    allow(PrestoService.preview_columns(any(), @system_name), return: ["id", "name"])
+    allow(PrestoService.preview(any(), @system_name), return: [[1, "Joe"], [2, "Robby"]])
     allow(PrestoService.build_query(any(), any()), return: {:ok, "select * from #{@system_name}"})
 
-    allow(Prestige.execute("select * from #{@system_name}", rows_as_maps: true),
+    allow(Prestige.new_session(any()), return: :connection)
+    allow(Prestige.query!(any(), "select * from #{@system_name}"), return: :result)
+
+    allow(Prestige.Result.as_maps(:result),
       return: [%{"id" => 1, "name" => "Joe"}, %{"id" => 2, "name" => "Robby"}]
     )
 

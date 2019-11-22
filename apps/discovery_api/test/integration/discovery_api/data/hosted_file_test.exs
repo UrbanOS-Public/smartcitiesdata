@@ -27,7 +27,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
 
     "test/integration/test-file.test"
     |> ExAws.S3.Upload.stream_file()
-    |> ExAws.S3.upload(Application.get_env(:discovery_api, :hosted_bucket), "test_org/#{@dataset_name}.tgz")
+    |> ExAws.S3.upload(Application.get_env(:discovery_api, :hosted_bucket), "test_org/#{@dataset_name}.shp")
     |> ExAws.request!()
 
     :ok
@@ -73,7 +73,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     Dataset.write(dataset)
 
     Patiently.wait_for!(
-      fn -> download_and_checksum(organization.orgName, dataset.technical.dataName, "application/shapefile") == @expected_checksum end,
+      fn -> download_and_checksum(organization.orgName, dataset.technical.dataName, "application/zip") == @expected_checksum end,
       dwell: 200,
       max_tries: 5
     )
@@ -96,7 +96,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     Dataset.write(dataset)
 
     Patiently.wait_for!(
-      fn -> download_and_checksum_with_format(organization.orgName, dataset.technical.dataName, "tgz") == @expected_checksum end,
+      fn -> download_and_checksum_with_format(organization.orgName, dataset.technical.dataName, "shp") == @expected_checksum end,
       dwell: 200,
       max_tries: 5
     )

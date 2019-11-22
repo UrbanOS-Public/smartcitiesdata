@@ -3,9 +3,11 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtils do
     This module handles calculating the bounding box for a list of features in a GeoJson strucutre
   """
 
+  def calculate_bounding_box(features_list, bounding_box \\ [nil, nil, nil, nil])
+
   def calculate_bounding_box(
         %{"geometry" => %{"coordinates" => coordinates}},
-        bounding_box \\ [nil, nil, nil, nil]
+        bounding_box
       ) do
     coordinates
     |> reduce_coordinates()

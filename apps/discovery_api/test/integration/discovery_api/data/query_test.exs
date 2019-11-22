@@ -15,9 +15,16 @@ defmodule DiscoveryApi.Data.QueryTest do
   @public_dataset_name "public_data"
   @private_dataset_name "private_data"
 
+  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+
   setup_all do
     Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
+
+    prestige_session =
+      @prestige_session_opts
+      |> Keyword.merge(receive_timeout: 10_000)
+      |> Prestige.new_session()
 
     membership = %{
       @organization_name => [
@@ -77,41 +84,47 @@ defmodule DiscoveryApi.Data.QueryTest do
     geojson_table = geojson_dataset.technical.systemName
 
     capture_log(fn ->
-      ~s|create table if not exists "#{public_table}" (id integer, name varchar)|
-      |> Prestige.execute()
-      |> Prestige.prefetch()
+      Prestige.query(
+        prestige_session,
+        ~s|create table if not exists "#{public_table}" (id integer, name varchar)|
+      )
     end)
 
     capture_log(fn ->
-      ~s|create table if not exists "#{private_table}" (id integer, name varchar)|
-      |> Prestige.execute()
-      |> Prestige.prefetch()
+      Prestige.query(
+        prestige_session,
+        ~s|create table if not exists "#{private_table}" (id integer, name varchar)|
+      )
     end)
 
     capture_log(fn ->
-      ~s|insert into "#{public_table}" values (1,'Fred'),(2,'Gred'),(3,'Hred')|
-      |> Prestige.execute()
-      |> Prestige.prefetch()
+      Prestige.query(
+        prestige_session,
+        ~s|insert into "#{public_table}" values (1,'Fred'),(2,'Gred'),(3,'Hred')|
+      )
     end)
 
     capture_log(fn ->
-      ~s|insert into "#{private_table}" values (3,'Brad'),(4,'Jrad'),(5,'Thad')|
-      |> Prestige.execute()
-      |> Prestige.prefetch()
+      Prestige.query(
+        prestige_session,
+        ~s|insert into "#{private_table}" values (3,'Brad'),(4,'Jrad'),(5,'Thad')|
+      )
     end)
 
     capture_log(fn ->
-      ~s|create table if not exists "#{geojson_table}" (feature varchar)|
-      |> Prestige.execute()
-      |> Prestige.prefetch()
+      Prestige.query(
+        prestige_session,
+        ~s|create table if not exists "#{geojson_table}" (feature varchar)|
+      )
     end)
 
     capture_log(fn ->
-      ~s|insert into "#{geojson_table}" (feature) values
-      ('{"geometry":{"coordinates":[[-1.0,1.0],[0.0,0.0]],"type":"LineString"},"properties":{"Foo":"Bar"},"type":"Feature"}'),
-      ('{"geometry":{"coordinates":[[-2.0,0.0],[3.0,0.0]],"type":"LineString"},"properties":{"Foo":"Baz"},"type":"Feature"}')|
-      |> Prestige.execute()
-      |> Prestige.prefetch()
+      Prestige.query(
+        prestige_session,
+        ~s|insert into "#{geojson_table}" (feature) values
+        ('{"geometry":{"coordinates":[[-1.0,1.0],[0.0,0.0]],"type":"LineString"},"properties":{"Foo":"Bar"},"type":"Feature"}'),
+        ('{"geometry":{"coordinates":[[-2.0,0.0],[3.0,0.0]],"type":"LineString"},"properties":{"Foo":"Baz"},"type":"Feature"}')|
+      )
     end)
 
     public_token = Helper.get_token_from_login(@username_with_public_access)
@@ -127,7 +140,8 @@ defmodule DiscoveryApi.Data.QueryTest do
        public_dataset: public_dataset,
        private_dataset: private_dataset,
        geojson_dataset: geojson_dataset,
-       geojson_table: geojson_table
+       geojson_table: geojson_table,
+       prestige_session: prestige_session
      }}
   end
 
@@ -379,7 +393,8 @@ defmodule DiscoveryApi.Data.QueryTest do
 
     test "any user can't delete from a table", %{
       private_table: private_table,
-      private_token: private_token
+      private_token: private_token,
+      prestige_session: prestige_session
     } do
       request_body = """
         DELETE FROM #{private_table}
@@ -390,15 +405,16 @@ defmodule DiscoveryApi.Data.QueryTest do
       assert actual.status_code == 400
 
       assert 3 ==
-               ~s|select * from #{private_table}|
-               |> Prestige.execute()
-               |> Prestige.prefetch()
+               prestige_session
+               |> Prestige.query!(~s|select * from #{private_table}|)
+               |> (fn result -> result.rows end).()
                |> Enum.count()
     end
 
     test "any user can't drop a table", %{
       private_table: private_table,
-      private_token: private_token
+      private_token: private_token,
+      prestige_session: prestige_session
     } do
       request_body = """
         DROP TABLE #{private_table}
@@ -410,15 +426,16 @@ defmodule DiscoveryApi.Data.QueryTest do
       assert actual.body == "{\"message\":\"Bad Request\"}"
 
       assert 3 ==
-               ~s|select * from #{private_table}|
-               |> Prestige.execute()
-               |> Prestige.prefetch()
+               prestige_session
+               |> Prestige.query!(~s|select * from #{private_table}|)
+               |> (fn result -> result.rows end).()
                |> Enum.count()
     end
 
     test "any user can't create a table", %{
       private_table: private_table,
-      private_token: private_token
+      private_token: private_token,
+      prestige_session: prestige_session
     } do
       request_body = """
         CREATE TABLE my_own_table (id integer, name varchar) AS SELECT * FROM #{private_table}
@@ -430,16 +447,15 @@ defmodule DiscoveryApi.Data.QueryTest do
       assert actual.body == "{\"message\":\"Bad Request\"}"
 
       assert_raise Prestige.Error, fn ->
-        ~s|select * from my_own_table|
-        |> Prestige.execute()
-        |> Prestige.prefetch()
+        Prestige.query!(prestige_session, ~s|select * from my_own_table|)
       end
     end
 
     test "any user can't perform multiple queries separated by newlines", %{
       public_table: public_table,
       private_table: private_table,
-      private_token: private_token
+      private_token: private_token,
+      prestige_session: prestige_session
     } do
       request_body = """
         SELECT * FROM #{public_table}
@@ -453,9 +469,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       assert actual.body == "{\"message\":\"Bad Request\"}"
 
       assert 3 ==
-               ~s|select * from #{private_table}|
-               |> Prestige.execute()
-               |> Prestige.prefetch()
+               prestige_session
+               |> Prestige.query!(~s|select * from #{private_table}|)
+               |> (fn result -> result.rows end).()
                |> Enum.count()
     end
 
@@ -475,7 +491,8 @@ defmodule DiscoveryApi.Data.QueryTest do
     test "any user can't perform multiple queries separated by a semicolon", %{
       public_table: public_table,
       private_table: private_table,
-      private_token: private_token
+      private_token: private_token,
+      prestige_session: prestige_session
     } do
       request_body = """
         SELECT * FROM #{public_table}; DROP TABLE #{private_table}
@@ -487,16 +504,17 @@ defmodule DiscoveryApi.Data.QueryTest do
       assert actual.body == "{\"message\":\"Bad Request\"}"
 
       assert 3 ==
-               ~s|select * from #{private_table}|
-               |> Prestige.execute()
-               |> Prestige.prefetch()
+               prestige_session
+               |> Prestige.query!(~s|select * from #{private_table}|)
+               |> (fn result -> result.rows end).()
                |> Enum.count()
     end
 
     test "any user can't insert data", %{
       public_table: public_table,
       private_table: private_table,
-      private_token: private_token
+      private_token: private_token,
+      prestige_session: prestige_session
     } do
       request_body = """
         INSERT INTO #{private_table} SELECT * FROM #{public_table}
@@ -508,9 +526,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       assert actual.body == "{\"message\":\"Bad Request\"}"
 
       assert 3 ==
-               ~s|select * from #{private_table}|
-               |> Prestige.execute()
-               |> Prestige.prefetch()
+               prestige_session
+               |> Prestige.query!(~s|select * from #{private_table}|)
+               |> (fn result -> result.rows end).()
                |> Enum.count()
     end
   end

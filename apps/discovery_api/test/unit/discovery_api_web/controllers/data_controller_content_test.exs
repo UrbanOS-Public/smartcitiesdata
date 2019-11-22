@@ -64,12 +64,15 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
       allow(MetricsService.record_api_hit(any(), any()), return: :does_not_matter)
 
       # these clearly need to be condensed
-      allow(PrestoService.get_column_names(any(), any()), return: {:ok, ["feature"]})
-      allow(PrestoService.preview_columns(@system_name), return: ["feature"])
-      allow(PrestoService.preview(@system_name), return: @geo_json_features)
+      allow(PrestoService.get_column_names(any(), any(), any()), return: {:ok, ["feature"]})
+      allow(PrestoService.preview_columns(any(), @system_name), return: ["feature"])
+      allow(PrestoService.preview(any(), @system_name), return: @geo_json_features)
       allow(PrestoService.build_query(any(), any()), return: {:ok, "select * from #{@system_name}"})
 
-      allow(Prestige.execute("select * from #{@system_name}", rows_as_maps: true),
+      allow(Prestige.new_session(any()), return: :connect)
+      allow(Prestige.query!(any(), "select * from #{@system_name}"), return: :result)
+
+      allow(Prestige.Result.as_maps(:result),
         return: [
           %{"feature" => "{\"geometry\":{\"coordinates\":[[0,0],[0,1]]}}"},
           %{"feature" => "{\"geometry\":{\"coordinates\":[[1,0]]}}"},

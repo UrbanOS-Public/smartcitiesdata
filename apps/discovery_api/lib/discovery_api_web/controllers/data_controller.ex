@@ -6,6 +6,8 @@ defmodule DiscoveryApiWeb.DataController do
   alias DiscoveryApiWeb.Utilities.AuthUtils
   require Logger
 
+  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+
   plug GetModel
   plug :conditional_accepts, DataView.accepted_formats() when action in [:fetch_file]
   plug :accepts, DataView.accepted_formats() when action in [:query]
@@ -22,10 +24,11 @@ defmodule DiscoveryApiWeb.DataController do
   end
 
   def fetch_preview(conn, _params) do
+    session = Prestige.new_session(@prestige_session_opts)
     dataset_name = conn.assigns.model.systemName
-    columns = PrestoService.preview_columns(dataset_name)
+    columns = PrestoService.preview_columns(session, dataset_name)
     schema = conn.assigns.model.schema
-    rows = PrestoService.preview(dataset_name)
+    rows = PrestoService.preview(session, dataset_name)
 
     render(conn, :data, %{rows: rows, columns: columns, dataset_name: dataset_name, schema: schema})
   rescue
@@ -55,7 +58,11 @@ defmodule DiscoveryApiWeb.DataController do
     dataset_id = conn.assigns.model.id
     schema = conn.assigns.model.schema
 
-    data_stream = Prestige.execute("select * from #{dataset_name}", rows_as_maps: true)
+    data_stream =
+      @prestige_session_opts
+      |> Prestige.new_session()
+      |> Prestige.query!("select * from #{dataset_name}")
+      |> Prestige.Result.as_maps()
 
     rendered_data_stream =
       DataView.render_as_stream(:data, format, %{stream: data_stream, columns: [], dataset_name: dataset_name, schema: schema})
@@ -69,11 +76,15 @@ defmodule DiscoveryApiWeb.DataController do
     dataset_id = conn.assigns.model.id
     current_user = conn.assigns.current_user
     schema = conn.assigns.model.schema
+    session = Prestige.new_session(@prestige_session_opts)
 
-    with {:ok, columns} <- PrestoService.get_column_names(dataset_name, Map.get(params, "columns")),
+    with {:ok, columns} <- PrestoService.get_column_names(session, dataset_name, Map.get(params, "columns")),
          {:ok, query} <- PrestoService.build_query(params, dataset_name),
          true <- AuthUtils.authorized_to_query?(query, current_user) do
-      data_stream = Prestige.execute(query, rows_as_maps: true)
+      data_stream =
+        session
+        |> Prestige.query!(query)
+        |> Prestige.Result.as_maps()
 
       rendered_data_stream =
         DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name, schema: schema})

@@ -5,16 +5,16 @@ defmodule DiscoveryApi.Services.PrestoService do
     ~r/^\s*WITH\s.*$/i
   ]
 
-  def preview(dataset_system_name, row_limit \\ 50) do
-    "select * from #{dataset_system_name} limit #{row_limit}"
-    |> Prestige.execute(rows_as_maps: true)
-    |> Prestige.prefetch()
+  def preview(session, dataset_system_name, row_limit \\ 50) do
+    session
+    |> Prestige.query!("select * from #{dataset_system_name} limit #{row_limit}")
+    |> Prestige.Result.as_maps()
   end
 
-  def preview_columns(dataset_system_name) do
-    "show columns from #{dataset_system_name}"
-    |> Prestige.execute()
-    |> Prestige.prefetch()
+  def preview_columns(session, dataset_system_name) do
+    session
+    |> Prestige.query!("show columns from #{dataset_system_name}")
+    |> Map.get(:rows)
     |> Enum.map(fn [column_name | _tail] -> column_name end)
   end
 
@@ -24,8 +24,8 @@ defmodule DiscoveryApi.Services.PrestoService do
     Enum.any?(@supported_statements, &Regex.match?(&1, cleaned))
   end
 
-  def get_affected_tables(statement) do
-    with {:ok, explanation} <- explain_statement(statement),
+  def get_affected_tables(session, statement) do
+    with {:ok, explanation} <- explain_statement(session, statement),
          {:ok, query_plan} <- extract_query_plan(explanation),
          [] <- extract_write_tables(query_plan),
          [] <- extract_system_tables(query_plan),
@@ -36,9 +36,10 @@ defmodule DiscoveryApi.Services.PrestoService do
     end
   end
 
-  defp explain_statement(statement) do
+  defp explain_statement(session, statement) do
     plan =
-      Prestige.execute("EXPLAIN (TYPE IO, FORMAT JSON) " <> statement, rows_as_maps: true)
+      Prestige.query!(session, "EXPLAIN (TYPE IO, FORMAT JSON) " <> statement)
+      |> Prestige.Result.as_maps()
       |> Enum.into([])
       |> hd()
       |> Map.get("Query Plan")
@@ -78,19 +79,19 @@ defmodule DiscoveryApi.Services.PrestoService do
     catalog == "hive" && schema == "default"
   end
 
-  def get_column_names(system_name, nil), do: get_column_names(system_name)
+  def get_column_names(session, system_name, nil), do: get_column_names(session, system_name)
 
-  def get_column_names(system_name, columns_string) do
-    case get_column_names(system_name) do
+  def get_column_names(session, system_name, columns_string) do
+    case get_column_names(session, system_name) do
       {:ok, _names} -> {:ok, clean_columns(columns_string)}
       {_, error} -> {:error, error}
     end
   end
 
-  def get_column_names(system_name) do
-    "describe #{system_name}"
-    |> Prestige.execute()
-    |> Prestige.prefetch()
+  def get_column_names(session, system_name) do
+    session
+    |> Prestige.query!("describe #{system_name}")
+    |> Map.get(:rows)
     |> Enum.map(fn [col | _tail] -> col end)
     |> case do
       [] -> {:error, "Table #{system_name} not found"}

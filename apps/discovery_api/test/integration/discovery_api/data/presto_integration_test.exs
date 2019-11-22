@@ -6,6 +6,8 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
   alias DiscoveryApi.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
 
+  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+
   setup do
     Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
@@ -17,9 +19,10 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     dataset_id = "123"
     system_name = "not_saved"
 
-    "create table if not exists #{system_name} (id integer, name varchar)"
-    |> Prestige.execute()
-    |> Prestige.prefetch()
+    @prestige_session_opts
+    |> Keyword.merge(receive_timeout: 10_000)
+    |> Prestige.new_session()
+    |> Prestige.query!("create table if not exists #{system_name} (id integer, name varchar)")
 
     organization = Helper.create_persisted_organization()
 
@@ -38,13 +41,15 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     dataset_id = "1234-4567-89101"
     system_name = "foobar__company_data"
 
-    "create table if not exists #{system_name} (id integer, name varchar)"
-    |> Prestige.execute()
-    |> Prestige.prefetch()
+    @prestige_session_opts
+    |> Keyword.merge(receive_timeout: 10_000)
+    |> Prestige.new_session()
+    |> Prestige.query!("create table if not exists #{system_name} (id integer, name varchar)")
 
-    ~s|insert into "#{system_name}" values (1, 'bob'), (2, 'mike')|
-    |> Prestige.execute()
-    |> Prestige.prefetch()
+    @prestige_session_opts
+    |> Keyword.merge(receive_timeout: 10_000)
+    |> Prestige.new_session()
+    |> Prestige.query!(~s|insert into "#{system_name}" values (1, 'bob'), (2, 'mike')|)
 
     organization = Helper.create_persisted_organization()
 

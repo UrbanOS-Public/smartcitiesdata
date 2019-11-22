@@ -54,6 +54,8 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
     allow(Model.get_all(), return: datasets, meck_options: [:passthrough])
 
+    allow(Prestige.new_session(any()), return: :connection)
+
     {
       :ok,
       %{
@@ -93,9 +95,10 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
       """
 
-      allow(Prestige.execute(any(), any()), return: expected_response)
+      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.Result.as_maps(:result), return: expected_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
+      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
       allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       response_body =
@@ -120,9 +123,10 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
       """
 
-      allow(Prestige.execute(any(), any()), return: allowed_response)
+      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.Result.as_maps(:result), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
+      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
       allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       response_body =
@@ -145,9 +149,10 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
       """
 
-      allow(Prestige.execute(any(), any()), return: allowed_response)
+      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.Result.as_maps(:result), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {:ok, private_tables})
+      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
       allow(AuthUtils.authorized_to_query?(any(), any()), return: true, meck_options: [:passthrough])
 
       assert conn
@@ -167,9 +172,10 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
       """
 
-      allow(Prestige.execute(any(), any()), return: allowed_response)
+      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.Result.as_maps(:result), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {:ok, private_tables})
+      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
       allow(AuthUtils.authorized_to_query?(any(), any()), seq: [false, true])
 
       assert conn
@@ -184,8 +190,9 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         INSERT INTO public__one SELECT * FROM public__two
       """
 
+      allow(Prestige.query!(any(), any()), return: :result)
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {:error, :does_not_matter})
+      allow(PrestoService.get_affected_tables(any(), statement), return: {:error, :does_not_matter})
       allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       assert conn
@@ -205,9 +212,10 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       SELECT * FROM not_in_redis
       """
 
-      allow(Prestige.execute(any(), any()), return: allowed_response)
+      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.Result.as_maps(:result), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {:ok, ["not_in_redis"]})
+      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, ["not_in_redis"]})
       allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       _response_body =
@@ -217,7 +225,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         |> post("/api/v1/query", statement)
         |> response(400)
 
-      assert not called?(Prestige.execute(any(), any()))
+      assert not called?(Prestige.query!(any(), any()))
     end
 
     test "can't perform query if it not a supported/allowed statement type", %{conn: conn, public_tables: public_tables} do
@@ -225,8 +233,9 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         EXPLAIN ANALYZE select * from public__one
       """
 
+      allow(Prestige.query!(any(), any()), return: :result)
       allow(PrestoService.is_select_statement?(statement), return: false)
-      allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
+      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
       allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       assert conn
@@ -252,10 +261,9 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       expected_response = "{\"message\":\"#{failure_message}\"}"
 
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {:ok, public_tables})
+      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
       allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
-
-      allow(Prestige.execute(any(), any()), exec: fn _, _ -> raise Prestige.Error, failure_message end)
+      allow(Prestige.query!(any(), any()), exec: fn _, _ -> raise Prestige.Error, failure_message end)
 
       assert expected_response ==
                conn
@@ -270,8 +278,9 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
     setup do
       statement = "SELECT * FROM geojson__geojson"
 
-      allow(
-        Prestige.execute(statement, rows_as_maps: true),
+      allow(Prestige.query!(any(), any()), return: :result)
+
+      allow(Prestige.Result.as_maps(:result),
         return: [
           %{"feature" => "{\"geometry\": {\"coordinates\": [1, 0]}}"},
           %{"feature" => "{\"geometry\": {\"coordinates\": [[0, 1]]}}"}
@@ -279,7 +288,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       )
 
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(statement), return: {:ok, ["geojson__geojson"]})
+      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, ["geojson__geojson"]})
       allow(LdapAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       %{statement: statement}

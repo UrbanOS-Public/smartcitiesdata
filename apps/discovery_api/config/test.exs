@@ -1,17 +1,17 @@
 use Mix.Config
 
+config :prestige, :session_opts, url: "http://localhost:8080"
+
 config :discovery_api, DiscoveryApiWeb.Endpoint,
   http: [port: 4001],
   server: false,
   url: [host: "data.tests.example.com", port: 80]
 
 config :discovery_api,
+  user_info_endpoint: "pretend-this-is-a-url/userinfo",
+  jwks_endpoint: "pretend-this-is-a-url/jwks",
   allowed_origins: ["tests.example.com"],
   test_mode: true
-
-config :discovery_api,
-  jwks_endpoint: "pretend-this-is-a-url/jwks",
-  user_info_endpoint: "pretend-this-is-a-url/userinfo"
 
 config :logger, level: :warn
 

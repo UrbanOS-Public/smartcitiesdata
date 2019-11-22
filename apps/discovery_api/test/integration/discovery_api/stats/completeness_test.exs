@@ -10,12 +10,15 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   alias DiscoveryApi.Stats.DataHelper
   alias DiscoveryApi.Test.Helper
 
+  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+
   setup do
     Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
     :ok
   end
 
+  @moduletag timeout: :infinity
   @moduletag capture_log: true
   describe "produce_completeness_stats/0" do
     test "Adds stats entries for dataset to redis" do
@@ -49,25 +52,21 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
       dataset1
       |> PrestoTestHelper.create_test_table()
-      |> Prestige.execute()
-      |> Prestige.prefetch()
+      |> prestige_execute()
 
       dataset1
       |> PrestoTestHelper.insert_sample_data()
-      |> Prestige.execute()
-      |> Prestige.prefetch()
+      |> prestige_execute()
 
       Persistence.persist("forklift:last_insert_date:#{dataset1.id}", DateTime.utc_now())
 
       dataset2
       |> PrestoTestHelper.create_small_test_table()
-      |> Prestige.execute()
-      |> Prestige.prefetch()
+      |> prestige_execute()
 
       dataset2
       |> PrestoTestHelper.insert_small_sample_data()
-      |> Prestige.execute()
-      |> Prestige.prefetch()
+      |> prestige_execute()
 
       Persistence.persist("forklift:last_insert_date:#{dataset2.id}", DateTime.utc_now())
 
@@ -157,5 +156,11 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
     |> Map.from_struct()
     |> Map.get(:body)
     |> Jason.decode!()
+  end
+
+  defp prestige_execute(query) do
+    @prestige_session_opts
+    |> Prestige.new_session()
+    |> Prestige.execute!(query)
   end
 end

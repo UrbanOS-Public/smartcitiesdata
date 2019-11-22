@@ -14,8 +14,10 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
 
       allow(Dataset.get_all!(), return: [dataset], meck_options: [:passthrough])
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
+      allow(Prestige.new_session(any()), return: :connection)
+      allow(Prestige.query!(any(), any()), return: :results)
 
-      allow(Prestige.execute(any(), any()),
+      allow(Prestige.Result.as_maps(any()),
         return: [
           %{"age" => 78, "name" => "Alex Trebek"},
           %{"age" => 72, "name" => "Pat Sajak"},
@@ -76,7 +78,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
       allow(Dataset.get_all!(), return: [dataset], meck_options: [:passthrough])
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
 
-      allow(Prestige.execute(any(), any()),
+      allow(Prestige.query!(any(), any()),
         return: []
       )
 
@@ -93,7 +95,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
       allow(Dataset.get_all!(), return: [dataset], meck_options: [:passthrough])
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
 
-      allow(Prestige.execute(any(), any()),
+      allow(Prestige.query!(any(), any()),
         return: [
           %{"age" => 78, "name" => "Alex Trebek"},
           %{"age" => 72, "name" => "Pat Sajak"},
@@ -118,7 +120,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
       allow(Dataset.get_all!(), return: [dataset], meck_options: [:passthrough])
 
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
-      allow(Prestige.execute(any(), any()), return: [])
+      allow(Prestige.query!(any(), any()), return: [])
 
       allow(Persistence.get(any()), return: nil)
 

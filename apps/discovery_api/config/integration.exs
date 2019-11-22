@@ -36,8 +36,7 @@ config :ex_json_schema,
        :remote_schema_resolver,
        fn url -> URLResolver.resolve_url(url) end
 
-config :prestige,
-  base_url: "http://#{host}:8080"
+config :prestige, :session_opts, url: "http://#{host}:8080"
 
 config :paddle, Paddle,
   host: host,

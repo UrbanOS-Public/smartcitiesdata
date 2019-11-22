@@ -37,17 +37,13 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
       allow(SystemNameCache.get(any(), any()), return: dataset_id)
       allow(Model.get(dataset_id), return: model)
 
-      allow(PrestoService.preview_columns(any()),
+      allow(PrestoService.preview_columns(any(), any()),
         return: ["bob", "andi"]
       )
 
-      allow(Prestige.execute(any(), any()),
-        return: [%{"andi" => 1, "bob" => 2}]
-      )
-
-      allow(Prestige.prefetch(any()),
-        return: [%{"andi" => 1, "bob" => 2}]
-      )
+      allow(Prestige.new_session(any()), return: :connection)
+      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.Result.as_maps(any()), return: [%{"andi" => 1, "bob" => 2}])
 
       allow(Redix.command!(any(), any()), return: :does_not_matter)
 

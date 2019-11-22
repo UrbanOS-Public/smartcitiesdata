@@ -5,9 +5,12 @@ defmodule DiscoveryApiWeb.Utilities.AuthUtils do
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApi.Data.Model
 
+  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+
   def authorized_to_query?(statement, username, access_module \\ DiscoveryApiWeb.Utilities.LdapAccessUtils) do
     with true <- PrestoService.is_select_statement?(statement),
-         {:ok, affected_tables} <- PrestoService.get_affected_tables(statement),
+         session <- Prestige.new_session(@prestige_session_opts),
+         {:ok, affected_tables} <- PrestoService.get_affected_tables(session, statement),
          affected_models <- get_affected_models(affected_tables) do
       valid_tables?(affected_tables, affected_models) && can_access_models?(affected_models, username, access_module)
     else
