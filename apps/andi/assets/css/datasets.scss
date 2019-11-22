@@ -80,3 +80,70 @@
 .datasets-table__th--sortable {
   cursor: pointer;
 }
+
+.metadata-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(10, 1fr);
+  grid-row-gap: 2rem;
+  grid-column-gap: 10rem;
+  grid-template-areas:
+    "title last-updated"
+    "description spatial"
+    "description temporal"
+    "format organization"
+    "maintainer-name level-of-access"
+    "maintainer-email language"
+    "release-date homepage"
+    "license ."
+    "update-frequency ."
+    "keywords .";
+
+  label {
+    display: block;
+  }
+}
+
+@mixin area($name) {
+  .metadata-form__#{$name} {
+    grid-area: $name
+  }
+}
+
+@include area(title)
+@include area(description)
+@include area(format)
+@include area(maintainer-name)
+@include area(maintainer-email)
+@include area(release-date)
+@include area(license)
+@include area(update-frequency)
+@include area(keywords)
+
+@include area(last-updated)
+@include area(spatial)
+@include area(temporal)
+@include area(organization)
+@include area(level-of-access)
+@include area(language)
+@include area(homepage)
+
+.metadata-form__description {
+  textarea {
+    width: 100%;
+    // Yuck
+    height: 80%;
+  }
+}
+
+.btn {
+  padding: 1rem 2rem;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn--cancel {
+  background-color: black;
+  color: white;
+}

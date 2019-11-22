@@ -36,7 +36,7 @@ defmodule Andi.DatasetCache do
     Logger.warn("Not caching dataset because it is invalid: #{inspect(invalid_dataset)}")
   end
 
-  defp get(id) do
+  def get(id) do
     case :ets.match_object(__MODULE__, {id, :"$1"}) do
       [{_key, value} | _t] -> value
       _ -> %{}
