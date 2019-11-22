@@ -4,7 +4,7 @@ defmodule Flair.MixProject do
   def project do
     [
       app: :flair,
-      version: "0.3.0",
+      version: "0.3.1",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -53,15 +53,16 @@ defmodule Flair.MixProject do
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:faker, "~> 0.12", only: [:test, :integration], override: true},
-      {:smart_city_test, "~> 0.7", only: [:test, :integration]},
+      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:smart_city_test, "~> 0.7", only: [:dev, :test, :integration]},
       {:distillery, "~> 2.1"},
+      {:pipeline, in_umbrella: true},
       {:tasks, in_umbrella: true, only: :dev}
     ]
   end
 
   defp aliases do
     [
-      test: ["test --no-start"],
       verify: ["format --check-formatted", "credo"]
     ]
   end

@@ -4,26 +4,46 @@ defmodule Andi.DatasetCache do
 
   require Logger
 
-  alias Andi.Services.DatasetRetrieval
+  import Andi, only: [instance_name: 0]
 
-  # Client
   def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def put_datasets(datasets) when is_list(datasets) do
-    Enum.each(datasets, &put_dataset/1)
+  def put(datasets) when is_list(datasets) do
+    Enum.each(datasets, &put/1)
   end
 
-  def put_dataset(%SmartCity.Dataset{} = dataset) do
-    :ets.insert(__MODULE__, {dataset.id, dataset})
+  def put(%SmartCity.Dataset{} = dataset) do
+    updated =
+      dataset.id
+      |> get()
+      |> Map.merge(%{"id" => dataset.id, "dataset" => dataset})
+
+    :ets.insert(__MODULE__, {dataset.id, updated})
   end
 
-  def put_dataset(invalid_dataset) do
+  def put(%{"id" => id, "ingested_time" => time_stamp}) do
+    updated =
+      id
+      |> get()
+      |> Map.merge(%{"id" => id, "ingested_time" => time_stamp})
+
+    :ets.insert(__MODULE__, {id, updated})
+  end
+
+  def put(invalid_dataset) do
     Logger.warn("Not caching dataset because it is invalid: #{inspect(invalid_dataset)}")
   end
 
-  def get_datasets do
+  defp get(id) do
+    case :ets.match_object(__MODULE__, {id, :"$1"}) do
+      [{_key, value} | _t] -> value
+      _ -> %{}
+    end
+  end
+
+  def get_all do
     :ets.match(__MODULE__, {:_, :"$1"}) |> List.flatten()
   end
 
@@ -33,7 +53,8 @@ defmodule Andi.DatasetCache do
     # In this case Brook is already single threaded so it should be ok.
     pid = :ets.new(__MODULE__, [:set, :public, :named_table])
 
-    DatasetRetrieval.get_all!() |> put_datasets()
+    Brook.get_all_values!(instance_name(), :dataset) |> put()
+    Brook.get_all_values!(instance_name(), :ingested_time) |> put()
 
     {:ok, pid}
   end

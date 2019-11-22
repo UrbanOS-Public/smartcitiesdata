@@ -3,15 +3,18 @@ defmodule Andi.EventHandler do
   use Brook.Event.Handler
   require Logger
 
-  import SmartCity.Event, only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0]
+  import SmartCity.Event,
+    only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0, data_ingest_end: 0]
 
   alias SmartCity.{Dataset, Organization}
   alias SmartCity.UserOrganizationAssociate
 
   alias Andi.DatasetCache
 
+  @ingested_time_topic "ingested_time_topic"
+
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data}) do
-    DatasetCache.put_dataset(data)
+    DatasetCache.put(data)
     {:merge, :dataset, data.id, data}
   end
 
@@ -30,6 +33,18 @@ defmodule Andi.EventHandler do
   def handle_event(%Brook.Event{type: "migration:modified_date:start"}) do
     Andi.Migration.ModifiedDateMigration.do_migration()
     {:create, :migration, "modified_date_migration_completed", true}
+  end
+
+  def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{id: id}, create_ts: create_ts}) do
+    # Brook converts all maps to string keys when it retrieves a value from its state, even if they're inserted as atom keys. For that reason, make sure to insert as string keys so that we're consistent.
+    DatasetCache.put(%{"id" => id, "ingested_time" => create_ts})
+
+    AndiWeb.Endpoint.broadcast!(@ingested_time_topic, "ingested_time_update", %{
+      "id" => id,
+      "ingested_time" => create_ts
+    })
+
+    {:create, :ingested_time, id, %{"id" => id, "ingested_time" => create_ts}}
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])

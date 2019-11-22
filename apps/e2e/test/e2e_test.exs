@@ -8,7 +8,6 @@ defmodule E2ETest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [data_ingest_start: 0]
 
   @brokers Application.get_env(:e2e, :elsa_brokers)
   @overrides %{
@@ -156,19 +155,13 @@ defmodule E2ETest do
       )
     end
 
-    # This really should test flair itself, but we're not quite ready to hook it up.
-    test "streams to flair for profiling" do
-      topic = Application.get_env(:forklift, :output_topic)
+    test "is profiled by flair", %{dataset: ds} do
+      table = Application.get_env(:flair, :table_name_timing)
 
-      eventually(fn ->
-        assert {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
+      expected = ["SmartCityOS", "forklift", "valkyrie", "reaper"]
+      actual = query("select distinct dataset_id, app from #{table}")
 
-        assert Jason.decode!(message.value)["payload"] == %{
-                 "one" => true,
-                 "two" => "foobar",
-                 "three" => 10
-               }
-      end)
+      Enum.each(expected, fn app -> assert [ds.id, app] in actual end)
     end
   end
 
