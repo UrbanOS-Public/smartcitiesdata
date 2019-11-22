@@ -33,13 +33,14 @@ defmodule DiscoveryApiWeb.VisualizationController do
     end
   end
 
-  def update(conn, %{"id" => public_id} = attribute_changes) do
+  def update(conn, %{"id" => public_id, "chart" => chart} = attribute_changes) do
     with {:ok, user} <- Users.get_user(conn.assigns.current_user, :subject_id),
-         {:ok, visualization} <- Visualizations.update_visualization_by_id(public_id, attribute_changes, user) do
+         {:ok, json_chart} <- Jason.encode(chart),
+         changes_with_encoded_chart <- Map.put(attribute_changes, "chart", json_chart),
+         {:ok, visualization} <- Visualizations.update_visualization_by_id(public_id, changes_with_encoded_chart, user) do
       render(conn, :visualization, %{visualization: visualization})
     else
-      _ ->
-        render_error(conn, 400, "Bad Request")
+      _ -> render_error(conn, 400, "Bad Request")
     end
   end
 
