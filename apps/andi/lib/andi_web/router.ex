@@ -23,6 +23,7 @@ defmodule AndiWeb.Router do
 
     get "/", Redirect, to: "/datasets"
     live "/datasets", DatasetLiveView, session: [:path_params]
+    get "/datasets/:id", EditController, :show
   end
 
   scope "/api", AndiWeb.API do
