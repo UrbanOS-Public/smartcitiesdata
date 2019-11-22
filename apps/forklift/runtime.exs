@@ -16,14 +16,16 @@ Enum.each(required_envars, fn var ->
 end)
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
-redis_host = System.get_env("REDIS_HOST")
-redis_password = System.get_env("REDIS_PASSWORD")
-all_redis_args = [host: redis_host, password: redis_password]
-redix_args = Enum.filter(all_redis_args, fn
-  {_, nil} -> false
-  {_, ""} -> false
-  _ -> true
-end)
+get_redix_args = fn (host, password) ->
+	[host: host, password: password]
+	|> Enum.filter(fn
+		{_, nil} -> false
+		{_, ""} -> false
+		_ -> true
+	end)
+end
+redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
+
 topic = System.get_env("DATA_TOPIC_PREFIX")
 output_topic = System.get_env("OUTPUT_TOPIC")
 metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
