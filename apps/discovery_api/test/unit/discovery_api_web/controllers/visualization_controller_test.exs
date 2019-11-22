@@ -88,7 +88,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       |> response(400)
     end
 
-    test "returns BAD REQUEST when user creates more than the limit of visualizations for their account" do
+    test "returns BAD REQUEST when user creates more than the limit of visualizations for their account", %{conn: conn} do
       allow(Users.get_user_with_visualizations(@valid_jwt_subject, :subject_id),
         return: {:ok, %{id: @user_id, visualizations: [1, 2, 3, 4, 5]}}
       )
