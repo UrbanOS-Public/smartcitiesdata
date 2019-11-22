@@ -3,8 +3,8 @@ defmodule Pipeline.Reader.DatasetTopicReader do
   Implementation of `Pipeline.Reader` for dataset Kafka topics.
   """
 
+  alias Pipeline.Reader.TopicReader
   @behaviour Pipeline.Reader
-  alias Pipeline.Reader.DatasetTopicReader.InitTask
 
   @type init_args() :: [
           instance: atom(),
@@ -27,15 +27,14 @@ defmodule Pipeline.Reader.DatasetTopicReader do
   topic if necessary.
 
   Optional arguments:
+  * `handler_init_args` - Initial state passed to handler. Defaults to `[]`.
+  * `topic_subscriber_config` - Subscriber configuration passed to underlying libraries. Defaults to `[]`
   * `retry_count` - Times to retry topic creation. Defaults to 10
   * `retry_delay` - Milliseconds to initially wait before retrying. Defaults to 100
-  * `topic_subscriber_config` - Subscriber configuration passed to underlying libraries. Defaults to `[]`
   """
   def init(args) do
-    case DynamicSupervisor.start_child(Pipeline.DynamicSupervisor, {InitTask, args}) do
-      {:ok, _} -> :ok
-      error -> {:error, error}
-    end
+    parse_init_args(args)
+    |> TopicReader.init()
   end
 
   @impl Pipeline.Reader
@@ -44,17 +43,28 @@ defmodule Pipeline.Reader.DatasetTopicReader do
   Destroys topic consumer infrastructure.
   """
   def terminate(args) do
-    with connection <- connection(args),
-         {:ok, pid} <- Registry.meta(Pipeline.Registry, connection) do
-      DynamicSupervisor.terminate_child(Pipeline.DynamicSupervisor, pid)
+    with instance <- Keyword.fetch!(args, :instance),
+         dataset <- Keyword.fetch!(args, :dataset),
+         topic <- "#{Keyword.fetch!(args, :input_topic_prefix)}-#{dataset.id}" do
+      TopicReader.terminate(instance: instance, topic: topic)
     end
   end
 
-  defp connection(args) do
+  defp parse_init_args(args) do
     instance = Keyword.fetch!(args, :instance)
-    prefix = Keyword.fetch!(args, :input_topic_prefix)
     dataset = Keyword.fetch!(args, :dataset)
+    topic = "#{Keyword.fetch!(args, :input_topic_prefix)}-#{dataset.id}"
 
-    :"#{instance}-#{prefix}-#{dataset.id}-consumer"
+    [
+      instance: instance,
+      connection: :"#{instance}-#{topic}-#{dataset.id}-consumer",
+      endpoints: Keyword.fetch!(args, :endpoints),
+      topic: topic,
+      handler: Keyword.fetch!(args, :handler),
+      handler_init_args: Keyword.get(args, :handler_init_args, []),
+      topic_subscriber_config: Keyword.get(args, :topic_subscriber_config, []),
+      retry_count: Keyword.get(args, :retry_count, 10),
+      retry_delay: Keyword.get(args, :retry_delay, 100)
+    ]
   end
 end
