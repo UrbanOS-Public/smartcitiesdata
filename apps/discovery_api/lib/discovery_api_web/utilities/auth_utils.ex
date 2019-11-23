@@ -5,7 +5,7 @@ defmodule DiscoveryApiWeb.Utilities.AuthUtils do
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApi.Data.Model
 
-  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+  @prestige_session_opts DiscoveryApi.prestige_session_opts()
 
   def authorized_to_query?(statement, username, access_module \\ DiscoveryApiWeb.Utilities.LdapAccessUtils) do
     with true <- PrestoService.is_select_statement?(statement),

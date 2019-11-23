@@ -15,7 +15,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   @public_dataset_name "public_data"
   @private_dataset_name "private_data"
 
-  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+  @prestige_session_opts DiscoveryApi.prestige_session_opts()
 
   setup_all do
     Helper.wait_for_brook_to_be_ready()

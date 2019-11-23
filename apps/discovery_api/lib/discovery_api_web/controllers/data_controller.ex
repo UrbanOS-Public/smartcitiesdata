@@ -6,7 +6,7 @@ defmodule DiscoveryApiWeb.DataController do
   alias DiscoveryApiWeb.Utilities.AuthUtils
   require Logger
 
-  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+  @prestige_session_opts DiscoveryApi.prestige_session_opts()
 
   plug GetModel
   plug :conditional_accepts, DataView.accepted_formats() when action in [:fetch_file]
