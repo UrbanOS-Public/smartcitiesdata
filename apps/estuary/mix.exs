@@ -7,7 +7,8 @@ defmodule Estuary.MixProject do
       version: "0.1.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      test_paths: test_paths(Mix.env())
     ]
   end
 
@@ -22,9 +23,12 @@ defmodule Estuary.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:elsa, "~> 0.11"}
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:elsa, "~> 0.11"},
+      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]}
     ]
   end
+
+  defp test_paths(:integration), do: ["test/integration"]
+  defp test_paths(_), do: ["test/unit"]
 end

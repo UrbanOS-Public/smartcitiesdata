@@ -1,7 +1,7 @@
 defmodule Estuary.Worker do
   use GenServer
 
-  def start_link(args) do
+  def start_link(_) do
     GenServer.start_link(__MODULE__, :no_args, name: __MODULE__)
   end
 
