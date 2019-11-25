@@ -16,14 +16,14 @@ defmodule Forklift.Integration.InitTest do
 
   test "starts a dataset topic reader for each dataset view state" do
     test = self()
-    expect(MockReader, :init, 2, fn args -> send(test, args[:dataset]) end)
+    expect(MockReader, :init, 2, fn args -> send(test, args[:dataset]) && :ok end)
     expect(MockTopic, :init, fn _ -> :ok end)
 
     dataset1 = TDG.create_dataset(%{id: "view-state-1"})
     dataset2 = TDG.create_dataset(%{id: "view-state-2"})
 
     allow Brook.get_all_values!(instance_name(), :datasets), return: [dataset1, dataset2]
-    assert {:ok, _} = Forklift.Init.start_link([])
+    assert {:ok, _} = Forklift.Init.start_link(name: :foo)
 
     assert_receive(%SmartCity.Dataset{id: "view-state-1"}, 1000)
     assert_receive(%SmartCity.Dataset{id: "view-state-2"}, 1000)
@@ -32,21 +32,10 @@ defmodule Forklift.Integration.InitTest do
   test "initializes output_topic TopicWriter" do
     test = self()
     expect(MockReader, :init, 0, fn _ -> :ok end)
-    expect(MockTopic, :init, fn args -> send(test, args[:topic]) end)
+    expect(MockTopic, :init, fn args -> send(test, args[:topic]) && :ok end)
     allow Brook.get_all_values!(instance_name(), :datasets), return: []
 
-    assert {:ok, _} = Forklift.Init.start_link([])
+    assert {:ok, _} = Forklift.Init.start_link(name: :bar)
     assert_receive "test-topic"
-  end
-
-  test "terminates after initialization" do
-    expect(MockReader, :init, 0, fn _ -> :ok end)
-    expect(MockTopic, :init, fn _ -> :ok end)
-    allow Brook.get_all_values!(instance_name(), :datasets), return: []
-
-    {:ok, pid} = Forklift.Init.start_link([])
-    Process.monitor(pid)
-
-    assert_receive {:DOWN, _, _, ^pid, :normal}
   end
 end

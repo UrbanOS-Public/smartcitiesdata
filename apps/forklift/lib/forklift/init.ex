@@ -2,31 +2,35 @@ defmodule Forklift.Init do
   @moduledoc """
   Task to initialize forklift and start ingesting each previously recorded dataset
   """
-  use Task, restart: :transient
+  use GenServer
 
   alias Forklift.MessageHandler
-  import Forklift
 
+  @name :forklift_init_server
   @reader Application.get_env(:forklift, :data_reader)
 
-  def start_link(_opts) do
-    Task.start_link(__MODULE__, :run, [])
+  def start_link(opts) do
+    name = Keyword.get(opts, :name, @name)
+    GenServer.start_link(__MODULE__, [], name: name)
   end
 
-  def run() do
-    Forklift.DataWriter.bootstrap()
+  def init(_) do
+    with :ok <- Forklift.DataWriter.bootstrap(),
+         :ok <- init_readers() do
+      {:ok, []}
+    end
+  end
 
+  defp init_readers do
     Forklift.Datasets.get_all!()
     |> Enum.map(&reader_init_args/1)
-    |> Enum.each(fn args ->
-      @reader.init(args)
-      Process.sleep(250)
-    end)
+    |> Enum.map(&initialize/1)
+    |> validate_inits()
   end
 
   defp reader_init_args(dataset) do
     [
-      instance: instance_name(),
+      instance: Forklift.instance_name(),
       dataset: dataset,
       endpoints: Application.get_env(:forklift, :elsa_brokers),
       handler: MessageHandler,
@@ -35,4 +39,17 @@ defmodule Forklift.Init do
       topic_subscriber_config: Application.get_env(:forklift, :topic_subscriber_config)
     ]
   end
+
+  defp initialize(args) do
+    Process.sleep(250)
+    @reader.init(args)
+  end
+
+  defp validate_inits(results) do
+    case Enum.reject(results, fn res -> res == :ok end) do
+      [] -> :ok
+      [error | _] -> {:error, error}
+    end
+  end
+
 end

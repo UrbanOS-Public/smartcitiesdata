@@ -65,7 +65,7 @@ defmodule Forklift.DataWriter do
         :ok
 
       topic ->
-        bootstrap_args(:forklift, topic)
+        bootstrap_args(topic)
         |> @topic_writer.init()
     end
   end
@@ -157,14 +157,14 @@ defmodule Forklift.DataWriter do
     |> Forklift.Util.remove_from_metadata(:forklift_start_time)
   end
 
-  defp bootstrap_args(instance, topic) do
+  defp bootstrap_args(topic) do
     [
-      instance: instance,
-      endpoints: Application.get_env(instance, :elsa_brokers),
+      instance: instance_name(),
+      endpoints: Application.get_env(:forklift, :elsa_brokers),
       topic: topic,
-      producer_name: Application.get_env(instance, :producer_name),
-      retry_count: Application.get_env(instance, :retry_count),
-      retry_delay: Application.get_env(instance, :retry_initial_delay)
+      producer_name: Application.get_env(:forklift, :producer_name),
+      retry_count: Application.get_env(:forklift, :retry_count),
+      retry_delay: Application.get_env(:forklift, :retry_initial_delay)
     ]
   end
 end
