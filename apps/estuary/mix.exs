@@ -25,7 +25,8 @@ defmodule Estuary.MixProject do
     [
       {:elsa, "~> 0.10.0"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
-      {:divo_kafka, "~> 0.1.6", only: [:dev, :integration]}
+      {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
+      {:distillery, "~> 2.1"}
     ]
   end
 
