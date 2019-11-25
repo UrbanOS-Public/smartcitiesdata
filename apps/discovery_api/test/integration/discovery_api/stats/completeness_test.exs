@@ -10,7 +10,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   alias DiscoveryApi.Stats.DataHelper
   alias DiscoveryApi.Test.Helper
 
-  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+  @prestige_session_opts DiscoveryApi.prestige_session_opts()
 
   setup do
     Helper.wait_for_brook_to_be_ready()

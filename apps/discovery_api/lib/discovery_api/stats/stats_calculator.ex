@@ -9,7 +9,7 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
   alias SmartCity.Registry.Dataset
 
   @completeness_key "discovery-api:completeness_calculated_date"
-  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+  @prestige_session_opts DiscoveryApi.prestige_session_opts()
 
   @doc """
   Entry point for calculating completeness statistics.  This method will get all datasets from the SmartCity Registry and calculate their completeness stats, saving them to redis.

@@ -18,7 +18,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
   @organization_1_user "FirstUser"
   @organization_2_user "SecondUser"
 
-  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+  @prestige_session_opts DiscoveryApi.prestige_session_opts()
 
   setup_all do
     Helper.wait_for_brook_to_be_ready()

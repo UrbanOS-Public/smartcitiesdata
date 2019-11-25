@@ -12,9 +12,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   check_origin: false,
   watchers: []
 
-config :prestige,
-  base_url: "http://localhost:8080",
-  log_level: :debug
+config :prestige, :session_opts, url: "http://localhost:8080"
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

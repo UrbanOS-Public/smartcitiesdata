@@ -4,7 +4,7 @@ defmodule DiscoveryApiWeb.MultipleDataController do
   alias DiscoveryApiWeb.MultipleDataView
   alias DiscoveryApiWeb.Utilities.AuthUtils
 
-  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+  @prestige_session_opts DiscoveryApi.prestige_session_opts()
 
   plug(:accepts, MultipleDataView.accepted_formats())
 

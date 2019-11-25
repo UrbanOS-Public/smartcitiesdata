@@ -60,7 +60,7 @@ defmodule DiscoveryApi.Mixfile do
       {:placebo, "~> 1.2.2", only: [:dev, :test]},
       {:plug_cowboy, "~> 1.0"},
       {:postgrex, "~> 0.15.1"},
-      {:prestige, github: "smartcitiesdata/prestige", branch: "master"},
+      {:prestige, "~> 1.0"},
       {:prometheus_plugs, "~> 1.1"},
       {:prometheus_phoenix, "~>1.3"},
       {:quantum, "~>2.3"},

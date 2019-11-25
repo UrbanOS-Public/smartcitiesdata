@@ -6,7 +6,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
   alias DiscoveryApi.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
 
-  @prestige_session_opts Application.get_env(:prestige, :session_opts)
+  @prestige_session_opts DiscoveryApi.prestige_session_opts()
 
   setup do
     Helper.wait_for_brook_to_be_ready()
