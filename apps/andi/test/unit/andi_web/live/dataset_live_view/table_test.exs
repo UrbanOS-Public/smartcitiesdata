@@ -50,8 +50,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
         get(conn, @url_path)
         |> live()
 
-      row_a = ["check", dataset_a.business.dataTitle, dataset_a.business.orgTitle]
-      row_b = ["check", dataset_b.business.dataTitle, dataset_b.business.orgTitle]
+      row_a = ["check", dataset_a.business.dataTitle, dataset_a.business.orgTitle, "Edit"]
+      row_b = ["check", dataset_b.business.dataTitle, dataset_b.business.orgTitle, "Edit"]
 
       {:ok, %{view: view, row_a: row_a, row_b: row_b}}
     end
@@ -108,8 +108,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
       conn = get(conn, @url_path)
 
-      row_a = ["check", dataset_a.business.dataTitle, dataset_a.business.orgTitle]
-      row_b = ["check", dataset_b.business.dataTitle, dataset_b.business.orgTitle]
+      row_a = ["check", dataset_a.business.dataTitle, dataset_a.business.orgTitle, "Edit"]
+      row_b = ["check", dataset_b.business.dataTitle, dataset_b.business.orgTitle, "Edit"]
 
       {:ok, %{conn: conn, row_a: row_a, row_b: row_b}}
     end
@@ -154,7 +154,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
     {:ok, _view, html} = live(conn, @url_path)
 
-    assert get_rendered_table_cells(html) == [["", dataset.business.dataTitle, dataset.business.orgTitle]]
+    assert get_rendered_table_cells(html) == [["", dataset.business.dataTitle, dataset.business.orgTitle, "Edit"]]
   end
 
   defp get_rendered_table_cells(html) do

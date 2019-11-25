@@ -1,6 +1,7 @@
 /* This file is for your main application css. */
 
 @import "./variables.scss";
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
 
 body {
   background: $color-background;
@@ -11,7 +12,7 @@ body {
   display: flex;
   flex-direction: column;
 
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Roboto', Arial, Helvetica, sans-serif;
   font-size: 1em;
   color: $color-text-primary;
 }

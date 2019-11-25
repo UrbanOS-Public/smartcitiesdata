@@ -98,10 +98,6 @@
     "license ."
     "update-frequency ."
     "keywords .";
-
-  label {
-    display: block;
-  }
 }
 
 @mixin area($name) {
@@ -128,22 +124,58 @@
 @include area(language)
 @include area(homepage)
 
-.metadata-form__description {
-  textarea {
-    width: 100%;
-    // Yuck
-    height: 80%;
-  }
-}
-
 .btn {
-  padding: 1rem 2rem;
+  padding: 0.3rem 1.2rem;
   display: inline-block;
   text-decoration: none;
   cursor: pointer;
+  background-color: black;
+  color: white;
+
+  &:hover {
+    background-color: lighten(black, 20%)
+  }
+
+  &:active {
+    background-color: lighten(black, 40%)
+  }
 }
 
 .btn--cancel {
-  background-color: black;
-  color: white;
+  padding: 0.6rem 1.5rem;
+  font-size: 1.5rem;
+}
+
+// Move to utility file
+.justify-self-start {
+  justify-self: start;
+}
+
+$label-color: #7F7676;
+
+.label {
+  color: $label-color;
+  display: block;
+}
+
+.label--required::after {
+  content: " *"
+}
+
+.input {
+  width: 25rem;
+}
+
+textarea {
+  width: 100%;
+  max-width: 35rem;
+  height: 80%;
+}
+
+.edit-page {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 3fr;
+  grid-row-gap: 2rem;
+  padding: 2rem;
 }
