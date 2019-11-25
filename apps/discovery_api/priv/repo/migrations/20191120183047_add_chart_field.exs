@@ -3,7 +3,7 @@ defmodule DiscoveryApi.Repo.Migrations.AddChartField do
 
   def change do
     alter table(:visualizations) do
-      add(:chart, :string, null: true, size: 20_000)
+      add(:chart, :text, null: true)
     end
   end
 end

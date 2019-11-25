@@ -74,9 +74,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       chart = Faker.String.base64(20_001)
       {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
 
-      assert_raise Postgrex.Error, fn ->
-        Visualizations.create_visualization(%{query: query, title: title, owner: owner, chart: chart})
-      end
+      assert {:error, _} = Visualizations.create_visualization(%{query: query, title: title, owner: owner, chart: chart})
     end
 
     test "given a chart smaller than twenty thousand bytes, it creates a visualization" do
@@ -140,6 +138,18 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
                    query: "select * FROM table2"
                  },
                  elem(new_user, 1)
+               )
+    end
+
+    test "does not allow chart length to increase more than the character limit",
+         %{created_visualization: created_visualization, owner: owner} do
+      new_chart = Faker.String.base64(20_001)
+
+      assert {:error, _} =
+               Visualizations.update_visualization_by_id(
+                 created_visualization.public_id,
+                 %{chart: new_chart},
+                 owner
                )
     end
   end
