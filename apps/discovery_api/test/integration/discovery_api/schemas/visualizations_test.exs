@@ -68,6 +68,24 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       end
     end
 
+    test "given a chart larger than twenty thousand bytes, it fails to create a visualization" do
+      query = "blah"
+      title = "blah blah"
+      chart = Faker.String.base64(20_001)
+      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+
+      assert {:error, _} = Visualizations.create_visualization(%{query: query, title: title, owner: owner, chart: chart})
+    end
+
+    test "given a chart smaller than twenty thousand bytes, it creates a visualization" do
+      query = "blah"
+      title = "blah blah"
+      chart = Faker.String.base64(19_999)
+      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+
+      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, title: title, owner: owner, chart: chart})
+    end
+
     test "given a non-existent owner, it creates the visualization and the owner" do
       query = "select * from turtles"
       title = "My first visualization"
@@ -120,6 +138,18 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
                    query: "select * FROM table2"
                  },
                  elem(new_user, 1)
+               )
+    end
+
+    test "does not allow chart length to increase more than the character limit",
+         %{created_visualization: created_visualization, owner: owner} do
+      new_chart = Faker.String.base64(20_001)
+
+      assert {:error, _} =
+               Visualizations.update_visualization_by_id(
+                 created_visualization.public_id,
+                 %{chart: new_chart},
+                 owner
                )
     end
   end

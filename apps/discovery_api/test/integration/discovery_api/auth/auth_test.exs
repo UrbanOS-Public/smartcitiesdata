@@ -353,7 +353,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       %{status_code: status_code, body: body} =
         post_with_authentication(
           "localhost:4000/api/v1/visualization",
-          ~s({"query": "select * from tarps", "title": "My favorite title"}),
+          ~s({"query": "select * from tarps", "title": "My favorite title", "chart": {"data": "hello"}}),
           AuthHelper.valid_jwt()
         )
 
