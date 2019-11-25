@@ -16,9 +16,16 @@ defmodule Forklift.Init do
 
   def init(_) do
     with :ok <- Forklift.DataWriter.bootstrap(),
-         :ok <- init_readers() do
-      {:ok, []}
+         :ok <- init_readers(),
+         pid <- Process.whereis(Pipeline.DynamicSupervisor) do
+      Process.monitor(pid)
+      {:ok, %{pipeline: pid}}
     end
+  end
+
+  def handle_info({:DOWN, _, _, down, _}, %{pipeline: pid}) when pid == down do
+    :ok = init_readers()
+    {:noreply, %{pipeline: Process.whereis(Pipeline.DynamicSupervisor)}}
   end
 
   defp init_readers do
@@ -51,5 +58,4 @@ defmodule Forklift.Init do
       [error | _] -> {:error, error}
     end
   end
-
 end
