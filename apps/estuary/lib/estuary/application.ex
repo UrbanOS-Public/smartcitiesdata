@@ -5,28 +5,27 @@ defmodule Estuary.Application do
 
   use Application
 
+  @elsa_endpoint Application.get_env(:estuary, :elsa_endpoint)
+  @event_stream_topic Application.get_env(:estuary, :event_stream_topic)
+
   @spec start(any, any) :: {:error, any} | {:ok, pid}
   def start(_type, _args) do
-    IO.puts("started")
+    validate_topic_exists()
 
     children = [
-      # Starts a worker by calling: Estuary.Worker.start_link(arg)
-      # {Elsa.Supervisor, elsa_args()}
-
+      {Elsa.Supervisor, elsa_args()}
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Estuary.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
   defp elsa_args do
     start_options = [
-      endpoints: [localhost: 9092],
+      endpoints: @elsa_endpoint,
       connection: :estuary_elsa_supervisor,
       consumer: [
-        topic: "topic1",
+        topic: @event_stream_topic,
         partition: 0,
         begin_offset: :earliest,
         handler: Estuary.MessageHandler
@@ -34,5 +33,12 @@ defmodule Estuary.Application do
     ]
 
     start_options
+  end
+
+  defp validate_topic_exists do
+    case Elsa.Topic.exists?(@elsa_endpoint, @event_stream_topic) do
+      true -> :ok
+      false -> Elsa.Topic.create(@elsa_endpoint, @event_stream_topic)
+    end
   end
 end

@@ -1,21 +1,19 @@
-defmodule Estuary.CreateTopicTest do
+defmodule Estuary.StartTest do
   use ExUnit.Case
+  use Divo
 
-  setup_all do
-    Application.start(:estuary)
-    :ok
+  @elsa_endpoint Application.get_env(:estuary, :elsa_endpoint)
+  @event_stream_topic Application.get_env(:estuary, :event_stream_topic)
+
+  setup do
+    case Application.ensure_all_started(:estuary) do
+      {:ok, _apps} -> :ok
+      {:error, err} -> {:error, err}
+      _ -> :error
+    end
   end
 
-  describe "Estuary supervisor tree starts up" do
-    test "Create topic" do
-      Elsa.Topic.create([localhost: 9092], "event-stream")
-      {:ok, topics} = Elsa.list_topics([localhost: 9092])
-
-      # assert topics == [{"event-stream", 1}]
-    end
-
-    test "Estuary connects to Kafka" do
-      assert true
-    end
+  test "Topic is created when Estuary starts" do
+    assert Elsa.Topic.exists?(@elsa_endpoint, @event_stream_topic)
   end
 end
