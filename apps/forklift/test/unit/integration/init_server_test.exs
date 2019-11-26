@@ -1,4 +1,4 @@
-defmodule Forklift.Integration.InitTest do
+defmodule Forklift.Integration.InitServerTest do
   use ExUnit.Case
   use Placebo
 
@@ -23,7 +23,7 @@ defmodule Forklift.Integration.InitTest do
     stub(MockTopic, :init, fn _ -> :ok end)
     stub(MockReader, :init, fn args -> send(test, args[:dataset]) && :ok end)
 
-    assert {:ok, _} = Forklift.Init.start_link(name: :foo)
+    assert {:ok, _} = Forklift.InitServer.start_link(name: :foo)
 
     assert_receive %SmartCity.Dataset{id: "view-state-1"}, 1000
     assert_receive %SmartCity.Dataset{id: "view-state-2"}, 1000
@@ -36,7 +36,7 @@ defmodule Forklift.Integration.InitTest do
     stub(MockReader, :init, fn _ -> :ok end)
     stub(MockTopic, :init, fn args -> send(test, args[:topic]) && :ok end)
 
-    assert {:ok, _} = Forklift.Init.start_link(name: :bar)
+    assert {:ok, _} = Forklift.InitServer.start_link(name: :bar)
     assert_receive "test-topic"
   end
 
@@ -51,7 +51,7 @@ defmodule Forklift.Integration.InitTest do
     expect(MockReader, :init, 2, fn _ -> :ok end)
     expect(MockReader, :init, 2, fn args -> send(test, args[:dataset]) && :ok end)
 
-    Forklift.Init.start_link(name: :baz)
+    Forklift.InitServer.start_link(name: :baz)
     DynamicSupervisor.stop(Pipeline.DynamicSupervisor, :test)
 
     assert_receive dataset1, 1_000

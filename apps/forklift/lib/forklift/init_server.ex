@@ -1,4 +1,4 @@
-defmodule Forklift.Init do
+defmodule Forklift.InitServer do
   @moduledoc """
   Task to initialize forklift and start ingesting each previously recorded dataset
   """
@@ -6,11 +6,10 @@ defmodule Forklift.Init do
 
   alias Forklift.MessageHandler
 
-  @name :forklift_init_server
   @reader Application.get_env(:forklift, :data_reader)
 
   def start_link(opts) do
-    name = Keyword.get(opts, :name, @name)
+    name = Keyword.get(opts, :name, __MODULE__)
     GenServer.start_link(__MODULE__, [], name: name)
   end
 
@@ -23,7 +22,7 @@ defmodule Forklift.Init do
     end
   end
 
-  def handle_info({:DOWN, _, _, down, _}, %{pipeline: pid}) when pid == down do
+  def handle_info({:DOWN, _, _, pid, _}, %{pipeline: pid}) do
     :ok = init_readers()
     {:noreply, %{pipeline: Process.whereis(Pipeline.DynamicSupervisor)}}
   end
