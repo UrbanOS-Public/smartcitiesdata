@@ -16,6 +16,8 @@ defmodule Reaper.S3ExtractorTest do
     setup do
       shapefile_dataset = TDG.create_dataset(id: @id, technical: %{sourceFormat: "zip"})
 
+      Process.sleep(1000)
+
       Brook.Test.with_event(@instance, fn ->
         FileIngestions.update_dataset(shapefile_dataset)
       end)
