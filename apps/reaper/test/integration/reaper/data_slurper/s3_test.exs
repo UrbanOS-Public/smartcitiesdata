@@ -16,6 +16,7 @@ defmodule Reaper.S3ExtractorTest do
     setup do
       shapefile_dataset = TDG.create_dataset(id: @id, technical: %{sourceFormat: "zip"})
 
+      # Adding a sleep because this test has a weird timing issue that makes it flaky. Sigh.
       Process.sleep(1000)
 
       Brook.Test.with_event(@instance, fn ->
@@ -35,7 +36,6 @@ defmodule Reaper.S3ExtractorTest do
 
     test "previously hosted file is converted from file:ingest:end event" do
       topic = "raw-#{@id}"
-      Elsa.create_topic(@endpoints, topic)
 
       eventually(
         fn ->
