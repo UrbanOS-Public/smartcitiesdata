@@ -64,8 +64,8 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
     test "preview controller returns _SOMETHING_ when table does not exist", %{conn: conn} do
       expected = %{"data" => [], "meta" => %{"columns" => []}}
 
-      allow PrestoService.preview_columns(any(), any()), return: []
-      allow PrestoService.preview(any(), any()), exec: fn _, _ -> raise Prestige.Error, message: "Test error" end
+      allow(PrestoService.preview_columns(any(), any()), return: [])
+      allow(PrestoService.preview(any(), any()), exec: fn _, _ -> raise Prestige.Error, message: "Test error" end)
       actual = conn |> put_req_header("accept", "application/json") |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
 
       assert expected == actual

@@ -6,8 +6,6 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
   alias DiscoveryApi.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
 
-  @prestige_session_opts DiscoveryApi.prestige_session_opts()
-
   setup do
     Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
@@ -19,7 +17,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     dataset_id = "123"
     system_name = "not_saved"
 
-    @prestige_session_opts
+    DiscoveryApi.prestige_opts()
     |> Keyword.merge(receive_timeout: 10_000)
     |> Prestige.new_session()
     |> Prestige.query!("create table if not exists #{system_name} (id integer, name varchar)")
@@ -41,12 +39,12 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     dataset_id = "1234-4567-89101"
     system_name = "foobar__company_data"
 
-    @prestige_session_opts
+    DiscoveryApi.prestige_opts()
     |> Keyword.merge(receive_timeout: 10_000)
     |> Prestige.new_session()
     |> Prestige.query!("create table if not exists #{system_name} (id integer, name varchar)")
 
-    @prestige_session_opts
+    DiscoveryApi.prestige_opts()
     |> Keyword.merge(receive_timeout: 10_000)
     |> Prestige.new_session()
     |> Prestige.query!(~s|insert into "#{system_name}" values (1, 'bob'), (2, 'mike')|)

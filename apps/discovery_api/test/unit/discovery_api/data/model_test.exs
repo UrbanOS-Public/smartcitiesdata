@@ -37,9 +37,9 @@ defmodule DiscoveryApi.Data.ModelTest do
   test "get/1" do
     {_cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
 
-    allow Persistence.get("discovery-api:model:cam"), return: cam_as_json
+    allow(Persistence.get("discovery-api:model:cam"), return: cam_as_json)
 
-    allow Persistence.get_many_with_keys(any()), return: get_many_with_keys_result(cam_as_expected)
+    allow(Persistence.get_many_with_keys(any()), return: get_many_with_keys_result(cam_as_expected))
 
     assert cam_as_expected == Model.get("cam")
   end
@@ -48,10 +48,11 @@ defmodule DiscoveryApi.Data.ModelTest do
     {_cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
     {_paul, paul_as_json, paul_as_expected} = generate_test_data("paul")
 
-    allow Persistence.get_many(["discovery-api:model:cam", "discovery-api:model:paul"], true), return: [cam_as_json, paul_as_json]
+    allow(Persistence.get_many(["discovery-api:model:cam", "discovery-api:model:paul"], true), return: [cam_as_json, paul_as_json])
 
-    allow Persistence.get_many_with_keys(any()),
+    allow(Persistence.get_many_with_keys(any()),
       return: Map.merge(get_many_with_keys_result(cam_as_expected), get_many_with_keys_result(paul_as_expected))
+    )
 
     Assertions.assert_lists_equal([cam_as_expected, paul_as_expected], Model.get_all(["cam", "paul"]))
   end
@@ -59,10 +60,11 @@ defmodule DiscoveryApi.Data.ModelTest do
   test "get_all/1 does not throw error when model has been deleted from redis" do
     {_paul, paul_as_json, paul_as_expected} = generate_test_data("paul")
 
-    allow Persistence.get_many(any(), true), return: [paul_as_json]
+    allow(Persistence.get_many(any(), true), return: [paul_as_json])
 
-    allow Persistence.get_many_with_keys(any()),
+    allow(Persistence.get_many_with_keys(any()),
       return: Map.merge(get_many_with_keys_result(nil), get_many_with_keys_result(paul_as_expected))
+    )
 
     Assertions.assert_lists_equal([paul_as_expected], Model.get_all(["cam", "paul"]))
   end
@@ -70,10 +72,11 @@ defmodule DiscoveryApi.Data.ModelTest do
   test "get_all/0" do
     {_cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
 
-    allow Persistence.get_all("discovery-api:model:*"), return: [cam_as_json]
+    allow(Persistence.get_all("discovery-api:model:*"), return: [cam_as_json])
 
-    allow Persistence.get_many_with_keys(any()),
+    allow(Persistence.get_many_with_keys(any()),
       return: get_many_with_keys_result(cam_as_expected)
+    )
 
     Assertions.assert_lists_equal([cam_as_expected], Model.get_all())
   end

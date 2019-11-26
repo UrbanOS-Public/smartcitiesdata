@@ -6,14 +6,12 @@ defmodule DiscoveryApiWeb.DataController do
   alias DiscoveryApiWeb.Utilities.AuthUtils
   require Logger
 
-  @prestige_session_opts DiscoveryApi.prestige_session_opts()
-
-  plug GetModel
-  plug :conditional_accepts, DataView.accepted_formats() when action in [:fetch_file]
-  plug :accepts, DataView.accepted_formats() when action in [:query]
-  plug :accepts, DataView.accepted_preview_formats() when action in [:fetch_preview]
-  plug Restrictor
-  plug RecordMetrics, fetch_file: "downloads", query: "queries"
+  plug(GetModel)
+  plug(:conditional_accepts, DataView.accepted_formats() when action in [:fetch_file])
+  plug(:accepts, DataView.accepted_formats() when action in [:query])
+  plug(:accepts, DataView.accepted_preview_formats() when action in [:fetch_preview])
+  plug(Restrictor)
+  plug(RecordMetrics, fetch_file: "downloads", query: "queries")
 
   defp conditional_accepts(conn, formats) do
     if conn.assigns.model.sourceType == "host" do
@@ -24,7 +22,7 @@ defmodule DiscoveryApiWeb.DataController do
   end
 
   def fetch_preview(conn, _params) do
-    session = Prestige.new_session(@prestige_session_opts)
+    session = DiscoveryApi.prestige_opts() |> Prestige.new_session()
     dataset_name = conn.assigns.model.systemName
     columns = PrestoService.preview_columns(session, dataset_name)
     schema = conn.assigns.model.schema
@@ -59,7 +57,7 @@ defmodule DiscoveryApiWeb.DataController do
     schema = conn.assigns.model.schema
 
     data_stream =
-      @prestige_session_opts
+      DiscoveryApi.prestige_opts()
       |> Prestige.new_session()
       |> Prestige.query!("select * from #{dataset_name}")
       |> Prestige.Result.as_maps()
@@ -76,7 +74,7 @@ defmodule DiscoveryApiWeb.DataController do
     dataset_id = conn.assigns.model.id
     current_user = conn.assigns.current_user
     schema = conn.assigns.model.schema
-    session = Prestige.new_session(@prestige_session_opts)
+    session = DiscoveryApi.prestige_opts() |> Prestige.new_session()
 
     with {:ok, columns} <- PrestoService.get_column_names(session, dataset_name, Map.get(params, "columns")),
          {:ok, query} <- PrestoService.build_query(params, dataset_name),

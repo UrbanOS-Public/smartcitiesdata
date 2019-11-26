@@ -9,9 +9,9 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
 
   describe "handle_dataset/1" do
     setup do
-      allow ResponseCache.invalidate(), return: :ok
-      allow DiscoveryApi.Search.Storage.index(any()), return: :ok
-      allow DiscoveryApi.RecommendationEngine.save(any()), return: :ok
+      allow(ResponseCache.invalidate(), return: :ok)
+      allow(DiscoveryApi.Search.Storage.index(any()), return: :ok)
+      allow(DiscoveryApi.RecommendationEngine.save(any()), return: :ok)
 
       dataset = TDG.create_dataset(%{id: "123"})
       organization = TDG.create_schema_organization(%{id: dataset.technical.orgId})
@@ -45,7 +45,7 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
       allow(Model.save(any()), return: {:ok, :success})
 
       assert :ok == DatasetEventListener.handle_dataset(dataset)
-      assert_called ResponseCache.invalidate(), once()
+      assert_called(ResponseCache.invalidate(), once())
     end
 
     @tag capture_log: true

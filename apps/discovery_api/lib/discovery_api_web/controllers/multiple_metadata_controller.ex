@@ -13,7 +13,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   ]
 
   plug(:accepts, MultipleMetadataView.accepted_formats())
-  plug DiscoveryApiWeb.Plugs.ResponseCache, %{for_params: @matched_params} when action in [:search]
+  plug(DiscoveryApiWeb.Plugs.ResponseCache, %{for_params: @matched_params} when action in [:search])
 
   def search(conn, params) do
     sort_by = Map.get(params, "sort", "name_asc")

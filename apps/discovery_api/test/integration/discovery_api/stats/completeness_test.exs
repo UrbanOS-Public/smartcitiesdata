@@ -10,8 +10,6 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   alias DiscoveryApi.Stats.DataHelper
   alias DiscoveryApi.Test.Helper
 
-  @prestige_session_opts DiscoveryApi.prestige_session_opts()
-
   setup do
     Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
@@ -159,7 +157,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   end
 
   defp prestige_execute(query) do
-    @prestige_session_opts
+    DiscoveryApi.prestige_opts()
     |> Prestige.new_session()
     |> Prestige.execute!(query)
   end

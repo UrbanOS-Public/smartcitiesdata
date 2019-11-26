@@ -4,8 +4,6 @@ defmodule DiscoveryApiWeb.MultipleDataController do
   alias DiscoveryApiWeb.MultipleDataView
   alias DiscoveryApiWeb.Utilities.AuthUtils
 
-  @prestige_session_opts DiscoveryApi.prestige_session_opts()
-
   plug(:accepts, MultipleDataView.accepted_formats())
 
   def query(conn, _params) do
@@ -13,7 +11,8 @@ defmodule DiscoveryApiWeb.MultipleDataController do
 
     with {:ok, statement, conn} <- read_body(conn),
          true <- AuthUtils.authorized_to_query?(statement, current_user),
-         session <- Prestige.new_session(@prestige_session_opts) do
+         session_opts <- DiscoveryApi.prestige_opts(),
+         session <- Prestige.new_session(session_opts) do
       format = get_format(conn)
       data_stream = Prestige.query!(session, statement) |> Prestige.Result.as_maps()
 

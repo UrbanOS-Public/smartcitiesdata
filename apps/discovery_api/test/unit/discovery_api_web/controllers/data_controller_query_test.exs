@@ -60,8 +60,8 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects from the table specified in the dataset definition", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url) |> response(200)
 
-      assert_called Prestige.query!(:connection, "describe #{@system_name}"), once()
-      assert_called Prestige.query!(:connection, "SELECT * FROM #{@system_name}"), once()
+      assert_called(Prestige.query!(:connection, "describe #{@system_name}"), once())
+      assert_called(Prestige.query!(:connection, "SELECT * FROM #{@system_name}"), once())
 
       where(
         url: [
@@ -74,7 +74,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects using the where clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, where: "name='Robby'") |> response(200)
 
-      assert_called Prestige.query!(:connection, "SELECT * FROM #{@system_name} WHERE name='Robby'"), once()
+      assert_called(Prestige.query!(:connection, "SELECT * FROM #{@system_name} WHERE name='Robby'"), once())
 
       where(
         url: [
@@ -87,7 +87,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects using the order by clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, orderBy: "id") |> response(200)
 
-      assert_called Prestige.query!(:connection, "SELECT * FROM #{@system_name} ORDER BY id"), once()
+      assert_called(Prestige.query!(:connection, "SELECT * FROM #{@system_name} ORDER BY id"), once())
 
       where(
         url: [
@@ -100,7 +100,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects using the limit clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, limit: "200") |> response(200)
 
-      assert_called Prestige.query!(:connection, "SELECT * FROM #{@system_name} LIMIT 200"), once()
+      assert_called(Prestige.query!(:connection, "SELECT * FROM #{@system_name} LIMIT 200"), once())
 
       where(
         url: [
@@ -113,7 +113,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects using the group by clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, groupBy: "one") |> response(200)
 
-      assert_called Prestige.query!(:connection, "SELECT * FROM #{@system_name} GROUP BY one"), once()
+      assert_called(Prestige.query!(:connection, "SELECT * FROM #{@system_name} GROUP BY one"), once())
 
       where(
         url: [
@@ -129,7 +129,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get(url, where: "id=1", orderBy: "name", limit: "200", groupBy: "name")
       |> response(200)
 
-      assert_called Prestige.query!(:connection, "SELECT * FROM #{@system_name} WHERE id=1 GROUP BY name ORDER BY name LIMIT 200"), once()
+      assert_called(Prestige.query!(:connection, "SELECT * FROM #{@system_name} WHERE id=1 GROUP BY name ORDER BY name LIMIT 200"), once())
 
       where(
         url: [
@@ -145,7 +145,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get(url, columns: "id")
       |> response(200)
 
-      assert_called Prestige.query!(:connection, "SELECT id FROM #{@system_name}"), once()
+      assert_called(Prestige.query!(:connection, "SELECT id FROM #{@system_name}"), once())
 
       where(
         url: [
@@ -189,7 +189,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get("/api/v1/dataset/no_exist/query", columns: "id,one,two")
       |> response(404)
 
-      assert_called Prestige.query!(:connection, query_string), times(0)
+      assert_called(Prestige.query!(:connection, query_string), times(0))
     end
   end
 
@@ -226,7 +226,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get("/api/v1/organization/org1/dataset/data1/query", orderBy: "/* This is a comment */")
       |> response(400)
 
-      assert_called Prestige.query!(:connection, query_string), times(0)
+      assert_called(Prestige.query!(:connection, query_string), times(0))
     end
 
     test "queries cannot contain single-line comments", %{conn: conn} do
@@ -237,7 +237,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get("/api/v1/organization/org1/dataset/data1/query", orderBy: "-- This is a comment")
       |> response(400)
 
-      assert_called Prestige.query!(:connection, query_string), times(0)
+      assert_called(Prestige.query!(:connection, query_string), times(0))
     end
   end
 

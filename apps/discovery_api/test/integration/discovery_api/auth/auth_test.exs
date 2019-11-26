@@ -18,8 +18,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
   @organization_1_user "FirstUser"
   @organization_2_user "SecondUser"
 
-  @prestige_session_opts DiscoveryApi.prestige_session_opts()
-
   setup_all do
     Helper.wait_for_brook_to_be_ready()
 
@@ -388,7 +386,8 @@ defmodule DiscoveryApi.Auth.AuthTest do
            public_model_that_belongs_to_org_1: model
          } do
       capture_log(fn ->
-        Prestige.new_session(@prestige_session_opts)
+        DiscoveryApi.prestige_opts()
+        |> Prestige.new_session()
         |> Prestige.query(~s|create table if not exists "#{model.systemName}" (id integer, name varchar)|)
       end)
 
@@ -411,7 +410,8 @@ defmodule DiscoveryApi.Auth.AuthTest do
       Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
 
       capture_log(fn ->
-        Prestige.new_session(@prestige_session_opts)
+        DiscoveryApi.prestige_opts()
+        |> Prestige.new_session()
         |> Prestige.query(~s|create table if not exists "#{model.systemName}" (id integer, name varchar)|)
       end)
 
@@ -430,11 +430,12 @@ defmodule DiscoveryApi.Auth.AuthTest do
       private_model_that_belongs_to_org_1: model
     } do
       capture_log(fn ->
-        Prestige.new_session(@prestige_session_opts)
+        DiscoveryApi.prestige_opts()
+        |> Prestige.new_session()
         |> Prestige.query(~s|create table if not exists "#{model.systemName}" (id integer, name varchar)|)
       end)
 
-      Prestige.new_session(@prestige_session_opts) |> Prestige.query!("describe #{model.systemName}") |> Prestige.Result.as_maps()
+      DiscoveryApi.prestige_opts() |> Prestige.new_session() |> Prestige.query!("describe #{model.systemName}") |> Prestige.Result.as_maps()
 
       visualization = create_visualization(model.systemName)
 

@@ -48,7 +48,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.DataJsonTest do
 
   describe "GET with all fields" do
     setup %{conn: conn, models: [_private_model, public_model] = models} do
-      allow Model.get_all(), return: models
+      allow(Model.get_all(), return: models)
       results = conn |> get("/api/v1/data_json") |> json_response(200) |> Map.get("dataset")
 
       {:ok, %{model: public_model, results: results}}
@@ -122,7 +122,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.DataJsonTest do
         private: false
       }
 
-      allow Model.get_all(), return: [model]
+      allow(Model.get_all(), return: [model])
 
       result_keys =
         conn

@@ -58,7 +58,7 @@ defmodule DiscoveryApi.Search.StorageTest do
       model1 = Helper.sample_model(%{title: "I love science"})
       model2 = Helper.sample_model(%{id: model1.id, title: "bicycle helmets"})
 
-      allow Model.get_all(any()), return: []
+      allow(Model.get_all(any()), return: [])
 
       Storage.index(model1)
       Storage.index(model2)
@@ -79,7 +79,7 @@ defmodule DiscoveryApi.Search.StorageTest do
       model3 = Helper.sample_model(%{organization: "fun stuff"})
       model4 = Helper.sample_model(%{keywords: ["best"]})
 
-      allow Model.get_all(any()), return: [model2]
+      allow(Model.get_all(any()), return: [model2])
 
       Storage.index(model1)
       Storage.index(model2)

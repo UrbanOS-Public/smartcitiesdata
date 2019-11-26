@@ -66,8 +66,8 @@ defmodule DiscoveryApiWeb.LoginControllerTest do
     setup do
       user = "bob"
       {:ok, token, claims} = Guardian.encode_and_sign(DiscoveryApi.Auth.Guardian, user)
-      allow PaddleWrapper.authenticate(any(), any()), return: :does_not_matter
-      allow PaddleWrapper.get(filter: any()), return: {:ok, [Helper.ldap_user()]}
+      allow(PaddleWrapper.authenticate(any(), any()), return: :does_not_matter)
+      allow(PaddleWrapper.get(filter: any()), return: {:ok, [Helper.ldap_user()]})
       {:ok, %{user: user, jwt: token, claims: claims}}
     end
 

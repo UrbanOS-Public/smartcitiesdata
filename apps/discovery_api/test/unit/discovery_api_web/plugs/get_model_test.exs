@@ -19,7 +19,7 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
 
       SystemNameCache.put(dataset, org)
       SystemNameCache.put(TDG.create_dataset(id: "ds2"), org)
-      allow Model.get(any()), return: :model
+      allow(Model.get(any()), return: :model)
 
       conn = build_conn(:get, "/doesnt/matter", %{"org_name" => "org1", "dataset_name" => "data1"})
       %{assigns: assigns} = GetModel.call(conn, [])
@@ -28,11 +28,11 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
     end
 
     test "responds with a 404 when org_name and dataset_name combination is not known" do
-      allow DiscoveryApiWeb.RenderError.render_error(any(), any(), any()), exec: fn conn, _, _ -> conn end
+      allow(DiscoveryApiWeb.RenderError.render_error(any(), any(), any()), exec: fn conn, _, _ -> conn end)
       conn = build_conn(:get, "/doesnt/matter", %{"org_name" => "org1", "dataset_name" => "data1"})
       result = GetModel.call(conn, [])
 
-      assert_called DiscoveryApiWeb.RenderError.render_error(conn, 404, "Not Found")
+      assert_called(DiscoveryApiWeb.RenderError.render_error(conn, 404, "Not Found"))
       assert result.halted == true
     end
   end
