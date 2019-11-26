@@ -5,7 +5,11 @@ defmodule Estuary.MixProject do
     [
       app: :estuary,
       version: "0.1.0",
-      elixir: "~> 1.9",
+      elixir: "~> 1.8",
+      build_path: "../../_build",
+      config_path: "../../config/config.exs",
+      deps_path: "../../deps",
+      lockfile: "../../mix.lock",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_paths: test_paths(Mix.env())
@@ -23,7 +27,7 @@ defmodule Estuary.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:elsa, "~> 0.11"},
+      {:elsa, "~> 0.10.0"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.6", only: [:dev, :integration]}
     ]
