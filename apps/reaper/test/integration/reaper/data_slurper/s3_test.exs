@@ -32,10 +32,13 @@ defmodule Reaper.S3ExtractorTest do
     end
 
     test "previously hosted file is converted from file:ingest:end event" do
+      topic = "raw-#{@id}"
+      Elsa.create_topic(@endpoints, topic)
+
       eventually(
         fn ->
           assert Brook.get!(@instance, :extractions, @id) != nil
-          assert {:ok, _, messages} = Elsa.fetch(@endpoints, "raw-#{@id}", partition: 0)
+          assert {:ok, _, messages} = Elsa.fetch(@endpoints, topic, partition: 0)
           assert Enum.all?(messages, fn %Elsa.Message{value: value} -> String.contains?(value, "geojson-dataset") end)
         end,
         1000,
