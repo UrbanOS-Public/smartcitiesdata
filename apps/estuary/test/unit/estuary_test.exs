@@ -4,6 +4,6 @@ defmodule EstuaryTest do
 
   # The "test" macro is imported by ExUnit.Case
   test "always pass" do
-    assert true
+    assert false
   end
 end
