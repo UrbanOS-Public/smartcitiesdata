@@ -157,6 +157,16 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     assert get_rendered_table_cells(html) == [["", dataset.business.dataTitle, dataset.business.orgTitle, "Edit"]]
   end
 
+  test "edit buttons link to dataset edit", %{conn: conn} do
+    dataset = TDG.create_dataset(%{})
+
+    DatasetCache.put(dataset)
+
+    {:ok, _view, html} = live(conn, @url_path)
+
+    assert Floki.attribute(html, "a", "href") == ["#{@url_path}/#{dataset.id}"]
+  end
+
   defp get_rendered_table_cells(html) do
     Floki.find(html, ".datasets-table__tr")
     |> Enum.map(fn {_name, _attrs, children} ->

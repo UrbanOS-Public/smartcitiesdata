@@ -1,7 +1,11 @@
 defmodule AndiWeb.Router do
   use AndiWeb, :router
 
-  @csp "default-src 'self'; style-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+  @csp "default-src 'self';" <>
+         "style-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com;" <>
+         "script-src 'self' 'unsafe-inline' 'unsafe-eval';" <>
+         "font-src https://fonts.gstatic.com data: 'self';" <>
+         "img-src 'self' data:;"
 
   pipeline :browser do
     plug Plug.Logger

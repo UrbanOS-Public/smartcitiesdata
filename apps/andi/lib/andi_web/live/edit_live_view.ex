@@ -1,37 +1,35 @@
 defmodule AndiWeb.EditLiveView do
-  # TODO make default view useful
   use Phoenix.LiveView
   alias Phoenix.HTML.Form
   alias Phoenix.HTML.Link
 
-  # TODO What's the difference between Release Date and LastUpdated again?
   def render(assigns) do
     ~L"""
     <div class="edit-page">
-      <%= Form.form_for :metadata, "#", [phx_change: :validate, class: "metadata-form"], fn f -> %>
+      <%= Form.form_for :metadata, "#", [class: "metadata-form"], fn f -> %>
         <div class="metadata-form__title">
           <%= Form.label(f, :title, "Title of Dataset", class: "label label--required") %>
           <%= Form.text_input(f, :title, value: @dataset.business.dataTitle, class: "input") %>
         </div>
         <div class="metadata-form__description">
           <%= Form.label(f, :description, "Description", class: "label label--required") %>
-          <%= Form.textarea(f, :description, value: @dataset.business.description, class: "textarea") %>
+          <%= Form.textarea(f, :description, value: @dataset.business.description, class: "input textarea") %>
         </div>
         <div class="metadata-form__format">
           <%= Form.label(f, :format, "Format", class: "label label--required") %>
           <%= Form.text_input(f, :format, value: @dataset.technical.sourceFormat, class: "input") %>
         </div>
         <div class="metadata-form__maintainer-name">
-          <%= Form.label(f, :authorName, "Maintainer Name", class: "label label--required") %>
-          <%= Form.text_input(f, :authorName, value: @dataset.business.contactName, class: "input") %>
+          <%= Form.label(f, :contactName, "Maintainer Name", class: "label label--required") %>
+          <%= Form.text_input(f, :contactName, value: @dataset.business.contactName, class: "input") %>
         </div>
         <div class="metadata-form__maintainer-email">
-          <%= Form.label(f, :authorEmail, "Maintainer Email", class: "label label--required") %>
-          <%= Form.text_input(f, :authorEmail, value: @dataset.business.contactEmail, class: "input") %>
+          <%= Form.label(f, :contactEmail, "Maintainer Email", class: "label label--required") %>
+          <%= Form.text_input(f, :contactEmail, value: @dataset.business.contactEmail, class: "input") %>
         </div>
         <div class="metadata-form__release-date">
-          <%= Form.label(f, :modifiedDate, "Release Date", class: "label label--required") %>
-          <%= Form.text_input(f, :modifiedDate, value: @dataset.business.modifiedDate, class: "input") %>
+          <%= Form.label(f, :issuedDate, "Release Date", class: "label label--required") %>
+          <%= Form.text_input(f, :issuedDate, value: @dataset.business.issuedDate, class: "input") %>
         </div>
         <div class="metadata-form__license">
           <%= Form.label(f, :license, "License", class: "label label--required") %>
@@ -43,7 +41,8 @@ defmodule AndiWeb.EditLiveView do
         </div>
         <div class="metadata-form__keywords">
           <%= Form.label(f, :keywords, "Keywords", class: "label") %>
-          <%= Form.text_input(f, :keywords, value: @dataset.business.keywords, class: "input") %>
+          <%= Form.text_input(f, :keywords, value: get_keywords(@dataset), class: "input") %>
+          <div class="label label--inline">Separated by comma</div>
         </div>
         <div class="metadata-form__last-updated">
           <%= Form.label(f, :modifiedDate, "Last Updated", class: "label") %>
@@ -74,8 +73,8 @@ defmodule AndiWeb.EditLiveView do
           <%= Form.text_input(f, :homepage, value: @dataset.business.homepage, class: "input") %>
         </div>
       <% end %>
-      <%= Link.link("Cancel", to: "/", class: "btn btn--cancel justify-self-start") %>
-    </div
+      <%= Link.link("Cancel", to: "/", class: "btn btn--cancel metadata-form__cancel-btn") %>
+    </div>
     """
   end
 
@@ -83,6 +82,9 @@ defmodule AndiWeb.EditLiveView do
     {:ok, assign(socket, dataset: dataset)}
   end
 
-  def get_private(%{technical: %{private: true}}), do: "Private"
-  def get_private(_), do: "Public"
+  defp get_private(%{technical: %{private: true}}), do: "Private"
+  defp get_private(_), do: "Public"
+
+  defp get_keywords(%{business: %{keywords: nil}}), do: ""
+  defp get_keywords(%{business: %{keywords: keywords}}), do: Enum.intersperse(keywords, ", ")
 end

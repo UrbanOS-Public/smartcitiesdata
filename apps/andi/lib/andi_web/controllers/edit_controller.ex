@@ -3,9 +3,10 @@ defmodule AndiWeb.EditController do
   alias Andi.DatasetCache
 
   def show(conn, %{"id" => id}) do
-    with %{"dataset" => dataset} <- DatasetCache.get(id) do
-      live_render(conn, AndiWeb.EditLiveView, session: %{dataset: dataset})
-    else
+    case DatasetCache.get(id) do
+      %{"dataset" => dataset} ->
+        live_render(conn, AndiWeb.EditLiveView, session: %{dataset: dataset})
+
       _ ->
         conn
         |> put_view(AndiWeb.ErrorView)
