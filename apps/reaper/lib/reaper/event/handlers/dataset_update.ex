@@ -91,6 +91,12 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
     file_ingest_start()
   end
 
+  defp determine_event(%SmartCity.Dataset{
+         technical: %{sourceType: "ingest", sourceFormat: "application/zip"}
+       }) do
+    file_ingest_start()
+  end
+
   defp determine_event(_) do
     data_extract_start()
   end
