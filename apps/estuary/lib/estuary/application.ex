@@ -12,27 +12,10 @@ defmodule Estuary.Application do
   def start(_type, _args) do
     validate_topic_exists()
 
-    children = [
-      {Elsa.Supervisor, elsa_args()}
-    ]
+    children = []
 
     opts = [strategy: :one_for_one, name: Estuary.Supervisor]
     Supervisor.start_link(children, opts)
-  end
-
-  defp elsa_args do
-    start_options = [
-      endpoints: @elsa_endpoint,
-      connection: :estuary_elsa_supervisor,
-      consumer: [
-        topic: @event_stream_topic,
-        partition: 0,
-        begin_offset: :earliest,
-        handler: Estuary.MessageHandler
-      ]
-    ]
-
-    start_options
   end
 
   defp validate_topic_exists do
