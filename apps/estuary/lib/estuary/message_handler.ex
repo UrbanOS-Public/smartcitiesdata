@@ -1,7 +1,8 @@
 defmodule Estuary.MessageHandler do
   use Elsa.Consumer.MessageHandler
 
-  def handle_messages(_messages) do
+  def handle_messages(msgs) do
+    IO.puts(msgs)
     :acknowledge
   end
 end

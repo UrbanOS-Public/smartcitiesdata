@@ -7,10 +7,12 @@ defmodule Estuary.Application do
 
   @spec start(any, any) :: {:error, any} | {:ok, pid}
   def start(_type, _args) do
+    IO.puts("started")
+
     children = [
       # Starts a worker by calling: Estuary.Worker.start_link(arg)
-      Estuary.Worker,
-      {Elsa.Supervisor, elsa_args()}
+      # {Elsa.Supervisor, elsa_args()}
+
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -24,7 +26,7 @@ defmodule Estuary.Application do
       endpoints: [localhost: 9092],
       connection: :estuary_elsa_supervisor,
       consumer: [
-        topic: "Topic1",
+        topic: "topic1",
         partition: 0,
         begin_offset: :earliest,
         handler: Estuary.MessageHandler
