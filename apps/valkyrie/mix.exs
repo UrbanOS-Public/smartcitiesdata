@@ -43,6 +43,7 @@ defmodule Valkyrie.MixProject do
       {:divo_kafka, "~> 0.1", only: [:integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
       {:excoveralls, "~> 0.11.1", only: :test},
+      {:tasks, in_umbrella: true, only: :dev},
       {:jason, "~> 1.1"},
       {:libcluster, "~> 3.1"},
       {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},

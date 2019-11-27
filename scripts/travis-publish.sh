@@ -5,6 +5,12 @@ set -e
 if [ ! -z "$TRAVIS_TAG" ]; then
     app=$(echo "$TRAVIS_TAG" | cut -d@ -f1)
     vsn=$(echo "$TRAVIS_TAG" | cut -d@ -f2)
+    mix_vsn=$(mix cmd --app $app mix app.version | tail -1)
+
+    if [ ! $vsn = $mix_vsn ]; then
+        echo "Tag version '$vsn' does not match mix version '$mix_vsn'"
+        exit 1
+    fi
 
     echo "Building smartcitiesdata/${app:?COULD NOT DETERMINE APP}:${vsn:?COULD NOT DETERMINE VERSION}"
 
