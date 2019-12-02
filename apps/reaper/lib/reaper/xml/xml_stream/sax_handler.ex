@@ -1,4 +1,4 @@
-defmodule TheBestHandler do
+defmodule XMLStream.SaxHandler do
   @moduledoc false
 
   defmodule State do
@@ -66,8 +66,6 @@ defmodule TheBestHandler do
       case stack do
         [] ->
           if [tag_name | state.tag_stack] == state.tag_path do
-            # send(state.send_to, {:emit, current})
-            # state.send_to.(current)
             state.emitter.(current)
 
             state

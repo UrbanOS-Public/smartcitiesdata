@@ -66,7 +66,6 @@ defmodule Reaper.MixProject do
       {:sftp_ex, "~> 0.2"},
       {:smart_city, "~> 3.5", override: true},
       {:saxy, "~> 0.10"},
-      {:erlsom, "~> 1.5"},
       {:sweet_xml, "~> 0.6"},
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
