@@ -41,6 +41,18 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
       ])
     end
 
+    test "sends file ingest start for source type ingest event when sourceFormat is zip (shapefile)" do
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{cadence: "once", sourceFormat: "application/zip", sourceType: "ingest"}
+        )
+
+      assert :ok == DatasetUpdate.handle(dataset)
+
+      assert_receive {:brook_event, %Brook.Event{type: "file:ingest:start", data: ^dataset}}
+    end
+
     test "should stop running jobs when cadence is once" do
       dataset = TDG.create_dataset(id: "ds1", technical: %{cadence: "once", sourceType: "ingest"})
       create_job(dataset.id)
