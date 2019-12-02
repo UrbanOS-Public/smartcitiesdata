@@ -1,6 +1,7 @@
 /* This file is for your main application css. */
 
 @import "./variables.scss";
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
 
 body {
   background: $color-background;
@@ -11,7 +12,7 @@ body {
   display: flex;
   flex-direction: column;
 
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Roboto', Arial, Helvetica, sans-serif;
   font-size: 1em;
   color: $color-text-primary;
 }
@@ -23,4 +24,65 @@ body {
   margin: 1em;
 }
 
+@mixin area($block, $element) {
+  .#{$block}__#{$element} {
+    grid-area: $element
+  }
+}
+
+.btn {
+  padding: 0.3rem 1.2rem;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+  background-color: black;
+  color: white;
+
+  &:hover {
+    background-color: lighten(black, 20%)
+  }
+
+  &:active {
+    background-color: lighten(black, 40%)
+  }
+}
+
+.btn--cancel {
+  padding: 0.4rem 1.7rem;
+  font-size: 1.5rem;
+}
+
+.label {
+  color: #7F7676;
+  display: block;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.03rem;
+  font-size: 1.2rem;
+}
+
+.label--inline {
+  display: inline-block;
+  font-size: 1rem;
+  letter-spacing: 0rem;
+}
+
+.label--required::after {
+  content: " *"
+}
+
+.input {
+  width: 25rem;
+  padding: 0.5rem;
+  border: 1px solid #E2E5EA;
+  border-radius: 2px; 
+}
+
+.textarea {
+  width: 100%;
+  max-width: 35rem;
+  height: 65%;
+}
+
+
 @import "./datasets.scss";
+@import "./edit.scss";

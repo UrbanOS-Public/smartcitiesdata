@@ -1,0 +1,46 @@
+.edit-page {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 2fr;
+  grid-row-gap: 4rem;
+  padding: 2rem;
+}
+
+.metadata-form {
+  display: grid;
+  grid-column-gap: 10rem;
+  grid-row-gap: 1rem;
+  grid-template-areas:
+    "title last-updated"
+    "description spatial"
+    "description temporal"
+    "format organization"
+    "maintainer-name level-of-access"
+    "maintainer-email language"
+    "release-date homepage"
+    "license ."
+    "update-frequency ."
+    "keywords .";
+}
+
+@include area(metadata-form, title)
+@include area(metadata-form, description)
+@include area(metadata-form, format)
+@include area(metadata-form, maintainer-name)
+@include area(metadata-form, maintainer-email)
+@include area(metadata-form, release-date)
+@include area(metadata-form, license)
+@include area(metadata-form, update-frequency)
+@include area(metadata-form, keywords)
+
+@include area(metadata-form, last-updated)
+@include area(metadata-form, spatial)
+@include area(metadata-form, temporal)
+@include area(metadata-form, organization)
+@include area(metadata-form, level-of-access)
+@include area(metadata-form, language)
+@include area(metadata-form, homepage)
+
+.metadata-form__cancel-btn {
+  justify-self: start;
+}
