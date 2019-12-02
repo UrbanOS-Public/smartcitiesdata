@@ -1,6 +1,6 @@
 # Estuary
 
-**TODO: Add description**
+**Persists events from the eventstream topic**
 
 ## Installation
 
