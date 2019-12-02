@@ -16,7 +16,7 @@ defmodule Forklift.Application do
         Forklift.Quantum.Scheduler,
         {Brook, Application.get_env(:forklift, :brook)},
         {DeadLetter, Application.get_env(:forklift, :dead_letter)},
-        Forklift.Init
+        Forklift.InitServer
       ]
       |> List.flatten()
 

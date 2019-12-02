@@ -13,7 +13,7 @@ defmodule Reaper.Event.HandlerTest do
     ]
 
   import SmartCity.TestHelper, only: [eventually: 1]
-
+  alias Reaper.Collections.FileIngestions
   alias SmartCity.TestDataGenerator, as: TDG
 
   @instance Reaper.Application.instance()
@@ -177,12 +177,9 @@ defmodule Reaper.Event.HandlerTest do
     test "triggers ingest of geojson from shapefile transformation" do
       shapefile_dataset = TDG.create_dataset(id: "ds3", technical: %{sourceFormat: "zip"})
 
-      Brook.Test.with_event(
-        @instance,
-        fn ->
-          Brook.ViewState.merge(:file_ingestions, shapefile_dataset.id, shapefile_dataset)
-        end
-      )
+      Brook.Test.with_event(@instance, fn ->
+        FileIngestions.update_dataset(shapefile_dataset)
+      end)
 
       allow Reaper.Horde.Supervisor.start_data_extract(any()), return: {:ok, :pid}
 
