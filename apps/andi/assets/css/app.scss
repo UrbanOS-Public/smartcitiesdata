@@ -37,6 +37,7 @@ body {
   cursor: pointer;
   background-color: black;
   color: white;
+  min-width: 2rem;
 
   &:hover {
     background-color: lighten(black, 20%)
