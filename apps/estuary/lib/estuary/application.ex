@@ -11,6 +11,7 @@ defmodule Estuary.Application do
   @spec start(any, any) :: {:error, any} | {:ok, pid}
   def start(_type, _args) do
     validate_topic_exists()
+    validate_table_exists()
 
     children = []
 
@@ -23,5 +24,12 @@ defmodule Estuary.Application do
       true -> :ok
       false -> Elsa.Topic.create(@elsa_endpoint, @event_stream_topic)
     end
+  end
+
+  defp validate_table_exists do
+    table_name = "event_stream"
+    query = "CREATE TABLE #{table_name} (id int)"
+    Prestige.execute(query)
+    |> Prestige.prefetch
   end
 end

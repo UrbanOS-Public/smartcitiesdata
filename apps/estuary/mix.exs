@@ -30,11 +30,12 @@ defmodule Estuary.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:elsa, "~> 0.10.0"},
+      {:credo, "~> 1.1", only: :dev, runtime: false},
+      {:distillery, "~> 2.1"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
-      {:distillery, "~> 2.1"},
-      {:credo, "~> 1.1", only: :dev, runtime: false}
+      {:elsa, "~> 0.10.0"},
+      {:prestige, "~> 0.3"}
     ]
   end
 
