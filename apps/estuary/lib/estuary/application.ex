@@ -5,13 +5,15 @@ defmodule Estuary.Application do
 
   use Application
 
+  alias Estuary.EventTable
+
   @elsa_endpoint Application.get_env(:estuary, :elsa_endpoint)
   @event_stream_topic Application.get_env(:estuary, :event_stream_topic)
 
   @spec start(any, any) :: {:error, any} | {:ok, pid}
   def start(_type, _args) do
     validate_topic_exists()
-    validate_table_exists()
+    EventTable.create_table()
 
     children = []
 
@@ -24,12 +26,5 @@ defmodule Estuary.Application do
       true -> :ok
       false -> Elsa.Topic.create(@elsa_endpoint, @event_stream_topic)
     end
-  end
-
-  defp validate_table_exists do
-    Prestige.execute(
-      "CREATE TABLE IF NOT EXISTS event_stream (author varchar, create_ts bigint, data varchar, type varchar)"
-    )
-    |> Prestige.prefetch()
   end
 end
