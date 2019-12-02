@@ -9,7 +9,7 @@ defmodule Estuary.StartTest do
     assert Elsa.Topic.exists?(@elsa_endpoint, @event_stream_topic)
   end
 
-  test "should create table when estuary starts" do
+  test "should create table if not exists when estuary starts" do
     expected_table_value = [["event_stream"]]
 
     actual_table_value =
