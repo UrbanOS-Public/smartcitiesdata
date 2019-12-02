@@ -27,9 +27,9 @@ defmodule Estuary.Application do
   end
 
   defp validate_table_exists do
-    table_name = "event_stream"
-    query = "CREATE TABLE #{table_name} (id int)"
-    Prestige.execute(query)
-    |> Prestige.prefetch
+    Prestige.execute(
+      "CREATE TABLE IF NOT EXISTS event_stream (author varchar, create_ts bigint, data varchar, type varchar)"
+    )
+    |> Prestige.prefetch()
   end
 end

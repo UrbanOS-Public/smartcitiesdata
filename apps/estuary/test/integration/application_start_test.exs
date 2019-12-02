@@ -10,11 +10,27 @@ defmodule Estuary.StartTest do
   end
 
   test "should create table when estuary starts" do
-    table_name = "event_stream"
-    query = "SHOW TABLES LIKE '#{table_name}'"
-    expected_table_value = [[table_name]]
-    actual_table_value = Prestige.execute(query)
-    |> Prestige.prefetch
+    expected_table_value = [["event_stream"]]
+
+    actual_table_value =
+      Prestige.execute("SHOW TABLES LIKE 'event_stream'")
+      |> Prestige.prefetch()
+
     assert expected_table_value == actual_table_value
+  end
+
+  test "should check all the columns exists in the table when estuary starts" do
+    expected_column_value = [
+      ["author", "varchar", "", ""],
+      ["create_ts", "bigint", "", ""],
+      ["data", "varchar", "", ""],
+      ["type", "varchar", "", ""]
+    ]
+
+    actual_column_value =
+      Prestige.execute("DESCRIBE event_stream")
+      |> Prestige.prefetch()
+
+    assert expected_column_value == actual_column_value
   end
 end
