@@ -4,18 +4,28 @@ defmodule DiscoveryApiWeb.Router do
   """
   use DiscoveryApiWeb, :router
 
-  pipeline :add_user_details do
+  pipeline :verify_token do
     plug(Guardian.Plug.Pipeline,
       otp_app: :discovery_api,
       module: DiscoveryApi.Auth.Guardian,
       error_handler: DiscoveryApi.Auth.ErrorHandler
     )
 
-    plug(Guardian.Plug.VerifyHeader, claims: %{iss: "discovery_api"}, realm: "Bearer")
-    plug(Guardian.Plug.VerifyCookie)
+    plug(DiscoveryApiWeb.Plugs.VerifyToken)
+  end
+
+  pipeline :add_user_details do
     plug(Guardian.Plug.LoadResource, allow_blank: true)
     plug(DiscoveryApiWeb.Plugs.SetCurrentUser)
-    plug(DiscoveryApiWeb.Plugs.SetAllowedOrigin)
+  end
+
+  pipeline :ensure_authenticated do
+    plug(Guardian.Plug.EnsureAuthenticated)
+  end
+
+  pipeline :ensure_user_details_loaded do
+    plug(Guardian.Plug.LoadResource, allow_blank: false)
+    plug(DiscoveryApiWeb.Plugs.SetCurrentUser)
   end
 
   pipeline :reject_cookies_from_ajax do
@@ -27,30 +37,26 @@ defmodule DiscoveryApiWeb.Router do
     plug(DiscoveryApiWeb.Plugs.NoStore)
   end
 
-  pipeline :add_user_auth0 do
-    plug(Guardian.Plug.Pipeline,
-      otp_app: :discovery_api,
-      module: DiscoveryApi.Auth.Auth0.Guardian,
-      error_handler: DiscoveryApi.Auth.Auth0.ErrorHandler
-    )
-
-    plug(DiscoveryApiWeb.Plugs.VerifyHeader)
-    plug(DiscoveryApiWeb.Plugs.SetCurrentUser)
-  end
-
-  pipeline :ensure_user_auth0 do
-    plug(Guardian.Plug.EnsureAuthenticated)
-  end
-
   scope "/", DiscoveryApiWeb do
     get("/healthcheck", HealthCheckController, :index)
   end
 
   scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:reject_cookies_from_ajax, :add_user_details, :global_headers])
+    pipe_through([:reject_cookies_from_ajax, :global_headers])
 
     get("/login", LoginController, :login)
+  end
+
+  scope "/api/v1", DiscoveryApiWeb do
+    pipe_through([:reject_cookies_from_ajax, :verify_token, :ensure_authenticated, :global_headers])
+
+    post("/logged-in", UserController, :logged_in)
+
     get("/logout", LoginController, :logout)
+  end
+
+  scope "/api/v1", DiscoveryApiWeb do
+    pipe_through([:reject_cookies_from_ajax, :verify_token, :add_user_details, :global_headers])
 
     get("/dataset/search", MultipleMetadataController, :search)
     get("/data_json", MultipleMetadataController, :fetch_data_json)
@@ -72,18 +78,19 @@ defmodule DiscoveryApiWeb.Router do
     get("/dataset/:dataset_id/query", DataController, :query)
     get("/organization/:org_name/dataset/:dataset_name/download", DataController, :fetch_file)
     get("/dataset/:dataset_id/download", DataController, :fetch_file)
-  end
-
-  scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:add_user_auth0, :ensure_user_auth0])
-
-    post("/logged-in", UserController, :logged_in)
-    resources("/visualization", VisualizationController, only: [:create, :update])
-  end
-
-  scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:add_user_auth0])
 
     resources("/visualization", VisualizationController, only: [:show])
+  end
+
+  scope "/api/v1", DiscoveryApiWeb do
+    pipe_through([
+      :reject_cookies_from_ajax,
+      :verify_token,
+      :ensure_user_details_loaded,
+      :ensure_authenticated,
+      :global_headers
+    ])
+
+    resources("/visualization", VisualizationController, only: [:create, :update])
   end
 end

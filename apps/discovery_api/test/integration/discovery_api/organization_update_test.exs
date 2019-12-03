@@ -43,7 +43,6 @@ defmodule DiscoveryApi.OrganizationUpdateTest do
         assert persisted_model.organizationDetails.description == expected_organization.description
         assert persisted_model.organizationDetails.logoUrl == expected_organization.logoUrl
         assert persisted_model.organizationDetails.homepage == expected_organization.homepage
-        assert persisted_model.organizationDetails.dn == expected_organization.dn
       end,
       2000,
       10

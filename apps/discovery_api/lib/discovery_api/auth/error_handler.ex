@@ -6,7 +6,7 @@ defmodule DiscoveryApi.Auth.ErrorHandler do
 
   @impl Guardian.Plug.ErrorHandler
   def auth_error(conn, error, _opts) do
-    Logger.error(inspect(error))
-    DiscoveryApiWeb.RenderError.render_error(conn, 404, "Not Found")
+    Logger.error("Auth failed: #{inspect(error)}")
+    DiscoveryApiWeb.RenderError.render_error(conn, 401, "Unauthorized")
   end
 end

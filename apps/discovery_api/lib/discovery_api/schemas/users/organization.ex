@@ -14,7 +14,6 @@ defmodule DiscoveryApi.Schemas.Organizations.Organization do
     field(:description, :string)
     field(:homepage, :string)
     field(:logo_url, :string)
-    field(:ldap_dn, :string)
     many_to_many(:users, User, join_through: DiscoveryApi.Schemas.Users.UserOrganization)
 
     timestamps()
@@ -22,8 +21,8 @@ defmodule DiscoveryApi.Schemas.Organizations.Organization do
 
   def changeset(organization, changes) do
     organization
-    |> cast(changes, [:name, :title, :description, :homepage, :logo_url, :ldap_dn])
-    |> validate_required([:id, :name, :title, :ldap_dn])
+    |> cast(changes, [:name, :title, :description, :homepage, :logo_url])
+    |> validate_required([:id, :name, :title])
     |> unique_constraint(:id)
   end
 end

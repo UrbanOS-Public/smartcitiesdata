@@ -24,18 +24,14 @@ defmodule DiscoveryApi.Data.QueryTest do
       |> Keyword.merge(receive_timeout: 10_000)
       |> Prestige.new_session()
 
-    membership = %{
-      @organization_name => [
-        @username_with_private_access
-      ],
-      "some_other_organization" => [
-        @username_with_public_access
-      ]
-    }
+    Helper.setup_ldap()
 
-    %{
-      @organization_name => organization
-    } = Helper.setup_ldap(membership)
+    private_access_user = Helper.create_ldap_user(@username_with_private_access)
+    _public_access_user = Helper.create_ldap_user(@username_with_public_access)
+
+    organization = Helper.create_persisted_organization(%{orgName: @organization_name})
+
+    Helper.associate_user_with_organization(private_access_user.id, organization.id)
 
     public_dataset =
       TDG.create_dataset(%{

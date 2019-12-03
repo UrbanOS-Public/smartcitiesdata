@@ -7,6 +7,7 @@ Discovery API serves as middleware between our metadata store and our Data Disco
   * Install dependencies with `mix deps.get`
   * Start Phoenix endpoint with `MIX_ENV=integration iex -S mix start`
   * `MIX_ENV=integration mix docker.stop`
+  * Optionally, run the app with Auth0 as an auth provider: `MIX_ENV=integration iex -S mix start --config config/auth0.exs`
 
 ### To run the tests
 

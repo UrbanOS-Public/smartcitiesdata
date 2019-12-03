@@ -3,15 +3,21 @@ defmodule DiscoveryApiWeb.LoginControllerTest do
   use Placebo
 
   alias Plug.Conn
+  alias DiscoveryApi.Schemas.Users
+
+  @username "bob"
+  @email "a@b.com"
 
   describe "GET /login" do
     setup do
-      allow(PaddleWrapper.authenticate("bob", "12345"), return: :ok)
+      allow(PaddleWrapper.authenticate(@username, "12345"), return: :ok)
       allow(PaddleWrapper.authenticate(nil, nil), return: {:error, :invalidCredentials})
+      allow(PaddleWrapper.get(filter: [uid: @username]), return: {:ok, [Helper.ldap_user(%{"mail" => [@email]})]})
+      allow(Users.create_or_update(any(), any()), return: {:ok, %{}})
 
       conn =
         build_conn()
-        |> Conn.put_req_header("authorization", "Basic " <> Base.encode64("bob:12345"))
+        |> Conn.put_req_header("authorization", "Basic " <> Base.encode64("#{@username}:12345"))
         |> get("/api/v1/login")
 
       conn |> response(200)
@@ -51,24 +57,50 @@ defmodule DiscoveryApiWeb.LoginControllerTest do
 
       assert Map.get(token, "typ") == "access"
     end
+
+    test "saves user with username as subject_id and email from LDAP" do
+      assert_called Users.create_or_update(@username, %{email: @email})
+    end
   end
 
-  test "GET /login fails", %{conn: conn} do
-    allow(PaddleWrapper.authenticate(any(), any()), return: {:error, :invalidCredentials})
+  describe "GET /login fails" do
+    setup %{conn: conn} do
+      allow(PaddleWrapper.authenticate(any(), any()), return: {:error, :invalidCredentials})
+      allow(Users.create_or_update(any(), any()), return: {:ok, %{}})
 
-    conn
-    |> Conn.put_req_header("authorization", "Basic " <> Base.encode64("bob:12345"))
+      conn
+      |> Conn.put_req_header("authorization", "Basic " <> Base.encode64("#{@username}:12345"))
+      |> get("/api/v1/login")
+      |> response(401)
+
+      :ok
+    end
+
+    test "does not save user" do
+      refute_called Users.create_or_update(any(), any())
+    end
+  end
+
+  @moduletag capture_log: true
+  test "GET /login saves user with no email address" do
+    allow(PaddleWrapper.authenticate(@username, "12345"), return: :ok)
+    allow(PaddleWrapper.get(filter: [uid: @username]), return: {:ok, [Helper.ldap_user()]})
+    allow(Users.create_or_update(any(), any()), return: {:ok, %{}})
+
+    build_conn()
+    |> Conn.put_req_header("authorization", "Basic " <> Base.encode64("#{@username}:12345"))
     |> get("/api/v1/login")
-    |> response(401)
+    |> response(200)
+
+    assert_called Users.create_or_update(@username, %{email: "N/A"})
   end
 
   describe "GET /logout" do
     setup do
-      user = "bob"
-      {:ok, token, claims} = Guardian.encode_and_sign(DiscoveryApi.Auth.Guardian, user)
-      allow(PaddleWrapper.authenticate(any(), any()), return: :does_not_matter)
-      allow(PaddleWrapper.get(filter: any()), return: {:ok, [Helper.ldap_user()]})
-      {:ok, %{user: user, jwt: token, claims: claims}}
+      {:ok, token, claims} = Guardian.encode_and_sign(DiscoveryApi.Auth.Guardian, @username)
+      allow PaddleWrapper.authenticate(any(), any()), return: :does_not_matter
+      allow PaddleWrapper.get(filter: any()), return: {:ok, [Helper.ldap_user()]}
+      {:ok, %{user: @username, jwt: token, claims: claims}}
     end
 
     test "GET /logout", %{conn: conn, jwt: jwt} do

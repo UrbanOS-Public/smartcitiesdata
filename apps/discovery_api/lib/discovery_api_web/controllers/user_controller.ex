@@ -8,7 +8,8 @@ defmodule DiscoveryApiWeb.UserController do
   def logged_in(conn, _params) do
     with {:ok, user_info} <- AuthService.get_user_info(Guardian.Plug.current_token(conn)),
          {:ok, email} <- Map.fetch(user_info, "email"),
-         {:ok, _user} <- Users.create_or_update(conn.assigns.current_user, %{email: email}) do
+         subject_id <- Guardian.Plug.current_claims(conn)["sub"],
+         {:ok, _user} <- Users.create_or_update(subject_id, %{email: email}) do
       conn |> send_resp(:ok, "")
     else
       error ->

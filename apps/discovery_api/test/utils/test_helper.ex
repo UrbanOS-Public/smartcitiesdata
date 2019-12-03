@@ -3,7 +3,10 @@ defmodule DiscoveryApi.Test.Helper do
   Utility functions for tests
   """
   alias DiscoveryApi.Data.Model
+  alias DiscoveryApi.Schemas.Users
   alias SmartCity.TestDataGenerator, as: SC_TDG
+
+  @ldap_people_ou "People"
 
   def sample_model(values \\ %{}) do
     %Model{
@@ -69,20 +72,10 @@ defmodule DiscoveryApi.Test.Helper do
       "cn" => ["bigbadbob"],
       "displayName" => ["big bad"],
       "dn" => "uid=bigbadbob,cn=users,cn=accounts",
-      "ou" => ["People"],
+      "ou" => [@ldap_people_ou],
       "sn" => ["bad"],
       "uid" => ["bigbadbob"],
       "uidNumber" => ["1501200034"]
-    }
-    |> Map.merge(values)
-  end
-
-  def ldap_group(values \\ %{}) do
-    %{
-      "cn" => ["this_is_a_group"],
-      "dn" => "cn=this_is_a_group,ou=Group",
-      "member" => ["cn=FirstUser,ou=People"],
-      "objectClass" => ["top", "groupOfNames"]
     }
     |> Map.merge(values)
   end
@@ -109,53 +102,18 @@ defmodule DiscoveryApi.Test.Helper do
 
   def default_guardian_token_key(), do: Guardian.Plug.Keys.token_key() |> Atom.to_string()
 
-  def setup_ldap(membership) do
-    people = "People"
-    group = "Group"
-
+  def setup_ldap() do
     Paddle.authenticate([cn: "admin"], "admin")
-    Paddle.add([ou: people], objectClass: ["top", "organizationalunit"], ou: people)
-    Paddle.add([ou: group], objectClass: ["top", "organizationalunit"], ou: group)
-
-    Enum.map(membership, fn {organization_name, members} ->
-      organization = make_ldap_organization(organization_name, group)
-
-      Enum.each(members, fn member ->
-        username = ensure_ldap_user(member, people)
-        add_ldap_user_to_organization(username, organization_name, group, people)
-      end)
-
-      {organization_name, organization}
-    end)
-    |> Enum.into(%{})
+    Paddle.add([ou: @ldap_people_ou], objectClass: ["top", "organizationalunit"], ou: @ldap_people_ou)
   end
 
-  def add_ldap_user_to_organization(uid, cn, org_ou, user_ou) do
-    dn = [cn: cn, ou: org_ou]
-
-    group = [
-      objectClass: ["top", "groupofnames"],
-      cn: cn,
-      member: ["uid=#{uid},ou=#{user_ou}"]
-    ]
-
-    Paddle.add(dn, group)
-  end
-
-  def make_ldap_organization(name, ou) do
-    create_persisted_organization(%{
-      dn: "cn=#{name},ou=#{ou}",
-      orgName: name
-    })
-  end
-
-  def ensure_ldap_user(name, ou) do
-    dn = [uid: name, ou: ou]
+  def create_ldap_user(username) do
+    dn = [uid: username, ou: @ldap_people_ou]
 
     user_request = [
       objectClass: ["account", "posixAccount"],
-      cn: name,
-      uid: name,
+      cn: username,
+      uid: username,
       loginShell: "/bin/bash",
       homeDirectory: "/home/user",
       uidNumber: 501,
@@ -165,8 +123,8 @@ defmodule DiscoveryApi.Test.Helper do
 
     case Paddle.add(dn, user_request) do
       status when status in [:ok, {:error, :entryAlreadyExists}] ->
-        {:ok, [_user | _]} = Paddle.get(base: "uid=#{name},ou=#{ou}")
-        name
+        {:ok, [_user | _]} = Paddle.get(base: "uid=#{username},ou=#{@ldap_people_ou}")
+        create_persisted_user(username)
 
       error ->
         raise error
@@ -194,6 +152,11 @@ defmodule DiscoveryApi.Test.Helper do
 
   def wait_for_brook_to_be_ready() do
     Process.sleep(5_000)
+  end
+
+  def create_persisted_user(subject_id) do
+    {:ok, user} = Users.create_or_update(subject_id, %{email: Faker.Internet.email()})
+    user
   end
 
   def create_persisted_organization(map \\ %{}) do

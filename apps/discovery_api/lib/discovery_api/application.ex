@@ -4,8 +4,13 @@ defmodule DiscoveryApi.Application do
   """
   use Application
 
+  alias DiscoveryApi.Auth.GuardianConfigurator
+
   def start(_type, _args) do
     import Supervisor.Spec
+
+    Application.get_env(:discovery_api, :auth_provider)
+    |> GuardianConfigurator.configure()
 
     DiscoveryApi.MetricsExporter.setup()
     DiscoveryApiWeb.Endpoint.Instrumenter.setup()

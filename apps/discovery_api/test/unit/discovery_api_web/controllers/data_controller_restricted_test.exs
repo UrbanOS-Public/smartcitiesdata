@@ -3,13 +3,16 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
   use Placebo
   import Checkov
   alias DiscoveryApi.Data.{Model, SystemNameCache}
+  alias DiscoveryApi.Schemas.Users
+  alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Services.{PrestoService, MetricsService}
-  alias DiscoveryApiWeb.Utilities.AuthUtils
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
+  @org_id "org1_id"
   @org_name "org1"
   @data_name "data1"
+  @subject_id "bigbadbob"
 
   setup do
     model =
@@ -22,8 +25,8 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
         queries: 7,
         downloads: 9,
         organizationDetails: %{
-          orgName: @org_name,
-          dn: "cn=this_is_a_group,ou=Group"
+          id: @org_id,
+          orgName: @org_name
         },
         schema: [
           %{name: "id", type: "integer"},
@@ -33,7 +36,7 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
 
     allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
     allow(Model.get(@dataset_id), return: model)
-    allow(AuthUtils.authorized_to_query?(any(), any()), return: true, meck_options: [:passthrough])
+    allow(Model.get_all(), return: [model])
     allow(MetricsService.record_api_hit(any(), any()), return: :does_not_matter)
 
     # these clearly need to be condensed
@@ -41,6 +44,8 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
     allow(PrestoService.preview_columns(any(), @system_name), return: ["id", "name"])
     allow(PrestoService.preview(any(), @system_name), return: [[1, "Joe"], [2, "Robby"]])
     allow(PrestoService.build_query(any(), any()), return: {:ok, "select * from #{@system_name}"})
+    allow(PrestoService.is_select_statement?("select * from #{@system_name}"), return: true)
+    allow(PrestoService.get_affected_tables(any(), "select * from #{@system_name}"), return: {:ok, ["#{@system_name}"]})
 
     allow(Prestige.new_session(any()), return: :connection)
     allow(Prestige.query!(any(), "select * from #{@system_name}"), return: :result)
@@ -54,15 +59,9 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
 
   describe "accessing restricted datasets" do
     data_test "does not download a restricted dataset via #{url} if the given user is not a member of the dataset's group", %{conn: conn} do
-      username = "bigbadbob"
-      ldap_user = Helper.ldap_user()
-      ldap_group = Helper.ldap_group(%{"member" => ["uid=FirstUser,ou=People"]})
+      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: []}})
 
-      allow(PaddleWrapper.authenticate(any(), any()), return: :ok)
-      allow(PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]})
-      allow(PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]})
-
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
 
       conn
       |> put_req_cookie(Helper.default_guardian_token_key(), token)
@@ -79,15 +78,9 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
     end
 
     data_test "downloads a restricted dataset via #{url} if the given user has access to it, via cookie", %{conn: conn} do
-      username = "bigbadbob"
-      ldap_user = Helper.ldap_user()
-      ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
+      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
-      allow(PaddleWrapper.authenticate(any(), any()), return: :ok)
-      allow(PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]})
-      allow(PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]})
-
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
 
       conn
       |> put_req_cookie(Helper.default_guardian_token_key(), token)
@@ -104,15 +97,9 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
     end
 
     data_test "downloads a restricted dataset via #{url} if the given user has access to it, via token", %{conn: conn} do
-      username = "bigbadbob"
-      ldap_user = Helper.ldap_user()
-      ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
+      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
-      allow(PaddleWrapper.authenticate(any(), any()), return: :ok)
-      allow(PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]})
-      allow(PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]), return: {:ok, [ldap_group]})
-
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
 
       conn
       |> put_req_header("authorization", "Bearer #{token}")

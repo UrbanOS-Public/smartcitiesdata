@@ -31,7 +31,6 @@ defmodule DiscoveryApi.TestDataGenerator do
     %DiscoveryApi.Schemas.Organizations.Organization{
       id: smart_city_organization.id,
       description: smart_city_organization.description,
-      ldap_dn: smart_city_organization.dn,
       name: smart_city_organization.orgName,
       title: smart_city_organization.orgTitle,
       logo_url: smart_city_organization.logoUrl,

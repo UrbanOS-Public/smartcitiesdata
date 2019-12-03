@@ -53,10 +53,6 @@ config :discovery_api,
   allowed_origins: allowed_origins,
   secrets_endpoint: secrets_endpoint
 
-config :discovery_api,
-  jwks_endpoint: System.get_env("AUTH_JWKS_ENDPOINT"),
-  user_info_endpoint: System.get_env("AUTH_USER_INFO_ENDPOINT")
-
 config :redix,
   host: System.get_env("REDIS_HOST")
 
@@ -72,9 +68,22 @@ config :paddle, Paddle,
   base: System.get_env("LDAP_BASE"),
   account_subdn: System.get_env("LDAP_ACCOUNT_SUBDN")
 
-config :discovery_api, DiscoveryApi.Auth.Guardian, secret_key: System.get_env("GUARDIAN_KEY")
+auth_provider = (System.get_env("AUTH_PROVIDER") || "default") |> String.downcase()
 
-config :discovery_api, DiscoveryApi.Auth.Auth0.Guardian, issuer: System.get_env("AUTH_JWT_ISSUER")
+config :discovery_api,
+  auth_provider: auth_provider
+
+if auth_provider == "auth0" do
+  config :discovery_api, DiscoveryApi.Auth.Guardian,
+    issuer: System.get_env("AUTH_JWT_ISSUER")
+
+  config :discovery_api,
+    jwks_endpoint: System.get_env("AUTH_JWKS_ENDPOINT"),
+    user_info_endpoint: System.get_env("AUTH_USER_INFO_ENDPOINT")
+else
+  config :discovery_api, DiscoveryApi.Auth.Guardian,
+    secret_key: System.get_env("GUARDIAN_KEY")
+end
 
 config :ex_aws,
   region: System.get_env("HOSTED_FILE_REGION")

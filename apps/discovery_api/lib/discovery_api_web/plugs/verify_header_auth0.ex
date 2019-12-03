@@ -1,4 +1,4 @@
-defmodule DiscoveryApiWeb.Plugs.VerifyHeader do
+defmodule DiscoveryApiWeb.Plugs.VerifyHeaderAuth0 do
   @moduledoc """
   Wraps Guardian's VerifyHeader plug to allow retries when verification fails on a cached JWKS.
   """

@@ -2,15 +2,14 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
 
+  alias DiscoveryApi.Auth.GuardianConfigurator
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users
+  alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Schemas.Visualizations
   alias DiscoveryApi.Schemas.Visualizations.Visualization
   alias DiscoveryApi.Auth.Auth0.CachedJWKS
-
-  @valid_jwt AuthHelper.valid_jwt()
-  @valid_jwt_subject AuthHelper.valid_jwt_sub()
-  @user_info_body Jason.encode!(%{"email" => "x@y.z"})
+  alias DiscoveryApiWeb.Utilities.QueryAccessUtils
 
   @user_id "asdfkjashdflkjhasdkjkadsf"
 
@@ -19,31 +18,21 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
   @query "select * from stuff"
   @chart "{data: []}"
 
-  setup do
-    jwks = AuthHelper.valid_jwks()
-    CachedJWKS.set(jwks)
+  describe "with default auth provider" do
+    setup do
+      subject_id = "ringo"
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(subject_id, %{}, token_type: "refresh")
 
-    bypass = Bypass.open()
+      %{subject_id: subject_id, token: token}
+    end
 
-    really_far_in_the_future = 3_000_000_000_000
-    AuthHelper.set_allowed_guardian_drift(really_far_in_the_future)
-
-    Application.put_env(
-      :discovery_api,
-      :user_info_endpoint,
-      "http://localhost:#{bypass.port}/userinfo"
-    )
-
-    Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
-      Plug.Conn.resp(conn, :ok, @user_info_body)
-    end)
-
-    :ok
-  end
-
-  describe "POST /visualization" do
-    test "returns CREATED for valid bearer token and visualization setup", %{conn: conn} do
-      allow(Users.get_user_with_visualizations(@valid_jwt_subject, :subject_id), return: {:ok, %{id: @user_id, visualizations: []}})
+    test "POST /visualization returns CREATED for valid bearer token and visualization setup", %{
+      conn: conn,
+      subject_id: subject_id,
+      token: token
+    } do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+      allow(Visualizations.get_visualizations_by_owner_id(@user_id), return: [])
 
       allow(Visualizations.create_visualization(any()),
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}}
@@ -51,7 +40,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
 
       body =
         conn
-        |> put_req_header("authorization", "Bearer #{@valid_jwt}")
+        |> put_req_header("authorization", "Bearer #{token}")
         |> put_req_header("content-type", "application/json")
         |> post("/api/v1/visualization", ~s({"query": "#{@query}", "title": "#{@title}", "chart": "#{@chart}"}))
         |> response(201)
@@ -65,53 +54,48 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
              } = body
     end
 
-    test "returns BAD REQUEST for valid bearer token but missing user for visualization setup", %{
-      conn: conn
+    @moduletag capture_log: true
+    test "POST /visualization returns UNAUTHORIZED for valid bearer token but missing user for visualization setup", %{
+      conn: conn,
+      subject_id: subject_id,
+      token: token
     } do
-      allow(Users.get_user_with_visualizations(@valid_jwt_subject, :subject_id), return: {:error, :not_found})
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:error, :not_found})
+      allow(Visualizations.get_visualizations_by_owner_id(@user_id), return: [])
 
       conn
-      |> put_req_header("authorization", "Bearer #{@valid_jwt}")
+      |> put_req_header("authorization", "Bearer #{token}")
       |> put_req_header("content-type", "application/json")
       |> post("/api/v1/visualization", ~s({"query": "#{@query}", "title": "#{@title}", "chart": "#{@chart}"}))
-      |> response(400)
+      |> response(401)
     end
 
-    test "returns BAD REQUEST for valid bearer token and but missing user for visualization setup",
-         %{conn: conn} do
-      allow(Users.get_user_with_visualizations(@valid_jwt_subject, :subject_id), return: {:error, :not_found})
-
-      conn
-      |> put_req_header("authorization", "Bearer #{@valid_jwt}")
-      |> put_req_header("content-type", "application/json")
-      |> post("/api/v1/visualization", ~s({"query": "#{@query}", "title": "#{@title}", "chart": "#{@chart}"}))
-      |> response(400)
-    end
-
-    test "returns BAD REQUEST when user creates more than the limit of visualizations for their account", %{conn: conn} do
-      allow(Users.get_user_with_visualizations(@valid_jwt_subject, :subject_id),
-        return: {:ok, %{id: @user_id, visualizations: [1, 2, 3, 4, 5]}}
-      )
+    test "POST /visualization returns BAD REQUEST when user creates more than the limit of visualizations for their account", %{
+      conn: conn,
+      subject_id: subject_id,
+      token: token
+    } do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+      allow(Visualizations.get_visualizations_by_owner_id(@user_id), return: [1, 2, 3, 4, 5])
 
       allow(Visualizations.create_visualization(any()),
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}}
       )
 
       conn
-      |> put_req_header("authorization", "Bearer #{@valid_jwt}")
+      |> put_req_header("authorization", "Bearer #{token}")
       |> put_req_header("content-type", "application/json")
       |> post("/api/v1/visualization", ~s({"query": "#{@query}", "title": "#{@title}", "chart": "#{@chart}"}))
       |> response(400)
     end
-  end
 
-  describe "PUT /visualization/id" do
-    setup do
-      allow(Users.get_user(@valid_jwt_subject, :subject_id), return: {:ok, %{id: @user_id}})
-      :ok
-    end
+    test "PUT /visualization/id update visualization for existing id returns accepted", %{
+      conn: conn,
+      subject_id: subject_id,
+      token: token
+    } do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
 
-    test "update visualization for existing id returns accepted", %{conn: conn} do
       allow(Visualizations.get_visualization_by_id(any()),
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}}
       )
@@ -126,7 +110,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
 
       body =
         conn
-        |> put_req_header("authorization", "Bearer #{@valid_jwt}")
+        |> put_req_header("authorization", "Bearer #{token}")
         |> put_req_header("content-type", "application/json")
         |> put("/api/v1/visualization/#{@id}", %{"query" => @query, "title" => @title, "public_id" => @id, "chart" => @chart})
         |> response(200)
@@ -139,22 +123,17 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
                "chart" => @chart
              } = body
     end
-  end
 
-  describe "GET /visualization" do
-    setup do
-      allow(Users.get_user(@valid_jwt_subject, :subject_id), return: {:ok, %{id: @user_id}})
-      :ok
-    end
+    test "GET /visualization returns OK for valid bearer token and id", %{subject_id: subject_id, token: token} do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
 
-    test "returns OK for valid bearer token and id" do
       allow(Visualizations.get_visualization_by_id(@id),
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart, owner_id: "irrelevant"}}
       )
 
-      allow(DiscoveryApiWeb.Utilities.AuthUtils.authorized_to_query?(@query, any(), any()), return: true)
+      allow(DiscoveryApiWeb.Utilities.QueryAccessUtils.authorized_to_query?(@query, any()), return: true)
 
-      body = get_visualization_body_with_code(200)
+      body = get_visualization_body_with_code(token, 200)
 
       assert %{
                "query" => @query,
@@ -164,7 +143,9 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
              } = body
     end
 
-    test "returns NOT FOUND when visualization cannot be executed by the user" do
+    test "GET /visualization returns NOT FOUND when visualization cannot be executed by the user", %{subject_id: subject_id, token: token} do
+      user = %User{id: @user_id}
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, user})
       private_system_name = "private__dataset"
       query = "select * from #{private_system_name}"
 
@@ -180,29 +161,31 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: query, title: @title, chart: @chart, owner_id: "irrelevant"}}
       )
 
-      allow(DiscoveryApiWeb.Utilities.AuthUtils.authorized_to_query?(query, @valid_jwt_subject, any()), return: false)
+      allow(QueryAccessUtils.authorized_to_query?(query, user), return: false)
 
-      body = get_visualization_body_with_code(404)
+      body = get_visualization_body_with_code(token, 404)
 
       assert %{"message" => "Not Found"} == body
     end
 
-    test "returns NOT FOUND when visualization cannot be fetched" do
+    test "GET /visualization returns NOT FOUND when visualization cannot be fetched", %{subject_id: subject_id, token: token} do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
       allow(Visualizations.get_visualization_by_id(@id), return: {:error, "no such visualization"})
 
-      body = get_visualization_body_with_code(404)
+      body = get_visualization_body_with_code(token, 404)
 
       assert %{"message" => "Not Found"} == body
     end
 
-    test "returns visualization when user is owner regardless of query contents" do
+    test "GET /visualization returns visualization when user is owner regardless of query contents", %{subject_id: subject_id, token: token} do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
       query = "select * from garbage"
 
       allow(Visualizations.get_visualization_by_id(@id),
         return: {:ok, %Visualization{public_id: @id, query: query, title: @title, chart: @chart, owner_id: @user_id}}
       )
 
-      body = get_visualization_body_with_code(200)
+      body = get_visualization_body_with_code(token, 200)
 
       assert %{
                "query" => ^query,
@@ -213,9 +196,86 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
     end
   end
 
-  defp get_visualization_body_with_code(code) do
+  describe "with Auth0 auth provider" do
+    setup do
+      secret_key = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian) |> Keyword.get(:secret_key)
+      GuardianConfigurator.configure("auth0", issuer: AuthHelper.valid_issuer())
+
+      jwks = AuthHelper.valid_jwks()
+      CachedJWKS.set(jwks)
+
+      bypass = Bypass.open()
+
+      really_far_in_the_future = 3_000_000_000_000
+      AuthHelper.set_allowed_guardian_drift(really_far_in_the_future)
+
+      Application.put_env(
+        :discovery_api,
+        :user_info_endpoint,
+        "http://localhost:#{bypass.port}/userinfo"
+      )
+
+      Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
+        Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z"}))
+      end)
+
+      on_exit(fn ->
+        AuthHelper.set_allowed_guardian_drift(0)
+        GuardianConfigurator.configure("default", secret_key: secret_key)
+      end)
+
+      %{subject_id: AuthHelper.valid_jwt_sub(), token: AuthHelper.valid_jwt()}
+    end
+
+    test "POST /visualization returns CREATED for valid bearer token and visualization setup", %{
+      conn: conn,
+      subject_id: subject_id,
+      token: token
+    } do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+      allow(Visualizations.get_visualizations_by_owner_id(@user_id), return: [])
+
+      allow(Visualizations.create_visualization(any()),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @chart}}
+      )
+
+      body =
+        conn
+        |> put_req_header("authorization", "Bearer #{token}")
+        |> put_req_header("content-type", "application/json")
+        |> post("/api/v1/visualization", ~s({"query": "#{@query}", "title": "#{@title}", "chart": "#{@chart}"}))
+        |> response(201)
+        |> Jason.decode!()
+
+      assert %{
+               "query" => @query,
+               "title" => @title,
+               "id" => @id
+             } = body
+    end
+
+    test "GET /visualization returns OK for valid bearer token and id", %{subject_id: subject_id, token: token} do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+
+      allow(Visualizations.get_visualization_by_id(@id),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant"}}
+      )
+
+      allow(QueryAccessUtils.authorized_to_query?(@query, any()), return: true)
+
+      body = get_visualization_body_with_code(token, 200)
+
+      assert %{
+               "query" => @query,
+               "title" => @title,
+               "id" => @id
+             } = body
+    end
+  end
+
+  defp get_visualization_body_with_code(token, code) do
     build_conn()
-    |> put_req_header("authorization", "Bearer #{@valid_jwt}")
+    |> put_req_header("authorization", "Bearer #{token}")
     |> put_req_header("content-type", "application/json")
     |> get("/api/v1/visualization/#{@id}")
     |> response(code)

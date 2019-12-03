@@ -2,16 +2,20 @@ defmodule DiscoveryApiWeb.UserControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
 
+  alias DiscoveryApi.Auth.GuardianConfigurator
+  alias DiscoveryApi.Auth.Auth0.CachedJWKS
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
-  alias DiscoveryApi.Auth.Auth0.CachedJWKS
 
   @valid_jwt AuthHelper.valid_jwt()
   @user_info_body Jason.encode!(%{"email" => "x@y.z"})
 
-  describe "POST /logged-in" do
+  describe "POST /logged-in with Auth0 auth provider" do
     setup do
+      secret_key = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian) |> Keyword.get(:secret_key)
+      GuardianConfigurator.configure("auth0", issuer: AuthHelper.valid_issuer())
+
       jwks = AuthHelper.valid_jwks()
       CachedJWKS.set(jwks)
 
@@ -22,6 +26,11 @@ defmodule DiscoveryApiWeb.UserControllerTest do
       Application.put_env(:discovery_api, :user_info_endpoint, "http://localhost:#{bypass.port}/userinfo")
 
       allow(Users.create_or_update(any(), %{email: "x@y.z"}), return: {:ok, %User{}})
+
+      on_exit(fn ->
+        AuthHelper.set_allowed_guardian_drift(0)
+        GuardianConfigurator.configure("default", secret_key: secret_key)
+      end)
 
       %{bypass: bypass}
     end

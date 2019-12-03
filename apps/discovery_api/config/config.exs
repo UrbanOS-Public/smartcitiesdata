@@ -17,6 +17,7 @@ config :logger, :console,
   metadata: [:user_id]
 
 config :discovery_api,
+  auth_provider: "default",
   collector: StreamingMetrics.PrometheusMetricCollector
 
 config :paddle, Paddle, host: "localhost", account_subdn: "ou=People"
@@ -25,14 +26,7 @@ config :paddle, Paddle, host: "localhost", account_subdn: "ou=People"
 # secret set as variable to pass sobelow check on hard coded secrets
 secret = "this_is_a_secret"
 
-config :discovery_api, DiscoveryApi.Auth.Guardian,
-  issuer: "discovery_api",
-  secret_key: secret
-
-config :discovery_api, DiscoveryApi.Auth.Auth0.Guardian,
-  allowed_algos: ["RS256"],
-  verify_issuer: true,
-  secret_fetcher: DiscoveryApi.Auth.Auth0.SecretFetcher
+config :discovery_api, DiscoveryApi.Auth.Guardian, secret_key: secret
 
 config :discovery_api, DiscoveryApi.Quantum.Scheduler,
   jobs: [

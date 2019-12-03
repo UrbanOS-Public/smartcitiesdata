@@ -41,13 +41,6 @@ defmodule DiscoveryApi.Schemas.Users do
     end
   end
 
-  def get_user_with_visualizations(id, field \\ :id) do
-    case get_user(id, field) do
-      {:ok, user} -> {:ok, user |> Repo.preload(:visualizations)}
-      error -> error
-    end
-  end
-
   def associate_with_organization(user_id, organization_id) do
     with {:ok, user} <- get_user(user_id),
          {:ok, organization} <- Organizations.get_organization(organization_id) do

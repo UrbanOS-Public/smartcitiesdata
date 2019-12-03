@@ -2,7 +2,7 @@ defmodule DiscoveryApiWeb.MultipleDataController do
   use DiscoveryApiWeb, :controller
   require Logger
   alias DiscoveryApiWeb.MultipleDataView
-  alias DiscoveryApiWeb.Utilities.AuthUtils
+  alias DiscoveryApiWeb.Utilities.QueryAccessUtils
 
   plug(:accepts, MultipleDataView.accepted_formats())
 
@@ -10,7 +10,7 @@ defmodule DiscoveryApiWeb.MultipleDataController do
     current_user = conn.assigns.current_user
 
     with {:ok, statement, conn} <- read_body(conn),
-         true <- AuthUtils.authorized_to_query?(statement, current_user),
+         true <- QueryAccessUtils.authorized_to_query?(statement, current_user),
          session_opts <- DiscoveryApi.prestige_opts(),
          session <- Prestige.new_session(session_opts) do
       format = get_format(conn)

@@ -1,17 +1,19 @@
-defmodule DiscoveryApiWeb.Utilities.AuthUtils do
+defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   @moduledoc """
   Provides authentication and authorization helper methods
   """
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApi.Data.Model
+  alias DiscoveryApiWeb.Utilities.ModelAccessUtils
 
-  def authorized_to_query?(statement, username, access_module \\ DiscoveryApiWeb.Utilities.LdapAccessUtils) do
+  def authorized_to_query?(statement, user) do
     with true <- PrestoService.is_select_statement?(statement),
          session_opts <- DiscoveryApi.prestige_opts(),
          session <- Prestige.new_session(session_opts),
          {:ok, affected_tables} <- PrestoService.get_affected_tables(session, statement),
-         affected_models <- get_affected_models(affected_tables) do
-      valid_tables?(affected_tables, affected_models) && can_access_models?(affected_models, username, access_module)
+         affected_models <- get_affected_models(affected_tables),
+         true <- valid_tables?(affected_tables, affected_models) do
+      can_access_models?(affected_models, user)
     else
       _ -> false
     end
@@ -32,7 +34,7 @@ defmodule DiscoveryApiWeb.Utilities.AuthUtils do
     MapSet.new(affected_tables) == MapSet.new(affected_system_names)
   end
 
-  defp can_access_models?(affected_models, username, access_module) do
-    Enum.all?(affected_models, &access_module.has_access?(&1, username))
+  defp can_access_models?(affected_models, user) do
+    Enum.all?(affected_models, &ModelAccessUtils.has_access?(&1, user))
   end
 end

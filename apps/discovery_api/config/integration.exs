@@ -14,12 +14,6 @@ config :discovery_api,
   hosted_bucket: "kdp-cloud-storage",
   hosted_region: aws_region
 
-config :discovery_api,
-  jwks_endpoint: "https://smartcolumbusos-demo.auth0.com/.well-known/jwks.json",
-  user_info_endpoint: "https://smartcolumbusos-demo.auth0.com/userinfo"
-
-config :discovery_api, DiscoveryApi.Auth.Auth0.Guardian, issuer: "https://smartcolumbusos-demo.auth0.com/"
-
 config :smart_city_registry,
   redis: [
     host: host

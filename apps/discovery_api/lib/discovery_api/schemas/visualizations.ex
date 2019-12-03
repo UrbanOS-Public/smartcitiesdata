@@ -2,6 +2,9 @@ defmodule DiscoveryApi.Schemas.Visualizations do
   @moduledoc """
   Interface for reading and writing the Visualization schema.
   """
+
+  import Ecto.Query, only: [from: 2]
+
   alias DiscoveryApi.Repo
   alias DiscoveryApi.Schemas.Visualizations.Visualization
 
@@ -20,6 +23,15 @@ defmodule DiscoveryApi.Schemas.Visualizations do
       nil -> {:error, "#{public_id} not found"}
       visualization -> {:ok, visualization}
     end
+  end
+
+  def get_visualizations_by_owner_id(owner_id) do
+    query =
+      from(visualization in Visualization,
+        where: visualization.owner_id == ^owner_id
+      )
+
+    Repo.all(query)
   end
 
   def update_visualization_by_id(id, visualization_changes, user) do

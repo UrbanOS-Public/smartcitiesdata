@@ -3,7 +3,7 @@ defmodule DiscoveryApiWeb.DataController do
   alias DiscoveryApi.Services.{PrestoService, ObjectStorageService}
   alias DiscoveryApiWeb.Plugs.{GetModel, Restrictor, RecordMetrics}
   alias DiscoveryApiWeb.DataView
-  alias DiscoveryApiWeb.Utilities.AuthUtils
+  alias DiscoveryApiWeb.Utilities.QueryAccessUtils
   require Logger
 
   plug(GetModel)
@@ -78,7 +78,7 @@ defmodule DiscoveryApiWeb.DataController do
 
     with {:ok, columns} <- PrestoService.get_column_names(session, dataset_name, Map.get(params, "columns")),
          {:ok, query} <- PrestoService.build_query(params, dataset_name),
-         true <- AuthUtils.authorized_to_query?(query, current_user) do
+         true <- QueryAccessUtils.authorized_to_query?(query, current_user) do
       data_stream =
         session
         |> Prestige.query!(query)

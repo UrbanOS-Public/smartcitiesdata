@@ -3,23 +3,13 @@ defmodule DiscoveryApi.Auth.Guardian do
   use Guardian, otp_app: :discovery_api, cookie_options: [secure: true, http_only: true]
   require Logger
 
+  alias DiscoveryApi.Schemas.Users
+
   def subject_for_token(resource, _claims) do
     {:ok, resource}
   end
 
   def resource_from_claims(claims) do
-    id = claims["sub"]
-    user = Application.get_env(:discovery_api, :ldap_user)
-    pass = Application.get_env(:discovery_api, :ldap_pass)
-    PaddleWrapper.authenticate(user, pass)
-
-    case PaddleWrapper.get(filter: [uid: id]) do
-      {:ok, resources} ->
-        {:ok, List.first(resources)}
-
-      error ->
-        Logger.error(inspect(error))
-        error
-    end
+    Users.get_user_with_organizations(claims["sub"], :subject_id)
   end
 end

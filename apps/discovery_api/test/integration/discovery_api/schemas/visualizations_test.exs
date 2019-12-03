@@ -25,6 +25,31 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     end
   end
 
+  describe "get_visualizations_by_owner_id/1" do
+    test "gets visualizations for the specified owner" do
+      {:ok, owner_1} = Users.create_or_update("mork|mindy", %{email: "dont@matter.com"})
+      {:ok, owner_2} = Users.create_or_update("laverne|shirley", %{email: "dont@matter.com"})
+
+      {:ok, visualization_1} =
+        Visualizations.create_visualization(%{query: "select * from a", owner: owner_1, title: "My first visualization"})
+
+      {:ok, visualization_2} =
+        Visualizations.create_visualization(%{query: "select * from b", owner: owner_1, title: "My second visualization"})
+
+      {:ok, _visualization_3} =
+        Visualizations.create_visualization(%{query: "select * from c", owner: owner_2, title: "Some other visualization"})
+
+      visualizations = Visualizations.get_visualizations_by_owner_id(owner_1.id)
+
+      assert Enum.any?(visualizations, fn visualization -> visualization.id == visualization_1.id end)
+      assert Enum.any?(visualizations, fn visualization -> visualization.id == visualization_2.id end)
+    end
+
+    test "returns an empty list when no visualizations are found" do
+      assert [] == Visualizations.get_visualizations_by_owner_id(Ecto.UUID.generate())
+    end
+  end
+
   describe "create/1" do
     test "given all required attributes, it creates a visualization" do
       query = "select * from turtles"

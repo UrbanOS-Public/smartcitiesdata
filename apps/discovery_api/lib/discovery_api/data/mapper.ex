@@ -49,8 +49,7 @@ defmodule DiscoveryApi.Data.Mapper do
         orgTitle: organization.title,
         description: organization.description,
         logoUrl: organization.logo_url,
-        homepage: organization.homepage,
-        dn: organization.ldap_dn
+        homepage: organization.homepage
       }
     }
   end

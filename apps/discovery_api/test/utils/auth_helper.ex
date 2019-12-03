@@ -34,9 +34,13 @@ defmodule DiscoveryApi.Test.AuthHelper do
     "auth0|5d7a527176fb160d8d9b2e3d"
   end
 
+  def valid_issuer() do
+    "https://smartcolumbusos-demo.auth0.com/"
+  end
+
   def set_allowed_guardian_drift(allowed_drift) do
-    guardian_env = Application.get_env(:discovery_api, DiscoveryApi.Auth.Auth0.Guardian)
+    guardian_env = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian)
     new_guardian_env = guardian_env |> Keyword.put(:allowed_drift, allowed_drift)
-    Application.put_env(:discovery_api, DiscoveryApi.Auth.Auth0.Guardian, new_guardian_env)
+    Application.put_env(:discovery_api, DiscoveryApi.Auth.Guardian, new_guardian_env)
   end
 end

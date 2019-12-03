@@ -4,7 +4,7 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
   import Checkov
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Services.{PrestoService, MetricsService}
-  alias DiscoveryApiWeb.Utilities.AuthUtils
+  alias DiscoveryApiWeb.Utilities.QueryAccessUtils
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -60,7 +60,7 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
 
       allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
       allow(Model.get(@dataset_id), return: model)
-      allow(AuthUtils.authorized_to_query?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(QueryAccessUtils.authorized_to_query?(any(), any()), return: true, meck_options: [:passthrough])
       allow(MetricsService.record_api_hit(any(), any()), return: :does_not_matter)
 
       # these clearly need to be condensed

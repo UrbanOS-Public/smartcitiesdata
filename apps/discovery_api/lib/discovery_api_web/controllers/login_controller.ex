@@ -2,19 +2,21 @@ defmodule DiscoveryApiWeb.LoginController do
   require Logger
   use DiscoveryApiWeb, :controller
   alias DiscoveryApi.Auth.Guardian
+  alias DiscoveryApi.Schemas.Users
 
   def login(conn, _) do
-    {user, password} = extract_auth(conn)
+    {username, password} = extract_auth(conn)
 
-    case PaddleWrapper.authenticate(user, password) do
+    case PaddleWrapper.authenticate(username, password) do
       :ok ->
-        {:ok, token, _claims} = Guardian.encode_and_sign(user)
+        Users.create_or_update(username, %{email: get_email(username)})
+        {:ok, token, _claims} = Guardian.encode_and_sign(username)
 
         conn
         |> Plug.Conn.put_resp_header("token", token)
-        |> Guardian.Plug.sign_in(user)
-        |> Guardian.Plug.remember_me(user)
-        |> text("#{user} logged in.")
+        |> Guardian.Plug.sign_in(username)
+        |> Guardian.Plug.remember_me(username)
+        |> text("#{username} logged in.")
 
       {:error, :invalidCredentials} ->
         render_error(conn, 401, "Not Authorized")
@@ -22,7 +24,7 @@ defmodule DiscoveryApiWeb.LoginController do
   end
 
   def logout(conn, _) do
-    jwt = extract_token(conn)
+    jwt = Guardian.Plug.current_token(conn)
 
     case Guardian.revoke(jwt) do
       {:ok, _claims} ->
@@ -35,6 +37,27 @@ defmodule DiscoveryApiWeb.LoginController do
     end
   end
 
+  defp get_email(username) do
+    with {:ok, results} <- PaddleWrapper.get(filter: [uid: username]),
+         email <- get_first_email_from_ldap_entries(results),
+         false <- email == nil do
+      email
+    else
+      error ->
+        Logger.warn("Unable to retrieve email for from LDAP for #{username}, error: #{inspect(error)}")
+        "N/A"
+    end
+  end
+
+  defp get_first_email_from_ldap_entries(entries) do
+    entries
+    |> Enum.find(%{}, fn entry ->
+      Map.get(entry, "mail", []) |> length() > 0
+    end)
+    |> Map.get("mail", [])
+    |> List.first()
+  end
+
   defp extract_auth(conn) do
     conn
     |> Plug.Conn.get_req_header("authorization")
@@ -44,13 +67,5 @@ defmodule DiscoveryApiWeb.LoginController do
     |> Base.decode64!()
     |> String.split(":")
     |> List.to_tuple()
-  end
-
-  defp extract_token(conn) do
-    conn
-    |> Plug.Conn.get_req_header("authorization")
-    |> List.last()
-    |> String.split(" ")
-    |> List.last()
   end
 end

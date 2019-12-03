@@ -3,8 +3,12 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
   use Placebo
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Data.Model
+  alias DiscoveryApi.Schemas.Users
+  alias DiscoveryApi.Schemas.Users.User
 
   @dataset_id "123"
+  @org_id "456"
+  @subject_id "bigbadbob"
 
   describe "fetch dataset detail" do
     test "retrieves dataset + organization from retriever when organization found", %{conn: conn} do
@@ -102,13 +106,12 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
           queries: 7,
           downloads: 9,
           organizationDetails: %{
-            id: "id",
+            id: @org_id,
             orgName: "name",
             orgTitle: "whatever",
             description: "description",
             logoUrl: "logo url",
-            homepage: "homepage",
-            dn: "cn=this_is_a_group,ou=Group"
+            homepage: "homepage"
           }
         })
 
@@ -121,18 +124,9 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
          %{
            conn: conn
          } do
-      username = "bigbadbob"
-      ldap_user = Helper.ldap_user()
-      ldap_group = Helper.ldap_group(%{"member" => ["uid=FirstUser,ou=People"]})
+      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: []}})
 
-      allow(PaddleWrapper.authenticate(any(), any()), return: :ok)
-      allow(PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]})
-
-      allow(PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]),
-        return: {:ok, [ldap_group]}
-      )
-
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
 
       conn
       |> put_req_cookie(Helper.default_guardian_token_key(), token)
@@ -143,18 +137,9 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
     test "retrieves a restricted dataset if the given user has access to it, via cookie", %{
       conn: conn
     } do
-      username = "bigbadbob"
-      ldap_user = Helper.ldap_user()
-      ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
+      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
-      allow(PaddleWrapper.authenticate(any(), any()), return: :ok)
-      allow(PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]})
-
-      allow(PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]),
-        return: {:ok, [ldap_group]}
-      )
-
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
 
       conn
       |> put_req_cookie(Helper.default_guardian_token_key(), token)
@@ -165,18 +150,9 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
     test "retrieves a restricted dataset if the given user has access to it, via token", %{
       conn: conn
     } do
-      username = "bigbadbob"
-      ldap_user = Helper.ldap_user()
-      ldap_group = Helper.ldap_group(%{"member" => ["uid=#{username},ou=People"]})
+      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
-      allow(PaddleWrapper.authenticate(any(), any()), return: :ok)
-      allow(PaddleWrapper.get(filter: [uid: username]), return: {:ok, [ldap_user]})
-
-      allow(PaddleWrapper.get(base: [ou: "Group"], filter: [cn: "this_is_a_group"]),
-        return: {:ok, [ldap_group]}
-      )
-
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(username, %{}, token_type: "refresh")
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
 
       conn
       |> put_req_header("authorization", "Bearer #{token}")
