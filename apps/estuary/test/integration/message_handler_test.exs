@@ -1,9 +1,10 @@
-defmodule Estuary.StartTest do
+defmodule Estuary.MessageHandlerTest do
   use ExUnit.Case
   use Placebo
   use Divo
   import ExUnit.CaptureLog
   require Logger
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   @elsa_endpoint Application.get_env(:estuary, :elsa_endpoint)
   @event_stream_topic Application.get_env(:estuary, :event_stream_topic)
@@ -18,31 +19,27 @@ defmodule Estuary.StartTest do
       :ok
     end
 
-    test "Topic is created when Estuary starts" do
-      assert Elsa.Topic.exists?(@elsa_endpoint, @event_stream_topic)
-    end
-
     test "Estuary.Message reads message from eventstream when event stream receives an event" do
       Elsa.produce(@elsa_endpoint, @event_stream_topic, {"key", "value1"})
 
-      Process.sleep(2000)
-
-      assert_called(
-        Estuary.MessageHandler.handle_messages(
-          [
-            %Elsa.Message{
-              generation_id: any(),
-              key: "key",
-              offset: any(),
-              partition: 0,
-              timestamp: any(),
-              topic: @event_stream_topic,
-              value: "value1"
-            }
-          ],
-          %{}
+      eventually(fn ->
+        assert_called(
+          Estuary.MessageHandler.handle_messages(
+            [
+              %Elsa.Message{
+                generation_id: any(),
+                key: "key",
+                offset: any(),
+                partition: 0,
+                timestamp: any(),
+                topic: @event_stream_topic,
+                value: "value1"
+              }
+            ],
+            %{}
+          )
         )
-      )
+      end)
     end
   end
 
@@ -58,11 +55,14 @@ defmodule Estuary.StartTest do
         value: "value1"
       }
     ]
+
     level = Logger.level()
     Logger.configure(level: :debug)
+
     assert capture_log(fn ->
              Estuary.MessageHandler.handle_messages(messages)
            end) =~ "Messages #{inspect(messages)} were sent to the eventstream"
+
     Logger.configure([{:level, level}])
   end
 end
