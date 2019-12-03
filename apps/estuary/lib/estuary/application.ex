@@ -5,12 +5,15 @@ defmodule Estuary.Application do
 
   use Application
 
+  alias Estuary.EventTable
+
   @elsa_endpoint Application.get_env(:estuary, :elsa_endpoint)
   @event_stream_topic Application.get_env(:estuary, :event_stream_topic)
 
   @spec start(any, any) :: {:error, any} | {:ok, pid}
   def start(_type, _args) do
     validate_topic_exists()
+    EventTable.create_table()
 
     children = [
       {Elsa.Supervisor, elsa_options()}
