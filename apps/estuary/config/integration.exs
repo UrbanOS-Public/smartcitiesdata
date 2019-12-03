@@ -11,3 +11,5 @@ config :prestige,
 config :estuary,
   divo: "docker-compose.yml",
   divo_wait: [dwell: 1000, max_tries: 120]
+
+config :logger, level: :warn

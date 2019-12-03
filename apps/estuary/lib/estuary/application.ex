@@ -15,10 +15,29 @@ defmodule Estuary.Application do
     validate_topic_exists()
     EventTable.create_table()
 
-    children = []
+    children = [
+      {Elsa.Supervisor, elsa_options()}
+    ]
 
     opts = [strategy: :one_for_one, name: Estuary.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp elsa_options do
+    [
+      endpoints: @elsa_endpoint,
+      connection: :estuary_elsa,
+      producer: [topic: @event_stream_topic],
+      group_consumer: [
+        group: "estuary-consumer-group",
+        topics: [@event_stream_topic],
+        handler: Estuary.MessageHandler,
+        config: [
+          begin_offset: :earliest,
+          offset_reset_policy: :reset_to_earliest
+        ]
+      ]
+    ]
   end
 
   defp validate_topic_exists do
