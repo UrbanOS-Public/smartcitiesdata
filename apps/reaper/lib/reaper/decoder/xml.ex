@@ -3,8 +3,6 @@ defmodule Reaper.Decoder.Xml do
   Reaper.Decoder implementation to decode a csv file into a stream of records
   """
 
-  import SweetXml
-
   defmodule XmlError do
     defexception [:message]
   end
