@@ -5,13 +5,14 @@ defmodule AndiWeb.DatasetLiveViewTest do
   import Andi, only: [instance_name: 0]
   import SmartCity.Event, only: [data_ingest_end: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
+  import FlokiHelpers, only: [floki_get_text: 2]
 
   alias Andi.DatasetCache
 
   alias SmartCity.TestDataGenerator, as: TDG
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/datasets/live"
+  @url_path "/datasets"
 
   setup do
     Brook.Test.with_event(instance_name(), fn ->
@@ -244,11 +245,5 @@ defmodule AndiWeb.DatasetLiveViewTest do
     html
     |> Floki.find("input.datasets-index__search-input")
     |> Floki.attribute("value")
-  end
-
-  defp floki_get_text(html, selector) do
-    html
-    |> Floki.find(selector)
-    |> Floki.text()
   end
 end

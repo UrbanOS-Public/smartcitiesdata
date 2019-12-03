@@ -34,7 +34,7 @@ defmodule AndiWeb.DatasetValidator do
 
   def validate_modified_date_format do
     {&check_valid_date(&1["business"]["modifiedDate"]),
-     "modifiedDate must be iso8601 formatted, e.g. '2019-01-01T13:59:45'", true}
+     "modifiedDate must be iso8601 formatted, e.g. '2019-01-01T13:59:45Z'", true}
   end
 
   def already_exists! do
