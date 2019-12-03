@@ -1,6 +1,6 @@
 defmodule Estuary.EventTable do
   @moduledoc """
-  This modules does the CRUD operation for event_stream in the presto database
+  This module will create event_stream table and insert data in the table
   """
 
   @event_stream_table_name Application.get_env(:estuary, :event_stream_table_name)
