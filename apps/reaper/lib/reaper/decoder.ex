@@ -17,6 +17,7 @@ defmodule Reaper.Decoder do
     Reaper.Decoder.Gtfs,
     Reaper.Decoder.Json,
     Reaper.Decoder.Csv,
+    Reaper.Decoder.Xml,
     Reaper.Decoder.GeoJson,
     Reaper.Decoder.Unknown
   ]

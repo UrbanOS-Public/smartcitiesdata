@@ -17,12 +17,15 @@ defmodule StreamyBoiXml do
         receive do
           {:emit, ^ref, emitee} ->
             {[emitee], acc}
+
           {:DOWN, ^monref, _, _, _} ->
             {:halt, :parse_ended}
         end
       end,
       _after_fn = fn
-        :parse_ended -> :ok
+        :parse_ended ->
+          :ok
+
         {_ref, pid, monref} ->
           Process.demonitor(monref)
           Process.unlink(pid)

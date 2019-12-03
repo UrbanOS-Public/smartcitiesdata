@@ -5,8 +5,7 @@ defmodule SaxyTest do
   alias XMLStream.SaxHandler.State
 
   test "emits station data records in 'simple form'" do
-    tag_path = ["stationData", "ns1:getPublicStationsResponse", "soapenv:Body",
-      "soapenv:Envelope"]
+    tag_path = ["stationData", "ns1:getPublicStationsResponse", "soapenv:Body", "soapenv:Envelope"]
 
     {:ok, _output} =
       "ChargePoint.xml"

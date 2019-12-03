@@ -21,12 +21,12 @@ defmodule XMLStream.SaxHandler do
   def handle_event(:start_document, _, state) do
     ok(state)
   end
+
   def handle_event(:end_document, _, state) do
     ok(state)
   end
 
-  def handle_event(:start_element, {tag_name, attributes}, %State{}=state) do
-
+  def handle_event(:start_element, {tag_name, attributes}, %State{} = state) do
     state = State.update(state, tag_stack: [tag_name | state.tag_stack])
 
     if state.tag_stack == state.tag_path or state.accumulate do
@@ -35,13 +35,12 @@ defmodule XMLStream.SaxHandler do
       state
       |> State.update(stack: [tag | state.stack], accumulate: true)
       |> ok()
-
     else
       ok(state)
     end
   end
 
-  def handle_event(:characters, chars, %{stack: stack, accumulate: accumulate}=state) do
+  def handle_event(:characters, chars, %{stack: stack, accumulate: accumulate} = state) do
     if accumulate do
       [{tag_name, attributes, content} | stack] = stack
 
@@ -55,7 +54,11 @@ defmodule XMLStream.SaxHandler do
     end
   end
 
-  def handle_event(:end_element, tag_name, %{stack: stack, accumulate: accumulate, tag_stack: [_stack_tag_name | tag_stack]}=state) do
+  def handle_event(
+        :end_element,
+        tag_name,
+        %{stack: stack, accumulate: accumulate, tag_stack: [_stack_tag_name | tag_stack]} = state
+      ) do
     state = %{state | tag_stack: tag_stack}
 
     if accumulate do
@@ -89,5 +92,4 @@ defmodule XMLStream.SaxHandler do
       ok(state)
     end
   end
-
 end
