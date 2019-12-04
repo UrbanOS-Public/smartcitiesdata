@@ -26,7 +26,6 @@ defmodule Estuary.ApplicationTest do
       ["author", "varchar", "", ""],
       ["create_ts", "bigint", "", ""],
       ["data", "varchar", "", ""],
-      ["forwarded", "boolean", "", ""],
       ["type", "varchar", "", ""]
     ]
 
