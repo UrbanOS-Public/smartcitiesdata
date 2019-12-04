@@ -7,7 +7,7 @@ defmodule Estuary.EventTable do
 
   def create_table do
     Prestige.execute(
-      "CREATE TABLE IF NOT EXISTS #{@event_stream_table_name} (author varchar, create_ts bigint, data varchar, type varchar)"
+      "CREATE TABLE IF NOT EXISTS #{@event_stream_table_name} (author varchar, create_ts bigint, data varchar, forwarded boolean, type varchar)"
     )
     |> Prestige.prefetch()
   end
