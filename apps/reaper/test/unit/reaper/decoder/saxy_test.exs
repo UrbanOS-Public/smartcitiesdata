@@ -1,14 +1,19 @@
-defmodule SaxyTest do
+defmodule XMLStream.SaxHandlerTest do
   use ExUnit.Case, async: true
 
   alias XMLStream.SaxHandler
   alias XMLStream.SaxHandler.State
 
+  @test_file_path "test/support/test_data/"
+  defp test_file_path(filename) do
+    @test_file_path <> filename
+  end
+
   test "emits station data records in 'simple form'" do
     tag_path = ["stationData", "ns1:getPublicStationsResponse", "soapenv:Body", "soapenv:Envelope"]
 
     {:ok, _output} =
-      "ChargePoint.xml"
+      test_file_path("ChargePoint.xml")
       |> File.stream!([], 40_000)
       |> Saxy.parse_stream(SaxHandler, State.new(tag_path: tag_path, emitter: make_test_emitter()), expand_entity: :skip)
 
@@ -20,7 +25,7 @@ defmodule SaxyTest do
     tag_path = ["response", "row", "row"] |> Enum.reverse()
 
     {:ok, _output} =
-      "big.xml"
+      test_file_path("repeat.xml")
       |> File.stream!([], 40_000)
       |> Saxy.parse_stream(SaxHandler, State.new(tag_path: tag_path, emitter: make_test_emitter()), expand_entity: :skip)
 
