@@ -42,7 +42,7 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
       )
 
       allow(Prestige.new_session(any()), return: :connection)
-      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.stream!(any(), any()), return: [:result])
       allow(Prestige.Result.as_maps(any()), return: [%{"andi" => 1, "bob" => 2}])
 
       allow(Redix.command!(any(), any()), return: :does_not_matter)

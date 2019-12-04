@@ -527,6 +527,15 @@ defmodule DiscoveryApi.Data.QueryTest do
     end
   end
 
+  @moduletag capture_log: true
+  describe "api/v1/dataset/<id>/download" do
+    test "downloads all of a dataset's data from presto", %{public_dataset: public_dataset} do
+      actual = get("http://localhost:4000/api/v1/dataset/#{public_dataset.id}/download")
+
+      assert actual.body == "id,name\n1,Fred\n2,Gred\n3,Hred\n"
+    end
+  end
+
   describe "geojson queries" do
     setup do
       %{

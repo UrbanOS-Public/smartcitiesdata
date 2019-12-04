@@ -28,7 +28,12 @@ defmodule DiscoveryApiWeb.DataController do
     schema = conn.assigns.model.schema
     rows = PrestoService.preview(session, dataset_name)
 
-    render(conn, :data, %{rows: rows, columns: columns, dataset_name: dataset_name, schema: schema})
+    render(conn, :data, %{
+      rows: rows,
+      columns: columns,
+      dataset_name: dataset_name,
+      schema: schema
+    })
   rescue
     Prestige.Error -> render(conn, :data, %{rows: [], columns: [], schema: []})
   end
@@ -59,11 +64,16 @@ defmodule DiscoveryApiWeb.DataController do
     data_stream =
       DiscoveryApi.prestige_opts()
       |> Prestige.new_session()
-      |> Prestige.query!("select * from #{dataset_name}")
-      |> Prestige.Result.as_maps()
+      |> Prestige.stream!("select * from #{dataset_name}")
+      |> Stream.flat_map(&Prestige.Result.as_maps/1)
 
     rendered_data_stream =
-      DataView.render_as_stream(:data, format, %{stream: data_stream, columns: [], dataset_name: dataset_name, schema: schema})
+      DataView.render_as_stream(:data, format, %{
+        stream: data_stream,
+        columns: [],
+        dataset_name: dataset_name,
+        schema: schema
+      })
 
     resp_as_stream(conn, rendered_data_stream, format, dataset_id)
   end

@@ -95,7 +95,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
       """
 
-      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.stream!(any(), any()), return: [:result])
       allow(Prestige.Result.as_maps(:result), return: expected_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
@@ -123,7 +123,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
       """
 
-      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.stream!(any(), any()), return: [:result])
       allow(Prestige.Result.as_maps(:result), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
@@ -149,7 +149,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
       """
 
-      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.stream!(any(), any()), return: [:result])
       allow(Prestige.Result.as_maps(:result), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
@@ -263,7 +263,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
       allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
-      allow(Prestige.query!(any(), any()), exec: fn _, _ -> raise Prestige.Error, failure_message end)
+      allow(Prestige.stream!(any(), any()), exec: fn _, _ -> raise Prestige.Error, failure_message end)
 
       assert expected_response ==
                conn
@@ -278,7 +278,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
     setup do
       statement = "SELECT * FROM geojson__geojson"
 
-      allow(Prestige.query!(any(), any()), return: :result)
+      allow(Prestige.stream!(any(), any()), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [

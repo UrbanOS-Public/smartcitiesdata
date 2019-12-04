@@ -49,6 +49,7 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
 
     allow(Prestige.new_session(any()), return: :connection)
     allow(Prestige.query!(any(), "select * from #{@system_name}"), return: :result)
+    allow(Prestige.stream!(any(), "select * from #{@system_name}"), return: [:result])
 
     allow(Prestige.Result.as_maps(:result),
       return: [%{"id" => 1, "name" => "Joe"}, %{"id" => 2, "name" => "Robby"}]

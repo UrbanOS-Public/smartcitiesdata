@@ -14,7 +14,10 @@ defmodule DiscoveryApiWeb.MultipleDataController do
          session_opts <- DiscoveryApi.prestige_opts(),
          session <- Prestige.new_session(session_opts) do
       format = get_format(conn)
-      data_stream = Prestige.query!(session, statement) |> Prestige.Result.as_maps()
+
+      data_stream =
+        Prestige.stream!(session, statement)
+        |> Stream.flat_map(&Prestige.Result.as_maps/1)
 
       rendered_data_stream = MultipleDataView.render_as_stream(:data, format, %{stream: data_stream})
 

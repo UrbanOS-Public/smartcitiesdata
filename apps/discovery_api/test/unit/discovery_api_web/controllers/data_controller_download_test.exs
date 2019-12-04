@@ -74,7 +74,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
         return: ["id", "int_array"]
       )
 
-      allow(Prestige.query!(any(), "select * from #{model.systemName}"), return: :result)
+      allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [%{"id" => 1, "int_array" => [2, 3, 4]}]
@@ -115,7 +115,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
         return: ["feature"]
       )
 
-      allow(Prestige.query!(any(), "select * from #{model.systemName}"), return: :result)
+      allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [%{"feature" => "{\"geometry\":{\"coordinates\":[0,1]}}"}]
@@ -170,7 +170,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
         return: ["bob", "andi"]
       )
 
-      allow(Prestige.query!(any(), "select * from #{model.systemName}"), return: :result)
+      allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [%{"andi" => 1, "bob" => 2}]
@@ -186,7 +186,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
 
   describe "metrics" do
     setup do
-      allow(Prestige.query!(any(), "select * from #{@system_name}"), return: :result)
+      allow(Prestige.stream!(any(), "select * from #{@system_name}"), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [%{"id" => 1, "name" => "Joe"}, %{"id" => 2, "name" => "Robby"}]

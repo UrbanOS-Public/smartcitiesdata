@@ -71,8 +71,9 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
 
       allow(Prestige.new_session(any()), return: :connect)
       allow(Prestige.query!(any(), "select * from #{@system_name}"), return: :result)
+      allow(Prestige.stream!(any(), "select * from #{@system_name}"), return: [:result])
 
-      allow(Prestige.Result.as_maps(:result),
+      allow(Prestige.Result.as_maps(any()),
         return: [
           %{"feature" => "{\"geometry\":{\"coordinates\":[[0,0],[0,1]]}}"},
           %{"feature" => "{\"geometry\":{\"coordinates\":[[1,0]]}}"},
