@@ -30,5 +30,4 @@ defmodule Reaper.XmlSchemaMapper do
   defp handle_type(row, %{name: key, selector: selector}) do
     {key, SweetXml.xpath(row, sigil_x(selector, 's'))}
   end
-
 end

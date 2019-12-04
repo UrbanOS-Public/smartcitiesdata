@@ -15,9 +15,26 @@ defmodule XMLStream.SaxHandler do
   end
 
   @behaviour Saxy.Handler
+  @file_chunk_size 40_000
 
-  defp ok(state), do: {:ok, state}
+  ######################
+  ## Client Functions ##
+  ######################
+  def start_stream(path, selector, callback) do
+    selector = parse_selector(selector)
 
+    path
+    |> File.stream!([], @file_chunk_size)
+    |> handle_ufeff()
+    |> Saxy.parse_stream(
+      __MODULE__,
+      __MODULE__.State.new(tag_path: selector, emitter: callback)
+    )
+  end
+
+  ###############
+  ## Callbacks ##
+  ###############
   def handle_event(:start_document, _, state) do
     ok(state)
   end
@@ -91,5 +108,25 @@ defmodule XMLStream.SaxHandler do
     else
       ok(state)
     end
+  end
+
+  #######################
+  ## Private Functions ##
+  #######################
+  @spec ok(%State{}) :: {:ok, %State{}}
+  defp ok(state), do: {:ok, state}
+
+  defp handle_ufeff(stream) do
+    Stream.transform(stream, false, &ufeff_reducer/2)
+  end
+
+  defp ufeff_reducer(bytes, true), do: {[bytes], true}
+  defp ufeff_reducer(<<"\uFEFF" <> bytes>>, false), do: {[bytes], true}
+  defp ufeff_reducer(bytes, false), do: {[bytes], true}
+
+  defp parse_selector(selector) when is_binary(selector) do
+    selector
+    |> String.split("/")
+    |> Enum.reverse()
   end
 end

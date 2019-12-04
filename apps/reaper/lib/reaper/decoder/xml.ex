@@ -17,8 +17,7 @@ defmodule Reaper.Decoder.Xml do
     try do
       stream =
         filename
-        |> XMLStream.do_stream(top_level_selector)
-        |> Stream.map(&Saxy.encode!/1)
+        |> XMLStream.stream(top_level_selector)
         |> Stream.map(&Reaper.XmlSchemaMapper.map(&1, schema))
 
       {:ok, stream}
