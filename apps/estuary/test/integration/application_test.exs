@@ -37,4 +37,22 @@ defmodule Estuary.ApplicationTest do
 
     assert expected_column_value == actual_column_value
   end
+
+  test "estuary persists event to the event stream" do
+    Elsa.produce(
+      @elsa_endpoint,
+      @event_stream_topic,
+      ~s({"__brook_struct__":"Elixir.Brook.Event","__struct__":"Elixir.SmartCity.Dataset","author":"reaper","create_ts":5,"data":"some data","forwarded":false,"type":"some type"})
+    )
+
+    Process.sleep(2000)
+
+    aloha_events =
+      Prestige.execute(
+        "SELECT COUNT(*) from #{@event_stream_table_name} WHERE author = 'reaper' and create_ts = 5 and data = 'some data' and type = 'some type'"
+      )
+      |> Prestige.prefetch()
+
+    assert aloha_events == [[1]]
+  end
 end

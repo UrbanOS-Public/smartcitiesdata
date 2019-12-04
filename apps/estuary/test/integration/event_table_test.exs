@@ -20,4 +20,24 @@ defmodule Estuary.EventTableTest do
     assert expected_value == actual_value
     assert expected_table_value == actual_table_value
   end
+
+  test "insert_event inserts an event into the #{@event_stream_table_name} table" do
+    aloha_events =
+      Prestige.execute(
+        "SELECT COUNT(*) from #{@event_stream_table_name} WHERE author = 'Steve Aloha' and create_ts = 5 and data = 'some data' and type = 'some type'"
+      )
+      |> Prestige.prefetch()
+
+    assert aloha_events == [[0]]
+    Estuary.EventTable.insert_event("Steve Aloha", 5, "some data", "some type")
+
+    aloha_events =
+      Prestige.execute(
+        "SELECT COUNT(*) from #{@event_stream_table_name} WHERE author = 'Steve Aloha' and create_ts = 5 and data = 'some data' and type = 'some type'"
+      )
+      |> Prestige.prefetch()
+
+    assert aloha_events == [[1]]
+    Prestige.execute("DELETE from #{@event_stream_table_name}") |> Prestige.prefetch()
+  end
 end

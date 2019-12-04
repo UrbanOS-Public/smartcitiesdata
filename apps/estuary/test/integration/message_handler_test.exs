@@ -19,7 +19,7 @@ defmodule Estuary.MessageHandlerTest do
       :ok
     end
 
-    test "Estuary.Message reads message from eventstream when event stream receives an event" do
+    test "Estuary.MessageHandler reads message from eventstream when event stream receives an event" do
       Elsa.produce(@elsa_endpoint, @event_stream_topic, {"key", "value1"})
 
       eventually(fn ->
@@ -43,7 +43,7 @@ defmodule Estuary.MessageHandlerTest do
     end
   end
 
-  test "Estuary.Message reads message from eventstream and logs it if Logger level is set to debug" do
+  test "Estuary.MessageHandler reads message from eventstream and logs it if Logger level is set to debug" do
     messages = [
       %Elsa.Message{
         generation_id: 1,

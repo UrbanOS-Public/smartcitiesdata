@@ -9,6 +9,15 @@ defmodule Estuary.EventTable do
     |> Prestige.prefetch()
   end
 
+  def insert_event(author, create_ts, data, type) do
+    Prestige.execute(
+      "INSERT INTO #{table_name()} (author, create_ts, data, type) values ('#{author}', #{
+        create_ts
+      }, '#{data}', '#{type}')"
+    )
+    |> Prestige.prefetch()
+  end
+
   defp table_name do
     Application.get_env(:estuary, :event_stream_table_name)
   end
