@@ -18,7 +18,7 @@ defmodule XMLStream do
 
   def do_stream(path, tls) do
     {:ok, pid} = GenStage.start_link(__MODULE__, {path, tls})
-    GenStage.stream([{pid, max_demand: 16, cancel: :transient}])
+    GenStage.stream([{pid, max_demand: 1, cancel: :transient}])
     # |> Stream.map(&Saxy.encode!/1)
   end
 
