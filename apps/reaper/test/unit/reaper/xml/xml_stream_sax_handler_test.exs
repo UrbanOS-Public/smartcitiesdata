@@ -10,24 +10,24 @@ defmodule XMLStream.SaxHandlerTest do
   end
 
   test "emits station data records in 'simple form'" do
-    tag_path = ["stationData", "ns1:getPublicStationsResponse", "soapenv:Body", "soapenv:Envelope"]
+    tag_path = "soapenv:Envelope/soapenv:Body/ns1:getPublicStationsResponse/stationData"
 
     {:ok, _output} =
-      test_file_path("ChargePoint.xml")
-      |> File.stream!([], 40_000)
-      |> Saxy.parse_stream(SaxHandler, State.new(tag_path: tag_path, emitter: make_test_emitter()), expand_entity: :skip)
+      "ChargePoint.xml"
+      |> test_file_path()
+      |> SaxHandler.start_stream(tag_path, make_test_emitter())
 
     assert_received {:emit, {"stationData", [], [{"stationID", [], ["1:41613"]} | _]}}
     assert_received {:emit, {"stationData", [], [{"stationID", [], ["1:111"]} | _]}}
   end
 
-  test "emits row data records in 'simple form' from bigxml" do
-    tag_path = ["response", "row", "row"] |> Enum.reverse()
+  test "emits row data records in 'simple form' from a file with repeated tag names" do
+    tag_path = "response/row/row"
 
     {:ok, _output} =
-      test_file_path("repeat.xml")
-      |> File.stream!([], 40_000)
-      |> Saxy.parse_stream(SaxHandler, State.new(tag_path: tag_path, emitter: make_test_emitter()), expand_entity: :skip)
+      "repeat.xml"
+      |> test_file_path()
+      |> SaxHandler.start_stream(tag_path, make_test_emitter())
 
     refute_received {:emit, {"row", _, [{"row", _, _} | _]}}
     assert_received {:emit, {"row", _, _}}
