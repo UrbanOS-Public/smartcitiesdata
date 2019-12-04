@@ -28,6 +28,12 @@ release :andi do
   set overlays: [{:copy, "apps/andi/runtime.exs", "etc/runtime.exs"}]
 end
 
+release :estuary do
+  set version: current_version(:estuary)
+  set applications: [:runtime_tools, :estuary]
+  set overlays: [{:copy, "apps/estuary/runtime.exs", "etc/runtime.exs"}]
+end
+
 release :flair do
   set version: current_version(:flair)
   set applications: [:runtime_tools, :flair]
