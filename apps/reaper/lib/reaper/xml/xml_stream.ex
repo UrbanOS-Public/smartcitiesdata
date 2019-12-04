@@ -8,11 +8,11 @@ defmodule XMLStream do
 
   defmodule State do
     @moduledoc false
-    @enforce_keys []
+    @enforce_keys [:filepath, :top_level_selector]
     defstruct demand: 0, blocked: nil, parser_pid: nil, monitor_ref: nil, filepath: nil, top_level_selector: nil
 
     def new(fields \\ %{}) do
-      struct(__MODULE__, fields)
+      struct!(__MODULE__, fields)
     end
 
     def update(%__MODULE__{} = state, fields) do

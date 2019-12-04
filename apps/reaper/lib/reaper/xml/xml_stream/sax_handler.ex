@@ -3,14 +3,14 @@ defmodule XMLStream.SaxHandler do
 
   defmodule State do
     @moduledoc false
-    @enforce_keys [:stack, :accumulate, :tag_stack, :tag_path, :emitter]
+    @enforce_keys [:tag_path, :emitter]
     defstruct stack: [], accumulate: false, tag_stack: [], tag_path: [], emitter: nil
 
     def new(fields \\ %{}) do
-      struct(__MODULE__, fields)
+      struct!(__MODULE__, fields)
     end
 
-    def update(state, fields) do
+    def update(%__MODULE__{}=state, fields) do
       struct!(state, fields)
     end
   end
@@ -21,7 +21,7 @@ defmodule XMLStream.SaxHandler do
   ######################
   ## Client Functions ##
   ######################
-  def start_stream(path, selector, callback) do
+  def start_stream(path, selector, callback) when is_function(callback, 1) do
     selector = parse_selector(selector)
 
     path
@@ -36,15 +36,15 @@ defmodule XMLStream.SaxHandler do
   ###############
   ## Callbacks ##
   ###############
-  def handle_event(:start_document, _, state) do
+  def handle_event(:start_document, _, %State{}=state) do
     ok(state)
   end
 
-  def handle_event(:end_document, _, state) do
+  def handle_event(:end_document, _, %State{}=state) do
     ok(state)
   end
 
-  def handle_event(:start_element, {tag_name, attributes}, %State{} = state) do
+  def handle_event(:start_element, {tag_name, attributes}, %State{}=state) do
     state = State.update(state, tag_stack: [tag_name | state.tag_stack])
 
     if state.tag_stack == state.tag_path or state.accumulate do
@@ -58,7 +58,7 @@ defmodule XMLStream.SaxHandler do
     end
   end
 
-  def handle_event(:characters, chars, %{stack: stack, accumulate: accumulate} = state) do
+  def handle_event(:characters, chars, %State{stack: stack, accumulate: accumulate} = state) do
     if accumulate do
       [{tag_name, attributes, content} | stack] = stack
 
@@ -75,7 +75,7 @@ defmodule XMLStream.SaxHandler do
   def handle_event(
         :end_element,
         tag_name,
-        %{stack: stack, accumulate: accumulate, tag_stack: [_stack_tag_name | tag_stack]} = state
+        %State{stack: stack, accumulate: accumulate, tag_stack: [_stack_tag_name | tag_stack]} = state
       ) do
     state = %{state | tag_stack: tag_stack}
 
@@ -115,7 +115,7 @@ defmodule XMLStream.SaxHandler do
   ## Private Functions ##
   #######################
   @spec ok(%State{}) :: {:ok, %State{}}
-  defp ok(state), do: {:ok, state}
+  defp ok(%State{}=state), do: {:ok, state}
 
   defp handle_ufeff(stream) do
     Stream.transform(stream, false, &ufeff_reducer/2)
