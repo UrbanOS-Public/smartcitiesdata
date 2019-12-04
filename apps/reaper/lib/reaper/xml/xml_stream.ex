@@ -7,6 +7,7 @@ defmodule XMLStream do
   alias XMLStream.SaxHandler
 
   defmodule State do
+    @moduledoc false
     @enforce_keys []
     defstruct demand: 0, blocked: nil, parser_pid: nil, monitor_ref: nil, filepath: nil, top_level_selector: nil
 
@@ -27,6 +28,7 @@ defmodule XMLStream do
   """
   def stream(path, tls) do
     {:ok, pid} = GenStage.start_link(__MODULE__, {path, tls})
+
     GenStage.stream([{pid, max_demand: 1, cancel: :transient}])
     |> Stream.map(&Saxy.encode!/1)
   end
@@ -60,7 +62,15 @@ defmodule XMLStream do
     pid = spawn_link(fn -> SaxHandler.start_stream(path, tls, &GenStage.call(parent, {:emit, &1}, :infinity)) end)
     monitor_ref = Process.monitor(pid)
 
-    {:automatic, State.update(state, parser_pid: pid, monitor_ref: monitor_ref, demand: 0, blocked: nil, filepath: path, top_level_selector: tls)}
+    {:automatic,
+     State.update(state,
+       parser_pid: pid,
+       monitor_ref: monitor_ref,
+       demand: 0,
+       blocked: nil,
+       filepath: path,
+       top_level_selector: tls
+     )}
   end
 
   def handle_cancel({:cancel, reason}, _from, state) do

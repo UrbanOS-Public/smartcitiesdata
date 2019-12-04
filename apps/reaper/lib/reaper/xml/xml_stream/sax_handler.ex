@@ -2,6 +2,7 @@ defmodule XMLStream.SaxHandler do
   @moduledoc false
 
   defmodule State do
+    @moduledoc false
     @enforce_keys [:stack, :accumulate, :tag_stack, :tag_path, :emitter]
     defstruct stack: [], accumulate: false, tag_stack: [], tag_path: [], emitter: nil
 

@@ -3,6 +3,8 @@ defmodule Reaper.Decoder.Xml do
   Reaper.Decoder implementation to decode a csv file into a stream of records
   """
 
+  alias Reaper.XmlSchemaMapper
+
   defmodule XmlError do
     defexception [:message]
   end
@@ -18,7 +20,7 @@ defmodule Reaper.Decoder.Xml do
       stream =
         filename
         |> XMLStream.stream(top_level_selector)
-        |> Stream.map(&Reaper.XmlSchemaMapper.map(&1, schema))
+        |> Stream.map(&XmlSchemaMapper.map(&1, schema))
 
       {:ok, stream}
     rescue

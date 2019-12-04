@@ -1,4 +1,7 @@
 defmodule Reaper.XmlSchemaMapper do
+  @moduledoc """
+  Map an XML String record to an Elixir data structure based on a Dataset schema definition
+  """
   import SweetXml
 
   def map(row, schema) do
