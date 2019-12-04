@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 #### User Story
-As a issue creature
+As a issue creator
 I want to be able to create issues
 So that I can see my issue resolved
 
