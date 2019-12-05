@@ -3,10 +3,11 @@ defmodule Estuary.MessageHandler do
   require Logger
 
   def handle_messages(messages) do
-    IO.inspect(messages, label: "MESSAGESSS!!!!!!!!!!!!!!!!!!!!!!")
-    event = messages |> Enum.at(0) |> get_in("value");
-    # Todo convert from string to map
-    Estuary.EventTable.insert_event(event.author, event.create_ts, event.data, event.type)
+    IO.inspect(messages)
+    Enum.each(messages, fn message ->
+      event = message.value |> Jason.decode!()
+      Estuary.EventTable.insert_event(Map.fetch!(event, "author"), Map.fetch!(event, "create_ts"), Map.fetch!(event, "data"), Map.fetch!(event, "type"))
+    end)
     Logger.debug("Messages #{inspect(messages)} were sent to the eventstream")
     :ack
   end
