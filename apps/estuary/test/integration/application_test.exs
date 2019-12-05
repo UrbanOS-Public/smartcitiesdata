@@ -15,7 +15,8 @@ defmodule Estuary.ApplicationTest do
     expected_table_value = [[@event_stream_table_name]]
 
     actual_table_value =
-      Prestige.execute("SHOW TABLES LIKE '#{@event_stream_table_name}'")
+      "SHOW TABLES LIKE '#{@event_stream_table_name}'"
+      |> Prestige.execute()
       |> Prestige.prefetch()
 
     assert expected_table_value == actual_table_value
@@ -30,7 +31,8 @@ defmodule Estuary.ApplicationTest do
     ]
 
     actual_column_value =
-      Prestige.execute("DESCRIBE #{@event_stream_table_name}")
+      "DESCRIBE #{@event_stream_table_name}"
+      |> Prestige.execute()
       |> Prestige.prefetch()
 
     assert expected_column_value == actual_column_value
