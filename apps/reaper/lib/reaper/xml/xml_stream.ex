@@ -8,8 +8,8 @@ defmodule XMLStream do
 
   defmodule State do
     @moduledoc false
-    @enforce_keys [:filepath, :top_level_selector]
-    defstruct demand: 0, blocked: nil, parser_pid: nil, monitor_ref: nil, filepath: nil, top_level_selector: nil
+    @enforce_keys [:filepath, :selector]
+    defstruct demand: 0, blocked: nil, parser_pid: nil, monitor_ref: nil, filepath: nil, selector: nil
 
     def new(fields \\ %{}) do
       struct!(__MODULE__, fields)
@@ -58,7 +58,7 @@ defmodule XMLStream do
   ## Callbacks ##
   ###############
   def init({filepath, tag_path}) do
-    {:producer, State.new(filepath: filepath, top_level_selector: tag_path)}
+    {:producer, State.new(filepath: filepath, selector: tag_path)}
   end
 
   def handle_call({:emit, record}, _from, %State{demand: demand} = state) when demand > 1 do
@@ -70,17 +70,17 @@ defmodule XMLStream do
   end
 
   def handle_demand(demand, state) do
-    if state.blocked != nil do
+    if state.blocked do
       GenStage.reply(state.blocked, :ok)
     end
 
-    {:noreply, [], Map.update!(state, :demand, &(&1 + demand))}
+    {:noreply, [], State.update(state, blocked: nil, demand: state.demand + demand)}
   end
 
-  def handle_subscribe(:consumer, _opts, _from, %State{filepath: path, top_level_selector: tls} = state) do
+  def handle_subscribe(:consumer, _opts, _from, %State{filepath: path, selector: selector} = state) do
     parent = self()
 
-    pid = spawn_link(fn -> SaxHandler.start_stream(path, tls, &GenStage.call(parent, {:emit, &1}, :infinity)) end)
+    pid = spawn_link(fn -> SaxHandler.start_stream(path, selector, &GenStage.call(parent, {:emit, &1}, :infinity)) end)
     monitor_ref = Process.monitor(pid)
 
     {:automatic,
@@ -90,7 +90,7 @@ defmodule XMLStream do
        demand: 0,
        blocked: nil,
        filepath: path,
-       top_level_selector: tls
+       selector: selector
      )}
   end
 

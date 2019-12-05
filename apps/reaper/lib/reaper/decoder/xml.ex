@@ -14,12 +14,12 @@ defmodule Reaper.Decoder.Xml do
   @impl Reaper.Decoder
   def decode(
         {:file, filename},
-        %SmartCity.Dataset{technical: %{schema: schema, topLevelSelector: top_level_selector}} = dataset
+        %SmartCity.Dataset{technical: %{schema: schema, topLevelSelector: selector}} = dataset
       ) do
     try do
       stream =
         filename
-        |> XMLStream.stream(top_level_selector)
+        |> XMLStream.stream(selector)
         |> Stream.map(&XmlSchemaMapper.map(&1, schema))
 
       {:ok, stream}
