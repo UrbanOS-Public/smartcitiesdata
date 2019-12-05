@@ -58,8 +58,7 @@ defmodule XMLStream.SaxHandler do
     end
   end
 
-  def handle_event(:characters, chars, %State{stack: stack, accumulate: accumulate} = state) do
-    if accumulate do
+  def handle_event(:characters, chars, %State{stack: stack, accumulate: true} = state) do
       [{tag_name, attributes, content} | stack] = stack
 
       current = {tag_name, attributes, [chars | content]}
@@ -67,10 +66,9 @@ defmodule XMLStream.SaxHandler do
       state
       |> State.update(stack: [current | stack])
       |> ok()
-    else
-      ok(state)
-    end
   end
+
+  def handle_event(:characters, _chars, %State{accumulate: false}=state), do: ok(state)
 
   def handle_event(
         :end_element,
