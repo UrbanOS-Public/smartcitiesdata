@@ -10,18 +10,18 @@ defmodule XMLStream.SaxHandler do
       struct!(__MODULE__, fields)
     end
 
-    def update(%__MODULE__{}=state, fields) do
+    def update(%__MODULE__{} = state, fields) do
       struct!(state, fields)
     end
 
     @spec pop(%State{}, :stack | :tag_stack | :tag_path) :: {any(), %State{}}
-    def pop(%__MODULE__{}=state, key) when key in [:stack, :tag_stack, :tag_path] do
+    def pop(%__MODULE__{} = state, key) when key in [:stack, :tag_stack, :tag_path] do
       [item | rest] = Map.fetch!(state, key)
 
       {item, State.update(state, [{key, rest}])}
     end
 
-    def pop_current_tag(%__MODULE__{}=state, tag_name) do
+    def pop_current_tag(%__MODULE__{} = state, tag_name) do
       {{^tag_name, attributes, content}, state} = State.pop(state, :stack)
 
       {{tag_name, attributes, Enum.reverse(content)}, state}
@@ -31,11 +31,11 @@ defmodule XMLStream.SaxHandler do
       [tag_name | tag_stack] == tag_path
     end
 
-    def ascend(%__MODULE__{}=state) do
+    def ascend(%__MODULE__{} = state) do
       State.pop(state, :tag_stack)
     end
 
-    def descend(%__MODULE__{tag_stack: tag_stack}=state, tag_name) do
+    def descend(%__MODULE__{tag_stack: tag_stack} = state, tag_name) do
       State.update(state, tag_stack: [tag_name | tag_stack])
     end
   end
@@ -62,17 +62,17 @@ defmodule XMLStream.SaxHandler do
   ## Callbacks ##
   ###############
   @impl true
-  def handle_event(:start_document, _, %State{}=state) do
+  def handle_event(:start_document, _, %State{} = state) do
     ok(state)
   end
 
   @impl true
-  def handle_event(:end_document, _, %State{}=state) do
+  def handle_event(:end_document, _, %State{} = state) do
     ok(state)
   end
 
   @impl true
-  def handle_event(:start_element, {tag_name, attributes}, %State{}=state) do
+  def handle_event(:start_element, {tag_name, attributes}, %State{} = state) do
     if State.at_path?(state, tag_name) or state.accumulate do
       tag = {tag_name, attributes, []}
 
@@ -89,16 +89,16 @@ defmodule XMLStream.SaxHandler do
 
   @impl true
   def handle_event(:characters, chars, %State{stack: stack, accumulate: true} = state) do
-      [{tag_name, attributes, content} | stack] = stack
+    [{tag_name, attributes, content} | stack] = stack
 
-      current = {tag_name, attributes, [chars | content]}
+    current = {tag_name, attributes, [chars | content]}
 
-      state
-      |> State.update(stack: [current | stack])
-      |> ok()
+    state
+    |> State.update(stack: [current | stack])
+    |> ok()
   end
 
-  def handle_event(:characters, _chars, %State{accumulate: false}=state), do: ok(state)
+  def handle_event(:characters, _chars, %State{accumulate: false} = state), do: ok(state)
 
   @impl true
   def handle_event(:end_element, tag_name, %State{accumulate: true} = state) do
@@ -106,17 +106,19 @@ defmodule XMLStream.SaxHandler do
     {current_tag, state} = State.pop_current_tag(state, tag_name)
 
     should_emit = State.at_path?(state, tag_name)
+
     case state.stack do
       [] when should_emit ->
-          state.emitter.(current_tag)
+        state.emitter.(current_tag)
 
-          state
-          |> State.update(accumulate: false)
-          |> ok()
+        state
+        |> State.update(accumulate: false)
+        |> ok()
+
       [] ->
-          state
-          |> State.update(stack: [current_tag])
-          |> ok()
+        state
+        |> State.update(stack: [current_tag])
+        |> ok()
 
       [parent | rest] ->
         parent = update_parent(parent, current_tag)
@@ -127,7 +129,7 @@ defmodule XMLStream.SaxHandler do
     end
   end
 
-  def handle_event(:end_element, _tag_name, %State{accumulate: false}=state) do
+  def handle_event(:end_element, _tag_name, %State{accumulate: false} = state) do
     {_tag, state} = State.ascend(state)
 
     ok(state)
@@ -137,7 +139,7 @@ defmodule XMLStream.SaxHandler do
   ## Private Functions ##
   #######################
   @spec ok(%State{}) :: {:ok, %State{}}
-  defp ok(%State{}=state), do: {:ok, state}
+  defp ok(%State{} = state), do: {:ok, state}
 
   defp handle_ufeff(stream) do
     Stream.transform(stream, false, &ufeff_reducer/2)
@@ -153,7 +155,7 @@ defmodule XMLStream.SaxHandler do
     |> Enum.reverse()
   end
 
-  defp update_parent({tag_name, attributes, content}=_parent_tag, child_tag) do
+  defp update_parent({tag_name, attributes, content} = _parent_tag, child_tag) do
     {tag_name, attributes, [child_tag | content]}
   end
 end
