@@ -24,10 +24,31 @@ defmodule XMLStream do
   ## Client Functions ##
   ######################
   @doc """
-  Creates a stream of records found at the tls as XML strings that can then be parsed using xpaths.
+  Creates a stream of records found at the given path in the document as XML strings that can then be parsed using xpaths.
+
+  Tag path is inclusive, i.e. the last element should be the record tag.
+
+  ## Example
+    With the following XML:
+    ```
+    <response>
+      <row id="1" />
+      <row id="2" />
+    </response>
+    ```
+
+    The tag path would be:
+    ```
+    tag_path = "response/row"
+    ```
+
+    The stream would emit:
+    ```
+    ["<row id=\"1\"></row>", "<row id=\"2\"></row>"]
+    ```
   """
-  def stream(path, tls) do
-    {:ok, pid} = GenStage.start_link(__MODULE__, {path, tls})
+  def stream(filepath, tag_path) do
+    {:ok, pid} = GenStage.start_link(__MODULE__, {filepath, tag_path})
 
     GenStage.stream([{pid, max_demand: 1, cancel: :transient}])
     |> Stream.map(&Saxy.encode!/1)
@@ -36,8 +57,8 @@ defmodule XMLStream do
   ###############
   ## Callbacks ##
   ###############
-  def init({path, tls}) do
-    {:producer, State.new(filepath: path, top_level_selector: tls)}
+  def init({filepath, tag_path}) do
+    {:producer, State.new(filepath: filepath, top_level_selector: tag_path)}
   end
 
   def handle_call({:emit, record}, _from, %State{demand: demand} = state) when demand > 1 do

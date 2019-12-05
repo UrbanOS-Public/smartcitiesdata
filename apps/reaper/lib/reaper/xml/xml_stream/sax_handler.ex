@@ -21,15 +21,15 @@ defmodule XMLStream.SaxHandler do
   ######################
   ## Client Functions ##
   ######################
-  def start_stream(path, selector, callback) when is_function(callback, 1) do
-    selector = parse_selector(selector)
+  def start_stream(filepath, tag_path_string, callback) when is_function(callback, 1) do
+    tag_path = parse_selector(tag_path_string)
 
-    path
+    filepath
     |> File.stream!([], @file_chunk_size)
     |> handle_ufeff()
     |> Saxy.parse_stream(
       __MODULE__,
-      __MODULE__.State.new(tag_path: selector, emitter: callback)
+      __MODULE__.State.new(tag_path: tag_path, emitter: callback)
     )
   end
 
