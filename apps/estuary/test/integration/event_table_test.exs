@@ -13,7 +13,8 @@ defmodule Estuary.EventTableTest do
     actual_value = EventTable.create_table()
 
     actual_table_value =
-      Prestige.execute("SHOW TABLES LIKE '#{@event_stream_table_name}'")
+      "SHOW TABLES LIKE '#{@event_stream_table_name}'"
+      |> Prestige.execute()
       |> Prestige.prefetch()
 
     assert expected_value == actual_value

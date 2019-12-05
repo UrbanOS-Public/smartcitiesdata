@@ -21,12 +21,12 @@ defmodule Estuary.Application do
 
   defp elsa_options do
     [
-      endpoints: get_elsa_endpoint(),
+      endpoints: elsa_endpoint(),
       connection: :estuary_elsa,
-      producer: [topic: get_event_stream_topic()],
+      producer: [topic: event_stream_topic()],
       group_consumer: [
         group: "estuary-consumer-group",
-        topics: [get_event_stream_topic()],
+        topics: [event_stream_topic()],
         handler: Estuary.MessageHandler,
         config: [
           begin_offset: :earliest,
@@ -38,25 +38,25 @@ defmodule Estuary.Application do
 
   defp validate_topic_exists do
     case Elsa.Topic.exists?(
-           get_elsa_endpoint(),
-           get_event_stream_topic()
+           elsa_endpoint(),
+           event_stream_topic()
          ) do
       true ->
         :ok
 
       false ->
         Elsa.Topic.create(
-          get_elsa_endpoint(),
-          get_event_stream_topic()
+          elsa_endpoint(),
+          event_stream_topic()
         )
     end
   end
 
-  defp get_elsa_endpoint do
+  defp elsa_endpoint do
     Application.get_env(:estuary, :elsa_endpoint)
   end
 
-  defp get_event_stream_topic do
+  defp event_stream_topic do
     Application.get_env(:estuary, :event_stream_topic)
   end
 end
