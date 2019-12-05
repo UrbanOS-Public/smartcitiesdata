@@ -4,10 +4,36 @@ defmodule Estuary.MessageHandler do
 
   def handle_messages(messages) do
     IO.inspect(messages)
+
     Enum.each(messages, fn message ->
-      event = message.value |> Jason.decode!()
-      Estuary.EventTable.insert_event(Map.fetch!(event, "author"), Map.fetch!(event, "create_ts"), Map.fetch!(event, "data"), Map.fetch!(event, "type"))
+      case message.value |> Jason.decode() do
+        {:ok, body} ->
+          Estuary.EventTable.insert_event(
+            Map.fetch!(body, "author"),
+            Map.fetch!(body, "create_ts"),
+            Map.fetch!(body, "data"),
+            Map.fetch!(body, "type")
+          )
+
+        # with %{author: author, create_ts: create_ts, data: data, type: type} <- body do
+        #   Estuary.EventTable.insert_event(
+        #     author,
+        #     create_ts,
+        #     data,
+        #     type
+        #   )
+        # else
+        #   err -> Elsa.produce([localhost: 9092], "streaming-dead-letters", message.value)
+        # end
+        {:error, reason} ->
+          Elsa.produce(
+            [localhost: 9092],
+            "streaming-dead-letters",
+            message.value
+          )
+      end
     end)
+
     Logger.debug("Messages #{inspect(messages)} were sent to the eventstream")
     :ack
   end
