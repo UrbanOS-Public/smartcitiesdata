@@ -71,6 +71,7 @@ defmodule Reaper.MixProject do
       {:yeet, "~> 1.0"},
       # Test/Dev Dependencies
       {:benchee, "~> 1.0", only: [:integration]},
+      {:tasks, in_umbrella: true, only: :dev},
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:checkov, "~> 0.4", only: [:test, :integration]},
       {:credo, "~> 1.1", only: [:dev, :test, :integration], runtime: false},
