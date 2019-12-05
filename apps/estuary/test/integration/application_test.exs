@@ -39,9 +39,8 @@ defmodule Estuary.ApplicationTest do
     assert expected_column_value == actual_column_value
   end
 
-  test "estuary persists event to the event stream" do
-    Elsa.produce(
-      @elsa_endpoint,
+  test "estuary persists event to the event_stream table" do
+    produce_event(
       @event_stream_topic,
       ~s({"__brook_struct__":"Elixir.Brook.Event","__struct__":"Elixir.SmartCity.Dataset","author":"reaper","create_ts":5,"data":"some data","forwarded":false,"type":"some type"})
     )
@@ -62,14 +61,10 @@ defmodule Estuary.ApplicationTest do
   end
 
   test "estuary persists batch of events to the event stream" do
-    Elsa.produce(
-      @elsa_endpoint,
-      @event_stream_topic,
-      [
-        ~s({"__brook_struct__":"Elixir.Brook.Event","__struct__":"Elixir.SmartCity.Dataset","author":"forklift","create_ts":1,"data":"some data1","forwarded":false,"type":"some type1"}),
-        ~s({"__brook_struct__":"Elixir.Brook.Event","__struct__":"Elixir.SmartCity.Dataset","author":"valkyrie","create_ts":2,"data":"some data2","forwarded":false,"type":"some type2"})
-      ]
-    )
+    produce_event(@event_stream_topic, [
+      ~s({"__brook_struct__":"Elixir.Brook.Event","__struct__":"Elixir.SmartCity.Dataset","author":"forklift","create_ts":1,"data":"some data1","forwarded":false,"type":"some type1"}),
+      ~s({"__brook_struct__":"Elixir.Brook.Event","__struct__":"Elixir.SmartCity.Dataset","author":"valkyrie","create_ts":2,"data":"some data2","forwarded":false,"type":"some type2"})
+    ])
 
     eventually(fn ->
       events =
@@ -93,17 +88,14 @@ defmodule Estuary.ApplicationTest do
   end
 
   test "estuary sends event to the dlq if it is not a properly formatted event" do
-    Elsa.produce(
-      @elsa_endpoint,
-      @event_stream_topic,
-      {"key", "value"}
-    )
+    produce_event(@event_stream_topic, {"key", "value"})
 
     eventually(fn ->
       {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "streaming-dead-letters")
 
       if length(events) > 0 do
-        assert Enum.at(events, 0).value == "value"
+        # assert Enum.at(events, 0).value == "{\"key\": \"value\"}"
+        Enum.any?(events, fn event -> event.value == "{\"key\": \"value\"}" end)
       else
         assert false
       end
@@ -111,20 +103,21 @@ defmodule Estuary.ApplicationTest do
   end
 
   test "estuary sends event to the dlq if it is properly formatted, but doesn't have the right keys" do
-    Elsa.produce(
-      @elsa_endpoint,
-      @event_stream_topic,
-      ~s({"value": "value"})
-    )
+    produce_event(@event_stream_topic, ~s({"key": "value"}))
 
     eventually(fn ->
       {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "streaming-dead-letters")
 
       if length(events) > 0 do
-        assert Enum.at(events, 0).value == "value"
+        # assert Enum.at(events, 0).value == "{\"foo\": \"bar\"}"
+        Enum.any?(events, fn event -> event.value == "{\"foo\": \"bar\"}" end)
       else
         assert false
       end
     end)
+  end
+
+  defp produce_event(topic, payload) do
+    Elsa.produce(@elsa_endpoint, topic, payload)
   end
 end
