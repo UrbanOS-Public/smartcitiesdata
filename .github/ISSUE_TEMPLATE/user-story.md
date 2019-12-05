@@ -23,4 +23,4 @@ So that my life is better
 - Not necessarily an acceptance criteria, but a hint for the people that play the card
 
 #### Amigos: 
-A list of tagged users that should amigo this card
+A list of tagged users that should be involved in reviewing (or exiting) this work
