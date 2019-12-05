@@ -1,0 +1,16 @@
+{
+  "dataset_id": "basic",
+  "_metadata": {},
+  "operational": {
+    "schema": [
+      {
+        "name": "id",
+        "type": "int"
+      },
+      {
+        "name": "name",
+        "type": "string"
+      }
+    ]
+  }
+}
