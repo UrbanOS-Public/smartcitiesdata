@@ -110,21 +110,21 @@ defmodule Estuary.ApplicationTest do
     end)
   end
 
-  # test "estuary sends event to the dlq if it is properly formatted, but doesn't have the right keys" do
-  #   Elsa.produce(
-  #     @elsa_endpoint,
-  #     @event_stream_topic,
-  #     ~s({"value": "value"})
-  #   )
+  test "estuary sends event to the dlq if it is properly formatted, but doesn't have the right keys" do
+    Elsa.produce(
+      @elsa_endpoint,
+      @event_stream_topic,
+      ~s({"value": "value"})
+    )
 
-  #   eventually(fn ->
-  #     {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "streaming-dead-letters")
+    eventually(fn ->
+      {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "streaming-dead-letters")
 
-  #     if length(events) > 0 do
-  #       assert Enum.at(events, 0).value == "value"
-  #     else
-  #       assert false
-  #     end
-  #   end)
-  # end
+      if length(events) > 0 do
+        assert Enum.at(events, 0).value == "value"
+      else
+        assert false
+      end
+    end)
+  end
 end

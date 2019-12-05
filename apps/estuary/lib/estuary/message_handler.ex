@@ -8,23 +8,18 @@ defmodule Estuary.MessageHandler do
     Enum.each(messages, fn message ->
       case message.value |> Jason.decode() do
         {:ok, body} ->
-          Estuary.EventTable.insert_event(
-            Map.fetch!(body, "author"),
-            Map.fetch!(body, "create_ts"),
-            Map.fetch!(body, "data"),
-            Map.fetch!(body, "type")
-          )
-
-        # with %{author: author, create_ts: create_ts, data: data, type: type} <- body do
-        #   Estuary.EventTable.insert_event(
-        #     author,
-        #     create_ts,
-        #     data,
-        #     type
-        #   )
-        # else
-        #   err -> Elsa.produce([localhost: 9092], "streaming-dead-letters", message.value)
-        # end
+          with %{"author" => author, "create_ts" => create_ts, "data" => data, "type" => type} <- body do
+            Estuary.EventTable.insert_event(
+              author,
+              create_ts,
+              data,
+              type
+            )
+          else
+            err ->
+              IO.inspect(err, label: "err>>>>>>>>>>>>>")
+              Elsa.produce([localhost: 9092], "streaming-dead-letters", message.value)
+          end
         {:error, reason} ->
           Elsa.produce(
             [localhost: 9092],
