@@ -8,15 +8,15 @@ assignees: ''
 ---
 
 #### User Story
-As a issue creator
+As a user
 
-I want to be able to create issues
+I want to see something changed
 
-So that I can see my issue resolved
+So that my life is better
 
 #### Acceptance Criteria: 
-- [ ] The issue exists in the list of issues
-- [ ] Issue has all fields properly filled out
+- [ ] This is something that must be done for the card to be complete
+- [ ] Another acceptance criteria
 
 #### Tech Notes: 
 - Notes that are technical in nature
