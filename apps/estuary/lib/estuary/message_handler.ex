@@ -1,6 +1,6 @@
 defmodule Estuary.MessageHandler do
   @moduledoc """
-  This module will read an event from the event stream and persist it.
+  Estuary.MessageHandler reads an event from the event stream and persists it.
   """
   use Elsa.Consumer.MessageHandler
   require Logger
