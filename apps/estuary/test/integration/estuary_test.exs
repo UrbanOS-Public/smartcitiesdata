@@ -1,4 +1,4 @@
-defmodule Estuary.ApplicationTest do
+defmodule Estuary.EstuaryTest do
   use ExUnit.Case
   use Placebo
   use Divo

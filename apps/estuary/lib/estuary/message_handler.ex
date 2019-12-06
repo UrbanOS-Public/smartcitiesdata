@@ -17,7 +17,6 @@ defmodule Estuary.MessageHandler do
         {:error, %Jason.DecodeError{}} ->
           Yeet.process_dead_letter("", message, "estuary", reason: "event's JSON could not be decoded")
         bad_keys ->
-          IO.inspect(bad_keys, label: "bad_keys>>>>>>>>>>>>>>>>>>>>>>>>>>>")
           Yeet.process_dead_letter("", message, "estuary",
           reason: "event #{inspect(bad_keys)} was decoded but did not have the right keys.")
       end
