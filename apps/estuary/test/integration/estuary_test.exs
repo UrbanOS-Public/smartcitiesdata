@@ -90,6 +90,7 @@ defmodule Estuary.EstuaryTest do
 
     eventually(fn ->
       {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "dead-letters")
+
       if length(events) > 0 do
         Enum.any?(events, fn event -> event.value == "{\"key\": \"value\"}" end)
       else

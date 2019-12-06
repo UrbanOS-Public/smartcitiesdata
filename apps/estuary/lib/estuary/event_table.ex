@@ -10,11 +10,9 @@ defmodule Estuary.EventTable do
   end
 
   def insert_event(author, create_ts, data, type) do
-    Prestige.execute(
-      "INSERT INTO #{table_name()} (author, create_ts, data, type) values ('#{author}', #{
-        create_ts
-      }, '#{data}', '#{type}')"
-    )
+    Prestige.execute("INSERT INTO #{table_name()}
+      (author, create_ts, data, type)
+      values ('#{author}', #{create_ts}, '#{data}', '#{type}')")
     |> Prestige.prefetch()
   end
 
