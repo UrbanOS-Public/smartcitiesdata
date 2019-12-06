@@ -21,6 +21,7 @@ defmodule Reaper.FullTest do
   @nested_data_file_name "nested_data.json"
   @gtfs_file_name "gtfs-realtime.pb"
   @csv_file_name "random_stuff.csv"
+  @xml_file_name "xml_sample.xml"
 
   setup_all do
     Temp.track!()
@@ -35,6 +36,7 @@ defmodule Reaper.FullTest do
     |> TestUtils.bypass_file(@json_file_name)
     |> TestUtils.bypass_file(@nested_data_file_name)
     |> TestUtils.bypass_file(@csv_file_name)
+    |> TestUtils.bypass_file(@xml_file_name)
 
     eventually(fn ->
       {type, result} = get("http://localhost:#{bypass.port}/#{@csv_file_name}")
@@ -345,6 +347,46 @@ defmodule Reaper.FullTest do
                  "id" => "3",
                  "grandParent" => %{"parentMap" => %{"fieldA" => "Joe", "fieldB" => nil}}
                }
+      end)
+    end
+  end
+
+  describe "xml dataset" do
+    setup %{bypass: bypass} do
+      pre_existing_dataset =
+        TDG.create_dataset(%{
+          id: @pre_existing_dataset_id,
+          technical: %{
+            cadence: "once",
+            sourceUrl: "http://localhost:#{bypass.port}/#{@xml_file_name}",
+            sourceFormat: "xml",
+            schema: [
+              %{name: "first_name", selector: "//person/firstName/text()"}
+            ],
+            topLevelSelector: "top/middle/rows/person"
+          }
+        })
+
+      Brook.Event.send(@instance, dataset_update(), :reaper, pre_existing_dataset)
+      :ok
+    end
+
+    test "is processed successfully" do
+      expected =
+        TestUtils.create_data(%{
+          dataset_id: @pre_existing_dataset_id,
+          payload: %{
+            "first_name" => "John"
+          }
+        })
+
+      topic = "#{@output_topic_prefix}-#{@pre_existing_dataset_id}"
+
+      eventually(fn ->
+        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+        last_one = List.last(results)
+
+        assert expected == last_one
       end)
     end
   end

@@ -1,0 +1,16 @@
+<response>
+  <row>
+    <row _id="a">
+      <coredata_id>1234</coredata_id>
+    </row>
+    <row _id="b">
+      <coredata_id>2345</coredata_id>
+    </row>
+    <row _id="c">
+      <coredata_id>3456</coredata_id>
+    </row>
+    <row _id="d">
+      <coredata_id>4567</coredata_id>
+    </row>
+  </row>
+</response>

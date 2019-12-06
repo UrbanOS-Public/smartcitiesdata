@@ -1,0 +1,126 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Header>
+    <wsse:Security soapenv:mustUnderstand="1" 
+      xmlns:wsse="http://docs.oasisopen.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"/>
+  </soapenv:Header>
+  <soapenv:Body>
+    <ns1:getPublicStationsResponse xmlns:ns1="urn:dictionary:com.chargepoint.webservices">
+      <responseCode>100</responseCode>
+      <responseText/>
+      <stationData>
+        <stationID>1:41613</stationID>
+        <stationManufacturer>Coulomb</stationManufacturer>
+        <stationModel>CT2025-HD-GW1-CCR</stationModel>
+        <Address>1692 Dell Ave</Address>
+        <City>Campbell</City>
+        <State>California</State>
+        <Country>United States</Country>
+        <postalCode>95008</postalCode>
+        <Port jalson="first">
+          <portNumber>1</portNumber>
+          <stationName>CHARGEPOINT / HQ14</stationName>
+          <Geo>
+            <Lat>37.261512756347656</Lat>
+            <Long>-121.957717895507810</Long>
+          </Geo>
+          <Description>Front parking lot along Dell Ave.</Description>
+          <Reservable>0</Reservable>
+          <Level>L2</Level>
+          <Connector>J1772</Connector>
+          <Voltage>240</Voltage>
+          <Current>30</Current>
+          <Power>7.2</Power>
+          <estimatedCost>0.5</estimatedCost>
+        </Port>
+        <Port jalson="second">
+          <portNumber>2</portNumber>
+          <stationName>CHARGEPOINT / HQ14</stationName>
+          <Geo>
+            <Lat>37.261512756347656</Lat>
+            <Long>-121.957717895507810</Long>
+          </Geo>
+          <Description>Front parking lot along Dell Ave.</Description>
+          <Reservable>0</Reservable>
+          <Level>L2</Level>
+          <Connector>J1772</Connector>
+          <Voltage>240</Voltage>
+          <Current>30</Current>
+          <Power>7.2</Power>
+          <estimatedCost>0.5</estimatedCost>
+        </Port>
+        <Pricing>
+          <Type>None</Type>
+          <startTime>00:00:00</startTime>
+          <endTime>24:00:00</endTime>
+          <minPrice>0.50</minPrice>
+          <maxPrice/>
+          <unitPricePerHour>1.50</unitPricePerHour>
+          <unitPricePerSession/>
+          <unitPricePerKWh/>
+        </Pricing>
+        <numPorts>2</numPorts>
+        <mainPhone>(888) 758-4389</mainPhone>
+        <modTimeStamp>2013-02-13T14:08:36Z</modTimeStamp>
+        <timezoneOffset>-08:00</timezoneOffset>
+        <currencyCode>USD</currencyCode>
+      </stationData>
+      <stationData>
+        <stationID>1:111</stationID>
+        <stationManufacturer>Coulomb</stationManufacturer>
+        <stationModel>CT2025-HD-GW1-CCR</stationModel>
+        <Address>1692 Dell Ave</Address>
+        <City>Campbell</City>
+        <State>California</State>
+        <Country>United States</Country>
+        <postalCode>95008</postalCode>
+        <Port jalson="third">
+          <portNumber>1</portNumber>
+          <stationName>CHARGEPOINT / HQ14</stationName>
+          <Geo>
+            <Lat>37.261512756347656</Lat>
+            <Long>-121.957717895507810</Long>
+          </Geo>
+          <Description>Front parking lot along Dell Ave.</Description>
+          <Reservable>0</Reservable>
+          <Level>L2</Level>
+          <Connector>J1772</Connector>
+          <Voltage>240</Voltage>
+          <Current>30</Current>
+          <Power>7.2</Power>
+          <estimatedCost>0.5</estimatedCost>
+        </Port>
+        <Port jalson="fourt">
+          <portNumber>4</portNumber>
+          <stationName>CHARGEPOINT / HQ14</stationName>
+          <Geo>
+            <Lat>37.261512756347656</Lat>
+            <Long>-121.957717895507810</Long>
+          </Geo>
+          <Description>Front parking lot along Dell Ave.</Description>
+          <Reservable>0</Reservable>
+          <Level>L2</Level>
+          <Connector>J1772</Connector>
+          <Voltage>240</Voltage>
+          <Current>30</Current>
+          <Power>7.2</Power>
+          <estimatedCost>0.5</estimatedCost>
+        </Port>
+        <Pricing>
+          <Type>None</Type>
+          <startTime>00:00:00</startTime>
+          <endTime>24:00:00</endTime>
+          <minPrice>0.50</minPrice>
+          <maxPrice/>
+          <unitPricePerHour>1.50</unitPricePerHour>
+          <unitPricePerSession/>
+          <unitPricePerKWh/>
+        </Pricing>
+        <numPorts>2</numPorts>
+        <mainPhone>(888) 758-4389</mainPhone>
+        <modTimeStamp>2013-02-13T14:08:36Z</modTimeStamp>
+        <timezoneOffset>-08:00</timezoneOffset>
+        <currencyCode>USD</currencyCode>
+      </stationData>
+    </ns1:getPublicStationsResponse>
+  </soapenv:Body>
+</soapenv:Envelope>
