@@ -29,7 +29,13 @@ defmodule Estuary.EventTableTest do
       |> Prestige.prefetch()
 
     assert aloha_events == [[0]]
-    Estuary.EventTable.insert_event("Steve Aloha", 5, "some data", "some type")
+
+    Estuary.EventTable.insert_event(%{
+      "author" => "Steve Aloha",
+      "create_ts" => 5,
+      "data" => "some data",
+      "type" => "some type"
+    })
 
     aloha_events =
       Prestige.execute(
