@@ -40,3 +40,7 @@ config :estuary,
 
 config :logger,
   level: :warn
+
+config :yeet,
+  endpoint: endpoints,
+  topic: System.get_env("DLQ_TOPIC")

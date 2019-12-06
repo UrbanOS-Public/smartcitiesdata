@@ -45,8 +45,6 @@ defmodule Estuary.ApplicationTest do
       ~s({"__brook_struct__":"Elixir.Brook.Event","__struct__":"Elixir.SmartCity.Dataset","author":"reaper","create_ts":5,"data":"some data","forwarded":false,"type":"some type"})
     )
 
-    # Process.sleep(2000)
-
     eventually(fn ->
       events =
         Prestige.execute(
@@ -91,10 +89,8 @@ defmodule Estuary.ApplicationTest do
     produce_event(@event_stream_topic, {"key", "value"})
 
     eventually(fn ->
-      {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "streaming-dead-letters")
-
+      {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "dead-letters")
       if length(events) > 0 do
-        # assert Enum.at(events, 0).value == "{\"key\": \"value\"}"
         Enum.any?(events, fn event -> event.value == "{\"key\": \"value\"}" end)
       else
         assert false
@@ -103,13 +99,12 @@ defmodule Estuary.ApplicationTest do
   end
 
   test "estuary sends event to the dlq if it is properly formatted, but doesn't have the right keys" do
-    produce_event(@event_stream_topic, ~s({"key": "value"}))
+    produce_event(@event_stream_topic, ~s({"foo": "bar"}))
 
     eventually(fn ->
-      {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "streaming-dead-letters")
+      {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "dead-letters")
 
       if length(events) > 0 do
-        # assert Enum.at(events, 0).value == "{\"foo\": \"bar\"}"
         Enum.any?(events, fn event -> event.value == "{\"foo\": \"bar\"}" end)
       else
         assert false

@@ -36,8 +36,9 @@ defmodule Estuary.MixProject do
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:elsa, "~> 0.10.0"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:prestige, "~> 0.3"},
       {:smart_city_test, "~> 0.7", only: [:test, :integration]},
-      {:prestige, "~> 0.3"}
+      {:yeet, "~> 1.0"}
     ]
   end
 

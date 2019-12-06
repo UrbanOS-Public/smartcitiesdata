@@ -3,7 +3,6 @@ defmodule Estuary.MessageHandler do
   require Logger
 
   def handle_messages(messages) do
-    IO.inspect(messages)
 
     Enum.each(messages, fn message ->
       with {:ok, body} <- message.value |> Jason.decode(),
@@ -15,9 +14,12 @@ defmodule Estuary.MessageHandler do
           type
         )
       else
-        err ->
-          IO.inspect(err, label: "err>>>>>>>>>>>>>")
-          Elsa.produce([localhost: 9092], "streaming-dead-letters", message.value)
+        {:error, %Jason.DecodeError{}} ->
+          Yeet.process_dead_letter("", message, "estuary", reason: "event's JSON could not be decoded")
+        bad_keys ->
+          IO.inspect(bad_keys, label: "bad_keys>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+          Yeet.process_dead_letter("", message, "estuary",
+          reason: "event #{inspect(bad_keys)} was decoded but did not have the right keys.")
       end
     end)
 

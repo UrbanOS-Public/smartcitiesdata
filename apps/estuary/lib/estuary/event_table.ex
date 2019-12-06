@@ -15,7 +15,9 @@ defmodule Estuary.EventTable do
         create_ts
       }, '#{data}', '#{type}')"
     )
+    |> IO.inspect(label: "before prefetch")
     |> Prestige.prefetch()
+    |> IO.inspect(label: "after prefetch")
   end
 
   defp table_name do
