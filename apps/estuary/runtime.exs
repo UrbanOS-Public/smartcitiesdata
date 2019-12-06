@@ -5,7 +5,8 @@ required_envars = [
   "PRESTO_URL",
   "KAFKA_BROKERS",
   "DATA_TOPIC",
-  "TABLE_NAME"
+  "TABLE_NAME",
+  "DLQ_TOPIC"
 ]
 
 Enum.each(required_envars, fn var ->

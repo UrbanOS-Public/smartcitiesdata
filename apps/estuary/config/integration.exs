@@ -1,12 +1,6 @@
 use Mix.Config
 
-host =
-  case System.get_env("HOST_IP") do
-    nil -> "127.0.0.1"
-    defined -> defined
-  end
-
-endpoints = [{String.to_atom(host), 9092}]
+endpoints = [localhost: 9092]
 
 config :prestige,
   base_url: "http://127.0.0.1:8080",
