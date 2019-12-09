@@ -33,12 +33,17 @@ defmodule AndiWeb.EditLiveView do
         business: %Andi.DatasetBusinessSchema{dataTitle: "title"}
       })
 
+    # change =
+    #   Andi.DatasetSchema.changeset(%{
+    #     other: 1
+    #   })
+
     {:ok, assign(socket, changeset: change)}
   end
 
-  defp get_private(%{technical: %{private: true}}), do: "Private"
-  defp get_private(_), do: "Public"
+  # defp get_private(%{technical: %{private: true}}), do: "Private"
+  # defp get_private(_), do: "Public"
 
-  defp get_keywords(%{business: %{keywords: nil}}), do: ""
-  defp get_keywords(%{business: %{keywords: keywords}}), do: Enum.intersperse(keywords, ", ")
+  # defp get_keywords(%{business: %{keywords: nil}}), do: ""
+  # defp get_keywords(%{business: %{keywords: keywords}}), do: Enum.intersperse(keywords, ", ")
 end
