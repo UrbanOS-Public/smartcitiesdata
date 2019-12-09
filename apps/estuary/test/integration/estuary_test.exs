@@ -125,11 +125,11 @@ defmodule Estuary.EstuaryTest do
     ~s({
       "__brook_struct__":"Elixir.Brook.Event",
       "__struct__":"Elixir.SmartCity.Dataset",
-      "author":event_data["author"],
-      "create_ts":event_data["create_ts"],
-      "data":event_data["data"],
+      "author":"#{event_data["author"]}",
+      "create_ts":"#{event_data["create_ts"]}",
+      "data":"#{event_data["data"]}",
       "forwarded":false,
-      "type":event_data["type"]
+      "type":"#{event_data["type"]}"
       })
   end
 end
