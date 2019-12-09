@@ -32,8 +32,15 @@ defmodule Estuary.EstuaryTest do
 
   test "should persist event to the event_stream table" do
     produce_event(
-      @event_stream_topic, event_struct("reaper", 5, "some data for reaper", "some type for reaper"))
-
+      @event_stream_topic,
+      %{
+        "author" => "reaper",
+        "create_ts" => 5,
+        "data" => "some data for reaper",
+        "type" => "some type for reaper"
+      }
+      |> event_struct()
+    )
 
     expected_value = [["reaper", 5, "some data for reaper", "some type for reaper"]]
 
@@ -50,8 +57,20 @@ defmodule Estuary.EstuaryTest do
 
   test "should persist batch of events to the event stream" do
     produce_event(@event_stream_topic, [
-      event_struct("forklift", 1, "some data for forklift", "some type for forklift"),
-      event_struct("valkyrie", 2, "some data for valkyrie", "some type for valkyrie")
+      %{
+        "author" => "forklift",
+        "create_ts" => 1,
+        "data" => "some data for forklift",
+        "type" => "some type for forklift"
+      }
+      |> event_struct(),
+      %{
+        "author" => "valkyrie",
+        "create_ts" => 2,
+        "data" => "some data for valkyrie",
+        "type" => "some type for valkyrie"
+      }
+      |> event_struct()
     ])
 
     expected_value = [
@@ -102,15 +121,15 @@ defmodule Estuary.EstuaryTest do
     Elsa.produce(@elsa_endpoint, topic, payload)
   end
 
-  defp event_struct(author, create_ts, data, type) do
+  defp event_struct(event_data) do
     ~s({
       "__brook_struct__":"Elixir.Brook.Event",
       "__struct__":"Elixir.SmartCity.Dataset",
-      "author":#{author},
-      "create_ts":#{create_ts},
-      "data":#{data},
+      "author":event_data["author"],
+      "create_ts":event_data["create_ts"],
+      "data":event_data["data"],
       "forwarded":false,
-      "type":#{type}
+      "type":event_data["type"]
       })
   end
 end
