@@ -12,7 +12,7 @@ defmodule Andi.Application do
     ]
 
     opts = [strategy: :one_for_one, name: Andi.Supervisor]
-    Supervisor.start_link(children, opts)
+    Supervisor.start_link([], opts)
   end
 
   # Tell Phoenix to update the endpoint configuration

@@ -12,8 +12,9 @@ endpoint = [{host, 9092}]
 config :andi,
   divo: [
     {DivoKafka, [create_topics: "event-stream:1:1", outside_host: host]},
-    {DivoRedis, []},
-    Andi.DivoLdap
+    # ,
+    {DivoRedis, []}
+    # Andi.DivoLdap
   ],
   divo_wait: [dwell: 700, max_tries: 50],
   ldap_user: [cn: "admin"],
