@@ -102,8 +102,16 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       assert {:error, _} = Visualizations.create_visualization(%{query: query, title: title, owner: owner, chart: chart})
     end
 
-    test "given a chart smaller than twenty thousand bytes, it creates a visualization" do
-      query = "blah"
+    test "given a query larger than twenty thousand bytes, it fails to create a visualization" do
+      query = Faker.String.base64(20_001)
+      title = "blah blah"
+      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+
+      assert {:error, _} = Visualizations.create_visualization(%{query: query, title: title, owner: owner})
+    end
+
+    test "given a query and chart smaller than twenty thousand bytes, it creates a visualization" do
+      query = Faker.String.base64(19_999)
       title = "blah blah"
       chart = Faker.String.base64(19_999)
       {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})

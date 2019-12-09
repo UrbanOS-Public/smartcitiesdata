@@ -24,6 +24,7 @@ defmodule DiscoveryApi.Schemas.Visualizations.Visualization do
     visualization
     |> cast(changes, [:query, :title, :chart])
     |> validate_length(:chart, count: :bytes, max: 20_000)
+    |> validate_length(:query, count: :bytes, max: 20_000)
     |> put_assoc(:owner, owner)
     |> foreign_key_constraint(:owner_id)
     |> validate_required([:query, :title, :owner])
