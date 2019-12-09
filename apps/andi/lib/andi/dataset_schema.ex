@@ -4,23 +4,18 @@ defmodule Andi.DatasetSchema do
   use Ecto.Schema
   import Ecto.Changeset
 
-  # embedded_schema do
   embedded_schema do
-    field(:age, :string)
     field(:other, :string)
     embeds_one(:technical, Andi.DatasetTechnicalSchema)
     embeds_one(:business, Andi.DatasetBusinessSchema)
   end
 
   def changeset(params \\ %{}) do
-    # IO.inspect(params, label: "changeset")
-
     %Andi.DatasetSchema{}
-    |> cast(params, [:age, :other])
+    |> cast(params, [:other])
+    |> cast_embed(:technical)
+    |> cast_embed(:business)
     |> validate_required([:other])
-
-    # |> cast_embed(:technical)
-    # |> cast_embed(:business)
   end
 end
 
