@@ -4,15 +4,19 @@ defmodule Estuary.EventTable do
   """
 
   def create_table do
-    "CREATE TABLE IF NOT EXISTS #{table_name()} (author varchar, create_ts bigint, data varchar, type varchar)"
+    "CREATE TABLE IF NOT EXISTS #{table_name()}
+    (author varchar, create_ts bigint, data varchar, type varchar)"
     |> Prestige.execute()
     |> Prestige.prefetch()
   end
 
-  def insert_event(%{"author" => author, "create_ts" => create_ts, "data" => data, "type" => type}) do
-    Prestige.execute("INSERT INTO #{table_name()}
+  def insert_event_to_table(event_value) do
+    "INSERT INTO #{table_name()}
       (author, create_ts, data, type)
-      values ('#{author}', #{create_ts}, '#{data}', '#{type}')")
+      VALUES
+      ('#{event_value["author"]}', #{event_value["create_ts"]},
+      '#{event_value["data"]}', '#{event_value["type"]}')"
+    |> Prestige.execute()
     |> Prestige.prefetch()
   end
 

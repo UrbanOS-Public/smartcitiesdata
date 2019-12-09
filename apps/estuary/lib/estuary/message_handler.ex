@@ -9,7 +9,7 @@ defmodule Estuary.MessageHandler do
     Enum.each(messages, fn message ->
       with {:ok, body} <- message.value |> Jason.decode(),
            %{"author" => author, "create_ts" => create_ts, "data" => data, "type" => type} <- body do
-        Estuary.EventTable.insert_event(body)
+        Estuary.EventTable.insert_event_to_table(body)
       else
         {:error, %Jason.DecodeError{}} ->
           Yeet.process_dead_letter("", message, "estuary",

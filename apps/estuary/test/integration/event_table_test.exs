@@ -3,6 +3,7 @@ defmodule Estuary.EventTableTest do
   use Divo
 
   alias Estuary.EventTable
+  alias Estuary.EventTableHelper
 
   @event_stream_table_name Application.get_env(:estuary, :event_stream_table_name)
 
@@ -21,29 +22,28 @@ defmodule Estuary.EventTableTest do
     assert expected_table_value == actual_table_value
   end
 
-  test "insert_event inserts an event into the #{@event_stream_table_name} table" do
-    events =
-      Prestige.execute(
-        "SELECT COUNT(*) from #{@event_stream_table_name} WHERE author = 'Steve' and create_ts = 5 and data = 'some data' and type = 'some type'"
-      )
-      |> Prestige.prefetch()
+  test "should insert event to event_stream table" do
+    expected_value_before_insert = []
+    expected_value_after_insert = [["Steve", 5, "some data", "some type"]]
 
-    assert events == [[0]]
+    actual_value_before_insert =
+      "'Steve'"
+      |> EventTableHelper.select_table_data()
 
-    Estuary.EventTable.insert_event(%{
+    %{
       "author" => "Steve",
       "create_ts" => 5,
       "data" => "some data",
       "type" => "some type"
-    })
+    }
+    |> Estuary.EventTable.insert_event_to_table()
 
-    events =
-      Prestige.execute(
-        "SELECT COUNT(*) from #{@event_stream_table_name} WHERE author = 'Steve' and create_ts = 5 and data = 'some data' and type = 'some type'"
-      )
-      |> Prestige.prefetch()
+    actual_value_after_insert =
+      "'Steve'"
+      |> EventTableHelper.select_table_data()
 
-    assert events == [[1]]
-    Prestige.execute("DELETE from #{@event_stream_table_name}") |> Prestige.prefetch()
+    assert expected_value_before_insert == actual_value_before_insert
+    assert expected_value_after_insert == actual_value_after_insert
+    EventTableHelper.delete_table_data()
   end
 end
