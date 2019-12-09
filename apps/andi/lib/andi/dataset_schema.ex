@@ -6,16 +6,17 @@ defmodule Andi.DatasetSchema do
 
   # embedded_schema do
   embedded_schema do
+    field(:age, :string)
     field(:other, :string)
     embeds_one(:technical, Andi.DatasetTechnicalSchema)
     embeds_one(:business, Andi.DatasetBusinessSchema)
   end
 
   def changeset(params \\ %{}) do
-    IO.inspect(params, label: "changeset")
+    # IO.inspect(params, label: "changeset")
 
     %Andi.DatasetSchema{}
-    |> cast(params, [:other])
+    |> cast(params, [:age, :other])
     |> validate_required([:other])
 
     # |> cast_embed(:technical)
