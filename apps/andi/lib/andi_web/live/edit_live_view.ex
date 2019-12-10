@@ -2,7 +2,7 @@ defmodule AndiWeb.EditLiveView do
   use Phoenix.LiveView
   alias Phoenix.HTML.Form
   alias Phoenix.HTML.Link
-  alias AndiWeb.ErrorHelpers
+  import AndiWeb.ErrorHelpers
 
   def render(assigns) do
     # phx_validation or phx_submit
@@ -13,7 +13,7 @@ defmodule AndiWeb.EditLiveView do
         <div class="metadata-form__id">
           <%= Form.label(f, :id, "ID", class: "label label--required") %>
           <%= Form.text_input(f, :other, [class: "input"]) %>
-          <%= ErrorHelpers.error_tag(f, :other) %>
+          <%= error_tag(f, :other) %>
         </div>
 
         <%= Form.inputs_for f, :technical, fn fp -> %>

@@ -15,7 +15,7 @@ defmodule Andi.DatasetSchema do
     |> cast(params, [:other])
     |> cast_embed(:technical)
     |> cast_embed(:business)
-    |> validate_required([:other])
+    |> validate_required([:other], message: "This field is required.")
   end
 end
 
