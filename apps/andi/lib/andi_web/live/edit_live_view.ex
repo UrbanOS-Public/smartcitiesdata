@@ -48,7 +48,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("validate", %{"dataset_schema" => dataset_schema}, socket) do
-    change = Andi.DatasetSchema.changeset(dataset_schema) |> IO.inspect(label: "validate")
+    change = Andi.DatasetSchema.changeset(dataset_schema)
     {:noreply, assign(socket, changeset: change)}
   end
 
