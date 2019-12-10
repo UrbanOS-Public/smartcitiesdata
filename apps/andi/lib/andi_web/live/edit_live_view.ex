@@ -2,30 +2,35 @@ defmodule AndiWeb.EditLiveView do
   use Phoenix.LiveView
   alias Phoenix.HTML.Form
   alias Phoenix.HTML.Link
-
-  require IEx
+  alias AndiWeb.ErrorHelpers
 
   def render(assigns) do
+    # phx_validation or phx_submit
     ~L"""
     <div class="edit-page">
-      <%= f = Form.form_for @changeset, "#", [phx_change: :dataset_edit] %>
+      <%= f = Form.form_for @changeset, "#", [phx_submit: :dataset_submit, phx_change: :validate] %>
 
         <div class="metadata-form__id">
           <%= Form.label(f, :id, "ID", class: "label label--required") %>
-          <%= Form.text_input(f, :other) %>
+          <%= Form.text_input(f, :other, [class: "input"]) %>
+          <%= ErrorHelpers.error_tag(f, :other) %>
         </div>
 
         <%= Form.inputs_for f, :technical, fn fp -> %>
           <%= Form.label(fp, :title, "Source Format", class: "label label--required") %>
-          <%= Form.text_input(fp, :sourceFormat) %>
+          <%= Form.text_input(fp, :sourceFormat, [class: "input"]) %>
         <% end %>
 
         <%= Form.inputs_for f, :business, fn fp -> %>
           <%= Form.label(fp, :title, "Dataset Title", class: "label label--required") %>
-          <%= Form.text_input(fp, :dataTitle) %>
+          <%= Form.text_input(fp, :dataTitle, [class: "input"]) %>
         <% end %>
-
-        <%= Link.link("Cancel", to: "/", class: "btn btn--cancel metadata-form__cancel-btn") %>
+        <div>
+          <%= Link.link("Cancel", to: "/", class: "btn btn--cancel metadata-form__cancel-btn") %>
+        </div>
+        <div>
+          <%= Form.submit "Submit" %>
+        </div>
     </div>
     """
   end
@@ -42,22 +47,15 @@ defmodule AndiWeb.EditLiveView do
     {:ok, assign(socket, changeset: change)}
   end
 
-  def handle_event("dataset_edit", event, socket) do
-    IO.inspect(event, label: "handle_event event:")
-    {:noreply, socket}
+  def handle_event("validate", %{"dataset_schema" => dataset_schema}, socket) do
+    change = Andi.DatasetSchema.changeset(dataset_schema) |> IO.inspect(label: "validate")
+    {:noreply, assign(socket, changeset: change)}
   end
 
-  # def handle_event("dataset", event, %{assigns: %{changeset: %{changes: existing}}} = socket) do
-  #   # IO.inspect(event, label: "handle event:")
-  #   IO.inspect(existing, label: "existing:")
-  #   change = Andi.DatasetSchema.changeset(event["dataset_schema"])
-
-  #   IO.inspect(change, label: "change")
-  #   merged = Map.merge(existing, change.changes)
-
-  #   IO.inspect(merged, label: "merged")
-  #   {:noreply, assign(socket, changeset: Andi.DatasetSchema.changeset(merged))}
-  # end
+  def handle_event("dataset_submit", %{"dataset_schema" => dataset_schema}, socket) do
+    change = Andi.DatasetSchema.changeset(dataset_schema)
+    {:noreply, assign(socket, changeset: change)}
+  end
 
   # defp get_private(%{technical: %{private: true}}), do: "Private"
   # defp get_private(_), do: "Public"
