@@ -16,16 +16,18 @@ defmodule DiscoveryApiWeb.MetadataController.SchemaTest do
           :pii => "false",
           :biased => "false",
           :masked => "N/A",
-          :demographic => "None"
+          :demographic => "None",
+          :subSchema => %{}
         },
         %{
           :description => "a name",
           :name => "name",
-          :type => "string",
+          :type => "list",
           :pii => "true",
           :biased => "true",
           :masked => "yes",
-          :demographic => "Other"
+          :demographic => "Other",
+          :itemType => "String"
         }
       ]
 
@@ -38,8 +40,8 @@ defmodule DiscoveryApiWeb.MetadataController.SchemaTest do
       actual = conn |> get("/api/v1/dataset/#{@dataset_id}/dictionary") |> json_response(200)
 
       expected = [
-        %{"name" => "number", "type" => "integer", "description" => "a number"},
-        %{"name" => "name", "type" => "string", "description" => "a name"}
+        %{"name" => "number", "type" => "integer", "description" => "a number", "subSchema" => %{}},
+        %{"name" => "name", "type" => "list", "description" => "a name", "itemType" => "String"}
       ]
 
       assert expected == actual
