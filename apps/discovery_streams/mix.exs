@@ -5,7 +5,7 @@ defmodule DiscoveryStreams.Mixfile do
     [
       app: :discovery_streams,
       version: "1.0.0-static",
-      elixir: "~> 1.7",
+      elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -39,9 +39,9 @@ defmodule DiscoveryStreams.Mixfile do
       {:divo_kafka, "~> 0.1"},
       {:divo, "~> 1.1"},
       {:divo_redis, "~> 0.1", only: [:integration]},
-      {:elsa, "~> 0.8.0", override: true},
+      {:elsa, "~> 0.10.0", override: true},
       {:ex_doc, "~> 0.19", only: [:test, :integration], runtime: false},
-      {:httpoison, "~> 1.5"},
+      {:httpoison, "~> 1.6"},
       {:kaffe, "~> 1.14"},
       {:libcluster, "~> 3.1"},
       {:mix_test_watch, "~> 0.6", only: :dev, runtime: false},
@@ -56,17 +56,15 @@ defmodule DiscoveryStreams.Mixfile do
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:redix, "~> 0.10.2"},
       {:sweet_xml, "~> 0.6"},
-      {:smart_city, "~> 2.8"},
+      {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.5", only: [:test, :integration]},
       {:streaming_metrics, "~>2.1"},
       {:temporary_env, "~> 2.0", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev, runtime: false},
-      {:husky, "~> 1.0", only: :dev, runtime: false},
-      # updating version breaks
-      {:distillery, "2.0.14"},
-      # distillery breaks @ 2.1.0 due to elixir 1.9 support
-      {:poison, "3.1.0"}
+      {:distillery, "~> 2.1"},
       # poison breaks @ 4.0.1 due to encode_to_iotdata missing from 4.0
+      # {:poison, "~> 4.0"},
+      {:poison, "~> 3.1", override: true}
     ]
   end
 

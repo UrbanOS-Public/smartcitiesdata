@@ -22,7 +22,7 @@ iex -S mix phx.server
 
 If you would like to run the app with its dependencies:
 ```bash
-MIX_ENV=integration docker.start
+MIX_ENV=integration mix docker.start
 ```
 
 ## Connecting to Websocket
