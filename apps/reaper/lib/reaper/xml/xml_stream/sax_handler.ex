@@ -91,7 +91,7 @@ defmodule XMLStream.SaxHandler do
   def handle_event(:characters, chars, %State{stack: stack, accumulate: true} = state) do
     [{tag_name, attributes, content} | stack] = stack
 
-    current = {tag_name, attributes, [chars | content]}
+    current = {tag_name, attributes, [{:characters, chars} | content]}
 
     state
     |> State.update(stack: [current | stack])
