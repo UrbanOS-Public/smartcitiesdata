@@ -12,7 +12,6 @@ defmodule DiscoveryStreams.EventHandler do
         data: %Dataset{id: id, technical: %{sourceType: "stream", private: false, systemName: system_name}}
       }) do
     save_dataset_to_viewstate(id, system_name)
-
     :ok
   end
 

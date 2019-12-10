@@ -92,7 +92,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   end
 
   defp get_dataset_id(system_name) do
-    case Brook.get(:streaming_datasets_by_system_name, system_name) do
+    case Brook.get(:discovery_streams, :streaming_datasets_by_system_name, system_name) do
       {:ok, dataset_id} -> dataset_id
       _ -> nil
     end

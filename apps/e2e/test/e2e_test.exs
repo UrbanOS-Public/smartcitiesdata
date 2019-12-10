@@ -2,9 +2,12 @@ defmodule E2ETest do
   use ExUnit.Case
   use Divo
   use Placebo
+  use Phoenix.ChannelTest
+  require IEx
 
   @moduletag :e2e
   @moduletag capture_log: false
+  @endpoint DiscoveryStreamsWeb.Endpoint
 
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
@@ -20,9 +23,9 @@ defmodule E2ETest do
         %{name: "two", type: "string"},
         %{name: "three", type: "integer"}
       ],
-      sourceType: "ingest",
+      sourceType: "stream",
       sourceFormat: "text/csv",
-      cadence: "once"
+      cadence: "* * * * *"
     }
   }
 
@@ -34,7 +37,6 @@ defmodule E2ETest do
     Paddle.add([ou: "integration"], objectClass: ["top", "organizationalunit"], ou: "integration")
 
     Bypass.stub(bypass, "GET", "/path/to/the/data.csv", fn conn ->
-      IO.inspect(conn, label: "bypass")
       Plug.Conn.resp(conn, 200, "true,foobar,10")
     end)
 
@@ -46,7 +48,6 @@ defmodule E2ETest do
       )
       |> TDG.create_dataset()
 
-    IO.inspect(dataset, label: "Dataset")
 
     [dataset: dataset]
   end
@@ -54,7 +55,6 @@ defmodule E2ETest do
   describe "creating an organization" do
     test "via RESTful POST" do
       org = TDG.create_organization(%{orgName: "end_to", id: "org-id"})
-      IO.inspect(org, label: "Organization")
 
       resp =
         HTTPoison.post!("http://localhost:4000/api/v1/organization", Jason.encode!(org), [
@@ -162,6 +162,75 @@ defmodule E2ETest do
       actual = query("select distinct dataset_id, app from #{table}")
 
       Enum.each(expected, fn app -> assert [ds.id, app] in actual end)
+    end
+  end
+
+  describe "streaming data" do
+    setup do
+      bypass = Bypass.open()
+      user = Application.get_env(:andi, :ldap_user)
+      pass = Application.get_env(:andi, :ldap_pass)
+      Paddle.authenticate(user, pass)
+      Paddle.add([ou: "integration"], objectClass: ["top", "organizationalunit"], ou: "integration")
+
+      Bypass.stub(bypass, "GET", "/path/to/the/data.csv", fn conn ->
+        Plug.Conn.resp(conn, 200, "true,foobar,10")
+      end)
+
+      cam_dataset =
+        %{
+          technical: %{
+            schema: [
+              %{name: "one", type: "boolean"},
+              %{name: "two", type: "string"},
+              %{name: "three", type: "integer"}
+            ],
+            sourceType: "stream",
+            sourceFormat: "text/csv",
+            cadence: "*/1 * * * * * *",
+            private: false
+          }
+        }
+        |> put_in(
+          [:technical, :sourceUrl],
+          "http://localhost:#{bypass.port()}/path/to/the/data.csv"
+        )
+        |> TDG.create_dataset()
+
+      cam_dataset = put_in(cam_dataset, [:technical, :systemName], "#{cam_dataset.technical.orgName}__#{cam_dataset.technical.dataName}")
+
+      # cam_dataset = TDG.create_dataset(cam_dataset)
+
+      [cam_dataset: cam_dataset]
+      # resp =
+      # HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(cam_dataset), [
+      #   {"Content-Type", "application/json"}
+      # ])
+      # :ok
+    end
+
+    test "is available through socket connection", %{cam_dataset: ds} do
+      #Alternative to do this in two steps
+      # {:ok, socket} = connect(UserSocket, %{"some" => "params"}, %{})
+      # {:ok, _, socket} = subscribe_and_join(socket, "room:lobby", %{"id" => 3})
+      HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
+            {"Content-Type", "application/json"}
+          ])
+
+      eventually(fn ->
+        assert "transformed-#{ds.id}" in DiscoveryStreams.TopicSubscriber.list_subscribed_topics()
+      end)
+
+      {:ok, _, socket} =
+        socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
+        |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{ds.technical.systemName}", %{})
+
+      assert_push "update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000
+
+
+    # {:ok, socket} = connect(UserSocket, %{}, %{})
+    # 2 make sure it does something      {:ok, _, socket} = subscribe_and_join(socket(), :"DiscoveryStreamsWeb.StreamingChannel", "streaming:streaming_org__streaming_data")
+    # 3 PROFIT!
     end
   end
 

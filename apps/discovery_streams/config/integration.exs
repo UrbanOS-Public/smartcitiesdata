@@ -22,13 +22,14 @@ config :kaffe,
 config :discovery_streams, topic_subscriber_interval: 1_000
 
 config :discovery_streams, :brook,
+  instance: :discovery_streams,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [
       endpoints: endpoints,
       topic: "event-stream",
       group: "discovery_streams-events",
-      config: [
+      consumer_config: [
         begin_offset: :earliest
       ]
     ]
@@ -41,3 +42,5 @@ config :discovery_streams, :brook,
       namespace: "discovery_streams:view"
     ]
   ]
+
+config :phoenix, serve_endpoints: true

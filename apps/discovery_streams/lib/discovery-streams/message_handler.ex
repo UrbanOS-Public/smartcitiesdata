@@ -66,7 +66,7 @@ defmodule DiscoveryStreams.MessageHandler do
   end
 
   defp broadcast(%{topic: "transformed-" <> channel, value: data}) do
-    case Brook.get(:streaming_datasets_by_id, channel) do
+    case Brook.get(:discovery_streams, :streaming_datasets_by_id, channel) do
       {:ok, system_name} ->
         DiscoveryStreamsWeb.Endpoint.broadcast!("streaming:#{system_name}", "update", data)
 

@@ -36,7 +36,7 @@ defmodule DiscoveryStreams.TopicSubscriber do
   end
 
   defp topics_we_should_be_consuming() do
-    case Brook.get_all_values(:streaming_datasets_by_system_name) do
+    case Brook.get_all_values(:discovery_streams, :streaming_datasets_by_system_name) do
       {:ok, items} ->
         Enum.map(items, &DiscoveryStreams.TopicHelper.topic_name(&1))
 
