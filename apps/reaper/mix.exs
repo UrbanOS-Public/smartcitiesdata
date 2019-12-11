@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.11.0",
+      version: "0.12.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -65,6 +65,7 @@ defmodule Reaper.MixProject do
       {:retry, "~> 0.13"},
       {:sftp_ex, "~> 0.2"},
       {:smart_city, "~> 3.5", override: true},
+      {:saxy, "~> 0.10"},
       {:sweet_xml, "~> 0.6"},
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},

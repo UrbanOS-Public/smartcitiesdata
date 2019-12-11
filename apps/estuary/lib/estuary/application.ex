@@ -2,13 +2,9 @@ defmodule Estuary.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
-
   use Application
 
   alias Estuary.EventTable
-
-  @elsa_endpoint Application.get_env(:estuary, :elsa_endpoint)
-  @event_stream_topic Application.get_env(:estuary, :event_stream_topic)
 
   @spec start(any, any) :: {:error, any} | {:ok, pid}
   def start(_type, _args) do
@@ -25,12 +21,12 @@ defmodule Estuary.Application do
 
   defp elsa_options do
     [
-      endpoints: @elsa_endpoint,
+      endpoints: elsa_endpoint(),
       connection: :estuary_elsa,
-      producer: [topic: @event_stream_topic],
+      producer: [topic: event_stream_topic()],
       group_consumer: [
         group: "estuary-consumer-group",
-        topics: [@event_stream_topic],
+        topics: [event_stream_topic()],
         handler: Estuary.MessageHandler,
         config: [
           begin_offset: :earliest,
@@ -41,9 +37,26 @@ defmodule Estuary.Application do
   end
 
   defp validate_topic_exists do
-    case Elsa.Topic.exists?(@elsa_endpoint, @event_stream_topic) do
-      true -> :ok
-      false -> Elsa.Topic.create(@elsa_endpoint, @event_stream_topic)
+    case Elsa.Topic.exists?(
+           elsa_endpoint(),
+           event_stream_topic()
+         ) do
+      true ->
+        :ok
+
+      false ->
+        Elsa.Topic.create(
+          elsa_endpoint(),
+          event_stream_topic()
+        )
     end
+  end
+
+  defp elsa_endpoint do
+    Application.get_env(:estuary, :elsa_endpoint)
+  end
+
+  defp event_stream_topic do
+    Application.get_env(:estuary, :event_stream_topic)
   end
 end
