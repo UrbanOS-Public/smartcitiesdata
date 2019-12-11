@@ -5,25 +5,26 @@ defmodule AndiWeb.EditLiveView do
   import AndiWeb.ErrorHelpers
 
   def render(assigns) do
-    # phx_validation or phx_submit
     ~L"""
     <div class="edit-page">
       <%= f = Form.form_for @changeset, "#", [phx_submit: :dataset_submit, phx_change: :validate] %>
 
         <div class="metadata-form__id">
-          <%= Form.label(f, :id, "ID", class: "label label--required") %>
-          <%= Form.text_input(f, :other, [class: "input"]) %>
-          <%= error_tag(f, :other) %>
+          <%= Form.label(f, :dataset_id, "ID", class: "label label--required") %>
+          <%= Form.text_input(f, :dataset_id, [class: "input"]) %>
+          <%= error_tag(f, :dataset_id) %>
         </div>
 
         <%= Form.inputs_for f, :technical, fn fp -> %>
-          <%= Form.label(fp, :title, "Source Format", class: "label label--required") %>
+          <%= Form.label(fp, :sourceFormat, "Source Format", class: "label label--required") %>
           <%= Form.text_input(fp, :sourceFormat, [class: "input"]) %>
+          <%= error_tag(fp, :sourceFormat) %>
         <% end %>
 
         <%= Form.inputs_for f, :business, fn fp -> %>
-          <%= Form.label(fp, :title, "Dataset Title", class: "label label--required") %>
+          <%= Form.label(fp, :dataTitle, "Dataset Title", class: "label label--required") %>
           <%= Form.text_input(fp, :dataTitle, [class: "input"]) %>
+          <%= error_tag(fp, :dataTitle) %>
         <% end %>
         <div>
           <%= Link.link("Cancel", to: "/", class: "btn btn--cancel metadata-form__cancel-btn") %>
@@ -38,7 +39,7 @@ defmodule AndiWeb.EditLiveView do
   def mount(%{dataset: %{id: id, technical: technical, business: business}}, socket) do
     change =
       %{
-        other: id,
+        dataset_id: id,
         technical: %{sourceFormat: technical.sourceFormat},
         business: %{dataTitle: business.dataTitle}
       }
