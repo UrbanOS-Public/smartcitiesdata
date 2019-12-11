@@ -54,6 +54,16 @@ defmodule AndiWeb.EditLiveViewTest do
       assert subject == ""
     end
 
+    # test "should not add additional commas", %{conn: conn} do
+    #   dataset = TDG.create_dataset(%{business: %{keywords: nil}})
+    #   DatasetCache.put(dataset)
+
+    #   assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
+    #   [subject] = Floki.find(html, "#dataset_schema_business_keywords") |> Floki.attribute("value")
+
+    #   assert false
+    # end
+
     test "displays all other fields", %{conn: conn} do
       dataset = TDG.create_dataset(%{business: %{description: "A description with no special characters"}})
       DatasetCache.put(dataset)
@@ -77,15 +87,81 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   describe "edit metadata" do
-    test "Error should display if ID is empty", %{conn: conn} do
-      dataset = TDG.create_dataset(%{business: %{dataTitle: ""}})
-      DatasetCache.put(dataset)
-
-      assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-
-      assert get_value(html, "#dataset_schema_business_dataTitle") == dataset.business.dataTitle
-      assert get_text(html, ".error-msg") == "Dataset Title is required."
+    test "accessibility level must be public or private" do
+      # assert_error_message(TDG.create_dataset(%{technical: %{private: ""}}), "Access Level is required.")
     end
+
+    test "All required fields display proper error message", %{conn: conn} do
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{dataTitle: ""}}),
+        :dataTitle,
+        "Dataset Title is required."
+      )
+
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{description: ""}}),
+        :description,
+        "Description is required."
+      )
+
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{contactName: ""}}),
+        :contactName,
+        "Maintainer Name is required."
+      )
+
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{contactEmail: ""}}),
+        :contactEmail,
+        "Maintainer Email is required."
+      )
+
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{issuedDate: ""}}),
+        :issuedDate,
+        "Release Date is required."
+      )
+
+      assert_error_message(conn, TDG.create_dataset(%{business: %{license: ""}}), :license, "License is required.")
+
+      dataset = TDG.create_dataset(%{})
+      new_tech = Map.put(dataset.technical, :sourceFormat, "")
+      dataset = Map.put(dataset, :technical, new_tech)
+
+      assert_error_message(
+        conn,
+        dataset,
+        :sourceFormat,
+        "Format is required."
+      )
+
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{publishFrequency: ""}}),
+        :publishFrequency,
+        "Publish Frequency is required."
+      )
+
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{orgTitle: ""}}),
+        :orgTitle,
+        "Organization is required."
+      )
+    end
+  end
+
+  defp assert_error_message(conn, dataset, field, error_message) do
+    DatasetCache.put(dataset)
+
+    assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
+
+    assert get_text(html, "##{field}-error-msg") == error_message
   end
 
   defp get_value(html, id) do

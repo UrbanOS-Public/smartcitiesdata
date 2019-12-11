@@ -19,48 +19,54 @@ defmodule AndiWeb.EditLiveView do
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :description, "Description", class: "label label--required") %>
             <%= Form.textarea(fp, :description, class: "input textarea") %>
+            <%= error_tag(fp, :description) %>
           <% end %>
         </div>
         <div class="metadata-form__format">
           <%= Form.inputs_for f, :technical, fn fp -> %>
             <%= Form.label(fp, :format, "Format", class: "label label--required") %>
             <%= Form.text_input(fp, :sourceFormat, class: "input") %>
+            <%= error_tag(fp, :sourceFormat) %>
           <% end %>
         </div>
         <div class="metadata-form__maintainer-name">
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :contactName, "Maintainer Name", class: "label label--required") %>
             <%= Form.text_input(fp, :contactName, class: "input") %>
+            <%= error_tag(fp, :contactName) %>
           <% end %>
         </div>
         <div class="metadata-form__maintainer-email">
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :contactEmail, "Maintainer Email", class: "label label--required") %>
             <%= Form.text_input(fp, :contactEmail, class: "input") %>
+            <%= error_tag(fp, :contactEmail) %>
           <% end %>
         </div>
         <div class="metadata-form__release-date">
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :issuedDate, "Release Date", class: "label label--required") %>
             <%= Form.text_input(fp, :issuedDate, class: "input") %>
+            <%= error_tag(fp, :issuedDate) %>
           <% end %>
         </div>
         <div class="metadata-form__license">
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :license, "License", class: "label label--required") %>
             <%= Form.text_input(fp, :license, class: "input") %>
+            <%= error_tag(fp, :license) %>
           <% end %>
         </div>
         <div class="metadata-form__update-frequency">
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :publishFrequency, "Update Frequency", class: "label label--required") %>
             <%= Form.text_input(fp, :publishFrequency, class: "input") %>
+            <%= error_tag(fp, :publishFrequency) %>
           <% end %>
         </div>
         <div class="metadata-form__keywords">
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :keywords, "Keywords", class: "label") %>
-
             <%= Form.text_input(fp, :keywords, value: get_keywords(Form.input_value(fp, :keywords)), class: "input") %>
             <div class="label label--inline">Separated by comma</div>
           <% end %>
@@ -87,12 +93,14 @@ defmodule AndiWeb.EditLiveView do
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :orgTitle, "Organization", class: "label label--required") %>
             <%= Form.text_input(fp, :orgTitle, class: "input") %>
+            <%= error_tag(fp, :orgTitle) %>
           <% end %>
         </div>
         <div class="metadata-form__level-of-access">
           <%= Form.inputs_for f, :technical, fn fp -> %>
             <%= Form.label(fp, :private, "Level of Access", class: "label label--required") %>
             <%= Form.text_input(fp, :private, value: get_private(Form.input_value(fp, :private)), class: "input") %>
+            <%= error_tag(fp, :private) %>
           <% end %>
         </div>
         <div class="metadata-form__language">
@@ -122,10 +130,7 @@ defmodule AndiWeb.EditLiveView do
       |> Map.from_struct()
       |> Map.put(:business, new_business)
       |> Map.put(:technical, new_technical)
-      # |> IO.inspect(label: "before change")
       |> Andi.DatasetSchema.changeset()
-
-    # IO.inspect(change, label: "mount change")
 
     {:ok, assign(socket, changeset: change)}
   end

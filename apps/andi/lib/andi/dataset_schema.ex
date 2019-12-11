@@ -30,8 +30,7 @@ defmodule Andi.DatasetTechnicalSchema do
   def changeset(tech, params \\ %{}) do
     tech
     |> cast(params, [:sourceFormat, :private])
-
-    # |> validate_required([:sourceFormat], message: "This field is required.")
+    |> validate_required([:sourceFormat], message: "Format is required.")
   end
 end
 
@@ -75,5 +74,12 @@ defmodule Andi.DatasetBusinessSchema do
       :homepage
     ])
     |> validate_required([:dataTitle], message: "Dataset Title is required.")
+    |> validate_required([:description], message: "Description is required.")
+    |> validate_required([:contactName], message: "Maintainer Name is required.")
+    |> validate_required([:contactEmail], message: "Maintainer Email is required.")
+    |> validate_required([:issuedDate], message: "Release Date is required.")
+    |> validate_required([:license], message: "License is required.")
+    |> validate_required([:publishFrequency], message: "Publish Frequency is required.")
+    |> validate_required([:orgTitle], message: "Organization is required.")
   end
 end
