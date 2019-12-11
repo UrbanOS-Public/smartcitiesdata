@@ -202,7 +202,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
              } = body
     end
 
-    test "GET /visualization gets all visualizations for user with valid id and bearer token", %{subject_id: subject_id, token: token} do
+    test "GET /visualization gets all visualizations for user with valid bearer token", %{subject_id: subject_id, token: token} do
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
 
       allow(Visualizations.get_visualizations_by_owner_id(@user_id),
@@ -347,7 +347,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
              } = body
     end
 
-    test "GET /visualization gets all visualizations for user with valid id and bearer token", %{subject_id: subject_id, token: token} do
+    test "GET /visualization gets all visualizations for user with valid bearer token", %{subject_id: subject_id, token: token} do
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
 
       allow(Visualizations.get_visualizations_by_owner_id(@user_id),
