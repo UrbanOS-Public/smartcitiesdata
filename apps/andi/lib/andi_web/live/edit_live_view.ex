@@ -2,89 +2,146 @@ defmodule AndiWeb.EditLiveView do
   use Phoenix.LiveView
   alias Phoenix.HTML.Form
   alias Phoenix.HTML.Link
+  import AndiWeb.ErrorHelpers
 
   def render(assigns) do
     ~L"""
     <div class="edit-page">
-      <%= Form.form_for :metadata, "#", [class: "metadata-form"], fn f -> %>
+      <%= f = Form.form_for @changeset, "#", [phx_change: :validate, class: "metadata-form"] %>
         <div class="metadata-form__title">
-          <%= Form.label(f, :title, "Title of Dataset", class: "label label--required") %>
-          <%= Form.text_input(f, :title, value: @dataset.business.dataTitle, class: "input") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :title, "Title of Dataset", class: "label label--required") %>
+            <%= Form.text_input(fp, :dataTitle, class: "input") %>
+            <%= error_tag(fp, :dataTitle) %>
+          <% end %>
         </div>
         <div class="metadata-form__description">
-          <%= Form.label(f, :description, "Description", class: "label label--required") %>
-          <%= Form.textarea(f, :description, value: @dataset.business.description, class: "input textarea") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :description, "Description", class: "label label--required") %>
+            <%= Form.textarea(fp, :description, class: "input textarea") %>
+          <% end %>
         </div>
         <div class="metadata-form__format">
-          <%= Form.label(f, :format, "Format", class: "label label--required") %>
-          <%= Form.text_input(f, :format, value: @dataset.technical.sourceFormat, class: "input") %>
+          <%= Form.inputs_for f, :technical, fn fp -> %>
+            <%= Form.label(fp, :format, "Format", class: "label label--required") %>
+            <%= Form.text_input(fp, :sourceFormat, class: "input") %>
+          <% end %>
         </div>
         <div class="metadata-form__maintainer-name">
-          <%= Form.label(f, :contactName, "Maintainer Name", class: "label label--required") %>
-          <%= Form.text_input(f, :contactName, value: @dataset.business.contactName, class: "input") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :contactName, "Maintainer Name", class: "label label--required") %>
+            <%= Form.text_input(fp, :contactName, class: "input") %>
+          <% end %>
         </div>
         <div class="metadata-form__maintainer-email">
-          <%= Form.label(f, :contactEmail, "Maintainer Email", class: "label label--required") %>
-          <%= Form.text_input(f, :contactEmail, value: @dataset.business.contactEmail, class: "input") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :contactEmail, "Maintainer Email", class: "label label--required") %>
+            <%= Form.text_input(fp, :contactEmail, class: "input") %>
+          <% end %>
         </div>
         <div class="metadata-form__release-date">
-          <%= Form.label(f, :issuedDate, "Release Date", class: "label label--required") %>
-          <%= Form.text_input(f, :issuedDate, value: @dataset.business.issuedDate, class: "input") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :issuedDate, "Release Date", class: "label label--required") %>
+            <%= Form.text_input(fp, :issuedDate, class: "input") %>
+          <% end %>
         </div>
         <div class="metadata-form__license">
-          <%= Form.label(f, :license, "License", class: "label label--required") %>
-          <%= Form.text_input(f, :license, value: @dataset.business.license, class: "input") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :license, "License", class: "label label--required") %>
+            <%= Form.text_input(fp, :license, class: "input") %>
+          <% end %>
         </div>
         <div class="metadata-form__update-frequency">
-          <%= Form.label(f, :publishFrequency, "Update Frequency", class: "label label--required") %>
-          <%= Form.text_input(f, :publishFrequency, value: @dataset.business.publishFrequency, class: "input") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :publishFrequency, "Update Frequency", class: "label label--required") %>
+            <%= Form.text_input(fp, :publishFrequency, class: "input") %>
+          <% end %>
         </div>
         <div class="metadata-form__keywords">
-          <%= Form.label(f, :keywords, "Keywords", class: "label") %>
-          <%= Form.text_input(f, :keywords, value: get_keywords(@dataset), class: "input") %>
-          <div class="label label--inline">Separated by comma</div>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :keywords, "Keywords", class: "label") %>
+
+            <%= Form.text_input(fp, :keywords, value: get_keywords(Form.input_value(fp, :keywords)), class: "input") %>
+            <div class="label label--inline">Separated by comma</div>
+          <% end %>
         </div>
         <div class="metadata-form__last-updated">
-          <%= Form.label(f, :modifiedDate, "Last Updated", class: "label") %>
-          <%= Form.text_input(f, :modifiedDate, value: @dataset.business.modifiedDate, class: "input") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :modifiedDate, "Last Updated", class: "label") %>
+            <%= Form.text_input(fp, :modifiedDate, class: "input") %>
+          <% end %>
         </div>
         <div class="metadata-form__spatial">
-          <%= Form.label(f, :spatial, "Spatial Boundaries", class: "label") %>
-          <%= Form.text_input(f, :spatial, value: @dataset.business.spatial, class: "input") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :spatial, "Spatial Boundaries", class: "label") %>
+            <%= Form.text_input(fp, :spatial, class: "input") %>
+          <% end %>
         </div>
         <div class="metadata-form__temporal">
-          <%= Form.label(f, :temporal, "Temporal Boundaries", class: "label") %>
-          <%= Form.text_input(f, :temporal, value: @dataset.business.temporal, class: "input") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :temporal, "Temporal Boundaries", class: "label") %>
+            <%= Form.text_input(fp, :temporal, class: "input") %>
+          <% end %>
         </div>
         <div class="metadata-form__organization">
-          <%= Form.label(f, :orgTitle, "Organization", class: "label label--required") %>
-          <%= Form.text_input(f, :orgTitle, value: @dataset.business.orgTitle, class: "input") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :orgTitle, "Organization", class: "label label--required") %>
+            <%= Form.text_input(fp, :orgTitle, class: "input") %>
+          <% end %>
         </div>
         <div class="metadata-form__level-of-access">
-          <%= Form.label(f, :private, "Level of Access", class: "label label--required") %>
-          <%= Form.text_input(f, :private, value: get_private(@dataset), class: "input") %>
+          <%= Form.inputs_for f, :technical, fn fp -> %>
+            <%= Form.label(fp, :private, "Level of Access", class: "label label--required") %>
+            <%= Form.text_input(fp, :private, value: get_private(Form.input_value(fp, :private)), class: "input") %>
+          <% end %>
         </div>
         <div class="metadata-form__language">
-          <%= Form.label(f, :language, "Language", class: "label") %>
-          <%= Form.text_input(f, :language, value: @dataset.business.language, class: "input") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :language, "Language", class: "label") %>
+            <%= Form.text_input(fp, :language, class: "input") %>
+          <% end %>
         </div>
         <div class="metadata-form__homepage">
-          <%= Form.label(f, :homepage, "Data Homepage URL", class: "label") %>
-          <%= Form.text_input(f, :homepage, value: @dataset.business.homepage, class: "input") %>
+          <%= Form.inputs_for f, :business, fn fp -> %>
+            <%= Form.label(fp, :homepage, "Data Homepage URL", class: "label") %>
+            <%= Form.text_input(fp, :homepage, class: "input") %>
+          <% end %>
         </div>
-      <% end %>
+      </div>
       <%= Link.link("Cancel", to: "/", class: "btn btn--cancel metadata-form__cancel-btn") %>
     </div>
     """
   end
 
   def mount(%{dataset: dataset}, socket) do
-    {:ok, assign(socket, dataset: dataset)}
+    new_business = dataset.business |> Map.from_struct()
+    new_technical = dataset.technical |> Map.from_struct()
+
+    change =
+      dataset
+      |> Map.from_struct()
+      |> Map.put(:business, new_business)
+      |> Map.put(:technical, new_technical)
+      # |> IO.inspect(label: "before change")
+      |> Andi.DatasetSchema.changeset()
+
+    # IO.inspect(change, label: "mount change")
+
+    {:ok, assign(socket, changeset: change)}
   end
 
-  defp get_private(%{technical: %{private: true}}), do: "Private"
+  def handle_event("validate", %{"dataset_schema" => dataset_schema}, socket) do
+    IO.inspect(dataset_schema, label: "schema")
+    keyword_list = dataset_schema["business"]["keywords"] |> String.split()
+    dataset_schema = put_in(dataset_schema, ["business", "keywords"], keyword_list)
+
+    change = Andi.DatasetSchema.changeset(dataset_schema)
+    {:noreply, assign(socket, changeset: change)}
+  end
+
+  defp get_private(true), do: "Private"
   defp get_private(_), do: "Public"
 
-  defp get_keywords(%{business: %{keywords: nil}}), do: ""
-  defp get_keywords(%{business: %{keywords: keywords}}), do: Enum.intersperse(keywords, ", ")
+  defp get_keywords(nil), do: ""
+  defp get_keywords(keywords), do: Enum.intersperse(keywords, ", ")
 end
