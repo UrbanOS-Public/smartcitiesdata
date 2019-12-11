@@ -36,7 +36,7 @@ defmodule Estuary.EventTableTest do
       "data" => "some data",
       "type" => "some type"
     }
-    |> Estuary.EventTable.insert_event_to_table()
+    |> EventTable.insert_event_to_table()
 
     actual_value_after_insert =
       "'Steve'"

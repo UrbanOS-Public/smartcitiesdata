@@ -89,31 +89,25 @@ defmodule Estuary.EstuaryTest do
     EventTableHelper.delete_table_data()
   end
 
-  test "should send event to the dlq if it is not a properly formatted event" do
-    produce_event(@event_stream_topic, {"key", "value"})
+  test "should send event to the dlq if it is not a properly formatted event for Jason decoding" do
+    produce_event(@event_stream_topic, {"some_improper_event_key", "some_improper_event_value"})
+
+    expected_value = [
+      "key: \\\"some_improper_event_key\\\"",
+      "value: \\\"some_improper_event_value\\\""
+    ]
 
     eventually(fn ->
-      {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "dead-letters")
-
-      if length(events) > 0 do
-        Enum.any?(events, fn event -> event.value == "{\"key\": \"value\"}" end)
-      else
-        assert false
-      end
+      assert event_value(expected_value)
     end)
   end
 
   test "should send event to the dlq if it is properly formatted, but doesn't have the right keys" do
-    produce_event(@event_stream_topic, ~s({"foo": "bar"}))
+    produce_event(@event_stream_topic, ~s({"some_bad_key": "some_bad_value"}))
+    expected_value = ["{\\\\\\\"some_bad_key\\\\\\\": \\\\\\\"some_bad_value\\\\\\\"}"]
 
     eventually(fn ->
-      {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "dead-letters")
-
-      if length(events) > 0 do
-        Enum.any?(events, fn event -> event.value == "{\"foo\": \"bar\"}" end)
-      else
-        assert false
-      end
+      assert event_value(expected_value)
     end)
   end
 
@@ -131,5 +125,10 @@ defmodule Estuary.EstuaryTest do
       "forwarded":false,
       "type":"#{event_data["type"]}"
       })
+  end
+
+  defp event_value(expected_value) do
+    {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "dead-letters")
+    Enum.any?(events, fn event -> String.contains?(event.value, expected_value) end)
   end
 end
