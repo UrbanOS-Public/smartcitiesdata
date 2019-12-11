@@ -59,22 +59,36 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      get_value = fn id -> Floki.find(html, id) |> Floki.attribute("value") |> List.first() end
 
-      assert get_value.("#metadata_title") == dataset.business.dataTitle
+      assert get_value(html, "#metadata_title") == dataset.business.dataTitle
       assert Floki.find(html, "#metadata_description") |> Floki.text() =~ dataset.business.description
-      assert get_value.("#metadata_format") == dataset.technical.sourceFormat
-      assert get_value.("#metadata_contactName") == dataset.business.contactName
-      assert get_value.("#metadata_contactEmail") == dataset.business.contactEmail
-      assert get_value.("#metadata_release-date") == dataset.business.issuedDate
-      assert get_value.("#metadata_license") == dataset.business.license
-      assert get_value.("#metadata_update-frequency") == dataset.business.publishFrequency
-      assert get_value.("#metadata_modifiedDate") == dataset.business.modifiedDate
-      assert get_value.("#metadata_spatial") == dataset.business.spatial
-      assert get_value.("#metadata_temporal") == dataset.business.temporal
-      assert get_value.("#metadata_orgTitle") == dataset.business.orgTitle
-      assert get_value.("#metadata_language") == dataset.business.language
-      assert get_value.("#metadata_homepage") == dataset.business.homepage
+      assert get_value(html, "#metadata_format") == dataset.technical.sourceFormat
+      assert get_value(html, "#metadata_contactName") == dataset.business.contactName
+      assert get_value(html, "#metadata_contactEmail") == dataset.business.contactEmail
+      assert get_value(html, "#metadata_release-date") == dataset.business.issuedDate
+      assert get_value(html, "#metadata_license") == dataset.business.license
+      assert get_value(html, "#metadata_update-frequency") == dataset.business.publishFrequency
+      assert get_value(html, "#metadata_modifiedDate") == dataset.business.modifiedDate
+      assert get_value(html, "#metadata_spatial") == dataset.business.spatial
+      assert get_value(html, "#metadata_temporal") == dataset.business.temporal
+      assert get_value(html, "#metadata_orgTitle") == dataset.business.orgTitle
+      assert get_value(html, "#metadata_language") == dataset.business.language
+      assert get_value(html, "#metadata_homepage") == dataset.business.homepage
     end
+  end
+
+  describe "edit medidata" do
+    test "Error should display if ID is empty", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{dataTitle: ""}})
+      DatasetCache.put(dataset)
+
+      assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
+
+      assert get_value(html, "#metadata_title") == ""
+    end
+  end
+
+  defp get_value(html, id) do
+    Floki.find(html, id) |> Floki.attribute("value") |> List.first()
   end
 end
