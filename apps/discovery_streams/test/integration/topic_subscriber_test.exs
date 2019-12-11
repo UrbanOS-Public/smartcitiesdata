@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.Event, only: [data_ingest_start: 0]
 
-  @instance DiscoveryStreamsWeb.instance_name()
+  @instance :discovery_streams
 
   test "subscribes to any non internal use topic" do
     private_dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: true})

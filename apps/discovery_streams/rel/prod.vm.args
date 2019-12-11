@@ -1,5 +1,0 @@
--name <%= release_name %>@${ERLANG_NAME}
-
--setcookie <%= release.profile.cookie %>
-
--smp auto

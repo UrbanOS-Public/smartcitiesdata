@@ -3,7 +3,6 @@ defmodule E2ETest do
   use Divo
   use Placebo
   use Phoenix.ChannelTest
-  require IEx
 
   @moduletag :e2e
   @moduletag capture_log: false
