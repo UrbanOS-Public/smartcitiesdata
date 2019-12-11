@@ -7,25 +7,27 @@ defmodule Estuary.MessageHandler do
   require Logger
 
   def handle_messages(messages) do
-    Enum.each(messages, fn message ->
-      with {:ok, body} <- message.value |> Jason.decode(),
-           %{"author" => _author, "create_ts" => _create_ts, "data" => _data, "type" => _type} <-
-             body do
-        EventTable.insert_event_to_table(body)
-      else
-        {:error, %Jason.DecodeError{}} ->
-          Yeet.process_dead_letter("", message, "estuary",
-            reason: "event's JSON could not be decoded"
-          )
+    Enum.each(messages, fn message -> process_message(message) end)
 
-        bad_keys ->
-          Yeet.process_dead_letter("", message, "estuary",
-            reason: "event #{inspect(bad_keys)} was decoded but did not have the right keys."
-          )
-      end
-    end)
-
-    Logger.debug("Messages #{inspect(messages)} were sent to the eventstream")
+    Logger.debug("Messages #{inspect(messages)} were sent to the event stream")
     :ack
+  end
+
+  defp process_message(message) do
+    case Jason.decode(message.value) do
+      {:ok, %{"author" => _, "create_ts" => _, "data" => _, "type" => _} = event} ->
+        EventTable.insert_event_to_table(event)
+
+      {:ok, term_without_keys} ->
+        Yeet.process_dead_letter("", message, "estuary",
+          reason:
+            "event #{inspect(term_without_keys)} was decoded but did not have the right keys"
+        )
+
+      {:error, %Jason.DecodeError{}} ->
+        Yeet.process_dead_letter("", message, "estuary",
+          reason: "event's JSON could not be decoded"
+        )
+    end
   end
 end
