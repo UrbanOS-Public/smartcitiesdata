@@ -54,15 +54,59 @@ defmodule AndiWeb.EditLiveViewTest do
       assert subject == ""
     end
 
-    # test "should not add additional commas", %{conn: conn} do
-    #   dataset = TDG.create_dataset(%{business: %{keywords: nil}})
-    #   DatasetCache.put(dataset)
+    test "should not add additional commas", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      DatasetCache.put(dataset)
 
-    #   assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-    #   [subject] = Floki.find(html, "#dataset_schema_business_keywords") |> Floki.attribute("value")
+      map_tech = dataset.technical |> Map.from_struct() |> Map.delete(:schema)
 
-    #   assert false
-    # end
+      map_bus =
+        dataset.business
+        |> Map.from_struct()
+        |> Map.put("keywords", dataset.business.keywords |> Enum.join(", "))
+
+      dataset_map =
+        dataset
+        |> Map.from_struct()
+        |> Map.put(:business, map_bus)
+        |> Map.put(:technical, map_tech)
+
+      expected = Enum.join(dataset.business.keywords, ", ")
+
+      assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
+      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+
+      subject = get_value(html, "#dataset_schema_business_keywords")
+
+      assert expected == subject
+    end
+
+    test "should trim spaces", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      DatasetCache.put(dataset)
+
+      map_tech = dataset.technical |> Map.from_struct() |> Map.delete(:schema)
+
+      map_bus =
+        dataset.business
+        |> Map.from_struct()
+        |> Map.put("keywords", "a , good ,  keyword   , is .... hard , to find")
+
+      dataset_map =
+        dataset
+        |> Map.from_struct()
+        |> Map.put(:business, map_bus)
+        |> Map.put(:technical, map_tech)
+
+      expected = Enum.join(dataset.business.keywords, ", ")
+
+      assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
+      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+
+      subject = get_value(html, "#dataset_schema_business_keywords")
+
+      assert "a, good, keyword, is .... hard, to find" == subject
+    end
 
     test "displays all other fields", %{conn: conn} do
       dataset = TDG.create_dataset(%{business: %{description: "A description with no special characters"}})

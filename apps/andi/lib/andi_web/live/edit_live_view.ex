@@ -136,8 +136,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("validate", %{"dataset_schema" => dataset_schema}, socket) do
-    IO.inspect(dataset_schema, label: "schema")
-    keyword_list = dataset_schema["business"]["keywords"] |> String.split()
+    keyword_list = dataset_schema["business"]["keywords"] |> String.split(", ") |> Enum.map(&String.trim/1)
     dataset_schema = put_in(dataset_schema, ["business", "keywords"], keyword_list)
 
     change = Andi.DatasetSchema.changeset(dataset_schema)
@@ -148,5 +147,5 @@ defmodule AndiWeb.EditLiveView do
   defp get_private(_), do: "Public"
 
   defp get_keywords(nil), do: ""
-  defp get_keywords(keywords), do: Enum.intersperse(keywords, ", ")
+  defp get_keywords(keywords), do: Enum.join(keywords, ", ")
 end
