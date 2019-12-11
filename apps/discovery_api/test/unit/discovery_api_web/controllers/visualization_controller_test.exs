@@ -125,7 +125,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
              } = body
     end
 
-    test "GET /visualization returns OK for valid bearer token and id", %{subject_id: subject_id, token: token} do
+    test "GET /visualization/id returns OK for valid bearer token and id", %{subject_id: subject_id, token: token} do
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
 
       allow(Visualizations.get_visualization_by_id(@id),
@@ -144,7 +144,10 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
              } = body
     end
 
-    test "GET /visualization returns NOT FOUND when visualization cannot be executed by the user", %{subject_id: subject_id, token: token} do
+    test "GET /visualization/id returns NOT FOUND when visualization cannot be executed by the user", %{
+      subject_id: subject_id,
+      token: token
+    } do
       user = %User{id: @user_id}
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, user})
       private_system_name = "private__dataset"
@@ -169,7 +172,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       assert %{"message" => "Not Found"} == body
     end
 
-    test "GET /visualization returns NOT FOUND when visualization cannot be fetched", %{subject_id: subject_id, token: token} do
+    test "GET /visualization/id returns NOT FOUND when visualization cannot be fetched", %{subject_id: subject_id, token: token} do
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
       allow(Visualizations.get_visualization_by_id(@id), return: {:error, "no such visualization"})
 
@@ -178,7 +181,10 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       assert %{"message" => "Not Found"} == body
     end
 
-    test "GET /visualization returns visualization when user is owner regardless of query contents", %{subject_id: subject_id, token: token} do
+    test "GET /visualization/id returns visualization when user is owner regardless of query contents", %{
+      subject_id: subject_id,
+      token: token
+    } do
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
       query = "select * from garbage"
 
@@ -194,6 +200,34 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
                "id" => @id,
                "chart" => @decoded_chart
              } = body
+    end
+
+    test "GET /visualization gets all visualizations for user with valid id and bearer token", %{subject_id: subject_id, token: token} do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+
+      allow(Visualizations.get_visualizations_by_owner_id(@user_id),
+        return: [
+          %Visualization{public_id: "1", query: "blah", title: "blah blah", owner_id: @user_id, chart: "{}"},
+          %Visualization{public_id: "2", query: "blah", title: "blah blah", owner_id: @user_id, chart: "{}"}
+        ]
+      )
+
+      body =
+        build_conn()
+        |> put_req_header("authorization", "Bearer #{token}")
+        |> put_req_header("content-type", "application/json")
+        |> get("/api/v1/visualization")
+        |> response(200)
+        |> Jason.decode!()
+
+      assert [%{"id" => "1"}, %{"id" => "2"}] = body
+    end
+
+    test "GET /visualization returns UNAUTHENTICATED with no user signed in" do
+      build_conn()
+      |> put_req_header("content-type", "application/json")
+      |> get("/api/v1/visualization")
+      |> response(401)
     end
   end
 
@@ -255,7 +289,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
              } = body
     end
 
-    test "GET /visualization returns OK for valid bearer token and id", %{subject_id: subject_id, token: token} do
+    test "GET /visualization/id returns OK for valid bearer token and id", %{subject_id: subject_id, token: token} do
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
 
       allow(Visualizations.get_visualization_by_id(@id),
@@ -274,7 +308,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
              } = body
     end
 
-    test "GET /visualization returns OK but empty chart if it is not decodable", %{subject_id: subject_id, token: token} do
+    test "GET /visualization/id returns OK but empty chart if it is not decodable", %{subject_id: subject_id, token: token} do
       undecodable_chart = ~s({"data": ]]})
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
 
@@ -294,7 +328,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
              } = body
     end
 
-    test "GET /visualization returns OK but empty chart when chart is nil", %{subject_id: subject_id, token: token} do
+    test "GET /visualization/id returns OK but empty chart when chart is nil", %{subject_id: subject_id, token: token} do
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
 
       allow(Visualizations.get_visualization_by_id(@id),
@@ -311,6 +345,34 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
                "id" => @id,
                "chart" => %{}
              } = body
+    end
+
+    test "GET /visualization gets all visualizations for user with valid id and bearer token", %{subject_id: subject_id, token: token} do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+
+      allow(Visualizations.get_visualizations_by_owner_id(@user_id),
+        return: [
+          %Visualization{public_id: "1", query: "blah", title: "blah blah", owner_id: @user_id, chart: "{}"},
+          %Visualization{public_id: "2", query: "blah", title: "blah blah", owner_id: @user_id, chart: "{}"}
+        ]
+      )
+
+      body =
+        build_conn()
+        |> put_req_header("authorization", "Bearer #{token}")
+        |> put_req_header("content-type", "application/json")
+        |> get("/api/v1/visualization")
+        |> response(200)
+        |> Jason.decode!()
+
+      assert [%{"id" => "1"}, %{"id" => "2"}] = body
+    end
+
+    test "GET /visualization returns UNAUTHENTICATED with no user signed in" do
+      build_conn()
+      |> put_req_header("content-type", "application/json")
+      |> get("/api/v1/visualization")
+      |> response(401)
     end
   end
 
