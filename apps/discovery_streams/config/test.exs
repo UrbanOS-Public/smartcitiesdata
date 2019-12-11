@@ -10,7 +10,24 @@ config :kaffe,
   ]
 
 config :discovery_streams, :brook,
+  instance: :discovery_streams,
   handlers: [DiscoveryStreams.EventHandler],
+  storage: [
+    module: Brook.Storage.Ets,
+    init_arg: []
+  ],
+  driver: [
+    module: Brook.Driver.Default,
+    init_arg: []
+  ]
+
+config :discovery_streams, :brook,
+  instance: :discovery_streams,
+  driver: [
+    module: Brook.Driver.Default,
+    init_arg: []
+  ],
+  handlers: [Andi.EventHandler],
   storage: [
     module: Brook.Storage.Ets,
     init_arg: []

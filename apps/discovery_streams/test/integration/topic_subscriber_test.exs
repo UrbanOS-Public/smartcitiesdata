@@ -4,11 +4,13 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.Event, only: [data_ingest_start: 0]
 
+  @instance DiscoveryStreamsWeb.instance_name()
+
   test "subscribes to any non internal use topic" do
     private_dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: true})
-    Brook.Event.send(data_ingest_start(), :author, private_dataset)
+    Brook.Event.send(@instance, data_ingest_start(), :author, private_dataset)
     dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
-    Brook.Event.send(data_ingest_start(), :author, dataset1)
+    Brook.Event.send(@instance, data_ingest_start(), :author, dataset1)
 
     expected = ["transformed-#{dataset1.id}"]
     expected_cache = [dataset1.id]
@@ -16,7 +18,7 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
     validate_caches_exist(expected_cache)
 
     dataset2 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
-    Brook.Event.send(data_ingest_start(), :author, dataset2)
+    Brook.Event.send(@instance, data_ingest_start(), :author, dataset2)
 
     expected = ["transformed-#{dataset1.id}", "transformed-#{dataset2.id}"]
     expected_cache = [dataset1.id, dataset2.id]

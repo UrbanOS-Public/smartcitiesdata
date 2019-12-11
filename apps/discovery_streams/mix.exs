@@ -4,16 +4,18 @@ defmodule DiscoveryStreams.Mixfile do
   def project do
     [
       app: :discovery_streams,
-      version: "1.0.0-static",
+      version: "2.2.0",
+      build_path: "../../_build",
+      config_path: "../../config/config.exs",
+      deps_path: "../../deps",
+      lockfile: "../../mix.lock",
       elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
+      test_paths: test_paths(Mix.env()),
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      docs: docs(),
-      package: package(),
       aliases: aliases(),
-      test_paths: test_paths(Mix.env())
     ]
   end
 
@@ -57,7 +59,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:redix, "~> 0.10.2"},
       {:sweet_xml, "~> 0.6"},
       {:smart_city, "~> 3.0"},
-      {:smart_city_test, "~> 0.5", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:streaming_metrics, "~>2.1"},
       {:temporary_env, "~> 2.0", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev, runtime: false},
@@ -65,24 +67,6 @@ defmodule DiscoveryStreams.Mixfile do
       # poison breaks @ 4.0.1 due to encode_to_iotdata missing from 4.0
       # {:poison, "~> 4.0"},
       {:poison, "~> 3.1", override: true}
-    ]
-  end
-
-  defp docs do
-    [
-      main: "readme",
-      source_url: "https://github.com/smartcitiesdata/discovery-streams",
-      extras: [
-        "README.md"
-      ]
-    ]
-  end
-
-  defp package do
-    [
-      maintainers: ["smartcitiesdata"],
-      licenses: ["Apache 2.0"],
-      links: %{"GitHub" => "https://github.com/smartcitiesdata/discovery-streams"}
     ]
   end
 

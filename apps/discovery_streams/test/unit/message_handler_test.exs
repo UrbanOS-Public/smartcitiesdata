@@ -22,23 +22,23 @@ defmodule DiscoveryStreams.MessageHandlerTest do
     allow TopicSubscriber.list_subscribed_topics(),
       return: ["transformed-#{@dataset_1_id}", "transformed-#{@dataset_2_id}"]
 
-    allow(Brook.get(:streaming_datasets_by_id, @dataset_1_id),
+    allow(Brook.get(any(), :streaming_datasets_by_id, @dataset_1_id),
       return: {:ok, "ceav__shuttles_on_a_map"}
     )
 
-    allow(Brook.get(:streaming_datasets_by_id, @dataset_2_id),
+    allow(Brook.get(any(), :streaming_datasets_by_id, @dataset_2_id),
       return: {:ok, "central_ohio_transit_authority__cota_stream"}
     )
 
-    allow(Brook.get(:streaming_datasets_by_system_name, "ceav__shuttles_on_a_map"),
+    allow(Brook.get(any(), :streaming_datasets_by_system_name, "ceav__shuttles_on_a_map"),
       return: {:ok, @dataset_1_id}
     )
 
-    allow(Brook.get(:streaming_datasets_by_system_name, "central_ohio_transit_authority__cota_stream"),
+    allow(Brook.get(any(), :streaming_datasets_by_system_name, "central_ohio_transit_authority__cota_stream"),
       return: {:ok, @dataset_2_id}
     )
 
-    allow(Brook.get(:streaming_datasets_by_system_name, any()),
+    allow(Brook.get(any(), :streaming_datasets_by_system_name, any()),
       return: {:error, "does_not_exist"}
     )
 
@@ -49,7 +49,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
     allow MetricCollector.record_metrics(any(), any()), return: {:ok, %{}}, meck_options: [:passthrough]
 
     {:ok, _, socket} =
-      socket()
+      socket(DiscoveryStreamsWeb.UserSocket)
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, channel)
 
     MessageHandler.handle_messages([
@@ -70,7 +70,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
     allow MetricCollector.record_metrics(any(), any()), return: {:ok, %{}}, meck_options: [:passthrough]
 
     {:ok, _, socket} =
-      socket()
+      socket(DiscoveryStreamsWeb.UserSocket)
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:ceav__shuttles_on_a_map")
 
     output =
@@ -101,7 +101,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
     allow MetricCollector.record_metrics(any(), any()), return: {:ok, %{}}, meck_options: [:passthrough]
 
     {:ok, _, socket} =
-      socket()
+      socket(DiscoveryStreamsWeb.UserSocket)
       |> subscribe_and_join(
         DiscoveryStreamsWeb.StreamingChannel,
         "streaming:central_ohio_transit_authority__cota_stream"
@@ -128,7 +128,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
       meck_options: [:passthrough]
 
     {:ok, _, socket} =
-      socket()
+      socket(DiscoveryStreamsWeb.UserSocket)
       |> subscribe_and_join(
         DiscoveryStreamsWeb.StreamingChannel,
         "streaming:central_ohio_transit_authority__cota_stream"
@@ -149,7 +149,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
     allow MetricCollector.record_metrics(any(), any()), return: {:ok, %{}}, meck_options: [:passthrough]
 
     {:ok, _, socket} =
-      socket()
+      socket(DiscoveryStreamsWeb.UserSocket)
       |> subscribe_and_join(
         DiscoveryStreamsWeb.StreamingChannel,
         "streaming:central_ohio_transit_authority__cota_stream"

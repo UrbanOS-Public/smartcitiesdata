@@ -85,7 +85,7 @@ defmodule Reaper.MixProject do
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 1.2", only: [:test, :integration]},
-      {:smart_city_test, "~> 0.7", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]}
     ]
   end

@@ -19,7 +19,7 @@ defmodule DiscoveryStreams.EventHandlerTest do
           technical: %{sourceType: "stream", private: false, systemName: "fake_system_name"}
         )
 
-      event = %Brook.Event{type: data_ingest_start(), data: dataset, author: :author}
+      event = Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author)
 
       response = DiscoveryStreams.EventHandler.handle_event(event)
 
@@ -42,7 +42,7 @@ defmodule DiscoveryStreams.EventHandlerTest do
           technical: %{sourceType: "stream", private: true, systemName: "fake_system_name"}
         )
 
-      event = %Brook.Event{type: data_ingest_start(), data: dataset, author: :author}
+      event = Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author)
 
       response = DiscoveryStreams.EventHandler.handle_event(event)
 
@@ -67,7 +67,7 @@ defmodule DiscoveryStreams.EventHandlerTest do
           technical: %{sourceType: source_type, private: private, systemName: system_name}
         )
 
-      event = %Brook.Event{type: dataset_update(), data: dataset, author: :author}
+      event = Brook.Event.new(type: dataset_update(), data: dataset, author: :author)
 
       DiscoveryStreams.EventHandler.handle_event(event)
 

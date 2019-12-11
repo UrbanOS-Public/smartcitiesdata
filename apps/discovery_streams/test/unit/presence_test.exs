@@ -3,9 +3,9 @@ defmodule DiscoveryStreamsWeb.PresenceTest do
   use Prometheus.Metric
   use Placebo
 
-  import Checkov
+  # import Checkov
 
-  alias DiscoveryStreams.{CachexSupervisor, TopicSubscriber}
+  # alias DiscoveryStreams.{CachexSupervisor, TopicSubscriber}
 
   # Commented out because Presence was not working and we did not want to fix it as part of a already large card.
 
