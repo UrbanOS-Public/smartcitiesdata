@@ -17,8 +17,8 @@ defmodule XMLStream.SaxHandlerTest do
       |> test_file_path()
       |> SaxHandler.start_stream(tag_path, make_test_emitter())
 
-    assert_received {:emit, {"stationData", [], [{"stationID", [], ["1:41613"]} | _]}}
-    assert_received {:emit, {"stationData", [], [{"stationID", [], ["1:111"]} | _]}}
+    assert_received {:emit, {"stationData", [], [{"stationID", [], [characters: "1:41613"]} | _]}}
+    assert_received {:emit, {"stationData", [], [{"stationID", [], [characters: "1:111"]} | _]}}
   end
 
   test "emits row data records in 'simple form' from a file with repeated tag names" do
@@ -35,8 +35,34 @@ defmodule XMLStream.SaxHandlerTest do
     assert_received {:emit, {"row", _, _}}
   end
 
+  test "handles escaping special characters" do
+    tag_path = "response/row/row"
+
+    {:ok, _output} =
+      "repeat.xml"
+      |> test_file_path()
+      |> SaxHandler.start_stream(tag_path, make_test_emitter())
+
+    all_rows = get_all_emits() |> Enum.map(&Saxy.encode!/1)
+
+    Enum.each(all_rows, fn row ->
+      assert String.contains?(row, "&amp;")
+    end)
+
+
+  end
+
   defp make_test_emitter do
     # Returns a closure with the test process PID
     fn msg -> send(self(), {:emit, msg}) end
+  end
+
+  defp get_all_emits(msgs \\ []) do
+    receive do
+      {:emit, msg} -> get_all_emits([msg | msgs])
+    after
+      0 -> msgs
+    end
+
   end
 end
