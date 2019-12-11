@@ -8,6 +8,8 @@ defmodule Estuary.EventTable do
     (author varchar, create_ts bigint, data varchar, type varchar)"
     |> Prestige.execute()
     |> Prestige.prefetch()
+  rescue
+    error -> {:error, error}
   end
 
   def insert_event_to_table(event_value) do
@@ -17,7 +19,9 @@ defmodule Estuary.EventTable do
       ('#{event_value["author"]}', #{event_value["create_ts"]},
       '#{event_value["data"]}', '#{event_value["type"]}')"
     |> Prestige.execute()
-    |> Prestige.prefetch()
+    |> Stream.run()
+  rescue
+    error -> {:error, error}
   end
 
   defp table_name do

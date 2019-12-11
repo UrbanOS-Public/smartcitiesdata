@@ -46,4 +46,19 @@ defmodule Estuary.EventTableTest do
     assert expected_value_after_insert == actual_value_after_insert
     EventTableHelper.delete_table_data()
   end
+
+  test "should fail when improper value of timestamp is passed" do
+    expected_value = "SYNTAX_ERROR"
+
+    bad_event_value = %{
+      "author" => "Steve",
+      "create_ts" => "'5'",
+      "data" => "some data",
+      "type" => "some type"
+    }
+
+    actual_value = elem(EventTable.insert_event_to_table(bad_event_value), 1).name
+
+    assert expected_value == actual_value
+  end
 end
