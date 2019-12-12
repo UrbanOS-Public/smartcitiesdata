@@ -34,7 +34,7 @@ defmodule DiscoveryStreams.Mixfile do
 
   defp deps do
     [
-      {:brook, "~> 0.3"},
+      {:brook, "~> 0.4.0"},
       {:cachex, "~> 3.0"},
       {:checkov, "~> 0.4", only: :test},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},

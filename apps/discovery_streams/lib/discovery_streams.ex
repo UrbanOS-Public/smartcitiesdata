@@ -1,6 +1,4 @@
 defmodule DiscoveryStreamsWeb do
-  @moduledoc File.read!("README.md")
-
   def controller do
     quote do
       use Phoenix.Controller, namespace: DiscoveryStreamsWeb
