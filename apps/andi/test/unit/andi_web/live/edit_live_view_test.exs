@@ -19,9 +19,7 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      {private_value, private_text} = get_select(html, "#dataset_schema_technical_private")
-      assert private_value == "false"
-      assert private_text == "Public"
+      assert {"false", "Public"} = get_select(html, "#dataset_schema_technical_private")
     end
 
     test "display Level of Access as private when private is true", %{conn: conn} do
@@ -29,9 +27,7 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      {private_value, private_text} = get_select(html, "#dataset_schema_technical_private")
-      assert private_value == "true"
-      assert private_text == "Private"
+      assert {"true", "Private"} = get_select(html, "#dataset_schema_technical_private")
     end
 
     test "adds commas between keywords", %{conn: conn} do
@@ -122,9 +118,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_value(html, "#dataset_schema_business_dataTitle") == dataset.business.dataTitle
       assert get_text(html, "#dataset_schema_business_description") == dataset.business.description
       assert get_value(html, "#dataset_schema_technical_sourceFormat") == dataset.technical.sourceFormat
-      {private_value, private_text} = get_select(html, "#dataset_schema_technical_private")
-      assert private_value == "true"
-      assert private_text == "Private"
+      assert {"true", "Private"} = get_select(html, "#dataset_schema_technical_private")
       assert get_value(html, "#dataset_schema_business_contactName") == dataset.business.contactName
       assert get_value(html, "#dataset_schema_business_contactEmail") == dataset.business.contactEmail
       assert get_value(html, "#dataset_schema_business_release-date") == dataset.business.issuedDate
@@ -140,7 +134,7 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   describe "edit metadata" do
-    test "accessibility level must be public or private" do
+    test "accessibility level must be public or private", %{conn: conn} do
       dataset = TDG.create_dataset(%{technical: %{private: true}})
 
       DatasetCache.put(dataset)
@@ -216,6 +210,36 @@ defmodule AndiWeb.EditLiveViewTest do
         :orgTitle,
         "Organization is required."
       )
+    end
+  end
+
+  describe "can not edit" do
+    test "source format", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert get_value(html, "#dataset_schema_technical_sourceFormat") == dataset.technical.sourceFormat
+
+      dataset_map = dataset_to_map(dataset) |> put_in([:technical, :sourceFormat], "newFormatYo")
+
+      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+      assert get_value(html, "#dataset_schema_technical_sourceFormat") == dataset.technical.sourceFormat
+    end
+
+    test "organization title", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert get_value(html, "#dataset_schema_business_orgTitle") == dataset.business.orgTitle
+
+      dataset_map = dataset_to_map(dataset) |> put_in([:business, :orgTitle], "newOrganization")
+
+      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+      assert get_value(html, "#dataset_schema_business_orgTitle") == dataset.business.orgTitle
     end
   end
 

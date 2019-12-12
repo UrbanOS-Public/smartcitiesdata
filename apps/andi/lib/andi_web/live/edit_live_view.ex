@@ -25,7 +25,7 @@ defmodule AndiWeb.EditLiveView do
         <div class="metadata-form__format">
           <%= Form.inputs_for f, :technical, fn fp -> %>
             <%= Form.label(fp, :format, "Format", class: "label label--required") %>
-            <%= Form.text_input(fp, :sourceFormat, class: "input") %>
+            <%= Form.text_input(fp, :sourceFormat, [class: "input", disabled: true]) %>
             <%= error_tag(fp, :sourceFormat) %>
           <% end %>
         </div>
@@ -92,7 +92,7 @@ defmodule AndiWeb.EditLiveView do
         <div class="metadata-form__organization">
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :orgTitle, "Organization", class: "label label--required") %>
-            <%= Form.text_input(fp, :orgTitle, class: "input") %>
+            <%= Form.text_input(fp, :orgTitle, [class: "input", disabled: true]) %>
             <%= error_tag(fp, :orgTitle) %>
           <% end %>
         </div>
@@ -138,11 +138,18 @@ defmodule AndiWeb.EditLiveView do
     {:ok, assign(socket, changeset: change)}
   end
 
-  def handle_event("validate", %{"dataset_schema" => dataset_schema}, socket) do
+  def handle_event(
+        "validate",
+        %{"dataset_schema" => dataset_schema},
+        %{assigns: %{changeset: %{changes: existing}}} = socket
+      ) do
     keyword_list = get_keywords_as_list(dataset_schema["business"]["keywords"])
-    dataset_schema = put_in(dataset_schema, ["business", "keywords"], keyword_list)
 
-    # IO.inspect(dataset_schema)
+    dataset_schema =
+      dataset_schema
+      |> put_in(["business", "keywords"], keyword_list)
+      |> put_in(["technical", "sourceFormat"], existing.technical.changes.sourceFormat)
+      |> put_in(["business", "orgTitle"], existing.business.changes.orgTitle)
 
     change = Andi.DatasetSchema.changeset(dataset_schema)
     {:noreply, assign(socket, changeset: change)}
