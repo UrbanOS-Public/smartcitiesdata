@@ -21,6 +21,7 @@ if kafka_brokers do
     ]
 
   config :discovery_streams, :brook,
+    instance: :discovery_streams,
     driver: [
       module: Brook.Driver.Kafka,
       init_arg: [
