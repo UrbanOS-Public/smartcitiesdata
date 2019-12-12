@@ -14,20 +14,30 @@ defmodule Estuary.MessageHandler do
   end
 
   defp process_message(message) do
-    case Jason.decode(message.value) do
-      {:ok, %{"author" => _, "create_ts" => _, "data" => _, "type" => _} = event} ->
-        EventTable.insert_event_to_table(event)
+    message.value
+    |> Jason.decode
+    |> process(message)
+  end
 
-      {:ok, term_without_keys} ->
-        Yeet.process_dead_letter("", message, "estuary",
-          reason:
-            "event #{inspect(term_without_keys)} was decoded but did not have the right keys"
-        )
-
-      {:error, %Jason.DecodeError{}} ->
-        Yeet.process_dead_letter("", message, "estuary",
-          reason: "event's JSON could not be decoded"
-        )
+  defp process({:ok, %{"author" => _, "create_ts" => _, "data" => _, "type" => _} = event}, _message) do
+    case EventTable.insert_event_to_table(event) do
+      {:error, %Prestige.Error{name: error}} -> Yeet.process_dead_letter("", event, "estuary",
+        reason:
+          "event #{inspect(event)} had #{error} and could not be inserted")
+      term -> IO.inspect(term)
     end
+  end
+
+  defp process({:ok, term_without_keys}, message) do
+    Yeet.process_dead_letter("", message, "estuary",
+      reason:
+        "event #{inspect(term_without_keys)} was decoded but did not have the right keys"
+    )
+  end
+
+  defp process({:error, %Jason.DecodeError{}}, message) do
+    Yeet.process_dead_letter("", message, "estuary",
+      reason: "event's JSON could not be decoded"
+    )
   end
 end

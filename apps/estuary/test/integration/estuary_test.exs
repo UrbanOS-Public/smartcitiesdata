@@ -98,7 +98,7 @@ defmodule Estuary.EstuaryTest do
     ]
 
     eventually(fn ->
-      assert event_value(expected_value)
+      assert is_in_dlq(expected_value)
     end)
   end
 
@@ -107,7 +107,27 @@ defmodule Estuary.EstuaryTest do
     expected_value = ["{\\\\\\\"some_bad_key\\\\\\\": \\\\\\\"some_bad_value\\\\\\\"}"]
 
     eventually(fn ->
-      assert event_value(expected_value)
+      assert is_in_dlq(expected_value)
+    end)
+  end
+
+  test "should dlq message if it fail to insert, because values are not the right type" do
+    event_data = %{
+      "author" => "Me",
+      "create_ts" => "'5'",
+      "data" => "some data",
+      "type" => "some type"
+    }
+
+    expected_value = "\"create_ts\":\"'5'\""
+
+    produce_event(
+      @event_stream_topic,
+      event_struct(event_data)
+    )
+
+    eventually(fn ->
+      assert is_in_dlq(expected_value)
     end)
   end
 
@@ -127,7 +147,7 @@ defmodule Estuary.EstuaryTest do
       })
   end
 
-  defp event_value(expected_value) do
+  defp is_in_dlq(expected_value) do
     {:ok, _, events} = Elsa.fetch(@elsa_endpoint, "dead-letters")
     Enum.any?(events, fn event -> String.contains?(event.value, expected_value) end)
   end

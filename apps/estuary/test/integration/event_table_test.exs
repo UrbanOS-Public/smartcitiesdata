@@ -57,8 +57,8 @@ defmodule Estuary.EventTableTest do
       "type" => "some type"
     }
 
-    actual_value = elem(EventTable.insert_event_to_table(bad_event_value), 1).name
+    {:error, %Prestige.Error{name: error}} = EventTable.insert_event_to_table(bad_event_value)
 
-    assert expected_value == actual_value
+    assert expected_value == error
   end
 end
