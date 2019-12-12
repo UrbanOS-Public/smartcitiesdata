@@ -2,9 +2,11 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
   use ExUnit.Case
   use Divo, services: [:redis, :presto, :metastore, :postgres, :minio, :zookeeper, :kafka, :"ecto-postgres"]
   use DiscoveryApi.DataCase
-  alias SmartCity.Registry.Dataset
-  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.Dataset
+  alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
+
+  import SmartCity.Event, only: [dataset_update: 0]
 
   setup do
     Helper.wait_for_brook_to_be_ready()
@@ -25,7 +27,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     organization = Helper.create_persisted_organization()
 
     dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
-    Dataset.write(dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
     Patiently.wait_for!(
       fn -> get_dataset_preview(dataset_id) == [] end,
@@ -52,7 +54,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     organization = Helper.create_persisted_organization()
 
     dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
-    Dataset.write(dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
     expected = [%{"id" => 1, "name" => "bob"}, %{"id" => 2, "name" => "mike"}]
 

@@ -21,7 +21,7 @@ defmodule DiscoveryApi.Stats.Completeness do
   defp update_fields_map(stats_map, dataset, data) do
     existing_field_map = Map.get(stats_map, :fields, %{})
 
-    dataset.technical.schema
+    dataset.schema
     |> get_fields()
     |> Enum.reduce(existing_field_map, fn field, field_stats ->
       update_field_count(field_stats, field, data)

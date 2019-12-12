@@ -3,8 +3,10 @@ defmodule DiscoveryApi.Stats.DataHelper do
   Helper module to create datasets for tests
   """
   alias SmartCity.TestDataGenerator, as: TDG
+  alias DiscoveryApi.Data.Mapper
+  alias DiscoveryApi.Test.Helper
 
-  def create_dataset do
+  def create_model do
     TDG.create_dataset(%{
       id: "abc",
       technical: %{
@@ -33,15 +35,17 @@ defmodule DiscoveryApi.Stats.DataHelper do
         ]
       }
     })
+    |> Mapper.to_data_model(Helper.create_schema_organization())
   end
 
-  def create_real_dataset do
+  def create_real_model do
     TDG.create_dataset(%{
       id: "8997475d-105b-47dd-adc5-14d618423878",
       technical: %{
         schema: real_dataset_schema()
       }
     })
+    |> Mapper.to_data_model(Helper.create_schema_organization())
   end
 
   def real_dataset_schema do
@@ -85,11 +89,13 @@ defmodule DiscoveryApi.Stats.DataHelper do
     }
   end
 
-  def create_simple_dataset do
+  def create_simple_model do
     TDG.create_dataset(create_simple_dataset_overrides())
+    |> Mapper.to_data_model(Helper.create_schema_organization())
   end
 
-  def create_array_dataset do
+  def create_array_model do
     TDG.create_dataset(create_array_dataset_overrides())
+    |> Mapper.to_data_model(Helper.create_schema_organization())
   end
 end

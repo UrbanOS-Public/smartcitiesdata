@@ -1,18 +1,21 @@
 defmodule DiscoveryApi.Stats.StatsCalculatorTest do
   use ExUnit.Case
   use Placebo
-  alias SmartCity.Registry.Dataset
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApi.Data.Persistence
+  alias DiscoveryApi.Data.Model
+  alias DiscoveryApi.Data.Mapper
+  alias SmartCity.TestDataGenerator, as: TDG
 
   @dataset_id "eaad54e8-fcb6-4f0e-99ac-bf51887ed102"
   @completeness_key "discovery-api:completeness_calculated_date"
+  @organization DiscoveryApi.Test.Helper.create_schema_organization()
 
   describe "produce_completeness_stats/1 positive cases" do
     setup do
       dataset = mock_non_remote_dataset()
 
-      allow(Dataset.get_all!(), return: [dataset], meck_options: [:passthrough])
+      allow(Model.get_all(), return: [dataset], meck_options: [:passthrough])
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
       allow(Prestige.new_session(any()), return: :connection)
       allow(Prestige.query!(any(), any()), return: :results)
@@ -75,7 +78,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
     test "Does not calculate statistics for remote datasets" do
       dataset = mock_remote_dataset()
 
-      allow(Dataset.get_all!(), return: [dataset], meck_options: [:passthrough])
+      allow(Model.get_all(), return: [dataset], meck_options: [:passthrough])
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
 
       allow(Prestige.query!(any(), any()),
@@ -92,7 +95,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
     test "Does not calculate statistics for datasets that have not been updated since last calculation date" do
       dataset = mock_non_remote_dataset()
 
-      allow(Dataset.get_all!(), return: [dataset], meck_options: [:passthrough])
+      allow(Model.get_all(), return: [dataset], meck_options: [:passthrough])
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
 
       allow(Prestige.query!(any(), any()),
@@ -117,7 +120,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
 
     test "Does not calculate statistics when presto returns no data" do
       dataset = mock_non_remote_dataset()
-      allow(Dataset.get_all!(), return: [dataset], meck_options: [:passthrough])
+      allow(Model.get_all(), return: [dataset], meck_options: [:passthrough])
 
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
       allow(Prestige.query!(any(), any()), return: [])
@@ -138,52 +141,28 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
   end
 
   defp mock_non_remote_dataset() do
-    %SmartCity.Registry.Dataset{
-      _metadata: %SmartCity.Registry.Dataset.Metadata{expectedBenefit: [], intendedUse: []},
-      business: nil,
+    TDG.create_dataset(%{
       id: @dataset_id,
-      technical: %SmartCity.Registry.Dataset.Technical{
-        cadence: 4654,
-        dataName: "Tawny_Laranja",
-        sourceHeaders: %{accepts: "application/json"},
-        orgId: "orgId",
-        orgName: "Rosa_Jasper",
-        partitioner: %{query: nil, type: nil},
-        private: true,
-        sourceQueryParams: %{apiKey: "d3b0afb2-66bc-496f-8b0c-32c6872f1515"},
+      technical: %{
+        sourceType: "ingest",
+        sourceFormat: "gtfs",
         schema: [
           %{name: "name", required: false, type: "string"},
           %{name: "age", required: false, type: "int"}
-        ],
-        sourceFormat: "gtfs",
-        sourceType: "ingest",
-        sourceUrl: "schultz.org",
-        systemName: "test_table",
-        transformations: ["trim", "aggregate", "rename_field"],
-        validations: ["matches_schema", "no_nulls"]
-      },
-      version: "0.2"
-    }
+        ]
+      }
+    })
+    |> Mapper.to_data_model(@organization)
   end
 
   defp mock_remote_dataset() do
-    %SmartCity.Registry.Dataset{
-      _metadata: %SmartCity.Registry.Dataset.Metadata{expectedBenefit: [], intendedUse: []},
-      business: nil,
+    TDG.create_dataset(
       id: @dataset_id,
-      technical: %SmartCity.Registry.Dataset.Technical{
-        private: true,
-        sourceQueryParams: %{apiKey: "d3b0afb2-66bc-496f-8b0c-32c6872f1515"},
-        schema: [
-          %{name: "name", required: false, type: "string"},
-          %{name: "age", required: false, type: "int"}
-        ],
-        sourceFormat: "gtfs",
+      technical: %{
         sourceType: "remote",
-        sourceUrl: "schultz.org",
-        systemName: "test_table"
-      },
-      version: "0.2"
-    }
+        sourceFormat: "gtfs"
+      }
+    )
+    |> Mapper.to_data_model(@organization)
   end
 end

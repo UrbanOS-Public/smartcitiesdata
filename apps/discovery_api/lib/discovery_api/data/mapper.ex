@@ -3,7 +3,7 @@ defmodule DiscoveryApi.Data.Mapper do
   Map data from one thing to another
   """
 
-  alias SmartCity.Registry.Dataset
+  alias SmartCity.Dataset
   alias DiscoveryApi.Schemas.Organizations.Organization
   alias DiscoveryApi.Data.Model
 

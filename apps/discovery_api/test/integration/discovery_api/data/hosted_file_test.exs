@@ -2,9 +2,10 @@ defmodule DiscoveryApi.Data.HostedFileTest do
   use ExUnit.Case
   use Divo
   use DiscoveryApi.DataCase
-  alias SmartCity.Registry.Dataset
-  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.Dataset
+  alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
+  import SmartCity.Event, only: [dataset_update: 0]
 
   require Logger
 
@@ -47,7 +48,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Dataset.write(dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
     Patiently.wait_for!(
       fn -> download_and_checksum(organization.orgName, dataset.technical.dataName, "application/geo+json") == @expected_checksum end,
@@ -70,7 +71,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Dataset.write(dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
     Patiently.wait_for!(
       fn -> download_and_checksum(organization.orgName, dataset.technical.dataName, "application/zip") == @expected_checksum end,
@@ -93,7 +94,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Dataset.write(dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
     Patiently.wait_for!(
       fn -> download_and_checksum_with_format(organization.orgName, dataset.technical.dataName, "shp") == @expected_checksum end,
@@ -116,7 +117,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Dataset.write(dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
     Patiently.wait_for!(
       fn ->

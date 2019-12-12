@@ -1,11 +1,13 @@
 defmodule DiscoveryApi.RecommendationEngineTest do
   use ExUnit.Case
-  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Test.Helper
 
   use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres"]
   use DiscoveryApi.DataCase
+
+  import SmartCity.Event, only: [dataset_update: 0]
 
   setup do
     Helper.wait_for_brook_to_be_ready()
@@ -71,7 +73,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
     RecommendationEngine.save(dataset_that_should_match)
     RecommendationEngine.save(dataset_that_doesnt_meet_column_count_threshold)
 
-    SmartCity.Registry.Dataset.write(dataset_to_get_recommendations_for)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset_to_get_recommendations_for)
 
     Patiently.wait_for!(
       fn -> DiscoveryApi.Data.Model.get(dataset_to_get_recommendations_for.id) != nil end,

@@ -3,8 +3,9 @@ defmodule DiscoveryApi.OrganizationUpdateTest do
   use Divo
   use DiscoveryApi.DataCase
   import SmartCity.TestHelper
-  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
+  import SmartCity.Event, only: [dataset_update: 0]
 
   setup_all do
     Helper.wait_for_brook_to_be_ready()
@@ -30,7 +31,7 @@ defmodule DiscoveryApi.OrganizationUpdateTest do
     expected_organization = Helper.create_persisted_organization()
     expected_registry_dataset = TDG.create_dataset(%{technical: %{orgId: expected_organization.id}})
 
-    DiscoveryApi.Data.DatasetEventListener.handle_dataset(expected_registry_dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", expected_registry_dataset)
 
     eventually(
       fn ->

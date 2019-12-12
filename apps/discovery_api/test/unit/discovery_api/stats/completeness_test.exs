@@ -7,15 +7,15 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
   setup do
     {:ok,
-     dataset: DataHelper.create_dataset(),
-     simple_dataset: DataHelper.create_simple_dataset(),
+     model: DataHelper.create_model(),
+     simple_model: DataHelper.create_simple_model(),
      simple_overrides: DataHelper.create_simple_dataset_overrides(),
-     array_dataset: DataHelper.create_array_dataset()}
+     array_model: DataHelper.create_array_model()}
   end
 
   describe "reducer/2" do
     test "with empty accumulator" do
-      dataset = DataHelper.create_real_dataset()
+      model = DataHelper.create_real_model()
 
       row = %{
         "bikes_allowed" => 0,
@@ -46,10 +46,10 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
         }
       }
 
-      assert expected == Completeness.calculate_stats_for_row(dataset, row, %{})
+      assert expected == Completeness.calculate_stats_for_row(model, row, %{})
     end
 
-    test "with missing columns", %{simple_dataset: dataset} do
+    test "with missing columns", %{simple_model: model} do
       expected = %{
         record_count: 2,
         fields: %{
@@ -64,20 +64,18 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
       assert expected ==
                Completeness.calculate_stats_for_row(
-                 dataset,
+                 model,
                  row2,
-                 Completeness.calculate_stats_for_row(dataset, row1, %{})
+                 Completeness.calculate_stats_for_row(model, row1, %{})
                )
     end
 
     test "does not count empty values" do
-      dataset = %{
+      model = %{
         id: "123",
-        technical: %{
-          schema: [
-            %{name: "id", type: "string", required: true}
-          ]
-        }
+        schema: [
+          %{name: "id", type: "string", required: true}
+        ]
       }
 
       expected = %{
@@ -95,25 +93,25 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
       assert expected ==
                Completeness.calculate_stats_for_row(
-                 dataset,
+                 model,
                  row5,
                  Completeness.calculate_stats_for_row(
-                   dataset,
+                   model,
                    row4,
                    Completeness.calculate_stats_for_row(
-                     dataset,
+                     model,
                      row3,
                      Completeness.calculate_stats_for_row(
-                       dataset,
+                       model,
                        row2,
-                       Completeness.calculate_stats_for_row(dataset, row1, %{})
+                       Completeness.calculate_stats_for_row(model, row1, %{})
                      )
                    )
                  )
                )
     end
 
-    test "three messages", %{simple_dataset: dataset} do
+    test "three messages", %{simple_model: model} do
       expected = %{
         record_count: 3,
         fields: %{
@@ -129,17 +127,17 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
       assert expected ==
                Completeness.calculate_stats_for_row(
-                 dataset,
+                 model,
                  row3,
                  Completeness.calculate_stats_for_row(
-                   dataset,
+                   model,
                    row2,
-                   Completeness.calculate_stats_for_row(dataset, row1, %{})
+                   Completeness.calculate_stats_for_row(model, row1, %{})
                  )
                )
     end
 
-    test "with arrays as columns", %{array_dataset: array_dataset} do
+    test "with arrays as columns", %{array_model: array_model} do
       row1 = %{"id" => "343", "name" => ["hello", "world"]}
       row2 = %{"id" => nil, "name" => nil, "age" => 55}
 
@@ -154,13 +152,13 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
       assert expected ==
                Completeness.calculate_stats_for_row(
-                 array_dataset,
+                 array_model,
                  row2,
-                 Completeness.calculate_stats_for_row(array_dataset, row1, %{})
+                 Completeness.calculate_stats_for_row(array_model, row1, %{})
                )
     end
 
-    test "with missing columns in all rows", %{simple_dataset: dataset} do
+    test "with missing columns in all rows", %{simple_model: model} do
       expected = %{
         record_count: 2,
         fields: %{
@@ -175,13 +173,13 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
       assert expected ==
                Completeness.calculate_stats_for_row(
-                 dataset,
+                 model,
                  row2,
-                 Completeness.calculate_stats_for_row(dataset, row1, %{})
+                 Completeness.calculate_stats_for_row(model, row1, %{})
                )
     end
 
-    test "with nested schema accumulator", %{dataset: dataset} do
+    test "with nested schema accumulator", %{model: model} do
       row = %{
         "required field" => "123",
         "required parent field" => %{
@@ -214,18 +212,16 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
         }
       }
 
-      assert expected == Completeness.calculate_stats_for_row(dataset, row, %{})
+      assert expected == Completeness.calculate_stats_for_row(model, row, %{})
     end
 
     test "Looks up columns by their downcased values" do
-      dataset = %{
+      model = %{
         id: "123",
-        technical: %{
-          schema: [
-            %{name: "Id", type: "number", required: true},
-            %{name: "Name", type: "string", required: true}
-          ]
-        }
+        schema: [
+          %{name: "Id", type: "number", required: true},
+          %{name: "Name", type: "string", required: true}
+        ]
       }
 
       row = %{
@@ -241,7 +237,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
         }
       }
 
-      assert expected == Completeness.calculate_stats_for_row(dataset, row, %{})
+      assert expected == Completeness.calculate_stats_for_row(model, row, %{})
     end
   end
 end

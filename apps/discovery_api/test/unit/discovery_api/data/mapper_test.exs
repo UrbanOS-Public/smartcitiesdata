@@ -2,7 +2,7 @@ defmodule DiscoveryApi.Data.MapperTest do
   use ExUnit.Case
   use Placebo
   alias DiscoveryApi.Data.{Mapper, Model}
-  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.TestDataGenerator, as: TDG
   import Checkov
 
   describe "to_data_model/2 hard overrides" do
@@ -14,7 +14,7 @@ defmodule DiscoveryApi.Data.MapperTest do
         # that we're not using yet in Discovery API.  This will change once we start consuming dataset update events from the event stream.
         |> SmartCity.Helpers.deep_merge(overrides)
 
-      organization = TDG.create_schema_organization(%{})
+      organization = DiscoveryApi.Test.Helper.create_schema_organization(%{})
 
       %Model{} = result = Mapper.to_data_model(dataset, organization)
 

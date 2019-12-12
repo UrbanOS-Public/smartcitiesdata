@@ -14,11 +14,6 @@ config :discovery_api,
   hosted_bucket: "kdp-cloud-storage",
   hosted_region: aws_region
 
-config :smart_city_registry,
-  redis: [
-    host: host
-  ]
-
 config :redix,
   host: host
 

@@ -56,11 +56,6 @@ config :discovery_api,
 config :redix,
   host: System.get_env("REDIS_HOST")
 
-config :smart_city_registry,
-  redis: [
-    host: System.get_env("REDIS_HOST")
-  ]
-
 config :prestige, :session_opts, url: System.get_env("PRESTO_URL")
 
 config :paddle, Paddle,

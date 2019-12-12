@@ -1,10 +1,14 @@
-defmodule DiscoveryApi.Data.DatasetEventListenerTest do
+defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
   use ExUnit.Case
   use Placebo
-  alias DiscoveryApi.Data.{DatasetEventListener, Model, SystemNameCache}
-  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Schemas.Organizations
+  alias SmartCity.TestDataGenerator, as: TDG
+
+  import SmartCity.Event, only: [dataset_update: 0]
+
+  import DiscoveryApi.Test.Helper
   import Checkov
 
   describe "handle_dataset/1" do
@@ -14,15 +18,15 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
       allow(DiscoveryApi.RecommendationEngine.save(any()), return: :ok)
 
       dataset = TDG.create_dataset(%{id: "123"})
-      organization = TDG.create_schema_organization(%{id: dataset.technical.orgId})
+      organization = create_schema_organization(%{id: dataset.technical.orgId})
       allow(Organizations.get_organization(dataset.technical.orgId), return: {:ok, organization})
+      allow(Model.save(any()), return: {:ok, :success})
       {:ok, %{dataset: dataset, organization: organization}}
     end
 
-    test "should return :ok when successful", %{dataset: dataset} do
-      allow(Model.save(any()), return: {:ok, :success})
-
-      assert :ok == DatasetEventListener.handle_dataset(dataset)
+    test "should save the dataset as a model", %{dataset: dataset} do
+      Brook.Test.send(DiscoveryApi.instance(), dataset_update(), "unit", dataset)
+      assert_called(Model.save(any()))
     end
 
     @tag capture_log: true
@@ -31,55 +35,56 @@ defmodule DiscoveryApi.Data.DatasetEventListenerTest do
 
       allow(Organizations.get_organization(dataset.technical.orgId), return: {:error, :failure})
 
-      assert :ok == DatasetEventListener.handle_dataset(dataset)
+      Brook.Test.send(DiscoveryApi.instance(), dataset_update(), "unit", dataset)
+
+      refute_called(Model.save(any()))
     end
 
     @tag capture_log: true
     test "should return :ok and log when system cache put fails", %{dataset: dataset} do
       allow(SystemNameCache.put(any(), any()), return: {:error, :failure})
 
-      assert :ok == DatasetEventListener.handle_dataset(dataset)
+      Brook.Test.send(DiscoveryApi.instance(), dataset_update(), "unit", dataset)
+
+      refute_called(Model.save(any()))
     end
 
     test "should invalidate the ResponseCache when dataset is received", %{dataset: dataset} do
-      allow(Model.save(any()), return: {:ok, :success})
-
-      assert :ok == DatasetEventListener.handle_dataset(dataset)
+      Brook.Test.send(DiscoveryApi.instance(), dataset_update(), "unit", dataset)
       assert_called(ResponseCache.invalidate(), once())
     end
 
-    @tag capture_log: true
-    test "should return :ok and log when model save fails", %{dataset: dataset} do
-      allow(SystemNameCache.put(any(), any()), return: {:ok, :cached})
-      allow(Model.save(any()), return: {:error, :failure})
+    # TODO: Error cases like this might be easier in the view state world. Revisit.
+    # @tag capture_log: true
+    # test "should return :ok and log when model save fails", %{dataset: dataset} do
+    #   allow(SystemNameCache.put(any(), any()), return: {:ok, :cached})
+    #   allow(Model.save(any()), return: {:error, :failure})
 
-      assert :ok == DatasetEventListener.handle_dataset(dataset)
-    end
+    #   Brook.Test.send(DiscoveryApi.instance(), dataset_update(), "unit", dataset)
+
+    #   assert :ok == DatasetEventListener.handle_dataset(dataset)
+    # end
 
     test "creates orgName/dataName mapping to dataset_id", %{dataset: dataset, organization: organization} do
-      allow(Model.save(any()), return: {:ok, :success})
-
-      DatasetEventListener.handle_dataset(dataset)
+      Brook.Test.send(DiscoveryApi.instance(), dataset_update(), "unit", dataset)
 
       assert SystemNameCache.get(organization.name, dataset.technical.dataName) == "123"
     end
 
     test "indexes model for search", %{dataset: dataset, organization: organization} do
-      allow(Model.save(any()), return: {:ok, :success})
       expected_model = DiscoveryApi.Data.Mapper.to_data_model(dataset, organization)
 
-      DatasetEventListener.handle_dataset(dataset)
+      Brook.Test.send(DiscoveryApi.instance(), dataset_update(), "unit", dataset)
 
       assert_called(DiscoveryApi.Search.Storage.index(expected_model))
     end
 
     data_test "sends dataset to recommendation engine" do
       dataset = TDG.create_dataset(dataset_map)
-      organization = TDG.create_schema_organization(%{id: dataset.technical.orgId})
+      organization = create_schema_organization(%{id: dataset.technical.orgId})
       allow(Organizations.get_organization(dataset.technical.orgId), return: {:ok, organization})
-      allow(Model.save(any()), return: {:ok, :success})
 
-      DatasetEventListener.handle_dataset(dataset)
+      Brook.Test.send(DiscoveryApi.instance(), dataset_update(), "unit", dataset)
 
       assert called == called?(DiscoveryApi.RecommendationEngine.save(dataset))
 
