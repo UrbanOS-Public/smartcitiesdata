@@ -99,7 +99,7 @@ defmodule AndiWeb.EditLiveView do
         <div class="metadata-form__level-of-access">
           <%= Form.inputs_for f, :technical, fn fp -> %>
             <%= Form.label(fp, :private, "Level of Access", class: "label label--required") %>
-            <%= Form.text_input(fp, :private, value: get_private(Form.input_value(fp, :private)), class: "input") %>
+            <%= Form.select(fp, :private, ["Public": false, "Private": true]) %>
             <%= error_tag(fp, :private) %>
           <% end %>
         </div>
@@ -119,6 +119,9 @@ defmodule AndiWeb.EditLiveView do
       <%= Link.link("Cancel", to: "/", class: "btn btn--cancel metadata-form__cancel-btn") %>
     </div>
     """
+
+    # <%= Form.text_input(fp, :private, value: get_private(Form.input_value(fp, :private)), class: "input") %>
+    # <%= Form.select(fp, :private, ["Public": false, "Private": true]) %>
   end
 
   def mount(%{dataset: dataset}, socket) do
@@ -139,12 +142,11 @@ defmodule AndiWeb.EditLiveView do
     keyword_list = dataset_schema["business"]["keywords"] |> String.split(", ") |> Enum.map(&String.trim/1)
     dataset_schema = put_in(dataset_schema, ["business", "keywords"], keyword_list)
 
+    # IO.inspect(dataset_schema)
+
     change = Andi.DatasetSchema.changeset(dataset_schema)
     {:noreply, assign(socket, changeset: change)}
   end
-
-  defp get_private(true), do: "Private"
-  defp get_private(_), do: "Public"
 
   defp get_keywords(nil), do: ""
   defp get_keywords(keywords), do: Enum.join(keywords, ", ")

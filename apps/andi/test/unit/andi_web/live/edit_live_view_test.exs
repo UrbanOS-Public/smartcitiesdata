@@ -19,9 +19,9 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      [subject] = Floki.find(html, "#dataset_schema_technical_private") |> Floki.attribute("value")
-
-      assert subject =~ "Public"
+      {private_value, private_text} = get_select(html, "#dataset_schema_technical_private")
+      assert private_value == "false"
+      assert private_text == "Public"
     end
 
     test "display Level of Access as private when private is true", %{conn: conn} do
@@ -29,9 +29,9 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      [subject] = Floki.find(html, "#dataset_schema_technical_private") |> Floki.attribute("value")
-
-      assert subject =~ "Private"
+      {private_value, private_text} = get_select(html, "#dataset_schema_technical_private")
+      assert private_value == "true"
+      assert private_text == "Private"
     end
 
     test "adds commas between keywords", %{conn: conn} do
@@ -58,18 +58,10 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset = TDG.create_dataset(%{})
       DatasetCache.put(dataset)
 
-      map_tech = dataset.technical |> Map.from_struct() |> Map.delete(:schema)
-
-      map_bus =
-        dataset.business
-        |> Map.from_struct()
-        |> Map.put("keywords", dataset.business.keywords |> Enum.join(", "))
-
       dataset_map =
         dataset
-        |> Map.from_struct()
-        |> Map.put(:business, map_bus)
-        |> Map.put(:technical, map_tech)
+        |> dataset_to_map()
+        |> put_in([:business, :keywords], dataset.business.keywords |> Enum.join(", "))
 
       expected = Enum.join(dataset.business.keywords, ", ")
 
@@ -85,20 +77,10 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset = TDG.create_dataset(%{})
       DatasetCache.put(dataset)
 
-      map_tech = dataset.technical |> Map.from_struct() |> Map.delete(:schema)
-
-      map_bus =
-        dataset.business
-        |> Map.from_struct()
-        |> Map.put("keywords", "a , good ,  keyword   , is .... hard , to find")
-
       dataset_map =
         dataset
-        |> Map.from_struct()
-        |> Map.put(:business, map_bus)
-        |> Map.put(:technical, map_tech)
-
-      expected = Enum.join(dataset.business.keywords, ", ")
+        |> dataset_to_map
+        |> put_in([:business, :keywords], "a , good ,  keyword   , is .... hard , to find")
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
       html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
@@ -109,13 +91,21 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "displays all other fields", %{conn: conn} do
-      dataset = TDG.create_dataset(%{business: %{description: "A description with no special characters"}})
+      dataset =
+        TDG.create_dataset(%{
+          business: %{description: "A description with no special characters"},
+          technical: %{private: true}
+        })
+
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
       assert get_value(html, "#dataset_schema_business_dataTitle") == dataset.business.dataTitle
       assert get_text(html, "#dataset_schema_business_description") == dataset.business.description
       assert get_value(html, "#dataset_schema_technical_sourceFormat") == dataset.technical.sourceFormat
+      {private_value, private_text} = get_select(html, "#dataset_schema_technical_private")
+      assert private_value == "true"
+      assert private_text == "Private"
       assert get_value(html, "#dataset_schema_business_contactName") == dataset.business.contactName
       assert get_value(html, "#dataset_schema_business_contactEmail") == dataset.business.contactEmail
       assert get_value(html, "#dataset_schema_business_release-date") == dataset.business.issuedDate
@@ -131,9 +121,19 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   describe "edit metadata" do
-    test "accessibility level must be public or private" do
-      # assert_error_message(TDG.create_dataset(%{technical: %{private: ""}}), "Access Level is required.")
-    end
+    # test "accessibility level must be public or private" do
+    #   dataset = TDG.create_dataset(%{technical: %{private: true}})
+
+    #   DatasetCache.put(dataset)
+
+    #   assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    #   assert get_select(html, "#dataset_schema_technical_private") == "#{dataset.technical.private}"
+
+    #   dataset_map = dataset_to_map(dataset)
+
+    #   html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+    #   assert get_select(html, "#dataset_schema_technical_private") == "#{not dataset.technical.private}"
+    # end
 
     test "All required fields display proper error message", %{conn: conn} do
       assert_error_message(
@@ -214,5 +214,28 @@ defmodule AndiWeb.EditLiveViewTest do
 
   defp get_text(html, id) do
     Floki.find(html, id) |> Floki.text() |> String.trim()
+  end
+
+  defp get_select(html, id) do
+    {_, [{_, value} | _], [text]} =
+      Floki.find(html, id)
+      |> Floki.find("select option")
+      |> Enum.filter(fn {_, list, _} -> list |> Enum.any?(&(&1 == {"selected", "selected"})) end)
+      |> List.first()
+
+    {value, text}
+  end
+
+  defp dataset_to_map(dataset) do
+    map_tech = dataset.technical |> Map.from_struct() |> Map.delete(:schema)
+
+    map_bus =
+      dataset.business
+      |> Map.from_struct()
+
+    dataset
+    |> Map.from_struct()
+    |> Map.put(:business, map_bus)
+    |> Map.put(:technical, map_tech)
   end
 end
