@@ -91,6 +91,6 @@ defmodule DiscoveryApiWeb.Router do
       :global_headers
     ])
 
-    resources("/visualization", VisualizationController, only: [:create, :update])
+    resources("/visualization", VisualizationController, only: [:create, :update, :index])
   end
 end
