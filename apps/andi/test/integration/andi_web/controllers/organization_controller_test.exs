@@ -5,6 +5,7 @@ defmodule Andi.CreateOrgTest do
   use Tesla
 
   alias SmartCity.Registry.Organization, as: RegOrganization
+  alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper, only: [eventually: 1]
   import Andi
@@ -24,6 +25,11 @@ defmodule Andi.CreateOrgTest do
 
     org = organization()
     {:ok, response} = create(org)
+
+    eventually(fn ->
+      {:ok, %Organization{}} = Brook.get(instance_name(), :org, org.id)
+    end)
+
     {:ok, happy_path_org} = RegOrganization.new(response.body)
     [happy_path: happy_path_org, response: response]
   end
@@ -87,10 +93,6 @@ defmodule Andi.CreateOrgTest do
     struct = Jason.encode!(org)
 
     response = post("/api/v1/organization", struct, headers: [{"content-type", "application/json"}])
-
-    eventually(fn ->
-      {:ok, nil} != Brook.get(instance_name(), :org, org.id)
-    end)
 
     response
   end

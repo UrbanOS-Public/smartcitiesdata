@@ -56,7 +56,7 @@ defmodule Andi.MixProject do
       {:simply_validate, ">= 0.2.0"},
       {:smart_city, "~> 3.0", override: true},
       {:smart_city_registry, "~> 5.0"},
-      {:smart_city_test, "~> 0.7", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:tesla, "~> 1.3", only: :integration},
       {:timex, "~> 3.6"},
       {:uuid, "~> 1.1"},
