@@ -54,7 +54,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert subject == ""
     end
 
-    test "should not add additional commas", %{conn: conn} do
+    test "should not add additional commas to keywords", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       DatasetCache.put(dataset)
 
@@ -73,7 +73,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert expected == subject
     end
 
-    test "should trim spaces", %{conn: conn} do
+    test "should trim spaces in keywords", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       DatasetCache.put(dataset)
 
@@ -88,6 +88,25 @@ defmodule AndiWeb.EditLiveViewTest do
       subject = get_value(html, "#dataset_schema_business_keywords")
 
       assert "a, good, keyword, is .... hard, to find" == subject
+    end
+
+    test "can handle lists of keywords", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      DatasetCache.put(dataset)
+
+      dataset_map =
+        dataset
+        |> dataset_to_map()
+        |> put_in([:business, :keywords], dataset.business.keywords)
+
+      expected = Enum.join(dataset.business.keywords, ", ")
+
+      assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
+      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+
+      subject = get_value(html, "#dataset_schema_business_keywords")
+
+      assert expected == subject
     end
 
     test "displays all other fields", %{conn: conn} do
@@ -121,19 +140,19 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   describe "edit metadata" do
-    # test "accessibility level must be public or private" do
-    #   dataset = TDG.create_dataset(%{technical: %{private: true}})
+    test "accessibility level must be public or private" do
+      dataset = TDG.create_dataset(%{technical: %{private: true}})
 
-    #   DatasetCache.put(dataset)
+      DatasetCache.put(dataset)
 
-    #   assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-    #   assert get_select(html, "#dataset_schema_technical_private") == "#{dataset.technical.private}"
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert get_select(html, "#dataset_schema_technical_private") == {"true", "Private"}
 
-    #   dataset_map = dataset_to_map(dataset)
+      dataset_map = dataset_to_map(dataset) |> put_in([:technical, :private], false)
 
-    #   html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
-    #   assert get_select(html, "#dataset_schema_technical_private") == "#{not dataset.technical.private}"
-    # end
+      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+      assert get_select(html, "#dataset_schema_technical_private") == {"false", "Public"}
+    end
 
     test "All required fields display proper error message", %{conn: conn} do
       assert_error_message(

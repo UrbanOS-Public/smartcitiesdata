@@ -139,7 +139,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("validate", %{"dataset_schema" => dataset_schema}, socket) do
-    keyword_list = dataset_schema["business"]["keywords"] |> String.split(", ") |> Enum.map(&String.trim/1)
+    keyword_list = get_keywords_as_list(dataset_schema["business"]["keywords"])
     dataset_schema = put_in(dataset_schema, ["business", "keywords"], keyword_list)
 
     # IO.inspect(dataset_schema)
@@ -150,4 +150,10 @@ defmodule AndiWeb.EditLiveView do
 
   defp get_keywords(nil), do: ""
   defp get_keywords(keywords), do: Enum.join(keywords, ", ")
+
+  defp get_keywords_as_list(keywords) when is_list(keywords), do: keywords
+
+  defp get_keywords_as_list(keywords) when is_binary(keywords) do
+    keywords |> String.split(", ") |> Enum.map(&String.trim/1)
+  end
 end
