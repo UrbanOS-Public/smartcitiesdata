@@ -13,8 +13,6 @@ defmodule Andi.DatasetSchema do
     |> cast(params, [:dataset_id])
     |> cast_embed(:technical)
     |> cast_embed(:business)
-
-    # |> validate_required([:dataset_id], message: "This field is required.")
   end
 end
 

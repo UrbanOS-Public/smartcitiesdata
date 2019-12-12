@@ -30,6 +30,46 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {"true", "Private"} = get_select(html, "#dataset_schema_technical_private")
     end
 
+    test "the default language is set to english", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{language: nil}})
+      DatasetCache.put(dataset)
+
+      assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
+
+      assert {"english", "English"} = get_select(html, "#dataset_schema_business_language")
+    end
+
+    test "the language is set to spanish", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{language: "spanish"}})
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert {"spanish", "Spanish"} = get_select(html, "#dataset_schema_business_language")
+    end
+
+    test "the language is set to english", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{language: "english"}})
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert {"english", "English"} = get_select(html, "#dataset_schema_business_language")
+    end
+
+    test "the language is changed from english to spanish", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{language: "english"}})
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      dataset_map = dataset_to_map(dataset) |> put_in([:business, :language], "spanish")
+
+      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+
+      assert {"spanish", "Spanish"} = get_select(html, "#dataset_schema_business_language")
+    end
+
     test "adds commas between keywords", %{conn: conn} do
       dataset = TDG.create_dataset(%{business: %{keywords: ["one", "two", "three"]}})
       DatasetCache.put(dataset)
@@ -128,7 +168,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_value(html, "#dataset_schema_business_spatial") == dataset.business.spatial
       assert get_value(html, "#dataset_schema_business_temporal") == dataset.business.temporal
       assert get_value(html, "#dataset_schema_business_orgTitle") == dataset.business.orgTitle
-      assert get_value(html, "#dataset_schema_business_language") == dataset.business.language
+      assert {"english", "English"} = get_select(html, "#dataset_schema_business_language")
       assert get_value(html, "#dataset_schema_business_homepage") == dataset.business.homepage
     end
   end

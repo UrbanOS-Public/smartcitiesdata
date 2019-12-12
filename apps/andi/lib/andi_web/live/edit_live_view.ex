@@ -99,14 +99,14 @@ defmodule AndiWeb.EditLiveView do
         <div class="metadata-form__level-of-access">
           <%= Form.inputs_for f, :technical, fn fp -> %>
             <%= Form.label(fp, :private, "Level of Access", class: "label label--required") %>
-            <%= Form.select(fp, :private, ["Public": false, "Private": true]) %>
+            <%= Form.select(fp, :private, [[key: "Private", value: "true"], [key: "Public", value: "false"]]) %>
             <%= error_tag(fp, :private) %>
           <% end %>
         </div>
         <div class="metadata-form__language">
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :language, "Language", class: "label") %>
-            <%= Form.text_input(fp, :language, class: "input") %>
+            <%= Form.select(fp, :language, [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]], value: get_language(Form.input_value(fp, :language))) %>
           <% end %>
         </div>
         <div class="metadata-form__homepage">
@@ -134,6 +134,8 @@ defmodule AndiWeb.EditLiveView do
       |> Map.put(:business, new_business)
       |> Map.put(:technical, new_technical)
       |> Andi.DatasetSchema.changeset()
+
+    # IO.inspect(change, label: "mount")
 
     {:ok, assign(socket, changeset: change)}
   end
@@ -163,4 +165,7 @@ defmodule AndiWeb.EditLiveView do
   defp get_keywords_as_list(keywords) when is_binary(keywords) do
     keywords |> String.split(", ") |> Enum.map(&String.trim/1)
   end
+
+  defp get_language(nil), do: "english"
+  defp get_language(lang), do: lang
 end
