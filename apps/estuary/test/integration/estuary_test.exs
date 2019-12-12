@@ -10,6 +10,14 @@ defmodule Estuary.EstuaryTest do
   @event_stream_topic Application.get_env(:estuary, :event_stream_topic)
   @event_stream_table_name Application.get_env(:estuary, :event_stream_table_name)
 
+  setup do
+
+    on_exit(fn ->
+      EventTableHelper.delete_table_data()
+    end)
+
+  end
+
   test "should create topic when estuary starts" do
     assert Elsa.Topic.exists?(@elsa_endpoint, @event_stream_topic)
   end
@@ -52,7 +60,6 @@ defmodule Estuary.EstuaryTest do
       assert expected_value == actual_value
     end)
 
-    EventTableHelper.delete_table_data()
   end
 
   test "should persist batch of events to the event stream" do
@@ -86,7 +93,7 @@ defmodule Estuary.EstuaryTest do
       assert expected_value == actual_value
     end)
 
-    EventTableHelper.delete_table_data()
+
   end
 
   test "should send event to the dlq if it is not a properly formatted event for Jason decoding" do

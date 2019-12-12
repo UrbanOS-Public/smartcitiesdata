@@ -23,12 +23,7 @@ defmodule Estuary.EventTableTest do
   end
 
   test "should insert event to event_stream table" do
-    expected_value_before_insert = []
     expected_value_after_insert = [["Steve", 5, "some data", "some type"]]
-
-    actual_value_before_insert =
-      "'Steve'"
-      |> EventTableHelper.select_table_data()
 
     %{
       "author" => "Steve",
@@ -42,7 +37,6 @@ defmodule Estuary.EventTableTest do
       "'Steve'"
       |> EventTableHelper.select_table_data()
 
-    assert expected_value_before_insert == actual_value_before_insert
     assert expected_value_after_insert == actual_value_after_insert
     EventTableHelper.delete_table_data()
   end
