@@ -75,6 +75,7 @@ defmodule Andi.DatasetBusinessSchema do
     |> validate_required([:description], message: "Description is required.")
     |> validate_required([:contactName], message: "Maintainer Name is required.")
     |> validate_required([:contactEmail], message: "Maintainer Email is required.")
+    |> validate_format(:contactEmail, ~r/^[A-Za-z0-9._%+-+']+@[A-Za-z0-9.-]+\.[A-Za-z]+$/, message: "Email is invalid.")
     |> validate_required([:issuedDate], message: "Release Date is required.")
     |> validate_required([:license], message: "License is required.")
     |> validate_required([:publishFrequency], message: "Publish Frequency is required.")

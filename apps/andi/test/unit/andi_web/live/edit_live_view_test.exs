@@ -2,6 +2,7 @@ defmodule AndiWeb.EditLiveViewTest do
   use AndiWeb.ConnCase
   use Phoenix.ConnTest
   import Phoenix.LiveViewTest
+  import Checkov
 
   alias Andi.DatasetCache
 
@@ -68,6 +69,40 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
 
       assert {"spanish", "Spanish"} = get_select(html, "#dataset_schema_business_language")
+    end
+
+    data_test "errors on invalid email: #{email}", %{conn: conn} do
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{contactEmail: email}}),
+        :contactEmail,
+        "Email is invalid."
+      )
+
+      where([
+        [:email],
+        ["foomail.com"],
+        ["kevinspace@"],
+        ["kevinspace@notarealdomain"],
+        ["my little address"]
+      ])
+    end
+
+    data_test "does not error on valid email: #{email}", %{conn: conn} do
+      # Assert error message is blank (no error)
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{contactEmail: email}}),
+        :contactEmail,
+        ""
+      )
+
+      where([
+        [:email],
+        ["foo@mail.com"],
+        ["kevin@space.org"],
+        ["my@little.gov"]
+      ])
     end
 
     test "adds commas between keywords", %{conn: conn} do
