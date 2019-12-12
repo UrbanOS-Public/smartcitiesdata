@@ -64,8 +64,6 @@ defmodule DiscoveryStreams.Mixfile do
       {:temporary_env, "~> 2.0", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev, runtime: false},
       {:distillery, "~> 2.1"},
-      # poison breaks @ 4.0.1 due to encode_to_iotdata missing from 4.0
-      # {:poison, "~> 4.0"},
       {:poison, "~> 3.1", override: true}
     ]
   end
