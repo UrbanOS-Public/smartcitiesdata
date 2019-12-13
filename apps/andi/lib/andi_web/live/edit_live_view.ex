@@ -122,6 +122,9 @@ defmodule AndiWeb.EditLiveView do
         </div>
         <div class="metadata-form__save-btn">
           <%= Form.submit("Save", id: "save-button", class: "btn btn--save", disabled: length(get_all_errors(@changeset)) > 0) %>
+          <%= if @is_saved  do %>
+            <div id="success-message">Saved Successfully</div>
+          <% end %>
         </div>
     </div>
     """
@@ -138,7 +141,7 @@ defmodule AndiWeb.EditLiveView do
       |> Map.put(:technical, new_technical)
       |> Andi.DatasetSchema.changeset()
 
-    {:ok, assign(socket, changeset: change)}
+    {:ok, assign(socket, changeset: change, is_saved: false)}
   end
 
   def handle_event(
@@ -155,7 +158,7 @@ defmodule AndiWeb.EditLiveView do
       |> put_in(["business", "orgTitle"], existing.business.changes.orgTitle)
 
     change = Andi.DatasetSchema.changeset(dataset_schema)
-    {:noreply, assign(socket, changeset: change)}
+    {:noreply, assign(socket, changeset: change, is_saved: false)}
   end
 
   def handle_event("save", _event, socket) do
@@ -178,7 +181,7 @@ defmodule AndiWeb.EditLiveView do
         IO.inspect(errors, label: "Had errors, what do we do?")
     end
 
-    {:noreply, socket}
+    {:noreply, assign(socket, is_saved: true)}
   end
 
   defp get_keywords(nil), do: ""

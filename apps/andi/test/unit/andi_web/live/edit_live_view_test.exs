@@ -389,6 +389,24 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert [] == Floki.find(html, "#save-button") |> Floki.attribute("disabled")
     end
+
+    test "success message is displayed when metadata is saved", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{
+          business: %{issuedDate: "", publishFrequency: "12345"}
+        })
+
+      DatasetCache.put(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert get_text(html, "#success-message") == ""
+
+      dataset_map = dataset_to_map(dataset) |> put_in([:business, :issuedDate], "12345")
+
+      html = render_change(view, :save, %{"dataset_schema" => dataset_map})
+
+      assert get_text(html, "#success-message") == "Saved Successfully"
+    end
   end
 
   defp assert_error_message(conn, dataset, field, error_message) do
