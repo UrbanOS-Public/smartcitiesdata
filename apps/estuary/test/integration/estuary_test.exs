@@ -126,7 +126,7 @@ defmodule Estuary.EstuaryTest do
       "type" => "some type"
     }
 
-    expected_value = "\"create_ts\":\"'5'\""
+    expected_value = "\\\\\\\"create_ts\\\\\\\":\\\\\\\"'5'\\\\\\\""
 
     produce_event(
       @event_stream_topic,
