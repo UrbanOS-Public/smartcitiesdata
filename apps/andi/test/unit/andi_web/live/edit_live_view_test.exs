@@ -333,7 +333,7 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
       html = render_change(view, :save, %{})
 
       assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, dataset), once())
@@ -345,10 +345,49 @@ defmodule AndiWeb.EditLiveViewTest do
 
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
       html = render_change(view, :save, %{})
 
       refute_called(Brook.Event.send(instance_name(), dataset_update(), :andi, dataset), once())
+    end
+
+    test "save should be disabled if there ARE errors", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{dataTitle: ""}})
+      DatasetCache.put(dataset)
+      assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
+
+      assert ["disabled"] == Floki.find(html, "#save-button") |> Floki.attribute("disabled")
+    end
+
+    test "save should NOT be disabled if there are NO errors", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{
+          business: %{publishFrequency: "frequently", issuedDate: "the begenening"},
+          technical: %{cadence: "123"}
+        })
+
+      DatasetCache.put(dataset)
+      assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
+
+      assert [] == Floki.find(html, "#save-button") |> Floki.attribute("disabled")
+    end
+
+    test "save should be disabled when there are errors then be enabled when they are corrected", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{
+          business: %{issuedDate: "", publishFrequency: "1234"}
+        })
+
+      DatasetCache.put(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert ["disabled"] == Floki.find(html, "#save-button") |> Floki.attribute("disabled")
+
+      dataset_map = dataset_to_map(dataset) |> put_in([:business, :issuedDate], "12345")
+
+      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+
+      assert [] == Floki.find(html, "#save-button") |> Floki.attribute("disabled")
     end
   end
 

@@ -61,10 +61,26 @@ body {
 .btn--save {
   @extend .btn--cancel;
   float: right;
-  background-color: white;
-  border-color: $color-text-link;
   color: $color-text-link;
-  border-width: 2px;
+  background-color: white;
+  border: 2px solid $color-text-link;
+}
+
+.btn--save:hover {
+  background: $color-text-link;
+  color: white;
+  border: 2px solid $color-text-link;
+}
+
+.btn--save:disabled {
+  background: #f3f3f3;
+  color: $disabled-background;
+  border: 2px solid $disabled-background;
+}
+.btn--save:disabled:hover {
+  background: #f3f3f3;
+  color: $disabled-background;
+  border: 2px solid $disabled-background;
 }
 
 .label {
@@ -92,9 +108,9 @@ body {
   border-radius: 2px;
 }
 
-input[type="text"]:disabled {
+.input[type="text"]:disabled {
   background: #f3f3f3;
-  color: #8a8a8a;
+  color: $disabled-background;
 }
 
 .textarea {

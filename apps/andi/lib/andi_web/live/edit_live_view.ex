@@ -121,7 +121,7 @@ defmodule AndiWeb.EditLiveView do
           <%= Link.button("Cancel", to: "/", class: "btn btn--cancel") %>
         </div>
         <div class="metadata-form__save-btn">
-          <%= Form.submit("Save", class: "btn btn--save") %>
+          <%= Form.submit("Save", id: "save-button", class: "btn btn--save", disabled: length(get_all_errors(@changeset)) > 0) %>
         </div>
     </div>
     """
@@ -137,8 +137,6 @@ defmodule AndiWeb.EditLiveView do
       |> Map.put(:business, new_business)
       |> Map.put(:technical, new_technical)
       |> Andi.DatasetSchema.changeset()
-
-    # IO.inspect(change, label: "mount")
 
     {:ok, assign(socket, changeset: change)}
   end

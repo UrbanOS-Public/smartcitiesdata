@@ -2,17 +2,19 @@ $search-unfocused: lightgray;
 $search-focused: darkgray;
 $header-shadow: rgba(0, 0, 0, 0.6);
 
-$color-background: #F6F9FF;
+$disabled-background: #8a8a8a;
+
+$color-background: #f6f9ff;
 $color-content-background: white;
 
 $color-text-primary: black;
-$color-text-link: #26ADEB;
+$color-text-link: #26adeb;
 
-$color-table-header: #CEC9C9;
-$color-table-stripe: #F6F6F6;
+$color-table-header: #cec9c9;
+$color-table-stripe: #f6f6f6;
 
-$table-border: 1px solid #D7D9DB;
-$table-padding: .5em 1.5em;
+$table-border: 1px solid #d7d9db;
+$table-padding: 0.5em 1.5em;
 $table-height: 2em;
 
 $box-shadow: 0 0 6px rgba(20, 20, 20, 0.2);
