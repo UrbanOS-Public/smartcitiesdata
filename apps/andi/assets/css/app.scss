@@ -37,7 +37,7 @@ body {
   cursor: pointer;
   background-color: black;
   color: white;
-  min-width: 2rem;
+  min-width: 10rem;
 
   &:hover {
     background-color: lighten(black, 20%);
@@ -55,10 +55,16 @@ body {
 .btn--cancel {
   padding: 0.4rem 1.7rem;
   font-size: 1.5rem;
+  max-width: 10rem;
 }
 
 .btn--save {
   @extend .btn--cancel;
+  float: right;
+  background-color: white;
+  border-color: $color-text-link;
+  color: $color-text-link;
+  border-width: 2px;
 }
 
 .label {
@@ -86,10 +92,23 @@ body {
   border-radius: 2px;
 }
 
+input[type="text"]:disabled {
+  background: #f3f3f3;
+  color: #8a8a8a;
+}
+
 .textarea {
   width: 100%;
   max-width: 35rem;
   height: 65%;
+}
+
+.select {
+  background-color: white;
+  font-size: 1rem;
+  width: 26rem;
+  height: 2.3rem;
+  border: 1px solid #e2e5ea;
 }
 
 @import "./datasets.scss";

@@ -101,14 +101,14 @@ defmodule AndiWeb.EditLiveView do
         <div class="metadata-form__level-of-access">
           <%= Form.inputs_for f, :technical, fn fp -> %>
             <%= Form.label(fp, :private, "Level of Access", class: "label label--required") %>
-            <%= Form.select(fp, :private, [[key: "Private", value: "true"], [key: "Public", value: "false"]]) %>
+            <%= Form.select(fp, :private, [[key: "Private", value: "true"], [key: "Public", value: "false"]], class: "select") %>
             <%= error_tag(fp, :private) %>
           <% end %>
         </div>
         <div class="metadata-form__language">
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :language, "Language", class: "label") %>
-            <%= Form.select(fp, :language, [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]], value: get_language(Form.input_value(fp, :language))) %>
+            <%= Form.select(fp, :language, [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]], value: get_language(Form.input_value(fp, :language)), class: "select") %>
           <% end %>
         </div>
         <div class="metadata-form__homepage">
@@ -117,9 +117,12 @@ defmodule AndiWeb.EditLiveView do
             <%= Form.text_input(fp, :homepage, class: "input") %>
           <% end %>
         </div>
-      </div>
-      <%= Link.link("Cancel", to: "/", class: "btn btn--cancel metadata-form__cancel-btn") %>
-      <%= Form.submit("Save", class: "btn btn--save metadata-form__save-btn") %>
+        <div class="metadata-form__cancel-btn">
+          <%= Link.button("Cancel", to: "/", class: "btn btn--cancel") %>
+        </div>
+        <div class="metadata-form__save-btn">
+          <%= Form.submit("Save", class: "btn btn--save") %>
+        </div>
     </div>
     """
   end
