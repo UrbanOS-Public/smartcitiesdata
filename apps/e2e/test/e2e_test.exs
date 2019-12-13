@@ -39,15 +39,33 @@ defmodule E2ETest do
     }
   }
 
+  @geo_overrides %{
+    id: "geo_data",
+    technical: %{
+      orgName: "end_to",
+      dataName: "land",
+      systemName: "end_to__land",
+      schema: [%{name: "feature", type: "json"}],
+      sourceType: "ingest",
+      sourceFormat: "zip",
+      cadence: "once"
+    }
+  }
+
   setup_all do
     bypass = Bypass.open()
     user = Application.get_env(:andi, :ldap_user)
     pass = Application.get_env(:andi, :ldap_pass)
+    shapefile = File.read!("test/support/shapefile.zip")
     Paddle.authenticate(user, pass)
     Paddle.add([ou: "integration"], objectClass: ["top", "organizationalunit"], ou: "integration")
 
     Bypass.stub(bypass, "GET", "/path/to/the/data.csv", fn conn ->
       Plug.Conn.resp(conn, 200, "true,foobar,10")
+    end)
+
+    Bypass.stub(bypass, "GET", "/path/to/the/geo_data.shapefile", fn conn ->
+      Plug.Conn.resp(conn, 200, shapefile)
     end)
 
     dataset =
@@ -60,7 +78,15 @@ defmodule E2ETest do
 
     streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
 
-    [dataset: dataset, streaming_dataset: streaming_dataset]
+    geo_dataset =
+      @geo_overrides
+      |> put_in(
+        [:technical, :sourceUrl],
+        "http://localhost:#{bypass.port()}/path/to/the/geo_data.shapefile"
+      )
+      |> TDG.create_dataset()
+
+    [dataset: dataset, streaming_dataset: streaming_dataset, geo_dataset: geo_dataset]
   end
 
   describe "creating an organization" do
@@ -182,9 +208,10 @@ defmodule E2ETest do
 
   describe "streaming data" do
     test "creating a dataset via RESTful PUT", %{streaming_dataset: ds} do
-      resp = HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-            {"Content-Type", "application/json"}
-          ])
+      resp =
+        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
+          {"Content-Type", "application/json"}
+        ])
 
       assert resp.status_code == 201
     end
@@ -237,9 +264,13 @@ defmodule E2ETest do
 
       {:ok, _, _} =
         socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
-        |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{ds.technical.systemName}", %{})
+        |> subscribe_and_join(
+          DiscoveryStreamsWeb.StreamingChannel,
+          "streaming:#{ds.technical.systemName}",
+          %{}
+        )
 
-      assert_push "update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000
+      assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000)
     end
 
     test "is profiled by flair", %{streaming_dataset: ds} do
@@ -252,6 +283,35 @@ defmodule E2ETest do
 
         Enum.each(expected, fn app -> assert [ds.id, app] in actual end)
       end)
+    end
+  end
+
+  describe "geospatial data" do
+    test "creating a dataset via RESTful PUT", %{geo_dataset: ds} do
+      resp = HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
+        {"Content-Type", "application/json"}
+          ])
+
+      assert resp.status_code == 201
+    end
+
+      @expected "geometry\":{\"coordinates\":[[[489257.623999998,141086.54630000144],[489122.64400000125,140988.30629999936],[489095.22399999946,140739.3161999993],[489056.8439999968,140586.14620000124],[488969.7339999974,140433.58619999886],[488902.72389999777,140127.2360999994],[488749.84390000254,139992.97610000148],[488664.56390000135,139840.4160999991],[488654.7638999969,139676.89600000158],[488470.0838999972,139543.89600000158],[488453.2937999964,139529.5460000001],[488436.47389999777,139513.3660000004],[488420.28390000015,139498.39600000158],[488407.07379999757,139479.0859999992],[488399.27380000055,139454.77600000054],[488398.683799997,139424.21599999815],[488398.11389999837,139394.87590000033],[488391.49390000105,139368.71590000018],[488371.00379999727,139320.80600000173],[488271.78379999846,139090.38589999825],[488247.60379999876,139041.3258999996],[488244.89389999956,139026.17590000108],[488242.80380000174,139014.51590000093],[488244.49379999936,138975.34589999914],[488244.02380000055,138950.8958999999],[488233.6238999963,138918.69590000063],[488215.77380000055,138881.13589999825],[488199.35379999876,138853.935899999],[488185.84380000085,138807.08590000123]"
+    @tag timeout: :infinity
+    test "persists geojson in PrestoDB", %{geo_dataset: ds} do
+
+      table = ds.technical.systemName
+
+      eventually(
+        fn ->
+          # assert [[table] | _] = query("show tables like '#{table}'")
+          assert [[table | _]] = query("show tables like '#{table}'")
+          # [[actual]] = query("select * from #{table}")
+          query("select * from #{table}") |> IO.inspect(label: "SELECT FROM TABLE")
+          # assert String.starts_with?(expected) == actual
+          assert @expected <> _rest = "GEOJSON!" #actual
+        end,
+        30_000
+      )
     end
   end
 

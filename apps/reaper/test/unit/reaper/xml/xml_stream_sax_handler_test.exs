@@ -48,8 +48,6 @@ defmodule XMLStream.SaxHandlerTest do
     Enum.each(all_rows, fn row ->
       assert String.contains?(row, "&amp;")
     end)
-
-
   end
 
   defp make_test_emitter do
@@ -63,6 +61,5 @@ defmodule XMLStream.SaxHandlerTest do
     after
       0 -> msgs
     end
-
   end
 end

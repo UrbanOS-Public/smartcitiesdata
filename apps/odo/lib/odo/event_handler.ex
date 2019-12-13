@@ -28,7 +28,10 @@ defmodule Odo.EventHandler do
     end
   end
 
-  def handle_event(%Brook.Event{type: file_ingest_end(), data: %HostedFile{mime_type: "application/geo+json"} = file_data}) do
+  def handle_event(%Brook.Event{
+        type: file_ingest_end(),
+        data: %HostedFile{mime_type: "application/geo+json"} = file_data
+      }) do
     old_key = String.replace(file_data.key, ".geojson", ".shapefile")
 
     Logger.debug("Geojson file converted for dataset: #{file_data.dataset_id}, removing from state view")

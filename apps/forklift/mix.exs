@@ -13,13 +13,11 @@ defmodule Forklift.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
-      docs: docs(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env())
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger],
@@ -27,7 +25,6 @@ defmodule Forklift.MixProject do
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:benchee, "~> 1.0", only: [:integration]},
@@ -36,7 +33,7 @@ defmodule Forklift.MixProject do
       {:checkov, "~> 0.4"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:elsa, "~> 0.10.0"},
       {:ex_doc, "~> 0.21"},
@@ -64,16 +61,6 @@ defmodule Forklift.MixProject do
 
   defp aliases do
     [verify: ["format --check-formatted", "credo"]]
-  end
-
-  defp docs do
-    [
-      main: "readme",
-      source_url: "https://www.github.com/smartcolumbusos/forklift",
-      extras: [
-        "README.md"
-      ]
-    ]
   end
 
   defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/support"]

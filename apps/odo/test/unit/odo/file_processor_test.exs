@@ -34,7 +34,11 @@ defmodule Odo.Unit.FileProcessorTest do
   describe "successful conversion of shapefile to geojson" do
     setup %{conversion_map: conversion_map} do
       allow(ExAws.request(any()), return: {:ok, :done})
-      allow(Brook.Event.send(Odo.event_stream_instance(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
+
+      allow(Brook.Event.send(Odo.event_stream_instance(), any(), any(), any()),
+        return: :ok,
+        meck_options: [:passthrough]
+      )
 
       result = Odo.FileProcessor.process(conversion_map)
 
