@@ -1,8 +1,12 @@
 defmodule AndiWeb.EditLiveViewTest do
   use AndiWeb.ConnCase
   use Phoenix.ConnTest
+  use Placebo
+
   import Phoenix.LiveViewTest
   import Checkov
+  import Andi
+  import SmartCity.Event, only: [dataset_update: 0]
 
   alias Andi.DatasetCache
 
@@ -315,6 +319,36 @@ defmodule AndiWeb.EditLiveViewTest do
 
       html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
       assert get_value(html, "#dataset_schema_business_orgTitle") == dataset.business.orgTitle
+    end
+  end
+
+  describe "save metadata" do
+    test "valid metadata is saved on submit", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{publishFrequency: "frequently", issuedDate: "the begenening"}})
+      DatasetCache.put(dataset)
+
+      dataset_map = dataset_to_map(dataset)
+
+      allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      html = render_change(view, :save, dataset_map)
+
+      assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, "event"), once())
+    end
+
+    test "invalid metadata is not saved on submit", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{publishFrequency: ""}})
+      DatasetCache.put(dataset)
+
+      dataset_map = dataset_to_map(dataset)
+
+      allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      html = render_change(view, :save, dataset_map)
+
+      refute_called(Brook.Event.send(instance_name(), dataset_update(), :andi, "event"), once())
     end
   end
 

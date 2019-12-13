@@ -3,11 +3,13 @@ defmodule AndiWeb.EditLiveView do
   alias Phoenix.HTML.Form
   alias Phoenix.HTML.Link
   import AndiWeb.ErrorHelpers
+  import Andi
+  import SmartCity.Event, only: [dataset_update: 0]
 
   def render(assigns) do
     ~L"""
     <div class="edit-page">
-      <%= f = Form.form_for @changeset, "#", [phx_change: :validate, class: "metadata-form"] %>
+      <%= f = Form.form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, class: "metadata-form"] %>
         <div class="metadata-form__title">
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :title, "Title of Dataset", class: "label label--required") %>
@@ -117,11 +119,9 @@ defmodule AndiWeb.EditLiveView do
         </div>
       </div>
       <%= Link.link("Cancel", to: "/", class: "btn btn--cancel metadata-form__cancel-btn") %>
+      <%= Form.submit("Save", class: "btn btn--save metadata-form__save-btn") %>
     </div>
     """
-
-    # <%= Form.text_input(fp, :private, value: get_private(Form.input_value(fp, :private)), class: "input") %>
-    # <%= Form.select(fp, :private, ["Public": false, "Private": true]) %>
   end
 
   def mount(%{dataset: dataset}, socket) do
@@ -157,6 +157,18 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: change)}
   end
 
+  def handle_event("save", event, socket) do
+    # IO.inspect(event, label: "event::::")
+    # IO.inspect(socket.assigns.changeset, label: "socket::::")
+
+    case get_all_errors(socket.assigns.changeset) do
+      [] -> Brook.Event.send(instance_name(), dataset_update(), :andi, "event")
+      errors -> IO.inspect(errors, label: "Had errors, what do we do?")
+    end
+
+    {:noreply, socket}
+  end
+
   defp get_keywords(nil), do: ""
   defp get_keywords(keywords), do: Enum.join(keywords, ", ")
 
@@ -168,4 +180,8 @@ defmodule AndiWeb.EditLiveView do
 
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang
+
+  defp get_all_errors(changeset) do
+    changeset.errors ++ changeset.changes.technical.errors ++ changeset.changes.business.errors
+  end
 end

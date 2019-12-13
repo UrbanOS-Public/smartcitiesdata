@@ -57,6 +57,10 @@ body {
   font-size: 1.5rem;
 }
 
+.btn--save {
+  @extend .btn--cancel;
+}
+
 .label {
   color: #7f7676;
   display: block;
