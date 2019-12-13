@@ -157,13 +157,24 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: change)}
   end
 
-  def handle_event("save", event, socket) do
-    # IO.inspect(event, label: "event::::")
-    # IO.inspect(socket.assigns.changeset, label: "socket::::")
-
+  def handle_event("save", _event, socket) do
     case get_all_errors(socket.assigns.changeset) do
-      [] -> Brook.Event.send(instance_name(), dataset_update(), :andi, "event")
-      errors -> IO.inspect(errors, label: "Had errors, what do we do?")
+      [] ->
+        schema = Ecto.Changeset.apply_changes(socket.assigns.changeset)
+        bus_map = schema.business |> Map.from_struct()
+        tech_map = schema.technical |> Map.from_struct()
+
+        {:ok, dataset} =
+          schema
+          |> Map.from_struct()
+          |> Map.put(:business, bus_map)
+          |> Map.put(:technical, tech_map)
+          |> SmartCity.Dataset.new()
+
+        Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
+
+      errors ->
+        IO.inspect(errors, label: "Had errors, what do we do?")
     end
 
     {:noreply, socket}

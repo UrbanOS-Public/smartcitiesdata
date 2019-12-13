@@ -324,31 +324,31 @@ defmodule AndiWeb.EditLiveViewTest do
 
   describe "save metadata" do
     test "valid metadata is saved on submit", %{conn: conn} do
-      dataset = TDG.create_dataset(%{business: %{publishFrequency: "frequently", issuedDate: "the begenening"}})
+      dataset =
+        TDG.create_dataset(%{
+          business: %{publishFrequency: "frequently", issuedDate: "the begenening"},
+          technical: %{cadence: "123"}
+        })
+
       DatasetCache.put(dataset)
-
-      dataset_map = dataset_to_map(dataset)
-
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      html = render_change(view, :save, dataset_map)
+      html = render_change(view, :save, %{})
 
-      assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, "event"), once())
+      assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, dataset), once())
     end
 
     test "invalid metadata is not saved on submit", %{conn: conn} do
       dataset = TDG.create_dataset(%{business: %{publishFrequency: ""}})
       DatasetCache.put(dataset)
 
-      dataset_map = dataset_to_map(dataset)
-
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      html = render_change(view, :save, dataset_map)
+      html = render_change(view, :save, %{})
 
-      refute_called(Brook.Event.send(instance_name(), dataset_update(), :andi, "event"), once())
+      refute_called(Brook.Event.send(instance_name(), dataset_update(), :andi, dataset), once())
     end
   end
 

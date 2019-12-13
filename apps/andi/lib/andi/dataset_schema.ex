@@ -3,14 +3,13 @@ defmodule Andi.DatasetSchema do
   import Ecto.Changeset
 
   embedded_schema do
-    field(:dataset_id, :string)
     embeds_one(:technical, Andi.DatasetTechnicalSchema)
     embeds_one(:business, Andi.DatasetBusinessSchema)
   end
 
   def changeset(params \\ %{}) do
     %Andi.DatasetSchema{}
-    |> cast(params, [:dataset_id])
+    |> cast(params, [:id])
     |> cast_embed(:technical)
     |> cast_embed(:business)
   end
@@ -21,13 +20,48 @@ defmodule Andi.DatasetTechnicalSchema do
   import Ecto.Changeset
 
   embedded_schema do
-    field(:sourceFormat, :string)
+    field(:allow_duplicates, :boolean)
+    field(:authHeaders, :map)
+    field(:authUrl, :string)
+    field(:cadence, :string)
+    field(:credentials, :boolean)
+    field(:dataName, :string)
+    field(:orgId, :string)
+    field(:orgName, :string)
     field(:private, :boolean)
+    field(:protocol, :string)
+    field(:schema, {:array, :map})
+    field(:sourceFormat, :string)
+    field(:sourceHeaders, :map)
+    field(:sourceQueryParams, :map)
+    field(:sourceType, :string)
+    field(:sourceUrl, :string)
+    field(:systemName, :string)
+    field(:topLevelSelector, :string)
   end
 
   def changeset(tech, params \\ %{}) do
     tech
-    |> cast(params, [:sourceFormat, :private])
+    |> cast(params, [
+      :allow_duplicates,
+      :authHeaders,
+      :authUrl,
+      :cadence,
+      :credentials,
+      :dataName,
+      :orgId,
+      :orgName,
+      :private,
+      :protocol,
+      :schema,
+      :sourceFormat,
+      :sourceHeaders,
+      :sourceQueryParams,
+      :sourceType,
+      :sourceUrl,
+      :systemName,
+      :topLevelSelector
+    ])
     |> validate_required([:sourceFormat], message: "Format is required.")
   end
 end
@@ -37,39 +71,57 @@ defmodule Andi.DatasetBusinessSchema do
   import Ecto.Changeset
 
   embedded_schema do
-    field(:dataTitle, :string)
-    field(:description, :string)
-    field(:contactName, :string)
+    field(:authorEmail, :string, default: nil)
+    field(:authorName, :string)
+    field(:categories, :string)
+    field(:conformsToUri, :string)
     field(:contactEmail, :string)
+    field(:contactName, :string)
+    field(:dataTitle, :string)
+    field(:describedByMimeType, :string)
+    field(:describedByUrl, :string)
+    field(:description, :string)
+    field(:homepage, :string)
     field(:issuedDate, :string)
-    field(:license, :string)
-    field(:publishFrequency, :string)
     field(:keywords, {:array, :string})
+    field(:language, :string)
+    field(:license, :string)
     field(:modifiedDate, :string)
+    field(:orgTitle, :string)
+    field(:parentDataset, :string)
+    field(:publishFrequency, :string)
+    field(:referenceUrls, :string)
+    field(:rights, :string)
     field(:spatial, :string)
     field(:temporal, :string)
-    field(:orgTitle, :string)
-    field(:language, :string)
-    field(:homepage, :string)
   end
 
   def changeset(biz, params \\ %{}) do
     biz
     |> cast(params, [
-      :dataTitle,
-      :description,
-      :contactName,
+      :authorEmail,
+      :authorName,
+      :categories,
+      :conformsToUri,
       :contactEmail,
+      :contactName,
+      :dataTitle,
+      :describedByMimeType,
+      :describedByUrl,
+      :description,
+      :homepage,
       :issuedDate,
-      :license,
-      :publishFrequency,
       :keywords,
-      :modifiedDate,
-      :spatial,
-      :temporal,
-      :orgTitle,
       :language,
-      :homepage
+      :license,
+      :modifiedDate,
+      :orgTitle,
+      :parentDataset,
+      :publishFrequency,
+      :referenceUrls,
+      :rights,
+      :spatial,
+      :temporal
     ])
     |> validate_required([:dataTitle], message: "Dataset Title is required.")
     |> validate_required([:description], message: "Description is required.")
