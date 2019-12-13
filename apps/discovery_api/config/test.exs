@@ -24,7 +24,7 @@ config :paddle, Paddle, base: "dc=example,dc=org"
 config :discovery_api, :brook,
   instance: :discovery_api,
   driver: [
-    module: Brook.Driver.Default,
+    module: Brook.Driver.Test,
     init_arg: []
   ],
   handlers: [DiscoveryApi.EventHandler],

@@ -6,6 +6,7 @@ defmodule DiscoveryApi.Data.Model do
 
   @behaviour Access
 
+  @derive Jason.Encoder
   defstruct [
     :accessLevel,
     :categories,
@@ -45,22 +46,28 @@ defmodule DiscoveryApi.Data.Model do
     :title
   ]
 
-  @model_name_space "discovery-api:model:"
-
+  @spec get(any) :: any
   def get(id) do
-    (@model_name_space <> id)
-    |> Persistence.get()
-    |> struct_from_json()
+    {:ok, model} = Brook.ViewState.get(DiscoveryApi.instance(), :models, id)
+
+    model
     |> add_system_attributes()
   end
 
   def get_all() do
-    get_all_models()
+    {:ok, models} = Brook.ViewState.get_all(DiscoveryApi.instance(), :models)
+
+    models
+    |> Map.values()
     |> add_system_attributes()
   end
 
   def get_all(ids) do
-    get_models(ids)
+    {:ok, models} = Brook.ViewState.get_all(DiscoveryApi.instance(), :models)
+
+    models
+    |> Enum.filter(fn {k, _v} -> k in ids end)
+    |> Enum.map(fn {_k, v} -> v end)
     |> add_system_attributes()
   end
 
@@ -77,15 +84,6 @@ defmodule DiscoveryApi.Data.Model do
   def get_last_updated_date(id) do
     ("forklift:last_insert_date:" <> id)
     |> Persistence.get()
-  end
-
-  def save(%__MODULE__{} = model) do
-    model_to_save =
-      model
-      |> default_nil_field_to(:keywords, [])
-      |> Map.from_struct()
-
-    Persistence.persist(@model_name_space <> model.id, model_to_save)
   end
 
   # sobelow_skip ["DOS.StringToAtom"]
@@ -114,19 +112,6 @@ defmodule DiscoveryApi.Data.Model do
 
   @impl Access
   def pop(data, key), do: Map.pop(data, key)
-
-  defp get_all_models() do
-    (@model_name_space <> "*")
-    |> Persistence.get_all()
-    |> Enum.map(&struct_from_json/1)
-  end
-
-  defp get_models(ids) do
-    ids
-    |> Enum.map(&(@model_name_space <> &1))
-    |> Persistence.get_many(true)
-    |> Enum.map(&struct_from_json/1)
-  end
 
   defp add_system_attributes(nil), do: nil
 
@@ -170,18 +155,18 @@ defmodule DiscoveryApi.Data.Model do
     end)
     |> List.flatten()
   end
+end
 
-  defp struct_from_json(nil), do: nil
+defimpl Brook.Deserializer.Protocol, for: DiscoveryApi.Data.Model do
+  def deserialize(_struct, data) do
+    model = struct(DiscoveryApi.Data.Model, data)
 
-  defp struct_from_json(json) do
-    map = Jason.decode!(json, keys: :atoms)
-    struct(__MODULE__, map)
-  end
+    orgWithAtomKeys =
+      model.organizationDetails
+      |> Enum.map(fn {k, v} -> {String.to_atom(k), v} end)
+      |> Map.new()
 
-  defp default_nil_field_to(model, field, default) do
-    case Map.get(model, field) do
-      nil -> Map.put(model, field, default)
-      _ -> model
-    end
+    orgDetails = struct(DiscoveryApi.Data.OrganizationDetails, orgWithAtomKeys)
+    {:ok, Map.put(model, :organizationDetails, orgDetails)}
   end
 end

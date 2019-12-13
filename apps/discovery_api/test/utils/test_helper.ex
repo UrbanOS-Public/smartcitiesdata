@@ -7,6 +7,7 @@ defmodule DiscoveryApi.Test.Helper do
   alias SmartCity.TestDataGenerator, as: TDG
 
   @ldap_people_ou "People"
+  @instance DiscoveryApi.instance()
 
   def sample_model(values \\ %{}) do
     %Model{
@@ -65,6 +66,16 @@ defmodule DiscoveryApi.Test.Helper do
       systemName: "#{Faker.Lorem.word()}__#{Faker.Lorem.word()}"
     }
     |> Map.merge(values)
+  end
+
+  def save_model(model) do
+    Brook.Test.with_event(@instance, fn ->
+      Brook.ViewState.merge(:models, model.id, model)
+    end)
+  end
+
+  def clear_saved_models() do
+    Brook.Test.clear_view_state(@instance, :models)
   end
 
   def ldap_user(values \\ %{}) do

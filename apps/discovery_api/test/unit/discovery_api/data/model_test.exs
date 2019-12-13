@@ -5,15 +5,10 @@ defmodule DiscoveryApi.Data.ModelTest do
   alias DiscoveryApi.Data.{Model, Persistence}
   alias DiscoveryApi.Test.Helper
 
-  test "save/1" do
-    dataset = Helper.sample_model() |> Map.put(:keywords, nil)
-    allow(Persistence.persist(any(), any()), return: {:ok, "good"})
+  @instance DiscoveryApi.instance()
 
-    Model.save(dataset)
-
-    %{keywords: actual_keywords} = capture(Persistence.persist(any(), any()), 2)
-
-    assert [] == actual_keywords
+  setup do
+    Brook.Test.clear_view_state(@instance, :models)
   end
 
   test "get_last_updated_date/1" do
@@ -35,9 +30,11 @@ defmodule DiscoveryApi.Data.ModelTest do
   end
 
   test "get/1" do
-    {_cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
+    cam_as_expected = generate_test_data("cam")
 
-    allow(Persistence.get("discovery-api:model:cam"), return: cam_as_json)
+    Brook.Test.with_event(@instance, fn ->
+      Brook.ViewState.merge(:models, cam_as_expected.id, cam_as_expected)
+    end)
 
     allow(Persistence.get_many_with_keys(any()), return: get_many_with_keys_result(cam_as_expected))
 
@@ -45,10 +42,13 @@ defmodule DiscoveryApi.Data.ModelTest do
   end
 
   test "get_all/1" do
-    {_cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
-    {_paul, paul_as_json, paul_as_expected} = generate_test_data("paul")
+    cam_as_expected = generate_test_data("cam")
+    paul_as_expected = generate_test_data("paul")
 
-    allow(Persistence.get_many(["discovery-api:model:cam", "discovery-api:model:paul"], true), return: [cam_as_json, paul_as_json])
+    Brook.Test.with_event(@instance, fn ->
+      Brook.ViewState.merge(:models, cam_as_expected.id, cam_as_expected)
+      Brook.ViewState.merge(:models, paul_as_expected.id, paul_as_expected)
+    end)
 
     allow(Persistence.get_many_with_keys(any()),
       return: Map.merge(get_many_with_keys_result(cam_as_expected), get_many_with_keys_result(paul_as_expected))
@@ -57,10 +57,30 @@ defmodule DiscoveryApi.Data.ModelTest do
     Assertions.assert_lists_equal([cam_as_expected, paul_as_expected], Model.get_all(["cam", "paul"]))
   end
 
-  test "get_all/1 does not throw error when model has been deleted from redis" do
-    {_paul, paul_as_json, paul_as_expected} = generate_test_data("paul")
+  test "get_all/1 only returns given ids" do
+    cam_as_expected = generate_test_data("cam")
+    paul_as_expected = generate_test_data("paul")
+    nate_as_expected = generate_test_data("nate")
 
-    allow(Persistence.get_many(any(), true), return: [paul_as_json])
+    Brook.Test.with_event(@instance, fn ->
+      Brook.ViewState.merge(:models, cam_as_expected.id, cam_as_expected)
+      Brook.ViewState.merge(:models, paul_as_expected.id, paul_as_expected)
+      Brook.ViewState.merge(:models, nate_as_expected.id, nate_as_expected)
+    end)
+
+    allow(Persistence.get_many_with_keys(any()),
+      return: Map.merge(get_many_with_keys_result(cam_as_expected), get_many_with_keys_result(paul_as_expected))
+    )
+
+    Assertions.assert_lists_equal([cam_as_expected, paul_as_expected], Model.get_all(["cam", "paul"]))
+  end
+
+  test "get_all/1 does not throw error when model does not exist" do
+    paul_as_expected = generate_test_data("paul")
+
+    Brook.Test.with_event(@instance, fn ->
+      Brook.ViewState.merge(:models, paul_as_expected.id, paul_as_expected)
+    end)
 
     allow(Persistence.get_many_with_keys(any()),
       return: Map.merge(get_many_with_keys_result(nil), get_many_with_keys_result(paul_as_expected))
@@ -70,15 +90,19 @@ defmodule DiscoveryApi.Data.ModelTest do
   end
 
   test "get_all/0" do
-    {_cam, cam_as_json, cam_as_expected} = generate_test_data("cam")
+    cam_as_expected = generate_test_data("cam")
+    paul_as_expected = generate_test_data("paul")
 
-    allow(Persistence.get_all("discovery-api:model:*"), return: [cam_as_json])
+    Brook.Test.with_event(@instance, fn ->
+      Brook.ViewState.merge(:models, cam_as_expected.id, cam_as_expected)
+      Brook.ViewState.merge(:models, paul_as_expected.id, paul_as_expected)
+    end)
 
     allow(Persistence.get_many_with_keys(any()),
-      return: get_many_with_keys_result(cam_as_expected)
+      return: Map.merge(get_many_with_keys_result(cam_as_expected), get_many_with_keys_result(paul_as_expected))
     )
 
-    Assertions.assert_lists_equal([cam_as_expected], Model.get_all())
+    Assertions.assert_lists_equal([cam_as_expected, paul_as_expected], Model.get_all())
   end
 
   defp get_many_with_keys_result(nil) do
@@ -104,13 +128,10 @@ defmodule DiscoveryApi.Data.ModelTest do
   end
 
   defp generate_test_data(name) do
-    model = Helper.sample_model(%{id: name})
-    model_as_json = model |> Map.from_struct() |> Jason.encode!()
-
     [x, y, z] = Stream.repeatedly(&:rand.uniform/0) |> Enum.take(3)
 
-    expected_model = Map.merge(model, %{completeness: %{completeness: x}, downloads: y, queries: z, lastUpdatedDate: DateTime.utc_now()})
-
-    {model, model_as_json, expected_model}
+    %{id: name}
+    |> Helper.sample_model()
+    |> Map.merge(%{completeness: %{completeness: x}, downloads: y, queries: z, lastUpdatedDate: DateTime.utc_now()})
   end
 end

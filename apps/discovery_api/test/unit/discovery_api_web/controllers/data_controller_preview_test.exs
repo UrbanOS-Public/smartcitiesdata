@@ -19,8 +19,8 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
           queries: 7,
           downloads: 9,
           schema: [
-            %{name: "id", type: "integer"},
-            %{name: "json_encoded", type: "json"}
+            %{"name" => "id", "type" => "integer"},
+            %{"name" => "json_encoded", "type" => "json"}
           ]
         })
 
@@ -84,8 +84,8 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
           sourceFormat: "geojson",
           systemName: dataset_name,
           schema: [
-            %{name: "id", type: "integer"},
-            %{name: "name", type: "string"}
+            %{"name" => "id", "type" => "integer"},
+            %{"name" => "name", "type" => "string"}
           ]
         })
 

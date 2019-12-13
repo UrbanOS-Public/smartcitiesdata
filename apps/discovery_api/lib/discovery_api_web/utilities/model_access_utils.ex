@@ -4,9 +4,9 @@ defmodule DiscoveryApiWeb.Utilities.ModelAccessUtils do
   """
   @behaviour DiscoveryApiWeb.Utilities.AccessUtils
   alias DiscoveryApi.Data.Model
+  alias DiscoveryApi.Data.OrganizationDetails
 
   def has_access?(%Model{private: false} = _dataset, _username), do: true
-
   def has_access?(%Model{private: true} = _dataset, nil), do: false
 
   def has_access?(%Model{private: true, organizationDetails: %{id: id}} = _dataset, %{organizations: organizations}) do

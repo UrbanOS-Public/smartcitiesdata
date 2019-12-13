@@ -29,8 +29,8 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
             orgName: org_name
           },
           schema: [
-            %{name: "bob", type: "integer"},
-            %{name: "andi", type: "integer"}
+            %{"name" => "bob", "type" => "integer"},
+            %{"name" => "andi", "type" => "integer"}
           ]
         })
 

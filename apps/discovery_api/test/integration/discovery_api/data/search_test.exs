@@ -31,8 +31,10 @@ defmodule DiscoveryApi.Data.SearchTest do
         description: "two"
       })
 
-    Model.save(model_one)
-    Model.save(model_two)
+    Brook.Test.with_event(DiscoveryApi.instance(), fn ->
+      Brook.ViewState.merge(:models, model_one.id, model_one)
+      Brook.ViewState.merge(:models, model_two.id, model_two)
+    end)
 
     :ok
   end

@@ -35,7 +35,7 @@ defmodule DiscoveryApi.Stats.Completeness do
     |> remove_dot()
   end
 
-  defp update_field_count(field_stats, %{name: field_name} = field, data) do
+  defp update_field_count(field_stats, %{"name" => field_name} = field, data) do
     field_stats
     |> increment_field_count(field, get_field_path(field_name), data)
   end
@@ -46,7 +46,7 @@ defmodule DiscoveryApi.Stats.Completeness do
     |> Enum.map(&String.downcase(&1))
   end
 
-  defp increment_field_count(field_stats, %{name: field_name, required: required}, field_path, data) do
+  defp increment_field_count(field_stats, %{"name" => field_name, "required" => required}, field_path, data) do
     count_in_row = field_count_in_row(data, field_path)
 
     Map.update(
@@ -78,24 +78,24 @@ defmodule DiscoveryApi.Stats.Completeness do
 
   defp remove_dot(list) do
     Enum.map(list, fn map ->
-      Map.update!(map, :name, fn name -> String.slice(name, 1..(String.length(name) - 1)) end)
+      Map.update!(map, "name", fn name -> String.slice(name, 1..(String.length(name) - 1)) end)
     end)
   end
 
   defp get_sub_fields(field, parent_name) do
-    if Map.get(field, :subSchema, nil) == nil do
-      name = parent_name <> "." <> Map.get(field, :name)
+    if Map.get(field, "subSchema", nil) == nil do
+      name = parent_name <> "." <> Map.get(field, "name")
 
-      [%{name: name, required: Map.get(field, :required, false)}]
+      [%{"name" => name, "required" => Map.get(field, "required", false)}]
     else
-      name = parent_name <> "." <> Map.get(field, :name)
+      name = parent_name <> "." <> Map.get(field, "name")
 
       sub_field =
         field
-        |> Map.get(:subSchema)
+        |> Map.get("subSchema")
         |> Enum.map(fn sub_field -> get_sub_fields(sub_field, name) end)
 
-      sub_field ++ [[%{name: name, required: Map.get(field, :required, false)}]]
+      sub_field ++ [[%{"name" => name, "required" => Map.get(field, "required", false)}]]
     end
   end
 end

@@ -17,8 +17,8 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
           %{"id" => 2, "name" => "tony"},
           %{"id" => 2, "name" => "tony"},
           [
-            %{name: "id", type: "integer"},
-            %{name: "name", type: "string"}
+            %{"name" => "id", "type" => "integer"},
+            %{"name" => "name", "type" => "string"}
           ]
         ],
         [
@@ -26,8 +26,8 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
           %{"id" => 1, "name" => %{"name" => "robert"}},
           %{"id" => 1, "name" => "{\"name\": \"robert\"}"},
           [
-            %{name: "id", type: "integer"},
-            %{name: "name", type: "json"}
+            %{"name" => "id", "type" => "integer"},
+            %{"name" => "name", "type" => "json"}
           ]
         ],
         [
@@ -50,8 +50,8 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
             "bins" => "{\"bins\":{\"day\":{},\"hour\":{},\"minute\":{}},\"streets\":{\"day\":{},\"hour\":{},\"minute\":{}}}"
           },
           [
-            %{name: "id", type: "integer"},
-            %{name: "bins", type: "json"}
+            %{"name" => "id", "type" => "integer"},
+            %{"name" => "bins", "type" => "json"}
           ]
         ],
         [
@@ -59,7 +59,7 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
           %{"id" => 1},
           %{"id" => 1},
           [
-            %{name: "not_found", type: "json"}
+            %{"name" => "not_found", "type" => "json"}
           ]
         ],
         [
@@ -67,7 +67,7 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
           %{"mixedcasekey" => %{"name" => "billy"}},
           %{"mixedcasekey" => "{\"name\": \"billy\"}"},
           [
-            %{name: "mIxEdCaSeKeY", type: "json"}
+            %{"name" => "mIxEdCaSeKeY", "type" => "json"}
           ]
         ]
       ])
@@ -79,8 +79,8 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
       input = %{"id" => 1, "name" => "{\"name\" \"robert\"}"}
 
       schema = [
-        %{name: "id", type: "integer"},
-        %{name: "name", type: "json"}
+        %{"name" => "id", "type" => "integer"},
+        %{"name" => "name", "type" => "json"}
       ]
 
       assert_raise(Jason.DecodeError, fn -> JsonFieldDecoder.decode_one_datum(schema, input) end)

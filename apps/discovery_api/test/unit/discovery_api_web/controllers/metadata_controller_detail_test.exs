@@ -14,22 +14,22 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
     test "retrieves dataset + organization from retriever when organization found", %{conn: conn} do
       schema = [
         %{
-          :description => "a number",
-          :name => "number",
-          :type => "integer",
-          :pii => "false",
-          :biased => "false",
-          :masked => "N/A",
-          :demographic => "None"
+          "description" => "a number",
+          "name" => "number",
+          "type" => "integer",
+          "pii" => "false",
+          "biased" => "false",
+          "masked" => "N/A",
+          "demographic" => "None"
         },
         %{
-          :description => "a name",
-          :name => "name",
-          :type => "string",
-          :pii => "true",
-          :biased => "true",
-          :masked => "yes",
-          :demographic => "Other"
+          "description" => "a name",
+          "name" => "name",
+          "type" => "string",
+          "pii" => "true",
+          "biased" => "true",
+          "masked" => "yes",
+          "demographic" => "Other"
         }
       ]
 

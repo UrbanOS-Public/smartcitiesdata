@@ -74,7 +74,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
       model = %{
         id: "123",
         schema: [
-          %{name: "id", type: "string", required: true}
+          %{"name" => "id", "type" => "string", "required" => true}
         ]
       }
 
@@ -219,8 +219,8 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
       model = %{
         id: "123",
         schema: [
-          %{name: "Id", type: "number", required: true},
-          %{name: "Name", type: "string", required: true}
+          %{"name" => "Id", "type" => "number", "required" => true},
+          %{"name" => "Name", "type" => "string", "required" => true}
         ]
       }
 

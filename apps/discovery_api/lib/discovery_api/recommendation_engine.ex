@@ -30,7 +30,7 @@ defmodule DiscoveryApi.RecommendationEngine do
 
   defp schema_mapper(schema) do
     Enum.map(schema, fn column ->
-      %{name: column.name, type: column.type}
+      %{name: column["name"], type: column["type"]}
     end)
   end
 

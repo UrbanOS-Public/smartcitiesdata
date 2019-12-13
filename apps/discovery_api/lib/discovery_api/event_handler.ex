@@ -6,7 +6,7 @@ defmodule DiscoveryApi.EventHandler do
   require Logger
   alias SmartCity.{Organization, UserOrganizationAssociate, Dataset}
   alias DiscoveryApi.Schemas.{Organizations, Users}
-  alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
+  alias DiscoveryApi.Data.{Mapper, SystemNameCache}
   alias DiscoveryApiWeb.Plugs.ResponseCache
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data}) do
@@ -23,20 +23,18 @@ defmodule DiscoveryApi.EventHandler do
     :discard
   end
 
-  # TODO: View state?
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = dataset}) do
     Logger.debug(fn -> "Handling dataset: `#{dataset.technical.systemName}`" end)
 
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
          {:ok, _cached} <- SystemNameCache.put(dataset, organization),
-         model <- Mapper.to_data_model(dataset, organization),
-         {:ok, _result} <- Model.save(model) do
+         model <- Mapper.to_data_model(dataset, organization) do
       DiscoveryApi.Search.Storage.index(model)
       save_dataset_to_recommendation_engine(dataset)
       ResponseCache.invalidate()
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
 
-      :discard
+      merge(:models, model.id, model)
     else
       {:error, reason} ->
         Logger.error("Unable to process message `#{inspect(dataset)}` : ERROR: #{inspect(reason)}")

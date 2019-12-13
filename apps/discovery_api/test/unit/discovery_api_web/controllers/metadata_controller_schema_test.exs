@@ -10,24 +10,24 @@ defmodule DiscoveryApiWeb.MetadataController.SchemaTest do
     test "retrieves limited fields for dataset schema from model", %{conn: conn} do
       schema = [
         %{
-          :description => "a number",
-          :name => "number",
-          :type => "integer",
-          :pii => "false",
-          :biased => "false",
-          :masked => "N/A",
-          :demographic => "None",
-          :subSchema => %{}
+          "description" => "a number",
+          "name" => "number",
+          "type" => "integer",
+          "pii" => "false",
+          "biased" => "false",
+          "masked" => "N/A",
+          "demographic" => "None",
+          "subSchema" => %{}
         },
         %{
-          :description => "a name",
-          :name => "name",
-          :type => "list",
-          :pii => "true",
-          :biased => "true",
-          :masked => "yes",
-          :demographic => "Other",
-          :itemType => "String"
+          "description" => "a name",
+          "name" => "name",
+          "type" => "list",
+          "pii" => "true",
+          "biased" => "true",
+          "masked" => "yes",
+          "demographic" => "Other",
+          "itemType" => "String"
         }
       ]
 

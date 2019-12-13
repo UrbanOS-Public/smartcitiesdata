@@ -3,7 +3,6 @@ defmodule DiscoveryApi.Data.QueryTest do
   use ExUnit.Case
   use Divo
   use DiscoveryApi.DataCase
-  alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
 

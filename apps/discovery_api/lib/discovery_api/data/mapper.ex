@@ -6,6 +6,7 @@ defmodule DiscoveryApi.Data.Mapper do
   alias SmartCity.Dataset
   alias DiscoveryApi.Schemas.Organizations.Organization
   alias DiscoveryApi.Data.Model
+  alias DiscoveryApi.Data.OrganizationDetails
 
   @doc """
   Map a `SmartCity.Dataset` to a `DiscoveryApi.Data.Model`
@@ -43,7 +44,7 @@ defmodule DiscoveryApi.Data.Mapper do
       referenceUrls: biz.referenceUrls,
       categories: biz.categories,
       organization: organization.title,
-      organizationDetails: %{
+      organizationDetails: %OrganizationDetails{
         id: organization.id,
         orgName: organization.name,
         orgTitle: organization.title,
