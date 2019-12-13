@@ -122,11 +122,14 @@ defmodule AndiWeb.EditLiveView do
         </div>
         <div class="metadata-form__save-btn">
           <%= Form.submit("Save", id: "save-button", class: "btn btn--save", disabled: length(get_all_errors(@changeset)) > 0) %>
-          <%= if @is_saved  do %>
-            <div id="success-message">Saved Successfully</div>
-          <% end %>
+
         </div>
     </div>
+    <div>
+      <%= if @is_saved  do %>
+        <div id="success-message" class="div__success-message">Saved Successfully</div>
+      <% end %>
+    <div>
     """
   end
 
