@@ -21,7 +21,7 @@ defmodule Estuary.EventTable do
     |> Prestige.execute()
     |> Stream.run()
   rescue
-    error -> {:error, error}
+    error in Prestige.Error -> {:error, error}
   end
 
   defp table_name do

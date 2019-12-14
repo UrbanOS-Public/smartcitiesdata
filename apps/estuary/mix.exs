@@ -45,8 +45,7 @@ defmodule Estuary.MixProject do
 
   defp aliases do
     [
-      verify: ["format --check-formatted", "credo"],
-      test: "test --no-start"
+      verify: ["format --check-formatted", "credo"]
     ]
   end
 
