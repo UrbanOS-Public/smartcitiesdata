@@ -28,6 +28,12 @@ release :andi do
   set overlays: [{:copy, "apps/andi/runtime.exs", "etc/runtime.exs"}]
 end
 
+release :discovery_streams do
+  set version: current_version(:discovery_streams)
+  set applications: [:runtime_tools, :discovery_streams]
+  set overlays: [{:copy, "apps/discovery_streams/runtime.exs", "etc/runtime.exs"}]
+end
+
 release :estuary do
   set version: current_version(:estuary)
   set applications: [:runtime_tools, :estuary]

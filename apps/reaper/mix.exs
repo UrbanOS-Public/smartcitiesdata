@@ -51,7 +51,7 @@ defmodule Reaper.MixProject do
       {:gen_stage, "~> 0.14"},
       {:horde, "~> 0.7.0"},
       {:httpoison, "~> 1.6"},
-      {:poison, "~> 4.0", override: true},
+      {:poison, "~> 3.1", override: true},
       {:jason, "~> 1.1"},
       {:libcluster, "~> 3.1"},
       {:libvault, "~> 0.2"},
@@ -86,7 +86,7 @@ defmodule Reaper.MixProject do
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 1.2", only: [:test, :integration]},
-      {:smart_city_test, "~> 0.7", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]}
     ]
   end

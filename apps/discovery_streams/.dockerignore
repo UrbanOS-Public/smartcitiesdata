@@ -1,0 +1,6 @@
+.git
+_build
+.gitignore
+Dockerfile
+Jenkinsfile
+deps

@@ -53,7 +53,7 @@ defmodule Valkyrie.MixProject do
       # updating version breaks
       {:retry, "~> 0.13"},
       {:smart_city, "~> 3.0", override: true},
-      {:smart_city_test, "~> 0.5", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:timex, "~> 3.6"},
       {:yeet, "~> 1.0"}
     ]
