@@ -1,7 +1,8 @@
 defmodule Estuary.EventTableHelper do
+  @moduledoc false
   @event_stream_table_name Application.get_env(:estuary, :event_stream_table_name)
 
-  def select_table_data(author) do
+  def get_events_by_author(author) do
     "SELECT author, create_ts, data, type
     FROM #{@event_stream_table_name}
     WHERE author IN (#{author})
@@ -10,7 +11,7 @@ defmodule Estuary.EventTableHelper do
     |> Prestige.prefetch()
   end
 
-  def delete_table_data() do
+  def delete_all_events_in_table() do
     "DELETE FROM #{@event_stream_table_name}"
     |> Prestige.execute()
     |> Stream.run()

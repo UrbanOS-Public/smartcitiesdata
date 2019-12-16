@@ -12,7 +12,7 @@ defmodule Estuary.EstuaryTest do
 
   setup do
     on_exit(fn ->
-      EventTableHelper.delete_table_data()
+      EventTableHelper.delete_all_events_in_table()
     end)
   end
 
@@ -53,7 +53,7 @@ defmodule Estuary.EstuaryTest do
     eventually(fn ->
       actual_value =
         "'reaper'"
-        |> EventTableHelper.select_table_data()
+        |> EventTableHelper.get_events_by_author()
 
       assert expected_value == actual_value
     end)
@@ -85,7 +85,7 @@ defmodule Estuary.EstuaryTest do
     eventually(fn ->
       actual_value =
         "'forklift', 'valkyrie'"
-        |> EventTableHelper.select_table_data()
+        |> EventTableHelper.get_events_by_author()
 
       assert expected_value == actual_value
     end)

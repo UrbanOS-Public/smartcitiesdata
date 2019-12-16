@@ -35,10 +35,10 @@ defmodule Estuary.EventTableTest do
 
     actual_value_after_insert =
       "'Steve'"
-      |> EventTableHelper.select_table_data()
+      |> EventTableHelper.get_events_by_author()
 
     assert expected_value_after_insert == actual_value_after_insert
-    EventTableHelper.delete_table_data()
+    EventTableHelper.delete_all_events_in_table()
   end
 
   test "should fail when improper value of timestamp is passed" do
