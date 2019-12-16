@@ -3,10 +3,13 @@ defmodule Forklift.MessageHandler do
   Reads data off kafka topics, buffering it in batches.
   """
   use Retry
+  require Logger
+  import SmartCity.Data, only: [end_of_data: 0]
+  import SmartCity.Event, only: [data_ingest_end: 0]
   use Elsa.Consumer.MessageHandler
 
+  import Forklift
   alias Forklift.Util
-  require Logger
   import SmartCity.Data, only: [end_of_data: 0]
 
   def init(args \\ []) do
@@ -23,7 +26,8 @@ defmodule Forklift.MessageHandler do
     |> Enum.map(&yeet_error/1)
     |> Enum.reject(&error_tuple?/1)
     |> Forklift.DataWriter.write(dataset: dataset)
-    #TODO write some kind of event completed writing to the event state
+
+    Brook.Event.send(instance_name(), "dataset:write_complete", :forklift, %{id: dataset.id, timestamp: DateTime.utc_now()})
 
     {:ack, %{dataset: dataset}}
   end
