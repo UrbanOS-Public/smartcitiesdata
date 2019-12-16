@@ -13,14 +13,14 @@ System.put_env("HOST", host)
 config :logger,
   level: :info
 
-bucket_name = "hosted-dataset-files"
-endpoints = [{host, 9092}]
+bucket_name = "kdp-cloud-storage"
+endpoints = [{String.to_atom(host), 9092}]
 
 config :odo,
   divo: [
     {DivoKafka, [create_topics: "event-stream:1:1", outside_host: host]},
     DivoRedis,
-    {Reaper.DivoMinio, [bucket_name: bucket_name]}
+    Odo.DivoMinio
   ],
   divo_wait: [dwell: 1000, max_tries: 120],
   kafka_broker: endpoints,
@@ -32,8 +32,8 @@ config :odo,
 
 config :ex_aws,
   debug_requests: true,
-  access_key_id: "access_key_testing",
-  secret_access_key: "secret_key_testing",
+  access_key_id: "testing_access_key",
+  secret_access_key: "testing_secret_key",
   region: "local"
 
 config :ex_aws, :s3,

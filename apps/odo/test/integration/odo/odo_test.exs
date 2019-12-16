@@ -3,11 +3,24 @@ defmodule Odo.Integration.OdoTest do
   use Divo
   import SmartCity.TestHelper
   import SmartCity.Event, only: [file_ingest_start: 0, file_ingest_end: 0, error_file_ingest: 0]
+  alias ExAws.S3
   alias SmartCity.HostedFile
 
   @kafka_broker Application.get_env(:odo, :kafka_broker)
   @org "my-org"
-  @bucket "hosted-dataset-files"
+  @bucket "kdp-cloud-storage"
+
+  setup_all do
+    "#{File.cwd!()}/test/support/my-data.shapefile"
+    |> S3.Upload.stream_file()
+    |> S3.upload(@bucket, "#{@org}/my-data.shapefile")
+    |> ExAws.request()
+
+    "#{File.cwd!()}/test/support/my-data2.shapefile"
+    |> S3.Upload.stream_file()
+    |> S3.upload(@bucket, "#{@org}/my-data2.shapefile")
+    |> ExAws.request()
+  end
 
   describe "success scenario" do
     setup do
@@ -16,10 +29,6 @@ defmodule Odo.Integration.OdoTest do
 
       id = 111
       data_name = "my-data"
-
-      on_exit(fn ->
-        File.rm!("test/support/minio_data/#{@bucket}/#{@org}/#{data_name}.geojson")
-      end)
 
       [id: id, data_name: data_name]
     end
@@ -75,10 +84,6 @@ defmodule Odo.Integration.OdoTest do
 
       id = 112
       data_name = "my-data2"
-
-      on_exit(fn ->
-        File.rm!("test/support/minio_data/#{@bucket}/#{@org}/#{data_name}.geojson")
-      end)
 
       [id: id, data_name: data_name]
     end

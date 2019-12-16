@@ -247,7 +247,7 @@ defmodule Reaper.FullTest do
         expected = File.read!("test/support/#{@csv_file_name}")
 
         case ExAws.S3.get_object(
-               "hosted-dataset-files",
+               Application.get_env(:reaper, :hosted_file_bucket),
                "#{hosted_dataset.technical.orgName}/#{hosted_dataset.technical.dataName}.csv"
              )
              |> ExAws.request() do

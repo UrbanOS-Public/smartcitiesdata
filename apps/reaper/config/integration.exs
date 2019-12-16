@@ -22,8 +22,7 @@ config :reaper,
     {DivoKafka,
      [
        create_topics: "event-stream:1:1,streaming-dead-letters:1:1",
-       outside_host: host,
-       kafka_image_version: "2.12-2.2.1"
+       outside_host: host
      ]},
     DivoRedis,
     Reaper.DivoSftp,

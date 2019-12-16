@@ -1,4 +1,4 @@
-defmodule Reaper.DivoMinio do
+defmodule Odo.DivoMinio do
   @moduledoc """
   Sets up Minio as a local S3 alternative
   """
@@ -8,10 +8,8 @@ defmodule Reaper.DivoMinio do
 
     %{
       minio: %{
-        image: "minio/minio",
-        ports: ["#{port}:9000"],
-        volumes: ["#{File.cwd!()}/test/support/minio_data:/data"],
-        command: ["server", "/data"]
+        image: "smartcitiesdata/minio-testo:development",
+        ports: ["#{port}:9000"]
       }
     }
   end
