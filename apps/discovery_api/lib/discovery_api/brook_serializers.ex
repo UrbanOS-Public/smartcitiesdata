@@ -1,4 +1,5 @@
 defimpl Brook.Deserializer.Protocol, for: DiscoveryApi.Data.Model do
+  # sobelow_skip ["DOS.StringToAtom"]
   def deserialize(_struct, data) do
     model = struct(DiscoveryApi.Data.Model, data)
 
