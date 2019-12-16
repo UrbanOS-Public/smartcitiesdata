@@ -1,4 +1,5 @@
 defmodule Andi.DatasetSchema do
+  @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -16,6 +17,7 @@ defmodule Andi.DatasetSchema do
 end
 
 defmodule Andi.DatasetTechnicalSchema do
+  @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -48,6 +50,7 @@ defmodule Andi.DatasetTechnicalSchema do
 end
 
 defmodule Andi.DatasetBusinessSchema do
+  @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
 

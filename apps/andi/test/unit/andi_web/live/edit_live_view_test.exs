@@ -334,7 +334,7 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      html = render_change(view, :save, %{})
+      _html = render_change(view, :save, %{})
 
       assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, dataset), once())
     end
@@ -346,7 +346,7 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      html = render_change(view, :save, %{})
+      _html = render_change(view, :save, %{})
 
       refute_called(Brook.Event.send(instance_name(), dataset_update(), :andi, dataset), once())
     end
@@ -364,7 +364,8 @@ defmodule AndiWeb.EditLiveViewTest do
 
       dataset_map = dataset_to_map(dataset) |> put_in([:business, :issuedDate], "12345")
 
-      html = render_change(view, :save, %{"dataset_schema" => dataset_map})
+      render_change(view, :validate, %{"dataset_schema" => dataset_map})
+      html = render_change(view, :save, %{"dataset_schema" => %{}})
 
       assert get_text(html, "#success-message") == "Saved Successfully"
     end

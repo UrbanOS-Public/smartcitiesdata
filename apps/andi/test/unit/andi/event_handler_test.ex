@@ -1,4 +1,6 @@
 defmodule EventHandlerTest do
+  @moduledoc false
+
   use ExUnit.Case
 
   alias SmartCity.TestDataGenerator, as: TDG

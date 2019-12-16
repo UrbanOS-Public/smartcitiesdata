@@ -97,14 +97,14 @@ defmodule AndiWeb.EditLiveView do
         </div>
         <div class="metadata-form__save-btn">
           <%= Form.submit("Save", id: "save-button", class: "btn btn--save", disabled: false) %>
-
         </div>
-    </div>
-    <div>
-      <%= if @is_saved do %>
-        <div id="success-message" class="div__success-message">Saved Successfully</div>
-      <% end %>
-    <div>
+        </div>
+      <div>
+        <%= if @is_saved do %>
+          <div id="success-message" class="div__success-message">Saved Successfully</div>
+        <% end %>
+      </div>
+
     """
   end
 
@@ -164,7 +164,8 @@ defmodule AndiWeb.EditLiveView do
           false
       end
 
-    {:noreply, assign(socket, save_message: is_saved)}
+    # Show errors is an unused property. It's sole purpose is to tell live view there has been a change so that it will render errors if needed.
+    {:noreply, assign(socket, is_saved: is_saved, show_errors: true)}
   end
 
   defp get_keywords(nil), do: ""
