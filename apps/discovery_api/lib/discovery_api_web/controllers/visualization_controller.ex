@@ -7,6 +7,13 @@ defmodule DiscoveryApiWeb.VisualizationController do
 
   plug(:accepts, DiscoveryApiWeb.VisualizationView.accepted_formats())
 
+  def index(conn, _body) do
+    with user <- Map.get(conn.assigns, :current_user),
+         visualizations <- Visualizations.get_visualizations_by_owner_id(user.id) do
+      render(conn, :visualizations, %{visualizations: visualizations})
+    end
+  end
+
   def show(conn, %{"id" => id}) do
     with {:ok, %{query: query} = visualization} <- Visualizations.get_visualization_by_id(id),
          user <- Map.get(conn.assigns, :current_user),
