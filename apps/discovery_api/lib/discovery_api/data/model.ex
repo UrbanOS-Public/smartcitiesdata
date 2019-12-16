@@ -102,6 +102,10 @@ defmodule DiscoveryApi.Data.Model do
     end
   end
 
+  def remote?(model) do
+    model.sourceType == "remote"
+  end
+
   @impl Access
   def fetch(term, key), do: Map.fetch(term, key)
 
@@ -154,19 +158,5 @@ defmodule DiscoveryApi.Data.Model do
       ]
     end)
     |> List.flatten()
-  end
-end
-
-defimpl Brook.Deserializer.Protocol, for: DiscoveryApi.Data.Model do
-  def deserialize(_struct, data) do
-    model = struct(DiscoveryApi.Data.Model, data)
-
-    orgWithAtomKeys =
-      model.organizationDetails
-      |> Enum.map(fn {k, v} -> {String.to_atom(k), v} end)
-      |> Map.new()
-
-    orgDetails = struct(DiscoveryApi.Data.OrganizationDetails, orgWithAtomKeys)
-    {:ok, Map.put(model, :organizationDetails, orgDetails)}
   end
 end

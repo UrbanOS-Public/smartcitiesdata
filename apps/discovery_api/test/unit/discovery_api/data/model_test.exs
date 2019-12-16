@@ -105,6 +105,18 @@ defmodule DiscoveryApi.Data.ModelTest do
     Assertions.assert_lists_equal([cam_as_expected, paul_as_expected], Model.get_all())
   end
 
+  test "remote?/0 returns true if remote" do
+    subject = generate_test_data("cam", %{sourceType: "remote"})
+
+    assert Model.remote?(subject) == true
+  end
+
+  test "remote?/0 returns false if not remote" do
+    subject = generate_test_data("cam", %{sourceType: "ingest"})
+
+    assert Model.remote?(subject) == false
+  end
+
   defp get_many_with_keys_result(nil) do
     id = "nil_id"
 
@@ -127,10 +139,11 @@ defmodule DiscoveryApi.Data.ModelTest do
     }
   end
 
-  defp generate_test_data(name) do
+  defp generate_test_data(name, overrides \\ %{}) do
     [x, y, z] = Stream.repeatedly(&:rand.uniform/0) |> Enum.take(3)
 
     %{id: name}
+    |> Map.merge(overrides)
     |> Helper.sample_model()
     |> Map.merge(%{completeness: %{completeness: x}, downloads: y, queries: z, lastUpdatedDate: DateTime.utc_now()})
   end

@@ -23,8 +23,8 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
     Persistence.persist("discovery-api:stats:end_time", DateTime.utc_now())
   end
 
-  defp calculate_and_save_completeness(%Model{} = dataset) do
-    dataset
+  defp calculate_and_save_completeness(%Model{} = model) do
+    model
     |> calculate_completeness_for_dataset()
     |> add_total_score()
     |> save_completeness()
@@ -34,26 +34,25 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
       :ok
   end
 
-  # TODO: Add this check to the model?
-  defp calculate_completeness?(%Model{} = dataset), do: dataset.sourceType != "remote" and inserted_since_last_calculation?(dataset)
+  defp calculate_completeness?(%Model{} = model), do: not Model.remote?(model) and inserted_since_last_calculation?(model)
 
-  defp inserted_since_last_calculation?(%Model{} = dataset) do
-    last_insert_date = Persistence.get("forklift:last_insert_date:#{dataset.id}")
-    completion_calculated_date = Persistence.get("#{@completeness_key}:#{dataset.id}")
+  defp inserted_since_last_calculation?(%Model{} = model) do
+    last_insert_date = Persistence.get("forklift:last_insert_date:#{model.id}")
+    completion_calculated_date = Persistence.get("#{@completeness_key}:#{model.id}")
     last_insert_date > completion_calculated_date
   end
 
-  defp calculate_completeness_for_dataset(%Model{} = dataset) do
-    dataset
+  defp calculate_completeness_for_dataset(%Model{} = model) do
+    model
     |> get_dataset()
-    |> Enum.reduce(%{}, fn x, acc -> Completeness.calculate_stats_for_row(dataset, x, acc) end)
-    |> Map.put(:id, dataset.id)
+    |> Enum.reduce(%{}, fn x, acc -> Completeness.calculate_stats_for_row(model, x, acc) end)
+    |> Map.put(:id, model.id)
   rescue
-    _ -> %{id: dataset.id}
+    _ -> %{id: model.id}
   end
 
-  defp get_dataset(%Model{} = dataset) do
-    get_statement = "select * from " <> dataset.systemName
+  defp get_dataset(%Model{} = model) do
+    get_statement = "select * from " <> model.systemName
 
     DiscoveryApi.prestige_opts()
     |> Prestige.new_session()

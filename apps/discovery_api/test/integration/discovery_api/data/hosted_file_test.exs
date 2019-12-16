@@ -2,7 +2,6 @@ defmodule DiscoveryApi.Data.HostedFileTest do
   use ExUnit.Case
   use Divo
   use DiscoveryApi.DataCase
-  alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
   import SmartCity.Event, only: [dataset_update: 0]

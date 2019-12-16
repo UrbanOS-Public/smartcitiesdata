@@ -6,7 +6,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
   import ExUnit.CaptureLog
 
   alias DiscoveryApi.Auth.GuardianConfigurator
-  alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users

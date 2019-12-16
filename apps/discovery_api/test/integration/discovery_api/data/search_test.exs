@@ -2,10 +2,8 @@ defmodule DiscoveryApi.Data.SearchTest do
   use ExUnit.Case
   use Divo, services: [:redis, :zookeeper, :kafka, :zookeeper, :kafka, :"ecto-postgres"]
   use DiscoveryApi.DataCase
-  alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
   alias SmartCity.TestDataGenerator, as: TDG
-  alias SmartCity.Dataset
   import SmartCity.Event, only: [dataset_update: 0]
   import SmartCity.TestHelper
 
