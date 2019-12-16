@@ -1,5 +1,3 @@
-/* This file is for your main application css. */
-
 @import "./variables.scss";
 @import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
 
@@ -77,6 +75,7 @@ body {
   color: $disabled-background;
   border: 2px solid $disabled-background;
 }
+
 .btn--save:disabled:hover {
   background: #f3f3f3;
   color: $disabled-background;
@@ -108,7 +107,7 @@ body {
   border-radius: 2px;
 }
 
-.input[type="text"]:disabled {
+.input--text:disabled {
   background: #f3f3f3;
   color: $disabled-background;
 }

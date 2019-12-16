@@ -10,81 +10,52 @@ defmodule AndiWeb.EditLiveView do
     ~L"""
     <div class="edit-page">
       <%= f = Form.form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, class: "metadata-form"] %>
-        <div class="metadata-form__title">
           <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :title, "Title of Dataset", class: "label label--required") %>
-            <%= Form.text_input(fp, :dataTitle, class: "input") %>
-            <%= error_tag(fp, :dataTitle) %>
+            <div class="metadata-form__spatial">
+              <%= Form.label(fp, :spatial, "Spatial Boundaries", class: "label") %>
+              <%= Form.text_input(fp, :spatial, class: "input") %>
+            </div>
+            <div class="metadata-form__last-updated">
+              <%= Form.label(fp, :modifiedDate, "Last Updated", class: "label") %>
+              <%= Form.text_input(fp, :modifiedDate, class: "input") %>
+            </div>
+            <div class="metadata-form__keywords">
+              <%= Form.label(fp, :keywords, "Keywords", class: "label") %>
+              <%= Form.text_input(fp, :keywords, value: get_keywords(Form.input_value(fp, :keywords)), class: "input") %>
+              <div class="label label--inline">Separated by comma</div>
+            </div>
+            <div class="metadata-form__update-frequency">
+              <%= Form.label(fp, :publishFrequency, "Update Frequency", class: "label label--required") %>
+              <%= Form.text_input(fp, :publishFrequency, class: "input") %>
+              <%= error_tag(fp, :publishFrequency) %>
+            </div>
+            <div class="metadata-form__license">
+              <%= Form.label(fp, :license, "License", class: "label label--required") %>
+              <%= Form.text_input(fp, :license, class: "input") %>
+              <%= error_tag(fp, :license) %>
+            </div>
+            <div class="metadata-form__release-date">
+              <%= Form.label(fp, :issuedDate, "Release Date", class: "label label--required") %>
+              <%= Form.text_input(fp, :issuedDate, class: "input") %>
+              <%= error_tag(fp, :issuedDate) %>
+            </div>
+            <div class="metadata-form__title">
+              <%= Form.label(fp, :title, "Title of Dataset", class: "label label--required") %>
+              <%= Form.text_input(fp, :dataTitle, class: "input") %>
+              <%= error_tag(fp, :dataTitle) %>
+            </div>
+            <div class="metadata-form__description">
+                <%= Form.label(fp, :description, "Description", class: "label label--required") %>
+                <%= Form.textarea(fp, :description, class: "input textarea") %>
+                <%= error_tag(fp, :description) %>
+            </div>
+            <div class="metadata-form__maintainer-name">
+              <%= Form.label(fp, :contactName, "Maintainer Name", class: "label label--required") %>
+              <%= Form.text_input(fp, :contactName, class: "input") %>
+              <%= error_tag(fp, :contactName) %>
+            </div>
           <% end %>
-        </div>
-        <div class="metadata-form__description">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :description, "Description", class: "label label--required") %>
-            <%= Form.textarea(fp, :description, class: "input textarea") %>
-            <%= error_tag(fp, :description) %>
-          <% end %>
-        </div>
-        <div class="metadata-form__format">
-          <%= Form.inputs_for f, :technical, fn fp -> %>
-            <%= Form.label(fp, :format, "Format", class: "label label--required") %>
-            <%= Form.text_input(fp, :sourceFormat, [class: "input", disabled: true]) %>
-            <%= error_tag(fp, :sourceFormat) %>
-          <% end %>
-        </div>
-        <div class="metadata-form__maintainer-name">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :contactName, "Maintainer Name", class: "label label--required") %>
-            <%= Form.text_input(fp, :contactName, class: "input") %>
-            <%= error_tag(fp, :contactName) %>
-          <% end %>
-        </div>
-        <div class="metadata-form__maintainer-email">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :contactEmail, "Maintainer Email", class: "label label--required") %>
-            <%= Form.text_input(fp, :contactEmail, class: "input") %>
-            <%= error_tag(fp, :contactEmail) %>
-          <% end %>
-        </div>
-        <div class="metadata-form__release-date">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :issuedDate, "Release Date", class: "label label--required") %>
-            <%= Form.text_input(fp, :issuedDate, class: "input") %>
-            <%= error_tag(fp, :issuedDate) %>
-          <% end %>
-        </div>
-        <div class="metadata-form__license">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :license, "License", class: "label label--required") %>
-            <%= Form.text_input(fp, :license, class: "input") %>
-            <%= error_tag(fp, :license) %>
-          <% end %>
-        </div>
-        <div class="metadata-form__update-frequency">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :publishFrequency, "Update Frequency", class: "label label--required") %>
-            <%= Form.text_input(fp, :publishFrequency, class: "input") %>
-            <%= error_tag(fp, :publishFrequency) %>
-          <% end %>
-        </div>
-        <div class="metadata-form__keywords">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :keywords, "Keywords", class: "label") %>
-            <%= Form.text_input(fp, :keywords, value: get_keywords(Form.input_value(fp, :keywords)), class: "input") %>
-            <div class="label label--inline">Separated by comma</div>
-          <% end %>
-        </div>
-        <div class="metadata-form__last-updated">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :modifiedDate, "Last Updated", class: "label") %>
-            <%= Form.text_input(fp, :modifiedDate, class: "input") %>
-          <% end %>
-        </div>
-        <div class="metadata-form__spatial">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :spatial, "Spatial Boundaries", class: "label") %>
-            <%= Form.text_input(fp, :spatial, class: "input") %>
-          <% end %>
-        </div>
+
         <div class="metadata-form__temporal">
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :temporal, "Temporal Boundaries", class: "label") %>
@@ -94,7 +65,7 @@ defmodule AndiWeb.EditLiveView do
         <div class="metadata-form__organization">
           <%= Form.inputs_for f, :business, fn fp -> %>
             <%= Form.label(fp, :orgTitle, "Organization", class: "label label--required") %>
-            <%= Form.text_input(fp, :orgTitle, [class: "input", disabled: true]) %>
+            <%= Form.text_input(fp, :orgTitle, [class: "input input--text", disabled: true]) %>
             <%= error_tag(fp, :orgTitle) %>
           <% end %>
         </div>

@@ -42,26 +42,7 @@ defmodule Andi.DatasetTechnicalSchema do
 
   def changeset(tech, params \\ %{}) do
     tech
-    |> cast(params, [
-      :allow_duplicates,
-      :authHeaders,
-      :authUrl,
-      :cadence,
-      :credentials,
-      :dataName,
-      :orgId,
-      :orgName,
-      :private,
-      :protocol,
-      :schema,
-      :sourceFormat,
-      :sourceHeaders,
-      :sourceQueryParams,
-      :sourceType,
-      :sourceUrl,
-      :systemName,
-      :topLevelSelector
-    ])
+    |> cast(params, __MODULE__.__schema__(:fields))
     |> validate_required([:sourceFormat], message: "Format is required.")
   end
 end
@@ -98,31 +79,7 @@ defmodule Andi.DatasetBusinessSchema do
 
   def changeset(biz, params \\ %{}) do
     biz
-    |> cast(params, [
-      :authorEmail,
-      :authorName,
-      :categories,
-      :conformsToUri,
-      :contactEmail,
-      :contactName,
-      :dataTitle,
-      :describedByMimeType,
-      :describedByUrl,
-      :description,
-      :homepage,
-      :issuedDate,
-      :keywords,
-      :language,
-      :license,
-      :modifiedDate,
-      :orgTitle,
-      :parentDataset,
-      :publishFrequency,
-      :referenceUrls,
-      :rights,
-      :spatial,
-      :temporal
-    ])
+    |> cast(params, __MODULE__.__schema__(:fields))
     |> validate_required([:dataTitle], message: "Dataset Title is required.")
     |> validate_required([:description], message: "Description is required.")
     |> validate_required([:contactName], message: "Maintainer Name is required.")
