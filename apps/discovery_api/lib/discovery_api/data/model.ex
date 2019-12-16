@@ -51,6 +51,7 @@ defmodule DiscoveryApi.Data.Model do
     {:ok, model} = Brook.ViewState.get(DiscoveryApi.instance(), :models, id)
 
     model
+    |> ensure_struct()
     |> add_system_attributes()
   end
 
@@ -119,7 +120,7 @@ defmodule DiscoveryApi.Data.Model do
 
   defp add_system_attributes(nil), do: nil
 
-  defp add_system_attributes(model) when is_map(model) do
+  defp add_system_attributes(%__MODULE__{} = model) do
     model
     |> List.wrap()
     |> add_system_attributes()
@@ -132,26 +133,23 @@ defmodule DiscoveryApi.Data.Model do
       |> get_all_keys()
       |> Persistence.get_many_with_keys()
 
-    _new_models =
-      Enum.map(models, fn model ->
-        completeness = redis_kv_results["discovery-api:stats:#{model.id}"]
-        downloads = redis_kv_results["smart_registry:downloads:count:#{model.id}"]
-        queries = redis_kv_results["smart_registry:queries:count:#{model.id}"]
-        last_updated_date = redis_kv_results["forklift:last_insert_date:#{model.id}"]
+    Enum.map(models, fn model ->
+      completeness = redis_kv_results["discovery-api:stats:#{model.id}"]
+      downloads = redis_kv_results["smart_registry:downloads:count:#{model.id}"]
+      queries = redis_kv_results["smart_registry:queries:count:#{model.id}"]
 
-        model
-        |> Map.put(:completeness, completeness)
-        |> Map.put(:downloads, downloads)
-        |> Map.put(:queries, queries)
-        |> Map.put(:lastUpdatedDate, last_updated_date)
-      end)
+      model
+      |> ensure_struct()
+      |> Map.put(:completeness, completeness)
+      |> Map.put(:downloads, downloads)
+      |> Map.put(:queries, queries)
+    end)
   end
 
   defp get_all_keys(ids) do
     ids
     |> Enum.map(fn id ->
       [
-        "forklift:last_insert_date:#{id}",
         "smart_registry:downloads:count:#{id}",
         "smart_registry:queries:count:#{id}",
         "discovery-api:stats:#{id}"
@@ -159,4 +157,7 @@ defmodule DiscoveryApi.Data.Model do
     end)
     |> List.flatten()
   end
+
+  defp ensure_struct(%__MODULE__{} = model), do: model
+  defp ensure_struct(%{} = model), do: struct(__MODULE__, model)
 end

@@ -23,6 +23,12 @@ defmodule DiscoveryApi.EventHandler do
     :discard
   end
 
+  def handle_event(%Brook.Event{type: "dataset:write_complete", data: %{"id" => id, "timestamp" => timestamp}}) do
+    Logger.debug(fn -> "Handling write_complete" end)
+
+    merge(:models, id, %{id: id, lastUpdatedDate: timestamp})
+  end
+
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = dataset}) do
     Logger.debug(fn -> "Handling dataset: `#{dataset.technical.systemName}`" end)
 
