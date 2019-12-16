@@ -58,6 +58,8 @@ defmodule Forklift.Integration.MessageHandlingTest do
     end
   end
 
+  #TODO Test that write complete event is sent to event state after DataWriter.write completes
+
   describe "on receiving end-of-data message" do
     test "shuts down dataset reader" do
       expect(MockTable, :write, fn [%{payload: "foobar"}, %{payload: "foobaz"}], _ -> :ok end)

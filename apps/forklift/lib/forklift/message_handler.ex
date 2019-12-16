@@ -23,6 +23,7 @@ defmodule Forklift.MessageHandler do
     |> Enum.map(&yeet_error/1)
     |> Enum.reject(&error_tuple?/1)
     |> Forklift.DataWriter.write(dataset: dataset)
+    #TODO write some kind of event completed writing to the event state
 
     {:ack, %{dataset: dataset}}
   end
