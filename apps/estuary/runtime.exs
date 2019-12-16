@@ -5,7 +5,8 @@ required_envars = [
   "PRESTO_URL",
   "KAFKA_BROKERS",
   "DATA_TOPIC",
-  "TABLE_NAME"
+  "TABLE_NAME",
+  "DLQ_TOPIC"
 ]
 
 Enum.each(required_envars, fn var ->
@@ -40,3 +41,7 @@ config :estuary,
 
 config :logger,
   level: :warn
+
+config :yeet,
+  endpoint: endpoints,
+  topic: System.get_env("DLQ_TOPIC")
