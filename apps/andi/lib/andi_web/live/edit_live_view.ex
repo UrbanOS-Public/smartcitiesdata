@@ -5,6 +5,7 @@ defmodule AndiWeb.EditLiveView do
   import AndiWeb.ErrorHelpers
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
+  require Logger
 
   def render(assigns) do
     ~L"""
@@ -45,59 +46,62 @@ defmodule AndiWeb.EditLiveView do
               <%= error_tag(fp, :dataTitle) %>
             </div>
             <div class="metadata-form__description">
-                <%= Form.label(fp, :description, "Description", class: "label label--required") %>
-                <%= Form.textarea(fp, :description, class: "input textarea") %>
-                <%= error_tag(fp, :description) %>
+              <%= Form.label(fp, :description, "Description", class: "label label--required") %>
+              <%= Form.textarea(fp, :description, class: "input textarea") %>
+              <%= error_tag(fp, :description) %>
             </div>
             <div class="metadata-form__maintainer-name">
               <%= Form.label(fp, :contactName, "Maintainer Name", class: "label label--required") %>
               <%= Form.text_input(fp, :contactName, class: "input") %>
               <%= error_tag(fp, :contactName) %>
             </div>
+            <div class="metadata-form__maintainer-email">
+              <%= Form.label(fp, :contactEmail, "Maintainer Email", class: "label label--required") %>
+              <%= Form.text_input(fp, :contactEmail, class: "input") %>
+              <%= error_tag(fp, :contactEmail) %>
+            </div>
+            <div class="metadata-form__temporal">
+              <%= Form.label(fp, :temporal, "Temporal Boundaries", class: "label") %>
+              <%= Form.text_input(fp, :temporal, class: "input") %>
+              <%= error_tag(fp, :temporal) %>
+            </div>
+            <div class="metadata-form__organization">
+              <%= Form.label(fp, :orgTitle, "Organization", class: "label label--required") %>
+              <%= Form.text_input(fp, :orgTitle, [class: "input input--text", disabled: true]) %>
+              <%= error_tag(fp, :orgTitle) %>
+            </div>
+            <div class="metadata-form__language">
+              <%= Form.label(fp, :language, "Language", class: "label") %>
+              <%= Form.select(fp, :language, [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]], value: get_language(Form.input_value(fp, :language)), class: "select") %>
+            </div>
+            <div class="metadata-form__homepage">
+              <%= Form.label(fp, :homepage, "Data Homepage URL", class: "label") %>
+              <%= Form.text_input(fp, :homepage, class: "input") %>
+            </div>
           <% end %>
-
-        <div class="metadata-form__temporal">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :temporal, "Temporal Boundaries", class: "label") %>
-            <%= Form.text_input(fp, :temporal, class: "input") %>
-          <% end %>
-        </div>
-        <div class="metadata-form__organization">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :orgTitle, "Organization", class: "label label--required") %>
-            <%= Form.text_input(fp, :orgTitle, [class: "input input--text", disabled: true]) %>
-            <%= error_tag(fp, :orgTitle) %>
-          <% end %>
-        </div>
-        <div class="metadata-form__level-of-access">
           <%= Form.inputs_for f, :technical, fn fp -> %>
-            <%= Form.label(fp, :private, "Level of Access", class: "label label--required") %>
-            <%= Form.select(fp, :private, [[key: "Private", value: "true"], [key: "Public", value: "false"]], class: "select") %>
-            <%= error_tag(fp, :private) %>
+            <div class="metadata-form__level-of-access">
+              <%= Form.label(fp, :private, "Level of Access", class: "label label--required") %>
+              <%= Form.select(fp, :private, [[key: "Private", value: "true"], [key: "Public", value: "false"]], class: "select") %>
+              <%= error_tag(fp, :private) %>
+            </div>
+
+            <div class="metadata-form__format">
+              <%= Form.label(fp, :format, "Format", class: "label label--required") %>
+              <%= Form.text_input(fp, :sourceFormat, [class: "input", disabled: true]) %>
+              <%= error_tag(fp, :sourceFormat) %>
+            </div>
           <% end %>
-        </div>
-        <div class="metadata-form__language">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :language, "Language", class: "label") %>
-            <%= Form.select(fp, :language, [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]], value: get_language(Form.input_value(fp, :language)), class: "select") %>
-          <% end %>
-        </div>
-        <div class="metadata-form__homepage">
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <%= Form.label(fp, :homepage, "Data Homepage URL", class: "label") %>
-            <%= Form.text_input(fp, :homepage, class: "input") %>
-          <% end %>
-        </div>
         <div class="metadata-form__cancel-btn">
           <%= Link.button("Cancel", to: "/", class: "btn btn--cancel") %>
         </div>
         <div class="metadata-form__save-btn">
-          <%= Form.submit("Save", id: "save-button", class: "btn btn--save", disabled: length(get_all_errors(@changeset)) > 0) %>
+          <%= Form.submit("Save", id: "save-button", class: "btn btn--save", disabled: false) %>
 
         </div>
     </div>
     <div>
-      <%= if @is_saved  do %>
+      <%= if @is_saved do %>
         <div id="success-message" class="div__success-message">Saved Successfully</div>
       <% end %>
     <div>
@@ -136,26 +140,31 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("save", _event, socket) do
-    case get_all_errors(socket.assigns.changeset) do
-      [] ->
-        schema = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-        bus_map = schema.business |> Map.from_struct()
-        tech_map = schema.technical |> Map.from_struct()
+    is_saved =
+      case get_all_errors(socket.assigns.changeset) do
+        [] ->
+          schema = Ecto.Changeset.apply_changes(socket.assigns.changeset)
+          bus_map = schema.business |> Map.from_struct()
+          tech_map = schema.technical |> Map.from_struct()
 
-        {:ok, dataset} =
-          schema
-          |> Map.from_struct()
-          |> Map.put(:business, bus_map)
-          |> Map.put(:technical, tech_map)
-          |> SmartCity.Dataset.new()
+          {:ok, dataset} =
+            schema
+            |> Map.from_struct()
+            |> Map.put(:business, bus_map)
+            |> Map.put(:technical, tech_map)
+            |> SmartCity.Dataset.new()
 
-        Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
+          Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
+          Logger.debug("Saved #{schema.id}")
+          true
 
-      errors ->
-        IO.inspect(errors, label: "Had errors, what do we do?")
-    end
+        errors ->
+          dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
+          Logger.info("Could not save dataset #{dataset.id} because it had errors: #{inspect(errors)}")
+          false
+      end
 
-    {:noreply, assign(socket, is_saved: true)}
+    {:noreply, assign(socket, save_message: is_saved)}
   end
 
   defp get_keywords(nil), do: ""
