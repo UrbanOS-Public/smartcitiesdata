@@ -2,7 +2,7 @@ defmodule Odo.Integration.OdoTest do
   use ExUnit.Case
   use Divo
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [file_ingest_start: 0, file_ingest_end: 0, error_file_ingest: 0]
+  import SmartCity.Event, only: [file_ingest_end: 0, error_file_ingest: 0]
   alias ExAws.S3
   alias SmartCity.HostedFile
 
@@ -20,61 +20,6 @@ defmodule Odo.Integration.OdoTest do
     |> S3.Upload.stream_file()
     |> S3.upload(@bucket, "#{@org}/my-data2.shapefile")
     |> ExAws.request()
-  end
-
-  describe "success scenario" do
-    setup do
-      Temp.track!()
-      Application.put_env(:odo, :working_dir, Temp.mkdir!())
-
-      id = 111
-      data_name = "my-data"
-
-      [id: id, data_name: data_name]
-    end
-
-    test "retrieves, converts, and uploads supported file type", %{id: id, data_name: data_name} do
-      {:ok, file_event} =
-        HostedFile.new(%{
-          dataset_id: id,
-          bucket: @bucket,
-          key: "#{@org}/#{data_name}.shapefile",
-          mime_type: "application/zip"
-        })
-
-      new_key = "#{@org}/#{data_name}.geojson"
-
-      Brook.Event.send(Odo.event_stream_instance(), file_ingest_end(), :odo, file_event)
-
-      eventually(fn ->
-        file_resp =
-          ExAws.S3.get_object(@bucket, new_key)
-          |> ExAws.request()
-
-        assert {:ok, %{body: body}} = file_resp
-        assert body != nil
-
-        [start_event, end_event | _] =
-          Elsa.Fetch.search_values(@kafka_broker, "event-stream", "my-data.geojson")
-          |> Enum.to_list()
-          |> Enum.map(fn event -> Brook.Deserializer.deserialize(struct(Brook.Event), event.value) end)
-          |> Enum.map(fn {:ok, value} -> {value.data, value.type} end)
-
-        actual_state = Brook.get_all_values!(Odo.event_stream_instance(), :file_conversions)
-
-        {:ok, expected_event} =
-          HostedFile.new(%{
-            dataset_id: id,
-            mime_type: "application/geo+json",
-            bucket: @bucket,
-            key: new_key
-          })
-
-        assert start_event == {expected_event, file_ingest_start()}
-        assert end_event == {expected_event, file_ingest_end()}
-        assert Enum.member?(actual_state, file_event) == false
-      end)
-    end
   end
 
   describe "error handling scenario" do
