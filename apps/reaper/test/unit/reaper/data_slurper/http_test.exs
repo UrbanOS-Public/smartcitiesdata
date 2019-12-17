@@ -78,7 +78,7 @@ defmodule Reaper.DataSlurper.HttpTest do
     test "makes call with headers", %{bypass: bypass} do
       file_url = "/some/other/csv-file2.csv"
 
-      allow(Mint.HTTP.request(:connection, any(), any(), any()), meck_options: [passthrough: true])
+      allow(Mint.HTTP.request(:connection, any(), any(), any(), any()), meck_options: [passthrough: true])
 
       setup_get(bypass, file_url, ~s|one,two,three\n4,5,6\n|)
 
@@ -90,7 +90,7 @@ defmodule Reaper.DataSlurper.HttpTest do
       {:file, _dataset_id} = DataSlurper.slurp(url, dataset_id, headers)
 
       assert_called(
-        Mint.HTTP.request(any(), "GET", "#{file_url}?", evaluated_headers),
+        Mint.HTTP.request(any(), "GET", "#{file_url}?", evaluated_headers, any()),
         once()
       )
     end
