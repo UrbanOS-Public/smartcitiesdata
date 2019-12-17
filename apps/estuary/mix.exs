@@ -4,7 +4,7 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.1.0",
+      version: "0.2.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -33,16 +33,17 @@ defmodule Estuary.MixProject do
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:elsa, "~> 0.10.0"},
+      {:mock, "~> 0.3", only: [:test, :integration], runtime: false},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:prestige, "~> 0.3"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
-      {:prestige, "~> 0.3"}
+      {:yeet, "~> 1.0"}
     ]
   end
 
   defp aliases do
     [
-      verify: ["format --check-formatted", "credo"],
-      test: "test --no-start"
+      verify: ["format --check-formatted", "credo"]
     ]
   end
 

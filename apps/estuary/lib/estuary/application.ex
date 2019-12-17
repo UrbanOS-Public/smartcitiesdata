@@ -1,6 +1,4 @@
 defmodule Estuary.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
   @moduledoc false
   use Application
 
@@ -8,12 +6,12 @@ defmodule Estuary.Application do
 
   @spec start(any, any) :: {:error, any} | {:ok, pid}
   def start(_type, _args) do
-    validate_topic_exists()
-    EventTable.create_table()
+    if elsa_endpoint() != nil do
+      validate_topic_exists()
+      EventTable.create_table()
+    end
 
-    children = [
-      {Elsa.Supervisor, elsa_options()}
-    ]
+    children = get_children()
 
     opts = [strategy: :one_for_one, name: Estuary.Supervisor]
     Supervisor.start_link(children, opts)
@@ -58,5 +56,15 @@ defmodule Estuary.Application do
 
   defp event_stream_topic do
     Application.get_env(:estuary, :event_stream_topic)
+  end
+
+  defp get_children do
+    if elsa_endpoint() != nil do
+      [
+        {Elsa.Supervisor, elsa_options()}
+      ]
+    else
+      []
+    end
   end
 end

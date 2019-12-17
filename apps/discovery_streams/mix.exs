@@ -64,7 +64,8 @@ defmodule DiscoveryStreams.Mixfile do
       {:temporary_env, "~> 2.0", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev, runtime: false},
       {:distillery, "~> 2.1"},
-      {:poison, "~> 3.1", override: true}
+      {:poison, "~> 3.1", override: true},
+      {:tasks, in_umbrella: true, only: :dev}
     ]
   end
 
