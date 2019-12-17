@@ -5,6 +5,7 @@ required_envars = [
   "PRESTO_URL",
   "KAFKA_BROKERS",
   "DATA_TOPIC",
+  "SCHEMA_NAME",
   "TABLE_NAME",
   "DLQ_TOPIC"
 ]
@@ -17,6 +18,7 @@ end)
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 topic = System.get_env("DATA_TOPIC")
+schema_name = System.get_env("SCHEMA_NAME")
 table_name = System.get_env("TABLE_NAME")
 
 endpoints =
@@ -31,7 +33,7 @@ config :prestige,
   headers: [
     user: System.get_env("PRESTO_USER"),
     catalog: "hive",
-    schema: "default"
+    schema: schema_name
   ]
 
 config :estuary,
