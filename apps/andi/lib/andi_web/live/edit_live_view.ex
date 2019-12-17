@@ -92,7 +92,7 @@ defmodule AndiWeb.EditLiveView do
             </div>
           <% end %>
         <div class="metadata-form__cancel-btn">
-          <%= Link.button("Cancel", to: "/", class: "btn btn--cancel") %>
+          <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--cancel") %>
         </div>
         <div class="metadata-form__save-btn">
           <%= Form.submit("Save", id: "save-button", class: "btn btn--save", disabled: false) %>
