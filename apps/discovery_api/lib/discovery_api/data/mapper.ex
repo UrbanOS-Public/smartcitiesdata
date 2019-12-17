@@ -3,9 +3,10 @@ defmodule DiscoveryApi.Data.Mapper do
   Map data from one thing to another
   """
 
-  alias SmartCity.Registry.Dataset
+  alias SmartCity.Dataset
   alias DiscoveryApi.Schemas.Organizations.Organization
   alias DiscoveryApi.Data.Model
+  alias DiscoveryApi.Data.OrganizationDetails
 
   @doc """
   Map a `SmartCity.Dataset` to a `DiscoveryApi.Data.Model`
@@ -43,7 +44,7 @@ defmodule DiscoveryApi.Data.Mapper do
       referenceUrls: biz.referenceUrls,
       categories: biz.categories,
       organization: organization.title,
-      organizationDetails: %{
+      organizationDetails: %OrganizationDetails{
         id: organization.id,
         orgName: organization.name,
         orgTitle: organization.title,
@@ -54,14 +55,8 @@ defmodule DiscoveryApi.Data.Mapper do
     }
   end
 
-  defp get_file_type(source_format) do
-    upcase_source_format = String.upcase(source_format)
-
-    case upcase_source_format do
-      "GTFS" -> ["JSON"]
-      _everything_else -> [upcase_source_format]
-    end
-  end
+  defp get_file_type("application/gtfs"), do: ["JSON"]
+  defp get_file_type(source_format), do: source_format |> MIME.extensions() |> hd() |> String.upcase() |> List.wrap()
 
   defp ternary(condition, success, _failure) when condition, do: success
   defp ternary(_condition, _success, failure), do: failure

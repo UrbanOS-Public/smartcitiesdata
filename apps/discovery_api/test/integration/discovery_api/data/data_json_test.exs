@@ -2,8 +2,10 @@ defmodule DiscoveryApi.Data.DataJsonTest do
   use ExUnit.Case
   use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres"]
   use DiscoveryApi.DataCase
-  alias SmartCity.Registry.Dataset
-  alias DiscoveryApi.TestDataGenerator, as: TDG
+
+  import SmartCity.Event, only: [dataset_update: 0]
+
+  alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
 
   setup do
@@ -16,13 +18,13 @@ defmodule DiscoveryApi.Data.DataJsonTest do
     organization = Helper.create_persisted_organization()
 
     dataset_one = TDG.create_dataset(%{technical: %{orgId: organization.id, private: true}})
-    Dataset.write(dataset_one)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset_one)
 
     dataset_two = TDG.create_dataset(%{technical: %{orgId: organization.id}})
-    Dataset.write(dataset_two)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset_two)
 
     dataset_three = TDG.create_dataset(%{technical: %{orgId: organization.id}})
-    Dataset.write(dataset_three)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset_three)
 
     Patiently.wait_for!(
       fn -> public_datasets_available?(2) end,

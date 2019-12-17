@@ -5,7 +5,7 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApiWeb.Plugs.GetModel
 
-  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.TestDataGenerator, as: TDG
 
   describe "call/2" do
     setup do
@@ -14,7 +14,7 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
     end
 
     test "replaces the org_name and dataset_name with the correct dataset_id" do
-      org = TDG.create_schema_organization(orgName: "org1")
+      org = DiscoveryApi.Test.Helper.create_schema_organization(orgName: "org1")
       dataset = TDG.create_dataset(id: "ds1", technical: %{orgId: org.id, dataName: "data1"})
 
       SystemNameCache.put(dataset, org)

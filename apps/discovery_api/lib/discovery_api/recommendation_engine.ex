@@ -5,7 +5,7 @@ defmodule DiscoveryApi.RecommendationEngine do
 
   @prefix "discovery_api:dataset_recommendations:"
 
-  def save(%SmartCity.Registry.Dataset{} = dataset) do
+  def save(%SmartCity.Dataset{} = dataset) do
     recommendation_metadata = %{
       id: dataset.id,
       systemName: dataset.technical.systemName,
@@ -30,7 +30,7 @@ defmodule DiscoveryApi.RecommendationEngine do
 
   defp schema_mapper(schema) do
     Enum.map(schema, fn column ->
-      %{name: column.name, type: column.type}
+      %{name: column["name"], type: column["type"]}
     end)
   end
 

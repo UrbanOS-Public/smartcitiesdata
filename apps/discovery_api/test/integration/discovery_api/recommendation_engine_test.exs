@@ -1,11 +1,13 @@
 defmodule DiscoveryApi.RecommendationEngineTest do
   use ExUnit.Case
-  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Test.Helper
 
   use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres"]
   use DiscoveryApi.DataCase
+
+  import SmartCity.Event, only: [dataset_update: 0]
 
   setup do
     Helper.wait_for_brook_to_be_ready()
@@ -17,12 +19,12 @@ defmodule DiscoveryApi.RecommendationEngineTest do
       TDG.create_dataset(%{
         technical: %{
           schema: [
-            %{name: "id", type: "int"},
-            %{name: "name", type: "string"},
-            %{name: "age", type: "int"},
-            %{name: "address_line_1", type: "string"},
-            %{name: "lat", type: "double"},
-            %{name: "long", type: "double"}
+            %{"name" => "id", "type" => "int"},
+            %{"name" => "name", "type" => "string"},
+            %{"name" => "age", "type" => "int"},
+            %{"name" => "address_line_1", "type" => "string"},
+            %{"name" => "lat", "type" => "double"},
+            %{"name" => "long", "type" => "double"}
           ]
         }
       })
@@ -33,12 +35,12 @@ defmodule DiscoveryApi.RecommendationEngineTest do
       TDG.create_dataset(%{
         technical: %{
           schema: [
-            %{name: "id", type: "bad"},
-            %{name: "name", type: "bad"},
-            %{name: "age", type: "bad"},
-            %{name: "address_line_1", type: "bad"},
-            %{name: "lat", type: "bad"},
-            %{name: "long", type: "bad"}
+            %{"name" => "id", "type" => "bad"},
+            %{"name" => "name", "type" => "bad"},
+            %{"name" => "age", "type" => "bad"},
+            %{"name" => "address_line_1", "type" => "bad"},
+            %{"name" => "lat", "type" => "bad"},
+            %{"name" => "long", "type" => "bad"}
           ]
         }
       })
@@ -47,10 +49,10 @@ defmodule DiscoveryApi.RecommendationEngineTest do
       TDG.create_dataset(%{
         technical: %{
           schema: [
-            %{name: "id", type: "int"},
-            %{name: "name", type: "string"},
-            %{name: "age", type: "int"},
-            %{name: "random", type: "string"}
+            %{"name" => "id", "type" => "int"},
+            %{"name" => "name", "type" => "string"},
+            %{"name" => "age", "type" => "int"},
+            %{"name" => "random", "type" => "string"}
           ]
         }
       })
@@ -59,9 +61,9 @@ defmodule DiscoveryApi.RecommendationEngineTest do
       TDG.create_dataset(%{
         technical: %{
           schema: [
-            %{name: "id", type: "int"},
-            %{name: "name", type: "string"},
-            %{name: "random_stuff", type: "string"}
+            %{"name" => "id", "type" => "int"},
+            %{"name" => "name", "type" => "string"},
+            %{"name" => "random_stuff", "type" => "string"}
           ]
         }
       })
@@ -71,7 +73,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
     RecommendationEngine.save(dataset_that_should_match)
     RecommendationEngine.save(dataset_that_doesnt_meet_column_count_threshold)
 
-    SmartCity.Registry.Dataset.write(dataset_to_get_recommendations_for)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset_to_get_recommendations_for)
 
     Patiently.wait_for!(
       fn -> DiscoveryApi.Data.Model.get(dataset_to_get_recommendations_for.id) != nil end,

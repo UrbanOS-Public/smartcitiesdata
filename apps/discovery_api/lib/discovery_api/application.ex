@@ -25,7 +25,6 @@ defmodule DiscoveryApi.Application do
         redis(),
         ecto_repo(),
         {Brook, Application.get_env(:discovery_api, :brook)},
-        registry_pubsub(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
         DiscoveryApi.Quantum.Scheduler
       ]
@@ -38,14 +37,6 @@ defmodule DiscoveryApi.Application do
   def config_change(changed, _new, removed) do
     DiscoveryApiWeb.Endpoint.config_change(changed, removed)
     :ok
-  end
-
-  defp registry_pubsub() do
-    Application.get_env(:smart_city_registry, :redis)
-    |> case do
-      nil -> []
-      [host: _] -> {SmartCity.Registry.Subscriber, [message_handler: DiscoveryApi.Data.DatasetEventListener]}
-    end
   end
 
   defp redis do

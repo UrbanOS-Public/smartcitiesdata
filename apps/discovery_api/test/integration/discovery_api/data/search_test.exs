@@ -2,10 +2,10 @@ defmodule DiscoveryApi.Data.SearchTest do
   use ExUnit.Case
   use Divo, services: [:redis, :zookeeper, :kafka, :zookeeper, :kafka, :"ecto-postgres"]
   use DiscoveryApi.DataCase
-  alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
-  alias DiscoveryApi.TestDataGenerator, as: TDG
-  alias SmartCity.Registry.Dataset
+  alias SmartCity.TestDataGenerator, as: TDG
+  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.TestHelper
 
   setup do
     Helper.wait_for_brook_to_be_ready()
@@ -29,8 +29,10 @@ defmodule DiscoveryApi.Data.SearchTest do
         description: "two"
       })
 
-    Model.save(model_one)
-    Model.save(model_two)
+    Brook.Test.with_event(DiscoveryApi.instance(), fn ->
+      Brook.ViewState.merge(:models, model_one.id, model_one)
+      Brook.ViewState.merge(:models, model_two.id, model_two)
+    end)
 
     :ok
   end
@@ -59,18 +61,19 @@ defmodule DiscoveryApi.Data.SearchTest do
           technical: %{orgId: organization.id, schema: []}
         })
 
-      Dataset.write(dataset)
-      DiscoveryApi.Data.DatasetEventListener.handle_dataset(dataset)
+      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
       Redix.command!(:redix, ["FLUSHALL"])
 
       params = Plug.Conn.Query.encode(%{query: "Bob"})
 
-      %{status_code: status_code, body: _body} =
-        "http://localhost:4000/api/v1/dataset/search?#{params}"
-        |> HTTPoison.get!()
+      eventually(fn ->
+        %{status_code: status_code, body: _body} =
+          "http://localhost:4000/api/v1/dataset/search?#{params}"
+          |> HTTPoison.get!()
 
-      assert status_code == 200
+        assert status_code == 200
+      end)
     end
   end
 end

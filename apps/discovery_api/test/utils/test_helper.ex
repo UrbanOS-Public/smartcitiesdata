@@ -4,9 +4,10 @@ defmodule DiscoveryApi.Test.Helper do
   """
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Schemas.Users
-  alias SmartCity.TestDataGenerator, as: SC_TDG
+  alias SmartCity.TestDataGenerator, as: TDG
 
   @ldap_people_ou "People"
+  @instance DiscoveryApi.instance()
 
   def sample_model(values \\ %{}) do
     %Model{
@@ -14,7 +15,7 @@ defmodule DiscoveryApi.Test.Helper do
       title: Faker.Lorem.word(),
       keywords: [Faker.Lorem.word(), Faker.Lorem.word()],
       organization: Faker.Lorem.word(),
-      organizationDetails: %{} |> SC_TDG.create_organization() |> Map.from_struct(),
+      organizationDetails: %{} |> TDG.create_organization() |> Map.from_struct(),
       modifiedDate: Date.to_string(Faker.Date.backward(20)),
       fileTypes: [Faker.Lorem.characters(3), Faker.Lorem.characters(4)],
       description: Enum.join(Faker.Lorem.sentences(2..3), " "),
@@ -65,6 +66,16 @@ defmodule DiscoveryApi.Test.Helper do
       systemName: "#{Faker.Lorem.word()}__#{Faker.Lorem.word()}"
     }
     |> Map.merge(values)
+  end
+
+  def save_model(model) do
+    Brook.Test.with_event(@instance, fn ->
+      Brook.ViewState.merge(:models, model.id, model)
+    end)
+  end
+
+  def clear_saved_models() do
+    Brook.Test.clear_view_state(@instance, :models)
   end
 
   def ldap_user(values \\ %{}) do
@@ -160,7 +171,7 @@ defmodule DiscoveryApi.Test.Helper do
   end
 
   def create_persisted_organization(map \\ %{}) do
-    organization = SC_TDG.create_organization(map)
+    organization = TDG.create_organization(map)
     Brook.Event.send(DiscoveryApi.instance(), "organization:update", :test, organization)
 
     Patiently.wait_for(
@@ -192,6 +203,19 @@ defmodule DiscoveryApi.Test.Helper do
       :ok -> :ok
       _ -> raise "An error occured in setting up the user-organization association correctly in: #{__MODULE__}"
     end
+  end
+
+  def create_schema_organization(overrides \\ %{}) do
+    smart_city_organization = SmartCity.TestDataGenerator.create_organization(overrides)
+
+    %DiscoveryApi.Schemas.Organizations.Organization{
+      id: smart_city_organization.id,
+      description: smart_city_organization.description,
+      name: smart_city_organization.orgName,
+      title: smart_city_organization.orgTitle,
+      logo_url: smart_city_organization.logoUrl,
+      homepage: smart_city_organization.homepage
+    }
   end
 
   defp user_associated_with_organization?(user_id, organization_id) do

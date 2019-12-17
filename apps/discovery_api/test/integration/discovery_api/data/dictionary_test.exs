@@ -2,9 +2,10 @@ defmodule DiscoveryApi.Data.DictionaryTest do
   use ExUnit.Case
   use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres"]
   use DiscoveryApi.DataCase
-  alias DiscoveryApi.TestDataGenerator, as: TDG
-  alias SmartCity.Registry.Dataset
+  alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
+  import SmartCity.TestHelper
+  import SmartCity.Event, only: [dataset_update: 0]
 
   setup do
     Helper.wait_for_brook_to_be_ready()
@@ -33,15 +34,16 @@ defmodule DiscoveryApi.Data.DictionaryTest do
           technical: %{orgId: organization.id, schema: schema}
         })
 
-      Dataset.write(dataset)
-      DiscoveryApi.Data.DatasetEventListener.handle_dataset(dataset)
+      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
-      %{status_code: status_code, body: body} =
-        "http://localhost:4000/api/v1/dataset/#{dataset.id}/dictionary"
-        |> HTTPoison.get!()
+      eventually(fn ->
+        %{status_code: status_code, body: body} =
+          "http://localhost:4000/api/v1/dataset/#{dataset.id}/dictionary"
+          |> HTTPoison.get!()
 
-      assert status_code == 200
-      assert Jason.decode!(body, keys: :atoms) == schema
+        assert status_code == 200
+        assert Jason.decode!(body, keys: :atoms) == schema
+      end)
     end
   end
 end

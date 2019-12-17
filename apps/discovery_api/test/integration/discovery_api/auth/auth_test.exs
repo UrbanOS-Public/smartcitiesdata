@@ -6,7 +6,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
   import ExUnit.CaptureLog
 
   alias DiscoveryApi.Auth.GuardianConfigurator
-  alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users
@@ -57,9 +56,10 @@ defmodule DiscoveryApi.Auth.AuthTest do
         keywords: ["dataset", "public_facet"]
       })
 
-    Model.save(private_model_that_belongs_to_org_1)
-    Model.save(private_model_that_belongs_to_org_2)
-    Model.save(public_model_that_belongs_to_org_1)
+    Helper.clear_saved_models()
+    Helper.save_model(private_model_that_belongs_to_org_1)
+    Helper.save_model(private_model_that_belongs_to_org_2)
+    Helper.save_model(public_model_that_belongs_to_org_1)
 
     %{status_code: 200, body: "#{@organization_1_username} logged in.", headers: headers} =
       "http://localhost:4000/api/v1/login"

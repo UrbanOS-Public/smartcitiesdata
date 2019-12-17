@@ -3,9 +3,10 @@ defmodule DiscoveryApi.Data.QueryTest do
   use ExUnit.Case
   use Divo
   use DiscoveryApi.DataCase
-  alias SmartCity.Registry.Dataset
-  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
+
+  import SmartCity.Event, only: [dataset_update: 0]
 
   @public_dataset_id "123-456-789"
   @private_dataset_id "111-222-333"
@@ -69,9 +70,9 @@ defmodule DiscoveryApi.Data.QueryTest do
         }
       })
 
-    Dataset.write(public_dataset)
-    Dataset.write(private_dataset)
-    Dataset.write(geojson_dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", public_dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", private_dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", geojson_dataset)
 
     public_table = public_dataset.technical.systemName
     private_table = private_dataset.technical.systemName

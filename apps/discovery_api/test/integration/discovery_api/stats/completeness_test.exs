@@ -2,13 +2,14 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   use ExUnit.Case
   use Divo
   use DiscoveryApi.DataCase
-  alias SmartCity.Registry.Dataset
   import SmartCity.TestHelper
-  alias DiscoveryApi.TestDataGenerator, as: TDG
+  alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Data.Persistence
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApi.Stats.DataHelper
   alias DiscoveryApi.Test.Helper
+
+  import SmartCity.Event, only: [dataset_update: 0]
 
   setup do
     Helper.wait_for_brook_to_be_ready()
@@ -45,8 +46,8 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
           }
         })
 
-      Dataset.write(dataset1)
-      Dataset.write(dataset2)
+      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset1)
+      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset2)
 
       dataset1
       |> PrestoTestHelper.create_test_table()

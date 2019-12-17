@@ -4,7 +4,7 @@ defmodule DiscoveryApi.Data.SystemNameCache do
   """
   require Logger
 
-  alias SmartCity.Registry.Dataset
+  alias SmartCity.Dataset
   alias DiscoveryApi.Schemas.Organizations.Organization
 
   def child_spec([]) do
