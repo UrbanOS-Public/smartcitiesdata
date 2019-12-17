@@ -45,7 +45,7 @@ defmodule DiscoveryApi.Data.RegistryMigrator do
            headers: [{"content-type", "application/json"}]
          ) do
       {:ok, result} -> result
-      error -> IO.puts("Got error posting dataset #{dataset.id}: #{inspect(error)}")
+      error -> Logger.error("Got error posting dataset #{dataset.id}: #{inspect(error)}")
     end
   end
 
