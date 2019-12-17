@@ -9,10 +9,6 @@ defmodule Odo.AngryCaseTest do
   test "Individual task failures do not stop others" do
     start_supervised!(Odo.TestEventHandler)
 
-    # Application.put_env(:odo, :working_dir, "test/support")
-
-    File.cp!("test/support/my-data.shapefile", "/tmp/123.shapefile")
-
     id = 123
     data_name = "my-data"
     org = "my-org"
@@ -60,15 +56,28 @@ defmodule Odo.AngryCaseTest do
 
     allow(ExAws.request(any()), return: {:ok, :there})
 
-    Brook.Event.send(Odo.event_stream_instance(), file_ingest_end(), :odo, bad_event)
-    Brook.Event.send(Odo.event_stream_instance(), file_ingest_end(), :odo, good_event)
+    old_path = Application.get_env(:odo, :working_dir, :unset)
 
-    SmartCity.TestHelper.eventually(fn ->
-      events = Odo.TestEventHandler.get_events()
+    try do
+      {:ok, dir_path} = Temp.mkdir(Temp.path())
+      File.cp!("test/support/my-data.shapefile", "#{dir_path}/123.shapefile")
+      Application.put_env(:odo, :working_dir, dir_path)
 
-      assert expected_good_event in events
-      assert Enum.member?(events, expected_good_event)
-      assert expected_bad_event in events
-    end)
+      Brook.Event.send(Odo.event_stream_instance(), file_ingest_end(), :odo, bad_event)
+      Brook.Event.send(Odo.event_stream_instance(), file_ingest_end(), :odo, good_event)
+
+      SmartCity.TestHelper.eventually(fn ->
+        events = Odo.TestEventHandler.get_events()
+
+        assert Enum.member?(events, expected_good_event)
+        assert Enum.member?(events, expected_bad_event)
+      end)
+    after
+      if old_path != :unset do
+        Application.put_env(:odo, :working_dir, old_path)
+      else
+        Application.delete_env(:odo, :working_dir)
+      end
+    end
   end
 end

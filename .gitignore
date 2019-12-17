@@ -25,5 +25,3 @@ erl_crash.dump
 
 node_modules/
 .DS_Store
-test/support/minio_data/.minio.sys/*
-!test/support/minio_data/.minio.sys/config/config.json
