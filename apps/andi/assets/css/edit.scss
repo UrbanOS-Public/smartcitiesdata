@@ -24,10 +24,10 @@
     "cancel-btn save-btn";
 }
 
-.div__success-message {
+.metadata-form__success-message {
   text-align: right;
   padding-right: 2em;
-  color: green;
+  color: $color-success;
 }
 
 @include area(metadata-form, title);

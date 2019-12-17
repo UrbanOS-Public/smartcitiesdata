@@ -326,17 +326,22 @@ defmodule AndiWeb.EditLiveViewTest do
     test "valid metadata is saved on submit", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
-          business: %{publishFrequency: "frequently", issuedDate: "the begenening"},
+          business: %{issuedDate: "", publishFrequency: "12345"},
           technical: %{cadence: "123"}
         })
 
       DatasetCache.put(dataset)
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
-      assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      _html = render_change(view, :save, %{})
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      dataset_map = dataset_to_map(dataset) |> put_in([:business, :issuedDate], "12345")
 
-      assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, dataset), once())
+      render_change(view, :validate, %{"dataset_schema" => dataset_map})
+      html = render_change(view, :save, %{"dataset_schema" => %{}})
+
+      {:ok, updated_dataset} = SmartCity.Dataset.new(dataset_map)
+
+      assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, updated_dataset), once())
     end
 
     test "invalid metadata is not saved on submit", %{conn: conn} do
@@ -354,7 +359,8 @@ defmodule AndiWeb.EditLiveViewTest do
     test "success message is displayed when metadata is saved", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
-          business: %{issuedDate: "", publishFrequency: "12345"}
+          business: %{issuedDate: "", publishFrequency: "12345"},
+          technical: %{cadence: "123"}
         })
 
       DatasetCache.put(dataset)

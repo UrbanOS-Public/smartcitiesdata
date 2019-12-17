@@ -72,7 +72,7 @@ defmodule AndiWeb.EditLiveView do
             </div>
             <div class="metadata-form__language">
               <%= Form.label(fp, :language, "Language", class: "label") %>
-              <%= Form.select(fp, :language, [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]], value: get_language(Form.input_value(fp, :language)), class: "select") %>
+              <%= Form.select(fp, :language, get_language_options(), value: get_language(Form.input_value(fp, :language)), class: "select") %>
             </div>
             <div class="metadata-form__homepage">
               <%= Form.label(fp, :homepage, "Data Homepage URL", class: "label") %>
@@ -87,7 +87,7 @@ defmodule AndiWeb.EditLiveView do
             </div>
             <div class="metadata-form__level-of-access">
               <%= Form.label(fp, :private, "Level of Access", class: "label label--required") %>
-              <%= Form.select(fp, :private, [[key: "Private", value: "true"], [key: "Public", value: "false"]], class: "select") %>
+              <%= Form.select(fp, :private, get_level_of_access_options(), class: "select") %>
               <%= error_tag(fp, :private) %>
             </div>
           <% end %>
@@ -97,10 +97,10 @@ defmodule AndiWeb.EditLiveView do
         <div class="metadata-form__save-btn">
           <%= Form.submit("Save", id: "save-button", class: "btn btn--save", disabled: false) %>
         </div>
-        </div>
+      </div>
       <div>
         <%= if @is_saved do %>
-          <div id="success-message" class="div__success-message">Saved Successfully</div>
+          <div id="success-message" class="metadata__success-message">Saved Successfully</div>
         <% end %>
       </div>
 
@@ -108,17 +108,9 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def mount(%{dataset: dataset}, socket) do
-    new_business = dataset.business |> Map.from_struct()
-    new_technical = dataset.technical |> Map.from_struct()
+    change = Andi.DatasetSchema.changeset(dataset)
 
-    change =
-      dataset
-      |> Map.from_struct()
-      |> Map.put(:business, new_business)
-      |> Map.put(:technical, new_technical)
-      |> Andi.DatasetSchema.changeset()
-
-    {:ok, assign(socket, changeset: change, is_saved: false)}
+    {:ok, assign(socket, changeset: change, base: dataset, is_saved: false)}
   end
 
   def handle_event(
@@ -128,6 +120,7 @@ defmodule AndiWeb.EditLiveView do
       ) do
     keyword_list = get_keywords_as_list(dataset_schema["business"]["keywords"])
 
+    # Parse keywords and prevent changes to disabled fields
     dataset_schema =
       dataset_schema
       |> put_in(["business", "keywords"], keyword_list)
@@ -135,6 +128,7 @@ defmodule AndiWeb.EditLiveView do
       |> put_in(["business", "orgTitle"], existing.business.changes.orgTitle)
 
     change = Andi.DatasetSchema.changeset(dataset_schema)
+
     {:noreply, assign(socket, changeset: change, is_saved: false)}
   end
 
@@ -143,8 +137,14 @@ defmodule AndiWeb.EditLiveView do
       case get_all_errors(socket.assigns.changeset) do
         [] ->
           schema = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-          bus_map = schema.business |> Map.from_struct()
-          tech_map = schema.technical |> Map.from_struct()
+          base_business = socket.assigns.base.business |> Map.from_struct()
+          base_tech = socket.assigns.base.technical |> Map.from_struct()
+          bus_map = Map.merge(base_business, schema.business |> Map.from_struct())
+          tech_map = Map.merge(base_tech, schema.technical |> Map.from_struct())
+          # bus_map = schema.business |> Map.from_struct()
+          # tech_map = schema.technical |> Map.from_struct()
+
+          IO.inspect(tech_map)
 
           {:ok, dataset} =
             schema
@@ -166,6 +166,9 @@ defmodule AndiWeb.EditLiveView do
     # Show errors is an unused property. It's sole purpose is to tell live view there has been a change so that it will render errors if needed.
     {:noreply, assign(socket, is_saved: is_saved, show_errors: true)}
   end
+
+  defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
+  defp get_level_of_access_options, do: [[key: "Private", value: "true"], [key: "Public", value: "false"]]
 
   defp get_keywords(nil), do: ""
   defp get_keywords(keywords), do: Enum.join(keywords, ", ")
