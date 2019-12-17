@@ -167,6 +167,15 @@ defmodule E2ETest do
       )
     end
 
+    test "forklift sends event to update last ingested time", %{dataset: ds} do
+      eventually(fn ->
+        messages = Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete") |> Enum.to_list()
+
+        assert 1 == length(messages)
+      end)
+
+    end
+
     test "is profiled by flair", %{dataset: ds} do
       table = Application.get_env(:flair, :table_name_timing)
 
@@ -240,6 +249,15 @@ defmodule E2ETest do
         |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{ds.technical.systemName}", %{})
 
       assert_push "update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000
+    end
+
+    test "forklift sends event to update last ingested time for streaming datasets", %{streaming_dataset: ds} do
+      eventually(fn ->
+        messages = Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete") |> Enum.to_list()
+
+        assert length(messages) > 0
+      end)
+
     end
 
     test "is profiled by flair", %{streaming_dataset: ds} do

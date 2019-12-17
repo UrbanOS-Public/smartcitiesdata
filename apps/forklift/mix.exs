@@ -51,7 +51,7 @@ defmodule Forklift.MixProject do
       {:quantum, "~>2.3"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
-      {:smart_city, "~> 3.0", override: true},
+      {:smart_city, "~> 3.10.0"},
       {:smart_city_test, "~> 0.7"},
       {:streaming_metrics, "~> 2.2"},
       {:timex, "~> 3.6"},

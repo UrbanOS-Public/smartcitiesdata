@@ -4,7 +4,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
   import Mox
   import Forklift
-  import SmartCity.Event, only: [data_ingest_end: 0]
+  import SmartCity.Event, only: [data_ingest_end: 0, data_write_complete: 0]
   import SmartCity.Data, only: [end_of_data: 0]
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -80,12 +80,12 @@ defmodule Forklift.Integration.MessageHandlingTest do
         event_data.id == dataset.id &&
           DateTime.to_iso8601(event_data.timestamp) > DateTime.to_iso8601(now)
       end
-      expect Brook.Event.send(instance_name(), "dataset:write_complete", :forklift, is(greater_than_now)), return: :ok
+      expect Brook.Event.send(instance_name(), data_write_complete(), :forklift, is(greater_than_now)), return: :ok
       Forklift.MessageHandler.handle_messages([message1, message2], %{dataset: dataset})
     end
 
     test "handles errors gracefully" do
-      allow(Brook.Event.send(instance_name(), "dataset:write_complete", any(), any()), return: :whatever)
+      allow(Brook.Event.send(instance_name(), data_write_complete(), any(), any()), return: :whatever)
 
       stub(MockTable, :write, fn _, _ -> {:error, :raisins} end)
       stub(MockTopic, :write, fn _, _ -> :ok end)
@@ -119,7 +119,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
       message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
       message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}
 
-      allow(Brook.Event.send(instance_name(), "dataset:write_complete", any(), any()), return: :whatever)
+      allow(Brook.Event.send(instance_name(), data_write_complete(), any(), any()), return: :whatever)
       expect Brook.Event.send(instance_name(), data_ingest_end(), :forklift, dataset), return: :ok
       Forklift.MessageHandler.handle_messages([message1, message2, end_of_data()], %{dataset: dataset})
     end
