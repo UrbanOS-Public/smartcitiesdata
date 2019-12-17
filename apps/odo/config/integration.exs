@@ -1,6 +1,6 @@
 use Mix.Config
 # We should turn this into a repo to share with Reaper
-import_config "../test/integration/divo_minio.ex"
+import_config "../test/support/divo_minio.ex"
 
 host =
   case System.get_env("HOST_IP") do

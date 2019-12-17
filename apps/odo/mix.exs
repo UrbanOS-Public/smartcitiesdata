@@ -58,6 +58,5 @@ defmodule Odo.MixProject do
   defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]
 end

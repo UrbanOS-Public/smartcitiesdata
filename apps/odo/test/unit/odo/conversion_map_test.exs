@@ -17,8 +17,8 @@ defmodule Odo.Unit.ConversionMapTest do
          bucket: "hosted-files",
          original_key: "my-org/my-dataset.shapefile",
          converted_key: "my-org/my-dataset.geojson",
-         download_path: "tmp/111.shapefile",
-         converted_path: "tmp/111.geojson",
+         download_path: "/tmp/111.shapefile",
+         converted_path: "/tmp/111.geojson",
          conversion: &Geomancer.geo_json/1,
          dataset_id: 111
        }}
