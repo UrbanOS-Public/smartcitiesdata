@@ -39,7 +39,6 @@ config :prestige,
 config :estuary,
   event_stream_topic: topic,
   elsa_endpoint: endpoints,
-  event_stream_schema_name: schema_name,
   event_stream_table_name: table_name
 
 config :logger,
