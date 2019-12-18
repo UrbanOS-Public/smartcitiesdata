@@ -55,13 +55,21 @@ defmodule Estuary.Datasets.DatasetSchemaTest do
         payload: %{
           "author" => "some_author",
           "create_ts" => 1_575_308_549_008,
+<<<<<<< HEAD
           "data" => Jason.encode(dataset),
+=======
+          "data" => dataset,
+>>>>>>> Adding unit test and faker
           "type" => "data:ingest:start"
         }
       }
     ]
 
+<<<<<<< HEAD
     actual_value = DatasetSchema.make_datawriter_payload(event)
+=======
+    actual_value = DatasetSchema.parse_event_args(event)
+>>>>>>> Adding unit test and faker
     assert expected_value == actual_value
   end
 end
