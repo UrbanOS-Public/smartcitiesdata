@@ -2,7 +2,8 @@ defmodule Estuary.Application do
   @moduledoc false
   use Application
 
-  alias Estuary.EventTable
+  alias Estuary.DataWriter
+  alias Estuary.Datasets.DatasetSchema
 
   @spec start(any, any) :: {:error, any} | {:ok, pid}
   def start(_type, _args) do
@@ -11,7 +12,10 @@ defmodule Estuary.Application do
       EventTable.create_schema()
       EventTable.create_table()
     end
-
+    # SC - Starts
+    DatasetSchema.table_schema()
+    |> DataWriter.init()
+    # SC - Ends
     children = get_children()
 
     opts = [strategy: :one_for_one, name: Estuary.Supervisor]
