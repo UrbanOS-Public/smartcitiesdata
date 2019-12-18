@@ -8,6 +8,7 @@ defmodule Forklift.MessageHandler do
 
   import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event, only: [data_ingest_end: 0, data_write_complete: 0]
+  alias SmartCity.DataWriteComplete
   import Forklift
   alias Forklift.Util
 
@@ -26,7 +27,8 @@ defmodule Forklift.MessageHandler do
     |> Enum.reject(&error_tuple?/1)
     |> Forklift.DataWriter.write(dataset: dataset)
 
-    Brook.Event.send(instance_name(), data_write_complete(), :forklift, %{id: dataset.id, timestamp: DateTime.utc_now()})
+    {:ok, event} = DataWriteComplete.new(%{id: dataset.id, timestamp: DateTime.utc_now()})
+    Brook.Event.send(instance_name(), data_write_complete(), :forklift, event)
 
     {:ack, %{dataset: dataset}}
   end
