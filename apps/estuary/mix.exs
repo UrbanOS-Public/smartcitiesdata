@@ -34,6 +34,7 @@ defmodule Estuary.MixProject do
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:elsa, "~> 0.10.0"},
+      {:jason, "~> 1.1"},
       {:mock, "~> 0.3", only: [:test, :integration], runtime: false},
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
       {:pipeline, in_umbrella: true},
