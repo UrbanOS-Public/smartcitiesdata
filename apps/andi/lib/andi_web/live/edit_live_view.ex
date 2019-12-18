@@ -128,15 +128,13 @@ defmodule AndiWeb.EditLiveView do
         schema = Ecto.Changeset.apply_changes(change)
         original_dataset = socket.assigns.dataset
 
-        {:ok, updated_dataset} =
-          %{
-            original_dataset
-            | business: Map.merge(Map.from_struct(original_dataset.business), Map.from_struct(schema.business)),
-              technical: Map.merge(Map.from_struct(original_dataset.technical), Map.from_struct(schema.technical))
-          }
-          |> SmartCity.Dataset.new()
-
-        Brook.Event.send(instance_name(), dataset_update(), :andi, updated_dataset)
+        %{
+          original_dataset
+          | business: Map.merge(Map.from_struct(original_dataset.business), Map.from_struct(schema.business)),
+            technical: Map.merge(Map.from_struct(original_dataset.technical), Map.from_struct(schema.technical))
+        }
+        |> SmartCity.Dataset.new()
+        |> send_dataset_update
 
         {:noreply, assign(socket, changeset: change, is_saved: true, update_stepper_state: "meta-data-save")}
 
@@ -150,6 +148,12 @@ defmodule AndiWeb.EditLiveView do
     |> put_in(["business", "keywords"], get_keywords_as_list(data["business"]["keywords"]))
     |> Andi.DatasetSchema.changeset()
   end
+
+  defp send_dataset_update({:ok, dataset}) do
+    Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
+  end
+
+  defp send_dataset_update({:error, e}), do: {:error, e}
 
   defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
   defp get_level_of_access_options, do: [[key: "Private", value: "true"], [key: "Public", value: "false"]]
