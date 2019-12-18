@@ -40,8 +40,6 @@ jobs:
       script: bash scripts/travis-test.sh estuary
     - name: discovery_streams
       script: bash scripts/travis-test.sh discovery_streams
-    - name: odo
-      script: bash scripts/travis-test.sh odo
     - stage: publish
       name: development
       if: branch == master && type != pull_request
