@@ -28,6 +28,13 @@ endpoints =
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {host, String.to_integer(port)} end)
 
+elsa_brokers =
+  kafka_brokers
+  |> String.split(",")
+  |> Enum.map(&String.trim/1)
+  |> Enum.map(fn entry -> String.split(entry, ":") end)
+  |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
+
 config :prestige,
   base_url: System.get_env("PRESTO_URL"),
   headers: [
@@ -37,10 +44,18 @@ config :prestige,
   ]
 
 config :estuary,
+  elsa_brokers: elsa_brokers,
   event_stream_topic: topic,
   elsa_endpoint: endpoints,
   event_stream_schema_name: schema_name,
   event_stream_table_name: table_name
+  topic_subscriber_config: [
+    begin_offset: :earliest,
+    offset_reset_policy: :reset_to_earliest,
+    max_bytes: 1_000_000,
+    min_bytes: 500_000,
+    max_wait_time: 10_000
+  ]
 
 config :logger,
   level: :warn

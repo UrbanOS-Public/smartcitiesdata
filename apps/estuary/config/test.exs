@@ -8,4 +8,13 @@ config :logger, level: :warn
 config :estuary,
   data_reader: MockReader,
   topic_writer: MockTopic,
-  table_writer: MockTable
+  table_writer: MockTable,
+  retry_count: 5,
+  retry_initial_delay: 10,
+  topic_subscriber_config: [
+    begin_offset: :earliest,
+    offset_reset_policy: :reset_to_earliest,
+    max_bytes: 1_000_000,
+    min_bytes: 500_000,
+    max_wait_time: 10_000
+  ]
