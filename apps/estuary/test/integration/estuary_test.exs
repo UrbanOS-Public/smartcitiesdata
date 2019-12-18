@@ -8,6 +8,7 @@ defmodule Estuary.EstuaryTest do
 
   @elsa_endpoint Application.get_env(:estuary, :elsa_endpoint)
   @event_stream_topic Application.get_env(:estuary, :event_stream_topic)
+  @event_stream_schema_name Application.get_env(:estuary, :event_stream_schema_name)
   @event_stream_table_name Application.get_env(:estuary, :event_stream_table_name)
 
   setup do
@@ -29,7 +30,7 @@ defmodule Estuary.EstuaryTest do
     ]
 
     actual_columns =
-      "DESCRIBE #{@event_stream_table_name}"
+      "DESCRIBE #{@event_stream_schema_name}.#{@event_stream_table_name}"
       |> Prestige.execute()
       |> Prestige.prefetch()
 

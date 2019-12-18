@@ -8,6 +8,7 @@ defmodule Estuary.Application do
   def start(_type, _args) do
     if elsa_endpoint() != nil do
       validate_topic_exists()
+      EventTable.create_schema()
       EventTable.create_table()
     end
 

@@ -5,7 +5,21 @@ defmodule Estuary.EventTableTest do
   alias Estuary.EventTable
   alias Estuary.EventTableHelper
 
+  @event_stream_schema_name Application.get_env(:estuary, :event_stream_schema_name)
   @event_stream_table_name Application.get_env(:estuary, :event_stream_table_name)
+
+  test "create_schema is idempotent" do
+    expected_value = [[true]]
+    expected_schema_value = [[@event_stream_schema_name]]
+    EventTable.create_schema()
+    actual_value = EventTable.create_schema()
+    actual_schema_value = "SHOW SCHEMAS in hive LIKE '#{@event_stream_schema_name}'"
+    |> Prestige.execute()
+    |> Prestige.prefetch()
+
+    assert expected_value == actual_value
+    assert expected_schema_value == actual_schema_value
+  end
 
   test "create_table is idempotent" do
     expected_value = [[true]]
@@ -14,7 +28,7 @@ defmodule Estuary.EventTableTest do
     actual_value = EventTable.create_table()
 
     actual_table_value =
-      "SHOW TABLES LIKE '#{@event_stream_table_name}'"
+      "SHOW TABLES in #{@event_stream_schema_name} LIKE '#{@event_stream_table_name}'"
       |> Prestige.execute()
       |> Prestige.prefetch()
 
