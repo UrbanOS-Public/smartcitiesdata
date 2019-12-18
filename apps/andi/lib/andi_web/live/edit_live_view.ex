@@ -5,7 +5,6 @@ defmodule AndiWeb.EditLiveView do
   import AndiWeb.ErrorHelpers
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
-  require Logger
 
   def render(assigns) do
     ~L"""
@@ -67,7 +66,7 @@ defmodule AndiWeb.EditLiveView do
             </div>
             <div class="metadata-form__organization">
               <%= Form.label(fp, :orgTitle, "Organization", class: "label label--required") %>
-              <%= Form.text_input(fp, :orgTitle, [class: "input input--text", disabled: true]) %>
+              <%= Form.text_input(fp, :orgTitle, [class: "input input--text", readonly: true]) %>
               <%= error_tag(fp, :orgTitle) %>
             </div>
             <div class="metadata-form__language">
@@ -81,8 +80,8 @@ defmodule AndiWeb.EditLiveView do
           <% end %>
           <%= Form.inputs_for f, :technical, fn fp -> %>
             <div class="metadata-form__format">
-              <%= Form.label(fp, :format, "Format", class: "label label--required") %>
-              <%= Form.text_input(fp, :sourceFormat, [class: "input", disabled: true]) %>
+              <%= Form.label(fp, :sourceFormat, "Format", class: "label label--required") %>
+              <%= Form.text_input(fp, :sourceFormat, [class: "input--text input", readonly: true]) %>
               <%= error_tag(fp, :sourceFormat) %>
             </div>
             <div class="metadata-form__level-of-access">
@@ -95,7 +94,8 @@ defmodule AndiWeb.EditLiveView do
           <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--cancel") %>
         </div>
         <div class="metadata-form__save-btn">
-          <%= Form.submit("Save", id: "save-button", class: "btn btn--save", disabled: false) %>
+          <%= Link.button("Next", to: "#", id: "next-button", class: "btn btn--next") %>
+          <%= Form.submit("Save", id: "save-button", class: "btn btn--save") %>
         </div>
       </div>
       <div>
@@ -108,63 +108,47 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def mount(%{dataset: dataset}, socket) do
-    change = Andi.DatasetSchema.changeset(dataset)
-
-    {:ok, assign(socket, changeset: change, base: dataset, is_saved: false)}
+    {:ok,
+     assign(socket, id: dataset.id, dataset: dataset, changeset: Andi.DatasetSchema.changeset(dataset), is_saved: false)}
   end
 
   def handle_event(
         "validate",
-        %{"dataset_schema" => dataset_schema},
-        %{assigns: %{changeset: %{changes: existing}}} = socket
+        %{"dataset_schema" => dataset_schema} = event,
+        socket
       ) do
-    keyword_list = get_keywords_as_list(dataset_schema["business"]["keywords"])
-
-    # Parse keywords and prevent changes to disabled fields
-    dataset_schema =
-      dataset_schema
-      |> put_in(["business", "keywords"], keyword_list)
-      |> put_in(["technical", "sourceFormat"], existing.technical.changes.sourceFormat)
-      |> put_in(["business", "orgTitle"], existing.business.changes.orgTitle)
-
-    change = Andi.DatasetSchema.changeset(dataset_schema)
-
-    {:noreply, assign(socket, changeset: change, is_saved: false)}
+    {:noreply, assign(socket, changeset: apply_changes(dataset_schema), is_saved: false)}
   end
 
-  def handle_event("save", _event, socket) do
-    is_saved =
-      case get_all_errors(socket.assigns.changeset) do
-        [] ->
-          schema = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-          base_business = socket.assigns.base.business |> Map.from_struct()
-          base_tech = socket.assigns.base.technical |> Map.from_struct()
-          bus_map = Map.merge(base_business, schema.business |> Map.from_struct())
-          tech_map = Map.merge(base_tech, schema.technical |> Map.from_struct())
-          # bus_map = schema.business |> Map.from_struct()
-          # tech_map = schema.technical |> Map.from_struct()
+  def handle_event("save", %{"dataset_schema" => dataset_schema} = event, socket) do
+    change = apply_changes(dataset_schema)
 
-          IO.inspect(tech_map)
+    case change.valid? do
+      true ->
+        schema = Ecto.Changeset.apply_changes(change)
+        original_dataset = socket.assigns.dataset
 
-          {:ok, dataset} =
-            schema
-            |> Map.from_struct()
-            |> Map.put(:business, bus_map)
-            |> Map.put(:technical, tech_map)
-            |> SmartCity.Dataset.new()
+        {:ok, updated_dataset} =
+          %{
+            original_dataset
+            | business: Map.merge(Map.from_struct(original_dataset.business), Map.from_struct(schema.business)),
+              technical: Map.merge(Map.from_struct(original_dataset.technical), Map.from_struct(schema.technical))
+          }
+          |> SmartCity.Dataset.new()
 
-          Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
-          Logger.debug("Saved #{schema.id}")
-          true
+        Brook.Event.send(instance_name(), dataset_update(), :andi, updated_dataset)
 
-        errors ->
-          dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-          Logger.info("Could not save dataset #{dataset.id} because it had errors: #{inspect(errors)}")
-          false
-      end
+        {:noreply, assign(socket, changeset: change, is_saved: true, update_stepper_state: "meta-data-save")}
 
-    # Show errors is an unused property. It's sole purpose is to tell live view there has been a change so that it will render errors if needed.
-    {:noreply, assign(socket, is_saved: is_saved, show_errors: true)}
+      false ->
+        {:noreply, assign(socket, changeset: change, is_saved: false, display_errors: true)}
+    end
+  end
+
+  defp apply_changes(data) do
+    data
+    |> put_in(["business", "keywords"], get_keywords_as_list(data["business"]["keywords"]))
+    |> Andi.DatasetSchema.changeset()
   end
 
   defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
@@ -181,8 +165,4 @@ defmodule AndiWeb.EditLiveView do
 
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang
-
-  defp get_all_errors(changeset) do
-    changeset.errors ++ changeset.changes.technical.errors ++ changeset.changes.business.errors
-  end
 end

@@ -12,12 +12,11 @@ defmodule Andi.DatasetSchema do
     business_map = dataset.business |> Map.from_struct()
     technical_map = dataset.technical |> Map.from_struct()
 
-    change =
-      dataset
-      |> Map.from_struct()
-      |> Map.put(:business, business_map)
-      |> Map.put(:technical, technical_map)
-      |> changeset()
+    dataset
+    |> Map.from_struct()
+    |> Map.put(:business, business_map)
+    |> Map.put(:technical, technical_map)
+    |> changeset()
   end
 
   def changeset(params \\ %{}) do
@@ -33,25 +32,11 @@ defmodule Andi.DatasetTechnicalSchema do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @primary_key false
+
   embedded_schema do
-    field(:allow_duplicates, :boolean)
-    field(:authHeaders, :map)
-    field(:authUrl, :string)
-    field(:cadence, :string)
-    field(:credentials, :boolean)
-    field(:dataName, :string)
-    field(:orgId, :string)
-    field(:orgName, :string)
     field(:private, :boolean)
-    field(:protocol, :string)
-    field(:schema, {:array, :map})
     field(:sourceFormat, :string)
-    field(:sourceHeaders, :map)
-    field(:sourceQueryParams, :map)
-    field(:sourceType, :string)
-    field(:sourceUrl, :string)
-    field(:systemName, :string)
-    field(:topLevelSelector, :string)
   end
 
   def changeset(tech, params \\ %{}) do
@@ -66,16 +51,12 @@ defmodule Andi.DatasetBusinessSchema do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @primary_key false
+
   embedded_schema do
-    field(:authorEmail, :string, default: nil)
-    field(:authorName, :string)
-    field(:categories, :string)
-    field(:conformsToUri, :string)
     field(:contactEmail, :string)
     field(:contactName, :string)
     field(:dataTitle, :string)
-    field(:describedByMimeType, :string)
-    field(:describedByUrl, :string)
     field(:description, :string)
     field(:homepage, :string)
     field(:issuedDate, :string)
@@ -84,10 +65,7 @@ defmodule Andi.DatasetBusinessSchema do
     field(:license, :string)
     field(:modifiedDate, :string)
     field(:orgTitle, :string)
-    field(:parentDataset, :string)
     field(:publishFrequency, :string)
-    field(:referenceUrls, :string)
-    field(:rights, :string)
     field(:spatial, :string)
     field(:temporal, :string)
   end

@@ -62,6 +62,16 @@ body {
   color: $color-text-link;
   background-color: white;
   border: 2px solid $color-text-link;
+  margin-right: 1rem;
+}
+
+.btn--next {
+  @extend .btn--save;
+  float: right;
+  color: white;
+  background-color: $color-text-link;
+  border: 2px solid $color-text-link;
+  margin-right: 0;
 }
 
 .btn--save:hover {
@@ -69,17 +79,10 @@ body {
   color: white;
   border: 2px solid $color-text-link;
 }
-
-.btn--save:disabled {
-  background: #f3f3f3;
-  color: $disabled-background;
-  border: 2px solid $disabled-background;
-}
-
-.btn--save:disabled:hover {
-  background: #f3f3f3;
-  color: $disabled-background;
-  border: 2px solid $disabled-background;
+.btn--next:hover {
+  background: white;
+  color: $color-text-link;
+  border: 2px solid $color-text-link;
 }
 
 .label {
@@ -107,7 +110,7 @@ body {
   border-radius: 2px;
 }
 
-.input--text:disabled {
+.input--text:read-only {
   background: #f3f3f3;
   color: $disabled-background;
 }
