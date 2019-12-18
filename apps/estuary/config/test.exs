@@ -7,7 +7,6 @@ config :logger, level: :warn
 
 config :estuary,
   data_reader: MockReader,
-  topic_writer: MockTopic,
   table_writer: MockTable,
   retry_count: 5,
   retry_initial_delay: 10,
