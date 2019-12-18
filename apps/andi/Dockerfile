@@ -1,4 +1,5 @@
 FROM smartcitiesdata:build as builder
+RUN npm config set unsafe-perm true
 RUN cd apps/andi/assets/ && \
     rm -rf node_modules && \
     npm install && \
