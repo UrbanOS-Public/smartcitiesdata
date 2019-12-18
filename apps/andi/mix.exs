@@ -54,7 +54,7 @@ defmodule Andi.MixProject do
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.1"},
       {:simply_validate, ">= 0.2.0"},
-      {:smart_city, "~> 3.11"},
+      {:smart_city, "~> 3.0"},
       {:smart_city_registry, "~> 5.0"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:tesla, "~> 1.3", only: :integration},
