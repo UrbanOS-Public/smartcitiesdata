@@ -59,8 +59,6 @@ defmodule Forklift.Integration.MessageHandlingTest do
       assert Enum.any?(timing, fn time -> time["label"] == "total_time" end)
     end
 
-    #TODO Test that write complete event is sent to event state after DataWriter.write completes
-    # name of event?
     test "sends 'dataset:write_complete event' with timestamp after writing records" do
       expect(MockTable, :write, fn [%{payload: "foobar"}, %{payload: "foobaz"}], _ -> :ok end)
       expect(MockTopic, :write, fn _, _ -> :ok end)

@@ -58,7 +58,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:redix, "~> 0.10.2"},
       {:sweet_xml, "~> 0.6"},
-      {:smart_city, "~> 3.10.0"},
+      {:smart_city, "~> 3.11"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:streaming_metrics, "~>2.1"},
       {:temporary_env, "~> 2.0", only: [:test, :integration]},
