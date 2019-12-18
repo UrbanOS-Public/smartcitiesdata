@@ -13,7 +13,11 @@ defmodule Flair.ConsumerTest do
       expected = durations_events_output()
 
       expect(MockTableWriter, :write, fn actual, _ ->
-        payloads = Enum.map(actual, fn %{payload: content} -> %{payload: Map.delete(content, "timestamp")} end)
+        payloads =
+          Enum.map(actual, fn %{payload: content} ->
+            %{payload: Map.delete(content, "timestamp")}
+          end)
+
         assert payloads == expected
       end)
 
@@ -59,7 +63,7 @@ defmodule Flair.ConsumerTest do
             max: 3_058_000,
             min: 318_000,
             stdev: 1_129_043.3511999834
-          },
+          }
         }
       },
       %{
@@ -73,7 +77,7 @@ defmodule Flair.ConsumerTest do
             max: 10,
             min: 3,
             stdev: 123.4321
-          },
+          }
         }
       }
     ]

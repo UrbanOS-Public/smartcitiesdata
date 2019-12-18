@@ -19,7 +19,6 @@ defmodule Estuary.MixProject do
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger],
@@ -27,7 +26,6 @@ defmodule Estuary.MixProject do
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:credo, "~> 1.1", only: :dev, runtime: false},

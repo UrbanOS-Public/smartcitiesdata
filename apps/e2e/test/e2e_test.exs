@@ -39,15 +39,35 @@ defmodule E2ETest do
     }
   }
 
+  @geo_overrides %{
+    id: "geo_data",
+    technical: %{
+      orgName: "end_to",
+      dataName: "land",
+      systemName: "end_to__land",
+      schema: [%{name: "feature", type: "json"}],
+      sourceType: "ingest",
+      sourceFormat: "zip",
+      cadence: "once"
+    }
+  }
+
   setup_all do
+    Temp.track!()
+    Application.put_env(:odo, :working_dir, Temp.mkdir!())
     bypass = Bypass.open()
     user = Application.get_env(:andi, :ldap_user)
     pass = Application.get_env(:andi, :ldap_pass)
+    shapefile = File.read!("test/support/shapefile.zip")
     Paddle.authenticate(user, pass)
     Paddle.add([ou: "integration"], objectClass: ["top", "organizationalunit"], ou: "integration")
 
     Bypass.stub(bypass, "GET", "/path/to/the/data.csv", fn conn ->
       Plug.Conn.resp(conn, 200, "true,foobar,10")
+    end)
+
+    Bypass.stub(bypass, "GET", "/path/to/the/geo_data.shapefile", fn conn ->
+      Plug.Conn.resp(conn, 200, shapefile)
     end)
 
     dataset =
@@ -60,7 +80,15 @@ defmodule E2ETest do
 
     streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
 
-    [dataset: dataset, streaming_dataset: streaming_dataset]
+    geo_dataset =
+      @geo_overrides
+      |> put_in(
+        [:technical, :sourceUrl],
+        "http://localhost:#{bypass.port()}/path/to/the/geo_data.shapefile"
+      )
+      |> TDG.create_dataset()
+
+    [dataset: dataset, streaming_dataset: streaming_dataset, geo_dataset: geo_dataset]
   end
 
   describe "creating an organization" do
@@ -182,9 +210,10 @@ defmodule E2ETest do
 
   describe "streaming data" do
     test "creating a dataset via RESTful PUT", %{streaming_dataset: ds} do
-      resp = HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-            {"Content-Type", "application/json"}
-          ])
+      resp =
+        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
+          {"Content-Type", "application/json"}
+        ])
 
       assert resp.status_code == 201
     end
@@ -237,9 +266,13 @@ defmodule E2ETest do
 
       {:ok, _, _} =
         socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
-        |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{ds.technical.systemName}", %{})
+        |> subscribe_and_join(
+          DiscoveryStreamsWeb.StreamingChannel,
+          "streaming:#{ds.technical.systemName}",
+          %{}
+        )
 
-      assert_push "update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000
+      assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000)
     end
 
     test "is profiled by flair", %{streaming_dataset: ds} do
@@ -252,6 +285,38 @@ defmodule E2ETest do
 
         Enum.each(expected, fn app -> assert [ds.id, app] in actual end)
       end)
+    end
+  end
+
+  describe "geospatial data" do
+    test "creating a dataset via RESTful PUT", %{geo_dataset: ds} do
+      resp = HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
+        {"Content-Type", "application/json"}
+          ])
+
+      assert resp.status_code == 201
+    end
+
+    @tag timeout: :infinity
+    test "persists geojson in PrestoDB", %{geo_dataset: ds} do
+
+      table = ds.technical.systemName
+
+      eventually(
+        fn ->
+          assert [[table | _]] = query("show tables like '#{table}'")
+          assert [[actual | _] | _] = query("select * from #{table}")
+
+          result = Jason.decode!(actual)
+
+          assert Map.keys(result) == ["bbox", "geometry","properties", "type"]
+
+          [coordinates] = result["geometry"]["coordinates"]
+
+          assert 253 == Enum.count(coordinates)
+        end,
+        10_000
+      )
     end
   end
 
