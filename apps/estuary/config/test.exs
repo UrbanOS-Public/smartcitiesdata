@@ -6,7 +6,12 @@ config :estuary,
 config :logger, level: :warn
 
 config :estuary,
+<<<<<<< HEAD
   topic_reader: MockReader,
+=======
+  data_reader: MockReader,
+  topic_writer: MockTopic,
+>>>>>>> adding config for event reading
   table_writer: MockTable,
   retry_count: 5,
   retry_initial_delay: 10,

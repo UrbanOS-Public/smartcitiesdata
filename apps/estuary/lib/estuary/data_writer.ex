@@ -21,6 +21,11 @@ defmodule Estuary.DataWriter do
   Writes data to PrestoDB and Kafka using `:table_writer` from
   Estuary's application environment.
   """
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> adding config for event reading
   def write() do
     # def write(data, opts) do
     # IO.inspect(data)
@@ -29,6 +34,28 @@ defmodule Estuary.DataWriter do
     # :ok <-
     DatasetSchema.dataset()
     |> DatasetSchema.parse_event_args()
+<<<<<<< HEAD
+=======
+=======
+
+  def write(data, opts) do
+    # IO.inspect(data)
+    # IO.inspect(metadata)
+    # :ok <- @table_writer.write(data, table: table_name(), parse_args(metadata))
+    :ok <- DatasetSchema.dataset()
+    |> DatasetSchema.parse_args()
+>>>>>>> Adding Pipeline write to database
+=======
+  def write() do
+    # def write(data, opts) do
+    # IO.inspect(data)
+    # IO.inspect(metadata)
+    # :ok <- @table_writer.write(data, table: table_name(), parse_args(metadata))
+    # :ok <-
+    DatasetSchema.dataset()
+    |> DatasetSchema.parse_event_args()
+>>>>>>> adding config for event reading
+>>>>>>> adding config for event reading
     |> @table_writer.write(
       table: DatasetSchema.table_name(),
       schema: DatasetSchema.schema()
