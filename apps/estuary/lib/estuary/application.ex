@@ -2,7 +2,6 @@ defmodule Estuary.Application do
   @moduledoc false
   use Application
 
-  alias Estuary.EventHandler
   alias Estuary.Datasets.DatasetSchema
 
   import Estuary
