@@ -36,7 +36,7 @@ defmodule Andi.MixProject do
     [
       {:brook, "~> 0.4.0"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
-      {:checkov, "~> 0.4.0", only: [:test]},
+      {:checkov, "~> 0.4.0", only: :test},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1.4", only: [:dev, :integration]},

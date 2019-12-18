@@ -25,7 +25,6 @@ defmodule Flair.MixProject do
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger],
@@ -33,10 +32,8 @@ defmodule Flair.MixProject do
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # App dependencies
       {:elsa, "~> 0.10.0"},
       {:flow, "~> 0.14"},
       {:gen_stage, "~> 0.14"},
@@ -45,9 +42,8 @@ defmodule Flair.MixProject do
       {:retry, "~> 0.13.0"},
 
       {:statistics, "~> 0.6"},
-      # Additional dependencies
       {:credo, "~> 1.1", only: :dev, runtime: false},
-      {:excoveralls, "~> 0.11", only: [:dev]},
+      {:excoveralls, "~> 0.11", only: :dev},
       {:ex_doc, "~> 0.21"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},

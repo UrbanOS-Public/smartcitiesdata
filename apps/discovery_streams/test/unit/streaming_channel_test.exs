@@ -24,7 +24,12 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "presence is tracked per channel" do
-    {:ok, _, socket} = subscribe_and_join(socket(DiscoveryStreamsWeb.UserSocket), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
+    {:ok, _, socket} =
+      subscribe_and_join(
+        socket(DiscoveryStreamsWeb.UserSocket),
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:shuttle-position"
+      )
 
     assert 1 == DiscoveryStreamsWeb.Presence.connections("streaming:shuttle-position")
 
@@ -35,7 +40,12 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "12345", %{"shuttleid" => "12345"})
     Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "98765", %{"shuttleid" => "98765"})
 
-    {:ok, _, socket} = subscribe_and_join(socket(DiscoveryStreamsWeb.UserSocket), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
+    {:ok, _, socket} =
+      subscribe_and_join(
+        socket(DiscoveryStreamsWeb.UserSocket),
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:shuttle-position"
+      )
 
     assert_push("update", %{"shuttleid" => "12345"}, 1000)
     assert_push("update", %{"shuttleid" => "98765"}, 1000)
@@ -47,7 +57,12 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "12342", %{"vehicleid" => "12342"})
     Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "54321", %{"vehicleid" => "54321"})
 
-    {:ok, _, socket} = subscribe_and_join(socket(DiscoveryStreamsWeb.UserSocket), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
+    {:ok, _, socket} =
+      subscribe_and_join(
+        socket(DiscoveryStreamsWeb.UserSocket),
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:shuttle-position"
+      )
 
     assert_push("update", %{"vehicleid" => "12342"}, 1000)
     assert_push("update", %{"vehicleid" => "54321"}, 1000)
@@ -60,9 +75,14 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "54321", %{"vehicleid" => "54321", "type" => "bus"})
 
     {:ok, _, socket} =
-      subscribe_and_join(socket(DiscoveryStreamsWeb.UserSocket), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position", %{
-        "type" => "bus"
-      })
+      subscribe_and_join(
+        socket(DiscoveryStreamsWeb.UserSocket),
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:shuttle-position",
+        %{
+          "type" => "bus"
+        }
+      )
 
     refute_push("update", %{"vehicleid" => "12345", "type" => "car"}, 1000)
     assert_push("update", %{"vehicleid" => "54321", "type" => "bus"}, 1000)
@@ -71,7 +91,12 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "filter events cause all cached messages in cache to be pushed through filter in channel" do
-    {:ok, _, socket} = subscribe_and_join(socket(DiscoveryStreamsWeb.UserSocket), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
+    {:ok, _, socket} =
+      subscribe_and_join(
+        socket(DiscoveryStreamsWeb.UserSocket),
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:shuttle-position"
+      )
 
     Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "12342", %{"foo" => %{"bar" => "12342"}})
     Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "98765", %{"foo" => %{"bar" => "98765"}})
@@ -85,7 +110,12 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "filter events cause all subsequent messages to be pushed to cache through filter in channel" do
-    {:ok, _, socket} = subscribe_and_join(socket(DiscoveryStreamsWeb.UserSocket), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
+    {:ok, _, socket} =
+      subscribe_and_join(
+        socket(DiscoveryStreamsWeb.UserSocket),
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:shuttle-position"
+      )
 
     push(socket, "filter", %{"foo.bar" => "12342"})
     broadcast_from(socket, "update", %{"foo" => %{"bar" => "12342"}})
@@ -98,7 +128,12 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "filter fields on cache with multiple values causes non-matches to be filtered out in channel" do
-    {:ok, _, socket} = subscribe_and_join(socket(DiscoveryStreamsWeb.UserSocket), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
+    {:ok, _, socket} =
+      subscribe_and_join(
+        socket(DiscoveryStreamsWeb.UserSocket),
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:shuttle-position"
+      )
 
     push(socket, "filter", %{"foo.bar" => ["12342", "12349"]})
     broadcast_from(socket, "update", %{"foo" => %{"bar" => "12342"}})
@@ -118,7 +153,12 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "filters with multiple keys must all match for message to get pushed" do
-    {:ok, _, socket} = subscribe_and_join(socket(DiscoveryStreamsWeb.UserSocket), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
+    {:ok, _, socket} =
+      subscribe_and_join(
+        socket(DiscoveryStreamsWeb.UserSocket),
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:shuttle-position"
+      )
 
     push(socket, "filter", %{"foo.bar" => 1, "abc.def" => "two"})
 
@@ -135,7 +175,12 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "empty filter events cause all cached messages to be pushed" do
-    {:ok, _, socket} = subscribe_and_join(socket(DiscoveryStreamsWeb.UserSocket), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
+    {:ok, _, socket} =
+      subscribe_and_join(
+        socket(DiscoveryStreamsWeb.UserSocket),
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:shuttle-position"
+      )
 
     Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "123456", %{"foo" => %{"bar" => "123456"}})
     Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "test42", %{"foo" => %{"bar" => "test42"}})
@@ -151,7 +196,12 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "empty filter events cause all subsequent messages to be pushed" do
-    {:ok, _, socket} = subscribe_and_join(socket(DiscoveryStreamsWeb.UserSocket), DiscoveryStreamsWeb.StreamingChannel, "streaming:shuttle-position")
+    {:ok, _, socket} =
+      subscribe_and_join(
+        socket(DiscoveryStreamsWeb.UserSocket),
+        DiscoveryStreamsWeb.StreamingChannel,
+        "streaming:shuttle-position"
+      )
 
     push(socket, "filter", %{})
 
@@ -166,6 +216,10 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
 
   test "joining topic that does not exist returns error tuple" do
     assert {:error, %{reason: "Channel streaming:three does not exist"}} ==
-             subscribe_and_join(socket(DiscoveryStreamsWeb.UserSocket), DiscoveryStreamsWeb.StreamingChannel, "streaming:three")
+             subscribe_and_join(
+               socket(DiscoveryStreamsWeb.UserSocket),
+               DiscoveryStreamsWeb.StreamingChannel,
+               "streaming:three"
+             )
   end
 end

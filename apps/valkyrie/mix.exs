@@ -50,7 +50,6 @@ defmodule Valkyrie.MixProject do
       {:observer_cli, "~> 1.4"},
       {:off_broadway_kafka, "~> 0.4.0"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      # updating version breaks
       {:retry, "~> 0.13"},
       {:smart_city, "~> 3.10.0"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},

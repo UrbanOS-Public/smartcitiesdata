@@ -12,7 +12,6 @@ defmodule Reaper.MixProject do
       lockfile: "../../mix.lock",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      docs: docs(),
       aliases: aliases(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env()),
@@ -71,12 +70,12 @@ defmodule Reaper.MixProject do
       {:timex, "~> 3.6"},
       {:yeet, "~> 1.0"},
       # Test/Dev Dependencies
-      {:benchee, "~> 1.0", only: [:integration]},
+      {:benchee, "~> 1.0", only: :integration},
       {:tasks, in_umbrella: true, only: :dev},
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:checkov, "~> 0.4", only: [:test, :integration]},
       {:credo, "~> 1.1", only: [:dev, :test, :integration], runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev]},
+      {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:divo, "~> 1.1", only: [:dev, :integration], override: true},
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1", only: [:dev, :integration]},
@@ -88,16 +87,6 @@ defmodule Reaper.MixProject do
       {:placebo, "~> 1.2", only: [:test, :integration]},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]}
-    ]
-  end
-
-  defp docs do
-    [
-      main: "readme",
-      source_url: "https://github.com/SmartColumbusOS/reaper",
-      extras: [
-        "README.md"
-      ]
     ]
   end
 

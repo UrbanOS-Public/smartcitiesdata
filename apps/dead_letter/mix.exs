@@ -14,10 +14,7 @@ defmodule DeadLetter.MixProject do
       test_paths: Mix.env() |> test_paths(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: aliases(),
-      docs: docs(),
-      description: description(),
-      package: package()
+      aliases: aliases()
     ]
   end
 
@@ -30,7 +27,7 @@ defmodule DeadLetter.MixProject do
   defp deps do
     [
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev]},
+      {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:ex_doc, "~> 0.21", only: :dev},
       {:jason, "~> 1.1"},
@@ -51,26 +48,4 @@ defmodule DeadLetter.MixProject do
 
   defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]
-
-  defp description do
-    "Generates standard messages for Dead Letter Queue"
-  end
-
-  defp package do
-    [
-      maintainers: ["smartcitiesdata"],
-      licenses: ["Apache 2.0"],
-      links: %{"GitHub" => "https://www.github.com/smartcitiesdata/smartcitiesdata/tree/master/apps/dead_letter"}
-    ]
-  end
-
-  defp docs do
-    [
-      main: "readme",
-      source_url: "https://www.github.com/smartcitiesdata/smartcitiesdata/tree/master/apps/dead_letter",
-      extras: [
-        "README.md"
-      ]
-    ]
-  end
 end
