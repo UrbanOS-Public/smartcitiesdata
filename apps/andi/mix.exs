@@ -59,7 +59,7 @@ defmodule Andi.MixProject do
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:tesla, "~> 1.3", only: :integration},
       {:timex, "~> 3.6"},
-      {:uuid, "~> 1.1"},
+      {:elixir_uuid, "~> 1.2"},
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev}
     ]
