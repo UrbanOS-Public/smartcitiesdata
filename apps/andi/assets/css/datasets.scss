@@ -56,6 +56,7 @@
   padding: $table-padding;
   border-right: $table-border;
   height: $table-height;
+  max-width: 30rem;
 }
 
 .datasets-table__ingested-cell {

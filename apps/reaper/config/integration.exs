@@ -16,15 +16,14 @@ System.put_env("HOST", host)
 config :logger,
   level: :info
 
-bucket_name = "hosted-dataset-files"
+bucket_name = "kdp-cloud-storage"
 
 config :reaper,
   divo: [
     {DivoKafka,
      [
        create_topics: "event-stream:1:1,streaming-dead-letters:1:1",
-       outside_host: host,
-       kafka_image_version: "2.12-2.2.1"
+       outside_host: host
      ]},
     DivoRedis,
     Reaper.DivoSftp,
@@ -74,8 +73,8 @@ config :yeet,
 
 config :ex_aws,
   debug_requests: true,
-  access_key_id: "access_key_testing",
-  secret_access_key: "secret_key_testing",
+  access_key_id: "testing_access_key",
+  secret_access_key: "testing_secret_key",
   region: "local"
 
 config :ex_aws, :s3,

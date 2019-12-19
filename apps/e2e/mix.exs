@@ -29,7 +29,9 @@ defmodule E2E.MixProject do
       {:reaper, in_umbrella: true, only: [:integration]},
       {:valkyrie, in_umbrella: true},
       {:forklift, in_umbrella: true},
+      {:odo, in_umbrella: true},
       {:flair, in_umbrella: true},
+      {:discovery_streams, in_umbrella: true},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]}
     ]
   end

@@ -92,8 +92,8 @@ defmodule Reaper.Http.Downloader do
     Enum.map(protocol, &String.to_atom/1)
   end
 
-  defp request(conn, method, uri, headers) do
-    Mint.HTTP.request(conn, method, "#{uri.path}?#{uri.query}", headers)
+  defp request(conn, method, uri, headers, body \\ "") do
+    Mint.HTTP.request(conn, method, "#{uri.path}?#{uri.query}", headers, body)
   end
 
   defp create_initial_response(conn, request_ref, url, opts) do

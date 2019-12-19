@@ -61,7 +61,7 @@ defmodule Reaper.Http.DownloaderTest do
   test "raises an error when request is made" do
     allow(Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection})
 
-    allow(Mint.HTTP.request(:connection, any(), any(), any()),
+    allow(Mint.HTTP.request(:connection, any(), any(), any(), any()),
       return: {:error, :connection, Mint.TransportError.exception(reason: "things have gone wrong")}
     )
 
@@ -77,7 +77,7 @@ defmodule Reaper.Http.DownloaderTest do
   test "raises an error when processing a stream message", %{bypass: bypass} do
     on_exit(fn -> File.rm("test.output") end)
     allow(Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection})
-    allow(Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok, :connection, :ref})
+    allow(Mint.HTTP.request(:connection, any(), any(), any(), any()), return: {:ok, :connection, :ref})
 
     allow(Mint.HTTP.stream(any(), any()),
       return: {:error, :connection, %Mint.TransportError{reason: :closed}, []},
@@ -155,7 +155,7 @@ defmodule Reaper.Http.DownloaderTest do
 
   test "only waits idle_timeout to receive message from process queue" do
     allow(Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection})
-    allow(Mint.HTTP.request(:connection, any(), any(), any()), return: {:ok, :connection, :ref})
+    allow(Mint.HTTP.request(:connection, any(), any(), any(), any()), return: {:ok, :connection, :ref})
     allow(Mint.HTTP.close(any()), return: :ok)
 
     expected_error =
@@ -174,7 +174,7 @@ defmodule Reaper.Http.DownloaderTest do
   end
 
   test "evaluate paramaters in headers", %{bypass: bypass} do
-    allow(Mint.HTTP.request(:connection, any(), any(), any()), meck_options: [passthrough: true])
+    allow(Mint.HTTP.request(:connection, any(), any(), any(), any()), meck_options: [passthrough: true])
 
     path = "/some.url"
     url = "http://localhost:#{bypass.port}#{path}"
@@ -192,7 +192,7 @@ defmodule Reaper.Http.DownloaderTest do
 
     {:ok, _} = Downloader.download(url, headers, to: "test.output")
 
-    assert_called(Mint.HTTP.request(any(), any(), any(), evaluated_headers), once())
+    assert_called(Mint.HTTP.request(any(), any(), any(), evaluated_headers, any()), once())
   end
 
   test "protocol is used for connection", %{bypass: bypass} do

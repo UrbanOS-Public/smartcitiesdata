@@ -1,0 +1,17 @@
+<top>
+  <middle>
+    <rows>
+      <person>
+        <firstName>Susan</firstName>
+        <pets></pets>
+      </person>
+      <person>
+        <firstName>John</firstName>
+        <pets>
+          <pet name="Simon"></pet>
+          <pet name="Sally"></pet>
+        </pets>
+      </person>
+    </rows>
+  </middle>
+</top>

@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "1.0.0-static",
+      version: "0.12.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -12,7 +12,6 @@ defmodule Reaper.MixProject do
       lockfile: "../../mix.lock",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      docs: docs(),
       aliases: aliases(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env()),
@@ -51,7 +50,7 @@ defmodule Reaper.MixProject do
       {:gen_stage, "~> 0.14"},
       {:horde, "~> 0.7.0"},
       {:httpoison, "~> 1.6"},
-      {:poison, "~> 4.0", override: true},
+      {:poison, "~> 3.1", override: true},
       {:jason, "~> 1.1"},
       {:libcluster, "~> 3.1"},
       {:libvault, "~> 0.2"},
@@ -65,16 +64,18 @@ defmodule Reaper.MixProject do
       {:retry, "~> 0.13"},
       {:sftp_ex, "~> 0.2"},
       {:smart_city, "~> 3.5", override: true},
+      {:saxy, "~> 0.10"},
       {:sweet_xml, "~> 0.6"},
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
       {:yeet, "~> 1.0"},
       # Test/Dev Dependencies
-      {:benchee, "~> 1.0", only: [:integration]},
+      {:benchee, "~> 1.0", only: :integration},
+      {:tasks, in_umbrella: true, only: :dev},
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:checkov, "~> 0.4", only: [:test, :integration]},
       {:credo, "~> 1.1", only: [:dev, :test, :integration], runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev]},
+      {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:divo, "~> 1.1", only: [:dev, :integration], override: true},
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1", only: [:dev, :integration]},
@@ -84,18 +85,8 @@ defmodule Reaper.MixProject do
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 1.2", only: [:test, :integration]},
-      {:smart_city_test, "~> 0.7", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]}
-    ]
-  end
-
-  defp docs do
-    [
-      main: "readme",
-      source_url: "https://github.com/SmartColumbusOS/reaper",
-      extras: [
-        "README.md"
-      ]
     ]
   end
 

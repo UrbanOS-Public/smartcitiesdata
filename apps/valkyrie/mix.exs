@@ -43,16 +43,16 @@ defmodule Valkyrie.MixProject do
       {:divo_kafka, "~> 0.1", only: [:integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
       {:excoveralls, "~> 0.11.1", only: :test},
+      {:tasks, in_umbrella: true, only: :dev},
       {:jason, "~> 1.1"},
       {:libcluster, "~> 3.1"},
       {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
       {:observer_cli, "~> 1.4"},
       {:off_broadway_kafka, "~> 0.4.0"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      # updating version breaks
       {:retry, "~> 0.13"},
       {:smart_city, "~> 3.0", override: true},
-      {:smart_city_test, "~> 0.5", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:timex, "~> 3.6"},
       {:yeet, "~> 1.0"}
     ]

@@ -8,5 +8,4 @@ defmodule Flair.Application do
     [{Flair.Durations.Flow, []}, {Flair.Durations.Init, []}]
     |> Supervisor.start_link(strategy: :one_for_one, name: Flair.Supervisor)
   end
-
 end

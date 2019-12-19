@@ -28,6 +28,18 @@ release :andi do
   set overlays: [{:copy, "apps/andi/runtime.exs", "etc/runtime.exs"}]
 end
 
+release :discovery_streams do
+  set version: current_version(:discovery_streams)
+  set applications: [:runtime_tools, :discovery_streams]
+  set overlays: [{:copy, "apps/discovery_streams/runtime.exs", "etc/runtime.exs"}]
+end
+
+release :estuary do
+  set version: current_version(:estuary)
+  set applications: [:runtime_tools, :estuary]
+  set overlays: [{:copy, "apps/estuary/runtime.exs", "etc/runtime.exs"}]
+end
+
 release :flair do
   set version: current_version(:flair)
   set applications: [:runtime_tools, :flair]
@@ -40,14 +52,20 @@ release :forklift do
   set overlays: [{:copy, "apps/forklift/runtime.exs", "etc/runtime.exs"}]
 end
 
-release :valkyrie do
-  set version: current_version(:valkyrie)
-  set applications: [:runtime_tools, :valkyrie]
-  set overlays: [{:copy, "apps/valkyrie/runtime.exs", "etc/runtime.exs"}]
+release :odo do
+  set version: current_version(:odo)
+  set applications: [:runtime_tools, :odo]
+  set overlays: [{:copy, "apps/odo/runtime.exs", "etc/runtime.exs"}]
 end
 
 release :reaper do
   set version: current_version(:reaper)
   set applications: [:runtime_tools, :reaper]
   set overlays: [{:copy, "apps/reaper/runtime.exs", "etc/runtime.exs"}]
+end
+
+release :valkyrie do
+  set version: current_version(:valkyrie)
+  set applications: [:runtime_tools, :valkyrie]
+  set overlays: [{:copy, "apps/valkyrie/runtime.exs", "etc/runtime.exs"}]
 end
