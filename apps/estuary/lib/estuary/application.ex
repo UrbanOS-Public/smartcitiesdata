@@ -2,17 +2,23 @@ defmodule Estuary.Application do
   @moduledoc false
   use Application
 
-  alias Estuary.DataWriter
+  alias Estuary.EventHandler
   alias Estuary.Datasets.DatasetSchema
 
   @spec start(any, any) :: {:error, any} | {:ok, pid}
   def start(_type, _args) do
+<<<<<<< HEAD
     if elsa_endpoint() != nil do
       validate_topic_exists()
       EventTable.create_schema()
       EventTable.create_table()
     end
     # SC - Starts
+=======
+    EventHandler.handle_event()
+    validate_topic_exists()
+
+>>>>>>> Rebasing with master
     DatasetSchema.table_schema()
     |> DataWriter.init()
     # SC - Ends
