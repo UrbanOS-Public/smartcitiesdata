@@ -319,7 +319,7 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset =
         TDG.create_dataset(%{
           business: %{issuedDate: "", publishFrequency: "12345"},
-          technical: %{cadence: "123", schema: []}
+          technical: %{cadence: "123"}
         })
 
       DatasetCache.put(dataset)
@@ -332,6 +332,8 @@ defmodule AndiWeb.EditLiveViewTest do
         |> put_in([:business, :issuedDate], "12345")
 
       render_change(view, :save, %{"dataset_schema" => dataset_map})
+
+      dataset_map = dataset_map |> put_in([:technical, :schema], dataset.technical.schema)
 
       {:ok, updated_dataset} = SmartCity.Dataset.new(dataset_map)
 
