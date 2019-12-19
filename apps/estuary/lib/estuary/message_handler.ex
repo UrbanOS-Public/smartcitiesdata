@@ -17,7 +17,6 @@ defmodule Estuary.MessageHandler do
     case Jason.decode(message.value) do
       {:ok, %{"author" => _, "create_ts" => _, "data" => _, "type" => _} = event} ->
         do_insert(message, event)
-
       {_, term} ->
         process_error(message, term)
     end
@@ -42,6 +41,7 @@ defmodule Estuary.MessageHandler do
   # SC - Starts
   alias Estuary.Util
   import Estuary
+  alias Estuary.Datasets.DatasetSchema
   # import SmartCity.Data, only: [end_of_data: 0]
 
   @reader Application.get_env(:estuary, :topic_reader)
@@ -59,8 +59,14 @@ defmodule Estuary.MessageHandler do
 
     # {:ack, %{dataset: dataset}}
 
-    # Logger.debug("Messages #{inspect(messages)} were sent to the eventstream")
-    # :ack
+  def handle_messages(messages, %{dataset: %SmartCity.Dataset{} = dataset}) do
+    messages
+    |> Enum.map(&parse/1)
+    |> Enum.map(&yeet_error/1)
+    |> Enum.reject(&error_tuple?/1)
+    |> Estuary.DataWriter.write_to_table(dataset: dataset)
+
+    {:ack, %{dataset: dataset}}
   end
 
   defp parse_message_value(message) do
@@ -97,6 +103,13 @@ defmodule Estuary.MessageHandler do
   defp yeet_error({:error, reason, message} = error_tuple) do
     Estuary.DeadLetterQueue.enqueue(message, reason: reason)
     error_tuple
+  end
+
+  defp parse(%{key: key, value: value} = message) do
+    case SmartCity.Data.new(value) do
+      {:ok, datum} -> Util.add_to_metadata(datum, :kafka_key, key)
+      {:error, reason} -> {:error, reason, message}
+    end
   end
 
   defp yeet_error(valid), do: valid
