@@ -35,7 +35,6 @@ body {
   cursor: pointer;
   background-color: black;
   color: white;
-  min-width: 10rem;
 
   &:hover {
     background-color: lighten(black, 20%);
@@ -53,7 +52,7 @@ body {
 .btn--cancel {
   padding: 0.4rem 1.7rem;
   font-size: 1.5rem;
-  max-width: 10rem;
+  min-width: 10rem;
 }
 
 .btn--save {
