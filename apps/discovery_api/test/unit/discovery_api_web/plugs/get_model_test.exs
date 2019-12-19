@@ -15,11 +15,10 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
 
     test "replaces the org_name and dataset_name with the correct dataset_id" do
       org = DiscoveryApi.Test.Helper.create_schema_organization(orgName: "org1")
-      dataset = TDG.create_dataset(id: "ds1", technical: %{orgId: org.id, dataName: "data1"})
+      dataset1 = TDG.create_dataset(id: "ds1", technical: %{orgId: org.id, dataName: "data1"})
 
-      SystemNameCache.put(dataset, org)
-      SystemNameCache.put(TDG.create_dataset(id: "ds2"), org)
-      allow(Model.get(any()), return: :model)
+      SystemNameCache.put(dataset1.id, org.name, dataset1.technical.dataName)
+      allow(Model.get(dataset1.id), return: :model)
 
       conn = build_conn(:get, "/doesnt/matter", %{"org_name" => "org1", "dataset_name" => "data1"})
       %{assigns: assigns} = GetModel.call(conn, [])

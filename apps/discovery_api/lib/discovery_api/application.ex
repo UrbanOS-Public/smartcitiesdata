@@ -25,6 +25,7 @@ defmodule DiscoveryApi.Application do
         redis(),
         ecto_repo(),
         {Brook, Application.get_env(:discovery_api, :brook)},
+        DiscoveryApi.Data.CachePopulator,
         supervisor(DiscoveryApiWeb.Endpoint, []),
         DiscoveryApi.Quantum.Scheduler
       ]

@@ -27,7 +27,7 @@ defmodule DiscoveryApi.EventHandler do
     Logger.debug(fn -> "Handling dataset: `#{dataset.technical.systemName}`" end)
 
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
-         {:ok, _cached} <- SystemNameCache.put(dataset, organization),
+         {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
          model <- Mapper.to_data_model(dataset, organization) do
       DiscoveryApi.Search.Storage.index(model)
       save_dataset_to_recommendation_engine(dataset)

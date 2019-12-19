@@ -45,7 +45,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
 
     @tag capture_log: true
     test "should not persist the model when system cache put fails", %{dataset: dataset} do
-      allow(SystemNameCache.put(any(), any()), return: {:error, :failure})
+      allow SystemNameCache.put(any(), any(), any()), return: {:error, :failure}
 
       Brook.Test.send(DiscoveryApi.instance(), dataset_update(), "unit", dataset)
 
