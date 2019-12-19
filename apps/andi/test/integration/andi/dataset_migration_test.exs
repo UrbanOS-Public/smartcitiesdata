@@ -13,7 +13,7 @@ defmodule Andi.DatasetMigrationTest do
     Application.ensure_all_started(:redix)
     Application.ensure_all_started(:faker)
 
-    {:ok, redix} = Redix.start_link(host: Application.get_env(:redix, :host), name: :redix)
+    {:ok, redix} = Redix.start_link(Keyword.put(Application.get_env(:redix, :args), :name, :redix))
     Process.unlink(redix)
 
     {:ok, brook} =

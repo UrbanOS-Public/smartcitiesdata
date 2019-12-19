@@ -6,7 +6,7 @@ host =
     nil -> "localhost"
     defined -> defined
   end
-
+redix_args = [host: host]
 endpoint = [{host, 9092}]
 
 config :andi,
@@ -22,7 +22,7 @@ config :andi,
   kafka_broker: endpoint
 
 config :smart_city_registry,
-  redis: [host: host]
+  redis: redix_args
 
 config :paddle, Paddle,
   host: host,
@@ -51,7 +51,7 @@ config :andi, :brook,
   handlers: [Andi.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
-    init_arg: [redix_args: [host: host], namespace: "andi:view"]
+    init_arg: [redix_args: redix_args, namespace: "andi:view"]
   ]
 
 config :andi, AndiWeb.Endpoint,
