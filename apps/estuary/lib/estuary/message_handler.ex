@@ -40,19 +40,46 @@ defmodule Estuary.MessageHandler do
   end
   #SC - Starts
   alias Estuary.Util
-  import SmartCity.Data, only: [end_of_data: 0]
+  # import SmartCity.Data, only: [end_of_data: 0]
 
-  def handle_messages(messages, %{dataset: %SmartCity.Dataset{} = dataset}) do
+  @reader Application.get_env(:estuary, :topic_reader)
+
+  def handle_messages(messages) do
     messages
-    |> Enum.map(&parse/1)
+    |> Enum.map(&parse_message_value/1)
     |> Enum.map(&yeet_error/1)
-    |> Enum.reject(&error_tuple?/1)
-    |> Estuary.DataWriter.write_to_table(dataset: dataset)
 
-    {:ack, %{dataset: dataset}}
+    # messages
+    # |> Enum.map(&parse/1)
+    # |> Enum.map(&yeet_error/1)
+    # |> Enum.reject(&error_tuple?/1)
+    # |> Estuary.DataWriter.write_to_table(dataset: dataset)
+
+    # {:ack, %{dataset: dataset}}
 
     # Logger.debug("Messages #{inspect(messages)} were sent to the eventstream")
     # :ack
+  end
+
+  defp parse_message_value(message) do
+    message.value
+    |> Jason.decode()
+    |> process_message()
+  end
+
+  defp process_message(
+         {:ok, %{"author" => _, "create_ts" => _, "data" => _, "type" => _} = event}
+       ) do
+    init_args <- reader_args(event)
+    :ok = @reader.init(init_args)
+
+    event
+    |> DatasetSchema.parse_event_args()
+    |> DataWriter.write()
+  end
+
+  defp process_message({_, term}) do
+    :discard
   end
 
   defp parse(end_of_data() = message), do: message

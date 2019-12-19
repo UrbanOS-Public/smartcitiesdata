@@ -51,13 +51,4 @@ defmodule Estuary.Datasets.DatasetSchema do
       }
     ]
   end
-
-  def event_args do
-    %{
-      "author" => _,
-      "create_ts" => _,
-      "data" => _,
-      "type" => _
-    }
-  end
 end
