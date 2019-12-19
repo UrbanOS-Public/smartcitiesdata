@@ -85,7 +85,8 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
                "queries" => model.queries,
                "accessLevel" => model.accessLevel,
                "completeness" => model.completeness,
-               "systemName" => model.systemName
+               "systemName" => model.systemName,
+               "fileTypes" => model.fileTypes
              } == actual
     end
 
