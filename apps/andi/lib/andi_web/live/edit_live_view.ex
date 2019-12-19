@@ -2,6 +2,7 @@ defmodule AndiWeb.EditLiveView do
   use Phoenix.LiveView
   alias Phoenix.HTML.Form
   alias Phoenix.HTML.Link
+  alias AndiWeb.DatasetValidator
   import AndiWeb.ErrorHelpers
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -115,13 +116,13 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event(
         "validate",
-        %{"dataset_schema" => dataset_schema} = event,
+        %{"dataset_schema" => dataset_schema},
         socket
       ) do
     {:noreply, assign(socket, changeset: apply_changes(dataset_schema), is_saved: false)}
   end
 
-  def handle_event("save", %{"dataset_schema" => dataset_schema} = event, socket) do
+  def handle_event("save", %{"dataset_schema" => dataset_schema}, socket) do
     change = apply_changes(dataset_schema)
 
     case change.valid? do
@@ -151,11 +152,14 @@ defmodule AndiWeb.EditLiveView do
   end
 
   defp send_dataset_update({:ok, dataset}) do
-    Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
+    case DatasetValidator.validate(dataset) do
+      :valid -> Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
+      {:invalid, errors} -> Logger.warn("Invalid dataset: #{IO.inspect({:invalid, errors})}")
+    end
   end
 
   defp send_dataset_update({:error, e}) do
-    Logger.warn("Unable to update dataset: #{IO.inspect({:error, e})}")
+    Logger.warn("Unable to create new SmartCity.Dataset: #{IO.inspect({:error, e})}")
   end
 
   defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]

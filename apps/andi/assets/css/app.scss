@@ -25,6 +25,7 @@ body {
 @mixin area($block, $element) {
   .#{$block}__#{$element} {
     grid-area: $element;
+    margin: 10px 0 10px 0;
   }
 }
 
@@ -47,6 +48,8 @@ body {
 
 .error-msg {
   color: red;
+  display: block;
+  margin: 5px 0 5px 0;
 }
 
 .btn--cancel {
