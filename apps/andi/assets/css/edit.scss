@@ -20,27 +20,31 @@
     "release-date homepage"
     "license ."
     "update-frequency ."
-    "keywords .";
+    "keywords ."
+    "cancel-btn save-btn";
 }
 
-@include area(metadata-form, title)
-@include area(metadata-form, description)
-@include area(metadata-form, format)
-@include area(metadata-form, maintainer-name)
-@include area(metadata-form, maintainer-email)
-@include area(metadata-form, release-date)
-@include area(metadata-form, license)
-@include area(metadata-form, update-frequency)
-@include area(metadata-form, keywords)
-
-@include area(metadata-form, last-updated)
-@include area(metadata-form, spatial)
-@include area(metadata-form, temporal)
-@include area(metadata-form, organization)
-@include area(metadata-form, level-of-access)
-@include area(metadata-form, language)
-@include area(metadata-form, homepage)
-
-.metadata-form__cancel-btn {
-  justify-self: start;
+.metadata__success-message {
+  text-align: right;
+  padding-right: 2em;
+  color: $color-success;
 }
+
+@include area(metadata-form, title);
+@include area(metadata-form, description);
+@include area(metadata-form, format);
+@include area(metadata-form, maintainer-name);
+@include area(metadata-form, maintainer-email);
+@include area(metadata-form, release-date);
+@include area(metadata-form, license);
+@include area(metadata-form, update-frequency);
+@include area(metadata-form, keywords);
+@include area(metadata-form, last-updated);
+@include area(metadata-form, spatial);
+@include area(metadata-form, temporal);
+@include area(metadata-form, organization);
+@include area(metadata-form, level-of-access);
+@include area(metadata-form, language);
+@include area(metadata-form, homepage);
+@include area(metadata-form, cancel-btn);
+@include area(metadata-form, save-btn);

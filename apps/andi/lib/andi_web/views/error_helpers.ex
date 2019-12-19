@@ -9,8 +9,12 @@ defmodule AndiWeb.ErrorHelpers do
   Generates tag for inlined form input errors.
   """
   def error_tag(form, field) do
-    Enum.map(Keyword.get_values(form.errors, field), fn error ->
-      content_tag(:span, translate_error(error), class: "help-block")
+    Enum.map(Keyword.get_values(form.source.errors, field), fn error ->
+      content_tag(:span, translate_error(error),
+        class: "error-msg",
+        id: "#{field}-error-msg",
+        data: [phx_error_for: input_id(form, field)]
+      )
     end)
   end
 

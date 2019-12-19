@@ -1,7 +1,5 @@
-/* This file is for your main application css. */
-
 @import "./variables.scss";
-@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+@import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
 
 body {
   background: $color-background;
@@ -12,7 +10,7 @@ body {
   display: flex;
   flex-direction: column;
 
-  font-family: 'Roboto', Arial, Helvetica, sans-serif;
+  font-family: "Roboto", Arial, Helvetica, sans-serif;
   font-size: 1em;
   color: $color-text-primary;
 }
@@ -26,7 +24,8 @@ body {
 
 @mixin area($block, $element) {
   .#{$block}__#{$element} {
-    grid-area: $element
+    grid-area: $element;
+    margin: 10px 0 10px 0;
   }
 }
 
@@ -37,24 +36,59 @@ body {
   cursor: pointer;
   background-color: black;
   color: white;
-  min-width: 2rem;
 
   &:hover {
-    background-color: lighten(black, 20%)
+    background-color: lighten(black, 20%);
   }
 
   &:active {
-    background-color: lighten(black, 40%)
+    background-color: lighten(black, 40%);
   }
+}
+
+.error-msg {
+  color: red;
+  display: block;
+  margin: 5px 0 5px 0;
 }
 
 .btn--cancel {
   padding: 0.4rem 1.7rem;
   font-size: 1.5rem;
+  min-width: 10rem;
+}
+
+.btn--save {
+  @extend .btn--cancel;
+  float: right;
+  color: $color-text-link;
+  background-color: white;
+  border: 2px solid $color-text-link;
+  margin-right: 1rem;
+}
+
+.btn--next {
+  @extend .btn--save;
+  float: right;
+  color: white;
+  background-color: $color-text-link;
+  border: 2px solid $color-text-link;
+  margin-right: 0;
+}
+
+.btn--save:hover {
+  background: $color-text-link;
+  color: white;
+  border: 2px solid $color-text-link;
+}
+.btn--next:hover {
+  background: white;
+  color: $color-text-link;
+  border: 2px solid $color-text-link;
 }
 
 .label {
-  color: #7F7676;
+  color: #7f7676;
   display: block;
   margin-bottom: 0.3rem;
   letter-spacing: 0.03rem;
@@ -68,14 +102,19 @@ body {
 }
 
 .label--required::after {
-  content: " *"
+  content: " *";
 }
 
 .input {
   width: 25rem;
   padding: 0.5rem;
-  border: 1px solid #E2E5EA;
-  border-radius: 2px; 
+  border: 1px solid #e2e5ea;
+  border-radius: 2px;
+}
+
+.input--text:read-only {
+  background: #f3f3f3;
+  color: $disabled-background;
 }
 
 .textarea {
@@ -84,6 +123,13 @@ body {
   height: 65%;
 }
 
+.select {
+  background-color: white;
+  font-size: 1rem;
+  width: 26rem;
+  height: 2.3rem;
+  border: 1px solid #e2e5ea;
+}
 
 @import "./datasets.scss";
 @import "./edit.scss";
