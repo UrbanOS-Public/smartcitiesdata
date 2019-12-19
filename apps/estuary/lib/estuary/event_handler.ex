@@ -10,6 +10,7 @@ defmodule Estuary.EventHandler do
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0]
 
   def handle_event(%Brook.Event{type: data_ingest_start(), data: %Dataset{} = dataset}) do
+    # %{"author" => _, "create_ts" => _, "data" => _, "type" => _}
     with source_type when source_type in ["ingest", "stream"] <- dataset.technical.sourceType,
          init_args <- reader_args(dataset) do
       :ok = @reader.init(init_args)
@@ -22,7 +23,7 @@ defmodule Estuary.EventHandler do
   defp reader_args(dataset) do
     [
       instance: instance_name(),
-      connection: Application.get_env(:estuary, :conection),
+      connection: Application.get_env(:estuary, :connection),
       endpoints: Application.get_env(:estuary, :elsa_brokers),
       topic: Application.get_env(:estuary, :event_stream_topic),
       handler: Estuary.MessageHandler,

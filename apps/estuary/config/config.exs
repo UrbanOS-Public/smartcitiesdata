@@ -1,6 +1,6 @@
 use Mix.Config
 
-@conection :estuary_elsa
+connection = :estuary_elsa
 
 config :estuary,
   event_stream_topic: "event-stream",
@@ -9,6 +9,6 @@ config :estuary,
   table_writer: Pipeline.Writer.TableWriter,
   retry_count: 10,
   retry_initial_delay: 100,
-  conection: @conection
+  connection: connection
 
 import_config "#{Mix.env()}.exs"
