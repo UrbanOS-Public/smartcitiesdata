@@ -154,12 +154,12 @@ defmodule AndiWeb.EditLiveView do
   defp send_dataset_update({:ok, dataset}) do
     case DatasetValidator.validate(dataset) do
       :valid -> Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
-      {:invalid, errors} -> Logger.warn("Invalid dataset: #{IO.inspect({:invalid, errors})}")
+      {:invalid, errors} -> Logger.warn("Invalid dataset: #{inspect({:invalid, errors})}")
     end
   end
 
   defp send_dataset_update({:error, e}) do
-    Logger.warn("Unable to create new SmartCity.Dataset: #{IO.inspect({:error, e})}")
+    Logger.warn("Unable to create new SmartCity.Dataset: #{inspect({:error, e})}")
   end
 
   defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
