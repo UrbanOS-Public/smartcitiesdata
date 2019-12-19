@@ -5,6 +5,7 @@ defmodule AndiWeb.EditLiveView do
   import AndiWeb.ErrorHelpers
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
+  require Logger
 
   def render(assigns) do
     ~L"""
@@ -94,7 +95,7 @@ defmodule AndiWeb.EditLiveView do
           <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--cancel") %>
         </div>
         <div class="metadata-form__save-btn">
-          <%= Link.button("Next", to: "#", id: "next-button", class: "btn btn--next") %>
+          <%= Link.button("Next", to: "/", method: "get", id: "next-button", class: "btn btn--next") %>
           <%= Form.submit("Save", id: "save-button", class: "btn btn--save") %>
         </div>
       </div>
@@ -153,7 +154,9 @@ defmodule AndiWeb.EditLiveView do
     Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
   end
 
-  defp send_dataset_update({:error, e}), do: {:error, e}
+  defp send_dataset_update({:error, e}) do
+    Logger.warn("Unable to update dataset: #{IO.inspect({:error, e})}")
+  end
 
   defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
   defp get_level_of_access_options, do: [[key: "Private", value: "true"], [key: "Public", value: "false"]]

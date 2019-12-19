@@ -299,12 +299,8 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert get_value(html, "#dataset_schema_technical_sourceFormat") == dataset.technical.sourceFormat
 
-      dataset_map = dataset_to_map(dataset) |> put_in([:technical, :sourceFormat], "newFormatYo")
-
-      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
-      assert get_value(html, "#dataset_schema_technical_sourceFormat") == dataset.technical.sourceFormat
+      assert Floki.attribute(html, "#dataset_schema_technical_sourceFormat", "readonly") == ["readonly"]
     end
 
     test "organization title", %{conn: conn} do
@@ -313,12 +309,8 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert get_value(html, "#dataset_schema_business_orgTitle") == dataset.business.orgTitle
 
-      dataset_map = dataset_to_map(dataset) |> put_in([:business, :orgTitle], "newOrganization")
-
-      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
-      assert get_value(html, "#dataset_schema_business_orgTitle") == dataset.business.orgTitle
+      assert Floki.attribute(html, "#dataset_schema_business_orgTitle", "readonly") == ["readonly"]
     end
   end
 
@@ -327,16 +319,18 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset =
         TDG.create_dataset(%{
           business: %{issuedDate: "", publishFrequency: "12345"},
-          technical: %{cadence: "123"}
+          technical: %{cadence: "123", schema: []}
         })
 
       DatasetCache.put(dataset)
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      dataset_map = dataset_to_map(dataset) |> put_in([:business, :issuedDate], "12345")
 
-      render_change(view, :validate, %{"dataset_schema" => dataset_map})
+      dataset_map =
+        dataset_to_map(dataset)
+        |> put_in([:business, :issuedDate], "12345")
+
       render_change(view, :save, %{"dataset_schema" => dataset_map})
 
       {:ok, updated_dataset} = SmartCity.Dataset.new(dataset_map)
@@ -348,10 +342,12 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset = TDG.create_dataset(%{business: %{publishFrequency: ""}})
       DatasetCache.put(dataset)
 
+      dataset_map = dataset_to_map(dataset)
+
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      render_change(view, :save, %{"dataset_schema" => dataset})
+      render_change(view, :save, %{"dataset_schema" => dataset_map})
 
       refute_called(Brook.Event.send(instance_name(), dataset_update(), :andi, dataset), once())
     end
@@ -371,7 +367,7 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset_map = dataset_to_map(dataset) |> put_in([:business, :issuedDate], "12345")
 
       render_change(view, :validate, %{"dataset_schema" => dataset_map})
-      render_change(view, :save, %{"dataset_schema" => dataset_map})
+      html = render_change(view, :save, %{"dataset_schema" => dataset_map})
 
       assert get_text(html, "#success-message") == "Saved Successfully"
     end
