@@ -5,7 +5,7 @@ defmodule Estuary.EventHandler do
   alias SmartCity.Dataset
   alias Estuary.DataWriter
 
-  @reader Application.get_env(:estuary, :data_reader)
+  @reader Application.get_env(:estuary, :topic_reader)
 
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0]
 
@@ -22,14 +22,14 @@ defmodule Estuary.EventHandler do
   defp reader_args(dataset) do
     [
       instance: instance_name(),
+      connection: Application.get_env(:estuary, :conection),
       endpoints: Application.get_env(:estuary, :elsa_brokers),
-      dataset: dataset,
-      handler: Forklift.MessageHandler,
-      input_topic_prefix: Application.get_env(:estuary, :input_topic_prefix),
-      retry_count: Application.get_env(:estuary, :retry_count),
-      retry_delay: Application.get_env(:estuary, :retry_initial_delay),
+      topic: Application.get_env(:estuary, :event_stream_topic),
+      handler: Estuary.MessageHandler,
+      handler_init_args: [dataset: dataset],
       topic_subscriber_config: Application.get_env(:estuary, :topic_subscriber_config, []),
-      handler_init_args: [dataset: dataset]
+      retry_count: Application.get_env(:estuary, :retry_count),
+      retry_delay: Application.get_env(:estuary, :retry_initial_delay)
     ]
   end
 end

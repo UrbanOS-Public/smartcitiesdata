@@ -1,14 +1,14 @@
 use Mix.Config
 
-input_topic_prefix = "transformed"
+@conection :estuary_elsa
 
 config :estuary,
   event_stream_topic: "event-stream",
   event_stream_table_name: "event_stream",
-  data_reader: Pipeline.Reader.DatasetTopicReader,
+  topic_reader: Pipeline.Reader.TopicReader,
   table_writer: Pipeline.Writer.TableWriter,
   retry_count: 10,
   retry_initial_delay: 100,
-  input_topic_prefix: input_topic_prefix
+  conection: @conection
 
 import_config "#{Mix.env()}.exs"

@@ -14,7 +14,7 @@ config :estuary,
   elsa_endpoint: [localhost: 9092],
   divo: "docker-compose.yml",
   divo_wait: [dwell: 1000, max_tries: 120],
-  data_reader: Pipeline.Reader.DatasetTopicReader,
+  topic_reader: Pipeline.Reader.TopicReader,
   table_writer: Pipeline.Writer.TableWriter
 
 config :logger, level: :warn
