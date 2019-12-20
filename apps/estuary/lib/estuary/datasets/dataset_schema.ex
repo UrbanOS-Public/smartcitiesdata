@@ -39,7 +39,6 @@ defmodule Estuary.Datasets.DatasetSchema do
     ]
   end
 
-<<<<<<< HEAD
   def make_datawriter_payload(event) do
     [
       %{
@@ -48,27 +47,8 @@ defmodule Estuary.Datasets.DatasetSchema do
           "create_ts" => event.create_ts,
           "data" => Jason.encode(event.data),
           "type" => event.type
-=======
-  def parse_event_args(dataset) do
-    [
-      %{
-        payload: %{
-          "author" => dataset.author,
-          "create_ts" => dataset.create_ts,
-          "data" => dataset.data,
-          "type" => dataset.type
->>>>>>> Adding unit test and faker
         }
       }
     ]
-  end
-
-  def event_args do
-    %{
-      "author" => _,
-      "create_ts" => _,
-      "data" => _,
-      "type" => _
-    }
   end
 end
