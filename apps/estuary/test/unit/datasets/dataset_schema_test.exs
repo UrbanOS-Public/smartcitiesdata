@@ -55,7 +55,7 @@ defmodule Estuary.Datasets.DatasetSchemaTest do
         payload: %{
           "author" => "some_author",
           "create_ts" => 1_575_308_549_008,
-          "data" => dataset,
+          "data" => Jason.encode(dataset),
           "type" => "data:ingest:start"
         }
       }

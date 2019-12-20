@@ -45,7 +45,7 @@ defmodule Estuary.Datasets.DatasetSchema do
         payload: %{
           "author" => event.author,
           "create_ts" => event.create_ts,
-          "data" => event.data,
+          "data" => Jason.encode(event.data),
           "type" => event.type
         }
       }

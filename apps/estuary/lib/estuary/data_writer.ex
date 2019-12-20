@@ -33,11 +33,5 @@ defmodule Estuary.DataWriter do
       table: DatasetSchema.table_name(),
       schema: DatasetSchema.schema()
     )
-
-    # :ok <- @table_writer.write(parse_args(dataset()), table: "event_stream", schema: schema())
-    "SELECT * FROM event_stream"
-    |> Prestige.execute()
-    |> Prestige.prefetch()
-    |> IO.inspect("This is table value $$$$$$$$: ")
   end
 end

@@ -38,7 +38,8 @@ defmodule Estuary.MessageHandler do
       reason: "could not process because #{inspect(data)}"
     )
   end
-  #SC - Starts
+
+  # SC - Starts
   alias Estuary.Util
   import Estuary
   # import SmartCity.Data, only: [end_of_data: 0]
@@ -109,12 +110,13 @@ defmodule Estuary.MessageHandler do
       connection: Application.get_env(:estuary, :connection),
       endpoints: Application.get_env(:estuary, :elsa_brokers),
       topic: Application.get_env(:estuary, :event_stream_topic),
-      handler: Estuary.MessageHandler,
+      handler: Estuary.MessageHandler
       # handler_init_args: ,#[dataset: event],
       # topic_subscriber_config: ,#Application.get_env(:estuary, :topic_subscriber_config, []),
       # retry_count: ,#Application.get_env(:estuary, :retry_count),
       # retry_delay: #Application.get_env(:estuary, :retry_initial_delay)
     ]
   end
-  #SC - Ends
+
+  # SC - Ends 
 end

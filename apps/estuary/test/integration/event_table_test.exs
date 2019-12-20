@@ -13,9 +13,11 @@ defmodule Estuary.EventTableTest do
     expected_schema_value = [[@event_stream_schema_name]]
     EventTable.create_schema()
     actual_value = EventTable.create_schema()
-    actual_schema_value = "SHOW SCHEMAS in hive LIKE '#{@event_stream_schema_name}'"
-    |> Prestige.execute()
-    |> Prestige.prefetch()
+
+    actual_schema_value =
+      "SHOW SCHEMAS in hive LIKE '#{@event_stream_schema_name}'"
+      |> Prestige.execute()
+      |> Prestige.prefetch()
 
     assert expected_value == actual_value
     assert expected_schema_value == actual_schema_value
