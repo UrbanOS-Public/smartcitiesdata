@@ -46,18 +46,15 @@ defmodule Odo.MixProject do
       {:tasks, in_umbrella: true, only: :dev},
       {:tesla, "~> 1.3"},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
-      {:divo, "~> 1.1", only: [:dev, :integration], override: true},
-      {:divo_redis, "~> 0.1", only: :integration},
-      {:divo_kafka, "~> 0.1", only: :integration},
       {:placebo, "~> 1.2", only: [:test, :integration]},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
-      {:temp, "~> 0.4", only: [:test, :integration]},
-      {:tasks, in_umbrella: true, only: :dev}
+      {:temp, "~> 0.4", only: [:test, :integration]}
     ]
   end
 
   defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
+  defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]
 end

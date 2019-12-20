@@ -161,7 +161,7 @@ defmodule Pipeline.Reader.TopicReaderTest do
       TopicReader.terminate(instance: :pipeline, topic: "term-0")
 
       refute Process.alive?(pid)
-      assert Registry.lookup(Pipeline.Registry, :"pipeline-term-0-pipeline-supervisor") == []
+      eventually(fn -> assert Registry.lookup(Pipeline.Registry, :"pipeline-term-0-pipeline-supervisor") == [] end)
     end
 
     test "returns error tuple if infrastructure cannot be torn down" do

@@ -2,6 +2,7 @@ FROM bitwalker/alpine-elixir:1.8.1
 ARG app_name
 COPY . /app
 WORKDIR /app
+ENV NPM_CONFIG_UNSAFE_PERM true
 RUN apk update && \
     apk --no-cache --update upgrade alpine-sdk && \
     apk --no-cache add alpine-sdk && \

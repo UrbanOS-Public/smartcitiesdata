@@ -2,8 +2,7 @@ defmodule Odo.AngryCaseTest do
   use ExUnit.Case
   use Placebo
 
-  import SmartCity.Event, only: [file_ingest_end: 0, error_file_ingest: 0]
-  alias ExAws.S3
+  import SmartCity.Event, only: [file_ingest_end: 0]
   alias SmartCity.HostedFile
 
   test "Individual task failures do not stop others" do
