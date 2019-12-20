@@ -61,7 +61,7 @@ defmodule Estuary.Datasets.DatasetSchemaTest do
       }
     ]
 
-    actual_value = DatasetSchema.parse_event_args(event)
+    actual_value = DatasetSchema.make_datawriter_payload(event)
     assert expected_value == actual_value
   end
 end

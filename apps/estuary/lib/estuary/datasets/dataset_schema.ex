@@ -39,14 +39,14 @@ defmodule Estuary.Datasets.DatasetSchema do
     ]
   end
 
-  def parse_event_args(dataset) do
+  def make_datawriter_payload(event) do
     [
       %{
         payload: %{
-          "author" => dataset.author,
-          "create_ts" => dataset.create_ts,
-          "data" => dataset.data,
-          "type" => dataset.type
+          "author" => event.author,
+          "create_ts" => event.create_ts,
+          "data" => event.data,
+          "type" => event.type
         }
       }
     ]

@@ -40,6 +40,7 @@ defmodule Estuary.MessageHandler do
   end
   #SC - Starts
   alias Estuary.Util
+  import Estuary
   # import SmartCity.Data, only: [end_of_data: 0]
 
   @reader Application.get_env(:estuary, :topic_reader)
@@ -70,8 +71,9 @@ defmodule Estuary.MessageHandler do
   defp process_message(
          {:ok, %{"author" => _, "create_ts" => _, "data" => _, "type" => _} = event}
        ) do
-    init_args <- reader_args(event)
-    :ok = @reader.init(init_args)
+    # init_args <- reader_args(event)
+    reader_args(event)
+    # :ok = @reader.init(init_args)
 
     event
     |> DatasetSchema.parse_event_args()
@@ -82,7 +84,7 @@ defmodule Estuary.MessageHandler do
     :discard
   end
 
-  defp parse(end_of_data() = message), do: message
+  # defp parse(end_of_data() = message), do: message
 
   defp parse(%{key: key, value: value} = message) do
     case SmartCity.Data.new(value) do
@@ -100,5 +102,19 @@ defmodule Estuary.MessageHandler do
 
   defp error_tuple?({:error, _, _}), do: true
   defp error_tuple?(_), do: false
+
+  defp reader_args(event) do
+    [
+      instance: instance_name(),
+      connection: Application.get_env(:estuary, :connection),
+      endpoints: Application.get_env(:estuary, :elsa_brokers),
+      topic: Application.get_env(:estuary, :event_stream_topic),
+      handler: Estuary.MessageHandler,
+      # handler_init_args: ,#[dataset: event],
+      # topic_subscriber_config: ,#Application.get_env(:estuary, :topic_subscriber_config, []),
+      # retry_count: ,#Application.get_env(:estuary, :retry_count),
+      # retry_delay: #Application.get_env(:estuary, :retry_initial_delay)
+    ]
+  end
   #SC - Ends
 end
