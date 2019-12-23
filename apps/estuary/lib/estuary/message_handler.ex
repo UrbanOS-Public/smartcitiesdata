@@ -6,7 +6,6 @@ defmodule Estuary.MessageHandler do
   use Elsa.Consumer.MessageHandler
   require Logger
 
-<<<<<<< HEAD
   def handle_messages(messages) do
     Enum.each(messages, fn message -> process_message(message) end)
 
@@ -38,10 +37,6 @@ defmodule Estuary.MessageHandler do
       reason: "could not process because #{inspect(data)}"
     )
   end
-=======
-  alias Estuary.Datasets.DatasetSchema
-  alias Estuary.Util
->>>>>>> Some renaming
 
   # SC - Starts
   alias Estuary.Util
@@ -64,7 +59,6 @@ defmodule Estuary.MessageHandler do
 
     # {:ack, %{dataset: dataset}}
 
-<<<<<<< HEAD
   def handle_messages(messages, %{dataset: %SmartCity.Dataset{} = dataset}) do
     messages
     |> Enum.map(&parse/1)
@@ -73,10 +67,6 @@ defmodule Estuary.MessageHandler do
     |> Estuary.DataWriter.write_to_table(dataset: dataset)
 
     {:ack, %{dataset: dataset}}
-=======
-    # Logger.debug("Messages #{inspect(messages)} were sent to the eventstream")
-    # :ack
->>>>>>> Some renaming
   end
 
   defp parse_message_value(message) do
@@ -115,7 +105,6 @@ defmodule Estuary.MessageHandler do
     error_tuple
   end
 
-<<<<<<< HEAD
   defp parse(%{key: key, value: value} = message) do
     case SmartCity.Data.new(value) do
       {:ok, datum} -> Util.add_to_metadata(datum, :kafka_key, key)
@@ -123,8 +112,6 @@ defmodule Estuary.MessageHandler do
     end
   end
 
-=======
->>>>>>> Some renaming
   defp yeet_error(valid), do: valid
 
   defp error_tuple?({:error, _, _}), do: true

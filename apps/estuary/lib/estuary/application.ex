@@ -10,15 +10,11 @@ defmodule Estuary.Application do
 
   @spec start(any, any) :: {:error, any} | {:ok, pid}
   def start(_type, _args) do
-<<<<<<< HEAD
     if elsa_endpoint() != nil do
       validate_topic_exists()
       EventTable.create_schema()
       EventTable.create_table()
     end
-=======
-    validate_topic_exists()
->>>>>>> Adding event reader
 
     # SC - Starts
     DatasetSchema.table_schema()

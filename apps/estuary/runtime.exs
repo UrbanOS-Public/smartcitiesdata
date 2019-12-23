@@ -35,7 +35,7 @@ elsa_brokers =
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
-config :prestige,
+  config :prestige,
   base_url: System.get_env("PRESTO_URL"),
   headers: [
     user: System.get_env("PRESTO_USER"),
