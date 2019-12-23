@@ -87,6 +87,51 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       assert "id,int_array\n1,\"2,3,4\"\n" == actual
     end
 
+    test "does not return bbox calculation when feature list is empty", %{conn: conn} do
+      dataset_id = "stanislav"
+      url = "/api/v1/dataset/#{dataset_id}/download"
+
+      model =
+        Helper.sample_model(%{
+          id: dataset_id,
+          systemName: "#{@org_name}__stan",
+          name: "stan",
+          private: false,
+          lastUpdatedDate: nil,
+          queries: 7,
+          downloads: 9,
+          organizationDetails: %{
+            orgName: @org_name
+          },
+          schema: [
+            %{"name" => "feature", "type" => "json"}
+          ]
+        })
+
+      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
+      allow(Model.get(dataset_id), return: model)
+
+      allow(PrestoService.preview_columns(any(), model.systemName),
+        return: ["feature"]
+      )
+
+      allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
+
+      allow(Prestige.Result.as_maps(:result), return: [])
+
+      allow(Redix.command!(any(), any()), return: :does_not_matter)
+
+      actual = conn |> put_req_header("accept", "application/geo+json") |> get(url) |> response(200)
+
+      expected = %{
+        "type" => "FeatureCollection",
+        "name" => "#{@org_name}__stan",
+        "features" => []
+      }
+
+      assert expected == actual |> Jason.decode!()
+    end
+
     test "returns json fields as valid json", %{conn: conn} do
       dataset_id = "stanislav"
       url = "/api/v1/dataset/#{dataset_id}/download"

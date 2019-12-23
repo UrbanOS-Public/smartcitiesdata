@@ -88,6 +88,14 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtilsTest do
       assert bounding_box == [-1, 0, -1, 0]
     end
 
+    test "the bounding box of an empty features list is nil" do
+      features = []
+
+      bounding_box = GeojsonUtils.calculate_bounding_box(features)
+
+      assert bounding_box == nil
+    end
+
     data_test "throws an exception when feature has #{error_reason}" do
       Logger.debug(fn -> "Testing #{error_reason}" end)
       features = [%{"geometry" => %{"coordinates" => coordinates}}]

@@ -30,7 +30,7 @@ defmodule DiscoveryApiWeb.MultipleDataView do
       |> Stream.map(&Map.get(&1, "feature"))
       |> Stream.intersperse(",")
 
-    [["{\"type\": \"#{type}\", \"features\": "], ["["], data, ["],"]]
+    [["{\"type\": \"#{type}\", \"features\": "], ["["], data, ["]"]]
     |> Stream.concat()
   end
 

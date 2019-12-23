@@ -43,7 +43,12 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
         end
       end)
 
-    {:ok, conn} = Conn.chunk(conn, "\"bbox\": #{Jason.encode!(bounding_box)}}")
+    {:ok, conn} =
+      case bounding_box do
+        [nil, nil, nil, nil] -> Conn.chunk(conn, "}")
+        _ -> Conn.chunk(conn, ", \"bbox\": #{Jason.encode!(bounding_box)}}")
+      end
+
     conn
   end
 
