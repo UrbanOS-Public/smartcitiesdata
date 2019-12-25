@@ -8,8 +8,8 @@ defmodule Estuary.EstuaryTest do
 
   @elsa_endpoint Application.get_env(:estuary, :elsa_endpoint)
   @event_stream_topic Application.get_env(:estuary, :event_stream_topic)
-  @event_stream_schema_name Application.get_env(:estuary, :event_stream_schema_name)
-  @event_stream_table_name Application.get_env(:estuary, :event_stream_table_name)
+  # @event_stream_schema_name Application.get_env(:estuary, :event_stream_schema_name)
+  # @event_stream_table_name Application.get_env(:estuary, :table_name)
 
   setup do
     on_exit(fn ->
@@ -21,7 +21,7 @@ defmodule Estuary.EstuaryTest do
     assert Elsa.Topic.exists?(@elsa_endpoint, @event_stream_topic)
   end
 
-  test "should create event_stream table and confirm all the column exists when estuary starts" do
+  test "should create history table and confirm all the column exists when estuary starts" do
     expected_columns = [
       ["author", "varchar", "", ""],
       ["create_ts", "bigint", "", ""],
@@ -30,7 +30,7 @@ defmodule Estuary.EstuaryTest do
     ]
 
     actual_columns =
-      "DESCRIBE #{@event_stream_schema_name}.#{@event_stream_table_name}"
+      "DESCRIBE history"
       |> Prestige.execute()
       |> Prestige.prefetch()
 

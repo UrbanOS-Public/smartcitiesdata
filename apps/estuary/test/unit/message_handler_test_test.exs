@@ -1,6 +1,7 @@
 defmodule Estuary.MessageHandlerTestTest do
   use ExUnit.Case
 
+  # import Mox
   alias Estuary.MessageHandler
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -27,8 +28,22 @@ defmodule Estuary.MessageHandlerTestTest do
     #     }
     #   }
     # ]
-    MessageHandler.handle_messages(event)
+    event
+    |> event_struct()
+    |> MessageHandler.handle_messages(event)
     # actual_value = MessageHandler.handle_messages(dataset)
     # assert expected_value == actual_value
+  end
+
+  defp event_struct(event_data) do
+    ~s({
+      "__brook_struct__":"Elixir.Brook.Event",
+      "__struct__":"Elixir.SmartCity.Dataset",
+      "author":"#{event_data["author"]}",
+      "create_ts":"#{event_data["create_ts"]}",
+      "data":"#{event_data["data"]}",
+      "forwarded":false,
+      "type":"#{event_data["type"]}"
+      })
   end
 end

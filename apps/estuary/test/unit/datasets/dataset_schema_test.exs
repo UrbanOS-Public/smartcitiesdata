@@ -3,8 +3,9 @@ defmodule Estuary.Datasets.DatasetSchemaTest do
 
   alias Estuary.Datasets.DatasetSchema
   alias SmartCity.TestDataGenerator, as: TDG
+  import Mox
 
-  @event_stream_table_name Application.get_env(:estuary, :event_stream_table_name)
+  @event_stream_table_name Application.get_env(:estuary, :table_name)
 
   test "should return table and schema" do
     expected_value = [

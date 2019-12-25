@@ -23,6 +23,7 @@ table_name = System.get_env("TABLE_NAME")
 
 endpoints =
   kafka_brokers
+  |> IO.inspect("KAFKAAA")
   |> String.split(",")
   |> Enum.map(&String.trim/1)
   |> Enum.map(fn entry -> String.split(entry, ":") end)
@@ -46,9 +47,9 @@ elsa_brokers =
 config :estuary,
   elsa_brokers: elsa_brokers,
   event_stream_topic: topic,
-  elsa_endpoint: endpoints,
-  event_stream_schema_name: schema_name,
-  event_stream_table_name: table_name
+  endpoints: endpoints,
+  schema_name: schema_name,
+  table_name: table_name
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,

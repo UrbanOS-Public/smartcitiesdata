@@ -11,7 +11,7 @@ defmodule Estuary.Datasets.DatasetSchema do
   end
 
   def table_name do
-    Application.get_env(:estuary, :event_stream_table_name)
+    Application.get_env(:estuary, :table_name)
   end
 
   def schema do
@@ -45,7 +45,7 @@ defmodule Estuary.Datasets.DatasetSchema do
         payload: %{
           "author" => event.author,
           "create_ts" => event.create_ts,
-          "data" => Jason.encode(event.data),
+          "data" => Jason.encode!(event.data),
           "type" => event.type
         }
       }

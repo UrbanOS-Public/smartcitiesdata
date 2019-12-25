@@ -12,6 +12,7 @@ defmodule Estuary.DataWriter do
   Ensures a table exists using `:table_writer` from Estuary's application environment.
   """
   def init(args) do
+    # :ok <- 
     args
     |> @table_writer.init()
   end
@@ -22,30 +23,9 @@ defmodule Estuary.DataWriter do
   Estuary's application environment.
   """
 
-  def write() do
-    # def write(data, opts) do
-    # IO.inspect(data)
-    # IO.inspect(metadata)
-    # :ok <- @table_writer.write(data, table: table_name(), parse_args(metadata))
-    # :ok <-
-    DatasetSchema.dataset()
-    |> DatasetSchema.parse_event_args()
-
-  def write(data, opts) do
-    # IO.inspect(data)
-    # IO.inspect(metadata)
-    # :ok <- @table_writer.write(data, table: table_name(), parse_args(metadata))
-    :ok <- DatasetSchema.dataset()
-    |> DatasetSchema.parse_args()
-
-  def write() do
-    # def write(data, opts) do
-    # IO.inspect(data)
-    # IO.inspect(metadata)
-    # :ok <- @table_writer.write(data, table: table_name(), parse_args(metadata))
-    # :ok <-
-    DatasetSchema.dataset()
-    |> DatasetSchema.parse_event_args()
+  def write(data) do
+    # :ok <- 
+    data
     |> @table_writer.write(
       table: DatasetSchema.table_name(),
       schema: DatasetSchema.schema()

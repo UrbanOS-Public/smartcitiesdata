@@ -2,41 +2,6 @@ defmodule Estuary.MessageHandler do
   @moduledoc """
   Estuary.MessageHandler reads an event from the event stream and persists it.
   """
-  alias Estuary.EventTable
-  use Elsa.Consumer.MessageHandler
-  require Logger
-
-  def handle_messages(messages) do
-    Enum.each(messages, fn message -> process_message(message) end)
-
-    Logger.debug("Messages #{inspect(messages)} were sent to the event stream")
-    :ack
-  end
-
-  defp process_message(message) do
-    case Jason.decode(message.value) do
-      {:ok, %{"author" => _, "create_ts" => _, "data" => _, "type" => _} = event} ->
-        do_insert(message, event)
-      {_, term} ->
-        process_error(message, term)
-    end
-  end
-
-  defp do_insert(_message, event) do
-    case EventTable.insert_event_to_table(event) do
-      {:error, message} ->
-        process_error(message, event)
-
-      term ->
-        term
-    end
-  end
-
-  defp process_error(message, data) do
-    DeadLetter.process("", message, "estuary",
-      reason: "could not process because #{inspect(data)}"
-    )
-  end
 
   # SC - Starts
   alias Estuary.Util
@@ -48,29 +13,15 @@ defmodule Estuary.MessageHandler do
 
   def handle_messages(messages) do
     messages
-    |> Enum.map(&parse_message_value/1)
-    |> Enum.map(&yeet_error/1)
+    |> parse_message_value()
 
-    # messages
-    # |> Enum.map(&parse/1)
+    # |> Enum.map(&parse_message_value/1)
     # |> Enum.map(&yeet_error/1)
-    # |> Enum.reject(&error_tuple?/1)
-    # |> Estuary.DataWriter.write_to_table(dataset: dataset)
-
-    # {:ack, %{dataset: dataset}}
-
-  def handle_messages(messages, %{dataset: %SmartCity.Dataset{} = dataset}) do
-    messages
-    |> Enum.map(&parse/1)
-    |> Enum.map(&yeet_error/1)
-    |> Enum.reject(&error_tuple?/1)
-    |> Estuary.DataWriter.write_to_table(dataset: dataset)
-
-    {:ack, %{dataset: dataset}}
   end
 
   defp parse_message_value(message) do
-    message.value
+    message
+    |> IO.inspect("Hellooooo")
     |> Jason.decode()
     |> process_message()
   end
@@ -79,11 +30,11 @@ defmodule Estuary.MessageHandler do
          {:ok, %{"author" => _, "create_ts" => _, "data" => _, "type" => _} = event}
        ) do
     # init_args <- reader_args(event)
-    reader_args(event)
+    # reader_args(event)
     # :ok = @reader.init(init_args)
 
     event
-    |> DatasetSchema.parse_event_args()
+    |> DatasetSchema.make_datawriter_payload()
     |> DataWriter.write()
   end
 
@@ -117,19 +68,42 @@ defmodule Estuary.MessageHandler do
   defp error_tuple?({:error, _, _}), do: true
   defp error_tuple?(_), do: false
 
-  defp reader_args(event) do
-    [
-      instance: instance_name(),
-      connection: Application.get_env(:estuary, :connection),
-      endpoints: Application.get_env(:estuary, :elsa_brokers),
-      topic: Application.get_env(:estuary, :event_stream_topic),
-      handler: Estuary.MessageHandler
-      # handler_init_args: ,#[dataset: event],
-      # topic_subscriber_config: ,#Application.get_env(:estuary, :topic_subscriber_config, []),
-      # retry_count: ,#Application.get_env(:estuary, :retry_count),
-      # retry_delay: #Application.get_env(:estuary, :retry_initial_delay)
-    ]
-  end
+  # SC - Ends
 
-  # SC - Ends 
+  # alias Estuary.EventTable
+  # use Elsa.Consumer.MessageHandler
+  # require Logger
+
+  # def handle_messages(messages) do
+  #   Enum.each(messages, fn message -> process_message(message) end)
+
+  #   Logger.debug("Messages #{inspect(messages)} were sent to the event stream")
+  #   :ack
+  # end
+
+  # defp process_message(message) do
+  #   case Jason.decode(message.value) do
+  #     {:ok, %{"author" => _, "create_ts" => _, "data" => _, "type" => _} = event} ->
+  #       do_insert(message, event)
+
+  #     {_, term} ->
+  #       process_error(message, term)
+  #   end
+  # end
+
+  # defp do_insert(_message, event) do
+  #   case EventTable.insert_event_to_table(event) do
+  #     {:error, message} ->
+  #       process_error(message, event)
+
+  #     term ->
+  #       term
+  #   end
+  # end
+
+  # defp process_error(message, data) do
+  #   Yeet.process_dead_letter("", message, "estuary",
+  #     reason: "could not process because #{inspect(data)}"
+  #   )
+  # end
 end
