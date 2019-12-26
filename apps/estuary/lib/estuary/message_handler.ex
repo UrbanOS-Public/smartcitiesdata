@@ -23,7 +23,7 @@ defmodule Estuary.MessageHandler do
     end
   end
 
-  defp do_insert(message, event) do
+  defp do_insert(_message, event) do
     case EventTable.insert_event_to_table(event) do
       {:error, message} ->
         process_error(message, event)

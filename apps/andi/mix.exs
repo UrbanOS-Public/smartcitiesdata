@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.10.0",
+      version: "0.13.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -22,7 +22,7 @@ defmodule Andi.MixProject do
   def application do
     [
       mod: {Andi.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :phoenix_ecto]
     ]
   end
 
@@ -40,6 +40,7 @@ defmodule Andi.MixProject do
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1.4", only: [:dev, :integration]},
+      {:ecto_sql, "~> 3.0"},
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},
       {:gettext, "~> 0.17"},
       {:jason, "~> 1.1"},
@@ -50,6 +51,7 @@ defmodule Andi.MixProject do
       {:phoenix_live_view, "~>0.4"},
       {:phoenix_html, "~> 2.13"},
       {:phoenix_live_reload, "~> 1.2", only: [:dev, :integration]},
+      {:phoenix_ecto, "~> 4.0"},
       {:phoenix_pubsub, "~> 1.1"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.1"},
@@ -59,7 +61,7 @@ defmodule Andi.MixProject do
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:tesla, "~> 1.3", only: :integration},
       {:timex, "~> 3.6"},
-      {:uuid, "~> 1.1"},
+      {:elixir_uuid, "~> 1.2"},
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev}
     ]
