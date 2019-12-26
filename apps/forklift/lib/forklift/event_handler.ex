@@ -4,10 +4,12 @@ defmodule Forklift.EventHandler do
 
   alias SmartCity.Dataset
   import Forklift
+  require Logger
 
   @reader Application.get_env(:forklift, :data_reader)
 
-  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0, data_write_complete: 0]
+  import Brook.ViewState
 
   def handle_event(%Brook.Event{type: data_ingest_start(), data: %Dataset{} = dataset}) do
     with source_type when source_type in ["ingest", "stream"] <- dataset.technical.sourceType,
@@ -35,6 +37,26 @@ defmodule Forklift.EventHandler do
       _ -> :discard
     end
   end
+
+  def handle_event(%Brook.Event{type: "migration:last_insert_date:start"}) do
+    Logger.info("Starting last insert date migration")
+    Redix.command!(:redix, ["KEYS", "forklift:last_insert_date:*"])
+    |> Enum.map(fn key -> {key, Redix.command!(:redix, ["GET", key])} end)
+    |> Enum.map(fn {key, timestamp} -> {parse_dataset_id(key), timestamp} end)
+    |> Enum.each(fn {dataset_id, timestamp} ->
+      event = SmartCity.DataWriteComplete.new(%{id: dataset_id, timestamp: timestamp})
+      Brook.Event.send(:forklift, data_write_complete(), :forklift, event)
+    end)
+
+    Logger.info("Completed last insert date migration")
+
+    create(:migration, "last_insert_date_migration_completed", true)
+  rescue
+    error ->
+      Logger.error("Failure in last insert date migration" <> error)
+  end
+
+  defp parse_dataset_id("forklift:last_insert_date:" <> dataset_id), do: dataset_id
 
   defp reader_args(dataset) do
     [
