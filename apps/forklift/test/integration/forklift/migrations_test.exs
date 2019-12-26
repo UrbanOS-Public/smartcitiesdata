@@ -19,7 +19,7 @@ defmodule Forklift.MigrationsTest do
       "forklift:last_insert_date:7ab08634-3eda-4b05-a754-5eb6cab31326" => "2019-12-04T17:44:02.645233Z"
     }
 
-    {:ok, redix} = Redix.start_link(host: Application.get_env(:redix, :host), name: :redix)
+    {:ok, redix} = Redix.start_link(Keyword.put(Application.get_env(:redix, :args), :name, :redix))
     Process.unlink(redix)
 
     Enum.each(last_insert_dates, fn {k, v} -> Redix.command(:redix, ["SET", k, v]) end)
