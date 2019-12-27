@@ -31,6 +31,6 @@ defmodule Estuary.DataWriter do
         schema: DatasetSchema.schema()
       )
   rescue
-    e -> {:error, e, "Presto Error"}
+    e -> {:error, data, "Presto Error"}
   end
 end

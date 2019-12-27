@@ -3,13 +3,13 @@ defmodule Estuary.Datasets.DatasetSchemaTest do
 
   alias Estuary.Datasets.DatasetSchema
   alias SmartCity.TestDataGenerator, as: TDG
-  import Mox
+  # import Mox
 
-  @event_stream_table_name Application.get_env(:estuary, :table_name)
+  @table_name Application.get_env(:estuary, :table_name)
 
   test "should return table and schema" do
     expected_value = [
-      table: @event_stream_table_name,
+      table: @table_name,
       schema: [
         %{description: "N/A", name: "author", type: "string"},
         %{description: "N/A", name: "create_ts", type: "long"},
@@ -23,7 +23,7 @@ defmodule Estuary.Datasets.DatasetSchemaTest do
   end
 
   test "should return table name" do
-    expected_value = @event_stream_table_name
+    expected_value = @table_name
     actual_value = DatasetSchema.table_name()
     assert expected_value == actual_value
   end
@@ -41,28 +41,31 @@ defmodule Estuary.Datasets.DatasetSchemaTest do
   end
 
   test "should return payload when given ingest SmartCity Dataset struct" do
+    author = DataWriterHelper.make_author()
+    time_stamp = DataWriterHelper.make_time_stamp()
     dataset = TDG.create_dataset(%{})
-
-    event = %{
-      author: "some_author",
-      create_ts: 1_575_308_549_008,
-      data: dataset,
-      forwarded: false,
-      type: "data:ingest:start"
-    }
 
     expected_value = [
       %{
         payload: %{
-          "author" => "some_author",
-          "create_ts" => 1_575_308_549_008,
-          "data" => Jason.encode(dataset),
+          "author" => author,
+          "create_ts" => time_stamp,
+          "data" => Jason.encode!(dataset),
           "type" => "data:ingest:start"
         }
       }
     ]
 
-    actual_value = DatasetSchema.make_datawriter_payload(event)
+    actual_value =
+      %{
+        author: author,
+        create_ts: time_stamp,
+        data: dataset,
+        forwarded: false,
+        type: "data:ingest:start"
+      }
+      |> DatasetSchema.make_datawriter_payload()
+
     assert expected_value == actual_value
   end
 end

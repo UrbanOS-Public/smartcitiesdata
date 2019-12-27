@@ -16,6 +16,7 @@ defmodule Estuary.Application do
 
     reader_args()
     |> @reader.init()
+
     children = []
     opts = [strategy: :one_for_one, name: Estuary.Supervisor]
     Supervisor.start_link(children, opts)

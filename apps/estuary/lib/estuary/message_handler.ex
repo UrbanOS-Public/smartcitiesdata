@@ -3,7 +3,6 @@ defmodule Estuary.MessageHandler do
   Estuary.MessageHandler reads an event from the event stream and persists it.
   """
 
-  import Estuary
   alias Estuary.Datasets.DatasetSchema
   alias Estuary.DataWriter
   alias Estuary.DeadLetterQueue

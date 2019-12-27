@@ -1,9 +1,10 @@
-defmodule Estuary.MessageHandlerTestTest do
+defmodule Estuary.MessageHandlerTest do
   use ExUnit.Case
   use Placebo
   use Divo
 
   # import Mox
+  alias Estuary.Datasets.DatasetSchema
   alias Estuary.DataWriterHelper
   alias Estuary.MessageHandler
   alias SmartCity.TestDataGenerator, as: TDG
@@ -19,39 +20,46 @@ defmodule Estuary.MessageHandlerTestTest do
         forwarded: false,
         type: "data:ingest:start"
       }
-      |> MessageHandler.handle_messages()
+      |> MessageHandler.handle_message()
 
     assert expected_value == actual_value
   end
 
   test "should send the message to dead letter queue when expected fields are not found" do
-    expected_value = :ok
+    event = %{
+      authors: DataWriterHelper.make_author(),
+      create_tss: DataWriterHelper.make_time_stamp(),
+      datas: TDG.create_dataset(%{}),
+      forwarded: false,
+      types: "data:ingest:start"
+    }
+
+    expected_value = {:error, event, "Required field missing"}
 
     actual_value =
-      %{
-        authors: DataWriterHelper.make_author(),
-        create_tss: DataWriterHelper.make_time_stamp(),
-        datas: TDG.create_dataset(%{}),
-        forwarded: false,
-        types: "data:ingest:start"
-      }
-      |> MessageHandler.handle_messages()
+      event
+      |> MessageHandler.handle_message()
 
     assert expected_value == actual_value
   end
 
   test "should send the message to dead letter queue when improper values are inserted to the database" do
-    expected_value = :ok
+    event = %{
+      author: DataWriterHelper.make_author(),
+      create_ts: "'#{DataWriterHelper.make_time_stamp()}'",
+      data: TDG.create_dataset(%{}),
+      forwarded: false,
+      type: "data:ingest:start"
+    }
+
+    expected_value =
+      {:error,
+       event
+       |> DatasetSchema.make_datawriter_payload(), "Presto Error"}
 
     actual_value =
-      %{
-        author: DataWriterHelper.make_author(),
-        create_ts: "#{DataWriterHelper.make_time_stamp()}",
-        data: TDG.create_dataset(%{}),
-        forwarded: false,
-        type: "data:ingest:start"
-      }
-      |> MessageHandler.handle_messages()
+      event
+      |> MessageHandler.handle_message()
 
     assert expected_value == actual_value
   end
