@@ -114,7 +114,7 @@ defmodule Forklift.DataWriter do
   defp do_write(data, dataset) do
     started_data = Enum.map(data, &add_start_time/1)
 
-    retry with: exponential_backoff(@retry_count) |> expiry(@max_wait) do
+    retry with: exponential_backoff(100) |> cap(@max_wait) |> Stream.take(@retry_count) do
       write_to_table(started_data, dataset)
     after
       {:ok, write_timing} ->
