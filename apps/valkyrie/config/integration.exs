@@ -51,7 +51,3 @@ config :valkyrie, :brook,
       namespace: "valkyrie:view"
     ]
   ]
-
-config :yeet,
-  topic: "dead-letters",
-  endpoint: endpoints

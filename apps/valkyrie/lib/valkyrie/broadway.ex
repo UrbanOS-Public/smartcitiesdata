@@ -66,7 +66,7 @@ defmodule Valkyrie.Broadway do
       %{message | data: %{message.data | value: json_data}}
     else
       {:failed_schema_validation, reason} ->
-        Yeet.process_dead_letter(dataset.id, message_data.value, @app_name,
+        DeadLetter.process(dataset.id, message_data.value, @app_name,
           error: :failed_schema_validation,
           reason: reason
         )
@@ -74,7 +74,7 @@ defmodule Valkyrie.Broadway do
         Message.failed(message, reason)
 
       {:error, reason} ->
-        Yeet.process_dead_letter(dataset.id, message_data.value, @app_name, reason: reason)
+        DeadLetter.process(dataset.id, message_data.value, @app_name, reason: reason)
         Message.failed(message, reason)
     end
   end

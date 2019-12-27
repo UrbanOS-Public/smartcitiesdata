@@ -54,16 +54,6 @@ config :forklift, :brook,
     ]
   ]
 
-config :forklift, :dead_letter,
-  driver: [
-    module: DeadLetter.Carrier.Kafka,
-    init_args: [
-      name: :forklift_dead_letters,
-      endpoints: endpoints,
-      topic: "dead-letters"
-    ]
-  ]
-
 config :prestige,
   base_url: "http://#{host}:8080",
   headers: [

@@ -7,6 +7,7 @@ defmodule Valkyrie.BroadwayTest do
 
   import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event, only: [data_standardization_end: 0]
+  import SmartCity.TestHelper
 
   @dataset_id "ds1"
   @topic "raw-ds1"
@@ -90,7 +91,6 @@ defmodule Valkyrie.BroadwayTest do
 
   test "should yeet message when it fails to parse properly", %{broadway: broadway} do
     allow SmartCity.Data.new(any()), return: {:error, :something_went_badly}
-    allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :ok
 
     kafka_message = %{value: :message}
 
@@ -99,12 +99,17 @@ defmodule Valkyrie.BroadwayTest do
     assert_receive {:ack, _ref, _, [message]}, 5_000
     assert {:failed, :something_went_badly} == message.status
 
-    assert_called Yeet.process_dead_letter(@dataset_id, :message, "Valkyrie", reason: :something_went_badly)
+    eventually(fn ->
+      {:ok, dlqd_message} = DeadLetter.Carrier.Test.receive()
+      refute dlqd_message == :empty
+
+      assert dlqd_message.app == "Valkyrie"
+      assert dlqd_message.dataset_id == @dataset_id
+      assert dlqd_message.reason == :something_went_badly
+    end)
   end
 
-  test "should yeet message is standardizing data fails do to schmea validation", %{broadway: broadway} do
-    allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :ok
-
+  test "should yeet message if standardizing data fails due to schmear validation", %{broadway: broadway} do
     data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => "twenty-one"})
     kafka_message = %{value: Jason.encode!(data)}
 
@@ -113,10 +118,16 @@ defmodule Valkyrie.BroadwayTest do
     assert_receive {:ack, _ref, _, failed_messages}, 5_000
     assert 1 == length(failed_messages)
 
-    assert_called Yeet.process_dead_letter("ds1", Jason.encode!(data), "Valkyrie",
-                    error: :failed_schema_validation,
-                    reason: %{"age" => :invalid_integer}
-                  )
+    eventually(fn ->
+      {:ok, dlqd_message} = DeadLetter.Carrier.Test.receive()
+      refute dlqd_message == :empty
+
+      assert dlqd_message.app == "Valkyrie"
+      assert dlqd_message.dataset_id == "ds1"
+      assert dlqd_message.reason == %{"age" => :invalid_integer}
+      assert dlqd_message.error == :failed_schema_validation
+      assert dlqd_message.original_message == Jason.encode!(data)
+    end)
   end
 
   test "should send the messages to the output kafka topic", %{broadway: broadway} do
