@@ -46,6 +46,6 @@ defmodule Reaper.Decoder do
   end
 
   defp yeet_error(%SmartCity.Dataset{id: dataset_id}, message, error) do
-    Yeet.process_dead_letter(dataset_id, message, "Reaper", error: error)
+    DeadLetter.process(dataset_id, message, "reaper", error: error)
   end
 end

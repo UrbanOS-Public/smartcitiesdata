@@ -15,7 +15,7 @@ config :libcluster,
       ]
     ]
   ]
-	
+
 config :redix, :args,
   [host: "localhost"]
 
@@ -27,6 +27,3 @@ config :reaper,
     DivoRedis
   ],
   divo_wait: [dwell: 700, max_tries: 50]
-
-config :husky,
-  pre_commit: "./scripts/git_pre_commit_hook.sh"
