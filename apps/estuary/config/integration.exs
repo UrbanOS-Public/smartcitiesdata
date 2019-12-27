@@ -16,7 +16,3 @@ config :estuary,
   divo_wait: [dwell: 1000, max_tries: 120]
 
 config :logger, level: :warn
-
-config :yeet,
-  topic: "dead-letters",
-  endpoint: endpoints
