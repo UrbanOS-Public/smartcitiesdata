@@ -15,8 +15,9 @@ config :forklift,
   data_reader: Pipeline.Reader.DatasetTopicReader,
   topic_writer: Pipeline.Writer.TopicWriter,
   table_writer: Pipeline.Writer.TableWriter,
-  retry_count: 10,
+  retry_count: 100,
   retry_initial_delay: 100,
+  retry_max_wait: 1_000 * 60 * 60,
   elsa_brokers: [{String.to_atom(host), 9092}],
   input_topic_prefix: "transformed",
   output_topic: output_topic,
@@ -39,7 +40,7 @@ config :forklift, :brook,
       endpoints: endpoints,
       topic: "event-stream",
       group: "forklift-events",
-      config: [
+      consumer_config: [
         begin_offset: :earliest
       ]
     ]

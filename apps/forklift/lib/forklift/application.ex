@@ -12,9 +12,9 @@ defmodule Forklift.Application do
         redis(),
         metrics(),
         {DynamicSupervisor, strategy: :one_for_one, name: Forklift.Dynamic.Supervisor},
-        migrations(),
         Forklift.Quantum.Scheduler,
         {Brook, Application.get_env(:forklift, :brook)},
+        migrations(),
         {DeadLetter, Application.get_env(:forklift, :dead_letter)},
         Forklift.InitServer
       ]

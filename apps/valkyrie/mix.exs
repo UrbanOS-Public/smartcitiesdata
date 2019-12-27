@@ -51,7 +51,7 @@ defmodule Valkyrie.MixProject do
       {:off_broadway_kafka, "~> 0.4.0"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:retry, "~> 0.13"},
-      {:smart_city, "~> 3.0", override: true},
+      {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:timex, "~> 3.6"},
       {:yeet, "~> 1.0"}

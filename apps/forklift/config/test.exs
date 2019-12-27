@@ -9,6 +9,7 @@ config :forklift,
   collector: MockMetricCollector,
   retry_count: 5,
   retry_initial_delay: 10,
+  retry_max_wait: 500,
   # To ensure that MessageWriter never starts while testing
   message_processing_cadence: 1_000_000_000,
   cache_processing_batch_size: 1_000,

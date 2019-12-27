@@ -4,7 +4,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
   import Mox
   import Forklift
-  import SmartCity.Event, only: [data_ingest_end: 0]
+  import SmartCity.Event, only: [data_ingest_end: 0, data_write_complete: 0]
   import SmartCity.Data, only: [end_of_data: 0]
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -43,6 +43,8 @@ defmodule Forklift.Integration.MessageHandlingTest do
       expect(MockTable, :write, fn _, _ -> :ok end)
       expect(MockTopic, :write, fn msg, _ -> send(test, msg) end)
 
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :whatever)
+
       dataset = TDG.create_dataset(%{})
       datum = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foo" => "baz"}, operational: %{timing: []}})
       message = %Elsa.Message{key: "key_two", value: Jason.encode!(datum)}
@@ -55,6 +57,50 @@ defmodule Forklift.Integration.MessageHandlingTest do
       assert Enum.count(timing) == 2
       assert Enum.any?(timing, fn time -> time["label"] == "presto_insert_time" end)
       assert Enum.any?(timing, fn time -> time["label"] == "total_time" end)
+    end
+
+    test "sends 'dataset:write_complete event' with timestamp after writing records" do
+      expect(MockTable, :write, fn [%{payload: "foobar"}, %{payload: "foobaz"}], _ -> :ok end)
+      expect(MockTopic, :write, fn _, _ -> :ok end)
+
+      dataset = TDG.create_dataset(%{})
+
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobar"})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobaz"})
+
+      message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
+      message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}
+
+      Map.put(dataset, :lastUpdatedDate, DateTime.utc_now())
+
+      now = DateTime.utc_now()
+      greater_than_now = fn event_data ->
+        event_data.id == dataset.id &&
+          DateTime.to_iso8601(event_data.timestamp) > DateTime.to_iso8601(now)
+      end
+      expect Brook.Event.send(instance_name(), data_write_complete(), :forklift, is(greater_than_now)), return: :ok
+      Forklift.MessageHandler.handle_messages([message1, message2], %{dataset: dataset})
+    end
+
+    test "handles errors gracefully" do
+      allow(Brook.Event.send(instance_name(), data_write_complete(), any(), any()), return: :whatever)
+
+      stub(MockTable, :write, fn _, _ -> {:error, :raisins} end)
+      stub(MockTopic, :write, fn _, _ -> :ok end)
+
+      dataset = TDG.create_dataset(%{})
+
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobar"})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobaz"})
+
+      message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
+      message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}
+
+      assert_raise RuntimeError, fn ->
+        Forklift.MessageHandler.handle_messages([message1, message2], %{dataset: dataset})
+      end
+
+      refute_called(Brook.Event.send, :any)
     end
   end
 
@@ -71,6 +117,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
       message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
       message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}
 
+      allow(Brook.Event.send(instance_name(), data_write_complete(), any(), any()), return: :whatever)
       expect Brook.Event.send(instance_name(), data_ingest_end(), :forklift, dataset), return: :ok
       Forklift.MessageHandler.handle_messages([message1, message2, end_of_data()], %{dataset: dataset})
     end

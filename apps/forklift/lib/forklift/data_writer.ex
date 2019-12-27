@@ -16,7 +16,8 @@ defmodule Forklift.DataWriter do
 
   @topic_writer Application.get_env(:forklift, :topic_writer)
   @table_writer Application.get_env(:forklift, :table_writer)
-  @max_wait_time 1_000 * 60 * 60
+  @max_wait Application.get_env(:forklift, :retry_max_wait)
+  @retry_count Application.get_env(:forklift, :retry_count)
 
   @impl Pipeline.Writer
   @doc """
@@ -113,7 +114,7 @@ defmodule Forklift.DataWriter do
   defp do_write(data, dataset) do
     started_data = Enum.map(data, &add_start_time/1)
 
-    retry with: exponential_backoff(100) |> cap(@max_wait_time) do
+    retry with: exponential_backoff(100) |> cap(@max_wait) |> Stream.take(@retry_count) do
       write_to_table(started_data, dataset)
     after
       {:ok, write_timing} ->
@@ -121,7 +122,8 @@ defmodule Forklift.DataWriter do
         |> Enum.map(&add_total_time/1)
         |> write_to_topic()
     else
-      {:error, reason} -> raise reason
+      {:error, reason} ->
+        raise RuntimeError, inspect(reason)
     end
   end
 

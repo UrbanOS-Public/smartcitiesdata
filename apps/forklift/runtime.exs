@@ -66,7 +66,7 @@ config :forklift, :brook,
       endpoints: elsa_brokers,
       topic: "event-stream",
       group: "forklift-events",
-      config: [
+      consumer_config: [
         begin_offset: :earliest
       ]
     ]

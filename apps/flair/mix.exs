@@ -40,7 +40,7 @@ defmodule Flair.MixProject do
       {:jason, "~> 1.1"},
       {:prestige, "~> 0.3"},
       {:retry, "~> 0.13.0"},
-      {:smart_city, "~> 3.0", override: true},
+
       {:statistics, "~> 0.6"},
       {:credo, "~> 1.1", only: :dev, runtime: false},
       {:excoveralls, "~> 0.11", only: :dev},
