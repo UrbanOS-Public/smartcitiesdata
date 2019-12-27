@@ -12,9 +12,9 @@ defmodule Estuary.DataWriter do
   Ensures a table exists using `:table_writer` from Estuary's application environment.
   """
   def init(args) do
-    # :ok <- 
-    args
-    |> @table_writer.init()
+    :ok =
+      args
+      |> @table_writer.init()
   end
 
   @impl Pipeline.Writer
@@ -24,11 +24,13 @@ defmodule Estuary.DataWriter do
   """
 
   def write(data) do
-    # :ok <- 
-    data
-    |> @table_writer.write(
-      table: DatasetSchema.table_name(),
-      schema: DatasetSchema.schema()
-    )
+    :ok =
+      data
+      |> @table_writer.write(
+        table: DatasetSchema.table_name(),
+        schema: DatasetSchema.schema()
+      )
+  rescue
+    e -> {:error, e, "Presto Error"}
   end
 end

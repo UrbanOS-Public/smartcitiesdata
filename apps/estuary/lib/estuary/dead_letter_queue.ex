@@ -7,10 +7,6 @@ defmodule Estuary.DeadLetterQueue do
     enqueue_message(message, options)
   end
 
-  defp enqueue_message(%{id: dataset_id} = message, options) do
-    DeadLetter.process(dataset_id, message, "estuary", options)
-  end
-
   defp enqueue_message(message, options) do
     DeadLetter.process("Unknown", message, "estuary", options)
   end

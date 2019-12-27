@@ -23,7 +23,6 @@ table_name = System.get_env("TABLE_NAME")
 
 endpoints =
   kafka_brokers
-  |> IO.inspect("KAFKAAA")
   |> String.split(",")
   |> Enum.map(&String.trim/1)
   |> Enum.map(fn entry -> String.split(entry, ":") end)
