@@ -3,11 +3,7 @@ defmodule Forklift.MigrationsTest do
   use Divo, auto_start: false
 
   import SmartCity.TestHelper
-  alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.Event, only: [data_write_complete: 0]
-
-  require Forklift
-  @instance Forklift.instance_name()
 
   @tag :capture_log
   test "should run the last insert date migration" do
@@ -31,7 +27,6 @@ defmodule Forklift.MigrationsTest do
     Process.sleep(30_000)
 
     eventually(fn ->
-      Elsa.Fetch.fetch([{'127.0.0.1', 9092}], "event-stream")
       assert Elsa.Fetch.search_keys([{'127.0.0.1', 9092}], "event-stream", data_write_complete()) |> Enum.to_list() |> length == 3
     end)
 

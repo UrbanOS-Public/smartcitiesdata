@@ -40,7 +40,7 @@ config :forklift, :brook,
       endpoints: endpoints,
       topic: "event-stream",
       group: "forklift-events",
-      config: [
+      consumer_config: [
         begin_offset: :earliest
       ]
     ]

@@ -24,14 +24,6 @@ defmodule Forklift.Migrations do
   end
 
   def migrate_once(completed_flag_name, event_name) do
-    Patiently.wait_for(
-      fn ->
-        Elsa.Registry.whereis_name({:elsa_registry_brook_driver_kafka_forklift, :"worker_event-stream_0"}) != :undefined
-      end,
-      dwell: 500,
-      max_tries: 12
-    )
-
     if complete?(completed_flag_name) do
       Logger.info("Migration already completed for " <> event_name)
     else
