@@ -2,7 +2,7 @@ defmodule Reaper.DataExtract.ValidationStageTest do
   use ExUnit.Case
   use Placebo
 
-  import SmartCity.TestHelper
+  import SmartCity.TestHelper, only: [eventually: 1]
   alias Reaper.DataExtract.ValidationStage
   alias Reaper.Cache
   alias SmartCity.TestDataGenerator, as: TDG

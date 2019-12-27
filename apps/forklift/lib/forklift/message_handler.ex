@@ -7,7 +7,7 @@ defmodule Forklift.MessageHandler do
   use Elsa.Consumer.MessageHandler
 
   import SmartCity.Data, only: [end_of_data: 0]
-  import SmartCity.Event, only: [data_ingest_end: 0, data_write_complete: 0]
+  import SmartCity.Event, only: [data_write_complete: 0]
   alias SmartCity.DataWriteComplete
   import Forklift
   alias Forklift.Util

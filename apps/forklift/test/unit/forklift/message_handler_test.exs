@@ -4,7 +4,7 @@ defmodule Forklift.MessageHandlerTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Forklift.MessageHandler
-  import SmartCity.TestHelper
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   @moduletag capture_log: true
   test "malformed messages are sent to dead letter queue" do

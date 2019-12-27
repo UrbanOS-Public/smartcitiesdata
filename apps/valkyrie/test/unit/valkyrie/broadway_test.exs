@@ -7,7 +7,7 @@ defmodule Valkyrie.BroadwayTest do
 
   import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event, only: [data_standardization_end: 0]
-  import SmartCity.TestHelper
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   @dataset_id "ds1"
   @topic "raw-ds1"

@@ -3,7 +3,7 @@ defmodule Reaper.DecoderTest do
   use Placebo
   alias Reaper.Decoder
 
-  import SmartCity.TestHelper
+  import SmartCity.TestHelper, only: [eventually: 1]
   alias SmartCity.TestDataGenerator, as: TDG
 
   @filename "#{__MODULE__}_temp_file"
