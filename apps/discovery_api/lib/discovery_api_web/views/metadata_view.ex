@@ -54,7 +54,8 @@ defmodule DiscoveryApiWeb.MetadataView do
       accessLevel: model.accessLevel,
       completeness: model.completeness,
       schema: format_schema(model.schema),
-      systemName: model.systemName
+      systemName: model.systemName,
+      fileTypes: model.fileTypes
     }
   end
 

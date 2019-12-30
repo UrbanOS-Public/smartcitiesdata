@@ -15,8 +15,8 @@ defmodule DiscoveryApi.Data.SystemNameCache do
     :system_name_cache
   end
 
-  def put(%Dataset{id: dataset_id, technical: %{dataName: data_name}}, %Organization{name: org_name}) do
-    Cachex.put(cache_name(), {org_name, data_name}, dataset_id)
+  def put(id, org_name, data_name) do
+    Cachex.put(cache_name(), {org_name, data_name}, id)
   end
 
   def get(org_name, data_name) do

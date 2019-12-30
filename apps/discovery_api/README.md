@@ -35,3 +35,17 @@ For a single dataset:
 `SmartCity.Dataset.get!(dataset_id) |> DiscoveryApi.Stats.StatsCalculator.calculate_and_save_completeness()`
 
 Datasets will be calculated and persisted to Redis with a key of `discovery-api:stats:{{dataset_id}}`
+
+
+### Creating Datasets Locally
+  * Start the app and use `iex` to run the following commands:
+```
+org = SmartCity.TestDataGenerator.create_organization([])
+datasets = Enum.map(1..3, fn _ -> SmartCity.TestDataGenerator.create_dataset(%{technical: %{orgId: org.id}}) end)
+Brook.Event.send(DiscoveryApi.instance(), "organization:update", :andi, org)
+Enum.each(datasets, &(Brook.Event.send(DiscoveryApi.instance(), "dataset:update", :andi, &1)))
+
+session = DiscoveryApi.prestige_opts() |> Prestige.new_session()
+Enum.each(datasets, fn %{technical: %{orgName: orgName, dataName: dataName}} -> Prestige.query!(session, "create table if not exists #{orgName}__#{dataName} (key varchar, value varchar)") end)
+```
+
