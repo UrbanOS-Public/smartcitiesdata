@@ -40,7 +40,7 @@ config :estuary,
   event_stream_table_name: table_name
 
 config :logger,
-  level: :warn
+  level: :debug
 
 config :yeet,
   endpoint: endpoints,
