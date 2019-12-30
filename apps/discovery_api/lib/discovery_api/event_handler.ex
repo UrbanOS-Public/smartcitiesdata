@@ -2,7 +2,7 @@ defmodule DiscoveryApi.EventHandler do
   @moduledoc "Event Handler for event stream"
 
   use Brook.Event.Handler
-  import SmartCity.Event, only: [organization_update: 0, user_organization_associate: 0, dataset_update: 0]
+  import SmartCity.Event, only: [organization_update: 0, user_organization_associate: 0, dataset_update: 0, data_write_complete: 0]
   require Logger
   alias SmartCity.{Organization, UserOrganizationAssociate, Dataset}
   alias DiscoveryApi.Schemas.{Organizations, Users}
@@ -23,7 +23,7 @@ defmodule DiscoveryApi.EventHandler do
     :discard
   end
 
-  def handle_event(%Brook.Event{type: "dataset:write_complete", data: %{"id" => id, "timestamp" => timestamp}}) do
+  def handle_event(%Brook.Event{type: data_write_complete(), data: %{"id" => id, "timestamp" => timestamp}}) do
     Logger.debug(fn -> "Handling write_complete" end)
 
     merge(:models, id, %{id: id, lastUpdatedDate: timestamp})

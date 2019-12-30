@@ -6,7 +6,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
   alias DiscoveryApi.Schemas.Organizations
   alias SmartCity.TestDataGenerator, as: TDG
 
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [dataset_update: 0, dataset_write_complete: 0]
 
   import DiscoveryApi.Test.Helper
   import Checkov
@@ -115,7 +115,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
 
     test "writes dataset:write_complete event once write is complete", %{data_model: %{id: id, title: title}} do
       write_complete_timestamp = DateTime.utc_now()
-      Brook.Test.send(@instance, "dataset:write_complete", "unit", %{id: id, timestamp: write_complete_timestamp})
+      Brook.Test.send(@instance, dataset_write_complete(), "unit", %{id: id, timestamp: write_complete_timestamp})
 
       assert %DiscoveryApi.Data.Model{id: ^id, title: ^title, lastUpdatedDate: ^write_complete_timestamp} = DiscoveryApi.Data.Model.get(id)
     end
@@ -124,7 +124,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       write_complete_timestamp = DateTime.utc_now()
       data_model_id = "not found"
 
-      Brook.Test.send(@instance, "dataset:write_complete", "unit", %{id: data_model_id, timestamp: write_complete_timestamp})
+      Brook.Test.send(@instance, dataset_write_complete(), "unit", %{id: data_model_id, timestamp: write_complete_timestamp})
 
       assert %DiscoveryApi.Data.Model{id: ^data_model_id, lastUpdatedDate: ^write_complete_timestamp} =
                DiscoveryApi.Data.Model.get(data_model_id)
