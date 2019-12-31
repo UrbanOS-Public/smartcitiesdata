@@ -96,6 +96,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       ])
     end
   end
+
   describe "data write complete events" do
     setup do
       clear_saved_models()
@@ -118,7 +119,8 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
 
       Brook.Test.send(@instance, data_write_complete(), "unit", %SmartCity.DataWriteComplete{id: id, timestamp: write_complete_timestamp})
 
-      assert %DiscoveryApi.Data.Model{id: ^id, title: ^title, lastUpdatedDate: ^write_complete_timestamp_iso} = DiscoveryApi.Data.Model.get(id)
+      assert %DiscoveryApi.Data.Model{id: ^id, title: ^title, lastUpdatedDate: ^write_complete_timestamp_iso} =
+               DiscoveryApi.Data.Model.get(id)
     end
 
     test "writes dataset:write_complete event once write is complete even if dataset is not in view state" do
@@ -126,9 +128,13 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       write_complete_timestamp_iso = DateTime.to_iso8601(write_complete_timestamp)
       data_model_id = "not found"
 
-      Brook.Test.send(@instance, data_write_complete(), "unit", %SmartCity.DataWriteComplete{id: data_model_id, timestamp: write_complete_timestamp})
+      Brook.Test.send(@instance, data_write_complete(), "unit", %SmartCity.DataWriteComplete{
+        id: data_model_id,
+        timestamp: write_complete_timestamp
+      })
 
-      assert %DiscoveryApi.Data.Model{id: ^data_model_id, lastUpdatedDate: ^write_complete_timestamp_iso} = DiscoveryApi.Data.Model.get(data_model_id)
+      assert %DiscoveryApi.Data.Model{id: ^data_model_id, lastUpdatedDate: ^write_complete_timestamp_iso} =
+               DiscoveryApi.Data.Model.get(data_model_id)
     end
 
     test "if it is not sent (for a remote, for example), but dataset is already there, what do we get?!", %{
