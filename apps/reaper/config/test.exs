@@ -5,9 +5,6 @@ config :logger,
 
 config :phoenix, :json_library, Jason
 
-config :yeet,
-  topic: "dead-letters"
-
 config :reaper,
   output_topic_prefix: "raw",
   produce_retries: 2,

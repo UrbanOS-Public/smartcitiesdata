@@ -2,7 +2,6 @@ defmodule XMLStream.SaxHandlerTest do
   use ExUnit.Case, async: true
 
   alias XMLStream.SaxHandler
-  alias XMLStream.SaxHandler.State
 
   @test_file_path "test/support/test_data/"
   defp test_file_path(filename) do

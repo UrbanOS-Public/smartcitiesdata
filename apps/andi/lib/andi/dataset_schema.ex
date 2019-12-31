@@ -8,6 +8,8 @@ defmodule Andi.DatasetSchema do
     embeds_one(:business, Andi.DatasetBusinessSchema)
   end
 
+  def changeset(params \\ %{})
+
   def changeset(%SmartCity.Dataset{} = dataset) do
     business_map = dataset.business |> Map.from_struct()
     technical_map = dataset.technical |> Map.from_struct()
@@ -19,7 +21,7 @@ defmodule Andi.DatasetSchema do
     |> changeset()
   end
 
-  def changeset(params \\ %{}) do
+  def changeset(params) do
     %Andi.DatasetSchema{}
     |> cast(params, [:id])
     |> cast_embed(:technical)

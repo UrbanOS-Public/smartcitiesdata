@@ -3,6 +3,7 @@ defmodule Reaper.DecoderTest do
   use Placebo
   alias Reaper.Decoder
 
+  import SmartCity.TestHelper, only: [eventually: 1]
   alias SmartCity.TestDataGenerator, as: TDG
 
   @filename "#{__MODULE__}_temp_file"
@@ -25,13 +26,19 @@ defmodule Reaper.DecoderTest do
         return: {:error, "this is the data part", "bad Csv"},
         meck_options: [:passthrough]
 
-      allow(Yeet.process_dead_letter(any(), any(), any(), any()), return: nil, meck_options: [:passthrough])
-
       assert_raise RuntimeError, "bad Csv", fn ->
         Decoder.decode({:file, @filename}, dataset)
       end
 
-      assert_called Yeet.process_dead_letter("ds1", "this is the data part", "Reaper", error: "bad Csv")
+      eventually(fn ->
+        {:ok, dlqd_message} = DeadLetter.Carrier.Test.receive()
+        refute dlqd_message == :empty
+
+        assert dlqd_message.app == "reaper"
+        assert dlqd_message.original_message == "this is the data part"
+        assert dlqd_message.dataset_id == "ds1"
+        assert dlqd_message.error == "bad Csv"
+      end)
     end
 
     test "invalid format messages yoted and raises error" do
@@ -39,15 +46,19 @@ defmodule Reaper.DecoderTest do
       File.write!(@filename, body)
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceFormat: "CSY"})
 
-      allow(Yeet.process_dead_letter(any(), any(), any(), any()), return: nil, meck_options: [:passthrough])
-
       assert_raise RuntimeError, "application/octet-stream is an invalid format", fn ->
         Reaper.Decoder.decode({:file, @filename}, dataset)
       end
 
-      assert_called Yeet.process_dead_letter("ds1", "", "Reaper",
-                      error: %RuntimeError{message: "application/octet-stream is an invalid format"}
-                    )
+      eventually(fn ->
+        {:ok, dlqd_message} = DeadLetter.Carrier.Test.receive()
+        refute dlqd_message == :empty
+
+        assert dlqd_message.app == "reaper"
+        assert dlqd_message.dataset_id == "ds1"
+        assert dlqd_message.error == "** (RuntimeError) application/octet-stream is an invalid format"
+        assert dlqd_message.original_message == ""
+      end)
     end
   end
 end

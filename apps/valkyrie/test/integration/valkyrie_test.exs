@@ -6,7 +6,7 @@ defmodule ValkyrieTest do
   import SmartCity.Event, only: [data_ingest_start: 0]
 
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
-  @dlq_topic Application.get_env(:yeet, :topic)
+  @dlq_topic Application.get_env(:dead_letter, :driver) |> get_in([:init_args, :topic])
   @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
   @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
   @instance Valkyrie.Application.instance()

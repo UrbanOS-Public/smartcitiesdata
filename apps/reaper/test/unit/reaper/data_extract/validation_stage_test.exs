@@ -2,6 +2,7 @@ defmodule Reaper.DataExtract.ValidationStageTest do
   use ExUnit.Case
   use Placebo
 
+  import SmartCity.TestHelper, only: [eventually: 1]
   alias Reaper.DataExtract.ValidationStage
   alias Reaper.Cache
   alias SmartCity.TestDataGenerator, as: TDG
@@ -78,7 +79,6 @@ defmodule Reaper.DataExtract.ValidationStageTest do
     test "will yeet any errors marked during cache call" do
       allow Cache.mark_duplicates(@cache, %{three: 3, four: 4}), return: {:error, "bad stuff"}
       allow Cache.mark_duplicates(@cache, any()), exec: fn _, msg -> {:ok, msg} end
-      allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :ok
 
       state = %{
         cache: @cache,
@@ -93,7 +93,16 @@ defmodule Reaper.DataExtract.ValidationStageTest do
 
       {:noreply, outgoing_events, _new_state} = ValidationStage.handle_events(incoming_events, self(), state)
       assert outgoing_events == [{%{one: 1, two: 2}, 1}]
-      assert_called Yeet.process_dead_letter("ds2", {%{three: 3, four: 4}, 2}, "reaper", reason: "bad stuff")
+
+      eventually(fn ->
+        {:ok, dlqd_message} = DeadLetter.Carrier.Test.receive()
+        refute dlqd_message == :empty
+
+        assert dlqd_message.app == "reaper"
+        assert dlqd_message.dataset_id == "ds2"
+        assert dlqd_message.original_message == {%{three: 3, four: 4}, 2}
+        assert dlqd_message.reason == "bad stuff"
+      end)
     end
   end
 

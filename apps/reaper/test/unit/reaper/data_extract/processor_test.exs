@@ -122,8 +122,6 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
     allow Elsa.produce(any(), any(), any(), any()), exec: fn _, _, _, _ -> raise "some error" end
 
-    allow Yeet.process_dead_letter(any(), any(), any(), any()), return: :yeet
-
     log =
       capture_log(fn ->
         assert_raise RuntimeError, fn ->

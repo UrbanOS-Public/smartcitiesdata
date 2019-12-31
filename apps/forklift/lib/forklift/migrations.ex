@@ -7,7 +7,7 @@ defmodule Forklift.Migrations do
 
   import Forklift, only: [instance_name: 0]
 
-  @instance Forklift.instance_name()
+  @instance instance_name()
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)

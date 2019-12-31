@@ -34,7 +34,7 @@ defmodule Estuary.MessageHandler do
   end
 
   defp process_error(message, data) do
-    Yeet.process_dead_letter("", message, "estuary",
+    DeadLetter.process("", message, "estuary",
       reason: "could not process because #{inspect(data)}"
     )
   end

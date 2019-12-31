@@ -63,10 +63,6 @@ if kafka_brokers do
     ]
   ]
 
-  config :yeet,
-    topic: System.get_env("DLQ_TOPIC"),
-    endpoint: endpoints
-
   config :valkyrie,
     elsa_brokers: endpoints,
     input_topic_prefix: input_topic_prefix,
@@ -78,5 +74,14 @@ if kafka_brokers do
       max_bytes: 1_000_000,
       min_bytes: 500_000,
       max_wait_time: 10_000
+    ]
+
+  config :dead_letter,
+    driver: [
+      module: DeadLetter.Carrier.Kafka,
+      init_args: [
+        endpoints: endpoints,
+        topic: "streaming-dead-letters"
+      ]
     ]
 end

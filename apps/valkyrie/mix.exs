@@ -38,6 +38,7 @@ defmodule Valkyrie.MixProject do
       {:cachex, "~> 3.1"},
       {:checkov, "~> 0.4.0", only: [:test]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:divo_kafka, "~> 0.1", only: [:integration]},
@@ -53,8 +54,7 @@ defmodule Valkyrie.MixProject do
       {:retry, "~> 0.13"},
       {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
-      {:timex, "~> 3.6"},
-      {:yeet, "~> 1.0"}
+      {:timex, "~> 3.6"}
     ]
   end
 
