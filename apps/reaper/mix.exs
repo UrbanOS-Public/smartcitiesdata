@@ -44,6 +44,7 @@ defmodule Reaper.MixProject do
       {:brook, "~> 0.4.0"},
       {:cachex, "~> 3.2"},
       {:castore, "~> 0.1"},
+      {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
@@ -68,7 +69,6 @@ defmodule Reaper.MixProject do
       {:sweet_xml, "~> 0.6"},
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
-      {:yeet, "~> 1.0"},
       # Test/Dev Dependencies
       {:benchee, "~> 1.0", only: :integration},
       {:tasks, in_umbrella: true, only: :dev},

@@ -3,25 +3,6 @@ defmodule DeadLetterTest do
   use Divo
   import Assertions
 
-  setup do
-    config = [
-      driver: [
-        module: DeadLetter.Carrier.Kafka,
-        init_args: [
-          name: :client,
-          endpoints: [localhost: 9092],
-          topic: "dead-letters"
-        ]
-      ]
-    ]
-
-    {:ok, dlq} = DeadLetter.start_link(config)
-
-    on_exit(fn ->
-      kill_and_wait(dlq)
-    end)
-  end
-
   test "successfully sends messages to kafka" do
     DeadLetter.process("123-456", %{topic: "foobar", payload: "{\"key\":\"value\"}"}, "loader")
 
@@ -60,11 +41,5 @@ defmodule DeadLetterTest do
       refute "invalid-message" in original_messages
       assert "valid-message" in original_messages
     end
-  end
-
-  defp kill_and_wait(pid, timeout \\ 1_000) do
-    ref = Process.monitor(pid)
-    Process.exit(pid, :normal)
-    assert_receive {:DOWN, ^ref, _, _, _}, timeout
   end
 end

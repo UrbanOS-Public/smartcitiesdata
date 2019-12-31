@@ -6,10 +6,6 @@ defmodule DeadLetter do
   dead letter message queue service.
   """
 
-  defdelegate start_link(opts), to: DeadLetter.Supervisor
-
-  defdelegate child_spec(args), to: DeadLetter.Supervisor
-
   @doc """
   Given a message with a dataset id and app name, send a message to the dead letter queue that contains that message, along with additional metadata.
   """

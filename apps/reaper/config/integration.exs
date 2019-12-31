@@ -22,7 +22,7 @@ config :reaper,
   divo: [
     {DivoKafka,
      [
-       create_topics: "event-stream:1:1,streaming-dead-letters:1:1",
+       create_topics: "event-stream:1:1,dead-letters:1:1",
        outside_host: host
      ]},
     DivoRedis,
@@ -66,10 +66,6 @@ config :reaper, Reaper.Quantum.Storage,
 
 config :redix, :args,
   redix_args
-
-config :yeet,
-  endpoint: endpoints,
-  topic: "streaming-dead-letters"
 
 config :ex_aws,
   debug_requests: true,

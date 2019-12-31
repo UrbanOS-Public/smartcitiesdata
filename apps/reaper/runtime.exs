@@ -93,9 +93,14 @@ config :reaper, Reaper.Quantum.Storage,
 config :redix, :args,
   redix_args
 
-config :yeet,
-  endpoint: endpoints,
-  topic: System.get_env("DLQ_TOPIC")
+config :dead_letter,
+  driver: [
+    module: DeadLetter.Carrier.Kafka,
+    init_args: [
+      endpoints: endpoints,
+      topic: "streaming-dead-letters"
+    ]
+  ]
 
 config :ex_aws,
   region: System.get_env("AWS_REGION") || "us-west-2"

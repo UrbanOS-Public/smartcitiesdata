@@ -45,6 +45,11 @@ config :estuary,
 config :logger,
   level: :warn
 
-config :yeet,
-  endpoint: endpoints,
-  topic: System.get_env("DLQ_TOPIC")
+config :dead_letter,
+  driver: [
+    module: DeadLetter.Carrier.Kafka,
+    init_args: [
+      endpoints: endpoints,
+      topic: "streaming-dead-letters"
+    ]
+  ]

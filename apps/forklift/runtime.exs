@@ -80,11 +80,10 @@ config :forklift, :brook,
     ]
   ]
 
-config :forklift, :dead_letter,
+config :dead_letter,
   driver: [
     module: DeadLetter.Carrier.Kafka,
     init_args: [
-      name: :forklift_dead_letters,
       endpoints: endpoints,
       topic: "streaming-dead-letters"
     ]

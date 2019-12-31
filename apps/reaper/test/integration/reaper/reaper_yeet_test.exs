@@ -10,7 +10,7 @@ defmodule Reaper.YeetTest do
   @dataset_id "12345-6789"
   @endpoints Application.get_env(:reaper, :elsa_brokers)
   @success_topic Application.get_env(:reaper, :output_topic_prefix) <> "-" <> @dataset_id
-  @dlq_topic Application.get_env(:yeet, :topic)
+  @dlq_topic Application.get_env(:dead_letter, :driver) |> get_in([:init_args, :topic])
   @instance Reaper.Application.instance()
 
   @invalid_json_file "includes_invalid.json"
@@ -52,7 +52,7 @@ defmodule Reaper.YeetTest do
       eventually(fn ->
         messages = TestUtils.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
 
-        assert [%{app: "Reaper", dataset_id: @dataset_id} | _] = messages
+        assert [%{app: "reaper", dataset_id: @dataset_id} | _] = messages
       end)
     end
 
