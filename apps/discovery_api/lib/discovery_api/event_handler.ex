@@ -23,8 +23,8 @@ defmodule DiscoveryApi.EventHandler do
     :discard
   end
 
-  def handle_event(%Brook.Event{type: data_write_complete(), data: %{"id" => id, "timestamp" => timestamp}}) do
-    Logger.debug(fn -> "Handling write_complete" end)
+  def handle_event(%Brook.Event{type: data_write_complete(), data: %SmartCity.DataWriteComplete{id: id, timestamp: timestamp}}) do
+    Logger.debug(fn -> "Handling write_complete for " <> id end)
 
     merge(:models, id, %{id: id, lastUpdatedDate: timestamp})
   end

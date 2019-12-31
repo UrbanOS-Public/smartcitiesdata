@@ -11,14 +11,6 @@ defmodule DiscoveryApi.Data.ModelTest do
     Brook.Test.clear_view_state(@instance, :models)
   end
 
-  test "get_last_updated_date/1" do
-    expected_date = DateTime.utc_now()
-    allow(Persistence.get(any()), return: {:last_updated_date, expected_date})
-
-    actual_date = Model.get_last_updated_date("123")
-    assert expected_date = actual_date
-  end
-
   test "get_count_maps/1" do
     keys = ["smart_registry:queries:count:123", "smart_registry:downloads:count:123"]
     allow(Persistence.get_keys("smart_registry:*:count:123"), return: keys)
@@ -121,7 +113,6 @@ defmodule DiscoveryApi.Data.ModelTest do
     id = "nil_id"
 
     %{
-      "forklift:last_insert_date:#{id}" => nil,
       "smart_registry:downloads:count:#{id}" => nil,
       "smart_registry:queries:count:#{id}" => nil,
       "discovery-api:stats:#{id}" => nil
@@ -132,7 +123,6 @@ defmodule DiscoveryApi.Data.ModelTest do
     id = expected_model.id
 
     %{
-      "forklift:last_insert_date:#{id}" => expected_model.lastUpdatedDate,
       "smart_registry:downloads:count:#{id}" => expected_model.downloads,
       "smart_registry:queries:count:#{id}" => expected_model.queries,
       "discovery-api:stats:#{id}" => expected_model.completeness
@@ -145,6 +135,6 @@ defmodule DiscoveryApi.Data.ModelTest do
     %{id: name}
     |> Map.merge(overrides)
     |> Helper.sample_model()
-    |> Map.merge(%{completeness: %{completeness: x}, downloads: y, queries: z, lastUpdatedDate: DateTime.utc_now()})
+    |> Map.merge(%{completeness: %{completeness: x}, downloads: y, queries: z})
   end
 end

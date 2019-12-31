@@ -6,7 +6,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
   alias DiscoveryApi.Schemas.Organizations
   alias SmartCity.TestDataGenerator, as: TDG
 
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [dataset_update: 0, data_write_complete: 0]
 
   import DiscoveryApi.Test.Helper
   import Checkov
@@ -19,6 +19,8 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       allow(ResponseCache.invalidate(), return: :ok)
       allow(DiscoveryApi.Search.Storage.index(any()), return: :ok)
       allow(DiscoveryApi.RecommendationEngine.save(any()), return: :ok)
+
+      allow(Redix.command!(any(), any()), return: ["not_in_redis"])
 
       dataset = TDG.create_dataset(%{id: "123"})
       organization = create_schema_organization(%{id: dataset.technical.orgId})
@@ -71,6 +73,12 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       assert_called(DiscoveryApi.Search.Storage.index(expected_model))
     end
 
+    test "the model should be accessible via the view state", %{dataset: %{id: id, business: %{dataTitle: title}} = dataset} do
+      Brook.Test.send(@instance, dataset_update(), "unit", dataset)
+
+      assert %DiscoveryApi.Data.Model{id: ^id, title: ^title} = DiscoveryApi.Data.Model.get(id)
+    end
+
     data_test "sends dataset to recommendation engine" do
       dataset = TDG.create_dataset(dataset_map)
       organization = create_schema_organization(%{id: dataset.technical.orgId})
@@ -86,6 +94,47 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
         [false, %{technical: %{private: false, schema: []}}],
         [false, %{technical: %{private: true}}]
       ])
+    end
+  end
+  describe "data write complete events" do
+    setup do
+      clear_saved_models()
+
+      dataset = TDG.create_dataset(%{id: "123"})
+      data_model = DiscoveryApi.Data.Mapper.to_data_model(dataset, %DiscoveryApi.Schemas.Organizations.Organization{})
+
+      Brook.Test.with_event(@instance, fn ->
+        Brook.ViewState.merge(:models, data_model.id, data_model)
+      end)
+
+      allow(Redix.command!(any(), any()), return: ["not_in_redis"])
+
+      {:ok, [data_model: data_model]}
+    end
+
+    test "merges the write complete timsetamp into the model", %{data_model: %{id: id, title: title}} do
+      write_complete_timestamp = DateTime.utc_now()
+      write_complete_timestamp_iso = DateTime.to_iso8601(write_complete_timestamp)
+
+      Brook.Test.send(@instance, data_write_complete(), "unit", %SmartCity.DataWriteComplete{id: id, timestamp: write_complete_timestamp})
+
+      assert %DiscoveryApi.Data.Model{id: ^id, title: ^title, lastUpdatedDate: ^write_complete_timestamp_iso} = DiscoveryApi.Data.Model.get(id)
+    end
+
+    test "writes dataset:write_complete event once write is complete even if dataset is not in view state" do
+      write_complete_timestamp = DateTime.utc_now()
+      write_complete_timestamp_iso = DateTime.to_iso8601(write_complete_timestamp)
+      data_model_id = "not found"
+
+      Brook.Test.send(@instance, data_write_complete(), "unit", %SmartCity.DataWriteComplete{id: data_model_id, timestamp: write_complete_timestamp})
+
+      assert %DiscoveryApi.Data.Model{id: ^data_model_id, lastUpdatedDate: ^write_complete_timestamp_iso} = DiscoveryApi.Data.Model.get(data_model_id)
+    end
+
+    test "if it is not sent (for a remote, for example), but dataset is already there, what do we get?!", %{
+      data_model: %{id: id, title: title}
+    } do
+      assert %DiscoveryApi.Data.Model{id: ^id, title: ^title, lastUpdatedDate: nil} = DiscoveryApi.Data.Model.get(id)
     end
   end
 end

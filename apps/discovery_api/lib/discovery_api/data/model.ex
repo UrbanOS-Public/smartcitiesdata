@@ -82,11 +82,6 @@ defmodule DiscoveryApi.Data.Model do
     {id, processed_completeness}
   end
 
-  def get_last_updated_date(id) do
-    ("forklift:last_insert_date:" <> id)
-    |> Persistence.get()
-  end
-
   # sobelow_skip ["DOS.StringToAtom"]
   def get_count_maps(dataset_id) do
     case Persistence.get_keys("smart_registry:*:count:" <> dataset_id) do
@@ -158,6 +153,7 @@ defmodule DiscoveryApi.Data.Model do
     |> List.flatten()
   end
 
+  defp ensure_struct(nil), do: nil
   defp ensure_struct(%__MODULE__{} = model), do: model
   defp ensure_struct(%{} = model), do: struct(__MODULE__, model)
 end
