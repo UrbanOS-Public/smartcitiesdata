@@ -22,7 +22,7 @@ defmodule Estuary.Application do
     Supervisor.start_link(children, opts)
   end
 
-  defp reader_args() do
+  defp reader_args do
     [
       instance: instance_name(),
       connection: Application.get_env(:estuary, :connection),

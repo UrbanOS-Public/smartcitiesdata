@@ -10,7 +10,7 @@ defmodule Estuary.MessageHandler do
   def handle_message(message) do
     message
     |> parse()
-    |> yeet_error()
+    |> error_dead_letter()
   end
 
   defp parse(%{author: _, create_ts: _, data: _, type: _} = event) do
@@ -23,10 +23,10 @@ defmodule Estuary.MessageHandler do
     {:error, event, "Required field missing"}
   end
 
-  defp yeet_error({:error, message, reason} = error_tuple) do
+  defp error_dead_letter({:error, message, reason} = error_tuple) do
     DeadLetterQueue.enqueue(message, reason: reason)
     error_tuple
   end
 
-  defp yeet_error(valid), do: valid
+  defp error_dead_letter(valid), do: valid
 end

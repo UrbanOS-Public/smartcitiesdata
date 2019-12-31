@@ -3,18 +3,24 @@ defmodule Estuary.DataWriter do
   Implementation of `Pipeline.Writer` for Estuary's edges.
   """
 
+  @behaviour Pipeline.Writer
+
   @table_writer Application.get_env(:estuary, :table_writer)
 
   alias Estuary.Datasets.DatasetSchema
 
   @impl Pipeline.Writer
   @doc """
-  Ensures a table exists using `:table_writer` from Estuary's application environment.
+  Ensures a table exists using `:table_writer` from 
+  Estuary's application environment.
   """
+
   def init(args) do
     :ok =
       args
       |> @table_writer.init()
+  rescue
+    e -> {:error, e, "Presto Error"}
   end
 
   @impl Pipeline.Writer
@@ -23,7 +29,7 @@ defmodule Estuary.DataWriter do
   Estuary's application environment.
   """
 
-  def write(data) do
+  def write(data, _opts \\ []) do
     :ok =
       data
       |> @table_writer.write(
@@ -31,6 +37,6 @@ defmodule Estuary.DataWriter do
         schema: DatasetSchema.schema()
       )
   rescue
-    e -> {:error, data, "Presto Error"}
+    _ -> {:error, data, "Presto Error"}
   end
 end

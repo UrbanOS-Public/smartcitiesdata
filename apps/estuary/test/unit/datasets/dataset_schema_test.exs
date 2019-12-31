@@ -1,11 +1,57 @@
 defmodule Estuary.Datasets.DatasetSchemaTest do
+  # , async: true
   use ExUnit.Case
+  use Placebo
 
   alias Estuary.Datasets.DatasetSchema
   alias SmartCity.TestDataGenerator, as: TDG
-  # import Mox
+  alias Estuary.DataWriterHelper
+  import Mox
 
   @table_name Application.get_env(:estuary, :table_name)
+
+  # @repo_name "intro-to-ruby"
+  # @org_name "flatiron-labs"
+  # @author_username "AuthorUsername"
+
+  # setup :set_mox_from_context
+  setup :set_mox_global
+  setup :verify_on_exit!
+
+  setup do
+    # reader_args = [instance: any(), connection: any(), endpoints: any(), topic: any(), handler: any()]
+    DatasetSchema
+    |> allow(:table_schema,
+      return: [
+        table: @table_name,
+        schema: [
+          %{description: "N/A", name: "author", type: "string"},
+          %{description: "N/A", name: "create_ts", type: "long"},
+          %{description: "N/A", name: "data", type: "string"},
+          %{description: "N/A", name: "type", type: "string"}
+        ]
+      ]
+    )
+
+    # assert  MockTable.init(any()) == :ok
+    # assert  MockData.init(any()) == :ok
+    # assert  MockReader.init(any()) == :ok
+    MockTable
+    |> stub(:init, fn _ -> :ok end)
+
+    MockData
+    |> stub(:init, fn _ -> :ok end)
+
+    MockReader
+    |> stub(:init, fn _ -> :ok end)
+
+    # MockTable
+    # |> expect(:init, &init/1)
+    # MockData
+    # |> expect(:init, &init/1)
+    # MockReader
+    # |> expect(:init, &init/1)
+  end
 
   test "should return table and schema" do
     expected_value = [

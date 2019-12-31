@@ -3,7 +3,7 @@ defmodule Estuary.Datasets.DatasetSchema do
   The schema information that estuary persists and references for a given dataset
   """
 
-  def table_schema() do
+  def table_schema do
     [
       table: table_name(),
       schema: schema()
