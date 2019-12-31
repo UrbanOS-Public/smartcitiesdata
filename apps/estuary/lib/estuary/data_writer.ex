@@ -11,7 +11,7 @@ defmodule Estuary.DataWriter do
 
   @impl Pipeline.Writer
   @doc """
-  Ensures a table exists using `:table_writer` from 
+  Ensures a table exists using `:table_writer` from
   Estuary's application environment.
   """
 

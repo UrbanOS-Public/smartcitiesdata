@@ -14,8 +14,8 @@ defmodule Estuary.Application do
     DatasetSchema.table_schema()
     |> DataWriter.init()
 
-    reader_args()
-    |> @reader.init()
+    # reader_args()
+    # |> @reader.init()
 
     children = []
     opts = [strategy: :one_for_one, name: Estuary.Supervisor]

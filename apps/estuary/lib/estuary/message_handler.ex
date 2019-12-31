@@ -2,15 +2,17 @@ defmodule Estuary.MessageHandler do
   @moduledoc """
   Estuary.MessageHandler reads an event from the event stream and persists it.
   """
-
+  use Elsa.Consumer.MessageHandler
   alias Estuary.Datasets.DatasetSchema
   alias Estuary.DataWriter
   alias Estuary.DeadLetterQueue
 
-  def handle_message(message) do
-    message
-    |> parse()
-    |> error_dead_letter()
+  def handle_messages(messages) do
+    Enum.map(messages, fn message ->
+      message
+      |> parse()
+      |> error_dead_letter()
+    end)
   end
 
   defp parse(%{author: _, create_ts: _, data: _, type: _} = event) do

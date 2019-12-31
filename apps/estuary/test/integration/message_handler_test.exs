@@ -10,17 +10,19 @@ defmodule Estuary.MessageHandlerTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   test "should successfully insert the message into the database" do
-    expected_value = :ok
+    expected_value = [:ok]
 
     actual_value =
-      %{
-        author: DataWriterHelper.make_author(),
-        create_ts: DataWriterHelper.make_time_stamp(),
-        data: TDG.create_dataset(%{}),
-        forwarded: false,
-        type: "data:ingest:start"
-      }
-      |> MessageHandler.handle_message()
+      [
+        %{
+          author: DataWriterHelper.make_author(),
+          create_ts: DataWriterHelper.make_time_stamp(),
+          data: TDG.create_dataset(%{}),
+          forwarded: false,
+          type: "data:ingest:start"
+        }
+      ]
+      |> MessageHandler.handle_messages()
 
     assert expected_value == actual_value
   end
@@ -34,11 +36,11 @@ defmodule Estuary.MessageHandlerTest do
       types: "data:ingest:start"
     }
 
-    expected_value = {:error, event, "Required field missing"}
+    expected_value = [{:error, event, "Required field missing"}]
 
     actual_value =
-      event
-      |> MessageHandler.handle_message()
+      [event]
+      |> MessageHandler.handle_messages()
 
     assert expected_value == actual_value
   end
@@ -52,14 +54,15 @@ defmodule Estuary.MessageHandlerTest do
       type: "data:ingest:start"
     }
 
-    expected_value =
+    expected_value = [
       {:error,
        event
        |> DatasetSchema.make_datawriter_payload(), "Presto Error"}
+    ]
 
     actual_value =
-      event
-      |> MessageHandler.handle_message()
+      [event]
+      |> MessageHandler.handle_messages()
 
     assert expected_value == actual_value
   end
