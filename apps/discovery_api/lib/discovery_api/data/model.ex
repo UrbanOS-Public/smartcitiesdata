@@ -160,5 +160,4 @@ defmodule DiscoveryApi.Data.Model do
 
   defp ensure_struct(%__MODULE__{} = model), do: model
   defp ensure_struct(%{} = model), do: struct(__MODULE__, model)
-
 end
