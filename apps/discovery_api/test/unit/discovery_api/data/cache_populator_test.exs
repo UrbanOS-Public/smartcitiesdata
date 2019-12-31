@@ -13,6 +13,8 @@ defmodule DiscoveryApi.Data.CachePopulatorTest do
 
   describe "init/1" do
     test "Populates the cache with existing view state models" do
+      Helper.clear_saved_models()
+
       organization = %{} |> TDG.create_organization()
 
       model =

@@ -24,9 +24,20 @@ defmodule DiscoveryApi.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: data_write_complete(), data: %SmartCity.DataWriteComplete{id: id, timestamp: timestamp}}) do
-    Logger.debug(fn -> "Handling write_complete for " <> id end)
+    Logger.debug(fn -> "Handling write complete for #{inspect(id)}" end)
 
-    merge(:models, id, %{id: id, lastUpdatedDate: timestamp})
+    case Brook.get(DiscoveryApi.instance(), :models, id) do
+      {:ok, nil} ->
+        Logger.debug(fn -> "Discarded write complete for non-existent dataset #{inspect(id)}" end)
+        :discard
+
+      {:ok, _} ->
+        merge(:models, id, %{id: id, lastUpdatedDate: timestamp})
+
+      error ->
+        Logger.debug(fn -> "Discarded write complete for dataset #{inspect(id)} due to #{inspect(error)}" end)
+        :discard
+    end
   end
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = dataset}) do

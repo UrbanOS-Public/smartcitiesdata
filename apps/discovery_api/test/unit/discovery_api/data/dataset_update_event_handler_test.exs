@@ -123,9 +123,8 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
                DiscoveryApi.Data.Model.get(id)
     end
 
-    test "writes dataset:write_complete event once write is complete even if dataset is not in view state" do
+    test "does not record write complete for datasets that are not in view state, as storing the partial can make other things blow up" do
       write_complete_timestamp = DateTime.utc_now()
-      write_complete_timestamp_iso = DateTime.to_iso8601(write_complete_timestamp)
       data_model_id = "not found"
 
       Brook.Test.send(@instance, data_write_complete(), "unit", %SmartCity.DataWriteComplete{
@@ -133,11 +132,10 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
         timestamp: write_complete_timestamp
       })
 
-      assert %DiscoveryApi.Data.Model{id: ^data_model_id, lastUpdatedDate: ^write_complete_timestamp_iso} =
-               DiscoveryApi.Data.Model.get(data_model_id)
+      assert nil == DiscoveryApi.Data.Model.get(data_model_id)
     end
 
-    test "if it is not sent (for a remote, for example), but dataset is already there, what do we get?!", %{
+    test "if an event was not received, lastUpdateDate should be nil", %{
       data_model: %{id: id, title: title}
     } do
       assert %DiscoveryApi.Data.Model{id: ^id, title: ^title, lastUpdatedDate: nil} = DiscoveryApi.Data.Model.get(id)
