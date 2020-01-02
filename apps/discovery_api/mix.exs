@@ -66,7 +66,7 @@ defmodule DiscoveryApi.Mixfile do
       {:quantum, "~>2.3"},
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.2"},
-      {:smart_city, "~> 3.0", override: true},
+      {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.7", only: [:test, :integration]},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},
       {:timex, "~> 3.0"},
