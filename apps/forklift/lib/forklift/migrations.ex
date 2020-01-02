@@ -14,7 +14,7 @@ defmodule Forklift.Migrations do
   end
 
   def init(_args) do
-    migrate_once("last_insert_date_completed", "migration:last_insert_date:start")
+    migrate_once("last_insert_date_migration_completed", "migration:last_insert_date:start")
 
     {:ok, :ok, {:continue, :stop}}
   end
