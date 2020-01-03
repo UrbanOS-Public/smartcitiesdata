@@ -5,6 +5,18 @@ defmodule Reaper.Decoder.Json do
   @behaviour Reaper.Decoder
 
   @impl Reaper.Decoder
+
+  def decode({:file, filename}, %{technical: %{topLevelSelector: top_level_selector}} = _dataset)
+      when not is_nil(top_level_selector) do
+    with {:ok, query} <- Jaxon.Path.parse(top_level_selector),
+         {:ok, data} <- json_file_query(filename, query) do
+      {:ok, data}
+    else
+      {:error, error} ->
+        {:error, File.read!(filename), error}
+    end
+  end
+
   def decode({:file, filename}, _dataset) do
     data = File.read!(filename)
 
@@ -23,4 +35,18 @@ defmodule Reaper.Decoder.Json do
   end
 
   def handle?(_source_format), do: false
+
+  defp json_file_query(filename, query) do
+    data =
+      filename
+      |> File.stream!()
+      |> Jaxon.Stream.query(query)
+      |> Enum.to_list()
+      |> List.flatten()
+      |> List.wrap()
+
+    {:ok, data}
+  rescue
+    error -> {:error, error}
+  end
 end

@@ -53,6 +53,7 @@ defmodule Reaper.MixProject do
       {:httpoison, "~> 1.6"},
       {:poison, "~> 3.1", override: true},
       {:jason, "~> 1.1"},
+      {:jaxon, "~> 1.0"},
       {:libcluster, "~> 3.1"},
       {:libvault, "~> 0.2"},
       {:mint, "~> 0.4"},
