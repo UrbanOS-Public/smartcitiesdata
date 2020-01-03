@@ -1,22 +1,19 @@
 defmodule Estuary.Datasets.DatasetSchemaTest do
-  # , async: true
   use ExUnit.Case
-  use Placebo
-  import Mox
-
   alias Estuary.Datasets.DatasetSchema
   alias SmartCity.TestDataGenerator, as: TDG
   alias Estuary.DataWriterHelper
+  import Mox
 
-  setup :set_mox_global
   setup :verify_on_exit!
 
   @table_name Application.get_env(:estuary, :table_name)
 
-  setup do
-    expect(MockReader, :init, fn _ -> :ok end)
-    expect(MockTable, :init, fn _ -> :ok end)
-  end
+  # setup do
+  #   reader_args = [[instance: :estuary, connection: :estuary_elsa, endpoints: [localhost: 9092], topic: "event-stream", handler: Estuary.MessageHandler]]
+  #   stub(MockReader, :init, fn reader_args -> :ok end)
+  #   stub(MockTable, :init, fn _ -> :ok end)
+  # end
 
   test "should return table and schema" do
     expected_value = [

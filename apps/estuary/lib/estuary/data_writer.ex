@@ -6,10 +6,11 @@ defmodule Estuary.DataWriter do
   @behaviour Pipeline.Writer
 
   @table_writer Application.get_env(:estuary, :table_writer)
+  @topic_reader Application.get_env(:estuary, :topic_reader)
 
   alias Estuary.Datasets.DatasetSchema
 
-  @impl Pipeline.Writer
+  @impl Pipeline.Reader
   @doc """
   Ensures a table exists using `:table_writer` from
   Estuary's application environment.
@@ -18,7 +19,7 @@ defmodule Estuary.DataWriter do
   def init(args) do
     :ok =
       args
-      |> @table_writer.init()
+      |> @topic_reader.init()
   rescue
     e -> {:error, e, "Presto Error"}
   end
