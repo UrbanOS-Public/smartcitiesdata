@@ -10,13 +10,13 @@ defmodule Forklift.MigrationsTest do
     Application.ensure_all_started(:redix)
 
     last_insert_dates = %{
-      "forklift:last_insert_date:38a830be-1408-41ae-8d2b-e1309f41c4cc" =>
-        "2019-10-04T17:44:02.645233Z",
-      "forklift:last_insert_date:043c12aa-0964-4a25-b74a-62b4eebdc0fa" =>
-        "2019-11-04T17:44:02.645233Z",
-      "forklift:last_insert_date:7ab08634-3eda-4b05-a754-5eb6cab31326" =>
-        "2019-12-04T17:44:02.645233Z"
+      "forklift:last_insert_date:38a830be-1408-41ae-8d2b-e1309f41c4cc" => "2019-10-04T17:44:02.645233Z",
+      "forklift:last_insert_date:043c12aa-0964-4a25-b74a-62b4eebdc0fa" => "2019-11-04T17:44:02.645233Z",
+      "forklift:last_insert_date:7ab08634-3eda-4b05-a754-5eb6cab31326" => "2019-12-04T17:44:02.645233Z"
     }
+
+    # 30 days in seconds, minus the few seconds tests take to run
+    expected_ttl = 86430 - 5000
 
     expected = [
       %{
@@ -33,12 +33,11 @@ defmodule Forklift.MigrationsTest do
       }
     ]
 
-    {:ok, redix} =
-      Redix.start_link(Keyword.put(Application.get_env(:redix, :args), :name, :redix))
+    {:ok, redix} = Redix.start_link(Keyword.put(Application.get_env(:redix, :args), :name, :redix))
 
     Process.unlink(redix)
 
-    Enum.each(last_insert_dates, fn {k, v} -> Redix.command(:redix, ["SET", k, v]) end)
+    Enum.each(last_insert_dates, fn {k} -> Redix.command(:redix, ["SET", k, v]) end)
 
     kill(redix)
 
@@ -57,6 +56,11 @@ defmodule Forklift.MigrationsTest do
         end)
 
       assert MapSet.new(actual) == MapSet.new(expected)
+
+      Enum.each(last_insert_dates, fn {k, v} ->
+        {:ok, ttl} = Redix.command(:redix, ["TTL", k])
+        assert ttl >= expected_ttl
+      end)
     end)
 
     Application.stop(:forklift)
