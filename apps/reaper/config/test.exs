@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :logger,
-  level: :warn
+  level: :info
 
 config :phoenix, :json_library, Jason
 

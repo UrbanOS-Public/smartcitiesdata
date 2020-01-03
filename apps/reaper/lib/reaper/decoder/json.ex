@@ -13,7 +13,7 @@ defmodule Reaper.Decoder.Json do
       {:ok, data}
     else
       {:error, error} ->
-        {:error, File.read!(filename), error}
+        {:error, truncate_file_for_logging(filename), error}
     end
   end
 
@@ -25,7 +25,7 @@ defmodule Reaper.Decoder.Json do
         {:ok, List.wrap(response)}
 
       {:error, error} ->
-        {:error, data, error}
+        {:error, truncate_file_for_logging(filename), error}
     end
   end
 
@@ -48,5 +48,9 @@ defmodule Reaper.Decoder.Json do
     {:ok, data}
   rescue
     error -> {:error, error}
+  end
+
+  def truncate_file_for_logging(filename) do
+    File.stream!(filename, [], 1000) |> Enum.at(0)
   end
 end
