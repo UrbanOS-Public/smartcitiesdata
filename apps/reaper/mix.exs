@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.12.0",
+      version: "0.13.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -53,6 +53,7 @@ defmodule Reaper.MixProject do
       {:httpoison, "~> 1.6"},
       {:poison, "~> 3.1", override: true},
       {:jason, "~> 1.1"},
+      {:jaxon, "~> 1.0"},
       {:libcluster, "~> 3.1"},
       {:libvault, "~> 0.2"},
       {:mint, "~> 0.4"},

@@ -46,6 +46,66 @@ defmodule Reaper.Decoder.JsonTest do
       assert {:error, body, Jason.DecodeError.exception(data: body, position: 0)} ==
                Reaper.Decoder.Json.decode({:file, @filename}, dataset)
     end
+
+    test "Decodes json data using the top level selector key" do
+      dataset_with_selector =
+        TDG.create_dataset(id: "ds1", technical: %{topLevelSelector: "$.data", sourceFormat: "json"})
+
+      body = %{data: [%{name: "Bob"}, %{name: "Fred"}], type: "Madness"} |> Jason.encode!()
+      expected = [%{"name" => "Bob"}, %{"name" => "Fred"}]
+      File.write!(@filename, body)
+
+      {:ok, result} = Decoder.Json.decode({:file, @filename}, dataset_with_selector)
+
+      assert is_list(result)
+      assert is_map(hd(result))
+
+      assert result == expected
+    end
+
+    test "Decodes json array using the top level selector key" do
+      dataset_with_selector =
+        TDG.create_dataset(id: "ds1", technical: %{topLevelSelector: "$.[*].data", sourceFormat: "json"})
+
+      body =
+        [
+          %{data: [%{name: "Bob"}, %{name: "Fred"}], type: "Madness"},
+          %{data: [%{name: "Rob"}, %{name: "Gred"}], type: "Derp"}
+        ]
+        |> Jason.encode!()
+
+      expected = [%{"name" => "Bob"}, %{"name" => "Fred"}, %{"name" => "Rob"}, %{"name" => "Gred"}]
+      File.write!(@filename, body)
+
+      {:ok, result} = Decoder.Json.decode({:file, @filename}, dataset_with_selector)
+
+      assert is_list(result)
+      assert is_map(hd(result))
+
+      assert result == expected
+    end
+
+    test "bad topLevelSelector returns error tuple" do
+      dataset_with_selector =
+        TDG.create_dataset(id: "ds1", technical: %{topLevelSelector: "$.data[XX]", sourceFormat: "json"})
+
+      body = %{data: [%{name: "Bob"}, %{name: "Fred"}], type: "Madness"} |> Jason.encode!()
+      File.write!(@filename, body)
+
+      assert {:error, ^body, %Jaxon.ParseError{}} =
+               Reaper.Decoder.Json.decode({:file, @filename}, dataset_with_selector)
+    end
+
+    test "bad json with topLevelSelector returns error tuple" do
+      dataset_with_selector =
+        TDG.create_dataset(id: "ds1", technical: %{topLevelSelector: "$.data", sourceFormat: "json"})
+
+      bad_body = "{\"data\":[{\"name\":QuotelessBob\"},{\"name\":\"Fred\"}],\"type\":\"Madness\"}"
+      File.write!(@filename, bad_body)
+
+      assert {:error, ^bad_body, %Jaxon.ParseError{}} =
+               Reaper.Decoder.Json.decode({:file, @filename}, dataset_with_selector)
+    end
   end
 
   describe "handle/1" do

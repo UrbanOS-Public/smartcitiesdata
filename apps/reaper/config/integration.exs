@@ -61,11 +61,9 @@ config :reaper, Reaper.Scheduler,
   storage: Reaper.Quantum.Storage,
   overlap: false
 
-config :reaper, Reaper.Quantum.Storage,
- 	redix_args
+config :reaper, Reaper.Quantum.Storage, redix_args
 
-config :redix, :args,
-  redix_args
+config :redix, :args, redix_args
 
 config :ex_aws,
   debug_requests: true,

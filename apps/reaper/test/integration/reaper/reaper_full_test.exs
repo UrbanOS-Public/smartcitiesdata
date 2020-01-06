@@ -22,6 +22,7 @@ defmodule Reaper.FullTest do
   @gtfs_file_name "gtfs-realtime.pb"
   @csv_file_name "random_stuff.csv"
   @xml_file_name "xml_sample.xml"
+  @json_file_name_subpath "json_subpath.json"
 
   setup_all do
     Temp.track!()
@@ -37,6 +38,7 @@ defmodule Reaper.FullTest do
     |> TestUtils.bypass_file(@nested_data_file_name)
     |> TestUtils.bypass_file(@csv_file_name)
     |> TestUtils.bypass_file(@xml_file_name)
+    |> TestUtils.bypass_file(@json_file_name_subpath)
 
     eventually(fn ->
       {type, result} = get("http://localhost:#{bypass.port}/#{@csv_file_name}")
@@ -198,6 +200,30 @@ defmodule Reaper.FullTest do
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
         assert [%{payload: %{"vehicle_id" => 51_127}} | _] = results
+      end)
+    end
+
+    test "configures and ingests a json source using topLevelSelector", %{bypass: bypass} do
+      dataset_id = "topLevelSelectorId"
+      topic = "#{@output_topic_prefix}-#{dataset_id}"
+
+      json_dataset =
+        TDG.create_dataset(%{
+          id: dataset_id,
+          technical: %{
+            cadence: "once",
+            sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name_subpath}",
+            sourceFormat: "json",
+            topLevelSelector: "$.sub.path"
+          }
+        })
+
+      Brook.Event.send(@instance, dataset_update(), :reaper, json_dataset)
+
+      eventually(fn ->
+        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+
+        assert [%{payload: %{"name" => "Fred"}} | [%{payload: %{"name" => "Bob"}} | _]] = results
       end)
     end
 
