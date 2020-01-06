@@ -9,6 +9,7 @@ defmodule AndiWeb.EditLiveViewTest do
   import SmartCity.Event, only: [dataset_update: 0]
 
   alias Andi.DatasetCache
+  alias AndiWeb.InputSchemas.Metadata
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -24,7 +25,7 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      assert {"false", "Public"} = get_select(html, "#dataset_schema_technical_private")
+      assert {"false", "Public"} = get_select(html, "#metadata_private")
     end
 
     test "display Level of Access as private when private is true", %{conn: conn} do
@@ -32,7 +33,7 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      assert {"true", "Private"} = get_select(html, "#dataset_schema_technical_private")
+      assert {"true", "Private"} = get_select(html, "#metadata_private")
     end
 
     test "the default language is set to english", %{conn: conn} do
@@ -41,7 +42,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 
-      assert {"english", "English"} = get_select(html, "#dataset_schema_business_language")
+      assert {"english", "English"} = get_select(html, "#metadata_language")
     end
 
     test "the language is set to spanish", %{conn: conn} do
@@ -50,7 +51,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert {"spanish", "Spanish"} = get_select(html, "#dataset_schema_business_language")
+      assert {"spanish", "Spanish"} = get_select(html, "#metadata_language")
     end
 
     test "the language is set to english", %{conn: conn} do
@@ -59,7 +60,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert {"english", "English"} = get_select(html, "#dataset_schema_business_language")
+      assert {"english", "English"} = get_select(html, "#metadata_language")
     end
 
     test "the language is changed from english to spanish", %{conn: conn} do
@@ -68,11 +69,11 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      dataset_map = dataset_to_map(dataset) |> put_in([:business, :language], "spanish")
+      dataset_map = dataset_to_map(dataset) |> Map.put(:language, "spanish")
 
-      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+      html = render_change(view, :validate, %{"metadata" => dataset_map})
 
-      assert {"spanish", "Spanish"} = get_select(html, "#dataset_schema_business_language")
+      assert {"spanish", "Spanish"} = get_select(html, "#metadata_language")
     end
 
     data_test "errors on invalid email: #{email}", %{conn: conn} do
@@ -114,17 +115,17 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      [subject] = Floki.find(html, "#dataset_schema_business_keywords") |> Floki.attribute("value")
+      [subject] = Floki.find(html, "#metadata_keywords") |> Floki.attribute("value")
 
       assert subject =~ "one, two, three"
     end
 
-    test "should show empty string if keywords is nil", %{conn: conn} do
+    test "keywords input should show empty string if keywords is nil", %{conn: conn} do
       dataset = TDG.create_dataset(%{business: %{keywords: nil}})
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      [subject] = Floki.find(html, "#dataset_schema_business_keywords") |> Floki.attribute("value")
+      [subject] = Floki.find(html, "#metadata_keywords") |> Floki.attribute("value")
 
       assert subject == ""
     end
@@ -136,14 +137,14 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset_map =
         dataset
         |> dataset_to_map()
-        |> put_in([:business, :keywords], dataset.business.keywords |> Enum.join(", "))
+        |> Map.put(:keywords, Enum.join(dataset.business.keywords, ", "))
 
       expected = Enum.join(dataset.business.keywords, ", ")
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+      html = render_change(view, :validate, %{"metadata" => dataset_map})
 
-      subject = get_value(html, "#dataset_schema_business_keywords")
+      subject = get_value(html, "#metadata_keywords")
 
       assert expected == subject
     end
@@ -155,12 +156,12 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset_map =
         dataset
         |> dataset_to_map
-        |> put_in([:business, :keywords], "a , good ,  keyword   , is .... hard , to find")
+        |> Map.put(:keywords, "a , good ,  keyword   , is .... hard , to find")
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+      html = render_change(view, :validate, %{"metadata" => dataset_map})
 
-      subject = get_value(html, "#dataset_schema_business_keywords")
+      subject = get_value(html, "#metadata_keywords")
 
       assert "a, good, keyword, is .... hard, to find" == subject
     end
@@ -172,14 +173,14 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset_map =
         dataset
         |> dataset_to_map()
-        |> put_in([:business, :keywords], dataset.business.keywords)
+        |> Map.put(:keywords, dataset.business.keywords)
 
       expected = Enum.join(dataset.business.keywords, ", ")
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
+      html = render_change(view, :validate, %{"metadata" => dataset_map})
 
-      subject = get_value(html, "#dataset_schema_business_keywords")
+      subject = get_value(html, "#metadata_keywords")
 
       assert expected == subject
     end
@@ -194,21 +195,21 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      assert get_value(html, "#dataset_schema_business_dataTitle") == dataset.business.dataTitle
-      assert get_text(html, "#dataset_schema_business_description") == dataset.business.description
-      assert get_value(html, "#dataset_schema_technical_sourceFormat") == dataset.technical.sourceFormat
-      assert {"true", "Private"} = get_select(html, "#dataset_schema_technical_private")
-      assert get_value(html, "#dataset_schema_business_contactName") == dataset.business.contactName
-      assert get_value(html, "#dataset_schema_business_contactEmail") == dataset.business.contactEmail
-      assert get_value(html, "#dataset_schema_business_release-date") == dataset.business.issuedDate
-      assert get_value(html, "#dataset_schema_business_license") == dataset.business.license
-      assert get_value(html, "#dataset_schema_business_update-frequency") == dataset.business.publishFrequency
-      assert get_value(html, "#dataset_schema_business_modifiedDate") == dataset.business.modifiedDate
-      assert get_value(html, "#dataset_schema_business_spatial") == dataset.business.spatial
-      assert get_value(html, "#dataset_schema_business_temporal") == dataset.business.temporal
-      assert get_value(html, "#dataset_schema_business_orgTitle") == dataset.business.orgTitle
-      assert {"english", "English"} = get_select(html, "#dataset_schema_business_language")
-      assert get_value(html, "#dataset_schema_business_homepage") == dataset.business.homepage
+      assert get_value(html, "#metadata_dataTitle") == dataset.business.dataTitle
+      assert get_text(html, "#metadata_description") == dataset.business.description
+      assert get_value(html, "#metadata_sourceFormat") == dataset.technical.sourceFormat
+      assert {"true", "Private"} == get_select(html, "#metadata_private")
+      assert get_value(html, "#metadata_contactName") == dataset.business.contactName
+      assert get_value(html, "#metadata_contactEmail") == dataset.business.contactEmail
+      assert get_value(html, "#metadata_release-date") == dataset.business.issuedDate
+      assert get_value(html, "#metadata_license") == dataset.business.license
+      assert get_value(html, "#metadata_update-frequency") == dataset.business.publishFrequency
+      assert dataset.business.modifiedDate =~ get_value(html, "#metadata_modifiedDate")
+      assert get_value(html, "#metadata_spatial") == dataset.business.spatial
+      assert get_value(html, "#metadata_temporal") == dataset.business.temporal
+      assert get_value(html, "#metadata_orgTitle") == dataset.business.orgTitle
+      assert {"english", "English"} == get_select(html, "#metadata_language")
+      assert get_value(html, "#metadata_homepage") == dataset.business.homepage
     end
   end
 
@@ -219,12 +220,12 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert get_select(html, "#dataset_schema_technical_private") == {"true", "Private"}
+      assert get_select(html, "#metadata_private") == {"true", "Private"}
 
-      dataset_map = dataset_to_map(dataset) |> put_in([:technical, :private], false)
+      dataset_map = dataset_to_map(dataset) |> Map.put(:private, false)
 
-      html = render_change(view, :validate, %{"dataset_schema" => dataset_map})
-      assert get_select(html, "#dataset_schema_technical_private") == {"false", "Public"}
+      html = render_change(view, :validate, %{"metadata" => dataset_map})
+      assert get_select(html, "#metadata_private") == {"false", "Public"}
     end
 
     test "All required fields display proper error message", %{conn: conn} do
@@ -300,7 +301,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert Floki.attribute(html, "#dataset_schema_technical_sourceFormat", "readonly") == ["readonly"]
+      assert Floki.attribute(html, "#metadata_sourceFormat", "readonly") == ["readonly"]
     end
 
     test "organization title", %{conn: conn} do
@@ -310,12 +311,14 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert Floki.attribute(html, "#dataset_schema_business_orgTitle", "readonly") == ["readonly"]
+      assert Floki.attribute(html, "#metadata_orgTitle", "readonly") == ["readonly"]
     end
   end
 
   describe "save metadata" do
     test "valid metadata is saved on submit", %{conn: conn} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+
       dataset =
         TDG.create_dataset(%{
           business: %{issuedDate: "", publishFrequency: "12345"},
@@ -323,19 +326,18 @@ defmodule AndiWeb.EditLiveViewTest do
         })
 
       DatasetCache.put(dataset)
-      allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      dataset_map =
-        dataset_to_map(dataset)
-        |> put_in([:business, :issuedDate], "12345")
+      form_data =
+        dataset
+        |> Metadata.changeset_from_struct()
+        |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
+        |> Ecto.Changeset.apply_changes()
 
-      render_change(view, :save, %{"dataset_schema" => dataset_map})
+      render_change(view, :save, %{"metadata" => form_data})
 
-      dataset_map = dataset_map |> put_in([:technical, :schema], dataset.technical.schema)
-
-      {:ok, updated_dataset} = SmartCity.Dataset.new(dataset_map)
+      updated_dataset = Metadata.restruct(form_data, dataset)
 
       assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, updated_dataset), once())
     end
@@ -349,7 +351,7 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      render_change(view, :save, %{"dataset_schema" => dataset_map})
+      render_change(view, :save, %{"metadata" => dataset_map})
 
       refute_called(Brook.Event.send(instance_name(), dataset_update(), :andi, dataset), once())
     end
@@ -362,14 +364,18 @@ defmodule AndiWeb.EditLiveViewTest do
         })
 
       DatasetCache.put(dataset)
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, "#success-message") == ""
 
-      dataset_map = dataset_to_map(dataset) |> put_in([:business, :issuedDate], "12345")
+      form_data =
+        dataset
+        |> Metadata.changeset_from_struct()
+        |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
+        |> Ecto.Changeset.apply_changes()
 
-      render_change(view, :validate, %{"dataset_schema" => dataset_map})
-      html = render_change(view, :save, %{"dataset_schema" => dataset_map})
+      render_change(view, :validate, %{"metadata" => form_data})
+      html = render_change(view, :save, %{"metadata" => form_data})
 
       assert get_text(html, "#success-message") == "Saved Successfully"
     end
@@ -378,7 +384,13 @@ defmodule AndiWeb.EditLiveViewTest do
   defp assert_error_message(conn, dataset, field, error_message) do
     DatasetCache.put(dataset)
 
-    assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
+    form_data =
+      dataset
+      |> Metadata.changeset_from_struct()
+      |> Ecto.Changeset.apply_changes()
+
+    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    html = render_change(view, :save, %{"metadata" => form_data})
 
     assert get_text(html, "##{field}-error-msg") == error_message
   end
@@ -388,7 +400,9 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   defp get_text(html, id) do
-    Floki.find(html, id) |> Floki.text() |> String.trim()
+    Floki.find(html, id)
+    |> Floki.text()
+    |> String.trim()
   end
 
   defp get_select(html, id) do
@@ -404,9 +418,7 @@ defmodule AndiWeb.EditLiveViewTest do
   defp dataset_to_map(dataset) do
     map_tech = dataset.technical |> Map.from_struct() |> Map.delete(:schema)
 
-    map_bus =
-      dataset.business
-      |> Map.from_struct()
+    map_bus = Map.from_struct(dataset.business)
 
     dataset
     |> Map.from_struct()

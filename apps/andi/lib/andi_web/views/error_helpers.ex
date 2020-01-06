@@ -9,11 +9,28 @@ defmodule AndiWeb.ErrorHelpers do
   Generates tag for inlined form input errors.
   """
   def error_tag(form, field) do
-    Enum.map(Keyword.get_values(form.source.errors, field), fn error ->
+    Enum.map(Keyword.get_values(form.errors, field), fn error ->
       content_tag(:span, translate_error(error),
         class: "error-msg",
         id: "#{field}-error-msg",
         data: [phx_error_for: input_id(form, field)]
+      )
+    end)
+  end
+
+  @doc """
+  Render an error_tag for the given input.
+
+  Fixes the bug with the date picker
+  not rendering the error message when clearing a valid
+  date using the date_input/3
+  https://elixirforum.com/t/liveview-phx-change-attribute-does-not-emit-event-on-input-text/21280
+  """
+  def error_tag_live(form, field) do
+    Enum.map(Keyword.get_values(form.errors, field), fn error ->
+      content_tag(:span, translate_error(error),
+        class: "error-msg",
+        id: "#{field}-error-msg"
       )
     end)
   end

@@ -1,0 +1,102 @@
+defmodule AndiWeb.InputSchemas.Metadata do
+  @moduledoc false
+  import Ecto.Changeset
+
+  @business_fields %{
+    contactEmail: :string,
+    contactName: :string,
+    dataTitle: :string,
+    description: :string,
+    homepage: :string,
+    issuedDate: :date,
+    keywords: {:array, :string},
+    language: :string,
+    license: :string,
+    modifiedDate: :date,
+    orgTitle: :string,
+    publishFrequency: :string,
+    spatial: :string,
+    temporal: :string
+  }
+
+  @technical_fields %{
+    private: :boolean,
+    sourceFormat: :string
+  }
+
+  @types Map.merge(@business_fields, @technical_fields)
+
+  @email_regex ~r/^[A-Za-z0-9._%+-+']+@[A-Za-z0-9.-]+\.[A-Za-z]+$/
+
+  def changeset_from_struct(%SmartCity.Dataset{} = dataset) do
+    from_business = get_business(dataset.business)
+    from_technical = get_technical(dataset.technical)
+
+    Map.merge(from_business, from_technical) |> new_changeset()
+  end
+
+  def restruct(schema, dataset) do
+    formatted_schema =
+      schema
+      |> Map.update!(:issuedDate, &date_to_iso8601_datetime/1)
+      |> Map.update!(:modifiedDate, &date_to_iso8601_datetime/1)
+
+    business = Map.merge(dataset.business, get_business(formatted_schema))
+    technical = Map.merge(dataset.technical, get_technical(formatted_schema))
+
+    dataset
+    |> Map.put(:business, business)
+    |> Map.put(:technical, technical)
+  end
+
+  def new_changeset(params \\ %{}), do: changeset({%{}, @types}, params)
+
+  def changeset(changeset, params \\ %{}) do
+    params =
+      case params do
+        %{keywords: _keywords} -> update_keywords_param(params, :keywords)
+        %{"keywords" => _keywords} -> update_keywords_param(params, "keywords")
+        other -> other
+      end
+
+    changeset
+    |> cast(params, Map.keys(@types))
+    |> validate_required([:dataTitle], message: "Dataset Title is required.")
+    |> validate_required([:description], message: "Description is required.")
+    |> validate_required([:contactName], message: "Maintainer Name is required.")
+    |> validate_required([:contactEmail], message: "Maintainer Email is required.")
+    |> validate_format(:contactEmail, @email_regex, message: "Email is invalid.")
+    |> validate_required([:issuedDate], message: "Release Date is required.")
+    |> validate_required([:license], message: "License is required.")
+    |> validate_required([:publishFrequency], message: "Publish Frequency is required.")
+    |> validate_required([:orgTitle], message: "Organization is required.")
+    |> validate_required([:sourceFormat], message: "Format is required.")
+  end
+
+  defp get_business(map) when is_map(map) do
+    Map.take(map, Map.keys(@business_fields))
+  end
+
+  defp get_technical(map) when is_map(map) do
+    Map.take(map, Map.keys(@technical_fields))
+  end
+
+  defp update_keywords_param(params, key) do
+    Map.update!(params, key, &keyword_string_to_list/1)
+  end
+
+  defp keyword_string_to_list(nil), do: []
+  defp keyword_string_to_list(keywords) when is_list(keywords), do: keywords
+
+  defp keyword_string_to_list(keywords) do
+    keywords
+    |> String.split(", ")
+    |> Enum.map(&String.trim/1)
+  end
+
+  defp date_to_iso8601_datetime(date) do
+    time_const = "00:00:00Z"
+
+    "#{Date.to_iso8601(date)} #{time_const}"
+  end
+end

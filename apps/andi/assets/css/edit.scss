@@ -24,6 +24,11 @@
     "cancel-btn save-btn";
 }
 
+.metadata__error-message {
+  color: $color-error;
+  padding-bottom: 0.5em;
+}
+
 .metadata__success-message {
   text-align: right;
   padding-right: 2em;

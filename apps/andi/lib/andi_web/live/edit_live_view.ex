@@ -1,9 +1,10 @@
 defmodule AndiWeb.EditLiveView do
-  use Phoenix.LiveView
-  alias Phoenix.HTML.Form
+  use AndiWeb, :live_view
+
   alias Phoenix.HTML.Link
   alias AndiWeb.DatasetValidator
-  import AndiWeb.ErrorHelpers
+  alias AndiWeb.InputSchemas.Metadata
+
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
   require Logger
@@ -11,168 +12,166 @@ defmodule AndiWeb.EditLiveView do
   def render(assigns) do
     ~L"""
     <div class="edit-page">
-      <%= f = Form.form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, class: "metadata-form"] %>
-          <%= Form.inputs_for f, :business, fn fp -> %>
-            <div class="metadata-form__title">
-              <%= Form.label(fp, :title, "Title of Dataset", class: "label label--required") %>
-              <%= Form.text_input(fp, :dataTitle, class: "input") %>
-              <%= error_tag(fp, :dataTitle) %>
-            </div>
-            <div class="metadata-form__description">
-              <%= Form.label(fp, :description, "Description", class: "label label--required") %>
-              <%= Form.textarea(fp, :description, class: "input textarea") %>
-              <%= error_tag(fp, :description) %>
-            </div>
-            <div class="metadata-form__maintainer-name">
-              <%= Form.label(fp, :contactName, "Maintainer Name", class: "label label--required") %>
-              <%= Form.text_input(fp, :contactName, class: "input") %>
-              <%= error_tag(fp, :contactName) %>
-            </div>
-            <div class="metadata-form__maintainer-email">
-              <%= Form.label(fp, :contactEmail, "Maintainer Email", class: "label label--required") %>
-              <%= Form.text_input(fp, :contactEmail, class: "input") %>
-              <%= error_tag(fp, :contactEmail) %>
-            </div>
-            <div class="metadata-form__release-date">
-              <%= Form.label(fp, :issuedDate, "Release Date", class: "label label--required") %>
-              <%= Form.text_input(fp, :issuedDate, class: "input") %>
-              <%= error_tag(fp, :issuedDate) %>
-            </div>
-            <div class="metadata-form__license">
-              <%= Form.label(fp, :license, "License", class: "label label--required") %>
-              <%= Form.text_input(fp, :license, class: "input") %>
-              <%= error_tag(fp, :license) %>
-            </div>
-            <div class="metadata-form__update-frequency">
-              <%= Form.label(fp, :publishFrequency, "Update Frequency", class: "label label--required") %>
-              <%= Form.text_input(fp, :publishFrequency, class: "input") %>
-              <%= error_tag(fp, :publishFrequency) %>
-            </div>
-            <div class="metadata-form__keywords">
-              <%= Form.label(fp, :keywords, "Keywords", class: "label") %>
-              <%= Form.text_input(fp, :keywords, value: get_keywords(Form.input_value(fp, :keywords)), class: "input") %>
-              <div class="label label--inline">Separated by comma</div>
-            </div>
-            <div class="metadata-form__last-updated">
-              <%= Form.label(fp, :modifiedDate, "Last Updated", class: "label") %>
-              <%= Form.text_input(fp, :modifiedDate, class: "input") %>
-            </div>
-            <div class="metadata-form__spatial">
-              <%= Form.label(fp, :spatial, "Spatial Boundaries", class: "label") %>
-              <%= Form.text_input(fp, :spatial, class: "input") %>
-            </div>
-            <div class="metadata-form__temporal">
-              <%= Form.label(fp, :temporal, "Temporal Boundaries", class: "label") %>
-              <%= Form.text_input(fp, :temporal, class: "input") %>
-              <%= error_tag(fp, :temporal) %>
-            </div>
-            <div class="metadata-form__organization">
-              <%= Form.label(fp, :orgTitle, "Organization", class: "label label--required") %>
-              <%= Form.text_input(fp, :orgTitle, [class: "input input--text", readonly: true]) %>
-              <%= error_tag(fp, :orgTitle) %>
-            </div>
-            <div class="metadata-form__language">
-              <%= Form.label(fp, :language, "Language", class: "label") %>
-              <%= Form.select(fp, :language, get_language_options(), value: get_language(Form.input_value(fp, :language)), class: "select") %>
-            </div>
-            <div class="metadata-form__homepage">
-              <%= Form.label(fp, :homepage, "Data Homepage URL", class: "label") %>
-              <%= Form.text_input(fp, :homepage, class: "input") %>
-            </div>
-          <% end %>
-          <%= Form.inputs_for f, :technical, fn fp -> %>
-            <div class="metadata-form__format">
-              <%= Form.label(fp, :sourceFormat, "Format", class: "label label--required") %>
-              <%= Form.text_input(fp, :sourceFormat, [class: "input--text input", readonly: true]) %>
-              <%= error_tag(fp, :sourceFormat) %>
-            </div>
-            <div class="metadata-form__level-of-access">
-              <%= Form.label(fp, :private, "Level of Access", class: "label label--required") %>
-              <%= Form.select(fp, :private, get_level_of_access_options(), class: "select") %>
-              <%= error_tag(fp, :private) %>
-            </div>
-          <% end %>
+      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, class: "metadata-form", as: :metadata] %>
+        <div class="metadata-form__title">
+          <%= label(f, :title, "Title of Dataset", class: "label label--required") %>
+          <%= text_input(f, :dataTitle, class: "input") %>
+          <%= error_tag(f, :dataTitle) %>
+        </div>
+        <div class="metadata-form__description">
+          <%= label(f, :description, "Description", class: "label label--required") %>
+          <%= textarea(f, :description, class: "input textarea") %>
+          <%= error_tag(f, :description) %>
+        </div>
+        <div class="metadata-form__maintainer-name">
+          <%= label(f, :contactName, "Maintainer Name", class: "label label--required") %>
+          <%= text_input(f, :contactName, class: "input") %>
+          <%= error_tag(f, :contactName) %>
+        </div>
+        <div class="metadata-form__maintainer-email">
+          <%= label(f, :contactEmail, "Maintainer Email", class: "label label--required") %>
+          <%= text_input(f, :contactEmail, class: "input") %>
+          <%= error_tag(f, :contactEmail) %>
+        </div>
+        <div class="metadata-form__release-date">
+          <%= label(f, :issuedDate, "Release Date", class: "label label--required") %>
+          <%= date_input(f, :issuedDate, class: "input") %>
+          <%= error_tag_live(f, :issuedDate) %>
+        </div>
+        <div class="metadata-form__license">
+          <%= label(f, :license, "License", class: "label label--required") %>
+          <%= text_input(f, :license, class: "input") %>
+          <%= error_tag(f, :license) %>
+        </div>
+        <div class="metadata-form__update-frequency">
+          <%= label(f, :publishFrequency, "Update Frequency", class: "label label--required") %>
+          <%= text_input(f, :publishFrequency, class: "input") %>
+          <%= error_tag(f, :publishFrequency) %>
+        </div>
+        <div class="metadata-form__keywords">
+          <%= label(f, :keywords, "Keywords", class: "label") %>
+          <%= text_input(f, :keywords, value: keywords_to_string(input_value(f, :keywords)), class: "input") %>
+          <div class="label label--inline">Separated by comma</div>
+        </div>
+        <div class="metadata-form__last-updated">
+          <%= label(f, :modifiedDate, "Last Updated", class: "label") %>
+          <%= date_input(f, :modifiedDate, class: "input") %>
+        </div>
+        <div class="metadata-form__spatial">
+          <%= label(f, :spatial, "Spatial Boundaries", class: "label") %>
+          <%= text_input(f, :spatial, class: "input") %>
+        </div>
+        <div class="metadata-form__temporal">
+          <%= label(f, :temporal, "Temporal Boundaries", class: "label") %>
+          <%= text_input(f, :temporal, class: "input") %>
+          <%= error_tag(f, :temporal) %>
+        </div>
+        <div class="metadata-form__organization">
+          <%= label(f, :orgTitle, "Organization", class: "label label--required") %>
+          <%= text_input(f, :orgTitle, [class: "input input--text", readonly: true]) %>
+          <%= error_tag(f, :orgTitle) %>
+        </div>
+        <div class="metadata-form__language">
+          <%= label(f, :language, "Language", class: "label") %>
+          <%= select(f, :language, get_language_options(), value: get_language(input_value(f, :language)), class: "select") %>
+        </div>
+        <div class="metadata-form__homepage">
+          <%= label(f, :homepage, "Data Homepage URL", class: "label") %>
+          <%= text_input(f, :homepage, class: "input") %>
+        </div>
+        <div class="metadata-form__format">
+          <%= label(f, :sourceFormat, "Format", class: "label label--required") %>
+          <%= text_input(f, :sourceFormat, [class: "input--text input", readonly: true]) %>
+          <%= error_tag(f, :sourceFormat) %>
+        </div>
+        <div class="metadata-form__level-of-access">
+          <%= label(f, :private, "Level of Access", class: "label label--required") %>
+          <%= select(f, :private, get_level_of_access_options(), class: "select") %>
+          <%= error_tag(f, :private) %>
+        </div>
         <div class="metadata-form__cancel-btn">
           <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--cancel") %>
         </div>
         <div class="metadata-form__save-btn">
-          <%= Link.button("Next", to: "/", method: "get", id: "next-button", class: "btn btn--next") %>
-          <%= Form.submit("Save", id: "save-button", class: "btn btn--save") %>
+          <%= unless is_nil(@validation_errors) do %>
+            <div class="metadata__error-message">
+              <span>There were errors with the dataset you tried to submit.
+              <ul>
+                <%= for error <- @validation_errors do %>
+                  <li><%= error %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+          <%= Link.button("Next", to: "/", method: "get", id: "next-button", class: "btn btn--next", disabled: true, title: "Not implemented yet.") %>
+          <%= submit("Save", id: "save-button", class: "btn btn--save") %>
         </div>
       </div>
-      <div>
-        <%= if @is_saved do %>
-          <div id="success-message" class="metadata__success-message">Saved Successfully</div>
-        <% end %>
-      </div>
+      <%= if @save_success do %>
+        <div id="success-message" class="metadata__success-message">Saved Successfully</div>
+      <% end %>
 
     """
   end
 
   def mount(%{dataset: dataset}, socket) do
+    new_changeset = Metadata.changeset_from_struct(dataset)
+
     {:ok,
-     assign(socket, id: dataset.id, dataset: dataset, changeset: Andi.DatasetSchema.changeset(dataset), is_saved: false)}
+     assign(socket,
+       dataset: dataset,
+       changeset: new_changeset,
+       validation_errors: nil,
+       save_success: false
+     )}
   end
 
-  def handle_event(
-        "validate",
-        %{"dataset_schema" => dataset_schema},
-        socket
-      ) do
-    {:noreply, assign(socket, changeset: apply_changes(dataset_schema), is_saved: false)}
+  def handle_event("validate", %{"metadata" => form_data}, socket) do
+    socket = reset_save_success(socket)
+
+    new_changeset =
+      form_data
+      |> Metadata.new_changeset()
+      |> Map.put(:action, :update)
+
+    {:noreply, assign(socket, changeset: new_changeset)}
   end
 
-  def handle_event("save", %{"dataset_schema" => dataset_schema}, socket) do
-    change = apply_changes(dataset_schema)
+  def handle_event("save", %{"metadata" => form_data}, socket) do
+    socket = reset_save_success(socket)
 
-    case change.valid? do
-      true ->
-        schema = Ecto.Changeset.apply_changes(change)
-        original_dataset = socket.assigns.dataset
+    new_changeset = Metadata.new_changeset(form_data)
 
-        %{
-          original_dataset
-          | business: Map.merge(Map.from_struct(original_dataset.business), Map.from_struct(schema.business)),
-            technical: Map.merge(Map.from_struct(original_dataset.technical), Map.from_struct(schema.technical))
-        }
-        |> SmartCity.Dataset.new()
-        |> send_dataset_update
+    if new_changeset.valid? do
+      schema = Ecto.Changeset.apply_changes(new_changeset)
+      original_dataset = socket.assigns.dataset
 
-        {:noreply, assign(socket, changeset: change, is_saved: true, update_stepper_state: "meta-data-save")}
+      with dataset = Metadata.restruct(schema, original_dataset),
+           :valid <- DatasetValidator.validate(dataset),
+           :ok <- Brook.Event.send(instance_name(), dataset_update(), :andi, dataset) do
+        {:noreply, assign(socket, dataset: dataset, changeset: new_changeset, save_success: true)}
+      else
+        {:invalid, errors} ->
+          {:noreply, assign(socket, changeset: new_changeset, validation_errors: errors)}
 
-      false ->
-        {:noreply, assign(socket, changeset: change, is_saved: false, display_errors: true)}
+        {:error, e} ->
+          Logger.warn("Unable to create new SmartCity.Dataset: #{inspect({:error, e})}")
+
+          {:noreply, assign(socket, changeset: new_changeset)}
+      end
+    else
+      {:noreply, assign(socket, changeset: %{new_changeset | action: :save})}
     end
   end
 
-  defp apply_changes(data) do
-    data
-    |> put_in(["business", "keywords"], get_keywords_as_list(data["business"]["keywords"]))
-    |> Andi.DatasetSchema.changeset()
-  end
-
-  defp send_dataset_update({:ok, dataset}) do
-    case DatasetValidator.validate(dataset) do
-      :valid -> Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
-      {:invalid, errors} -> Logger.warn("Invalid dataset: #{inspect({:invalid, errors})}")
-    end
-  end
-
-  defp send_dataset_update({:error, e}) do
-    Logger.warn("Unable to create new SmartCity.Dataset: #{inspect({:error, e})}")
-  end
+  defp reset_save_success(socket), do: assign(socket, save_success: false)
 
   defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
   defp get_level_of_access_options, do: [[key: "Private", value: "true"], [key: "Public", value: "false"]]
 
-  defp get_keywords(nil), do: ""
-  defp get_keywords(keywords), do: Enum.join(keywords, ", ")
-
-  defp get_keywords_as_list(keywords) when is_list(keywords), do: keywords
-
-  defp get_keywords_as_list(keywords) when is_binary(keywords) do
-    keywords |> String.split(", ") |> Enum.map(&String.trim/1)
-  end
+  defp keywords_to_string(nil), do: ""
+  defp keywords_to_string(keywords) when is_binary(keywords), do: keywords
+  defp keywords_to_string(keywords), do: Enum.join(keywords, ", ")
 
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang

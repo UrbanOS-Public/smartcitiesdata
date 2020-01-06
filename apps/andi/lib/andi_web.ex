@@ -66,6 +66,16 @@ defmodule AndiWeb do
     end
   end
 
+  def live_view do
+    quote do
+      use Phoenix.LiveView
+      import AndiWeb.ErrorHelpers
+      import Phoenix.HTML.Form
+      import Phoenix.HTML.Link
+      alias AndiWeb.Router.Helpers, as: Routes
+    end
+  end
+
   @doc """
   When used, dispatch to the appropriate controller/view/etc.
   """
