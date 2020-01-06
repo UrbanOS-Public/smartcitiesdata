@@ -7,6 +7,8 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
 
   require Logger
 
+  @empty_bounding_box [nil, nil, nil, nil]
+
   def map_data_stream_for_csv(stream) do
     stream
     |> Stream.map(&flatten_lists/1)
@@ -43,9 +45,11 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
         end
       end)
 
+    # streamed response is left open for bounding box calculation
+    # closes response with brace if no bbox is applicable
     {:ok, conn} =
       case bounding_box do
-        [nil, nil, nil, nil] -> Conn.chunk(conn, "}")
+        @empty_bounding_box -> Conn.chunk(conn, "}")
         _ -> Conn.chunk(conn, ", \"bbox\": #{Jason.encode!(bounding_box)}}")
       end
 
