@@ -8,7 +8,8 @@ defmodule Estuary.MessageHandler do
   alias Estuary.DeadLetterQueue
 
   def handle_messages(messages) do
-    Enum.map(messages, fn message ->
+    messages
+    |> Enum.map(fn message ->
       message
       |> parse()
       |> error_dead_letter()

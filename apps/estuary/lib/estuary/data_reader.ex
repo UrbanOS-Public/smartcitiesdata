@@ -8,8 +8,6 @@ defmodule Estuary.DataReader do
   @behaviour Pipeline.Reader
 
   @topic_reader Application.get_env(:estuary, :topic_reader)
-  @writer Application.get_env(:estuary, :table_writer)
-
 
   @impl Pipeline.Reader
   @doc """
@@ -17,14 +15,9 @@ defmodule Estuary.DataReader do
   """
 
   def init(_opts \\ []) do
-    # :ok =
-    #   reader_args()
-    #   |> IO.inspect()
-    #   |> @reader.init()
-    # @topic_reader.init(nil)
-
-    # rescue
-    #   e -> {:error, e, "Presto Error"}
+    :ok =
+      reader_args()
+      |> @topic_reader.init()
   end
 
   @impl Pipeline.Reader
