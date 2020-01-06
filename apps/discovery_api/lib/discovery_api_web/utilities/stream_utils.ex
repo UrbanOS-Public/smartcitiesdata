@@ -45,14 +45,7 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
       end)
       |> handle_empty_bounding_box()
 
-    # streamed response is left open for bounding box calculation
-    # closes response with brace if no bbox is applicable
-    {:ok, conn} =
-      case bounding_box do
-        {:error, "Bounding box is empty"} -> Conn.chunk(conn, "}")
-        _ -> Conn.chunk(conn, ", \"bbox\": #{Jason.encode!(bounding_box)}}")
-      end
-
+    {:ok, conn} = chunk_bbox_response(conn, bounding_box)
     conn
   end
 
@@ -77,6 +70,15 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
     case Jason.decode(feature_json) do
       {:ok, json} -> GeojsonUtils.calculate_bounding_box(json, bounding_box)
       {:error, _} -> bounding_box
+    end
+  end
+
+  defp chunk_bbox_response(conn, bounding_box) do
+    # streamed response is left open for bounding box calculation
+    # closes response with brace if no bbox is applicable
+    case bounding_box do
+      {:error, "Bounding box is empty"} -> Conn.chunk(conn, "}")
+      _ -> Conn.chunk(conn, ", \"bbox\": #{Jason.encode!(bounding_box)}}")
     end
   end
 
