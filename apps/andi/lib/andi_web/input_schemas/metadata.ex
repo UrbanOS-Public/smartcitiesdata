@@ -32,8 +32,25 @@ defmodule AndiWeb.InputSchemas.Metadata do
     from_business = get_business(dataset.business)
     from_technical = get_technical(dataset.technical)
 
-    Map.merge(from_business, from_technical) |> new_changeset()
+    Map.merge(from_business, from_technical)
+    |> new_changeset()
   end
+
+  def form_changeset(params \\ %{})
+
+  def form_changeset(%{keywords: keywords} = params) when is_binary(keywords) do
+    params
+    |> Map.update!(:keywords, &keyword_string_to_list/1)
+    |> new_changeset()
+  end
+
+  def form_changeset(%{"keywords" => keywords} = params) when is_binary(keywords) do
+    params
+    |> Map.update!("keywords", &keyword_string_to_list/1)
+    |> new_changeset()
+  end
+
+  def form_changeset(params), do: new_changeset(params)
 
   def restruct(schema, dataset) do
     formatted_schema =
@@ -49,16 +66,10 @@ defmodule AndiWeb.InputSchemas.Metadata do
     |> Map.put(:technical, technical)
   end
 
-  def new_changeset(params \\ %{}), do: changeset({%{}, @types}, params)
+  @changeset_base {%{}, @types}
+  def new_changeset(params \\ %{}), do: changeset(@changeset_base, params)
 
   def changeset(changeset, params \\ %{}) do
-    params =
-      case params do
-        %{keywords: _keywords} -> update_keywords_param(params, :keywords)
-        %{"keywords" => _keywords} -> update_keywords_param(params, "keywords")
-        other -> other
-      end
-
     changeset
     |> cast(params, Map.keys(@types))
     |> validate_required([:dataTitle], message: "Dataset Title is required.")
@@ -81,12 +92,8 @@ defmodule AndiWeb.InputSchemas.Metadata do
     Map.take(map, Map.keys(@technical_fields))
   end
 
-  defp update_keywords_param(params, key) do
-    Map.update!(params, key, &keyword_string_to_list/1)
-  end
-
   defp keyword_string_to_list(nil), do: []
-  defp keyword_string_to_list(keywords) when is_list(keywords), do: keywords
+  defp keyword_string_to_list(""), do: []
 
   defp keyword_string_to_list(keywords) do
     keywords

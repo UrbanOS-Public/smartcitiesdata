@@ -155,7 +155,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       dataset_map =
         dataset
-        |> dataset_to_map
+        |> dataset_to_map()
         |> Map.put(:keywords, "a , good ,  keyword   , is .... hard , to find")
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
@@ -169,13 +169,12 @@ defmodule AndiWeb.EditLiveViewTest do
     test "can handle lists of keywords", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       DatasetCache.put(dataset)
+      expected = Enum.join(dataset.business.keywords, ", ")
 
       dataset_map =
         dataset
         |> dataset_to_map()
-        |> Map.put(:keywords, dataset.business.keywords)
-
-      expected = Enum.join(dataset.business.keywords, ", ")
+        |> Map.put(:keywords, expected)
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
       html = render_change(view, :validate, %{"metadata" => dataset_map})
@@ -334,10 +333,15 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Metadata.changeset_from_struct()
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
         |> Ecto.Changeset.apply_changes()
+        |> Map.update!(:keywords, &Enum.join(&1, ", "))
 
       render_change(view, :save, %{"metadata" => form_data})
 
-      updated_dataset = Metadata.restruct(form_data, dataset)
+      updated_dataset =
+        form_data
+        |> Metadata.form_changeset()
+        |> Ecto.Changeset.apply_changes()
+        |> Metadata.restruct(dataset)
 
       assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, updated_dataset), once())
     end
@@ -373,6 +377,7 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Metadata.changeset_from_struct()
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
         |> Ecto.Changeset.apply_changes()
+        |> Map.update!(:keywords, &Enum.join(&1, ", "))
 
       render_change(view, :validate, %{"metadata" => form_data})
       html = render_change(view, :save, %{"metadata" => form_data})
@@ -388,6 +393,7 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset
       |> Metadata.changeset_from_struct()
       |> Ecto.Changeset.apply_changes()
+      |> Map.update!(:keywords, &Enum.join(&1, ", "))
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     html = render_change(view, :save, %{"metadata" => form_data})

@@ -106,6 +106,7 @@ defmodule AndiWeb.EditLiveView do
           <%= Link.button("Next", to: "/", method: "get", id: "next-button", class: "btn btn--next", disabled: true, title: "Not implemented yet.") %>
           <%= submit("Save", id: "save-button", class: "btn btn--save") %>
         </div>
+      </form>
       </div>
       <%= if @save_success do %>
         <div id="success-message" class="metadata__success-message">Saved Successfully</div>
@@ -131,7 +132,7 @@ defmodule AndiWeb.EditLiveView do
 
     new_changeset =
       form_data
-      |> Metadata.new_changeset()
+      |> Metadata.form_changeset()
       |> Map.put(:action, :update)
 
     {:noreply, assign(socket, changeset: new_changeset)}
@@ -140,7 +141,7 @@ defmodule AndiWeb.EditLiveView do
   def handle_event("save", %{"metadata" => form_data}, socket) do
     socket = reset_save_success(socket)
 
-    new_changeset = Metadata.new_changeset(form_data)
+    new_changeset = Metadata.form_changeset(form_data)
 
     if new_changeset.valid? do
       schema = Ecto.Changeset.apply_changes(new_changeset)
