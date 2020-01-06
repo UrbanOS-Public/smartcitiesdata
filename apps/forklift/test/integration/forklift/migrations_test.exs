@@ -15,9 +15,6 @@ defmodule Forklift.MigrationsTest do
       "forklift:last_insert_date:7ab08634-3eda-4b05-a754-5eb6cab31326" => "2019-12-04T17:44:02.645233Z"
     }
 
-    # 30 days in seconds, minus the few seconds tests take to run
-    expected_ttl = 86430 - 5000
-
     expected = [
       %{
         "id" => "38a830be-1408-41ae-8d2b-e1309f41c4cc",
@@ -37,33 +34,33 @@ defmodule Forklift.MigrationsTest do
 
     Process.unlink(redix)
 
-    Enum.each(last_insert_dates, fn {k} -> Redix.command(:redix, ["SET", k, v]) end)
+    Enum.each(last_insert_dates, fn {k, v} -> Redix.command(:redix, ["SET", k, v]) end)
 
     kill(redix)
 
     Application.ensure_all_started(:forklift)
 
     eventually(fn ->
-      messages =
-        Elsa.Fetch.search_keys([{'127.0.0.1', 9092}], "event-stream", data_write_complete())
-        |> Enum.to_list()
+      actual = get_data_write_complete_events()
 
-      assert Enum.count(messages) == 3
-
-      actual =
-        Enum.map(messages, fn %Elsa.Message{value: value} ->
-          Jason.decode!(value)["data"] |> Jason.decode!() |> Map.drop(["__brook_struct__"])
-        end)
+      assert Enum.count(actual) == 3
 
       assert MapSet.new(actual) == MapSet.new(expected)
 
-      Enum.each(last_insert_dates, fn {k, v} ->
-        {:ok, ttl} = Redix.command(:redix, ["TTL", k])
-        assert ttl >= expected_ttl
-      end)
+      last_insert_dates
+      |> Map.keys()
+      |> Enum.each(fn k -> assert Redix.command!(:redix, ["TTL", k]) > 0 end)
     end)
 
     Application.stop(:forklift)
+  end
+
+  def get_data_write_complete_events() do
+    Elsa.Fetch.search_keys([{'127.0.0.1', 9092}], "event-stream", data_write_complete())
+    |> Enum.to_list()
+    |> Enum.map(fn %Elsa.Message{value: value} ->
+      Jason.decode!(value)["data"] |> Jason.decode!() |> Map.drop(["__brook_struct__"])
+    end)
   end
 
   defp kill(pid) do

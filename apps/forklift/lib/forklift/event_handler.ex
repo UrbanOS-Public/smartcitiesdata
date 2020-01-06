@@ -50,7 +50,8 @@ defmodule Forklift.EventHandler do
       Brook.Event.send(:forklift, data_write_complete(), :forklift, event)
     end)
 
-    keys |> Enum.each(fn key -> Redix.command!(:redix, ["EXPIRE", key, 86430]) end)
+    thirty_days = 2_592_000
+    keys |> Enum.each(fn key -> Redix.command!(:redix, ["EXPIRE", key, thirty_days]) end)
 
     Logger.info("Completed last insert date migration")
 
