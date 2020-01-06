@@ -7,8 +7,6 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
 
   require Logger
 
-  @empty_bounding_box [nil, nil, nil, nil]
-
   def map_data_stream_for_csv(stream) do
     stream
     |> Stream.map(&flatten_lists/1)
@@ -35,7 +33,8 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
       |> Conn.send_chunked(200)
 
     {conn, bounding_box} =
-      Enum.reduce_while(stream, {conn, [nil, nil, nil, nil]}, fn data, {conn, bounding_box} ->
+      stream
+      |> Enum.reduce_while({conn, [nil, nil, nil, nil]}, fn data, {conn, bounding_box} ->
         case Conn.chunk(conn, data) do
           {:ok, conn} ->
             {:cont, {conn, decode_and_calculate_bounding_box(data, bounding_box)}}
@@ -44,12 +43,13 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
             {:halt, {conn, bounding_box}}
         end
       end)
+      |> handle_empty_bounding_box()
 
     # streamed response is left open for bounding box calculation
     # closes response with brace if no bbox is applicable
     {:ok, conn} =
       case bounding_box do
-        @empty_bounding_box -> Conn.chunk(conn, "}")
+        {:error, "Bounding box is empty"} -> Conn.chunk(conn, "}")
         _ -> Conn.chunk(conn, ", \"bbox\": #{Jason.encode!(bounding_box)}}")
       end
 
@@ -79,4 +79,7 @@ defmodule DiscoveryApiWeb.Utilities.StreamUtils do
       {:error, _} -> bounding_box
     end
   end
+
+  defp handle_empty_bounding_box({conn, [nil, nil, nil, nil]}), do: {conn, {:error, "Bounding box is empty"}}
+  defp handle_empty_bounding_box(conn_and_bbox), do: conn_and_bbox
 end
