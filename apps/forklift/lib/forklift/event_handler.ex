@@ -40,13 +40,18 @@ defmodule Forklift.EventHandler do
 
   def handle_event(%Brook.Event{type: "migration:last_insert_date:start"}) do
     Logger.info("Starting last insert date migration")
-    Redix.command!(:redix, ["KEYS", "forklift:last_insert_date:*"])
+    keys = Redix.command!(:redix, ["KEYS", "forklift:last_insert_date:*"])
+
+    keys
     |> Enum.map(fn key -> {key, Redix.command!(:redix, ["GET", key])} end)
     |> Enum.map(fn {key, timestamp} -> {parse_dataset_id(key), timestamp} end)
     |> Enum.each(fn {dataset_id, timestamp} ->
-      event = SmartCity.DataWriteComplete.new(%{id: dataset_id, timestamp: timestamp})
+      {:ok, event} = SmartCity.DataWriteComplete.new(%{id: dataset_id, timestamp: timestamp})
       Brook.Event.send(:forklift, data_write_complete(), :forklift, event)
     end)
+
+    thirty_days = 2_592_000
+    keys |> Enum.each(fn key -> Redix.command!(:redix, ["EXPIRE", key, thirty_days]) end)
 
     Logger.info("Completed last insert date migration")
 
