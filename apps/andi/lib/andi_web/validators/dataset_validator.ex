@@ -77,7 +77,7 @@ defmodule AndiWeb.DatasetValidator do
 
   defp check_valid_date(""), do: true
 
-  defp check_valid_date(date) do
+  defp check_valid_date(date) when is_binary(date) do
     case DateTime.from_iso8601(date) do
       {:ok, _date, _offset} ->
         true
@@ -86,6 +86,8 @@ defmodule AndiWeb.DatasetValidator do
         false
     end
   end
+
+  defp check_valid_date(_), do: false
 
   # Handles preconverting datasets from structs to maps for comparison purposes
   defp stringify_keys(%{__struct__: _} = struct), do: struct |> Map.from_struct() |> stringify_keys()
