@@ -3,6 +3,8 @@ defmodule Estuary.DataWriter do
   Implementation of `Pipeline.Writer` for Estuary's edges.
   """
 
+  alias Estuary.Datasets.DatasetSchema
+
   @behaviour Pipeline.Writer
 
   @table_writer Application.get_env(:estuary, :table_writer)
@@ -29,14 +31,22 @@ defmodule Estuary.DataWriter do
   Estuary's application environment.
   """
 
-  def write(data, _opts \\ []) do
+  def write(event, opts \\ [])
+  def write(%{author: _, create_ts: _, data: _, type: _} = event, _) do
     :ok =
-      data
+      event
+      |> DatasetSchema.make_datawriter_payload()
       |> @table_writer.write(
         table: DatasetSchema.table_name(),
         schema: DatasetSchema.schema()
       )
   rescue
-    _ -> {:error, data, "Presto Error"}
+
+    _ -> {:error, event, "Presto Error"}
   end
+
+  def write(event, _) do
+    {:error, event, "Required field missing"}
+  end
+
 end

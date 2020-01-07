@@ -3,7 +3,6 @@ defmodule Estuary.MessageHandler do
   Estuary.MessageHandler reads an event from the event stream and persists it.
   """
   use Elsa.Consumer.MessageHandler
-  alias Estuary.Datasets.DatasetSchema
   alias Estuary.DataWriter
   alias Estuary.DeadLetterQueue
 
@@ -11,25 +10,16 @@ defmodule Estuary.MessageHandler do
     messages
     |> Enum.map(fn message ->
       message
-      |> parse()
+      |> DataWriter.write(message)
       |> error_dead_letter()
     end)
+    :ok
   end
 
-  defp parse(%{author: _, create_ts: _, data: _, type: _} = event) do
-    event
-    |> DatasetSchema.make_datawriter_payload()
-    |> DataWriter.write()
+  defp error_dead_letter({:error, event, reason} = error_tuple) do
+    DeadLetterQueue.enqueue(event, reason: reason)
+    :error
   end
 
-  defp parse(_ = event) do
-    {:error, event, "Required field missing"}
-  end
-
-  defp error_dead_letter({:error, message, reason} = error_tuple) do
-    DeadLetterQueue.enqueue(message, reason: reason)
-    error_tuple
-  end
-
-  defp error_dead_letter(valid), do: valid
+  defp error_dead_letter(_), do: :ok
 end

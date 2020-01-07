@@ -13,7 +13,6 @@ defmodule Estuary.DataWriterTest do
 
   test "create_table is idempotent" do
     expect(MockTable, :init, 2, fn _ -> :ok end)
-    expected_value = :ok
 
     DatasetSchema.table_schema()
     |> DataWriter.init()
@@ -22,7 +21,7 @@ defmodule Estuary.DataWriterTest do
       DatasetSchema.table_schema()
       |> DataWriter.init()
 
-    assert expected_value == actual_value
+    assert :ok == actual_value
   end
 
   test "should insert event to history table" do
@@ -31,7 +30,6 @@ defmodule Estuary.DataWriterTest do
     time_stamp = DataWriterHelper.make_time_stamp()
     dataset = TDG.create_dataset(%{})
 
-    expected_value = :ok
 
     actual_value =
       %{
@@ -41,9 +39,8 @@ defmodule Estuary.DataWriterTest do
         forwarded: false,
         type: "data:ingest:start"
       }
-      |> DatasetSchema.make_datawriter_payload()
       |> DataWriter.write()
 
-    assert expected_value == actual_value
+    assert :ok == actual_value
   end
 end
