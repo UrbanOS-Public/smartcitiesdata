@@ -24,6 +24,9 @@ Discovery API serves as middleware between our metadata store and our Data Disco
   * Go to http://localhost:4000/api/v1/dataset/search
   * You can get paginated results using the url http://localhost:4000/api/v1/dataset/search?offset=10&limit=5&sort=name_asc
 
+### Tableau Web Data Connector
+This application hosts a Tableau Web Data Connector that uses this API for interfacing with Tableau. More information can be found in its [README](./priv/static/tableau/README.md)
+
 ### Calculating Completeness scores manually
 
 For all datasets:
