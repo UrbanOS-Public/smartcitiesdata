@@ -12,18 +12,6 @@ defmodule Estuary.MessageHandlerTest do
   setup :set_mox_global
   setup :verify_on_exit!
 
-  setup do
-    config = [driver: [module: DeadLetter.Carrier.Test, init_args: [size: 3_000]]]
-
-    {:ok, dlq} = DeadLetter.start_link(config)
-
-    on_exit(fn ->
-      ref = Process.monitor(dlq)
-      Process.exit(dlq, :normal)
-      assert_receive {:DOWN, ^ref, _, _, _}
-    end)
-  end
-
   @tag :capture_log
   test "should send the message to dead letter queue when expected fields are not found" do
     payload = %{
