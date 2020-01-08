@@ -36,6 +36,15 @@ defmodule AndiWeb.InputSchemas.Metadata do
     |> new_changeset()
   end
 
+  # TODO not this
+  def changeset_from_struct(dataset) do
+    from_business = get_business(dataset["business"] |> Map.new(fn {k, v} -> {String.to_atom(k), v} end))
+    from_technical = get_technical(dataset["technical"] |> Map.new(fn {k, v} -> {String.to_atom(k), v} end))
+
+    Map.merge(from_business, from_technical)
+    |> new_changeset()
+  end
+
   def form_changeset(params \\ %{})
 
   def form_changeset(%{keywords: keywords} = params) when is_binary(keywords) do

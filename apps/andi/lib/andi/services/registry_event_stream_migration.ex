@@ -32,7 +32,9 @@ defmodule Andi.Services.RegistryEventStreamMigration do
   end
 
   defp to_dataset(%SmartCity.Registry.Dataset{id: id, technical: technical, business: business}) do
-    {:ok, dataset} = SmartCity.Dataset.new(%{id: id, technical: Map.from_struct(technical), business: Map.from_struct(business)})
+    {:ok, dataset} =
+      SmartCity.Dataset.new(%{id: id, technical: Map.from_struct(technical), business: Map.from_struct(business)})
+
     dataset
   end
 end

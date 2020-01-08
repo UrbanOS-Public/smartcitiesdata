@@ -193,6 +193,50 @@ defmodule AndiWeb.API.DatasetControllerTest do
     assert String.contains?(joined_errors, "iso8601 formatted")
   end
 
+  test "put returns 400 and errors when fields are invalid", %{
+    conn: conn
+  } do
+    new_dataset =
+      TDG.create_dataset(
+        id: "my-new-dataset",
+        business: %{
+          dataTitle: "",
+          description: nil,
+          contactEmail: "not-a-valid-email",
+          license: "",
+          publishFrequency: nil
+        },
+        technical: %{sourceFormat: ""}
+      )
+      |> struct_to_map_with_string_keys()
+      |> delete_in([
+        ["business", "contactName"],
+        ["business", "orgTitle"],
+        ["technical", "sourceFormat"]
+      ])
+
+    allow(DatasetRetrieval.get_all!(), return: [])
+
+    %{"errors" => actual_errors} =
+      conn
+      |> put(@route, new_dataset)
+      |> json_response(400)
+
+    expected_errors = %{
+      "dataTitle" => ["Dataset Title is required."],
+      "description" => ["Description is required."],
+      "contactName" => ["Maintainer Name is required."],
+      "contactEmail" => ["Email is invalid."],
+      "issuedDate" => ["Release Date is required."],
+      "license" => ["License is required."],
+      "publishFrequency" => ["Publish Frequency is required."],
+      "orgTitle" => ["Organization is required."],
+      "sourceFormat" => ["Format is required."]
+    }
+
+    assert expected_errors == actual_errors
+  end
+
   test "put trims fields on dataset", %{
     conn: conn
   } do
@@ -390,5 +434,11 @@ defmodule AndiWeb.API.DatasetControllerTest do
     dataset
     |> Jason.encode!()
     |> Jason.decode!()
+  end
+
+  defp delete_in(data, paths) do
+    Enum.reduce(paths, data, fn path, working ->
+      working |> pop_in(path) |> elem(1)
+    end)
   end
 end

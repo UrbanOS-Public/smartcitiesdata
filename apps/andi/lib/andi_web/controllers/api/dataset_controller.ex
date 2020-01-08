@@ -13,6 +13,7 @@ defmodule AndiWeb.API.DatasetController do
   alias Andi.Services.DatasetRetrieval
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
+  alias AndiWeb.InputSchemas.Metadata
 
   @doc """
   Parse a data message and post the created dataset to redis
@@ -22,6 +23,7 @@ defmodule AndiWeb.API.DatasetController do
     with message <- add_uuid(conn.body_params),
          {:ok, parsed_message} <- parse_message(message),
          :valid <- DatasetValidator.validate(parsed_message),
+         :valid <- even_more_validation(parsed_message),
          {:ok, old_dataset} <- RegDataset.new(parsed_message),
          {:ok, dataset} <- Dataset.new(parsed_message),
          {:ok, _id} <- write_old_dataset(old_dataset),
@@ -29,12 +31,29 @@ defmodule AndiWeb.API.DatasetController do
       respond(conn, :created, dataset)
     else
       {:invalid, reason} ->
-        respond(conn, :bad_request, %{reason: reason})
+        respond(conn, :bad_request, %{errors: reason})
 
       error ->
         Logger.error("Failed to create dataset: #{inspect(error)}")
         respond(conn, :internal_server_error, "Unable to process your request")
     end
+  end
+
+  def even_more_validation(dataset) do
+    changeset = Metadata.changeset_from_struct(dataset)
+
+    if changeset.valid? do
+      :valid
+    else
+      {:invalid, format_changeset_errors(changeset)}
+    end
+  end
+
+  defp format_changeset_errors(%{errors: errors}) do
+    errors
+    |> Enum.reduce(%{}, fn {field_name, {message, _}}, acc ->
+      Map.update(acc, field_name, [message], fn current -> [message | current] end)
+    end)
   end
 
   @doc """
