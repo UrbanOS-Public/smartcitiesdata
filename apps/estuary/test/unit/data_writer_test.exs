@@ -24,14 +24,16 @@ defmodule Estuary.DataWriterTest do
       "type" => "data:ingest:start"
     })
 
-    payload = [%{
-      payload: %{
-      "author" => author,
-      "create_ts" => time_stamp,
-      "data" => dataset,
-      "type" => "data:ingest:start"
+    payload = [
+      %{
+        payload: %{
+          "author" => author,
+          "create_ts" => time_stamp,
+          "data" => dataset,
+          "type" => "data:ingest:start"
+        }
       }
-    }]
+    ]
 
     assert_called(MockTable.write(payload, table: table, schema: schema))
   end

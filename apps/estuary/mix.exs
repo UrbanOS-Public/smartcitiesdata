@@ -28,7 +28,6 @@ defmodule Estuary.MixProject do
 
   defp deps do
     [
-      {:brook, "~> 0.4.0"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},

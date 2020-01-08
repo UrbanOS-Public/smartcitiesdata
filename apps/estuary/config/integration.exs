@@ -19,13 +19,3 @@ config :estuary,
   topic: "event-stream"
 
 config :logger, level: :warn
-
-config :estuary, :dead_letter,
-  driver: [
-    module: DeadLetter.Carrier.Kafka,
-    init_args: [
-      name: :estuary_dead_letters,
-      endpoints: endpoints,
-      topic: "dead-letters"
-    ]
-  ]
