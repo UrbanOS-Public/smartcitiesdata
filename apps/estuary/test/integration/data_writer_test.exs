@@ -38,18 +38,18 @@ defmodule Estuary.DataWriterTest do
   test "should insert event to history table" do
     author = DataWriterHelper.make_author()
     time_stamp = DataWriterHelper.make_time_stamp()
-    dataset = TDG.create_dataset(%{})
+    dataset = Jason.encode!(TDG.create_dataset(%{}))
 
     expected_value = [
-      [author, time_stamp, Jason.encode!(dataset), "data:ingest:start"]
+      [author, time_stamp, dataset, "data:ingest:start"]
     ]
 
     %{
-      author: author,
-      create_ts: time_stamp,
-      data: dataset,
-      forwarded: false,
-      type: "data:ingest:start"
+      "author" => author,
+      "create_ts" => time_stamp,
+      "data" => dataset,
+      "forwarded" => false,
+      "type" => "data:ingest:start"
     }
     |> DataWriter.write()
 

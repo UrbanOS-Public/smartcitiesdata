@@ -33,7 +33,7 @@ defmodule Estuary.DataWriter do
 
   def write(event, opts \\ [])
 
-  def write(%{author: _, create_ts: _, data: _, type: _} = event, _) do
+  def write(%{"author" => _, "create_ts" => _, "data" => _, "type" => _} = event, _) do
     :ok =
       event
       |> DatasetSchema.make_datawriter_payload()

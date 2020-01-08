@@ -8,8 +8,6 @@ defmodule Estuary.EstuaryTest do
 
   @endpoints Application.get_env(:estuary, :endpoints)
   @topic Application.get_env(:estuary, :topic)
-  # @event_stream_schema_name Application.get_env(:estuary, :event_stream_schema_name)
-  # @event_stream_table_name Application.get_env(:estuary, :table_name)
 
   setup do
     on_exit(fn ->
@@ -34,14 +32,17 @@ defmodule Estuary.EstuaryTest do
   end
 
   test "should persist event to the event_stream table" do
+    # Can we use produce sync here instead of the sleep?
+    Process.sleep(2_000)
     produce_event(
       @topic,
-      %{
+      Jason.encode!(%Brook.Event{
+        type: "some type for reaper",
         author: "reaper",
         create_ts: 5,
         data: "some data for reaper",
-        type: "some type for reaper"
-      }
+        forwarded: false
+      })
     )
 
     expected_value = [["reaper", 5, "some data for reaper", "some type for reaper"]]
@@ -56,20 +57,22 @@ defmodule Estuary.EstuaryTest do
   end
 
   test "should persist batch of events to the event stream" do
-    produce_event(@topic, [
-      %{
+    Process.sleep(2_000)
+
+    produce_event(@topic,
+    [Jason.encode!(%Brook.Event{
+        type: "some type for forklift",
         author: "forklift",
         create_ts: 1,
-        data: "some data for forklift",
-        type: "some type for forklift"
-      },
-      %{
+        data: "some data for forklift"
+      }),
+    Jason.encode!(%Brook.Event{
+        type: "some type for valkyrie",
         author: "valkyrie",
         create_ts: 2,
-        data: "some data for valkyrie",
-        type: "some type for valkyrie"
+        data: "some data for valkyrie"
       }
-    ])
+    )])
 
     expected_value = [
       ["forklift", 1, "some data for forklift", "some type for forklift"],

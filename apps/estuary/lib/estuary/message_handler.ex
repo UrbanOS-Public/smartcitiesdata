@@ -9,12 +9,13 @@ defmodule Estuary.MessageHandler do
   def handle_messages(messages) do
     messages
     |> Enum.map(fn message ->
-      message
-      |> DataWriter.write(message)
+      message.value
+      |> Jason.decode!
+      |> DataWriter.write()
       |> error_dead_letter()
     end)
 
-    :ok
+    :ack
   end
 
   defp error_dead_letter({:error, event, reason} = error_tuple) do
