@@ -35,16 +35,6 @@ elsa_brokers =
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
-  config :estuary, :dead_letter,
-  driver: [
-    module: DeadLetter.Carrier.Kafka,
-    init_args: [
-      name: :estuary_dead_letters,
-      endpoints: endpoints,
-      topic: "streaming-dead-letters"
-    ]
-  ]
-
   config :prestige,
   base_url: System.get_env("PRESTO_URL"),
   headers: [
