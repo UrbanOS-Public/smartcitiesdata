@@ -6,8 +6,12 @@ defmodule Estuary.MessageHandlerTest do
 
   alias Estuary.DataWriterHelper
   alias Estuary.MessageHandler
+  alias Estuary.Datasets.DatasetSchema
   alias SmartCity.TestDataGenerator, as: TDG
   alias DeadLetter.Carrier.Test, as: Carrier
+
+  setup :set_mox_global
+  setup :verify_on_exit!
 
   setup do
     config = [driver: [module: DeadLetter.Carrier.Test, init_args: [size: 3_000]]]
@@ -39,6 +43,55 @@ defmodule Estuary.MessageHandlerTest do
 
     assert :ok == actual_value
   end
+
+
+  test "should persist event to the event_stream table" do
+    # stub(MockTable, :write, fn _, _ -> :ok end)
+    author = DataWriterHelper.make_author()
+    time_stamp = DataWriterHelper.make_time_stamp()
+    dataset = TDG.create_dataset(%{})
+
+
+    expected_data =  [
+      %{
+        payload: %{
+          "auhor" => author,
+          "create_ts" => time_stamp,
+          "data" => Jason.encode!(dataset),
+          "type" => "data:ingest:start2"
+        }
+      }
+    ]
+
+    # IO.inspect(expected_data, label: "Expectedddd")
+    # :ok =
+    #   event
+    #   |> DatasetSchema.make_datawriter_payload()
+    #   |> @table_writer.write(expected_data,
+    #     table: DatasetSchema.table_name(),
+    #     schema: DatasetSchema.schema()
+    #   )
+    table_name = DatasetSchema.table_name()
+    schema = DatasetSchema.schema()
+
+    #This doesn't fail when expected data doesn't match
+    expect(MockTable, :write, fn (^expected_data, _) -> :ok end)
+
+    assert :ok == [%{
+      author: author,
+      create_ts: time_stamp,
+      data: dataset,
+      type: "data:ingest:start"
+    }]
+    |> MessageHandler.handle_messages()
+
+    # IO.inspect("after DLQ")
+
+    assert {:ok, :empty} = DeadLetter.Carrier.Test.receive()
+    # allow DataWriter.write(expected_data), return: :ok
+    # assert_called(MockTable.write(expected_data, table: "history", schema: []))
+  end
+
 
   test "should send the message to dead letter queue when expected fields are not found" do
     event = %{
@@ -73,7 +126,7 @@ defmodule Estuary.MessageHandlerTest do
   test "should send the message to dead letter queue when inserting into the database fails" do
     event = %{
       author: DataWriterHelper.make_author(),
-      create_ts: "'#{DataWriterHelper.make_time_stamp() |> to_string()}'",
+      create_ts: "'notatimestamp'",
       data: TDG.create_dataset(%{}),
       forwarded: false,
       type: "data:ingest:start"

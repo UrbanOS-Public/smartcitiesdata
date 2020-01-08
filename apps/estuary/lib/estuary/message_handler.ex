@@ -13,6 +13,7 @@ defmodule Estuary.MessageHandler do
       |> DataWriter.write(message)
       |> error_dead_letter()
     end)
+
     :ok
   end
 

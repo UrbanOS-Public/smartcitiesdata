@@ -15,7 +15,8 @@ config :estuary,
   divo: "docker-compose.yml",
   divo_wait: [dwell: 1000, max_tries: 120],
   topic_reader: Pipeline.Reader.TopicReader,
-  table_writer: Pipeline.Writer.TableWriter
+  table_writer: Pipeline.Writer.TableWriter,
+  topic: "event-stream"
 
 config :logger, level: :warn
 

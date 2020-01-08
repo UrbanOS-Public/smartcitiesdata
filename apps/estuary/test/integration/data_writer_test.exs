@@ -51,7 +51,6 @@ defmodule Estuary.DataWriterTest do
       forwarded: false,
       type: "data:ingest:start"
     }
-    |> DatasetSchema.make_datawriter_payload()
     |> DataWriter.write()
 
     actual_value =

@@ -32,6 +32,7 @@ defmodule Estuary.DataWriter do
   """
 
   def write(event, opts \\ [])
+
   def write(%{author: _, create_ts: _, data: _, type: _} = event, _) do
     :ok =
       event
@@ -41,12 +42,10 @@ defmodule Estuary.DataWriter do
         schema: DatasetSchema.schema()
       )
   rescue
-
     _ -> {:error, event, "Presto Error"}
   end
 
   def write(event, _) do
     {:error, event, "Required field missing"}
   end
-
 end

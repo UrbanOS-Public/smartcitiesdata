@@ -30,7 +30,6 @@ defmodule Estuary.DataWriterTest do
     time_stamp = DataWriterHelper.make_time_stamp()
     dataset = TDG.create_dataset(%{})
 
-
     actual_value =
       %{
         author: author,
