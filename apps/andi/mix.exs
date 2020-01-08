@@ -34,6 +34,7 @@ defmodule Andi.MixProject do
 
   defp deps do
     [
+      {:atomic_map, "~> 0.9"},
       {:brook, "~> 0.4.0"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:checkov, "~> 0.4.0", only: :test},

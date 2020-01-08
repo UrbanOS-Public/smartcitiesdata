@@ -73,7 +73,9 @@ defmodule AndiWeb.API.DatasetControllerTest do
         "license" => "license",
         "rights" => "rights information",
         "homepage" => "",
-        "keywords" => []
+        "keywords" => [],
+        "issuedDate" => "2020-01-01T00:00:00Z",
+        "publishFrequency" => "all day, ey'r day"
       },
       "_metadata" => %{
         "intendedUse" => [],
@@ -137,7 +139,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> put(@route, request)
       |> json_response(400)
 
-    assert %{"reason" => ["Existing dataset has the same orgName and dataName"]} == response
+    assert %{"errors" => ["Existing dataset has the same orgName and dataName"]} == response
   end
 
   test "put returns 400 when systemName has dashes", %{
@@ -149,6 +151,10 @@ defmodule AndiWeb.API.DatasetControllerTest do
     new_dataset =
       TDG.create_dataset(
         id: "my-new-dataset",
+        business: %{
+          issuedDate: "2020-01-01T00:00:00Z",
+          publishFrequency: "now and then"
+        },
         technical: %{
           dataName: data_name,
           orgName: org_name,
@@ -158,7 +164,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     allow(DatasetRetrieval.get_all!(), return: [])
 
-    %{"reason" => errors} =
+    %{"errors" => errors} =
       conn
       |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
       |> json_response(400)
@@ -176,14 +182,18 @@ defmodule AndiWeb.API.DatasetControllerTest do
     new_dataset =
       TDG.create_dataset(
         id: "my-new-dataset",
-        technical: %{dataName: "my_little_dataset"}
+        technical: %{dataName: "my_little_dataset"},
+        business: %{
+          issuedDate: "2020-01-01T00:00:00Z",
+          publishFrequency: "just this once"
+        }
       )
       |> struct_to_map_with_string_keys()
       |> put_in(["business", "modifiedDate"], "badDate")
 
     allow(DatasetRetrieval.get_all!(), return: [])
 
-    %{"reason" => errors} =
+    %{"errors" => errors} =
       conn
       |> put(@route, new_dataset)
       |> json_response(400)
@@ -212,7 +222,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> delete_in([
         ["business", "contactName"],
         ["business", "orgTitle"],
-        ["technical", "sourceFormat"]
+        ["technical", "sourceFormat"],
+        ["technical", "private"]
       ])
 
     allow(DatasetRetrieval.get_all!(), return: [])
@@ -231,6 +242,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       "license" => ["License is required."],
       "publishFrequency" => ["Publish Frequency is required."],
       "orgTitle" => ["Organization is required."],
+      "private" => ["Level of Access is required."],
       "sourceFormat" => ["Format is required."]
     }
 
@@ -249,7 +261,9 @@ defmodule AndiWeb.API.DatasetControllerTest do
         },
         business: %{
           contactName: " some  body  ",
-          keywords: ["  a keyword", " another keyword", "etc"]
+          keywords: ["  a keyword", " another keyword", "etc"],
+          issuedDate: "2020-01-01T00:00:00Z",
+          publishFrequency: "every now and then"
         }
       )
 

@@ -12,7 +12,7 @@ defmodule AndiWeb.InputSchemas.Metadata do
     keywords: {:array, :string},
     language: :string,
     license: :string,
-    modifiedDate: :date,
+    modifiedDate: :date, #TODO: consider converting to :utc_datetime?
     orgTitle: :string,
     publishFrequency: :string,
     spatial: :string,
@@ -29,17 +29,17 @@ defmodule AndiWeb.InputSchemas.Metadata do
   @email_regex ~r/^[A-Za-z0-9._%+-+']+@[A-Za-z0-9.-]+\.[A-Za-z]+$/
 
   def changeset_from_struct(%SmartCity.Dataset{} = dataset) do
-    from_business = get_business(dataset.business)
-    from_technical = get_technical(dataset.technical)
-
-    Map.merge(from_business, from_technical)
-    |> new_changeset()
+    create_changeset_from_struct(dataset)
   end
 
-  # TODO not this
-  def changeset_from_struct(dataset) do
-    from_business = get_business(dataset["business"] |> Map.new(fn {k, v} -> {String.to_atom(k), v} end))
-    from_technical = get_technical(dataset["technical"] |> Map.new(fn {k, v} -> {String.to_atom(k), v} end))
+  def changeset_from_dataset_map(dataset) do
+    AtomicMap.convert(dataset, safe: false, underscore: false)
+    |> create_changeset_from_struct()
+  end
+
+  defp create_changeset_from_struct(%{business: business, technical: technical}) do
+    from_business = get_business(business)
+    from_technical = get_technical(technical)
 
     Map.merge(from_business, from_technical)
     |> new_changeset()
@@ -90,6 +90,7 @@ defmodule AndiWeb.InputSchemas.Metadata do
     |> validate_required([:license], message: "License is required.")
     |> validate_required([:publishFrequency], message: "Publish Frequency is required.")
     |> validate_required([:orgTitle], message: "Organization is required.")
+    |> validate_required([:private], message: "Level of Access is required.")
     |> validate_required([:sourceFormat], message: "Format is required.")
   end
 

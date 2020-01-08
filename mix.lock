@@ -3,6 +3,7 @@
   "accessible": {:hex, :accessible, "0.2.1", "09b2808ee9a451e392beab2766bec93daf2944ad31cc130b172fc49bde8edb3c", [:mix], [], "hexpm"},
   "artificery": {:hex, :artificery, "0.4.2", "3ded6e29e13113af52811c72f414d1e88f711410cac1b619ab3a2666bbd7efd4", [:mix], [], "hexpm"},
   "assertions": {:hex, :assertions, "0.14.1", "352391bbcecbfce7d4594df1267ee4ca7a8b79981859a4befdf62dd798769c42", [:mix], [], "hexpm"},
+  "atomic_map": {:hex, :atomic_map, "0.9.3", "3c7f1302e0590164732d08ca999708efbb2cd768abf2911cf140280ce2dc499d", [:mix], [], "hexpm"},
   "benchee": {:hex, :benchee, "1.0.1", "66b211f9bfd84bd97e6d1beaddf8fc2312aaabe192f776e8931cb0c16f53a521", [:mix], [{:deep_merge, "~> 1.0", [hex: :deep_merge, repo: "hexpm", optional: false]}], "hexpm"},
   "broadway": {:hex, :broadway, "0.4.0", "b8daf580baed44347a9690449f9d8d7a308c1ca086648397d1a88eea893d047e", [:mix], [{:gen_stage, "~> 0.14", [hex: :gen_stage, repo: "hexpm", optional: false]}], "hexpm"},
   "brod": {:hex, :brod, "3.9.3", "edc5525e1e565c58eec7e36118c74c074b67647a4ae7c154444ffe3f709b0869", [:make, :rebar, :rebar3], [{:kafka_protocol, "2.3.2", [hex: :kafka_protocol, repo: "hexpm", optional: false]}, {:supervisor3, "1.1.8", [hex: :supervisor3, repo: "hexpm", optional: false]}], "hexpm"},

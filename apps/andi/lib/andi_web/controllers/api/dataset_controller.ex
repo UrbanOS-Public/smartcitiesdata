@@ -23,7 +23,7 @@ defmodule AndiWeb.API.DatasetController do
     with message <- add_uuid(conn.body_params),
          {:ok, parsed_message} <- parse_message(message),
          :valid <- DatasetValidator.validate(parsed_message),
-         :valid <- even_more_validation(parsed_message),
+         :valid <- validate_changes(parsed_message),
          {:ok, old_dataset} <- RegDataset.new(parsed_message),
          {:ok, dataset} <- Dataset.new(parsed_message),
          {:ok, _id} <- write_old_dataset(old_dataset),
@@ -39,14 +39,10 @@ defmodule AndiWeb.API.DatasetController do
     end
   end
 
-  def even_more_validation(dataset) do
-    changeset = Metadata.changeset_from_struct(dataset)
+  def validate_changes(dataset) do
+    changeset = Metadata.changeset_from_dataset_map(dataset)
 
-    if changeset.valid? do
-      :valid
-    else
-      {:invalid, format_changeset_errors(changeset)}
-    end
+    if changeset.valid?, do: :valid, else: {:invalid, format_changeset_errors(changeset)}
   end
 
   defp format_changeset_errors(%{errors: errors}) do
