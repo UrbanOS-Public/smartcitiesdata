@@ -42,7 +42,12 @@ defmodule Estuary.Datasets.DatasetSchema do
   def make_datawriter_payload(event) do
     [
       %{
-        payload: event
+        payload: %{
+          "author" => event["author"],
+          "create_ts" => event["create_ts"],
+          "data" => event["data"],
+          "type" => event["type"]
+        }
       }
     ]
   end

@@ -6,7 +6,6 @@ defmodule Estuary.MessageHandlerTest do
 
   alias Estuary.DataWriterHelper
   alias Estuary.MessageHandler
-  alias Estuary.Datasets.DatasetSchema
   alias SmartCity.TestDataGenerator, as: TDG
   alias DeadLetter.Carrier.Test, as: Carrier
 
@@ -25,19 +24,24 @@ defmodule Estuary.MessageHandlerTest do
     end)
   end
 
+  @tag :capture_log
   test "should send the message to dead letter queue when expected fields are not found" do
+    payload = %{
+      "authors" => DataWriterHelper.make_author(),
+      "create_tss" => DataWriterHelper.make_time_stamp(),
+      "datas" => Jason.encode!(TDG.create_dataset(%{})),
+      "forwarded" => false,
+      "types" => "data:ingest:start"
+    }
+
     event = %{
-      authors: DataWriterHelper.make_author(),
-      create_tss: DataWriterHelper.make_time_stamp(),
-      datas: TDG.create_dataset(%{}),
-      forwarded: false,
-      types: "data:ingest:start"
+      value: Jason.encode!(payload)
     }
 
     expected_value = %{
       app: "estuary",
       dataset_id: "Unknown",
-      original_message: event,
+      original_message: payload,
       reason: "Required field missing"
     }
 
@@ -55,19 +59,24 @@ defmodule Estuary.MessageHandlerTest do
     end
   end
 
+  @tag :capture_log
   test "should send the message to dead letter queue when inserting into the database fails" do
+    payload = %{
+      "author" => DataWriterHelper.make_author(),
+      "create_ts" => "'notatimestamp'",
+      "data" => Jason.encode!(TDG.create_dataset(%{})),
+      "forwarded" => false,
+      "type" => "data:ingest:start"
+    }
+
     event = %{
-      author: DataWriterHelper.make_author(),
-      create_ts: "'notatimestamp'",
-      data: TDG.create_dataset(%{}),
-      forwarded: false,
-      type: "data:ingest:start"
+      value: Jason.encode!(payload)
     }
 
     expected_value = %{
       app: "estuary",
       dataset_id: "Unknown",
-      original_message: event,
+      original_message: payload,
       reason: "Presto Error"
     }
 

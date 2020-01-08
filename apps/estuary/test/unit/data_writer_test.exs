@@ -32,11 +32,11 @@ defmodule Estuary.DataWriterTest do
 
     actual_value =
       %{
-        author: author,
-        create_ts: time_stamp,
-        data: dataset,
-        forwarded: false,
-        type: "data:ingest:start"
+        "author" => author,
+        "create_ts" => time_stamp,
+        "data" => dataset,
+        "forwarded" => false,
+        "type" => "data:ingest:start"
       }
       |> DataWriter.write()
 

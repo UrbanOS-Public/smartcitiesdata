@@ -43,14 +43,14 @@ defmodule Estuary.Datasets.DatasetSchemaTest do
   test "should return payload when given ingest SmartCity Dataset struct" do
     author = DataWriterHelper.make_author()
     time_stamp = DataWriterHelper.make_time_stamp()
-    dataset = TDG.create_dataset(%{})
+    dataset = Jason.encode!(TDG.create_dataset(%{}))
 
     expected_value = [
       %{
         payload: %{
           "author" => author,
           "create_ts" => time_stamp,
-          "data" => Jason.encode!(dataset),
+          "data" => dataset,
           "type" => "data:ingest:start"
         }
       }
@@ -58,11 +58,11 @@ defmodule Estuary.Datasets.DatasetSchemaTest do
 
     actual_value =
       %{
-        author: author,
-        create_ts: time_stamp,
-        data: dataset,
-        forwarded: false,
-        type: "data:ingest:start"
+        "author" => author,
+        "create_ts" => time_stamp,
+        "data" => dataset,
+        "forwarded" => false,
+        "type" => "data:ingest:start"
       }
       |> DatasetSchema.make_datawriter_payload()
 

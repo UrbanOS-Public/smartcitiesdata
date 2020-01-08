@@ -10,7 +10,7 @@ defmodule Estuary.MessageHandler do
     messages
     |> Enum.map(fn message ->
       message.value
-      |> Jason.decode!
+      |> Jason.decode!()
       |> DataWriter.write()
       |> error_dead_letter()
     end)

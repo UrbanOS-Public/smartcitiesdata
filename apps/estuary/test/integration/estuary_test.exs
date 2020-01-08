@@ -34,6 +34,7 @@ defmodule Estuary.EstuaryTest do
   test "should persist event to the event_stream table" do
     # Can we use produce sync here instead of the sleep?
     Process.sleep(2_000)
+
     produce_event(
       @topic,
       Jason.encode!(%Brook.Event{
@@ -59,20 +60,23 @@ defmodule Estuary.EstuaryTest do
   test "should persist batch of events to the event stream" do
     Process.sleep(2_000)
 
-    produce_event(@topic,
-    [Jason.encode!(%Brook.Event{
-        type: "some type for forklift",
-        author: "forklift",
-        create_ts: 1,
-        data: "some data for forklift"
-      }),
-    Jason.encode!(%Brook.Event{
-        type: "some type for valkyrie",
-        author: "valkyrie",
-        create_ts: 2,
-        data: "some data for valkyrie"
-      }
-    )])
+    produce_event(
+      @topic,
+      [
+        Jason.encode!(%Brook.Event{
+          type: "some type for forklift",
+          author: "forklift",
+          create_ts: 1,
+          data: "some data for forklift"
+        }),
+        Jason.encode!(%Brook.Event{
+          type: "some type for valkyrie",
+          author: "valkyrie",
+          create_ts: 2,
+          data: "some data for valkyrie"
+        })
+      ]
+    )
 
     expected_value = [
       ["forklift", 1, "some data for forklift", "some type for forklift"],
