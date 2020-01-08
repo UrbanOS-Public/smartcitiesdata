@@ -5,7 +5,7 @@ config :logger, level: :warn
 config :estuary,
   topic_reader: MockReader,
   table_writer: MockTable,
-  endpoints: [localhost: 9092],
+  endpoints: nil,
   instance: :estuary,
   handler: Estuary.MessageHandler,
   connection: :estuary_elsa

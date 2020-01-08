@@ -2,8 +2,6 @@ defmodule Estuary.Datasets.DatasetSchemaTest do
   use ExUnit.Case
 
   alias Estuary.Datasets.DatasetSchema
-  alias SmartCity.TestDataGenerator, as: TDG
-  alias Estuary.DataWriterHelper
 
   @table_name Application.get_env(:estuary, :table_name)
 
@@ -37,35 +35,6 @@ defmodule Estuary.Datasets.DatasetSchemaTest do
     ]
 
     actual_value = DatasetSchema.schema()
-    assert expected_value == actual_value
-  end
-
-  test "should return payload when given ingest SmartCity Dataset struct" do
-    author = DataWriterHelper.make_author()
-    time_stamp = DataWriterHelper.make_time_stamp()
-    dataset = Jason.encode!(TDG.create_dataset(%{}))
-
-    expected_value = [
-      %{
-        payload: %{
-          "author" => author,
-          "create_ts" => time_stamp,
-          "data" => dataset,
-          "type" => "data:ingest:start"
-        }
-      }
-    ]
-
-    actual_value =
-      %{
-        "author" => author,
-        "create_ts" => time_stamp,
-        "data" => dataset,
-        "forwarded" => false,
-        "type" => "data:ingest:start"
-      }
-      |> DatasetSchema.make_datawriter_payload()
-
     assert expected_value == actual_value
   end
 end
