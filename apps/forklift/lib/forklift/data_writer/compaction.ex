@@ -4,10 +4,8 @@ defmodule Forklift.DataWriter.Compaction do
   require Logger
   alias SmartCity.Dataset
   alias Forklift.DataWriter.Compaction.Metric
-  import Forklift
 
   @behaviour Pipeline.Writer
-  @reader Application.get_env(:forklift, :data_reader)
   @writer Application.get_env(:forklift, :table_writer)
 
   @impl Pipeline.Writer
@@ -16,8 +14,7 @@ defmodule Forklift.DataWriter.Compaction do
     config = parse_args(args)
     Logger.info("#{config.table} compaction started")
 
-    reader_args(config.dataset)
-    |> @reader.terminate()
+    Forklift.DataReaderHelper.terminate(config.dataset)
   end
 
   @impl Pipeline.Writer
@@ -34,8 +31,7 @@ defmodule Forklift.DataWriter.Compaction do
   def terminate(args) do
     config = parse_args(args)
 
-    reader_args(config.dataset)
-    |> @reader.init()
+    Forklift.DataReaderHelper.init(config.dataset)
   end
 
   @impl Pipeline.Writer
@@ -62,18 +58,5 @@ defmodule Forklift.DataWriter.Compaction do
   defp parse_args(args) do
     dataset = Keyword.fetch!(args, :dataset)
     %{dataset: dataset, table: dataset.technical.systemName}
-  end
-
-  defp reader_args(dataset) do
-    [
-      instance: instance_name(),
-      endpoints: Application.get_env(:forklift, :elsa_brokers),
-      dataset: dataset,
-      handler: Forklift.MessageHandler,
-      input_topic_prefix: Application.get_env(:forklift, :input_topic_prefix),
-      retry_count: Application.get_env(:forklift, :retry_count),
-      retry_delay: Application.get_env(:forklift, :retry_initial_delay),
-      topic_subscriber_config: Application.get_env(:forklift, :topic_subscriber_config, [])
-    ]
   end
 end
