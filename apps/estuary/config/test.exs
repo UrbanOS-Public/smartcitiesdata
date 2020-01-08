@@ -4,7 +4,6 @@ config :logger, level: :warn
 
 config :estuary,
   topic_reader: MockReader,
-  topic_writer: MockTopic,
   table_writer: MockTable,
   endpoints: [localhost: 9092],
   instance: :estuary,
