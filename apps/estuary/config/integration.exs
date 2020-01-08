@@ -11,7 +11,7 @@ config :prestige,
   ]
 
 config :estuary,
-  endpoints: [localhost: 9092],
+  endpoints: endpoints,
   divo: "docker-compose.yml",
   divo_wait: [dwell: 1000, max_tries: 120],
   topic_reader: Pipeline.Reader.TopicReader,

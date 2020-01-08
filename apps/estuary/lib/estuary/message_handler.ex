@@ -18,7 +18,7 @@ defmodule Estuary.MessageHandler do
     :ack
   end
 
-  defp error_dead_letter({:error, event, reason} = error_tuple) do
+  defp error_dead_letter({:error, event, reason}) do
     DeadLetterQueue.enqueue(event, reason: reason)
     :error
   end
