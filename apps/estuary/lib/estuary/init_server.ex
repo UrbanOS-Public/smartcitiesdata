@@ -15,7 +15,7 @@ defmodule Estuary.InitServer do
 
   def init(_) do
     with :ok <- create_table(),
-         :ok <- read_event(),
+         :ok <- DataReader.init(),
          pid <- Process.whereis(Pipeline.DynamicSupervisor) do
       Process.monitor(pid)
       {:ok, %{pipeline: pid}}
@@ -24,16 +24,12 @@ defmodule Estuary.InitServer do
 
   def handle_info({:DOWN, _, _, pid, _}, %{pipeline: pid}) do
     :ok = create_table()
-    :ok = read_event()
+    :ok = DataReader.init()
     {:noreply, %{pipeline: Process.whereis(Pipeline.DynamicSupervisor)}}
   end
 
   defp create_table do
     DatasetSchema.table_schema()
     |> DataWriter.init()
-  end
-
-  defp read_event do
-    DataReader.init()
   end
 end

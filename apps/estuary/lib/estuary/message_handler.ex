@@ -4,11 +4,10 @@ defmodule Estuary.MessageHandler do
   """
   use Elsa.Consumer.MessageHandler
   alias Estuary.DataWriter
-  alias Estuary.DeadLetterQueue
 
   def handle_messages(messages) do
     messages
-    |> Enum.map(fn message ->
+    |> Enum.each(fn message ->
       message.value
       |> Jason.decode!()
       |> DataWriter.write()
@@ -19,7 +18,7 @@ defmodule Estuary.MessageHandler do
   end
 
   defp error_dead_letter({:error, event, reason}) do
-    DeadLetterQueue.enqueue(event, reason: reason)
+    DeadLetter.process("Unknown", event, "estuary", reason: reason)
     :error
   end
 

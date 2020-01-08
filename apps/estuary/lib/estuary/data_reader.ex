@@ -10,10 +10,6 @@ defmodule Estuary.DataReader do
   @topic_reader Application.get_env(:estuary, :topic_reader)
 
   @impl Pipeline.Reader
-  @doc """
-
-  """
-
   def init(_opts \\ []) do
     :ok =
       reader_args()
@@ -21,10 +17,6 @@ defmodule Estuary.DataReader do
   end
 
   @impl Pipeline.Reader
-  @doc """
-
-  """
-
   def terminate(_opts \\ []) do
     :ok
   end
