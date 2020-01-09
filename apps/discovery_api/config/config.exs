@@ -18,7 +18,8 @@ config :logger, :console,
 
 config :discovery_api,
   auth_provider: "default",
-  collector: StreamingMetrics.PrometheusMetricCollector
+  collector: StreamingMetrics.PrometheusMetricCollector,
+  hsts_enabled: true
 
 config :paddle, Paddle, host: "localhost", account_subdn: "ou=People"
 

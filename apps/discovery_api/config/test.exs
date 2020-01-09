@@ -11,7 +11,8 @@ config :discovery_api,
   user_info_endpoint: "pretend-this-is-a-url/userinfo",
   jwks_endpoint: "pretend-this-is-a-url/jwks",
   allowed_origins: ["tests.example.com"],
-  test_mode: true
+  test_mode: true,
+  hsts_enabled: false
 
 config :logger, level: :warn
 

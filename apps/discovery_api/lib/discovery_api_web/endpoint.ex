@@ -8,6 +8,25 @@ defmodule DiscoveryApiWeb.Endpoint do
 
   socket("/socket", DiscoveryApiWeb.UserSocket)
 
+  plug(DiscoveryApiWeb.Plugs.SecureHeaders)
+
+  plug(Corsica,
+    origins: "*",
+    allow_credentials: true,
+    allow_headers: ["authorization", "content-type"],
+    expose_headers: ["token"]
+  )
+
+  if Application.get_env(:discovery_api, :hsts_enabled, true) do
+    plug(Plug.SSL,
+      hsts: true,
+      expires: 63_072_000,
+      subdomains: true,
+      preload: true,
+      rewrite_on: [:x_forwarded_proto]
+    )
+  end
+
   # Serve at "/" the static files from "priv/static" directory.
   #
   # You should set gzip to true if you are running phoenix.digest
@@ -45,15 +64,6 @@ defmodule DiscoveryApiWeb.Endpoint do
     key: "_discovery_api_key",
     signing_salt: "foI/nCz1"
   )
-
-  plug(Corsica,
-    origins: "*",
-    allow_credentials: true,
-    allow_headers: ["authorization", "content-type"],
-    expose_headers: ["token"]
-  )
-
-  plug(DiscoveryApiWeb.Plugs.SecureHeaders)
 
   plug(DiscoveryApi.MetricsExporter)
 
