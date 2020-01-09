@@ -199,11 +199,11 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_value(html, "#metadata_sourceFormat") == dataset.technical.sourceFormat
       assert {"true", "Private"} == get_select(html, "#metadata_private")
       assert get_value(html, "#metadata_contactName") == dataset.business.contactName
+      assert dataset.business.modifiedDate =~ get_value(html, "#metadata_modifiedDate") |> IO.inspect(label: "modifiedDate")
       assert get_value(html, "#metadata_contactEmail") == dataset.business.contactEmail
-      assert get_value(html, "#metadata_release-date") == dataset.business.issuedDate
+      assert dataset.business.issuedDate =~ get_value(html, "#metadata_issuedDate")
       assert get_value(html, "#metadata_license") == dataset.business.license
-      assert get_value(html, "#metadata_update-frequency") == dataset.business.publishFrequency
-      assert dataset.business.modifiedDate =~ get_value(html, "#metadata_modifiedDate")
+      assert get_value(html, "#metadata_publishFrequency") == dataset.business.publishFrequency
       assert get_value(html, "#metadata_spatial") == dataset.business.spatial
       assert get_value(html, "#metadata_temporal") == dataset.business.temporal
       assert get_value(html, "#metadata_orgTitle") == dataset.business.orgTitle

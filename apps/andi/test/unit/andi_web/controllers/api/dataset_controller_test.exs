@@ -151,10 +151,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
     new_dataset =
       TDG.create_dataset(
         id: "my-new-dataset",
-        business: %{
-          issuedDate: "2020-01-01T00:00:00Z",
-          publishFrequency: "now and then"
-        },
         technical: %{
           dataName: data_name,
           orgName: org_name,
@@ -179,11 +175,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
     new_dataset =
       TDG.create_dataset(
         id: "my-new-dataset",
-        technical: %{dataName: "my_little_dataset"},
-        business: %{
-          issuedDate: "2020-01-01T00:00:00Z",
-          publishFrequency: "just this once"
-        }
+        technical: %{dataName: "my_little_dataset"}
       )
       |> struct_to_map_with_string_keys()
       |> put_in(["business", "modifiedDate"], "badDate")
@@ -217,6 +209,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> delete_in([
         ["business", "contactName"],
         ["business", "orgTitle"],
+        ["business", "issuedDate"],
         ["technical", "sourceFormat"],
         ["technical", "private"]
       ])
@@ -256,9 +249,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
         },
         business: %{
           contactName: " some  body  ",
-          keywords: ["  a keyword", " another keyword", "etc"],
-          issuedDate: "2020-01-01T00:00:00Z",
-          publishFrequency: "every now and then"
+          keywords: ["  a keyword", " another keyword", "etc"]
         }
       )
 
