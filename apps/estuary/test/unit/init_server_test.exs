@@ -11,8 +11,6 @@ defmodule Estuary.InitServerTest do
   setup :verify_on_exit!
 
   test "should initialize topic reader and table writer on the application startup" do
-    Application.ensure_all_started(:pipeline)
-
     expect(MockTable, :init, fn _ -> :ok end)
     expect(MockReader, :init, fn _ -> :ok end)
 
@@ -20,17 +18,18 @@ defmodule Estuary.InitServerTest do
   end
 
   @tag :capture_log
-  test "should re-initialize topic reader if pipeline goes down" do
+  test "should die (so the supervisor can restart it) when pipeline goes down" do
     expect(MockTable, :init, 1, fn _ -> :ok end)
     expect(MockReader, :init, 1, fn _ -> :ok end)
-    stub(MockReader, :init, fn _ -> :ok end)
 
     assert {:ok, init_server_pid} = InitServer.start_link(name: :foo)
+    Process.unlink(init_server_pid)
 
     DynamicSupervisor.stop(Pipeline.DynamicSupervisor, :test)
 
     assert_async do
-      assert Process.whereis(Estuary.InitServer) |> Process.alive?()
+      assert not Process.alive?(init_server_pid)
+      assert is_nil(Process.whereis(Estuary.InitServer))
     end
   end
 end
