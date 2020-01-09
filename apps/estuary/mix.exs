@@ -28,13 +28,15 @@ defmodule Estuary.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 1.1", only: :dev, runtime: false},
+      {:credo, "~> 1.1", only: [:dev], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:elsa, "~> 0.10.0"},
-      {:mock, "~> 0.3", only: [:test, :integration], runtime: false},
+      {:jason, "~> 1.1"},
+      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:pipeline, in_umbrella: true},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:prestige, "~> 0.3"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]}
@@ -43,7 +45,8 @@ defmodule Estuary.MixProject do
 
   defp aliases do
     [
-      verify: ["format --check-formatted", "credo"]
+      verify: ["format --check-formatted", "credo"],
+      test: "test --no-start"
     ]
   end
 

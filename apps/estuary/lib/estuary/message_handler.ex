@@ -2,40 +2,25 @@ defmodule Estuary.MessageHandler do
   @moduledoc """
   Estuary.MessageHandler reads an event from the event stream and persists it.
   """
-  alias Estuary.EventTable
   use Elsa.Consumer.MessageHandler
-  require Logger
+  alias Estuary.DataWriter
 
   def handle_messages(messages) do
-    Enum.each(messages, fn message -> process_message(message) end)
+    messages
+    |> Enum.each(fn message ->
+      message.value
+      |> Jason.decode!()
+      |> DataWriter.write()
+      |> error_dead_letter()
+    end)
 
-    Logger.debug("Messages #{inspect(messages)} were sent to the event stream")
     :ack
   end
 
-  defp process_message(message) do
-    case Jason.decode(message.value) do
-      {:ok, %{"author" => _, "create_ts" => _, "data" => _, "type" => _} = event} ->
-        do_insert(message, event)
-
-      {_, term} ->
-        process_error(message, term)
-    end
+  defp error_dead_letter({:error, event, reason}) do
+    DeadLetter.process("Unknown", event, "estuary", reason: reason)
+    :error
   end
 
-  defp do_insert(_message, event) do
-    case EventTable.insert_event_to_table(event) do
-      {:error, message} ->
-        process_error(message, event)
-
-      term ->
-        term
-    end
-  end
-
-  defp process_error(message, data) do
-    DeadLetter.process("", message, "estuary",
-      reason: "could not process because #{inspect(data)}"
-    )
-  end
+  defp error_dead_letter(_), do: :ok
 end

@@ -1,6 +1,10 @@
 use Mix.Config
 
-config :estuary,
-  elsa_endpoint: nil
-
 config :logger, level: :warn
+
+config :estuary,
+  topic_reader: MockReader,
+  table_writer: MockTable,
+  instance: :estuary,
+  handler: Estuary.MessageHandler,
+  connection: :estuary_elsa

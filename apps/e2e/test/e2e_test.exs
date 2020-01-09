@@ -215,6 +215,16 @@ defmodule E2ETest do
         Enum.each(expected, fn app -> assert [ds.id, app] in actual end)
       end)
     end
+
+    test "events have been stored in estuary" do
+      table = Application.get_env(:estuary, :table_name)
+
+      eventually(fn ->
+        [[actual]] = query("SELECT count(1) FROM #{table}")
+
+        assert actual > 0
+      end)
+    end
   end
 
   describe "streaming data" do
@@ -308,16 +318,16 @@ defmodule E2ETest do
 
   describe "geospatial data" do
     test "creating a dataset via RESTful PUT", %{geo_dataset: ds} do
-      resp = HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-        {"Content-Type", "application/json"}
-          ])
+      resp =
+        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
+          {"Content-Type", "application/json"}
+        ])
 
       assert resp.status_code == 201
     end
 
     @tag timeout: :infinity
     test "persists geojson in PrestoDB", %{geo_dataset: ds} do
-
       table = ds.technical.systemName
 
       eventually(
@@ -327,7 +337,7 @@ defmodule E2ETest do
 
           result = Jason.decode!(actual)
 
-          assert Map.keys(result) == ["bbox", "geometry","properties", "type"]
+          assert Map.keys(result) == ["bbox", "geometry", "properties", "type"]
 
           [coordinates] = result["geometry"]["coordinates"]
 
