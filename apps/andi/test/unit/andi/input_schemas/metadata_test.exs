@@ -1,8 +1,8 @@
-defmodule AndiWeb.InputSchemas.MetadataTest do
+defmodule Andi.InputSchemas.MetadataTest do
   use ExUnit.Case
 
   alias Ecto.Changeset
-  alias AndiWeb.InputSchemas.Metadata
+  alias Andi.InputSchemas.Metadata
   alias SmartCity.TestDataGenerator
 
   test "SmartCity.Dataset => Changeset => SmartCity.Dataset works" do

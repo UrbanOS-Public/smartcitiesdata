@@ -3,7 +3,7 @@ defmodule AndiWeb.EditLiveView do
 
   alias Phoenix.HTML.Link
   alias AndiWeb.DatasetValidator
-  alias AndiWeb.InputSchemas.Metadata
+  alias Andi.InputSchemas.Metadata
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -143,16 +143,22 @@ defmodule AndiWeb.EditLiveView do
 
     new_changeset = Metadata.form_changeset(form_data)
 
+    IO.inspect(new_changeset, label: "WAT")
+
+    # TODO: consider extracting to shared service for API and live-view save
     if new_changeset.valid? do
-      schema = Ecto.Changeset.apply_changes(new_changeset)
+      # TODO: find out why an empty description doesn't show as a "change"
+      schema = Ecto.Changeset.apply_changes(new_changeset) |> IO.inspect(label: "form")
       original_dataset = socket.assigns.dataset
 
-      with dataset = Metadata.restruct(schema, original_dataset),
+      with dataset = Metadata.restruct(schema, original_dataset) |> IO.inspect(label: "dataset being saved"),
            :valid <- DatasetValidator.validate(dataset),
            :ok <- Brook.Event.send(instance_name(), dataset_update(), :andi, dataset) do
         {:noreply, assign(socket, dataset: dataset, changeset: new_changeset, save_success: true)}
       else
         {:invalid, errors} ->
+          Logger.warn("Unable to create new SmartCity.Dataset: #{inspect({:invalid, errors})}")
+
           {:noreply, assign(socket, changeset: new_changeset, validation_errors: errors)}
 
         {:error, e} ->

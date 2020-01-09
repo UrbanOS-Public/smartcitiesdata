@@ -13,7 +13,7 @@ defmodule AndiWeb.API.DatasetController do
   alias Andi.Services.DatasetRetrieval
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
-  alias AndiWeb.InputSchemas.Metadata
+  alias Andi.InputSchemas.Metadata
 
   @doc """
   Parse a data message and post the created dataset to redis
@@ -135,7 +135,7 @@ defmodule AndiWeb.API.DatasetController do
   defp parse_message(%{"technical" => _technical} = msg) do
     msg
     |> trim_fields()
-    |> create_system_name()
+    |> create_system_name() #TODO: move this to after validation
   end
 
   defp parse_message(msg), do: {:error, "Cannot parse message: #{inspect(msg)}"}

@@ -9,7 +9,7 @@ defmodule AndiWeb.EditLiveViewTest do
   import SmartCity.Event, only: [dataset_update: 0]
 
   alias Andi.DatasetCache
-  alias AndiWeb.InputSchemas.Metadata
+  alias Andi.InputSchemas.Metadata
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -81,7 +81,7 @@ defmodule AndiWeb.EditLiveViewTest do
         conn,
         TDG.create_dataset(%{business: %{contactEmail: email}}),
         :contactEmail,
-        "Email is invalid."
+        "has invalid format"
       )
 
       where([
@@ -232,38 +232,38 @@ defmodule AndiWeb.EditLiveViewTest do
         conn,
         TDG.create_dataset(%{business: %{dataTitle: ""}}),
         :dataTitle,
-        "Dataset Title is required."
+        "is required"
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{description: ""}}),
         :description,
-        "Description is required."
+        "is required"
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{contactName: ""}}),
         :contactName,
-        "Maintainer Name is required."
+        "is required"
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{contactEmail: ""}}),
         :contactEmail,
-        "Maintainer Email is required."
+        "is required"
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{issuedDate: ""}}),
         :issuedDate,
-        "Release Date is required."
+        "is required"
       )
 
-      assert_error_message(conn, TDG.create_dataset(%{business: %{license: ""}}), :license, "License is required.")
+      assert_error_message(conn, TDG.create_dataset(%{business: %{license: ""}}), :license, "is required")
 
       dataset = TDG.create_dataset(%{})
       new_tech = Map.put(dataset.technical, :sourceFormat, "")
@@ -273,21 +273,21 @@ defmodule AndiWeb.EditLiveViewTest do
         conn,
         dataset,
         :sourceFormat,
-        "Format is required."
+        "is required"
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{publishFrequency: ""}}),
         :publishFrequency,
-        "Publish Frequency is required."
+        "is required"
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{orgTitle: ""}}),
         :orgTitle,
-        "Organization is required."
+        "is required"
       )
     end
   end

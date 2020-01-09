@@ -134,12 +134,12 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     allow DatasetRetrieval.get_all!(), return: [existing_dataset]
 
-    response =
+    %{"errors" => errors} =
       conn
       |> put(@route, request)
       |> json_response(400)
 
-    assert %{"errors" => ["Existing dataset has the same orgName and dataName"]} == response
+    assert errors["dataName"] == ["existing dataset has the same orgName and dataName"]
   end
 
   test "put returns 400 when systemName has dashes", %{
@@ -169,11 +169,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
       |> json_response(400)
 
-    joined_errors = Enum.join(errors, ", ")
-
-    assert String.contains?(joined_errors, "orgName")
-    assert String.contains?(joined_errors, "dataName")
-    assert String.contains?(joined_errors, "dashes")
+    assert errors["orgName"] == ["cannot contain dashes"]
+    assert errors["dataName"] == ["cannot contain dashes"]
   end
 
   test "put returns 400 when modifiedDate is invalid", %{
@@ -198,9 +195,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> put(@route, new_dataset)
       |> json_response(400)
 
-    joined_errors = Enum.join(errors, ", ")
-
-    assert String.contains?(joined_errors, "iso8601 formatted")
+    assert errors["modifiedDate"] == ["is invalid"]
   end
 
   test "put returns 400 and errors when fields are invalid", %{
@@ -234,16 +229,16 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> json_response(400)
 
     expected_errors = %{
-      "dataTitle" => ["Dataset Title is required."],
-      "description" => ["Description is required."],
-      "contactName" => ["Maintainer Name is required."],
-      "contactEmail" => ["Email is invalid."],
-      "issuedDate" => ["Release Date is required."],
-      "license" => ["License is required."],
-      "publishFrequency" => ["Publish Frequency is required."],
-      "orgTitle" => ["Organization is required."],
-      "private" => ["Level of Access is required."],
-      "sourceFormat" => ["Format is required."]
+      "dataTitle" => ["is required"],
+      "description" => ["is required"],
+      "contactName" => ["is required"],
+      "contactEmail" => ["has invalid format"],
+      "issuedDate" => ["is required"],
+      "license" => ["is required"],
+      "publishFrequency" => ["is required"],
+      "orgTitle" => ["is required"],
+      "private" => ["is required"],
+      "sourceFormat" => ["is required"]
     }
 
     assert expected_errors == actual_errors
