@@ -8,7 +8,7 @@ defmodule Estuary.InitServer do
   alias Estuary.Datasets.DatasetSchema
   alias Estuary.DataWriter
 
-  def start_link(_opts) do
+  def start_link(_opts \\ []) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 

@@ -1,13 +1,27 @@
 defmodule Estuary.DataWriterTest do
   use ExUnit.Case
-  use Placebo
+  import Mox
 
   alias Estuary.Datasets.DatasetSchema
   alias Estuary.DataWriter
   alias SmartCity.TestDataGenerator, as: TDG
 
+  setup :set_mox_global
+  setup :verify_on_exit!
+
   test "should insert event to history table" do
-    allow(MockTable.write(any(), any()), return: :ok)
+    test = self()
+
+    expect(MockTable, :write, 1, fn payload, args ->
+      send(test, %{
+        payload: payload,
+        table: Keyword.get(args, :table),
+        schema: Keyword.get(args, :schema)
+      })
+
+      :ok
+    end)
+
     author = "A nice fellow"
     time_stamp = DateTime.to_unix(DateTime.utc_now())
     dataset = Jason.encode!(TDG.create_dataset(%{}))
@@ -34,6 +48,12 @@ defmodule Estuary.DataWriterTest do
       }
     ]
 
-    assert_called(MockTable.write(payload, table: table, schema: schema))
+    expected = %{
+      payload: payload,
+      table: table,
+      schema: schema
+    }
+
+    assert_receive(^expected)
   end
 end

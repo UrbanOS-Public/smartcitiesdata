@@ -8,9 +8,6 @@ defmodule Estuary.MessageHandlerTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias DeadLetter.Carrier.Test, as: Carrier
 
-  setup :set_mox_global
-  setup :verify_on_exit!
-
   @tag :capture_log
   test "should send the message to dead letter queue when expected fields are not found" do
     payload = %{

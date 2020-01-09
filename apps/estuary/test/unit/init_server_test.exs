@@ -1,6 +1,5 @@
 defmodule Estuary.InitServerTest do
   use ExUnit.Case
-  use Placebo
 
   import Assertions
   import Mox
@@ -14,7 +13,7 @@ defmodule Estuary.InitServerTest do
     expect(MockTable, :init, fn _ -> :ok end)
     expect(MockReader, :init, fn _ -> :ok end)
 
-    assert {:ok, _} = InitServer.start_link(name: :foo)
+    assert {:ok, _} = InitServer.start_link()
   end
 
   @tag :capture_log
@@ -22,7 +21,7 @@ defmodule Estuary.InitServerTest do
     expect(MockTable, :init, 1, fn _ -> :ok end)
     expect(MockReader, :init, 1, fn _ -> :ok end)
 
-    assert {:ok, init_server_pid} = InitServer.start_link(name: :foo)
+    assert {:ok, init_server_pid} = InitServer.start_link()
     Process.unlink(init_server_pid)
 
     DynamicSupervisor.stop(Pipeline.DynamicSupervisor, :test)
