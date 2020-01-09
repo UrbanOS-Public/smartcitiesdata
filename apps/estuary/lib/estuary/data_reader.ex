@@ -11,14 +11,12 @@ defmodule Estuary.DataReader do
 
   @impl Pipeline.Reader
   def init(_opts \\ []) do
-    :ok =
-      reader_args()
-      |> @topic_reader.init()
+    :ok = @topic_reader.init(reader_args())
   end
 
   @impl Pipeline.Reader
   def terminate(_opts \\ []) do
-    :ok
+    :ok = @topic_reader.terminate(reader_args())
   end
 
   defp reader_args do

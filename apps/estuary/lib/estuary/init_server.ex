@@ -16,15 +16,24 @@ defmodule Estuary.InitServer do
   def init(_) do
     with :ok <- init_writer(),
          :ok <- DataReader.init(),
-         pid <- Process.whereis(Pipeline.DynamicSupervisor) do
+         pid when is_pid(pid) <- Process.whereis(Pipeline.DynamicSupervisor) do
       Process.monitor(pid)
       {:ok, %{pipeline: pid}}
+    else
+      _ -> raise "Could not initialize Estuary"
     end
   end
 
-  def handle_info({:DOWN, _, _, pid, _}, %{pipeline: pid}) do
-    :ok = DataReader.init()
-    {:noreply, %{pipeline: Process.whereis(Pipeline.DynamicSupervisor)}}
+  def handle_info({:DOWN, _, _, pid, _} = msg, %{pipeline: pid} = state) do
+    with :ok <- DataReader.init(),
+         pid when is_pid(pid) <- Process.whereis(Pipeline.DynamicSupervisor) do
+      Process.monitor(pid)
+      {:noreply, %{pipeline: pid}}
+    else
+      _ ->
+        Process.sleep(100)
+        handle_info(msg, state)
+    end
   end
 
   defp init_writer do
