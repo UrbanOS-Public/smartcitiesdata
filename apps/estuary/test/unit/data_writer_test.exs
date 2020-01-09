@@ -4,13 +4,12 @@ defmodule Estuary.DataWriterTest do
 
   alias Estuary.Datasets.DatasetSchema
   alias Estuary.DataWriter
-  alias Estuary.DataWriterHelper
   alias SmartCity.TestDataGenerator, as: TDG
 
   test "should insert event to history table" do
     allow(MockTable.write(any(), any()), return: :ok)
-    author = DataWriterHelper.make_author()
-    time_stamp = DataWriterHelper.make_time_stamp()
+    author = "A nice fellow"
+    time_stamp = DateTime.to_unix(DateTime.utc_now())
     dataset = Jason.encode!(TDG.create_dataset(%{}))
 
     table = DatasetSchema.table_name()

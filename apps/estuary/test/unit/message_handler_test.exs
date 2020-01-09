@@ -4,7 +4,6 @@ defmodule Estuary.MessageHandlerTest do
   import Mox
   import Assertions
 
-  alias Estuary.DataWriterHelper
   alias Estuary.MessageHandler
   alias SmartCity.TestDataGenerator, as: TDG
   alias DeadLetter.Carrier.Test, as: Carrier
@@ -15,8 +14,8 @@ defmodule Estuary.MessageHandlerTest do
   @tag :capture_log
   test "should send the message to dead letter queue when expected fields are not found" do
     payload = %{
-      "authors" => DataWriterHelper.make_author(),
-      "create_tss" => DataWriterHelper.make_time_stamp(),
+      "authors" => "Some Author",
+      "create_tss" => DateTime.to_unix(DateTime.utc_now()),
       "datas" => Jason.encode!(TDG.create_dataset(%{})),
       "forwarded" => false,
       "types" => "data:ingest:start"
@@ -50,7 +49,7 @@ defmodule Estuary.MessageHandlerTest do
   @tag :capture_log
   test "should send the message to dead letter queue when inserting into the database fails" do
     payload = %{
-      "author" => DataWriterHelper.make_author(),
+      "author" => "Another Author",
       "create_ts" => "'notatimestamp'",
       "data" => Jason.encode!(TDG.create_dataset(%{})),
       "forwarded" => false,

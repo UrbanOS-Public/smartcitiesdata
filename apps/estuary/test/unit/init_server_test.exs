@@ -21,21 +21,16 @@ defmodule Estuary.InitServerTest do
 
   @tag :capture_log
   test "should re-initialize topic reader if pipeline goes down" do
-    Application.ensure_all_started(:pipeline)
-    expect(MockTable, :init, fn _ -> :ok end)
+    expect(MockTable, :init, 1, fn _ -> :ok end)
     expect(MockReader, :init, 1, fn _ -> :ok end)
     stub(MockReader, :init, fn _ -> :ok end)
 
     assert {:ok, init_server_pid} = InitServer.start_link(name: :foo)
 
-    old_pid = Process.whereis(Pipeline.DynamicSupervisor)
     DynamicSupervisor.stop(Pipeline.DynamicSupervisor, :test)
 
     assert_async do
-      {:monitors, processes} = Process.info(init_server_pid, :monitors)
-      assert [process: new_pid] = processes
-      assert new_pid != old_pid
-      assert new_pid == Process.whereis(Pipeline.DynamicSupervisor)
+      assert Process.whereis(Estuary.InitServer) |> Process.alive?()
     end
   end
 end
