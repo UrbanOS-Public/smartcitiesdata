@@ -91,8 +91,8 @@ defmodule DiscoveryApiWeb.DataController do
          true <- QueryAccessUtils.authorized_to_query?(query, current_user) do
       data_stream =
         session
-        |> Prestige.query!(query)
-        |> Prestige.Result.as_maps()
+        |> Prestige.stream!(query)
+        |> Stream.flat_map(&Prestige.Result.as_maps/1)
 
       rendered_data_stream =
         DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name, schema: schema})
