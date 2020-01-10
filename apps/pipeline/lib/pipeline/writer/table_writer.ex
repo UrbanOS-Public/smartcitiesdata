@@ -74,8 +74,12 @@ defmodule Pipeline.Writer.TableWriter do
   end
 
   defp execute(statement) do
-    statement
-    |> Prestige.execute()
-    |> Prestige.prefetch()
+    try do
+      statement
+      |> Prestige.execute()
+      |> Prestige.prefetch()
+    rescue
+      e -> e.message
+    end
   end
 end

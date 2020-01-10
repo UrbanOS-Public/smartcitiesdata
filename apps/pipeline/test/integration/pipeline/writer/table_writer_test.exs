@@ -36,6 +36,18 @@ defmodule Pipeline.Writer.TableWriterTest do
       end)
     end
 
+    test "handles prestige errors for invalid table names" do
+      schema = [
+        %{name: "one", type: "list", itemType: "string"},
+        %{name: "two", type: "map", subSchema: [%{name: "three", type: "decimal(18,3)"}]},
+        %{name: "four", type: "list", itemType: "map", subSchema: [%{name: "five", type: "integer"}]}
+      ]
+
+      dataset = TDG.create_dataset(%{technical: %{systemName: "this.is.invalid", schema: schema}})
+
+      assert {:error, _} = TableWriter.init(table: dataset.technical.systemName, schema: dataset.technical.schema)
+    end
+
     test "escapes invalid column names" do
       expected = [%{"Column" => "on", "Comment" => "", "Extra" => "", "Type" => "boolean"}]
       schema = [%{name: "on", type: "boolean"}]
