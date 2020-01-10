@@ -2,6 +2,8 @@ defmodule Flair.Application do
   @moduledoc """
   Flair starts flows for any profiling needed, as well as a connection to kafka.
   """
+
+  # Change Flair
   use Application
 
   def start(_type, _args) do
