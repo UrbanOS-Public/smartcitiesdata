@@ -9,7 +9,7 @@ defmodule AndiWeb.EditLiveViewTest do
   import SmartCity.Event, only: [dataset_update: 0]
 
   alias Andi.DatasetCache
-  alias Andi.InputSchemas.Metadata
+  alias Andi.InputSchemas.InputConverter
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -330,7 +330,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       form_data =
         dataset
-        |> Metadata.changeset_from_struct()
+        |> InputConverter.changeset_from_struct()
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
         |> Ecto.Changeset.apply_changes()
         |> Map.update!(:keywords, &Enum.join(&1, ", "))
@@ -339,9 +339,9 @@ defmodule AndiWeb.EditLiveViewTest do
 
       updated_dataset =
         form_data
-        |> Metadata.form_changeset()
+        |> InputConverter.form_changeset()
         |> Ecto.Changeset.apply_changes()
-        |> Metadata.restruct(dataset)
+        |> InputConverter.restruct(dataset)
 
       assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, updated_dataset), once())
     end
@@ -374,7 +374,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       form_data =
         dataset
-        |> Metadata.changeset_from_struct()
+        |> InputConverter.changeset_from_struct()
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
         |> Ecto.Changeset.apply_changes()
         |> Map.update!(:keywords, &Enum.join(&1, ", "))
@@ -391,7 +391,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
     form_data =
       dataset
-      |> Metadata.changeset_from_struct()
+      |> InputConverter.changeset_from_struct()
       |> Ecto.Changeset.apply_changes()
       |> Map.update!(:keywords, &Enum.join(&1, ", "))
 

@@ -1,7 +1,7 @@
-defmodule Andi.InputSchemas.Metadata do
+defmodule Andi.InputSchemas.InputConverter do
   @moduledoc false
 
-  alias Andi.InputSchemas.Dataset
+  alias Andi.InputSchemas.DatasetInput
 
   def changeset_from_struct(%SmartCity.Dataset{} = dataset) do
     create_changeset_from_dataset(dataset)
@@ -17,7 +17,7 @@ defmodule Andi.InputSchemas.Metadata do
     from_technical = get_technical(technical)
 
     Map.merge(from_business, from_technical)
-    |> Dataset.changeset()
+    |> DatasetInput.changeset()
   end
 
   def form_changeset(params \\ %{})
@@ -25,16 +25,16 @@ defmodule Andi.InputSchemas.Metadata do
   def form_changeset(%{keywords: keywords} = params) when is_binary(keywords) do
     params
     |> Map.update!(:keywords, &keyword_string_to_list/1)
-    |> Dataset.changeset()
+    |> DatasetInput.changeset()
   end
 
   def form_changeset(%{"keywords" => keywords} = params) when is_binary(keywords) do
     params
     |> Map.update!("keywords", &keyword_string_to_list/1)
-    |> Dataset.changeset()
+    |> DatasetInput.changeset()
   end
 
-  def form_changeset(params), do: Dataset.changeset(params)
+  def form_changeset(params), do: DatasetInput.changeset(params)
 
   def restruct(schema, dataset) do
     formatted_schema =
@@ -51,11 +51,11 @@ defmodule Andi.InputSchemas.Metadata do
   end
 
   defp get_business(map) when is_map(map) do
-    Map.take(map, Dataset.business_field_keys())
+    Map.take(map, DatasetInput.business_keys())
   end
 
   defp get_technical(map) when is_map(map) do
-    Map.take(map, Dataset.technical_field_keys())
+    Map.take(map, DatasetInput.technical_keys())
   end
 
   defp keyword_string_to_list(nil), do: []

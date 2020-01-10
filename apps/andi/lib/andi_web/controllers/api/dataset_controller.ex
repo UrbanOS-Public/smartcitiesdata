@@ -13,7 +13,7 @@ defmodule AndiWeb.API.DatasetController do
   alias Andi.Services.DatasetRetrieval
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
-  alias Andi.InputSchemas.Metadata
+  alias Andi.InputSchemas.InputConverter
 
   @doc """
   Parse a data message and post the created dataset to redis
@@ -40,7 +40,7 @@ defmodule AndiWeb.API.DatasetController do
   end
 
   def validate_changes(dataset) do
-    changeset = Metadata.changeset_from_dataset_map(dataset)
+    changeset = InputConverter.changeset_from_dataset_map(dataset)
 
     if changeset.valid?, do: :valid, else: {:invalid, format_changeset_errors(changeset)}
   end

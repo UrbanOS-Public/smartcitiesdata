@@ -1,4 +1,4 @@
-defmodule Andi.InputSchemas.Dataset do
+defmodule Andi.InputSchemas.DatasetInput do
   @moduledoc false
   import Ecto.Changeset
 
@@ -29,7 +29,9 @@ defmodule Andi.InputSchemas.Dataset do
     topLevelSelector: :string
   }
 
-  @types Map.merge(@business_fields, @technical_fields) |> Map.put(:id, :string)
+  @types %{id: :string}
+  |> Map.merge(@business_fields)
+  |> Map.merge(@technical_fields)
 
   @changeset_base {%{}, @types}
 
@@ -51,9 +53,9 @@ defmodule Andi.InputSchemas.Dataset do
   @email_regex ~r/^[A-Za-z0-9._%+-+']+@[A-Za-z0-9.-]+\.[A-Za-z]+$/
   @no_dashes_regex ~r/^[^\-]+$/
 
-  def business_field_keys(), do: Map.keys(@business_fields)
-  def technical_field_keys(), do: Map.keys(@technical_fields)
-  def all_field_keys(), do: Map.keys(@types)
+  def business_keys(), do: Map.keys(@business_fields)
+  def technical_keys(), do: Map.keys(@technical_fields)
+  def all_keys(), do: Map.keys(@types)
 
   def changeset(changes) do
     @changeset_base

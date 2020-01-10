@@ -3,7 +3,7 @@ defmodule AndiWeb.EditLiveView do
 
   alias Phoenix.HTML.Link
   alias AndiWeb.DatasetValidator
-  alias Andi.InputSchemas.Metadata
+  alias Andi.InputSchemas.InputConverter
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -116,7 +116,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def mount(%{dataset: dataset}, socket) do
-    new_changeset = Metadata.changeset_from_struct(dataset)
+    new_changeset = InputConverter.changeset_from_struct(dataset)
 
     {:ok,
      assign(socket,
@@ -132,7 +132,7 @@ defmodule AndiWeb.EditLiveView do
 
     new_changeset =
       form_data
-      |> Metadata.form_changeset()
+      |> InputConverter.form_changeset()
       |> Map.put(:action, :update)
 
     {:noreply, assign(socket, changeset: new_changeset)}
@@ -141,7 +141,7 @@ defmodule AndiWeb.EditLiveView do
   def handle_event("save", %{"metadata" => form_data}, socket) do
     socket = reset_save_success(socket)
 
-    new_changeset = Metadata.form_changeset(form_data)
+    new_changeset = InputConverter.form_changeset(form_data)
 
     IO.inspect(new_changeset, label: "WAT")
 
@@ -151,7 +151,7 @@ defmodule AndiWeb.EditLiveView do
       schema = Ecto.Changeset.apply_changes(new_changeset) |> IO.inspect(label: "form")
       original_dataset = socket.assigns.dataset
 
-      with dataset = Metadata.restruct(schema, original_dataset) |> IO.inspect(label: "dataset being saved"),
+      with dataset = InputConverter.restruct(schema, original_dataset) |> IO.inspect(label: "dataset being saved"),
            :valid <- DatasetValidator.validate(dataset),
            :ok <- Brook.Event.send(instance_name(), dataset_update(), :andi, dataset) do
         {:noreply, assign(socket, dataset: dataset, changeset: new_changeset, save_success: true)}

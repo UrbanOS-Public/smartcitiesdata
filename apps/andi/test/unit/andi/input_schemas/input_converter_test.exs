@@ -1,11 +1,11 @@
-defmodule Andi.InputSchemas.MetadataTest do
+defmodule Andi.InputSchemas.InputConverterTest do
   use ExUnit.Case
 
   alias Ecto.Changeset
-  alias Andi.InputSchemas.Metadata
+  alias Andi.InputSchemas.InputConverter
   alias SmartCity.TestDataGenerator
 
-  test "SmartCity.Dataset => Changeset => SmartCity.Dataset works" do
+  test "SmartCity.Dataset => Changeset => SmartCity.Dataset" do
     dataset =
       TestDataGenerator.create_dataset(%{
         business: %{issuedDate: "2020-01-03 00:00:00Z", modifiedDate: "2020-01-05 00:00:00Z"}
@@ -13,9 +13,9 @@ defmodule Andi.InputSchemas.MetadataTest do
 
     new_dataset =
       dataset
-      |> Metadata.changeset_from_struct()
+      |> InputConverter.changeset_from_struct()
       |> Changeset.apply_changes()
-      |> Metadata.restruct(dataset)
+      |> InputConverter.restruct(dataset)
 
     assert new_dataset == dataset
   end
