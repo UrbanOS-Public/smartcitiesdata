@@ -5,8 +5,6 @@ defmodule AndiWeb.API.DatasetController do
 
   use AndiWeb, :controller
 
-  alias AndiWeb.DatasetValidator
-
   require Logger
   alias SmartCity.Registry.Dataset, as: RegDataset
   alias SmartCity.Dataset
@@ -22,7 +20,6 @@ defmodule AndiWeb.API.DatasetController do
   def create(conn, _params) do
     with message <- add_uuid(conn.body_params),
          {:ok, parsed_message} <- parse_message(message),
-         :valid <- DatasetValidator.validate(parsed_message),
          :valid <- validate_changes(parsed_message),
          {:ok, old_dataset} <- RegDataset.new(parsed_message),
          {:ok, dataset} <- Dataset.new(parsed_message),

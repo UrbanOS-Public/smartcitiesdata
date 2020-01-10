@@ -20,7 +20,9 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     orgTitle: "orgTitle",
     private: false,
     publishFrequency: "publishFrequency",
-    sourceFormat: "sourceFormat"
+    schema: [%{name: "name", type: "type"}],
+    sourceFormat: "sourceFormat",
+    sourceType: "sourceType"
   }
 
   describe "changeset" do
@@ -49,7 +51,8 @@ defmodule Andi.InputSchemas.DatasetInputTest do
           :orgTitle,
           :private,
           :publishFrequency,
-          :sourceFormat
+          :sourceFormat,
+          :sourceType
         ]
       )
     end
@@ -126,6 +129,48 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       assert changeset.errors == [{:topLevelSelector, {"is required", [validation: :required]}}]
 
       where(source_format: ["xml", "text/xml"])
+    end
+
+    data_test "validates the schema appropriately when sourceType is #{source_type} and schema is #{inspect(schema)}" do
+      changes = @valid_changes |> Map.put(:schema, schema) |> Map.put(:sourceType, source_type)
+
+      changeset = DatasetInput.changeset(changes)
+
+      assert changeset.errors == errors
+
+      where(
+        source_type: ["ingest", "stream", "ingest", "something-else"],
+        schema: [nil, nil, [], nil],
+        errors: [
+          [{:schema, {"is required", [validation: :required]}}],
+          [{:schema, {"is required", [validation: :required]}}],
+          [{:schema, {"cannot be empty", []}}],
+          []
+        ]
+      )
+    end
+
+    test "xml source format requires all fields in the schema to have selectors" do
+      schema = [
+        %{name: "field_name"},
+        %{name: "other_field", selector: "this is the only selector"},
+        %{name: "another_field", selector: ""}
+      ]
+
+      changes =
+        @valid_changes
+        |> Map.merge(%{
+          schema: schema,
+          sourceFormat: "xml",
+          topLevelSelector: "whatever",
+          sourceType: "ingest"
+        })
+
+      changeset = DatasetInput.changeset(changes)
+
+      assert length(changeset.errors) == 2
+      assert changeset.errors |> Enum.any?(fn {:schema, {error, _}} -> String.match?(error, ~r/selector.+field_name/) end)
+      assert changeset.errors |> Enum.any?(fn {:schema, {error, _}} -> String.match?(error, ~r/selector.+another_field/) end)
     end
   end
 end

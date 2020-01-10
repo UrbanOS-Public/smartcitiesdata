@@ -3,6 +3,7 @@ defmodule Andi.InputSchemas.DatasetInput do
   import Ecto.Changeset
 
   alias Andi.Services.DatasetRetrieval
+  alias AndiWeb.DatasetSchemaValidator
 
   @business_fields %{
     contactEmail: :string,
@@ -25,15 +26,15 @@ defmodule Andi.InputSchemas.DatasetInput do
     dataName: :string,
     orgName: :string,
     private: :boolean,
+    schema: {:array, :map},
     sourceFormat: :string,
+    sourceType: :string,
     topLevelSelector: :string
   }
 
   @types %{id: :string}
   |> Map.merge(@business_fields)
   |> Map.merge(@technical_fields)
-
-  @changeset_base {%{}, @types}
 
   @required_fields [
     :contactEmail,
@@ -47,7 +48,8 @@ defmodule Andi.InputSchemas.DatasetInput do
     :orgTitle,
     :private,
     :publishFrequency,
-    :sourceFormat
+    :sourceFormat,
+    :sourceType
   ]
 
   @email_regex ~r/^[A-Za-z0-9._%+-+']+@[A-Za-z0-9.-]+\.[A-Za-z]+$/
@@ -58,7 +60,11 @@ defmodule Andi.InputSchemas.DatasetInput do
   def all_keys(), do: Map.keys(@types)
 
   def changeset(changes) do
-    @changeset_base
+    changeset(%{}, changes)
+  end
+
+  def changeset(schema, changes) do
+    {schema, @types}
     |> cast(changes, Map.keys(@types))
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:contactEmail, @email_regex)
@@ -66,6 +72,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_unique_system_name()
     |> validate_top_level_selector()
+    |> validate_schema()
   end
 
   defp validate_unique_system_name(changeset) do
@@ -91,4 +98,20 @@ defmodule Andi.InputSchemas.DatasetInput do
   end
 
   defp validate_top_level_selector(changeset), do: changeset
+
+  defp validate_schema(%{changes: %{sourceType: source_type}} = changeset)
+    when source_type in ["ingest", "stream"] do
+    case Map.get(changeset.changes, :schema) do
+      [] -> add_error(changeset, :schema, "cannot be empty")
+      nil -> add_error(changeset, :schema, "is required", validation: :required)
+      _ -> validate_schema_internals(changeset)
+    end
+  end
+
+  defp validate_schema(changeset), do: changeset
+
+  defp validate_schema_internals(%{changes: changes} = changeset) do
+    DatasetSchemaValidator.validate(changes[:schema], changes[:sourceFormat])
+    |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
+  end
 end

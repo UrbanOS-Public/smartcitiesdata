@@ -2,7 +2,6 @@ defmodule AndiWeb.EditLiveView do
   use AndiWeb, :live_view
 
   alias Phoenix.HTML.Link
-  alias AndiWeb.DatasetValidator
   alias Andi.InputSchemas.InputConverter
 
   import Andi
@@ -116,7 +115,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def mount(%{dataset: dataset}, socket) do
-    new_changeset = InputConverter.changeset_from_struct(dataset)
+    new_changeset = InputConverter.changeset_from_struct(dataset) |> remove_schema()
 
     {:ok,
      assign(socket,
@@ -125,6 +124,12 @@ defmodule AndiWeb.EditLiveView do
        validation_errors: nil,
        save_success: false
      )}
+  end
+
+  # phoenix forms cannot handle the current structure of our schema,
+  # so we are temporarily excluding it from the changeset that is passed to the form
+  defp remove_schema(changeset) do
+    Map.update(changeset, :changes, nil, fn changes -> Map.delete(changes, :schema) end)
   end
 
   def handle_event("validate", %{"metadata" => form_data}, socket) do
@@ -148,21 +153,15 @@ defmodule AndiWeb.EditLiveView do
     # TODO: consider extracting to shared service for API and live-view save
     if new_changeset.valid? do
       # TODO: find out why an empty description doesn't show as a "change"
-      schema = Ecto.Changeset.apply_changes(new_changeset) |> IO.inspect(label: "form")
+      schema = Ecto.Changeset.apply_changes(new_changeset) # |> IO.inspect(label: "form")
       original_dataset = socket.assigns.dataset
 
       with dataset = InputConverter.restruct(schema, original_dataset) |> IO.inspect(label: "dataset being saved"),
-           :valid <- DatasetValidator.validate(dataset),
            :ok <- Brook.Event.send(instance_name(), dataset_update(), :andi, dataset) do
         {:noreply, assign(socket, dataset: dataset, changeset: new_changeset, save_success: true)}
       else
-        {:invalid, errors} ->
-          Logger.warn("Unable to create new SmartCity.Dataset: #{inspect({:invalid, errors})}")
-
-          {:noreply, assign(socket, changeset: new_changeset, validation_errors: errors)}
-
-        {:error, e} ->
-          Logger.warn("Unable to create new SmartCity.Dataset: #{inspect({:error, e})}")
+        error ->
+          Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
 
           {:noreply, assign(socket, changeset: new_changeset)}
       end
@@ -176,6 +175,7 @@ defmodule AndiWeb.EditLiveView do
   defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
   defp get_level_of_access_options, do: [[key: "Private", value: "true"], [key: "Public", value: "false"]]
 
+  # TODO should these be removed?
   defp keywords_to_string(nil), do: ""
   defp keywords_to_string(keywords) when is_binary(keywords), do: keywords
   defp keywords_to_string(keywords), do: Enum.join(keywords, ", ")
