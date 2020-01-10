@@ -5,7 +5,6 @@ required_envars = [
   "PRESTO_URL",
   "KAFKA_BROKERS",
   "DATA_TOPIC",
-  "SCHEMA_NAME",
   "TABLE_NAME",
   "DLQ_TOPIC"
 ]
@@ -18,7 +17,6 @@ end)
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 topic = System.get_env("DATA_TOPIC")
-schema_name = System.get_env("SCHEMA_NAME")
 table_name = System.get_env("TABLE_NAME")
 
 endpoints =
@@ -35,13 +33,9 @@ elsa_brokers =
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
-  config :prestige,
+config :prestige,
   base_url: System.get_env("PRESTO_URL"),
-  headers: [
-    user: System.get_env("PRESTO_USER"),
-    catalog: "hive",
-    schema: schema_name
-  ]
+  headers: [user: System.get_env("PRESTO_USER")]
 
 config :estuary,
   elsa_brokers: elsa_brokers,
@@ -60,4 +54,3 @@ config :dead_letter,
       topic: "streaming-dead-letters"
     ]
   ]
-
