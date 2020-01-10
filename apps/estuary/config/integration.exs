@@ -7,7 +7,7 @@ config :prestige,
   headers: [
     user: "estuary",
     catalog: "hive",
-    schema: "event_stream"
+    schema: "default"
   ]
 
 config :estuary,
