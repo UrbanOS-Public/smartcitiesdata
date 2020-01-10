@@ -3,12 +3,7 @@ use Mix.Config
 endpoints = [localhost: 9092]
 
 config :prestige,
-  base_url: "http://127.0.0.1:8080",
-  headers: [
-    user: "estuary",
-    catalog: "hive",
-    schema: "event_stream"
-  ]
+  base_url: "http://127.0.0.1:8080"
 
 config :estuary,
   endpoints: endpoints,
