@@ -9,7 +9,7 @@ defmodule Estuary.DataWriterTest do
   setup :set_mox_global
   setup :verify_on_exit!
 
-  test "should insert event to history table" do
+  test "should insert events to history table" do
     test = self()
 
     expect(MockTable, :write, 1, fn payload, args ->
@@ -22,28 +22,42 @@ defmodule Estuary.DataWriterTest do
       :ok
     end)
 
-    author = "A nice fellow"
-    time_stamp = DateTime.to_unix(DateTime.utc_now())
-    dataset = Jason.encode!(TDG.create_dataset(%{}))
-
     table = DatasetSchema.table_name()
     schema = DatasetSchema.schema()
 
-    DataWriter.write(%{
-      "author" => author,
-      "create_ts" => time_stamp,
-      "data" => dataset,
+    eventA = %{
+      "author" => "A nice fellow",
+      "create_ts" => DateTime.to_unix(DateTime.utc_now()),
+      "data" => Jason.encode!(TDG.create_dataset(%{})),
       "forwarded" => false,
       "type" => "data:ingest:start"
-    })
+    }
+
+    eventB = %{
+      "author" => "A mean fellow",
+      "create_ts" => DateTime.to_unix(DateTime.utc_now()),
+      "data" => Jason.encode!(TDG.create_dataset(%{})),
+      "forwarded" => false,
+      "type" => "data:ingest:end"
+    }
+
+    DataWriter.write([eventA, eventB])
 
     payload = [
       %{
         payload: %{
-          "author" => author,
-          "create_ts" => time_stamp,
-          "data" => dataset,
-          "type" => "data:ingest:start"
+          "author" => eventA["author"],
+          "create_ts" => eventA["create_ts"],
+          "data" => eventA["data"],
+          "type" => eventA["type"]
+        }
+      },
+      %{
+        payload: %{
+          "author" => eventB["author"],
+          "create_ts" => eventB["create_ts"],
+          "data" => eventB["data"],
+          "type" => eventB["type"]
         }
       }
     ]

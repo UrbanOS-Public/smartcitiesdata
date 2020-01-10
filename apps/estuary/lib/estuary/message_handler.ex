@@ -7,12 +7,20 @@ defmodule Estuary.MessageHandler do
 
   def handle_messages(messages) do
     messages
-    |> Enum.each(fn message ->
+    |> Enum.map(fn message ->
       message.value
       |> Jason.decode!()
-      |> DataWriter.write()
-      |> error_dead_letter()
     end)
+    |> DataWriter.write()
+    |> error_dead_letter()
+
+    # messages
+    # |> Enum.each(fn message ->
+    #   message.value
+    #   |> Jason.decode!()
+    #   |> DataWriter.write()
+    #   |> error_dead_letter()
+    # end)
 
     :ack
   end

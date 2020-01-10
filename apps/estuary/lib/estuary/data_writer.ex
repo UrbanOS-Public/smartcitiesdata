@@ -25,34 +25,40 @@ defmodule Estuary.DataWriter do
   Writes data to PrestoDB and Kafka using `:table_writer` from
   Estuary's application environment.
   """
-  def write(event, opts \\ [])
-
-  def write(%{"author" => _, "create_ts" => _, "data" => _, "type" => _} = event, _) do
+  def write(events, _ \\ []) do
+    # if bad events, return, else write
     :ok =
-      event
+      events
       |> make_datawriter_payload()
       |> @table_writer.write(
         table: DatasetSchema.table_name(),
         schema: DatasetSchema.schema()
       )
   rescue
-    _ -> {:error, event, "Presto Error"}
+    _ -> {:error, events, "Presto Error"}
   end
 
-  def write(event, _) do
-    {:error, event, "Required field missing"}
+  defp make_datawriter_payload(events) do
+    Enum.map(events, &make_payload/1)
   end
 
-  defp make_datawriter_payload(event) do
-    [
-      %{
-        payload: %{
-          "author" => event["author"],
-          "create_ts" => event["create_ts"],
-          "data" => event["data"],
-          "type" => event["type"]
-        }
+  defp make_payload(%{
+         "author" => author,
+         "create_ts" => create_ts,
+         "data" => data,
+         "type" => type
+       }) do
+    %{
+      payload: %{
+        "author" => author,
+        "create_ts" => create_ts,
+        "data" => data,
+        "type" => type
       }
-    ]
+    }
+  end
+
+  def make_payload(event, _) do
+    {:error, event, "Required field missing"}
   end
 end

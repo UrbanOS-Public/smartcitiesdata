@@ -60,7 +60,7 @@ defmodule Estuary.MessageHandlerTest do
     expected_value = %{
       app: "estuary",
       dataset_id: "Unknown",
-      original_message: payload,
+      original_message: [payload],
       reason: "Presto Error"
     }
 
@@ -75,7 +75,11 @@ defmodule Estuary.MessageHandlerTest do
         &(&1.app == &2.app and &1.dataset_id == &2.dataset_id and
             &1.original_message == &2.original_message and &1.reason == &2.reason)
 
-      assert_maps_equal(expected_value, actual_value, dlq_comparison)
+      assert_maps_equal(
+        expected_value,
+        actual_value,
+        dlq_comparison
+      )
     end
   end
 end
