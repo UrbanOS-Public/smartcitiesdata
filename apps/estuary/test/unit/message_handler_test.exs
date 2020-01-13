@@ -13,7 +13,7 @@ defmodule Estuary.MessageHandlerTest do
     payload = %{
       "authors" => "Some Author",
       "create_tss" => DateTime.to_unix(DateTime.utc_now()),
-      "datas" => Jason.encode!(TDG.create_dataset(%{})),
+      "datas" => "some data",
       "forwarded" => false,
       "types" => "data:ingest:start"
     }
@@ -25,7 +25,7 @@ defmodule Estuary.MessageHandlerTest do
     expected_value = %{
       app: "estuary",
       dataset_id: "Unknown",
-      original_message: payload,
+      original_message: [payload],
       reason: "Required field missing"
     }
 

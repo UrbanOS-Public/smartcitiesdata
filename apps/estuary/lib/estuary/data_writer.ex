@@ -26,14 +26,18 @@ defmodule Estuary.DataWriter do
   Estuary's application environment.
   """
   def write(events, _ \\ []) do
-    # if bad events, return, else write
-    :ok =
-      events
-      |> make_datawriter_payload()
-      |> @table_writer.write(
-        table: DatasetSchema.table_name(),
-        schema: DatasetSchema.schema()
-      )
+    payload = make_datawriter_payload(events)
+
+    case get_errors(payload) do
+      [] ->
+        @table_writer.write(payload,
+          table: DatasetSchema.table_name(),
+          schema: DatasetSchema.schema()
+        )
+
+      _ ->
+        {:error, events, "Required field missing"}
+    end
   rescue
     _ -> {:error, events, "Presto Error"}
   end
@@ -58,7 +62,11 @@ defmodule Estuary.DataWriter do
     }
   end
 
-  def make_payload(event, _) do
+  defp make_payload(event) do
     {:error, event, "Required field missing"}
+  end
+
+  defp get_errors(payload) do
+    Enum.filter(payload, &match?({:error, _, _}, &1))
   end
 end
