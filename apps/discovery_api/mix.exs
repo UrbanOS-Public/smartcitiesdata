@@ -59,6 +59,7 @@ defmodule DiscoveryApi.Mixfile do
       {:nanoid, "~> 2.0"},
       {:placebo, "~> 1.2.2", only: [:dev, :test]},
       {:plug_cowboy, "~> 1.0"},
+      {:plug_heartbeat, "~> 0.2.0"},
       {:postgrex, "~> 0.15.1"},
       {:prestige, "~> 1.0"},
       {:prometheus_plugs, "~> 1.1"},

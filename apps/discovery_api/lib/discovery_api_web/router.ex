@@ -37,10 +37,6 @@ defmodule DiscoveryApiWeb.Router do
     plug(DiscoveryApiWeb.Plugs.NoStore)
   end
 
-  scope "/", DiscoveryApiWeb do
-    get("/healthcheck", HealthCheckController, :index)
-  end
-
   scope "/api/v1", DiscoveryApiWeb do
     pipe_through([:reject_cookies_from_ajax, :global_headers])
 

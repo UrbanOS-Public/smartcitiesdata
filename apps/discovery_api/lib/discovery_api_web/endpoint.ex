@@ -8,6 +8,10 @@ defmodule DiscoveryApiWeb.Endpoint do
 
   socket("/socket", DiscoveryApiWeb.UserSocket)
 
+  plug(PlugHeartbeat, path: "/healthcheck")
+
+  plug(DiscoveryApi.MetricsExporter)
+
   plug(DiscoveryApiWeb.Plugs.SecureHeaders)
 
   plug(Corsica,
@@ -64,8 +68,6 @@ defmodule DiscoveryApiWeb.Endpoint do
     key: "_discovery_api_key",
     signing_salt: "foI/nCz1"
   )
-
-  plug(DiscoveryApi.MetricsExporter)
 
   plug(DiscoveryApiWeb.Router)
 
