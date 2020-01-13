@@ -115,7 +115,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def mount(%{dataset: dataset}, socket) do
-    new_changeset = InputConverter.changeset_from_struct(dataset) |> remove_schema()
+    new_changeset = InputConverter.changeset_from_struct(dataset)
 
     {:ok,
      assign(socket,
@@ -124,12 +124,6 @@ defmodule AndiWeb.EditLiveView do
        validation_errors: nil,
        save_success: false
      )}
-  end
-
-  # phoenix forms cannot handle the current structure of our schema,
-  # so we are temporarily excluding it from the changeset that is passed to the form
-  defp remove_schema(changeset) do
-    Map.update(changeset, :changes, nil, fn changes -> Map.delete(changes, :schema) end)
   end
 
   def handle_event("validate", %{"metadata" => form_data}, socket) do
@@ -145,28 +139,24 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("save", %{"metadata" => form_data}, socket) do
     socket = reset_save_success(socket)
+    original_dataset = socket.assigns.dataset
+    changeset = InputConverter.get_new_changeset(original_dataset, form_data)
 
-    new_changeset = InputConverter.form_changeset(form_data)
-
-    IO.inspect(new_changeset, label: "WAT")
-
-    # TODO: consider extracting to shared service for API and live-view save
-    if new_changeset.valid? do
+    if changeset.valid? do
       # TODO: find out why an empty description doesn't show as a "change"
-      schema = Ecto.Changeset.apply_changes(new_changeset) # |> IO.inspect(label: "form")
-      original_dataset = socket.assigns.dataset
+      changes = Ecto.Changeset.apply_changes(changeset)
 
-      with dataset = InputConverter.restruct(schema, original_dataset) |> IO.inspect(label: "dataset being saved"),
+      with dataset = InputConverter.restruct(changes, original_dataset),
            :ok <- Brook.Event.send(instance_name(), dataset_update(), :andi, dataset) do
-        {:noreply, assign(socket, dataset: dataset, changeset: new_changeset, save_success: true)}
+        {:noreply, assign(socket, dataset: dataset, changeset: changeset, save_success: true)}
       else
         error ->
           Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
 
-          {:noreply, assign(socket, changeset: new_changeset)}
+          {:noreply, assign(socket, changeset: changeset)}
       end
     else
-      {:noreply, assign(socket, changeset: %{new_changeset | action: :save})}
+      {:noreply, assign(socket, changeset: %{changeset | action: :save})}
     end
   end
 

@@ -199,7 +199,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_value(html, "#metadata_sourceFormat") == dataset.technical.sourceFormat
       assert {"true", "Private"} == get_select(html, "#metadata_private")
       assert get_value(html, "#metadata_contactName") == dataset.business.contactName
-      assert dataset.business.modifiedDate =~ get_value(html, "#metadata_modifiedDate") |> IO.inspect(label: "modifiedDate")
+      assert dataset.business.modifiedDate =~ get_value(html, "#metadata_modifiedDate")
       assert get_value(html, "#metadata_contactEmail") == dataset.business.contactEmail
       assert dataset.business.issuedDate =~ get_value(html, "#metadata_issuedDate")
       assert get_value(html, "#metadata_license") == dataset.business.license
@@ -334,6 +334,7 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
         |> Ecto.Changeset.apply_changes()
         |> Map.update!(:keywords, &Enum.join(&1, ", "))
+        |> Map.delete(:schema)
 
       render_change(view, :save, %{"metadata" => form_data})
 
@@ -378,6 +379,7 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
         |> Ecto.Changeset.apply_changes()
         |> Map.update!(:keywords, &Enum.join(&1, ", "))
+        |> Map.delete(:schema)
 
       render_change(view, :validate, %{"metadata" => form_data})
       html = render_change(view, :save, %{"metadata" => form_data})
@@ -394,6 +396,8 @@ defmodule AndiWeb.EditLiveViewTest do
       |> InputConverter.changeset_from_struct()
       |> Ecto.Changeset.apply_changes()
       |> Map.update!(:keywords, &Enum.join(&1, ", "))
+      |> Map.delete(:schema)
+      #TODO: consolidate the above three lines with a comment about why we're deleting the schema
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     html = render_change(view, :save, %{"metadata" => form_data})
