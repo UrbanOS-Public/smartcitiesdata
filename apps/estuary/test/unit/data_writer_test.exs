@@ -75,16 +75,8 @@ defmodule Estuary.DataWriterTest do
     test = self()
     table_name = Application.get_env(:estuary, :table_name)
 
-    event = %{
-      "author" => "An Event",
-      "create_ts" => DateTime.to_unix(DateTime.utc_now()),
-      "data" => Jason.encode!(TDG.create_dataset(%{})),
-      "forwarded" => false,
-      "type" => "data:ingest:start"
-    }
-
-    # stub(MockReader, :terminate, fn _ -> :ok end)
-    # stub(MockReader, :init, fn _ -> :ok end)
+    stub(MockReader, :terminate, fn _ -> :ok end)
+    stub(MockReader, :init, fn _ -> :ok end)
 
     expect(MockTable, :compact, fn args ->
       case args[:table] do
@@ -101,22 +93,11 @@ defmodule Estuary.DataWriterTest do
     assert_receive ^table_name
   end
 
-  # test "should stop/restart ingestion around each compaction" do
-  #   stub(MockMetricCollector, :count_metric, fn _, _, _, _ -> [42] end)
-  #   stub(MockMetricCollector, :record_metrics, fn [42], "estuary" -> {:ok, :ok} end)
-  #   stub(MockTable, :compact, fn _ -> :ok end)
+  test "should stop/restart ingestion around each compaction" do
+    stub(MockTable, :compact, fn _ -> :ok end)
+    expect(MockReader, :terminate, fn _ -> :ok end)
+    expect(MockReader, :init, fn _ -> :ok end)
 
-  #   expect(MockReader, :terminate, fn _ -> :ok end)
-  #   expect(MockReader, :init, fn _ -> :ok end)
-
-  #   event = %{
-  #     "author" => "An Event",
-  #     "create_ts" => DateTime.to_unix(DateTime.utc_now()),
-  #     "data" => Jason.encode!(TDG.create_dataset(%{})),
-  #     "forwarded" => false,
-  #     "type" => "data:ingest:start"
-  #   }
-
-  #   assert :ok = DataWriter.compact_events()
-  # end
+    assert :ok = DataWriter.compact_events()
+  end
 end

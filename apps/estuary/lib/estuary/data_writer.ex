@@ -4,6 +4,7 @@ defmodule Estuary.DataWriter do
   """
 
   alias Estuary.Datasets.DatasetSchema
+  alias Estuary.DataReader
 
   @behaviour Pipeline.Writer
 
@@ -44,7 +45,9 @@ defmodule Estuary.DataWriter do
   end
 
   def compact_events() do
+    DataReader.terminate()
     @table_writer.compact(table: @table_name)
+    DataReader.init()
     :ok
   end
 
