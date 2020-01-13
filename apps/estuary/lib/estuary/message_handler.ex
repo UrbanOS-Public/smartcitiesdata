@@ -1,18 +1,18 @@
 defmodule Estuary.MessageHandler do
   @moduledoc """
-  Estuary.MessageHandler reads an event from the event stream and persists it.
+  Estuary.MessageHandler reads events from the event stream and persists them.
   """
   use Elsa.Consumer.MessageHandler
   alias Estuary.DataWriter
 
   def handle_messages(messages) do
     messages
-    |> Enum.each(fn message ->
+    |> Enum.map(fn message ->
       message.value
       |> Jason.decode!()
-      |> DataWriter.write()
-      |> error_dead_letter()
     end)
+    |> DataWriter.write()
+    |> error_dead_letter()
 
     :ack
   end
