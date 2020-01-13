@@ -8,6 +8,7 @@ defmodule Estuary.DataWriter do
   @behaviour Pipeline.Writer
 
   @table_writer Application.get_env(:estuary, :table_writer)
+  @table_name Application.get_env(:estuary, :table_name)
 
   @impl Pipeline.Writer
   @doc """
@@ -40,6 +41,11 @@ defmodule Estuary.DataWriter do
     end
   rescue
     _ -> {:error, events, "Presto Error"}
+  end
+
+  def compact_events() do
+    @table_writer.compact(table: @table_name)
+    :ok
   end
 
   defp make_datawriter_payload(events) do
