@@ -65,7 +65,7 @@ defmodule Andi.InputSchemas.DatasetInput do
 
   def changeset(schema, changes) do
     {schema, @types}
-    |> cast(changes, Map.keys(@types))
+    |> cast(changes, Map.keys(@types), empty_values: [])
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:contactEmail, @email_regex)
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")

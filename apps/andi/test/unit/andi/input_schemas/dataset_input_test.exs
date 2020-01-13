@@ -57,6 +57,19 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       )
     end
 
+    test "treats empty string values as changes" do
+      changes =
+        @valid_changes
+        |> Map.put(:spatial, "")
+        |> Map.put(:temporal, "")
+
+      changeset = DatasetInput.changeset(changes)
+
+      assert changeset.errors == []
+      assert changeset.changes[:spatial] == ""
+      assert changeset.changes[:temporal] == ""
+    end
+
     test "requires valid email" do
       changes = @valid_changes |> Map.put(:contactEmail, "nope")
 
