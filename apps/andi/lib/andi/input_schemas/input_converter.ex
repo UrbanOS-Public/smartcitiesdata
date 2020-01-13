@@ -21,7 +21,6 @@ defmodule Andi.InputSchemas.InputConverter do
 
   def changeset_from_dataset_map(dataset) do
     AtomicMap.convert(dataset, safe: false, underscore: false)
-    |> IO.inspect(label: "changeset_from_dataset_map")
     |> create_changeset_from_dataset()
   end
 

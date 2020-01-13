@@ -332,9 +332,7 @@ defmodule AndiWeb.EditLiveViewTest do
         dataset
         |> InputConverter.changeset_from_struct()
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
-        |> Ecto.Changeset.apply_changes()
-        |> Map.update!(:keywords, &Enum.join(&1, ", "))
-        |> Map.delete(:schema)
+        |> form_data_for_save()
 
       render_change(view, :save, %{"metadata" => form_data})
 
@@ -377,9 +375,7 @@ defmodule AndiWeb.EditLiveViewTest do
         dataset
         |> InputConverter.changeset_from_struct()
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
-        |> Ecto.Changeset.apply_changes()
-        |> Map.update!(:keywords, &Enum.join(&1, ", "))
-        |> Map.delete(:schema)
+        |> form_data_for_save()
 
       render_change(view, :validate, %{"metadata" => form_data})
       html = render_change(view, :save, %{"metadata" => form_data})
@@ -394,15 +390,19 @@ defmodule AndiWeb.EditLiveViewTest do
     form_data =
       dataset
       |> InputConverter.changeset_from_struct()
-      |> Ecto.Changeset.apply_changes()
-      |> Map.update!(:keywords, &Enum.join(&1, ", "))
-      |> Map.delete(:schema)
-      #TODO: consolidate the above three lines with a comment about why we're deleting the schema
+      |> form_data_for_save()
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     html = render_change(view, :save, %{"metadata" => form_data})
 
     assert get_text(html, "##{field}-error-msg") == error_message
+  end
+
+  defp form_data_for_save(changeset) do
+    changeset
+    |> Ecto.Changeset.apply_changes()
+    |> Map.update!(:keywords, &Enum.join(&1, ", "))
+    |> Map.delete(:schema)
   end
 
   defp get_value(html, id) do
