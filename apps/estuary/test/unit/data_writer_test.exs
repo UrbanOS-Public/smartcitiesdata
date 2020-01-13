@@ -25,7 +25,7 @@ defmodule Estuary.DataWriterTest do
     table = DatasetSchema.table_name()
     schema = DatasetSchema.schema()
 
-    eventA = %{
+    event_a = %{
       "author" => "A nice fellow",
       "create_ts" => DateTime.to_unix(DateTime.utc_now()),
       "data" => Jason.encode!(TDG.create_dataset(%{})),
@@ -33,7 +33,7 @@ defmodule Estuary.DataWriterTest do
       "type" => "data:ingest:start"
     }
 
-    eventB = %{
+    event_b = %{
       "author" => "A mean fellow",
       "create_ts" => DateTime.to_unix(DateTime.utc_now()),
       "data" => Jason.encode!(TDG.create_dataset(%{})),
@@ -41,23 +41,23 @@ defmodule Estuary.DataWriterTest do
       "type" => "data:ingest:end"
     }
 
-    DataWriter.write([eventA, eventB])
+    DataWriter.write([event_a, event_b])
 
     payload = [
       %{
         payload: %{
-          "author" => eventA["author"],
-          "create_ts" => eventA["create_ts"],
-          "data" => eventA["data"],
-          "type" => eventA["type"]
+          "author" => event_a["author"],
+          "create_ts" => event_a["create_ts"],
+          "data" => event_a["data"],
+          "type" => event_a["type"]
         }
       },
       %{
         payload: %{
-          "author" => eventB["author"],
-          "create_ts" => eventB["create_ts"],
-          "data" => eventB["data"],
-          "type" => eventB["type"]
+          "author" => event_b["author"],
+          "create_ts" => event_b["create_ts"],
+          "data" => event_b["data"],
+          "type" => event_b["type"]
         }
       }
     ]

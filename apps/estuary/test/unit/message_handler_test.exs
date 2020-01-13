@@ -1,7 +1,6 @@
 defmodule Estuary.MessageHandlerTest do
   use ExUnit.Case
 
-  import Mox
   import Assertions
 
   alias Estuary.MessageHandler
