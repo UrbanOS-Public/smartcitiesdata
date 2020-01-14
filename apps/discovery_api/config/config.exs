@@ -37,7 +37,7 @@ config :discovery_api, DiscoveryApi.Quantum.Scheduler,
 
 config :mime, :types, %{
   "application/zip" => ["zip", "shp", "shapefile"],
-  "application/gtfs" => ["pb"]
+  "application/gtfs+protobuf" => ["gtfs"]
 }
 
 config :discovery_api,

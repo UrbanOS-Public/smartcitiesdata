@@ -89,9 +89,9 @@ config :dead_letter,
     ]
   ]
 
-config :prestige,
-  base_url: System.get_env("PRESTO_URL"),
-  headers: [user: System.get_env("PRESTO_USER")]
+config :prestige, :session_opts,
+  url: System.get_env("PRESTO_URL"),
+  user: System.get_env("PRESTO_USER")
 
 config :redix,
   args: redix_args

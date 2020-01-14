@@ -6,6 +6,10 @@ defmodule DiscoveryApi.Mixfile do
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
       version: "1.0.0-static",
+      build_path: "../../_build",
+      config_path: "../../config/config.exs",
+      deps_path: "../../deps",
+      lockfile: "../../mix.lock",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -40,11 +44,11 @@ defmodule DiscoveryApi.Mixfile do
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:cachex, "~> 3.0"},
       {:corsica, "~> 1.0"},
-      {:cowboy, "~> 1.0"},
+      {:cowboy, "~> 2.7"},
       {:csv, "~> 2.3"},
       {:credo, "~> 1.1", only: [:dev, :test, :integration], runtime: false},
       {:checkov, "~> 0.5", only: [:test, :integration]},
-      {:divo, "~> 1.1"},
+      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:ex_json_schema, "~> 0.7", only: [:test, :integration]},
       {:ecto_sql, "~> 3.0"},
       {:guardian, "~> 2.0"},
@@ -58,7 +62,7 @@ defmodule DiscoveryApi.Mixfile do
       {:phoenix_pubsub, "~> 1.0"},
       {:nanoid, "~> 2.0"},
       {:placebo, "~> 1.2.2", only: [:dev, :test]},
-      {:plug_cowboy, "~> 1.0"},
+      {:plug_cowboy, "~> 2.1"},
       {:plug_heartbeat, "~> 0.2.0"},
       {:postgrex, "~> 0.15.1"},
       {:prestige, "~> 1.0"},
@@ -71,13 +75,12 @@ defmodule DiscoveryApi.Mixfile do
       {:smart_city_test, "~> 0.7", only: [:test, :integration]},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},
       {:timex, "~> 3.0"},
-      {:sobelow, "~> 0.8.0", only: :dev},
-      {:dialyxir, "~> 0.5.1", only: :dev, runtime: false},
-      # updating version breaks
-      {:distillery, "2.0.14"},
-      # distillery breaks @ 2.1.0 due to elixir 1.9 support
-      {:poison, "3.1.0"}
+      {:sobelow, "~> 0.8", only: :dev},
+      {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
+      {:distillery, "~> 2.1"},
+      {:poison, "3.1.0"},
       # poison breaks @ 4.0.1 due to encode_to_iotdata missing from 4.0
+      {:tasks, in_umbrella: true, only: :dev}
     ]
   end
 
