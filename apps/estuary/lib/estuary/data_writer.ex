@@ -11,7 +11,6 @@ defmodule Estuary.DataWriter do
   @behaviour Pipeline.Writer
 
   @table_writer Application.get_env(:estuary, :table_writer)
-  @table_name Application.get_env(:estuary, :table_name)
 
   @impl Pipeline.Writer
   @doc """
@@ -48,12 +47,16 @@ defmodule Estuary.DataWriter do
 
   @impl Pipeline.Writer
   def compact(_ \\ []) do
-    Logger.info("Beginning compaction")
+    Logger.info("Beginning #{DatasetSchema.table_name()} compaction")
     DataReader.terminate()
-    @table_writer.compact(table: @table_name)
+    @table_writer.compact(table: DatasetSchema.table_name())
     DataReader.init()
-    Logger.info("Completed compaction")
+    Logger.info("Completed #{DatasetSchema.table_name()} compaction")
     :ok
+  rescue
+    error ->
+      Logger.error("#{DatasetSchema.table_name()} failed to compact: #{inspect(error)}")
+      {:error, error}
   end
 
   defp make_datawriter_payload(events) do

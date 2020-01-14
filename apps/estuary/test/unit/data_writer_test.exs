@@ -80,9 +80,6 @@ defmodule Estuary.DataWriterTest do
 
     expect(MockTable, :compact, fn args ->
       case args[:table] do
-        "fail" ->
-          {:error, "reason"}
-
         table ->
           send(test, table)
           :ok
