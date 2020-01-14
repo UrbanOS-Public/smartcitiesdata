@@ -66,7 +66,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       "business" => %{
         "dataTitle" => "dataset title",
         "description" => "description",
-        "modifiedDate" => "",
+        "modifiedDate" => DateTime.utc_now() |> DateTime.to_iso8601(),
         "orgTitle" => "org title",
         "contactName" => "contact name",
         "contactEmail" => "contact@email.com",
