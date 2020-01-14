@@ -143,7 +143,6 @@ defmodule AndiWeb.EditLiveView do
     changeset = InputConverter.get_new_changeset(original_dataset, form_data)
 
     if changeset.valid? do
-      # TODO: find out why an empty description doesn't show as a "change"
       changes = Ecto.Changeset.apply_changes(changeset)
 
       with dataset = InputConverter.restruct(changes, original_dataset),

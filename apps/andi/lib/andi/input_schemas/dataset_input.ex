@@ -15,8 +15,8 @@ defmodule Andi.InputSchemas.DatasetInput do
     keywords: {:array, :string},
     language: :string,
     license: :string,
-    #TODO Figure out a way to be able to pass an empty string for modifiedDate
-    #possibly just make it a string and validate that it's a date manually
+    # TODO Figure out a way to be able to pass an empty string for modifiedDate
+    # possibly just make it a string and validate that it's a date manually
     modifiedDate: :date,
     orgTitle: :string,
     publishFrequency: :string,
@@ -67,6 +67,7 @@ defmodule Andi.InputSchemas.DatasetInput do
 
   def changeset(schema, changes) do
     {schema, @types}
+    # adding empty_values here is causing tests to fail?
     |> cast(changes, Map.keys(@types), empty_values: [])
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:contactEmail, @email_regex)

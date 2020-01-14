@@ -32,7 +32,6 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.merge(from_business)
     |> Map.merge(from_technical)
     |> DatasetInput.changeset()
-    # TODO: test that ID is actually getting into the changeset
   end
 
   def form_changeset(params \\ %{})
