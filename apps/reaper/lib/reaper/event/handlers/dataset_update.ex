@@ -80,11 +80,19 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   end
 
   defp create_job(cron_expression, dataset) do
+    {:ok, serialized_dataset} = Brook.Serializer.serialize(dataset)
+
     Reaper.Scheduler.new_job()
     |> Job.set_name(String.to_atom(dataset.id))
     |> Job.set_schedule(cron_expression)
-    |> Job.set_task({Brook.Event, :send, [@instance, determine_event(dataset), :reaper, dataset]})
+    |> Job.set_task({__MODULE__, :protected_event_send, [serialized_dataset]})
     |> Reaper.Scheduler.add_job()
+  end
+
+  def protected_event_send(dataset_json) do
+    {:ok, safe_dataset} = Brook.Deserializer.deserialize(dataset_json)
+
+    Brook.Event.send(@instance, determine_event(safe_dataset), :reaper, safe_dataset)
   end
 
   defp determine_event(%SmartCity.Dataset{technical: %{sourceType: "host"}}) do

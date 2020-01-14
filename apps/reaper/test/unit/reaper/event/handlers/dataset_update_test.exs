@@ -8,7 +8,6 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Quantum.Job
   alias Reaper.Collections.Extractions
-  import Crontab.CronExpression
 
   @instance Reaper.Application.instance()
 
@@ -82,13 +81,11 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
     end
 
     data_test "adds job to quantum when cadence is a cron expression" do
-      dataset = TDG.create_dataset(id: "ds2", technical: %{cadence: "* * * * *", sourceType: source_type})
+      dataset = TDG.create_dataset(id: "ds2", technical: %{cadence: "*/5 * * * * * *", sourceType: source_type})
 
       assert :ok == DatasetUpdate.handle(dataset)
 
-      job = Reaper.Scheduler.find_job(:ds2)
-      assert job.schedule == ~e[* * * * *]
-      assert job.task == {Brook.Event, :send, [@instance, event, :reaper, dataset]}
+      assert_receive {:brook_event, %Brook.Event{type: ^event, data: ^dataset}}, 10_000
 
       where([
         [:source_type, :event],
