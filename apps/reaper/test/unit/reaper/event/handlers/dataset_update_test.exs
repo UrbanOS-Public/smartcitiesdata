@@ -8,6 +8,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Quantum.Job
   alias Reaper.Collections.Extractions
+  import Crontab.CronExpression
 
   @instance Reaper.Application.instance()
 
@@ -81,11 +82,35 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
     end
 
     data_test "adds job to quantum when cadence is a cron expression" do
-      dataset = TDG.create_dataset(id: "ds2", technical: %{cadence: "*/5 * * * * * *", sourceType: source_type})
+      dataset = TDG.create_dataset(id: "ds2", technical: %{cadence: "* * * * *", sourceType: source_type})
 
       assert :ok == DatasetUpdate.handle(dataset)
 
-      assert_receive {:brook_event, %Brook.Event{type: ^event, data: ^dataset}}, 10_000
+      job = Reaper.Scheduler.find_job(:ds2)
+      {:ok, expected_dataset} = Brook.Serializer.serialize(dataset)
+      assert job.schedule == ~e[* * * * *]
+      assert job.task == {DatasetUpdate, :protected_event_send, [expected_dataset]}
+
+      where([
+        [:source_type],
+        ["ingest"],
+        ["host"]
+      ])
+    end
+
+    data_test "jobs that are added to quantum when cadence is a cron expression work, even with missing optional fields" do
+      {:ok, cadence} = Crontab.CronExpression.Parser.parse("*/5 * * * * * *", true) # gotta go fast
+      dataset = TDG.create_dataset(%{technical: %{sourceType: source_type, topLevelSelector: "remove me"}})
+      {:ok, serialized_dataset} = Brook.Serializer.serialize(dataset)
+      older_dataset_that_is_missing_top_level_selector = String.replace(serialized_dataset, ~r/,?\s*"topLevelSelector":\s*"remove me"\s*,?/, "")
+
+      Reaper.Scheduler.new_job()
+      |> Job.set_name(:do_it)
+      |> Job.set_schedule(cadence)
+      |> Job.set_task({DatasetUpdate, :protected_event_send, [older_dataset_that_is_missing_top_level_selector]})
+      |> Reaper.Scheduler.add_job()
+
+      assert_receive {:brook_event, %Brook.Event{type: ^event, data: %SmartCity.Dataset{technical: %{topLevelSelector: _}}}}, 10_000
 
       where([
         [:source_type, :event],
