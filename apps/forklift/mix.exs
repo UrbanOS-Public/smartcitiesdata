@@ -43,7 +43,7 @@ defmodule Forklift.MixProject do
       {:observer_cli, "~> 1.5"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.1"},
-      {:prestige, "~> 0.3"},
+      {:prestige, "~> 1.0"},
       {:prometheus_plugs, "~> 1.1"},
       {:quantum, "~>2.3"},
       {:redix, "~> 0.10"},

@@ -5,6 +5,7 @@ defmodule Pipeline.Writer.TableWriter do
 
   @behaviour Pipeline.Writer
   alias Pipeline.Writer.TableWriter.{Compaction, Statement}
+  alias Pipeline.Application
   require Logger
 
   @type schema() :: [map()]
@@ -75,11 +76,11 @@ defmodule Pipeline.Writer.TableWriter do
 
   defp execute(statement) do
     try do
-      statement
-      |> Prestige.execute()
-      |> Prestige.prefetch()
+      Application.prestige_opts()
+      |> Prestige.new_session()
+      |> Prestige.execute!(statement)
     rescue
-      e -> e.message
+      e -> e
     end
   end
 end

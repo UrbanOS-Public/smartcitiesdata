@@ -29,7 +29,7 @@ defmodule Pipeline.MixProject do
       {:smart_city, "~> 3.0"},
       {:elsa, "~> 0.10.0"},
       {:retry, "~> 0.13"},
-      {:prestige, "~> 0.3"},
+      {:prestige, "~> 1.0"},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},

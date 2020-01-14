@@ -38,10 +38,10 @@ defmodule Estuary.MixProject do
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
       {:pipeline, in_umbrella: true},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      {:prestige, "~> 0.3"},
-      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:quantum, "~>2.3"},
-      {:timex, "~> 3.6"}
+      {:timex, "~> 3.6"},
+      {:prestige, "~> 1.0"},
+      {:smart_city_test, "~> 0.8", only: [:test, :integration]}
     ]
   end
 

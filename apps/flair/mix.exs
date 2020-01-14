@@ -38,7 +38,7 @@ defmodule Flair.MixProject do
       {:flow, "~> 0.14"},
       {:gen_stage, "~> 0.14"},
       {:jason, "~> 1.1"},
-      {:prestige, "~> 0.3"},
+      {:prestige, "~> 1.0"},
       {:retry, "~> 0.13.0"},
 
       {:statistics, "~> 0.6"},
