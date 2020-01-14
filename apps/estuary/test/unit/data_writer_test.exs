@@ -89,7 +89,7 @@ defmodule Estuary.DataWriterTest do
       end
     end)
 
-    assert :ok = DataWriter.compact_events()
+    assert :ok = DataWriter.compact()
     assert_receive ^table_name
   end
 
@@ -98,6 +98,6 @@ defmodule Estuary.DataWriterTest do
     expect(MockReader, :terminate, fn _ -> :ok end)
     expect(MockReader, :init, fn _ -> :ok end)
 
-    assert :ok = DataWriter.compact_events()
+    assert :ok = DataWriter.compact()
   end
 end

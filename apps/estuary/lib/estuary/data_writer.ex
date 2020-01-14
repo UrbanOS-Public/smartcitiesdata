@@ -3,6 +3,8 @@ defmodule Estuary.DataWriter do
   Implementation of `Pipeline.Writer` for Estuary's edges.
   """
 
+  require Logger
+
   alias Estuary.Datasets.DatasetSchema
   alias Estuary.DataReader
 
@@ -44,10 +46,13 @@ defmodule Estuary.DataWriter do
     _ -> {:error, events, "Presto Error"}
   end
 
-  def compact_events() do
+  @impl Pipeline.Writer
+  def compact(_ \\ []) do
+    Logger.info("Beginning compaction")
     DataReader.terminate()
     @table_writer.compact(table: @table_name)
     DataReader.init()
+    Logger.info("Completed compaction")
     :ok
   end
 
