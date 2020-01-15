@@ -10,8 +10,10 @@ defmodule Pipeline.Writer.TableWriterTest do
   import SmartCity.TestHelper, only: [eventually: 1]
 
   setup do
-    session = Application.prestige_opts()
-    |> Prestige.new_session()
+    session =
+      Application.prestige_opts()
+      |> Prestige.new_session()
+
     [session: session]
   end
 
@@ -25,20 +27,21 @@ defmodule Pipeline.Writer.TableWriterTest do
 
       schema = [
         %{name: "one", type: "list", itemType: "string"},
-        %{name: "two", type: "list", itemType: "map", subSchema: [%{name: "three", type: "decimal(18,3)"}]},
+        %{name: "two", type: "map", subSchema: [%{name: "three", type: "decimal(18,3)"}]},
         %{name: "four", type: "list", itemType: "map", subSchema: [%{name: "five", type: "decimal(18,3)"}]}
       ]
 
-      dataset = TDG.create_dataset(%{technical: %{systemName: "org_name__dataset_name", schema: schema}})
+      dataset = TDG.create_dataset(%{technical: %{systemName: "org_name_dataset_name", schema: schema}})
 
       TableWriter.init(table: dataset.technical.systemName, schema: dataset.technical.schema)
 
       eventually(fn ->
-        table = "describe hive.default.org_name__dataset_name"
+        table = "describe hive.default.org_name_dataset_name"
 
-        result = session
-        |> Prestige.execute!(table)
-        |> Prestige.Result.as_maps()
+        result =
+          session
+          |> Prestige.execute!(table)
+          |> Prestige.Result.as_maps()
 
         assert result == expected
       end)
@@ -65,9 +68,10 @@ defmodule Pipeline.Writer.TableWriterTest do
       eventually(fn ->
         table = "describe hive.default.foo"
 
-        result = session
-        |> Prestige.execute!(table)
-        |> Prestige.Result.as_maps()
+        result =
+          session
+          |> Prestige.execute!(table)
+          |> Prestige.Result.as_maps()
 
         assert result == expected
       end)
@@ -89,7 +93,8 @@ defmodule Pipeline.Writer.TableWriterTest do
       eventually(fn ->
         query = "select * from foo__bar"
 
-        result = session
+        result =
+          session
           |> Prestige.query!(query)
           |> Prestige.Result.as_maps()
 
@@ -150,22 +155,28 @@ defmodule Pipeline.Writer.TableWriterTest do
       dataset = TDG.create_dataset(%{technical: %{systemName: "foo__baz", schema: schema}})
       TableWriter.init(table: dataset.technical.systemName, schema: schema)
 
-      datum = TDG.create_data(dataset_id: dataset.id, payload: payload) |> IO.inspect(label: "lkajdsfla;k")
+      datum = TDG.create_data(dataset_id: dataset.id, payload: payload)
 
-      expected = [
-        "Joe",
-        10,
-        ["bob", "sally"],
-        [["Bill", "Bunco"], ["Sally", "Bosco"]],
-        ["Susan", "female", ["Joel", "1941-07-12"]]
-      ]
+      expected = %{
+        "age" => "10",
+        "first_name" => "Joe",
+        "friend_names" => ["bob", "sally"],
+        "friends" => [%{"first_name" => "Bill", "pet" => "Bunco"}, %{"first_name" => "Sally", "pet" => "Bosco"}],
+        "spouse" => %{
+          "first_name" => "Susan",
+          "gender" => "female",
+          "next_of_kin" => %{"date_of_birth" => "1941-07-12", "first_name" => "Joel"}
+        }
+      }
 
       assert :ok = TableWriter.write([datum], table: dataset.technical.systemName, schema: schema)
 
       eventually(fn ->
         query = "select * from foo__baz"
-        result = session
-          |> Prestige.execute(query)
+
+        result =
+          session
+          |> Prestige.execute!(query)
           |> Prestige.Result.as_maps()
 
         assert result == [expected]
@@ -176,12 +187,12 @@ defmodule Pipeline.Writer.TableWriterTest do
   describe "compact/1" do
     test "compacts a table without changing data", %{session: session} do
       sub = [%{name: "three", type: "boolean"}]
-      schema = [%{name: "one", type: "list", itemType: "integer"}, %{name: "two", type: "map", subSchema: sub}]
+      schema = [%{name: "one", type: "list", itemType: "decimal"}, %{name: "two", type: "map", subSchema: sub}]
       dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "a__b"}})
 
       TableWriter.init(table: dataset.technical.systemName, schema: schema)
 
-      Enum.each(1..10, fn n ->
+      Enum.each(1..15, fn n ->
         payload = %{"one" => [n], "two" => %{"three" => false}}
         datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
         TableWriter.write([datum], table: dataset.technical.systemName, schema: schema)
@@ -189,22 +200,24 @@ defmodule Pipeline.Writer.TableWriterTest do
 
       eventually(fn ->
         query = "select count(1) from #{dataset.technical.systemName}"
-        [result] = session
-        |> Prestige.query!(query)
-        |> Prestige.Result.as_maps()
 
-        assert result == [[10]]
+        result =
+          session
+          |> Prestige.query!(query)
+
+        assert result.rows == [[15]]
       end)
 
-      assert :ok = TableWriter.compact(table: dataset.technical.systemName)
+      assert :ok == TableWriter.compact(table: dataset.technical.systemName)
 
       eventually(fn ->
         query = "select count(1) from #{dataset.technical.systemName}"
-        [result] = session
-        |> Prestige.query!(query)
-        |> Prestige.Result.as_maps()
 
-        assert result == [[10]]
+        result =
+          session
+          |> Prestige.query!(query)
+
+        assert result.rows == [[15]]
       end)
     end
 
@@ -216,7 +229,7 @@ defmodule Pipeline.Writer.TableWriterTest do
 
       TableWriter.init(table: dataset.technical.systemName, schema: schema)
 
-      Enum.each(1..10, fn n ->
+      Enum.each(1..15, fn n ->
         payload = %{"abc" => "#{n}"}
         datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
         TableWriter.write([datum], table: "xyz", schema: schema)
@@ -226,11 +239,12 @@ defmodule Pipeline.Writer.TableWriterTest do
 
       eventually(fn ->
         query = "select count(1) from xyz"
-        result = session
-        |> Prestige.query!(query)
-        |> Prestige.Result.as_maps()
 
-        assert result == [[10]]
+        result =
+          session
+          |> Prestige.query!(query)
+
+        assert result.rows == [[15]]
       end)
     end
   end
