@@ -6,7 +6,6 @@ defmodule AndiWeb.API.DatasetController do
   use AndiWeb, :controller
 
   require Logger
-  alias SmartCity.Registry.Dataset, as: RegDataset
   alias SmartCity.Dataset
   alias Andi.Services.DatasetRetrieval
   import Andi
@@ -21,9 +20,7 @@ defmodule AndiWeb.API.DatasetController do
     with message <- add_uuid(conn.body_params),
          {:ok, parsed_message} <- parse_message(message),
          :valid <- validate_changes(parsed_message),
-         {:ok, old_dataset} <- RegDataset.new(parsed_message),
          {:ok, dataset} <- Dataset.new(parsed_message),
-         {:ok, _id} <- write_old_dataset(old_dataset),
          :ok <- write_dataset(dataset) do
       respond(conn, :created, dataset)
     else
@@ -75,9 +72,6 @@ defmodule AndiWeb.API.DatasetController do
   end
 
   defp write_dataset(dataset), do: Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
-
-  # Deprecated function for backwards compatibility with SmartCity.Registry apps
-  def write_old_dataset(dataset), do: RegDataset.write(dataset)
 
   @doc """
   Disable a dataset

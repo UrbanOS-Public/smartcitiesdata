@@ -4,7 +4,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
   @route "/api/v1/dataset"
   @get_datasets_route "/api/v1/datasets"
-  alias SmartCity.Registry.Dataset, as: RegDataset
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetRetrieval
@@ -25,11 +24,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> struct_to_map_with_string_keys()
 
     example_datasets = [example_dataset_1, example_dataset_2]
-
-    allow(RegDataset.write(any()),
-      return: {:ok, "id"},
-      meck_options: [:passthrough]
-    )
 
     allow(DatasetRetrieval.get_all(),
       return: {:ok, [example_dataset_1, example_dataset_2]},
