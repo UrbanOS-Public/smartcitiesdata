@@ -54,3 +54,14 @@ config :dead_letter,
       topic: "streaming-dead-letters"
     ]
   ]
+
+if System.get_env("COMPACTION_SCHEDULE") do
+  config :estuary, Estuary.Quantum.Scheduler,
+    jobs: [
+      compactor: [
+        schedule: System.get_env("COMPACTION_SCHEDULE"),
+        task: {Estuary.DataWriter, :compact, []},
+        timezone: "America/New_York"
+      ]
+    ]
+end

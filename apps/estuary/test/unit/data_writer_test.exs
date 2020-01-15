@@ -70,4 +70,31 @@ defmodule Estuary.DataWriterTest do
 
     assert_receive(^expected)
   end
+
+  test "should compact the table" do
+    test = self()
+    table_name = Application.get_env(:estuary, :table_name)
+
+    stub(MockReader, :terminate, fn _ -> :ok end)
+    stub(MockReader, :init, fn _ -> :ok end)
+
+    expect(MockTable, :compact, fn args ->
+      case args[:table] do
+        table ->
+          send(test, table)
+          :ok
+      end
+    end)
+
+    assert :ok = DataWriter.compact()
+    assert_receive ^table_name
+  end
+
+  test "should stop/restart ingestion around each compaction" do
+    stub(MockTable, :compact, fn _ -> :ok end)
+    expect(MockReader, :terminate, fn _ -> :ok end)
+    expect(MockReader, :init, fn _ -> :ok end)
+
+    assert :ok = DataWriter.compact()
+  end
 end
