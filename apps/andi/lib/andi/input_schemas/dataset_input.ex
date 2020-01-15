@@ -15,8 +15,6 @@ defmodule Andi.InputSchemas.DatasetInput do
     keywords: {:array, :string},
     language: :string,
     license: :string,
-    # TODO Figure out a way to be able to pass an empty string for modifiedDate
-    # possibly just make it a string and validate that it's a date manually
     modifiedDate: :date,
     orgTitle: :string,
     publishFrequency: :string,

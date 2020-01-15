@@ -382,6 +382,35 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert get_text(html, "#success-message") == "Saved Successfully"
     end
+
+    test "allows clearing modified date", %{conn: conn}  do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+
+      dataset =
+        TDG.create_dataset(%{
+          business: %{modifiedDate: "2020-01-01"}
+        })
+
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      form_data =
+        dataset
+        |> InputConverter.changeset_from_struct()
+        |> Ecto.Changeset.cast(%{modifiedDate: nil}, [:modifiedDate], empty_values: [])
+        |> form_data_for_save()
+
+      render_change(view, :save, %{"metadata" => form_data})
+
+      expected_updated_dataset =
+        form_data
+        |> InputConverter.form_changeset()
+        |> Ecto.Changeset.apply_changes()
+        |> InputConverter.restruct(dataset)
+
+      assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, expected_updated_dataset), once())
+    end
   end
 
   defp assert_error_message(conn, dataset, field, error_message) do
@@ -403,6 +432,8 @@ defmodule AndiWeb.EditLiveViewTest do
     |> Ecto.Changeset.apply_changes()
     |> Map.update!(:keywords, &Enum.join(&1, ", "))
     |> Map.delete(:schema)
+    # For now, schema needs to be removed from the form data as it cannot be encoded in the form as an array of maps.
+    # Once we start editing the schema in the form, we will need to address this (probably by changing the schema structure in the form data).
   end
 
   defp get_value(html, id) do

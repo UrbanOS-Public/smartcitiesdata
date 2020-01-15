@@ -3,7 +3,6 @@ defmodule AndiWeb.DatasetSchemaValidatorTest do
   use Placebo
 
   alias AndiWeb.DatasetSchemaValidator
-  alias SmartCity.TestDataGenerator, as: TDG
 
   describe "schema validation" do
     test "selectors are not required for non-xml schemas" do
@@ -102,11 +101,5 @@ defmodule AndiWeb.DatasetSchemaValidatorTest do
       assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+other_field/) end)
       assert errors |> Enum.any?(fn error -> String.match?(error, ~r/selector.+deep_field/) end)
     end
-  end
-
-  defp struct_to_map_with_string_keys(dataset) do
-    dataset
-    |> Jason.encode!()
-    |> Jason.decode!()
   end
 end

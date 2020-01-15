@@ -25,7 +25,7 @@ defmodule Andi.InputSchemas.InputConverter do
   end
 
   defp create_changeset_from_dataset(%{id: id, business: business, technical: technical}) do
-    from_business = get_business(business)
+    from_business = get_business(business) |> fix_modified_date()
     from_technical = get_technical(technical)
 
     %{id: id}
@@ -34,34 +34,29 @@ defmodule Andi.InputSchemas.InputConverter do
     |> DatasetInput.changeset()
   end
 
-  def form_changeset(params \\ %{})
-
-  def form_changeset(%{keywords: keywords} = params) when is_binary(keywords) do
+  def form_changeset(params \\ %{}) do
     params
-    |> Map.update!(:keywords, &keyword_string_to_list/1)
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> Map.update(:keywords, nil, &keywords_to_list/1)
+    |> fix_modified_date()
     |> DatasetInput.changeset()
   end
-
-  def form_changeset(%{"keywords" => keywords} = params) when is_binary(keywords) do
-    params
-    |> Map.update!("keywords", &keyword_string_to_list/1)
-    |> DatasetInput.changeset()
-  end
-
-  def form_changeset(params), do: DatasetInput.changeset(params)
 
   def restruct(changes, dataset) do
     formatted_changes =
       changes
       |> Map.update!(:issuedDate, &date_to_iso8601_datetime/1)
-      |> Map.update!(:modifiedDate, &date_to_iso8601_datetime/1)
+      |> Map.update(:modifiedDate, nil, &date_to_iso8601_datetime/1)
 
-    business = Map.merge(dataset.business, get_business(formatted_changes))
-    technical = Map.merge(dataset.technical, get_technical(formatted_changes))
+    business = Map.merge(dataset.business, get_business(formatted_changes)) |> Map.from_struct()
+    technical = Map.merge(dataset.technical, get_technical(formatted_changes)) |> Map.from_struct()
 
     dataset
+    |> Map.from_struct()
     |> Map.put(:business, business)
     |> Map.put(:technical, technical)
+    |> SmartCity.Dataset.new()
+    |> (fn {:ok, dataset} -> dataset end).()
   end
 
   defp get_business(map) when is_map(map) do
@@ -72,18 +67,29 @@ defmodule Andi.InputSchemas.InputConverter do
     Map.take(map, DatasetInput.technical_keys())
   end
 
-  defp keyword_string_to_list(nil), do: []
-  defp keyword_string_to_list(""), do: []
+  defp keywords_to_list(nil), do: []
+  defp keywords_to_list(""), do: []
 
-  defp keyword_string_to_list(keywords) do
+  defp keywords_to_list(keywords) when is_binary(keywords) do
     keywords
     |> String.split(", ")
     |> Enum.map(&String.trim/1)
   end
 
+  defp keywords_to_list(keywords) when is_list(keywords), do: keywords
+
   defp date_to_iso8601_datetime(date) do
     time_const = "00:00:00Z"
 
     "#{Date.to_iso8601(date)} #{time_const}"
+  end
+
+  defp fix_modified_date(map) do
+    map
+    |> Map.get_and_update(:modifiedDate, fn
+      "" -> {"", nil}
+      current_value -> {current_value, current_value}
+    end)
+    |> elem(1)
   end
 end

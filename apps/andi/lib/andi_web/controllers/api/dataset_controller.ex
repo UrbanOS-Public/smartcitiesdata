@@ -27,8 +27,8 @@ defmodule AndiWeb.API.DatasetController do
          :ok <- write_dataset(dataset) do
       respond(conn, :created, dataset)
     else
-      {:invalid, reason} ->
-        respond(conn, :bad_request, %{errors: reason})
+      {:invalid, errors} ->
+        respond(conn, :bad_request, %{errors: errors})
 
       error ->
         Logger.error("Failed to create dataset: #{inspect(error)}")
