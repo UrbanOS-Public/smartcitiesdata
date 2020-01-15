@@ -1,4 +1,5 @@
 use Mix.Config
+
 host =
   case System.get_env("HOST_IP") do
     nil -> "127.0.0.1"

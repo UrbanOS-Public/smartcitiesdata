@@ -197,11 +197,12 @@ defmodule E2ETest do
 
     test "forklift sends event to update last ingested time", %{dataset: _ds} do
       eventually(fn ->
-        messages = Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete") |> Enum.to_list()
+        messages =
+          Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete")
+          |> Enum.to_list()
 
         assert 1 == length(messages)
       end)
-
     end
 
     test "is profiled by flair", %{dataset: ds} do
@@ -294,13 +295,16 @@ defmodule E2ETest do
       assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000)
     end
 
-    test "forklift sends event to update last ingested time for streaming datasets", %{streaming_dataset: _ds} do
+    test "forklift sends event to update last ingested time for streaming datasets", %{
+      streaming_dataset: _ds
+    } do
       eventually(fn ->
-        messages = Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete") |> Enum.to_list()
+        messages =
+          Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete")
+          |> Enum.to_list()
 
         assert length(messages) > 0
       end)
-
     end
 
     test "is profiled by flair", %{streaming_dataset: ds} do
