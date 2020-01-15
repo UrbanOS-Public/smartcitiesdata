@@ -164,7 +164,6 @@ defmodule AndiWeb.EditLiveView do
   defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
   defp get_level_of_access_options, do: [[key: "Private", value: "true"], [key: "Public", value: "false"]]
 
-  # TODO should these be removed?
   defp keywords_to_string(nil), do: ""
   defp keywords_to_string(keywords) when is_binary(keywords), do: keywords
   defp keywords_to_string(keywords), do: Enum.join(keywords, ", ")

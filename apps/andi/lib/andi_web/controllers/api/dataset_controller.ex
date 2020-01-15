@@ -18,9 +18,9 @@ defmodule AndiWeb.API.DatasetController do
   @spec create(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def create(conn, _params) do
     with message <- add_uuid(conn.body_params),
-         {:ok, parsed_message} <- parse_message(message),
+         {:ok, parsed_message} <- trim_fields(message),
          :valid <- validate_changes(parsed_message),
-         {:ok, dataset} <- Dataset.new(parsed_message),
+         {:ok, dataset} <- with_system_name(parsed_message) |> Dataset.new(),
          :ok <- write_dataset(dataset) do
       respond(conn, :created, dataset)
     else
@@ -123,22 +123,17 @@ defmodule AndiWeb.API.DatasetController do
     Map.merge(message, %{"id" => uuid}, fn _k, v1, _v2 -> v1 end)
   end
 
-  defp parse_message(%{"technical" => _technical} = msg) do
-    msg
-    |> trim_fields()
-    |> create_system_name() #TODO: move this to after validation
-  end
-
-  defp parse_message(msg), do: {:error, "Cannot parse message: #{inspect(msg)}"}
-
   defp trim_fields(%{"id" => id, "technical" => technical, "business" => business} = map) do
-    %{
-      map
-      | "id" => String.trim(id),
-        "technical" => trim_map(technical),
-        "business" => trim_map(business)
-    }
+    {:ok,
+     %{
+       map
+       | "id" => String.trim(id),
+         "technical" => trim_map(technical),
+         "business" => trim_map(business)
+     }}
   end
+
+  defp trim_fields(msg), do: {:error, "Cannot parse message: #{inspect(msg)}"}
 
   defp trim_map(data) do
     data
@@ -157,13 +152,8 @@ defmodule AndiWeb.API.DatasetController do
     end)
   end
 
-  defp create_system_name(%{"technical" => technical} = msg) do
-    with org_name when not is_nil(org_name) <- Map.get(technical, "orgName"),
-         data_name when not is_nil(data_name) <- Map.get(technical, "dataName"),
-         system_name <- "#{org_name}__#{data_name}" do
-      {:ok, put_in(msg, ["technical", "systemName"], system_name)}
-    else
-      _ -> {:error, "Cannot parse message: #{inspect(msg)}"}
-    end
+  defp with_system_name(%{"technical" => technical} = msg) do
+    system_name = "#{technical["orgName"]}__#{technical["dataName"]}"
+    put_in(msg, ["technical", "systemName"], system_name)
   end
 end
