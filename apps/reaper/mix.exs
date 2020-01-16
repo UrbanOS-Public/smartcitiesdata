@@ -81,7 +81,7 @@ defmodule Reaper.MixProject do
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1", only: [:dev, :integration]},
       {:excoveralls, "~> 0.11", only: :test},
-      {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:mock, "~> 0.3", only: [:test, :integration], runtime: false},
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},

@@ -44,7 +44,7 @@ defmodule DiscoveryApi.Mixfile do
       {:csv, "~> 2.3"},
       {:credo, "~> 1.1", only: [:dev, :test, :integration], runtime: false},
       {:checkov, "~> 0.5", only: [:test, :integration]},
-      {:divo, "~> 1.1"},
+      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:ex_json_schema, "~> 0.7", only: [:test, :integration]},
       {:ecto_sql, "~> 3.0"},
       {:guardian, "~> 2.0"},
