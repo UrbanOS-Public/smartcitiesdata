@@ -159,8 +159,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
       |> json_response(400)
 
-    assert errors["orgName"] == ["Organization Name cannot contain dashes."]
-    assert errors["dataName"] == ["Data Name cannot contain dashes."]
+    assert errors["orgName"] == ["cannot contain dashes"]
+    assert errors["dataName"] == ["cannot contain dashes"]
   end
 
   test "put returns 400 when modifiedDate is invalid", %{

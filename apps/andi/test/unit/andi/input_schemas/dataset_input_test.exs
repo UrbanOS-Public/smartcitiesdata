@@ -36,24 +36,25 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.changeset(changes)
 
-      assert changeset.errors == [{field_name, {"Please enter a valid #{display_name}.", [validation: :required]}}]
+      assert changeset.errors == [{field_name, {"is required", [validation: :required]}}]
 
-      where([
-        [:field_name, :display_name],
-        [:contactEmail, "maintainer email"],
-        [:contactName, "maintainer name"],
-        [:dataName, "data name"],
-        [:dataTitle, "dataset title"],
-        [:description, "description"],
-        [:issuedDate, "release date"],
-        [:license, "license"],
-        [:orgName, "organization name"],
-        [:orgTitle, "organization"],
-        [:private, "level of access"],
-        [:publishFrequency, "update frequency"],
-        [:sourceFormat, "source format"],
-        [:sourceType, "source type"]
-      ])
+      where(
+        field_name: [
+          :contactEmail,
+          :contactName,
+          :dataName,
+          :dataTitle,
+          :description,
+          :issuedDate,
+          :license,
+          :orgName,
+          :orgTitle,
+          :private,
+          :publishFrequency,
+          :sourceFormat,
+          :sourceType
+        ]
+      )
     end
 
     test "treats empty string values as changes" do
@@ -74,7 +75,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.changeset(changes)
 
-      assert changeset.errors == [{:contactEmail, {"Please enter a valid maintainer email.", [validation: :format]}}]
+      assert changeset.errors == [{:contactEmail, {"has invalid format", [validation: :format]}}]
     end
 
     data_test "requires #{field_name} be a date" do
@@ -97,13 +98,14 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.changeset(changes)
 
-      assert changeset.errors == [{field_name, {"#{display_name} cannot contain dashes.", [validation: :format]}}]
+      assert changeset.errors == [{field_name, {"cannot contain dashes", [validation: :format]}}]
 
-      where([
-        [:field_name, :display_name],
-        [:orgName, "Organization Name"],
-        [:dataName, "Data Name"]
-      ])
+      where(
+        field_name: [
+          :orgName,
+          :dataName
+        ]
+      )
     end
 
     test "requires unique orgName and dataName" do
@@ -143,7 +145,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       changeset = DatasetInput.changeset(changes)
 
       assert changeset.errors == [
-               {:topLevelSelector, {"Please enter a valid top level selector.", [validation: :required]}}
+               {:topLevelSelector, {"is required", [validation: :required]}}
              ]
 
       where(source_format: ["xml", "text/xml"])
@@ -160,9 +162,9 @@ defmodule Andi.InputSchemas.DatasetInputTest do
         source_type: ["ingest", "stream", "ingest", "something-else"],
         schema: [nil, nil, [], nil],
         errors: [
-          [{:schema, {"Please enter a valid schema.", [validation: :required]}}],
-          [{:schema, {"Please enter a valid schema.", [validation: :required]}}],
-          [{:schema, {"Schema cannot be empty.", []}}],
+          [{:schema, {"is required", [validation: :required]}}],
+          [{:schema, {"is required", [validation: :required]}}],
+          [{:schema, {"cannot be empty", []}}],
           []
         ]
       )
