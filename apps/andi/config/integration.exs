@@ -6,6 +6,7 @@ host =
     nil -> "localhost"
     defined -> defined
   end
+
 redix_args = [host: host]
 endpoint = [{host, 9092}]
 

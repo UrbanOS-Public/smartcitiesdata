@@ -4,7 +4,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
   @route "/api/v1/dataset"
   @get_datasets_route "/api/v1/datasets"
-  alias SmartCity.Registry.Dataset, as: RegDataset
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetRetrieval
@@ -25,11 +24,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> struct_to_map_with_string_keys()
 
     example_datasets = [example_dataset_1, example_dataset_2]
-
-    allow(RegDataset.write(any()),
-      return: {:ok, "id"},
-      meck_options: [:passthrough]
-    )
 
     allow(DatasetRetrieval.get_all(),
       return: {:ok, [example_dataset_1, example_dataset_2]},
@@ -73,7 +67,9 @@ defmodule AndiWeb.API.DatasetControllerTest do
         "license" => "license",
         "rights" => "rights information",
         "homepage" => "",
-        "keywords" => []
+        "keywords" => [],
+        "issuedDate" => "2020-01-01T00:00:00Z",
+        "publishFrequency" => "all day, ey'r day"
       },
       "_metadata" => %{
         "intendedUse" => [],
@@ -132,12 +128,12 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     allow DatasetRetrieval.get_all!(), return: [existing_dataset]
 
-    response =
+    %{"errors" => errors} =
       conn
       |> put(@route, request)
       |> json_response(400)
 
-    assert %{"reason" => ["Existing dataset has the same orgName and dataName"]} == response
+    assert errors["dataName"] == ["existing dataset has the same orgName and dataName"]
   end
 
   test "put returns 400 when systemName has dashes", %{
@@ -158,16 +154,13 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     allow(DatasetRetrieval.get_all!(), return: [])
 
-    %{"reason" => errors} =
+    %{"errors" => errors} =
       conn
       |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
       |> json_response(400)
 
-    joined_errors = Enum.join(errors, ", ")
-
-    assert String.contains?(joined_errors, "orgName")
-    assert String.contains?(joined_errors, "dataName")
-    assert String.contains?(joined_errors, "dashes")
+    assert errors["orgName"] == ["cannot contain dashes"]
+    assert errors["dataName"] == ["cannot contain dashes"]
   end
 
   test "put returns 400 when modifiedDate is invalid", %{
@@ -183,14 +176,63 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     allow(DatasetRetrieval.get_all!(), return: [])
 
-    %{"reason" => errors} =
+    %{"errors" => errors} =
       conn
       |> put(@route, new_dataset)
       |> json_response(400)
 
-    joined_errors = Enum.join(errors, ", ")
+    assert errors["modifiedDate"] == ["is invalid"]
+  end
 
-    assert String.contains?(joined_errors, "iso8601 formatted")
+  test "put returns 400 and errors when fields are invalid", %{
+    conn: conn
+  } do
+    new_dataset =
+      TDG.create_dataset(
+        id: "my-new-dataset",
+        business: %{
+          dataTitle: "",
+          description: nil,
+          contactEmail: "not-a-valid-email",
+          license: "",
+          publishFrequency: nil
+        },
+        technical: %{sourceFormat: ""}
+      )
+      |> struct_to_map_with_string_keys()
+      |> delete_in([
+        ["business", "contactName"],
+        ["business", "orgTitle"],
+        ["business", "issuedDate"],
+        ["technical", "sourceFormat"],
+        ["technical", "private"]
+      ])
+
+    allow(DatasetRetrieval.get_all!(), return: [])
+
+    %{"errors" => actual_errors} =
+      conn
+      |> put(@route, new_dataset)
+      |> json_response(400)
+
+    expected_error_keys = [
+      "dataTitle",
+      "description",
+      "contactName",
+      "contactEmail",
+      "issuedDate",
+      "license",
+      "publishFrequency",
+      "orgTitle",
+      "private",
+      "sourceFormat"
+    ]
+
+    for key <- expected_error_keys do
+      assert Map.has_key?(actual_errors, key) == true
+    end
+
+    assert Map.keys(actual_errors) |> length() == length(expected_error_keys)
   end
 
   test "put trims fields on dataset", %{
@@ -390,5 +432,11 @@ defmodule AndiWeb.API.DatasetControllerTest do
     dataset
     |> Jason.encode!()
     |> Jason.decode!()
+  end
+
+  defp delete_in(data, paths) do
+    Enum.reduce(paths, data, fn path, working ->
+      working |> pop_in(path) |> elem(1)
+    end)
   end
 end
