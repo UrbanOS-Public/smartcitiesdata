@@ -74,10 +74,12 @@ defmodule Forklift.Integration.MessageHandlingTest do
       Map.put(dataset, :lastUpdatedDate, DateTime.utc_now())
 
       now = DateTime.utc_now()
+
       greater_than_now = fn event_data ->
         event_data.id == dataset.id &&
           DateTime.to_iso8601(event_data.timestamp) > DateTime.to_iso8601(now)
       end
+
       expect Brook.Event.send(instance_name(), data_write_complete(), :forklift, is(greater_than_now)), return: :ok
       Forklift.MessageHandler.handle_messages([message1, message2], %{dataset: dataset})
     end
@@ -100,7 +102,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
         Forklift.MessageHandler.handle_messages([message1, message2], %{dataset: dataset})
       end
 
-      refute_called(Brook.Event.send, :any)
+      refute_called(Brook.Event.send(), :any)
     end
   end
 

@@ -34,6 +34,7 @@ defmodule Smartcitiesdata.MixProject do
         "apps/reaper/README.md",
         "apps/valkyrie/README.md",
         "apps/odo/README.md",
+        "apps/estuary/README.md",
         "apps/discovery_streams/README.md",
         "apps/forklift/README.md",
         "apps/flair/README.md"

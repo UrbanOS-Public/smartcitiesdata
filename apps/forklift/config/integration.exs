@@ -65,4 +65,4 @@ config :prestige,
 config(:forklift, divo: "docker-compose.yml", divo_wait: [dwell: 1000, max_tries: 120])
 
 config :redix,
-       args: redix_args
+  args: redix_args

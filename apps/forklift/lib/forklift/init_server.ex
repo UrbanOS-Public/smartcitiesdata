@@ -4,10 +4,6 @@ defmodule Forklift.InitServer do
   """
   use GenServer
 
-  alias Forklift.MessageHandler
-
-  @reader Application.get_env(:forklift, :data_reader)
-
   def start_link(opts) do
     name = Keyword.get(opts, :name, __MODULE__)
     GenServer.start_link(__MODULE__, [], name: name)
@@ -29,26 +25,13 @@ defmodule Forklift.InitServer do
 
   defp init_readers do
     Forklift.Datasets.get_all!()
-    |> Enum.map(&reader_init_args/1)
     |> Enum.map(&initialize/1)
     |> validate_inits()
   end
 
-  defp reader_init_args(dataset) do
-    [
-      instance: Forklift.instance_name(),
-      dataset: dataset,
-      endpoints: Application.get_env(:forklift, :elsa_brokers),
-      handler: MessageHandler,
-      handler_init_args: [dataset: dataset],
-      input_topic_prefix: Application.get_env(:forklift, :input_topic_prefix),
-      topic_subscriber_config: Application.get_env(:forklift, :topic_subscriber_config)
-    ]
-  end
-
-  defp initialize(args) do
+  defp initialize(dataset) do
     Process.sleep(250)
-    @reader.init(args)
+    Forklift.DataReaderHelper.init(dataset)
   end
 
   defp validate_inits(results) do
