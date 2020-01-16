@@ -40,7 +40,7 @@ defmodule DiscoveryApi.Mixfile do
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:cachex, "~> 3.0"},
       {:corsica, "~> 1.0"},
-      {:cowboy, "~> 1.0"},
+      {:cowboy, "~> 2.7"},
       {:csv, "~> 2.3"},
       {:credo, "~> 1.1", only: [:dev, :test, :integration], runtime: false},
       {:checkov, "~> 0.5", only: [:test, :integration]},
@@ -58,7 +58,7 @@ defmodule DiscoveryApi.Mixfile do
       {:phoenix_pubsub, "~> 1.0"},
       {:nanoid, "~> 2.0"},
       {:placebo, "~> 1.2.2", only: [:dev, :test]},
-      {:plug_cowboy, "~> 1.0"},
+      {:plug_cowboy, "~> 2.1"},
       {:plug_heartbeat, "~> 0.2.0"},
       {:postgrex, "~> 0.15.1"},
       {:prestige, "~> 1.0"},
@@ -71,11 +71,9 @@ defmodule DiscoveryApi.Mixfile do
       {:smart_city_test, "~> 0.7", only: [:test, :integration]},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},
       {:timex, "~> 3.0"},
-      {:sobelow, "~> 0.8.0", only: :dev},
-      {:dialyxir, "~> 0.5.1", only: :dev, runtime: false},
-      # updating version breaks
-      {:distillery, "2.0.14"},
-      # distillery breaks @ 2.1.0 due to elixir 1.9 support
+      {:sobelow, "~> 0.8", only: :dev},
+      {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
+      {:distillery, "~> 2.1"},
       {:poison, "3.1.0"}
       # poison breaks @ 4.0.1 due to encode_to_iotdata missing from 4.0
     ]
