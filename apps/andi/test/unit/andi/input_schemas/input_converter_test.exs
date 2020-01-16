@@ -13,7 +13,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
 
     new_dataset =
       dataset
-      |> InputConverter.changeset_from_struct()
+      |> InputConverter.changeset_from_dataset()
       |> Changeset.apply_changes()
       |> InputConverter.restruct(dataset)
 
@@ -28,7 +28,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
 
     new_dataset =
       dataset
-      |> InputConverter.changeset_from_struct()
+      |> InputConverter.changeset_from_dataset()
       |> Changeset.apply_changes()
       |> InputConverter.restruct(dataset)
 

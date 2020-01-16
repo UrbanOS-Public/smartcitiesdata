@@ -159,8 +159,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
       |> json_response(400)
 
-    assert errors["orgName"] == ["cannot contain dashes"]
-    assert errors["dataName"] == ["cannot contain dashes"]
+    assert errors["orgName"] == ["Organization Name cannot contain dashes."]
+    assert errors["dataName"] == ["Data Name cannot contain dashes."]
   end
 
   test "put returns 400 when modifiedDate is invalid", %{
@@ -215,20 +215,24 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> put(@route, new_dataset)
       |> json_response(400)
 
-    expected_errors = %{
-      "dataTitle" => ["is required"],
-      "description" => ["is required"],
-      "contactName" => ["is required"],
-      "contactEmail" => ["has invalid format"],
-      "issuedDate" => ["is required"],
-      "license" => ["is required"],
-      "publishFrequency" => ["is required"],
-      "orgTitle" => ["is required"],
-      "private" => ["is required"],
-      "sourceFormat" => ["is required"]
-    }
+    expected_error_keys = [
+      "dataTitle",
+      "description",
+      "contactName",
+      "contactEmail",
+      "issuedDate",
+      "license",
+      "publishFrequency",
+      "orgTitle",
+      "private",
+      "sourceFormat"
+    ]
 
-    assert expected_errors == actual_errors
+    for key <- expected_error_keys do
+      assert Map.has_key?(actual_errors, key) == true
+    end
+
+    assert Map.keys(actual_errors) |> length() == length(expected_error_keys)
   end
 
   test "put trims fields on dataset", %{

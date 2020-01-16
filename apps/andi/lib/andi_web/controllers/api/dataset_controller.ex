@@ -20,7 +20,7 @@ defmodule AndiWeb.API.DatasetController do
     with message <- add_uuid(conn.body_params),
          {:ok, parsed_message} <- trim_fields(message),
          :valid <- validate_changes(parsed_message),
-         {:ok, dataset} <- with_system_name(parsed_message) |> Dataset.new(),
+         {:ok, dataset} <- new_dataset(parsed_message),
          :ok <- write_dataset(dataset) do
       respond(conn, :created, dataset)
     else
@@ -34,7 +34,7 @@ defmodule AndiWeb.API.DatasetController do
   end
 
   def validate_changes(dataset) do
-    changeset = InputConverter.changeset_from_dataset_map(dataset)
+    changeset = InputConverter.changeset_from_dataset(dataset)
 
     if changeset.valid?, do: :valid, else: {:invalid, format_changeset_errors(changeset)}
   end
@@ -150,6 +150,12 @@ defmodule AndiWeb.API.DatasetController do
       item when is_binary(item) -> String.trim(item)
       item -> item
     end)
+  end
+
+  defp new_dataset(message) do
+    message
+    |> with_system_name()
+    |> Dataset.new()
   end
 
   defp with_system_name(%{"technical" => technical} = msg) do

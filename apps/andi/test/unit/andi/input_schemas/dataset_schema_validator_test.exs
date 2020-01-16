@@ -1,8 +1,8 @@
-defmodule AndiWeb.DatasetSchemaValidatorTest do
+defmodule Andi.InputSchemas.DatasetSchemaValidatorTest do
   use ExUnit.Case
   use Placebo
 
-  alias AndiWeb.DatasetSchemaValidator
+  alias Andi.InputSchemas.DatasetSchemaValidator
 
   describe "schema validation" do
     test "selectors are not required for non-xml schemas" do

@@ -81,7 +81,7 @@ defmodule AndiWeb.EditLiveViewTest do
         conn,
         TDG.create_dataset(%{business: %{contactEmail: email}}),
         :contactEmail,
-        "has invalid format"
+        "Please enter a valid maintainer email."
       )
 
       where([
@@ -232,38 +232,43 @@ defmodule AndiWeb.EditLiveViewTest do
         conn,
         TDG.create_dataset(%{business: %{dataTitle: ""}}),
         :dataTitle,
-        "is required"
+        "Please enter a valid dataset title."
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{description: ""}}),
         :description,
-        "is required"
+        "Please enter a valid description."
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{contactName: ""}}),
         :contactName,
-        "is required"
+        "Please enter a valid maintainer name."
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{contactEmail: ""}}),
         :contactEmail,
-        "is required"
+        "Please enter a valid maintainer email."
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{issuedDate: ""}}),
         :issuedDate,
-        "is required"
+        "Please enter a valid release date."
       )
 
-      assert_error_message(conn, TDG.create_dataset(%{business: %{license: ""}}), :license, "is required")
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{license: ""}}),
+        :license,
+        "Please enter a valid license."
+      )
 
       dataset = TDG.create_dataset(%{})
       new_tech = Map.put(dataset.technical, :sourceFormat, "")
@@ -273,21 +278,21 @@ defmodule AndiWeb.EditLiveViewTest do
         conn,
         dataset,
         :sourceFormat,
-        "is required"
+        "Please enter a valid source format."
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{publishFrequency: ""}}),
         :publishFrequency,
-        "is required"
+        "Please enter a valid update frequency."
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{orgTitle: ""}}),
         :orgTitle,
-        "is required"
+        "Please enter a valid organization."
       )
     end
   end
@@ -330,7 +335,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       form_data =
         dataset
-        |> InputConverter.changeset_from_struct()
+        |> InputConverter.changeset_from_dataset()
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
         |> form_data_for_save()
 
@@ -373,7 +378,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       form_data =
         dataset
-        |> InputConverter.changeset_from_struct()
+        |> InputConverter.changeset_from_dataset()
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
         |> form_data_for_save()
 
@@ -383,7 +388,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_text(html, "#success-message") == "Saved Successfully"
     end
 
-    test "allows clearing modified date", %{conn: conn}  do
+    test "allows clearing modified date", %{conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
       dataset =
@@ -397,7 +402,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       form_data =
         dataset
-        |> InputConverter.changeset_from_struct()
+        |> InputConverter.changeset_from_dataset()
         |> Ecto.Changeset.cast(%{modifiedDate: nil}, [:modifiedDate], empty_values: [])
         |> form_data_for_save()
 
@@ -418,7 +423,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
     form_data =
       dataset
-      |> InputConverter.changeset_from_struct()
+      |> InputConverter.changeset_from_dataset()
       |> form_data_for_save()
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -432,6 +437,7 @@ defmodule AndiWeb.EditLiveViewTest do
     |> Ecto.Changeset.apply_changes()
     |> Map.update!(:keywords, &Enum.join(&1, ", "))
     |> Map.delete(:schema)
+
     # For now, schema needs to be removed from the form data as it cannot be encoded in the form as an array of maps.
     # Once we start editing the schema in the form, we will need to address this (probably by changing the schema structure in the form data).
   end

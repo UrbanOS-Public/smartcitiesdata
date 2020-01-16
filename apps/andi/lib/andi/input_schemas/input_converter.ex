@@ -1,30 +1,17 @@
 defmodule Andi.InputSchemas.InputConverter do
-  @moduledoc false
+  @moduledoc """
+  Used to convert between SmartCity.Datasets, form data (defined by Andi.InputSchemas.DatasetInput), and Ecto.Changesets.
+  """
 
+  alias SmartCity.Dataset
   alias Andi.InputSchemas.DatasetInput
 
-  def get_new_changeset(%SmartCity.Dataset{} = original_dataset, changes) when is_map(changes) do
-    form_data_with_atom_keys = AtomicMap.convert(changes, safe: false, underscore: false)
+  @type dataset :: map() | Dataset.t()
 
-    original_dataset_flattened =
-      original_dataset
-      |> changeset_from_struct()
-      |> Ecto.Changeset.apply_changes()
+  @spec changeset_from_dataset(dataset) :: Ecto.Changeset.t()
+  def changeset_from_dataset(dataset) do
+    %{id: id, business: business, technical: technical} = AtomicMap.convert(dataset, safe: false, underscore: false)
 
-    all_changes = Map.merge(original_dataset_flattened, form_data_with_atom_keys)
-    form_changeset(all_changes)
-  end
-
-  def changeset_from_struct(%SmartCity.Dataset{} = dataset) do
-    create_changeset_from_dataset(dataset)
-  end
-
-  def changeset_from_dataset_map(dataset) do
-    AtomicMap.convert(dataset, safe: false, underscore: false)
-    |> create_changeset_from_dataset()
-  end
-
-  defp create_changeset_from_dataset(%{id: id, business: business, technical: technical}) do
     from_business = get_business(business) |> fix_modified_date()
     from_technical = get_technical(technical)
 
@@ -34,6 +21,20 @@ defmodule Andi.InputSchemas.InputConverter do
     |> DatasetInput.changeset()
   end
 
+  @spec changeset_from_dataset(Dataset.t(), map()) :: Ecto.Changeset.t()
+  def changeset_from_dataset(%SmartCity.Dataset{} = original_dataset, changes) do
+    form_data_with_atom_keys = AtomicMap.convert(changes, safe: false, underscore: false)
+
+    original_dataset_flattened =
+      original_dataset
+      |> changeset_from_dataset()
+      |> Ecto.Changeset.apply_changes()
+
+    all_changes = Map.merge(original_dataset_flattened, form_data_with_atom_keys)
+    form_changeset(all_changes)
+  end
+
+  @spec form_changeset(map()) :: Ecto.Changeset.t()
   def form_changeset(params \\ %{}) do
     params
     |> AtomicMap.convert(safe: false, underscore: false)
@@ -42,17 +43,18 @@ defmodule Andi.InputSchemas.InputConverter do
     |> DatasetInput.changeset()
   end
 
+  @spec restruct(map(), Dataset.t()) :: Dataset.t()
   def restruct(changes, dataset) do
     formatted_changes =
       changes
-      |> Map.update!(:issuedDate, &date_to_iso8601_datetime/1)
+      |> Map.update(:issuedDate, nil, &date_to_iso8601_datetime/1)
       |> Map.update(:modifiedDate, nil, &date_to_iso8601_datetime/1)
 
     business = Map.merge(dataset.business, get_business(formatted_changes)) |> Map.from_struct()
     technical = Map.merge(dataset.technical, get_technical(formatted_changes)) |> Map.from_struct()
 
-    dataset
-    |> Map.from_struct()
+    %{}
+    |> Map.put(:id, dataset.id)
     |> Map.put(:business, business)
     |> Map.put(:technical, technical)
     |> SmartCity.Dataset.new()

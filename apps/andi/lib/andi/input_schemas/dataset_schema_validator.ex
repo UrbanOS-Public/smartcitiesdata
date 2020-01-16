@@ -1,4 +1,4 @@
-defmodule AndiWeb.DatasetSchemaValidator do
+defmodule Andi.InputSchemas.DatasetSchemaValidator do
   @moduledoc """
   Used to validate dataset schemas
   """

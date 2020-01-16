@@ -1,9 +1,12 @@
 defmodule Andi.InputSchemas.DatasetInput do
-  @moduledoc false
+  @moduledoc """
+  Module for validating Ecto.Changesets on flattened dataset input.
+  """
   import Ecto.Changeset
 
   alias Andi.Services.DatasetRetrieval
-  alias AndiWeb.DatasetSchemaValidator
+  alias Andi.InputSchemas.DatasetSchemaValidator
+  alias Andi.InputSchemas.DisplayNames
 
   @business_fields %{
     contactEmail: :string,
@@ -33,8 +36,8 @@ defmodule Andi.InputSchemas.DatasetInput do
   }
 
   @types %{id: :string}
-  |> Map.merge(@business_fields)
-  |> Map.merge(@technical_fields)
+         |> Map.merge(@business_fields)
+         |> Map.merge(@technical_fields)
 
   @required_fields [
     :contactEmail,
@@ -59,21 +62,33 @@ defmodule Andi.InputSchemas.DatasetInput do
   def technical_keys(), do: Map.keys(@technical_fields)
   def all_keys(), do: Map.keys(@types)
 
+  def get_display_name(field_key), do: DisplayNames.get(field_key)
+  def get_downcased_display_name(field_key), do: field_key |> DisplayNames.get() |> String.downcase()
+
   def changeset(changes) do
     changeset(%{}, changes)
   end
 
   def changeset(schema, changes) do
     {schema, @types}
-    # adding empty_values here is causing tests to fail?
     |> cast(changes, Map.keys(@types), empty_values: [])
-    |> validate_required(@required_fields, message: "is required")
-    |> validate_format(:contactEmail, @email_regex)
-    |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
-    |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
+    |> validate_required_fields()
+    |> validate_format(:contactEmail, @email_regex,
+      message: "Please enter a valid #{get_downcased_display_name(:contactEmail)}."
+    )
+    |> validate_format(:orgName, @no_dashes_regex, message: "#{get_display_name(:orgName)} cannot contain dashes.")
+    |> validate_format(:dataName, @no_dashes_regex, message: "#{get_display_name(:dataName)} cannot contain dashes.")
     |> validate_unique_system_name()
     |> validate_top_level_selector()
     |> validate_schema()
+  end
+
+  defp validate_required_fields(changeset) do
+    Enum.reduce(@required_fields, changeset, fn field_key, changeset_acc ->
+      validate_required(changeset_acc, [field_key],
+        message: "Please enter a valid #{get_downcased_display_name(field_key)}."
+      )
+    end)
   end
 
   defp validate_unique_system_name(changeset) do
@@ -95,17 +110,26 @@ defmodule Andi.InputSchemas.DatasetInput do
 
   defp validate_top_level_selector(%{changes: %{sourceFormat: source_format}} = changeset)
        when source_format in ["xml", "text/xml"] do
-    validate_required(changeset, [:topLevelSelector], message: "is required")
+    validate_required(changeset, [:topLevelSelector],
+      message: "Please enter a valid #{get_downcased_display_name(:topLevelSelector)}."
+    )
   end
 
   defp validate_top_level_selector(changeset), do: changeset
 
   defp validate_schema(%{changes: %{sourceType: source_type}} = changeset)
-    when source_type in ["ingest", "stream"] do
+       when source_type in ["ingest", "stream"] do
     case Map.get(changeset.changes, :schema) do
-      [] -> add_error(changeset, :schema, "cannot be empty")
-      nil -> add_error(changeset, :schema, "is required", validation: :required)
-      _ -> validate_schema_internals(changeset)
+      [] ->
+        add_error(changeset, :schema, "#{get_display_name(:schema)} cannot be empty.")
+
+      nil ->
+        add_error(changeset, :schema, "Please enter a valid #{get_downcased_display_name(:schema)}.",
+          validation: :required
+        )
+
+      _ ->
+        validate_schema_internals(changeset)
     end
   end
 
