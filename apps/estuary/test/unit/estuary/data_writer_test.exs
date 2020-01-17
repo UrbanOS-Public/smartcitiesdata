@@ -71,6 +71,7 @@ defmodule Estuary.DataWriterTest do
     assert_receive(^expected)
   end
 
+  @tag :capture_log
   test "should compact the table" do
     test = self()
     table_name = Application.get_env(:estuary, :table_name)
@@ -90,6 +91,7 @@ defmodule Estuary.DataWriterTest do
     assert_receive ^table_name
   end
 
+  @tag :capture_log
   test "should stop/restart ingestion around each compaction" do
     stub(MockTable, :compact, fn _ -> :ok end)
     expect(MockReader, :terminate, fn _ -> :ok end)

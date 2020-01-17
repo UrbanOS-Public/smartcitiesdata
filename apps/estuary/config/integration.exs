@@ -14,3 +14,34 @@ config :estuary,
   topic: "event-stream"
 
 config :logger, level: :warn
+
+config :estuary, EstuaryWeb.Endpoint,
+  http: [port: 4000],
+  server: true,
+  check_origin: false
+
+config :estuary, EstuaryWeb.Endpoint,
+  code_reloader: true,
+  watchers: [
+    node: [
+      "node_modules/webpack/bin/webpack.js",
+      "--mode",
+      "development",
+      "--watch-stdin",
+      cd: Path.expand("../assets", __DIR__)
+    ]
+  ],
+  reloadable_apps: [:estuary],
+  live_reload: [
+    patterns: [
+      ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
+      ~r{priv/gettext/.*(po)$},
+      ~r{lib/estuary_web/controllers/.*(ex)$},
+      ~r{lib/estuary_web/live/.*(ex)$},
+      ~r{lib/estuary_web/views/.*(ex)$},
+      ~r{lib/estuary_web/templates/.*(eex)$}
+    ]
+  ],
+  live_view: [
+    signing_salt: "SUPER VERY TOP SECRET!!!"
+  ]

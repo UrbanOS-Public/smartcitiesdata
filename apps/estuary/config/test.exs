@@ -9,3 +9,12 @@ config :estuary,
   instance: :estuary,
   handler: Estuary.MessageHandler,
   connection: :estuary_elsa
+
+# By default the server don't run the during test. If one is required,
+# the server option can be enabled below.
+config :estuary, EstuaryWeb.Endpoint,
+  http: [port: 4002],
+  server: false,
+  live_view: [
+    signing_salt: "CHANGEME?"
+  ]

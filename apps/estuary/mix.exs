@@ -15,13 +15,14 @@ defmodule Estuary.MixProject do
       aliases: aliases(),
       docs: docs(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      test_paths: test_paths(Mix.env())
+      test_paths: test_paths(Mix.env()),
+      compilers: [:phoenix, :gettext] ++ Mix.compilers()
     ]
   end
 
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :runtime_tools, :phoenix_ecto],
       mod: {Estuary.Application, []}
     ]
   end
@@ -36,10 +37,18 @@ defmodule Estuary.MixProject do
       {:elsa, "~> 0.10.0"},
       {:jason, "~> 1.1"},
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:phoenix, "~> 1.4"},
+      {:phoenix_ecto, "~> 4.0"},
+      {:phoenix_html, "~> 2.13"},
+      {:phoenix_live_reload, "~> 1.2", only: [:dev, :integration]},
+      {:phoenix_live_view, "~>0.4"},
+      {:phoenix_pubsub, "~> 1.1"},
       {:pipeline, in_umbrella: true},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:plug_cowboy, "~> 2.1"},
       {:prestige, "~> 0.3"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
+      {:sobelow, "~> 0.8", only: :dev},
       {:quantum, "~>2.3"},
       {:timex, "~> 3.6"}
     ]
@@ -47,7 +56,11 @@ defmodule Estuary.MixProject do
 
   defp aliases do
     [
-      verify: ["format --check-formatted", "credo"],
+      verify: [
+        "format --check-formatted",
+        "credo",
+        "sobelow -i Config.HTTPS --skip --compact --exit low"
+      ],
       test: "test --no-start"
     ]
   end
