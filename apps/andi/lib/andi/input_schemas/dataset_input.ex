@@ -61,20 +61,23 @@ defmodule Andi.InputSchemas.DatasetInput do
   def technical_keys(), do: Map.keys(@technical_fields)
   def all_keys(), do: Map.keys(@types)
 
-  def changeset(changes) do
-    changeset(%{}, changes)
-  end
+  def light_validation_changeset(changes), do: light_validation_changeset(%{}, changes)
 
-  def changeset(schema, changes) do
+  def light_validation_changeset(schema, changes) do
     {schema, @types}
     |> cast(changes, Map.keys(@types), empty_values: [])
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:contactEmail, @email_regex)
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
-    |> validate_unique_system_name()
     |> validate_top_level_selector()
     |> validate_schema()
+  end
+
+  def full_validation_changeset(changes), do: full_validation_changeset(%{}, changes)
+
+  def full_validation_changeset(schema, changes) do
+    light_validation_changeset(schema, changes) |> validate_unique_system_name()
   end
 
   defp validate_unique_system_name(changeset) do

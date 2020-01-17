@@ -18,7 +18,7 @@ defmodule Andi.InputSchemas.InputConverter do
     %{id: id}
     |> Map.merge(from_business)
     |> Map.merge(from_technical)
-    |> DatasetInput.changeset()
+    |> DatasetInput.full_validation_changeset()
   end
 
   @spec changeset_from_dataset(Dataset.t(), map()) :: Ecto.Changeset.t()
@@ -31,16 +31,24 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Ecto.Changeset.apply_changes()
 
     all_changes = Map.merge(original_dataset_flattened, form_data_with_atom_keys)
-    form_changeset(all_changes)
+
+    all_changes
+    |> adjust_form_input()
+    |> DatasetInput.full_validation_changeset()
   end
 
   @spec form_changeset(map()) :: Ecto.Changeset.t()
   def form_changeset(params \\ %{}) do
     params
+    |> adjust_form_input()
+    |> DatasetInput.light_validation_changeset()
+  end
+
+  defp adjust_form_input(params) do
+    params
     |> AtomicMap.convert(safe: false, underscore: false)
     |> Map.update(:keywords, nil, &keywords_to_list/1)
     |> fix_modified_date()
-    |> DatasetInput.changeset()
   end
 
   @spec restruct(map(), Dataset.t()) :: Dataset.t()

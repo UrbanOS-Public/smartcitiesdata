@@ -25,16 +25,11 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     sourceType: "sourceType"
   }
 
-  describe "changeset" do
-    setup do
-      allow DatasetRetrieval.get_all!(), return: []
-      :ok
-    end
-
+  describe "light_validation_changeset" do
     data_test "requires value for #{field_name}" do
       changes = @valid_changes |> Map.delete(field_name)
 
-      changeset = DatasetInput.changeset(changes)
+      changeset = DatasetInput.light_validation_changeset(changes)
 
       assert changeset.errors == [{field_name, {"is required", [validation: :required]}}]
 
@@ -63,7 +58,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
         |> Map.put(:spatial, "")
         |> Map.put(:temporal, "")
 
-      changeset = DatasetInput.changeset(changes)
+      changeset = DatasetInput.light_validation_changeset(changes)
 
       assert changeset.errors == []
       assert changeset.changes[:spatial] == ""
@@ -73,7 +68,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     test "requires valid email" do
       changes = @valid_changes |> Map.put(:contactEmail, "nope")
 
-      changeset = DatasetInput.changeset(changes)
+      changeset = DatasetInput.light_validation_changeset(changes)
 
       assert changeset.errors == [{:contactEmail, {"has invalid format", [validation: :format]}}]
     end
@@ -81,7 +76,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     data_test "requires #{field_name} be a date" do
       changes = @valid_changes |> Map.put(field_name, "2020-13-32")
 
-      changeset = DatasetInput.changeset(changes)
+      changeset = DatasetInput.light_validation_changeset(changes)
 
       assert [{^field_name, _}] = changeset.errors
 
@@ -96,7 +91,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     data_test "rejects dashes in the #{field_name}" do
       changes = @valid_changes |> Map.put(field_name, "this-has-dashes")
 
-      changeset = DatasetInput.changeset(changes)
+      changeset = DatasetInput.light_validation_changeset(changes)
 
       assert changeset.errors == [{field_name, {"cannot contain dashes", [validation: :format]}}]
 
@@ -108,41 +103,10 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       )
     end
 
-    test "requires unique orgName and dataName" do
-      Placebo.unstub()
-
-      changes = @valid_changes |> Map.delete(:id)
-
-      existing_dataset =
-        TDG.create_dataset(%{technical: %{dataName: @valid_changes.dataName, orgName: @valid_changes.orgName}})
-
-      allow DatasetRetrieval.get_all!(), return: [existing_dataset]
-
-      changeset = DatasetInput.changeset(changes)
-
-      assert changeset.errors == [{:dataName, {"existing dataset has the same orgName and dataName", []}}]
-    end
-
-    test "allows same orgName and dataName when id is same" do
-      Placebo.unstub()
-
-      existing_dataset =
-        TDG.create_dataset(%{
-          id: @valid_changes.id,
-          technical: %{dataName: @valid_changes.dataName, orgName: @valid_changes.orgName}
-        })
-
-      allow DatasetRetrieval.get_all!(), return: [existing_dataset]
-
-      changeset = DatasetInput.changeset(@valid_changes)
-
-      assert changeset.errors == []
-    end
-
     data_test "topLevelSelector is required when sourceFormat is #{source_format}" do
       changes = @valid_changes |> Map.put(:sourceFormat, source_format)
 
-      changeset = DatasetInput.changeset(changes)
+      changeset = DatasetInput.light_validation_changeset(changes)
 
       assert changeset.errors == [
                {:topLevelSelector, {"is required", [validation: :required]}}
@@ -154,7 +118,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     data_test "validates the schema appropriately when sourceType is #{source_type} and schema is #{inspect(schema)}" do
       changes = @valid_changes |> Map.put(:schema, schema) |> Map.put(:sourceType, source_type)
 
-      changeset = DatasetInput.changeset(changes)
+      changeset = DatasetInput.light_validation_changeset(changes)
 
       assert changeset.errors == errors
 
@@ -186,7 +150,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
           sourceType: "ingest"
         })
 
-      changeset = DatasetInput.changeset(changes)
+      changeset = DatasetInput.light_validation_changeset(changes)
 
       assert length(changeset.errors) == 2
 
@@ -195,6 +159,54 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       assert changeset.errors
              |> Enum.any?(fn {:schema, {error, _}} -> String.match?(error, ~r/selector.+another_field/) end)
+    end
+  end
+
+
+  describe "full_validation_changeset" do
+    setup do
+      allow DatasetRetrieval.get_all!(), return: []
+      :ok
+    end
+
+    test "requires unique orgName and dataName" do
+      Placebo.unstub()
+
+      changes = @valid_changes |> Map.delete(:id)
+
+      existing_dataset =
+        TDG.create_dataset(%{technical: %{dataName: @valid_changes.dataName, orgName: @valid_changes.orgName}})
+
+      allow DatasetRetrieval.get_all!(), return: [existing_dataset]
+
+      changeset = DatasetInput.full_validation_changeset(changes)
+
+      assert changeset.errors == [{:dataName, {"existing dataset has the same orgName and dataName", []}}]
+    end
+
+    test "allows same orgName and dataName when id is same" do
+      Placebo.unstub()
+
+      existing_dataset =
+        TDG.create_dataset(%{
+          id: @valid_changes.id,
+          technical: %{dataName: @valid_changes.dataName, orgName: @valid_changes.orgName}
+        })
+
+      allow DatasetRetrieval.get_all!(), return: [existing_dataset]
+
+      changeset = DatasetInput.full_validation_changeset(@valid_changes)
+
+      assert changeset.errors == []
+    end
+
+    test "includes light validation" do
+      changes = @valid_changes |> Map.put(:contactEmail, "nope") |> Map.delete(:sourceFormat)
+
+      changeset = DatasetInput.full_validation_changeset(changes)
+
+      assert {:contactEmail, {"has invalid format", [validation: :format]}} in changeset.errors
+      assert {:sourceFormat, {"is required", [validation: :required]}} in changeset.errors
     end
   end
 end
