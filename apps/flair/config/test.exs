@@ -8,4 +8,5 @@ config :flair,
   message_timeout: 50,
   task_timeout: 50
 
-config :prestige, base_url: "http://127.0.0.1:8080"
+config :prestige, :session_opts,
+  url: "http://127.0.0.1:8080"

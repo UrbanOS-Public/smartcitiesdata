@@ -7,11 +7,9 @@ config :flair,
 config :logger,
   level: :info
 
-config :prestige,
-  headers: [
-    user: "presto",
-    catalog: "hive",
-    schema: "default"
-  ]
+config :prestige, :session_opts,
+  user: "presto",
+  catalog: "hive",
+  schema: "default"
 
 import_config "#{Mix.env()}.exs"
