@@ -7,10 +7,14 @@ defmodule AndiWeb.API.DatasetControllerTest do
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetRetrieval
+  alias Andi.DatasetCache
+
   import Andi
   import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0]
 
   setup do
+    GenServer.call(DatasetCache, :reset)
+
     example_dataset_1 = TDG.create_dataset(%{})
 
     example_dataset_1 =
@@ -88,7 +92,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
   describe "PUT /api/ without systemName" do
     setup %{conn: conn, request: request} do
-      allow DatasetRetrieval.get_all!(), return: []
       {_, request} = pop_in(request, ["technical", "systemName"])
       [conn: put(conn, @route, request)]
     end
@@ -126,7 +129,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
         }
       )
 
-    allow DatasetRetrieval.get_all!(), return: [existing_dataset]
+    DatasetCache.put(existing_dataset)
 
     %{"errors" => errors} =
       conn
@@ -152,8 +155,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
         }
       )
 
-    allow(DatasetRetrieval.get_all!(), return: [])
-
     %{"errors" => errors} =
       conn
       |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
@@ -173,8 +174,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
       )
       |> struct_to_map_with_string_keys()
       |> put_in(["business", "modifiedDate"], "badDate")
-
-    allow(DatasetRetrieval.get_all!(), return: [])
 
     %{"errors" => errors} =
       conn
@@ -207,8 +206,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
         ["technical", "sourceFormat"],
         ["technical", "private"]
       ])
-
-    allow(DatasetRetrieval.get_all!(), return: [])
 
     %{"errors" => actual_errors} =
       conn
@@ -250,8 +247,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
           keywords: ["  a keyword", " another keyword", "etc"]
         }
       )
-
-    allow(DatasetRetrieval.get_all!(), return: [])
 
     response =
       conn
@@ -347,7 +342,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
   describe "PUT /api/ with systemName" do
     setup %{conn: conn, request: request} do
-      allow DatasetRetrieval.get_all!(), return: []
       req = put_in(request, ["technical", "systemName"], "org__dataset_akdjbas")
       [conn: put(conn, @route, req)]
     end
@@ -395,8 +389,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
   end
 
   test "PUT /api/ dataset passed without UUID generates UUID for dataset", %{conn: conn, request: request} do
-    allow DatasetRetrieval.get_all!(), return: []
-
     {_, request} = pop_in(request, ["id"])
     conn = put(conn, @route, request)
 

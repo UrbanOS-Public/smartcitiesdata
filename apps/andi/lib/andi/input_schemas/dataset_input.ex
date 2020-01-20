@@ -4,7 +4,7 @@ defmodule Andi.InputSchemas.DatasetInput do
   """
   import Ecto.Changeset
 
-  alias Andi.Services.DatasetRetrieval
+  alias Andi.DatasetCache
   alias Andi.InputSchemas.DatasetSchemaValidator
 
   @business_fields %{
@@ -89,7 +89,9 @@ defmodule Andi.InputSchemas.DatasetInput do
   end
 
   defp has_unique_data_and_org_name?(%{changes: changes}) do
-    DatasetRetrieval.get_all!()
+    DatasetCache.get_all()
+    |> Enum.filter(&Map.has_key?(&1, "dataset"))
+    |> Enum.map(&(&1["dataset"]))
     |> Enum.all?(fn existing_dataset ->
       changes[:orgName] != existing_dataset.technical.orgName ||
         changes[:dataName] != existing_dataset.technical.dataName ||

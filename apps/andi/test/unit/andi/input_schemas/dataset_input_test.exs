@@ -5,7 +5,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   alias Andi.InputSchemas.DatasetInput
-  alias Andi.Services.DatasetRetrieval
+  alias Andi.DatasetCache
 
   @valid_changes %{
     contactEmail: "contact@email.com",
@@ -24,6 +24,10 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     sourceFormat: "sourceFormat",
     sourceType: "sourceType"
   }
+
+  setup do
+    GenServer.call(DatasetCache, :reset)
+  end
 
   describe "light_validation_changeset" do
     data_test "requires value for #{field_name}" do
@@ -164,20 +168,12 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
 
   describe "full_validation_changeset" do
-    setup do
-      allow DatasetRetrieval.get_all!(), return: []
-      :ok
-    end
-
     test "requires unique orgName and dataName" do
-      Placebo.unstub()
-
       changes = @valid_changes |> Map.delete(:id)
 
       existing_dataset =
         TDG.create_dataset(%{technical: %{dataName: @valid_changes.dataName, orgName: @valid_changes.orgName}})
-
-      allow DatasetRetrieval.get_all!(), return: [existing_dataset]
+      DatasetCache.put(existing_dataset)
 
       changeset = DatasetInput.full_validation_changeset(changes)
 
@@ -185,15 +181,12 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     end
 
     test "allows same orgName and dataName when id is same" do
-      Placebo.unstub()
-
       existing_dataset =
         TDG.create_dataset(%{
           id: @valid_changes.id,
           technical: %{dataName: @valid_changes.dataName, orgName: @valid_changes.orgName}
         })
-
-      allow DatasetRetrieval.get_all!(), return: [existing_dataset]
+      DatasetCache.put(existing_dataset)
 
       changeset = DatasetInput.full_validation_changeset(@valid_changes)
 

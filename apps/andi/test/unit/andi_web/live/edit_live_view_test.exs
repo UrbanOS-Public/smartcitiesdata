@@ -10,14 +10,12 @@ defmodule AndiWeb.EditLiveViewTest do
 
   alias Andi.DatasetCache
   alias Andi.InputSchemas.InputConverter
-  alias Andi.Services.DatasetRetrieval
 
   alias SmartCity.TestDataGenerator, as: TDG
 
   @url_path "/datasets/"
 
   setup do
-    allow DatasetRetrieval.get_all!(), return: []
     GenServer.call(DatasetCache, :reset)
   end
 
@@ -212,19 +210,6 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {"english", "English"} == get_select(html, "#metadata_language")
       assert get_value(html, "#metadata_homepage") == dataset.business.homepage
     end
-
-    test "does NOT fetch all datasets to check uniqueness", %{conn: conn} do
-      dataset = TDG.create_dataset(%{})
-      DatasetCache.put(dataset)
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-      Placebo.unstub()
-      allow DatasetRetrieval.get_all!(), return: []
-
-      html = render_change(view, :validate, %{"metadata" => dataset_to_map(dataset)})
-
-      refute_called(DatasetRetrieval.get_all!())
-    end
   end
 
   describe "edit metadata" do
@@ -309,6 +294,31 @@ defmodule AndiWeb.EditLiveViewTest do
         :orgTitle,
         "Please enter a valid organization."
       )
+    end
+
+    test "error message is cleared when form is updated", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{issuedDate: ""}})
+      DatasetCache.put(dataset)
+
+      form_data =
+        dataset
+        |> InputConverter.changeset_from_dataset()
+        |> form_data_for_save()
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      render_change(view, :save, %{"metadata" => form_data})
+
+      assert render(view) |> get_text(".metadata__error-message") =~ "errors"
+
+      form_data =
+        dataset
+        |> InputConverter.changeset_from_dataset()
+        |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
+        |> form_data_for_save()
+
+      render_change(view, :validate, %{"metadata" => form_data})
+
+      assert render(view) |> get_text(".metadata__error-message") == ""
     end
   end
 
@@ -432,15 +442,14 @@ defmodule AndiWeb.EditLiveViewTest do
       assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, expected_updated_dataset), once())
     end
 
-    test "does not save when dataset org and data name match existing dataset" do
-      Placebo.unstub()
+    test "does not save when dataset org and data name match existing dataset", %{conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
       dataset = TDG.create_dataset(%{business: %{issuedDate: nil}})
       DatasetCache.put(dataset)
 
       existing_dataset = TDG.create_dataset(%{technical: %{dataName: dataset.technical.dataName, orgName: dataset.technical.orgName}})
-      allow DatasetRetrieval.get_all!(), return: [existing_dataset]
+      DatasetCache.put(existing_dataset)
 
       form_data =
         dataset
@@ -452,6 +461,8 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(view, :save, %{"metadata" => form_data})
 
       refute_called(Brook.Event.send(any(), any(), any(), any()))
+
+      assert render(view) |> get_text(".metadata__error-message") =~ "errors"
     end
   end
 
