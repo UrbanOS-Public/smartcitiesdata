@@ -93,7 +93,7 @@ defmodule AndiWeb.EditLiveView do
           <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--cancel") %>
         </div>
         <div class="metadata-form__save-btn">
-          <%= unless is_nil(@validation_errors) do %>
+          <%= if @has_validation_errors do %>
             <div class="metadata__error-message">
               <span>There were errors with the dataset you tried to submit.</span>
             </div>
@@ -117,7 +117,7 @@ defmodule AndiWeb.EditLiveView do
      assign(socket,
        dataset: dataset,
        changeset: new_changeset,
-       validation_errors: nil,
+       has_validation_errors: false,
        save_success: false
      )}
   end
@@ -151,11 +151,11 @@ defmodule AndiWeb.EditLiveView do
           {:noreply, assign(socket, changeset: changeset)}
       end
     else
-      {:noreply, assign(socket, changeset: %{changeset | action: :save}, validation_errors: changeset.errors)}
+      {:noreply, assign(socket, changeset: %{changeset | action: :save}, has_validation_errors: true)}
     end
   end
 
-  defp reset_save_success(socket), do: assign(socket, save_success: false, validation_errors: nil)
+  defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
 
   defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
   defp get_level_of_access_options, do: [[key: "Private", value: "true"], [key: "Public", value: "false"]]
