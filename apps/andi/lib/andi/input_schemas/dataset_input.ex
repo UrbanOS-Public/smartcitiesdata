@@ -91,7 +91,7 @@ defmodule Andi.InputSchemas.DatasetInput do
   defp has_unique_data_and_org_name?(%{changes: changes}) do
     DatasetCache.get_all()
     |> Enum.filter(&Map.has_key?(&1, "dataset"))
-    |> Enum.map(&(&1["dataset"]))
+    |> Enum.map(& &1["dataset"])
     |> Enum.all?(fn existing_dataset ->
       changes[:orgName] != existing_dataset.technical.orgName ||
         changes[:dataName] != existing_dataset.technical.dataName ||

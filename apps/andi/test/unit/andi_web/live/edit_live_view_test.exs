@@ -448,7 +448,9 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset = TDG.create_dataset(%{business: %{issuedDate: nil}})
       DatasetCache.put(dataset)
 
-      existing_dataset = TDG.create_dataset(%{technical: %{dataName: dataset.technical.dataName, orgName: dataset.technical.orgName}})
+      existing_dataset =
+        TDG.create_dataset(%{technical: %{dataName: dataset.technical.dataName, orgName: dataset.technical.orgName}})
+
       DatasetCache.put(existing_dataset)
 
       form_data =

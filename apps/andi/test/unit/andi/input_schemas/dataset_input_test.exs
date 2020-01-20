@@ -166,13 +166,13 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     end
   end
 
-
   describe "full_validation_changeset" do
     test "requires unique orgName and dataName" do
       changes = @valid_changes |> Map.delete(:id)
 
       existing_dataset =
         TDG.create_dataset(%{technical: %{dataName: @valid_changes.dataName, orgName: @valid_changes.orgName}})
+
       DatasetCache.put(existing_dataset)
 
       changeset = DatasetInput.full_validation_changeset(changes)
@@ -186,6 +186,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
           id: @valid_changes.id,
           technical: %{dataName: @valid_changes.dataName, orgName: @valid_changes.orgName}
         })
+
       DatasetCache.put(existing_dataset)
 
       changeset = DatasetInput.full_validation_changeset(@valid_changes)
