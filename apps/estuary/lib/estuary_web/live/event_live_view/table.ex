@@ -1,4 +1,4 @@
-defmodule EstuaryWeb.DatasetLiveView.Table do
+defmodule EstuaryWeb.EventLiveView.Table do
   @moduledoc """
     LiveComponent for dataset table
   """
@@ -20,30 +20,9 @@ defmodule EstuaryWeb.DatasetLiveView.Table do
 
         <%= if @events == [] do %>
           <tr><td class="events-table__cell" colspan="100%">No events Found!</td></tr>
-        # <% else %>
-        #   <%= for dataset <- @events do %>
-        #   <tr class="events-table__tr">
-        #     <td class="events-table__cell events-table__cell--break events-table__ingested-cell"><%= ingest_status(dataset) %></td>
-        #     <td class="events-table__cell events-table__cell--break"><%= dataset["data_title"] %></td>
-        #     <td class="events-table__cell events-table__cell--break"><%= dataset["org_title"] %></td>
-        #     <td class="events-table__cell events-table__cell--break"><%= Link.link("Edit", to: "/events/#{dataset["id"]}", class: "btn") %></td>
-        #   </tr>
-          <% end %>
         <% end %>
       </table>
     </div>
     """
-  end
-
-  def handle_event("order-by", %{"field" => field}, socket) do
-    send(self(), {:order, field})
-    {:noreply, socket}
-  end
-
-  defp ingest_status(dataset) do
-    case dataset["ingested_time"] do
-      nil -> ""
-      _ -> ~E(<i class="material-icons">check</i>)
-    end
   end
 end

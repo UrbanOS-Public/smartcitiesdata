@@ -57,9 +57,9 @@ defmodule EstuaryWeb.ErrorHelpers do
     # should be written to the errors.po file. The :count option is
     # set by Ecto and indicates we should also apply plural rules.
     if count = opts[:count] do
-      Gettext.dngettext(EsturyWeb.Gettext, "errors", msg, msg, count, opts)
+      Gettext.dngettext(EsturayWeb.Gettext, "errors", msg, msg, count, opts)
     else
-      Gettext.dgettext(EsturyWeb.Gettext, "errors", msg, opts)
+      Gettext.dgettext(EstuaryWeb.Gettext, "errors", msg, opts)
     end
   end
 end

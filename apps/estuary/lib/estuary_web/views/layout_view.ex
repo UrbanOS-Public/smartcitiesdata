@@ -1,3 +1,3 @@
-defmodule EsturyWeb.LayoutView do
+defmodule EstuaryWeb.LayoutView do
   use EstuaryWeb, :view
 end

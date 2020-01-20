@@ -1,6 +1,6 @@
 use Mix.Config
 
-config :andi, EstuaryWeb.Endpoint,
+config :estuary, EstuaryWeb.Endpoint,
   http: [port: 4000],
   debug_errors: true,
   code_reloader: true,

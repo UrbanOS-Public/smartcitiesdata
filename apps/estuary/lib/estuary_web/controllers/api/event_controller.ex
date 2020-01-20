@@ -6,7 +6,6 @@ defmodule EstuaryWeb.API.EventController do
 
   require Logger
   alias Estuary.Services.EventRetrievalService
-  import Estuary
 
   @doc """
   Return all events stored in presto
@@ -25,8 +24,6 @@ defmodule EstuaryWeb.API.EventController do
   defp respond(conn, status, body) do
     conn
     |> put_status(status)
-    |> IO.inspect(label: "Statussss")
     |> json(body)
-    |> IO.inspect(label: "Jsonnn")
   end
 end

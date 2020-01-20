@@ -1,29 +1,31 @@
 defmodule EstuaryWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :estuary
 
-  socket "/live", Phoenix.LiveView.Socket
+  socket("/live", Phoenix.LiveView.Socket)
 
-  plug Plug.Static,
+  plug(Plug.Static,
     at: "/",
     from: :estuary,
     gzip: false,
     only: ~w(css fonts images js favicon.ico robots.txt)
+  )
 
   if code_reloading? do
-    socket "/phoenix/live_reload/socket", Phoenix.LiveReloader.Socket
-    plug Phoenix.LiveReloader
-    plug Phoenix.CodeReloader
+    socket("/phoenix/live_reload/socket", Phoenix.LiveReloader.Socket)
+    plug(Phoenix.LiveReloader)
+    plug(Phoenix.CodeReloader)
   end
 
-  plug Plug.RequestId
+  plug(Plug.RequestId)
 
-  plug Plug.Parsers,
+  plug(Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
+  )
 
-  plug Plug.MethodOverride
-  plug Plug.Head
+  plug(Plug.MethodOverride)
+  plug(Plug.Head)
 
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
@@ -33,5 +35,5 @@ defmodule EstuaryWeb.Endpoint do
   #   key: "_estuary_key",
   #   signing_salt: "SekoFX7T"
 
-  plug EstuaryWeb.Router
+  plug(EstuaryWeb.Router)
 end

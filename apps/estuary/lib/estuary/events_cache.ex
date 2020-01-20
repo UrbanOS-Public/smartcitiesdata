@@ -9,12 +9,10 @@ defmodule Estuary.EventsCache do
   def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
-  
 
   def put(invalid_dataset) do
     Logger.warn("Not caching dataset because it is invalid: #{inspect(invalid_dataset)}")
   end
-
 
   def get_all do
     :ets.match(__MODULE__, {:_, :"$1"}) |> List.flatten()

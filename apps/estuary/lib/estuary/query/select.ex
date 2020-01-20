@@ -3,12 +3,15 @@ defmodule Estuary.Query.Select do
 
   def select_table do
     insert
-    events = "SELECT author, create_ts, data, type 
+
+    events =
+      "SELECT author, create_ts, data, type 
     FROM hive.default.event_stream 
     ORDER BY create_ts
     DESC LIMIT 1000"
-    |> Prestige.execute(user: "estury", by_names: true)
-    |> Prestige.prefetch()
+      |> Prestige.execute(user: "estury", by_names: true)
+      |> Prestige.prefetch()
+
     {:ok, events}
   rescue
     error -> {:error, error}
