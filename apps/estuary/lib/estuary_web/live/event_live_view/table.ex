@@ -1,6 +1,6 @@
 defmodule EstuaryWeb.EventLiveView.Table do
   @moduledoc """
-    LiveComponent for dataset table
+    LiveComponent for event_stream table
   """
 
   use Phoenix.LiveComponent

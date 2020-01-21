@@ -7,27 +7,27 @@ defmodule EstuaryWeb.EventLiveView do
 
   def render(assigns) do
     ~L"""
-    <div class="datasets-index">
-      <h1 class="datasets-index__title">All Events</h1>
-      <div class="datasets-index__search">
+    <div class="events-index">
+      <h1 class="events-index__title">All Events</h1>
+      <div class="events-index__search">
         <form phx-change="search" phx-submit="search">
-          <div class="datasets-index__search-input-container">
-            <label for="datasets-index__search-input">
-              <i class="material-icons datasets-index__search-icon">search</i>
+          <div class="events-index__search-input-container">
+            <label for="events-index__search-input">
+              <i class="material-icons events-index__search-icon">search</i>
             </label>
             <input
               name="search-value"
               phx-debounce="250"
-              id="datasets-index__search-input"
-              class="datasets-index__search-input"
+              id="events-index__search-input"
+              class="events-index__search-input"
               type="text"
               value="<%= @search_text %>"
-              placeholder="Search datasets"
+              placeholder="Search events"
             >
           </div>
         </form>
       </div>
-      <%= live_component(@socket, Table, id: :datasets_table, datasets: @datasets, order: @order) %>
+      <%= live_component(@socket, Table, id: :events_table, events: @events, order: @order) %>
     </div>
     """
   end

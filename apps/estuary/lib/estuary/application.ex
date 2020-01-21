@@ -5,7 +5,6 @@ defmodule Estuary.Application do
   def start(_type, _args) do
     [
       EstuaryWeb.Endpoint,
-      Estuary.EventsCache,
       Estuary.Quantum.Scheduler,
       {Estuary.InitServer, []}
     ]
