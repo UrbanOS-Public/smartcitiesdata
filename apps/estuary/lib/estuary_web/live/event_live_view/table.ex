@@ -12,14 +12,23 @@ defmodule EstuaryWeb.EventLiveView.Table do
     <div id="<%= @id %>" class="events-index__table">
       <table class="events-table">
       <thead>
-        <th class="events-table__th events-table__cell events-table__th--sortable events-table__th--<%= Map.get(@order, "author", "unsorted") %>" phx-click="order-by" phx-value-field="author">Author </th>
-        <th class="events-table__th events-table__cell events-table__th--sortable events-table__th--<%= Map.get(@order, "create_ts", "unsorted") %>" phx-click="order-by" phx-value-field="create_ts">Create Timestamp </th>
-        <th class="events-table__th events-table__cell events-table__th--sortable events-table__th--<%= Map.get(@order, "data", "unsorted") %>" phx-click="order-by" phx-value-field="data">Data </th>
-        <th class="events-table__th events-table__cell events-table__th--sortable events-table__th--<%= Map.get(@order, "type", "unsorted") %>" phx-click="order-by" phx-value-field="type">Type </th>
+        <th class="events-table__th events-table__cell phx-value-field="author">Author </th>
+        <th class="events-table__th events-table__cell phx-value-field="create_ts">Create Timestamp </th>
+        <th class="events-table__th events-table__cell phx-value-field="data">Data </th>
+        <th class="events-table__th events-table__cell phx-value-field="type">Type </th>
         </thead>
 
         <%= if @events == [] do %>
           <tr><td class="events-table__cell" colspan="100%">No events Found!</td></tr>
+        <% else %>
+          <%= for event <- @events do %>
+            <tr class="events-table__tr">
+              <td class="events-table__cell events-table__cell--break"><%= event["author"] %></td>
+              <td class="events-table__cell events-table__cell--break"><%= event["create_ts"] %></td>
+              <td class="events-table__cell events-table__cell--break"><%= event["data"] %></td>
+              <td class="events-table__cell events-table__cell--break"><%= event["type"] %></td>
+            </tr>
+          <% end %>
         <% end %>
       </table>
     </div>
