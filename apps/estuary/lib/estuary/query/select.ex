@@ -6,7 +6,6 @@ defmodule Estuary.Query.Select do
       "SELECT #{translate_columns(value["columns"])}
       FROM #{value["table_name"]} #{translate_order(value["order_by"], value["order"])}
       LIMIT #{translate_limit(value["limit"])}"
-      |> IO.inspect()
       |> Prestige.execute(by_names: true)
       |> Prestige.prefetch()
 
