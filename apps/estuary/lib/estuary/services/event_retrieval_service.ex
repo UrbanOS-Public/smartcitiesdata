@@ -3,6 +3,7 @@ defmodule Estuary.Services.EventRetrievalService do
   Interface for retrieving events.
   """
   alias Estuary.Query.Select
+  alias Estuary.Datasets.DatasetSchema
 
   def get_all() do
     case Select.select_table(make_select_table_schema()) do
@@ -14,7 +15,7 @@ defmodule Estuary.Services.EventRetrievalService do
   defp make_select_table_schema do
     %{
       "columns" => ["author", "create_ts", "data", "type"],
-      "table_name" => "event_stream",
+      "table_name" => DatasetSchema.table_name(),
       "order_by" => "create_ts",
       "order" => "DESC",
       "limit" => 1000

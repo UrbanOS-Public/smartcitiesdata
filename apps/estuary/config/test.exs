@@ -3,6 +3,7 @@ use Mix.Config
 config :logger, level: :warn
 
 config :estuary,
+  init_server: false,
   topic_reader: MockReader,
   table_writer: MockTable,
   table_name: "not_the_event_stream",

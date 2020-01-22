@@ -60,8 +60,7 @@ defmodule Estuary.MixProject do
         "format --check-formatted",
         "credo",
         "sobelow -i Config.HTTPS --skip --compact --exit low"
-      ],
-      test: "test --no-start"
+      ]
     ]
   end
 

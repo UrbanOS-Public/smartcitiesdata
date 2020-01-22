@@ -1,5 +1,2 @@
-Application.ensure_all_started(:mox)
-Application.ensure_all_started(:dead_letter)
-Application.ensure_all_started(:pipeline)
 ExUnit.start(exclude: [:skip])
 Faker.start()
