@@ -294,6 +294,13 @@ defmodule AndiWeb.EditLiveViewTest do
         :orgTitle,
         "Please enter a valid organization."
       )
+
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{technical: %{sourceUrl: ""}}),
+        :sourceUrl,
+        "Please enter a valid source url."
+      )
     end
 
     test "error message is cleared when form is updated", %{conn: conn} do
@@ -465,6 +472,28 @@ defmodule AndiWeb.EditLiveViewTest do
       refute_called(Brook.Event.send(any(), any(), any(), any()))
 
       assert render(view) |> get_text(".metadata__error-message") =~ "errors"
+    end
+  end
+
+  describe "sourceUrl testing" do
+    test "status and time are displayed when source url is tested", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{sourceUrl: "123.com"}
+        })
+
+      DatasetCache.put(dataset)
+
+      allow(Andi.Services.UrlTest.test("123.com"), return: %{time: 1_000, status: "200"})
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert get_text(html, "#test-status-code") == ""
+      assert get_text(html, "#test-time") == ""
+
+      html = render_change(view, :test_url, %{})
+
+      assert get_text(html, "#test-status-code") == "200"
+      assert get_text(html, "#test-time") == "1000"
     end
   end
 

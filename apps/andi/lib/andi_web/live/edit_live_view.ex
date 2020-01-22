@@ -12,7 +12,8 @@ defmodule AndiWeb.EditLiveView do
   def render(assigns) do
     ~L"""
     <div class="edit-page">
-      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, class: "metadata-form", as: :metadata] %>
+      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :metadata] %>
+      <div class="metadata-form">
         <div class="metadata-form__title">
           <%= label(f, :title, DisplayNames.get(:dataTitle), class: "label label--required") %>
           <%= text_input(f, :dataTitle, class: "input") %>
@@ -89,8 +90,22 @@ defmodule AndiWeb.EditLiveView do
           <%= select(f, :private, get_level_of_access_options(), class: "select") %>
           <%= error_tag(f, :private) %>
         </div>
-        <div class="metadata-form__cancel-btn">
-          <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--cancel") %>
+        </div>
+        <div>
+          <div class="metadata-form__source-url">
+            <%= label(f, :sourceUrl, DisplayNames.get(:sourceUrl), class: "label label--required") %>
+            <%= text_input(f, :sourceUrl, class: "input") %>
+            <%= error_tag(f, :sourceUrl) %>
+          </div>
+          <div>
+            <button class="metadata-form__test-btn" phx-click="test_url">Test</button>
+            <%= if @test_results do %>
+            <div>
+            Status: <span id="test-status-code"><%= @test_results |> Map.get(:status) %></span> | Time: <span id="test-time"><%= @test_results |> Map.get(:time) %></span> ms
+            </div>
+            <% end %>
+          </div>
+        </div>
         </div>
         <div class="metadata-form__save-btn">
           <%= if @has_validation_errors do %>
@@ -118,8 +133,13 @@ defmodule AndiWeb.EditLiveView do
        dataset: dataset,
        changeset: new_changeset,
        has_validation_errors: false,
-       save_success: false
+       save_success: false,
+       test_results: nil
      )}
+  end
+
+  def handle_event("test_url", _, %{assigns: %{changeset: %{changes: %{sourceUrl: sourceUrl}}}} = socket) do
+    {:noreply, assign(socket, test_results: Andi.Services.UrlTest.test(sourceUrl))}
   end
 
   def handle_event("validate", %{"metadata" => form_data}, socket) do
