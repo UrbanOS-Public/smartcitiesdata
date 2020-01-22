@@ -484,16 +484,47 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetCache.put(dataset)
 
-      allow(Andi.Services.UrlTest.test("123.com"), return: %{time: 1_000, status: "200"})
+      allow(Andi.Services.UrlTest.test("123.com"), return: %{time: 1_000, status: 200})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert get_text(html, "#test-status-code") == ""
-      assert get_text(html, "#test-time") == ""
+      assert get_text(html, "#test-status__code") == ""
+      assert get_text(html, "#test-status__time") == ""
 
       html = render_change(view, :test_url, %{})
 
-      assert get_text(html, "#test-status-code") == "200"
-      assert get_text(html, "#test-time") == "1000"
+      assert get_text(html, "#test-status__code") == "200"
+      assert get_text(html, "#test-status__time") == "1000"
+    end
+
+    test "status is displayed with an appropriate class when it is between 200 and 399", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+
+      DatasetCache.put(dataset)
+
+      allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), return: %{time: 1_000, status: 200})
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert get_text(html, ".test-status__good") == ""
+
+      html = render_change(view, :test_url, %{})
+
+      assert get_text(html, ".test-status__good") == "200"
+    end
+
+    test "status is displayed with an appropriate class when it is not between 200 and 399", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+
+      DatasetCache.put(dataset)
+
+      allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), return: %{time: 1_000, status: 400})
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert get_text(html, ".test-status__bad") == ""
+
+      html = render_change(view, :test_url, %{})
+
+      assert get_text(html, ".test-status__bad") == "400"
+      assert get_text(html, ".test-status__good") != "400"
     end
   end
 

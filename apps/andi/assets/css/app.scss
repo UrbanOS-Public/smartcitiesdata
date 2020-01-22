@@ -76,6 +76,14 @@ body {
   margin-right: 0;
 }
 
+.btn--test {
+  @extend .btn--cancel;
+  color: white;
+  font-size: 1rem;
+  background-color: $color-text-link;
+  border: 2px solid $color-text-link;
+}
+
 .btn--save:hover {
   background: $color-text-link;
   color: white;

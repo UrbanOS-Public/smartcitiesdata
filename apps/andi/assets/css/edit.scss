@@ -6,6 +6,12 @@
   padding: 2rem;
 }
 
+.form-section {
+  border: $table-border;
+  padding: 2rem;
+  margin-bottom: 4rem;
+}
+
 .metadata-form {
   display: grid;
   grid-column-gap: 10rem;
@@ -35,6 +41,28 @@
   color: $color-success;
 }
 
+#test-status {
+  display: inline-block;
+  margin-left: 1rem;
+}
+
+#test-status__code {
+  margin-right: 1rem;
+}
+
+.test-status__good {
+  color: $color-success
+}
+
+.test-status__bad {
+  color: $color-error
+}
+
+.full-width {
+  width: 100%;
+  box-sizing:border-box;
+}
+
 @include area(metadata-form, title);
 @include area(metadata-form, description);
 @include area(metadata-form, format);
@@ -53,3 +81,4 @@
 @include area(metadata-form, homepage);
 @include area(metadata-form, cancel-btn);
 @include area(metadata-form, save-btn);
+@include area(metadata-form, test-btn);

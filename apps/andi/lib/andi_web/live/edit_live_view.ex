@@ -13,7 +13,7 @@ defmodule AndiWeb.EditLiveView do
     ~L"""
     <div class="edit-page">
       <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :metadata] %>
-      <div class="metadata-form">
+      <div class="metadata-form form-section">
         <div class="metadata-form__title">
           <%= label(f, :title, DisplayNames.get(:dataTitle), class: "label label--required") %>
           <%= text_input(f, :dataTitle, class: "input") %>
@@ -91,17 +91,18 @@ defmodule AndiWeb.EditLiveView do
           <%= error_tag(f, :private) %>
         </div>
         </div>
-        <div>
+        <div class="form-section">
           <div class="metadata-form__source-url">
             <%= label(f, :sourceUrl, DisplayNames.get(:sourceUrl), class: "label label--required") %>
-            <%= text_input(f, :sourceUrl, class: "input") %>
+            <%= text_input(f, :sourceUrl, class: "input full-width") %>
             <%= error_tag(f, :sourceUrl) %>
           </div>
           <div>
-            <button class="metadata-form__test-btn" phx-click="test_url">Test</button>
+            <button class="metadata-form__test-btn btn--test btn" phx-click="test_url">Test</button>
             <%= if @test_results do %>
-            <div>
-            Status: <span id="test-status-code"><%= @test_results |> Map.get(:status) %></span> | Time: <span id="test-time"><%= @test_results |> Map.get(:time) %></span> ms
+            <div id="test-status">
+            Status: <span id="test-status__code" class="<%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) %></span>
+            Time: <span id="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
             </div>
             <% end %>
           </div>
@@ -186,4 +187,7 @@ defmodule AndiWeb.EditLiveView do
 
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang
+
+  defp status_class(%{status: status}) when status in 200..399, do: "test-status__good"
+  defp status_class(%{status: _}), do: "test-status__bad"
 end
