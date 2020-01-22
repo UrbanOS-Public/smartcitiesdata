@@ -9,7 +9,7 @@ defmodule AndiWeb.EditLiveViewTest do
   import SmartCity.Event, only: [dataset_update: 0]
 
   alias Andi.DatasetCache
-  alias AndiWeb.InputSchemas.Metadata
+  alias Andi.InputSchemas.InputConverter
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -81,7 +81,7 @@ defmodule AndiWeb.EditLiveViewTest do
         conn,
         TDG.create_dataset(%{business: %{contactEmail: email}}),
         :contactEmail,
-        "Email is invalid."
+        "Please enter a valid maintainer email."
       )
 
       where([
@@ -199,11 +199,11 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_value(html, "#metadata_sourceFormat") == dataset.technical.sourceFormat
       assert {"true", "Private"} == get_select(html, "#metadata_private")
       assert get_value(html, "#metadata_contactName") == dataset.business.contactName
-      assert get_value(html, "#metadata_contactEmail") == dataset.business.contactEmail
-      assert get_value(html, "#metadata_release-date") == dataset.business.issuedDate
-      assert get_value(html, "#metadata_license") == dataset.business.license
-      assert get_value(html, "#metadata_update-frequency") == dataset.business.publishFrequency
       assert dataset.business.modifiedDate =~ get_value(html, "#metadata_modifiedDate")
+      assert get_value(html, "#metadata_contactEmail") == dataset.business.contactEmail
+      assert dataset.business.issuedDate =~ get_value(html, "#metadata_issuedDate")
+      assert get_value(html, "#metadata_license") == dataset.business.license
+      assert get_value(html, "#metadata_publishFrequency") == dataset.business.publishFrequency
       assert get_value(html, "#metadata_spatial") == dataset.business.spatial
       assert get_value(html, "#metadata_temporal") == dataset.business.temporal
       assert get_value(html, "#metadata_orgTitle") == dataset.business.orgTitle
@@ -232,38 +232,43 @@ defmodule AndiWeb.EditLiveViewTest do
         conn,
         TDG.create_dataset(%{business: %{dataTitle: ""}}),
         :dataTitle,
-        "Dataset Title is required."
+        "Please enter a valid dataset title."
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{description: ""}}),
         :description,
-        "Description is required."
+        "Please enter a valid description."
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{contactName: ""}}),
         :contactName,
-        "Maintainer Name is required."
+        "Please enter a valid maintainer name."
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{contactEmail: ""}}),
         :contactEmail,
-        "Maintainer Email is required."
+        "Please enter a valid maintainer email."
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{issuedDate: ""}}),
         :issuedDate,
-        "Release Date is required."
+        "Please enter a valid release date."
       )
 
-      assert_error_message(conn, TDG.create_dataset(%{business: %{license: ""}}), :license, "License is required.")
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{license: ""}}),
+        :license,
+        "Please enter a valid license."
+      )
 
       dataset = TDG.create_dataset(%{})
       new_tech = Map.put(dataset.technical, :sourceFormat, "")
@@ -273,22 +278,47 @@ defmodule AndiWeb.EditLiveViewTest do
         conn,
         dataset,
         :sourceFormat,
-        "Format is required."
+        "Please enter a valid source format."
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{publishFrequency: ""}}),
         :publishFrequency,
-        "Publish Frequency is required."
+        "Please enter a valid update frequency."
       )
 
       assert_error_message(
         conn,
         TDG.create_dataset(%{business: %{orgTitle: ""}}),
         :orgTitle,
-        "Organization is required."
+        "Please enter a valid organization."
       )
+    end
+
+    test "error message is cleared when form is updated", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{issuedDate: ""}})
+      DatasetCache.put(dataset)
+
+      form_data =
+        dataset
+        |> InputConverter.changeset_from_dataset()
+        |> form_data_for_save()
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      render_change(view, :save, %{"metadata" => form_data})
+
+      assert render(view) |> get_text(".metadata__error-message") =~ "errors"
+
+      form_data =
+        dataset
+        |> InputConverter.changeset_from_dataset()
+        |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
+        |> form_data_for_save()
+
+      render_change(view, :validate, %{"metadata" => form_data})
+
+      assert render(view) |> get_text(".metadata__error-message") == ""
     end
   end
 
@@ -330,18 +360,17 @@ defmodule AndiWeb.EditLiveViewTest do
 
       form_data =
         dataset
-        |> Metadata.changeset_from_struct()
+        |> InputConverter.changeset_from_dataset()
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
-        |> Ecto.Changeset.apply_changes()
-        |> Map.update!(:keywords, &Enum.join(&1, ", "))
+        |> form_data_for_save()
 
       render_change(view, :save, %{"metadata" => form_data})
 
       updated_dataset =
         form_data
-        |> Metadata.form_changeset()
+        |> InputConverter.form_changeset()
         |> Ecto.Changeset.apply_changes()
-        |> Metadata.restruct(dataset)
+        |> InputConverter.restruct(dataset)
 
       assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, updated_dataset), once())
     end
@@ -374,15 +403,68 @@ defmodule AndiWeb.EditLiveViewTest do
 
       form_data =
         dataset
-        |> Metadata.changeset_from_struct()
+        |> InputConverter.changeset_from_dataset()
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
-        |> Ecto.Changeset.apply_changes()
-        |> Map.update!(:keywords, &Enum.join(&1, ", "))
+        |> form_data_for_save()
 
       render_change(view, :validate, %{"metadata" => form_data})
       html = render_change(view, :save, %{"metadata" => form_data})
 
       assert get_text(html, "#success-message") == "Saved Successfully"
+    end
+
+    test "allows clearing modified date", %{conn: conn} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+
+      dataset =
+        TDG.create_dataset(%{
+          business: %{modifiedDate: "2020-01-01"}
+        })
+
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      form_data =
+        dataset
+        |> InputConverter.changeset_from_dataset()
+        |> Ecto.Changeset.cast(%{modifiedDate: nil}, [:modifiedDate], empty_values: [])
+        |> form_data_for_save()
+
+      render_change(view, :save, %{"metadata" => form_data})
+
+      expected_updated_dataset =
+        form_data
+        |> InputConverter.form_changeset()
+        |> Ecto.Changeset.apply_changes()
+        |> InputConverter.restruct(dataset)
+
+      assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, expected_updated_dataset), once())
+    end
+
+    test "does not save when dataset org and data name match existing dataset", %{conn: conn} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+
+      dataset = TDG.create_dataset(%{business: %{issuedDate: nil}})
+      DatasetCache.put(dataset)
+
+      existing_dataset =
+        TDG.create_dataset(%{technical: %{dataName: dataset.technical.dataName, orgName: dataset.technical.orgName}})
+
+      DatasetCache.put(existing_dataset)
+
+      form_data =
+        dataset
+        |> InputConverter.changeset_from_dataset()
+        |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
+        |> form_data_for_save()
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      render_change(view, :save, %{"metadata" => form_data})
+
+      refute_called(Brook.Event.send(any(), any(), any(), any()))
+
+      assert render(view) |> get_text(".metadata__error-message") =~ "errors"
     end
   end
 
@@ -391,14 +473,23 @@ defmodule AndiWeb.EditLiveViewTest do
 
     form_data =
       dataset
-      |> Metadata.changeset_from_struct()
-      |> Ecto.Changeset.apply_changes()
-      |> Map.update!(:keywords, &Enum.join(&1, ", "))
+      |> InputConverter.changeset_from_dataset()
+      |> form_data_for_save()
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     html = render_change(view, :save, %{"metadata" => form_data})
 
     assert get_text(html, "##{field}-error-msg") == error_message
+  end
+
+  defp form_data_for_save(changeset) do
+    changeset
+    |> Ecto.Changeset.apply_changes()
+    |> Map.update!(:keywords, &Enum.join(&1, ", "))
+    |> Map.delete(:schema)
+
+    # For now, schema needs to be removed from the form data as it cannot be encoded in the form as an array of maps.
+    # Once we start editing the schema in the form, we will need to address this (probably by changing the schema structure in the form data).
   end
 
   defp get_value(html, id) do

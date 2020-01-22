@@ -5,12 +5,16 @@ defmodule AndiWeb.ErrorHelpers do
 
   use Phoenix.HTML
 
+  alias Andi.InputSchemas.DisplayNames
+
   @doc """
   Generates tag for inlined form input errors.
   """
   def error_tag(form, field) do
     Enum.map(Keyword.get_values(form.errors, field), fn error ->
-      content_tag(:span, translate_error(error),
+      translated = error |> interpret_error(field) |> translate_error()
+
+      content_tag(:span, translated,
         class: "error-msg",
         id: "#{field}-error-msg",
         data: [phx_error_for: input_id(form, field)]
@@ -28,7 +32,9 @@ defmodule AndiWeb.ErrorHelpers do
   """
   def error_tag_live(form, field) do
     Enum.map(Keyword.get_values(form.errors, field), fn error ->
-      content_tag(:span, translate_error(error),
+      translated = error |> interpret_error(field) |> translate_error()
+
+      content_tag(:span, translated,
         class: "error-msg",
         id: "#{field}-error-msg"
       )
@@ -62,4 +68,12 @@ defmodule AndiWeb.ErrorHelpers do
       Gettext.dgettext(AndiWeb.Gettext, "errors", msg, opts)
     end
   end
+
+  defp interpret_error(error, field) do
+    {_, opts} = error
+    updated_message = "Please enter a valid #{get_downcased_display_name(field)}."
+    {updated_message, opts}
+  end
+
+  def get_downcased_display_name(field_key), do: field_key |> DisplayNames.get() |> String.downcase()
 end
