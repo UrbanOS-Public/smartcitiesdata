@@ -12,7 +12,8 @@ defmodule EventHandlerTest do
 
     Brook.Test.send(instance_name(), data_ingest_end(), :andi, dataset)
 
-    result = Brook.get!(instance_name(), :ingest_complete, dataset.id)
+    result = Brook.get!(instance_name(), :ingested_time, dataset.id)
+
     assert not is_nil(result)
   end
 end

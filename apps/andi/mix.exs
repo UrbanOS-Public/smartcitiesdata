@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.14.1",
+      version: "0.14.3",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -34,6 +34,7 @@ defmodule Andi.MixProject do
 
   defp deps do
     [
+      {:atomic_map, "~> 0.9"},
       {:brook, "~> 0.4.0"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:checkov, "~> 0.5.0", only: :test},

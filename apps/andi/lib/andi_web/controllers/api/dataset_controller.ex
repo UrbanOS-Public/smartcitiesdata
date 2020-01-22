@@ -5,14 +5,12 @@ defmodule AndiWeb.API.DatasetController do
 
   use AndiWeb, :controller
 
-  alias AndiWeb.DatasetValidator
-
   require Logger
-  alias SmartCity.Registry.Dataset, as: RegDataset
   alias SmartCity.Dataset
   alias Andi.Services.DatasetRetrieval
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
+  alias Andi.InputSchemas.InputConverter
 
   @doc """
   Parse a data message and post the created dataset to redis
@@ -20,21 +18,32 @@ defmodule AndiWeb.API.DatasetController do
   @spec create(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def create(conn, _params) do
     with message <- add_uuid(conn.body_params),
-         {:ok, parsed_message} <- parse_message(message),
-         :valid <- DatasetValidator.validate(parsed_message),
-         {:ok, old_dataset} <- RegDataset.new(parsed_message),
-         {:ok, dataset} <- Dataset.new(parsed_message),
-         {:ok, _id} <- write_old_dataset(old_dataset),
+         {:ok, parsed_message} <- trim_fields(message),
+         :valid <- validate_changes(parsed_message),
+         {:ok, dataset} <- new_dataset(parsed_message),
          :ok <- write_dataset(dataset) do
       respond(conn, :created, dataset)
     else
-      {:invalid, reason} ->
-        respond(conn, :bad_request, %{reason: reason})
+      {:invalid, errors} ->
+        respond(conn, :bad_request, %{errors: errors})
 
       error ->
         Logger.error("Failed to create dataset: #{inspect(error)}")
         respond(conn, :internal_server_error, "Unable to process your request")
     end
+  end
+
+  def validate_changes(dataset) do
+    changeset = InputConverter.changeset_from_dataset(dataset)
+
+    if changeset.valid?, do: :valid, else: {:invalid, format_changeset_errors(changeset)}
+  end
+
+  defp format_changeset_errors(%{errors: errors}) do
+    errors
+    |> Enum.reduce(%{}, fn {field_name, {message, _}}, acc ->
+      Map.update(acc, field_name, [message], fn current -> [message | current] end)
+    end)
   end
 
   @doc """
@@ -63,9 +72,6 @@ defmodule AndiWeb.API.DatasetController do
   end
 
   defp write_dataset(dataset), do: Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
-
-  # Deprecated function for backwards compatibility with SmartCity.Registry apps
-  def write_old_dataset(dataset), do: RegDataset.write(dataset)
 
   @doc """
   Disable a dataset
@@ -117,22 +123,17 @@ defmodule AndiWeb.API.DatasetController do
     Map.merge(message, %{"id" => uuid}, fn _k, v1, _v2 -> v1 end)
   end
 
-  defp parse_message(%{"technical" => _technical} = msg) do
-    msg
-    |> trim_fields()
-    |> create_system_name()
-  end
-
-  defp parse_message(msg), do: {:error, "Cannot parse message: #{inspect(msg)}"}
-
   defp trim_fields(%{"id" => id, "technical" => technical, "business" => business} = map) do
-    %{
-      map
-      | "id" => String.trim(id),
-        "technical" => trim_map(technical),
-        "business" => trim_map(business)
-    }
+    {:ok,
+     %{
+       map
+       | "id" => String.trim(id),
+         "technical" => trim_map(technical),
+         "business" => trim_map(business)
+     }}
   end
+
+  defp trim_fields(msg), do: {:error, "Cannot parse message: #{inspect(msg)}"}
 
   defp trim_map(data) do
     data
@@ -151,13 +152,14 @@ defmodule AndiWeb.API.DatasetController do
     end)
   end
 
-  defp create_system_name(%{"technical" => technical} = msg) do
-    with org_name when not is_nil(org_name) <- Map.get(technical, "orgName"),
-         data_name when not is_nil(data_name) <- Map.get(technical, "dataName"),
-         system_name <- "#{org_name}__#{data_name}" do
-      {:ok, put_in(msg, ["technical", "systemName"], system_name)}
-    else
-      _ -> {:error, "Cannot parse message: #{inspect(msg)}"}
-    end
+  defp new_dataset(message) do
+    message
+    |> with_system_name()
+    |> Dataset.new()
+  end
+
+  defp with_system_name(%{"technical" => technical} = msg) do
+    system_name = "#{technical["orgName"]}__#{technical["dataName"]}"
+    put_in(msg, ["technical", "systemName"], system_name)
   end
 end
