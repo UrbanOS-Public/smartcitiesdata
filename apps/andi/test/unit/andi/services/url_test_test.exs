@@ -27,5 +27,11 @@ defmodule Andi.Services.UrlTestTest do
       assert %{time: time} = response
       assert is_float(time)
     end
+
+    test "returns custom status message for non-existant domains" do
+      response = Andi.Services.UrlTest.test("http://bobisthegreatest123.co.llc")
+
+      assert %{status: "Domain not found"} = response
+    end
   end
 end

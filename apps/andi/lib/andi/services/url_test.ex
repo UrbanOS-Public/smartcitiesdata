@@ -14,7 +14,7 @@ defmodule Andi.Services.UrlTest do
       {time, {:error, :nxdomain}} ->
         timed_status(time, "Domain not found")
 
-      {time, {:error, _}} ->
+      {time, _} ->
         timed_status(time, "Could not complete request")
     end
   end
