@@ -13,8 +13,8 @@ defmodule AndiWeb.EditLiveView do
     ~L"""
     <div class="edit-page">
       <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :metadata] %>
-      <div class="metadata-form form-section">
-        <h2 class="metadata-form__top-header box-header">Metadata</h2>
+      <div class="metadata-form form-section form-grid">
+        <h2 class="metadata-form__top-header edit-page__box-header">Metadata</h2>
         <div class="metadata-form__title">
           <%= label(f, :title, DisplayNames.get(:dataTitle), class: "label label--required") %>
           <%= text_input(f, :dataTitle, class: "input") %>
@@ -92,26 +92,26 @@ defmodule AndiWeb.EditLiveView do
           <%= error_tag(f, :private) %>
         </div>
       </div>
-      <div class="url-form form-section">
-        <h2 class="url-form__top-header box-header">Configure Upload</h2>
+      <div class="url-form form-section form-grid">
+        <h2 class="url-form__top-header edit-page__box-header">Configure Upload</h2>
         <div class="url-form__source-url">
           <%= label(f, :sourceUrl, DisplayNames.get(:sourceUrl), class: "label label--required") %>
           <%= text_input(f, :sourceUrl, class: "input full-width") %>
           <%= error_tag(f, :sourceUrl) %>
         </div>
         <div class="url-form__test-section">
-          <button type="button" class="metadata-form__test-btn btn--test btn" phx-click="test_url">Test</button>
+          <button type="button" class="metadata-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url">Test</button>
           <%= if @test_results do %>
-            <div id="test-status">
-            Status: <span id="test-status__code" class="<%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) %></span>
-            Time: <span id="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
+            <div class="test-status">
+            Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) %></span>
+            Time: <span class="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
             </div>
           <% end %>
         </div>
       </div>
-      <div class="edit-button-group">
+      <div class="edit-button-group form-grid">
         <div class="edit-button-group__cancel-btn">
-          <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--cancel") %>
+          <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
         </div>
         <div class="edit-button-group__save-btn">
           <%= if @has_validation_errors do %>
@@ -119,8 +119,8 @@ defmodule AndiWeb.EditLiveView do
               <span>There were errors with the dataset you tried to submit.</span>
             </div>
           <% end %>
-          <%= Link.button("Next", to: "/", method: "get", id: "next-button", class: "btn btn--next", disabled: true, title: "Not implemented yet.") %>
-          <%= submit("Save", id: "save-button", class: "btn btn--save") %>
+          <%= Link.button("Next", to: "/", method: "get", id: "next-button", class: "btn btn--next btn--large btn--action", disabled: true, title: "Not implemented yet.") %>
+          <%= submit("Save", id: "save-button", class: "btn btn--save btn--large") %>
         </div>
       </div>
       </form>
@@ -196,6 +196,6 @@ defmodule AndiWeb.EditLiveView do
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang
 
-  defp status_class(%{status: status}) when status in 200..399, do: "test-status__good"
-  defp status_class(%{status: _}), do: "test-status__bad"
+  defp status_class(%{status: status}) when status in 200..399, do: "test-status__code--good"
+  defp status_class(%{status: _}), do: "test-status__code--bad"
 end

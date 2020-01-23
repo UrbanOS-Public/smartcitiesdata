@@ -487,13 +487,13 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Andi.Services.UrlTest.test("123.com"), return: %{time: 1_000, status: 200})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert get_text(html, "#test-status__code") == ""
-      assert get_text(html, "#test-status__time") == ""
+      assert get_text(html, ".test-status__code") == ""
+      assert get_text(html, ".test-status__time") == ""
 
       html = render_change(view, :test_url, %{})
 
-      assert get_text(html, "#test-status__code") == "200"
-      assert get_text(html, "#test-status__time") == "1000"
+      assert get_text(html, ".test-status__code") == "200"
+      assert get_text(html, ".test-status__time") == "1000"
     end
 
     test "status is displayed with an appropriate class when it is between 200 and 399", %{conn: conn} do
@@ -504,11 +504,11 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), return: %{time: 1_000, status: 200})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert get_text(html, ".test-status__good") == ""
+      assert get_text(html, ".test-status__code--good") == ""
 
       html = render_change(view, :test_url, %{})
 
-      assert get_text(html, ".test-status__good") == "200"
+      assert get_text(html, ".test-status__code--good") == "200"
     end
 
     test "status is displayed with an appropriate class when it is not between 200 and 399", %{conn: conn} do
@@ -519,12 +519,12 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), return: %{time: 1_000, status: 400})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert get_text(html, ".test-status__bad") == ""
+      assert get_text(html, ".test-status__code--bad") == ""
 
       html = render_change(view, :test_url, %{})
 
-      assert get_text(html, ".test-status__bad") == "400"
-      assert get_text(html, ".test-status__good") != "400"
+      assert get_text(html, ".test-status__code--bad") == "400"
+      assert get_text(html, ".test-status__code--good") != "400"
     end
   end
 

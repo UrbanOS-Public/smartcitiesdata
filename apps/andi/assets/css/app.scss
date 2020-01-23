@@ -52,14 +52,19 @@ body {
   margin: 5px 0 5px 0;
 }
 
-.btn--cancel {
+.btn--large {
   padding: 0.4rem 1.7rem;
   font-size: 1.5rem;
   min-width: 10rem;
 }
 
+.btn--action {
+  color: white;
+  background-color: $color-text-link;
+  border: 2px solid $color-text-link;
+}
+
 .btn--save {
-  @extend .btn--cancel;
   float: right;
   color: $color-text-link;
   background-color: white;
@@ -68,20 +73,12 @@ body {
 }
 
 .btn--next {
-  @extend .btn--save;
   float: right;
-  color: white;
-  background-color: $color-text-link;
-  border: 2px solid $color-text-link;
   margin-right: 0;
 }
 
 .btn--test {
-  @extend .btn--cancel;
-  color: white;
   font-size: 1rem;
-  background-color: $color-text-link;
-  border: 2px solid $color-text-link;
 }
 
 .btn--save:hover {

@@ -19,13 +19,11 @@
 }
 
 .edit-button-group {
-  @extend .form-grid;
   grid-template-areas:
     "cancel-btn save-btn";
 }
 
 .metadata-form {
-  @extend .form-grid;
   grid-template-areas:
     "top-header ."
     "title last-updated"
@@ -41,7 +39,6 @@
 }
 
 .url-form {
-  @extend .form-grid;
   grid-template-areas:
     "top-header ."
     "source-url source-url"
@@ -59,20 +56,20 @@
   color: $color-success;
 }
 
-#test-status {
+.test-status {
   display: inline-block;
   margin-left: 1rem;
 }
 
-#test-status__code {
+.test-status__code {
   margin-right: 1rem;
 }
 
-.test-status__good {
+.test-status__code--good {
   color: $color-success
 }
 
-.test-status__bad {
+.test-status__code--bad {
   color: $color-error
 }
 
@@ -107,7 +104,7 @@
 @include area(url-form, test-section);
 
 
-.box-header {
+.edit-page__box-header {
   margin-top: -2.75rem;
   background-color: white;
   width: fit-content;
