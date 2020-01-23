@@ -12,11 +12,22 @@
   margin-bottom: 4rem;
 }
 
-.metadata-form {
+.form-grid {
   display: grid;
   grid-column-gap: 10rem;
   grid-row-gap: 1rem;
+}
+
+.edit-button-group {
+  @extend .form-grid;
   grid-template-areas:
+    "cancel-btn save-btn";
+}
+
+.metadata-form {
+  @extend .form-grid;
+  grid-template-areas:
+    "top-header ."
     "title last-updated"
     "description spatial"
     "description temporal"
@@ -26,8 +37,15 @@
     "release-date homepage"
     "license ."
     "update-frequency ."
-    "keywords ."
-    "cancel-btn save-btn";
+    "keywords .";
+}
+
+.url-form {
+  @extend .form-grid;
+  grid-template-areas:
+    "top-header ."
+    "source-url source-url"
+    "test-section .";
 }
 
 .metadata__error-message {
@@ -63,6 +81,7 @@
   box-sizing:border-box;
 }
 
+@include area(metadata-form, top-header);
 @include area(metadata-form, title);
 @include area(metadata-form, description);
 @include area(metadata-form, format);
@@ -79,6 +98,19 @@
 @include area(metadata-form, level-of-access);
 @include area(metadata-form, language);
 @include area(metadata-form, homepage);
-@include area(metadata-form, cancel-btn);
-@include area(metadata-form, save-btn);
-@include area(metadata-form, test-btn);
+
+@include area(edit-button-group, cancel-btn);
+@include area(edit-button-group, save-btn);
+@include area(edit-button-group, test-btn);
+
+@include area(url-form, source-url);
+@include area(url-form, test-section);
+
+
+.box-header {
+  margin-top: -2.75rem;
+  background-color: white;
+  width: fit-content;
+  padding: 0rem 2rem;
+  color: #7f7676;
+}

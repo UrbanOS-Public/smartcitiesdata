@@ -14,6 +14,7 @@ defmodule AndiWeb.EditLiveView do
     <div class="edit-page">
       <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :metadata] %>
       <div class="metadata-form form-section">
+        <h2 class="metadata-form__top-header box-header">Metadata</h2>
         <div class="metadata-form__title">
           <%= label(f, :title, DisplayNames.get(:dataTitle), class: "label label--required") %>
           <%= text_input(f, :dataTitle, class: "input") %>
@@ -90,25 +91,29 @@ defmodule AndiWeb.EditLiveView do
           <%= select(f, :private, get_level_of_access_options(), class: "select") %>
           <%= error_tag(f, :private) %>
         </div>
+      </div>
+      <div class="url-form form-section">
+        <h2 class="url-form__top-header box-header">Configure Upload</h2>
+        <div class="url-form__source-url">
+          <%= label(f, :sourceUrl, DisplayNames.get(:sourceUrl), class: "label label--required") %>
+          <%= text_input(f, :sourceUrl, class: "input full-width") %>
+          <%= error_tag(f, :sourceUrl) %>
         </div>
-        <div class="form-section">
-          <div class="metadata-form__source-url">
-            <%= label(f, :sourceUrl, DisplayNames.get(:sourceUrl), class: "label label--required") %>
-            <%= text_input(f, :sourceUrl, class: "input full-width") %>
-            <%= error_tag(f, :sourceUrl) %>
-          </div>
-          <div>
-            <button class="metadata-form__test-btn btn--test btn" phx-click="test_url">Test</button>
-            <%= if @test_results do %>
+        <div class="url-form__test-section">
+          <button type="button" class="metadata-form__test-btn btn--test btn" phx-click="test_url">Test</button>
+          <%= if @test_results do %>
             <div id="test-status">
             Status: <span id="test-status__code" class="<%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) %></span>
             Time: <span id="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
             </div>
-            <% end %>
-          </div>
+          <% end %>
         </div>
+      </div>
+      <div class="edit-button-group">
+        <div class="edit-button-group__cancel-btn">
+          <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--cancel") %>
         </div>
-        <div class="metadata-form__save-btn">
+        <div class="edit-button-group__save-btn">
           <%= if @has_validation_errors do %>
             <div class="metadata__error-message">
               <span>There were errors with the dataset you tried to submit.</span>
@@ -117,11 +122,12 @@ defmodule AndiWeb.EditLiveView do
           <%= Link.button("Next", to: "/", method: "get", id: "next-button", class: "btn btn--next", disabled: true, title: "Not implemented yet.") %>
           <%= submit("Save", id: "save-button", class: "btn btn--save") %>
         </div>
-      </form>
       </div>
-      <%= if @save_success do %>
-        <div id="success-message" class="metadata__success-message">Saved Successfully</div>
-      <% end %>
+      </form>
+    </div>
+    <%= if @save_success do %>
+      <div id="success-message" class="metadata__success-message">Saved Successfully</div>
+    <% end %>
 
     """
   end
@@ -139,7 +145,8 @@ defmodule AndiWeb.EditLiveView do
      )}
   end
 
-  def handle_event("test_url", _, %{assigns: %{changeset: %{changes: %{sourceUrl: sourceUrl}}}} = socket) do
+  def handle_event("test_url", _, socket) do
+    sourceUrl = Map.get(socket.assigns.changeset.changes, :sourceUrl)
     {:noreply, assign(socket, test_results: Andi.Services.UrlTest.test(sourceUrl))}
   end
 
@@ -154,7 +161,7 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
-  def handle_event("save", %{"metadata" => form_data}, socket) do
+  def handle_event("save", %{"metadata" => form_data} = params, socket) do
     socket = reset_save_success(socket)
     original_dataset = socket.assigns.dataset
     changeset = InputConverter.changeset_from_dataset(original_dataset, form_data)
