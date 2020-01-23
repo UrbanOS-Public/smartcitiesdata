@@ -1,5 +1,5 @@
 use Mix.Config
-aws_region = "us-west-2"
+aws_region = "local"
 host = "localhost"
 endpoints = [{to_charlist(host), 9092}]
 
@@ -34,8 +34,10 @@ config :paddle, Paddle,
 
 config :ex_aws, :s3,
   scheme: "http://",
-  host: "localhost",
   region: aws_region,
+  host: %{
+    "local" => "localhost"
+  },
   port: 9000
 
 config :discovery_api, ecto_repos: [DiscoveryApi.Repo]
