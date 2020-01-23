@@ -1,6 +1,7 @@
 use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
+live_view_salt = System.get_env("LIVEVIEW_SALT")
 
 get_redix_args = fn host, password ->
   [host: host, password: password]
@@ -48,4 +49,9 @@ config :andi, :brook,
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [redix_args: redix_args, namespace: "andi:view"]
+  ]
+
+config :andi, AndiWeb.Endpoint,
+  live_view: [
+    signing_salt: live_view_salt
   ]
