@@ -3,16 +3,8 @@ defmodule Estuary.Query.SelectTest do
   use Placebo
   alias Estuary.Query.Select
 
-  test "display Level of Access as public when private is false" do
-    table_schema = %{
-      "columns" => ["author", "create_ts", "data", "type"],
-      "table_name" => "any_table",
-      "order_by" => "create_ts",
-      "order" => "DESC",
-      "limit" => 1000
-    }
-
-    expected_events = [
+  describe "should get the data from the given table" do
+    @expected_events [
       %{
         "author" => "Author-2020-01-21 23:29:20.171519Z",
         "create_ts" => 1_579_649_360,
@@ -27,8 +19,74 @@ defmodule Estuary.Query.SelectTest do
       }
     ]
 
-    allow(Prestige.execute(any(), any()), return: :do_not_care)
-    allow(Prestige.prefetch(any()), return: expected_events)
-    assert {:ok, expected_events} == Select.select_table(table_schema)
+    @tag capture_log: true
+    test "should return the events for the given limit on the given condition in descending order" do
+      table_schema = %{
+        "columns" => ["author", "create_ts", "data", "type"],
+        "table_name" => "any_table",
+        "order_by" => "create_ts",
+        "order" => "DESC",
+        "limit" => 1000
+      }
+
+      allow(Prestige.execute(any(), any()), return: :do_not_care)
+      allow(Prestige.prefetch(any()), return: @expected_events)
+      assert {:ok, @expected_events} == Select.select_table(table_schema)
+    end
+
+    @tag capture_log: true
+    test "should return all the events when limit is not passed on the given condition in descending order" do
+      table_schema = %{
+        "columns" => ["author", "create_ts", "data", "type"],
+        "table_name" => "any_table",
+        "order_by" => "create_ts",
+        "order" => "DESC"
+      }
+
+      allow(Prestige.execute(any(), any()), return: :do_not_care)
+      allow(Prestige.prefetch(any()), return: @expected_events)
+      assert {:ok, @expected_events} == Select.select_table(table_schema)
+    end
+
+    @tag capture_log: true
+    test "should return all the columns when column names are not passed on the given condition" do
+      table_schema = %{
+        "table_name" => "any_table",
+        "order_by" => "create_ts",
+        "order" => "DESC",
+        "limit" => 1000
+      }
+
+      allow(Prestige.execute(any(), any()), return: :do_not_care)
+      allow(Prestige.prefetch(any()), return: @expected_events)
+      assert {:ok, @expected_events} == Select.select_table(table_schema)
+    end
+
+    @tag capture_log: true
+    test "should ignore the order when order_by or order is missing" do
+      table_schema = %{
+        "columns" => ["author", "create_ts", "data", "type"],
+        "table_name" => "any_table",
+        "limit" => 1000
+      }
+
+      allow(Prestige.execute(any(), any()), return: :do_not_care)
+      allow(Prestige.prefetch(any()), return: @expected_events)
+      assert {:ok, @expected_events} == Select.select_table(table_schema)
+    end
+
+    @tag capture_log: true
+    test "should return error when table name is missing" do
+      expected_error = {:error, %RuntimeError{message: "Table name missing"}}
+
+      table_schema = %{
+        "columns" => ["author", "create_ts", "data", "type"],
+        "order_by" => "create_ts",
+        "order" => "DESC",
+        "limit" => 1000
+      }
+
+      assert expected_error == Select.select_table(table_schema)
+    end
   end
 end

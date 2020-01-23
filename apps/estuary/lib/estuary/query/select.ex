@@ -4,7 +4,7 @@ defmodule Estuary.Query.Select do
   def select_table(value) do
     data =
       "SELECT #{translate_columns(value["columns"])}
-      FROM #{value["table_name"]}
+      FROM #{check_table_name(value["table_name"])}
       #{translate_order(value["order_by"], value["order"])}
       LIMIT #{translate_limit(value["limit"])}"
       |> Prestige.execute(by_names: true)
@@ -24,6 +24,13 @@ defmodule Estuary.Query.Select do
 
       _ ->
         "*"
+    end
+  end
+
+  defp check_table_name(table_name) do
+    case !is_nil(table_name) and byte_size(table_name) != 0 do
+      true -> table_name
+      _ -> raise "Table name missing"
     end
   end
 

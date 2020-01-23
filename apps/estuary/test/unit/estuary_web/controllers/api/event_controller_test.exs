@@ -5,7 +5,7 @@ defmodule EstuaryWeb.API.EventControllerTest do
 
   describe "GET events from /api/v1/events" do
     @tag capture_log: true
-    test "returns a 200", %{conn: conn} do
+    test "should return a 200 and the events when events are found in the database", %{conn: conn} do
       expected_events = [
         %{
           "author" => "Author-2020-01-21 23:29:20.171519Z",
@@ -30,6 +30,18 @@ defmodule EstuaryWeb.API.EventControllerTest do
         |> json_response(200)
 
       assert expected_events == actual_events
+    end
+
+    @tag capture_log: true
+    test "should return 404 and message when error occurs", %{conn: conn} do
+      expected_error = "Unable to process your request"
+      conn = get(conn, "/api/v1/events")
+
+      actual_error =
+        conn
+        |> json_response(404)
+
+      assert expected_error == actual_error
     end
   end
 end

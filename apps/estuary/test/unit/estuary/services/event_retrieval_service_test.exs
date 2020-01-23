@@ -5,7 +5,8 @@ defmodule Estuary.Services.EventRetrievalServiceTest do
   alias Estuary.Services.EventRetrievalService
   alias Estuary.Query.Select
 
-  test "display Level of Access as public when private is false" do
+  @tag capture_log: true
+  test "should return the events from the table" do
     expected_events = [
       %{
         "author" => "Author-2020-01-21 23:29:20.171519Z",

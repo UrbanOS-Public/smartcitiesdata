@@ -11,7 +11,7 @@ defmodule EstuaryWeb.EventLiveViewTest do
 
   describe "GET events from /events" do
     @tag capture_log: true
-    test "returns a 200", %{conn: conn} do
+    test "should return OK and all the events in html format to display", %{conn: conn} do
       events = [
         %{
           "author" => "Author-2020-01-21 23:29:20.171519Z",
