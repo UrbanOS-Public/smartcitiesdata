@@ -3,6 +3,8 @@ defmodule EstuaryWeb.Endpoint do
 
   socket("/live", Phoenix.LiveView.Socket)
 
+  plug(PlugHeartbeat, path: "/healthcheck")
+
   plug(Plug.Static,
     at: "/",
     from: :estuary,

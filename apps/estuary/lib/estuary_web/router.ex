@@ -34,8 +34,4 @@ defmodule EstuaryWeb.Router do
 
     get("/v1/events", EventController, :get_all)
   end
-
-  scope "/", EstuaryWeb do
-    get("/healthcheck", HealthCheckController, :index)
-  end
 end
