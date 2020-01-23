@@ -16,7 +16,7 @@ config :estuary,
 config :logger, level: :warn
 
 config :estuary, EstuaryWeb.Endpoint,
-  http: [port: 4000],
+  http: [port: 4010],
   server: true,
   check_origin: false
 
