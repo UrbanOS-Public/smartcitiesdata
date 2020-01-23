@@ -21,7 +21,7 @@ defmodule EstuaryWeb.API.EventControllerTest do
         }
       ]
 
-      allow(EventRetrievalService.get_all(), return: expected_events)
+      allow(EventRetrievalService.get_all(), return: {:ok, expected_events})
 
       conn = get(conn, "/api/v1/events")
 

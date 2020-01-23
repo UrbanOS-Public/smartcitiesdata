@@ -30,7 +30,7 @@ defmodule EstuaryWeb.EventLiveViewTest do
       expected_events =
         "Author Create Timestamp Data Type Author-2020-01-21 23:29:20.171519Z1579649360Data-2020-01-21 23:29:20.171538ZType-2020-01-21 23:29:20.171543ZAuthor-2020-01-21 23:25:52.522084Z1579649152Data-2020-01-21 23:25:52.522107ZType-2020-01-21 23:25:52.522111Z"
 
-      allow(EventRetrievalService.get_all(), return: events)
+      allow(EventRetrievalService.get_all(), return: {:ok, events})
 
       assert {:ok, _view, html} = live(conn, "/events")
       actual_events = floki_get_text(html, ".events-index__table")

@@ -6,10 +6,8 @@ defmodule Estuary.Services.EventRetrievalService do
   alias Estuary.Datasets.DatasetSchema
 
   def get_all() do
-    case Select.select_table(make_select_table_schema()) do
-      {:ok, events} -> events
-      {:error, reason} -> raise reason
-    end
+    make_select_table_schema()
+    |> Select.select_table()
   end
 
   defp make_select_table_schema do

@@ -13,6 +13,7 @@ defmodule EstuaryWeb.EventLiveView do
   end
 
   def mount(_session, socket) do
-    {:ok, assign(socket, events: EventRetrievalService.get_all())}
+    {:ok, events} = EventRetrievalService.get_all()
+    {:ok, assign(socket, events: events)}
   end
 end

@@ -2,14 +2,15 @@ defmodule Estuary.Query.Select do
   @moduledoc false
 
   def select_table(value) do
-    events =
+    data =
       "SELECT #{translate_columns(value["columns"])}
-      FROM #{value["table_name"]} #{translate_order(value["order_by"], value["order"])}
+      FROM #{value["table_name"]}
+      #{translate_order(value["order_by"], value["order"])}
       LIMIT #{translate_limit(value["limit"])}"
       |> Prestige.execute(by_names: true)
       |> Prestige.prefetch()
 
-    {:ok, events}
+    {:ok, data}
   rescue
     error -> {:error, error}
   end
