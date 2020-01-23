@@ -29,7 +29,7 @@ defmodule Andi.Services.UrlTestTest do
     end
 
     test "returns custom status message for non-existant domains" do
-      response = Andi.Services.UrlTest.test("http://bobisthegreatest123.co.llc")
+      response = Andi.Services.UrlTest.test("invalid-domain")
 
       assert %{status: "Domain not found"} = response
     end
