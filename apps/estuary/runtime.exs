@@ -55,6 +55,11 @@ config :dead_letter,
     ]
   ]
 
+config :estuary, EstuaryWeb.Endpoint,
+  live_view: [
+    signing_salt: live_view_salt
+  ]
+
 if System.get_env("COMPACTION_SCHEDULE") do
   config :estuary, Estuary.Quantum.Scheduler,
     jobs: [
