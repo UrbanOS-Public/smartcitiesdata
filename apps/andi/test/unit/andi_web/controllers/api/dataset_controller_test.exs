@@ -62,6 +62,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
         "validations" => []
       },
       "business" => %{
+        "benefitRating" => 0.5,
         "dataTitle" => "dataset title",
         "description" => "description",
         "modifiedDate" => "",
@@ -73,7 +74,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
         "homepage" => "",
         "keywords" => [],
         "issuedDate" => "2020-01-01T00:00:00Z",
-        "publishFrequency" => "all day, ey'r day"
+        "publishFrequency" => "all day, ey'r day",
+        "riskRating" => 1.0
       },
       "_metadata" => %{
         "intendedUse" => [],
@@ -106,9 +108,9 @@ defmodule AndiWeb.API.DatasetControllerTest do
     end
 
     test "writes data to event stream", %{message: message} do
-      {:ok, _struct} = Dataset.new(message)
+      {:ok, struct} = Dataset.new(message)
 
-      assert_called(Brook.Event.send(instance_name(), any(), :andi, any()), once())
+      assert_called(Brook.Event.send(instance_name(), any(), :andi, struct), once())
     end
   end
 
