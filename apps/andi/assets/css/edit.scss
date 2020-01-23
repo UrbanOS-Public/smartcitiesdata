@@ -19,8 +19,8 @@
     "maintainer-email language"
     "release-date homepage"
     "license ."
-    "update-frequency ."
-    "keywords ."
+    "update-frequency benefit-rating"
+    "keywords risk-rating"
     "cancel-btn save-btn";
 }
 
@@ -51,5 +51,7 @@
 @include area(metadata-form, level-of-access);
 @include area(metadata-form, language);
 @include area(metadata-form, homepage);
+@include area(metadata-form, benefit-rating);
+@include area(metadata-form, risk-rating);
 @include area(metadata-form, cancel-btn);
 @include area(metadata-form, save-btn);

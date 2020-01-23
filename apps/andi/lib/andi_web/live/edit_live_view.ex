@@ -89,6 +89,16 @@ defmodule AndiWeb.EditLiveView do
           <%= select(f, :private, get_level_of_access_options(), class: "select") %>
           <%= error_tag(f, :private) %>
         </div>
+        <div class="metadata-form__benefit-rating">
+          <%= label(f, :benefitRating, DisplayNames.get(:benefitRating), class: "label label--required") %>
+          <%= select(f, :benefitRating, get_rating_options(), class: "select") %>
+          <%= error_tag(f, :benefitRating) %>
+        </div>
+        <div class="metadata-form__risk-rating">
+          <%= label(f, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
+          <%= select(f, :riskRating, get_rating_options(), class: "select") %>
+          <%= error_tag(f, :riskRating) %>
+        </div>
         <div class="metadata-form__cancel-btn">
           <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--cancel") %>
         </div>
@@ -159,6 +169,7 @@ defmodule AndiWeb.EditLiveView do
 
   defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
   defp get_level_of_access_options, do: [[key: "Private", value: "true"], [key: "Public", value: "false"]]
+  defp get_rating_options, do: [[key: "Low", value: 0.0], [key: "Medium", value: 0.5], [key: "High", value: 1.0]]
 
   defp keywords_to_string(nil), do: ""
   defp keywords_to_string(keywords) when is_binary(keywords), do: keywords

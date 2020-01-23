@@ -76,6 +76,38 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {"spanish", "Spanish"} = get_select(html, "#metadata_language")
     end
 
+    data_test "benefit rating is set to #{label} (#{value})", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{benefitRating: value}})
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert {to_string(value), label} == get_select(html, "#metadata_benefitRating")
+
+      where([
+        [:value, :label],
+        [0.0, "Low"],
+        [0.5, "Medium"],
+        [1.0, "High"],
+      ])
+    end
+
+    data_test "risk rating is set to #{label} (#{value})", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{riskRating: value}})
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert {to_string(value), label} == get_select(html, "#metadata_riskRating")
+
+      where([
+        [:value, :label],
+        [0.0, "Low"],
+        [0.5, "Medium"],
+        [1.0, "High"],
+      ])
+    end
+
     data_test "errors on invalid email: #{email}", %{conn: conn} do
       assert_error_message(
         conn,
@@ -187,7 +219,7 @@ defmodule AndiWeb.EditLiveViewTest do
     test "displays all other fields", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
-          business: %{description: "A description with no special characters"},
+          business: %{description: "A description with no special characters", benefitRating: 1.0, riskRating: 0.5},
           technical: %{private: true}
         })
 
@@ -209,6 +241,8 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_value(html, "#metadata_orgTitle") == dataset.business.orgTitle
       assert {"english", "English"} == get_select(html, "#metadata_language")
       assert get_value(html, "#metadata_homepage") == dataset.business.homepage
+      assert {"1.0", "High"} == get_select(html, "#metadata_benefitRating")
+      assert {"0.5", "Medium"} == get_select(html, "#metadata_riskRating")
     end
   end
 

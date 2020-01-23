@@ -8,6 +8,7 @@ defmodule Andi.InputSchemas.DatasetInput do
   alias Andi.InputSchemas.DatasetSchemaValidator
 
   @business_fields %{
+    benefitRating: :float,
     contactEmail: :string,
     contactName: :string,
     dataTitle: :string,
@@ -20,6 +21,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     modifiedDate: :date,
     orgTitle: :string,
     publishFrequency: :string,
+    riskRating: :float,
     spatial: :string,
     temporal: :string
   }
