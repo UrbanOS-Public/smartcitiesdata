@@ -146,8 +146,8 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("test_url", _, socket) do
-    sourceUrl = Map.get(socket.assigns.changeset.changes, :sourceUrl)
-    {:noreply, assign(socket, test_results: Andi.Services.UrlTest.test(sourceUrl))}
+    source_url = Map.get(socket.assigns.changeset.changes, :sourceUrl)
+    {:noreply, assign(socket, test_results: Andi.Services.UrlTest.test(source_url))}
   end
 
   def handle_event("validate", %{"metadata" => form_data}, socket) do
@@ -161,18 +161,19 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
-  def handle_event("save", %{"metadata" => form_data} = params, socket) do
+  def handle_event("save", %{"metadata" => form_data}, socket) do
     socket = reset_save_success(socket)
     original_dataset = socket.assigns.dataset
     changeset = InputConverter.changeset_from_dataset(original_dataset, form_data)
 
     if changeset.valid? do
       changes = Ecto.Changeset.apply_changes(changeset)
+      dataset = InputConverter.restruct(changes, original_dataset)
 
-      with dataset = InputConverter.restruct(changes, original_dataset),
-           :ok <- Brook.Event.send(instance_name(), dataset_update(), :andi, dataset) do
-        {:noreply, assign(socket, dataset: dataset, changeset: changeset, save_success: true)}
-      else
+      case Brook.Event.send(instance_name(), dataset_update(), :andi, dataset) do
+        :ok ->
+          {:noreply, assign(socket, dataset: dataset, changeset: changeset, save_success: true)}
+
         error ->
           Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
 
