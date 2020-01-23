@@ -25,8 +25,9 @@
 }
 
 .metadata__error-message {
+  text-align: right;
+  padding-right: 2em;
   color: $color-error;
-  padding-bottom: 0.5em;
 }
 
 .metadata__success-message {

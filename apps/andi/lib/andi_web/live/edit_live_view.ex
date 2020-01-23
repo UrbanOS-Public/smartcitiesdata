@@ -103,11 +103,6 @@ defmodule AndiWeb.EditLiveView do
           <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--cancel") %>
         </div>
         <div class="metadata-form__save-btn">
-          <%= if @has_validation_errors do %>
-            <div class="metadata__error-message">
-              <span>There were errors with the dataset you tried to submit.</span>
-            </div>
-          <% end %>
           <%= Link.button("Next", to: "/", method: "get", id: "next-button", class: "btn btn--next", disabled: true, title: "Not implemented yet.") %>
           <%= submit("Save", id: "save-button", class: "btn btn--save") %>
         </div>
@@ -116,7 +111,9 @@ defmodule AndiWeb.EditLiveView do
       <%= if @save_success do %>
         <div id="success-message" class="metadata__success-message">Saved Successfully</div>
       <% end %>
-
+      <%= if @has_validation_errors do %>
+        <div class="metadata__error-message">There were errors with the dataset you tried to submit.</div>
+      <% end %>
     """
   end
 
