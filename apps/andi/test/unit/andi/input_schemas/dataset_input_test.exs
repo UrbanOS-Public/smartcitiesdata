@@ -8,6 +8,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
   alias Andi.DatasetCache
 
   @valid_changes %{
+    benefitRating: 0,
     contactEmail: "contact@email.com",
     contactName: "contactName",
     dataName: "dataName",
@@ -20,6 +21,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     orgTitle: "orgTitle",
     private: false,
     publishFrequency: "publishFrequency",
+    riskRating: 1,
     schema: [%{name: "name", type: "type"}],
     sourceFormat: "sourceFormat",
     sourceType: "sourceType"
@@ -39,6 +41,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       where(
         field_name: [
+          :benefitRating,
           :contactEmail,
           :contactName,
           :dataName,
@@ -50,6 +53,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
           :orgTitle,
           :private,
           :publishFrequency,
+          :riskRating,
           :sourceFormat,
           :sourceType
         ]

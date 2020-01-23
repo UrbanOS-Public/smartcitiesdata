@@ -41,6 +41,7 @@ defmodule Andi.InputSchemas.DatasetInput do
          |> Map.merge(@technical_fields)
 
   @required_fields [
+    :benefitRating,
     :contactEmail,
     :contactName,
     :dataName,
@@ -52,6 +53,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     :orgTitle,
     :private,
     :publishFrequency,
+    :riskRating,
     :sourceFormat,
     :sourceType
   ]

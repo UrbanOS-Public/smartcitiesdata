@@ -69,7 +69,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      dataset_map = dataset_to_map(dataset) |> Map.put(:language, "spanish")
+      dataset_map = dataset_to_form_data(dataset) |> Map.put(:language, "spanish")
 
       html = render_change(view, :validate, %{"metadata" => dataset_map})
 
@@ -168,7 +168,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       dataset_map =
         dataset
-        |> dataset_to_map()
+        |> dataset_to_form_data()
         |> Map.put(:keywords, Enum.join(dataset.business.keywords, ", "))
 
       expected = Enum.join(dataset.business.keywords, ", ")
@@ -187,7 +187,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       dataset_map =
         dataset
-        |> dataset_to_map()
+        |> dataset_to_form_data()
         |> Map.put(:keywords, "a , good ,  keyword   , is .... hard , to find")
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
@@ -205,7 +205,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       dataset_map =
         dataset
-        |> dataset_to_map()
+        |> dataset_to_form_data()
         |> Map.put(:keywords, expected)
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
@@ -255,7 +255,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_select(html, "#metadata_private") == {"true", "Private"}
 
-      dataset_map = dataset_to_map(dataset) |> Map.put(:private, false)
+      dataset_map = dataset_to_form_data(dataset) |> Map.put(:private, false)
 
       html = render_change(view, :validate, %{"metadata" => dataset_map})
       assert get_select(html, "#metadata_private") == {"false", "Public"}
@@ -328,6 +328,39 @@ defmodule AndiWeb.EditLiveViewTest do
         :orgTitle,
         "Please enter a valid organization."
       )
+
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{benefitRating: nil}}),
+        :benefitRating,
+        "Please enter a valid benefit."
+      )
+
+      assert_error_message(
+        conn,
+        TDG.create_dataset(%{business: %{riskRating: nil}}),
+        :riskRating,
+        "Please enter a valid risk."
+      )
+    end
+
+    data_test "displays error when #{field} is unset", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert get_text(html, "##{field}-error-msg") == ""
+
+      form_data = dataset_to_form_data(dataset) |> Map.put(field, "")
+      html = render_change(view, :validate, %{"metadata" => form_data})
+
+      assert get_text(html, "##{field}-error-msg") == expected_error_message
+
+      where [
+        [:field, :expected_error_message],
+        [:benefitRating, "Please enter a valid benefit."],
+        [:riskRating, "Please enter a valid risk."]
+      ]
     end
 
     test "error message is cleared when form is updated", %{conn: conn} do
@@ -413,7 +446,7 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset = TDG.create_dataset(%{business: %{publishFrequency: ""}})
       DatasetCache.put(dataset)
 
-      dataset_map = dataset_to_map(dataset)
+      dataset_map = dataset_to_form_data(dataset)
 
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
@@ -546,14 +579,9 @@ defmodule AndiWeb.EditLiveViewTest do
     {value, text}
   end
 
-  defp dataset_to_map(dataset) do
-    map_tech = dataset.technical |> Map.from_struct() |> Map.delete(:schema)
-
-    map_bus = Map.from_struct(dataset.business)
-
+  defp dataset_to_form_data(dataset) do
     dataset
-    |> Map.from_struct()
-    |> Map.put(:business, map_bus)
-    |> Map.put(:technical, map_tech)
+    |> InputConverter.changeset_from_dataset()
+    |> form_data_for_save()
   end
 end
