@@ -76,7 +76,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {"spanish", "Spanish"} = get_select(html, "#metadata_language")
     end
 
-    data_test "benefit rating is set to #{label} (#{value})", %{conn: conn} do
+    data_test "benefit rating is set to '#{label}' (#{inspect(value)})", %{conn: conn} do
       dataset = TDG.create_dataset(%{business: %{benefitRating: value}})
       DatasetCache.put(dataset)
 
@@ -92,7 +92,7 @@ defmodule AndiWeb.EditLiveViewTest do
       ])
     end
 
-    data_test "risk rating is set to #{label} (#{value})", %{conn: conn} do
+    data_test "risk rating is set to '#{label}' (#{inspect(value)})", %{conn: conn} do
       dataset = TDG.create_dataset(%{business: %{riskRating: value}})
       DatasetCache.put(dataset)
 

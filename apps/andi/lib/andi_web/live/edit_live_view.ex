@@ -91,12 +91,12 @@ defmodule AndiWeb.EditLiveView do
         </div>
         <div class="metadata-form__benefit-rating">
           <%= label(f, :benefitRating, DisplayNames.get(:benefitRating), class: "label label--required") %>
-          <%= select(f, :benefitRating, get_rating_options(), class: "select") %>
+          <%= select(f, :benefitRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
           <%= error_tag(f, :benefitRating) %>
         </div>
         <div class="metadata-form__risk-rating">
           <%= label(f, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
-          <%= select(f, :riskRating, get_rating_options(), class: "select") %>
+          <%= select(f, :riskRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
           <%= error_tag(f, :riskRating) %>
         </div>
         <div class="metadata-form__cancel-btn">
@@ -177,4 +177,6 @@ defmodule AndiWeb.EditLiveView do
 
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang
+
+  defp rating_selection_prompt(), do: "Please Select a Value"
 end
