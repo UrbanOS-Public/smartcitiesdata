@@ -110,12 +110,9 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     data_test "errors on invalid email: #{email}", %{conn: conn} do
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{contactEmail: email}}),
-        :contactEmail,
-        "Please enter a valid maintainer email."
-      )
+      html = save_form_for_dataset(conn, TDG.create_dataset(%{business: %{contactEmail: email}}))
+
+      assert get_text(html, "#contactEmail-error-msg") == "Please enter a valid maintainer email."
 
       where([
         [:email],
@@ -127,13 +124,9 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     data_test "does not error on valid email: #{email}", %{conn: conn} do
-      # Assert error message is blank (no error)
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{contactEmail: email}}),
-        :contactEmail,
-        ""
-      )
+      html = save_form_for_dataset(conn, TDG.create_dataset(%{business: %{contactEmail: email}}))
+
+      assert get_text(html, "#contactEmail-error-msg") == ""
 
       where([
         [:email],
@@ -262,94 +255,36 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_select(html, "#metadata_private") == {"false", "Public"}
     end
 
-    test "All required fields display proper error message", %{conn: conn} do
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{dataTitle: ""}}),
-        :dataTitle,
-        "Please enter a valid dataset title."
-      )
+    data_test "required #{field} field displays proper error message", %{conn: conn} do
+      html = save_form_for_dataset(conn, TDG.create_dataset(dataset_override))
 
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{description: ""}}),
-        :description,
-        "Please enter a valid description."
-      )
+      assert get_text(html, "##{field}-error-msg") == expected_error_message
 
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{contactName: ""}}),
-        :contactName,
-        "Please enter a valid maintainer name."
-      )
+      where([
+        [:field, :dataset_override, :expected_error_message],
+        [:dataTitle, %{business: %{dataTitle: ""}}, "Please enter a valid dataset title."],
+        [:description, %{business: %{description: ""}}, "Please enter a valid description."],
+        [:contactName, %{business: %{contactName: ""}}, "Please enter a valid maintainer name."],
+        [:contactEmail, %{business: %{contactEmail: ""}}, "Please enter a valid maintainer email."],
+        [:issuedDate, %{business: %{issuedDate: ""}}, "Please enter a valid release date."],
+        [:license, %{business: %{license: ""}}, "Please enter a valid license."],
+        [:publishFrequency, %{business: %{publishFrequency: ""}}, "Please enter a valid update frequency."],
+        [:orgTitle, %{business: %{orgTitle: ""}}, "Please enter a valid organization."],
+        [:sourceUrl, %{technical: %{sourceUrl: ""}}, "Please enter a valid source url."],
+        [:license, %{business: %{license: ""}}, "Please enter a valid license."],
+        [:benefitRating, %{business: %{benefitRating: ""}}, "Please enter a valid benefit."],
+        [:riskRating, %{business: %{riskRating: ""}}, "Please enter a valid risk."]
+      ])
+    end
 
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{contactEmail: ""}}),
-        :contactEmail,
-        "Please enter a valid maintainer email."
-      )
-
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{issuedDate: ""}}),
-        :issuedDate,
-        "Please enter a valid release date."
-      )
-
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{license: ""}}),
-        :license,
-        "Please enter a valid license."
-      )
-
+    test "required sourceFormat displays proper error message", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       new_tech = Map.put(dataset.technical, :sourceFormat, "")
       dataset = Map.put(dataset, :technical, new_tech)
 
-      assert_error_message(
-        conn,
-        dataset,
-        :sourceFormat,
-        "Please enter a valid source format."
-      )
+      html = save_form_for_dataset(conn, dataset)
 
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{publishFrequency: ""}}),
-        :publishFrequency,
-        "Please enter a valid update frequency."
-      )
-
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{orgTitle: ""}}),
-        :orgTitle,
-        "Please enter a valid organization."
-      )
-
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{technical: %{sourceUrl: ""}}),
-        :sourceUrl,
-        "Please enter a valid source url."
-      )
-
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{benefitRating: nil}}),
-        :benefitRating,
-        "Please enter a valid benefit."
-      )
-
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{riskRating: nil}}),
-        :riskRating,
-        "Please enter a valid risk."
-      )
+      assert get_text(html, "#sourceFormat-error-msg") == "Please enter a valid source format."
     end
 
     data_test "displays error when #{field} is unset", %{conn: conn} do
@@ -613,18 +548,13 @@ defmodule AndiWeb.EditLiveViewTest do
     end
   end
 
-  defp assert_error_message(conn, dataset, field, error_message) do
+  defp save_form_for_dataset(conn, dataset) do
     DatasetCache.put(dataset)
 
-    form_data =
-      dataset
-      |> InputConverter.changeset_from_dataset()
-      |> form_data_for_save()
+    form_data = dataset_to_form_data(dataset)
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-    html = render_change(view, :save, %{"metadata" => form_data})
-
-    assert get_text(html, "##{field}-error-msg") == error_message
+    render_change(view, :save, %{"metadata" => form_data})
   end
 
   defp form_data_for_save(changeset) do
