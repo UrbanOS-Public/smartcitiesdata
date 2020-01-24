@@ -220,10 +220,14 @@ defmodule AndiWeb.EditLiveView do
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
 
-  # defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
   defp get_language_options(), do: map_to_dropdown_options(Options.language())
   defp get_level_of_access_options, do: map_to_dropdown_options(Options.level_of_access())
   defp get_rating_options(), do: map_to_dropdown_options(Options.ratings())
+
+  defp map_to_dropdown_options(options) do
+    Enum.map(options, fn {actual_value, description} ->  [key: description, value: actual_value] end )
+  end
+
   defp keywords_to_string(nil), do: ""
   defp keywords_to_string(keywords) when is_binary(keywords), do: keywords
   defp keywords_to_string(keywords), do: Enum.join(keywords, ", ")
@@ -232,14 +236,10 @@ defmodule AndiWeb.EditLiveView do
   defp get_language(lang), do: lang
 
   defp rating_selection_prompt(), do: "Please Select a Value"
+
   defp status_class(%{status: status}) when status in 200..399, do: "test-status__code--good"
   defp status_class(%{status: _}), do: "test-status__code--bad"
 
   defp disabled?(true), do: "disabled"
   defp disabled?(_), do: ""
-
-  defp map_to_dropdown_options(options) do
-    Enum.map(options, fn {actual_value, description} ->  [key: description, value: actual_value] end )
-  end
-
 end

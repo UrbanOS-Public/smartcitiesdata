@@ -423,11 +423,7 @@ defmodule AndiWeb.EditLiveViewTest do
     test "valid metadata is saved on submit", %{conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      dataset =
-        TDG.create_dataset(%{
-          business: %{benefitRating: 0.0, issuedDate: "", publishFrequency: "12345", riskRating: 0.5},
-          technical: %{cadence: "123"}
-        })
+      dataset = TDG.create_dataset(%{business: %{issuedDate: ""}})
 
       DatasetCache.put(dataset)
 
@@ -465,11 +461,7 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "success message is displayed when metadata is saved", %{conn: conn} do
-      dataset =
-        TDG.create_dataset(%{
-          business: %{benefitRating: 0.0, issuedDate: "", publishFrequency: "12345", riskRating: 0.5},
-          technical: %{cadence: "123"}
-        })
+      dataset = TDG.create_dataset(%{business: %{issuedDate: ""}})
 
       DatasetCache.put(dataset)
 
@@ -491,10 +483,7 @@ defmodule AndiWeb.EditLiveViewTest do
     test "allows clearing modified date", %{conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      dataset =
-        TDG.create_dataset(%{
-          business: %{benefitRating: 0.0, modifiedDate: "2020-01-01", riskRating: 0.5}
-        })
+      dataset = TDG.create_dataset(%{business: %{modifiedDate: "2020-01-01"}})
 
       DatasetCache.put(dataset)
 

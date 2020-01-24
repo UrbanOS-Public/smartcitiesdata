@@ -249,10 +249,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
           orgName: " the_org_name   "
         },
         business: %{
-          benefitRating: 0.5,
           contactName: " some  body  ",
-          keywords: ["  a keyword", " another keyword", "etc"],
-          riskRating: 1
+          keywords: ["  a keyword", " another keyword", "etc"]
         }
       )
 
