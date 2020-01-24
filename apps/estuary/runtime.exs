@@ -18,6 +18,7 @@ end)
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 topic = System.get_env("DATA_TOPIC")
 table_name = System.get_env("TABLE_NAME")
+live_view_salt = System.get_env("LIVEVIEW_SALT")
 
 endpoints =
   kafka_brokers
