@@ -44,7 +44,6 @@ defmodule EstuaryWeb do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
-      import EstuaryWeb.ErrorHelpers
       import EstuaryWeb.Gettext
       alias EstuaryWeb.Router.Helpers, as: Routes
     end
@@ -69,7 +68,6 @@ defmodule EstuaryWeb do
   def live_view do
     quote do
       use Phoenix.LiveView
-      import EstuaryWeb.ErrorHelpers
       import Phoenix.HTML.Form
       import Phoenix.HTML.Link
       alias EstuaryWeb.Router.Helpers, as: Routes
