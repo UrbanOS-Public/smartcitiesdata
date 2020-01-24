@@ -35,7 +35,7 @@ defmodule EstuaryWeb.Endpoint do
   plug(Plug.Session,
     store: :cookie,
     key: "_estuary_key",
-    signing_salt: "SekoFX7T"
+    signing_salt: "WQnXwowgt4JM5bQxei4smr2w"
   )
 
   plug(EstuaryWeb.Router)
