@@ -170,7 +170,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
              |> Enum.any?(fn {:schema, {error, _}} -> String.match?(error, ~r/selector.+another_field/) end)
     end
 
-    data_test "requires #{field} to have an acceptable value" do
+    data_test "is invalid when #{field} has an unacceptable value" do
       changes = @valid_changes |> Map.put(field, value)
       changeset = DatasetInput.light_validation_changeset(changes)
 
