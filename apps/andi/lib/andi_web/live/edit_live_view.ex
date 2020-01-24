@@ -129,10 +129,10 @@ defmodule AndiWeb.EditLiveView do
             <div id="success-message" class="metadata__success-message">Saved Successfully</div>
           <% end %>
           <%= if @has_validation_errors do %>
-            <div class="metadata__error-message">There were errors with the dataset you tried to submit.</div>
+            <div id="validation-error-message" class="metadata__error-message">There were errors with the dataset you tried to submit.</div>
           <% end %>
           <%= if @page_error do %>
-            <div id="page-error-message" class="metadata__page-error-message">A page error occurred</div>
+            <div id="page-error-message" class="metadata__error-message">A page error occurred</div>
           <% end %>
         </div>
         <div class="edit-button-group__save-btn">

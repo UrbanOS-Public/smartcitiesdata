@@ -537,13 +537,13 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), exec: fn _ -> raise "derp" end)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert get_text(html, "metadata__page-error-message") == ""
+      assert get_text(html, "#page-error-message") == ""
 
       render_change(view, :test_url, %{})
 
       eventually(fn ->
         html = render(view)
-        assert get_text(html, ".metadata__page-error-message") == "A page error occurred"
+        assert get_text(html, "#page-error-message") == "A page error occurred"
       end)
     end
   end
