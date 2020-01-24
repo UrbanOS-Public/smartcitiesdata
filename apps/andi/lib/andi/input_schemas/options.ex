@@ -8,5 +8,17 @@ defmodule Andi.InputSchemas.Options do
     }
   end
 
-  #TODO: add languages and other options in here
+  def language() do
+    %{
+      "english" => "English",
+      "spanish" => "Spanish"
+    }
+  end
+
+  def level_of_access() do
+    %{
+      "true" => "Private",
+      "false" => "Public"
+    }
+  end
 end
