@@ -7,7 +7,7 @@ defmodule Estuary.Application do
       EstuaryWeb.Endpoint,
       Estuary.Quantum.Scheduler
     ]
-    |> config_child()
+    |> config_init_server()
     |> List.flatten()
     |> Supervisor.start_link(strategy: :one_for_one, name: Estuary.Supervisor)
   end
@@ -19,7 +19,7 @@ defmodule Estuary.Application do
     :ok
   end
 
-  defp config_child(child) do
+  defp config_init_server(child) do
     case Application.get_env(:estuary, :init_server) do
       false -> child
       _ -> [{Estuary.InitServer, []} | child]
