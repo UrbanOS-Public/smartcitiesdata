@@ -148,6 +148,7 @@ defmodule AndiWeb.EditLiveView do
   def mount(%{dataset: dataset}, socket) do
     new_changeset = InputConverter.changeset_from_dataset(dataset)
     Process.flag(:trap_exit, true)
+
     {:ok,
      assign(socket,
        dataset: dataset,
@@ -162,9 +163,11 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("test_url", _, socket) do
     source_url = Map.get(socket.assigns.changeset.changes, :sourceUrl)
+
     Task.async(fn ->
-        {:test_results, Andi.Services.UrlTest.test(source_url)}
+      {:test_results, Andi.Services.UrlTest.test(source_url)}
     end)
+
     {:noreply, assign(socket, testing: true)}
   end
 
@@ -225,7 +228,7 @@ defmodule AndiWeb.EditLiveView do
   defp get_rating_options(), do: map_to_dropdown_options(Options.ratings())
 
   defp map_to_dropdown_options(options) do
-    Enum.map(options, fn {actual_value, description} ->  [key: description, value: actual_value] end )
+    Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
   end
 
   defp keywords_to_string(nil), do: ""

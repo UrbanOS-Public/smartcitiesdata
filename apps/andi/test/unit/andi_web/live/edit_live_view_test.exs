@@ -89,7 +89,7 @@ defmodule AndiWeb.EditLiveViewTest do
         [:value, :label],
         [0.0, "Low"],
         [0.5, "Medium"],
-        [1.0, "High"],
+        [1.0, "High"]
       ])
     end
 
@@ -105,7 +105,7 @@ defmodule AndiWeb.EditLiveViewTest do
         [:value, :label],
         [0.0, "Low"],
         [0.5, "Medium"],
-        [1.0, "High"],
+        [1.0, "High"]
       ])
     end
 
@@ -299,11 +299,11 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert get_text(html, "##{field}-error-msg") == expected_error_message
 
-      where [
+      where([
         [:field, :expected_error_message],
         [:benefitRating, "Please enter a valid benefit."],
         [:riskRating, "Please enter a valid risk."]
-      ]
+      ])
     end
 
     test "error message is cleared when form is updated", %{conn: conn} do

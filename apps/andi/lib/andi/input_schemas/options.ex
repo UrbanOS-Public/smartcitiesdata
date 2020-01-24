@@ -1,4 +1,5 @@
 defmodule Andi.InputSchemas.Options do
+  @moduledoc false
 
   def ratings() do
     %{

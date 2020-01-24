@@ -174,15 +174,15 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       changes = @valid_changes |> Map.put(field, value)
       changeset = DatasetInput.light_validation_changeset(changes)
 
-      assert  [{ ^field, {^message, _}}] = changeset.errors
+      assert [{^field, {^message, _}}] = changeset.errors
 
-      where [
+      where([
         [:field, :value, :message],
         [:benefitRating, 0.7, "should be one of [0.0, 0.5, 1.0]"],
         [:benefitRating, 1.1, "should be one of [0.0, 0.5, 1.0]"],
         [:riskRating, 3.14159, "should be one of [0.0, 0.5, 1.0]"],
-        [:riskRating, 0.000001, "should be one of [0.0, 0.5, 1.0]"],
-      ]
+        [:riskRating, 0.000001, "should be one of [0.0, 0.5, 1.0]"]
+      ])
     end
   end
 
