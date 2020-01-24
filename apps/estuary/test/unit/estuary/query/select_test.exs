@@ -76,6 +76,35 @@ defmodule Estuary.Query.SelectTest do
     end
 
     @tag capture_log: true
+    test "should return in ascending order when order is missing" do
+      expected_events = [
+        %{
+          "author" => "Author-2020-01-21 23:25:52.522084Z",
+          "create_ts" => 1_579_649_152,
+          "data" => "Data-2020-01-21 23:25:52.522107Z",
+          "type" => "Type-2020-01-21 23:25:52.522111Z"
+        },
+        %{
+          "author" => "Author-2020-01-21 23:29:20.171519Z",
+          "create_ts" => 1_579_649_360,
+          "data" => "Data-2020-01-21 23:29:20.171538Z",
+          "type" => "Type-2020-01-21 23:29:20.171543Z"
+        }
+      ]
+
+      table_schema = %{
+        "columns" => ["author", "create_ts", "data", "type"],
+        "table_name" => "any_table",
+        "order_by" => "create_ts",
+        "limit" => 1000
+      }
+
+      allow(Prestige.execute(any(), any()), return: :do_not_care)
+      allow(Prestige.prefetch(any()), return: expected_events)
+      assert {:ok, expected_events} == Select.select_table(table_schema)
+    end
+
+    @tag capture_log: true
     test "should return error when table name is missing" do
       expected_error = {:error, %RuntimeError{message: "Table name missing"}}
 
