@@ -6,11 +6,26 @@
   padding: 2rem;
 }
 
-.metadata-form {
+.form-section {
+  border: $table-border;
+  padding: 2rem;
+  margin-bottom: 4rem;
+}
+
+.form-grid {
   display: grid;
   grid-column-gap: 10rem;
   grid-row-gap: 1rem;
+}
+
+.edit-button-group {
   grid-template-areas:
+    "cancel-btn messages save-btn";
+}
+
+.metadata-form {
+  grid-template-areas:
+    "top-header ."
     "title last-updated"
     "description spatial"
     "description temporal"
@@ -20,8 +35,14 @@
     "release-date homepage"
     "license ."
     "update-frequency benefit-rating"
-    "keywords risk-rating"
-    "cancel-btn save-btn";
+    "keywords risk-rating";
+}
+
+.url-form {
+  grid-template-areas:
+    "top-header ."
+    "source-url source-url"
+    "test-section .";
 }
 
 .metadata__error-message {
@@ -36,6 +57,35 @@
   color: $color-success;
 }
 
+.metadata__page-error-message {
+  text-align: right;
+  padding-right: 2em;
+  color: $color-error;
+}
+
+.test-status {
+  display: inline-block;
+  margin-left: 1rem;
+}
+
+.test-status__code {
+  margin-right: 1rem;
+}
+
+.test-status__code--good {
+  color: $color-success
+}
+
+.test-status__code--bad {
+  color: $color-error
+}
+
+.full-width {
+  width: 100%;
+  box-sizing:border-box;
+}
+
+@include area(metadata-form, top-header);
 @include area(metadata-form, title);
 @include area(metadata-form, description);
 @include area(metadata-form, format);
@@ -54,5 +104,25 @@
 @include area(metadata-form, homepage);
 @include area(metadata-form, benefit-rating);
 @include area(metadata-form, risk-rating);
-@include area(metadata-form, cancel-btn);
-@include area(metadata-form, save-btn);
+
+@include area(edit-button-group, cancel-btn);
+@include area(edit-button-group, save-btn);
+@include area(edit-button-group, test-btn);
+@include area(edit-button-group, messages);
+
+@include area(url-form, source-url);
+@include area(url-form, test-section);
+
+
+.edit-page__box-header {
+  margin-top: -2.75rem;
+  background-color: white;
+  width: fit-content;
+  padding: 0rem 2rem;
+  color: #7f7676;
+}
+
+.edit-button-group__messages {
+  margin: auto;
+  text-align: center;
+}

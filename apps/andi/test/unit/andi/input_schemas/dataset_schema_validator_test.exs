@@ -9,7 +9,7 @@ defmodule Andi.InputSchemas.DatasetSchemaValidatorTest do
       schema = [%{name: "field_name"}, %{name: "other_field", selector: "selector"}]
 
       errors = DatasetSchemaValidator.validate(schema, "application/json")
-      assert length(errors) == 0
+      assert Enum.empty?(errors)
     end
 
     test "xml source format requires a single field in the schema to have a selector" do

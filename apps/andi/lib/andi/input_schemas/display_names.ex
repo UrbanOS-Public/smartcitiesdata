@@ -25,6 +25,7 @@ defmodule Andi.InputSchemas.DisplayNames do
     schema: "Schema",
     sourceFormat: "Source Format",
     sourceType: "Source Type",
+    sourceUrl: "Source URL",
     topLevelSelector: "Top Level Selector"
   }
 

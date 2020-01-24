@@ -24,7 +24,8 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     riskRating: 1,
     schema: [%{name: "name", type: "type"}],
     sourceFormat: "sourceFormat",
-    sourceType: "sourceType"
+    sourceType: "sourceType",
+    sourceUrl: "sourceurl.com"
   }
 
   setup do

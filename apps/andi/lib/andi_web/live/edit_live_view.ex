@@ -12,7 +12,9 @@ defmodule AndiWeb.EditLiveView do
   def render(assigns) do
     ~L"""
     <div class="edit-page">
-      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, class: "metadata-form", as: :metadata] %>
+      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :metadata] %>
+      <div class="metadata-form form-section form-grid">
+        <h2 class="metadata-form__top-header edit-page__box-header">Metadata</h2>
         <div class="metadata-form__title">
           <%= label(f, :title, DisplayNames.get(:dataTitle), class: "label label--required") %>
           <%= text_input(f, :dataTitle, class: "input") %>
@@ -99,34 +101,70 @@ defmodule AndiWeb.EditLiveView do
           <%= select(f, :riskRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
           <%= error_tag_live(f, :riskRating) %>
         </div>
-        <div class="metadata-form__cancel-btn">
-          <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--cancel") %>
-        </div>
-        <div class="metadata-form__save-btn">
-          <%= Link.button("Next", to: "/", method: "get", id: "next-button", class: "btn btn--next", disabled: true, title: "Not implemented yet.") %>
-          <%= submit("Save", id: "save-button", class: "btn btn--save") %>
-        </div>
-      </form>
       </div>
-      <%= if @save_success do %>
-        <div id="success-message" class="metadata__success-message">Saved Successfully</div>
-      <% end %>
-      <%= if @has_validation_errors do %>
-        <div class="metadata__error-message">There were errors with the dataset you tried to submit.</div>
-      <% end %>
+      <div class="url-form form-section form-grid">
+        <h2 class="url-form__top-header edit-page__box-header">Configure Upload</h2>
+        <div class="url-form__source-url">
+          <%= label(f, :sourceUrl, DisplayNames.get(:sourceUrl), class: "label label--required") %>
+          <%= text_input(f, :sourceUrl, class: "input full-width", disabled: @testing) %>
+          <%= error_tag(f, :sourceUrl) %>
+        </div>
+        <div class="url-form__test-section">
+          <button type="button" class="metadata-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
+          <%= if @test_results do %>
+            <div class="test-status">
+            Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) %></span>
+            Time: <span class="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
+            </div>
+          <% end %>
+        </div>
+      </div>
+      <div class="edit-button-group form-grid">
+        <div class="edit-button-group__cancel-btn">
+          <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
+        </div>
+        <div class="edit-button-group__messages">
+          <%= if @save_success do %>
+            <div id="success-message" class="metadata__success-message">Saved Successfully</div>
+          <% end %>
+          <%= if @has_validation_errors do %>
+            <div class="metadata__error-message">There were errors with the dataset you tried to submit.</div>
+          <% end %>
+          <%= if @page_error do %>
+            <div id="page-error-message" class="metadata__page-error-message">A page error occurred</div>
+          <% end %>
+        </div>
+        <div class="edit-button-group__save-btn">
+          <%= Link.button("Next", to: "/", method: "get", id: "next-button", class: "btn btn--next btn--large btn--action", disabled: true, title: "Not implemented yet.") %>
+          <%= submit("Save", id: "save-button", class: "btn btn--save btn--large") %>
+        </div>
+      </div>
+      </form>
+    </div>
     """
   end
 
   def mount(%{dataset: dataset}, socket) do
     new_changeset = InputConverter.changeset_from_dataset(dataset)
-
+    Process.flag(:trap_exit, true)
     {:ok,
      assign(socket,
        dataset: dataset,
        changeset: new_changeset,
        has_validation_errors: false,
-       save_success: false
+       save_success: false,
+       page_error: false,
+       test_results: nil,
+       testing: false
      )}
+  end
+
+  def handle_event("test_url", _, socket) do
+    source_url = Map.get(socket.assigns.changeset.changes, :sourceUrl)
+    Task.async(fn ->
+        {:test_results, Andi.Services.UrlTest.test(source_url)}
+    end)
+    {:noreply, assign(socket, testing: true)}
   end
 
   def handle_event("validate", %{"metadata" => form_data}, socket) do
@@ -147,11 +185,12 @@ defmodule AndiWeb.EditLiveView do
 
     if changeset.valid? do
       changes = Ecto.Changeset.apply_changes(changeset)
+      dataset = InputConverter.restruct(changes, original_dataset)
 
-      with dataset = InputConverter.restruct(changes, original_dataset),
-           :ok <- Brook.Event.send(instance_name(), dataset_update(), :andi, dataset) do
-        {:noreply, assign(socket, dataset: dataset, changeset: changeset, save_success: true)}
-      else
+      case Brook.Event.send(instance_name(), dataset_update(), :andi, dataset) do
+        :ok ->
+          {:noreply, assign(socket, dataset: dataset, changeset: changeset, save_success: true, page_error: false)}
+
         error ->
           Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
 
@@ -160,6 +199,22 @@ defmodule AndiWeb.EditLiveView do
     else
       {:noreply, assign(socket, changeset: %{changeset | action: :save}, has_validation_errors: true)}
     end
+  end
+
+  # This handle_info takes care of all exceptions in a generic way.
+  # Expected errors should be handled in specific handlers.
+  # Flags should be reset here.
+  def handle_info({:EXIT, _pid, {_error, _stacktrace}}, socket) do
+    {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
+  end
+
+  def handle_info({_, {:test_results, results}}, socket) do
+    {:noreply, assign(socket, test_results: results, testing: false)}
+  end
+
+  def handle_info(message, socket) do
+    Logger.debug(inspect(message))
+    {:noreply, socket}
   end
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
@@ -176,4 +231,9 @@ defmodule AndiWeb.EditLiveView do
   defp get_language(lang), do: lang
 
   defp rating_selection_prompt(), do: "Please Select a Value"
+  defp status_class(%{status: status}) when status in 200..399, do: "test-status__code--good"
+  defp status_class(%{status: _}), do: "test-status__code--bad"
+
+  defp disabled?(true), do: "disabled"
+  defp disabled?(_), do: ""
 end
