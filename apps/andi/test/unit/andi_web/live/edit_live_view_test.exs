@@ -7,6 +7,7 @@ defmodule AndiWeb.EditLiveViewTest do
   import Checkov
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.TestHelper
 
   alias Andi.DatasetCache
   alias Andi.InputSchemas.InputConverter
@@ -490,10 +491,13 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_text(html, ".test-status__code") == ""
       assert get_text(html, ".test-status__time") == ""
 
-      html = render_change(view, :test_url, %{})
+      render_change(view, :test_url, %{})
 
-      assert get_text(html, ".test-status__code") == "200"
-      assert get_text(html, ".test-status__time") == "1000"
+      eventually(fn ->
+        html = render(view)
+        assert get_text(html, ".test-status__code") == "200"
+        assert get_text(html, ".test-status__time") == "1000"
+      end)
     end
 
     test "status is displayed with an appropriate class when it is between 200 and 399", %{conn: conn} do
@@ -506,9 +510,12 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, ".test-status__code--good") == ""
 
-      html = render_change(view, :test_url, %{})
+      render_change(view, :test_url, %{})
 
-      assert get_text(html, ".test-status__code--good") == "200"
+      eventually(fn ->
+        html = render(view)
+        assert get_text(html, ".test-status__code--good") == "200"
+      end)
     end
 
     test "status is displayed with an appropriate class when it is not between 200 and 399", %{conn: conn} do
@@ -521,10 +528,31 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, ".test-status__code--bad") == ""
 
-      html = render_change(view, :test_url, %{})
+      render_change(view, :test_url, %{})
 
-      assert get_text(html, ".test-status__code--bad") == "400"
-      assert get_text(html, ".test-status__code--good") != "400"
+      eventually(fn ->
+        html = render(view)
+        assert get_text(html, ".test-status__code--bad") == "400"
+        assert get_text(html, ".test-status__code--good") != "400"
+      end)
+    end
+
+    test "status is displayed with an appropriate class when an internal page error occurred", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+
+      DatasetCache.put(dataset)
+
+      allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), exec: fn _ -> raise "derp" end)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert get_text(html, "metadata__page-error-message") == ""
+
+      render_change(view, :test_url, %{})
+
+      eventually(fn ->
+        html = render(view)
+        assert get_text(html, ".metadata__page-error-message") == "A page error occurred"
+      end)
     end
   end
 

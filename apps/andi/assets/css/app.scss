@@ -79,6 +79,10 @@ body {
 
 .btn--test {
   font-size: 1rem;
+
+  &:disabled, &:disabled:hover {
+    background-color: $disabled-background;
+  }
 }
 
 .btn--save:hover {
