@@ -22,7 +22,8 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     publishFrequency: "publishFrequency",
     schema: [%{name: "name", type: "type"}],
     sourceFormat: "sourceFormat",
-    sourceType: "sourceType"
+    sourceType: "sourceType",
+    sourceUrl: "sourceurl.com"
   }
 
   setup do
