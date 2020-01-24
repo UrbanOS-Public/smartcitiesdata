@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.15.0",
+      version: "0.16.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -36,6 +36,7 @@ defmodule Andi.MixProject do
     [
       {:atomic_map, "~> 0.9"},
       {:brook, "~> 0.4.0"},
+      {:bypass, "~> 1.0", only: [:test, :integration]},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:checkov, "~> 0.4.0", only: :test},
       {:divo, "~> 1.1", only: [:dev, :integration]},
@@ -59,8 +60,8 @@ defmodule Andi.MixProject do
       {:simply_validate, ">= 0.2.0"},
       {:smart_city, "~> 3.0"},
       {:smart_city_registry, "~> 5.0"},
+      {:tesla, "~> 1.3"},
       {:smart_city_test, "~> 0.9", only: [:test, :integration]},
-      {:tesla, "~> 1.3", only: :integration},
       {:timex, "~> 3.6"},
       {:elixir_uuid, "~> 1.2"},
       {:distillery, "~> 2.1"},
