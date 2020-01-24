@@ -425,7 +425,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       dataset =
         TDG.create_dataset(%{
-          business: %{issuedDate: "", publishFrequency: "12345"},
+          business: %{benefitRating: 0.0, issuedDate: "", publishFrequency: "12345", riskRating: 0.5},
           technical: %{cadence: "123"}
         })
 
@@ -467,7 +467,7 @@ defmodule AndiWeb.EditLiveViewTest do
     test "success message is displayed when metadata is saved", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
-          business: %{issuedDate: "", publishFrequency: "12345"},
+          business: %{benefitRating: 0.0, issuedDate: "", publishFrequency: "12345", riskRating: 0.5},
           technical: %{cadence: "123"}
         })
 
@@ -493,7 +493,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       dataset =
         TDG.create_dataset(%{
-          business: %{modifiedDate: "2020-01-01"}
+          business: %{benefitRating: 0.0, modifiedDate: "2020-01-01", riskRating: 0.5}
         })
 
       DatasetCache.put(dataset)
@@ -604,6 +604,7 @@ defmodule AndiWeb.EditLiveViewTest do
       end)
     end
 
+    @tag capture_log: true
     test "status is displayed with an appropriate class when an internal page error occurred", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
 
