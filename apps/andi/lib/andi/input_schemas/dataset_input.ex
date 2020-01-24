@@ -31,6 +31,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     schema: {:array, :map},
     sourceFormat: :string,
     sourceType: :string,
+    sourceUrl: :string,
     topLevelSelector: :string
   }
 
@@ -51,7 +52,8 @@ defmodule Andi.InputSchemas.DatasetInput do
     :private,
     :publishFrequency,
     :sourceFormat,
-    :sourceType
+    :sourceType,
+    :sourceUrl
   ]
 
   @email_regex ~r/^[A-Za-z0-9._%+-+']+@[A-Za-z0-9.-]+\.[A-Za-z]+$/
