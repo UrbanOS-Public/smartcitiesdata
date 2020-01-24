@@ -63,7 +63,7 @@ defmodule Andi.InputSchemas.DatasetInput do
 
   @email_regex ~r/^[A-Za-z0-9._%+-+']+@[A-Za-z0-9.-]+\.[A-Za-z]+$/
   @no_dashes_regex ~r/^[^\-]+$/
-  @ratings Options.ratings()
+  @ratings Map.keys(Options.ratings())
 
   def business_keys(), do: Map.keys(@business_fields)
   def technical_keys(), do: Map.keys(@technical_fields)

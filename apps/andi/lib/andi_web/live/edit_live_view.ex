@@ -4,6 +4,7 @@ defmodule AndiWeb.EditLiveView do
   alias Phoenix.HTML.Link
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.DisplayNames
+  alias Andi.InputSchemas.Options
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -221,7 +222,9 @@ defmodule AndiWeb.EditLiveView do
 
   defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
   defp get_level_of_access_options, do: [[key: "Private", value: "true"], [key: "Public", value: "false"]]
-  defp get_rating_options, do: [[key: "Low", value: 0.0], [key: "Medium", value: 0.5], [key: "High", value: 1.0]]
+  defp get_rating_options() do
+     Enum.map(Options.ratings(), fn {rating, description} ->  [key: description, value: rating] end )
+  end
 
   defp keywords_to_string(nil), do: ""
   defp keywords_to_string(keywords) when is_binary(keywords), do: keywords
