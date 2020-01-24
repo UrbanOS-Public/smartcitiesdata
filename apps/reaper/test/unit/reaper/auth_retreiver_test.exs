@@ -34,6 +34,36 @@ defmodule AuthRetrieverTest do
       assert Reaper.AuthRetriever.retrieve(dataset_id) == expected
     end
 
+    test "retrieve response using auth body and url" do
+      bypass = Bypass.open()
+
+      dataset_id = "123"
+      url = "http://localhost:#{bypass.port}/auth"
+      expected_body = %{
+        secret_thing: "secret"
+      }
+
+      reaper_config =
+        FixtureHelper.new_reaper_config(%{
+          dataset_id: dataset_id,
+          authUrl: url,
+          authHeaders: [],
+          authBody: expected_body
+        })
+
+      expected = %{"api_key" => "12343523423423"}
+      auth_response = Jason.encode!(expected)
+
+      Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
+        {:ok, actual_body, _} = Plug.Conn.read_body(conn)
+        assert Jason.encode!(expected_body) == actual_body
+        Plug.Conn.resp(conn, 200, auth_response)
+      end)
+
+      allow Brook.get!(@instance, :reaper_config, dataset_id), return: reaper_config
+      assert Reaper.AuthRetriever.retrieve(dataset_id) == expected
+    end
+
     test "evaluate auth headers" do
       dataset_id = "123"
       url = "www.example.com"

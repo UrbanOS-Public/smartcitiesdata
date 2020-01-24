@@ -19,6 +19,7 @@ defmodule Reaper.ReaperConfig do
           protocol: list(),
           sourceHeaders: map(),
           authHeaders: map(),
+          authBody: map(),
           allow_duplicates: boolean()
         }
 
@@ -37,6 +38,7 @@ defmodule Reaper.ReaperConfig do
     :schema,
     :protocol,
     :allow_duplicates,
+    authBody: %{},
     sourceHeaders: %{},
     authHeaders: %{}
   ]
@@ -58,6 +60,7 @@ defmodule Reaper.ReaperConfig do
       sourceQueryParams: dataset.technical.sourceQueryParams,
       sourceHeaders: dataset.technical.sourceHeaders,
       authHeaders: dataset.technical.authHeaders,
+      authBody: dataset.technical.authBody,
       schema: dataset.technical.schema,
       protocol: dataset.technical.protocol,
       allow_duplicates: dataset.technical.allow_duplicates
