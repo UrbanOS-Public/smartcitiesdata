@@ -82,12 +82,11 @@ defmodule Reaper.DataSlurper.HttpTest do
 
       setup_get(bypass, file_url, ~s|one,two,three\n4,5,6\n|)
 
-      dataset_id = "1234"
       url = "http://localhost:#{bypass.port}#{file_url}"
       headers = %{"content-type" => "text/csv"}
       evaluated_headers = [{"content-type", "text/csv"}]
 
-      {:file, _dataset_id} = DataSlurper.slurp(url, dataset_id, headers)
+      {:file, _dataset_id} = DataSlurper.slurp(url, @dataset_id, headers)
 
       assert_called(
         Mint.HTTP.request(any(), "GET", "#{file_url}?", evaluated_headers, any()),
