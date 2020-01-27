@@ -39,6 +39,7 @@ defmodule AuthRetrieverTest do
 
       dataset_id = "123"
       url = "http://localhost:#{bypass.port}/auth"
+
       expected_body = %{
         secret_thing: "secret"
       }

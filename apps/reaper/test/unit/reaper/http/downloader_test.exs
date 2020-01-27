@@ -12,7 +12,6 @@ defmodule Reaper.Http.DownloaderTest do
   end
 
   test "downloads the file correctly", %{bypass: bypass} do
-
     Bypass.stub(bypass, "GET", "/file/to/download", fn conn ->
       conn = Conn.send_chunked(conn, 200)
 
