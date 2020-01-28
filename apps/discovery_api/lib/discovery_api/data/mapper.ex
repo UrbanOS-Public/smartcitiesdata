@@ -55,7 +55,7 @@ defmodule DiscoveryApi.Data.Mapper do
     }
   end
 
-  defp get_file_type("application/gtfs"), do: ["JSON"]
+  defp get_file_type("application/gtfs+protobuf"), do: ["JSON"]
   defp get_file_type(source_format), do: source_format |> MIME.extensions() |> hd() |> String.upcase() |> List.wrap()
 
   defp ternary(condition, success, _failure) when condition, do: success
