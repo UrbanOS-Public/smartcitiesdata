@@ -21,6 +21,7 @@ import_config "../apps/*/config/config.exs"
 
 config :mime, :types, %{
   "application/gtfs+protobuf" => ["gtfs"],
+  "application/zip" => ["zip", "shp", "shapefile"],
   "application/vnd.ogc.wms_xml" => ["wms"]
 }
 

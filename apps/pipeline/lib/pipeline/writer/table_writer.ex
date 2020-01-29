@@ -5,6 +5,7 @@ defmodule Pipeline.Writer.TableWriter do
 
   @behaviour Pipeline.Writer
   alias Pipeline.Writer.TableWriter.{Compaction, Statement}
+  alias Pipeline.Application
   require Logger
 
   @type schema() :: [map()]
@@ -18,7 +19,7 @@ defmodule Pipeline.Writer.TableWriter do
     config = parse_args(args)
 
     with {:ok, statement} <- Statement.create(config),
-         [[true]] <- execute(statement) do
+         {:ok, _} <- execute(statement) do
       Logger.info("Created #{config.table} table")
       :ok
     else
@@ -46,7 +47,7 @@ defmodule Pipeline.Writer.TableWriter do
     |> Statement.insert(payloads)
     |> execute()
     |> case do
-      [[_]] -> :ok
+      {:ok, _} -> :ok
       error -> {:error, error}
     end
   end
@@ -75,11 +76,11 @@ defmodule Pipeline.Writer.TableWriter do
 
   defp execute(statement) do
     try do
-      statement
-      |> Prestige.execute()
-      |> Prestige.prefetch()
+      Application.prestige_opts()
+      |> Prestige.new_session()
+      |> Prestige.execute(statement)
     rescue
-      e -> e.message
+      e -> e
     end
   end
 end

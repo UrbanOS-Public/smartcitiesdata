@@ -48,7 +48,7 @@ defmodule Estuary.MixProject do
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.1"},
       {:plug_heartbeat, "~> 0.2.0"},
-      {:prestige, "~> 0.3"},
+      {:prestige, "~> 1.0"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:quantum, "~>2.3"},
