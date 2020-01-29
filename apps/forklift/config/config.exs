@@ -22,9 +22,7 @@ config :logger,
 
 import_config "#{Mix.env()}.exs"
 
-config :prestige,
-  headers: [
-    catalog: "hive",
-    schema: "default",
-    user: "carpenter"
-  ]
+config :prestige, :session_opts,
+  catalog: "hive",
+  schema: "default",
+  user: "carpenter"

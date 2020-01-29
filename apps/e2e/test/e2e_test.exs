@@ -135,15 +135,11 @@ defmodule E2ETest do
       ]
 
       eventually(fn ->
-        table =
-          try do
-            query("describe hive.default.end_to__end", true)
-          rescue
-            _ -> []
-          end
+        table = query("describe hive.default.end_to__end", true)
 
         assert table == expected
-      end)
+      end, 500, 20)
+
     end
 
     test "stores a definition that can be retrieved", %{dataset: expected} do
@@ -187,9 +183,9 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert [[table] | _] = query("show tables like '#{table}'")
+          assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
-          assert [[true, "foobar", 10]] = query("select * from #{table}")
+          assert %{"one" => true, "three" => 10, "two" => "foobar"} in query("select * from #{table}", true)
         end,
         10_000
       )
@@ -210,9 +206,9 @@ defmodule E2ETest do
       expected = ["SmartCityOS", "forklift", "valkyrie", "reaper"]
 
       eventually(fn ->
-        actual = query("select distinct dataset_id, app from #{table}")
+        actual = query("select distinct dataset_id, app from #{table}", true)
 
-        Enum.each(expected, fn app -> assert [ds.id, app] in actual end)
+        Enum.each(expected, fn app -> assert %{"app" => app, "dataset_id" => ds.id} in actual end)
       end)
     end
 
@@ -220,9 +216,10 @@ defmodule E2ETest do
       table = Application.get_env(:estuary, :table_name)
 
       eventually(fn ->
-        [[actual]] = query("SELECT count(1) FROM #{table}")
+        actual = query("SELECT count(1) FROM #{table}", false)
+        [row_count] = actual.rows
 
-        assert actual > 0
+        assert row_count > 0
       end)
     end
   end
@@ -270,9 +267,9 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert [[table] | _] = query("show tables like '#{table}'")
+          assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
-          assert [[true, "foobar", 10] | _] = query("select * from #{table}")
+          assert %{"one" => true, "three" => 10, "two" => "foobar"} in query("select * from #{table}", true)
         end,
         5_000
       )
@@ -309,9 +306,9 @@ defmodule E2ETest do
       expected = ["SmartCityOS", "forklift", "valkyrie", "reaper"]
 
       eventually(fn ->
-        actual = query("select distinct dataset_id, app from #{table}")
+        actual = query("select distinct dataset_id, app from #{table}", true)
 
-        Enum.each(expected, fn app -> assert [ds.id, app] in actual end)
+        Enum.each(expected, fn app -> assert %{"app" => app, "dataset_id" => ds.id} in actual end)
       end)
     end
   end
@@ -332,8 +329,9 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert [[table | _]] = query("show tables like '#{table}'")
-          assert [[actual | _] | _] = query("select * from #{table}")
+          assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
+
+          assert [%{"feature" => actual} | _] = query("select * from #{table}", true)
 
           result = Jason.decode!(actual)
 
@@ -348,9 +346,24 @@ defmodule E2ETest do
     end
   end
 
-  def query(statement, toggle \\ false) do
-    statement
-    |> Prestige.execute(rows_as_maps: toggle)
-    |> Prestige.prefetch()
+  def query(statment, toggle \\ false)
+  def query(statement, false) do
+    prestige_session()
+    |> Prestige.execute(statement)
+    |> case do
+      {:ok, result} -> result
+      {:error, error} -> {:error, error}
+    end
   end
+
+  def query(statement, true) do
+    prestige_session()
+    |> Prestige.execute(statement)
+    |> case do
+      {:ok, result} -> Prestige.Result.as_maps(result)
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  defp prestige_session(), do: Application.get_env(:prestige, :session_opts) |> Prestige.new_session()
 end

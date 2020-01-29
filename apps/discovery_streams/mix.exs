@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.Mixfile do
   def project do
     [
       app: :discovery_streams,
-      version: "2.2.0",
+      version: "2.2.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -46,7 +46,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:httpoison, "~> 1.6"},
       {:kaffe, "~> 1.14"},
       {:libcluster, "~> 3.1"},
-      {:mix_test_watch, "~> 0.6", only: :dev, runtime: false},
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:patiently, "~> 0.2", only: [:test, :integration], override: true},
       {:phoenix, "~> 1.4"},
       {:phoenix_pubsub, "~> 1.0"},
