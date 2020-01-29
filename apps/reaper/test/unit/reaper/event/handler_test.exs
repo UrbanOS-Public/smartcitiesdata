@@ -9,7 +9,9 @@ defmodule Reaper.Event.HandlerTest do
       data_extract_start: 0,
       file_ingest_start: 0,
       file_ingest_end: 0,
-      dataset_disable: 0
+      dataset_update: 0,
+      dataset_disable: 0,
+      error_dataset_update: 0
     ]
 
   import SmartCity.TestHelper, only: [eventually: 1]
@@ -32,6 +34,26 @@ defmodule Reaper.Event.HandlerTest do
     end)
 
     :ok
+  end
+
+  describe "#{dataset_update()}" do
+    test "sends error event for known bad case of nil cadence" do
+      dataset = TDG.create_dataset(id: "ds-empty-cron", technical: %{cadence: nil, sourceType: "ingest"})
+
+      assert :ok == Brook.Test.send(@instance, dataset_update(), "testing", dataset)
+
+      assert_receive {:brook_event, %Brook.Event{type: error_dataset_update(), data: %{"reason" => _, "dataset" => %SmartCity.Dataset{id: "ds-empty-cron"}}}}, 10_000
+    end
+
+    test "sends error event for raised errors while performing dataset update" do
+      allow(Reaper.Event.Handlers.DatasetUpdate.handle(any()), exec: fn _ -> raise "bad stuff" end)
+
+      dataset = TDG.create_dataset(%{})
+
+      assert :ok == Brook.Test.send(@instance, dataset_update(), "testing", dataset)
+
+      assert_receive {:brook_event, %Brook.Event{type: "error:dataset:update", data: %{"reason" => %RuntimeError{message: "bad stuff"}, "dataset" => _}}}, 10_000
+    end
   end
 
   describe "#{data_extract_start()}" do
