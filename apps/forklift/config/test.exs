@@ -32,4 +32,5 @@ config :forklift, :brook,
     ]
   ]
 
-config :prestige, base_url: "http://127.0.0.1:8080"
+config :prestige, :session_opts,
+  url: "http://127.0.0.1:8080"

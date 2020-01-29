@@ -4,7 +4,7 @@ defmodule Odo.MixProject do
   def project do
     [
       app: :odo,
-      version: "0.3.1",
+      version: "0.3.2",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -30,7 +30,7 @@ defmodule Odo.MixProject do
       {:credo, "~> 1.0", only: :dev, runtime: false},
       {:distillery, "~> 2.1"},
       {:ex_aws, "~> 2.1"},
-      {:ex_aws_s3, "~> 2.0"},
+      {:ex_aws_s3, "~> 2.0", [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},
       {:geomancer, "~> 0.1.0"},
       {:hackney, "~> 1.15"},
       {:jason, "~> 1.1"},
