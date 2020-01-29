@@ -59,26 +59,27 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
   end
 
   describe "accessing restricted datasets" do
-    data_test "does not download a restricted dataset via #{url} if the given user is not a member of the dataset's group", %{conn: conn} do
+    data_test "does not allow access if a restricted dataset if the given user is not a member of the dataset's group", %{conn: conn} do
       allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: []}})
 
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
+      {:ok, guardian_token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
 
       conn
-      |> put_req_cookie(Helper.default_guardian_token_key(), token)
+      |> put_req_cookie(Helper.default_guardian_token_key(), guardian_token)
       |> put_req_header("accept", accepts)
       |> get(url)
       |> json_response(response_code)
 
       where([
         [:url, :accepts, :response_code],
+        ["/api/v1/dataset/1234-4567-89101/download/presigned_url", "application/json", 404],
         ["/api/v1/dataset/1234-4567-89101/download", "application/json", 404],
         ["/api/v1/dataset/1234-4567-89101/query", "application/json", 404],
         ["/api/v1/dataset/1234-4567-89101/preview", "application/json", 404]
       ])
     end
 
-    data_test "downloads a restricted dataset via #{url} if the given user has access to it, via cookie", %{conn: conn} do
+    data_test "querying or previewing a restricted dataset via #{url} if the given user has access to it, via token", %{conn: conn} do
       allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
@@ -91,13 +92,32 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
 
       where([
         [:url, :accepts, :response_code],
-        ["/api/v1/dataset/1234-4567-89101/download", "application/json", 200],
+        ["/api/v1/dataset/1234-4567-89101/download/presigned_url", "application/json", 200],
         ["/api/v1/dataset/1234-4567-89101/query", "application/json", 200],
         ["/api/v1/dataset/1234-4567-89101/preview", "application/json", 200]
       ])
     end
 
-    data_test "downloads a restricted dataset via #{url} if the given user has access to it, via token", %{conn: conn} do
+    test "presigned url returns everything needed to download dataset", %{conn: conn} do
+      url = "/api/v1/dataset/1234-4567-89101/download/presigned_url"
+      accepts = "application/json"
+      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
+      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
+
+      response =
+        conn
+        |> put_req_cookie(Helper.default_guardian_token_key(), token)
+        |> put_req_header("accept", accepts)
+        |> get(url)
+        |> json_response(200)
+
+      assert "https://data.tests.example.com/api/v1/dataset/1234-4567-89101/download?key=" <>
+               <<key::binary-size(64)>> <> "&expires=" <> expires = response
+
+      assert is_number(String.to_integer(expires))
+    end
+
+    data_test "downloads a restricted dataset if the given user has access to it, via token", %{conn: conn} do
       allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
       {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
@@ -110,7 +130,13 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
 
       where([
         [:url, :accepts, :response_code],
-        ["/api/v1/dataset/1234-4567-89101/download", "application/json", 200],
+        # hmac token is datasetid/timestamp encrypted with a key
+        # :crypto.hmac(:sha256, "test_presign_key", "1234-4567-89101/2556118800") |> Base.encode16()
+        [
+          "/api/v1/dataset/1234-4567-89101/download?key=A2C4E59FA2FEDAAA3AB3059DB07C78CDFE61AA5088CE0F07DC4E326D865E593D&expires=2556118800",
+          "application/json",
+          200
+        ],
         ["/api/v1/dataset/1234-4567-89101/query", "application/json", 200],
         ["/api/v1/dataset/1234-4567-89101/preview", "application/json", 200]
       ])

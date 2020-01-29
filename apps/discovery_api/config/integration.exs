@@ -3,7 +3,7 @@ aws_region = "local"
 host = "localhost"
 endpoints = [{to_charlist(host), 9092}]
 
-config :discovery_api, DiscoveryApiWeb.Endpoint, url: [host: "data.integrationtests.example.com", port: 80]
+config :discovery_api, DiscoveryApiWeb.Endpoint, url: [scheme: "https", host: "data.integrationtests.example.com", port: 443]
 
 config :discovery_api,
   allowed_origins: ["integrationtests.example.com", "localhost:9001"],

@@ -72,10 +72,15 @@ defmodule DiscoveryApiWeb.Router do
     get("/dataset/:dataset_id/preview", DataController, :fetch_preview)
     get("/organization/:org_name/dataset/:dataset_name/query", DataController, :query)
     get("/dataset/:dataset_id/query", DataController, :query)
-    get("/organization/:org_name/dataset/:dataset_name/download", DataController, :fetch_file)
-    get("/dataset/:dataset_id/download", DataController, :fetch_file)
+    get("/dataset/:dataset_id/download/presigned_url", DataController, :download_presigned_url)
 
     resources("/visualization", VisualizationController, only: [:show])
+  end
+
+  scope "/api/v1", DiscoveryApiWeb do
+    pipe_through([:reject_cookies_from_ajax, :add_user_details, :global_headers])
+    get("/organization/:org_name/dataset/:dataset_name/download", DataDownloadController, :fetch_file)
+    get("/dataset/:dataset_id/download", DataDownloadController, :fetch_file)
   end
 
   scope "/api/v1", DiscoveryApiWeb do

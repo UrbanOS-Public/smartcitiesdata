@@ -21,7 +21,8 @@ config :discovery_api,
   ldap_user: System.get_env("LDAP_USER"),
   ldap_pass: System.get_env("LDAP_PASS"),
   hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
-  hosted_region: System.get_env("HOSTED_FILE_REGION")
+  hosted_region: System.get_env("HOSTED_FILE_REGION"),
+  presign_key: System.get_env("PRESIGN_KEY")
 
 config :discovery_api, DiscoveryApi.Repo,
   database: System.get_env("POSTGRES_DBNAME"),
@@ -30,7 +31,7 @@ config :discovery_api, DiscoveryApi.Repo,
   hostname: System.get_env("POSTGRES_HOST"),
   port: System.get_env("POSTGRES_PORT")
 
-required_envars = ["REDIS_HOST", "PRESTO_URL", "ALLOWED_ORIGINS"]
+required_envars = ["REDIS_HOST", "PRESTO_URL", "ALLOWED_ORIGINS", "PRESIGN_KEY"]
 
 Enum.each(required_envars, fn var ->
   if is_nil(System.get_env(var)) do
@@ -69,15 +70,13 @@ config :discovery_api,
   auth_provider: auth_provider
 
 if auth_provider == "auth0" do
-  config :discovery_api, DiscoveryApi.Auth.Guardian,
-    issuer: System.get_env("AUTH_JWT_ISSUER")
+  config :discovery_api, DiscoveryApi.Auth.Guardian, issuer: System.get_env("AUTH_JWT_ISSUER")
 
   config :discovery_api,
     jwks_endpoint: System.get_env("AUTH_JWKS_ENDPOINT"),
     user_info_endpoint: System.get_env("AUTH_USER_INFO_ENDPOINT")
 else
-  config :discovery_api, DiscoveryApi.Auth.Guardian,
-    secret_key: System.get_env("GUARDIAN_KEY")
+  config :discovery_api, DiscoveryApi.Auth.Guardian, secret_key: System.get_env("GUARDIAN_KEY")
 end
 
 config :ex_aws,
