@@ -22,7 +22,7 @@ defmodule Reaper.Event.Handler do
     Reaper.Event.Handlers.DatasetUpdate.handle(dataset)
   rescue
     reason ->
-      Brook.Event.send(@instance, error_dataset_update(), :reaper, %{reason: reason, dataset: dataset})
+      Brook.Event.send(@instance, error_dataset_update(), :reaper, %{"reason" => reason, "dataset" => dataset})
       :discard
   end
 
