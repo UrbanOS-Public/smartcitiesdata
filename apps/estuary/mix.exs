@@ -34,6 +34,7 @@ defmodule Estuary.MixProject do
       {:distillery, "~> 2.1"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
+      {:ecto_sql, "~> 3.0"},
       {:elsa, "~> 0.10.0"},
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},
       {:jason, "~> 1.1"},
