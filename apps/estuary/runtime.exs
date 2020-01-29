@@ -18,6 +18,7 @@ end)
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 topic = System.get_env("DATA_TOPIC")
 table_name = System.get_env("TABLE_NAME")
+live_view_salt = System.get_env("LIVEVIEW_SALT")
 
 endpoints =
   kafka_brokers
@@ -53,6 +54,11 @@ config :dead_letter,
       endpoints: endpoints,
       topic: "streaming-dead-letters"
     ]
+  ]
+
+config :estuary, EstuaryWeb.Endpoint,
+  live_view: [
+    signing_salt: live_view_salt
   ]
 
 if System.get_env("COMPACTION_SCHEDULE") do

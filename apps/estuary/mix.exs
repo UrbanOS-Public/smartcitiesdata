@@ -4,7 +4,7 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.5.2",
+      version: "0.6.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -15,13 +15,14 @@ defmodule Estuary.MixProject do
       aliases: aliases(),
       docs: docs(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      test_paths: test_paths(Mix.env())
+      test_paths: test_paths(Mix.env()),
+      compilers: [:phoenix, :gettext] ++ Mix.compilers()
     ]
   end
 
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :runtime_tools, :phoenix_ecto],
       mod: {Estuary.Application, []}
     ]
   end
@@ -34,21 +35,34 @@ defmodule Estuary.MixProject do
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:elsa, "~> 0.10.0"},
+      {:floki, "~> 0.23", only: [:dev, :test, :integration]},
       {:jason, "~> 1.1"},
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:phoenix, "~> 1.4"},
+      {:phoenix_ecto, "~> 4.0"},
+      {:phoenix_html, "~> 2.13"},
+      {:phoenix_live_reload, "~> 1.2", only: [:dev, :integration]},
+      {:phoenix_live_view, "~>0.4"},
+      {:phoenix_pubsub, "~> 1.1"},
       {:pipeline, in_umbrella: true},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      {:quantum, "~>2.3"},
-      {:timex, "~> 3.6"},
+      {:plug_cowboy, "~> 2.1"},
+      {:plug_heartbeat, "~> 0.2.0"},
       {:prestige, "~> 1.0"},
-      {:smart_city_test, "~> 0.8", only: [:test, :integration]}
+      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
+      {:sobelow, "~> 0.8", only: :dev},
+      {:quantum, "~>2.3"},
+      {:timex, "~> 3.6"}
     ]
   end
 
   defp aliases do
     [
-      verify: ["format --check-formatted", "credo"],
-      test: "test --no-start"
+      verify: [
+        "format --check-formatted",
+        "credo",
+        "sobelow -i Config.HTTPS --skip --compact --exit low"
+      ]
     ]
   end
 
