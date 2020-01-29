@@ -3,16 +3,21 @@ defmodule Estuary.Query.Select do
 
   def select_table(value) do
     data =
-      "SELECT #{translate_columns(value["columns"])}
-      FROM #{check_table_name(value["table_name"])}
-      #{translate_order(value["order_by"], value["order"])}
-      LIMIT #{translate_limit(value["limit"])}"
-      |> Prestige.execute(by_names: true)
-      |> Prestige.prefetch()
+      Application.get_env(:prestige, :session_opts)
+      |> Prestige.new_session()
+      |> Prestige.query!(create_query_statement(value))
+      |> Prestige.Result.as_maps()
 
     {:ok, data}
   rescue
     error -> {:error, error}
+  end
+
+  defp create_query_statement(value) do
+    "SELECT #{translate_columns(value["columns"])}
+      FROM #{check_table_name(value["table_name"])}
+      #{translate_order(value["order_by"], value["order"])}
+      LIMIT #{translate_limit(value["limit"])}"
   end
 
   defp translate_columns(columns) do

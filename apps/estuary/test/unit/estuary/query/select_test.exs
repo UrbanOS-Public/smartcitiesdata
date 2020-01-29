@@ -29,8 +29,9 @@ defmodule Estuary.Query.SelectTest do
         "limit" => 1000
       }
 
-      allow(Prestige.execute(any(), any()), return: :do_not_care)
-      allow(Prestige.prefetch(any()), return: @expected_events)
+      allow(Prestige.new_session(any()), return: :do_not_care)
+      allow(Prestige.query!(any(), any()), return: :do_not_care)
+      allow(Prestige.Result.as_maps(any()), return: @expected_events)
       assert {:ok, @expected_events} == Select.select_table(table_schema)
     end
 
@@ -43,8 +44,9 @@ defmodule Estuary.Query.SelectTest do
         "order" => "DESC"
       }
 
-      allow(Prestige.execute(any(), any()), return: :do_not_care)
-      allow(Prestige.prefetch(any()), return: @expected_events)
+      allow(Prestige.new_session(any()), return: :do_not_care)
+      allow(Prestige.query!(any(), any()), return: :do_not_care)
+      allow(Prestige.Result.as_maps(any()), return: @expected_events)
       assert {:ok, @expected_events} == Select.select_table(table_schema)
     end
 
@@ -57,8 +59,9 @@ defmodule Estuary.Query.SelectTest do
         "limit" => 1000
       }
 
-      allow(Prestige.execute(any(), any()), return: :do_not_care)
-      allow(Prestige.prefetch(any()), return: @expected_events)
+      allow(Prestige.new_session(any()), return: :do_not_care)
+      allow(Prestige.query!(any(), any()), return: :do_not_care)
+      allow(Prestige.Result.as_maps(any()), return: @expected_events)
       assert {:ok, @expected_events} == Select.select_table(table_schema)
     end
 
@@ -70,8 +73,9 @@ defmodule Estuary.Query.SelectTest do
         "limit" => 1000
       }
 
-      allow(Prestige.execute(any(), any()), return: :do_not_care)
-      allow(Prestige.prefetch(any()), return: @expected_events)
+      allow(Prestige.new_session(any()), return: :do_not_care)
+      allow(Prestige.query!(any(), any()), return: :do_not_care)
+      allow(Prestige.Result.as_maps(any()), return: @expected_events)
       assert {:ok, @expected_events} == Select.select_table(table_schema)
     end
 
@@ -99,8 +103,9 @@ defmodule Estuary.Query.SelectTest do
         "limit" => 1000
       }
 
-      allow(Prestige.execute(any(), any()), return: :do_not_care)
-      allow(Prestige.prefetch(any()), return: expected_events)
+      allow(Prestige.new_session(any()), return: :do_not_care)
+      allow(Prestige.query!(any(), any()), return: :do_not_care)
+      allow(Prestige.Result.as_maps(any()), return: expected_events)
       assert {:ok, expected_events} == Select.select_table(table_schema)
     end
 
