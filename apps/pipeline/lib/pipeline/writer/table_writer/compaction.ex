@@ -1,6 +1,6 @@
 defmodule Pipeline.Writer.TableWriter.Compaction do
   @moduledoc false
-
+  alias Pipeline.Application
   alias Pipeline.Writer.TableWriter.Statement
   require Logger
 
@@ -21,10 +21,12 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
 
   def measure(compaction_task, table) do
     with count_task <- execute_async("select count(1) from #{table}"),
-         [[orig_count]] <- Task.await(count_task, :infinity),
+         {:ok, orig_results} <- Task.await(count_task, :infinity),
          _ <- Task.await(compaction_task, :infinity),
-         [[new_count]] <- execute("select count(1) from #{table}_compact") do
-      {new_count, orig_count}
+         {:ok, new_results} <- execute("select count(1) from #{table}_compact") do
+      [[new_row_count]] = new_results.rows
+      [[old_row_count]] = orig_results.rows
+      {new_row_count, old_row_count}
     end
   end
 
@@ -53,22 +55,26 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
   end
 
   def count(table) do
-    with [[count]] <- execute("select count(1) from #{table}") do
-      count
+    with {:ok, results} <- execute("select count(1) from #{table}") do
+      results.rows
     end
   end
 
   def count_async(table) do
     with task <- execute_async("select count(1) from #{table}"),
-         [[count]] <- Task.await(task) do
-      count
+         {:ok, results} <- Task.await(task) do
+      results.rows
     end
   end
 
   defp execute(statement) do
-    statement
-    |> Prestige.execute()
-    |> Prestige.prefetch()
+    try do
+      Application.prestige_opts()
+      |> Prestige.new_session()
+      |> Prestige.execute(statement)
+    rescue
+      e -> e
+    end
   end
 
   defp execute_async(statement) do

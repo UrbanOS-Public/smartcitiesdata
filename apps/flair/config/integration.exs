@@ -26,13 +26,11 @@ config :flair,
     max_wait_time: 10_000
   ]
 
-config :prestige,
-  base_url: "http://#{host}:8080",
-  headers: [
-    catalog: "hive",
-    schema: "default",
-    user: "foobar"
-  ]
+config :prestige, :session_opts,
+  url: "http://#{host}:8080",
+  catalog: "hive",
+  schema: "default",
+  user: "foobar"
 
 config :smart_city_test,
   endpoint: endpoint

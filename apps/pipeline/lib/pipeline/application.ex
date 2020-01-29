@@ -11,4 +11,6 @@ defmodule Pipeline.Application do
     opts = [strategy: :one_for_one, name: Pipeline.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
+  def prestige_opts(), do: Application.get_env(:prestige, :session_opts)
 end

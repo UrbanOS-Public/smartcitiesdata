@@ -54,13 +54,11 @@ config :forklift, :brook,
     ]
   ]
 
-config :prestige,
-  base_url: "http://#{host}:8080",
-  headers: [
-    catalog: "hive",
-    schema: "default",
-    user: "foobar"
-  ]
+config :prestige, :session_opts,
+  url: "http://#{host}:8080",
+  catalog: "hive",
+  schema: "default",
+  user: "foobar"
 
 config(:forklift, divo: "docker-compose.yml", divo_wait: [dwell: 1000, max_tries: 120])
 

@@ -7,13 +7,11 @@ config :pipeline,
   divo: [{DivoKafka, [outside_host: "localhost"]}, Pipeline.DivoPresto],
   divo_wait: [dwell: 1_000, max_tries: 120]
 
-config :prestige,
-  base_url: "http://localhost:8080",
-  headers: [
-    catalog: "hive",
-    schema: "default",
-    user: "foobar"
-  ]
+config :prestige, :session_opts,
+  url: "http://localhost:8080",
+  catalog: "hive",
+  schema: "default",
+  user: "foobar"
 
 defmodule Pipeline.DivoPresto do
   @moduledoc """
