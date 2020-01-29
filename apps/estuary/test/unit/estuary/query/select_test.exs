@@ -2,6 +2,7 @@ defmodule Estuary.Query.SelectTest do
   use ExUnit.Case
   use Placebo
   alias Estuary.Query.Select
+  alias Estuary.Query.Helper.PrestigeHelper
 
   describe "should get the data from the given table" do
     @expected_events [
@@ -29,7 +30,7 @@ defmodule Estuary.Query.SelectTest do
         "limit" => 1000
       }
 
-      allow(Prestige.new_session(any()), return: :do_not_care)
+      allow(PrestigeHelper.create_session(), return: :do_not_care)
       allow(Prestige.query!(any(), any()), return: :do_not_care)
       allow(Prestige.Result.as_maps(any()), return: @expected_events)
       assert {:ok, @expected_events} == Select.select_table(table_schema)
@@ -44,7 +45,7 @@ defmodule Estuary.Query.SelectTest do
         "order" => "DESC"
       }
 
-      allow(Prestige.new_session(any()), return: :do_not_care)
+      allow(PrestigeHelper.create_session(), return: :do_not_care)
       allow(Prestige.query!(any(), any()), return: :do_not_care)
       allow(Prestige.Result.as_maps(any()), return: @expected_events)
       assert {:ok, @expected_events} == Select.select_table(table_schema)
@@ -59,7 +60,7 @@ defmodule Estuary.Query.SelectTest do
         "limit" => 1000
       }
 
-      allow(Prestige.new_session(any()), return: :do_not_care)
+      allow(PrestigeHelper.create_session(), return: :do_not_care)
       allow(Prestige.query!(any(), any()), return: :do_not_care)
       allow(Prestige.Result.as_maps(any()), return: @expected_events)
       assert {:ok, @expected_events} == Select.select_table(table_schema)
@@ -73,7 +74,7 @@ defmodule Estuary.Query.SelectTest do
         "limit" => 1000
       }
 
-      allow(Prestige.new_session(any()), return: :do_not_care)
+      allow(PrestigeHelper.create_session(), return: :do_not_care)
       allow(Prestige.query!(any(), any()), return: :do_not_care)
       allow(Prestige.Result.as_maps(any()), return: @expected_events)
       assert {:ok, @expected_events} == Select.select_table(table_schema)
@@ -103,7 +104,7 @@ defmodule Estuary.Query.SelectTest do
         "limit" => 1000
       }
 
-      allow(Prestige.new_session(any()), return: :do_not_care)
+      allow(PrestigeHelper.create_session(), return: :do_not_care)
       allow(Prestige.query!(any(), any()), return: :do_not_care)
       allow(Prestige.Result.as_maps(any()), return: expected_events)
       assert {:ok, expected_events} == Select.select_table(table_schema)

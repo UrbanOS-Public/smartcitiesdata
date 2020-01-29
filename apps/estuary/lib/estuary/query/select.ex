@@ -1,11 +1,14 @@
 defmodule Estuary.Query.Select do
   @moduledoc false
 
+  alias Estuary.Query.Helper.PrestigeHelper
+
   def select_table(value) do
+    query = create_query_statement(value)
+
     data =
-      Application.get_env(:prestige, :session_opts)
-      |> Prestige.new_session()
-      |> Prestige.query!(create_query_statement(value))
+      PrestigeHelper.create_session()
+      |> Prestige.query!(query)
       |> Prestige.Result.as_maps()
 
     {:ok, data}
