@@ -1,5 +1,4 @@
-FROM bitwalker/alpine-elixir:1.8.1 as builder
-
+FROM smartcitiesdata:build as builder
 RUN MIX_ENV=prod mix distillery.release --name discovery_api
 
 FROM alpine:3.9
