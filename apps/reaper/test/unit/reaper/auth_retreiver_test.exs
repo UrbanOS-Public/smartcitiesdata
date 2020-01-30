@@ -2,8 +2,11 @@ defmodule AuthRetrieverTest do
   use ExUnit.Case
   use Placebo
 
+  alias SmartCity.TestDataGenerator, as: TDG
+
+  alias Reaper.Collections.Extractions
   alias Reaper.Cache.AuthCache
-  @instance Reaper.Application.instance()
+
   @dataset_id "123"
   @auth_response Jason.encode!(%{"api_key" => "12343523423423"})
 
@@ -24,18 +27,13 @@ defmodule AuthRetrieverTest do
         "key2" => "value2"
       }
 
-      reaper_config =
-        FixtureHelper.new_reaper_config(%{
-          dataset_id: @dataset_id,
-          authUrl: url,
-          authHeaders: headers
-        })
+      dataset = TDG.create_dataset(%{id: @dataset_id, technical: %{authUrl: url, authHeaders: headers}})
 
       Bypass.stub(bypass, "POST", "/auth", fn conn ->
         Plug.Conn.resp(conn, 200, @auth_response)
       end)
 
-      allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
+      allow Extractions.get_dataset!(@dataset_id), return: dataset
       assert Reaper.AuthRetriever.retrieve(@dataset_id) == @auth_response
     end
 
@@ -47,21 +45,18 @@ defmodule AuthRetrieverTest do
         secret_thing: "secret"
       }
 
-      reaper_config =
-        FixtureHelper.new_reaper_config(%{
-          dataset_id: @dataset_id,
-          authUrl: url,
-          authHeaders: %{},
-          authBody: expected_body
-        })
+      dataset =
+        TDG.create_dataset(%{id: @dataset_id, technical: %{authUrl: url, authHeaders: %{}, authBody: expected_body}})
 
       Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
         {:ok, actual_body, _} = Plug.Conn.read_body(conn)
         assert actual_body == URI.encode_query(expected_body)
+        assert "application/x-www-form-urlencoded" == Plug.Conn.get_req_header(conn, "content-type") |> List.last()
+
         Plug.Conn.resp(conn, 200, @auth_response)
       end)
 
-      allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
+      allow Extractions.get_dataset!(@dataset_id), return: dataset
       assert Reaper.AuthRetriever.retrieve(@dataset_id) == @auth_response
     end
 
@@ -69,11 +64,7 @@ defmodule AuthRetrieverTest do
       bypass = Bypass.open()
       url = "http://localhost:#{bypass.port}/auth"
 
-      reaper_config =
-        FixtureHelper.new_reaper_config(%{
-          dataset_id: @dataset_id,
-          authUrl: url
-        })
+      dataset = TDG.create_dataset(%{id: @dataset_id, technical: %{authUrl: url}})
 
       Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
         {:ok, actual_body, _} = Plug.Conn.read_body(conn)
@@ -81,7 +72,7 @@ defmodule AuthRetrieverTest do
         Plug.Conn.resp(conn, 200, @auth_response)
       end)
 
-      allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
+      allow Extractions.get_dataset!(@dataset_id), return: dataset
       assert Reaper.AuthRetriever.retrieve(@dataset_id) == @auth_response
     end
 
@@ -94,12 +85,7 @@ defmodule AuthRetrieverTest do
         "key2" => "<%= Date.to_iso8601(~D[1970-01-01], :basic) %>"
       }
 
-      reaper_config =
-        FixtureHelper.new_reaper_config(%{
-          dataset_id: @dataset_id,
-          authUrl: url,
-          authHeaders: headers
-        })
+      dataset = TDG.create_dataset(%{id: @dataset_id, technical: %{authUrl: url, authHeaders: headers}})
 
       Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
         assert "value1" == Plug.Conn.get_req_header(conn, "key1") |> List.last()
@@ -107,7 +93,7 @@ defmodule AuthRetrieverTest do
         Plug.Conn.resp(conn, 200, @auth_response)
       end)
 
-      allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
+      allow Extractions.get_dataset!(@dataset_id), return: dataset
 
       Reaper.AuthRetriever.retrieve(@dataset_id)
     end
@@ -124,12 +110,7 @@ defmodule AuthRetrieverTest do
 
     evaluated_body = %{"key2" => "19700101", "key1" => "value1"} |> URI.encode_query()
 
-    reaper_config =
-      FixtureHelper.new_reaper_config(%{
-        dataset_id: @dataset_id,
-        authUrl: url,
-        authBody: body
-      })
+    dataset = TDG.create_dataset(%{id: @dataset_id, technical: %{authUrl: url, authBody: body}})
 
     Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
       {:ok, actual_body, _} = Plug.Conn.read_body(conn)
@@ -137,7 +118,7 @@ defmodule AuthRetrieverTest do
       Plug.Conn.resp(conn, 200, @auth_response)
     end)
 
-    allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
+    allow Extractions.get_dataset!(@dataset_id), return: dataset
 
     Reaper.AuthRetriever.retrieve(@dataset_id)
   end
@@ -146,13 +127,9 @@ defmodule AuthRetrieverTest do
     bypass = Bypass.open()
     url = "http://localhost:#{bypass.port}/auth"
 
-    reaper_config =
-      FixtureHelper.new_reaper_config(%{
-        dataset_id: @dataset_id,
-        authUrl: url
-      })
+    dataset = TDG.create_dataset(%{id: @dataset_id, technical: %{authUrl: url}})
 
-    allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
+    allow Extractions.get_dataset!(@dataset_id), return: dataset
 
     Bypass.stub(bypass, "POST", "/auth", fn conn ->
       Plug.Conn.resp(conn, 200, @auth_response)
@@ -175,13 +152,9 @@ defmodule AuthRetrieverTest do
     bypass = Bypass.open()
     url = "http://localhost:#{bypass.port}/auth"
 
-    reaper_config =
-      FixtureHelper.new_reaper_config(%{
-        dataset_id: @dataset_id,
-        authUrl: url
-      })
+    dataset = TDG.create_dataset(%{id: @dataset_id, technical: %{authUrl: url}})
 
-    allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
+    allow Extractions.get_dataset!(@dataset_id), return: dataset
 
     Bypass.stub(bypass, "POST", "/auth", fn conn ->
       Plug.Conn.resp(conn, 200, @auth_response)
@@ -202,24 +175,16 @@ defmodule AuthRetrieverTest do
     assert Reaper.AuthRetriever.retrieve(@dataset_id, 1) == "other_auth_response"
   end
 
-  test "caches auth response body based on reaper config" do
+  test "caches auth response body based on dataset" do
     bypass = Bypass.open()
     url = "http://localhost:#{bypass.port}/auth"
     different_url = "http://localhost:#{bypass.port}/authx"
 
-    reaper_config =
-      FixtureHelper.new_reaper_config(%{
-        dataset_id: @dataset_id,
-        authUrl: url
-      })
+    dataset = TDG.create_dataset(%{id: @dataset_id, technical: %{authUrl: url}})
 
-    different_reaper_config =
-      FixtureHelper.new_reaper_config(%{
-        dataset_id: @dataset_id,
-        authUrl: different_url
-      })
+    different_dataset = TDG.create_dataset(%{id: @dataset_id, technical: %{authUrl: different_url}})
 
-    allow Brook.get!(@instance, :reaper_config, @dataset_id), seq: [reaper_config, different_reaper_config]
+    allow Extractions.get_dataset!(@dataset_id), seq: [dataset, different_dataset]
 
     Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
       Plug.Conn.resp(conn, 200, @auth_response)
@@ -238,17 +203,13 @@ defmodule AuthRetrieverTest do
     bypass = Bypass.open()
     url = "http://localhost:#{bypass.port}/auth"
 
-    reaper_config =
-      FixtureHelper.new_reaper_config(%{
-        dataset_id: @dataset_id,
-        authUrl: url
-      })
+    dataset = TDG.create_dataset(%{id: @dataset_id, technical: %{authUrl: url}})
 
     Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
       Plug.Conn.resp(conn, 400, @auth_response)
     end)
 
-    allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
+    allow Extractions.get_dataset!(@dataset_id), return: dataset
 
     assert_raise(RuntimeError, ~r/#{@dataset_id}.*400/, fn -> Reaper.AuthRetriever.retrieve(@dataset_id) end)
     assert AuthCache.get(@dataset_id) == nil
