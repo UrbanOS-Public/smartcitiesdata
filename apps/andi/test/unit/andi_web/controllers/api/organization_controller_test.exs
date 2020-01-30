@@ -275,6 +275,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
       assert_called(Brook.Event.send(instance_name(), any(), :andi, expected_2), once())
     end
 
+    @tag capture_log: true
     test "returns a 500 if unable to get organizations through Brook", %{conn: conn} do
       allow(Brook.get(any(), any(), any()),
         return: {:error, "bad stuff happened"},
@@ -290,6 +291,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
       refute_called(Brook.Event.send(instance_name(), any(), :andi, any()))
     end
 
+    @tag capture_log: true
     test "returns a 500 if unable to send events", %{conn: conn, org: org} do
       allow(Brook.Event.send(instance_name(), any(), :andi, any()),
         return: {:error, "unable to send event"},

@@ -4,6 +4,7 @@ defmodule AndiWeb.EditLiveView do
   alias Phoenix.HTML.Link
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.DisplayNames
+  alias Andi.InputSchemas.Options
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -91,6 +92,16 @@ defmodule AndiWeb.EditLiveView do
           <%= select(f, :private, get_level_of_access_options(), class: "select") %>
           <%= error_tag(f, :private) %>
         </div>
+        <div class="metadata-form__benefit-rating">
+          <%= label(f, :benefitRating, DisplayNames.get(:benefitRating), class: "label label--required") %>
+          <%= select(f, :benefitRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
+          <%= error_tag_live(f, :benefitRating) %>
+        </div>
+        <div class="metadata-form__risk-rating">
+          <%= label(f, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
+          <%= select(f, :riskRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
+          <%= error_tag_live(f, :riskRating) %>
+        </div>
       </div>
       <div class="url-form form-section form-grid">
         <h2 class="url-form__top-header edit-page__box-header">Configure Upload</h2>
@@ -114,16 +125,14 @@ defmodule AndiWeb.EditLiveView do
           <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
         </div>
         <div class="edit-button-group__messages">
-          <%= if @has_validation_errors do %>
-            <div class="metadata__error-message">
-              <span>There were errors with the dataset you tried to submit.</span>
-            </div>
-          <% end %>
           <%= if @save_success do %>
             <div id="success-message" class="metadata__success-message">Saved Successfully</div>
           <% end %>
+          <%= if @has_validation_errors do %>
+            <div id="validation-error-message" class="metadata__error-message">There were errors with the dataset you tried to submit.</div>
+          <% end %>
           <%= if @page_error do %>
-            <div id="page-error-message" class="metadata__page-error-message">A page error occurred</div>
+            <div id="page-error-message" class="metadata__error-message">A page error occurred</div>
           <% end %>
         </div>
         <div class="edit-button-group__save-btn">
@@ -139,6 +148,7 @@ defmodule AndiWeb.EditLiveView do
   def mount(%{dataset: dataset}, socket) do
     new_changeset = InputConverter.changeset_from_dataset(dataset)
     Process.flag(:trap_exit, true)
+
     {:ok,
      assign(socket,
        dataset: dataset,
@@ -153,9 +163,11 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("test_url", _, socket) do
     source_url = Map.get(socket.assigns.changeset.changes, :sourceUrl)
+
     Task.async(fn ->
-        {:test_results, Andi.Services.UrlTest.test(source_url)}
+      {:test_results, Andi.Services.UrlTest.test(source_url)}
     end)
+
     {:noreply, assign(socket, testing: true)}
   end
 
@@ -211,8 +223,13 @@ defmodule AndiWeb.EditLiveView do
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
 
-  defp get_language_options, do: [[key: "English", value: "english"], [key: "Spanish", value: "spanish"]]
-  defp get_level_of_access_options, do: [[key: "Private", value: "true"], [key: "Public", value: "false"]]
+  defp get_language_options(), do: map_to_dropdown_options(Options.language())
+  defp get_level_of_access_options, do: map_to_dropdown_options(Options.level_of_access())
+  defp get_rating_options(), do: map_to_dropdown_options(Options.ratings())
+
+  defp map_to_dropdown_options(options) do
+    Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
+  end
 
   defp keywords_to_string(nil), do: ""
   defp keywords_to_string(keywords) when is_binary(keywords), do: keywords
@@ -220,6 +237,8 @@ defmodule AndiWeb.EditLiveView do
 
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang
+
+  defp rating_selection_prompt(), do: "Please Select a Value"
 
   defp status_class(%{status: status}) when status in 200..399, do: "test-status__code--good"
   defp status_class(%{status: _}), do: "test-status__code--bad"

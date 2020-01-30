@@ -3,6 +3,7 @@ defmodule Andi.InputSchemas.DisplayNames do
 
   @display_names %{
     id: "ID",
+    benefitRating: "Benefit",
     contactEmail: "Maintainer Email",
     contactName: "Maintainer Name",
     dataTitle: "Dataset Title",
@@ -20,6 +21,7 @@ defmodule Andi.InputSchemas.DisplayNames do
     dataName: "Data Name",
     orgName: "Organization Name",
     private: "Level of Access",
+    riskRating: "Risk",
     schema: "Schema",
     sourceFormat: "Source Format",
     sourceType: "Source Type",

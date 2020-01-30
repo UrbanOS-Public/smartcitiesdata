@@ -25,9 +25,7 @@ defmodule AndiWeb.ErrorHelpers do
   @doc """
   Render an error_tag for the given input.
 
-  Fixes the bug with the date picker
-  not rendering the error message when clearing a valid
-  date using the date_input/3
+  Fixes the bug with non text-input fields not rendering the error message when clearing a valid value
   https://elixirforum.com/t/liveview-phx-change-attribute-does-not-emit-event-on-input-text/21280
   """
   def error_tag_live(form, field) do
