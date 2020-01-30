@@ -8,13 +8,14 @@ defmodule Reaper.AuthRetriever do
   def retrieve(dataset_id, cache_ttl \\ 10_000) do
     reaper_config = Brook.get!(@instance, :reaper_config, dataset_id)
     id = hash_config(reaper_config)
+
     case AuthCache.get(id) do
       nil -> retrieve_from_url(reaper_config, id, cache_ttl)
       auth -> auth
     end
   end
 
-  def hash_config(reaper_config) do
+  defp hash_config(reaper_config) do
     plain_text = Jason.encode!(reaper_config)
     :crypto.hash(:md5, plain_text)
   end

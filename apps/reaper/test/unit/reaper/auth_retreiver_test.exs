@@ -212,6 +212,7 @@ defmodule AuthRetrieverTest do
         dataset_id: @dataset_id,
         authUrl: url
       })
+
     different_reaper_config =
       FixtureHelper.new_reaper_config(%{
         dataset_id: @dataset_id,
