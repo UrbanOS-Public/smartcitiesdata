@@ -46,6 +46,31 @@ defmodule DiscoveryApi.Data.Model do
     :title
   ]
 
+  def new(data) do
+    model = struct(DiscoveryApi.Data.Model, data)
+
+    org_with_atom_keys =
+      model.organizationDetails
+      |> from_struct()
+      |> Enum.map(&string_to_atom/1)
+      |> Map.new()
+
+    org_details = struct(DiscoveryApi.Data.OrganizationDetails, org_with_atom_keys)
+    Map.put(model, :organizationDetails, org_details)
+  end
+
+  defp string_to_atom({k, v}) when is_atom(k) do
+    {k, v}
+  end
+  defp string_to_atom({k, v}) when is_binary(k) do
+    {String.to_atom(k), v}
+  end
+
+  defp from_struct(%_type{} = data) do
+    Map.from_struct(data)
+  end
+  defp from_struct(data), do: data
+
   @spec get(any) :: any
   def get(id) do
     {:ok, model} = Brook.ViewState.get(DiscoveryApi.instance(), :models, id)
