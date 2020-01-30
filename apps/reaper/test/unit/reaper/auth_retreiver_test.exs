@@ -202,6 +202,37 @@ defmodule AuthRetrieverTest do
     assert Reaper.AuthRetriever.retrieve(@dataset_id, 1) == "other_auth_response"
   end
 
+  test "caches auth response body based on reaper config" do
+    bypass = Bypass.open()
+    url = "http://localhost:#{bypass.port}/auth"
+    different_url = "http://localhost:#{bypass.port}/authx"
+
+    reaper_config =
+      FixtureHelper.new_reaper_config(%{
+        dataset_id: @dataset_id,
+        authUrl: url
+      })
+    different_reaper_config =
+      FixtureHelper.new_reaper_config(%{
+        dataset_id: @dataset_id,
+        authUrl: different_url
+      })
+
+    allow Brook.get!(@instance, :reaper_config, @dataset_id), seq: [reaper_config, different_reaper_config]
+
+    Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
+      Plug.Conn.resp(conn, 200, @auth_response)
+    end)
+
+    Bypass.expect_once(bypass, "POST", "/authx", fn conn ->
+      Plug.Conn.resp(conn, 200, "other_auth_response")
+    end)
+
+    assert Reaper.AuthRetriever.retrieve(@dataset_id) == @auth_response
+
+    assert Reaper.AuthRetriever.retrieve(@dataset_id) == "other_auth_response"
+  end
+
   test "raise and do not cache if bad status code" do
     bypass = Bypass.open()
     url = "http://localhost:#{bypass.port}/auth"

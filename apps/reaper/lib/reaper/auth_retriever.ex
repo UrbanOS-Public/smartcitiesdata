@@ -6,15 +6,20 @@ defmodule Reaper.AuthRetriever do
   @instance Reaper.Application.instance()
 
   def retrieve(dataset_id, cache_ttl \\ 10_000) do
-    case AuthCache.get(dataset_id) do
-      nil -> retrieve_from_url(dataset_id, cache_ttl)
+    reaper_config = Brook.get!(@instance, :reaper_config, dataset_id)
+    id = hash_config(reaper_config)
+    case AuthCache.get(id) do
+      nil -> retrieve_from_url(reaper_config, id, cache_ttl)
       auth -> auth
     end
   end
 
-  defp retrieve_from_url(dataset_id, cache_ttl) do
-    reaper_config = Brook.get!(@instance, :reaper_config, dataset_id)
+  def hash_config(reaper_config) do
+    plain_text = Jason.encode!(reaper_config)
+    :crypto.hash(:md5, plain_text)
+  end
 
+  defp retrieve_from_url(reaper_config, cache_id, cache_ttl) do
     body =
       Map.get(reaper_config, :authBody, %{})
       |> evaluate_eex_map()
@@ -22,16 +27,21 @@ defmodule Reaper.AuthRetriever do
 
     headers = evaluate_eex_map(reaper_config.authHeaders)
 
+    auth = make_auth_request(reaper_config, body, headers)
+    AuthCache.put(cache_id, auth, ttl: cache_ttl)
+    auth
+  end
+
+  defp make_auth_request(reaper_config, body, headers) do
     case HTTPoison.post(reaper_config.authUrl, body, headers) do
       {:ok, %{status_code: code, body: body}} when code < 400 ->
-        AuthCache.put(dataset_id, body, ttl: cache_ttl)
         body
 
       {:ok, %{status_code: code}} ->
-        raise "Unable to retrieve auth credentials for dataset #{dataset_id} with status #{code}"
+        raise "Unable to retrieve auth credentials for dataset #{reaper_config.dataset_id} with status #{code}"
 
       error ->
-        raise "Unable to retrieve auth credentials for dataset #{dataset_id} with error #{inspect(error)}"
+        raise "Unable to retrieve auth credentials for dataset #{reaper_config.dataset_id} with error #{inspect(error)}"
     end
   end
 
