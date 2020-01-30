@@ -8,6 +8,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
   alias Andi.DatasetCache
 
   @valid_changes %{
+    benefitRating: 0,
     contactEmail: "contact@email.com",
     contactName: "contactName",
     dataName: "dataName",
@@ -20,6 +21,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     orgTitle: "orgTitle",
     private: false,
     publishFrequency: "publishFrequency",
+    riskRating: 1,
     schema: [%{name: "name", type: "type"}],
     sourceFormat: "sourceFormat",
     sourceType: "sourceType",
@@ -40,6 +42,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       where(
         field_name: [
+          :benefitRating,
           :contactEmail,
           :contactName,
           :dataName,
@@ -51,6 +54,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
           :orgTitle,
           :private,
           :publishFrequency,
+          :riskRating,
           :sourceFormat,
           :sourceType
         ]
@@ -164,6 +168,21 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       assert changeset.errors
              |> Enum.any?(fn {:schema, {error, _}} -> String.match?(error, ~r/selector.+another_field/) end)
+    end
+
+    data_test "is invalid when #{field} has an unacceptable value" do
+      changes = @valid_changes |> Map.put(field, value)
+      changeset = DatasetInput.light_validation_changeset(changes)
+
+      assert [{^field, {^message, _}}] = changeset.errors
+
+      where([
+        [:field, :value, :message],
+        [:benefitRating, 0.7, "should be one of [0.0, 0.5, 1.0]"],
+        [:benefitRating, 1.1, "should be one of [0.0, 0.5, 1.0]"],
+        [:riskRating, 3.14159, "should be one of [0.0, 0.5, 1.0]"],
+        [:riskRating, 0.000001, "should be one of [0.0, 0.5, 1.0]"]
+      ])
     end
   end
 

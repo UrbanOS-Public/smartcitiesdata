@@ -34,8 +34,8 @@
     "maintainer-email language"
     "release-date homepage"
     "license ."
-    "update-frequency ."
-    "keywords .";
+    "update-frequency benefit-rating"
+    "keywords risk-rating";
 }
 
 .url-form {
@@ -46,20 +46,15 @@
 }
 
 .metadata__error-message {
+  text-align: right;
+  padding-right: 2em;
   color: $color-error;
-  padding-bottom: 0.5em;
 }
 
 .metadata__success-message {
   text-align: right;
   padding-right: 2em;
   color: $color-success;
-}
-
-.metadata__page-error-message {
-  text-align: right;
-  padding-right: 2em;
-  color: $color-error;
 }
 
 .test-status {
@@ -101,6 +96,8 @@
 @include area(metadata-form, level-of-access);
 @include area(metadata-form, language);
 @include area(metadata-form, homepage);
+@include area(metadata-form, benefit-rating);
+@include area(metadata-form, risk-rating);
 
 @include area(edit-button-group, cancel-btn);
 @include area(edit-button-group, save-btn);

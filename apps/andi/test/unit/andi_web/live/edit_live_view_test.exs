@@ -70,20 +70,49 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      dataset_map = dataset_to_map(dataset) |> Map.put(:language, "spanish")
+      dataset_map = dataset_to_form_data(dataset) |> Map.put(:language, "spanish")
 
       html = render_change(view, :validate, %{"metadata" => dataset_map})
 
       assert {"spanish", "Spanish"} = get_select(html, "#metadata_language")
     end
 
+    data_test "benefit rating is set to '#{label}' (#{inspect(value)})", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{benefitRating: value}})
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert {to_string(value), label} == get_select(html, "#metadata_benefitRating")
+
+      where([
+        [:value, :label],
+        [0.0, "Low"],
+        [0.5, "Medium"],
+        [1.0, "High"]
+      ])
+    end
+
+    data_test "risk rating is set to '#{label}' (#{inspect(value)})", %{conn: conn} do
+      dataset = TDG.create_dataset(%{business: %{riskRating: value}})
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert {to_string(value), label} == get_select(html, "#metadata_riskRating")
+
+      where([
+        [:value, :label],
+        [0.0, "Low"],
+        [0.5, "Medium"],
+        [1.0, "High"]
+      ])
+    end
+
     data_test "errors on invalid email: #{email}", %{conn: conn} do
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{contactEmail: email}}),
-        :contactEmail,
-        "Please enter a valid maintainer email."
-      )
+      html = save_form_for_dataset(conn, TDG.create_dataset(%{business: %{contactEmail: email}}))
+
+      assert get_text(html, "#contactEmail-error-msg") == "Please enter a valid maintainer email."
 
       where([
         [:email],
@@ -95,13 +124,9 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     data_test "does not error on valid email: #{email}", %{conn: conn} do
-      # Assert error message is blank (no error)
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{contactEmail: email}}),
-        :contactEmail,
-        ""
-      )
+      html = save_form_for_dataset(conn, TDG.create_dataset(%{business: %{contactEmail: email}}))
+
+      assert get_text(html, "#contactEmail-error-msg") == ""
 
       where([
         [:email],
@@ -137,7 +162,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       dataset_map =
         dataset
-        |> dataset_to_map()
+        |> dataset_to_form_data()
         |> Map.put(:keywords, Enum.join(dataset.business.keywords, ", "))
 
       expected = Enum.join(dataset.business.keywords, ", ")
@@ -156,7 +181,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       dataset_map =
         dataset
-        |> dataset_to_map()
+        |> dataset_to_form_data()
         |> Map.put(:keywords, "a , good ,  keyword   , is .... hard , to find")
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
@@ -174,7 +199,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       dataset_map =
         dataset
-        |> dataset_to_map()
+        |> dataset_to_form_data()
         |> Map.put(:keywords, expected)
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
@@ -188,7 +213,7 @@ defmodule AndiWeb.EditLiveViewTest do
     test "displays all other fields", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
-          business: %{description: "A description with no special characters"},
+          business: %{description: "A description with no special characters", benefitRating: 1.0, riskRating: 0.5},
           technical: %{private: true}
         })
 
@@ -210,6 +235,8 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_value(html, "#metadata_orgTitle") == dataset.business.orgTitle
       assert {"english", "English"} == get_select(html, "#metadata_language")
       assert get_value(html, "#metadata_homepage") == dataset.business.homepage
+      assert {"1.0", "High"} == get_select(html, "#metadata_benefitRating")
+      assert {"0.5", "Medium"} == get_select(html, "#metadata_riskRating")
     end
   end
 
@@ -222,86 +249,61 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_select(html, "#metadata_private") == {"true", "Private"}
 
-      dataset_map = dataset_to_map(dataset) |> Map.put(:private, false)
+      dataset_map = dataset_to_form_data(dataset) |> Map.put(:private, false)
 
       html = render_change(view, :validate, %{"metadata" => dataset_map})
       assert get_select(html, "#metadata_private") == {"false", "Public"}
     end
 
-    test "All required fields display proper error message", %{conn: conn} do
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{dataTitle: ""}}),
-        :dataTitle,
-        "Please enter a valid dataset title."
-      )
+    data_test "required #{field} field displays proper error message", %{conn: conn} do
+      html = save_form_for_dataset(conn, TDG.create_dataset(dataset_override))
 
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{description: ""}}),
-        :description,
-        "Please enter a valid description."
-      )
+      assert get_text(html, "##{field}-error-msg") == expected_error_message
 
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{contactName: ""}}),
-        :contactName,
-        "Please enter a valid maintainer name."
-      )
+      where([
+        [:field, :dataset_override, :expected_error_message],
+        [:dataTitle, %{business: %{dataTitle: ""}}, "Please enter a valid dataset title."],
+        [:description, %{business: %{description: ""}}, "Please enter a valid description."],
+        [:contactName, %{business: %{contactName: ""}}, "Please enter a valid maintainer name."],
+        [:contactEmail, %{business: %{contactEmail: ""}}, "Please enter a valid maintainer email."],
+        [:issuedDate, %{business: %{issuedDate: ""}}, "Please enter a valid release date."],
+        [:license, %{business: %{license: ""}}, "Please enter a valid license."],
+        [:publishFrequency, %{business: %{publishFrequency: ""}}, "Please enter a valid update frequency."],
+        [:orgTitle, %{business: %{orgTitle: ""}}, "Please enter a valid organization."],
+        [:sourceUrl, %{technical: %{sourceUrl: ""}}, "Please enter a valid source url."],
+        [:license, %{business: %{license: ""}}, "Please enter a valid license."],
+        [:benefitRating, %{business: %{benefitRating: ""}}, "Please enter a valid benefit."],
+        [:riskRating, %{business: %{riskRating: ""}}, "Please enter a valid risk."]
+      ])
+    end
 
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{contactEmail: ""}}),
-        :contactEmail,
-        "Please enter a valid maintainer email."
-      )
-
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{issuedDate: ""}}),
-        :issuedDate,
-        "Please enter a valid release date."
-      )
-
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{license: ""}}),
-        :license,
-        "Please enter a valid license."
-      )
-
+    test "required sourceFormat displays proper error message", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       new_tech = Map.put(dataset.technical, :sourceFormat, "")
       dataset = Map.put(dataset, :technical, new_tech)
 
-      assert_error_message(
-        conn,
-        dataset,
-        :sourceFormat,
-        "Please enter a valid source format."
-      )
+      html = save_form_for_dataset(conn, dataset)
 
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{publishFrequency: ""}}),
-        :publishFrequency,
-        "Please enter a valid update frequency."
-      )
+      assert get_text(html, "#sourceFormat-error-msg") == "Please enter a valid source format."
+    end
 
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{business: %{orgTitle: ""}}),
-        :orgTitle,
-        "Please enter a valid organization."
-      )
+    data_test "displays error when #{field} is unset", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      DatasetCache.put(dataset)
 
-      assert_error_message(
-        conn,
-        TDG.create_dataset(%{technical: %{sourceUrl: ""}}),
-        :sourceUrl,
-        "Please enter a valid source url."
-      )
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert get_text(html, "##{field}-error-msg") == ""
+
+      form_data = dataset_to_form_data(dataset) |> Map.put(field, "")
+      html = render_change(view, :validate, %{"metadata" => form_data})
+
+      assert get_text(html, "##{field}-error-msg") == expected_error_message
+
+      where([
+        [:field, :expected_error_message],
+        [:benefitRating, "Please enter a valid benefit."],
+        [:riskRating, "Please enter a valid risk."]
+      ])
     end
 
     test "error message is cleared when form is updated", %{conn: conn} do
@@ -356,11 +358,7 @@ defmodule AndiWeb.EditLiveViewTest do
     test "valid metadata is saved on submit", %{conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      dataset =
-        TDG.create_dataset(%{
-          business: %{issuedDate: "", publishFrequency: "12345"},
-          technical: %{cadence: "123"}
-        })
+      dataset = TDG.create_dataset(%{business: %{issuedDate: ""}})
 
       DatasetCache.put(dataset)
 
@@ -387,7 +385,7 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset = TDG.create_dataset(%{business: %{publishFrequency: ""}})
       DatasetCache.put(dataset)
 
-      dataset_map = dataset_to_map(dataset)
+      dataset_map = dataset_to_form_data(dataset)
 
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
@@ -398,11 +396,7 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "success message is displayed when metadata is saved", %{conn: conn} do
-      dataset =
-        TDG.create_dataset(%{
-          business: %{issuedDate: "", publishFrequency: "12345"},
-          technical: %{cadence: "123"}
-        })
+      dataset = TDG.create_dataset(%{business: %{issuedDate: ""}})
 
       DatasetCache.put(dataset)
 
@@ -424,10 +418,7 @@ defmodule AndiWeb.EditLiveViewTest do
     test "allows clearing modified date", %{conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      dataset =
-        TDG.create_dataset(%{
-          business: %{modifiedDate: "2020-01-01"}
-        })
+      dataset = TDG.create_dataset(%{business: %{modifiedDate: "2020-01-01"}})
 
       DatasetCache.put(dataset)
 
@@ -537,6 +528,7 @@ defmodule AndiWeb.EditLiveViewTest do
       end)
     end
 
+    @tag capture_log: true
     test "status is displayed with an appropriate class when an internal page error occurred", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
 
@@ -545,29 +537,24 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), exec: fn _ -> raise "derp" end)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert get_text(html, "metadata__page-error-message") == ""
+      assert get_text(html, "#page-error-message") == ""
 
       render_change(view, :test_url, %{})
 
       eventually(fn ->
         html = render(view)
-        assert get_text(html, ".metadata__page-error-message") == "A page error occurred"
+        assert get_text(html, "#page-error-message") == "A page error occurred"
       end)
     end
   end
 
-  defp assert_error_message(conn, dataset, field, error_message) do
+  defp save_form_for_dataset(conn, dataset) do
     DatasetCache.put(dataset)
 
-    form_data =
-      dataset
-      |> InputConverter.changeset_from_dataset()
-      |> form_data_for_save()
+    form_data = dataset_to_form_data(dataset)
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-    html = render_change(view, :save, %{"metadata" => form_data})
-
-    assert get_text(html, "##{field}-error-msg") == error_message
+    render_change(view, :save, %{"metadata" => form_data})
   end
 
   defp form_data_for_save(changeset) do
@@ -600,14 +587,9 @@ defmodule AndiWeb.EditLiveViewTest do
     {value, text}
   end
 
-  defp dataset_to_map(dataset) do
-    map_tech = dataset.technical |> Map.from_struct() |> Map.delete(:schema)
-
-    map_bus = Map.from_struct(dataset.business)
-
+  defp dataset_to_form_data(dataset) do
     dataset
-    |> Map.from_struct()
-    |> Map.put(:business, map_bus)
-    |> Map.put(:technical, map_tech)
+    |> InputConverter.changeset_from_dataset()
+    |> form_data_for_save()
   end
 end

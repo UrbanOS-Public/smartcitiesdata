@@ -196,7 +196,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
           description: nil,
           contactEmail: "not-a-valid-email",
           license: "",
-          publishFrequency: nil
+          publishFrequency: nil,
+          benefitRating: nil
         },
         technical: %{sourceFormat: ""}
       )
@@ -205,6 +206,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
         ["business", "contactName"],
         ["business", "orgTitle"],
         ["business", "issuedDate"],
+        ["business", "riskRating"],
         ["technical", "sourceFormat"],
         ["technical", "private"]
       ])
@@ -215,6 +217,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> json_response(400)
 
     expected_error_keys = [
+      "benefitRating",
       "dataTitle",
       "description",
       "contactName",
@@ -224,6 +227,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       "publishFrequency",
       "orgTitle",
       "private",
+      "riskRating",
       "sourceFormat"
     ]
 

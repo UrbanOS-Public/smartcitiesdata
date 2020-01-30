@@ -22,7 +22,7 @@ defmodule Estuary.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :runtime_tools, :phoenix_ecto],
+      extra_applications: [:logger, :runtime_tools],
       mod: {Estuary.Application, []}
     ]
   end
@@ -39,7 +39,6 @@ defmodule Estuary.MixProject do
       {:jason, "~> 1.1"},
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
-      {:phoenix_ecto, "~> 4.0"},
       {:phoenix_html, "~> 2.13"},
       {:phoenix_live_reload, "~> 1.2", only: [:dev, :integration]},
       {:phoenix_live_view, "~>0.4"},
