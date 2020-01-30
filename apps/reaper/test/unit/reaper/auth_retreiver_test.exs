@@ -2,9 +2,17 @@ defmodule AuthRetrieverTest do
   use ExUnit.Case
   use Placebo
 
+  alias Reaper.Cache.AuthCache
   @instance Reaper.Application.instance()
   @dataset_id "123"
   @auth_response Jason.encode!(%{"api_key" => "12343523423423"})
+
+  setup do
+    Cachex.start(AuthCache.cache_name())
+    Cachex.clear(AuthCache.cache_name())
+
+    :ok
+  end
 
   describe "retrieve/1" do
     test "retrieve response using auth headers and url" do
@@ -28,7 +36,7 @@ defmodule AuthRetrieverTest do
       end)
 
       allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
-      assert Reaper.AuthRetriever.retrieve(@dataset_id) == Jason.decode!(@auth_response)
+      assert Reaper.AuthRetriever.retrieve(@dataset_id) == @auth_response
     end
 
     test "retrieve response using auth body and url" do
@@ -54,7 +62,7 @@ defmodule AuthRetrieverTest do
       end)
 
       allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
-      assert Reaper.AuthRetriever.retrieve(@dataset_id) == Jason.decode!(@auth_response)
+      assert Reaper.AuthRetriever.retrieve(@dataset_id) == @auth_response
     end
 
     test "retrieve response with no body or headers" do
@@ -74,7 +82,7 @@ defmodule AuthRetrieverTest do
       end)
 
       allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
-      assert Reaper.AuthRetriever.retrieve(@dataset_id) == Jason.decode!(@auth_response)
+      assert Reaper.AuthRetriever.retrieve(@dataset_id) == @auth_response
     end
 
     test "evaluate auth headers" do
@@ -132,5 +140,85 @@ defmodule AuthRetrieverTest do
     allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
 
     Reaper.AuthRetriever.retrieve(@dataset_id)
+  end
+
+  test "caches auth response body" do
+    bypass = Bypass.open()
+    url = "http://localhost:#{bypass.port}/auth"
+
+    reaper_config =
+      FixtureHelper.new_reaper_config(%{
+        dataset_id: @dataset_id,
+        authUrl: url
+      })
+
+    allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
+
+    Bypass.stub(bypass, "POST", "/auth", fn conn ->
+      Plug.Conn.resp(conn, 200, @auth_response)
+    end)
+
+    assert Reaper.AuthRetriever.retrieve(@dataset_id) == @auth_response
+
+    Bypass.down(bypass)
+
+    bypass = Bypass.open(port: bypass.port)
+
+    Bypass.stub(bypass, "POST", "/auth", fn conn ->
+      Plug.Conn.resp(conn, 401, "[]")
+    end)
+
+    assert Reaper.AuthRetriever.retrieve(@dataset_id) == @auth_response
+  end
+
+  test "caches response for specified ttl" do
+    bypass = Bypass.open()
+    url = "http://localhost:#{bypass.port}/auth"
+
+    reaper_config =
+      FixtureHelper.new_reaper_config(%{
+        dataset_id: @dataset_id,
+        authUrl: url
+      })
+
+    allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
+
+    Bypass.stub(bypass, "POST", "/auth", fn conn ->
+      Plug.Conn.resp(conn, 200, @auth_response)
+    end)
+
+    assert Reaper.AuthRetriever.retrieve(@dataset_id, 1) == @auth_response
+
+    Bypass.down(bypass)
+
+    bypass = Bypass.open(port: bypass.port)
+
+    Bypass.stub(bypass, "POST", "/auth", fn conn ->
+      Plug.Conn.resp(conn, 200, "other_auth_response")
+    end)
+
+    Process.sleep(2)
+
+    assert Reaper.AuthRetriever.retrieve(@dataset_id, 1) == "other_auth_response"
+  end
+
+  test "raise and do not cache if bad status code" do
+    bypass = Bypass.open()
+    url = "http://localhost:#{bypass.port}/auth"
+
+    reaper_config =
+      FixtureHelper.new_reaper_config(%{
+        dataset_id: @dataset_id,
+        authUrl: url
+      })
+
+    Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
+      Plug.Conn.resp(conn, 400, @auth_response)
+    end)
+
+    allow Brook.get!(@instance, :reaper_config, @dataset_id), return: reaper_config
+
+    assert_raise(RuntimeError, ~r/#{@dataset_id}.*400/, fn -> Reaper.AuthRetriever.retrieve(@dataset_id) end)
+    assert AuthCache.get(@dataset_id) == nil
   end
 end
