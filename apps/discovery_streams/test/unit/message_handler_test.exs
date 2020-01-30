@@ -194,7 +194,14 @@ defmodule DiscoveryStreams.MessageHandlerTest do
   end
 
   describe("integration") do
-    test "Consumer properly invokes the \"count metric\" library function" do
+    setup do
+      previous_level = Logger.level()
+      Logger.configure(level: :info)
+
+      on_exit(fn -> Logger.configure(level: previous_level) end)
+    end
+
+    test "Consumer properly logs messages" do
       actual =
         capture_log(fn ->
           MessageHandler.handle_messages([

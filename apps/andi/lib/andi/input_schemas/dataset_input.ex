@@ -6,8 +6,10 @@ defmodule Andi.InputSchemas.DatasetInput do
 
   alias Andi.DatasetCache
   alias Andi.InputSchemas.DatasetSchemaValidator
+  alias Andi.InputSchemas.Options
 
   @business_fields %{
+    benefitRating: :float,
     contactEmail: :string,
     contactName: :string,
     dataTitle: :string,
@@ -20,6 +22,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     modifiedDate: :date,
     orgTitle: :string,
     publishFrequency: :string,
+    riskRating: :float,
     spatial: :string,
     temporal: :string
   }
@@ -40,6 +43,7 @@ defmodule Andi.InputSchemas.DatasetInput do
          |> Map.merge(@technical_fields)
 
   @required_fields [
+    :benefitRating,
     :contactEmail,
     :contactName,
     :dataName,
@@ -51,6 +55,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     :orgTitle,
     :private,
     :publishFrequency,
+    :riskRating,
     :sourceFormat,
     :sourceType,
     :sourceUrl
@@ -58,6 +63,7 @@ defmodule Andi.InputSchemas.DatasetInput do
 
   @email_regex ~r/^[A-Za-z0-9._%+-+']+@[A-Za-z0-9.-]+\.[A-Za-z]+$/
   @no_dashes_regex ~r/^[^\-]+$/
+  @ratings Map.keys(Options.ratings())
 
   def business_keys(), do: Map.keys(@business_fields)
   def technical_keys(), do: Map.keys(@technical_fields)
@@ -72,6 +78,8 @@ defmodule Andi.InputSchemas.DatasetInput do
     |> validate_format(:contactEmail, @email_regex)
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
+    |> validate_inclusion(:benefitRating, @ratings, message: "should be one of #{inspect(@ratings)}")
+    |> validate_inclusion(:riskRating, @ratings, message: "should be one of #{inspect(@ratings)}")
     |> validate_top_level_selector()
     |> validate_schema()
   end
