@@ -29,7 +29,9 @@ defmodule AuthRetrieverTest do
 
       dataset = TDG.create_dataset(%{id: @dataset_id, technical: %{authUrl: url, authHeaders: headers}})
 
-      Bypass.stub(bypass, "POST", "/auth", fn conn ->
+      Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
+        assert "value1" == Plug.Conn.get_req_header(conn, "key1") |> List.last()
+        assert "value2" == Plug.Conn.get_req_header(conn, "key2") |> List.last()
         Plug.Conn.resp(conn, 200, @auth_response)
       end)
 
@@ -69,6 +71,7 @@ defmodule AuthRetrieverTest do
       Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
         {:ok, actual_body, _} = Plug.Conn.read_body(conn)
         assert actual_body == ""
+        refute "application/x-www-form-urlencoded" == Plug.Conn.get_req_header(conn, "content-type") |> List.last()
         Plug.Conn.resp(conn, 200, @auth_response)
       end)
 

@@ -22,13 +22,15 @@ defmodule Reaper.AuthRetriever do
 
   defp retrieve_from_url(dataset, cache_id, cache_ttl) do
     body =
-      get_in(dataset, [:technical, :authBody])
+      dataset
+      |> get_in([:technical, :authBody])
       |> evaluate_eex_map()
       |> encode_body()
 
-    # TODO: only add content type header if authBody has stuff in it
     headers =
-      evaluate_eex_map(dataset.technical.authHeaders) |> Map.put("Content-Type", "application/x-www-form-urlencoded")
+      dataset.technical.authHeaders
+      |> evaluate_eex_map()
+      |> add_content_type(body)
 
     auth = make_auth_request(dataset, body, headers)
     AuthCache.put(cache_id, auth, ttl: cache_ttl)
@@ -61,4 +63,7 @@ defmodule Reaper.AuthRetriever do
   end
 
   defp encode_body(body), do: URI.encode_query(body)
+
+  defp add_content_type(headers, ""), do: headers
+  defp add_content_type(headers, _body), do: Map.put(headers, "Content-Type", "application/x-www-form-urlencoded")
 end
