@@ -99,7 +99,8 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
     end
 
     data_test "jobs that are added to quantum when cadence is a cron expression work, even with missing optional fields" do
-      {:ok, cadence} = Crontab.CronExpression.Parser.parse("*/5 * * * * * *", true) # gotta go fast
+      # gotta go fast
+      {:ok, cadence} = Crontab.CronExpression.Parser.parse("*/5 * * * * * *", true)
       dataset = TDG.create_dataset(%{technical: %{sourceType: source_type, topLevelSelector: "remove me"}})
       older_dataset_that_is_missing_top_level_selector = pop_in(dataset, [:technical, :topLevelSelector]) |> elem(1)
       {:ok, serialized_older_dataset} = Brook.Serializer.serialize(older_dataset_that_is_missing_top_level_selector)
@@ -110,7 +111,9 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
       |> Job.set_task({DatasetUpdate, :protected_event_send, [serialized_older_dataset]})
       |> Reaper.Scheduler.add_job()
 
-      assert_receive {:brook_event, %Brook.Event{type: ^event, data: %SmartCity.Dataset{technical: %{topLevelSelector: _}}}}, 10_000
+      assert_receive {:brook_event,
+                      %Brook.Event{type: ^event, data: %SmartCity.Dataset{technical: %{topLevelSelector: _}}}},
+                     10_000
 
       where([
         [:source_type, :event],

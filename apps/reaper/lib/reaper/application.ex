@@ -15,6 +15,7 @@ defmodule Reaper.Application do
         {Reaper.Cache.Registry, keys: :unique},
         Reaper.Horde.Supervisor,
         {Reaper.Horde.NodeListener, hordes: [Reaper.Horde.Supervisor, Reaper.Horde.Registry, Reaper.Cache.Registry]},
+        Reaper.Cache.AuthCache,
         redis(),
         Reaper.Migrations,
         brook(),
