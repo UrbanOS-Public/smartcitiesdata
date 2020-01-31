@@ -26,7 +26,9 @@ defmodule Reaper.AuthRetriever do
         auth = make_auth_request(dataset, body, headers)
         AuthCache.put(cache_id, auth, ttl: cache_ttl)
         auth
-      auth -> auth
+
+      auth ->
+        auth
     end
   end
 
