@@ -7,20 +7,7 @@ defmodule Reaper.AuthRetriever do
 
   def retrieve(dataset_id, cache_ttl \\ 10_000) do
     dataset = Extractions.get_dataset!(dataset_id)
-    id = hash_config(dataset)
 
-    case AuthCache.get(id) do
-      nil -> retrieve_from_url(dataset, id, cache_ttl)
-      auth -> auth
-    end
-  end
-
-  defp hash_config(dataset) do
-    json = Jason.encode!(dataset)
-    :crypto.hash(:md5, json)
-  end
-
-  defp retrieve_from_url(dataset, cache_id, cache_ttl) do
     body =
       dataset
       |> get_in([:technical, :authBody])
@@ -32,9 +19,20 @@ defmodule Reaper.AuthRetriever do
       |> evaluate_eex_map()
       |> add_content_type(body)
 
-    auth = make_auth_request(dataset, body, headers)
-    AuthCache.put(cache_id, auth, ttl: cache_ttl)
-    auth
+    cache_id = hash_config(%{url: dataset.technical[:authUrl], body: body, headers: headers})
+
+    case AuthCache.get(cache_id) do
+      nil ->
+        auth = make_auth_request(dataset, body, headers)
+        AuthCache.put(cache_id, auth, ttl: cache_ttl)
+        auth
+      auth -> auth
+    end
+  end
+
+  defp hash_config(auth_params_map) do
+    json = Jason.encode!(auth_params_map)
+    :crypto.hash(:md5, json)
   end
 
   defp make_auth_request(dataset, body, headers) do
