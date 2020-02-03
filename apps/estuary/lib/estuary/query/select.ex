@@ -1,24 +1,10 @@
 defmodule Estuary.Query.Select do
   @moduledoc false
 
-  alias Estuary.Query.Helper.PrestigeHelper
-
-  def select_table(value) do
-    query = create_query_statement(value)
-
-    data =
-      PrestigeHelper.create_session()
-      |> Prestige.query!(query)
-      |> Prestige.Result.as_maps()
-
-    {:ok, data}
-  rescue
-    error -> {:error, error}
-  end
-
-  defp create_query_statement(value) do
+  def create_select_statement(value) do
     "SELECT #{translate_columns(value["columns"])}
       FROM #{check_table_name(value["table_name"])}
+      #{translate_condition(value["conditions"], value["condition_type"])}
       #{translate_order(value["order_by"], value["order"])}
       LIMIT #{translate_limit(value["limit"])}"
   end
@@ -32,6 +18,31 @@ defmodule Estuary.Query.Select do
 
       _ ->
         "*"
+    end
+  end
+
+  defp translate_condition(conditions, condition_type) do
+    type = check_condition_type(condition_type)
+
+    case !is_nil(conditions) do
+      true ->
+        "WHERE
+        #{
+          conditions
+          |> Enum.reject(&(byte_size(&1) == 0))
+          |> Enum.map_join("#{type} ", & &1)
+        }"
+
+      _ ->
+        ""
+    end
+  end
+
+  defp check_condition_type(condition_type) do
+    case !is_nil(condition_type) and byte_size(condition_type) != 0 and
+           (String.upcase(condition_type) == "AND" or String.upcase(condition_type) == "OR") do
+      true -> " #{condition_type}"
+      _ -> ""
     end
   end
 

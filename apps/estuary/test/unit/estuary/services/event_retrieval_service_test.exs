@@ -3,7 +3,7 @@ defmodule Estuary.Services.EventRetrievalServiceTest do
   use Placebo
 
   alias Estuary.Services.EventRetrievalService
-  alias Estuary.Query.Select
+  alias Estuary.Query.Helper.PrestigeHelper
 
   @tag capture_log: true
   test "should return the events from the table" do
@@ -22,7 +22,7 @@ defmodule Estuary.Services.EventRetrievalServiceTest do
       }
     ]
 
-    allow(Select.select_table(any()), return: {:ok, expected_events})
+    allow(PrestigeHelper.execute_query(any()), return: {:ok, expected_events})
     assert expected_events = EventRetrievalService.get_all()
   end
 end
