@@ -28,6 +28,8 @@ jobs:
       script: bash scripts/travis-test.sh dead_letter
     - name: e2e
       script: bash scripts/travis-test.sh e2e
+    - name: discovery_api
+      script: bash scripts/travis-test.sh discovery_api
     - name: andi
       script: bash scripts/travis-test.sh andi
     - name: flair
