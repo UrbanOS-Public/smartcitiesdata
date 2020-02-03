@@ -35,7 +35,8 @@ defmodule Andi.InputSchemas.DatasetInput do
     sourceFormat: :string,
     sourceType: :string,
     sourceUrl: :string,
-    topLevelSelector: :string
+    topLevelSelector: :string,
+    sourceQueryParams: :map
   }
 
   @types %{id: :string}

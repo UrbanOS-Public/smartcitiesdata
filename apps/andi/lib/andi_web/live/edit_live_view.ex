@@ -110,6 +110,12 @@ defmodule AndiWeb.EditLiveView do
           <%= text_input(f, :sourceUrl, class: "input full-width", disabled: @testing) %>
           <%= error_tag(f, :sourceUrl) %>
         </div>
+        <div>
+          <%= for {k, v} <- input_value(f, :sourceQueryParams) do %>
+            <%= text_input(f, :"sourceQueryParams_#{k}", value: k, name: "metadata[sourceQueryParams][#{k}]", class: "input full-width") %>
+            <%= text_input(f, :"sourceQueryParams_#{k}", value: v, name: "metadata[sourceQueryParams][#{k}]", class: "input full-width") %>
+          <% end %>
+        </div>
         <div class="url-form__test-section">
           <button type="button" class="metadata-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
           <%= if @test_results do %>
@@ -188,6 +194,7 @@ defmodule AndiWeb.EditLiveView do
     changeset = InputConverter.changeset_from_dataset(original_dataset, form_data)
 
     if changeset.valid? do
+      IO.inspect(changeset, label: "stuff")
       changes = Ecto.Changeset.apply_changes(changeset)
       dataset = InputConverter.restruct(changes, original_dataset)
 
