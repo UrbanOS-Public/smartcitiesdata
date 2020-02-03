@@ -5,6 +5,7 @@ defmodule Reaper.Event.Handler do
   import SmartCity.Event,
     only: [
       dataset_update: 0,
+      error_dataset_update: 0,
       data_ingest_start: 0,
       data_extract_start: 0,
       data_extract_end: 0,
@@ -19,6 +20,10 @@ defmodule Reaper.Event.Handler do
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %SmartCity.Dataset{} = dataset}) do
     Reaper.Event.Handlers.DatasetUpdate.handle(dataset)
+  rescue
+    reason ->
+      Brook.Event.send(@instance, error_dataset_update(), :reaper, %{"reason" => reason, "dataset" => dataset})
+      :discard
   end
 
   def handle_event(%Brook.Event{type: data_extract_start(), data: %SmartCity.Dataset{} = dataset}) do
