@@ -6,10 +6,10 @@ defmodule Estuary.Services.EventRetrievalService do
   alias Estuary.Datasets.DatasetSchema
   alias Estuary.Query.Helper.PrestigeHelper
 
-  def get_all() do
+  def get_all do
     make_select_table_sub_schema()
     |> Select.create_select_statement()
-    |> make_select_table_schema
+    |> make_select_table_schema()
     |> Select.create_select_statement()
     |> PrestigeHelper.execute_query()
   end
