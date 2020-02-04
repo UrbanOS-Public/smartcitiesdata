@@ -54,13 +54,13 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
         record_count: 2,
         fields: %{
           "id" => %{required: true, count: 1},
-          "name" => %{required: false, count: 2},
+          "designation" => %{required: false, count: 2},
           "age" => %{required: false, count: 1}
         }
       }
 
-      row1 = %{"id" => "343", "name" => "John Smith"}
-      row2 = %{"id" => nil, "name" => "Jane Doe", "age" => 55}
+      row1 = %{"id" => "343", "designation" => "John Smith"}
+      row2 = %{"id" => nil, "designation" => "Jane Doe", "age" => 55}
 
       assert expected ==
                Completeness.calculate_stats_for_row(
@@ -74,7 +74,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
       model = %{
         id: "123",
         schema: [
-          %{"name" => "id", "type" => "string", "required" => true}
+          %{name: "id", type: "string", required: true}
         ]
       }
 
@@ -116,14 +116,14 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
         record_count: 3,
         fields: %{
           "id" => %{required: true, count: 3},
-          "name" => %{required: false, count: 2},
+          "designation" => %{required: false, count: 2},
           "age" => %{required: false, count: 0}
         }
       }
 
-      row1 = %{"id" => "343", "name" => "John Smith", "age" => nil}
-      row2 = %{"id" => "123", "name" => "Jane Doe", "age" => nil}
-      row3 = %{"id" => "456", "name" => nil, "age" => nil}
+      row1 = %{"id" => "343", "designation" => "John Smith", "age" => nil}
+      row2 = %{"id" => "123", "designation" => "Jane Doe", "age" => nil}
+      row3 = %{"id" => "456", "designation" => nil, "age" => nil}
 
       assert expected ==
                Completeness.calculate_stats_for_row(
@@ -138,14 +138,14 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
     end
 
     test "with arrays as columns", %{array_model: array_model} do
-      row1 = %{"id" => "343", "name" => ["hello", "world"]}
-      row2 = %{"id" => nil, "name" => nil, "age" => 55}
+      row1 = %{"id" => "343", "designation" => ["hello", "world"]}
+      row2 = %{"id" => nil, "designation" => nil, "age" => 55}
 
       expected = %{
         record_count: 2,
         fields: %{
           "id" => %{required: false, count: 1},
-          "name" => %{required: false, count: 1},
+          "designation" => %{required: false, count: 1},
           "age" => %{required: false, count: 1}
         }
       }
@@ -163,7 +163,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
         record_count: 2,
         fields: %{
           "id" => %{required: true, count: 0},
-          "name" => %{required: false, count: 0},
+          "designation" => %{required: false, count: 0},
           "age" => %{required: false, count: 0}
         }
       }
@@ -219,21 +219,21 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
       model = %{
         id: "123",
         schema: [
-          %{"name" => "Id", "type" => "number", "required" => true},
-          %{"name" => "Name", "type" => "string", "required" => true}
+          %{name: "Id", type: "number", required: true},
+          %{name: "Designation", type: "string", required: true}
         ]
       }
 
       row = %{
         "id" => 0,
-        "name" => "my_name"
+        "designation" => "my_name"
       }
 
       expected = %{
         record_count: 1,
         fields: %{
           "Id" => %{count: 1, required: true},
-          "Name" => %{count: 1, required: true}
+          "Designation" => %{count: 1, required: true}
         }
       }
 
