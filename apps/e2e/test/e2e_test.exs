@@ -224,7 +224,7 @@ defmodule E2ETest do
     end
   end
 
-  test "should return status code 200 and data count 1000, when estuary is called to get the events" do
+  test "should return status code 200, when estuary is called to get the events" do
     resp = HTTPoison.get!("http://localhost:4010/api/v1/events")
 
     assert resp.status_code == 200
