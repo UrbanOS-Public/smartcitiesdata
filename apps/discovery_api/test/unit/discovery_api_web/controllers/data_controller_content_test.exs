@@ -53,8 +53,8 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
           queries: 7,
           downloads: 9,
           schema: [
-            %{"name" => "number", "type" => "integer"},
-            %{"name" => "name", "type" => "string"}
+            %{name: "number", type: "integer"},
+            %{name: "name", type: "string"}
           ]
         })
 

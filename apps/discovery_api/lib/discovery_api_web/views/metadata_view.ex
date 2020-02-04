@@ -60,7 +60,7 @@ defmodule DiscoveryApiWeb.MetadataView do
   end
 
   defp format_schema(schema_fields) do
-    fields_to_return = ["name", "type", "description", "subSchema", "itemType"]
+    fields_to_return = [:name, :type, :description, :subSchema, :itemType]
     Enum.map(schema_fields, &Map.take(&1, fields_to_return))
   end
 end

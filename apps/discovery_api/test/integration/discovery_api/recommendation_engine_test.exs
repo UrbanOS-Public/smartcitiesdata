@@ -19,12 +19,12 @@ defmodule DiscoveryApi.RecommendationEngineTest do
       TDG.create_dataset(%{
         technical: %{
           schema: [
-            %{"name" => "id", "type" => "int"},
-            %{"name" => "name", "type" => "string"},
-            %{"name" => "age", "type" => "int"},
-            %{"name" => "address_line_1", "type" => "string"},
-            %{"name" => "lat", "type" => "double"},
-            %{"name" => "long", "type" => "double"}
+            %{name: "id", type: "int"},
+            %{name: "name", type: "string"},
+            %{name: "age", type: "int"},
+            %{name: "address_line_1", type: "string"},
+            %{name: "lat", type: "double"},
+            %{name: "long", type: "double"}
           ]
         }
       })
@@ -35,12 +35,12 @@ defmodule DiscoveryApi.RecommendationEngineTest do
       TDG.create_dataset(%{
         technical: %{
           schema: [
-            %{"name" => "id", "type" => "bad"},
-            %{"name" => "name", "type" => "bad"},
-            %{"name" => "age", "type" => "bad"},
-            %{"name" => "address_line_1", "type" => "bad"},
-            %{"name" => "lat", "type" => "bad"},
-            %{"name" => "long", "type" => "bad"}
+            %{name: "id", type: "bad"},
+            %{name: "name", type: "bad"},
+            %{name: "age", type: "bad"},
+            %{name: "address_line_1", type: "bad"},
+            %{name: "lat", type: "bad"},
+            %{name: "long", type: "bad"}
           ]
         }
       })
@@ -49,10 +49,10 @@ defmodule DiscoveryApi.RecommendationEngineTest do
       TDG.create_dataset(%{
         technical: %{
           schema: [
-            %{"name" => "id", "type" => "int"},
-            %{"name" => "name", "type" => "string"},
-            %{"name" => "age", "type" => "int"},
-            %{"name" => "random", "type" => "string"}
+            %{name: "id", type: "int"},
+            %{name: "name", type: "string"},
+            %{name: "age", type: "int"},
+            %{name: "random", type: "string"}
           ]
         }
       })
@@ -61,9 +61,9 @@ defmodule DiscoveryApi.RecommendationEngineTest do
       TDG.create_dataset(%{
         technical: %{
           schema: [
-            %{"name" => "id", "type" => "int"},
-            %{"name" => "name", "type" => "string"},
-            %{"name" => "random_stuff", "type" => "string"}
+            %{name: "id", type: "int"},
+            %{name: "name", type: "string"},
+            %{name: "random_stuff", type: "string"}
           ]
         }
       })

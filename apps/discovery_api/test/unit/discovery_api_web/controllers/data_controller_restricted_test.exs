@@ -29,8 +29,8 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
           orgName: @org_name
         },
         schema: [
-          %{"name" => "id", "type" => "integer"},
-          %{"name" => "name", "type" => "string"}
+          %{name: "id", type: "integer"},
+          %{name: "name", type: "string"}
         ]
       })
 

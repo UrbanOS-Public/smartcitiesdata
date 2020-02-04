@@ -147,8 +147,8 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
         sourceType: "ingest",
         sourceFormat: "gtfs",
         schema: [
-          %{"name" => "name", "required" => false, "type" => "string"},
-          %{"name" => "age", "required" => false, "type" => "int"}
+          %{name: "name", required: false, type: "string"},
+          %{name: "age", required: false, type: "int"}
         ]
       }
     })
