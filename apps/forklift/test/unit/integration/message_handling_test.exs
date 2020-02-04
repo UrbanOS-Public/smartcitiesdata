@@ -77,7 +77,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
       greater_than_now = fn event_data ->
         event_data.id == dataset.id &&
-          DateTime.to_iso8601(event_data.timestamp) > DateTime.to_iso8601(now)
+          event_data.timestamp > DateTime.to_iso8601(now)
       end
 
       expect Brook.Event.send(instance_name(), data_write_complete(), :forklift, is(greater_than_now)), return: :ok

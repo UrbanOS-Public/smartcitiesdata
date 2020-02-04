@@ -10,7 +10,8 @@ defmodule Reaper.Decoder.Json do
       when not is_nil(top_level_selector) do
     with {:ok, query} <- Jaxon.Path.parse(top_level_selector),
          {:ok, data} <- json_file_query(filename, query) do
-      {:ok, data}
+      decoded = List.wrap(data)
+      {:ok, decoded}
     else
       {:error, error} ->
         {:error, truncate_file_for_logging(filename), error}
@@ -36,14 +37,13 @@ defmodule Reaper.Decoder.Json do
 
   def handle?(_source_format), do: false
 
-  defp json_file_query(filename, query) do
+  def json_file_query(filename, query) do
     data =
       filename
       |> File.stream!()
       |> Jaxon.Stream.query(query)
       |> Enum.to_list()
       |> List.flatten()
-      |> List.wrap()
 
     {:ok, data}
   rescue

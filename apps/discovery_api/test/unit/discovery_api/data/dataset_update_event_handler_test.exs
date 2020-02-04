@@ -116,9 +116,11 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
     test "merges the write complete timsetamp into the model", %{data_model: %{id: id, title: title}} do
       write_complete_timestamp_iso = DateTime.utc_now() |> DateTime.to_iso8601()
 
-      Brook.Test.send(@instance, data_write_complete(), "unit", %SmartCity.DataWriteComplete{id: id, timestamp: write_complete_timestamp_iso})
+      {:ok, event} = SmartCity.DataWriteComplete.new(%{id: id, timestamp: write_complete_timestamp_iso})
 
-      assert %DiscoveryApi.Data.Model{id: ^id, title: ^title, lastUpdatedDate: ^write_complete_timestamp_iso} =
+      Brook.Test.send(@instance, data_write_complete(), "unit", event)
+
+      assert %DiscoveryApi.Data.Model{id: ^id, title: ^title, lastUpdatedDate: write_complete_timestamp_iso} =
                DiscoveryApi.Data.Model.get(id)
     end
 
@@ -126,10 +128,12 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       write_complete_timestamp = DateTime.utc_now()
       data_model_id = "not found"
 
-      Brook.Test.send(@instance, data_write_complete(), "unit", %SmartCity.DataWriteComplete{
+      {:ok, event} = SmartCity.DataWriteComplete.new(%{
         id: data_model_id,
         timestamp: write_complete_timestamp
       })
+
+      Brook.Test.send(@instance, data_write_complete(), "unit", event)
 
       assert nil == DiscoveryApi.Data.Model.get(data_model_id)
     end
