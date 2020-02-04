@@ -228,7 +228,11 @@ defmodule E2ETest do
     resp = HTTPoison.get!("http://localhost:4010/api/v1/events")
 
     assert resp.status_code == 200
-    assert 1000 == resp.body |> Jason.decode!() |> Enum.count()
+
+    assert 1000 ==
+             resp.body
+             |> Jason.decode!()
+             |> Enum.count()
   end
 
   describe "streaming data" do
