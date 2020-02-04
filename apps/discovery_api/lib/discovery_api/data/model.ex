@@ -57,6 +57,7 @@ defmodule DiscoveryApi.Data.Model do
 
     org_details = struct(DiscoveryApi.Data.OrganizationDetails, org_with_atom_keys)
     Map.put(model, :organizationDetails, org_details)
+    |> Map.put(:schema, SmartCity.Helpers.to_atom_keys(model.schema))
   end
 
   defp string_to_atom({k, v}) when is_atom(k) do
