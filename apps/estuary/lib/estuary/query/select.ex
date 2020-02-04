@@ -7,6 +7,8 @@ defmodule Estuary.Query.Select do
       #{translate_condition(value["conditions"], value["condition_type"])}
       #{translate_order(value["order_by"], value["order"])}
       LIMIT #{translate_limit(value["limit"])}"
+  rescue
+    error -> error
   end
 
   defp translate_columns(columns) do
