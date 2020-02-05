@@ -11,23 +11,23 @@ defmodule DiscoveryApi.Stats.DataHelper do
       id: "abc",
       technical: %{
         schema: [
-          %{"name" => "required field", "type" => "string", "required" => true},
-          %{"name" => "optional field", "type" => "string", "required" => false},
-          %{"name" => "optional field2", "type" => "string"},
+          %{name: "required field", type: "string", required: true},
+          %{name: "optional field", type: "string", required: false},
+          %{name: "optional field2", type: "string"},
           %{
-            "name" => "required parent field",
-            "type" => "map",
-            "required" => true,
-            "subSchema" => [
-              %{"name" => "required sub field", "type" => "string", "required" => true},
+            name: "required parent field",
+            type: "map",
+            required: true,
+            subSchema: [
+              %{name: "required sub field", type: "string", required: true},
               %{
-                "name" => "next_of_kin",
-                "type" => "map",
-                "required" => true,
-                "subSchema" => [
-                  %{"name" => "Not required", "type" => "string", "required" => false},
-                  %{"name" => "required_sub_schema_field", "type" => "date", "required" => true},
-                  %{"name" => "Not required not specified", "type" => "string"}
+                name: "next_of_kin",
+                type: "map",
+                required: true,
+                subSchema: [
+                  %{name: "Not required", type: "string", required: false},
+                  %{name: "required_sub_schema_field", type: "date", required: true},
+                  %{name: "Not required not specified", type: "string"}
                 ]
               }
             ]
@@ -50,16 +50,16 @@ defmodule DiscoveryApi.Stats.DataHelper do
 
   def real_dataset_schema do
     [
-      %{"name" => "bikes_allowed", "type" => "int", "required" => false},
-      %{"name" => "block_id", "type" => "int", "required" => false},
-      %{"name" => "direction_id", "type" => "int", "required" => false},
-      %{"name" => "route_id", "type" => "int", "required" => false},
-      %{"name" => "service_id", "type" => "int", "required" => false},
-      %{"name" => "shape_id", "type" => "int", "required" => false},
-      %{"name" => "trip_headsign", "type" => "string", "required" => false},
-      %{"name" => "trip_id", "type" => "int", "required" => false},
-      %{"name" => "trip_short_name", "type" => "string", "required" => false},
-      %{"name" => "wheelchair_accessible", "type" => "int", "required" => false}
+      %{name: "bikes_allowed", type: "int", required: false},
+      %{name: "block_id", type: "int", required: false},
+      %{name: "direction_id", type: "int", required: false},
+      %{name: "route_id", type: "int", required: false},
+      %{name: "service_id", type: "int", required: false},
+      %{name: "shape_id", type: "int", required: false},
+      %{name: "trip_headsign", type: "string", required: false},
+      %{name: "trip_id", type: "int", required: false},
+      %{name: "trip_short_name", type: "string", required: false},
+      %{name: "wheelchair_accessible", type: "int", required: false}
     ]
   end
 
@@ -68,9 +68,9 @@ defmodule DiscoveryApi.Stats.DataHelper do
       id: "123",
       technical: %{
         schema: [
-          %{"name" => "id", "type" => "string", "required" => true},
-          %{"name" => "name", "type" => "string"},
-          %{"name" => "age", "type" => "string"}
+          %{name: "id", type: "string", required: true},
+          %{name: "designation", type: "string"},
+          %{name: "age", type: "string"}
         ]
       }
     }
@@ -81,9 +81,9 @@ defmodule DiscoveryApi.Stats.DataHelper do
       id: "123",
       technical: %{
         schema: [
-          %{"name" => "id", "type" => "string"},
-          %{"name" => "name", "type" => "list"},
-          %{"name" => "age", "type" => "string"}
+          %{name: "id", type: "string"},
+          %{name: "designation", type: "list"},
+          %{name: "age", type: "string"}
         ]
       }
     }

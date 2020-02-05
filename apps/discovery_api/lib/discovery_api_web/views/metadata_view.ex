@@ -11,7 +11,7 @@ defmodule DiscoveryApiWeb.MetadataView do
   end
 
   def render("fetch_schema.json", %{model: %{schema: schema}}) do
-    format_schema(schema)
+    format_schema(schema) |> IO.inspect(label: "metadata_view.ex:14")
   end
 
   defp translate_to_dataset_detail(%Model{} = model) do
@@ -60,7 +60,8 @@ defmodule DiscoveryApiWeb.MetadataView do
   end
 
   defp format_schema(schema_fields) do
-    fields_to_return = ["name", "type", "description", "subSchema", "itemType"]
+    schema_fields |> IO.inspect(label: "metadata_view.ex:63")
+    fields_to_return = [:name, :type, :description, :subSchema, :itemType]
     Enum.map(schema_fields, &Map.take(&1, fields_to_return))
   end
 end

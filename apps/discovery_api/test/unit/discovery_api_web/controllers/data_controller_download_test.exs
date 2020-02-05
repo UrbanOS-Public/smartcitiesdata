@@ -25,8 +25,8 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
           orgName: @org_name
         },
         schema: [
-          %{"name" => "id", "type" => "integer"},
-          %{"name" => "name", "type" => "string"}
+          %{name: "id", type: "integer"},
+          %{name: "name", type: "string"}
         ]
       })
 
@@ -62,8 +62,8 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
             orgName: @org_name
           },
           schema: [
-            %{"name" => "number", "type" => "integer"},
-            %{"name" => "number", "type" => "integer"}
+            %{name: "number", type: "integer"},
+            %{name: "number", type: "integer"}
           ]
         })
 
@@ -104,7 +104,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
             orgName: @org_name
           },
           schema: [
-            %{"name" => "feature", "type" => "json"}
+            %{name: "feature", type: "json"}
           ]
         })
 
@@ -149,7 +149,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
             orgName: @org_name
           },
           schema: [
-            %{"name" => "feature", "type" => "json"}
+            %{name: "feature", type: "json"}
           ]
         })
 
@@ -203,8 +203,8 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
             orgName: @org_name
           },
           schema: [
-            %{"name" => "bob", "type" => "integer"},
-            %{"name" => "andi", "type" => "integer"}
+            %{name: "bob", type: "integer"},
+            %{name: "andi", type: "integer"}
           ]
         })
 
