@@ -224,6 +224,12 @@ defmodule E2ETest do
     end
   end
 
+  test "should return status code 200, when estuary is called to get the events" do
+    resp = HTTPoison.get!("http://localhost:4010/api/v1/events")
+
+    assert resp.status_code == 200
+  end
+
   describe "streaming data" do
     test "creating a dataset via RESTful PUT", %{streaming_dataset: ds} do
       resp =
