@@ -19,7 +19,9 @@ config :logger, :console,
 config :discovery_api,
   auth_provider: "default",
   collector: StreamingMetrics.PrometheusMetricCollector,
-  hsts_enabled: true
+  hsts_enabled: true,
+  download_link_expire_seconds: 60,
+  presign_key: "test_presign_key"
 
 config :paddle, Paddle, host: "localhost", account_subdn: "ou=People"
 
