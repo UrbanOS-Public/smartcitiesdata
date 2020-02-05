@@ -49,7 +49,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
         "sourceType" => "stream",
         "sourceFormat" => "gtfs",
         "cadence" => 9000,
-        "schema" => [%{"name" => "billy", "type" => "writer"}],
+        "schema" => [%{name: "billy", type: "writer"}],
         "private" => false,
         "headers" => %{
           "accepts" => "application/foobar"

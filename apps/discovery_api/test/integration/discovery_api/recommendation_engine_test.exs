@@ -81,8 +81,6 @@ defmodule DiscoveryApi.RecommendationEngineTest do
       max_tries: 20
     )
 
-    DiscoveryApi.Data.Model.get(dataset_to_get_recommendations_for.id)
-
     %{body: body, status_code: 200} =
       "http://localhost:4000/api/v1/dataset/#{dataset_to_get_recommendations_for.id}/recommendations"
       |> HTTPoison.get!()
