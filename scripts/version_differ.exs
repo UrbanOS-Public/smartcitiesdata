@@ -26,8 +26,8 @@ defmodule VersionDiffer do
     }`"
   end
 
-  def get_changed_apps do
-    with {raw, 0} <- get_raw_file_diff() do
+  def get_changed_apps(commit_range \\ "origin/master") do
+    with {raw, 0} <- get_raw_file_diff(commit_range) do
       extract_apps(raw)
     else
       error ->
@@ -62,8 +62,8 @@ defmodule VersionDiffer do
     end
   end
 
-  defp get_raw_file_diff do
-    System.cmd("git", ["diff", "--name-status", "origin/master"])
+  defp get_raw_file_diff(commit_range) do
+    System.cmd("git", ["diff", "--name-status", commit_range])
   end
 
   defp extract_apps(raw) do

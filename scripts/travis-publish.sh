@@ -2,6 +2,8 @@
 
 set -e
 
+source ./scripts/lib_common.sh
+
 if [[ ! -z "$TRAVIS_TAG" ]]; then
     app=$(echo "$TRAVIS_TAG" | cut -d@ -f1)
     vsn=$(echo "$TRAVIS_TAG" | cut -d@ -f2)
@@ -17,7 +19,9 @@ if [[ ! -z "$TRAVIS_TAG" ]]; then
     ./scripts/build.sh $app $vsn
     ./scripts/publish.sh $app $vsn
 elif [[ "$TRAVIS_BRANCH" == "master" ]]; then
-    for app in $(find apps -name Dockerfile | awk -F/ '{print $2}'); do
+    apps=$(apps_needing_builds "${TRAVIS_COMMIT_RANGE}")
+
+    for app in $apps; do
         ./scripts/build.sh $app development
         ./scripts/publish.sh $app development
     done
