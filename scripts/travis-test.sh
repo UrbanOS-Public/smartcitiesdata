@@ -8,11 +8,9 @@ DOCKER_COMPOSE_VERSION=1.23.1
 app="$1"
 force_run_test="${2:-false}"
 
-if [ "${force_run_test}" == "false" ]; then
-  if ! app_needs_build "${app}" "${TRAVIS_COMMIT_RANGE}"; then
-    echo "Application ${app} was not changed, skipping tests"
-    exit 0
-  fi
+if ([[ "${force_run_test}" == "false" ]] && app_does_not_need_built "${app}" "${TRAVIS_COMMIT_RANGE}") || [[ -n "${TRAVIS_TAG}" ]]; then
+  echo "Application ${app} was not changed, skipping tests"
+  exit 0
 fi
 
 # before_install
