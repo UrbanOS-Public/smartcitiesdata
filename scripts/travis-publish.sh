@@ -19,7 +19,11 @@ if [[ ! -z "$TRAVIS_TAG" ]]; then
     ./scripts/build.sh $app $vsn
     ./scripts/publish.sh $app $vsn
 elif [[ "$TRAVIS_BRANCH" == "master" ]]; then
-    apps=$(apps_needing_builds "${TRAVIS_COMMIT_RANGE}")
+    apps=$(apps_needing_published "${TRAVIS_COMMIT_RANGE}")
+    if [[ -z ${apps} ]]; then
+        echo "No apps need to be published with a development tag. Exiting."
+        exit 0
+    fi
 
     for app in $apps; do
         ./scripts/build.sh $app development

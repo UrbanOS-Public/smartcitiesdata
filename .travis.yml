@@ -21,9 +21,9 @@ jobs:
     - name: unit test
       script: mix test
     - name: pipeline
-      script: bash scripts/travis-test.sh pipeline force
+      script: bash scripts/travis-test.sh pipeline
     - name: dead_letter
-      script: bash scripts/travis-test.sh dead_letter force
+      script: bash scripts/travis-test.sh dead_letter
     - name: e2e
       script: bash scripts/travis-test.sh e2e force
     - name: discovery_api
