@@ -1,4 +1,5 @@
 defmodule DiscoveryStreamsWeb do
+  @moduledoc false
   def controller do
     quote do
       use Phoenix.Controller, namespace: DiscoveryStreamsWeb

@@ -5,7 +5,7 @@ config :prestige, :session_opts, url: "http://localhost:8080"
 config :discovery_api, DiscoveryApiWeb.Endpoint,
   http: [port: 4001],
   server: false,
-  url: [host: "data.tests.example.com", port: 80]
+  url: [scheme: "https", host: "data.tests.example.com", port: 443]
 
 config :discovery_api,
   user_info_endpoint: "pretend-this-is-a-url/userinfo",

@@ -67,14 +67,7 @@ if kafka_brokers do
     elsa_brokers: endpoints,
     input_topic_prefix: input_topic_prefix,
     output_topic_prefix: output_topic_prefix,
-    processor_stages: String.to_integer(processor_stages),
-    topic_subscriber_config: [
-      begin_offset: :earliest,
-      offset_reset_policy: :reset_to_earliest,
-      max_bytes: 1_000_000,
-      min_bytes: 500_000,
-      max_wait_time: 10_000
-    ]
+    processor_stages: String.to_integer(processor_stages)
 
   config :dead_letter,
     driver: [

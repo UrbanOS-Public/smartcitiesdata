@@ -12,7 +12,6 @@ defmodule DiscoveryApiWeb.MetadataController do
   end
 
   def fetch_schema(conn, _params) do
-    conn.assigns.model |> IO.inspect(label: "metadata_controller.ex:15")
     render(conn, :fetch_schema, model: conn.assigns.model)
   end
 
