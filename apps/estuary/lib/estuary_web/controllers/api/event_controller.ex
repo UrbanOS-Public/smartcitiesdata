@@ -6,6 +6,7 @@ defmodule EstuaryWeb.API.EventController do
 
   require Logger
   alias Estuary.Services.EventRetrievalService
+  alias Plug.Conn
 
   @doc """
   Return all events stored in presto
@@ -25,5 +26,30 @@ defmodule EstuaryWeb.API.EventController do
     conn
     |> put_status(status)
     |> json(body)
+  end
+
+  defp resp_as_stream(conn, status, stream) do
+    conn = Conn.send_chunked(conn, status)
+
+    stream
+    |> data_as_json_string()
+    |> data_as_stream()
+    |> Enum.reduce_while(conn, fn event, conn ->
+      case Conn.chunk(conn, event) do
+        {:ok, conn} -> {:cont, conn}
+        {:error, :closed} -> {:halt, conn}
+      end
+    end)
+  end
+
+  defp data_as_json_string(stream) do
+    stream
+    |> Stream.map(&Jason.encode!/1)
+    |> Stream.intersperse(",")
+  end
+
+  defp data_as_stream(json_string) do
+    [["["], json_string, ["]"]]
+    |> Stream.concat()
   end
 end
