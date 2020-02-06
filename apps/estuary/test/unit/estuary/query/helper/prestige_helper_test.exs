@@ -13,9 +13,14 @@ defmodule Estuary.Query.Helper.PrestigeHelperTest do
       }
     ]
 
-    allow(Prestige.new_session(any()), return: :do_not_care)
-    allow(Prestige.query!(any(), any()), return: :do_not_care)
-    allow(Prestige.Result.as_maps(any()), return: expected_table_data)
-    assert {:ok, expected_table_data} == PrestigeHelper.execute_query(any())
+    allow(Prestige.new_session(any()), return: :connection)
+    allow(Prestige.stream!(any(), any()), return: [:result])
+
+    allow(Prestige.Result.as_maps(:result),
+      return: expected_table_data
+    )
+
+    {:ok, returned_table_data} = PrestigeHelper.execute_query_stream("whatever")
+    assert expected_table_data == Enum.to_list(returned_table_data)
   end
 end

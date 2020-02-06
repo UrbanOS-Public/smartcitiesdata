@@ -14,7 +14,7 @@ defmodule EstuaryWeb.API.EventController do
   def get_all(conn, _params) do
     case EventRetrievalService.get_all() do
       {:ok, events} ->
-        respond(conn, 200, events)
+        resp_as_stream(conn, 200, events)
 
       {:error, error} ->
         Logger.error("Failed to retrieve events: #{inspect(error)}")

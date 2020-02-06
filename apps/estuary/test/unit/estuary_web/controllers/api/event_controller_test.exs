@@ -35,6 +35,7 @@ defmodule EstuaryWeb.API.EventControllerTest do
     @tag capture_log: true
     test "should return 404 and message when error occurs", %{conn: conn} do
       expected_error = "Unable to process your request"
+      allow(EventRetrievalService.get_all(), return: {:error, :do_not_care})
       conn = get(conn, "/api/v1/events")
 
       actual_error =
