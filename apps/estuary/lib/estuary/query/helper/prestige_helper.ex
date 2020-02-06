@@ -1,11 +1,11 @@
 defmodule Estuary.Query.Helper.PrestigeHelper do
   @moduledoc false
 
-  def execute_query(query) do
+  def execute_query_stream(query) do
     data =
       create_session()
-      |> Prestige.query!(query)
-      |> Prestige.Result.as_maps()
+      |> Prestige.stream!(query)
+      |> Stream.flat_map(&Prestige.Result.as_maps/1)
 
     {:ok, data}
   rescue
