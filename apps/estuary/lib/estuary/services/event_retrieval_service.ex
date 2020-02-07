@@ -13,6 +13,6 @@ defmodule Estuary.Services.EventRetrievalService do
     WHERE create_ts >= to_unixtime(now() - interval '3' hour) LIMIT 5000) events
     ORDER BY events.create_ts DESC LIMIT 1000
     """
-    |> PrestigeHelper.execute_query()
+    |> PrestigeHelper.execute_query_stream()
   end
 end
