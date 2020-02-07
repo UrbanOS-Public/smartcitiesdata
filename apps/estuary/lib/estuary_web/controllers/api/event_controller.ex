@@ -34,12 +34,7 @@ defmodule EstuaryWeb.API.EventController do
     stream
     |> data_as_json_string()
     |> data_as_stream()
-    |> Enum.reduce_while(conn, fn event, conn ->
-      case Conn.chunk(conn, event) do
-        {:ok, conn} -> {:cont, conn}
-        {:error, :closed} -> {:halt, conn}
-      end
-    end)
+    |> response(conn)
   end
 
   defp data_as_json_string(stream) do
@@ -51,5 +46,15 @@ defmodule EstuaryWeb.API.EventController do
   defp data_as_stream(json_string) do
     [["["], json_string, ["]"]]
     |> Stream.concat()
+  end
+
+  defp response(events, conn) do
+    events
+    |> Enum.reduce_while(conn, fn event, conn ->
+      case Conn.chunk(conn, event) do
+        {:ok, conn} -> {:cont, conn}
+        {:error, :closed} -> {:halt, conn}
+      end
+    end)
   end
 end

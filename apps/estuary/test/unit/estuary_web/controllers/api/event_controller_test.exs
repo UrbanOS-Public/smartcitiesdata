@@ -1,6 +1,5 @@
 defmodule EstuaryWeb.API.EventControllerTest do
   use EstuaryWeb.ConnCase
-  # use Plug.Test
   use Placebo
   alias Estuary.Services.EventRetrievalService
 
