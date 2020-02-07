@@ -14,7 +14,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
 config :logger, level: :info
 
 config :redix,
-  host: "localhost"
+  args: [host: "localhost"]
 
 config :discovery_api, ecto_repos: [DiscoveryApi.Repo]
 
