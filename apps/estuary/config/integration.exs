@@ -10,7 +10,14 @@ config :estuary,
   divo_wait: [dwell: 1000, max_tries: 120],
   topic_reader: Pipeline.Reader.TopicReader,
   table_writer: Pipeline.Writer.TableWriter,
-  topic: "event-stream"
+  topic: "event-stream",
+  topic_subscriber_config: [
+    begin_offset: :earliest,
+    offset_reset_policy: :reset_to_earliest,
+    max_bytes: 1_000_000,
+    min_bytes: 500_000,
+    max_wait_time: 30_000
+  ]
 
 config :logger, level: :warn
 

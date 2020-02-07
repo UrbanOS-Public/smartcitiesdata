@@ -25,7 +25,8 @@ defmodule Estuary.DataReader do
       connection: Application.get_env(:estuary, :connection),
       endpoints: Application.get_env(:estuary, :endpoints),
       topic: Application.get_env(:estuary, :topic),
-      handler: Estuary.MessageHandler
+      handler: Estuary.MessageHandler,
+      topic_subscriber_config: Application.get_env(:estuary, :topic_subscriber_config, [])
     ]
   end
 end
