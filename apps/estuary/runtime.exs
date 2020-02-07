@@ -42,7 +42,14 @@ config :estuary,
   elsa_brokers: elsa_brokers,
   event_stream_topic: topic,
   endpoints: endpoints,
-  table_name: table_name
+  table_name: table_name,
+  topic_subscriber_config: [
+    begin_offset: :earliest,
+    offset_reset_policy: :reset_to_earliest,
+    max_bytes: 1_000_000,
+    min_bytes: 500_000,
+    max_wait_time: 30_000
+  ]
 
 config :logger,
   level: :warn
