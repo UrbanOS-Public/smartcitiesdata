@@ -11,12 +11,6 @@ defmodule Andi.CreateDatasetTest do
   plug(Tesla.Middleware.BaseUrl, "http://localhost:4000")
   @kafka_broker Application.get_env(:andi, :kafka_broker)
 
-  setup_all do
-    Redix.command!(:smart_city_registry, ["FLUSHALL"])
-    Process.sleep(5000)
-    :ok
-  end
-
   describe "dataset disable" do
     test "sends dataset:disable event" do
       dataset = TDG.create_dataset(%{})
