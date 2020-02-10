@@ -1,11 +1,5 @@
 name: Reaper
 on:
-  pull_request:
-    paths:
-      - 'apps/reaper/**'
-      - 'mix.lock'
-      - 'apps/pipeline/**'
-      - 'apps/dead_letter/**'
   push:
     paths:
       - 'apps/reaper/**'

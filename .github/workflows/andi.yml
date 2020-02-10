@@ -2,11 +2,12 @@ name: ANDI
 env:
   app: andi
 on:
-  pull_request:
+  push:
     paths:
       - 'apps/andi/**'
       - 'mix.lock'
-      - 'apps/{pipeline,dead_letter}/**'
+      - 'apps/pipeline/**'
+      - 'apps/dead_letter/**'
 
 jobs:
   integration:
