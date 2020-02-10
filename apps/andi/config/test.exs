@@ -12,11 +12,6 @@ config :andi, AndiWeb.Endpoint,
 # Print only warnings and errors during test
 config :logger, level: :warn
 
-config :andi,
-  ldap_user: [cn: "admin"],
-  ldap_pass: "admin",
-  ldap_env_ou: "test"
-
 config :andi, :brook,
   instance: :andi,
   driver: [

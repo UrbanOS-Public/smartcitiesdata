@@ -28,9 +28,6 @@ config :andi, AndiWeb.Endpoint,
     signing_salt: "TOP SECRET!!!"
   ]
 
-config :smart_city_registry,
-  redis: redix_args
-
 config :andi, AndiWeb.Endpoint,
   live_reload: [
     patterns: [
