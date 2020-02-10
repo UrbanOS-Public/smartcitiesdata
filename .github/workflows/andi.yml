@@ -1,0 +1,32 @@
+name: ANDI
+env:
+  app: andi
+on:
+  pull_request:
+    paths:
+      - 'apps/andi/**'
+      - 'mix.lock'
+      - 'apps/{pipeline,dead_letter}/**'
+  push:
+    paths:
+      - 'apps/andi/**'
+      - 'mix.lock'
+      - 'apps/pipeline/**'
+      - 'apps/dead_letter/**'
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Elixir
+        uses: actions/setup-elixir@v1.2.0
+        with:
+          elixir-version: 1.8
+          otp-version: 22.2
+          runs-on: ubuntu-latest
+      - name: Run Integration Tests
+        run: |
+          mix deps.get
+          cd apps/${{ env.app }}
+          mix test.integration
