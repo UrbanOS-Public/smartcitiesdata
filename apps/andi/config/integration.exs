@@ -1,5 +1,4 @@
 use Mix.Config
-import_config "../test/integration/divo_ldap.ex"
 
 host =
   case System.get_env("HOST_IP") do
@@ -13,17 +12,10 @@ endpoint = [{host, 9092}]
 config :andi,
   divo: [
     {DivoKafka, [create_topics: "event-stream:1:1", outside_host: host]},
-    {DivoRedis, []},
-    Andi.DivoLdap
+    {DivoRedis, []}
   ],
   divo_wait: [dwell: 700, max_tries: 50],
-  ldap_user: [cn: "admin"],
-  ldap_pass: "admin",
-  ldap_env_ou: "integration",
   kafka_broker: endpoint
-
-config :smart_city_registry,
-  redis: redix_args
 
 config :andi, AndiWeb.Endpoint,
   http: [port: 4000],
