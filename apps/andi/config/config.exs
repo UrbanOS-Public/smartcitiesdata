@@ -27,8 +27,6 @@ config :andi,
   topic: "dataset-registry",
   organization_topic: "organization-raw"
 
-config :paddle, Paddle, host: "localhost"
-
 config :tesla, adapter: Tesla.Adapter.Hackney
 
 # Import environment specific config. This must remain at the bottom

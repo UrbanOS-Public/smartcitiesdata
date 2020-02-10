@@ -25,11 +25,6 @@ config :andi,
 config :smart_city_registry,
   redis: redix_args
 
-config :paddle, Paddle,
-  host: host,
-  base: "dc=example,dc=org",
-  timeout: 3000
-
 config :andi, AndiWeb.Endpoint,
   http: [port: 4000],
   server: true,

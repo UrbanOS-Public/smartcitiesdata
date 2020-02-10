@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.17.1",
+      version: "0.17.2",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -47,7 +47,6 @@ defmodule Andi.MixProject do
       {:gettext, "~> 0.17"},
       {:jason, "~> 1.1"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
-      {:paddle, "~> 0.1"},
       {:sobelow, "~> 0.8", only: :dev},
       {:phoenix, "~> 1.4"},
       {:phoenix_live_view, "~>0.4"},
@@ -59,7 +58,6 @@ defmodule Andi.MixProject do
       {:plug_cowboy, "~> 2.1"},
       {:simply_validate, ">= 0.2.0"},
       {:smart_city, "~> 3.0"},
-      {:smart_city_registry, "~> 5.0"},
       {:tesla, "~> 1.3"},
       {:smart_city_test, "~> 0.9", only: [:test, :integration]},
       {:timex, "~> 3.6"},

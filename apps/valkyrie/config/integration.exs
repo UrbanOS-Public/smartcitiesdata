@@ -6,7 +6,7 @@ host =
     defined -> defined
   end
 
-  redix_args = [host: host]
+redix_args = [host: host]
 
 endpoints = [{String.to_atom(host), 9092}]
 

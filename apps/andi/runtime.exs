@@ -28,10 +28,6 @@ config :andi,
   ldap_pass: System.get_env("LDAP_PASS"),
   ldap_env_ou: System.get_env("LDAP_ENV")
 
-config :paddle, Paddle,
-  host: System.get_env("LDAP_HOST"),
-  base: System.get_env("LDAP_BASE")
-
 config :andi, :brook,
   instance: :andi,
   driver: [

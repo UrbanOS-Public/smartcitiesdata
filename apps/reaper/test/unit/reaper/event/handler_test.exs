@@ -42,7 +42,12 @@ defmodule Reaper.Event.HandlerTest do
 
       assert :ok == Brook.Test.send(@instance, dataset_update(), "testing", dataset)
 
-      assert_receive {:brook_event, %Brook.Event{type: error_dataset_update(), data: %{"reason" => _, "dataset" => %SmartCity.Dataset{id: "ds-empty-cron"}}}}, 10_000
+      assert_receive {:brook_event,
+                      %Brook.Event{
+                        type: error_dataset_update(),
+                        data: %{"reason" => _, "dataset" => %SmartCity.Dataset{id: "ds-empty-cron"}}
+                      }},
+                     10_000
     end
 
     test "sends error event for raised errors while performing dataset update" do
@@ -52,7 +57,12 @@ defmodule Reaper.Event.HandlerTest do
 
       assert :ok == Brook.Test.send(@instance, dataset_update(), "testing", dataset)
 
-      assert_receive {:brook_event, %Brook.Event{type: "error:dataset:update", data: %{"reason" => %RuntimeError{message: "bad stuff"}, "dataset" => _}}}, 10_000
+      assert_receive {:brook_event,
+                      %Brook.Event{
+                        type: "error:dataset:update",
+                        data: %{"reason" => %RuntimeError{message: "bad stuff"}, "dataset" => _}
+                      }},
+                     10_000
     end
   end
 
