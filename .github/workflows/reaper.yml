@@ -16,7 +16,7 @@ on:
       - 'apps/dead_letter/**'
 
 jobs:
-  reaper-integration:
+  integration:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,4 +30,5 @@ jobs:
         run: |
           mix deps.get
           cd apps/${{ env.app }}
+          pwd
           mix test.integration
