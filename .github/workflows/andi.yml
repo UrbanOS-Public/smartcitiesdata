@@ -10,7 +10,7 @@ on:
       - 'apps/dead_letter/**'
   push:
     branches:
-      - master
+      - fake-master
     paths:
       - 'apps/andi/**'
       - 'mix.lock'
