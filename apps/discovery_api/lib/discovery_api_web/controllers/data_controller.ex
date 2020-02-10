@@ -40,7 +40,8 @@ defmodule DiscoveryApiWeb.DataController do
   end
 
   def download_presigned_url(conn, params) do
-    expires_in_seconds = Application.get_env(:discovery_api, :download_link_expire_seconds) ## Potential issue
+    ## Potential issue
+    expires_in_seconds = Application.get_env(:discovery_api, :download_link_expire_seconds)
     expires = DateTime.utc_now() |> DateTime.add(expires_in_seconds, :second) |> DateTime.to_unix()
     hmac_token = HmacToken.create_hmac_token(params["dataset_id"], expires)
     scheme = Application.get_env(:discovery_api, DiscoveryApiWeb.Endpoint)[:url][:scheme]

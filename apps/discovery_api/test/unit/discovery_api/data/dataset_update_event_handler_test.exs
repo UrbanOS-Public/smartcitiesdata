@@ -128,10 +128,11 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       write_complete_timestamp = DateTime.utc_now()
       data_model_id = "not found"
 
-      {:ok, event} = SmartCity.DataWriteComplete.new(%{
-        id: data_model_id,
-        timestamp: write_complete_timestamp
-      })
+      {:ok, event} =
+        SmartCity.DataWriteComplete.new(%{
+          id: data_model_id,
+          timestamp: write_complete_timestamp
+        })
 
       Brook.Test.send(@instance, data_write_complete(), "unit", event)
 
