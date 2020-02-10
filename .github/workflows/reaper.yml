@@ -1,6 +1,14 @@
 name: Reaper
 on:
+  pull_request:
+    paths:
+      - 'apps/reaper/**'
+      - 'mix.lock'
+      - 'apps/pipeline/**'
+      - 'apps/dead_letter/**'
   push:
+    branches:
+      - master
     paths:
       - 'apps/reaper/**'
       - 'mix.lock'
@@ -21,5 +29,5 @@ jobs:
       - name: Run Integration Tests
         run: |
           mix deps.get
-          cd apps/reaper
+          cd apps/${{ env.app }}
           mix test.integration

@@ -2,7 +2,15 @@ name: ANDI
 env:
   app: andi
 on:
+  pull_request:
+    paths:
+      - 'apps/andi/**'
+      - 'mix.lock'
+      - 'apps/pipeline/**'
+      - 'apps/dead_letter/**'
   push:
+    branches:
+      - master
     paths:
       - 'apps/andi/**'
       - 'mix.lock'
