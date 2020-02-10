@@ -134,12 +134,15 @@ defmodule E2ETest do
         %{"Column" => "three", "Comment" => "", "Extra" => "", "Type" => "integer"}
       ]
 
-      eventually(fn ->
-        table = query("describe hive.default.end_to__end", true)
+      eventually(
+        fn ->
+          table = query("describe hive.default.end_to__end", true)
 
-        assert table == expected
-      end, 500, 20)
-
+          assert table == expected
+        end,
+        500,
+        20
+      )
     end
 
     test "stores a definition that can be retrieved", %{dataset: expected} do
@@ -185,7 +188,10 @@ defmodule E2ETest do
         fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
-          assert %{"one" => true, "three" => 10, "two" => "foobar"} in query("select * from #{table}", true)
+          assert %{"one" => true, "three" => 10, "two" => "foobar"} in query(
+                   "select * from #{table}",
+                   true
+                 )
         end,
         10_000
       )
@@ -193,11 +199,12 @@ defmodule E2ETest do
 
     test "forklift sends event to update last ingested time", %{dataset: _ds} do
       eventually(fn ->
-        messages = Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete") |> Enum.to_list()
+        messages =
+          Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete")
+          |> Enum.to_list()
 
         assert 1 == length(messages)
       end)
-
     end
 
     test "is profiled by flair", %{dataset: ds} do
@@ -275,7 +282,10 @@ defmodule E2ETest do
         fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
-          assert %{"one" => true, "three" => 10, "two" => "foobar"} in query("select * from #{table}", true)
+          assert %{"one" => true, "three" => 10, "two" => "foobar"} in query(
+                   "select * from #{table}",
+                   true
+                 )
         end,
         5_000
       )
@@ -297,13 +307,16 @@ defmodule E2ETest do
       assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000)
     end
 
-    test "forklift sends event to update last ingested time for streaming datasets", %{streaming_dataset: _ds} do
+    test "forklift sends event to update last ingested time for streaming datasets", %{
+      streaming_dataset: _ds
+    } do
       eventually(fn ->
-        messages = Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete") |> Enum.to_list()
+        messages =
+          Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete")
+          |> Enum.to_list()
 
         assert length(messages) > 0
       end)
-
     end
 
     test "is profiled by flair", %{streaming_dataset: ds} do
@@ -353,6 +366,7 @@ defmodule E2ETest do
   end
 
   def query(statment, toggle \\ false)
+
   def query(statement, false) do
     prestige_session()
     |> Prestige.execute(statement)
@@ -371,5 +385,6 @@ defmodule E2ETest do
     end
   end
 
-  defp prestige_session(), do: Application.get_env(:prestige, :session_opts) |> Prestige.new_session()
+  defp prestige_session(),
+    do: Application.get_env(:prestige, :session_opts) |> Prestige.new_session()
 end

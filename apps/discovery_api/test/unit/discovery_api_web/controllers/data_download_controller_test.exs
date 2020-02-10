@@ -31,8 +31,8 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
           orgName: @org_name
         },
         schema: [
-          %{name:  "id", type: "integer"},
-          %{name:  "name", type: "string"}
+          %{name: "id", type: "integer"},
+          %{name: "name", type: "string"}
         ]
       })
 
@@ -68,8 +68,8 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
             orgName: @org_name
           },
           schema: [
-            %{name:  "number", type: "integer"},
-            %{name:  "number", type: "integer"}
+            %{name: "number", type: "integer"},
+            %{name: "number", type: "integer"}
           ]
         })
 
@@ -110,7 +110,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
             orgName: @org_name
           },
           schema: [
-            %{name:  "feature", type: "json"}
+            %{name: "feature", type: "json"}
           ]
         })
 
@@ -155,7 +155,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
             orgName: @org_name
           },
           schema: [
-            %{name:  "feature", type: "json"}
+            %{name: "feature", type: "json"}
           ]
         })
 
@@ -240,7 +240,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
       allow(Prestige.stream!(any(), "select * from #{@system_name}"), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
-        return: [%{"id" => 1, name:  "Joe"}, %{"id" => 2, name:  "Robby"}]
+        return: [%{"id" => 1, name: "Joe"}, %{"id" => 2, name: "Robby"}]
       )
 
       :ok
@@ -300,7 +300,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
             orgName: @org_name
           },
           schema: [
-            %{name:  "feature", type: "json"}
+            %{name: "feature", type: "json"}
           ]
         })
 
@@ -333,7 +333,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
             orgName: @org_name
           },
           schema: [
-            %{name:  "feature", type: "json"}
+            %{name: "feature", type: "json"}
           ]
         })
 
@@ -361,7 +361,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
             orgName: @org_name
           },
           schema: [
-            %{name:  "feature", type: "json"}
+            %{name: "feature", type: "json"}
           ]
         })
 
@@ -424,7 +424,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
             id: "org_id"
           },
           schema: [
-            %{name:  "feature", type: "json"}
+            %{name: "feature", type: "json"}
           ]
         })
 
@@ -462,8 +462,8 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
           orgName: @org_name
         },
         schema: [
-          %{name:  "bob", type: "integer"},
-          %{name:  "andi", type: "integer"}
+          %{name: "bob", type: "integer"},
+          %{name: "andi", type: "integer"}
         ]
       })
 

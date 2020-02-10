@@ -56,6 +56,7 @@ defmodule DiscoveryApi.Data.Model do
       |> Map.new()
 
     org_details = struct(DiscoveryApi.Data.OrganizationDetails, org_with_atom_keys)
+
     Map.put(model, :organizationDetails, org_details)
     |> Map.put(:schema, SmartCity.Helpers.to_atom_keys(model.schema))
   end
@@ -63,6 +64,7 @@ defmodule DiscoveryApi.Data.Model do
   defp string_to_atom({k, v}) when is_atom(k) do
     {k, v}
   end
+
   defp string_to_atom({k, v}) when is_binary(k) do
     {String.to_atom(k), v}
   end
@@ -70,6 +72,7 @@ defmodule DiscoveryApi.Data.Model do
   defp from_struct(%_type{} = data) do
     Map.from_struct(data)
   end
+
   defp from_struct(data), do: data
 
   @spec get(any) :: any

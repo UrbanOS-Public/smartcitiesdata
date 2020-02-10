@@ -71,7 +71,6 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   describe "post /api/ with valid data and imported id" do
     setup %{conn: conn} do
-
       req_with_id = %{
         "id" => "123",
         "orgName" => "yourOrg",

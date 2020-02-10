@@ -1,4 +1,5 @@
 defmodule DeadLetter.Application do
+  @moduledoc false
   use Application
 
   def start(_something, _else) do
@@ -12,6 +13,6 @@ defmodule DeadLetter.Application do
       ]
       |> List.flatten()
 
-    Supervisor.start_link(children, [strategy: :one_for_one, name: DeadLetter.Supervisor])
+    Supervisor.start_link(children, strategy: :one_for_one, name: DeadLetter.Supervisor)
   end
 end
