@@ -2,6 +2,7 @@ use Mix.Config
 aws_region = "local"
 host = "localhost"
 endpoints = [{to_charlist(host), 9092}]
+redix_args = [host: host]
 
 config :discovery_api, DiscoveryApiWeb.Endpoint, url: [scheme: "https", host: "data.integrationtests.example.com", port: 443]
 
@@ -66,7 +67,7 @@ config :discovery_api, :brook,
   handlers: [DiscoveryApi.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
-    init_arg: [redix_args: [host: host], namespace: "discovery-api:view"]
+    init_arg: [redix_args: redix_args, namespace: "discovery-api:view"]
   ]
 
 config :discovery_api,
