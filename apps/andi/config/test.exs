@@ -17,8 +17,6 @@ config :andi,
   ldap_pass: "admin",
   ldap_env_ou: "test"
 
-config :paddle, Paddle, base: "dc=foo,dc=bar"
-
 config :andi, :brook,
   instance: :andi,
   driver: [
