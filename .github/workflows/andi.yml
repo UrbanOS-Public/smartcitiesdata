@@ -7,12 +7,6 @@ on:
       - 'apps/andi/**'
       - 'mix.lock'
       - 'apps/{pipeline,dead_letter}/**'
-  push:
-    paths:
-      - 'apps/andi/**'
-      - 'mix.lock'
-      - 'apps/pipeline/**'
-      - 'apps/dead_letter/**'
 
 jobs:
   integration:
