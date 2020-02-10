@@ -56,11 +56,7 @@ defmodule E2ETest do
     Temp.track!()
     Application.put_env(:odo, :working_dir, Temp.mkdir!())
     bypass = Bypass.open()
-    user = Application.get_env(:andi, :ldap_user)
-    pass = Application.get_env(:andi, :ldap_pass)
     shapefile = File.read!("test/support/shapefile.zip")
-    Paddle.authenticate(user, pass)
-    Paddle.add([ou: "integration"], objectClass: ["top", "organizationalunit"], ou: "integration")
 
     Bypass.stub(bypass, "GET", "/path/to/the/data.csv", fn conn ->
       Plug.Conn.resp(conn, 200, "true,foobar,10")
