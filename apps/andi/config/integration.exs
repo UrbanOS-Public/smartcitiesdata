@@ -17,9 +17,6 @@ config :andi,
   divo_wait: [dwell: 700, max_tries: 50],
   kafka_broker: endpoint
 
-config :smart_city_registry,
-  redis: redix_args
-
 config :andi, AndiWeb.Endpoint,
   http: [port: 4000],
   server: true,
