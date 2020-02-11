@@ -9,6 +9,17 @@ defmodule Andi.InputSchemas.DatasetInput do
   alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.KeyValue
 
+  #TODO: move this to KeyValue as a function
+  @embeddedSourceQueryParams %Ecto.Embedded{
+    cardinality: :many,
+    field: :sourceQueryParams,
+    on_cast: &KeyValue.changeset(&1, &2),
+    on_replace: :delete,
+    owner: nil,
+    related: KeyValue,
+    unique: false
+  }
+
   @business_fields %{
     benefitRating: :float,
     contactEmail: :string,
@@ -36,12 +47,15 @@ defmodule Andi.InputSchemas.DatasetInput do
     sourceFormat: :string,
     sourceType: :string,
     sourceUrl: :string,
-    topLevelSelector: :string
+    topLevelSelector: :string,
+    sourceQueryParams: {:embed, @embeddedSourceQueryParams}
   }
 
   @types %{id: :string}
          |> Map.merge(@business_fields)
          |> Map.merge(@technical_fields)
+
+  @non_embedded_types Map.drop(@types, [:sourceQueryParams])
 
   @required_fields [
     :benefitRating,
@@ -67,26 +81,14 @@ defmodule Andi.InputSchemas.DatasetInput do
   @ratings Map.keys(Options.ratings())
 
   def business_keys(), do: Map.keys(@business_fields)
-  def technical_keys(), do: Map.keys(@technical_fields) ++ [:sourceQueryParams]
-  def all_keys(), do: Map.keys(@types)
+  def technical_keys(), do: Map.keys(@technical_fields)
 
   def light_validation_changeset(changes), do: light_validation_changeset(%{}, changes)
 
   def light_validation_changeset(schema, changes) do
 
-    the_types = Map.put(@types, :sourceQueryParams, {:embed,
-    %Ecto.Embedded{
-      cardinality: :many,
-      field: :sourceQueryParams,
-      on_cast: &KeyValue.changeset(&1, &2),
-      on_replace: :delete,
-      owner: nil,
-      related: KeyValue,
-      unique: false
-    }})
-
-    {schema, the_types}
-    |> cast(changes, Map.keys(@types), empty_values: [])
+    {schema, @types}
+    |> cast(changes, Map.keys(@non_embedded_types), empty_values: [])
     |> cast_embed(:sourceQueryParams)
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:contactEmail, @email_regex)
