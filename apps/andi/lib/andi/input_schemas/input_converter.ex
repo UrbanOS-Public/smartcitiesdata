@@ -13,7 +13,7 @@ defmodule Andi.InputSchemas.InputConverter do
     %{id: id, business: business, technical: technical} = AtomicMap.convert(dataset, safe: false, underscore: false)
 
     from_business = get_business(business) |> fix_modified_date()
-    from_technical = get_technical(technical)
+    from_technical = get_technical(technical) |> convert_source_query_params()
 
     %{id: id}
     |> Map.merge(from_business)
@@ -57,6 +57,7 @@ defmodule Andi.InputSchemas.InputConverter do
       changes
       |> Map.update(:issuedDate, nil, &date_to_iso8601_datetime/1)
       |> Map.update(:modifiedDate, nil, &date_to_iso8601_datetime/1)
+      |> Map.update(:sourceQueryParams, [], &restruct_query_params/1)
 
     business = Map.merge(dataset.business, get_business(formatted_changes)) |> Map.from_struct()
     technical = Map.merge(dataset.technical, get_technical(formatted_changes)) |> Map.from_struct()
@@ -102,4 +103,17 @@ defmodule Andi.InputSchemas.InputConverter do
     end)
     |> elem(1)
   end
+
+  defp restruct_query_params(params) do
+    Enum.reduce(params, %{}, fn param, acc -> Map.put(acc, param.key, param.value) end)
+  end
+
+  defp convert_source_query_params(%{sourceQueryParams: nil} = technical), do: Map.put(technical, :sourceQueryParams, [])
+
+  defp convert_source_query_params(%{sourceQueryParams: query_params} = technical) do
+    converted = Enum.map(query_params, fn {k, v} -> %{key: Atom.to_string(k), value: v} end)
+    Map.put(technical, :sourceQueryParams, converted)
+  end
+
+  defp convert_source_query_params(technical), do: Map.put(technical, :sourceQueryParams, [])
 end

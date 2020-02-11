@@ -7,6 +7,7 @@ defmodule Andi.InputSchemas.DatasetInput do
   alias Andi.DatasetCache
   alias Andi.InputSchemas.DatasetSchemaValidator
   alias Andi.InputSchemas.Options
+  alias Andi.InputSchemas.KeyValue
 
   @business_fields %{
     benefitRating: :float,
@@ -35,8 +36,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     sourceFormat: :string,
     sourceType: :string,
     sourceUrl: :string,
-    topLevelSelector: :string,
-    sourceQueryParams: :map
+    topLevelSelector: :string
   }
 
   @types %{id: :string}
@@ -67,14 +67,27 @@ defmodule Andi.InputSchemas.DatasetInput do
   @ratings Map.keys(Options.ratings())
 
   def business_keys(), do: Map.keys(@business_fields)
-  def technical_keys(), do: Map.keys(@technical_fields)
+  def technical_keys(), do: Map.keys(@technical_fields) ++ [:sourceQueryParams]
   def all_keys(), do: Map.keys(@types)
 
   def light_validation_changeset(changes), do: light_validation_changeset(%{}, changes)
 
   def light_validation_changeset(schema, changes) do
-    {schema, @types}
+
+    the_types = Map.put(@types, :sourceQueryParams, {:embed,
+    %Ecto.Embedded{
+      cardinality: :many,
+      field: :sourceQueryParams,
+      on_cast: &KeyValue.changeset(&1, &2),
+      on_replace: :delete,
+      owner: nil,
+      related: KeyValue,
+      unique: false
+    }})
+
+    {schema, the_types}
     |> cast(changes, Map.keys(@types), empty_values: [])
+    |> cast_embed(:sourceQueryParams)
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:contactEmail, @email_regex)
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")

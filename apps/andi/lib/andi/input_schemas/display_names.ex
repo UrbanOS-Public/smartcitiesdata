@@ -26,7 +26,9 @@ defmodule Andi.InputSchemas.DisplayNames do
     sourceFormat: "Source Format",
     sourceType: "Source Type",
     sourceUrl: "Source URL",
-    topLevelSelector: "Top Level Selector"
+    topLevelSelector: "Top Level Selector",
+    key: "KEY",
+    value: "VALUE"
   }
 
   def get(field_key) do

@@ -111,9 +111,9 @@ defmodule AndiWeb.EditLiveView do
           <%= error_tag(f, :sourceUrl) %>
         </div>
         <div>
-          <%= for {k, v} <- input_value(f, :sourceQueryParams) do %>
-            <%= text_input(f, :"sourceQueryParams_#{k}", value: k, name: "metadata[sourceQueryParams][#{k}]", class: "input full-width") %>
-            <%= text_input(f, :"sourceQueryParams_#{k}", value: v, name: "metadata[sourceQueryParams][#{k}]", class: "input full-width") %>
+          <%= inputs_for f, :sourceQueryParams, fn sqpf -> %>
+            <%= text_input(sqpf, :key, class: "input full-width") %>
+            <%= text_input(sqpf, :value, class: "input full-width") %>
           <% end %>
         </div>
         <div class="url-form__test-section">
@@ -194,9 +194,8 @@ defmodule AndiWeb.EditLiveView do
     changeset = InputConverter.changeset_from_dataset(original_dataset, form_data)
 
     if changeset.valid? do
-      IO.inspect(changeset, label: "stuff")
       changes = Ecto.Changeset.apply_changes(changeset)
-      dataset = InputConverter.restruct(changes, original_dataset)
+      dataset = InputConverter.restruct(changes, original_dataset) |> IO.inspect(label: "SAVE:")
 
       case Brook.Event.send(instance_name(), dataset_update(), :andi, dataset) do
         :ok ->
