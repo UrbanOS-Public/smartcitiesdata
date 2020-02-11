@@ -3,6 +3,7 @@ defmodule AndiWeb.EditLiveView do
 
   alias Phoenix.HTML.Link
   alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.DatasetInput
   alias Andi.InputSchemas.DisplayNames
   alias Andi.InputSchemas.Options
 
@@ -115,6 +116,7 @@ defmodule AndiWeb.EditLiveView do
             <%= text_input(sqpf, :key, class: "input full-width") %>
             <%= text_input(sqpf, :value, class: "input full-width") %>
           <% end %>
+          <button type="button" class="metadata-form__test-btn btn--test btn btn--large btn--action" phx-click="add_query_param">ADD</button>
         </div>
         <div class="url-form__test-section">
           <button type="button" class="metadata-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
@@ -175,6 +177,11 @@ defmodule AndiWeb.EditLiveView do
     end)
 
     {:noreply, assign(socket, testing: true)}
+  end
+
+  def handle_event("add_query_param", _, socket) do
+    changeset = DatasetInput.add_source_query_param(socket.assigns.changeset, %{})
+    {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("validate", %{"metadata" => form_data}, socket) do

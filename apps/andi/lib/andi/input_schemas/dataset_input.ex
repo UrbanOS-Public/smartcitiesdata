@@ -106,6 +106,10 @@ defmodule Andi.InputSchemas.DatasetInput do
     light_validation_changeset(schema, changes) |> validate_unique_system_name()
   end
 
+  def add_source_query_param(changeset, %{} = param) do
+    update_change(changeset, :sourceQueryParams, fn params -> params ++ [KeyValue.changeset(%KeyValue{}, param)] end)
+  end
+
   defp validate_unique_system_name(changeset) do
     if has_unique_data_and_org_name?(changeset) do
       changeset
