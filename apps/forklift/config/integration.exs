@@ -10,7 +10,7 @@ redix_args = [host: host]
 endpoints = [{to_charlist(host), 9092}]
 
 output_topic = "streaming-persisted"
-
+bucket_name = "kdp-cloud-storage"
 config :forklift,
   data_reader: Pipeline.Reader.DatasetTopicReader,
   topic_writer: Pipeline.Writer.TopicWriter,
@@ -64,3 +64,11 @@ config(:forklift, divo: "docker-compose.yml", divo_wait: [dwell: 1000, max_tries
 
 config :redix,
   args: redix_args
+
+config :ex_aws, :s3,
+  scheme: "http://",
+  region: "local",
+  host: %{
+    "local" => "localhost"
+  },
+  port: 9000

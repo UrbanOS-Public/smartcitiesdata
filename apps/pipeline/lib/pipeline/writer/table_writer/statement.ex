@@ -24,6 +24,16 @@ defmodule Pipeline.Writer.TableWriter.Statement do
       {:error, "Unable to parse schema: #{inspect(e)}"}
   end
 
+  def create(%{table: name, schema: schema, format: format}) do
+    {:ok, Create.compose(name, schema, format)}
+  rescue
+    e in FieldTypeError ->
+      {:error, e.message}
+
+    e ->
+      {:error, "Unable to parse schema: #{inspect(e)}"}
+  end
+
   def insert(config, content) do
     with {:ok, statement} <- Insert.compose(config, content) do
       statement

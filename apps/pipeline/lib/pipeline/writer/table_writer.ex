@@ -6,6 +6,7 @@ defmodule Pipeline.Writer.TableWriter do
   @behaviour Pipeline.Writer
   alias Pipeline.Writer.TableWriter.{Compaction, Statement}
   alias Pipeline.Application
+  alias ExAws.S3
   require Logger
 
   @type schema() :: [map()]
@@ -18,7 +19,15 @@ defmodule Pipeline.Writer.TableWriter do
   def init(args) do
     config = parse_args(args)
 
+    json_config = %{
+      table: config[:table] <> "_json",
+      schema: config[:schema],
+      format: "JSON"
+    }
+
     with {:ok, statement} <- Statement.create(config),
+         {:ok, _} <- execute(statement),
+         {:ok, statement} <- Statement.create(json_config),
          {:ok, _} <- execute(statement) do
       Logger.info("Created #{config.table} table")
       :ok
@@ -41,9 +50,25 @@ defmodule Pipeline.Writer.TableWriter do
   end
 
   def write(content, config) do
-    payloads = Enum.map(content, &Map.get(&1, :payload))
+    args = parse_args(config)
 
-    parse_args(config)
+    payloads = Enum.map(content, &Map.get(&1, :payload))
+    File.write!(config[:table], Jason.encode!(payloads))
+
+    # time = DateTime.utc_now |> DateTime.to_unix |> to_string()
+    # file_name = "hive-s3/#{config[:table]}_json/#{time}-#{System.unique_integer}"
+    # config[:table]
+    # |> S3.Upload.stream_file()
+    # |> S3.upload("kdp-cloud-storage", "hive-s3/" <> config[:table] <> "_json/" <> time)
+    # |> ExAws.request()
+    # |> IO.inspect(label: "table_writer.ex:61")
+    args
+    |> Map.put(:table, config.table <> "_json")
+    |> Statement.insert(payloads)
+    |> execute()
+    |> IO.inspect(label: "table_writer.ex:69")
+
+    args
     |> Statement.insert(payloads)
     |> execute()
     |> case do
@@ -76,9 +101,7 @@ defmodule Pipeline.Writer.TableWriter do
 
   defp execute(statement) do
     try do
-      Application.prestige_opts()
-      |> Prestige.new_session()
-      |> Prestige.execute(statement)
+      Application.prestige_opts() |> Prestige.new_session() |> Prestige.execute(statement)
     rescue
       e -> e
     end

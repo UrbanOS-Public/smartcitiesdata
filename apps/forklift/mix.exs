@@ -29,6 +29,9 @@ defmodule Forklift.MixProject do
     [
       {:benchee, "~> 1.0", only: [:integration]},
       {:brod, "~> 3.8", override: true},
+      {:ex_aws, "~> 2.1"},
+      {:ex_aws_s3, "~> 2.0",
+       [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},
       {:brook, "~> 0.4.0"},
       {:checkov, "~> 0.4"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
@@ -50,6 +53,7 @@ defmodule Forklift.MixProject do
       {:retry, "~> 0.13"},
       {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.7"},
+      {:sweet_xml, "~> 0.6"},
       {:streaming_metrics, "~> 2.2"},
       {:timex, "~> 3.6"},
       {:distillery, "~> 2.1"},
