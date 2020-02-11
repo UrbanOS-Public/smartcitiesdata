@@ -106,5 +106,5 @@ config :discovery_api, :brook,
   handlers: [DiscoveryApi.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
-    init_arg: [redix_args: [host: redis_host], namespace: "discovery-api:view"]
+    init_arg: [redix_args: redix_args, namespace: "discovery-api:view"]
   ]
