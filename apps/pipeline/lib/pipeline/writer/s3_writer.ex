@@ -1,21 +1,14 @@
-defmodule Pipeline.Writer.TableWriter do
-  @moduledoc """
-  Implementation of `Pipeline.Writer` for PrestoDB tables.
-  """
-
-  @behaviour Pipeline.Writer
+defmodule Pipeline.Writer.S3Writer do
+  alias Pipeline.Writer.S3Writer
   alias Pipeline.Writer.TableWriter.{Compaction, Statement}
   alias Pipeline.Application
   alias ExAws.S3
-  require Logger
 
+  require Logger
   @type schema() :: [map()]
 
   @impl Pipeline.Writer
   @spec init(table: String.t(), schema: schema()) :: :ok | {:error, term()}
-  @doc """
-  Ensures PrestoDB table exists.
-  """
   def init(args) do
     config = parse_args(args)
 
@@ -46,51 +39,31 @@ defmodule Pipeline.Writer.TableWriter do
 
     payloads = Enum.map(content, &Map.get(&1, :payload))
 
-    json_data = payloads |> Enum.map(&Jason.encode!/1) |> Enum.join("\n")
-    File.write!(config[:table], json_data, [:compressed])
+    json_data = payloads
+    |> Enum.map(&S3Writer.S3SafeJson.build(&1, args[:schema]))
+    |> Enum.map(&Jason.encode!/1)
+    |> Enum.join("\n")
+
+    File.write!(args[:table], json_data, [:compressed])
 
     time = DateTime.utc_now |> DateTime.to_unix |> to_string()
-    file_name = "hive-s3/#{config[:table]}_json/#{time}-#{System.unique_integer}.gz"
-    config[:table]
+    file_name = "hive-s3/#{args[:table]}/#{time}-#{System.unique_integer}.gz"
+    args[:table]
     |> S3.Upload.stream_file()
     |> S3.upload("kdp-cloud-storage", file_name)
     |> ExAws.request()
-    |> IO.inspect(label: "table_writer.ex:61")
-
-    # args
-    # |> Map.put(:table, config[:table] <> "_json")
-    # |> Statement.insert(payloads)
-    # |> execute()
-    # |> IO.inspect(label: "table_writer.ex:69")
-
-    args
-    |> Statement.insert(payloads)
-    |> execute()
+    |> IO.inspect(label: "s3_writer.ex:49")
     |> case do
       {:ok, _} -> :ok
       error -> {:error, error}
     end
   end
 
-  @impl Pipeline.Writer
-  @spec compact(table: String.t()) :: :ok | {:error, term()}
-  @doc """
-  Creates a new, compacted table from a table. Compaction reduces the number
-  of ORC files stored by object storage.
-  """
-  def compact(args) do
-    table = Keyword.fetch!(args, :table)
-
-    Compaction.setup(table)
-    |> Compaction.run()
-    |> Compaction.measure(table)
-    |> Compaction.complete(table)
-  end
-
   defp parse_args(args) do
     %{
-      table: Keyword.fetch!(args, :table),
-      schema: Keyword.fetch!(args, :schema)
+      table: Keyword.fetch!(args, :table) <> "__json",
+      schema: Keyword.fetch!(args, :schema),
+      format: "JSON"
     }
   end
 
