@@ -1,10 +1,10 @@
 use Mix.Config
 
 redis_host = System.get_env("REDIS_HOST")
-redis_password = System.get_env("REDIS_PASSWORD", "")
+redis_password = System.get_env("REDIS_PASSWORD")
 all_redis_args = [host: redis_host, password: redis_password]
 redix_args = Enum.filter(all_redis_args, fn
-  {_, ""} -> false
+  {_, nil} -> false
   _ -> true
 end)
 
