@@ -6,7 +6,6 @@ defmodule Pipeline.Writer.TableWriter do
   @behaviour Pipeline.Writer
   alias Pipeline.Writer.TableWriter.{Compaction, Statement}
   alias Pipeline.Application
-  alias ExAws.S3
   require Logger
 
   @type schema() :: [map()]
@@ -42,28 +41,9 @@ defmodule Pipeline.Writer.TableWriter do
   end
 
   def write(content, config) do
-    args = parse_args(config)
-
     payloads = Enum.map(content, &Map.get(&1, :payload))
 
-    json_data = payloads |> Enum.map(&Jason.encode!/1) |> Enum.join("\n")
-    File.write!(config[:table], json_data, [:compressed])
-
-    time = DateTime.utc_now |> DateTime.to_unix |> to_string()
-    file_name = "hive-s3/#{config[:table]}_json/#{time}-#{System.unique_integer}.gz"
-    config[:table]
-    |> S3.Upload.stream_file()
-    |> S3.upload("kdp-cloud-storage", file_name)
-    |> ExAws.request()
-    |> IO.inspect(label: "table_writer.ex:61")
-
-    # args
-    # |> Map.put(:table, config[:table] <> "_json")
-    # |> Statement.insert(payloads)
-    # |> execute()
-    # |> IO.inspect(label: "table_writer.ex:69")
-
-    args
+    parse_args(config)
     |> Statement.insert(payloads)
     |> execute()
     |> case do
@@ -96,7 +76,9 @@ defmodule Pipeline.Writer.TableWriter do
 
   defp execute(statement) do
     try do
-      Application.prestige_opts() |> Prestige.new_session() |> Prestige.execute(statement)
+      Application.prestige_opts()
+      |> Prestige.new_session()
+      |> Prestige.execute(statement)
     rescue
       e -> e
     end

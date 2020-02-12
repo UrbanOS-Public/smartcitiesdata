@@ -35,6 +35,7 @@ defmodule Pipeline.MixProject do
       {:prestige, "~> 1.0"},
       {:timex, "~> 3.6"},
       {:sweet_xml, "~> 0.6"},
+      {:temp, "~> 0.4"},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},

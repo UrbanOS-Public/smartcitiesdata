@@ -4,7 +4,8 @@ defmodule Pipeline.Writer.S3WriterTest do
   use Placebo
 
   alias Pipeline.Writer.S3Writer
-  # alias Pipeline.Writer.S3Writer.Compaction
+  alias Pipeline.Writer.TableWriter
+  alias Pipeline.Writer.S3Writer.Compaction
   alias Pipeline.Application
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper, only: [eventually: 1]
@@ -184,68 +185,90 @@ defmodule Pipeline.Writer.S3WriterTest do
     end
   end
 
-  # describe "compact/1" do
-  #   test "compacts a table without changing data", %{session: session} do
-  #     sub = [%{name: "three", type: "boolean"}]
-  #     schema = [%{name: "one", type: "list", itemType: "decimal"}, %{name: "two", type: "map", subSchema: sub}]
-  #     dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "a__b"}})
+  describe "compact/1" do
+    test "compacts a table without changing data", %{session: session} do
+      sub = [%{name: "three", type: "boolean"}]
+      schema = [%{name: "one", type: "list", itemType: "decimal"}, %{name: "two", type: "map", subSchema: sub}]
+      dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "a__b"}})
 
-  #     TableWriter.init(table: dataset.technical.systemName, schema: schema)
+      S3Writer.init(table: dataset.technical.systemName, schema: schema)
 
-  #     Enum.each(1..15, fn n ->
-  #       payload = %{"one" => [n], "two" => %{"three" => false}}
-  #       datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
-  #       TableWriter.write([datum], table: dataset.technical.systemName, schema: schema)
-  #     end)
+      Enum.each(1..15, fn n ->
+        payload = %{"one" => [n], "two" => %{"three" => false}}
+        datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
+        S3Writer.write([datum], table: dataset.technical.systemName, schema: schema)
+      end)
 
-  #     eventually(fn ->
-  #       query = "select count(1) from #{dataset.technical.systemName}"
+      Enum.each(1..5, fn n ->
+        payload = %{"one" => [n], "two" => %{"three" => false}}
+        datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
+        TableWriter.write([datum], table: dataset.technical.systemName, schema: schema)
+      end)
 
-  #       result =
-  #         session
-  #         |> Prestige.query!(query)
+      eventually(fn ->
+        orc_query = "select count(1) from #{dataset.technical.systemName}__json"
 
-  #       assert result.rows == [[15]]
-  #     end)
+        orc_query_result =
+          session
+          |> Prestige.query!(orc_query)
 
-  #     assert :ok == TableWriter.compact(table: dataset.technical.systemName)
+        assert orc_query_result.rows == [[15]]
 
-  #     eventually(fn ->
-  #       query = "select count(1) from #{dataset.technical.systemName}"
+        json_query = "select count(1) from #{dataset.technical.systemName}"
 
-  #       result =
-  #         session
-  #         |> Prestige.query!(query)
+        json_query_result =
+          session
+          |> Prestige.query!(json_query)
 
-  #       assert result.rows == [[15]]
-  #     end)
-  #   end
+        assert json_query_result.rows == [[5]]
+      end)
 
-  #   test "fails without altering state if it was going to change data", %{session: session} do
-  #     allow Compaction.measure(any(), any()), return: {6, 10}, meck_options: [:passthrough]
+      assert :ok == S3Writer.compact(table: dataset.technical.systemName)
 
-  #     schema = [%{name: "abc", type: "string"}]
-  #     dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "xyz"}})
+      eventually(fn ->
+        orc_query = "select count(1) from #{dataset.technical.systemName}"
 
-  #     TableWriter.init(table: dataset.technical.systemName, schema: schema)
+        orc_query_result =
+          session
+          |> Prestige.query!(orc_query)
 
-  #     Enum.each(1..15, fn n ->
-  #       payload = %{"abc" => "#{n}"}
-  #       datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
-  #       TableWriter.write([datum], table: "xyz", schema: schema)
-  #     end)
+        assert orc_query_result.rows == [[20]]
 
-  #     assert {:error, _} = TableWriter.compact(table: "xyz")
+        json_query = "select count(1) from #{dataset.technical.systemName}__json"
 
-  #     eventually(fn ->
-  #       query = "select count(1) from xyz"
+        json_query_result =
+          session
+          |> Prestige.query!(json_query)
 
-  #       result =
-  #         session
-  #         |> Prestige.query!(query)
+        assert json_query_result.rows == [[0]]
+      end)
+    end
 
-  #       assert result.rows == [[15]]
-  #     end)
-  #   end
-  # end
+    test "fails without altering state if it was going to change data", %{session: session} do
+      allow Compaction.measure(any(), any()), return: {6, 10}, meck_options: [:passthrough]
+
+      schema = [%{name: "abc", type: "string"}]
+      dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "xyz"}})
+
+      S3Writer.init(table: dataset.technical.systemName, schema: schema)
+
+      Enum.each(1..15, fn n ->
+        payload = %{"abc" => "#{n}"}
+        datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
+        S3Writer.write([datum], table: "xyz", schema: schema)
+      end)
+
+      assert {:error, _} = S3Writer.compact(table: "xyz")
+
+      eventually(fn ->
+        query = "select count(1) from xyz__json"
+
+        result =
+          session
+          |> Prestige.query!(query)
+
+        assert result.rows == [[15]]
+      end)
+    end
+  end
 end

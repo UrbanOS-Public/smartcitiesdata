@@ -44,6 +44,10 @@ defmodule Pipeline.Writer.TableWriter.Statement do
     "drop table if exists #{table}"
   end
 
+  def truncate(%{table: table}) do
+    "delete from #{table}"
+  end
+
   def alter(%{table: table, alteration: change}) do
     "alter table #{table} #{change}"
   end
