@@ -111,12 +111,13 @@ defmodule AndiWeb.EditLiveView do
           <%= text_input(f, :sourceUrl, class: "input full-width", disabled: @testing) %>
           <%= error_tag(f, :sourceUrl) %>
         </div>
-        <div>
+        <div class="url-form__source-query-params">
           <%= inputs_for f, :sourceQueryParams, fn sqpf -> %>
-            <%= text_input(sqpf, :key, class: "input full-width") %>
-            <%= text_input(sqpf, :value, class: "input full-width") %>
+            <%= text_input(sqpf, :key, class: "input full-width query-param") %>
+            <%= text_input(sqpf, :value, class: "input full-width query-param") %>
+            <button type="button" class="metadata-form__source-query-params-btn btn--delete btn btn--large btn--action" phx-click="remove_source_query_param" phx-value-id="<%= input_value(sqpf, :id) %>">X</button>
           <% end %>
-          <button type="button" class="metadata-form__test-btn btn--test btn btn--large btn--action" phx-click="add_query_param">ADD</button>
+          <button type="button" class="metadata-form__source-query-params-btn btn--add btn btn--large btn--action" phx-click="add_source_query_param">ADD</button>
         </div>
         <div class="url-form__test-section">
           <button type="button" class="metadata-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
@@ -179,8 +180,13 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, testing: true)}
   end
 
-  def handle_event("add_query_param", _, socket) do
+  def handle_event("add_source_query_param", _, socket) do
     changeset = DatasetInput.add_source_query_param(socket.assigns.changeset, %{})
+    {:noreply, assign(socket, changeset: changeset)}
+  end
+
+  def handle_event("remove_source_query_param", %{"id" => id}, socket) do
+    changeset = DatasetInput.remove_source_query_param(socket.assigns.changeset, id)
     {:noreply, assign(socket, changeset: changeset)}
   end
 

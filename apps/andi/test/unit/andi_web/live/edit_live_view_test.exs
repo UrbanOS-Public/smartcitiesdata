@@ -548,6 +548,39 @@ defmodule AndiWeb.EditLiveViewTest do
     end
   end
 
+  describe "updating source query params" do
+    test "new key/value inputs are added when add button is pressed", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{"foo" => "bar"}}})
+
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      html = render_change(view, :add_source_query_param, %{})
+
+      inputs = Floki.find(html, ".query-param")
+
+      assert length(inputs) == 4
+    end
+
+
+    test "key/value inputs are deleted when x is pressed", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{foo: "bar", baz: "biz"}}})
+
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      btn_ids = Floki.find(html, ".btn--delete") |> Floki.attribute("phx-value-id")
+
+      html = render_change(view, :remove_source_query_param, %{id: List.first(btn_ids)})
+
+      inputs = Floki.find(html, ".query-param")
+
+      assert length(inputs) == 2
+    end
+  end
+
   defp save_form_for_dataset(conn, dataset) do
     DatasetCache.put(dataset)
 
