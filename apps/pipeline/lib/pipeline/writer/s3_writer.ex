@@ -62,6 +62,27 @@ defmodule Pipeline.Writer.S3Writer do
     upload_to_kdp_s3_folder(source_file_path, destination_file_path)
   end
 
+  @impl Pipeline.Writer
+  @spec compact(table: String.t()) :: :ok | :skipped | {:error, term()}
+  @doc """
+  Creates a new, compacted table from the S3 table and the compacted table. Compaction reduces the number of ORC files stored by object storage.
+  """
+  def compact(options) do
+    compaction_options = [
+     orc_table: orc_table_name(options),
+     json_table: json_table_name(options)
+    ]
+
+    if Compaction.skip?(compaction_options) do
+      :skipped
+    else
+      Compaction.setup(compaction_options)
+      |> Compaction.run()
+      |> Compaction.measure(compaction_options)
+      |> Compaction.complete(compaction_options)
+    end
+  end
+
   defp write_to_temporary_file(file_contents, table_name) do
     temporary_file_path = Temp.path!(table_name)
 
@@ -92,23 +113,6 @@ defmodule Pipeline.Writer.S3Writer do
   defp cleanup_file(passthrough, file_path) do
     File.rm!(file_path)
     passthrough
-  end
-
-  @impl Pipeline.Writer
-  @spec compact(table: String.t()) :: :ok | {:error, term()}
-  @doc """
-  Creates a new, compacted table from the S3 table and the compacted table. Compaction reduces the number of ORC files stored by object storage.
-  """
-  def compact(options) do
-    compaction_options = [
-     orc_table: orc_table_name(options),
-     json_table: json_table_name(options)
-    ]
-
-    Compaction.setup(compaction_options)
-    |> Compaction.run()
-    |> Compaction.measure(compaction_options)
-    |> Compaction.complete(compaction_options)
   end
 
   defp orc_config(options) do

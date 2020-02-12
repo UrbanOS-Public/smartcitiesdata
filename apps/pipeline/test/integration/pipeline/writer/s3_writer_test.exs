@@ -206,21 +206,21 @@ defmodule Pipeline.Writer.S3WriterTest do
       end)
 
       eventually(fn ->
-        orc_query = "select count(1) from #{dataset.technical.systemName}__json"
+        orc_query = "select count(1) from #{dataset.technical.systemName}"
 
         orc_query_result =
           session
           |> Prestige.query!(orc_query)
 
-        assert orc_query_result.rows == [[15]]
+        assert orc_query_result.rows == [[5]]
 
-        json_query = "select count(1) from #{dataset.technical.systemName}"
+        json_query = "select count(1) from #{dataset.technical.systemName}__json"
 
         json_query_result =
           session
           |> Prestige.query!(json_query)
 
-        assert json_query_result.rows == [[5]]
+        assert json_query_result.rows == [[15]]
       end)
 
       assert :ok == S3Writer.compact(table: dataset.technical.systemName)
@@ -233,6 +233,58 @@ defmodule Pipeline.Writer.S3WriterTest do
           |> Prestige.query!(orc_query)
 
         assert orc_query_result.rows == [[20]]
+
+        json_query = "select count(1) from #{dataset.technical.systemName}__json"
+
+        json_query_result =
+          session
+          |> Prestige.query!(json_query)
+
+        assert json_query_result.rows == [[0]]
+      end)
+    end
+
+    test "skips compaction (and tells you that it skipped it) for empty json table", %{session: session} do
+      sub = [%{name: "three", type: "boolean"}]
+      schema = [%{name: "one", type: "list", itemType: "decimal"}, %{name: "two", type: "map", subSchema: sub}]
+      dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "d__e"}})
+
+      S3Writer.init(table: dataset.technical.systemName, schema: schema)
+
+      Enum.each(1..5, fn n ->
+        payload = %{"one" => [n], "two" => %{"three" => false}}
+        datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
+        TableWriter.write([datum], table: dataset.technical.systemName, schema: schema)
+      end)
+
+      eventually(fn ->
+        orc_query = "select count(1) from #{dataset.technical.systemName}"
+
+        orc_query_result =
+          session
+          |> Prestige.query!(orc_query)
+
+        assert orc_query_result.rows == [[5]]
+
+        json_query = "select count(1) from #{dataset.technical.systemName}__json"
+
+        json_query_result =
+          session
+          |> Prestige.query!(json_query)
+
+        assert json_query_result.rows == [[0]]
+      end)
+
+      assert :skipped == S3Writer.compact(table: dataset.technical.systemName)
+
+      eventually(fn ->
+        orc_query = "select count(1) from #{dataset.technical.systemName}"
+
+        orc_query_result =
+          session
+          |> Prestige.query!(orc_query)
+
+        assert orc_query_result.rows == [[5]]
 
         json_query = "select count(1) from #{dataset.technical.systemName}__json"
 

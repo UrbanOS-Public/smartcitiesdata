@@ -28,6 +28,14 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     |> execute_async()
   end
 
+  def skip?(options) do
+    json_table = options[:json_table]
+    case execute("select count(1) from #{json_table}") do
+      {:ok, %{rows: [[0]]}} -> true
+      _ -> false
+    end
+  end
+
   def measure(compaction_task, options) do
     orc_table = options[:orc_table]
     json_table = options[:json_table]
