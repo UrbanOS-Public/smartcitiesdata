@@ -5,7 +5,10 @@ defmodule Andi.InputSchemas.DatasetInputTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   alias Andi.InputSchemas.DatasetInput
+  alias Andi.InputSchemas.KeyValue
   alias Andi.DatasetCache
+
+  @sourceQueryParamId Ecto.UUID.generate()
 
   @valid_changes %{
     benefitRating: 0,
@@ -24,6 +27,10 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     riskRating: 1,
     schema: [%{name: "name", type: "type"}],
     sourceFormat: "sourceFormat",
+    sourceQueryParams: [
+      %{id: Ecto.UUID.generate(), key: "foo", value: "bar"},
+      %{id: @sourceQueryParamId, key: "fizzle", value: "bizzle"}
+    ],
     sourceType: "sourceType",
     sourceUrl: "sourceurl.com"
   }
@@ -221,6 +228,51 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       assert {:contactEmail, {"has invalid format", [validation: :format]}} in changeset.errors
       assert {:sourceFormat, {"is required", [validation: :required]}} in changeset.errors
+    end
+  end
+
+  describe "add_source_query_param" do
+    setup do
+      %{changeset: DatasetInput.light_validation_changeset(@valid_changes)}
+    end
+
+    test "appends key/value to the sourceQueryParams", %{changeset: changeset} do
+      new_param = %{key: "key2", value: "value2"}
+      changes = DatasetInput.add_source_query_param(changeset, new_param)
+      |> Ecto.Changeset.apply_changes()
+
+      assert length(changes.sourceQueryParams) == length(@valid_changes.sourceQueryParams) + 1
+      refute is_nil(List.last(changes.sourceQueryParams).id)
+      assert List.last(changes.sourceQueryParams).key == new_param.key
+      assert List.last(changes.sourceQueryParams).value == new_param.value
+    end
+
+    test "appends an empty key/value to the sourceQueryParams by default", %{changeset: changeset} do
+      changes = DatasetInput.add_source_query_param(changeset)
+      |> Ecto.Changeset.apply_changes()
+
+      assert length(changes.sourceQueryParams) == length(@valid_changes.sourceQueryParams) + 1
+      refute is_nil(List.last(changes.sourceQueryParams).id)
+      assert is_nil(List.last(changes.sourceQueryParams).key)
+      assert is_nil(List.last(changes.sourceQueryParams).value)
+    end
+  end
+
+  describe "remove_source_query_param" do
+    setup do
+      %{changeset: DatasetInput.light_validation_changeset(@valid_changes)}
+    end
+
+    test "removes key/value from the sourceQueryParams by id", %{changeset: changeset} do
+      changes = DatasetInput.remove_source_query_param(changeset, @sourceQueryParamId)
+      |> Ecto.Changeset.apply_changes()
+
+      assert length(changes.sourceQueryParams) == length(@valid_changes.sourceQueryParams) - 1
+      refute Enum.any?(changes.sourceQueryParams, fn param -> param.id == @sourceQueryParamId end)
+    end
+
+    test "does nothing if id is unknown", %{changeset: changeset} do
+      assert changeset == DatasetInput.remove_source_query_param(changeset, "unknown")
     end
   end
 end

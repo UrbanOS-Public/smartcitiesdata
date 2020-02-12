@@ -16,8 +16,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     on_cast: &KeyValue.changeset(&1, &2),
     on_replace: :delete,
     owner: nil,
-    related: KeyValue,
-    unique: false
+    related: KeyValue
   }
 
   @business_fields %{
@@ -86,7 +85,6 @@ defmodule Andi.InputSchemas.DatasetInput do
   def light_validation_changeset(changes), do: light_validation_changeset(%{}, changes)
 
   def light_validation_changeset(schema, changes) do
-
     {schema, @types}
     |> cast(changes, Map.keys(@non_embedded_types), empty_values: [])
     |> cast_embed(:sourceQueryParams)
@@ -106,8 +104,12 @@ defmodule Andi.InputSchemas.DatasetInput do
     light_validation_changeset(schema, changes) |> validate_unique_system_name()
   end
 
-  def add_source_query_param(changeset, %{} = param) do
+  def add_source_query_param(changeset, %{} = param \\ %{}) do
     update_change(changeset, :sourceQueryParams, fn params -> params ++ [KeyValue.changeset(%KeyValue{}, param)] end)
+  end
+
+  def remove_source_query_param(changeset, id) do
+    update_change(changeset, :sourceQueryParams, fn params -> Enum.filter(params, fn param -> param.changes.id != id end) end)
   end
 
   defp validate_unique_system_name(changeset) do
