@@ -5,7 +5,7 @@ defmodule Andi.InputSchemas.KeyValue do
 
   @primary_key false
   embedded_schema() do
-    field(:id, Ecto.UUID, default: Ecto.UUID.generate())
+    field(:id, Ecto.UUID)
     field(:key, :string)
     field(:value, :string)
   end

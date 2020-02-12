@@ -549,35 +549,36 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   describe "updating source query params" do
-    test "new key/value inputs are added when add button is pressed", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{"foo" => "bar"}}})
-
+    setup do
+      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{foo: "bar", baz: "biz"}}})
       DatasetCache.put(dataset)
 
+      %{dataset: dataset}
+    end
+
+    test "new key/value inputs are added when add button is pressed", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       html = render_change(view, :add_source_query_param, %{})
 
-      inputs = Floki.find(html, ".query-param")
-
-      assert length(inputs) == 4
+      assert html |> Floki.find(".url-form__source-query-param-key-input") |> length() == 3
+      assert html |> Floki.find(".url-form__source-query-param-value-input") |> length() == 3
     end
 
-
-    test "key/value inputs are deleted when x is pressed", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{foo: "bar", baz: "biz"}}})
-
-      DatasetCache.put(dataset)
-
+    test "key/value inputs are deleted when x is pressed", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      btn_ids = Floki.find(html, ".btn--delete") |> Floki.attribute("phx-value-id")
+      btn_id = Floki.find(html, ".url-form__source-query-params-delete-btn") |> Floki.attribute("phx-value-id") |> hd()
 
-      html = render_change(view, :remove_source_query_param, %{id: List.first(btn_ids)})
+      html = render_change(view, :remove_source_query_param, %{id: btn_id})
 
-      inputs = Floki.find(html, ".query-param")
+      key_input = html |> Floki.find(".url-form__source-query-param-key-input")
+      assert length(key_input) == 1
+      refute btn_id =~ hd(key_input) |> Floki.attribute("class") |> hd()
 
-      assert length(inputs) == 2
+      value_input = html |> Floki.find(".url-form__source-query-param-key-input")
+      assert length(value_input) == 1
+      refute btn_id =~ hd(value_input) |> Floki.attribute("class") |> hd()
     end
   end
 

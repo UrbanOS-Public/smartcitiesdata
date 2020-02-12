@@ -113,14 +113,14 @@ defmodule AndiWeb.EditLiveView do
         </div>
         <div class="url-form__source-query-params">
           <%= inputs_for f, :sourceQueryParams, fn sqpf -> %>
-            <%= text_input(sqpf, :key, class: "input full-width query-param") %>
-            <%= text_input(sqpf, :value, class: "input full-width query-param") %>
-            <button type="button" class="metadata-form__source-query-params-btn btn--delete btn btn--large btn--action" phx-click="remove_source_query_param" phx-value-id="<%= input_value(sqpf, :id) %>">X</button>
+            <%= text_input(sqpf, :key, class: "input full-width url-form__source-query-param-key-input #{input_value(sqpf, :id)}") %>
+            <%= text_input(sqpf, :value, class: "input full-width url-form__source-query-param-value-input #{input_value(sqpf, :id)}") %>
+            <button type="button" class="url-form__source-query-params-delete-btn btn btn--large btn--action" phx-click="remove_source_query_param" phx-value-id="<%= input_value(sqpf, :id) %>">X</button>
           <% end %>
-          <button type="button" class="metadata-form__source-query-params-btn btn--add btn btn--large btn--action" phx-click="add_source_query_param">ADD</button>
+          <button type="button" class="url-form__source-query-params-add-btn btn btn--large btn--action" phx-click="add_source_query_param">+</button>
         </div>
         <div class="url-form__test-section">
-          <button type="button" class="metadata-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
+          <button type="button" class="url-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
           <%= if @test_results do %>
             <div class="test-status">
             Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) %></span>
