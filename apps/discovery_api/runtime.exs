@@ -1,8 +1,16 @@
 use Mix.Config
 
-redis_host = System.get_env("REDIS_HOST")
-kafka_brokers = System.get_env("KAFKA_BROKERS")
+get_redix_args = fn (host, password) ->
+  [host: host, password: password]
+  |> Enum.filter(fn
+    {_, nil} -> false
+    {_, ""} -> false
+    _ -> true
+  end)
+end
+redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
 
+kafka_brokers = System.get_env("KAFKA_BROKERS")
 endpoint =
   kafka_brokers
   |> String.split(",")
@@ -55,7 +63,7 @@ config :discovery_api,
   secrets_endpoint: secrets_endpoint
 
 config :redix,
-  host: System.get_env("REDIS_HOST")
+  args: redix_args
 
 config :prestige, :session_opts, url: System.get_env("PRESTO_URL")
 
@@ -98,5 +106,5 @@ config :discovery_api, :brook,
   handlers: [DiscoveryApi.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
-    init_arg: [redix_args: [host: redis_host], namespace: "discovery-api:view"]
+    init_arg: [redix_args: redix_args, namespace: "discovery-api:view"]
   ]
