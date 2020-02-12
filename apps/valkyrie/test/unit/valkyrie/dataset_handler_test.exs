@@ -76,21 +76,22 @@ defmodule Valkyrie.DatasetHandlerTest do
 
       assert_called(DatasetProcessor.stop("ds1"))
     end
-  end
 
-  test "should delete dataset when dataset:delete event fires" do
-    allow(DatasetProcessor.delete(any()), return: :does_not_matter)
+    test "should delete dataset when dataset:delete event fires" do
+      dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: "ingest"})
+      allow(DatasetProcessor.delete(any()), return: :ok)
 
-    Brook.Test.with_event(@instance, fn ->
-      DatasetHandler.handle_event(
-        Brook.Event.new(
-          type: dataset_delete(),
-          data: %{"dataset_id" => "ds1"},
-          author: :author
+      Brook.Test.with_event(@instance, fn ->
+        DatasetHandler.handle_event(
+          Brook.Event.new(
+            type: dataset_delete(),
+            data: dataset,
+            author: :author
+          )
         )
-      )
-    end)
+      end)
 
-    assert_called(DatasetProcessor.delete("ds1"))
+      assert_called(DatasetProcessor.delete(dataset.id))
+    end
   end
 end

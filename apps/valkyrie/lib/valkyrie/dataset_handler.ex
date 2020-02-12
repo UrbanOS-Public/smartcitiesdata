@@ -28,10 +28,15 @@ defmodule Valkyrie.DatasetHandler do
 
   def handle_event(%Brook.Event{
         type: dataset_delete(),
-        data: %{"dataset_id" => dataset_id}
+        data: %Dataset{} = dataset
       }) do
-    Valkyrie.DatasetProcessor.delete(dataset_id)
-    Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{dataset_id}")
-    delete(:datasets, dataset_id)
+    case Valkyrie.DatasetProcessor.delete(dataset.id) do
+      :ok ->
+        delete(:datasets, dataset.id)
+        Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{dataset.id}")
+
+      {:error, error} ->
+        Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{dataset.id}, Reason: #{inspect(error)}")
+    end
   end
 end

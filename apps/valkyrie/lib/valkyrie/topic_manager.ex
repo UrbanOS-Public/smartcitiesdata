@@ -20,17 +20,11 @@ defmodule Valkyrie.TopicManager do
     %{input_topic: input_topic, output_topic: output_topic}
   end
 
-  @spec delete_topics(%SmartCity.Dataset{}) :: %{input_topic: String.t(), output_topic: String.t()}
-  def delete_topics(dataset) do
-    input_topic = input_topic(dataset.id)
-    output_topic = output_topic(dataset.id)
-
+  def delete_topics(dataset_id) do
+    input_topic = input_topic(dataset_id)
+    output_topic = output_topic(dataset_id)
     Elsa.delete_topic(endpoints(), input_topic)
     Elsa.delete_topic(endpoints(), output_topic)
-    wait_for_topic(input_topic)
-    wait_for_topic(output_topic)
-
-    %{input_topic: input_topic, output_topic: output_topic}
   end
 
   def wait_for_topic(topic) do

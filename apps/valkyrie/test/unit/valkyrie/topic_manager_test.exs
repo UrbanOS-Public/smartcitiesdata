@@ -44,26 +44,10 @@ defmodule Valkyrie.TopicManagerTest do
   end
 
   test "should delete input and output topic when the topic names are provided" do
-    allow Elsa.topic?(any(), any()), return: true
     allow(Elsa.delete_topic(any(), any()), return: :doesnt_matter)
-    dataset = TDG.create_dataset(id: @dataset_id)
-
-    TopicManager.delete_topics(dataset)
-
+    TopicManager.delete_topics(@dataset_id)
     assert_called(Elsa.delete_topic(@endpoints, "#{@input_topic_prefix}-#{@dataset_id}"))
     assert_called(Elsa.delete_topic(@endpoints, "#{@output_topic_prefix}-#{@dataset_id}"))
-  end
-
-  test "verifies input and output topics are not available" do
-    allow(Elsa.delete_topic(any(), any()), return: :doesnt_matter)
-    allow(Elsa.topic?(any(), "#{@input_topic_prefix}-#{@dataset_id}"), seq: [false, false, true])
-    allow(Elsa.topic?(any(), "#{@output_topic_prefix}-#{@dataset_id}"), seq: [false, false, true])
-    dataset = TDG.create_dataset(id: @dataset_id)
-
-    TopicManager.delete_topics(dataset)
-
-    assert_called(Elsa.topic?(@endpoints, "#{@input_topic_prefix}-#{@dataset_id}"), times(3))
-    assert_called(Elsa.topic?(@endpoints, "#{@output_topic_prefix}-#{@dataset_id}"), times(3))
   end
 
   test "raises an error when it times out waiting for a topic" do
