@@ -41,10 +41,9 @@ defmodule DiscoveryApi.Application do
   end
 
   defp redis do
-    Application.get_env(:redix, :host)
-    |> case do
+    case Application.get_env(:redix, :args) do
       nil -> []
-      host -> {Redix, host: host, name: :redix}
+      redix_args -> {Redix, Keyword.put(redix_args, :name, :redix)}
     end
   end
 
