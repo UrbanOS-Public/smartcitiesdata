@@ -16,7 +16,7 @@ config :discovery_api,
   hosted_region: aws_region
 
 config :redix,
-  host: host
+  args: redix_args
 
 config :phoenix,
   serve_endpoints: true,
