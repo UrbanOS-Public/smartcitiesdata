@@ -112,10 +112,12 @@ defmodule AndiWeb.EditLiveView do
           <%= error_tag(f, :sourceUrl) %>
         </div>
         <div class="url-form__source-query-params">
+          <%= if has_values(input_value(f, :sourceQueryParams)) do %>
           <%= inputs_for f, :sourceQueryParams, fn sqpf -> %>
-            <%= text_input(sqpf, :key, class: "input full-width url-form__source-query-param-key-input #{input_value(sqpf, :id)}") %>
-            <%= text_input(sqpf, :value, class: "input full-width url-form__source-query-param-value-input #{input_value(sqpf, :id)}") %>
+            <%= text_input(sqpf, :key, class: "input full-width url-form__source-query-param-key-input #{input_value(sqpf, :id)}", placeholder: "key") %>
+            <%= text_input(sqpf, :value, class: "input full-width url-form__source-query-param-value-input #{input_value(sqpf, :id)}", placeholder: "value") %>
             <button type="button" class="url-form__source-query-params-delete-btn btn btn--large btn--action" phx-click="remove_source_query_param" phx-value-id="<%= input_value(sqpf, :id) %>">X</button>
+          <% end %>
           <% end %>
           <button type="button" class="url-form__source-query-params-add-btn btn btn--large btn--action" phx-click="add_source_query_param">+</button>
         </div>
@@ -208,7 +210,7 @@ defmodule AndiWeb.EditLiveView do
 
     if changeset.valid? do
       changes = Ecto.Changeset.apply_changes(changeset)
-      dataset = InputConverter.restruct(changes, original_dataset) |> IO.inspect(label: "SAVE:")
+      dataset = InputConverter.restruct(changes, original_dataset)
 
       case Brook.Event.send(instance_name(), dataset_update(), :andi, dataset) do
         :ok ->
@@ -264,4 +266,8 @@ defmodule AndiWeb.EditLiveView do
 
   defp disabled?(true), do: "disabled"
   defp disabled?(_), do: ""
+
+  defp has_values(nil), do: false
+  defp has_values([]), do: false
+  defp has_values(_), do: true
 end

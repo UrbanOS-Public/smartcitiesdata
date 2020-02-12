@@ -105,6 +105,7 @@ defmodule Andi.InputSchemas.DatasetInput do
   end
 
   def add_source_query_param(changeset, %{} = param \\ %{}) do
+    #TODO: this doesn't work if there were no sourceQueryParams to begin with
     update_change(changeset, :sourceQueryParams, fn params -> params ++ [KeyValue.changeset(%KeyValue{}, param)] end)
   end
 

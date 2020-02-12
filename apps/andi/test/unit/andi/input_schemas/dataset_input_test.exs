@@ -256,6 +256,22 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       assert is_nil(List.last(changes.sourceQueryParams).key)
       assert is_nil(List.last(changes.sourceQueryParams).value)
     end
+
+    test "appends a key/value to an empty list of sourceQueryParams" do
+      new_param = %{key: "key2", value: "value2"}
+      changeset =
+        @valid_changes
+        |> Map.put(:sourceQueryParams, %{})
+        |> DatasetInput.light_validation_changeset()
+
+      changes = DatasetInput.add_source_query_param(changeset, new_param)
+      |> Ecto.Changeset.apply_changes()
+
+      assert length(changes.sourceQueryParams) == 1
+      refute is_nil(hd(changes.sourceQueryParams).id)
+      assert hd(changes.sourceQueryParams).key == new_param.key
+      assert hd(changes.sourceQueryParams).value == new_param.value
+    end
   end
 
   describe "remove_source_query_param" do

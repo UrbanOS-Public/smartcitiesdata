@@ -57,7 +57,7 @@ defmodule Andi.InputSchemas.InputConverter do
       changes
       |> Map.update(:issuedDate, nil, &date_to_iso8601_datetime/1)
       |> Map.update(:modifiedDate, nil, &date_to_iso8601_datetime/1)
-      |> Map.update(:sourceQueryParams, [], &restruct_query_params/1)
+      |> Map.update(:sourceQueryParams, %{}, &restruct_source_query_params/1)
 
     business = Map.merge(dataset.business, get_business(formatted_changes)) |> Map.from_struct()
     technical = Map.merge(dataset.technical, get_technical(formatted_changes)) |> Map.from_struct()
@@ -104,14 +104,14 @@ defmodule Andi.InputSchemas.InputConverter do
     |> elem(1)
   end
 
-  defp restruct_query_params(params) do
+  defp restruct_source_query_params(params) do
     Enum.reduce(params, %{}, fn param, acc -> Map.put(acc, param.key, param.value) end)
   end
 
   defp convert_source_query_params(%{sourceQueryParams: nil} = technical), do: Map.put(technical, :sourceQueryParams, [])
 
   defp convert_source_query_params(%{sourceQueryParams: query_params} = technical) do
-    converted = Enum.map(query_params, fn {k, v} -> %{key: Atom.to_string(k), value: v, id: Ecto.UUID.generate()} end)
+    converted = Enum.map(query_params, fn {k, v} -> %{key: Atom.to_string(k), value: v} end)
     Map.put(technical, :sourceQueryParams, converted)
   end
 

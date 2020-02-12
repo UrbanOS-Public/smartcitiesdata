@@ -11,8 +11,10 @@ defmodule Andi.InputSchemas.KeyValue do
   end
 
   def changeset(key_value, changes) do
+    with_id = Map.put_new(changes, :id, Ecto.UUID.generate())
+
     key_value
-    |> cast(changes, [:id, :key, :value])
+    |> cast(with_id, [:id, :key, :value], empty_values: [])
     |> validate_required([:id, :key, :value]) #TODO: value should not be required
   end
 end

@@ -580,6 +580,18 @@ defmodule AndiWeb.EditLiveViewTest do
       assert length(value_input) == 1
       refute btn_id =~ hd(value_input) |> Floki.attribute("class") |> hd()
     end
+
+    test "does not have key/value inputs when dataset has not source query params", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      html = render_change(view, :add_source_query_param, %{})
+
+      assert html |> Floki.find(".url-form__source-query-param-key-input") |> Enum.empty?()
+      assert html |> Floki.find(".url-form__source-query-param-value-input") |> Enum.empty?()
+    end
   end
 
   defp save_form_for_dataset(conn, dataset) do
