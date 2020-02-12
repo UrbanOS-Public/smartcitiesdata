@@ -67,9 +67,10 @@ defmodule Valkyrie.DatasetMutationTest do
     output_topic = "#{@output_topic_prefix}-#{dataset_id}"
     dataset = TDG.create_dataset(id: dataset_id, technical: %{sourceType: "ingest"})
 
+    Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
+
     eventually(
       fn ->
-        Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
         topic_list_before_delete = Elsa.list_topics(@endpoints)
         assert true == Enum.member?(topic_list_before_delete, {input_topic, 1})
         assert true == Enum.member?(topic_list_before_delete, {output_topic, 1})
@@ -78,9 +79,10 @@ defmodule Valkyrie.DatasetMutationTest do
       10
     )
 
+    Brook.Event.send(@instance, dataset_delete(), :author, dataset)
+
     eventually(
       fn ->
-        Brook.Event.send(@instance, dataset_delete(), :author, dataset)
         topic_list_after_delete = Elsa.list_topics(@endpoints)
         assert false == Enum.member?(topic_list_after_delete, {input_topic, 1})
         assert false == Enum.member?(topic_list_after_delete, {output_topic, 1})
