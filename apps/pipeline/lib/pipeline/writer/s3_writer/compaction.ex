@@ -76,7 +76,7 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     Statement.drop(%{table: compact_table})
     |> execute()
 
-    message = "Failed '#{orc_table}' compaction. New row count (#{new}) did not match original count (#{old})"
+    message = "Failed '#{orc_table}' compaction. New row count (#{inspect(new)}) did not match original count (#{inspect(old)})"
     Logger.error(message)
 
     {:error, message}

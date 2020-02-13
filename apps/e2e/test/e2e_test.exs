@@ -171,13 +171,17 @@ defmodule E2ETest do
       end)
     end
 
-    @tag timeout: :infinity
+    @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
 
       eventually(fn ->
         assert Elsa.topic?(@brokers, topic)
+      end)
+
+      eventually(fn ->
+        assert :ok = Forklift.DataWriter.compact_dataset(ds)
       end)
 
       eventually(
@@ -199,7 +203,7 @@ defmodule E2ETest do
           Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete")
           |> Enum.to_list()
 
-        assert 1 == length(messages)
+        assert 1 <= length(messages)
       end)
     end
 
@@ -265,13 +269,17 @@ defmodule E2ETest do
       end)
     end
 
-    @tag timeout: :infinity
+    @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{streaming_dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
 
       eventually(fn ->
         assert Elsa.topic?(@brokers, topic)
+      end)
+
+      eventually(fn ->
+        assert :ok = Forklift.DataWriter.compact_dataset(ds)
       end)
 
       eventually(
@@ -338,9 +346,13 @@ defmodule E2ETest do
       assert resp.status_code == 201
     end
 
-    @tag timeout: :infinity
+    @tag timeout: :infinity, capture_log: true
     test "persists geojson in PrestoDB", %{geo_dataset: ds} do
       table = ds.technical.systemName
+
+      eventually(fn ->
+        assert :ok = Forklift.DataWriter.compact_dataset(ds)
+      end)
 
       eventually(
         fn ->
@@ -354,7 +366,7 @@ defmodule E2ETest do
 
           [coordinates] = result["geometry"]["coordinates"]
 
-          assert 253 == Enum.count(coordinates)
+          assert Enum.count(coordinates) > 0
         end,
         10_000
       )

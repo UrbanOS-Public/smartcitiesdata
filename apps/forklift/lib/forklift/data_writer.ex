@@ -86,17 +86,23 @@ defmodule Forklift.DataWriter do
     Logger.info("Beginning dataset compaction")
 
     Forklift.Datasets.get_all!()
-    |> Enum.each(fn dataset ->
-      Compaction.init(dataset: dataset)
-
-      start = Time.utc_now()
-
-      Compaction.compact(dataset: dataset)
-      Compaction.terminate(dataset: dataset)
-      Compaction.write({start, Time.utc_now()}, dataset: dataset)
-    end)
+    |> Enum.each(&compact_dataset/1)
 
     Logger.info("Completed dataset compaction")
+  end
+
+  def compact_dataset(dataset) do
+    Compaction.init(dataset: dataset)
+
+    start = Time.utc_now()
+
+    compaction_result = Compaction.compact(dataset: dataset)
+
+    Compaction.terminate(dataset: dataset)
+
+    Compaction.write({start, Time.utc_now()}, dataset: dataset)
+
+    compaction_result
   end
 
   defp ingest_status(data) do
