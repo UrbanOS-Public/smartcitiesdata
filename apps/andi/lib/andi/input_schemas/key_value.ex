@@ -15,7 +15,6 @@ defmodule Andi.InputSchemas.KeyValue do
 
     key_value
     |> cast(with_id, [:id, :key, :value], empty_values: [])
-    # TODO: value should not be required
     |> validate_required([:id, :key])
   end
 end

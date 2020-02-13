@@ -184,7 +184,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("add_source_query_param", _, socket) do
-    changeset = DatasetInput.add_source_query_param(socket.assigns.changeset, %{})
+    changeset = DatasetInput.add_source_query_param(socket.assigns.changeset)
     {:noreply, assign(socket, changeset: changeset)}
   end
 

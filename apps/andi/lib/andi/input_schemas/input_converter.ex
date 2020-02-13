@@ -9,9 +9,9 @@ defmodule Andi.InputSchemas.InputConverter do
   @type dataset :: map() | Dataset.t()
 
   @spec changeset_from_dataset(dataset) :: Ecto.Changeset.t()
-  def changeset_from_dataset(dataset) do
-    %{id: id, business: business, technical: technical} = AtomicMap.convert(dataset, safe: false, underscore: false)
+  def changeset_from_dataset(%{ "id" => _ } = dataset), do: atomize(dataset) |> changeset_from_dataset()
 
+  def changeset_from_dataset(%{id: id, business: business, technical: technical}) do
     from_business = get_business(business) |> fix_modified_date()
     from_technical = get_technical(technical) |> convert_source_query_params()
 
@@ -70,6 +70,18 @@ defmodule Andi.InputSchemas.InputConverter do
     |> (fn {:ok, dataset} -> dataset end).()
   end
 
+  defp atomize(dataset) do
+    dataset
+    |> atomize_top_level()
+    |> Map.update(:business, nil, &atomize_top_level/1)
+    |> Map.update(:technical, nil, &atomize_top_level/1)
+    |> update_in([:technical, :schema], fn schema -> Enum.map(schema, &atomize_top_level/1) end)
+  end
+
+  defp atomize_top_level(map) do
+    Map.new(map, fn {key, val} -> {SmartCity.Helpers.safe_string_to_atom(key), val} end)
+  end
+
   defp get_business(map) when is_map(map) do
     Map.take(map, DatasetInput.business_keys())
   end
@@ -104,17 +116,17 @@ defmodule Andi.InputSchemas.InputConverter do
     |> elem(1)
   end
 
-  defp restruct_source_query_params(params) do
-    Enum.reduce(params, %{}, fn param, acc -> Map.put(acc, param.key, param.value) end)
-  end
-
   defp convert_source_query_params(%{sourceQueryParams: nil} = technical),
     do: Map.put(technical, :sourceQueryParams, [])
 
   defp convert_source_query_params(%{sourceQueryParams: query_params} = technical) do
-    converted = Enum.map(query_params, fn {k, v} -> %{key: Atom.to_string(k), value: v} end)
+    converted = Enum.map(query_params, fn {k, v} -> %{key: k, value: v} end)
     Map.put(technical, :sourceQueryParams, converted)
   end
 
   defp convert_source_query_params(technical), do: Map.put(technical, :sourceQueryParams, [])
+
+  defp restruct_source_query_params(params) do
+    Enum.reduce(params, %{}, fn param, acc -> Map.put(acc, param.key, param.value) end)
+  end
 end
