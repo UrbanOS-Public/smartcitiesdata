@@ -191,24 +191,33 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       ])
     end
 
-    test "sourceQueryParams are invalid when any key is not set" do
-      changes = @valid_changes |> Map.put(:sourceQueryParams, [
+    data_test "#{field} are invalid when any key is not set" do
+      changes = @valid_changes |> Map.put(field, [
         %{id: Ecto.UUID.generate(), key: "foo", value: "bar"},
         %{id: Ecto.UUID.generate(), key: "", value: "where's my key?"}
       ])
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
-      assert changeset.errors == [{:sourceQueryParams, {"has invalid format", [validation: :format]}}]
+      refute changeset.valid?
+      assert changeset.errors == [{field, {"has invalid format", [validation: :format]}}]
+
+      where(
+        field: [:sourceQueryParams, :sourceHeaders]
+      )
     end
 
-    test "sourceQueryParams are valid when they are not set" do
-      changes = @valid_changes |> Map.delete(:sourceQueryParams)
+    data_test "#{field} are valid when they are not set" do
+      changes = @valid_changes |> Map.delete(field)
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
       assert changeset.valid?
       assert Enum.empty?(changeset.errors)
+
+      where(
+        field: [:sourceQueryParams, :sourceHeaders]
+      )
     end
   end
 

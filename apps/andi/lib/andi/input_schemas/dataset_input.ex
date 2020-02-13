@@ -9,10 +9,19 @@ defmodule Andi.InputSchemas.DatasetInput do
   alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.KeyValue
 
-  # TODO: move this to KeyValue as a function
-  @embedded_source_query_params %Ecto.Embedded{
+  #TODO: make this suck less
+  @params_embedded_key_values %Ecto.Embedded{
     cardinality: :many,
     field: :sourceQueryParams,
+    on_cast: &KeyValue.changeset(&1, &2),
+    on_replace: :delete,
+    owner: nil,
+    related: KeyValue
+  }
+
+  @headers_embedded_key_values %Ecto.Embedded{
+    cardinality: :many,
+    field: :sourceHeaders,
     on_cast: &KeyValue.changeset(&1, &2),
     on_replace: :delete,
     owner: nil,
@@ -44,17 +53,18 @@ defmodule Andi.InputSchemas.DatasetInput do
     private: :boolean,
     schema: {:array, :map},
     sourceFormat: :string,
+    sourceHeaders: {:embed, @headers_embedded_key_values},
     sourceType: :string,
+    sourceQueryParams: {:embed, @params_embedded_key_values},
     sourceUrl: :string,
-    topLevelSelector: :string,
-    sourceQueryParams: {:embed, @embedded_source_query_params}
+    topLevelSelector: :string
   }
 
   @types %{id: :string}
          |> Map.merge(@business_fields)
          |> Map.merge(@technical_fields)
 
-  @non_embedded_types Map.drop(@types, [:sourceQueryParams])
+  @non_embedded_types Map.drop(@types, [:sourceQueryParams, :sourceHeaders])
 
   @required_fields [
     :benefitRating,
@@ -88,6 +98,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     {schema, @types}
     |> cast(changes, Map.keys(@non_embedded_types), empty_values: [])
     |> cast_embed(:sourceQueryParams)
+    |> cast_embed(:sourceHeaders)
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:contactEmail, @email_regex)
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
@@ -97,6 +108,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     |> validate_top_level_selector()
     |> validate_schema()
     |> validate_source_query_params()
+    |> validate_source_headers()
   end
 
   def full_validation_changeset(changes), do: full_validation_changeset(%{}, changes)
@@ -165,10 +177,18 @@ defmodule Andi.InputSchemas.DatasetInput do
     |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
   end
 
-  defp validate_source_query_params(%{ changes: %{sourceQueryParams: source_query_params}} = changeset) do
-    invalid = Enum.any?(source_query_params, fn param_changeset -> not param_changeset.valid? end)
+  #TODO: dry up
+  defp validate_source_query_params(%{ changes: %{sourceQueryParams: key_values}} = changeset) do
+    invalid = Enum.any?(key_values, fn key_value_changeset -> not key_value_changeset.valid? end)
     if invalid, do: add_error(changeset, :sourceQueryParams, "has invalid format", validation: :format), else: changeset
   end
 
   defp validate_source_query_params(changeset), do: changeset
+
+  defp validate_source_headers(%{ changes: %{sourceHeaders: key_values}} = changeset) do
+    invalid = Enum.any?(key_values, fn key_value_changeset -> not key_value_changeset.valid? end)
+    if invalid, do: add_error(changeset, :sourceHeaders, "has invalid format", validation: :format), else: changeset
+  end
+
+  defp validate_source_headers(changeset), do: changeset
 end
