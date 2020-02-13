@@ -98,8 +98,8 @@ defmodule Valkyrie.DatasetMutationTest do
     name = Valkyrie.DatasetSupervisor.name(dataset_id)
 
     case Process.whereis(name) do
-      pid -> Process.alive?(pid)
       nil -> false
+      pid -> Process.alive?(pid)
     end
   end
 end
