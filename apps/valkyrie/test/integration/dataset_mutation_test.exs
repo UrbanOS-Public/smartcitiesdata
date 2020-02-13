@@ -2,12 +2,14 @@ defmodule Valkyrie.DatasetMutationTest do
   use ExUnit.Case
   use Divo
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [data_ingest_start: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, dataset_delete: 0]
   alias SmartCity.TestDataGenerator, as: TDG
 
   @dataset_id "ds1"
   @input_topic "#{Application.get_env(:valkyrie, :input_topic_prefix)}-#{@dataset_id}"
   @output_topic "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{@dataset_id}"
+  @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
+  @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
   @instance Valkyrie.Application.instance()
 
@@ -53,6 +55,37 @@ defmodule Valkyrie.DatasetMutationTest do
           Enum.map(messages, fn message -> SmartCity.Data.new(message.value) |> elem(1) |> Map.get(:payload) end)
 
         assert payloads == [%{"age" => "21"}, %{"age" => 22}]
+      end,
+      2_000,
+      10
+    )
+  end
+
+  test "should delete all view state for the dataset and the input and output topics when dataset:delete is called" do
+    dataset_id = Faker.UUID.v4()
+    input_topic = "#{@input_topic_prefix}-#{dataset_id}"
+    output_topic = "#{@output_topic_prefix}-#{dataset_id}"
+    dataset = TDG.create_dataset(id: dataset_id, technical: %{sourceType: "ingest"})
+
+    Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
+
+    eventually(
+      fn ->
+        topic_list_before_delete = Elsa.list_topics(@endpoints)
+        assert true == Enum.member?(topic_list_before_delete, {input_topic, 1})
+        assert true == Enum.member?(topic_list_before_delete, {output_topic, 1})
+      end,
+      2_000,
+      10
+    )
+
+    Brook.Event.send(@instance, dataset_delete(), :author, dataset)
+
+    eventually(
+      fn ->
+        topic_list_after_delete = Elsa.list_topics(@endpoints)
+        assert false == Enum.member?(topic_list_after_delete, {input_topic, 1})
+        assert false == Enum.member?(topic_list_after_delete, {output_topic, 1})
       end,
       2_000,
       10
