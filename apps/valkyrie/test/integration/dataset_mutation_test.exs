@@ -73,6 +73,7 @@ defmodule Valkyrie.DatasetMutationTest do
       fn ->
         assert true == Elsa.Topic.exists?(@endpoints, input_topic)
         assert true == Elsa.Topic.exists?(@endpoints, output_topic)
+        assert {:ok, dataset} == Brook.ViewState.get(@instance, :datasets, dataset_id)
       end,
       2_000,
       10
@@ -84,6 +85,7 @@ defmodule Valkyrie.DatasetMutationTest do
       fn ->
         assert false == Elsa.Topic.exists?(@endpoints, input_topic)
         assert false == Elsa.Topic.exists?(@endpoints, output_topic)
+        assert {:ok, nil} == Brook.ViewState.get(@instance, :datasets, dataset_id)
       end,
       2_000,
       10
