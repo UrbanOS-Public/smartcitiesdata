@@ -199,7 +199,10 @@ defmodule AndiWeb.API.DatasetControllerTest do
           publishFrequency: nil,
           benefitRating: nil
         },
-        technical: %{sourceFormat: ""}
+        technical: %{
+          sourceFormat: "",
+          sourceQueryParams: %{"" => "where's my key"}
+        }
       )
       |> struct_to_map_with_string_keys()
       |> delete_in([
@@ -228,7 +231,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
       "orgTitle",
       "private",
       "riskRating",
-      "sourceFormat"
+      "sourceFormat",
+      "sourceQueryParams"
     ]
 
     for key <- expected_error_keys do

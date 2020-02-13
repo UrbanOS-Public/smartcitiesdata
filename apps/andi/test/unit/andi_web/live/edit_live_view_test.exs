@@ -287,6 +287,18 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_text(html, "#sourceFormat-error-msg") == "Please enter a valid source format."
     end
 
+    test "invalid sourceQueryParams displays proper error message", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{"foo" => "where's my key"}}})
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      form_data =  dataset_to_form_data(dataset) |> Map.put(:sourceQueryParams, %{"0" => %{"key" => "", "value" => "where's my key"}})
+      html = render_change(view, :validate, %{"metadata" => form_data})
+
+      assert get_text(html, "#sourceQueryParams-error-msg") == "Please enter a valid key(s)."
+    end
+
     data_test "displays error when #{field} is unset", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       DatasetCache.put(dataset)

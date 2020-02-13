@@ -96,6 +96,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     |> validate_inclusion(:riskRating, @ratings, message: "should be one of #{inspect(@ratings)}")
     |> validate_top_level_selector()
     |> validate_schema()
+    |> validate_source_query_params()
   end
 
   def full_validation_changeset(changes), do: full_validation_changeset(%{}, changes)
@@ -163,4 +164,11 @@ defmodule Andi.InputSchemas.DatasetInput do
     DatasetSchemaValidator.validate(changes[:schema], changes[:sourceFormat])
     |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
   end
+
+  defp validate_source_query_params(%{ changes: %{sourceQueryParams: source_query_params}} = changeset) do
+    invalid = Enum.any?(source_query_params, fn param_changeset -> not param_changeset.valid? end)
+    if invalid, do: add_error(changeset, :sourceQueryParams, "has invalid format", validation: :format), else: changeset
+  end
+
+  defp validate_source_query_params(changeset), do: changeset
 end

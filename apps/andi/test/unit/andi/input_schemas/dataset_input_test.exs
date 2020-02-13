@@ -5,7 +5,6 @@ defmodule Andi.InputSchemas.DatasetInputTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   alias Andi.InputSchemas.DatasetInput
-  alias Andi.InputSchemas.KeyValue
   alias Andi.DatasetCache
 
   @source_query_param_id Ecto.UUID.generate()
@@ -190,6 +189,26 @@ defmodule Andi.InputSchemas.DatasetInputTest do
         [:riskRating, 3.14159, "should be one of [0.0, 0.5, 1.0]"],
         [:riskRating, 0.000001, "should be one of [0.0, 0.5, 1.0]"]
       ])
+    end
+
+    test "sourceQueryParams are invalid when any key is not set" do
+      changes = @valid_changes |> Map.put(:sourceQueryParams, [
+        %{id: Ecto.UUID.generate(), key: "foo", value: "bar"},
+        %{id: Ecto.UUID.generate(), key: "", value: "where's my key?"}
+      ])
+
+      changeset = DatasetInput.light_validation_changeset(changes)
+
+      assert changeset.errors == [{:sourceQueryParams, {"has invalid format", [validation: :format]}}]
+    end
+
+    test "sourceQueryParams are valid when they are not set" do
+      changes = @valid_changes |> Map.delete(:sourceQueryParams)
+
+      changeset = DatasetInput.light_validation_changeset(changes)
+
+      assert changeset.valid?
+      assert Enum.empty?(changeset.errors)
     end
   end
 

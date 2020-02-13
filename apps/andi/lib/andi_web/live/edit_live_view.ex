@@ -113,13 +113,14 @@ defmodule AndiWeb.EditLiveView do
         </div>
         <div class="url-form__source-query-params">
           <%= if has_values(input_value(f, :sourceQueryParams)) do %>
-          <%= inputs_for f, :sourceQueryParams, fn sqpf -> %>
-            <%= text_input(sqpf, :key, class: "input full-width url-form__source-query-param-key-input #{input_value(sqpf, :id)}", placeholder: "key") %>
-            <%= text_input(sqpf, :value, class: "input full-width url-form__source-query-param-value-input #{input_value(sqpf, :id)}", placeholder: "value") %>
-            <button type="button" class="url-form__source-query-params-delete-btn btn btn--large btn--action" phx-click="remove_source_query_param" phx-value-id="<%= input_value(sqpf, :id) %>">X</button>
-          <% end %>
+            <%= inputs_for f, :sourceQueryParams, fn sqpf -> %>
+              <%= text_input(sqpf, :key, class: "input full-width url-form__source-query-param-key-input #{input_value(sqpf, :id)}", placeholder: "key") %>
+              <%= text_input(sqpf, :value, class: "input full-width url-form__source-query-param-value-input #{input_value(sqpf, :id)}", placeholder: "value") %>
+              <button type="button" class="url-form__source-query-params-delete-btn btn btn--large btn--action" phx-click="remove_source_query_param" phx-value-id="<%= input_value(sqpf, :id) %>">X</button>
+            <% end %>
           <% end %>
           <button type="button" class="url-form__source-query-params-add-btn btn btn--large btn--action" phx-click="add_source_query_param">+</button>
+          <%= error_tag_live(f, :sourceQueryParams) %>
         </div>
         <div class="url-form__test-section">
           <button type="button" class="url-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
@@ -194,7 +195,6 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("validate", %{"metadata" => form_data}, socket) do
     socket = reset_save_success(socket)
-
     new_changeset =
       form_data
       |> InputConverter.form_changeset()
