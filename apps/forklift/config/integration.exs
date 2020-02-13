@@ -67,6 +67,12 @@ config(:forklift, divo: "docker-compose.yml", divo_wait: [dwell: 1000, max_tries
 config :redix,
   args: redix_args
 
+config :ex_aws,
+  debug_requests: true,
+  access_key_id: "testing_access_key",
+  secret_access_key: "testing_secret_key",
+  region: "local"
+
 config :ex_aws, :s3,
   scheme: "http://",
   region: "local",

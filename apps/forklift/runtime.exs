@@ -30,6 +30,7 @@ topic = System.get_env("DATA_TOPIC_PREFIX")
 output_topic = System.get_env("OUTPUT_TOPIC")
 metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
 s3_writer_bucket = System.get_env("S3_WRITER_BUCKET")
+secrets_endpoint = System.get_env("SECRETS_ENDPOINT")
 
 endpoints =
   kafka_brokers
@@ -50,6 +51,7 @@ config :forklift,
   input_topic_prefix: topic,
   output_topic: output_topic,
   s3_writer_bucket: s3_writer_bucket,
+  secrets_endpoint: secrets_endpoint,
   producer_name: :"#{output_topic}-producer",
   metrics_port: metrics_port,
   topic_subscriber_config: [

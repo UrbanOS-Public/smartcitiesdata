@@ -39,6 +39,7 @@ defmodule Forklift.MixProject do
       {:ex_doc, "~> 0.21"},
       {:jason, "~> 1.1"},
       {:libcluster, "~> 3.1"},
+      {:libvault, "~> 0.2"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:observer_cli, "~> 1.5"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
