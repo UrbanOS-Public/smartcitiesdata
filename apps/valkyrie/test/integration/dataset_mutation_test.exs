@@ -71,9 +71,8 @@ defmodule Valkyrie.DatasetMutationTest do
 
     eventually(
       fn ->
-        topic_list_before_delete = Elsa.list_topics(@endpoints)
-        assert true == Enum.member?(topic_list_before_delete, {input_topic, 1})
-        assert true == Enum.member?(topic_list_before_delete, {output_topic, 1})
+        assert true == Elsa.Topic.exists?(@endpoints, input_topic)
+        assert true == Elsa.Topic.exists?(@endpoints, output_topic)
       end,
       2_000,
       10
@@ -83,9 +82,8 @@ defmodule Valkyrie.DatasetMutationTest do
 
     eventually(
       fn ->
-        topic_list_after_delete = Elsa.list_topics(@endpoints)
-        assert false == Enum.member?(topic_list_after_delete, {input_topic, 1})
-        assert false == Enum.member?(topic_list_after_delete, {output_topic, 1})
+        assert false == Elsa.Topic.exists?(@endpoints, input_topic)
+        assert false == Elsa.Topic.exists?(@endpoints, output_topic)
       end,
       2_000,
       10
