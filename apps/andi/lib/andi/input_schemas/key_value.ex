@@ -4,7 +4,7 @@ defmodule Andi.InputSchemas.KeyValue do
   import Ecto.Changeset
 
   @primary_key false
-  embedded_schema() do
+  embedded_schema do
     field(:id, Ecto.UUID)
     field(:key, :string)
     field(:value, :string)
@@ -15,6 +15,7 @@ defmodule Andi.InputSchemas.KeyValue do
 
     key_value
     |> cast(with_id, [:id, :key, :value], empty_values: [])
-    |> validate_required([:id, :key, :value]) #TODO: value should not be required
+    # TODO: value should not be required
+    |> validate_required([:id, :key, :value])
   end
 end

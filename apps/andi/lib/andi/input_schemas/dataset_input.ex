@@ -9,8 +9,8 @@ defmodule Andi.InputSchemas.DatasetInput do
   alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.KeyValue
 
-  #TODO: move this to KeyValue as a function
-  @embeddedSourceQueryParams %Ecto.Embedded{
+  # TODO: move this to KeyValue as a function
+  @embedded_source_query_params %Ecto.Embedded{
     cardinality: :many,
     field: :sourceQueryParams,
     on_cast: &KeyValue.changeset(&1, &2),
@@ -47,7 +47,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     sourceType: :string,
     sourceUrl: :string,
     topLevelSelector: :string,
-    sourceQueryParams: {:embed, @embeddedSourceQueryParams}
+    sourceQueryParams: {:embed, @embedded_source_query_params}
   }
 
   @types %{id: :string}
@@ -106,17 +106,20 @@ defmodule Andi.InputSchemas.DatasetInput do
 
   def add_source_query_param(changeset, %{} = param \\ %{}) do
     new_key_value_changeset = KeyValue.changeset(%KeyValue{}, param)
+
     change =
-    case fetch_change(changeset, :sourceQueryParams) do
-      {:ok, params} -> params ++ [new_key_value_changeset]
-      _ -> [new_key_value_changeset]
-    end
+      case fetch_change(changeset, :sourceQueryParams) do
+        {:ok, params} -> params ++ [new_key_value_changeset]
+        _ -> [new_key_value_changeset]
+      end
 
     put_change(changeset, :sourceQueryParams, change)
   end
 
   def remove_source_query_param(changeset, id) do
-    update_change(changeset, :sourceQueryParams, fn params -> Enum.filter(params, fn param -> param.changes.id != id end) end)
+    update_change(changeset, :sourceQueryParams, fn params ->
+      Enum.filter(params, fn param -> param.changes.id != id end)
+    end)
   end
 
   defp validate_unique_system_name(changeset) do

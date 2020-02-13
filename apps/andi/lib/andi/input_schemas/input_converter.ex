@@ -108,7 +108,8 @@ defmodule Andi.InputSchemas.InputConverter do
     Enum.reduce(params, %{}, fn param, acc -> Map.put(acc, param.key, param.value) end)
   end
 
-  defp convert_source_query_params(%{sourceQueryParams: nil} = technical), do: Map.put(technical, :sourceQueryParams, [])
+  defp convert_source_query_params(%{sourceQueryParams: nil} = technical),
+    do: Map.put(technical, :sourceQueryParams, [])
 
   defp convert_source_query_params(%{sourceQueryParams: query_params} = technical) do
     converted = Enum.map(query_params, fn {k, v} -> %{key: Atom.to_string(k), value: v} end)

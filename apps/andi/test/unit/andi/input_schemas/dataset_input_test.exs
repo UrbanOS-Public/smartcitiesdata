@@ -8,7 +8,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
   alias Andi.InputSchemas.KeyValue
   alias Andi.DatasetCache
 
-  @sourceQueryParamId Ecto.UUID.generate()
+  @source_query_param_id Ecto.UUID.generate()
 
   @valid_changes %{
     benefitRating: 0,
@@ -29,7 +29,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     sourceFormat: "sourceFormat",
     sourceQueryParams: [
       %{id: Ecto.UUID.generate(), key: "foo", value: "bar"},
-      %{id: @sourceQueryParamId, key: "fizzle", value: "bizzle"}
+      %{id: @source_query_param_id, key: "fizzle", value: "bizzle"}
     ],
     sourceType: "sourceType",
     sourceUrl: "sourceurl.com"
@@ -238,8 +238,10 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
     test "appends key/value to the sourceQueryParams", %{changeset: changeset} do
       new_param = %{key: "key2", value: "value2"}
-      changes = DatasetInput.add_source_query_param(changeset, new_param)
-      |> Ecto.Changeset.apply_changes()
+
+      changes =
+        DatasetInput.add_source_query_param(changeset, new_param)
+        |> Ecto.Changeset.apply_changes()
 
       assert length(changes.sourceQueryParams) == length(@valid_changes.sourceQueryParams) + 1
       refute is_nil(List.last(changes.sourceQueryParams).id)
@@ -248,8 +250,9 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     end
 
     test "appends an empty key/value to the sourceQueryParams by default", %{changeset: changeset} do
-      changes = DatasetInput.add_source_query_param(changeset)
-      |> Ecto.Changeset.apply_changes()
+      changes =
+        DatasetInput.add_source_query_param(changeset)
+        |> Ecto.Changeset.apply_changes()
 
       assert length(changes.sourceQueryParams) == length(@valid_changes.sourceQueryParams) + 1
       refute is_nil(List.last(changes.sourceQueryParams).id)
@@ -259,13 +262,15 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
     test "appends a key/value to an empty list of sourceQueryParams" do
       new_param = %{key: "key2", value: "value2"}
+
       changeset =
         @valid_changes
         |> Map.put(:sourceQueryParams, %{})
         |> DatasetInput.light_validation_changeset()
 
-      changes = DatasetInput.add_source_query_param(changeset, new_param)
-      |> Ecto.Changeset.apply_changes()
+      changes =
+        DatasetInput.add_source_query_param(changeset, new_param)
+        |> Ecto.Changeset.apply_changes()
 
       assert length(changes.sourceQueryParams) == 1
       refute is_nil(hd(changes.sourceQueryParams).id)
@@ -280,11 +285,12 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     end
 
     test "removes key/value from the sourceQueryParams by id", %{changeset: changeset} do
-      changes = DatasetInput.remove_source_query_param(changeset, @sourceQueryParamId)
-      |> Ecto.Changeset.apply_changes()
+      changes =
+        DatasetInput.remove_source_query_param(changeset, @source_query_param_id)
+        |> Ecto.Changeset.apply_changes()
 
       assert length(changes.sourceQueryParams) == length(@valid_changes.sourceQueryParams) - 1
-      refute Enum.any?(changes.sourceQueryParams, fn param -> param.id == @sourceQueryParamId end)
+      refute Enum.any?(changes.sourceQueryParams, fn param -> param.id == @source_query_param_id end)
     end
 
     test "does nothing if id is unknown", %{changeset: changeset} do
