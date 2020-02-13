@@ -135,7 +135,7 @@ defmodule Forklift.DataWriter do
 
   defp write_to_table(data, %{technical: metadata}) do
     with write_start <- Data.Timing.current_time(),
-         :ok <- @table_writer.write(data, table: metadata.systemName, schema: metadata.schema),
+         :ok <- @table_writer.write(data, table: metadata.systemName, schema: metadata.schema, bucket: s3_writer_bucket()),
          write_end <- Data.Timing.current_time(),
          write_timing <- Data.Timing.new(instance_name(), "presto_insert_time", write_start, write_end) do
       {:ok, write_timing}
@@ -174,5 +174,9 @@ defmodule Forklift.DataWriter do
       retry_count: Application.get_env(:forklift, :retry_count),
       retry_delay: Application.get_env(:forklift, :retry_initial_delay)
     ]
+  end
+
+  defp s3_writer_bucket() do
+    Application.get_env(:forklift, :s3_writer_bucket)
   end
 end

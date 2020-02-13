@@ -14,7 +14,7 @@ defmodule Pipeline.Writer.S3Writer do
   @type schema() :: [map()]
 
   @impl Pipeline.Writer
-  @spec init(table: String.t(), schema: schema()) :: :ok | {:error, term()}
+  @spec init(table: String.t(), schema: schema(), bucket: String.t()) :: :ok | {:error, term()}
   @doc """
   Ensures PrestoDB tables exist for JSON and ORC formats.
   """
@@ -49,6 +49,7 @@ defmodule Pipeline.Writer.S3Writer do
 
   def write(content, options) do
     json_config = json_config(options)
+    bucket = Keyword.fetch!(options, :bucket)
 
     source_file_path = content
     |> Enum.map(&Map.get(&1, :payload))
@@ -59,7 +60,7 @@ defmodule Pipeline.Writer.S3Writer do
 
     destination_file_path= generate_unique_s3_file_path(json_config.table)
 
-    upload_to_kdp_s3_folder(source_file_path, destination_file_path)
+    upload_to_kdp_s3_folder(bucket, source_file_path, destination_file_path)
   end
 
   @impl Pipeline.Writer
@@ -96,10 +97,10 @@ defmodule Pipeline.Writer.S3Writer do
     "hive-s3/#{table_name}/#{time}-#{System.unique_integer}.gz"
   end
 
-  defp upload_to_kdp_s3_folder(source_file_path, destination_file_path) do
+  defp upload_to_kdp_s3_folder(bucket, source_file_path, destination_file_path) do
     source_file_path
     |> S3.Upload.stream_file()
-    |> S3.upload("kdp-cloud-storage", destination_file_path)
+    |> S3.upload(bucket, destination_file_path)
     |> ExAws.request()
     |> cleanup_file(source_file_path)
     |> case do
