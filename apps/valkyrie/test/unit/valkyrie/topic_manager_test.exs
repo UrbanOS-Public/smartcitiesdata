@@ -53,4 +53,11 @@ defmodule Valkyrie.TopicManagerTest do
       TopicManager.setup_topics(dataset)
     end
   end
+
+  test "should delete input and output topic when the topic names are provided" do
+    allow(Elsa.delete_topic(any(), any()), return: :doesnt_matter)
+    TopicManager.delete_topics(@dataset_id)
+    assert_called(Elsa.delete_topic(@endpoints, "#{@input_topic_prefix}-#{@dataset_id}"))
+    assert_called(Elsa.delete_topic(@endpoints, "#{@output_topic_prefix}-#{@dataset_id}"))
+  end
 end

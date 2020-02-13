@@ -20,6 +20,13 @@ defmodule Valkyrie.TopicManager do
     %{input_topic: input_topic, output_topic: output_topic}
   end
 
+  def delete_topics(dataset_id) do
+    input_topic = input_topic(dataset_id)
+    output_topic = output_topic(dataset_id)
+    Elsa.delete_topic(endpoints(), input_topic)
+    Elsa.delete_topic(endpoints(), output_topic)
+  end
+
   def wait_for_topic(topic) do
     retry with: @initial_delay |> exponential_backoff() |> Stream.take(@retries), atoms: [false] do
       Elsa.topic?(endpoints(), topic)
