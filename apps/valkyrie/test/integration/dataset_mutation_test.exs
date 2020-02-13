@@ -71,9 +71,10 @@ defmodule Valkyrie.DatasetMutationTest do
 
     eventually(
       fn ->
+        assert true == TestHelper.is_dataset_supervisor_alive(dataset_id)
+        assert {:ok, dataset} == Brook.ViewState.get(@instance, :datasets, dataset_id)
         assert true == Elsa.Topic.exists?(@endpoints, input_topic)
         assert true == Elsa.Topic.exists?(@endpoints, output_topic)
-        assert {:ok, dataset} == Brook.ViewState.get(@instance, :datasets, dataset_id)
       end,
       2_000,
       10
@@ -83,9 +84,10 @@ defmodule Valkyrie.DatasetMutationTest do
 
     eventually(
       fn ->
+        assert false == TestHelper.is_dataset_supervisor_alive(dataset_id)
+        assert {:ok, nil} == Brook.ViewState.get(@instance, :datasets, dataset_id)
         assert false == Elsa.Topic.exists?(@endpoints, input_topic)
         assert false == Elsa.Topic.exists?(@endpoints, output_topic)
-        assert {:ok, nil} == Brook.ViewState.get(@instance, :datasets, dataset_id)
       end,
       2_000,
       10

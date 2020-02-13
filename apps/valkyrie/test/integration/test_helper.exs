@@ -85,4 +85,13 @@ defmodule TestHelpers do
       max_tries: 20
     )
   end
+
+  def is_dataset_supervisor_alive(dataset_id) do
+    name = Valkyrie.DatasetSupervisor.name(dataset_id)
+
+    case Process.whereis(name) do
+      pid -> Process.alive?(pid)
+      nil -> false
+    end
+  end
 end
