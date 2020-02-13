@@ -19,19 +19,14 @@ defmodule Pipeline.Writer.S3Writer do
   Ensures PrestoDB tables exist for JSON and ORC formats.
   """
   def init(options) do
-    json_config = json_config(options)
-    orc_config = orc_config(options)
-
-    with {:ok, statement} <- Statement.create(json_config),
-         {:ok, _} <- execute(statement),
-         {:ok, statement} <- Statement.create(orc_config),
-         {:ok, _} <- execute(statement)  do
-      Logger.info("Created #{orc_config.table} table")
+    with {:ok, orc_table_name} <- create_table("ORC", options),
+         {:ok, _json_table_name} <- create_table("JSON", options) do
+      Logger.info("Created #{orc_table_name} table")
       :ok
     else
-      error ->
-        Logger.error("Error creating #{orc_config.table} table: #{inspect(error)}")
-        {:error, "Write to Presto failed: #{inspect(error)}"}
+      {error, {:ok, statement}} ->
+        Logger.error("Error creating table as: #{inspect(statement)}")
+        {:error, "Presto table creation failed due to: #{inspect(error)}"}
     end
   end
 
@@ -41,26 +36,33 @@ defmodule Pipeline.Writer.S3Writer do
   Writes data to PrestoDB table via S3.
   """
   def write([], options) do
-    orc_config = orc_config(options)
+    table_name = table_name("ORC", options)
 
-    Logger.debug("No data to write to #{orc_config.table}")
+    Logger.debug("No data to write to #{table_name}")
     :ok
   end
 
   def write(content, options) do
-    json_config = json_config(options)
+    json_config = config("JSON", options)
     bucket = Keyword.fetch!(options, :bucket)
 
-    source_file_path = content
-    |> Enum.map(&Map.get(&1, :payload))
-    |> Enum.map(&S3SafeJson.build(&1, json_config.schema))
-    |> Enum.map(&Jason.encode!/1)
-    |> Enum.join("\n")
-    |> write_to_temporary_file(json_config.table)
+    case table_exists?(json_config) do
+      true ->
+        source_file_path =
+          content
+          |> Enum.map(&Map.get(&1, :payload))
+          |> Enum.map(&S3SafeJson.build(&1, json_config.schema))
+          |> Enum.map(&Jason.encode!/1)
+          |> Enum.join("\n")
+          |> write_to_temporary_file(json_config.table)
 
-    destination_file_path= generate_unique_s3_file_path(json_config.table)
+        destination_file_path = generate_unique_s3_file_path(json_config.table)
 
-    upload_to_kdp_s3_folder(bucket, source_file_path, destination_file_path)
+        upload_to_kdp_s3_folder(bucket, source_file_path, destination_file_path)
+
+      error ->
+        error
+    end
   end
 
   @impl Pipeline.Writer
@@ -70,8 +72,8 @@ defmodule Pipeline.Writer.S3Writer do
   """
   def compact(options) do
     compaction_options = [
-     orc_table: orc_table_name(options),
-     json_table: json_table_name(options)
+      orc_table: table_name("ORC", options),
+      json_table: table_name("JSON", options)
     ]
 
     if Compaction.skip?(compaction_options) do
@@ -93,8 +95,8 @@ defmodule Pipeline.Writer.S3Writer do
   end
 
   defp generate_unique_s3_file_path(table_name) do
-    time = DateTime.utc_now |> DateTime.to_unix |> to_string()
-    "hive-s3/#{table_name}/#{time}-#{System.unique_integer}.gz"
+    time = DateTime.utc_now() |> DateTime.to_unix() |> to_string()
+    "hive-s3/#{table_name}/#{time}-#{System.unique_integer()}.gz"
   end
 
   defp upload_to_kdp_s3_folder(bucket, source_file_path, destination_file_path) do
@@ -106,6 +108,7 @@ defmodule Pipeline.Writer.S3Writer do
     |> case do
       {:ok, _} ->
         :ok
+
       error ->
         {:error, error}
     end
@@ -116,29 +119,48 @@ defmodule Pipeline.Writer.S3Writer do
     passthrough
   end
 
-  defp orc_config(options) do
+  defp create_table(format, options) do
+    config = config(format, options)
+
+    statement = Statement.create(config)
+
+    case execute(statement) do
+      {:error, _} = error -> {error, statement}
+      {:ok, _} -> {:ok, config.table}
+    end
+  end
+
+  defp config(format, options) do
     %{
-      table: orc_table_name(options),
-      schema: Keyword.fetch!(options, :schema)
+      table: table_name(format, options),
+      schema: options[:schema],
+      format: format
     }
   end
 
-  defp json_config(options) do
-    %{
-      table: json_table_name(options),
-      schema: Keyword.fetch!(options, :schema),
-      format: "JSON"
-    }
+  defp table_name("ORC", options), do: Keyword.fetch!(options, :table)
+  defp table_name("JSON", options), do: Keyword.fetch!(options, :table) <> "__json"
+
+  defp execute({:error, _} = error) do
+    error
   end
 
-  defp orc_table_name(options), do: Keyword.fetch!(options, :table)
-  defp json_table_name(options), do: orc_table_name(options) <> "__json"
-
-  defp execute(statement) do
+  defp execute({:ok, statement}) do
     try do
-      Application.prestige_opts() |> Prestige.new_session() |> Prestige.execute(statement)
+      Application.prestige_opts()
+      |> Prestige.new_session()
+      |> Prestige.execute(statement)
     rescue
       e -> e
+    end
+  end
+
+  defp execute(statement), do: execute({:ok, statement})
+
+  defp table_exists?(%{table: table}) do
+    case execute("show create table #{table}") do
+      {:ok, _} -> true
+      error -> error
     end
   end
 end

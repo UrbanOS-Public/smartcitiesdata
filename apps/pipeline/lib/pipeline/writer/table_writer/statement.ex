@@ -51,4 +51,8 @@ defmodule Pipeline.Writer.TableWriter.Statement do
   def alter(%{table: table, alteration: change}) do
     "alter table #{table} #{change}"
   end
+
+  def union(table_one, table_two) do
+    "select * from #{table_one} union all select * from #{table_two}"
+  end
 end

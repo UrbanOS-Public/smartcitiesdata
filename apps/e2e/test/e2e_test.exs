@@ -182,7 +182,7 @@ defmodule E2ETest do
 
       eventually(fn ->
         assert :ok = Forklift.DataWriter.compact_dataset(ds)
-      end)
+      end, 5_000)
 
       eventually(
         fn ->
@@ -280,7 +280,7 @@ defmodule E2ETest do
 
       eventually(fn ->
         assert :ok = Forklift.DataWriter.compact_dataset(ds)
-      end)
+      end, 10_000)
 
       eventually(
         fn ->
@@ -352,7 +352,7 @@ defmodule E2ETest do
 
       eventually(fn ->
         assert :ok = Forklift.DataWriter.compact_dataset(ds)
-      end)
+      end, 5_000)
 
       eventually(
         fn ->

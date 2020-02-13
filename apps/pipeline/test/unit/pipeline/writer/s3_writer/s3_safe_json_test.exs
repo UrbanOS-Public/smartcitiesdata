@@ -8,7 +8,7 @@ defmodule Pipeline.Writer.S3Writer.S3SafeJsonTest do
     test "correctly maps integer and string fields" do
       data = %{
         "a_date" => "2020-02-11T00:00:00Z",
-        "a_integer" => 66251,
+        "a_integer" => 66_251,
         "a_list" => ["2020-02-11T00:00:00Z", "2020-02-11T00:00:00Z"],
         "a_list_of_maps" => [
           %{"a_deep_date" => "2020-02-11T00:00:00Z"},
@@ -20,7 +20,7 @@ defmodule Pipeline.Writer.S3Writer.S3SafeJsonTest do
 
       expected_data = %{
         "a_date" => "2020-02-11",
-        "a_integer" => 66251,
+        "a_integer" => 66_251,
         "a_list" => ["2020-02-11", "2020-02-11"],
         "a_list_of_maps" => [
           %{"a_deep_date" => "2020-02-11"},

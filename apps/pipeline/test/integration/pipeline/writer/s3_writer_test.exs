@@ -103,6 +103,16 @@ defmodule Pipeline.Writer.S3WriterTest do
       end)
     end
 
+    test "returns an error for tables that do not exist", %{session: session} do
+      schema = [%{name: "one", type: "string"}, %{name: "two", type: "integer"}]
+      dataset = TDG.create_dataset(%{technical: %{systemName: "not__there", schema: schema}})
+
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})
+
+      assert {:error, _ } = S3Writer.write([datum1, datum2], table: dataset.technical.systemName, schema: schema, bucket: "kdp-cloud-storage")
+    end
+
     test "inserts heavily nested records", %{session: session} do
       schema = [
         %{name: "first_name", type: "string"},
@@ -170,7 +180,8 @@ defmodule Pipeline.Writer.S3WriterTest do
         }
       }
 
-      assert :ok = S3Writer.write([datum], table: dataset.technical.systemName, schema: schema, bucket: "kdp-cloud-storage")
+      assert :ok =
+               S3Writer.write([datum], table: dataset.technical.systemName, schema: schema, bucket: "kdp-cloud-storage")
 
       eventually(fn ->
         query = "select * from foo__baz__json"
@@ -294,6 +305,12 @@ defmodule Pipeline.Writer.S3WriterTest do
 
         assert json_query_result.rows == [[0]]
       end)
+    end
+
+    test "skips compaction (and tells you that it skipped it) for missing json table" do
+      dataset = TDG.create_dataset(%{technical: %{systemName: "f__g"}})
+
+      assert :skipped == S3Writer.compact(table: dataset.technical.systemName)
     end
 
     test "fails without altering state if it was going to change data", %{session: session} do

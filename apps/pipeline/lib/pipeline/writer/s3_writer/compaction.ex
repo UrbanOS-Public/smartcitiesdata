@@ -21,7 +21,7 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
 
     %{
       table: compact_table,
-      as: "select * from #{orc_table} union all select * from #{json_table}"
+      as: Statement.union(orc_table, json_table)
     }
     |> Statement.create()
     |> elem(1)
@@ -30,8 +30,10 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
 
   def skip?(options) do
     json_table = options[:json_table]
+
     case execute("select count(1) from #{json_table}") do
       {:ok, %{rows: [[0]]}} -> true
+      {:error, _} -> true
       _ -> false
     end
   end
@@ -39,8 +41,10 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
   def measure(compaction_task, options) do
     orc_table = options[:orc_table]
     json_table = options[:json_table]
+    union_statement = Statement.union(orc_table, json_table)
 
-    with count_task <- execute_async("select count(1) from (select * from #{orc_table} union all select * from #{json_table})"),
+    with count_task <-
+           execute_async("select count(1) from (#{union_statement})"),
          {:ok, orig_results} <- Task.await(count_task, :infinity),
          _ <- Task.await(compaction_task, :infinity),
          {:ok, new_results} <- execute("select count(1) from #{orc_table}_compact") do
@@ -66,6 +70,7 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     %{table: compact_table, alteration: "rename to #{orc_table}"}
     |> Statement.alter()
     |> execute()
+
     :ok
   end
 
@@ -76,7 +81,9 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     Statement.drop(%{table: compact_table})
     |> execute()
 
-    message = "Failed '#{orc_table}' compaction. New row count (#{inspect(new)}) did not match original count (#{inspect(old)})"
+    message =
+      "Failed '#{orc_table}' compaction. New row count (#{inspect(new)}) did not match original count (#{inspect(old)})"
+
     Logger.error(message)
 
     {:error, message}

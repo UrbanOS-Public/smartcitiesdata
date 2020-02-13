@@ -1,13 +1,15 @@
 defmodule Pipeline.Writer.S3Writer.S3SafeJson do
+  @moduledoc false
   def build(record, schema) do
     format_columns(schema, record)
   end
 
   defp format_columns(columns, row) do
     Enum.map(columns, fn %{name: name} = column ->
-      data = row
-      |> Map.get(to_string(name))
-      |> format_data(column)
+      data =
+        row
+        |> Map.get(to_string(name))
+        |> format_data(column)
 
       {name, data}
     end)
