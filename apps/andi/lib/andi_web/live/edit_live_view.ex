@@ -6,6 +6,7 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.DatasetInput
   alias Andi.InputSchemas.DisplayNames
   alias Andi.InputSchemas.Options
+  alias AndiWeb.EditLiveView.KeyValueEditor
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -111,28 +112,10 @@ defmodule AndiWeb.EditLiveView do
           <%= text_input(f, :sourceUrl, class: "input full-width", disabled: @testing) %>
           <%= error_tag(f, :sourceUrl) %>
         </div>
-        <div class="url-form__source-query-params">
-          <%= if has_values(input_value(f, :sourceQueryParams)) do %>
-            <%= inputs_for f, :sourceQueryParams, fn sqpf -> %>
-              <%= text_input(sqpf, :key, class: "input full-width url-form__source-query-param-key-input #{input_value(sqpf, :id)}", placeholder: "key") %>
-              <%= text_input(sqpf, :value, class: "input full-width url-form__source-query-param-value-input #{input_value(sqpf, :id)}", placeholder: "value") %>
-              <button type="button" class="url-form__source-query-params-delete-btn btn btn--large btn--action" phx-click="remove_source_query_param" phx-value-id="<%= input_value(sqpf, :id) %>">X</button>
-            <% end %>
-          <% end %>
-          <button type="button" class="url-form__source-query-params-add-btn btn btn--large btn--action" phx-click="add_source_query_param">+</button>
-          <%= error_tag_live(f, :sourceQueryParams) %>
-        </div>
-        <div class="url-form__source-header">
-          <%= if has_values(input_value(f, :sourceHeaders)) do %>
-            <%= inputs_for f, :sourceHeaders, fn sqpf -> %>
-              <%= text_input(sqpf, :key, class: "input full-width url-form__source-header-key-input #{input_value(sqpf, :id)}", placeholder: "key") %>
-              <%= text_input(sqpf, :value, class: "input full-width url-form__source-header-value-input #{input_value(sqpf, :id)}", placeholder: "value") %>
-              <button type="button" class="url-form__source-header-delete-btn btn btn--large btn--action" phx-click="remove_source_header" phx-value-id="<%= input_value(sqpf, :id) %>">X</button>
-            <% end %>
-          <% end %>
-          <button type="button" class="url-form__source-header-add-btn btn btn--large btn--action" phx-click="add_source_header">+</button>
-          <%= error_tag_live(f, :sourceHeaders) %>
-        </div>
+
+        <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_query_params, form: f, field: :sourceQueryParams ) %>
+        <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_headers, form: f, field: :sourceHeaders ) %>
+
         <div class="url-form__test-section">
           <button type="button" class="url-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
           <%= if @test_results do %>
@@ -194,26 +177,6 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, testing: true)}
   end
 
-  def handle_event("add_source_query_param", _, socket) do
-    changeset = DatasetInput.add_key_value(socket.assigns.changeset, :sourceQueryParams)
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
-  def handle_event("remove_source_query_param", %{"id" => id}, socket) do
-    changeset = DatasetInput.remove_key_value(socket.assigns.changeset, :sourceQueryParams, id)
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
-  def handle_event("add_source_header", _, socket) do
-    changeset = DatasetInput.add_key_value(socket.assigns.changeset, :sourceHeaders)
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
-  def handle_event("remove_source_header", %{"id" => id}, socket) do
-    changeset = DatasetInput.remove_key_value(socket.assigns.changeset, :sourceHeaders, id)
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
   def handle_event("validate", %{"metadata" => form_data}, socket) do
     socket = reset_save_success(socket)
 
@@ -259,6 +222,16 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, test_results: results, testing: false)}
   end
 
+  def handle_info({:add_key_value, %{"field" => field}}, socket) do
+    changeset = DatasetInput.add_key_value(socket.assigns.changeset, String.to_atom(field))
+    {:noreply, assign(socket, changeset: changeset)}
+  end
+
+  def handle_info({:remove_key_value, %{"id" => id, "field" => field}}, socket) do
+    changeset = DatasetInput.remove_key_value(socket.assigns.changeset, String.to_atom(field), id)
+    {:noreply, assign(socket, changeset: changeset)}
+  end
+
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
@@ -288,8 +261,4 @@ defmodule AndiWeb.EditLiveView do
 
   defp disabled?(true), do: "disabled"
   defp disabled?(_), do: ""
-
-  defp has_values(nil), do: false
-  defp has_values([]), do: false
-  defp has_values(_), do: true
 end

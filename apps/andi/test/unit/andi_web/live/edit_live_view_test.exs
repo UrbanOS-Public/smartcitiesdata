@@ -577,27 +577,30 @@ defmodule AndiWeb.EditLiveViewTest do
       %{dataset: dataset}
     end
 
-    data_test "new key/value inputs are added when add button is pressed for #{event}", %{conn: conn, dataset: dataset} do
+    data_test "new key/value inputs are added when add button is pressed for #{field}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      html = render_change(view, event, %{})
+      render_click([view, component_id], "add", %{"field" => Atom.to_string(field)})
+      html = render(view)
 
       assert html |> Floki.find(key_class) |> length() == 3
       assert html |> Floki.find(value_class) |> length() == 3
 
       where(
-        event: [:add_source_query_param, :add_source_header],
-        key_class: [".url-form__source-query-param-key-input", ".url-form__source-header-key-input"],
-        value_class: [".url-form__source-query-param-value-input", ".url-form__source-header-value-input"]
+        field: [:sourceQueryParams, :sourceHeaders],
+        component_id: ["key_value_editor_source_query_params", "key_value_editor_source_headers"],
+        key_class: [".url-form__sourceQueryParams-key-input", ".url-form__sourceHeaders-key-input"],
+        value_class: [".url-form__sourceQueryParams-value-input", ".url-form__sourceHeaders-value-input"]
       )
     end
 
-    data_test "key/value inputs are deleted when x is pressed for #{event}", %{conn: conn, dataset: dataset} do
+    data_test "key/value inputs are deleted when x is pressed for #{field}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       btn_id = Floki.find(html, btn_class) |> Floki.attribute("phx-value-id") |> hd()
 
-      html = render_change(view, event, %{id: btn_id})
+      render_click([view, component_id], "remove", %{"id" => btn_id, "field" => Atom.to_string(field)})
+      html = render(view)
 
       key_input = html |> Floki.find(key_class)
       assert length(key_input) == 1
@@ -608,10 +611,11 @@ defmodule AndiWeb.EditLiveViewTest do
       refute btn_id =~ hd(value_input) |> Floki.attribute("class") |> hd()
 
       where(
-        event: [:remove_source_query_param, :remove_source_header],
-        btn_class: [".url-form__source-query-params-delete-btn", ".url-form__source-header-delete-btn"],
-        key_class: [".url-form__source-query-param-key-input", ".url-form__source-header-key-input"],
-        value_class: [".url-form__source-query-param-value-input", ".url-form__source-header-value-input"]
+        field: [:sourceQueryParams, :sourceHeaders],
+        component_id: ["key_value_editor_source_query_params", "key_value_editor_source_headers"],
+        btn_class: [".url-form__sourceQueryParams-delete-btn", ".url-form__sourceHeaders-delete-btn"],
+        key_class: [".url-form__sourceQueryParams-key-input", ".url-form__sourceHeaders-key-input"],
+        value_class: [".url-form__sourceQueryParams-value-input", ".url-form__sourceHeaders-value-input"]
       )
     end
 
@@ -626,8 +630,8 @@ defmodule AndiWeb.EditLiveViewTest do
 
       where(
         field: [:sourceQueryParams, :sourceHeaders],
-        key_class: [".url-form__source-query-param-key-input", ".url-form__source-header-key-input"],
-        value_class: [".url-form__source-query-param-value-input", ".url-form__source-header-value-input"]
+        key_class: [".url-form__sourceQueryParams-key-input", ".url-form__sourceHeaders-key-input"],
+        value_class: [".url-form__sourceQueryParams-value-input", ".url-form__sourceHeaders-value-input"]
       )
     end
   end
