@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.EventHandler do
   """
   alias SmartCity.Dataset
   use Brook.Event.Handler
-  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, dataset_delete: 0]
   require Logger
 
   def handle_event(%Brook.Event{
@@ -31,6 +31,21 @@ defmodule DiscoveryStreams.EventHandler do
     :ok
   end
 
+  def handle_event(%Brook.Event{
+        type: dataset_delete(),
+        data: %Dataset{id: id, technical: %{systemName: system_name}}
+      }) do
+    case delete_dataset(id) do
+      :ok ->
+        Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{id}")
+
+      {:error, error} ->
+        Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{id}, Reason: #{inspect(error)}")
+    end
+
+    delete_from_viewstate(id, system_name)
+  end
+
   def save_dataset_to_viewstate(id, system_name) do
     Logger.debug("#{__MODULE__}: Handling Datatset: #{id} with system_name: #{system_name}")
 
@@ -42,5 +57,10 @@ defmodule DiscoveryStreams.EventHandler do
     Logger.debug("#{__MODULE__}: Deleting Datatset: #{id} with system_name: #{system_name}")
     delete(:streaming_datasets_by_id, id)
     delete(:streaming_datasets_by_system_name, system_name)
+  end
+
+  defp delete_dataset(dataset_id) do
+    Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset_id}")
+    DiscoveryStreams.TopicHelper.delete_topic(dataset_id)
   end
 end
