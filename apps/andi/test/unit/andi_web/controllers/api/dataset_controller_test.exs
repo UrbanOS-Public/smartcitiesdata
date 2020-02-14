@@ -201,7 +201,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
         },
         technical: %{
           sourceFormat: "",
-          sourceQueryParams: %{"" => "where's my key"}
+          sourceHeaders: %{"" => "where's my key"},
+          sourceQueryParams: %{"" => "where's MY key"}
         }
       )
       |> struct_to_map_with_string_keys()
@@ -232,6 +233,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       "private",
       "riskRating",
       "sourceFormat",
+      "sourceHeaders",
       "sourceQueryParams"
     ]
 

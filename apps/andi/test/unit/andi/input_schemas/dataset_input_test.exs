@@ -262,7 +262,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     end
   end
 
-  describe "add_key_value_param" do
+  describe "add_key_value" do
     setup do
       %{changeset: DatasetInput.light_validation_changeset(@valid_changes)}
     end
@@ -271,7 +271,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       new_param = %{key: "key2", value: "value2"}
 
       changes =
-        DatasetInput.add_key_value_param(changeset, field, new_param)
+        DatasetInput.add_key_value(changeset, field, new_param)
         |> Ecto.Changeset.apply_changes()
 
       assert length(changes[field]) == length(@valid_changes[field]) + 1
@@ -284,7 +284,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
     data_test "appends an empty key/value to #{field} by default", %{changeset: changeset} do
       changes =
-        DatasetInput.add_key_value_param(changeset, field)
+        DatasetInput.add_key_value(changeset, field)
         |> Ecto.Changeset.apply_changes()
 
       assert length(changes[field]) == length(@valid_changes[field]) + 1
@@ -304,7 +304,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
         |> DatasetInput.light_validation_changeset()
 
       changes =
-        DatasetInput.add_key_value_param(changeset, field, new_param)
+        DatasetInput.add_key_value(changeset, field, new_param)
         |> Ecto.Changeset.apply_changes()
 
       assert length(changes[field]) == 1
@@ -316,14 +316,14 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     end
   end
 
-  describe "remove_key_value_param" do
+  describe "remove_key_value" do
     setup do
       %{changeset: DatasetInput.light_validation_changeset(@valid_changes)}
     end
 
     data_test "removes key/value from #{field} by id", %{changeset: changeset} do
       changes =
-        DatasetInput.remove_key_value_param(changeset, field, id)
+        DatasetInput.remove_key_value(changeset, field, id)
         |> Ecto.Changeset.apply_changes()
 
       assert length(changes[field]) == length(@valid_changes[field]) - 1
@@ -336,7 +336,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     end
 
     data_test "does not alter #{field} if id is unknown", %{changeset: changeset} do
-      assert changeset == DatasetInput.remove_key_value_param(changeset, field, "unknown")
+      assert changeset == DatasetInput.remove_key_value(changeset, field, "unknown")
 
       where(field: [:sourceQueryParams, :sourceHeaders])
     end

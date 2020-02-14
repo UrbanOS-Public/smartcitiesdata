@@ -13,7 +13,7 @@ defmodule Andi.InputSchemas.InputConverter do
 
   def changeset_from_dataset(%{id: id, business: business, technical: technical}) do
     from_business = get_business(business) |> fix_modified_date()
-    from_technical = get_technical(technical) |> convert_source_query_params() |> convert_source_headers()
+    from_technical = get_technical(technical) |> convert_key_values()
 
     %{id: id}
     |> Map.merge(from_business)
@@ -57,8 +57,7 @@ defmodule Andi.InputSchemas.InputConverter do
       changes
       |> Map.update(:issuedDate, nil, &date_to_iso8601_datetime/1)
       |> Map.update(:modifiedDate, nil, &date_to_iso8601_datetime/1)
-      |> Map.update(:sourceQueryParams, %{}, &restruct_source_query_params/1)
-      |> Map.update(:sourceHeaders, %{}, &restruct_source_headers/1)
+      |> restruct_key_values()
 
     business = Map.merge(dataset.business, get_business(formatted_changes)) |> Map.from_struct()
     technical = Map.merge(dataset.technical, get_technical(formatted_changes)) |> Map.from_struct()
@@ -117,31 +116,23 @@ defmodule Andi.InputSchemas.InputConverter do
     |> elem(1)
   end
 
-  defp convert_source_query_params(%{sourceQueryParams: nil} = technical),
-    do: Map.put(technical, :sourceQueryParams, [])
-
-  defp convert_source_query_params(%{sourceQueryParams: query_params} = technical) do
-    converted = Enum.map(query_params, fn {k, v} -> %{key: k, value: v} end)
-    Map.put(technical, :sourceQueryParams, converted)
+  defp convert_key_values(technical) do
+    Enum.reduce(DatasetInput.key_value_keys(), technical, fn field, acc -> convert_key_values(acc, field) end)
   end
 
-  defp convert_source_query_params(technical), do: Map.put(technical, :sourceQueryParams, [])
-
-  defp restruct_source_query_params(params) do
-    Enum.reduce(params, %{}, fn param, acc -> Map.put(acc, param.key, param.value) end)
+  defp convert_key_values(map, field) do
+    Map.update(map, field, [], fn key_values ->
+      Enum.map(key_values, fn {k, v} -> %{key: k, value: v} end)
+    end)
   end
 
-  defp convert_source_headers(%{sourceHeaders: nil} = technical),
-    do: Map.put(technical, :sourceHeaders, [])
-
-  defp convert_source_headers(%{sourceHeaders: source_headers} = technical) do
-    converted = Enum.map(source_headers, fn {k, v} -> %{key: k, value: v} end)
-    Map.put(technical, :sourceHeaders, converted)
+  defp restruct_key_values(params) do
+    Enum.reduce(DatasetInput.key_value_keys(), params, fn field, acc -> restruct_key_values(acc, field) end)
   end
 
-  defp convert_source_headers(technical), do: Map.put(technical, :sourceHeaders, [])
-
-  defp restruct_source_headers(headers) do
-    Enum.reduce(headers, %{}, fn header, acc -> Map.put(acc, header.key, header.value) end)
+  defp restruct_key_values(map, field) do
+    Map.update(map, field, %{}, fn key_values ->
+      Enum.reduce(key_values, %{}, fn entry, acc -> Map.put(acc, entry.key, entry.value) end)
+    end)
   end
 end

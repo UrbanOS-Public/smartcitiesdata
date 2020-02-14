@@ -45,7 +45,9 @@ defmodule Andi.InputSchemas.DatasetInput do
          |> Map.merge(@business_fields)
          |> Map.merge(@technical_fields)
 
-  @non_embedded_types Map.drop(@types, [:sourceQueryParams, :sourceHeaders])
+  @key_value_type_keys [:sourceQueryParams, :sourceHeaders]
+
+  @non_embedded_types Map.drop(@types, @key_value_type_keys)
 
   @required_fields [
     :benefitRating,
@@ -72,6 +74,7 @@ defmodule Andi.InputSchemas.DatasetInput do
 
   def business_keys(), do: Map.keys(@business_fields)
   def technical_keys(), do: Map.keys(@technical_fields)
+  def key_value_keys(), do: @key_value_type_keys
 
   def light_validation_changeset(changes), do: light_validation_changeset(%{}, changes)
 
@@ -97,7 +100,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     light_validation_changeset(schema, changes) |> validate_unique_system_name()
   end
 
-  def add_key_value_param(changeset, field, %{} = param \\ %{}) do
+  def add_key_value(changeset, field, %{} = param \\ %{}) do
     new_key_value_changeset = KeyValue.changeset(%KeyValue{}, param)
 
     change =
@@ -109,7 +112,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     put_change(changeset, field, change)
   end
 
-  def remove_key_value_param(changeset, field, id) do
+  def remove_key_value(changeset, field, id) do
     update_change(changeset, field, fn params ->
       Enum.filter(params, fn param -> param.changes.id != id end)
     end)

@@ -195,22 +195,22 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("add_source_query_param", _, socket) do
-    changeset = DatasetInput.add_key_value_param(socket.assigns.changeset, :sourceQueryParams)
+    changeset = DatasetInput.add_key_value(socket.assigns.changeset, :sourceQueryParams)
     {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("remove_source_query_param", %{"id" => id}, socket) do
-    changeset = DatasetInput.remove_key_value_param(socket.assigns.changeset, :sourceQueryParams, id)
+    changeset = DatasetInput.remove_key_value(socket.assigns.changeset, :sourceQueryParams, id)
     {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("add_source_header", _, socket) do
-    changeset = DatasetInput.add_key_value_param(socket.assigns.changeset, :sourceHeaders)
+    changeset = DatasetInput.add_key_value(socket.assigns.changeset, :sourceHeaders)
     {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("remove_source_header", %{"id" => id}, socket) do
-    changeset = DatasetInput.remove_key_value_param(socket.assigns.changeset, :sourceHeaders, id)
+    changeset = DatasetInput.remove_key_value(socket.assigns.changeset, :sourceHeaders, id)
     {:noreply, assign(socket, changeset: changeset)}
   end
 
