@@ -2,7 +2,7 @@ defmodule DiscoveryStreams.EventHandlerTest do
   use ExUnit.Case
   alias SmartCity.TestDataGenerator, as: TDG
   import Checkov
-  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, dataset_delete: 0]
   use Placebo
 
   describe "data:ingest:start event" do
@@ -81,6 +81,18 @@ defmodule DiscoveryStreams.EventHandlerTest do
         ["stream", false, false],
         ["stream", true, true]
       ])
+    end
+
+    test "should delete dataset when dataset:delete event fires" do
+      system_name = Faker.UUID.v4()
+      dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{systemName: system_name})
+      allow(DiscoveryStreams.TopicHelper.delete_topic(any()), return: :ok)
+
+      event = Brook.Event.new(type: dataset_delete(), data: dataset, author: :author)
+
+      DiscoveryStreams.EventHandler.handle_event(event)
+      assert_called(Brook.ViewState.delete(:streaming_datasets_by_id, dataset.id))
+      assert_called(Brook.ViewState.delete(:streaming_datasets_by_system_name, system_name))
     end
   end
 end
