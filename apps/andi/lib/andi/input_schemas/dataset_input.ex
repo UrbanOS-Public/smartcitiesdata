@@ -35,8 +35,8 @@ defmodule Andi.InputSchemas.DatasetInput do
     schema: {:array, :map},
     sourceFormat: :string,
     sourceHeaders: {:embed, KeyValue.relationship_definition(:sourceHeaders)},
-    sourceType: :string,
     sourceQueryParams: {:embed, KeyValue.relationship_definition(:sourceQueryParams)},
+    sourceType: :string,
     sourceUrl: :string,
     topLevelSelector: :string
   }
@@ -97,20 +97,20 @@ defmodule Andi.InputSchemas.DatasetInput do
     light_validation_changeset(schema, changes) |> validate_unique_system_name()
   end
 
-  def add_source_query_param(changeset, %{} = param \\ %{}) do
+  def add_key_value_param(changeset, field, %{} = param \\ %{}) do
     new_key_value_changeset = KeyValue.changeset(%KeyValue{}, param)
 
     change =
-      case fetch_change(changeset, :sourceQueryParams) do
+      case fetch_change(changeset, field) do
         {:ok, params} -> params ++ [new_key_value_changeset]
         _ -> [new_key_value_changeset]
       end
 
-    put_change(changeset, :sourceQueryParams, change)
+    put_change(changeset, field, change)
   end
 
-  def remove_source_query_param(changeset, id) do
-    update_change(changeset, :sourceQueryParams, fn params ->
+  def remove_key_value_param(changeset, field, id) do
+    update_change(changeset, field, fn params ->
       Enum.filter(params, fn param -> param.changes.id != id end)
     end)
   end

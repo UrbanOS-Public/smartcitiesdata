@@ -9,11 +9,11 @@ defmodule Andi.InputSchemas.InputConverter do
   @type dataset :: map() | Dataset.t()
 
   @spec changeset_from_dataset(dataset) :: Ecto.Changeset.t()
-  def changeset_from_dataset(%{ "id" => _ } = dataset), do: atomize(dataset) |> changeset_from_dataset()
+  def changeset_from_dataset(%{"id" => _} = dataset), do: atomize(dataset) |> changeset_from_dataset()
 
   def changeset_from_dataset(%{id: id, business: business, technical: technical}) do
     from_business = get_business(business) |> fix_modified_date()
-    from_technical = get_technical(technical) |> convert_source_query_params()
+    from_technical = get_technical(technical) |> convert_source_query_params() |> convert_source_headers()
 
     %{id: id}
     |> Map.merge(from_business)
@@ -58,6 +58,7 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:issuedDate, nil, &date_to_iso8601_datetime/1)
       |> Map.update(:modifiedDate, nil, &date_to_iso8601_datetime/1)
       |> Map.update(:sourceQueryParams, %{}, &restruct_source_query_params/1)
+      |> Map.update(:sourceHeaders, %{}, &restruct_source_headers/1)
 
     business = Map.merge(dataset.business, get_business(formatted_changes)) |> Map.from_struct()
     technical = Map.merge(dataset.technical, get_technical(formatted_changes)) |> Map.from_struct()
@@ -128,5 +129,19 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp restruct_source_query_params(params) do
     Enum.reduce(params, %{}, fn param, acc -> Map.put(acc, param.key, param.value) end)
+  end
+
+  defp convert_source_headers(%{sourceHeaders: nil} = technical),
+    do: Map.put(technical, :sourceHeaders, [])
+
+  defp convert_source_headers(%{sourceHeaders: source_headers} = technical) do
+    converted = Enum.map(source_headers, fn {k, v} -> %{key: k, value: v} end)
+    Map.put(technical, :sourceHeaders, converted)
+  end
+
+  defp convert_source_headers(technical), do: Map.put(technical, :sourceHeaders, [])
+
+  defp restruct_source_headers(headers) do
+    Enum.reduce(headers, %{}, fn header, acc -> Map.put(acc, header.key, header.value) end)
   end
 end

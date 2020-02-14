@@ -24,10 +24,11 @@ defmodule Andi.InputSchemas.DisplayNames do
     riskRating: "Risk",
     schema: "Schema",
     sourceFormat: "Source Format",
+    sourceHeaders: "Headers",
     sourceQueryParams: "Query Parameters",
     sourceType: "Source Type",
     sourceUrl: "Source URL",
-    topLevelSelector: "Top Level Selector",
+    topLevelSelector: "Top Level Selector"
   }
 
   def get(field_key) do

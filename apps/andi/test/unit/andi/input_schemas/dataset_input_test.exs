@@ -8,6 +8,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
   alias Andi.DatasetCache
 
   @source_query_param_id Ecto.UUID.generate()
+  @source_header_id Ecto.UUID.generate()
 
   @valid_changes %{
     benefitRating: 0,
@@ -26,9 +27,13 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     riskRating: 1,
     schema: [%{name: "name", type: "type"}],
     sourceFormat: "sourceFormat",
-    sourceQueryParams: [
+    sourceHeaders: [
       %{id: Ecto.UUID.generate(), key: "foo", value: "bar"},
-      %{id: @source_query_param_id, key: "fizzle", value: "bizzle"}
+      %{id: @source_header_id, key: "fizzle", value: "bizzle"}
+    ],
+    sourceQueryParams: [
+      %{id: Ecto.UUID.generate(), key: "chain", value: "city"},
+      %{id: @source_query_param_id, key: "F# minor", value: "add"}
     ],
     sourceType: "sourceType",
     sourceUrl: "sourceurl.com"
@@ -192,19 +197,19 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     end
 
     data_test "#{field} are invalid when any key is not set" do
-      changes = @valid_changes |> Map.put(field, [
-        %{id: Ecto.UUID.generate(), key: "foo", value: "bar"},
-        %{id: Ecto.UUID.generate(), key: "", value: "where's my key?"}
-      ])
+      changes =
+        @valid_changes
+        |> Map.put(field, [
+          %{id: Ecto.UUID.generate(), key: "foo", value: "bar"},
+          %{id: Ecto.UUID.generate(), key: "", value: "where's my key?"}
+        ])
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
       refute changeset.valid?
       assert changeset.errors == [{field, {"has invalid format", [validation: :format]}}]
 
-      where(
-        field: [:sourceQueryParams, :sourceHeaders]
-      )
+      where(field: [:sourceQueryParams, :sourceHeaders])
     end
 
     data_test "#{field} are valid when they are not set" do
@@ -215,9 +220,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       assert changeset.valid?
       assert Enum.empty?(changeset.errors)
 
-      where(
-        field: [:sourceQueryParams, :sourceHeaders]
-      )
+      where(field: [:sourceQueryParams, :sourceHeaders])
     end
   end
 
@@ -259,70 +262,83 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     end
   end
 
-  describe "add_source_query_param" do
+  describe "add_key_value_param" do
     setup do
       %{changeset: DatasetInput.light_validation_changeset(@valid_changes)}
     end
 
-    test "appends key/value to the sourceQueryParams", %{changeset: changeset} do
+    data_test "appends key/value to #{field}", %{changeset: changeset} do
       new_param = %{key: "key2", value: "value2"}
 
       changes =
-        DatasetInput.add_source_query_param(changeset, new_param)
+        DatasetInput.add_key_value_param(changeset, field, new_param)
         |> Ecto.Changeset.apply_changes()
 
-      assert length(changes.sourceQueryParams) == length(@valid_changes.sourceQueryParams) + 1
-      refute is_nil(List.last(changes.sourceQueryParams).id)
-      assert List.last(changes.sourceQueryParams).key == new_param.key
-      assert List.last(changes.sourceQueryParams).value == new_param.value
+      assert length(changes[field]) == length(@valid_changes[field]) + 1
+      refute is_nil(List.last(changes[field]).id)
+      assert List.last(changes[field]).key == new_param.key
+      assert List.last(changes[field]).value == new_param.value
+
+      where(field: [:sourceQueryParams, :sourceHeaders])
     end
 
-    test "appends an empty key/value to the sourceQueryParams by default", %{changeset: changeset} do
+    data_test "appends an empty key/value to #{field} by default", %{changeset: changeset} do
       changes =
-        DatasetInput.add_source_query_param(changeset)
+        DatasetInput.add_key_value_param(changeset, field)
         |> Ecto.Changeset.apply_changes()
 
-      assert length(changes.sourceQueryParams) == length(@valid_changes.sourceQueryParams) + 1
-      refute is_nil(List.last(changes.sourceQueryParams).id)
-      assert is_nil(List.last(changes.sourceQueryParams).key)
-      assert is_nil(List.last(changes.sourceQueryParams).value)
+      assert length(changes[field]) == length(@valid_changes[field]) + 1
+      refute is_nil(List.last(changes[field]).id)
+      assert is_nil(List.last(changes[field]).key)
+      assert is_nil(List.last(changes[field]).value)
+
+      where(field: [:sourceQueryParams, :sourceHeaders])
     end
 
-    test "appends a key/value to an empty list of sourceQueryParams" do
+    data_test "appends a key/value to an empty list of #{field}" do
       new_param = %{key: "key2", value: "value2"}
 
       changeset =
         @valid_changes
-        |> Map.put(:sourceQueryParams, %{})
+        |> Map.put(field, %{})
         |> DatasetInput.light_validation_changeset()
 
       changes =
-        DatasetInput.add_source_query_param(changeset, new_param)
+        DatasetInput.add_key_value_param(changeset, field, new_param)
         |> Ecto.Changeset.apply_changes()
 
-      assert length(changes.sourceQueryParams) == 1
-      refute is_nil(hd(changes.sourceQueryParams).id)
-      assert hd(changes.sourceQueryParams).key == new_param.key
-      assert hd(changes.sourceQueryParams).value == new_param.value
+      assert length(changes[field]) == 1
+      refute is_nil(hd(changes[field]).id)
+      assert hd(changes[field]).key == new_param.key
+      assert hd(changes[field]).value == new_param.value
+
+      where(field: [:sourceQueryParams, :sourceHeaders])
     end
   end
 
-  describe "remove_source_query_param" do
+  describe "remove_key_value_param" do
     setup do
       %{changeset: DatasetInput.light_validation_changeset(@valid_changes)}
     end
 
-    test "removes key/value from the sourceQueryParams by id", %{changeset: changeset} do
+    data_test "removes key/value from #{field} by id", %{changeset: changeset} do
       changes =
-        DatasetInput.remove_source_query_param(changeset, @source_query_param_id)
+        DatasetInput.remove_key_value_param(changeset, field, id)
         |> Ecto.Changeset.apply_changes()
 
-      assert length(changes.sourceQueryParams) == length(@valid_changes.sourceQueryParams) - 1
-      refute Enum.any?(changes.sourceQueryParams, fn param -> param.id == @source_query_param_id end)
+      assert length(changes[field]) == length(@valid_changes[field]) - 1
+      refute Enum.any?(changes[field], fn param -> param.id == id end)
+
+      where(
+        field: [:sourceQueryParams, :sourceHeaders],
+        id: [@source_query_param_id, @source_header_id]
+      )
     end
 
-    test "does nothing if id is unknown", %{changeset: changeset} do
-      assert changeset == DatasetInput.remove_source_query_param(changeset, "unknown")
+    data_test "does not alter #{field} if id is unknown", %{changeset: changeset} do
+      assert changeset == DatasetInput.remove_key_value_param(changeset, field, "unknown")
+
+      where(field: [:sourceQueryParams, :sourceHeaders])
     end
   end
 end

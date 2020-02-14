@@ -122,6 +122,17 @@ defmodule AndiWeb.EditLiveView do
           <button type="button" class="url-form__source-query-params-add-btn btn btn--large btn--action" phx-click="add_source_query_param">+</button>
           <%= error_tag_live(f, :sourceQueryParams) %>
         </div>
+        <div class="url-form__source-header">
+          <%= if has_values(input_value(f, :sourceHeaders)) do %>
+            <%= inputs_for f, :sourceHeaders, fn sqpf -> %>
+              <%= text_input(sqpf, :key, class: "input full-width url-form__source-header-key-input #{input_value(sqpf, :id)}", placeholder: "key") %>
+              <%= text_input(sqpf, :value, class: "input full-width url-form__source-header-value-input #{input_value(sqpf, :id)}", placeholder: "value") %>
+              <button type="button" class="url-form__source-header-delete-btn btn btn--large btn--action" phx-click="remove_source_header" phx-value-id="<%= input_value(sqpf, :id) %>">X</button>
+            <% end %>
+          <% end %>
+          <button type="button" class="url-form__source-header-add-btn btn btn--large btn--action" phx-click="add_source_header">+</button>
+          <%= error_tag_live(f, :sourceHeaders) %>
+        </div>
         <div class="url-form__test-section">
           <button type="button" class="url-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
           <%= if @test_results do %>
@@ -184,17 +195,28 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("add_source_query_param", _, socket) do
-    changeset = DatasetInput.add_source_query_param(socket.assigns.changeset)
+    changeset = DatasetInput.add_key_value_param(socket.assigns.changeset, :sourceQueryParams)
     {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("remove_source_query_param", %{"id" => id}, socket) do
-    changeset = DatasetInput.remove_source_query_param(socket.assigns.changeset, id)
+    changeset = DatasetInput.remove_key_value_param(socket.assigns.changeset, :sourceQueryParams, id)
+    {:noreply, assign(socket, changeset: changeset)}
+  end
+
+  def handle_event("add_source_header", _, socket) do
+    changeset = DatasetInput.add_key_value_param(socket.assigns.changeset, :sourceHeaders)
+    {:noreply, assign(socket, changeset: changeset)}
+  end
+
+  def handle_event("remove_source_header", %{"id" => id}, socket) do
+    changeset = DatasetInput.remove_key_value_param(socket.assigns.changeset, :sourceHeaders, id)
     {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("validate", %{"metadata" => form_data}, socket) do
     socket = reset_save_success(socket)
+
     new_changeset =
       form_data
       |> InputConverter.form_changeset()

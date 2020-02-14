@@ -69,11 +69,13 @@ defmodule AndiWeb.ErrorHelpers do
 
   defp interpret_error(error, field) do
     {_, opts} = error
+
     updated_message =
       case field do
-        :sourceQueryParams -> "Please enter a valid key(s)."
+        field when field in [:sourceHeaders, :sourceQueryParams] -> "Please enter a valid key(s)."
         _ -> "Please enter a valid #{get_downcased_display_name(field)}."
       end
+
     {updated_message, opts}
   end
 

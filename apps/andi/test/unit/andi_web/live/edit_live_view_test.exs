@@ -287,16 +287,18 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_text(html, "#sourceFormat-error-msg") == "Please enter a valid source format."
     end
 
-    test "invalid sourceQueryParams displays proper error message", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{"foo" => "where's my key"}}})
+    data_test "invalid #{field} displays proper error message", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{field => %{"foo" => "where's my key"}}})
       DatasetCache.put(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      form_data =  dataset_to_form_data(dataset) |> Map.put(:sourceQueryParams, %{"0" => %{"key" => "", "value" => "where's my key"}})
+      form_data = dataset_to_form_data(dataset) |> Map.put(field, %{"0" => %{"key" => "", "value" => "where's my key"}})
       html = render_change(view, :validate, %{"metadata" => form_data})
 
-      assert get_text(html, "#sourceQueryParams-error-msg") == "Please enter a valid key(s)."
+      assert get_text(html, "##{field}-error-msg") == "Please enter a valid key(s)."
+
+      where(field: [:sourceQueryParams, :sourceHeaders])
     end
 
     data_test "displays error when #{field} is unset", %{conn: conn} do
@@ -560,47 +562,73 @@ defmodule AndiWeb.EditLiveViewTest do
     end
   end
 
-  describe "updating source query params" do
+  describe "updating source params" do
     setup do
-      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{foo: "bar", baz: "biz"}}})
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            sourceQueryParams: %{foo: "bar", baz: "biz"},
+            sourceHeaders: %{fool: "barl", bazl: "bizl"}
+          }
+        })
+
       DatasetCache.put(dataset)
 
       %{dataset: dataset}
     end
 
-    test "new key/value inputs are added when add button is pressed", %{conn: conn, dataset: dataset} do
+    data_test "new key/value inputs are added when add button is pressed for #{event}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      html = render_change(view, :add_source_query_param, %{})
+      html = render_change(view, event, %{})
 
-      assert html |> Floki.find(".url-form__source-query-param-key-input") |> length() == 3
-      assert html |> Floki.find(".url-form__source-query-param-value-input") |> length() == 3
+      assert html |> Floki.find(key_class) |> length() == 3
+      assert html |> Floki.find(value_class) |> length() == 3
+
+      where(
+        event: [:add_source_query_param, :add_source_header],
+        key_class: [".url-form__source-query-param-key-input", ".url-form__source-header-key-input"],
+        value_class: [".url-form__source-query-param-value-input", ".url-form__source-header-value-input"]
+      )
     end
 
-    test "key/value inputs are deleted when x is pressed", %{conn: conn, dataset: dataset} do
+    data_test "key/value inputs are deleted when x is pressed for #{event}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      btn_id = Floki.find(html, ".url-form__source-query-params-delete-btn") |> Floki.attribute("phx-value-id") |> hd()
+      btn_id = Floki.find(html, btn_class) |> Floki.attribute("phx-value-id") |> hd()
 
-      html = render_change(view, :remove_source_query_param, %{id: btn_id})
+      html = render_change(view, event, %{id: btn_id})
 
-      key_input = html |> Floki.find(".url-form__source-query-param-key-input")
+      key_input = html |> Floki.find(key_class)
       assert length(key_input) == 1
       refute btn_id =~ hd(key_input) |> Floki.attribute("class") |> hd()
 
-      value_input = html |> Floki.find(".url-form__source-query-param-key-input")
+      value_input = html |> Floki.find(value_class)
       assert length(value_input) == 1
       refute btn_id =~ hd(value_input) |> Floki.attribute("class") |> hd()
+
+      where(
+        event: [:remove_source_query_param, :remove_source_header],
+        btn_class: [".url-form__source-query-params-delete-btn", ".url-form__source-header-delete-btn"],
+        key_class: [".url-form__source-query-param-key-input", ".url-form__source-header-key-input"],
+        value_class: [".url-form__source-query-param-value-input", ".url-form__source-header-value-input"]
+      )
     end
 
-    test "does not have key/value inputs when dataset has no source query params", %{conn: conn} do
+    data_test "does not have key/value inputs when dataset has no source #{field}", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       DatasetCache.put(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert html |> Floki.find(".url-form__source-query-param-key-input") |> Enum.empty?()
-      assert html |> Floki.find(".url-form__source-query-param-value-input") |> Enum.empty?()
+      assert html |> Floki.find(key_class) |> Enum.empty?()
+      assert html |> Floki.find(value_class) |> Enum.empty?()
+
+      where(
+        field: [:sourceQueryParams, :sourceHeaders],
+        key_class: [".url-form__source-query-param-key-input", ".url-form__source-header-key-input"],
+        value_class: [".url-form__source-query-param-value-input", ".url-form__source-header-value-input"]
+      )
     end
   end
 
