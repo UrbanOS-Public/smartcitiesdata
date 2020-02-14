@@ -17,4 +17,15 @@ defmodule Andi.InputSchemas.KeyValue do
     |> cast(with_id, [:id, :key, :value], empty_values: [])
     |> validate_required([:id, :key])
   end
+
+  def relationship_definition(field) do
+    %Ecto.Embedded{
+      cardinality: :many,
+      field: field,
+      on_cast: &Andi.InputSchemas.KeyValue.changeset(&1, &2),
+      on_replace: :delete,
+      owner: nil,
+      related: Andi.InputSchemas.KeyValue
+    }
+  end
 end

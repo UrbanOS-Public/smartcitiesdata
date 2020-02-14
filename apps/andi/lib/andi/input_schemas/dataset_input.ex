@@ -9,25 +9,6 @@ defmodule Andi.InputSchemas.DatasetInput do
   alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.KeyValue
 
-  #TODO: make this suck less
-  @params_embedded_key_values %Ecto.Embedded{
-    cardinality: :many,
-    field: :sourceQueryParams,
-    on_cast: &KeyValue.changeset(&1, &2),
-    on_replace: :delete,
-    owner: nil,
-    related: KeyValue
-  }
-
-  @headers_embedded_key_values %Ecto.Embedded{
-    cardinality: :many,
-    field: :sourceHeaders,
-    on_cast: &KeyValue.changeset(&1, &2),
-    on_replace: :delete,
-    owner: nil,
-    related: KeyValue
-  }
-
   @business_fields %{
     benefitRating: :float,
     contactEmail: :string,
@@ -53,9 +34,9 @@ defmodule Andi.InputSchemas.DatasetInput do
     private: :boolean,
     schema: {:array, :map},
     sourceFormat: :string,
-    sourceHeaders: {:embed, @headers_embedded_key_values},
+    sourceHeaders: {:embed, KeyValue.relationship_definition(:sourceHeaders)},
     sourceType: :string,
-    sourceQueryParams: {:embed, @params_embedded_key_values},
+    sourceQueryParams: {:embed, KeyValue.relationship_definition(:sourceQueryParams)},
     sourceUrl: :string,
     topLevelSelector: :string
   }
@@ -107,8 +88,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     |> validate_inclusion(:riskRating, @ratings, message: "should be one of #{inspect(@ratings)}")
     |> validate_top_level_selector()
     |> validate_schema()
-    |> validate_source_query_params()
-    |> validate_source_headers()
+    |> validate_key_value_parameters()
   end
 
   def full_validation_changeset(changes), do: full_validation_changeset(%{}, changes)
@@ -177,18 +157,21 @@ defmodule Andi.InputSchemas.DatasetInput do
     |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
   end
 
-  #TODO: dry up
-  defp validate_source_query_params(%{ changes: %{sourceQueryParams: key_values}} = changeset) do
-    invalid = Enum.any?(key_values, fn key_value_changeset -> not key_value_changeset.valid? end)
-    if invalid, do: add_error(changeset, :sourceQueryParams, "has invalid format", validation: :format), else: changeset
+  defp validate_key_value_parameters(changeset) do
+    [:sourceQueryParams, :sourceHeaders]
+    |> Enum.reduce(changeset, fn field, acc_changeset ->
+      if has_invalid_key_values?(acc_changeset, field) do
+        add_error(acc_changeset, field, "has invalid format", validation: :format)
+      else
+        acc_changeset
+      end
+    end)
   end
 
-  defp validate_source_query_params(changeset), do: changeset
-
-  defp validate_source_headers(%{ changes: %{sourceHeaders: key_values}} = changeset) do
-    invalid = Enum.any?(key_values, fn key_value_changeset -> not key_value_changeset.valid? end)
-    if invalid, do: add_error(changeset, :sourceHeaders, "has invalid format", validation: :format), else: changeset
+  defp has_invalid_key_values?(%{changes: changes}, field) do
+    case Map.get(changes, field) do
+      nil -> false
+      key_values -> Enum.any?(key_values, fn key_value_changeset -> not key_value_changeset.valid? end)
+    end
   end
-
-  defp validate_source_headers(changeset), do: changeset
 end
