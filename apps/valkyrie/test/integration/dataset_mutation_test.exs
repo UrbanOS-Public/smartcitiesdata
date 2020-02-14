@@ -71,9 +71,10 @@ defmodule Valkyrie.DatasetMutationTest do
 
     eventually(
       fn ->
-        topic_list_before_delete = Elsa.list_topics(@endpoints)
-        assert true == Enum.member?(topic_list_before_delete, {input_topic, 1})
-        assert true == Enum.member?(topic_list_before_delete, {output_topic, 1})
+        assert true == is_dataset_supervisor_alive(dataset_id)
+        assert {:ok, dataset} == Brook.ViewState.get(@instance, :datasets, dataset_id)
+        assert true == Elsa.Topic.exists?(@endpoints, input_topic)
+        assert true == Elsa.Topic.exists?(@endpoints, output_topic)
       end,
       2_000,
       10
@@ -83,12 +84,22 @@ defmodule Valkyrie.DatasetMutationTest do
 
     eventually(
       fn ->
-        topic_list_after_delete = Elsa.list_topics(@endpoints)
-        assert false == Enum.member?(topic_list_after_delete, {input_topic, 1})
-        assert false == Enum.member?(topic_list_after_delete, {output_topic, 1})
+        assert false == is_dataset_supervisor_alive(dataset_id)
+        assert {:ok, nil} == Brook.ViewState.get(@instance, :datasets, dataset_id)
+        assert false == Elsa.Topic.exists?(@endpoints, input_topic)
+        assert false == Elsa.Topic.exists?(@endpoints, output_topic)
       end,
       2_000,
       10
     )
+  end
+
+  defp is_dataset_supervisor_alive(dataset_id) do
+    name = Valkyrie.DatasetSupervisor.name(dataset_id)
+
+    case Process.whereis(name) do
+      nil -> false
+      pid -> Process.alive?(pid)
+    end
   end
 end
