@@ -57,9 +57,9 @@ config :forklift,
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,
-    max_bytes: 1_000_000,
-    min_bytes: 500_000,
-    max_wait_time: 10_000
+    max_bytes: 10_000_000,
+    min_bytes: 5_000_000,
+    max_wait_time: 60_000
   ]
 
 config :forklift, :brook,
@@ -99,6 +99,9 @@ config :prestige, :session_opts,
 
 config :redix,
   args: redix_args
+
+config :ex_aws,
+  region: System.get_env("AWS_REGION") || "us-west-2"
 
 if System.get_env("COMPACTION_SCHEDULE") do
   config :forklift, Forklift.Quantum.Scheduler,

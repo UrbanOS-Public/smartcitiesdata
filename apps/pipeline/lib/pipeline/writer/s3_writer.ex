@@ -48,21 +48,31 @@ defmodule Pipeline.Writer.S3Writer do
 
     case table_exists?(json_config) do
       true ->
-        source_file_path =
-          content
-          |> Enum.map(&Map.get(&1, :payload))
-          |> Enum.map(&S3SafeJson.build(&1, json_config.schema))
-          |> Enum.map(&Jason.encode!/1)
-          |> Enum.join("\n")
-          |> write_to_temporary_file(json_config.table)
+        upload_content(content, json_config.schema, json_config.table, bucket)
 
-        destination_file_path = generate_unique_s3_file_path(json_config.table)
-
-        upload_to_kdp_s3_folder(bucket, source_file_path, destination_file_path)
+      {:error, %{name: "SYNTAX_ERROR", type: "USER_ERROR"}} ->
+        case init(options) do
+          :ok -> write(content, options)
+          error -> error
+        end
 
       error ->
         error
     end
+  end
+
+  defp upload_content(content, schema, table, bucket) do
+    source_file_path =
+      content
+      |> Enum.map(&Map.get(&1, :payload))
+      |> Enum.map(&S3SafeJson.build(&1, schema))
+      |> Enum.map(&Jason.encode!/1)
+      |> Enum.join("\n")
+      |> write_to_temporary_file(table)
+
+    destination_file_path = generate_unique_s3_file_path(table)
+
+    upload_to_kdp_s3_folder(bucket, source_file_path, destination_file_path)
   end
 
   @impl Pipeline.Writer

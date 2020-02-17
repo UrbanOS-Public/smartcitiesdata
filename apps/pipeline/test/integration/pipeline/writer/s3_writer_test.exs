@@ -103,12 +103,36 @@ defmodule Pipeline.Writer.S3WriterTest do
       end)
     end
 
-    test "returns an error for tables that do not exist", %{session: session} do
+    test "inserts records, creating the table when it does not exist", %{session: session} do
       schema = [%{name: "one", type: "string"}, %{name: "two", type: "integer"}]
-      dataset = TDG.create_dataset(%{technical: %{systemName: "not__there", schema: schema}})
+      dataset = TDG.create_dataset(%{technical: %{systemName: "goo__bar", schema: schema}})
 
       datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
       datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})
+
+      S3Writer.write([datum1, datum2], table: dataset.technical.systemName, schema: schema, bucket: "kdp-cloud-storage")
+
+      eventually(fn ->
+        query = "select * from goo__bar__json"
+
+        result =
+          session
+          |> Prestige.query!(query)
+          |> Prestige.Result.as_maps()
+
+        assert result == [%{"one" => "hello", "two" => 42}, %{"one" => "goodbye", "two" => 9001}]
+      end)
+    end
+
+    test "returns an error if it cannot create the table" do
+      schema = [%{name: "one", type: "string"}, %{name: "two", type: "integer"}]
+      dataset = TDG.create_dataset(%{technical: %{systemName: "suprisingly__there", schema: schema}})
+
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})
+
+      ExAws.S3.upload(["Blarg"], "kdp-cloud-storage", "hive-s3/suprisingly__there/blarg.gz")
+      |> ExAws.request()
 
       assert {:error, _ } = S3Writer.write([datum1, datum2], table: dataset.technical.systemName, schema: schema, bucket: "kdp-cloud-storage")
     end
