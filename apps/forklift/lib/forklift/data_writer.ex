@@ -86,17 +86,23 @@ defmodule Forklift.DataWriter do
     Logger.info("Beginning dataset compaction")
 
     Forklift.Datasets.get_all!()
-    |> Enum.each(fn dataset ->
-      Compaction.init(dataset: dataset)
-
-      start = Time.utc_now()
-
-      Compaction.compact(dataset: dataset)
-      Compaction.terminate(dataset: dataset)
-      Compaction.write({start, Time.utc_now()}, dataset: dataset)
-    end)
+    |> Enum.each(&compact_dataset/1)
 
     Logger.info("Completed dataset compaction")
+  end
+
+  def compact_dataset(dataset) do
+    Compaction.init(dataset: dataset)
+
+    start = Time.utc_now()
+
+    compaction_result = Compaction.compact(dataset: dataset)
+
+    Compaction.terminate(dataset: dataset)
+
+    Compaction.write({start, Time.utc_now()}, dataset: dataset)
+
+    compaction_result
   end
 
   defp ingest_status(data) do
@@ -129,7 +135,7 @@ defmodule Forklift.DataWriter do
 
   defp write_to_table(data, %{technical: metadata}) do
     with write_start <- Data.Timing.current_time(),
-         :ok <- @table_writer.write(data, table: metadata.systemName, schema: metadata.schema),
+         :ok <- @table_writer.write(data, table: metadata.systemName, schema: metadata.schema, bucket: s3_writer_bucket()),
          write_end <- Data.Timing.current_time(),
          write_timing <- Data.Timing.new(instance_name(), "presto_insert_time", write_start, write_end) do
       {:ok, write_timing}
@@ -168,5 +174,9 @@ defmodule Forklift.DataWriter do
       retry_count: Application.get_env(:forklift, :retry_count),
       retry_delay: Application.get_env(:forklift, :retry_initial_delay)
     ]
+  end
+
+  defp s3_writer_bucket() do
+    Application.get_env(:forklift, :s3_writer_bucket)
   end
 end
