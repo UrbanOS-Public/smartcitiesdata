@@ -105,7 +105,7 @@ defmodule Pipeline.Writer.S3WriterTest do
 
     test "inserts records, creating the table when it does not exist", %{session: session} do
       schema = [%{name: "one", type: "string"}, %{name: "two", type: "integer"}]
-      dataset = TDG.create_dataset(%{technical: %{systemName: "goo__bar", schema: schema}})
+      dataset = TDG.create_dataset(%{technical: %{systemName: "Goo__Bar", schema: schema}})
 
       datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
       datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})

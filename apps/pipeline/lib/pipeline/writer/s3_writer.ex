@@ -148,8 +148,8 @@ defmodule Pipeline.Writer.S3Writer do
     }
   end
 
-  defp table_name("ORC", options), do: Keyword.fetch!(options, :table)
-  defp table_name("JSON", options), do: Keyword.fetch!(options, :table) <> "__json"
+  defp table_name("ORC", options), do: Keyword.fetch!(options, :table) |> String.downcase()
+  defp table_name("JSON", options), do: Keyword.fetch!(options, :table) <> "__json" |> String.downcase()
 
   defp execute({:error, _} = error) do
     error
