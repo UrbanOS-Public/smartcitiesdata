@@ -28,13 +28,4 @@ defmodule DiscoveryStreams.CachexSupervisor do
 
     DynamicSupervisor.start_child(__MODULE__, child_spec)
   end
-
-  # def stop_dataset_supervisor(dataset_id) do
-  #   name = name(dataset_id)
-
-  #   case Process.whereis(name) do
-  #     nil -> :ok
-  #     pid -> DynamicSupervisor.terminate_child(DiscoveryStreams.Dynamic.Supervisor, pid)
-  #   end
-  # end
 end

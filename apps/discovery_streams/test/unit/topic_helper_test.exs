@@ -24,9 +24,8 @@ defmodule DiscoveryStreams.TopicHelperTest do
   test "should delete output topic when the topic names are provided" do
     dataset_id = Faker.UUID.v4()
     Application.put_env(:kaffe, :consumer, endpoints: @endpoints)
-    # allow(TopicHelper.get_endpoints(), return: :doesnt_matter)
-    allow(Elsa.delete_topic(@endpoints, any()), return: :doesnt_matter)
+    allow(Elsa.delete_topic(any(), any()), return: :doesnt_matter)
     TopicHelper.delete_topic(dataset_id)
-    assert_called(Elsa.delete_topic([localhost: 9092], "#{@output_topic_prefix}#{dataset_id}"))
+    assert_called(Elsa.delete_topic(TopicHelper.get_endpoints(), "#{@output_topic_prefix}#{dataset_id}"))
   end
 end
