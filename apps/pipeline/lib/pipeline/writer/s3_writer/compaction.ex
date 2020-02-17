@@ -54,7 +54,7 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     end
   end
 
-  def complete({new, old}, options) when new == old do
+  def complete({new_count, old_count}, options) when new_count == old_count do
     orc_table = options[:orc_table]
     json_table = options[:json_table]
     compact_table = "#{orc_table}_compact"
@@ -74,7 +74,7 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     :ok
   end
 
-  def complete({new, old}, options) do
+  def complete({new_count, old_count}, options) do
     orc_table = options[:orc_table]
     compact_table = "#{orc_table}_compact"
 
@@ -82,7 +82,7 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     |> execute()
 
     message =
-      "Failed '#{orc_table}' compaction. New row count (#{inspect(new)}) did not match original count (#{inspect(old)})"
+      "Failed '#{orc_table}' compaction. New row count (#{inspect(new_count)}) did not match original count (#{inspect(old_count)})"
 
     Logger.error(message)
 
