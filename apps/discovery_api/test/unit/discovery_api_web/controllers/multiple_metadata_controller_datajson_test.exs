@@ -18,7 +18,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.DataJsonTest do
         license: "http://openlicense.org",
         keywords: ["key", "words"],
         homepage: "www.bad.com",
-        rights: "some rights",
+        rights: "",
         spatial: "some space",
         temporal: "some temporal val",
         publishFrequency: "publish freq",
@@ -54,6 +54,19 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.DataJsonTest do
       {:ok, %{model: public_model, results: results}}
     end
 
+    test "language is a list", %{results: [result | _]} do
+      assert is_list(result["language"]) == true
+    end
+
+    test "removes optional fields with blanks from results", %{results: [result | _]} do
+      assert result["rights"] == nil
+    end
+
+    test "never returns accrualPeriodicity", %{results: [result | _]} do
+      # Decision was made to not return it since the values are not valid according to PODMS
+      assert result["accrualPeriodicity"] == nil
+    end
+
     test "only a single dataset (the public one) is returned", %{results: results} do
       assert 1 == Enum.count(results)
     end
@@ -73,18 +86,16 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.DataJsonTest do
       assert "mailto:" <> model.contactEmail == result["contactPoint"]["hasEmail"]
       assert model.homepage == result["landingPage"]
       assert model.license == result["license"]
-      assert(model.rights == result["rights"])
       assert model.accessLevel == result["accessLevel"]
 
       assert model.spatial == result["spatial"]
       assert model.temporal == result["temporal"]
-      assert model.publishFrequency == result["accrualPeriodicity"]
       assert model.conformsToUri == result["conformsTo"]
       assert model.describedByUrl == result["describedBy"]
       assert model.describedByMimeType == result["describedByType"]
       assert model.parentDataset == result["isPartOf"]
       assert model.issuedDate == result["issued"]
-      assert model.language == result["language"]
+      assert [model.language] == result["language"]
       assert model.referenceUrls == result["references"]
       assert model.categories == result["theme"]
     end

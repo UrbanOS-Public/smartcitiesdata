@@ -77,13 +77,13 @@ defmodule DiscoveryApiWeb.MultipleMetadataView do
           "mediaType" => "text/csv"
         }
       ],
-      "accrualPeriodicity" => val_or_optional(model.publishFrequency),
+      "accrualPeriodicity" => :optional,
       "conformsTo" => val_or_optional(model.conformsToUri),
       "describedBy" => val_or_optional(model.describedByUrl),
       "describedByType" => val_or_optional(model.describedByMimeType),
       "isPartOf" => val_or_optional(model.parentDataset),
       "issued" => val_or_optional(model.issuedDate),
-      "language" => val_or_optional(model.language),
+      "language" => [val_or_optional(model.language)],
       "landingPage" => val_or_optional(model.homepage),
       "references" => val_or_optional(model.referenceUrls),
       "theme" => val_or_optional(model.categories)
@@ -96,9 +96,13 @@ defmodule DiscoveryApiWeb.MultipleMetadataView do
     |> Enum.filter(fn {_key, value} ->
       value != :optional
     end)
+    |> Enum.filter(fn {_key, value} ->
+      value != [:optional]
+    end)
     |> Enum.into(Map.new())
   end
 
+  defp val_or_optional(""), do: :optional
   defp val_or_optional(nil), do: :optional
   defp val_or_optional(val), do: val
 
