@@ -37,10 +37,14 @@ defmodule DiscoveryStreams.EventHandler do
       }) do
     case delete_dataset(id) do
       :ok ->
-        Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{id}")
+        Logger.debug("#{__MODULE__}: Deleted dataset for dataset id: #{id} and system name: #{system_name}")
 
       {:error, error} ->
-        Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{id}, Reason: #{inspect(error)}")
+        Logger.error(
+          "#{__MODULE__}: Failed to delete dataset for dataset id: #{id} and system name: #{system_name}, Reason: #{
+            inspect(error)
+          }"
+        )
     end
 
     delete_from_viewstate(id, system_name)

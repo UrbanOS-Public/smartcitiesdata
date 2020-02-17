@@ -24,5 +24,5 @@ defmodule DiscoveryStreams.TopicHelper do
     Application.get_env(:discovery_streams, :topic_prefix, "transformed-")
   end
 
-  defp output_topic(dataset_id), do: "#{topic_prefix()}-#{dataset_id}"
+  defp output_topic(dataset_id), do: "#{topic_prefix()}#{dataset_id}"
 end
