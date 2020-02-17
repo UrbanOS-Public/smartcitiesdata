@@ -10,16 +10,18 @@ redix_args = [host: host]
 endpoints = [{to_charlist(host), 9092}]
 
 output_topic = "streaming-persisted"
+bucket_name = "kdp-cloud-storage"
 
 config :forklift,
   data_reader: Pipeline.Reader.DatasetTopicReader,
   topic_writer: Pipeline.Writer.TopicWriter,
-  table_writer: Pipeline.Writer.TableWriter,
+  table_writer: Pipeline.Writer.S3Writer,
   retry_count: 100,
   retry_initial_delay: 100,
   retry_max_wait: 1_000 * 60 * 60,
   elsa_brokers: [{String.to_atom(host), 9092}],
   input_topic_prefix: "transformed",
+  s3_writer_bucket: "kdp-cloud-storage",
   output_topic: output_topic,
   producer_name: :"#{output_topic}-producer",
   metrics_port: 9002,
@@ -64,3 +66,17 @@ config(:forklift, divo: "docker-compose.yml", divo_wait: [dwell: 1000, max_tries
 
 config :redix,
   args: redix_args
+
+config :ex_aws,
+  debug_requests: true,
+  access_key_id: "testing_access_key",
+  secret_access_key: "testing_secret_key",
+  region: "local"
+
+config :ex_aws, :s3,
+  scheme: "http://",
+  region: "local",
+  host: %{
+    "local" => "localhost"
+  },
+  port: 9000

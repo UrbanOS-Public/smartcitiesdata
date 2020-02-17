@@ -29,6 +29,8 @@ redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS
 topic = System.get_env("DATA_TOPIC_PREFIX")
 output_topic = System.get_env("OUTPUT_TOPIC")
 metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
+s3_writer_bucket = System.get_env("S3_WRITER_BUCKET")
+secrets_endpoint = System.get_env("SECRETS_ENDPOINT")
 
 endpoints =
   kafka_brokers
@@ -48,14 +50,16 @@ config :forklift,
   elsa_brokers: elsa_brokers,
   input_topic_prefix: topic,
   output_topic: output_topic,
+  s3_writer_bucket: s3_writer_bucket,
+  secrets_endpoint: secrets_endpoint,
   producer_name: :"#{output_topic}-producer",
   metrics_port: metrics_port,
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,
-    max_bytes: 1_000_000,
-    min_bytes: 500_000,
-    max_wait_time: 10_000
+    max_bytes: 10_000_000,
+    min_bytes: 5_000_000,
+    max_wait_time: 60_000
   ]
 
 config :forklift, :brook,
@@ -95,6 +99,9 @@ config :prestige, :session_opts,
 
 config :redix,
   args: redix_args
+
+config :ex_aws,
+  region: System.get_env("AWS_REGION") || "us-west-2"
 
 if System.get_env("COMPACTION_SCHEDULE") do
   config :forklift, Forklift.Quantum.Scheduler,
