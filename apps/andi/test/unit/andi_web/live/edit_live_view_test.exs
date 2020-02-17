@@ -294,11 +294,15 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       form_data = dataset_to_form_data(dataset) |> Map.put(field, %{"0" => %{"key" => "", "value" => "where's my key"}})
-      html = render_change(view, :validate, %{"metadata" => form_data})
+      render_change([view, component_id], :validate, %{"metadata" => form_data})
+      html = render(view)
 
       assert get_text(html, "##{field}-error-msg") == "Please enter a valid key(s)."
 
-      where(field: [:sourceQueryParams, :sourceHeaders])
+      where(
+        field: [:sourceQueryParams, :sourceHeaders],
+        component_id: ["key_value_editor_source_query_params", "key_value_editor_source_headers"]
+      )
     end
 
     data_test "displays error when #{field} is unset", %{conn: conn} do
@@ -589,12 +593,12 @@ defmodule AndiWeb.EditLiveViewTest do
       where(
         field: [:sourceQueryParams, :sourceHeaders],
         component_id: ["key_value_editor_source_query_params", "key_value_editor_source_headers"],
-        key_class: [".url-form__sourceQueryParams-key-input", ".url-form__sourceHeaders-key-input"],
-        value_class: [".url-form__sourceQueryParams-value-input", ".url-form__sourceHeaders-value-input"]
+        key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
+        value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
       )
     end
 
-    data_test "key/value inputs are deleted when x is pressed for #{field}", %{conn: conn, dataset: dataset} do
+    data_test "key/value inputs are deleted when delete button is pressed for #{field}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       btn_id = Floki.find(html, btn_class) |> Floki.attribute("phx-value-id") |> hd()
@@ -613,9 +617,9 @@ defmodule AndiWeb.EditLiveViewTest do
       where(
         field: [:sourceQueryParams, :sourceHeaders],
         component_id: ["key_value_editor_source_query_params", "key_value_editor_source_headers"],
-        btn_class: [".url-form__sourceQueryParams-delete-btn", ".url-form__sourceHeaders-delete-btn"],
-        key_class: [".url-form__sourceQueryParams-key-input", ".url-form__sourceHeaders-key-input"],
-        value_class: [".url-form__sourceQueryParams-value-input", ".url-form__sourceHeaders-value-input"]
+        btn_class: [".url-form__source-query-params-delete-btn", ".url-form__source-headers-delete-btn"],
+        key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
+        value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
       )
     end
 
@@ -630,8 +634,8 @@ defmodule AndiWeb.EditLiveViewTest do
 
       where(
         field: [:sourceQueryParams, :sourceHeaders],
-        key_class: [".url-form__sourceQueryParams-key-input", ".url-form__sourceHeaders-key-input"],
-        value_class: [".url-form__sourceQueryParams-value-input", ".url-form__sourceHeaders-value-input"]
+        key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
+        value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
       )
     end
   end

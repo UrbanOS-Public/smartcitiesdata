@@ -7,6 +7,8 @@ defmodule AndiWeb.ErrorHelpers do
 
   alias Andi.InputSchemas.DisplayNames
 
+  #TODO: combine these functions
+
   @doc """
   Generates tag for inlined form input errors.
   """

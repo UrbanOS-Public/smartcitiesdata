@@ -16,6 +16,7 @@ defmodule AndiWeb.EditLiveView do
     ~L"""
     <div class="edit-page">
       <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :metadata] %>
+
       <div class="metadata-form form-section form-grid">
         <h2 class="metadata-form__top-header edit-page__box-header">Metadata</h2>
         <div class="metadata-form__title">
@@ -105,6 +106,7 @@ defmodule AndiWeb.EditLiveView do
           <%= error_tag_live(f, :riskRating) %>
         </div>
       </div>
+
       <div class="url-form form-section form-grid">
         <h2 class="url-form__top-header edit-page__box-header">Configure Upload</h2>
         <div class="url-form__source-url">
@@ -113,8 +115,8 @@ defmodule AndiWeb.EditLiveView do
           <%= error_tag(f, :sourceUrl) %>
         </div>
 
-        <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_query_params, form: f, field: :sourceQueryParams ) %>
-        <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_headers, form: f, field: :sourceHeaders ) %>
+        <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_query_params, css_label: "source-query-params", form: f, field: :sourceQueryParams ) %>
+        <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_headers, css_label: "source-headers", form: f, field: :sourceHeaders ) %>
 
         <div class="url-form__test-section">
           <button type="button" class="url-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
@@ -126,6 +128,7 @@ defmodule AndiWeb.EditLiveView do
           <% end %>
         </div>
       </div>
+
       <div class="edit-button-group form-grid">
         <div class="edit-button-group__cancel-btn">
           <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
@@ -146,6 +149,7 @@ defmodule AndiWeb.EditLiveView do
           <%= submit("Save", id: "save-button", class: "btn btn--save btn--large") %>
         </div>
       </div>
+
       </form>
     </div>
     """
@@ -177,16 +181,7 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, testing: true)}
   end
 
-  def handle_event("validate", %{"metadata" => form_data}, socket) do
-    socket = reset_save_success(socket)
-
-    new_changeset =
-      form_data
-      |> InputConverter.form_changeset()
-      |> Map.put(:action, :update)
-
-    {:noreply, assign(socket, changeset: new_changeset)}
-  end
+  def handle_event("validate", %{"metadata" => form_data}, socket), do: handle_validation(form_data, socket)
 
   def handle_event("save", %{"metadata" => form_data}, socket) do
     socket = reset_save_success(socket)
@@ -222,6 +217,8 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, test_results: results, testing: false)}
   end
 
+  def handle_info({:validate, %{"metadata" => form_data}}, socket), do: handle_validation(form_data, socket)
+
   def handle_info({:add_key_value, %{"field" => field}}, socket) do
     changeset = DatasetInput.add_key_value(socket.assigns.changeset, String.to_atom(field))
     {:noreply, assign(socket, changeset: changeset)}
@@ -235,6 +232,17 @@ defmodule AndiWeb.EditLiveView do
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
+  end
+
+  defp handle_validation(form_data, socket) do
+    socket = reset_save_success(socket)
+
+    new_changeset =
+      form_data
+      |> InputConverter.form_changeset()
+      |> Map.put(:action, :update)
+
+    {:noreply, assign(socket, changeset: new_changeset)}
   end
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
