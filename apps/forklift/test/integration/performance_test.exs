@@ -84,7 +84,7 @@ defmodule Forklift.PerformanceTest do
         # "big_pref_b1M" => %SetupConfig{messages: big_messages, processor_stages: 8, prefetch_bytes: 1_000_000},
         # "big_pref_b10M" => %SetupConfig{messages: big_messages, processor_stages: 8, prefetch_bytes: 10_000_000},
         # "big_pref_b100M" => %SetupConfig{messages: big_messages, processor_stages: 8, prefetch_bytes: 100_000_000},
-        "huge_pref_b5M" => %SetupConfig{messages: huge_messages},
+        "huge_pref_b5M" => %SetupConfig{messages: huge_messages}
         # "huge_pref_b10M" => %SetupConfig{messages: huge_messages, processor_stages: 8, prefetch_bytes: 10_000_000},
         # "huge_pref_b100M" => %SetupConfig{messages: huge_messages, processor_stages: 8, prefetch_bytes: 100_000_000},
         # "medium_pref_m10000" => %SetupConfig{messages: medium_messages, processor_stages: 8, prefetch_count: 10_000},
@@ -166,7 +166,9 @@ defmodule Forklift.PerformanceTest do
     producer_name = :"#{topic}_producer"
 
     Logger.debug("Loading #{expected_count} messages into kafka with #{num_producers} producers")
-    {:ok, producer_pid} = Elsa.Supervisor.start_link(endpoints: @endpoints, producer: [topic: topic], connection: producer_name)
+
+    {:ok, producer_pid} =
+      Elsa.Supervisor.start_link(endpoints: @endpoints, producer: [topic: topic], connection: producer_name)
 
     messages
     |> Stream.map(&prepare_messages(&1, dataset))

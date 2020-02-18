@@ -188,7 +188,7 @@ defmodule E2ETest do
         fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
-          assert %{"one" => true, "three" => 10, "two" => "foobar"} in query(
+          assert [%{"one" => true, "three" => 10, "two" => "foobar"}] == query(
                    "select * from #{table}",
                    true
                  )
@@ -203,7 +203,7 @@ defmodule E2ETest do
           Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete")
           |> Enum.to_list()
 
-        assert 1 <= length(messages)
+        assert 1 == length(messages)
       end)
     end
 
@@ -358,7 +358,9 @@ defmodule E2ETest do
         fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
-          assert [%{"feature" => actual} | _] = query("select * from #{table}", true)
+          assert [%{"feature" => actual} | _] = features = query("select * from #{table}", true)
+
+          assert Enum.count(features) <= 88
 
           result = Jason.decode!(actual)
 
@@ -368,7 +370,8 @@ defmodule E2ETest do
 
           assert Enum.count(coordinates) > 0
         end,
-        10_000
+        10_000,
+        10
       )
     end
   end
