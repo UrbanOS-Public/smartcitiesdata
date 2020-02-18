@@ -7,7 +7,7 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
 
   @instance :discovery_streams
   @endpoints Application.get_env(:kaffe, :consumer)[:endpoints]
-  @output_topic_prefix Application.get_env(:discovery_streams, :topic_prefix, "transformed-")
+  @input_topic_prefix Application.get_env(:discovery_streams, :topic_prefix, "transformed-")
 
   test "subscribes to any non internal use topic" do
     private_dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: true})
@@ -32,7 +32,7 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
   test "should delete all view state for the dataset and the output topic when dataset:delete is called" do
     dataset_id = Faker.UUID.v4()
     system_name = Faker.UUID.v4()
-    output_topic = "#{@output_topic_prefix}#{dataset_id}"
+    input_topic = "#{@input_topic_prefix}#{dataset_id}"
     dataset = TDG.create_dataset(id: dataset_id, technical: %{sourceType: "stream", systemName: system_name})
     Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
 

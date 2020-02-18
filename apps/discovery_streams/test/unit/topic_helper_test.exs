@@ -25,7 +25,7 @@ defmodule DiscoveryStreams.TopicHelperTest do
     dataset_id = Faker.UUID.v4()
     Application.put_env(:kaffe, :consumer, endpoints: @endpoints)
     allow(Elsa.delete_topic(any(), any()), return: :doesnt_matter)
-    TopicHelper.delete_topic(dataset_id)
+    TopicHelper.delete_input_topic(dataset_id)
     assert_called(Elsa.delete_topic(TopicHelper.get_endpoints(), "#{@output_topic_prefix}#{dataset_id}"))
   end
 end

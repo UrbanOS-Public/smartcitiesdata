@@ -15,14 +15,14 @@ defmodule DiscoveryStreams.TopicHelper do
     |> Enum.map(fn {host, port} -> {to_charlist(host), port} end)
   end
 
-  def delete_topic(dataset_id) do
-    output_topic = output_topic(dataset_id)
-    Elsa.delete_topic(get_endpoints(), output_topic)
+  def delete_input_topic(dataset_id) do
+    input_topic = input_topic(dataset_id)
+    Elsa.delete_topic(get_endpoints(), input_topic)
   end
 
   defp topic_prefix() do
     Application.get_env(:discovery_streams, :topic_prefix, "transformed-")
   end
 
-  defp output_topic(dataset_id), do: "#{topic_prefix()}#{dataset_id}"
+  defp input_topic(dataset_id), do: "#{topic_prefix()}#{dataset_id}"
 end

@@ -86,7 +86,7 @@ defmodule DiscoveryStreams.EventHandlerTest do
     test "should delete dataset when dataset:delete event fires" do
       system_name = Faker.UUID.v4()
       dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{systemName: system_name})
-      allow(DiscoveryStreams.TopicHelper.delete_topic(any()), return: :ok)
+      allow(DiscoveryStreams.TopicHelper.delete_input_topic(any()), return: :ok)
 
       event = Brook.Event.new(type: dataset_delete(), data: dataset, author: :author)
 
