@@ -11,6 +11,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
   alias Andi.DatasetCache
   alias Andi.InputSchemas.InputConverter
+  alias Andi.Services.UrlTest
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -297,7 +298,7 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change([view, component_id], :validate, %{"metadata" => form_data})
       html = render(view)
 
-      assert get_text(html, "##{field}-error-msg") == "Please enter a valid key(s)."
+      assert get_text(html, "##{field}-error-msg") == "Please enter valid key(s)."
 
       where(
         field: [:sourceQueryParams, :sourceHeaders],
@@ -486,6 +487,27 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   describe "sourceUrl testing" do
+    @tag capture_log: true
+    test "uses provided query params and headers", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            sourceUrl: "123.com",
+            sourceQueryParams: %{"x" => "y"},
+            sourceHeaders: %{"api-key" => "to-my-heart"}
+          }
+        })
+
+      DatasetCache.put(dataset)
+
+      allow(UrlTest.test(any(), any()), return: %{time: 1_000, status: 200})
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      render_change(view, :test_url, %{})
+
+      assert_called(UrlTest.test("123.com", query_params: [{"x", "y"}], headers: [{"api-key", "to-my-heart"}]))
+    end
+
     test "status and time are displayed when source url is tested", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
@@ -494,7 +516,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetCache.put(dataset)
 
-      allow(Andi.Services.UrlTest.test("123.com"), return: %{time: 1_000, status: 200})
+      allow(UrlTest.test("123.com", any()), return: %{time: 1_000, status: 200})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, ".test-status__code") == ""
@@ -514,7 +536,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetCache.put(dataset)
 
-      allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), return: %{time: 1_000, status: 200})
+      allow(UrlTest.test(dataset.technical.sourceUrl, any()), return: %{time: 1_000, status: 200})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, ".test-status__code--good") == ""
@@ -532,7 +554,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetCache.put(dataset)
 
-      allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), return: %{time: 1_000, status: 400})
+      allow(UrlTest.test(dataset.technical.sourceUrl, any()), return: %{time: 1_000, status: 400})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, ".test-status__code--bad") == ""
@@ -552,7 +574,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetCache.put(dataset)
 
-      allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), exec: fn _ -> raise "derp" end)
+      allow(UrlTest.test(dataset.technical.sourceUrl, any()), exec: fn _ -> raise "derp" end)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, "#page-error-message") == ""

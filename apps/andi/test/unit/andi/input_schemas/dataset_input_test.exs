@@ -183,8 +183,10 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       refute changeset.valid?
       assert length(changeset.errors) == 2
+
       assert changeset.errors
              |> Enum.any?(fn {:schema, {error, _}} -> String.match?(error, ~r/selector.+field_name/) end)
+
       assert changeset.errors
              |> Enum.any?(fn {:schema, {error, _}} -> String.match?(error, ~r/selector.+another_field/) end)
     end

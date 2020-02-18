@@ -33,5 +33,39 @@ defmodule Andi.Services.UrlTestTest do
 
       assert %{status: "Domain not found"} = response
     end
+
+    test "sends HEAD request with query params when provided" do
+      query_params = [{"a", "b"}, {"c", ""}, {"d", "e"}]
+      bypass = Bypass.open()
+
+      Bypass.expect_once(bypass, "HEAD", "/test", fn conn ->
+        actual = Plug.Conn.fetch_query_params(conn) |> Map.get(:query_params)
+
+        assert length(query_params) == actual |> Map.keys() |> length()
+
+        Enum.each(query_params, fn {key, value} ->
+          assert actual[key] == value
+        end)
+
+        Plug.Conn.resp(conn, 200, "yes")
+      end)
+
+      Andi.Services.UrlTest.test("http://localhost:#{bypass.port()}/test", query_params: query_params)
+    end
+
+    test "sends HEAD request with headers when provided" do
+      headers = [{"a", "b"}, {"c", ""}, {"d", "e"}]
+      bypass = Bypass.open()
+
+      Bypass.expect_once(bypass, "HEAD", "/test", fn conn ->
+        Enum.each(headers, fn header ->
+          assert header in conn.req_headers
+        end)
+
+        Plug.Conn.resp(conn, 200, "yes")
+      end)
+
+      Andi.Services.UrlTest.test("http://localhost:#{bypass.port()}/test", headers: headers)
+    end
   end
 end

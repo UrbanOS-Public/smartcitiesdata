@@ -172,10 +172,13 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("test_url", _, socket) do
-    source_url = Map.get(socket.assigns.changeset.changes, :sourceUrl)
+    changes = Ecto.Changeset.apply_changes(socket.assigns.changeset)
+    url = Map.get(changes, :sourceUrl)
+    query_params = key_values_to_keyword_list(changes, :sourceQueryParams)
+    headers = key_values_to_keyword_list(changes, :sourceHeaders)
 
     Task.async(fn ->
-      {:test_results, Andi.Services.UrlTest.test(source_url)}
+      {:test_results, Andi.Services.UrlTest.test(url, query_params: query_params, headers: headers)}
     end)
 
     {:noreply, assign(socket, testing: true)}
@@ -243,6 +246,12 @@ defmodule AndiWeb.EditLiveView do
       |> Map.put(:action, :update)
 
     {:noreply, assign(socket, changeset: new_changeset)}
+  end
+
+  defp key_values_to_keyword_list(form_data, field) do
+    form_data
+    |> Map.get(field, [])
+    |> Enum.map(fn %{key: key, value: value} -> {key, value} end)
   end
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)

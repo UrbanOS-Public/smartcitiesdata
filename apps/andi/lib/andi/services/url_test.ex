@@ -6,8 +6,11 @@ defmodule Andi.Services.UrlTest do
 
   plug Tesla.Middleware.JSON
 
-  def test(url) do
-    case :timer.tc(&head/1, [url]) do
+  def test(url, options \\ []) do
+    query_params = Keyword.get(options, :query_params, [])
+    headers = Keyword.get(options, :headers, [])
+
+    case :timer.tc(&head/2, [url, [query: query_params, headers: headers]]) do
       {time, {:ok, %{status: status}}} ->
         timed_status(time, status)
 
