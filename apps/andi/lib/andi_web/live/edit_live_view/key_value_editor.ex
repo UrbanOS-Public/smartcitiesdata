@@ -27,13 +27,17 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
             <%= text_input(f, :value, class: "input full-width url-form__#{@css_label}-value-input #{input_value(f, :id)}") %>
           </td>
           <td class="url-form-table__cell url-form-table__cell--delete">
-            <img src="/images/remove.svg" alt="Remove" class="url-form__<%= @css_label %>-delete-btn url-form-table__btn" phx-click="remove" phx-value-id="<%= input_value(f, :id) %>" phx-value-field="<%= @field %>" />
+            <div class="url-form__<%= @css_label %>-delete-btn url-form-table__btn" phx-click="remove" phx-value-id="<%= input_value(f, :id) %>" phx-value-field="<%= @field %>">
+              <img src="/images/remove.svg" alt="Remove"/>
+            </div>
           </td>
         </tr>
         <% end %>
       <% end %>
       </table>
-      <img src="/images/add.svg" alt="Add" class="url-form__<%= @css_label %>-add-btn url-form-table__btn" phx-click="add" phx-value-field="<%= @field %>"/>
+      <div class="url-form__<%= @css_label %>-add-btn url-form-table__btn" style="margin-top: 0.8em;" phx-click="add" phx-value-field="<%= @field %>">
+        <img src="/images/add.svg" alt="Add"/>
+      </div>
       <%= error_tag_live(@form, @field) %>
     </div>
     """

@@ -82,8 +82,8 @@
       }
 
       .url-form-table__cell--delete {
-        text-align: center;
         padding: 0.2em;
+        text-align: center;
       }
 
       .url-form-table__cell--header {
@@ -94,6 +94,8 @@
 
   .url-form-table__btn {
     cursor: pointer;
+    max-width: 0;
+    text-align: center;
   }
 }
 
