@@ -19,6 +19,10 @@ defmodule Pipeline.Writer.TableWriter.Statement.Create do
     "CREATE TABLE IF NOT EXISTS #{name} (#{translate_columns(schema)})"
   end
 
+  def compose(name, schema, format) do
+    "CREATE TABLE IF NOT EXISTS #{name} (#{translate_columns(schema)})  WITH (format = '#{format}')"
+  end
+
   defp translate_columns(cols) do
     cols
     |> Enum.map(&translate_column/1)

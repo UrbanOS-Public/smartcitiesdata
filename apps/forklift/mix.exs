@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "0.10.6",
+      version: "0.11.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -39,10 +39,12 @@ defmodule Forklift.MixProject do
       {:ex_doc, "~> 0.21"},
       {:jason, "~> 1.1"},
       {:libcluster, "~> 3.1"},
+      {:libvault, "~> 0.2"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:observer_cli, "~> 1.5"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.1"},
+      {:poison, "~> 3.1", override: true},
       {:prestige, "~> 1.0"},
       {:prometheus_plugs, "~> 1.1"},
       {:quantum, "~>2.3"},
