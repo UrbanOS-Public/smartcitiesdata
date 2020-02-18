@@ -21,11 +21,14 @@ defmodule Forklift.MessageHandler do
   Handle each kafka message.
   """
   def handle_messages(messages, %{dataset: %SmartCity.Dataset{} = dataset}) do
-    messages
-    |> Enum.map(&parse/1)
-    |> Enum.map(&yeet_error/1)
-    |> Enum.reject(&error_tuple?/1)
-    |> Forklift.DataWriter.write(dataset: dataset)
+    timed_messages =
+      messages
+      |> Enum.map(&parse/1)
+      |> Enum.map(&yeet_error/1)
+      |> Enum.reject(&error_tuple?/1)
+      |> Forklift.DataWriter.write(dataset: dataset)
+
+    Task.start(fn -> Forklift.DataWriter.write_to_topic(timed_messages) end)
 
     {:ok, event} = DataWriteComplete.new(%{id: dataset.id, timestamp: DateTime.utc_now()})
     Brook.Event.send(instance_name(), data_write_complete(), :forklift, event)

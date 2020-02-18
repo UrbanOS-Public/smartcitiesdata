@@ -103,7 +103,8 @@ defmodule Pipeline.Reader.TopicReader do
         topics: [config.topic],
         handler: config.handler,
         handler_init_args: config.handler_init_args,
-        config: config.topic_subscriber_config
+        config: config.topic_subscriber_config,
+        direct_ack: true
       ]
     ]
 
