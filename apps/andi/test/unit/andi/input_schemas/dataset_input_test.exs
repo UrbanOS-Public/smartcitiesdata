@@ -134,6 +134,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       changeset = DatasetInput.light_validation_changeset(changes)
 
       refute changeset.valid?
+
       assert changeset.errors == [
                {:topLevelSelector, {"is required", [validation: :required]}}
              ]
@@ -354,6 +355,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
     data_test("removes error when an invalid key/value is removed from #{field}") do
       bad_key_value_id = Ecto.UUID.generate()
+
       changes =
         @valid_changes
         |> Map.put(field, [
@@ -363,8 +365,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
-      post_removal_changeset =
-        DatasetInput.remove_key_value(changeset, field, bad_key_value_id)
+      post_removal_changeset = DatasetInput.remove_key_value(changeset, field, bad_key_value_id)
 
       assert Enum.empty?(post_removal_changeset.errors)
 

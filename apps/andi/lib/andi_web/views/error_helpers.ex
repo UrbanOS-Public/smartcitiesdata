@@ -7,7 +7,7 @@ defmodule AndiWeb.ErrorHelpers do
 
   alias Andi.InputSchemas.DisplayNames
 
-  #TODO: combine these functions
+  # TODO: combine these functions
 
   @doc """
   Generates tag for inlined form input errors.
@@ -74,7 +74,7 @@ defmodule AndiWeb.ErrorHelpers do
 
     updated_message =
       case field do
-        field when field in [:sourceHeaders, :sourceQueryParams] -> "Please enter a valid key(s)."
+        field when field in [:sourceHeaders, :sourceQueryParams] -> "Please enter valid key(s)."
         _ -> "Please enter a valid #{get_downcased_display_name(field)}."
       end
 

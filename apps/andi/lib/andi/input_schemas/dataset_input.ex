@@ -165,6 +165,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     [:sourceQueryParams, :sourceHeaders]
     |> Enum.reduce(changeset, fn field, acc_changeset ->
       acc_changeset = clear_field_errors(acc_changeset, field)
+
       if has_invalid_key_values?(acc_changeset, field) do
         add_error(acc_changeset, field, "has invalid format", validation: :format)
       else
@@ -175,8 +176,11 @@ defmodule Andi.InputSchemas.DatasetInput do
 
   defp has_invalid_key_values?(%{changes: changes}, field) do
     case Map.get(changes, field) do
-      nil -> false
-      key_values -> Enum.any?(key_values, fn key_value_changeset -> not key_value_changeset.valid? end)
+      nil ->
+        false
+
+      key_value_changesets ->
+        Enum.any?(key_value_changesets, fn key_value_changeset -> not key_value_changeset.valid? end)
     end
   end
 

@@ -58,7 +58,7 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
     {:noreply, socket}
   end
 
-  #TODO: why is this still blowing up sometimes saying that the key is not in the changeset?  These guards should be defending against this
+  # TODO: why is this still blowing up sometimes saying that the key is not in the changeset?  These guards should be defending against this
   defp has_values(nil), do: false
   defp has_values(%{}), do: false
   defp has_values([]), do: false
