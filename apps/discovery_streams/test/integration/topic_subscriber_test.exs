@@ -29,7 +29,7 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
     validate_caches_exist(expected_cache)
   end
 
-  test "should delete all view state for the dataset and the output topic when dataset:delete is called" do
+  test "should delete all view state for the dataset and the input topic when dataset:delete is called" do
     dataset_id = Faker.UUID.v4()
     system_name = Faker.UUID.v4()
     input_topic = "#{@input_topic_prefix}#{dataset_id}"
