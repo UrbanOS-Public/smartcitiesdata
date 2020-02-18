@@ -49,6 +49,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
+      refute changeset.valid?
       assert changeset.errors == [{field_name, {"is required", [validation: :required]}}]
 
       where(
@@ -80,6 +81,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
+      assert changeset.valid?
       assert changeset.errors == []
       assert changeset.changes[:spatial] == ""
       assert changeset.changes[:temporal] == ""
@@ -90,6 +92,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
+      refute changeset.valid?
       assert changeset.errors == [{:contactEmail, {"has invalid format", [validation: :format]}}]
     end
 
@@ -98,6 +101,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
+      refute changeset.valid?
       assert [{^field_name, _}] = changeset.errors
 
       where(
@@ -113,6 +117,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
+      refute changeset.valid?
       assert changeset.errors == [{field_name, {"cannot contain dashes", [validation: :format]}}]
 
       where(
@@ -128,6 +133,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
+      refute changeset.valid?
       assert changeset.errors == [
                {:topLevelSelector, {"is required", [validation: :required]}}
              ]
@@ -140,6 +146,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
+      assert changeset.valid? == valid
       assert changeset.errors == errors
 
       where(
@@ -150,7 +157,8 @@ defmodule Andi.InputSchemas.DatasetInputTest do
           [{:schema, {"is required", [validation: :required]}}],
           [{:schema, {"cannot be empty", []}}],
           []
-        ]
+        ],
+        valid: [false, false, false, true]
       )
     end
 
@@ -172,11 +180,10 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
+      refute changeset.valid?
       assert length(changeset.errors) == 2
-
       assert changeset.errors
              |> Enum.any?(fn {:schema, {error, _}} -> String.match?(error, ~r/selector.+field_name/) end)
-
       assert changeset.errors
              |> Enum.any?(fn {:schema, {error, _}} -> String.match?(error, ~r/selector.+another_field/) end)
     end
@@ -185,6 +192,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       changes = @valid_changes |> Map.put(field, value)
       changeset = DatasetInput.light_validation_changeset(changes)
 
+      refute changeset.valid?
       assert [{^field, {^message, _}}] = changeset.errors
 
       where([
@@ -235,6 +243,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.full_validation_changeset(changes)
 
+      refute changeset.valid?
       assert changeset.errors == [{:dataName, {"existing dataset has the same orgName and dataName", []}}]
     end
 
@@ -249,6 +258,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.full_validation_changeset(@valid_changes)
 
+      assert changeset.valid?
       assert changeset.errors == []
     end
 
@@ -257,6 +267,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.full_validation_changeset(changes)
 
+      refute changeset.valid?
       assert {:contactEmail, {"has invalid format", [validation: :format]}} in changeset.errors
       assert {:sourceFormat, {"is required", [validation: :required]}} in changeset.errors
     end
@@ -337,6 +348,25 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
     data_test "does not alter #{field} if id is unknown", %{changeset: changeset} do
       assert changeset == DatasetInput.remove_key_value(changeset, field, "unknown")
+
+      where(field: [:sourceQueryParams, :sourceHeaders])
+    end
+
+    data_test("removes error when an invalid key/value is removed from #{field}") do
+      bad_key_value_id = Ecto.UUID.generate()
+      changes =
+        @valid_changes
+        |> Map.put(field, [
+          %{id: Ecto.UUID.generate(), key: "foo", value: "bar"},
+          %{id: bad_key_value_id, key: "", value: "where's my key?"}
+        ])
+
+      changeset = DatasetInput.light_validation_changeset(changes)
+
+      post_removal_changeset =
+        DatasetInput.remove_key_value(changeset, field, bad_key_value_id)
+
+      assert Enum.empty?(post_removal_changeset.errors)
 
       where(field: [:sourceQueryParams, :sourceHeaders])
     end

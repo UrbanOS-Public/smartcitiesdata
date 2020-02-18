@@ -116,6 +116,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     update_change(changeset, field, fn params ->
       Enum.filter(params, fn param -> param.changes.id != id end)
     end)
+    |> validate_key_value_parameters()
   end
 
   defp validate_unique_system_name(changeset) do
@@ -163,6 +164,7 @@ defmodule Andi.InputSchemas.DatasetInput do
   defp validate_key_value_parameters(changeset) do
     [:sourceQueryParams, :sourceHeaders]
     |> Enum.reduce(changeset, fn field, acc_changeset ->
+      acc_changeset = clear_field_errors(acc_changeset, field)
       if has_invalid_key_values?(acc_changeset, field) do
         add_error(acc_changeset, field, "has invalid format", validation: :format)
       else
@@ -176,5 +178,9 @@ defmodule Andi.InputSchemas.DatasetInput do
       nil -> false
       key_values -> Enum.any?(key_values, fn key_value_changeset -> not key_value_changeset.valid? end)
     end
+  end
+
+  defp clear_field_errors(changset, field) do
+    Map.update(changset, :errors, [], fn errors -> Keyword.delete(errors, field) end)
   end
 end
