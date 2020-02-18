@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.TopicHelperTest do
   alias DiscoveryStreams.TopicHelper
 
   @endpoints Application.get_env(:kaffe, :endpoints)
-  @output_topic_prefix Application.get_env(:discovery_streams, :topic_prefix, "transformed-")
+  @input_topic_prefix Application.get_env(:discovery_streams, :topic_prefix, "transformed-")
 
   describe "topic_name/1" do
     test "should return given dataset_id prefixed with the topic prefix" do
@@ -26,6 +26,6 @@ defmodule DiscoveryStreams.TopicHelperTest do
     Application.put_env(:kaffe, :consumer, endpoints: @endpoints)
     allow(Elsa.delete_topic(any(), any()), return: :doesnt_matter)
     TopicHelper.delete_input_topic(dataset_id)
-    assert_called(Elsa.delete_topic(TopicHelper.get_endpoints(), "#{@output_topic_prefix}#{dataset_id}"))
+    assert_called(Elsa.delete_topic(TopicHelper.get_endpoints(), "#{@input_topic_prefix}#{dataset_id}"))
   end
 end
