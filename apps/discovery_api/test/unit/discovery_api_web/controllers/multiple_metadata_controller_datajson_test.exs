@@ -67,6 +67,11 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.DataJsonTest do
       assert result["accrualPeriodicity"] == nil
     end
 
+    test "never returns temporal", %{results: [result | _]} do
+      # Decision was made to not return it since the values are not valid according to PODMS
+      assert result["temporal"] == nil
+    end
+
     test "only a single dataset (the public one) is returned", %{results: results} do
       assert 1 == Enum.count(results)
     end
@@ -87,9 +92,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.DataJsonTest do
       assert model.homepage == result["landingPage"]
       assert model.license == result["license"]
       assert model.accessLevel == result["accessLevel"]
-
       assert model.spatial == result["spatial"]
-      assert model.temporal == result["temporal"]
       assert model.conformsToUri == result["conformsTo"]
       assert model.describedByUrl == result["describedBy"]
       assert model.describedByMimeType == result["describedByType"]

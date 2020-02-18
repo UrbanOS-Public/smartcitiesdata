@@ -64,7 +64,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataView do
       "license" => val_or_optional(model.license),
       "rights" => val_or_optional(model.rights),
       "spatial" => val_or_optional(model.spatial),
-      "temporal" => val_or_optional(model.temporal),
+      "temporal" => :optional,
       "distribution" => [
         %{
           "@type" => "dcat:Distribution",
