@@ -25,13 +25,11 @@ MIX_ENV=integration mix docker.start
 
 ## Connecting to Websocket
 
-Install [wsta](https://github.com/esphen/wsta)
+Install [websocat](https://github.com/vi/websocat)
 
 ```bash
-wsta -I --ping 50 \
---ping-msg '{"topic":"streaming:central_ohio_transit_authority__cota_stream","event":"heartbeat","payload":{},"ref":"1"}' \
-'wss://streams.smartcolumbusos.com/socket/websocket' \
-'{"topic":"streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{},"ref":"1"}'
+websocat wss://streams.smartcolumbusos.com/socket/websocket
+{"topic": "streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{},"ref":"1"}
 ```
 
 ### Setting a Filter
@@ -40,10 +38,8 @@ A filter can be provided in the `phx_join` event by giving a filter key and valu
 ```bash
 # Stream only vehicles with an id of 11409
 
-wsta -I --ping 50 \
---ping-msg '{"topic":"streaming:central_ohio_transit_authority__cota_stream","event":"heartbeat","payload":{},"ref":"1"}' \
-'wss://streams.smartcolumbusos.com/socket/websocket' \
-'{"topic":"streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{"vehicle.vehicle.id":"11409"},"ref":"1"}'
+websocat wss://streams.smartcolumbusos.com/socket/websocket
+{"topic": "streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{"vehicle.vehicle.id":"11409"},"ref":"1"}
 ```
 
 ## Environment Variables
