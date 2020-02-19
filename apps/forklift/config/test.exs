@@ -24,6 +24,10 @@ config :forklift,
 
 config :forklift, :brook,
   instance: :forklift,
+  driver: [
+    module: Brook.Driver.Test,
+    init_arg: []
+  ],
   handlers: [Forklift.EventHandler],
   storage: [
     module: Brook.Storage.Ets,

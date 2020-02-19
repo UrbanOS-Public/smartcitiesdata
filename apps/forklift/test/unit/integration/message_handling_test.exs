@@ -11,6 +11,11 @@ defmodule Forklift.Integration.MessageHandlingTest do
   setup :set_mox_global
   setup :verify_on_exit!
 
+  setup do
+    Brook.Test.register(instance_name())
+    :ok
+  end
+
   describe "on receiving a data message" do
     test "retries to persist to Presto if failing" do
       test = self()

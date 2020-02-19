@@ -30,7 +30,12 @@ defmodule Forklift.MessageHandler do
 
     Task.start(fn ->
       result = Forklift.DataWriter.write_to_topic(timed_messages)
-      Logger.debug(fn -> "Finished writing #{Enum.count(timed_messages)} timed messages for dataset #{dataset.id} with result #{inspect(result)}" end)
+
+      Logger.debug(fn ->
+        "Finished writing #{Enum.count(timed_messages)} timed messages for dataset #{dataset.id} with result #{
+          inspect(result)
+        }"
+      end)
     end)
 
     {:ok, event} = DataWriteComplete.new(%{id: dataset.id, timestamp: DateTime.utc_now()})
