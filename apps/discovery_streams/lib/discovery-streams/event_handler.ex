@@ -35,7 +35,7 @@ defmodule DiscoveryStreams.EventHandler do
         type: dataset_delete(),
         data: %Dataset{id: id, technical: %{systemName: system_name}}
       }) do
-    delete_dataset_topic(id, system_name)
+    DiscoveryStreams.TopicHelper.delete_input_topic(id)
     delete_from_viewstate(id, system_name)
   end
 
@@ -50,24 +50,5 @@ defmodule DiscoveryStreams.EventHandler do
     Logger.debug("#{__MODULE__}: Deleting Datatset: #{id} with system_name: #{system_name}")
     delete(:streaming_datasets_by_id, id)
     delete(:streaming_datasets_by_system_name, system_name)
-  end
-
-  defp delete_dataset_topic(id, system_name) do
-    case delete_topic(id) do
-      :ok ->
-        Logger.debug("#{__MODULE__}: Deleted dataset for dataset id: #{id} and system name: #{system_name}")
-
-      {:error, error} ->
-        Logger.error(
-          "#{__MODULE__}: Failed to delete dataset for dataset id: #{id} and system name: #{system_name}, Reason: #{
-            inspect(error)
-          }"
-        )
-    end
-  end
-
-  defp delete_topic(dataset_id) do
-    Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset_id}")
-    DiscoveryStreams.TopicHelper.delete_input_topic(dataset_id)
   end
 end
