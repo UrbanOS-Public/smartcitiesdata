@@ -271,7 +271,7 @@ defmodule AndiWeb.EditLiveViewTest do
         [:license, %{business: %{license: ""}}, "Please enter a valid license."],
         [:publishFrequency, %{business: %{publishFrequency: ""}}, "Please enter a valid update frequency."],
         [:orgTitle, %{business: %{orgTitle: ""}}, "Please enter a valid organization."],
-        [:sourceUrl, %{technical: %{sourceUrl: ""}}, "Please enter a valid source url."],
+        [:sourceUrl, %{technical: %{sourceUrl: ""}}, "Please enter a valid base url."],
         [:license, %{business: %{license: ""}}, "Please enter a valid license."],
         [:benefitRating, %{business: %{benefitRating: ""}}, "Please enter a valid benefit."],
         [:riskRating, %{business: %{riskRating: ""}}, "Please enter a valid risk."]

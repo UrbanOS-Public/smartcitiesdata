@@ -27,7 +27,7 @@ defmodule Andi.InputSchemas.DisplayNames do
     sourceHeaders: "Headers",
     sourceQueryParams: "Query Parameters",
     sourceType: "Source Type",
-    sourceUrl: "Source URL",
+    sourceUrl: "Base URL",
     topLevelSelector: "Top Level Selector"
   }
 

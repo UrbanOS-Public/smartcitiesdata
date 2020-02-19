@@ -53,4 +53,17 @@ defmodule Andi.InputSchemas.InputConverterTest do
 
     assert new_dataset == dataset
   end
+
+  test "conversion strips query string hardcoded on base source URL" do
+    dataset =
+      TestDataGenerator.create_dataset(%{technical: %{sourceUrl: "test.com?a=b&b=c"}})
+
+    new_dataset =
+      dataset
+      |> InputConverter.changeset_from_dataset()
+      |> Changeset.apply_changes()
+      |> InputConverter.restruct(dataset)
+
+    assert "test.com" == new_dataset.technical.sourceUrl
+  end
 end
