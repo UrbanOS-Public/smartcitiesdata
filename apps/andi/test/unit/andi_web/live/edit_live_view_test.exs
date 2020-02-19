@@ -484,6 +484,31 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert render(view) |> get_text(".metadata__error-message") =~ "errors"
     end
+
+    data_test "allows saving with empty #{field}", %{conn: conn} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+
+      dataset = TDG.create_dataset(%{technical: %{field => %{"x" => "y"}}})
+      DatasetCache.put(dataset)
+
+      form_data =
+        dataset
+        |> dataset_to_form_data()
+        |> Map.delete(field)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      render_change(view, :save, %{"metadata" => form_data})
+
+      expected_updated_dataset =
+        form_data
+        |> InputConverter.form_changeset()
+        |> Ecto.Changeset.apply_changes()
+        |> InputConverter.restruct(dataset)
+
+      assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, expected_updated_dataset), once())
+
+      where(field: [:sourceQueryParams, :sourceHeaders])
+    end
   end
 
   describe "sourceUrl testing" do

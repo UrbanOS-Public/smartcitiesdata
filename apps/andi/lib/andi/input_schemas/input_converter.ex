@@ -9,7 +9,7 @@ defmodule Andi.InputSchemas.InputConverter do
   @type dataset :: map() | Dataset.t()
 
   @spec changeset_from_dataset(dataset) :: Ecto.Changeset.t()
-  def changeset_from_dataset(%{"id" => _} = dataset), do: atomize(dataset) |> changeset_from_dataset()
+  def changeset_from_dataset(%{"id" => _} = dataset), do: atomize_dataset_map(dataset) |> changeset_from_dataset()
 
   def changeset_from_dataset(%{id: id, business: business, technical: technical}) do
     from_business = get_business(business) |> fix_modified_date()
@@ -23,18 +23,16 @@ defmodule Andi.InputSchemas.InputConverter do
 
   @spec changeset_from_dataset(Dataset.t(), map()) :: Ecto.Changeset.t()
   def changeset_from_dataset(%SmartCity.Dataset{} = original_dataset, changes) do
-    form_data_with_atom_keys = AtomicMap.convert(changes, safe: false, underscore: false)
+    adjusted_changes = adjust_form_input(changes)
 
     original_dataset_flattened =
       original_dataset
       |> changeset_from_dataset()
       |> Ecto.Changeset.apply_changes()
 
-    all_changes = Map.merge(original_dataset_flattened, form_data_with_atom_keys)
+    all_changes = Map.merge(original_dataset_flattened, adjusted_changes)
 
-    all_changes
-    |> adjust_form_input()
-    |> DatasetInput.full_validation_changeset()
+    DatasetInput.full_validation_changeset(all_changes)
   end
 
   @spec form_changeset(map()) :: Ecto.Changeset.t()
@@ -49,6 +47,7 @@ defmodule Andi.InputSchemas.InputConverter do
     |> AtomicMap.convert(safe: false, underscore: false)
     |> Map.update(:keywords, nil, &keywords_to_list/1)
     |> fix_modified_date()
+    |> reset_key_values()
   end
 
   @spec restruct(map(), Dataset.t()) :: Dataset.t()
@@ -70,7 +69,7 @@ defmodule Andi.InputSchemas.InputConverter do
     |> (fn {:ok, dataset} -> dataset end).()
   end
 
-  defp atomize(dataset) do
+  defp atomize_dataset_map(dataset) when is_map(dataset) do
     dataset
     |> atomize_top_level()
     |> Map.update(:business, nil, &atomize_top_level/1)
@@ -116,8 +115,14 @@ defmodule Andi.InputSchemas.InputConverter do
     |> elem(1)
   end
 
-  defp convert_key_values(technical) do
-    Enum.reduce(DatasetInput.key_value_keys(), technical, fn field, acc -> convert_key_values(acc, field) end)
+  defp reset_key_values(map) do
+    Enum.reduce(DatasetInput.key_value_keys(), map, fn field, acc ->
+      Map.put_new(acc, field, %{})
+    end)
+  end
+
+  defp convert_key_values(map) do
+    Enum.reduce(DatasetInput.key_value_keys(), map, fn field, acc -> convert_key_values(acc, field) end)
   end
 
   defp convert_key_values(map, field) do
@@ -126,8 +131,8 @@ defmodule Andi.InputSchemas.InputConverter do
     end)
   end
 
-  defp restruct_key_values(params) do
-    Enum.reduce(DatasetInput.key_value_keys(), params, fn field, acc -> restruct_key_values(acc, field) end)
+  defp restruct_key_values(map) do
+    Enum.reduce(DatasetInput.key_value_keys(), map, fn field, acc -> restruct_key_values(acc, field) end)
   end
 
   defp restruct_key_values(map, field) do

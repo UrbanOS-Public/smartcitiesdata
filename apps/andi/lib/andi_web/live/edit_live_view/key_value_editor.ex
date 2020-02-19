@@ -17,7 +17,7 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
         <th class="url-form-table__cell url-form-table__cell--bordered url-form-table__cell--header">KEY</th>
         <th class="url-form-table__cell url-form-table__cell--bordered url-form-table__cell--header" colspan="2" >VALUE</th>
       </tr>
-      <%= if has_values(input_value(@form, @field)) do %>
+      <%= if has_values(@form.source.changes[@field]) do %>
         <%= inputs_for @form, @field, fn f -> %>
         <tr class="url-form-table__row url-form-table__row--bordered">
           <td class="url-form-table__cell url-form-table__cell--bordered">
@@ -58,7 +58,7 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
     {:noreply, socket}
   end
 
-  # TODO: why is this still blowing up sometimes saying that the key is not in the changeset?  These guards should be defending against this
+  #TODO: TEST for this?
   defp has_values(nil), do: false
   defp has_values(%{}), do: false
   defp has_values([]), do: false
