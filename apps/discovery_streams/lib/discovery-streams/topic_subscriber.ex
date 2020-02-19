@@ -62,11 +62,6 @@ defmodule DiscoveryStreams.TopicSubscriber do
   end
 
   defp create_topics(topics) do
-    Enum.each(topics, &Elsa.create_topic(get_endpoints(), &1))
-  end
-
-  defp get_endpoints() do
-    Application.get_env(:kaffe, :consumer)[:endpoints]
-    |> Enum.map(fn {host, port} -> {to_charlist(host), port} end)
+    Enum.each(topics, &Elsa.create_topic(DiscoveryStreams.TopicHelper.get_endpoints(), &1))
   end
 end

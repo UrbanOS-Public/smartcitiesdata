@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.EventHandler do
   """
   alias SmartCity.Dataset
   use Brook.Event.Handler
-  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, dataset_delete: 0]
   require Logger
 
   def handle_event(%Brook.Event{
@@ -29,6 +29,14 @@ defmodule DiscoveryStreams.EventHandler do
     delete_from_viewstate(id, system_name)
 
     :ok
+  end
+
+  def handle_event(%Brook.Event{
+        type: dataset_delete(),
+        data: %Dataset{id: id, technical: %{systemName: system_name}}
+      }) do
+    DiscoveryStreams.TopicHelper.delete_input_topic(id)
+    delete_from_viewstate(id, system_name)
   end
 
   def save_dataset_to_viewstate(id, system_name) do
