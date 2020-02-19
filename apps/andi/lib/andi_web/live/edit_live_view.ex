@@ -3,8 +3,10 @@ defmodule AndiWeb.EditLiveView do
 
   alias Phoenix.HTML.Link
   alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.DatasetInput
   alias Andi.InputSchemas.DisplayNames
   alias Andi.InputSchemas.Options
+  alias AndiWeb.EditLiveView.KeyValueEditor
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -13,7 +15,8 @@ defmodule AndiWeb.EditLiveView do
   def render(assigns) do
     ~L"""
     <div class="edit-page">
-      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :metadata] %>
+      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
+
       <div class="metadata-form form-section form-grid">
         <h2 class="metadata-form__top-header edit-page__box-header">Metadata</h2>
         <div class="metadata-form__title">
@@ -39,7 +42,7 @@ defmodule AndiWeb.EditLiveView do
         <div class="metadata-form__release-date">
           <%= label(f, :issuedDate, DisplayNames.get(:issuedDate), class: "label label--required") %>
           <%= date_input(f, :issuedDate, class: "input") %>
-          <%= error_tag_live(f, :issuedDate) %>
+          <%= error_tag(f, :issuedDate, bind_to_input: false) %>
         </div>
         <div class="metadata-form__license">
           <%= label(f, :license, DisplayNames.get(:license), class: "label label--required") %>
@@ -95,14 +98,15 @@ defmodule AndiWeb.EditLiveView do
         <div class="metadata-form__benefit-rating">
           <%= label(f, :benefitRating, DisplayNames.get(:benefitRating), class: "label label--required") %>
           <%= select(f, :benefitRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
-          <%= error_tag_live(f, :benefitRating) %>
+          <%= error_tag(f, :benefitRating, bind_to_input: false) %>
         </div>
         <div class="metadata-form__risk-rating">
           <%= label(f, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
           <%= select(f, :riskRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
-          <%= error_tag_live(f, :riskRating) %>
+          <%= error_tag(f, :riskRating, bind_to_input: false) %>
         </div>
       </div>
+
       <div class="url-form form-section form-grid">
         <h2 class="url-form__top-header edit-page__box-header">Configure Upload</h2>
         <div class="url-form__source-url">
@@ -110,8 +114,12 @@ defmodule AndiWeb.EditLiveView do
           <%= text_input(f, :sourceUrl, class: "input full-width", disabled: @testing) %>
           <%= error_tag(f, :sourceUrl) %>
         </div>
+
+        <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_query_params, css_label: "source-query-params", form: f, field: :sourceQueryParams ) %>
+        <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_headers, css_label: "source-headers", form: f, field: :sourceHeaders ) %>
+
         <div class="url-form__test-section">
-          <button type="button" class="metadata-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
+          <button type="button" class="url-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
           <%= if @test_results do %>
             <div class="test-status">
             Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) %></span>
@@ -120,6 +128,7 @@ defmodule AndiWeb.EditLiveView do
           <% end %>
         </div>
       </div>
+
       <div class="edit-button-group form-grid">
         <div class="edit-button-group__cancel-btn">
           <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
@@ -140,6 +149,7 @@ defmodule AndiWeb.EditLiveView do
           <%= submit("Save", id: "save-button", class: "btn btn--save btn--large") %>
         </div>
       </div>
+
       </form>
     </div>
     """
@@ -162,27 +172,21 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("test_url", _, socket) do
-    source_url = Map.get(socket.assigns.changeset.changes, :sourceUrl)
+    changes = Ecto.Changeset.apply_changes(socket.assigns.changeset)
+    url = Map.get(changes, :sourceUrl)
+    query_params = key_values_to_keyword_list(changes, :sourceQueryParams)
+    headers = key_values_to_keyword_list(changes, :sourceHeaders)
 
     Task.async(fn ->
-      {:test_results, Andi.Services.UrlTest.test(source_url)}
+      {:test_results, Andi.Services.UrlTest.test(url, query_params: query_params, headers: headers)}
     end)
 
     {:noreply, assign(socket, testing: true)}
   end
 
-  def handle_event("validate", %{"metadata" => form_data}, socket) do
-    socket = reset_save_success(socket)
+  def handle_event("validate", %{"form_data" => form_data}, socket), do: handle_validation(form_data, socket)
 
-    new_changeset =
-      form_data
-      |> InputConverter.form_changeset()
-      |> Map.put(:action, :update)
-
-    {:noreply, assign(socket, changeset: new_changeset)}
-  end
-
-  def handle_event("save", %{"metadata" => form_data}, socket) do
+  def handle_event("save", %{"form_data" => form_data}, socket) do
     socket = reset_save_success(socket)
     original_dataset = socket.assigns.dataset
     changeset = InputConverter.changeset_from_dataset(original_dataset, form_data)
@@ -216,9 +220,40 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, test_results: results, testing: false)}
   end
 
+  def handle_info({:validate, %{"form_data" => form_data}}, socket), do: handle_validation(form_data, socket)
+
+  def handle_info({:add_key_value, %{"field" => field}}, socket) do
+    socket = reset_save_success(socket)
+    changeset = DatasetInput.add_key_value(socket.assigns.changeset, SmartCity.Helpers.safe_string_to_atom(field))
+    {:noreply, assign(socket, changeset: changeset)}
+  end
+
+  def handle_info({:remove_key_value, %{"id" => id, "field" => field}}, socket) do
+    socket = reset_save_success(socket)
+    changeset = DatasetInput.remove_key_value(socket.assigns.changeset, SmartCity.Helpers.safe_string_to_atom(field), id)
+    {:noreply, assign(socket, changeset: changeset)}
+  end
+
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
+  end
+
+  defp handle_validation(form_data, socket) do
+    socket = reset_save_success(socket)
+
+    new_changeset =
+      form_data
+      |> InputConverter.form_changeset()
+      |> Map.put(:action, :update)
+
+    {:noreply, assign(socket, changeset: new_changeset)}
+  end
+
+  defp key_values_to_keyword_list(form_data, field) do
+    form_data
+    |> Map.get(field, [])
+    |> Enum.map(fn %{key: key, value: value} -> {key, value} end)
   end
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)

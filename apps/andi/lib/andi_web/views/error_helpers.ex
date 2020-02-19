@@ -10,33 +10,23 @@ defmodule AndiWeb.ErrorHelpers do
   @doc """
   Generates tag for inlined form input errors.
   """
-  def error_tag(form, field) do
+  def error_tag(form, field, options \\ []) do
     Enum.map(Keyword.get_values(form.errors, field), fn error ->
       translated = error |> interpret_error(field) |> translate_error()
 
       content_tag(:span, translated,
         class: "error-msg",
         id: "#{field}-error-msg",
-        data: [phx_error_for: input_id(form, field)]
+        data: get_additional_content_tag_data(form, field, options)
       )
     end)
   end
 
-  @doc """
-  Render an error_tag for the given input.
-
-  Fixes the bug with non text-input fields not rendering the error message when clearing a valid value
-  https://elixirforum.com/t/liveview-phx-change-attribute-does-not-emit-event-on-input-text/21280
-  """
-  def error_tag_live(form, field) do
-    Enum.map(Keyword.get_values(form.errors, field), fn error ->
-      translated = error |> interpret_error(field) |> translate_error()
-
-      content_tag(:span, translated,
-        class: "error-msg",
-        id: "#{field}-error-msg"
-      )
-    end)
+  # Fixes the bug with non text-input fields not rendering the error message when clearing a valid value
+  # https://elixirforum.com/t/liveview-phx-change-attribute-does-not-emit-event-on-input-text/21280
+  defp get_additional_content_tag_data(form, field, options) do
+    bind_to_input = Keyword.get(options, :bind_to_input, true)
+    if bind_to_input, do: [phx_error_for: input_id(form, field)], else: []
   end
 
   @doc """
@@ -69,7 +59,13 @@ defmodule AndiWeb.ErrorHelpers do
 
   defp interpret_error(error, field) do
     {_, opts} = error
-    updated_message = "Please enter a valid #{get_downcased_display_name(field)}."
+
+    updated_message =
+      case field do
+        field when field in [:sourceHeaders, :sourceQueryParams] -> "Please enter valid key(s)."
+        _ -> "Please enter a valid #{get_downcased_display_name(field)}."
+      end
+
     {updated_message, opts}
   end
 

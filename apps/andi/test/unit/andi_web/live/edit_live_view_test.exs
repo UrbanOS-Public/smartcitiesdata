@@ -11,6 +11,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
   alias Andi.DatasetCache
   alias Andi.InputSchemas.InputConverter
+  alias Andi.Services.UrlTest
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -20,13 +21,13 @@ defmodule AndiWeb.EditLiveViewTest do
     GenServer.call(DatasetCache, :reset)
   end
 
-  describe "Enter Metadata" do
+  describe "enter form data" do
     test "display Level of Access as public when private is false", %{conn: conn} do
       dataset = TDG.create_dataset(%{technical: %{private: false}})
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      assert {"false", "Public"} = get_select(html, "#metadata_private")
+      assert {"false", "Public"} = get_select(html, "#form_data_private")
     end
 
     test "display Level of Access as private when private is true", %{conn: conn} do
@@ -34,7 +35,7 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      assert {"true", "Private"} = get_select(html, "#metadata_private")
+      assert {"true", "Private"} = get_select(html, "#form_data_private")
     end
 
     test "the default language is set to english", %{conn: conn} do
@@ -43,7 +44,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 
-      assert {"english", "English"} = get_select(html, "#metadata_language")
+      assert {"english", "English"} = get_select(html, "#form_data_language")
     end
 
     test "the language is set to spanish", %{conn: conn} do
@@ -52,7 +53,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert {"spanish", "Spanish"} = get_select(html, "#metadata_language")
+      assert {"spanish", "Spanish"} = get_select(html, "#form_data_language")
     end
 
     test "the language is set to english", %{conn: conn} do
@@ -61,7 +62,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert {"english", "English"} = get_select(html, "#metadata_language")
+      assert {"english", "English"} = get_select(html, "#form_data_language")
     end
 
     test "the language is changed from english to spanish", %{conn: conn} do
@@ -72,9 +73,9 @@ defmodule AndiWeb.EditLiveViewTest do
 
       dataset_map = dataset_to_form_data(dataset) |> Map.put(:language, "spanish")
 
-      html = render_change(view, :validate, %{"metadata" => dataset_map})
+      html = render_change(view, :validate, %{"form_data" => dataset_map})
 
-      assert {"spanish", "Spanish"} = get_select(html, "#metadata_language")
+      assert {"spanish", "Spanish"} = get_select(html, "#form_data_language")
     end
 
     data_test "benefit rating is set to '#{label}' (#{inspect(value)})", %{conn: conn} do
@@ -83,7 +84,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert {to_string(value), label} == get_select(html, "#metadata_benefitRating")
+      assert {to_string(value), label} == get_select(html, "#form_data_benefitRating")
 
       where([
         [:value, :label],
@@ -99,7 +100,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert {to_string(value), label} == get_select(html, "#metadata_riskRating")
+      assert {to_string(value), label} == get_select(html, "#form_data_riskRating")
 
       where([
         [:value, :label],
@@ -141,7 +142,7 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      [subject] = Floki.find(html, "#metadata_keywords") |> Floki.attribute("value")
+      [subject] = Floki.find(html, "#form_data_keywords") |> Floki.attribute("value")
 
       assert subject =~ "one, two, three"
     end
@@ -151,7 +152,7 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      [subject] = Floki.find(html, "#metadata_keywords") |> Floki.attribute("value")
+      [subject] = Floki.find(html, "#form_data_keywords") |> Floki.attribute("value")
 
       assert subject == ""
     end
@@ -168,9 +169,9 @@ defmodule AndiWeb.EditLiveViewTest do
       expected = Enum.join(dataset.business.keywords, ", ")
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      html = render_change(view, :validate, %{"metadata" => dataset_map})
+      html = render_change(view, :validate, %{"form_data" => dataset_map})
 
-      subject = get_value(html, "#metadata_keywords")
+      subject = get_value(html, "#form_data_keywords")
 
       assert expected == subject
     end
@@ -185,9 +186,9 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Map.put(:keywords, "a , good ,  keyword   , is .... hard , to find")
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      html = render_change(view, :validate, %{"metadata" => dataset_map})
+      html = render_change(view, :validate, %{"form_data" => dataset_map})
 
-      subject = get_value(html, "#metadata_keywords")
+      subject = get_value(html, "#form_data_keywords")
 
       assert "a, good, keyword, is .... hard, to find" == subject
     end
@@ -203,9 +204,9 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Map.put(:keywords, expected)
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      html = render_change(view, :validate, %{"metadata" => dataset_map})
+      html = render_change(view, :validate, %{"form_data" => dataset_map})
 
-      subject = get_value(html, "#metadata_keywords")
+      subject = get_value(html, "#form_data_keywords")
 
       assert expected == subject
     end
@@ -220,39 +221,39 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      assert get_value(html, "#metadata_dataTitle") == dataset.business.dataTitle
-      assert get_text(html, "#metadata_description") == dataset.business.description
-      assert get_value(html, "#metadata_sourceFormat") == dataset.technical.sourceFormat
-      assert {"true", "Private"} == get_select(html, "#metadata_private")
-      assert get_value(html, "#metadata_contactName") == dataset.business.contactName
-      assert dataset.business.modifiedDate =~ get_value(html, "#metadata_modifiedDate")
-      assert get_value(html, "#metadata_contactEmail") == dataset.business.contactEmail
-      assert dataset.business.issuedDate =~ get_value(html, "#metadata_issuedDate")
-      assert get_value(html, "#metadata_license") == dataset.business.license
-      assert get_value(html, "#metadata_publishFrequency") == dataset.business.publishFrequency
-      assert get_value(html, "#metadata_spatial") == dataset.business.spatial
-      assert get_value(html, "#metadata_temporal") == dataset.business.temporal
-      assert get_value(html, "#metadata_orgTitle") == dataset.business.orgTitle
-      assert {"english", "English"} == get_select(html, "#metadata_language")
-      assert get_value(html, "#metadata_homepage") == dataset.business.homepage
-      assert {"1.0", "High"} == get_select(html, "#metadata_benefitRating")
-      assert {"0.5", "Medium"} == get_select(html, "#metadata_riskRating")
+      assert get_value(html, "#form_data_dataTitle") == dataset.business.dataTitle
+      assert get_text(html, "#form_data_description") == dataset.business.description
+      assert get_value(html, "#form_data_sourceFormat") == dataset.technical.sourceFormat
+      assert {"true", "Private"} == get_select(html, "#form_data_private")
+      assert get_value(html, "#form_data_contactName") == dataset.business.contactName
+      assert dataset.business.modifiedDate =~ get_value(html, "#form_data_modifiedDate")
+      assert get_value(html, "#form_data_contactEmail") == dataset.business.contactEmail
+      assert dataset.business.issuedDate =~ get_value(html, "#form_data_issuedDate")
+      assert get_value(html, "#form_data_license") == dataset.business.license
+      assert get_value(html, "#form_data_publishFrequency") == dataset.business.publishFrequency
+      assert get_value(html, "#form_data_spatial") == dataset.business.spatial
+      assert get_value(html, "#form_data_temporal") == dataset.business.temporal
+      assert get_value(html, "#form_data_orgTitle") == dataset.business.orgTitle
+      assert {"english", "English"} == get_select(html, "#form_data_language")
+      assert get_value(html, "#form_data_homepage") == dataset.business.homepage
+      assert {"1.0", "High"} == get_select(html, "#form_data_benefitRating")
+      assert {"0.5", "Medium"} == get_select(html, "#form_data_riskRating")
     end
   end
 
-  describe "edit metadata" do
+  describe "edit form data" do
     test "accessibility level must be public or private", %{conn: conn} do
       dataset = TDG.create_dataset(%{technical: %{private: true}})
 
       DatasetCache.put(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert get_select(html, "#metadata_private") == {"true", "Private"}
+      assert get_select(html, "#form_data_private") == {"true", "Private"}
 
       dataset_map = dataset_to_form_data(dataset) |> Map.put(:private, false)
 
-      html = render_change(view, :validate, %{"metadata" => dataset_map})
-      assert get_select(html, "#metadata_private") == {"false", "Public"}
+      html = render_change(view, :validate, %{"form_data" => dataset_map})
+      assert get_select(html, "#form_data_private") == {"false", "Public"}
     end
 
     data_test "required #{field} field displays proper error message", %{conn: conn} do
@@ -270,7 +271,7 @@ defmodule AndiWeb.EditLiveViewTest do
         [:license, %{business: %{license: ""}}, "Please enter a valid license."],
         [:publishFrequency, %{business: %{publishFrequency: ""}}, "Please enter a valid update frequency."],
         [:orgTitle, %{business: %{orgTitle: ""}}, "Please enter a valid organization."],
-        [:sourceUrl, %{technical: %{sourceUrl: ""}}, "Please enter a valid source url."],
+        [:sourceUrl, %{technical: %{sourceUrl: ""}}, "Please enter a valid base url."],
         [:license, %{business: %{license: ""}}, "Please enter a valid license."],
         [:benefitRating, %{business: %{benefitRating: ""}}, "Please enter a valid benefit."],
         [:riskRating, %{business: %{riskRating: ""}}, "Please enter a valid risk."]
@@ -287,6 +288,24 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_text(html, "#sourceFormat-error-msg") == "Please enter a valid source format."
     end
 
+    data_test "invalid #{field} displays proper error message", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{field => %{"foo" => "where's my key"}}})
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      form_data = dataset_to_form_data(dataset) |> Map.put(field, %{"0" => %{"key" => "", "value" => "where's my key"}})
+      render_change([view, component_id], :validate, %{"form_data" => form_data})
+      html = render(view)
+
+      assert get_text(html, "##{field}-error-msg") == "Please enter valid key(s)."
+
+      where(
+        field: [:sourceQueryParams, :sourceHeaders],
+        component_id: ["key_value_editor_source_query_params", "key_value_editor_source_headers"]
+      )
+    end
+
     data_test "displays error when #{field} is unset", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       DatasetCache.put(dataset)
@@ -295,7 +314,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_text(html, "##{field}-error-msg") == ""
 
       form_data = dataset_to_form_data(dataset) |> Map.put(field, "")
-      html = render_change(view, :validate, %{"metadata" => form_data})
+      html = render_change(view, :validate, %{"form_data" => form_data})
 
       assert get_text(html, "##{field}-error-msg") == expected_error_message
 
@@ -316,7 +335,7 @@ defmodule AndiWeb.EditLiveViewTest do
         |> form_data_for_save()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      render_change(view, :save, %{"metadata" => form_data})
+      render_change(view, :save, %{"form_data" => form_data})
 
       assert render(view) |> get_text(".metadata__error-message") =~ "errors"
 
@@ -326,7 +345,7 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
         |> form_data_for_save()
 
-      render_change(view, :validate, %{"metadata" => form_data})
+      render_change(view, :validate, %{"form_data" => form_data})
 
       assert render(view) |> get_text(".metadata__error-message") == ""
     end
@@ -340,7 +359,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert Floki.attribute(html, "#metadata_sourceFormat", "readonly") == ["readonly"]
+      assert Floki.attribute(html, "#form_data_sourceFormat", "readonly") == ["readonly"]
     end
 
     test "organization title", %{conn: conn} do
@@ -350,12 +369,12 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert Floki.attribute(html, "#metadata_orgTitle", "readonly") == ["readonly"]
+      assert Floki.attribute(html, "#form_data_orgTitle", "readonly") == ["readonly"]
     end
   end
 
-  describe "save metadata" do
-    test "valid metadata is saved on submit", %{conn: conn} do
+  describe "save form data" do
+    test "valid form data is saved on submit", %{conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
       dataset = TDG.create_dataset(%{business: %{issuedDate: ""}})
@@ -370,7 +389,7 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
         |> form_data_for_save()
 
-      render_change(view, :save, %{"metadata" => form_data})
+      render_change(view, :save, %{"form_data" => form_data})
 
       updated_dataset =
         form_data
@@ -381,7 +400,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, updated_dataset), once())
     end
 
-    test "invalid metadata is not saved on submit", %{conn: conn} do
+    test "invalid form data is not saved on submit", %{conn: conn} do
       dataset = TDG.create_dataset(%{business: %{publishFrequency: ""}})
       DatasetCache.put(dataset)
 
@@ -390,12 +409,12 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      render_change(view, :save, %{"metadata" => dataset_map})
+      render_change(view, :save, %{"form_data" => dataset_map})
 
       refute_called(Brook.Event.send(instance_name(), dataset_update(), :andi, dataset), once())
     end
 
-    test "success message is displayed when metadata is saved", %{conn: conn} do
+    test "success message is displayed when form data is saved", %{conn: conn} do
       dataset = TDG.create_dataset(%{business: %{issuedDate: ""}})
 
       DatasetCache.put(dataset)
@@ -409,8 +428,8 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Ecto.Changeset.cast(%{issuedDate: "2020-01-03"}, [:issuedDate])
         |> form_data_for_save()
 
-      render_change(view, :validate, %{"metadata" => form_data})
-      html = render_change(view, :save, %{"metadata" => form_data})
+      render_change(view, :validate, %{"form_data" => form_data})
+      html = render_change(view, :save, %{"form_data" => form_data})
 
       assert get_text(html, "#success-message") == "Saved Successfully"
     end
@@ -430,7 +449,7 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Ecto.Changeset.cast(%{modifiedDate: nil}, [:modifiedDate], empty_values: [])
         |> form_data_for_save()
 
-      render_change(view, :save, %{"metadata" => form_data})
+      render_change(view, :save, %{"form_data" => form_data})
 
       expected_updated_dataset =
         form_data
@@ -459,15 +478,61 @@ defmodule AndiWeb.EditLiveViewTest do
         |> form_data_for_save()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      render_change(view, :save, %{"metadata" => form_data})
+      render_change(view, :save, %{"form_data" => form_data})
 
       refute_called(Brook.Event.send(any(), any(), any(), any()))
 
       assert render(view) |> get_text(".metadata__error-message") =~ "errors"
     end
+
+    data_test "allows saving with empty #{field}", %{conn: conn} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+
+      dataset = TDG.create_dataset(%{technical: %{field => %{"x" => "y"}}})
+      DatasetCache.put(dataset)
+
+      form_data =
+        dataset
+        |> dataset_to_form_data()
+        |> Map.delete(field)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      render_change(view, :save, %{"form_data" => form_data})
+
+      expected_updated_dataset =
+        form_data
+        |> InputConverter.form_changeset()
+        |> Ecto.Changeset.apply_changes()
+        |> InputConverter.restruct(dataset)
+
+      assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, expected_updated_dataset), once())
+
+      where(field: [:sourceQueryParams, :sourceHeaders])
+    end
   end
 
   describe "sourceUrl testing" do
+    @tag capture_log: true
+    test "uses provided query params and headers", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            sourceUrl: "123.com",
+            sourceQueryParams: %{"x" => "y"},
+            sourceHeaders: %{"api-key" => "to-my-heart"}
+          }
+        })
+
+      DatasetCache.put(dataset)
+
+      allow(UrlTest.test(any(), any()), return: %{time: 1_000, status: 200})
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      render_change(view, :test_url, %{})
+
+      assert_called(UrlTest.test("123.com", query_params: [{"x", "y"}], headers: [{"api-key", "to-my-heart"}]))
+    end
+
     test "status and time are displayed when source url is tested", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
@@ -476,7 +541,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetCache.put(dataset)
 
-      allow(Andi.Services.UrlTest.test("123.com"), return: %{time: 1_000, status: 200})
+      allow(UrlTest.test("123.com", any()), return: %{time: 1_000, status: 200})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, ".test-status__code") == ""
@@ -496,7 +561,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetCache.put(dataset)
 
-      allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), return: %{time: 1_000, status: 200})
+      allow(UrlTest.test(dataset.technical.sourceUrl, any()), return: %{time: 1_000, status: 200})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, ".test-status__code--good") == ""
@@ -514,7 +579,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetCache.put(dataset)
 
-      allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), return: %{time: 1_000, status: 400})
+      allow(UrlTest.test(dataset.technical.sourceUrl, any()), return: %{time: 1_000, status: 400})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, ".test-status__code--bad") == ""
@@ -534,7 +599,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetCache.put(dataset)
 
-      allow(Andi.Services.UrlTest.test(dataset.technical.sourceUrl), exec: fn _ -> raise "derp" end)
+      allow(UrlTest.test(dataset.technical.sourceUrl, any()), exec: fn _ -> raise "derp" end)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, "#page-error-message") == ""
@@ -548,13 +613,87 @@ defmodule AndiWeb.EditLiveViewTest do
     end
   end
 
+  describe "updating source params" do
+    setup do
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            sourceQueryParams: %{foo: "bar", baz: "biz"},
+            sourceHeaders: %{fool: "barl", bazl: "bizl"}
+          }
+        })
+
+      DatasetCache.put(dataset)
+
+      %{dataset: dataset}
+    end
+
+    data_test "new key/value inputs are added when add button is pressed for #{field}", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      render_click([view, component_id], "add", %{"field" => Atom.to_string(field)})
+      html = render(view)
+
+      assert html |> Floki.find(key_class) |> length() == 3
+      assert html |> Floki.find(value_class) |> length() == 3
+
+      where(
+        field: [:sourceQueryParams, :sourceHeaders],
+        component_id: ["key_value_editor_source_query_params", "key_value_editor_source_headers"],
+        key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
+        value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
+      )
+    end
+
+    data_test "key/value inputs are deleted when delete button is pressed for #{field}", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      btn_id = Floki.find(html, btn_class) |> Floki.attribute("phx-value-id") |> hd()
+
+      render_click([view, component_id], "remove", %{"id" => btn_id, "field" => Atom.to_string(field)})
+      html = render(view)
+
+      key_input = html |> Floki.find(key_class)
+      assert length(key_input) == 1
+      refute btn_id =~ hd(key_input) |> Floki.attribute("class") |> hd()
+
+      value_input = html |> Floki.find(value_class)
+      assert length(value_input) == 1
+      refute btn_id =~ hd(value_input) |> Floki.attribute("class") |> hd()
+
+      where(
+        field: [:sourceQueryParams, :sourceHeaders],
+        component_id: ["key_value_editor_source_query_params", "key_value_editor_source_headers"],
+        btn_class: [".url-form__source-query-params-delete-btn", ".url-form__source-headers-delete-btn"],
+        key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
+        value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
+      )
+    end
+
+    data_test "does not have key/value inputs when dataset has no source #{field}", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert html |> Floki.find(key_class) |> Enum.empty?()
+      assert html |> Floki.find(value_class) |> Enum.empty?()
+
+      where(
+        field: [:sourceQueryParams, :sourceHeaders],
+        key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
+        value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
+      )
+    end
+  end
+
   defp save_form_for_dataset(conn, dataset) do
     DatasetCache.put(dataset)
 
     form_data = dataset_to_form_data(dataset)
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-    render_change(view, :save, %{"metadata" => form_data})
+    render_change(view, :save, %{"form_data" => form_data})
   end
 
   defp form_data_for_save(changeset) do

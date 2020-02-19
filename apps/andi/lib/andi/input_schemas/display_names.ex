@@ -24,8 +24,10 @@ defmodule Andi.InputSchemas.DisplayNames do
     riskRating: "Risk",
     schema: "Schema",
     sourceFormat: "Source Format",
+    sourceHeaders: "Headers",
+    sourceQueryParams: "Query Parameters",
     sourceType: "Source Type",
-    sourceUrl: "Source URL",
+    sourceUrl: "Base URL",
     topLevelSelector: "Top Level Selector"
   }
 
