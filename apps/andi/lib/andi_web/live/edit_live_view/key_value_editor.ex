@@ -38,7 +38,7 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
       <div class="url-form__<%= @css_label %>-add-btn url-form-table__btn" style="margin-top: 0.8em;" phx-click="add" phx-value-field="<%= @field %>">
         <img src="/images/add.svg" alt="Add"/>
       </div>
-      <%= error_tag_live(@form, @field) %>
+      <%= error_tag(@form, @field, bind_to_input: false) %>
     </div>
     """
   end

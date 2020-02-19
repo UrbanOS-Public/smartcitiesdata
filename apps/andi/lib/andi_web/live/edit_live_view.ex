@@ -42,7 +42,7 @@ defmodule AndiWeb.EditLiveView do
         <div class="metadata-form__release-date">
           <%= label(f, :issuedDate, DisplayNames.get(:issuedDate), class: "label label--required") %>
           <%= date_input(f, :issuedDate, class: "input") %>
-          <%= error_tag_live(f, :issuedDate) %>
+          <%= error_tag(f, :issuedDate, bind_to_input: false) %>
         </div>
         <div class="metadata-form__license">
           <%= label(f, :license, DisplayNames.get(:license), class: "label label--required") %>
@@ -98,12 +98,12 @@ defmodule AndiWeb.EditLiveView do
         <div class="metadata-form__benefit-rating">
           <%= label(f, :benefitRating, DisplayNames.get(:benefitRating), class: "label label--required") %>
           <%= select(f, :benefitRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
-          <%= error_tag_live(f, :benefitRating) %>
+          <%= error_tag(f, :benefitRating, bind_to_input: false) %>
         </div>
         <div class="metadata-form__risk-rating">
           <%= label(f, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
           <%= select(f, :riskRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
-          <%= error_tag_live(f, :riskRating) %>
+          <%= error_tag(f, :riskRating, bind_to_input: false) %>
         </div>
       </div>
 
