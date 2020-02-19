@@ -15,7 +15,7 @@ defmodule AndiWeb.EditLiveView do
   def render(assigns) do
     ~L"""
     <div class="edit-page">
-      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :metadata] %>
+      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
 
       <div class="metadata-form form-section form-grid">
         <h2 class="metadata-form__top-header edit-page__box-header">Metadata</h2>
@@ -184,9 +184,9 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, testing: true)}
   end
 
-  def handle_event("validate", %{"metadata" => form_data}, socket), do: handle_validation(form_data, socket)
+  def handle_event("validate", %{"form_data" => form_data}, socket), do: handle_validation(form_data, socket)
 
-  def handle_event("save", %{"metadata" => form_data}, socket) do
+  def handle_event("save", %{"form_data" => form_data}, socket) do
     socket = reset_save_success(socket)
     original_dataset = socket.assigns.dataset
     changeset = InputConverter.changeset_from_dataset(original_dataset, form_data)
@@ -220,7 +220,7 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, test_results: results, testing: false)}
   end
 
-  def handle_info({:validate, %{"metadata" => form_data}}, socket), do: handle_validation(form_data, socket)
+  def handle_info({:validate, %{"form_data" => form_data}}, socket), do: handle_validation(form_data, socket)
 
   def handle_info({:add_key_value, %{"field" => field}}, socket) do
     socket = reset_save_success(socket)

@@ -4,6 +4,8 @@ defmodule Andi.Services.UrlTest do
   """
   use Tesla
 
+  require Logger
+
   plug Tesla.Middleware.JSON
 
   def test(url, options \\ []) do
@@ -17,7 +19,8 @@ defmodule Andi.Services.UrlTest do
       {time, {:error, :nxdomain}} ->
         timed_status(time, "Domain not found")
 
-      {time, _} ->
+      {time, error} ->
+        Logger.debug("Could not complete request : #{inspect(error)}")
         timed_status(time, "Could not complete request")
     end
   end
