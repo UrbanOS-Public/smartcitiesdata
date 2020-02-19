@@ -36,6 +36,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
       assert_receive :retry
       assert_receive ^table_name, 2_000
+      wait_for_mox()
     end
 
     test "writes message to topic with timing data" do
@@ -57,6 +58,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
       assert Enum.count(timing) == 2
       assert Enum.any?(timing, fn time -> time["label"] == "presto_insert_time" end)
       assert Enum.any?(timing, fn time -> time["label"] == "total_time" end)
+      wait_for_mox()
     end
 
     test "sends 'dataset:write_complete event' with timestamp after writing records" do
@@ -82,6 +84,8 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
       expect Brook.Event.send(instance_name(), data_write_complete(), :forklift, is(greater_than_now)), return: :ok
       Forklift.MessageHandler.handle_messages([message1, message2], %{dataset: dataset})
+
+      wait_for_mox()
     end
 
     test "handles errors gracefully" do
@@ -104,6 +108,24 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
       refute_called(Brook.Event.send(), :any)
     end
+
+    @tag :capture_log
+    test "handles topic writer errors gracefully" do
+      allow(Brook.Event.send(instance_name(), data_write_complete(), any(), any()), return: :whatever)
+
+      stub(MockTable, :write, fn _, _ -> :ok end)
+      stub(MockTopic, :write, fn _, _ -> raise "something bad happened, but we don't care" end)
+
+      dataset = TDG.create_dataset(%{})
+
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobar"})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobaz"})
+
+      message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
+      message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}
+
+      assert {:ack, _} = Forklift.MessageHandler.handle_messages([message1, message2], %{dataset: dataset})
+    end
   end
 
   describe "on receiving end-of-data message" do
@@ -122,6 +144,17 @@ defmodule Forklift.Integration.MessageHandlingTest do
       allow(Brook.Event.send(instance_name(), data_write_complete(), any(), any()), return: :whatever)
       expect Brook.Event.send(instance_name(), data_ingest_end(), :forklift, dataset), return: :ok
       Forklift.MessageHandler.handle_messages([message1, message2, end_of_data()], %{dataset: dataset})
+      wait_for_mox()
     end
+  end
+
+  defp wait_for_mox do
+    SmartCity.TestHelper.eventually(fn ->
+      try do
+        verify!()
+      rescue
+        _ -> false
+      end
+    end)
   end
 end

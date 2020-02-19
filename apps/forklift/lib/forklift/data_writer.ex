@@ -42,16 +42,17 @@ defmodule Forklift.DataWriter do
 
     case ingest_status(data) do
       {:ok, batch_data} ->
-        :ok =
-          Enum.reverse(batch_data)
-          |> do_write(dataset)
+        Enum.reverse(batch_data)
+        |> do_write(dataset)
 
       {:final, batch_data} ->
-        :ok =
+        results =
           Enum.reverse(batch_data)
           |> do_write(dataset)
 
         Brook.Event.send(instance_name(), data_ingest_end(), :forklift, dataset)
+
+        results
     end
   end
 
@@ -126,7 +127,6 @@ defmodule Forklift.DataWriter do
       {:ok, write_timing} ->
         Enum.map(started_data, &Data.add_timing(&1, write_timing))
         |> Enum.map(&add_total_time/1)
-        |> write_to_topic()
     else
       {:error, reason} ->
         raise RuntimeError, inspect(reason)
@@ -135,14 +135,15 @@ defmodule Forklift.DataWriter do
 
   defp write_to_table(data, %{technical: metadata}) do
     with write_start <- Data.Timing.current_time(),
-         :ok <- @table_writer.write(data, table: metadata.systemName, schema: metadata.schema, bucket: s3_writer_bucket()),
+         :ok <-
+           @table_writer.write(data, table: metadata.systemName, schema: metadata.schema, bucket: s3_writer_bucket()),
          write_end <- Data.Timing.current_time(),
          write_timing <- Data.Timing.new(instance_name(), "presto_insert_time", write_start, write_end) do
       {:ok, write_timing}
     end
   end
 
-  defp write_to_topic(data) do
+  def write_to_topic(data) do
     max_bytes = Application.get_env(:forklift, :max_outgoing_bytes, 900_000)
     writer_args = [instance: instance_name(), producer_name: Application.get_env(:forklift, :producer_name)]
 
