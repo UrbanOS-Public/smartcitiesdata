@@ -224,13 +224,13 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info({:add_key_value, %{"field" => field}}, socket) do
     socket = reset_save_success(socket)
-    changeset = DatasetInput.add_key_value(socket.assigns.changeset, String.to_atom(field))
+    changeset = DatasetInput.add_key_value(socket.assigns.changeset, SmartCity.Helpers.safe_string_to_atom(field))
     {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_info({:remove_key_value, %{"id" => id, "field" => field}}, socket) do
     socket = reset_save_success(socket)
-    changeset = DatasetInput.remove_key_value(socket.assigns.changeset, String.to_atom(field), id)
+    changeset = DatasetInput.remove_key_value(socket.assigns.changeset, SmartCity.Helpers.safe_string_to_atom(field), id)
     {:noreply, assign(socket, changeset: changeset)}
   end
 

@@ -81,8 +81,7 @@ defmodule Andi.InputSchemas.DatasetInput do
   def light_validation_changeset(schema, changes) do
     {schema, @types}
     |> cast(changes, Map.keys(@non_embedded_types), empty_values: [])
-    |> cast_embed(:sourceQueryParams)
-    |> cast_embed(:sourceHeaders)
+    |> cast_embedded()
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:contactEmail, @email_regex)
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
@@ -117,6 +116,10 @@ defmodule Andi.InputSchemas.DatasetInput do
       Enum.filter(params, fn param -> param.changes.id != id end)
     end)
     |> validate_key_value_parameters()
+  end
+
+  defp cast_embedded(changeset) do
+    Enum.reduce(@key_value_type_keys, changeset, fn key, acc_changeset -> cast_embed(acc_changeset, key) end)
   end
 
   defp validate_unique_system_name(changeset) do
