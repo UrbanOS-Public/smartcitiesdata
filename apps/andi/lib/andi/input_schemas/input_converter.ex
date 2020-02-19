@@ -48,7 +48,6 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.update(:keywords, nil, &keywords_to_list/1)
     |> fix_modified_date()
     |> reset_key_values()
-    |> Map.update(:sourceUrl, nil, &strip_query_string/1)
   end
 
   @spec restruct(map(), Dataset.t()) :: Dataset.t()
@@ -57,7 +56,6 @@ defmodule Andi.InputSchemas.InputConverter do
       changes
       |> Map.update(:issuedDate, nil, &date_to_iso8601_datetime/1)
       |> Map.update(:modifiedDate, nil, &date_to_iso8601_datetime/1)
-      |> Map.update(:sourceUrl, nil, &strip_query_string/1)
       |> restruct_key_values()
 
     business = Map.merge(dataset.business, get_business(formatted_changes)) |> Map.from_struct()
@@ -142,6 +140,4 @@ defmodule Andi.InputSchemas.InputConverter do
       Enum.reduce(key_values, %{}, fn entry, acc -> Map.put(acc, entry.key, entry.value) end)
     end)
   end
-
-  defp strip_query_string(url_string), do: url_string |> String.split("?") |> hd()
 end
