@@ -13,6 +13,20 @@ config :prestige, :session_opts,
   schema: "default",
   user: "foobar"
 
+config :ex_aws,
+  debug_requests: true,
+  access_key_id: "testing_access_key",
+  secret_access_key: "testing_secret_key",
+  region: "local"
+
+config :ex_aws, :s3,
+  scheme: "http://",
+  region: "local",
+  host: %{
+    "local" => "localhost"
+  },
+  port: 9000
+
 defmodule Pipeline.DivoPresto do
   @moduledoc """
   Defines a presto stack compatible with divo

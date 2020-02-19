@@ -44,6 +44,10 @@ defmodule Forklift.DataWriter.Compaction do
         :ok ->
           Logger.info("#{config.table} compacted successfully")
 
+        :skipped ->
+          Logger.info("#{config.table} compaction skipped")
+          :skipped
+
         error ->
           Logger.error("#{config.table} failed to compact: #{inspect(error)}")
           {:error, error}

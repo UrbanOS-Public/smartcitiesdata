@@ -5,7 +5,7 @@ input_topic_prefix = "transformed"
 config :forklift,
   data_reader: Pipeline.Reader.DatasetTopicReader,
   topic_writer: Pipeline.Writer.TopicWriter,
-  table_writer: Pipeline.Writer.TableWriter,
+  table_writer: Pipeline.Writer.S3Writer,
   retry_count: 100,
   retry_initial_delay: 100,
   retry_max_wait: 1_000 * 60 * 60,

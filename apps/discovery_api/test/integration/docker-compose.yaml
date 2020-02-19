@@ -45,7 +45,7 @@ services:
     ports:
       - "5455:5432"
   ecto-postgres:
-    image: postgres
+    image: postgres:9.6.16
     ports:
       - "5456:5432"
     volumes:

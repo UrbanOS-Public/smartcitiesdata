@@ -171,7 +171,7 @@ defmodule E2ETest do
       end)
     end
 
-    @tag timeout: :infinity
+    @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
@@ -180,11 +180,15 @@ defmodule E2ETest do
         assert Elsa.topic?(@brokers, topic)
       end)
 
+      eventually(fn ->
+        assert :ok = Forklift.DataWriter.compact_dataset(ds)
+      end, 5_000)
+
       eventually(
         fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
-          assert %{"one" => true, "three" => 10, "two" => "foobar"} in query(
+          assert [%{"one" => true, "three" => 10, "two" => "foobar"}] == query(
                    "select * from #{table}",
                    true
                  )
@@ -265,7 +269,7 @@ defmodule E2ETest do
       end)
     end
 
-    @tag timeout: :infinity
+    @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{streaming_dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
@@ -273,6 +277,10 @@ defmodule E2ETest do
       eventually(fn ->
         assert Elsa.topic?(@brokers, topic)
       end)
+
+      eventually(fn ->
+        assert :ok = Forklift.DataWriter.compact_dataset(ds)
+      end, 10_000)
 
       eventually(
         fn ->
@@ -338,15 +346,21 @@ defmodule E2ETest do
       assert resp.status_code == 201
     end
 
-    @tag timeout: :infinity
+    @tag timeout: :infinity, capture_log: true
     test "persists geojson in PrestoDB", %{geo_dataset: ds} do
       table = ds.technical.systemName
+
+      eventually(fn ->
+        assert :ok = Forklift.DataWriter.compact_dataset(ds)
+      end, 5_000)
 
       eventually(
         fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
-          assert [%{"feature" => actual} | _] = query("select * from #{table}", true)
+          assert [%{"feature" => actual} | _] = features = query("select * from #{table}", true)
+
+          assert Enum.count(features) <= 88
 
           result = Jason.decode!(actual)
 
@@ -354,9 +368,10 @@ defmodule E2ETest do
 
           [coordinates] = result["geometry"]["coordinates"]
 
-          assert 253 == Enum.count(coordinates)
+          assert Enum.count(coordinates) > 0
         end,
-        10_000
+        10_000,
+        10
       )
     end
   end
