@@ -133,7 +133,8 @@ defmodule AndiWeb.EditLiveViewTest do
         [:email],
         ["foo@mail.com"],
         ["kevin@space.org"],
-        ["my@little.gov"]
+        ["my@little.gov"],
+        ["test-email@email.com"]
       ])
     end
 
