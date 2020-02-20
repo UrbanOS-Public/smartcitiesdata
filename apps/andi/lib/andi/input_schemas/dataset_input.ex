@@ -68,7 +68,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     :sourceUrl
   ]
 
-  @email_regex ~r/^[A-Za-z0-9._%+-+']+@[A-Za-z0-9.-]+\.[A-Za-z]+$/
+  @email_regex ~r/^[\w\_\~\!\$\&\'\(\)\*\+\,\;\=\:.-]+@[\w.-]+\.[\w.-]+?$/
   @no_dashes_regex ~r/^[^\-]+$/
   @ratings Map.keys(Options.ratings())
 
