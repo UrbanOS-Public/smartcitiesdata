@@ -268,8 +268,7 @@ defmodule Reaper.Event.HandlerTest do
 
       eventually(fn ->
         view_state = Brook.get!(@instance, :extractions, dataset.id)
-        assert view_state != nil
-        assert false == Map.get(view_state, "enabled")
+        assert view_state == nil
         assert_called Reaper.Event.Handlers.DatasetDelete.handle(dataset)
       end)
     end

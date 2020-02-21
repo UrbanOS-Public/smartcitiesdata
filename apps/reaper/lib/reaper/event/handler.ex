@@ -75,6 +75,6 @@ defmodule Reaper.Event.Handler do
 
   def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = dataset}) do
     Reaper.Event.Handlers.DatasetDelete.handle(dataset)
-    Extractions.disable_dataset(dataset.id)
+    Extractions.delete_dataset(dataset.id)
   end
 end

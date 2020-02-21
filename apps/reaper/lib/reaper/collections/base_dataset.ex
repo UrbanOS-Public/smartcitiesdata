@@ -24,6 +24,10 @@ defmodule Reaper.Collections.BaseDataset do
         })
       end
 
+      def delete_dataset(dataset_id) do
+        Brook.ViewState.delete(unquote(collection), dataset_id)
+      end
+
       def is_enabled?(dataset_id) do
         case Brook.get!(unquote(instance), unquote(collection), dataset_id) do
           nil -> false
