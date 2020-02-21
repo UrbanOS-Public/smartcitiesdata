@@ -24,6 +24,19 @@ window.DiscoveryWDCTranslator = {
   convertDatasetRowToTableRow: _convertDatasetRowToTableRow
 };
 
+var webAuth = new auth0.WebAuth({
+  clientID: 'sfe5fZzFXsv5gIRXz8V3zkR7iaZBMvL0',
+  domain: 'smartcolumbusos-demo.auth0.com',
+  redirectUri: 'http://localhost:9001/connector.html',
+  responseType: 'token',
+  scope: 'offline_access',
+  audience: 'discovery_api'
+});
+
+function doAuthRedirect() {
+  webAuth.authorize();
+}
+
 function _setupConnector(tableauInstance) {
   var connector = tableauInstance.makeConnector();
 
@@ -33,11 +46,32 @@ function _setupConnector(tableauInstance) {
   tableauInstance.registerConnector(connector);
 
   connector.init = function(initCallback) {
-    initCallback();
-    tableauInstance.submit();
+    webAuth.parseHash({ hash: window.location.hash }, function(err, authResult) {
+      if (!err && authResult) {
+        initCallback();
+
+        tableauInstance.password = authResult.accessToken;
+
+        tableauInstance.submit();
+      }
+    })
   }
 }
 _setupConnector(tableau)
+
+$(document).ready(function() {
+
+  $("#authButton").click(function() {
+    doAuthRedirect();
+  });
+
+  $("#submitButton").click(function() {
+    window.DiscoveryWDCTranslator.getDatasetList = function () { fetch("http://dog.com/search?apiAccessible=true&offset=0&limit=" + configurableDatasetLimit); };
+    console.log(window.DiscoveryWDCTranslator.getDatasetList);
+    _getTableSchemas()
+    // tableau.submit();
+  });
+});
 
 function _getTableSchemas(schemaCallback) {
   _getDatasetList()
