@@ -1,4 +1,4 @@
-defmodule Reaper.Topic.Manager do
+defmodule Reaper.Topic.TopicManager do
   @moduledoc """
   Manages the topics in kafka using Elsa library.
   """
@@ -10,7 +10,8 @@ defmodule Reaper.Topic.Manager do
 
     case Elsa.delete_topic(endpoints(), output_topic) do
       :ok ->
-        Logger.debug("#{__MODULE__}: Deleted topic: #{output_topic}")
+        Logger.info("#{__MODULE__}: Deleted topic: #{output_topic}")
+        :ok
 
       {:error, error} ->
         Logger.error("#{__MODULE__}: Failed to delete topic: #{output_topic}, Reason: #{inspect(error)}")

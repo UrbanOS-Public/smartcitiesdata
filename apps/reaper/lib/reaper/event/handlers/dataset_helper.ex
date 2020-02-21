@@ -1,4 +1,4 @@
-defmodule Reaper.Event.Handlers.Helper do
+defmodule Reaper.Event.Handlers.DatasetHelper do
   @moduledoc """
   Holds common helper functions for dataset handlers
   """

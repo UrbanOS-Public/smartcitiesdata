@@ -1,8 +1,8 @@
-defmodule Reaper.Event.Handlers.HelperTest do
+defmodule Reaper.Event.Handlers.DatasetHelperTest do
   use ExUnit.Case
   use Placebo
 
-  alias Reaper.Event.Handlers.Helper
+  alias Reaper.Event.Handlers.DatasetHelper
   alias SmartCity.TestDataGenerator, as: TDG
   alias Quantum.Job
 
@@ -45,7 +45,7 @@ defmodule Reaper.Event.Handlers.HelperTest do
   test "stops the dataset job in quantum", %{dataset: dataset} do
     dataset_id = dataset.id |> String.to_atom()
     create_job(dataset_id)
-    :ok = Helper.deactivate_quantum_job(dataset.id)
+    :ok = DatasetHelper.deactivate_quantum_job(dataset.id)
     job = Reaper.Scheduler.find_job(dataset_id)
     assert job.state == :inactive
   end
@@ -59,10 +59,10 @@ defmodule Reaper.Event.Handlers.HelperTest do
   end
 
   defp stop_dataset(dataset_id) do
-    Helper.retry_stopping_dataset(Reaper.Horde.Registry, dataset_id)
+    DatasetHelper.retry_stopping_dataset(Reaper.Horde.Registry, dataset_id)
   end
 
   defp kill_cache(dataset_id) do
-    Helper.retry_stopping_dataset(Reaper.Cache.Registry, dataset_id)
+    DatasetHelper.retry_stopping_dataset(Reaper.Cache.Registry, dataset_id)
   end
 end

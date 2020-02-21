@@ -1,11 +1,11 @@
 defmodule Reaper.Event.Handlers.DatasetDisable do
   @moduledoc false
-  alias Reaper.Event.Handlers.Helper
+  alias Reaper.Event.Handlers.DatasetHelper
 
   def handle(%SmartCity.Dataset{id: dataset_id}) do
-    with :ok <- Helper.deactivate_quantum_job(dataset_id),
-         :ok <- Helper.retry_stopping_dataset(Reaper.Horde.Registry, dataset_id),
-         :ok <- Helper.retry_stopping_dataset(Reaper.Cache.Registry, dataset_id) do
+    with :ok <- DatasetHelper.deactivate_quantum_job(dataset_id),
+         :ok <- DatasetHelper.retry_stopping_dataset(Reaper.Horde.Registry, dataset_id),
+         :ok <- DatasetHelper.retry_stopping_dataset(Reaper.Cache.Registry, dataset_id) do
       :ok
     else
       error -> error
