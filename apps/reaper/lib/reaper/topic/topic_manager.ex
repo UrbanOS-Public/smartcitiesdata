@@ -10,7 +10,7 @@ defmodule Reaper.Topic.TopicManager do
 
     case Elsa.delete_topic(endpoints(), output_topic) do
       :ok ->
-        Logger.info("#{__MODULE__}: Deleted topic: #{output_topic}")
+        Logger.debug("#{__MODULE__}: Deleted topic: #{output_topic}")
         :ok
 
       {:error, error} ->
