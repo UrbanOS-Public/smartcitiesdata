@@ -267,8 +267,7 @@ defmodule Reaper.Event.HandlerTest do
       Brook.Test.send(@instance, dataset_delete(), :author, dataset)
 
       eventually(fn ->
-        view_state = Brook.get!(@instance, :extractions, dataset.id)
-        assert view_state == nil
+        assert nil == Brook.get!(@instance, :extractions, dataset.id)
         assert_called Reaper.Event.Handlers.DatasetDelete.handle(dataset)
       end)
     end
