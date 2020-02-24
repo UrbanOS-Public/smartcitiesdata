@@ -10,6 +10,7 @@ global.tableau = {
   },
   makeConnector: () => ({}),
   registerConnector: jest.fn(),
+  submit: jest.fn(),
   connectionData: "{}"
 }
 global.fetch = jest.fn()
@@ -20,13 +21,10 @@ describe('Discovery API Tableau Web Data Connector', () => {
   describe('high level tests', () => {
     describe('given a page load (by the require/src tag)', () => {
       let registeredConnector
-      const tableauInstance = {
-        makeConnector: () => ({}),
-        registerConnector: (connector) => {
-          registeredConnector = connector;
-        },
-        submit: jest.fn()
-      }
+      beforeEach(() => {
+        global.tableau.connectionData = "{}"
+        global.tableau.registerConnector = (connector) => { registeredConnector = connector }
+      })
 
       const datasetListFromApi = {
         results: [{
@@ -122,7 +120,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
       ]
 
       beforeEach(() => {
-        DiscoveryWDCTranslator.setupConnector(tableauInstance)
+        DiscoveryWDCTranslator.setupConnector(global.tableau)
       })
 
       test('the generated connector calls init callback on init', () => {
@@ -135,7 +133,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
       describe('on submit for discovery mode', () => {
         beforeEach(() => {
-          DiscoveryWDCTranslator.submit(tableauInstance, 'discovery')
+          DiscoveryWDCTranslator.submit('discovery')
         })
 
         test('the generated connector calls init callback and tableau.submit', () => {
@@ -144,11 +142,11 @@ describe('Discovery API Tableau Web Data Connector', () => {
           registeredConnector.init(initCallback)
 
           expect(initCallback).toHaveBeenCalled()
-          expect(tableauInstance.submit).toHaveBeenCalled()
+          expect(global.tableau.submit).toHaveBeenCalled()
         })
 
         test('tableau connection data has the specified mode', () => {
-          expect(tableauInstance.connectionData).toBe("{\"mode\":\"discovery\"}")
+          expect(global.tableau.connectionData).toBe("{\"mode\":\"discovery\"}")
         })
       })
 
@@ -156,7 +154,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
         beforeEach(() => {
           document.body.innerHTML = '<textarea id="query">select * from constellation</textarea>'
 
-          DiscoveryWDCTranslator.submit(tableauInstance, 'query')
+          DiscoveryWDCTranslator.submit('query')
         })
 
         test('the generated connector calls init callback and tableau.submit', () => {
@@ -165,11 +163,11 @@ describe('Discovery API Tableau Web Data Connector', () => {
           registeredConnector.init(initCallback)
 
           expect(initCallback).toHaveBeenCalled()
-          expect(tableauInstance.submit).toHaveBeenCalled()
+          expect(global.tableau.submit).toHaveBeenCalled()
         })
 
         test('tableau connection data has the specified mode and query', () => {
-          expect(tableauInstance.connectionData).toBe("{\"mode\":\"query\",\"query\":\"select * from constellation\"}")
+          expect(global.tableau.connectionData).toBe("{\"mode\":\"query\",\"query\":\"select * from constellation\"}")
         })
       })
 
