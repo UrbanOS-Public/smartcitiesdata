@@ -11,36 +11,91 @@ var dataMap = {
   json: tableau.dataTypeEnum.geometry
 };
 
-var configurableApiBaseUrl = "https://data.smartcolumbusos.com/api/v1/dataset/";
+var configurableApiBaseUrl = "http://localhost:4000/api/v1/";
 var configurableDatasetLimit = "1000000";
 var configurableFileTypes = ["CSV", "GEOJSON"];
 
 window.DiscoveryWDCTranslator = {
   setupConnector: _setupConnector,
-  getTableSchemas: _getTableSchemas,
+  getTableSchemas: _buildGetTableSchemas,
   getTableData: _getTableData,
   convertDatasetToTableSchema: _convertDatasetToTableSchema,
   convertDictionaryToColumns: _convertDictionaryToColumns,
   convertDatasetRowToTableRow: _convertDatasetRowToTableRow
 };
 
+function getUrlVars() {
+  var vars = {};
+  window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+      vars[key] = value;
+  });
+  return vars;
+}
+
+const vars = getUrlVars()
+
+if (vars["mode"] == "query") {
+  window.modeFunctions = {
+    getDatasets: _buildGetQueryDataset(),
+    getData: _getQueryData,
+    getDictionary: _getQueryDictionary
+  }
+} else {
+  window.modeFunctions = {
+    getDatasets: _getDatasetList,
+    getData: _getDatasetData,
+    getDictionary: _getDatasetDictionary
+  }
+}
+
+window.onload = function() {
+
+}
+
+function submit() {
+  if (vars["mode"] == "query") {
+    tableau.connectionData = document.getElementById("query").value
+    console.log('query value', tableau.connectionData)
+    console.log('mode functions', window.modeFunctions)
+    window.modeFunctions.getDatasets = _buildGetQueryDataset("this shouldn't be used")
+  }
+  _setupConnector(tableau)
+  tableau.submit()
+}
+
 function _setupConnector(tableauInstance) {
   var connector = tableauInstance.makeConnector();
 
-  connector.getSchema = DiscoveryWDCTranslator.getTableSchemas;
+  connector.getSchema = DiscoveryWDCTranslator.getTableSchemas();
   connector.getData = DiscoveryWDCTranslator.getTableData;
 
   tableauInstance.registerConnector(connector);
+  window.connector = connector
 
   connector.init = function(initCallback) {
     initCallback();
-    tableauInstance.submit();
+    // tableauInstance.submit();
   }
 }
 _setupConnector(tableau)
 
+function _buildGetTableSchemas() {
+  console.log("Building schemas", window.modeFunctions)
+  return function(schemaCallback) {
+    window.modeFunctions.getDatasets()
+    .then(_decodeAsJson)
+    .then(_extractTableSchemas)
+    .then(function(tableSchemaPromises) {
+      console.log("Doing all the promises")
+      Promise.all(tableSchemaPromises)
+        .then(schemaCallback)
+    })
+    .catch((error) => console.log('nope', error))
+  }
+}
+
 function _getTableSchemas(schemaCallback) {
-  _getDatasetList()
+  window.modeFunctions.getDatasets()
     .then(_decodeAsJson)
     .then(_extractTableSchemas)
     .then(function(tableSchemaPromises) {
@@ -50,7 +105,7 @@ function _getTableSchemas(schemaCallback) {
 }
 
 function _getTableData(table, doneCallback) {
-  _getDatasetData(table.tableInfo.description)
+  window.modeFunctions.getData(table.tableInfo)
     .then(_decodeAsJson)
     .then(_convertDatasetRowsToTableRows(table.tableInfo))
     .then(table.appendRows)
@@ -76,15 +131,42 @@ function _convertDatasetRowToTableRow(tableInfo) {
 }
 
 function _getDatasetList() {
-  return fetch(configurableApiBaseUrl + "search?apiAccessible=true&offset=0&limit=" + configurableDatasetLimit);
+  return fetch(configurableApiBaseUrl + "dataset/search?apiAccessible=true&offset=0&limit=" + configurableDatasetLimit);
 }
 
-function _getDatasetDictionary(datasetId) {
-  return fetch(configurableApiBaseUrl + datasetId + "/dictionary");
+function _buildGetQueryDataset(query) {
+   console.log('query?', tableau.connectionData)
+  //  query = "select * from sample_org__almanac_of_minutely_power11"
+  return function () {
+    console.log("deep query", tableau.connectionData)
+    return new Promise(
+      (resolve, _reject) => {
+        console.log('WAT', tableau.connectionData)
+        resolve(
+          {
+            json: function () { return { results: [{ fileTypes: ['CSV'], title: "query", description: tableau.connectionData, id: "query" }] } }
+          }
+        )
+      }
+    );
+  }
 }
 
-function _getDatasetData(datasetId) {
-  return fetch(configurableApiBaseUrl + datasetId + "/query?_format=json")
+function _getDatasetDictionary(dataset) {
+  return fetch(configurableApiBaseUrl + "dataset/" + dataset.id + "/dictionary");
+}
+
+function _getQueryDictionary(dataset) {
+  console.log("schema for 'dataset'", dataset)
+  return fetch(configurableApiBaseUrl + "query/describe?_format=json", {method: 'POST', body: dataset.description});
+}
+
+function _getDatasetData(dataset) {
+  return fetch(configurableApiBaseUrl + "dataset/" + dataset.description + "/query?_format=json")
+}
+
+function _getQueryData(dataset) {
+  return fetch(configurableApiBaseUrl + "query?_format=json", {method: 'POST', body: dataset.description});
 }
 
 function _tableauAcceptableIdentifier(value) {
@@ -92,6 +174,7 @@ function _tableauAcceptableIdentifier(value) {
 }
 
 function _decodeAsJson(response) {
+  console.log('decoding', response)
   return response.json();
 }
 
@@ -104,6 +187,7 @@ function _supportsDesiredFileTypes(dataset) {
 function _extractTableSchemas(response) {
   var datasets = response.results;
 
+  console.log('_extractTableSchemas response', response)
   var extractedSchemas = datasets.filter(_supportsDesiredFileTypes)
     .map(_extractTableSchema)
 
@@ -112,8 +196,9 @@ function _extractTableSchemas(response) {
 
 function _extractTableSchema(dataset) {
   var tableSchema = _convertDatasetToTableSchema(dataset)
+  console.log('_extractTableSchema dataset', dataset)
 
-  return _getDatasetDictionary(dataset.id)
+  return window.modeFunctions.getDictionary(dataset)
     .then(_decodeAsJson)
     .then(_convertDictionaryToColumns)
     .then(function(columns) {
