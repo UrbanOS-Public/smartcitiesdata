@@ -1,6 +1,6 @@
 defmodule Reaper.Event.Handlers.DatasetDisable do
   @moduledoc false
-  alias Reaper.Event.Handlers.DatasetHelper
+  alias Reaper.Event.Handlers.Helper.DatasetHelper
 
   def handle(%SmartCity.Dataset{id: dataset_id}) do
     with :ok <- DatasetHelper.deactivate_quantum_job(dataset_id),

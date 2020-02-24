@@ -3,7 +3,7 @@ defmodule Reaper.Event.Handlers.DatasetDelete do
 
   require Logger
 
-  alias Reaper.Event.Handlers.DatasetHelper
+  alias Reaper.Event.Handlers.Helper.DatasetHelper
   alias Reaper.Topic.TopicManager
 
   def handle(%SmartCity.Dataset{id: dataset_id}) do

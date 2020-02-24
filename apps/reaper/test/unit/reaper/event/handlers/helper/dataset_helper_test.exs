@@ -1,8 +1,8 @@
-defmodule Reaper.Event.Handlers.DatasetHelperTest do
+defmodule Reaper.Event.Handlers.Helper.DatasetHelperTest do
   use ExUnit.Case
   use Placebo
 
-  alias Reaper.Event.Handlers.DatasetHelper
+  alias Reaper.Event.Handlers.Helper.DatasetHelper
   alias SmartCity.TestDataGenerator, as: TDG
   alias Quantum.Job
 
