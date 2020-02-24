@@ -36,7 +36,7 @@ const vars = getUrlVars()
 
 if (vars["mode"] == "query") {
   window.modeFunctions = {
-    getDatasets: _buildGetQueryDataset(),
+    getDatasets: _getQueryDataset,
     getData: _getQueryData,
     getDictionary: _getQueryDictionary
   }
@@ -55,9 +55,6 @@ window.onload = function() {
 function submit() {
   if (vars["mode"] == "query") {
     tableau.connectionData = document.getElementById("query").value
-    console.log('query value', tableau.connectionData)
-    console.log('mode functions', window.modeFunctions)
-    window.modeFunctions.getDatasets = _buildGetQueryDataset("this shouldn't be used")
   }
   _setupConnector(tableau)
   tableau.submit()
@@ -134,11 +131,7 @@ function _getDatasetList() {
   return fetch(configurableApiBaseUrl + "dataset/search?apiAccessible=true&offset=0&limit=" + configurableDatasetLimit);
 }
 
-function _buildGetQueryDataset(query) {
-   console.log('query?', tableau.connectionData)
-  //  query = "select * from sample_org__almanac_of_minutely_power11"
-  return function () {
-    console.log("deep query", tableau.connectionData)
+function _getQueryDataset() {
     return new Promise(
       (resolve, _reject) => {
         console.log('WAT', tableau.connectionData)
@@ -149,7 +142,6 @@ function _buildGetQueryDataset(query) {
         )
       }
     );
-  }
 }
 
 function _getDatasetDictionary(dataset) {
