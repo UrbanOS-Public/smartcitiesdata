@@ -8,7 +8,8 @@ var dataMap = {
   boolean: tableau.dataTypeEnum.bool,
   date: tableau.dataTypeEnum.date,
   timestamp: tableau.dataTypeEnum.datetime,
-  json: tableau.dataTypeEnum.geometry
+  json: tableau.dataTypeEnum.geometry,
+  nested: tableau.dataTypeEnum.string
 };
 
 var configurableApiBaseUrl = "http://localhost:4000/api/v1/";
@@ -16,6 +17,7 @@ var configurableDatasetLimit = "1000000";
 var configurableFileTypes = ["CSV", "GEOJSON"];
 
 window.DiscoveryWDCTranslator = {
+  submit: submit,
   setupConnector: _setupConnector,
   getTableSchemas: _getTableSchemas,
   getTableData: _getTableData,
@@ -24,43 +26,15 @@ window.DiscoveryWDCTranslator = {
   convertDatasetRowToTableRow: _convertDatasetRowToTableRow
 };
 
-function getUrlVars() {
-  var vars = {};
-  window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-      vars[key] = value;
-  });
-  return vars;
-}
-
-const vars = getUrlVars()
-
-const getGetDatasets = mode => { return mode == 'query' ? _getQueryDataset : _getDatasetList }
-const getGetData = mode => { return mode == 'query' ? _getQueryData : _getDatasetData }
-const getGetDictionary = mode => { return mode == 'query' ? _getQueryDictionary : _getDatasetDictionary }
-
-// if (vars["mode"] == "query") {
-//   window.modeFunctions = {
-//     getDatasets: _getQueryDataset,
-//     getData: _getQueryData,
-//     getDictionary: _getQueryDictionary
-//   }
-// } else {
-//   window.modeFunctions = {
-//     getDatasets: _getDatasetList,
-//     getData: _getDatasetData,
-//     getDictionary: _getDatasetDictionary
-//   }
-// }
-
-function submit(mode) {
+function submit(tableauInstance, mode) {
+  connectionData = {mode}
   if (mode == "query") {
-    // tableau.connectionData = document.getElementById("query").value
-    tableau.connectionData = JSON.stringify({mode: mode, query: document.getElementById("query").value})
-  } else {
-    tableau.connectionData = JSON.stringify({mode: mode})
+    connectionData.query = document.getElementById("query").value
   }
-  _setupConnector(tableau)
-  tableau.submit()
+  _setConnectionData(connectionData, tableauInstance)
+
+  _setupConnector(tableauInstance)
+  tableauInstance.submit()
 }
 
 function _setupConnector(tableauInstance) {
@@ -70,7 +44,6 @@ function _setupConnector(tableauInstance) {
   connector.getData = DiscoveryWDCTranslator.getTableData;
 
   tableauInstance.registerConnector(connector);
-  window.connector = connector
 
   connector.init = function(initCallback) {
     initCallback();
@@ -79,8 +52,7 @@ function _setupConnector(tableauInstance) {
 _setupConnector(tableau)
 
 function _getTableSchemas(schemaCallback) {
-  getGetDatasets(JSON.parse(tableau.connectionData).mode)()
-  // window.modeFunctions.getDatasets()
+  getDatasets(JSON.parse(tableau.connectionData).mode)
     .then(_decodeAsJson)
     .then(_extractTableSchemas)
     .then(function(tableSchemaPromises) {
@@ -90,7 +62,7 @@ function _getTableSchemas(schemaCallback) {
 }
 
 function _getTableData(table, doneCallback) {
-  getGetData(JSON.parse(tableau.connectionData).mode)(table.tableInfo)
+  getData(JSON.parse(tableau.connectionData).mode, table.tableInfo)
     .then(_decodeAsJson)
     .then(_convertDatasetRowsToTableRows(table.tableInfo))
     .then(table.appendRows)
@@ -115,46 +87,58 @@ function _convertDatasetRowToTableRow(tableInfo) {
   }
 }
 
-function _getDatasetList() {
-  return fetch(configurableApiBaseUrl + "dataset/search?apiAccessible=true&offset=0&limit=" + configurableDatasetLimit);
+// Mode selectors
+const getDatasets = (mode) => {
+  return mode == 'query' ? _getQueryDataset() : _getDatasetList()
+}
+const getDictionary = (mode, dataset) => {
+  return mode == 'query' ? _getQueryDictionary(dataset) : _getDatasetDictionary(dataset)
+}
+const getData = (mode, table) => {
+  return mode == 'query' ? _getQueryData(table) : _getDatasetData(table)
 }
 
-function _getQueryDataset() {
-    return new Promise(
-      (resolve, _reject) => {
-        console.log('WAT', tableau.connectionData)
-        resolve(
-          {
-            json: function () { return { results: [{ fileTypes: ['CSV'], title: "query", description: JSON.parse(tableau.connectionData).query, id: "query" }] } }
-          }
-        )
-      }
-    );
+// Discovery Mode Functions
+function _getDatasetList() {
+  return fetch(configurableApiBaseUrl + "dataset/search?apiAccessible=true&offset=0&limit=" + configurableDatasetLimit);
 }
 
 function _getDatasetDictionary(dataset) {
   return fetch(configurableApiBaseUrl + "dataset/" + dataset.id + "/dictionary");
 }
 
-function _getQueryDictionary(dataset) {
-  console.log("schema for 'dataset'", dataset)
-  return fetch(configurableApiBaseUrl + "query/describe?_format=json", {method: 'POST', body: dataset.description});
-}
-
 function _getDatasetData(dataset) {
   return fetch(configurableApiBaseUrl + "dataset/" + dataset.description + "/query?_format=json")
+}
+// ---
+
+// Query Mode Functions
+function _getQueryDataset() {
+  return new Promise(
+    (resolve, _reject) => {
+      resolve(
+        {
+          json: function () { return { results: [{ fileTypes: ['CSV'], title: "query", description: JSON.parse(tableau.connectionData).query, id: "query" }] } }
+        }
+      )
+    }
+  );
+}
+
+function _getQueryDictionary(dataset) {
+  return fetch(configurableApiBaseUrl + "query/describe?_format=json", {method: 'POST', body: dataset.description});
 }
 
 function _getQueryData(dataset) {
   return fetch(configurableApiBaseUrl + "query?_format=json", {method: 'POST', body: dataset.description});
 }
+// ---
 
 function _tableauAcceptableIdentifier(value) {
   return value.trim().replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase()
 }
 
 function _decodeAsJson(response) {
-  console.log('decoding', response)
   return response.json();
 }
 
@@ -167,7 +151,6 @@ function _supportsDesiredFileTypes(dataset) {
 function _extractTableSchemas(response) {
   var datasets = response.results;
 
-  console.log('_extractTableSchemas response', response)
   var extractedSchemas = datasets.filter(_supportsDesiredFileTypes)
     .map(_extractTableSchema)
 
@@ -176,9 +159,8 @@ function _extractTableSchemas(response) {
 
 function _extractTableSchema(dataset) {
   var tableSchema = _convertDatasetToTableSchema(dataset)
-  console.log('_extractTableSchema dataset', dataset)
 
-  return getGetDictionary(JSON.parse(tableau.connectionData).mode)(dataset)
+  return getDictionary(JSON.parse(tableau.connectionData).mode, dataset)
     .then(_decodeAsJson)
     .then(_convertDictionaryToColumns)
     .then(function(columns) {
@@ -205,4 +187,8 @@ function _convertDictionaryToColumns(dictionary) {
       dataType: dataMap[columnSpec.type]
     }
   })
+}
+
+function _setConnectionData(data, tableauInstance) {
+  tableauInstance.connectionData = JSON.stringify(data)
 }

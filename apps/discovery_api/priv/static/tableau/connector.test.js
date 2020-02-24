@@ -9,7 +9,8 @@ global.tableau = {
     geometry: jest.fn()
   },
   makeConnector: () => ({}),
-  registerConnector: jest.fn()
+  registerConnector: jest.fn(),
+  connectionData: "{}"
 }
 global.fetch = jest.fn()
 
@@ -124,8 +125,20 @@ describe('Discovery API Tableau Web Data Connector', () => {
         DiscoveryWDCTranslator.setupConnector(tableauInstance)
       })
 
-      describe('non-interactive init', () => {
-        test('the generated connector calls init callback and tableau.submit on init', () => {
+      test('the generated connector calls init callback on init', () => {
+        const initCallback = jest.fn()
+
+        registeredConnector.init(initCallback)
+
+        expect(initCallback).toHaveBeenCalled()
+      })
+
+      describe('on submit for discovery mode', () => {
+        beforeEach(() => {
+          DiscoveryWDCTranslator.submit(tableauInstance, 'discovery')
+        })
+
+        test('the generated connector calls init callback and tableau.submit', () => {
           const initCallback = jest.fn()
 
           registeredConnector.init(initCallback)
@@ -133,59 +146,181 @@ describe('Discovery API Tableau Web Data Connector', () => {
           expect(initCallback).toHaveBeenCalled()
           expect(tableauInstance.submit).toHaveBeenCalled()
         })
+
+        test('tableau connection data has the specified mode', () => {
+          expect(tableauInstance.connectionData).toBe("{\"mode\":\"discovery\"}")
+        })
+      })
+
+      describe('on submit for query mode', () => {
+        beforeEach(() => {
+          document.body.innerHTML = '<textarea id="query">select * from constellation</textarea>'
+
+          DiscoveryWDCTranslator.submit(tableauInstance, 'query')
+        })
+
+        test('the generated connector calls init callback and tableau.submit', () => {
+          const initCallback = jest.fn()
+
+          registeredConnector.init(initCallback)
+
+          expect(initCallback).toHaveBeenCalled()
+          expect(tableauInstance.submit).toHaveBeenCalled()
+        })
+
+        test('tableau connection data has the specified mode and query', () => {
+          expect(tableauInstance.connectionData).toBe("{\"mode\":\"query\",\"query\":\"select * from constellation\"}")
+        })
       })
 
       describe('connector.getSchema', () => {
-        beforeEach(() => {
-          global.fetch.mockReturnValueOnce(mockFetchResponseAsJson(datasetListFromApi))
-            .mockReturnValueOnce(mockFetchResponseAsJson(datasetOneDictionaryFromApi))
-            .mockReturnValueOnce(mockFetchResponseAsJson(datasetTwoDictionaryFromApi))
-        })
-
-        test('the generated connector sends table schemas to what will be a tableau-internal callback', (done) => {
-          const schemaCallback = jest.fn((tableSchemas) => {
-            expect(tableSchemas).toEqual([
-              expectedTableSchemaForDatasetOne,
-              expectedTableSchemaForDatasetTwo
-            ])
-
-            done()
+        describe('in data discovery mode', () => {
+          beforeEach(() => {
+            global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
+            global.fetch.mockReset()
+            global.fetch.mockReturnValueOnce(mockFetchResponseAsJson(datasetListFromApi))
+              .mockReturnValueOnce(mockFetchResponseAsJson(datasetOneDictionaryFromApi))
+              .mockReturnValueOnce(mockFetchResponseAsJson(datasetTwoDictionaryFromApi))
           })
 
-          registeredConnector.getSchema(schemaCallback)
+          test('fetches datasets from the search API', (done) => {
+            const schemaCallback = jest.fn(() => {
+              const firstCall = global.fetch.mock.calls[0][0]
+              expect(firstCall).toContain('dataset/search')
+
+              done()
+            })
+
+            registeredConnector.getSchema(schemaCallback)
+          })
+
+          test('fetches dataset dictionaries from the dictionary API', (done) => {
+            const schemaCallback = jest.fn(() => {
+              const calls = global.fetch.mock.calls
+              expect(calls.length).toBe(3)
+              expect(calls[1][0]).toContain(`dataset/${datasetListFromApi.results[0].id}/dictionary`)
+              expect(calls[2][0]).toContain(`dataset/${datasetListFromApi.results[1].id}/dictionary`)
+
+              done()
+            })
+
+            registeredConnector.getSchema(schemaCallback)
+          })
+
+          test('the generated connector sends table schemas to what will be a tableau-internal callback', (done) => {
+            const schemaCallback = jest.fn((tableSchemas) => {
+              expect(tableSchemas).toEqual([
+                expectedTableSchemaForDatasetOne,
+                expectedTableSchemaForDatasetTwo
+              ])
+
+              done()
+            })
+
+            registeredConnector.getSchema(schemaCallback)
+          })
+        })
+
+        describe('in query mode', () => {
+          const query = 'select * from walk_of_fame'
+          beforeEach(() => {
+            global.tableau.connectionData = JSON.stringify({mode: 'query', query})
+            global.fetch.mockReset()
+            global.fetch.mockReturnValueOnce(mockFetchResponseAsJson(datasetOneDictionaryFromApi))
+          })
+
+          test('fetches dataset dictionaries from the query describe API', (done) => {
+            const schemaCallback = jest.fn(() => {
+              const firstCallUrl = global.fetch.mock.calls[0][0]
+              expect(firstCallUrl).toContain('query/describe?_format=json')
+              const firstCallBody = global.fetch.mock.calls[0][1]
+              expect(firstCallBody).toEqual({method: 'POST', body: query})
+
+              done()
+            })
+
+            registeredConnector.getSchema(schemaCallback)
+          })
         })
       })
 
       describe('connector.getData', () => {
-        beforeEach(() => {
-          global.fetch.mockReturnValueOnce(mockFetchResponseAsJson(datasetTwoDataFromApi))
-        })
+        describe('in data discovery mode', () => {
+          beforeEach(() => {
+            global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
+            global.fetch.mockReset()
+            global.fetch.mockReturnValueOnce(mockFetchResponseAsJson(datasetTwoDataFromApi))
+          })
 
-        test('the generated connector pushes table data to what will be a tableau-internal callback', (done) => {
-          const table = {
-            appendRows: jest.fn((tableRows) => {
-              expect(tableRows).toEqual([
-                [0.3, {
-                  coordinates: [1, 2, 3],
-                  type: 'Polygon'
-                }],
-                [0.4, {
-                  coordinates: [[4, 5, 6]],
-                  type: 'MultiPolygon'
-                }]
-              ])
+          test('fetches data from the dataset query API', (done) => {
+            const table = {
+              appendRows: jest.fn(),
+              tableInfo: expectedTableSchemaForDatasetTwo
+            }
+            const doneCallback = () => {
+              const calls = global.fetch.mock.calls
+              expect(calls.length).toBe(1)
+              expect(calls[0][0]).toContain(`dataset/${expectedTableSchemaForDatasetTwo.description}/query?_format=json`)
 
               done()
-            }),
-            tableInfo: expectedTableSchemaForDatasetTwo
-          }
-          const doneCallback = jest.fn()
+            }
 
-          registeredConnector.getData(table, doneCallback)
+            registeredConnector.getData(table, doneCallback)
+          })
+
+          test('the generated connector pushes table data to what will be a tableau-internal callback', (done) => {
+            const table = {
+              appendRows: jest.fn((tableRows) => {
+                expect(tableRows).toEqual([
+                  [0.3, {
+                    coordinates: [1, 2, 3],
+                    type: 'Polygon'
+                  }],
+                  [0.4, {
+                    coordinates: [[4, 5, 6]],
+                    type: 'MultiPolygon'
+                  }]
+                ])
+
+                done()
+              }),
+              tableInfo: expectedTableSchemaForDatasetTwo
+            }
+            const doneCallback = jest.fn()
+
+            registeredConnector.getData(table, doneCallback)
+          })
+        })
+
+        describe('in query mode', () => {
+          const query = 'select this from that'
+          beforeEach(() => {
+            global.tableau.connectionData = JSON.stringify({mode: 'query', query})
+            global.fetch.mockReset()
+            global.fetch.mockReturnValueOnce(mockFetchResponseAsJson(datasetTwoDataFromApi))
+          })
+
+          test('fetches data from the free-form query API', (done) => {
+            const table = {
+              appendRows: jest.fn(),
+              tableInfo: {...expectedTableSchemaForDatasetTwo, ...{description: query}}
+            }
+            const doneCallback = () => {
+              const firstCallUrl = global.fetch.mock.calls[0][0]
+              expect(firstCallUrl).toContain('query?_format=json')
+              const firstCallBody = global.fetch.mock.calls[0][1]
+              expect(firstCallBody).toEqual({method: 'POST', body: query})
+
+              done()
+            }
+
+            registeredConnector.getData(table, doneCallback)
+          })
         })
       })
     })
   })
+
   describe('convertDictionaryToColumns', () => {
     describe('given a valid dataset dictionary containing all the field types', () => {
       let columns
