@@ -17,7 +17,7 @@ var configurableFileTypes = ["CSV", "GEOJSON"];
 
 window.DiscoveryWDCTranslator = {
   setupConnector: _setupConnector,
-  getTableSchemas: _buildGetTableSchemas,
+  getTableSchemas: _getTableSchemas,
   getTableData: _getTableData,
   convertDatasetToTableSchema: _convertDatasetToTableSchema,
   convertDictionaryToColumns: _convertDictionaryToColumns,
@@ -34,27 +34,30 @@ function getUrlVars() {
 
 const vars = getUrlVars()
 
-if (vars["mode"] == "query") {
-  window.modeFunctions = {
-    getDatasets: _getQueryDataset,
-    getData: _getQueryData,
-    getDictionary: _getQueryDictionary
-  }
-} else {
-  window.modeFunctions = {
-    getDatasets: _getDatasetList,
-    getData: _getDatasetData,
-    getDictionary: _getDatasetDictionary
-  }
-}
+const getGetDatasets = mode => { return mode == 'query' ? _getQueryDataset : _getDatasetList }
+const getGetData = mode => { return mode == 'query' ? _getQueryData : _getDatasetData }
+const getGetDictionary = mode => { return mode == 'query' ? _getQueryDictionary : _getDatasetDictionary }
 
-window.onload = function() {
+// if (vars["mode"] == "query") {
+//   window.modeFunctions = {
+//     getDatasets: _getQueryDataset,
+//     getData: _getQueryData,
+//     getDictionary: _getQueryDictionary
+//   }
+// } else {
+//   window.modeFunctions = {
+//     getDatasets: _getDatasetList,
+//     getData: _getDatasetData,
+//     getDictionary: _getDatasetDictionary
+//   }
+// }
 
-}
-
-function submit() {
-  if (vars["mode"] == "query") {
-    tableau.connectionData = document.getElementById("query").value
+function submit(mode) {
+  if (mode == "query") {
+    // tableau.connectionData = document.getElementById("query").value
+    tableau.connectionData = JSON.stringify({mode: mode, query: document.getElementById("query").value})
+  } else {
+    tableau.connectionData = JSON.stringify({mode: mode})
   }
   _setupConnector(tableau)
   tableau.submit()
@@ -63,7 +66,7 @@ function submit() {
 function _setupConnector(tableauInstance) {
   var connector = tableauInstance.makeConnector();
 
-  connector.getSchema = DiscoveryWDCTranslator.getTableSchemas();
+  connector.getSchema = DiscoveryWDCTranslator.getTableSchemas;
   connector.getData = DiscoveryWDCTranslator.getTableData;
 
   tableauInstance.registerConnector(connector);
@@ -71,28 +74,13 @@ function _setupConnector(tableauInstance) {
 
   connector.init = function(initCallback) {
     initCallback();
-    // tableauInstance.submit();
   }
 }
 _setupConnector(tableau)
 
-function _buildGetTableSchemas() {
-  console.log("Building schemas", window.modeFunctions)
-  return function(schemaCallback) {
-    window.modeFunctions.getDatasets()
-    .then(_decodeAsJson)
-    .then(_extractTableSchemas)
-    .then(function(tableSchemaPromises) {
-      console.log("Doing all the promises")
-      Promise.all(tableSchemaPromises)
-        .then(schemaCallback)
-    })
-    .catch((error) => console.log('nope', error))
-  }
-}
-
 function _getTableSchemas(schemaCallback) {
-  window.modeFunctions.getDatasets()
+  getGetDatasets(JSON.parse(tableau.connectionData).mode)()
+  // window.modeFunctions.getDatasets()
     .then(_decodeAsJson)
     .then(_extractTableSchemas)
     .then(function(tableSchemaPromises) {
@@ -102,7 +90,7 @@ function _getTableSchemas(schemaCallback) {
 }
 
 function _getTableData(table, doneCallback) {
-  window.modeFunctions.getData(table.tableInfo)
+  getGetData(JSON.parse(tableau.connectionData).mode)(table.tableInfo)
     .then(_decodeAsJson)
     .then(_convertDatasetRowsToTableRows(table.tableInfo))
     .then(table.appendRows)
@@ -137,7 +125,7 @@ function _getQueryDataset() {
         console.log('WAT', tableau.connectionData)
         resolve(
           {
-            json: function () { return { results: [{ fileTypes: ['CSV'], title: "query", description: tableau.connectionData, id: "query" }] } }
+            json: function () { return { results: [{ fileTypes: ['CSV'], title: "query", description: JSON.parse(tableau.connectionData).query, id: "query" }] } }
           }
         )
       }
@@ -190,7 +178,7 @@ function _extractTableSchema(dataset) {
   var tableSchema = _convertDatasetToTableSchema(dataset)
   console.log('_extractTableSchema dataset', dataset)
 
-  return window.modeFunctions.getDictionary(dataset)
+  return getGetDictionary(JSON.parse(tableau.connectionData).mode)(dataset)
     .then(_decodeAsJson)
     .then(_convertDictionaryToColumns)
     .then(function(columns) {

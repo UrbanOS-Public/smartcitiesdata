@@ -14,7 +14,7 @@
     <body>
         <p>This is the Tableau Web Data Connector for Discovery API. Use this URL in a Tableau product to make use of it.</p>
         <textarea id="query"> </textarea>
-        <button onclick="submit()">Get Data</button>
-        <button onclick="window.location.href = window.location.href + '?mode=query'">Query Mode</button>
+        <button onclick="submit('discovery')">Discover Datasets</button>
+        <button onclick="submit('query')">Submit Query</button>
     </body>
 </html>
