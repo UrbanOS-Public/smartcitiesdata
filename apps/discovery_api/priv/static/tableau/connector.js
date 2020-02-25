@@ -8,14 +8,16 @@ var dataMap = {
   boolean: tableau.dataTypeEnum.bool,
   date: tableau.dataTypeEnum.date,
   timestamp: tableau.dataTypeEnum.datetime,
-  json: tableau.dataTypeEnum.geometry
+  json: tableau.dataTypeEnum.geometry,
+  nested: tableau.dataTypeEnum.string
 };
 
-var configurableApiBaseUrl = "https://data.smartcolumbusos.com/api/v1/dataset/";
+var configurableApiBaseUrl = "https://data.smartcolumbusos.com/api/v1/";
 var configurableDatasetLimit = "1000000";
 var configurableFileTypes = ["CSV", "GEOJSON"];
 
 window.DiscoveryWDCTranslator = {
+  submit: submit,
   setupConnector: _setupConnector,
   getTableSchemas: _getTableSchemas,
   getTableData: _getTableData,
@@ -24,70 +26,89 @@ window.DiscoveryWDCTranslator = {
   convertDatasetRowToTableRow: _convertDatasetRowToTableRow
 };
 
+window.DiscoveryAuthHandler = {
+  login: login,
+  logout: logout
+}
+
 var webAuth = new auth0.WebAuth({
   clientID: 'sfe5fZzFXsv5gIRXz8V3zkR7iaZBMvL0',
   domain: 'smartcolumbusos-demo.auth0.com',
   redirectUri: 'http://localhost:9001/connector.html',
-  responseType: 'token',
+  responseType: 'token', // TODO: update this to use code responseType
   scope: 'offline_access',
   audience: 'discovery_api'
 });
 
-function doAuthRedirect() {
+function login() {
   webAuth.authorize();
 }
 
-function _setupConnector(tableauInstance) {
-  var connector = tableauInstance.makeConnector();
+function logout() {
+  // TODO: clear tableau.password and logout via auth0?
+}
+
+function submit(mode) {
+  var connectionData = {mode}
+  if (mode == "query") {
+    connectionData.query = document.getElementById("query").value
+    if (connectionData.query == "") {
+      document.getElementById('error').style.display = 'block';
+      return;
+    }
+  }
+  _setConnectionData(connectionData)
+
+  _setupConnector()
+  tableau.submit()
+}
+
+function _setupConnector() {
+  var connector = tableau.makeConnector();
 
   connector.getSchema = DiscoveryWDCTranslator.getTableSchemas;
   connector.getData = DiscoveryWDCTranslator.getTableData;
 
-  tableauInstance.registerConnector(connector);
+  tableau.registerConnector(connector);
 
   connector.init = function(initCallback) {
+
+    // TODO: this will need to extract the code from the URL and call the token URL to fetch a refresh token
     webAuth.parseHash({ hash: window.location.hash }, function(err, authResult) {
+
       if (!err && authResult) {
-        initCallback();
-
-        tableauInstance.password = authResult.accessToken;
-
-        tableauInstance.submit();
+        tableau.password = authResult.accessToken;  // TODO: this will fetch the refresh token
+        tableau.submit();
+      } else {
+         // TODO: show a message to the user letting them know things didn't work out
       }
     })
+
+    initCallback();
   }
 }
-_setupConnector(tableau)
 
-$(document).ready(function() {
-
-  $("#authButton").click(function() {
-    doAuthRedirect();
-  });
-
-  $("#submitButton").click(function() {
-    window.DiscoveryWDCTranslator.getDatasetList = function () { fetch("http://dog.com/search?apiAccessible=true&offset=0&limit=" + configurableDatasetLimit); };
-    console.log(window.DiscoveryWDCTranslator.getDatasetList);
-    _getTableSchemas()
-    // tableau.submit();
-  });
-});
+_setupConnector()
 
 function _getTableSchemas(schemaCallback) {
-  _getDatasetList()
+  // TODO: fetch access token and send with the requests made below
+  _getDatasets()
     .then(_decodeAsJson)
     .then(_extractTableSchemas)
     .then(function(tableSchemaPromises) {
-      Promise.all(tableSchemaPromises)
-        .then(schemaCallback)
+      return Promise.all(tableSchemaPromises)
     })
+    .catch((error) => tableau.abortWithError(error))
+    .then(schemaCallback)
 }
 
 function _getTableData(table, doneCallback) {
-  _getDatasetData(table.tableInfo.description)
+  // TODO: fetch access token and send with the requests made below
+  _getData(table.tableInfo)
     .then(_decodeAsJson)
     .then(_convertDatasetRowsToTableRows(table.tableInfo))
     .then(table.appendRows)
+    .catch((error) => tableau.abortWithError(error))
     .then(doneCallback)
 }
 
@@ -109,23 +130,66 @@ function _convertDatasetRowToTableRow(tableInfo) {
   }
 }
 
+// Mode selectors
+function _getDatasets() {
+  return _getMode() == 'query' ? _getQueryDataset() : _getDatasetList()
+}
+function _getDictionary(dataset) {
+  return _getMode() == 'query' ? _getQueryDictionary(dataset) : _getDatasetDictionary(dataset)
+}
+function _getData(table) {
+  return _getMode() == 'query' ? _getQueryData(table) : _getDatasetData(table)
+}
+// ---
+
+// Discovery Mode Functions
 function _getDatasetList() {
-  return fetch(configurableApiBaseUrl + "search?apiAccessible=true&offset=0&limit=" + configurableDatasetLimit);
+  return fetch(configurableApiBaseUrl + "dataset/search?apiAccessible=true&offset=0&limit=" + configurableDatasetLimit);
 }
 
-function _getDatasetDictionary(datasetId) {
-  return fetch(configurableApiBaseUrl + datasetId + "/dictionary");
+function _getDatasetDictionary(dataset) {
+  return fetch(configurableApiBaseUrl + "dataset/" + dataset.id + "/dictionary");
 }
 
-function _getDatasetData(datasetId) {
-  return fetch(configurableApiBaseUrl + datasetId + "/query?_format=json")
+function _getDatasetData(dataset) {
+  return fetch(configurableApiBaseUrl + "dataset/" + dataset.description + "/query?_format=json")
 }
+// ---
+
+// Query Mode Functions
+function _getQueryDataset() {
+  return new Promise(function (resolve) {
+    resolve({
+      ok: true,
+      json: function () { return {
+        results: [{
+          fileTypes: ['CSV'],
+          title: "query",
+          description: _getQueryString(),
+          id: "query" }]
+        }
+      }
+    })
+  })
+}
+
+function _getQueryDictionary(dataset) {
+  return fetch(configurableApiBaseUrl + "query/describe?_format=json", {method: 'POST', body: dataset.description});
+}
+
+function _getQueryData(dataset) {
+  return fetch(configurableApiBaseUrl + "query?_format=json", {method: 'POST', body: dataset.description});
+}
+// ---
 
 function _tableauAcceptableIdentifier(value) {
   return value.trim().replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase()
 }
 
 function _decodeAsJson(response) {
+  if (!response.ok) {
+    throw `Request failed: ${response.status} ${response.statusText}`
+  }
   return response.json();
 }
 
@@ -147,7 +211,7 @@ function _extractTableSchemas(response) {
 function _extractTableSchema(dataset) {
   var tableSchema = _convertDatasetToTableSchema(dataset)
 
-  return _getDatasetDictionary(dataset.id)
+  return _getDictionary(dataset)
     .then(_decodeAsJson)
     .then(_convertDictionaryToColumns)
     .then(function(columns) {
@@ -175,3 +239,10 @@ function _convertDictionaryToColumns(dictionary) {
     }
   })
 }
+
+function _setConnectionData(data) {
+  tableau.connectionData = JSON.stringify(data)
+}
+
+function _getMode() { return JSON.parse(tableau.connectionData).mode }
+function _getQueryString() { return JSON.parse(tableau.connectionData).query }

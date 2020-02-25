@@ -6,6 +6,20 @@ defmodule DiscoveryApiWeb.MultipleDataView do
     ["csv", "json", "geojson"]
   end
 
+  def render(:describe, "csv", %{rows: rows}) do
+    row_values = Enum.map(rows, &Map.values/1)
+
+    [Map.keys(rows |> hd())]
+    |> Enum.concat(row_values)
+    |> map_data_stream_for_csv()
+    |> Enum.into([])
+    |> List.to_string()
+  end
+
+  def render(:describe, "json", %{rows: rows}) do
+    rows |> Jason.encode!()
+  end
+
   def render_as_stream(:data, "json", %{stream: stream}) do
     data =
       stream
