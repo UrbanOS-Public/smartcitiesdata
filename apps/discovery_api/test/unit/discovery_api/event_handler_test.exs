@@ -2,7 +2,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   use ExUnit.Case
   use Placebo
 
-  import SmartCity.Event, only: [organization_update: 0, user_organization_associate: 0]
+  import SmartCity.Event, only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0]
   import ExUnit.CaptureLog
 
   alias SmartCity.TestDataGenerator, as: TDG
@@ -10,6 +10,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApi.Schemas.Organizations
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
+  alias DiscoveryApiWeb.Plugs.DataJson
 
   describe "handle_event/1 organization_update" do
     test "should save organization to ecto" do
@@ -44,6 +45,24 @@ defmodule DiscoveryApi.EventHandlerTest do
       assert capture_log(fn ->
                EventHandler.handle_event(Brook.Event.new(type: user_organization_associate(), data: association_event, author: :author))
              end) =~ error_message
+    end
+  end
+
+  describe "handle_event/1 #{dataset_update()}" do
+    test "tells the data json plug to delete its current data json cache" do
+      allow(DiscoveryApi.Schemas.Organizations.get_organization(any()),
+        return: {:ok, %DiscoveryApi.Schemas.Organizations.Organization{name: "seriously"}}
+      )
+
+      allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
+      allow(DiscoveryApi.RecommendationEngine.save(any()), return: :seriously_whatever)
+      allow(DataJson.delete_data_json(), return: :ok)
+
+      dataset = TDG.create_dataset(%{})
+
+      Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_update(), data: dataset, author: :author))
+
+      assert_called(DataJson.delete_data_json())
     end
   end
 end

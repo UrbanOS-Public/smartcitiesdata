@@ -1,4 +1,5 @@
 defmodule DiscoveryApi.Services.DataJsonService do
+  @moduledoc false
   alias DiscoveryApi.Data.DataJson
 
   def delete_data_json() do
@@ -14,9 +15,8 @@ defmodule DiscoveryApi.Services.DataJsonService do
 
   defp create_data_json() do
     with results <- DataJson.translate_to_open_data_schema(),
-    {:ok, json} <- Jason.encode(results),
-    :ok <- File.write(file_path(), json)
-    do
+         {:ok, json} <- Jason.encode(results),
+         :ok <- File.write(file_path(), json) do
       {:ok, file_path()}
     else
       _err -> {:error, "Unable to create file"}

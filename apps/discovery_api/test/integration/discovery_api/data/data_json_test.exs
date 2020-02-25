@@ -14,6 +14,7 @@ defmodule DiscoveryApi.Data.DataJsonTest do
   setup_all do
     Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
+
     on_exit(fn ->
       DataJson.delete_data_json()
     end)
@@ -29,9 +30,13 @@ defmodule DiscoveryApi.Data.DataJsonTest do
     dataset_three = TDG.create_dataset(%{technical: %{orgId: organization.id}})
     Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset_three)
 
-    eventually(fn ->
-      assert Enum.count(get_data_json_datasets()) == 2
-    end, 2_000, 20)
+    eventually(
+      fn ->
+        assert Enum.count(get_data_json_datasets()) == 2
+      end,
+      2_000,
+      20
+    )
 
     [organization_id: organization.id]
   end

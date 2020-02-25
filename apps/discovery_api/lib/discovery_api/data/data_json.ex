@@ -1,4 +1,5 @@
 defmodule DiscoveryApi.Data.DataJson do
+  @moduledoc false
   alias DiscoveryApi.Data.Model
 
   def translate_to_open_data_schema() do

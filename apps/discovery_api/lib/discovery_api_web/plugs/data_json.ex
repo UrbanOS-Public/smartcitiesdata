@@ -1,4 +1,5 @@
 defmodule DiscoveryApiWeb.Plugs.DataJson do
+  @moduledoc false
   use Plug.Builder
   use Plug.Debugger, otp_app: :discovery_api
   alias DiscoveryApi.Services.DataJsonService
@@ -13,6 +14,7 @@ defmodule DiscoveryApiWeb.Plugs.DataJson do
           {:ok, file_path} -> conn |> Plug.Conn.put_resp_header("content-type", "application/json") |> Plug.Conn.send_file(200, file_path)
           {:error, _} -> conn |> Plug.Conn.resp(500, "Internal Server Error") |> Plug.Conn.send_resp()
         end
+
       _ ->
         # 404 error
         conn |> Plug.Conn.resp(404, "Not Found") |> Plug.Conn.send_resp()
@@ -24,5 +26,4 @@ defmodule DiscoveryApiWeb.Plugs.DataJson do
       :local -> DataJsonService.delete_data_json()
     end
   end
-
 end
