@@ -11,6 +11,7 @@ global.tableau = {
   makeConnector: () => ({}),
   registerConnector: jest.fn(),
   submit: jest.fn(),
+  abortWithError: jest.fn(),
   connectionData: "{}"
 }
 global.fetch = jest.fn()
@@ -196,49 +197,72 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
     describe('connector.getSchema', () => {
       describe('in data discovery mode', () => {
-        beforeEach(() => {
-          global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
-          global.fetch.mockReset()
-          global.fetch.mockReturnValueOnce(mockFetchResponseAsJson(datasetListFromApi))
-            .mockReturnValueOnce(mockFetchResponseAsJson(datasetOneDictionaryFromApi))
-            .mockReturnValueOnce(mockFetchResponseAsJson(datasetTwoDictionaryFromApi))
-        })
-
-        test('fetches datasets from the search API', (done) => {
-          const schemaCallback = jest.fn(() => {
-            const firstCall = global.fetch.mock.calls[0][0]
-            expect(firstCall).toContain('dataset/search')
-
-            done()
+        describe('success', () => {
+          beforeEach(() => {
+            global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
+            global.fetch.mockReset()
+            global.fetch.mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetListFromApi))
+              .mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetOneDictionaryFromApi))
+              .mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetTwoDictionaryFromApi))
           })
 
-          registeredConnector.getSchema(schemaCallback)
-        })
+          test('fetches datasets from the search API', (done) => {
+            const schemaCallback = jest.fn(() => {
+              const firstCall = global.fetch.mock.calls[0][0]
+              expect(firstCall).toContain('dataset/search')
 
-        test('fetches dataset dictionaries from the dictionary API', (done) => {
-          const schemaCallback = jest.fn(() => {
-            const calls = global.fetch.mock.calls
-            expect(calls.length).toBe(3)
-            expect(calls[1][0]).toContain(`dataset/${datasetListFromApi.results[0].id}/dictionary`)
-            expect(calls[2][0]).toContain(`dataset/${datasetListFromApi.results[1].id}/dictionary`)
+              done()
+            })
 
-            done()
+            registeredConnector.getSchema(schemaCallback)
           })
 
-          registeredConnector.getSchema(schemaCallback)
-        })
+          test('fetches dataset dictionaries from the dictionary API', (done) => {
+            const schemaCallback = jest.fn(() => {
+              const calls = global.fetch.mock.calls
+              expect(calls.length).toBe(3)
+              expect(calls[1][0]).toContain(`dataset/${datasetListFromApi.results[0].id}/dictionary`)
+              expect(calls[2][0]).toContain(`dataset/${datasetListFromApi.results[1].id}/dictionary`)
 
-        test('the generated connector sends table schemas to what will be a tableau-internal callback', (done) => {
-          const schemaCallback = jest.fn((tableSchemas) => {
-            expect(tableSchemas).toEqual([
-              expectedTableSchemaForDatasetOne,
-              expectedTableSchemaForDatasetTwo
-            ])
+              done()
+            })
 
-            done()
+            registeredConnector.getSchema(schemaCallback)
           })
 
-          registeredConnector.getSchema(schemaCallback)
+          test('the generated connector sends table schemas to what will be a tableau-internal callback', (done) => {
+            const schemaCallback = jest.fn((tableSchemas) => {
+              expect(tableSchemas).toEqual([
+                expectedTableSchemaForDatasetOne,
+                expectedTableSchemaForDatasetTwo
+              ])
+
+              done()
+            })
+
+            registeredConnector.getSchema(schemaCallback)
+          })
+        })
+
+        describe('failing to fetch a dictionary', () => {
+          beforeEach(() => {
+            global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
+            global.tableau.abortWithError.mockReset()
+            global.fetch.mockReset()
+            global.fetch.mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetListFromApi))
+              .mockReturnValueOnce(mockFailedFetchResponse(400, 'Bad Request'))
+              .mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetTwoDictionaryFromApi))
+          })
+
+          test('calls the tableau.abortWithError callback', (done) => {
+            const schemaCallback = jest.fn(() => {
+              expect(tableau.abortWithError).toHaveBeenCalledWith('Request failed: 400 Bad Request')
+
+              done()
+            })
+
+            registeredConnector.getSchema(schemaCallback)
+          })
         })
       })
 
@@ -247,7 +271,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
         beforeEach(() => {
           global.tableau.connectionData = JSON.stringify({mode: 'query', query})
           global.fetch.mockReset()
-          global.fetch.mockReturnValueOnce(mockFetchResponseAsJson(datasetOneDictionaryFromApi))
+          global.fetch.mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetOneDictionaryFromApi))
         })
 
         test('fetches dataset dictionaries from the query describe API', (done) => {
@@ -267,49 +291,71 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
     describe('connector.getData', () => {
       describe('in data discovery mode', () => {
-        beforeEach(() => {
-          global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
-          global.fetch.mockReset()
-          global.fetch.mockReturnValueOnce(mockFetchResponseAsJson(datasetTwoDataFromApi))
-        })
+        const table = {
+          appendRows: jest.fn(),
+          tableInfo: expectedTableSchemaForDatasetTwo
+        }
 
-        test('fetches data from the dataset query API', (done) => {
-          const table = {
-            appendRows: jest.fn(),
-            tableInfo: expectedTableSchemaForDatasetTwo
-          }
-          const doneCallback = () => {
-            const calls = global.fetch.mock.calls
-            expect(calls.length).toBe(1)
-            expect(calls[0][0]).toContain(`dataset/${expectedTableSchemaForDatasetTwo.description}/query?_format=json`)
+        describe('success', () => {
+          beforeEach(() => {
+            global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
+            global.fetch.mockReset()
+            global.fetch.mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetTwoDataFromApi))
+          })
 
-            done()
-          }
-
-          registeredConnector.getData(table, doneCallback)
-        })
-
-        test('the generated connector pushes table data to what will be a tableau-internal callback', (done) => {
-          const table = {
-            appendRows: jest.fn((tableRows) => {
-              expect(tableRows).toEqual([
-                [0.3, {
-                  coordinates: [1, 2, 3],
-                  type: 'Polygon'
-                }],
-                [0.4, {
-                  coordinates: [[4, 5, 6]],
-                  type: 'MultiPolygon'
-                }]
-              ])
+          test('fetches data from the dataset query API', (done) => {
+            const doneCallback = () => {
+              const calls = global.fetch.mock.calls
+              expect(calls.length).toBe(1)
+              expect(calls[0][0]).toContain(`dataset/${expectedTableSchemaForDatasetTwo.description}/query?_format=json`)
 
               done()
-            }),
-            tableInfo: expectedTableSchemaForDatasetTwo
-          }
-          const doneCallback = jest.fn()
+            }
 
-          registeredConnector.getData(table, doneCallback)
+            registeredConnector.getData(table, doneCallback)
+          })
+
+          test('the generated connector pushes table data to what will be a tableau-internal callback', (done) => {
+            const table = {
+              appendRows: jest.fn((tableRows) => {
+                expect(tableRows).toEqual([
+                  [0.3, {
+                    coordinates: [1, 2, 3],
+                    type: 'Polygon'
+                  }],
+                  [0.4, {
+                    coordinates: [[4, 5, 6]],
+                    type: 'MultiPolygon'
+                  }]
+                ])
+
+                done()
+              }),
+              tableInfo: expectedTableSchemaForDatasetTwo
+            }
+            const doneCallback = jest.fn()
+
+            registeredConnector.getData(table, doneCallback)
+          })
+        })
+
+        describe('failing to fetch data', () => {
+          beforeEach(() => {
+            global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
+            global.tableau.abortWithError.mockReset()
+            global.fetch.mockReset()
+            global.fetch.mockReturnValueOnce(mockFailedFetchResponse(500, 'Internal Server Error'))
+          })
+
+          test('calls the tableau.abortWithError callback', (done) => {
+            const doneCallback = () => {
+              expect(tableau.abortWithError).toHaveBeenCalledWith('Request failed: 500 Internal Server Error')
+
+              done()
+            }
+
+            registeredConnector.getData(table, doneCallback)
+          })
         })
       })
 
@@ -318,7 +364,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
         beforeEach(() => {
           global.tableau.connectionData = JSON.stringify({mode: 'query', query})
           global.fetch.mockReset()
-          global.fetch.mockReturnValueOnce(mockFetchResponseAsJson(datasetTwoDataFromApi))
+          global.fetch.mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetTwoDataFromApi))
         })
 
         test('fetches data from the free-form query API', (done) => {
@@ -518,8 +564,17 @@ describe('Discovery API Tableau Web Data Connector', () => {
   })
 })
 
-function mockFetchResponseAsJson(response) {
+function mockSuccessFetchResponseAsJson(body) {
   return Promise.resolve({
-    json: () => (Promise.resolve(response))
+    ok: true,
+    json: () => (Promise.resolve(body))
+  })
+}
+
+function mockFailedFetchResponse(status, statusText) {
+  return Promise.resolve({
+    ok: false,
+    status,
+    statusText
   })
 }

@@ -60,9 +60,10 @@ function _getTableSchemas(schemaCallback) {
     .then(_decodeAsJson)
     .then(_extractTableSchemas)
     .then(function(tableSchemaPromises) {
-      Promise.all(tableSchemaPromises)
-        .then(schemaCallback)
+      return Promise.all(tableSchemaPromises)
     })
+    .catch((error) => tableau.abortWithError(error))
+    .then(schemaCallback)
 }
 
 function _getTableData(table, doneCallback) {
@@ -70,6 +71,7 @@ function _getTableData(table, doneCallback) {
     .then(_decodeAsJson)
     .then(_convertDatasetRowsToTableRows(table.tableInfo))
     .then(table.appendRows)
+    .catch((error) => tableau.abortWithError(error))
     .then(doneCallback)
 }
 
@@ -121,6 +123,7 @@ function _getDatasetData(dataset) {
 function _getQueryDataset() {
   return new Promise(function (resolve) {
     resolve({
+      ok: true,
       json: function () { return {
         results: [{
           fileTypes: ['CSV'],
@@ -147,6 +150,9 @@ function _tableauAcceptableIdentifier(value) {
 }
 
 function _decodeAsJson(response) {
+  if (!response.ok) {
+    throw `Request failed: ${response.status} ${response.statusText}`
+  }
   return response.json();
 }
 
