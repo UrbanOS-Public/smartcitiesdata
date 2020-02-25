@@ -27,7 +27,7 @@ window.DiscoveryWDCTranslator = {
 };
 
 function submit(mode) {
-  connectionData = {mode}
+  var connectionData = {mode}
   if (mode == "query") {
     connectionData.query = document.getElementById("query").value
     if (connectionData.query == "") {

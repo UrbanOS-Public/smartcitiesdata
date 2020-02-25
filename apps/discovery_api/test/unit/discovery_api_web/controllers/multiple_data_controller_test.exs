@@ -327,12 +327,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
              |> response(400)
     end
 
-    test "unable to query or describe datasets which are not in redis", %{
-      conn: conn,
-      public_tables: _public_tables,
-      json_response: allowed_response,
-      csv_response: _expected_response
-    } do
+    test "unable to query or describe datasets which are not in redis", %{conn: conn} do
       statement = """
       SELECT * FROM not_in_redis
       """
