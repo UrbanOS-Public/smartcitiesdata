@@ -28,6 +28,8 @@ jobs:
       script: bash scripts/travis-test.sh e2e force
     - name: discovery_api
       script: bash scripts/travis-test.sh discovery_api
+    - name: tableau-wdc
+      script: bash scripts/wdc-test.sh
     - name: andi
       script: bash scripts/travis-test.sh andi
     - name: flair
