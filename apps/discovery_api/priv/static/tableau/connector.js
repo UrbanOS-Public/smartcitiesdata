@@ -12,7 +12,7 @@ var dataMap = {
   nested: tableau.dataTypeEnum.string
 };
 
-var configurableApiBaseUrl = "http://localhost:4000/api/v1/";
+var configurableApiBaseUrl = "https://data.smartcolumbusos.com/api/v1/";
 var configurableDatasetLimit = "1000000";
 var configurableFileTypes = ["CSV", "GEOJSON"];
 
