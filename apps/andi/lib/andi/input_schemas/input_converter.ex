@@ -18,6 +18,7 @@ defmodule Andi.InputSchemas.InputConverter do
     %{id: id}
     |> Map.merge(from_business)
     |> Map.merge(from_technical)
+    |> AtomicMap.convert(safe: false, underscore: false)
     |> DatasetInput.full_validation_changeset()
   end
 
