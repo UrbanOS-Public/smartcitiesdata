@@ -8,13 +8,15 @@ defmodule DiscoveryApi.Data.DataJsonTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
 
-  setup do
+  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+
+  setup_all do
     Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
-    :ok
-  end
+    # on_exit(fn ->
+    #   File.rm("data.json")
+    # end)
 
-  test "Properly formatted metadata is returned after consuming registry messages" do
     organization = Helper.create_persisted_organization()
 
     dataset_one = TDG.create_dataset(%{technical: %{orgId: organization.id, private: true}})
@@ -26,12 +28,14 @@ defmodule DiscoveryApi.Data.DataJsonTest do
     dataset_three = TDG.create_dataset(%{technical: %{orgId: organization.id}})
     Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset_three)
 
-    Patiently.wait_for!(
-      fn -> public_datasets_available?(2) end,
-      dwell: 1000,
-      max_tries: 20
-    )
+    eventually(fn ->
+      assert Enum.count(get_data_json_datasets()) == 2
+    end, 2_000, 20)
 
+    [organization_id: organization.id]
+  end
+
+  test "Properly formatted metadata is returned after consuming registry messages" do
     actual = get_map_from_url("http://localhost:4000/api/v1/data_json")
     schema = get_schema_from_path("./test/integration/schemas/catalog.json")
 
@@ -45,22 +49,25 @@ defmodule DiscoveryApi.Data.DataJsonTest do
     end
   end
 
-  defp public_datasets_available?(count) do
-    datasets =
-      "http://localhost:4000/api/v1/data_json"
-      |> get_map_from_url()
-      |> Map.get("dataset", [])
+  test "Returns an additional dataset when we add one via an update", %{organization_id: organization_id} do
+    additional_dataset = TDG.create_dataset(%{technical: %{orgId: organization_id}})
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", additional_dataset)
 
-    if Enum.count(datasets) == count do
-      Enum.all?(datasets, fn dataset -> dataset["accessLevel"] == "public" end)
-    else
-      false
-    end
+    eventually(fn ->
+      assert Enum.count(get_data_json_datasets()) == 3
+    end)
+  end
+
+  defp get_data_json_datasets() do
+    "http://localhost:4000/api/v1/data_json"
+    |> get_map_from_url()
+    |> Map.get("dataset", [])
   end
 
   defp get_map_from_url(url) do
     url
-    |> HTTPoison.get!()
+    |> HTTPoison.get!([], follow_redirect: true)
+    |> IO.inspect(label: "response")
     |> Map.from_struct()
     |> Map.get(:body)
     |> Jason.decode!()

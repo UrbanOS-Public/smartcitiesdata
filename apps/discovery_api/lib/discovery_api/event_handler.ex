@@ -8,6 +8,7 @@ defmodule DiscoveryApi.EventHandler do
   alias DiscoveryApi.Schemas.{Organizations, Users}
   alias DiscoveryApi.Data.{Mapper, SystemNameCache}
   alias DiscoveryApiWeb.Plugs.ResponseCache
+  alias DiscoveryApiWeb.Plugs.DataJson
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data}) do
     Organizations.create_or_update(data)
@@ -46,12 +47,15 @@ defmodule DiscoveryApi.EventHandler do
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
          {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
          model <- Mapper.to_data_model(dataset, organization) do
+
       DiscoveryApi.Search.Storage.index(model)
       save_dataset_to_recommendation_engine(dataset)
       ResponseCache.invalidate()
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
-
       merge(:models, model.id, model)
+      DataJson.delete_data_json()
+
+      :ok
     else
       {:error, reason} ->
         Logger.error("Unable to process message `#{inspect(dataset)}` : ERROR: #{inspect(reason)}")

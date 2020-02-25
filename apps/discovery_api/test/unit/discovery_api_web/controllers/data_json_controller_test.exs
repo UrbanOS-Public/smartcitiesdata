@@ -1,8 +1,9 @@
-defmodule DiscoveryApiWeb.MultipleMetadataController.DataJsonTest do
+defmodule DiscoveryApiWeb.DataJsonControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
+  alias DiscoveryApiWeb.Plugs.DataJson
 
   setup do
     public_model =
@@ -39,6 +40,10 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.DataJsonTest do
         accessLevel: "non-public",
         private: true
       })
+
+    on_exit(fn ->
+      DataJson.delete_data_json()
+    end)
 
     {:ok,
      %{

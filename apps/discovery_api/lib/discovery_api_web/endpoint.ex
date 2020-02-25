@@ -40,7 +40,7 @@ defmodule DiscoveryApiWeb.Endpoint do
     at: "/",
     from: :discovery_api,
     gzip: false,
-    only: ~w(css fonts images js favicon.ico robots.txt tableau)
+    only: ~w(css fonts images js favicon.ico robots.txt tableau data)
   )
 
   # Code reloading can be explicitly enabled under the

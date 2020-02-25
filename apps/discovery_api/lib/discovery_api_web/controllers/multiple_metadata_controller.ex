@@ -5,7 +5,6 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
   alias DiscoveryApiWeb.MultipleMetadataView
   alias DiscoveryApi.Search.{DataModelFilterator, DataModelFacinator, DataModelSearchinator}
-  alias DiscoveryApi.Data.Model
 
   @matched_params [
     %{"query" => "", "limit" => "10", "offset" => "0", "apiAccessible" => "false"},
@@ -50,24 +49,6 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
     e ->
       Logger.error("Unhandled error in search #{inspect(e)}")
       reraise e, __STACKTRACE__
-  end
-
-  def fetch_data_json(conn, _params) do
-    case Model.get_all() |> Enum.filter(&is_public?/1) do
-      [] ->
-        render_error(conn, 404, "Not Found")
-
-      result ->
-        render(
-          conn,
-          :get_data_json,
-          models: result
-        )
-    end
-  end
-
-  defp is_public?(%Model{} = model) do
-    model.private == false
   end
 
   defp parse_api_accessible(params) do
