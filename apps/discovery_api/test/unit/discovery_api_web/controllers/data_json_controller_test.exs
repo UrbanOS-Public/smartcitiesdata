@@ -3,7 +3,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
   use Placebo
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
-  alias DiscoveryApiWeb.Plugs.DataJson
+  alias DiscoveryApi.Services.DataJsonService
 
   setup do
     public_model =
@@ -42,7 +42,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
       })
 
     on_exit(fn ->
-      DataJson.delete_data_json()
+      DataJsonService.delete_data_json()
     end)
 
     {:ok,

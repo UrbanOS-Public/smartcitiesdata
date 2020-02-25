@@ -8,7 +8,7 @@ defmodule DiscoveryApi.EventHandler do
   alias DiscoveryApi.Schemas.{Organizations, Users}
   alias DiscoveryApi.Data.{Mapper, SystemNameCache}
   alias DiscoveryApiWeb.Plugs.ResponseCache
-  alias DiscoveryApiWeb.Plugs.DataJson
+  alias DiscoveryApi.Services.DataJsonService
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data}) do
     Organizations.create_or_update(data)
@@ -52,7 +52,7 @@ defmodule DiscoveryApi.EventHandler do
       ResponseCache.invalidate()
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
       merge(:models, model.id, model)
-      DataJson.delete_data_json()
+      DataJsonService.delete_data_json()
 
       :ok
     else

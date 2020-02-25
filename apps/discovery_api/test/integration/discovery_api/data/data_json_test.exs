@@ -7,7 +7,7 @@ defmodule DiscoveryApi.Data.DataJsonTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
-  alias DiscoveryApiWeb.Plugs.DataJson
+  alias DiscoveryApi.Services.DataJsonService
 
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
@@ -16,7 +16,7 @@ defmodule DiscoveryApi.Data.DataJsonTest do
     Redix.command!(:redix, ["FLUSHALL"])
 
     on_exit(fn ->
-      DataJson.delete_data_json()
+      DataJsonService.delete_data_json()
     end)
 
     organization = Helper.create_persisted_organization()

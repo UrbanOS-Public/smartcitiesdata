@@ -10,7 +10,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApi.Schemas.Organizations
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
-  alias DiscoveryApiWeb.Plugs.DataJson
+  alias DiscoveryApi.Services.DataJsonService
 
   describe "handle_event/1 organization_update" do
     test "should save organization to ecto" do
@@ -56,13 +56,13 @@ defmodule DiscoveryApi.EventHandlerTest do
 
       allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
       allow(DiscoveryApi.RecommendationEngine.save(any()), return: :seriously_whatever)
-      allow(DataJson.delete_data_json(), return: :ok)
+      allow(DataJsonService.delete_data_json(), return: :ok)
 
       dataset = TDG.create_dataset(%{})
 
       Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_update(), data: dataset, author: :author))
 
-      assert_called(DataJson.delete_data_json())
+      assert_called(DataJsonService.delete_data_json())
     end
   end
 end

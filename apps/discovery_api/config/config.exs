@@ -45,10 +45,4 @@ config :mime, :types, %{
 config :discovery_api,
   user_visualization_limit: 1_000
 
-# data_json_service options are :local or s3
-# :local sends the local data.json
-# :s3 redirects to the data.json file hosted in s3
-config :discovery_api,
-  data_json_service: :local
-
 import_config "#{Mix.env()}.exs"

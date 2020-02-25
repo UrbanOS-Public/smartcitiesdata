@@ -8,7 +8,7 @@ defmodule DiscoveryApi.Services.DataJsonService do
 
   def ensure_data_json_file() do
     case File.stat(file_path()) do
-      {:ok, _} -> {:ok, file_path()}
+      {:ok, _} -> {:local, file_path()}
       {:error, _} -> create_data_json()
     end
   end
@@ -17,7 +17,7 @@ defmodule DiscoveryApi.Services.DataJsonService do
     with results <- DataJson.translate_to_open_data_schema(),
          {:ok, json} <- Jason.encode(results),
          :ok <- File.write(file_path(), json) do
-      {:ok, file_path()}
+      {:local, file_path()}
     else
       _err -> {:error, "Unable to create file"}
     end
