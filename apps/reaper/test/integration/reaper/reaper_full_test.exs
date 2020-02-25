@@ -6,7 +6,7 @@ defmodule Reaper.FullTest do
   require Logger
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [dataset_update: 0, dataset_delete: 0]
 
   @endpoints Application.get_env(:reaper, :elsa_brokers)
   @brod_endpoints Enum.map(@endpoints, fn {host, port} -> {to_charlist(host), port} end)
@@ -417,9 +417,56 @@ defmodule Reaper.FullTest do
     end
   end
 
+  test "should delete the dataset and the view state when delete event is called" do
+    dataset_id = Faker.UUID.v4()
+    output_topic = "#{@output_topic_prefix}-#{dataset_id}"
+
+    dataset =
+      TDG.create_dataset(
+        id: dataset_id,
+        technical: %{allow_duplicates: false, cadence: "*/20 * * * * * *"}
+      )
+
+    Brook.Event.send(@instance, dataset_update(), :author, dataset)
+
+    eventually(
+      fn ->
+        assert nil != find_quantum_job(dataset_id)
+        assert nil != Reaper.Horde.Registry.lookup(dataset_id)
+        assert nil != Reaper.Cache.Registry.lookup(dataset_id)
+
+        # assert {:ok, dataset} == Brook.ViewState.get(@instance, :datasets, dataset_id)
+        assert true == Elsa.Topic.exists?(@endpoints, output_topic)
+      end,
+      2_000,
+      10
+    )
+
+    Brook.Event.send(@instance, dataset_delete(), :author, dataset)
+
+    eventually(
+      fn ->
+        assert nil == find_quantum_job(dataset_id)
+        assert nil == Reaper.Horde.Registry.lookup(dataset_id)
+        assert nil == Reaper.Cache.Registry.lookup(dataset_id)
+
+        # assert {:ok, nil} == Brook.ViewState.get(@instance, :datasets, dataset_id)
+        assert false == Elsa.Topic.exists?(@endpoints, output_topic)
+      end,
+      2_000,
+      10
+    )
+  end
+
   defp random_string(length) do
     :crypto.strong_rand_bytes(length)
     |> Base.url_encode64()
     |> binary_part(0, length)
+  end
+
+  defp find_quantum_job(dataset_id) do
+    dataset_id
+    |> String.to_atom()
+    |> Reaper.Scheduler.find_job()
   end
 end
