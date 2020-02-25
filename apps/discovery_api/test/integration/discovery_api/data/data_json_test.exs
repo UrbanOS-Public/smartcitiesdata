@@ -7,15 +7,16 @@ defmodule DiscoveryApi.Data.DataJsonTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
+  alias DiscoveryApiWeb.Plugs.DataJson
 
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   setup_all do
     Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
-    # on_exit(fn ->
-    #   File.rm("data.json")
-    # end)
+    on_exit(fn ->
+      DataJson.delete_data_json()
+    end)
 
     organization = Helper.create_persisted_organization()
 
@@ -67,7 +68,6 @@ defmodule DiscoveryApi.Data.DataJsonTest do
   defp get_map_from_url(url) do
     url
     |> HTTPoison.get!([], follow_redirect: true)
-    |> IO.inspect(label: "response")
     |> Map.from_struct()
     |> Map.get(:body)
     |> Jason.decode!()

@@ -13,12 +13,8 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCache do
     opts
   end
 
-  def call(conn, %{for_params: params}) do
-    do_call(conn, conn.params in params)
-  end
-
-  def call(conn, %{}) do
-    do_call(conn, true)
+  def call(conn, opts) do
+    do_call(conn, conn.params in opts.for_params)
   end
 
   def invalidate() do
