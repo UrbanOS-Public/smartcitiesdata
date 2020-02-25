@@ -30,6 +30,10 @@ function submit(mode) {
   connectionData = {mode}
   if (mode == "query") {
     connectionData.query = document.getElementById("query").value
+    if (connectionData.query == "") {
+      document.getElementById('error').style.display = 'block';
+      return;
+    }
   }
   _setConnectionData(connectionData)
 

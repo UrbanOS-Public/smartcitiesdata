@@ -151,24 +151,48 @@ describe('Discovery API Tableau Web Data Connector', () => {
       })
 
       describe('on submit for query mode', () => {
-        beforeEach(() => {
-          document.body.innerHTML = '<textarea id="query">select * from constellation</textarea>'
+        describe('with a query entered', () => {
+          beforeEach(() => {
+            document.body.innerHTML = '<textarea id="query">select * from constellation</textarea>'
 
-          DiscoveryWDCTranslator.submit('query')
+            DiscoveryWDCTranslator.submit('query')
+          })
+
+          test('the generated connector calls init callback and tableau.submit', () => {
+            const initCallback = jest.fn()
+
+            registeredConnector.init(initCallback)
+
+            expect(initCallback).toHaveBeenCalled()
+            expect(global.tableau.submit).toHaveBeenCalled()
+          })
+
+          test('tableau connection data has the specified mode and query', () => {
+            expect(global.tableau.connectionData).toBe("{\"mode\":\"query\",\"query\":\"select * from constellation\"}")
+          })
         })
 
-        test('the generated connector calls init callback and tableau.submit', () => {
-          const initCallback = jest.fn()
+        describe('without a query entered', () => {
+          beforeEach(() => {
+            global.tableau.submit = jest.fn()
+            document.body.innerHTML = '<textarea id="query"></textarea><p id="error" style="display:none">Please enter a query.</p>'
 
-          registeredConnector.init(initCallback)
+            DiscoveryWDCTranslator.submit('query')
+          })
 
-          expect(initCallback).toHaveBeenCalled()
-          expect(global.tableau.submit).toHaveBeenCalled()
+          test('the generated connector is not submitted', () => {
+            const initCallback = jest.fn()
+
+            registeredConnector.init(initCallback)
+
+            expect(global.tableau.submit).not.toHaveBeenCalled()
+          })
+
+          test('the page displays an informative message', () => {
+            expect(document.body.innerHTML).toEqual(expect.stringMatching('<p id="error" style="display: block;"'))
+          })
         })
 
-        test('tableau connection data has the specified mode and query', () => {
-          expect(global.tableau.connectionData).toBe("{\"mode\":\"query\",\"query\":\"select * from constellation\"}")
-        })
       })
 
       describe('connector.getSchema', () => {
