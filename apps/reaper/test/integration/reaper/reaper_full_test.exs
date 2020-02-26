@@ -8,6 +8,8 @@ defmodule Reaper.FullTest do
   import SmartCity.TestHelper
   import SmartCity.Event, only: [dataset_update: 0, dataset_delete: 0]
 
+  alias Reaper.Collections.Extractions
+
   @endpoints Application.get_env(:reaper, :elsa_brokers)
   @brod_endpoints Enum.map(@endpoints, fn {host, port} -> {to_charlist(host), port} end)
   @output_topic_prefix Application.get_env(:reaper, :output_topic_prefix)
@@ -424,18 +426,17 @@ defmodule Reaper.FullTest do
     dataset =
       TDG.create_dataset(
         id: dataset_id,
-        technical: %{allow_duplicates: false, cadence: "*/5 * * * * * *"}
+        technical: %{allow_duplicates: false, cadence: "*/1 * * * * * *"}
       )
 
     Brook.Event.send(@instance, dataset_update(), :author, dataset)
 
     eventually(
       fn ->
-        assert nil != find_quantum_job(dataset_id)
+        assert String.to_atom(dataset_id) == find_quantum_job(dataset_id)
         assert nil != Reaper.Horde.Registry.lookup(dataset_id)
         assert nil != Reaper.Cache.Registry.lookup(dataset_id)
-
-        # assert {:ok, dataset} == Brook.ViewState.get(@instance, :datasets, dataset_id)
+        assert dataset == Extractions.get_dataset!(dataset.id)
         assert true == Elsa.Topic.exists?(@endpoints, output_topic)
       end,
       2_000,
@@ -446,11 +447,10 @@ defmodule Reaper.FullTest do
 
     eventually(
       fn ->
-        # assert nil == find_quantum_job(dataset_id)
+        assert nil == find_quantum_job(dataset_id)
         assert nil == Reaper.Horde.Registry.lookup(dataset_id)
         assert nil == Reaper.Cache.Registry.lookup(dataset_id)
-
-        assert {:ok, nil} == Brook.ViewState.get(@instance, :datasets, dataset_id)
+        assert nil == Extractions.get_dataset!(dataset.id)
         assert false == Elsa.Topic.exists?(@endpoints, output_topic)
       end,
       2_000,
@@ -468,5 +468,13 @@ defmodule Reaper.FullTest do
     dataset_id
     |> String.to_atom()
     |> Reaper.Scheduler.find_job()
+    |> quantum_job_name()
+  end
+
+  defp quantum_job_name(job) do
+    case job do
+      nil -> nil
+      job -> job.name
+    end
   end
 end
