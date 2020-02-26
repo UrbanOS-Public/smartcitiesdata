@@ -15,6 +15,15 @@
 </head>
 
 <body>
+  <div class="login-bar">
+    <div class="clickable login-link" onclick="login()">
+      <svg class="MuiSvgIcon-root user-icon" focusable="false" viewBox="0 0 24 24" aria-hidden="true" role="presentation">
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+        <path fill="none" d="M0 0h24v24H0z"></path>
+      </svg>
+      <span>Log In to Access Private Datasets</span>
+    </div>
+  </div>
   <div class="header">
     <h1>Discovery API Tableau Web Data Connector</h1>
     <h5>Use this URL in a Tableau product to access data from the API.
@@ -22,14 +31,14 @@
   </div>
   <div class="content">
     <p>Load all available datasets into Tableau.</p>
-    <button onclick="submit('discovery')">Discover Datasets</button>
+    <button class="clickable" onclick="submit('discovery')">Discover Datasets</button>
     <div>
       <hr />
       <span class="line-text">OR</span>
     </div>
     <p>Enter a custom SQL query below to refine your results. SQL queries use the <a href="https://prestodb.github.io/docs/current/sql/select.html" target="_blank">PrestoDB</a> query syntax.</p>
     <textarea id="query" placeholder="select * from..."></textarea>
-    <button onclick="submit('query')">Submit a Query</button>
+    <button class="clickable" onclick="submit('query')">Submit a Query</button>
     <p id="error" style="display:none">Please enter a query.</p>
     <div>
 </body>
