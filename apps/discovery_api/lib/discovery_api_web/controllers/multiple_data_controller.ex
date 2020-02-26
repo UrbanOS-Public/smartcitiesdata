@@ -30,7 +30,6 @@ defmodule DiscoveryApiWeb.MultipleDataController do
   end
 
   def describe(conn, _params) do
-
     with {:ok, statement, conn} <- read_body(conn),
          {:ok, session} <- authorized_session(conn, statement) do
       format = get_format(conn)
@@ -55,6 +54,7 @@ defmodule DiscoveryApiWeb.MultipleDataController do
 
   defp authorized_session(conn, statement) do
     current_user = conn.assigns.current_user
+
     with true <- QueryAccessUtils.authorized_to_query?(statement, current_user),
          session_opts = DiscoveryApi.prestige_opts(),
          session = Prestige.new_session(session_opts) do

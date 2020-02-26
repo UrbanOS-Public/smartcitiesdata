@@ -84,5 +84,4 @@ defmodule DiscoveryApiWeb.Utilities.DescribeUtilsTest do
       assert actual_schema == expected_schema
     end
   end
-
 end
