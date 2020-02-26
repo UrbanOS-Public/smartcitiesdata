@@ -1,8 +1,8 @@
-defmodule Reaper.Event.Handlers.DatasetDisableTest do
+defmodule Reaper.Event.Handlers.Helper.StopDatasetTest do
   use ExUnit.Case
   use Placebo
 
-  alias Reaper.Event.Handlers.DatasetDisable
+  alias Reaper.Event.Handlers.Helper.StopDataset
   alias SmartCity.TestDataGenerator, as: TDG
   alias Quantum.Job
   @moduletag capture_log: true
@@ -10,7 +10,11 @@ defmodule Reaper.Event.Handlers.DatasetDisableTest do
   setup do
     TestHelper.start_horde()
     {:ok, scheduler} = Reaper.Scheduler.start_link()
-    allow Reaper.DataExtract.Processor.process(any()), exec: fn _dataset -> Process.sleep(10 * 60_000) end
+
+    allow(Reaper.DataExtract.Processor.process(any()),
+      exec: fn _dataset -> Process.sleep(10 * 60_000) end
+    )
+
     dataset = TDG.create_dataset(id: "ds-to-kill")
 
     on_exit(fn ->
@@ -26,18 +30,18 @@ defmodule Reaper.Event.Handlers.DatasetDisableTest do
       horde_pid = Reaper.Horde.Registry.lookup(dataset.id)
       assert nil != horde_pid
 
-      assert :ok == DatasetDisable.handle(dataset)
+      assert :ok == StopDataset.stop_horde_and_cache(dataset.id)
 
       assert nil == Reaper.Horde.Registry.lookup(dataset.id)
       assert [] == Horde.DynamicSupervisor.which_children(Reaper.Horde.Supervisor)
     end
 
     test "does not throw errors if dataset is not running", %{dataset: dataset} do
-      assert :ok == DatasetDisable.handle(dataset)
+      assert :ok == StopDataset.stop_horde_and_cache(dataset.id)
     end
 
     test "will attempt to find the pid several times", %{dataset: dataset} do
-      task = Task.async(fn -> DatasetDisable.handle(dataset) end)
+      task = Task.async(fn -> StopDataset.stop_horde_and_cache(dataset.id) end)
       Process.sleep(500)
       Reaper.Horde.Supervisor.start_data_extract(dataset)
 
@@ -47,20 +51,24 @@ defmodule Reaper.Event.Handlers.DatasetDisableTest do
     end
 
     test "kills the cache server for the current dataset", %{dataset: dataset} do
-      Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: dataset.id})
+      Horde.DynamicSupervisor.start_child(
+        Reaper.Horde.Supervisor,
+        {Reaper.Cache, name: dataset.id}
+      )
+
       cache_pid = Reaper.Cache.Registry.lookup(dataset.id)
       assert nil != cache_pid
 
-      assert :ok == DatasetDisable.handle(dataset)
+      assert :ok == StopDataset.stop_horde_and_cache(dataset.id)
 
       assert nil == Reaper.Cache.Registry.lookup(dataset.id)
       assert [] == Horde.DynamicSupervisor.which_children(Reaper.Horde.Supervisor)
     end
 
     test "returns error when an error occurs", %{dataset: dataset} do
-      allow Reaper.Horde.Registry.lookup(any()), exec: fn _ -> raise("Mistakes were made") end
+      allow(Reaper.Horde.Registry.lookup(any()), exec: fn _ -> raise("Mistakes were made") end)
 
-      assert match?({:error, _}, DatasetDisable.handle(dataset))
+      assert match?({:error, _}, StopDataset.stop_horde_and_cache(dataset.id))
     end
 
     test "stops the dataset job in quantum", %{dataset: dataset} do
@@ -68,11 +76,21 @@ defmodule Reaper.Event.Handlers.DatasetDisableTest do
 
       create_job(dataset_id)
 
-      :ok = DatasetDisable.handle(dataset)
+      :ok = StopDataset.deactivate_quantum_job(dataset.id)
 
       job = Reaper.Scheduler.find_job(dataset_id)
 
       assert job.state == :inactive
+    end
+
+    test "should delete the quantum job", %{dataset: dataset} do
+      dataset_id = dataset.id |> String.to_atom()
+
+      create_job(dataset_id)
+
+      :ok = StopDataset.delete_quantum_job(dataset.id)
+
+      assert nil == Reaper.Scheduler.find_job(dataset_id)
     end
   end
 

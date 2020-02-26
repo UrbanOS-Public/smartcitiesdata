@@ -68,6 +68,9 @@ defmodule Andi.MixProject do
   end
 
   defp aliases do
-    [verify: ["format --check-formatted", "credo", "sobelow -i Config.HTTPS --skip --compact --exit low"]]
+    [
+      verify: ["format --check-formatted", "credo", "sobelow -i Config.HTTPS --skip --compact --exit low"],
+      start: ["phx.server"]
+    ]
   end
 end
