@@ -119,6 +119,26 @@ describe('Discovery API Tableau Web Data Connector', () => {
       }
     ]
 
+    const queryDatasetDictionaryFromApi = [
+      {
+        name: 'Column One',
+        type: 'string'
+      }
+    ]
+
+    const expectedTableSchemaForQueryDataset = {
+      id: 'query',
+      alias: 'query',
+      description: 'select * from something',
+      columns: [{
+          id: 'column_one',
+          alias: 'column one',
+          dataType: tableau.dataTypeEnum.string,
+          description: 'column one'
+        }
+      ]
+    }
+
     beforeEach(() => {
       DiscoveryWDCTranslator.setupConnector(global.tableau)
     })
@@ -267,11 +287,10 @@ describe('Discovery API Tableau Web Data Connector', () => {
       })
 
       describe('in query mode', () => {
-        const query = 'select * from walk_of_fame'
         beforeEach(() => {
-          global.tableau.connectionData = JSON.stringify({mode: 'query', query})
+          global.tableau.connectionData = JSON.stringify({mode: 'query', query: expectedTableSchemaForQueryDataset.description})
           global.fetch.mockReset()
-          global.fetch.mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetOneDictionaryFromApi))
+          global.fetch.mockReturnValueOnce(mockSuccessFetchResponseAsJson(queryDatasetDictionaryFromApi))
         })
 
         test('fetches dataset dictionaries from the query describe API', (done) => {
@@ -279,7 +298,17 @@ describe('Discovery API Tableau Web Data Connector', () => {
             const firstCallUrl = global.fetch.mock.calls[0][0]
             expect(firstCallUrl).toContain('/api/v1/query/describe?_format=json')
             const firstCallBody = global.fetch.mock.calls[0][1]
-            expect(firstCallBody).toEqual({method: 'POST', body: query})
+            expect(firstCallBody).toEqual({method: 'POST', body: expectedTableSchemaForQueryDataset.description})
+
+            done()
+          })
+
+          registeredConnector.getSchema(schemaCallback)
+        })
+
+        test('the generated connector sends table schemas to what will be a tableau-internal callback', (done) => {
+          const schemaCallback = jest.fn((tableSchemas) => {
+            expect(tableSchemas).toEqual([expectedTableSchemaForQueryDataset])
 
             done()
           })

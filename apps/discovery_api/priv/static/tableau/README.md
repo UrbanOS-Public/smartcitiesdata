@@ -6,14 +6,15 @@ To utilize this connector in Tableau Enterprise, Public, etc. add a connector wi
 
 ## Local Development
 ### Running tests
-Install jest-cli globally
 ```sh
-npm install -g jest-cli
+npm install
+npm test
 ```
 
-Run the tests supplied in this directory
+### Check JS against ES5
+We are supporting a version of Tableau that runs the web data connector in an older version of Internet Explorer. Because of this we need to ship `connector.js` (and any other production code) as ES5 compliant. We ensure that we have proper ES5 javascript using the `es-check` library as part of the build.  Run this check locally with:
 ```sh
-jest connector.test.js
+npm run es-check
 ```
 
 ### Running in Web Data Connector Simulator
