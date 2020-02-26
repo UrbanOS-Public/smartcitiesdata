@@ -12,10 +12,6 @@ var dataMap = {
   nested: tableau.dataTypeEnum.string
 };
 
-var configurableApiBaseUrl = "https://data.smartcolumbusos.com/api/v1/";
-var configurableDatasetLimit = "1000000";
-var configurableFileTypes = ["CSV", "GEOJSON"];
-
 window.DiscoveryWDCTranslator = {
   submit: submit,
   setupConnector: _setupConnector,
@@ -25,6 +21,10 @@ window.DiscoveryWDCTranslator = {
   convertDictionaryToColumns: _convertDictionaryToColumns,
   convertDatasetRowToTableRow: _convertDatasetRowToTableRow
 };
+
+var datasetLimit = "1000000";
+var fileTypes = ["CSV", "GEOJSON"];
+var apiPath = '/api/v1/'
 
 function submit(mode) {
   var connectionData = {mode}
@@ -107,15 +107,15 @@ function _getData(table) {
 
 // Discovery Mode Functions
 function _getDatasetList() {
-  return fetch(configurableApiBaseUrl + "dataset/search?apiAccessible=true&offset=0&limit=" + configurableDatasetLimit);
+  return fetch(apiPath + "dataset/search?apiAccessible=true&offset=0&limit=" + datasetLimit);
 }
 
 function _getDatasetDictionary(dataset) {
-  return fetch(configurableApiBaseUrl + "dataset/" + dataset.id + "/dictionary");
+  return fetch(apiPath + "dataset/" + dataset.id + "/dictionary");
 }
 
 function _getDatasetData(dataset) {
-  return fetch(configurableApiBaseUrl + "dataset/" + dataset.description + "/query?_format=json")
+  return fetch(apiPath + "dataset/" + dataset.description + "/query?_format=json")
 }
 // ---
 
@@ -137,11 +137,11 @@ function _getQueryDataset() {
 }
 
 function _getQueryDictionary(dataset) {
-  return fetch(configurableApiBaseUrl + "query/describe?_format=json", {method: 'POST', body: dataset.description});
+  return fetch(apiPath + "query/describe?_format=json", {method: 'POST', body: dataset.description});
 }
 
 function _getQueryData(dataset) {
-  return fetch(configurableApiBaseUrl + "query?_format=json", {method: 'POST', body: dataset.description});
+  return fetch(apiPath + "query?_format=json", {method: 'POST', body: dataset.description});
 }
 // ---
 
@@ -157,7 +157,7 @@ function _decodeAsJson(response) {
 }
 
 function _supportsDesiredFileTypes(dataset) {
-  return configurableFileTypes.some(function(desiredFileType) {
+  return fileTypes.some(function(desiredFileType) {
     return dataset.fileTypes.includes(desiredFileType);
   })
 }
