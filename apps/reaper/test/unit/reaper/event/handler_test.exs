@@ -11,6 +11,7 @@ defmodule Reaper.Event.HandlerTest do
       file_ingest_end: 0,
       dataset_update: 0,
       dataset_disable: 0,
+      dataset_delete: 0,
       error_dataset_update: 0
     ]
 
@@ -252,6 +253,22 @@ defmodule Reaper.Event.HandlerTest do
         assert view_state != nil
         assert false == Map.get(view_state, "enabled")
         assert_called Reaper.Event.Handlers.DatasetDisable.handle(dataset)
+      end)
+    end
+  end
+
+  describe "#{dataset_delete()}" do
+    test "should stop and delete the dataset if it is a successful stop" do
+      allow Reaper.Event.Handlers.DatasetDelete.handle(any()), return: :result_not_relevant
+      allow Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
+
+      dataset = TDG.create_dataset(id: Faker.UUID.v4())
+      Brook.Test.send(@instance, data_extract_start(), :author, dataset)
+      Brook.Test.send(@instance, dataset_delete(), :author, dataset)
+
+      eventually(fn ->
+        assert nil == Brook.get!(@instance, :extractions, dataset.id)
+        assert_called Reaper.Event.Handlers.DatasetDelete.handle(dataset)
       end)
     end
   end
