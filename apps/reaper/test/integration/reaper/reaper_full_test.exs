@@ -426,7 +426,7 @@ defmodule Reaper.FullTest do
     dataset =
       TDG.create_dataset(
         id: dataset_id,
-        technical: %{allow_duplicates: false, cadence: "*/1 * * * * * *"}
+        technical: %{allow_duplicates: false, cadence: "*/5 * * * * * *"}
       )
 
     Brook.Event.send(@instance, dataset_update(), :author, dataset)
