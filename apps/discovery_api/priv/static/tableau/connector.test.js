@@ -209,7 +209,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
           test('fetches datasets from the search API', (done) => {
             const schemaCallback = jest.fn(() => {
               const firstCall = global.fetch.mock.calls[0][0]
-              expect(firstCall).toContain('dataset/search')
+              expect(firstCall).toContain('/api/v1/dataset/search')
 
               done()
             })
@@ -221,8 +221,8 @@ describe('Discovery API Tableau Web Data Connector', () => {
             const schemaCallback = jest.fn(() => {
               const calls = global.fetch.mock.calls
               expect(calls.length).toBe(3)
-              expect(calls[1][0]).toContain(`dataset/${datasetListFromApi.results[0].id}/dictionary`)
-              expect(calls[2][0]).toContain(`dataset/${datasetListFromApi.results[1].id}/dictionary`)
+              expect(calls[1][0]).toBe(`/api/v1/dataset/${datasetListFromApi.results[0].id}/dictionary`)
+              expect(calls[2][0]).toBe(`/api/v1/dataset/${datasetListFromApi.results[1].id}/dictionary`)
 
               done()
             })
@@ -277,7 +277,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
         test('fetches dataset dictionaries from the query describe API', (done) => {
           const schemaCallback = jest.fn(() => {
             const firstCallUrl = global.fetch.mock.calls[0][0]
-            expect(firstCallUrl).toContain('query/describe?_format=json')
+            expect(firstCallUrl).toContain('/api/v1/query/describe?_format=json')
             const firstCallBody = global.fetch.mock.calls[0][1]
             expect(firstCallBody).toEqual({method: 'POST', body: query})
 
@@ -307,7 +307,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
             const doneCallback = () => {
               const calls = global.fetch.mock.calls
               expect(calls.length).toBe(1)
-              expect(calls[0][0]).toContain(`dataset/${expectedTableSchemaForDatasetTwo.description}/query?_format=json`)
+              expect(calls[0][0]).toBe(`/api/v1/dataset/${expectedTableSchemaForDatasetTwo.description}/query?_format=json`)
 
               done()
             }
@@ -374,7 +374,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
           }
           const doneCallback = () => {
             const firstCallUrl = global.fetch.mock.calls[0][0]
-            expect(firstCallUrl).toContain('query?_format=json')
+            expect(firstCallUrl).toBe('/api/v1/query?_format=json')
             const firstCallBody = global.fetch.mock.calls[0][1]
             expect(firstCallBody).toEqual({method: 'POST', body: query})
 
