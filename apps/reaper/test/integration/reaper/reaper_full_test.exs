@@ -424,7 +424,7 @@ defmodule Reaper.FullTest do
     dataset =
       TDG.create_dataset(
         id: dataset_id,
-        technical: %{allow_duplicates: false, cadence: "*/20 * * * * * *"}
+        technical: %{allow_duplicates: false, cadence: "*/5 * * * * * *"}
       )
 
     Brook.Event.send(@instance, dataset_update(), :author, dataset)
@@ -446,11 +446,11 @@ defmodule Reaper.FullTest do
 
     eventually(
       fn ->
-        assert nil == find_quantum_job(dataset_id)
+        # assert nil == find_quantum_job(dataset_id)
         assert nil == Reaper.Horde.Registry.lookup(dataset_id)
         assert nil == Reaper.Cache.Registry.lookup(dataset_id)
 
-        # assert {:ok, nil} == Brook.ViewState.get(@instance, :datasets, dataset_id)
+        assert {:ok, nil} == Brook.ViewState.get(@instance, :datasets, dataset_id)
         assert false == Elsa.Topic.exists?(@endpoints, output_topic)
       end,
       2_000,
