@@ -4,11 +4,8 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelper do
   require Logger
 
   def execute_query(query) do
-    data =
-      create_session()
-      |> Prestige.execute(query)
-
-    {:ok, data}
+    create_session()
+    |> Prestige.execute(query)
   rescue
     error -> error
   end
