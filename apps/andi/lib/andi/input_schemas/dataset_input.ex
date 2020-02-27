@@ -116,6 +116,46 @@ defmodule Andi.InputSchemas.DatasetInput do
       Enum.filter(params, fn param -> param.changes.id != id end)
     end)
     |> validate_key_value_parameters()
+
+    # source_url = Ecto.Changeset.get_field(removal_changes, :sourceUrl)
+    # source_query_params = Ecto.Changeset.get_field(removal_changes, :sourceQueryParams)
+
+    # update_source_url(removal_changes, )
+  end
+
+  def update_query_params(changeset, url) do
+    key_value_changeset = url
+      |> URI.parse()
+      |> Map.get(:query)
+      |> decode_query_params()
+
+    put_change(changeset, :sourceQueryParams, key_value_changeset)
+  end
+
+  def update_source_url(changeset, url, params) do
+    uri = url
+    |> URI.parse()
+
+    query_params = params
+    |> Enum.map(fn {_k, v} -> {v["key"], v["value"]} end)
+    |> URI.encode_query()
+
+    updated_source_url = uri
+    |> Map.put(:query, query_params)
+    |> URI.to_string()
+
+    key_value_changeset = params
+    |> Enum.map(fn {k, v} -> KeyValue.changeset(%KeyValue{}, %{key: v["key"], value: v["value"]}) end)
+
+    source_url_changeset = put_change(changeset, :sourceUrl, updated_source_url)
+    put_change(source_url_changeset, :sourceQueryParams, key_value_changeset)
+  end
+
+  defp decode_query_params(nil), do: []
+  defp decode_query_params(params) do
+    params
+    |> URI.query_decoder()
+    |> Enum.map(fn {k, v} -> KeyValue.changeset(%KeyValue{}, %{key: k, value: v}) end)
   end
 
   defp cast_embedded(changeset) do
