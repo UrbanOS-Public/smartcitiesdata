@@ -4,11 +4,13 @@
   "description": "Tableau Web Data Connector for Discovery API",
   "main": "connector.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "es-check": "es-check es5 connector.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "es-check": "^5.1.0",
     "jest": "^25.1.0"
   }
 }

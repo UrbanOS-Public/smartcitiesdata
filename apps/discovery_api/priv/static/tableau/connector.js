@@ -27,7 +27,7 @@ var fileTypes = ["CSV", "GEOJSON"];
 var apiPath = '/api/v1/'
 
 function submit(mode) {
-  var connectionData = {mode}
+  var connectionData = {mode: mode}
   if (mode == "query") {
     connectionData.query = document.getElementById("query").value
     if (connectionData.query == "") {
@@ -62,7 +62,7 @@ function _getTableSchemas(schemaCallback) {
     .then(function(tableSchemaPromises) {
       return Promise.all(tableSchemaPromises)
     })
-    .catch((error) => tableau.abortWithError(error))
+    .catch(function(error) {tableau.abortWithError(error)})
     .then(schemaCallback)
 }
 
@@ -71,7 +71,7 @@ function _getTableData(table, doneCallback) {
     .then(_decodeAsJson)
     .then(_convertDatasetRowsToTableRows(table.tableInfo))
     .then(table.appendRows)
-    .catch((error) => tableau.abortWithError(error))
+    .catch(function(error) {tableau.abortWithError(error)})
     .then(doneCallback)
 }
 
@@ -95,13 +95,16 @@ function _convertDatasetRowToTableRow(tableInfo) {
 
 // Mode selectors
 function _getDatasets() {
-  return _getMode() == 'query' ? _getQueryDataset() : _getDatasetList()
+  return _getMode() == 'query' ? _getQueryInfo() : _getDatasetList()
 }
 function _getDictionary(dataset) {
   return _getMode() == 'query' ? _getQueryDictionary(dataset) : _getDatasetDictionary(dataset)
 }
-function _getData(table) {
-  return _getMode() == 'query' ? _getQueryData(table) : _getDatasetData(table)
+function _getData(tableInfo) {
+  return _getMode() == 'query' ? _getQueryData(tableInfo) : _getDatasetData(tableInfo)
+}
+function _convertToTableSchema(info) {
+  return _getMode() == 'query' ? _convertQueryInfoToTableSchema(info) : _convertDatasetToTableSchema(info)
 }
 // ---
 
@@ -114,34 +117,51 @@ function _getDatasetDictionary(dataset) {
   return fetch(apiPath + "dataset/" + dataset.id + "/dictionary");
 }
 
-function _getDatasetData(dataset) {
-  return fetch(apiPath + "dataset/" + dataset.description + "/query?_format=json")
+function _getDatasetData(tableInfo) {
+  return fetch(apiPath + "dataset/" + tableInfo.description + "/query?_format=json")
+}
+
+function _convertDatasetToTableSchema(dataset) {
+  return {
+    id: _tableauAcceptableIdentifier(dataset.id),
+    alias: dataset.title,
+    description: dataset.id,
+  }
 }
 // ---
 
 // Query Mode Functions
-function _getQueryDataset() {
+function _getQueryInfo() {
   return new Promise(function (resolve) {
     resolve({
       ok: true,
-      json: function () { return {
-        results: [{
-          fileTypes: ['CSV'],
-          title: "query",
-          description: _getQueryString(),
-          id: "query" }]
+      json: function () {
+        return {
+          results: [{
+            fileTypes: ['CSV'],
+            query: _getQueryString()
+          }]
         }
       }
     })
   })
 }
 
-function _getQueryDictionary(dataset) {
-  return fetch(apiPath + "query/describe?_format=json", {method: 'POST', body: dataset.description});
+function _getQueryDictionary(queryInfo) {
+  return fetch(apiPath + "query/describe?_format=json", {method: 'POST', body: queryInfo.query});
 }
 
-function _getQueryData(dataset) {
-  return fetch(apiPath + "query?_format=json", {method: 'POST', body: dataset.description});
+function _getQueryData(tableInfo) {
+  // Tableau has limited places to store things in the table struct. We use the description to store the query.
+  return fetch(apiPath + "query?_format=json", {method: 'POST', body: tableInfo.description});
+}
+
+function _convertQueryInfoToTableSchema(queryInfo) {
+  return {
+    id: "query",
+    alias: "query",
+    description: queryInfo.query,
+  }
 }
 // ---
 
@@ -151,7 +171,7 @@ function _tableauAcceptableIdentifier(value) {
 
 function _decodeAsJson(response) {
   if (!response.ok) {
-    throw `Request failed: ${response.status} ${response.statusText}`
+    throw "Request failed: " + response.status + ' ' + response.statusText;
   }
   return response.json();
 }
@@ -172,7 +192,7 @@ function _extractTableSchemas(response) {
 }
 
 function _extractTableSchema(dataset) {
-  var tableSchema = _convertDatasetToTableSchema(dataset)
+  var tableSchema = _convertToTableSchema(dataset)
 
   return _getDictionary(dataset)
     .then(_decodeAsJson)
@@ -182,14 +202,6 @@ function _extractTableSchema(dataset) {
         columns: columns
       })
     })
-}
-
-function _convertDatasetToTableSchema(dataset) {
-  return {
-    id: _tableauAcceptableIdentifier(dataset.id),
-    alias: dataset.title,
-    description: dataset.id,
-  }
 }
 
 function _convertDictionaryToColumns(dictionary) {
