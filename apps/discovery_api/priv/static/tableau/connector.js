@@ -64,16 +64,14 @@ function _setupConnector() {
   tableau.registerConnector(connector);
 
   connector.init = function(initCallback) {
-
-    // TODO: this will need to extract the code from the URL and call the token URL to fetch a refresh token
-    auth0Client.parseHash({ hash: window.location.hash }, function(err, authResult) {
-
-      if (!err && authResult) {
-        tableau.password = authResult.accessToken;  // TODO: this will fetch the refresh token
-      } else {
-         // TODO: show a message to the user letting them know things didn't work out
-      }
-    })
+    var code = _getUrlParameterByName('code')
+    if (code) {
+      // TODO: clear URL
+      _fetchRefreshToken(code)
+      .then(function(refreshToken) { tableau.password = refreshToken; })
+      .catch(function(error) { alert('Unable to authenticate: ' + error); })
+      // TODO: show a message to the user letting them know things didn't work out
+    }
 
     initCallback();
   }
@@ -249,3 +247,53 @@ function _setConnectionData(data) {
 
 function _getMode() { return JSON.parse(tableau.connectionData).mode }
 function _getQueryString() { return JSON.parse(tableau.connectionData).query }
+
+function _getUrlParameterByName(name) {
+  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+  var results = regex.exec(window.location.href);
+  if (!results || !results[2]) { return null; }
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+function _fetchRefreshToken(code) {
+  var params = {
+    grant_type: 'authorization_code',
+    client_id: 'sfe5fZzFXsv5gIRXz8V3zkR7iaZBMvL0', // TODO: parameterize me
+    code: code,
+    redirect_uri: 'http://localhost:9001/connector.html' // TODO: parameterize me
+  };
+  // TODO: parameterize me
+  return fetch('https://smartcolumbusos-demo.auth0.com/oauth/token', {
+    method: 'POST',
+    headers: {'content-type':'application/x-www-form-urlencoded'},
+    body: _encodeAsUriQueryString(params)
+  })
+  .then(_decodeAsJson)
+  .then(function(body) { return body.refresh_token })
+}
+
+function _encodeAsUriQueryString(obj) {
+  var queryString = ''
+  for(var key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      queryString += encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]) + '&'
+    }
+  }
+  return queryString
+}
+
+function _fetchAccessToken(refreshToken) {
+  var params = {
+    grant_type: 'refresh_token',
+    client_id: 'sfe5fZzFXsv5gIRXz8V3zkR7iaZBMvL0', // TODO: parameterize me
+    refresh_token: refreshToken
+  };
+  // TODO: parameterize me
+  return fetch('https://smartcolumbusos-demo.auth0.com/oauth/token', {
+    method: 'POST',
+    headers: {'content-type':'application/x-www-form-urlencoded'},
+    body: _encodeAsUriQueryString(params)
+  })
+  .then(_decodeAsJson)
+  .then(function(body) { return body.access_token })
+}
