@@ -15,8 +15,11 @@ global.tableau = {
   connectionData: "{}"
 }
 global.fetch = jest.fn()
-
-// TODO: figure out how to mock auth0 stuff
+global.auth0Client = {
+  authorize: jest.fn(),
+  parseHash: jest.fn(),
+  logout: jest.fn()
+}
 
 const connector = require('./connector.js')
 
@@ -142,7 +145,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
     }
 
     beforeEach(() => {
-      DiscoveryWDCTranslator.setupConnector(global.tableau)
+      DiscoveryWDCTranslator.setupConnector()
     })
 
     test('the generated connector calls init callback on init', () => {
@@ -590,6 +593,29 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
       test('correctly extracts each field value for the row', () => {
         expect(tableRow).toEqual(['a', 'geojson geometry', 1])
+      })
+    })
+  })
+
+  describe('auth', () => {
+    test('login calls auth0.authorize', () => {
+      DiscoveryAuthHandler.login()
+
+      expect(auth0Client.authorize).toHaveBeenCalled()
+    })
+
+    describe('logout', () => {
+      test('calls auth0.logout', () => {
+        DiscoveryAuthHandler.logout()
+
+        expect(auth0Client.logout).toHaveBeenCalled()
+      })
+
+      test('clears the saved token', () => {
+        global.tableau.password = "BobTheToken"
+        DiscoveryAuthHandler.logout()
+
+        expect(global.tableau.password).toBeFalsy()
       })
     })
   })

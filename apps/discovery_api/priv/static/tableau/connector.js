@@ -27,21 +27,13 @@ window.DiscoveryAuthHandler = {
   logout: logout
 }
 
-var webAuth = new auth0.WebAuth({
-  clientID: 'sfe5fZzFXsv5gIRXz8V3zkR7iaZBMvL0',
-  domain: 'smartcolumbusos-demo.auth0.com',
-  redirectUri: 'http://localhost:9001/connector.html',
-  responseType: 'token', // TODO: update this to use code responseType
-  scope: 'offline_access',
-  audience: 'discovery_api'
-});
-
 function login() {
-  webAuth.authorize();
+  auth0Client.authorize();
 }
 
 function logout() {
-  // TODO: clear tableau.password and logout via auth0?
+  delete tableau.password
+  auth0Client.logout();
 }
 
 var datasetLimit = "1000000";
@@ -74,11 +66,10 @@ function _setupConnector() {
   connector.init = function(initCallback) {
 
     // TODO: this will need to extract the code from the URL and call the token URL to fetch a refresh token
-    webAuth.parseHash({ hash: window.location.hash }, function(err, authResult) {
+    auth0Client.parseHash({ hash: window.location.hash }, function(err, authResult) {
 
       if (!err && authResult) {
         tableau.password = authResult.accessToken;  // TODO: this will fetch the refresh token
-        tableau.submit();
       } else {
          // TODO: show a message to the user letting them know things didn't work out
       }
