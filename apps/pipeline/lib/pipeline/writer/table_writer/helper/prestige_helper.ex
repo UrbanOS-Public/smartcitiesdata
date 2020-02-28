@@ -20,7 +20,7 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelper do
     end)
   end
 
-  def create_session do
+  def create_session() do
     Application.get_env(:prestige, :session_opts)
     |> Prestige.new_session()
   end
