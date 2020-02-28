@@ -5,15 +5,12 @@ defmodule Pipeline.Writer.TableWriterTest do
 
   alias Pipeline.Writer.TableWriter
   alias Pipeline.Writer.TableWriter.Compaction
-  alias Pipeline.Application
+  alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper, only: [eventually: 1]
 
   setup do
-    session =
-      Application.prestige_opts()
-      |> Prestige.new_session()
-
+    session = PrestigeHelper.create_session()
     [session: session]
   end
 

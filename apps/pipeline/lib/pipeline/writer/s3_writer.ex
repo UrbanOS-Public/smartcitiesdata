@@ -7,7 +7,7 @@ defmodule Pipeline.Writer.S3Writer do
 
   alias Pipeline.Writer.S3Writer.{Compaction, S3SafeJson}
   alias Pipeline.Writer.TableWriter.{Statement}
-  alias Pipeline.Application
+  alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias ExAws.S3
 
   require Logger
@@ -157,9 +157,7 @@ defmodule Pipeline.Writer.S3Writer do
 
   defp execute({:ok, statement}) do
     try do
-      Application.prestige_opts()
-      |> Prestige.new_session()
-      |> Prestige.execute(statement)
+      PrestigeHelper.execute_query(statement)
     rescue
       e -> e
     end
