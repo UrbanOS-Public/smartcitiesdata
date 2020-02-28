@@ -6,6 +6,7 @@ defmodule Pipeline.Writer.TableWriter do
   @behaviour Pipeline.Writer
   alias Pipeline.Writer.TableWriter.{Compaction, Statement}
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+  alias Pipeline.Writer.TableWriter.Statement.Rename
   require Logger
 
   @type schema() :: [map()]
@@ -65,6 +66,16 @@ defmodule Pipeline.Writer.TableWriter do
     |> Compaction.run()
     |> Compaction.measure(table)
     |> Compaction.complete(table)
+  end
+
+  @impl Pipeline.Writer
+  def rename_table(args) do
+    old_table_name = Keyword.fetch!(args, )
+    new_table_name = Keyword.fetch!(args, )
+    Rename.create_new_table_with_existing_table(new_table_name, old_table_name)
+
+    %{table: old_table_name}
+    |> Rename.drop()
   end
 
   defp parse_args(args) do

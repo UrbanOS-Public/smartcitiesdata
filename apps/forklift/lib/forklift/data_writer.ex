@@ -56,6 +56,10 @@ defmodule Forklift.DataWriter do
     end
   end
 
+  @impl Pipeline.Writer
+  def delete_topic(opts) do
+  end
+
   @spec bootstrap() :: :ok | {:error, term()}
   @doc """
   Initializes `:topic_writer` from Forklift's application environment if an

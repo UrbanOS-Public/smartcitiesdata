@@ -9,4 +9,6 @@ defmodule Pipeline.Writer do
   @callback compact(keyword()) :: :ok | {:error, term()}
 
   @optional_callbacks compact: 1, terminate: 1
+  # @optional_callbacks delete_topic(keyword()) :: :ok | {:error, term()}
+  # @optional_callbacks rename_table(keyword()) :: :ok | {:error, term()}
 end
