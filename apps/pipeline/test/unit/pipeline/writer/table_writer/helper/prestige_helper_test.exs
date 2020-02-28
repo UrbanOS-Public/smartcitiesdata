@@ -16,6 +16,7 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelperTest do
     assert @expected_table_data == PrestigeHelper.execute_query("whatever")
   end
 
+  @tag capture_log: true
   test "should return error when error occurs while executing the query" do
     expected_error = {:error, "some error"}
     allow(Prestige.new_session(any()), return: :connection)
@@ -23,6 +24,7 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelperTest do
     assert expected_error == PrestigeHelper.execute_query("whatever")
   end
 
+  @tag capture_log: true
   test "should attempt to execute query asynchronously" do
     allow(Prestige.new_session(any()), return: :connection)
     allow(Prestige.execute(any(), any()), return: @expected_table_data)
