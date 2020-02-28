@@ -58,6 +58,7 @@ defmodule Forklift.DataWriter do
 
   @impl Pipeline.Writer
   def delete_topic(opts) do
+    [new_table: new_table, old_table: old_table]
   end
 
   @spec bootstrap() :: :ok | {:error, term()}
