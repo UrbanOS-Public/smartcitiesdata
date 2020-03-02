@@ -58,7 +58,14 @@ defmodule Forklift.DataWriter do
 
   @impl Pipeline.Writer
   def delete_topic(opts) do
-    [new_table: new_table, old_table: old_table]
+    @topic_writer.delete_topic()
+  end
+
+  @impl Pipeline.Writer
+  def delete_table(opts) do
+    table_name = table_name(dataset)
+    new_table_name = new_table_name(table_name)
+    @table_writer.delete_table(new_table_name: new_table_name, table_name: table_name)
   end
 
   @spec bootstrap() :: :ok | {:error, term()}
@@ -184,5 +191,18 @@ defmodule Forklift.DataWriter do
 
   defp s3_writer_bucket() do
     Application.get_env(:forklift, :s3_writer_bucket)
+  end
+
+  defp table_name(dataset) do
+    "#{dataset.technical.orgName}__#{dataset.technical.dataName}"
+  end
+
+  defp new_table_name(table_name) do
+    "deleted__#{current_timestamp()}__#{table_name}"
+  end
+
+  defp current_timestamp() do
+    DateTime.utc_now()
+    |> DateTime.to_unix(:millisecond)
   end
 end

@@ -4,7 +4,7 @@ defmodule Forklift.Integration.EventHandlingTest do
 
   import Mox
   import Forklift
-  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0, dataset_delete: 0]
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -84,5 +84,25 @@ defmodule Forklift.Integration.EventHandlingTest do
 
       assert_receive %SmartCity.Dataset{id: "terminate-id"}
     end
+  end
+
+  test "should delete dataset when dataset:delete event fires" do
+    dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: "ingest"})
+
+    allow(Forklift.DataReaderHelper.terminate(any()), return: :doesnt_matter)
+    allow(Forklift.DataWriter.delete_topic(), return: :doesnt_matter)
+    allow(Forklift.DataWriter.delete_table())
+
+    Brook.Test.with_event(@instance, fn ->
+      DatasetHandler.handle_event(
+        Brook.Event.new(
+          type: dataset_delete(),
+          data: dataset,
+          author: :datasets
+        )
+      )
+    end)
+
+    assert_called(Forklift.Datasets.delete(dataset.id))
   end
 end

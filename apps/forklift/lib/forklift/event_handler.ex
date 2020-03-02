@@ -66,8 +66,9 @@ defmodule Forklift.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = dataset}) do
-    Forklift.Forklift.DataReaderHelper.terminate(dataset)
-    Forklift.DataWriter.delete_topic()
+    Forklift.DataReaderHelper.terminate(dataset)
+    Forklift.DataWriter.delete_topic(dataset.id)
+    Forklift.DataWriter.delete_table(dataset)
     Forklift.Datasets.delete(dataset.id)
   end
 
