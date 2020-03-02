@@ -36,7 +36,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       %{id: @source_query_param_id, key: "F# minor", value: "add"}
     ],
     sourceType: "sourceType",
-    sourceUrl: "https://sourceurl.com"
+    sourceUrl: "https://sourceurl.com?chain=city&F%23+minor=add"
   }
 
   setup do

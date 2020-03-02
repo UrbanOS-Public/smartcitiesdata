@@ -111,6 +111,10 @@ defmodule Andi.InputSchemas.DatasetInput do
     put_change(changeset, field, change)
   end
 
+  # TODO - strip query string for changeset => dataset
+  # TODO - add/modify query string for dataset => changeset
+  # TODO - validating the url or params?
+
   def remove_key_value(changeset, field, id) do
     update_change(changeset, field, fn params ->
       Enum.filter(params, fn param -> param.changes.id != id end)
@@ -128,7 +132,7 @@ defmodule Andi.InputSchemas.DatasetInput do
   end
 
   def update_query_params(changeset, url) do
-    case extract_query_params(url) do
+    case Andi.URI.extract_query_params(url) do
       {:ok, params} ->
         key_value_changes = Enum.map(params, &convert_param_to_kv/1)
 
@@ -154,20 +158,6 @@ defmodule Andi.InputSchemas.DatasetInput do
   defp convert_param_to_kv({k, v}) do
     KeyValue.changeset(%KeyValue{}, %{key: k, value: v})
   end
-
-  defp extract_query_params(url) do
-    url
-    |> Andi.URI.parse()
-    |> Map.get(:query)
-    |> Andi.URI.query_decoder()
-  end
-
-  # TODO - fix ? case possibly with a URI module wrapper
-
-
-  # TODO - strip query string for changeset => dataset
-  # TODO - add/modify query string for dataset => changeset
-
 
   defp cast_embedded(changeset) do
     Enum.reduce(@key_value_type_keys, changeset, fn key, acc_changeset -> cast_embed(acc_changeset, key) end)
