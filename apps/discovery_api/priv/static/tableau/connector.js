@@ -51,7 +51,7 @@ function submit(mode) {
   }
   _setConnectionData(connectionData)
 
-  _setupConnector()
+  // _setupConnector()
   tableau.submit()
 }
 
@@ -65,6 +65,8 @@ function _setupConnector() {
 
   connector.init = function(initCallback) {
     var code = _getUrlParameterByName('code')
+
+    // TODO: test me
     if (code) {
       // TODO: clear URL
       _fetchRefreshToken(code)
@@ -80,7 +82,8 @@ function _setupConnector() {
 _setupConnector()
 
 function _getTableSchemas(schemaCallback) {
-  // TODO: fetch access token and send with the requests made below
+  // TODO: test that we get a new access token each time
+  delete window.accessToken
   _getDatasets()
     .then(_decodeAsJson)
     .then(_extractTableSchemas)
@@ -92,7 +95,8 @@ function _getTableSchemas(schemaCallback) {
 }
 
 function _getTableData(table, doneCallback) {
-  // TODO: fetch access token and send with the requests made below
+  // TODO: test that we get a new access token each time
+  delete window.accessToken
   _getData(table.tableInfo)
     .then(_decodeAsJson)
     .then(_convertDatasetRowsToTableRows(table.tableInfo))
@@ -134,17 +138,26 @@ function _convertToTableSchema(info) {
 }
 // ---
 
+function _authorizedFetch(url, params = {}) {
+  console.log('authorized fetch for', url, params)
+  return DiscoveryWDCTranslator.fetchAccessToken(tableau.password)
+  .then(function (token) {
+    const authorizedParams = Object.assign(params, {headers: {"Authorization": "Bearer " + token}})
+    return fetch(url, authorizedParams);
+  })
+}
+
 // Discovery Mode Functions
 function _getDatasetList() {
-  return fetch(apiPath + "dataset/search?apiAccessible=true&offset=0&limit=" + datasetLimit);
+  return _authorizedFetch(apiPath + "dataset/search?apiAccessible=true&offset=0&limit=" + datasetLimit);
 }
 
 function _getDatasetDictionary(dataset) {
-  return fetch(apiPath + "dataset/" + dataset.id + "/dictionary");
+  return _authorizedFetch(apiPath + "dataset/" + dataset.id + "/dictionary");
 }
 
 function _getDatasetData(tableInfo) {
-  return fetch(apiPath + "dataset/" + tableInfo.description + "/query?_format=json")
+  return _authorizedFetch(apiPath + "dataset/" + tableInfo.description + "/query?_format=json")
 }
 
 function _convertDatasetToTableSchema(dataset) {
@@ -174,12 +187,12 @@ function _getQueryInfo() {
 }
 
 function _getQueryDictionary(queryInfo) {
-  return fetch(apiPath + "query/describe?_format=json", {method: 'POST', body: queryInfo.query});
+  return _authorizedFetch(apiPath + "query/describe?_format=json", {method: 'POST', body: queryInfo.query});
 }
 
 function _getQueryData(tableInfo) {
   // Tableau has limited places to store things in the table struct. We use the description to store the query.
-  return fetch(apiPath + "query?_format=json", {method: 'POST', body: tableInfo.description});
+  return _authorizedFetch(apiPath + "query?_format=json", {method: 'POST', body: tableInfo.description});
 }
 
 function _convertQueryInfoToTableSchema(queryInfo) {
@@ -283,6 +296,9 @@ function _encodeAsUriQueryString(obj) {
 }
 
 function _fetchAccessToken(refreshToken) {
+  if (window.accessToken) {
+    return Promise.resolve(window.accessToken)
+  }
   var params = {
     grant_type: 'refresh_token',
     client_id: 'sfe5fZzFXsv5gIRXz8V3zkR7iaZBMvL0', // TODO: parameterize me
@@ -295,5 +311,5 @@ function _fetchAccessToken(refreshToken) {
     body: _encodeAsUriQueryString(params)
   })
   .then(_decodeAsJson)
-  .then(function(body) { return body.access_token })
+  .then(function(body) { window.accessToken = body.access_token; return body.access_token })
 }
