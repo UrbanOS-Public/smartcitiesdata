@@ -56,8 +56,8 @@ defmodule Pipeline.Writer.TableWriter.Statement do
     "select * from #{table_one} union all select * from #{table_two}"
   end
 
-  def create_new_table_with_existing_table(new_table_name, old_table_name) do
-    %{table: "#{new_table_name}", as: "select * from #{old_table_name}"}
+  def create_new_table_with_existing_table(%{new_table_name: new_table_name, table_name: table_name}) do
+    %{table: "#{new_table_name}", as: "select * from #{table_name}"}
     |> create()
     |> elem(1)
   end

@@ -246,12 +246,14 @@ defmodule Pipeline.Writer.TableWriterTest do
     end
   end
 
-  test "should rename the table", %{session: session} do
-    expected = [
+  test "should rename the table when rename table is called", %{session: session} do
+    expected_table_values = [
       %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "array(varchar)"},
       %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "row(three decimal(18,3))"},
       %{"Column" => "four", "Comment" => "", "Extra" => "", "Type" => "array(row(five decimal(18,3)))"}
     ]
+
+    expected_tables = [%{"Table" => "some_org_name_dataset_name"}]
 
     schema = [
       %{name: "one", type: "list", itemType: "string"},
@@ -259,32 +261,42 @@ defmodule Pipeline.Writer.TableWriterTest do
       %{name: "four", type: "list", itemType: "map", subSchema: [%{name: "five", type: "decimal(18,3)"}]}
     ]
 
-    dataset = TDG.create_dataset(%{technical: %{systemName: "org_name_dataset_name", schema: schema}})
+    dataset = TDG.create_dataset(%{technical: %{systemName: "some_org_name_dataset_name", schema: schema}})
 
-    TableWriter.init(table: dataset.technical.systemName, schema: dataset.technical.schema)
-
-    eventually(fn ->
-      table = "describe hive.default.org_name_dataset_name"
-
-      result =
-        session
-        |> Prestige.execute!(table)
-        |> Prestige.Result.as_maps()
-
-      assert result == expected
-    end)
-
-    TableWriter.rename_table(new_table_name: "some_new_table_name", old_table_name: "some_old_table_name")
+    [table: dataset.technical.systemName, schema: dataset.technical.schema]
+    |> TableWriter.init()
 
     eventually(fn ->
-      table = "describe hive.default.org_name_dataset_name"
+      assert expected_tables ==
+               "SHOW TABLES LIKE '%some_org_name_dataset_name%'"
+               |> execute_query(session)
 
-      result =
-        session
-        |> Prestige.execute!(table)
-        |> Prestige.Result.as_maps()
+      assert expected_table_values ==
+               "DESCRIBE some_org_name_dataset_name"
+               |> execute_query(session)
 
-      assert result == expected
+      assert [] ==
+               "SHOW TABLES LIKE '%some_new_org_name_dataset_name%'"
+               |> execute_query(session)
     end)
+
+    [new_table_name: "some_new_org_name_dataset_name", table_name: "some_org_name_dataset_name"]
+    |> TableWriter.rename_table()
+
+    eventually(fn ->
+      assert expected_table_values ==
+               "DESCRIBE some_new_org_name_dataset_name"
+               |> execute_query(session)
+
+      assert [] ==
+               "SHOW TABLES LIKE '%some_org_name_dataset_name%'"
+               |> execute_query(session)
+    end)
+  end
+
+  defp execute_query(query, session) do
+    session
+    |> Prestige.execute!(query)
+    |> Prestige.Result.as_maps()
   end
 end

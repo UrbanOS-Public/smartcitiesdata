@@ -469,7 +469,12 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
 
   test "should create query for creating new table with the existing table" do
     expected_query = "create table some_new_table as (select * from some_old_table)"
-    assert ^expected_query = Statement.create_new_table_with_existing_table("some_new_table", "some_old_table")
+
+    assert ^expected_query =
+             Statement.create_new_table_with_existing_table(%{
+               new_table_name: "some_new_table",
+               table_name: "some_old_table"
+             })
   end
 
   defp config(schema \\ [%{name: "id", type: "integer"}, %{name: "name", type: "string"}]) do

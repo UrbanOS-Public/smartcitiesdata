@@ -70,12 +70,12 @@ defmodule Pipeline.Writer.TableWriter do
 
   @impl Pipeline.Writer
   def rename_table(args) do
-    old_table_name = Keyword.fetch!(args, :old_table_name)
+    table_name = Keyword.fetch!(args, :table_name)
     new_table_name = Keyword.fetch!(args, :new_table_name)
-    Rename.create_new_table_with_existing_table(new_table_name, old_table_name)
+    Rename.create_new_table_with_existing_table(new_table_name, table_name)
 
-    %{table: old_table_name}
-    |> Rename.drop()
+    table_name
+    |> Rename.drop_table()
   end
 
   defp parse_args(args) do
