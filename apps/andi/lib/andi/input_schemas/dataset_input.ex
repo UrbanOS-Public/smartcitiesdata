@@ -111,9 +111,10 @@ defmodule Andi.InputSchemas.DatasetInput do
     put_change(changeset, field, change)
   end
 
-  # TODO - strip query string for changeset => dataset
   # TODO - add/modify query string for dataset => changeset
+  # TODO - test URL should reflect both fields correctly (probably just works, but we'll see)
   # TODO - validating the url or params?
+  # TODO - are race conditions possible? Ex. updating both query params and url at once? or updating one of them and clicking save really fast?
 
   def remove_key_value(changeset, field, id) do
     update_change(changeset, field, fn params ->
