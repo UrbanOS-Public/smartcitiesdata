@@ -140,11 +140,12 @@ function _convertToTableSchema(info) {
 
 function _authorizedFetch(url, params = {}) {
   console.log('authorized fetch for', url, params)
-  return DiscoveryWDCTranslator.fetchAccessToken(tableau.password)
-  .then(function (token) {
-    const authorizedParams = Object.assign(params, {headers: {"Authorization": "Bearer " + token}})
-    return fetch(url, authorizedParams);
-  })
+  return _fetchAccessToken(tableau.password)
+    .then(function (token) {
+      const headersWithAuth = Object.assign(params.headers || {}, { "Authorization": "Bearer " + token })
+      const authorizedParams = Object.assign(params, { headers: headersWithAuth })
+      return fetch(url, authorizedParams);
+    })
 }
 
 // Discovery Mode Functions
@@ -285,16 +286,6 @@ function _fetchRefreshToken(code) {
   .then(function(body) { return body.refresh_token })
 }
 
-function _encodeAsUriQueryString(obj) {
-  var queryString = ''
-  for(var key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      queryString += encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]) + '&'
-    }
-  }
-  return queryString
-}
-
 function _fetchAccessToken(refreshToken) {
   if (window.accessToken) {
     return Promise.resolve(window.accessToken)
@@ -311,5 +302,19 @@ function _fetchAccessToken(refreshToken) {
     body: _encodeAsUriQueryString(params)
   })
   .then(_decodeAsJson)
-  .then(function(body) { window.accessToken = body.access_token; return body.access_token })
+  .then(function(body) {
+    // TODO: test that access token is presevered on window outside of simulator
+    window.accessToken = body.access_token
+    return body.access_token
+  })
+}
+
+function _encodeAsUriQueryString(obj) {
+  var queryString = ''
+  for(var key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      queryString += encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]) + '&'
+    }
+  }
+  return queryString
 }
