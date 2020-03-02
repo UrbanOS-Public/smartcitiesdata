@@ -239,8 +239,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     test "requires unique orgName and dataName" do
       changes = @valid_changes |> Map.delete(:id)
 
-      existing_dataset =
-        TDG.create_dataset(%{technical: %{dataName: @valid_changes.dataName, orgName: @valid_changes.orgName}})
+      existing_dataset = TDG.create_dataset(%{technical: %{dataName: @valid_changes.dataName, orgName: @valid_changes.orgName}})
 
       DatasetCache.put(existing_dataset)
 
@@ -374,120 +373,200 @@ defmodule Andi.InputSchemas.DatasetInputTest do
       where(field: [:sourceQueryParams, :sourceHeaders])
     end
 
-    test "updates source url when a sourceQueryParam is removed" do
-      changeset = @valid_changes
-        |> Map.put(:sourceUrl, "https://source.url.example.com?foo=bar&F#+minor=add")
-        |> Map.put(:sourceQueryParams, [])
-        |> DatasetInput.light_validation_changeset()
+    data_test("updates source url when a sourceQueryParam is removed") do
+      current_state =
+        create_changeset(%{
+          sourceUrl: "http://host",
+          sourceQueryParams: sourceQueryParams
+        })
 
-      changes =
-        DatasetInput.remove_key_value(changeset, :sourceQueryParams, @source_query_param_id)
+      source_url =
+        Enum.reduce(keysToRemove, current_state, fn key, acc ->
+          DatasetInput.remove_key_value(acc, :sourceQueryParams, key)
+        end)
         |> Ecto.Changeset.apply_changes()
+        |> Map.get(:sourceUrl)
 
-      source_url = changes[:sourceUrl]
+      assert source_url == sourceUrl
 
-      assert source_url == "https://source.url.example.com?foo=bar"
+      where([
+        [:sourceQueryParams, :sourceUrl, :keysToRemove],
+        [[%{id: uuid("1"), key: "a", value: "b"}, %{id: uuid("2"), key: "c", value: "d"}], "http://host?c=d", [uuid("1")]],
+        [[%{id: uuid("1"), key: "a", value: "b"}, %{id: uuid("2"), key: "c", value: "d"}], "http://host", [uuid("1"), uuid("2")]]
+      ])
     end
+  end
+
+  defp uuid(known_value) do
+    padded_known_value = Base.encode16(known_value, case: :lower) |> String.pad_leading(12, "0")
+
+    "00000000-0000-0000-0000-#{padded_known_value}"
+    |> Ecto.UUID.cast!()
   end
 
   describe "update_query_params/2" do
-    setup do
-      valid_changeset_with_empty_query_params = @valid_changes
-        |> Map.put(:sourceUrl, "https://source.url.example.com")
-        |> Map.put(:sourceQueryParams, [])
+    test "given a url it sets the query params to match what is in it" do
+      current_state =
+        create_changeset(%{
+          sourceUrl: "https://source.url.example.com",
+          sourceQueryParams: []
+        })
 
-      [
-        initial_changeset: DatasetInput.light_validation_changeset(valid_changeset_with_empty_query_params)
-      ]
-    end
+      dataset_input =
+        DatasetInput.update_query_params(
+          current_state,
+          "https://source.url.example.com?look=at&me=i&have=params"
+        )
+        |> Ecto.Changeset.apply_changes()
 
-    test "given a url it sets the query params to match what is in it", %{initial_changeset: initial_changeset} do
-      changeset = DatasetInput.update_query_params(initial_changeset, "https://source.url.example.com?look=at&me=i&have=params")
-
-      query_params = Ecto.Changeset.get_field(changeset, :sourceQueryParams)
-
-      assert [
-        %{key: "look", value: "at"},
-        %{key: "me", value: "i"},
-        %{key: "have", value: "params"}
-      ] = query_params
+      assert %{
+               sourceQueryParams: [
+                 %{key: "look", value: "at"},
+                 %{key: "me", value: "i"},
+                 %{key: "have", value: "params"}
+               ]
+             } = dataset_input
     end
 
     test "given a url and a changeset with non-empty query params it replaces the query params to match what is in the url" do
-      valid_changeset_with_non_empty_query_params = @valid_changes
-        |> Map.put(:sourceUrl, "https://source.url.example.com")
-        |> Map.put(:sourceQueryParams, [
-          %{id: "a-uuid", key: "fizzle", value: "bizzle"}
-        ])
-      initial_changeset = DatasetInput.light_validation_changeset(valid_changeset_with_non_empty_query_params)
+      current_state =
+        create_changeset(%{
+          sourceUrl: "https://source.url.example.com",
+          sourceQueryParams: [
+            %{id: "a-uuid", key: "fizzle", value: "bizzle"}
+          ]
+        })
 
-      changeset = DatasetInput.update_query_params(initial_changeset, "https://source.url.example.com?look=at&me=i&have=params")
+      dataset_input =
+        DatasetInput.update_query_params(
+          current_state,
+          "https://source.url.example.com?look=at&me=i&have=params"
+        )
+        |> Ecto.Changeset.apply_changes()
 
-      query_params = Ecto.Changeset.get_field(changeset, :sourceQueryParams)
+      assert %{
+               sourceQueryParams: [
+                 %{key: "look", value: "at"},
+                 %{key: "me", value: "i"},
+                 %{key: "have", value: "params"}
+               ]
+             } = dataset_input
+    end
 
-      assert [
-        %{key: "look", value: "at"},
-        %{key: "me", value: "i"},
-        %{key: "have", value: "params"}
-      ] = query_params
+    test "given a url with partial URL encoding characters in it ignores them" do
+      current_state =
+        create_changeset(%{
+          sourceUrl: "https://source.url.example.com",
+          sourceQueryParams: [
+            %{id: "uuid-1", key: "hello", value: "true"},
+            %{id: "uuid-2", key: "goodbye scott", value: "false"}
+          ]
+        })
+
+      dataset_input =
+        DatasetInput.update_query_params(
+          current_state,
+          "https://source.url.example.com?hello%=true&goodbye+scott=false"
+        )
+        |> Ecto.Changeset.apply_changes()
+
+      assert %{
+               sourceQueryParams: [
+                 %{key: "hello", value: "true"},
+                 %{key: "goodbye scott", value: "false"}
+               ]
+             } = dataset_input
+    end
+
+    test "given a url with URL encoding characters in it already it matches what's in the url" do
+      current_state =
+        create_changeset(%{
+          sourceUrl: "https://source.url.example.com",
+          sourceQueryParams: []
+        })
+
+      dataset_input =
+        DatasetInput.update_query_params(
+          current_state,
+          "https://source.url.example.com?hello%20world=true&goodbye+scott=false"
+        )
+        |> Ecto.Changeset.apply_changes()
+
+      assert %{
+               sourceQueryParams: [
+                 %{key: "hello world", value: "true"},
+                 %{key: "goodbye scott", value: "false"}
+               ]
+             } = dataset_input
     end
   end
 
-  describe "update_source_url/2" do
-    setup do
-      valid_changeset_with_empty_query_params = @valid_changes
-        |> Map.put(:sourceUrl, "https://source.url.example.com")
-        |> Map.put(:sourceQueryParams, [])
+  describe "update_key_value/2" do
+    test "given a url (with no params) and query params it sets url to match the query params" do
+      current_state =
+        create_changeset(%{
+          sourceUrl: "https://source.url.example.com",
+          sourceQueryParams: []
+        })
 
-      [
-        initial_changeset: DatasetInput.light_validation_changeset(valid_changeset_with_empty_query_params)
-      ]
+      dataset_input =
+        DatasetInput.update_key_value(
+          current_state,
+          "https://source.url.example.com",
+          %{
+            "0" => %{"key" => "look", "value" => "at"},
+            "1" => %{"key" => "me", "value" => "i"},
+            "2" => %{"key" => "have", "value" => "params"}
+          }
+        )
+        |> Ecto.Changeset.apply_changes()
+
+      assert %{
+               sourceUrl: "https://source.url.example.com?look=at&me=i&have=params",
+               sourceQueryParams: [
+                 %{key: "look", value: "at"},
+                 %{key: "me", value: "i"},
+                 %{key: "have", value: "params"}
+               ]
+             } = dataset_input
     end
 
-    test "given a url (with no params) and query params it sets url to match the query params", %{initial_changeset: initial_changeset} do
-      changeset = DatasetInput.update_source_url(
-        initial_changeset,
-        "https://source.url.example.com",
-        %{
-          "0" => %{"key" => "look", "value" => "at"},
-          "1" => %{"key" => "me", "value" => "i"},
-          "2" => %{"key" => "have", "value" => "params"}
-        }
-      )
+    test "given a url and query params it sets url to match the query params" do
+      current_state =
+        create_changeset(%{
+          sourceUrl: "https://source.url.example.com?somehow=existing&params=yes",
+          sourceQueryParams: [
+            %{id: "uuid-1", key: "hello", value: "true"},
+            %{id: "uuid-2", key: "goodbye scott", value: "false"}
+          ]
+        })
 
-      source_url = Ecto.Changeset.get_field(changeset, :sourceUrl)
-      query_params = Ecto.Changeset.get_field(changeset, :sourceQueryParams)
+      dataset_input =
+        DatasetInput.update_key_value(
+          current_state,
+          "https://source.url.example.com?somehow=existing&params=yes",
+          %{
+            "0" => %{"key" => "look", "value" => "at"},
+            "1" => %{"key" => "me", "value" => "i"},
+            "2" => %{"key" => "have", "value" => "params"}
+          }
+        )
+        |> Ecto.Changeset.apply_changes()
 
-      assert [
-        %{key: "look", value: "at"},
-        %{key: "me", value: "i"},
-        %{key: "have", value: "params"}
-      ] = query_params
-
-      assert "https://source.url.example.com?look=at&me=i&have=params" == source_url
+      assert %{
+               sourceUrl: "https://source.url.example.com?look=at&me=i&have=params",
+               sourceQueryParams: [
+                 %{key: "look", value: "at"},
+                 %{key: "me", value: "i"},
+                 %{key: "have", value: "params"}
+               ]
+             } = dataset_input
     end
+  end
 
-    test "given a url and query params it sets url to match the query params", %{initial_changeset: initial_changeset} do
-      changeset = DatasetInput.update_source_url(
-        initial_changeset,
-        "https://source.url.example.com?somehow=existing&params=yes",
-        %{
-          "0" => %{"key" => "look", "value" => "at"},
-          "1" => %{"key" => "me", "value" => "i"},
-          "2" => %{"key" => "have", "value" => "params"}
-        }
-      )
-
-      source_url = Ecto.Changeset.get_field(changeset, :sourceUrl)
-      query_params = Ecto.Changeset.get_field(changeset, :sourceQueryParams)
-
-      assert [
-        %{key: "look", value: "at"},
-        %{key: "me", value: "i"},
-        %{key: "have", value: "params"}
-      ] = query_params
-
-      assert "https://source.url.example.com?look=at&me=i&have=params" == source_url
-    end
+  defp create_changeset(overrides) do
+    @valid_changes
+    |> Map.merge(overrides)
+    |> DatasetInput.light_validation_changeset()
   end
 end

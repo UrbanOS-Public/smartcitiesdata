@@ -11,12 +11,14 @@ defmodule Reaper.UrlBuilder do
   @spec build(SmartCity.Dataset.t()) :: String.t()
   def build(%SmartCity.Dataset{technical: %{sourceUrl: "s3://" <> _location = url}} = _dataset), do: url
 
-  def build(%SmartCity.Dataset{technical: %{sourceUrl: url, sourceQueryParams: query_params}} = _dataset)
-      when query_params == %{},
+  def build(%SmartCity.Dataset{technical: %{sourceUrl: url, sourceQueryParams: query_params}, version: version} = _dataset)
+      when query_params == %{} and version in ["0.1", "0.2", "0.3", "0.4"],
       do: build_url_path(url)
 
-  def build(%SmartCity.Dataset{technical: %{sourceUrl: url, sourceQueryParams: query_params}} = dataset) do
+  def build(%SmartCity.Dataset{technical: %{sourceUrl: url, sourceQueryParams: query_params}, version: version} = dataset) and version in ["0.5", "0.6", "0.7"] do
     last_success_time = extract_last_success_time(dataset.id)
+
+    VersionHelper.versioned_call([VersionRange("0.1", "0.4") => {UrlBuilderV1, :build, []}])
 
     string_params =
       query_params
@@ -42,6 +44,27 @@ defmodule Reaper.UrlBuilder do
       parameters,
       &evaluate_parameter(&1, bindings)
     )
+  end
+
+  [
+    %KeyValuePair{
+      key: "stuff"
+      value: "1"
+    },
+    %KeyValuePair{
+      key: "stuff"
+      value: "2"
+    }
+  ]
+
+  %SmartCity.Dataset.Technical{
+    sourceQueryParams: %{
+      "key[]" => ["3", "2"]
+    }
+  }
+
+  defp evaluate_parameter({key, value}, bindings) when is_list(value) do
+    {key, Enum.map(value, &EEx.eval_string(&1, bindings))}
   end
 
   defp evaluate_parameter({key, value}, bindings) do

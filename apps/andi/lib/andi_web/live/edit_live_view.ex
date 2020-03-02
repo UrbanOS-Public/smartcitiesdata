@@ -229,7 +229,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_info({:validate, %{"form_data" => %{"sourceUrl" => source_url, "sourceQueryParams" => source_query_params} = form_data, "_target" => ["form_data", "sourceQueryParams" | _]}} = the_whole_thing, socket) do
-    changeset = DatasetInput.update_source_url(socket.assigns.changeset, source_url, source_query_params)
+    changeset = DatasetInput.update_key_value(socket.assigns.changeset, source_url, source_query_params)
 
     {:noreply, assign(socket, changeset: changeset)}
   end
