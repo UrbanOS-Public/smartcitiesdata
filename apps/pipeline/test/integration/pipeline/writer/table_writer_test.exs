@@ -267,10 +267,6 @@ defmodule Pipeline.Writer.TableWriterTest do
     |> TableWriter.init()
 
     eventually(fn ->
-      assert expected_tables ==
-               "SHOW TABLES LIKE '%some_org_name_dataset_name%'"
-               |> execute_query(session)
-
       assert expected_table_values ==
                "DESCRIBE some_org_name_dataset_name"
                |> execute_query(session)
