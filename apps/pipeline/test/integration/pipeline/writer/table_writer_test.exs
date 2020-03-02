@@ -9,6 +9,18 @@ defmodule Pipeline.Writer.TableWriterTest do
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper, only: [eventually: 1]
 
+  @expected_table_values [
+    %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "array(varchar)"},
+    %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "row(three decimal(18,3))"},
+    %{"Column" => "four", "Comment" => "", "Extra" => "", "Type" => "array(row(five decimal(18,3)))"}
+  ]
+
+  @table_schema [
+    %{name: "one", type: "list", itemType: "string"},
+    %{name: "two", type: "map", subSchema: [%{name: "three", type: "decimal(18,3)"}]},
+    %{name: "four", type: "list", itemType: "map", subSchema: [%{name: "five", type: "decimal(18,3)"}]}
+  ]
+
   setup do
     session = PrestigeHelper.create_session()
     [session: session]
@@ -16,19 +28,7 @@ defmodule Pipeline.Writer.TableWriterTest do
 
   describe "init/1" do
     test "creates table with correct name and schema", %{session: session} do
-      expected = [
-        %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "array(varchar)"},
-        %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "row(three decimal(18,3))"},
-        %{"Column" => "four", "Comment" => "", "Extra" => "", "Type" => "array(row(five decimal(18,3)))"}
-      ]
-
-      schema = [
-        %{name: "one", type: "list", itemType: "string"},
-        %{name: "two", type: "map", subSchema: [%{name: "three", type: "decimal(18,3)"}]},
-        %{name: "four", type: "list", itemType: "map", subSchema: [%{name: "five", type: "decimal(18,3)"}]}
-      ]
-
-      dataset = TDG.create_dataset(%{technical: %{systemName: "org_name_dataset_name", schema: schema}})
+      dataset = TDG.create_dataset(%{technical: %{systemName: "org_name_dataset_name", schema: @table_schema}})
 
       TableWriter.init(table: dataset.technical.systemName, schema: dataset.technical.schema)
 
@@ -40,7 +40,7 @@ defmodule Pipeline.Writer.TableWriterTest do
           |> Prestige.execute!(table)
           |> Prestige.Result.as_maps()
 
-        assert result == expected
+        assert result == @expected_table_values
       end)
     end
 
@@ -247,27 +247,13 @@ defmodule Pipeline.Writer.TableWriterTest do
   end
 
   test "should rename the table when rename table is called", %{session: session} do
-    expected_table_values = [
-      %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "array(varchar)"},
-      %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "row(three decimal(18,3))"},
-      %{"Column" => "four", "Comment" => "", "Extra" => "", "Type" => "array(row(five decimal(18,3)))"}
-    ]
-
-    expected_tables = [%{"Table" => "some_org_name_dataset_name"}]
-
-    schema = [
-      %{name: "one", type: "list", itemType: "string"},
-      %{name: "two", type: "map", subSchema: [%{name: "three", type: "decimal(18,3)"}]},
-      %{name: "four", type: "list", itemType: "map", subSchema: [%{name: "five", type: "decimal(18,3)"}]}
-    ]
-
-    dataset = TDG.create_dataset(%{technical: %{systemName: "some_org_name_dataset_name", schema: schema}})
+    dataset = TDG.create_dataset(%{technical: %{systemName: "some_org_name_dataset_name", schema: @table_schema}})
 
     [table: dataset.technical.systemName, schema: dataset.technical.schema]
     |> TableWriter.init()
 
     eventually(fn ->
-      assert expected_table_values ==
+      assert @expected_table_values ==
                "DESCRIBE some_org_name_dataset_name"
                |> execute_query(session)
 
@@ -280,7 +266,7 @@ defmodule Pipeline.Writer.TableWriterTest do
     |> TableWriter.rename_table()
 
     eventually(fn ->
-      assert expected_table_values ==
+      assert @expected_table_values ==
                "DESCRIBE some_new_org_name_dataset_name"
                |> execute_query(session)
 

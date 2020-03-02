@@ -7,6 +7,7 @@ defmodule Pipeline.Writer.TopicWriterTest do
   import SmartCity.TestHelper, only: [eventually: 1]
 
   @topic Application.get_env(:pipeline, :output_topic)
+  @output_topic_prefix Application.get_env(:pipeline, :output_topic_prefix)
   @brokers Application.get_env(:pipeline, :elsa_brokers)
   @producer Application.get_env(:pipeline, :producer_name)
 
@@ -101,23 +102,25 @@ defmodule Pipeline.Writer.TopicWriterTest do
   end
 
   test "should delete the topic when delete topic is called" do
+    topic = "#{@output_topic_prefix}-#{Faker.UUID.v4()}"
+
     config = [
       instance: :pipeline,
       producer_name: @producer,
       endpoints: @brokers,
-      topic: @topic
+      topic: topic
     ]
 
     assert :ok = TopicWriter.init(config)
 
     eventually(fn ->
-      assert true == Elsa.Topic.exists?(@brokers, @topic)
+      assert true == Elsa.Topic.exists?(@brokers, topic)
     end)
 
     assert :ok = TopicWriter.delete_topic(config)
 
     eventually(fn ->
-      assert false == Elsa.topic?(@brokers, @topic)
+      assert false == Elsa.topic?(@brokers, topic)
     end)
   end
 end
