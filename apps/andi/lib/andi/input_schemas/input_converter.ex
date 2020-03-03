@@ -11,22 +11,19 @@ defmodule Andi.InputSchemas.InputConverter do
   @spec changeset_from_dataset(dataset) :: Ecto.Changeset.t()
   def changeset_from_dataset(%{"id" => _} = dataset) do
     dataset
-    |> IO.inspect(label: "input_converter.ex:14")
     |> atomize_dataset_map()
-    |> IO.inspect(label: "input_converter.ex:16")
     |> changeset_from_dataset()
   end
 
   def changeset_from_dataset(%{id: id, business: business, technical: technical}) do
-    from_business = get_business(business)
-    |> fix_modified_date()
+    from_business =
+      get_business(business)
+      |> fix_modified_date()
 
-    from_technical = get_technical(technical)
-    |> convert_key_values_for_fields()
-    |> convert_source_url()
-
-    Map.get(from_technical, :sourceUrl) |> IO.inspect(label: "load url")
-    Map.get(from_technical, :sourceQueryParams) |> IO.inspect(label: "load params")
+    from_technical =
+      get_technical(technical)
+      |> convert_key_values_for_fields()
+      |> convert_source_url()
 
     %{id: id}
     |> Map.merge(from_business)
@@ -72,9 +69,6 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:modifiedDate, nil, &date_to_iso8601_datetime/1)
       |> Map.update(:sourceUrl, nil, &Andi.URI.clear_query_params/1)
       |> restruct_key_values()
-
-    Map.get(formatted_changes, :sourceUrl) |> IO.inspect(label: "save url")
-    Map.get(formatted_changes, :sourceQueryParams) |> IO.inspect(label: "save params")
 
     business = Map.merge(dataset.business, get_business(formatted_changes)) |> Map.from_struct()
     technical = Map.merge(dataset.technical, get_technical(formatted_changes)) |> Map.from_struct()

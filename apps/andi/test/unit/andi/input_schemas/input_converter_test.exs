@@ -63,32 +63,33 @@ defmodule Andi.InputSchemas.InputConverterTest do
         }
       })
 
-      dataset =
-        dataset
-        |> InputConverter.changeset_from_dataset(%{
-          "sourceUrl" => "http://example.com?key=value&key1=value1",
-          "sourceQueryParams" => %{
-            "0" => %{
-              "key" => "key",
-              "value" => "value"
-            },
-            "1" => %{
-              "key" => "key1",
-              "value" => "value1"
-            }
-          }
-        })
-        |> Changeset.apply_changes()
-        |> InputConverter.restruct(dataset)
-
-      assert %SmartCity.Dataset{
-        technical: %{
-          sourceUrl: "http://example.com",
-          sourceQueryParams: %{
-            "key" => "value", "key1" => "value1"
+    dataset =
+      dataset
+      |> InputConverter.changeset_from_dataset(%{
+        "sourceUrl" => "http://example.com?key=value&key1=value1",
+        "sourceQueryParams" => %{
+          "0" => %{
+            "key" => "key",
+            "value" => "value"
+          },
+          "1" => %{
+            "key" => "key1",
+            "value" => "value1"
           }
         }
-      } = dataset
+      })
+      |> Changeset.apply_changes()
+      |> InputConverter.restruct(dataset)
+
+    assert %SmartCity.Dataset{
+             technical: %{
+               sourceUrl: "http://example.com",
+               sourceQueryParams: %{
+                 "key" => "value",
+                 "key1" => "value1"
+               }
+             }
+           } = dataset
   end
 
   test "converting a dataset to a changeset syncs source url and query params" do
@@ -103,16 +104,17 @@ defmodule Andi.InputSchemas.InputConverterTest do
         }
       })
 
-    dataset_input = InputConverter.changeset_from_dataset(dataset)
-    |> Ecto.Changeset.apply_changes()
+    dataset_input =
+      InputConverter.changeset_from_dataset(dataset)
+      |> Ecto.Changeset.apply_changes()
 
     assert %{
-      sourceUrl: "http://example.com?dog=cat&squashed=bro&wont=get",
-      sourceQueryParams: [
-        %{key: "dog", value: "cat"},
-        %{key: "squashed", value: "bro"},
-        %{key: "wont", value: "get"}
-      ]
-    } = dataset_input
+             sourceUrl: "http://example.com?dog=cat&squashed=bro&wont=get",
+             sourceQueryParams: [
+               %{key: "dog", value: "cat"},
+               %{key: "squashed", value: "bro"},
+               %{key: "wont", value: "get"}
+             ]
+           } = dataset_input
   end
 end

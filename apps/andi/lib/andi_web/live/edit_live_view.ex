@@ -174,7 +174,7 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("test_url", _, socket) do
     changes = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-    url = Map.get(changes, :sourceUrl)
+    url = Map.get(changes, :sourceUrl) |> Andi.URI.clear_query_params()
     query_params = key_values_to_keyword_list(changes, :sourceQueryParams)
     headers = key_values_to_keyword_list(changes, :sourceHeaders)
 
@@ -185,8 +185,14 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, testing: true)}
   end
 
-  def handle_event("validate", %{"form_data" => %{"sourceUrl" => sourceUrl}, "_target" => ["form_data", "sourceUrl"]} = change, socket) do
-    changeset = DatasetInput.update_query_params(socket.assigns.changeset, sourceUrl)
+  def handle_event("validate", %{"form_data" => %{"sourceUrl" => sourceUrl} = form_data, "_target" => ["form_data", "sourceUrl"]}, socket) do
+    socket = reset_save_success(socket)
+
+    changeset =
+      form_data
+      |> InputConverter.form_changeset()
+      |> DatasetInput.update_query_params(sourceUrl)
+
     {:noreply, assign(socket, changeset: changeset)}
   end
 
@@ -228,13 +234,23 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, test_results: results, testing: false)}
   end
 
-  def handle_info({:validate, %{"form_data" => %{"sourceUrl" => source_url, "sourceQueryParams" => source_query_params} = form_data, "_target" => ["form_data", "sourceQueryParams" | _]}} = the_whole_thing, socket) do
-    changeset = DatasetInput.update_key_value(socket.assigns.changeset, source_url, source_query_params)
+  def handle_info(
+        {:validate,
+         %{
+           "form_data" => %{"sourceUrl" => source_url, "sourceQueryParams" => source_query_params},
+           "_target" => ["form_data", "sourceQueryParams" | _]
+         }},
+        socket
+      ) do
+    socket = reset_save_success(socket)
+
+    changeset =
+      DatasetInput.update_key_value(socket.assigns.changeset, source_url, source_query_params) |> IO.inspect(label: "query param changeset")
 
     {:noreply, assign(socket, changeset: changeset)}
   end
 
-  def handle_info({:validate, %{"form_data" => form_data}} = the_whole_thing, socket) do
+  def handle_info({:validate, %{"form_data" => form_data}}, socket) do
     handle_validation(form_data, socket)
   end
 

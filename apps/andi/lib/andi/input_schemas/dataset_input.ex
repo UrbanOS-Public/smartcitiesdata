@@ -111,9 +111,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     put_change(changeset, field, change)
   end
 
-  # TODO - add/modify query string for dataset => changeset
-  # TODO - test URL should reflect both fields correctly (probably just works, but we'll see)
-  # TODO - validating the url or params?
+  # TODO - error handling/validating the url or params on update?
   # TODO - are race conditions possible? Ex. updating both query params and url at once? or updating one of them and clicking save really fast?
 
   def remove_key_value(changeset, field, id) do
@@ -124,7 +122,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     |> update_source_url()
   end
 
-  def update_key_value(changeset,  url, params) do
+  def update_key_value(changeset, url, params) do
     changeset = update_source_url(changeset, url, params)
 
     source_url = changeset.changes.sourceUrl
@@ -138,6 +136,7 @@ defmodule Andi.InputSchemas.DatasetInput do
         key_value_changes = Enum.map(params, &convert_param_to_kv/1)
 
         put_change(changeset, :sourceQueryParams, key_value_changes)
+
       _ ->
         changeset
     end
