@@ -88,19 +88,19 @@ defmodule Forklift.Integration.EventHandlingTest do
     end
   end
 
-  test "should delete dataset when dataset:delete event fires" do
-    dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: "ingest"})
+  test "should delete dataset when dataset:delete event handle is called" do
+    dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "ingest"})
+    expect(MockReader, :terminate, fn _ -> :ok end)
+    expect(MockTopic, :delete_topic, fn _ -> :ok end)
+    expect(MockTable, :rename_table, fn _ -> :ok end)
+    expect(Forklift.Datasets.delete(any()), return: :ok)
 
-    allow(Forklift.DataReaderHelper.terminate(any()), return: :doesnt_matter)
-    allow(Forklift.DataWriter.delete_topic(), return: :doesnt_matter)
-    allow(Forklift.DataWriter.delete_table())
-
-    Brook.Test.with_event(@instance, fn ->
-      DatasetHandler.handle_event(
+    Brook.Test.with_event(instance_name(), fn ->
+      Forklift.EventHandler.handle_event(
         Brook.Event.new(
           type: dataset_delete(),
           data: dataset,
-          author: :datasets
+          author: :author
         )
       )
     end)
