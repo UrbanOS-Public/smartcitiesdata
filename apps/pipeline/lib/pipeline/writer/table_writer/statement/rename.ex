@@ -1,7 +1,5 @@
 defmodule Pipeline.Writer.TableWriter.Statement.Rename do
-  @moduledoc """
-
-  """
+  @moduledoc false
 
   alias Pipeline.Writer.TableWriter.Statement
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
