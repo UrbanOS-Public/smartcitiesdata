@@ -65,24 +65,22 @@ function _setupConnector() {
 
   connector.init = function(initCallback) {
     var code = _getUrlParameterByName('code')
+    window.history.replaceState(null, null, window.location.pathname);
 
-    // TODO: test me
     if (code) {
-      // TODO: clear URL
       _fetchRefreshToken(code)
       .then(function(refreshToken) { tableau.password = refreshToken; })
-      .catch(function(error) { alert('Unable to authenticate: ' + error); })
-      // TODO: show a message to the user letting them know things didn't work out
+      .catch(function(error) { alert('Unable to authenticate: ' + error + '\nIf you need to access private datasets, contact your data curator.'); })
+      .then(function() { initCallback() })
+    } else {
+      initCallback();
     }
-
-    initCallback();
   }
 }
 
 _setupConnector()
 
 function _getTableSchemas(schemaCallback) {
-  // TODO: test that we get a new access token each time
   delete window.accessToken
   _getDatasets()
     .then(_decodeAsJson)
@@ -95,7 +93,6 @@ function _getTableSchemas(schemaCallback) {
 }
 
 function _getTableData(table, doneCallback) {
-  // TODO: test that we get a new access token each time
   delete window.accessToken
   _getData(table.tableInfo)
     .then(_decodeAsJson)

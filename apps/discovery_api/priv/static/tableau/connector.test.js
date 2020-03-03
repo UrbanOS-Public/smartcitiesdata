@@ -163,6 +163,33 @@ describe('Discovery API Tableau Web Data Connector', () => {
       expect(initCallback).toHaveBeenCalled()
     })
 
+    test('sets up the connector with a refresh token if a code is found', (done) => {
+      mockFetches({
+        'token': {body: {refresh_token: 'this-is-a-refresh-token'}}
+      })
+      history.pushState({}, 'Test Title', '/connector.html?code=bobthecode');
+
+      DiscoveryWDCTranslator.setupConnector()
+      registeredConnector.init(() => {
+        expect(global.fetch).toHaveBeenCalledWithBodyContaining('token', 'bobthecode')
+        expect(global.tableau.password).toBe('this-is-a-refresh-token')
+        done()
+      })
+    })
+
+    test('after fetching the refresh token, clears the code param from the url', (done) => {
+      mockFetches({
+        'token': {body: {refresh_token: 'this-is-a-refresh-token'}}
+      })
+      history.pushState({}, 'Test Title', '/connector.html?code=bobtheothercode');
+
+      DiscoveryWDCTranslator.setupConnector()
+      registeredConnector.init(() => {
+        expect(window.location.search).toBe('')
+        done()
+      })
+    })
+
     describe('on submit for discovery mode', () => {
       beforeEach(() => {
         DiscoveryWDCTranslator.submit('discovery')
@@ -746,6 +773,21 @@ expect.extend({
     return {
       pass,
       message: () => { return pass ? '' : `fetch was not called with ${urlFragment}` }
+    }
+  }
+})
+
+expect.extend({
+  toHaveBeenCalledWithBodyContaining(fetchMock, urlFragment, bodyFragment) {
+    const matchingCalls = fetchMock.mock.calls.filter(call => {
+      return call[0].includes(urlFragment)
+    }).filter(call => {
+      return call[1].body.includes(bodyFragment)
+    })
+    const pass = matchingCalls.length > 0
+    return {
+      pass,
+      message: () => { return pass ? '' : `fetch was not called with ${bodyFragment}` }
     }
   }
 })
