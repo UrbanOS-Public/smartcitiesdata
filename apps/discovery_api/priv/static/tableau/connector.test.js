@@ -58,6 +58,10 @@ describe('Discovery API Tableau Web Data Connector', () => {
     }
   ]
 
+  beforeEach(() => {
+    delete global.tableau.password
+  })
+
   describe('high level tests', () => {
     let registeredConnector
     beforeEach(() => {
@@ -232,7 +236,6 @@ describe('Discovery API Tableau Web Data Connector', () => {
           beforeEach(() => {
             global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
             mockFetches({
-              'token': {body: successfulAccessTokenResponse},
               'search': {body: datasetListFromApi},
               [datasetOneDictionaryUrl]: {body: datasetOneDictionaryFromApi},
               [datasetTwoDictionaryUrl]: {body: datasetTwoDictionaryFromApi}
@@ -314,7 +317,6 @@ describe('Discovery API Tableau Web Data Connector', () => {
             global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
             global.tableau.abortWithError.mockReset()
             mockFetches({
-              'token': {body: successfulAccessTokenResponse},
               'search': {body: datasetListFromApi},
               [datasetOneDictionaryUrl]: {ok: false, status: 400, statusText: 'Bad Request'},
               [datasetTwoDictionaryUrl]: {body: datasetTwoDictionaryFromApi}
@@ -337,16 +339,15 @@ describe('Discovery API Tableau Web Data Connector', () => {
         beforeEach(() => {
           global.tableau.connectionData = JSON.stringify({mode: 'query', query: expectedTableSchemaForQueryDataset.description})
           mockFetches({
-            "token": {body: successfulAccessTokenResponse},
             "describe": {body: queryDatasetDictionaryFromApi}
           })
         })
 
         test('fetches dataset dictionaries from the query describe API', (done) => {
           const schemaCallback = jest.fn(() => {
-            const firstCallUrl = global.fetch.mock.calls[1][0]
+            const firstCallUrl = global.fetch.mock.calls[0][0]
             expect(firstCallUrl).toContain('/api/v1/query/describe?_format=json')
-            const firstCallBody = global.fetch.mock.calls[1][1]
+            const firstCallBody = global.fetch.mock.calls[0][1]
             expect(firstCallBody.body).toEqual(expectedTableSchemaForQueryDataset.description)
 
             done()
@@ -380,7 +381,6 @@ describe('Discovery API Tableau Web Data Connector', () => {
           beforeEach(() => {
             global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
             mockFetches({
-              'token': {body: successfulAccessTokenResponse},
               [queryUrl]: {body: datasetTwoDataFromApi}
             })
           })
@@ -424,7 +424,6 @@ describe('Discovery API Tableau Web Data Connector', () => {
             global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
             global.tableau.abortWithError.mockReset()
             mockFetches({
-              'token': {body: successfulAccessTokenResponse},
               'query': {ok: false, status: 500, statusText: 'Internal Server Error'}
             })
           })
@@ -448,7 +447,6 @@ describe('Discovery API Tableau Web Data Connector', () => {
           beforeEach(() => {
             global.tableau.connectionData = JSON.stringify({mode: 'query', query})
             mockFetches({
-              'token': {body: successfulAccessTokenResponse},
               'query': {body: datasetTwoDictionaryFromApi}
             })
           })
@@ -459,9 +457,9 @@ describe('Discovery API Tableau Web Data Connector', () => {
               tableInfo: {...expectedTableSchemaForDatasetTwo, ...{description: query}}
             }
             const doneCallback = () => {
-              const firstCallUrl = global.fetch.mock.calls[1][0]
+              const firstCallUrl = global.fetch.mock.calls[0][0]
               expect(firstCallUrl).toBe('/api/v1/query?_format=json')
-              const firstCallBody = global.fetch.mock.calls[1][1]
+              const firstCallBody = global.fetch.mock.calls[0][1]
               expect(firstCallBody.body).toEqual(query)
 
               done()
@@ -755,10 +753,8 @@ expect.extend({
 expect.extend({
   toHaveBeenCalledWithHeader(fetchMock, urlFragment, headerKey, headerValue) {
     const matchingCalls = fetchMock.mock.calls.filter(call => {
-      console.log('url', call[0])
       return call[0].includes(urlFragment)
     }).filter(call => {
-      console.log('headers', call[1].headers)
       return call[1].headers[headerKey] == headerValue
     })
 

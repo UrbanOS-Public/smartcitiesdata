@@ -139,13 +139,16 @@ function _convertToTableSchema(info) {
 // ---
 
 function _authorizedFetch(url, params = {}) {
-  console.log('authorized fetch for', url, params)
-  return _fetchAccessToken(tableau.password)
-    .then(function (token) {
-      const headersWithAuth = Object.assign(params.headers || {}, { "Authorization": "Bearer " + token })
-      const authorizedParams = Object.assign(params, { headers: headersWithAuth })
-      return fetch(url, authorizedParams);
-    })
+  if (tableau.password) {
+    return _fetchAccessToken(tableau.password)
+      .then(function (token) {
+        const headersWithAuth = Object.assign(params.headers || {}, { "Authorization": "Bearer " + token })
+        const authorizedParams = Object.assign(params, { headers: headersWithAuth })
+        return fetch(url, authorizedParams);
+      })
+  } else {
+    return fetch(url, params);
+  }
 }
 
 // Discovery Mode Functions
