@@ -66,10 +66,30 @@ defmodule Forklift.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = dataset}) do
-    Forklift.DataReaderHelper.terminate(dataset)
-    Forklift.DataWriter.delete_topic(dataset.id)
-    Forklift.DataWriter.rename_table(dataset)
-    Forklift.Datasets.delete(dataset.id)
+    Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset.id}")
+
+    case delete_dataset(dataset) do
+      :ok ->
+        Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{dataset.id}")
+
+      {:error, error} ->
+        Logger.error(
+          "#{__MODULE__}: Failed to delete dataset for dataset: #{dataset.id}, Reason: #{
+            inspect(error)
+          }"
+        )
+    end
+  end
+
+  defp delete_dataset(dataset) do
+    with :ok <- Forklift.DataReaderHelper.terminate(dataset),
+         :ok <- Forklift.DataWriter.delete_topic(dataset.id),
+         :ok <- Forklift.DataWriter.rename_table(dataset),
+         :ok <- Forklift.Datasets.delete(dataset.id) do
+      :ok
+    else
+      error -> {:error, error}
+    end
   end
 
   defp parse_dataset_id("forklift:last_insert_date:" <> dataset_id), do: dataset_id
