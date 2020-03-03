@@ -122,20 +122,22 @@ defmodule Andi.InputSchemas.DatasetInput do
     |> update_source_url()
   end
 
-  def update_key_value(changeset, url, params) do
-    changeset = update_source_url(changeset, url, params)
+  def update_source_url_with_query_params(changeset, url, query_params) do
+    changeset = update_source_url(changeset, url, query_params)
 
     source_url = changeset.changes.sourceUrl
 
-    update_query_params(changeset, source_url)
+    update_source_query_params(changeset, source_url)
   end
 
-  def update_query_params(changeset, url) do
+  def update_source_query_params(changeset, url) do
     case Andi.URI.extract_query_params(url) do
       {:ok, params} ->
         key_value_changes = Enum.map(params, &convert_param_to_kv/1)
 
-        put_change(changeset, :sourceQueryParams, key_value_changes)
+        changeset
+        |> put_change(:sourceQueryParams, key_value_changes)
+        |> validate_key_value_parameters()
 
       _ ->
         changeset
@@ -149,8 +151,8 @@ defmodule Andi.InputSchemas.DatasetInput do
     update_source_url(changeset, source_url, source_query_params)
   end
 
-  defp update_source_url(changeset, url, params) do
-    updated_source_url = Andi.URI.update_url_with_params(url, params)
+  defp update_source_url(changeset, url, query_params) do
+    updated_source_url = Andi.URI.update_url_with_params(url, query_params)
 
     put_change(changeset, :sourceUrl, updated_source_url)
   end

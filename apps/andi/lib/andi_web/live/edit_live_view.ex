@@ -186,18 +186,16 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("validate", %{"form_data" => %{"sourceUrl" => sourceUrl} = form_data, "_target" => ["form_data", "sourceUrl"]}, socket) do
-    socket = reset_save_success(socket)
-
-    changeset =
-      form_data
-      |> InputConverter.form_changeset()
-      |> DatasetInput.update_query_params(sourceUrl)
-
-    {:noreply, assign(socket, changeset: changeset)}
+    form_data
+    |> InputConverter.form_changeset()
+    |> DatasetInput.update_source_query_params(sourceUrl)
+    |> complete_validation(socket)
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    handle_validation(form_data, socket)
+    form_data
+    |> InputConverter.form_changeset()
+    |> complete_validation(socket)
   end
 
   def handle_event("save", %{"form_data" => form_data}, socket) do
@@ -237,21 +235,21 @@ defmodule AndiWeb.EditLiveView do
   def handle_info(
         {:validate,
          %{
-           "form_data" => %{"sourceUrl" => source_url, "sourceQueryParams" => source_query_params},
+           "form_data" => %{"sourceUrl" => source_url, "sourceQueryParams" => source_query_params} = form_data,
            "_target" => ["form_data", "sourceQueryParams" | _]
          }},
         socket
       ) do
-    socket = reset_save_success(socket)
-
-    changeset =
-      DatasetInput.update_key_value(socket.assigns.changeset, source_url, source_query_params) |> IO.inspect(label: "query param changeset")
-
-    {:noreply, assign(socket, changeset: changeset)}
+    form_data
+    |> InputConverter.form_changeset()
+    |> DatasetInput.update_source_url_with_query_params(source_url, source_query_params)
+    |> complete_validation(socket)
   end
 
   def handle_info({:validate, %{"form_data" => form_data}}, socket) do
-    handle_validation(form_data, socket)
+    form_data
+    |> InputConverter.form_changeset()
+    |> complete_validation(socket)
   end
 
   def handle_info({:add_key_value, %{"field" => field}}, socket) do
@@ -272,13 +270,10 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, socket}
   end
 
-  defp handle_validation(form_data, socket) do
+  defp complete_validation(changeset, socket) do
     socket = reset_save_success(socket)
 
-    new_changeset =
-      form_data
-      |> InputConverter.form_changeset()
-      |> Map.put(:action, :update)
+    new_changeset = Map.put(changeset, :action, :update)
 
     {:noreply, assign(socket, changeset: new_changeset)}
   end

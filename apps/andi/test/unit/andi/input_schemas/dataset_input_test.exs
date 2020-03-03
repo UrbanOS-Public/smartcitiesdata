@@ -404,7 +404,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     |> Ecto.UUID.cast!()
   end
 
-  describe "update_query_params/2" do
+  describe "update_source_query_params/2" do
     test "given a url it sets the query params to match what is in it" do
       current_state =
         create_changeset(%{
@@ -413,7 +413,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
         })
 
       dataset_input =
-        DatasetInput.update_query_params(
+        DatasetInput.update_source_query_params(
           current_state,
           "https://source.url.example.com?look=at&me=i&have=params"
         )
@@ -438,7 +438,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
         })
 
       dataset_input =
-        DatasetInput.update_query_params(
+        DatasetInput.update_source_query_params(
           current_state,
           "https://source.url.example.com?look=at&me=i&have=params"
         )
@@ -464,7 +464,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
         })
 
       dataset_input =
-        DatasetInput.update_query_params(
+        DatasetInput.update_source_query_params(
           current_state,
           "https://source.url.example.com?hello%=true&goodbye+scott=false"
         )
@@ -486,7 +486,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
         })
 
       dataset_input =
-        DatasetInput.update_query_params(
+        DatasetInput.update_source_query_params(
           current_state,
           "https://source.url.example.com?hello%20world=true&goodbye+scott=false"
         )
@@ -501,7 +501,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     end
   end
 
-  describe "update_key_value/2" do
+  describe "update_source_url_with_query_params/3" do
     test "given a url (with no params) and query params it sets url to match the query params" do
       current_state =
         create_changeset(%{
@@ -510,7 +510,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
         })
 
       dataset_input =
-        DatasetInput.update_key_value(
+        DatasetInput.update_source_url_with_query_params(
           current_state,
           "https://source.url.example.com",
           %{
@@ -542,7 +542,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
         })
 
       dataset_input =
-        DatasetInput.update_key_value(
+        DatasetInput.update_source_url_with_query_params(
           current_state,
           "https://source.url.example.com?somehow=existing&params=yes",
           %{
@@ -561,6 +561,25 @@ defmodule Andi.InputSchemas.DatasetInputTest do
                  %{key: "have", value: "params"}
                ]
              } = dataset_input
+    end
+
+    test "given a url with at least one invalid query param it marks the dataset as invalid" do
+      current_state =
+        create_changeset(%{
+          sourceUrl: "https://source.url.example.com",
+          sourceQueryParams: []
+        })
+
+      changeset =
+        DatasetInput.update_source_query_params(
+          current_state,
+          "https://source.url.example.com?=oops&a=b"
+        )
+
+      refute changeset.valid?
+      assert changeset.errors == [{:sourceQueryParams, {"has invalid format", [validation: :format]}}]
+
+      assert %{sourceQueryParams: [%{key: nil, value: "oops"}, %{key: "a", value: "b"}]} = Ecto.Changeset.apply_changes(changeset)
     end
   end
 
