@@ -69,9 +69,10 @@ defmodule Pipeline.Writer.TableWriter do
   end
 
   @impl Pipeline.Writer
+  @spec rename_table(new_table_name: String.t(), table_name: String.t()) :: :ok | {:error, term()}
   def rename_table(args) do
-    table_name = Keyword.fetch!(args, :table_name)
     new_table_name = Keyword.fetch!(args, :new_table_name)
+    table_name = Keyword.fetch!(args, :table_name)
     Rename.create_new_table_with_existing_table(new_table_name, table_name)
 
     table_name

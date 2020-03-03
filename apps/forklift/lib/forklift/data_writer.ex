@@ -57,15 +57,21 @@ defmodule Forklift.DataWriter do
   end
 
   @impl Pipeline.Writer
-  def delete_topic(opts) do
-    @topic_writer.delete_topic()
+  def delete_topic(dataset_id) do
+    endpoints = Application.get_env(:forklift, :elsa_brokers)
+    topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{dataset_id}"
+
+    [endpoints: endpoints, topic: topic]
+    |> @topic_writer.delete_topic()
   end
 
   @impl Pipeline.Writer
-  def delete_table(opts) do
+  def rename_table(dataset) do
     table_name = table_name(dataset)
     new_table_name = new_table_name(table_name)
-    @table_writer.delete_table(new_table_name: new_table_name, table_name: table_name)
+
+    [new_table_name: new_table_name, table_name: table_name]
+    |> @table_writer.rename_table()
   end
 
   @spec bootstrap() :: :ok | {:error, term()}

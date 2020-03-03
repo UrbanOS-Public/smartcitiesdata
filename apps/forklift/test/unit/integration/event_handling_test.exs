@@ -4,7 +4,9 @@ defmodule Forklift.Integration.EventHandlingTest do
 
   import Mox
   import Forklift
-  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0, dataset_delete: 0]
+
+  import SmartCity.Event,
+    only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0, dataset_delete: 0]
 
   alias SmartCity.TestDataGenerator, as: TDG
 

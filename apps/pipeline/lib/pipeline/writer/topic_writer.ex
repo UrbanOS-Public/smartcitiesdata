@@ -37,6 +37,7 @@ defmodule Pipeline.Writer.TopicWriter do
   end
 
   @impl Pipeline.Writer
+  @spec delete_topic(endpoints: Elsa.endpoints(), topic: String.t()) :: :ok | {:error, term()}
   def delete_topic(config) do
     endpoints = Keyword.fetch!(config, :endpoints)
     topic = Keyword.fetch!(config, :topic)
