@@ -135,16 +135,17 @@ function _convertToTableSchema(info) {
 }
 // ---
 
-function _authorizedFetch(url, params = {}) {
+function _authorizedFetch(url, params) {
+  var fetchParams = params || {};
   if (tableau.password) {
     return _fetchAccessToken(tableau.password)
       .then(function (token) {
-        const headersWithAuth = Object.assign(params.headers || {}, { "Authorization": "Bearer " + token })
-        const authorizedParams = Object.assign(params, { headers: headersWithAuth })
+        var headersWithAuth = Object.assign(fetchParams.headers || {}, { "Authorization": "Bearer " + token })
+        var authorizedParams = Object.assign(fetchParams, { headers: headersWithAuth })
         return fetch(url, authorizedParams);
       })
   } else {
-    return fetch(url, params);
+    return fetch(url, fetchParams);
   }
 }
 
