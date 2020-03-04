@@ -11,7 +11,6 @@ defmodule AndiWeb.EditLiveView do
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
   require Logger
-  require IEx
 
   def render(assigns) do
     ~L"""
