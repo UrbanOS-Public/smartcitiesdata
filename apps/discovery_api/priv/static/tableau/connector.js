@@ -38,7 +38,6 @@ function logout() {
 
 var datasetLimit = "1000000";
 var fileTypes = ["CSV", "GEOJSON"];
-// var apiPath = 'http://localhost:9001/api/v1/'
 var apiPath = '/api/v1/'
 
 function submit(mode) {
@@ -274,8 +273,7 @@ function _getQueryString() { return JSON.parse(tableau.connectionData).query }
 function _getUrlParameterByName(name) {
   var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
   var results = regex.exec(window.location.href);
-  if (!results || !results[2]) { return null; }
-  return decodeURIComponent(results[2].replace(/\+/g, ' '));
+  return results && results[2] ? decodeURIComponent(results[2].replace(/\+/g, ' ')) : null;
 }
 
 function _fetchRefreshToken(code) {
