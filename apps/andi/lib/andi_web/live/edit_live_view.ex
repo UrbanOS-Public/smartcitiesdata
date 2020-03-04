@@ -173,7 +173,7 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("test_url", _, socket) do
     changes = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-    url = Map.get(changes, :sourceUrl)
+    url = Map.get(changes, :sourceUrl) |> Andi.URI.clear_query_params()
     query_params = key_values_to_keyword_list(changes, :sourceQueryParams)
     headers = key_values_to_keyword_list(changes, :sourceHeaders)
 
@@ -184,7 +184,18 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, testing: true)}
   end
 
-  def handle_event("validate", %{"form_data" => form_data}, socket), do: handle_validation(form_data, socket)
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceUrl"]}, socket) do
+    form_data
+    |> InputConverter.form_changeset()
+    |> DatasetInput.adjust_source_query_params_for_url()
+    |> complete_validation(socket)
+  end
+
+  def handle_event("validate", %{"form_data" => form_data}, socket) do
+    form_data
+    |> InputConverter.form_changeset()
+    |> complete_validation(socket)
+  end
 
   def handle_event("save", %{"form_data" => form_data}, socket) do
     socket = reset_save_success(socket)
@@ -220,7 +231,18 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, test_results: results, testing: false)}
   end
 
-  def handle_info({:validate, %{"form_data" => form_data}}, socket), do: handle_validation(form_data, socket)
+  def handle_info({:validate, %{"form_data" => form_data, "_target" => ["form_data", "sourceQueryParams" | _]}}, socket) do
+    form_data
+    |> InputConverter.form_changeset()
+    |> DatasetInput.adjust_source_url_for_query_params()
+    |> complete_validation(socket)
+  end
+
+  def handle_info({:validate, %{"form_data" => form_data}}, socket) do
+    form_data
+    |> InputConverter.form_changeset()
+    |> complete_validation(socket)
+  end
 
   def handle_info({:add_key_value, %{"field" => field}}, socket) do
     socket = reset_save_success(socket)
@@ -231,6 +253,7 @@ defmodule AndiWeb.EditLiveView do
   def handle_info({:remove_key_value, %{"id" => id, "field" => field}}, socket) do
     socket = reset_save_success(socket)
     changeset = DatasetInput.remove_key_value(socket.assigns.changeset, SmartCity.Helpers.safe_string_to_atom(field), id)
+
     {:noreply, assign(socket, changeset: changeset)}
   end
 
@@ -239,13 +262,10 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, socket}
   end
 
-  defp handle_validation(form_data, socket) do
+  defp complete_validation(changeset, socket) do
     socket = reset_save_success(socket)
 
-    new_changeset =
-      form_data
-      |> InputConverter.form_changeset()
-      |> Map.put(:action, :update)
+    new_changeset = Map.put(changeset, :action, :update)
 
     {:noreply, assign(socket, changeset: new_changeset)}
   end

@@ -65,8 +65,7 @@ defmodule AndiWeb.DatasetLiveView do
       filter_on_search_change(search_text, socket)
       |> sort_by_dir(order_by, order_dir)
 
-    {:noreply,
-     assign(socket, search_text: search_text, datasets: view_models, order: %{order_by => order_dir}, params: params)}
+    {:noreply, assign(socket, search_text: search_text, datasets: view_models, order: %{order_by => order_dir}, params: params)}
   end
 
   def handle_event("search", %{"search-value" => value}, socket) do

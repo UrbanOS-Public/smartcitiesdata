@@ -9,11 +9,21 @@ defmodule Andi.InputSchemas.InputConverter do
   @type dataset :: map() | Dataset.t()
 
   @spec changeset_from_dataset(dataset) :: Ecto.Changeset.t()
-  def changeset_from_dataset(%{"id" => _} = dataset), do: atomize_dataset_map(dataset) |> changeset_from_dataset()
+  def changeset_from_dataset(%{"id" => _} = dataset) do
+    dataset
+    |> atomize_dataset_map()
+    |> changeset_from_dataset()
+  end
 
   def changeset_from_dataset(%{id: id, business: business, technical: technical}) do
-    from_business = get_business(business) |> fix_modified_date()
-    from_technical = get_technical(technical) |> convert_key_values()
+    from_business =
+      get_business(business)
+      |> fix_modified_date()
+
+    from_technical =
+      get_technical(technical)
+      |> convert_key_values_for_fields()
+      |> convert_source_url()
 
     %{id: id}
     |> Map.merge(from_business)
@@ -57,6 +67,7 @@ defmodule Andi.InputSchemas.InputConverter do
       changes
       |> Map.update(:issuedDate, nil, &date_to_iso8601_datetime/1)
       |> Map.update(:modifiedDate, nil, &date_to_iso8601_datetime/1)
+      |> Map.update(:sourceUrl, nil, &Andi.URI.clear_query_params/1)
       |> restruct_key_values()
 
     business = Map.merge(dataset.business, get_business(formatted_changes)) |> Map.from_struct()
@@ -122,14 +133,26 @@ defmodule Andi.InputSchemas.InputConverter do
     end)
   end
 
-  defp convert_key_values(map) do
-    Enum.reduce(DatasetInput.key_value_keys(), map, fn field, acc -> convert_key_values(acc, field) end)
+  defp convert_key_values_for_fields(map) do
+    Enum.reduce(DatasetInput.key_value_keys(), map, fn field, acc -> convert_key_values_for_fields(acc, field) end)
   end
 
-  defp convert_key_values(map, field) do
-    Map.update(map, field, [], fn key_values ->
-      Enum.map(key_values, fn {k, v} -> %{key: k, value: v} end)
-    end)
+  defp convert_key_values_for_fields(map, field) do
+    Map.update(map, field, [], &convert_key_values/1)
+  end
+
+  defp convert_key_values(key_values) do
+    Enum.map(key_values, fn {k, v} -> %{key: to_string(k), value: v} end)
+  end
+
+  defp convert_source_url(map) do
+    source_url = Map.get(map, :sourceUrl)
+    source_query_params = Map.get(map, :sourceQueryParams)
+
+    {url, params} = Andi.URI.merge_url_and_params(source_url, source_query_params)
+
+    Map.put(map, :sourceUrl, url)
+    |> Map.put(:sourceQueryParams, convert_key_values(params))
   end
 
   defp restruct_key_values(map) do
