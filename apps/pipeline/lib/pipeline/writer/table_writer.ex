@@ -72,14 +72,8 @@ defmodule Pipeline.Writer.TableWriter do
   @spec delete(dataset: [term()]) :: :ok | {:error, term()}
   def delete(args) do
     dataset = Keyword.fetch!(args, :dataset)
-    table_name = parse_table_name(dataset)
-
-    table_name
-    |> parse_new_table_name()
-    |> Rename.create_new_table_with_existing_table(table_name)
-
-    table_name
-    |> Rename.drop_table()
+    Rename.create_new_table_with_existing_table(dataset)
+    Rename.drop_table(dataset)
   end
 
   defp parse_args(args) do
@@ -87,18 +81,5 @@ defmodule Pipeline.Writer.TableWriter do
       table: Keyword.fetch!(args, :table),
       schema: Keyword.fetch!(args, :schema)
     }
-  end
-
-  defp parse_table_name(dataset) do
-    "#{dataset.technical.orgName}__#{dataset.technical.dataName}"
-  end
-
-  defp parse_new_table_name(table_name) do
-    "deleted__#{current_timestamp()}__#{table_name}"
-  end
-
-  defp current_timestamp() do
-    DateTime.utc_now()
-    |> DateTime.to_unix(:millisecond)
   end
 end

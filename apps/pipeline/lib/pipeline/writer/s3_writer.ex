@@ -8,6 +8,7 @@ defmodule Pipeline.Writer.S3Writer do
   alias Pipeline.Writer.S3Writer.{Compaction, S3SafeJson}
   alias Pipeline.Writer.TableWriter.{Statement}
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+  alias Pipeline.Writer.TableWriter.Statement.Rename
   alias ExAws.S3
 
   require Logger
@@ -97,14 +98,11 @@ defmodule Pipeline.Writer.S3Writer do
   end
 
   @impl Pipeline.Writer
-  @spec delete(new_table_name: String.t(), table_name: String.t()) :: :ok | {:error, term()}
+  @spec delete(dataset: [term()]) :: :ok | {:error, term()}
   def delete(args) do
-    new_table_name = Keyword.fetch!(args, :new_table_name)
-    table_name = Keyword.fetch!(args, :table_name)
-    Rename.create_new_table_with_existing_table(new_table_name, table_name)
-
-    table_name
-    |> Rename.drop_table()
+    dataset = Keyword.fetch!(args, :dataset)
+    Rename.create_new_table_with_existing_table(dataset)
+    Rename.drop_table(dataset)
   end
 
   defp write_to_temporary_file(file_contents, table_name) do

@@ -82,13 +82,9 @@ defmodule Forklift.EventHandler do
   end
 
   defp delete_dataset(dataset) do
-    with :ok <- Forklift.DataReaderHelper.terminate(dataset),
-         :ok <- Forklift.DataWriter.delete(dataset),
-         :ok <- Forklift.Datasets.delete(dataset.id) do
-      :ok
-    else
-      error -> {:error, error}
-    end
+    Forklift.DataReaderHelper.terminate(dataset)
+    Forklift.DataWriter.delete(dataset)
+    Forklift.Datasets.delete(dataset.id)
   end
 
   defp parse_dataset_id("forklift:last_insert_date:" <> dataset_id), do: dataset_id
