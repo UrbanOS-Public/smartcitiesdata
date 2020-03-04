@@ -380,7 +380,7 @@ defmodule Pipeline.Writer.S3WriterTest do
     end
   end
 
-  test "should delete and rename the json table when delete table is called", %{session: session} do
+  test "should delete and rename the orc and json table when delete table is called", %{session: session} do
     dataset =
       TDG.create_dataset(%{
         technical: %{schema: @table_schema}
@@ -395,7 +395,7 @@ defmodule Pipeline.Writer.S3WriterTest do
 
     eventually(fn ->
       assert @expected_table_values ==
-               "DESCRIBE #{table_name}__json"
+               "DESCRIBE #{table_name}"
                |> execute_query(session)
     end)
 
@@ -404,13 +404,14 @@ defmodule Pipeline.Writer.S3WriterTest do
 
     eventually(fn ->
       expected_table_name =
-        "SHOW TABLES LIKE '%#{table_name}__json%'"
+        "SHOW TABLES LIKE '%#{table_name}%'"
         |> execute_query(session)
         |> Enum.find(fn x ->
           x["Table"]
-          |> String.ends_with?("#{table_name}__json")
+          |> String.ends_with?("#{table_name}")
         end)
-        |> verify_deleted_table_name("#{table_name}__json")
+        |> IO.inspect(label: "Tablesssss")
+        |> verify_deleted_table_name("#{table_name}")
 
       assert @expected_table_values ==
                "DESCRIBE #{expected_table_name}"

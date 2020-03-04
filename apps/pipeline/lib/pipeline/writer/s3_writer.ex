@@ -100,17 +100,12 @@ defmodule Pipeline.Writer.S3Writer do
   @impl Pipeline.Writer
   @spec delete(dataset: [term()]) :: :ok | {:error, term()}
   def delete(args) do
-    table =
+    table_name =
       Keyword.fetch!(args, :dataset)
       |> Rename.parse_table_name()
 
-    table_name = table_name("JSON", table: table)
-
-    table_name
-    |> Rename.create_new_table_with_existing_table()
-
-    table_name
-    |> Rename.drop_table()
+    delete_orc_table(table_name)
+    delete_json_table(table_name)
   end
 
   defp write_to_temporary_file(file_contents, table_name) do
@@ -187,5 +182,25 @@ defmodule Pipeline.Writer.S3Writer do
       {:ok, _} -> true
       error -> error
     end
+  end
+
+  defp delete_json_table(table_name) do
+    json_table_name = table_name("JSON", table: table_name)
+
+    json_table_name
+    |> Rename.create_new_table_with_existing_table()
+
+    json_table_name
+    |> Rename.drop_table()
+  end
+
+  defp delete_orc_table(table_name) do
+    orc_table_name = table_name("ORC", table: table_name)
+
+    orc_table_name
+    |> Rename.create_new_table_with_existing_table()
+
+    orc_table_name
+    |> Rename.drop_table()
   end
 end
