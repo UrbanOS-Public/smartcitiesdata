@@ -116,6 +116,42 @@ defmodule Andi.InputSchemas.DatasetInput do
       Enum.filter(params, fn param -> param.changes.id != id end)
     end)
     |> validate_key_value_parameters()
+    |> update_source_url()
+  end
+
+  def adjust_source_url_for_query_params(changeset) do
+    changeset
+    |> update_source_url()
+    |> adjust_source_query_params_for_url()
+  end
+
+  def adjust_source_query_params_for_url(changeset) do
+    source_url = Ecto.Changeset.get_field(changeset, :sourceUrl)
+
+    case Andi.URI.extract_query_params(source_url) do
+      {:ok, params} ->
+        key_value_changes = Enum.map(params, &convert_param_to_kv/1)
+
+        changeset
+        |> put_change(:sourceQueryParams, key_value_changes)
+        |> validate_key_value_parameters()
+
+      _ ->
+        changeset
+    end
+  end
+
+  defp update_source_url(changeset) do
+    source_url = Ecto.Changeset.get_field(changeset, :sourceUrl)
+    source_query_params = Ecto.Changeset.get_field(changeset, :sourceQueryParams, [])
+
+    updated_source_url = Andi.URI.update_url_with_params(source_url, source_query_params)
+
+    put_change(changeset, :sourceUrl, updated_source_url)
+  end
+
+  defp convert_param_to_kv({k, v}) do
+    KeyValue.changeset(%KeyValue{}, %{key: k, value: v})
   end
 
   defp cast_embedded(changeset) do
