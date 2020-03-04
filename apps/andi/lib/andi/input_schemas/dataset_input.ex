@@ -111,9 +111,6 @@ defmodule Andi.InputSchemas.DatasetInput do
     put_change(changeset, field, change)
   end
 
-  # TODO - error handling/validating the url or params on update?
-  # TODO - are race conditions possible? Ex. updating both query params and url at once? or updating one of them and clicking save really fast?
-
   def remove_key_value(changeset, field, id) do
     update_change(changeset, field, fn params ->
       Enum.filter(params, fn param -> param.changes.id != id end)
@@ -122,7 +119,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     |> update_source_url()
   end
 
-  def update_source_url_with_query_params(changeset, url, query_params) do
+  def update_source_url_and_query_params(changeset, url, query_params) do
     changeset = update_source_url(changeset, url, query_params)
 
     source_url = changeset.changes.sourceUrl

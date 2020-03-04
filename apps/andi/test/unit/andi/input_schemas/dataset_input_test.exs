@@ -501,7 +501,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
     end
   end
 
-  describe "update_source_url_with_query_params/3" do
+  describe "update_source_url_and_query_params/3" do
     test "given a url (with no params) and query params it sets url to match the query params" do
       current_state =
         create_changeset(%{
@@ -510,7 +510,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
         })
 
       dataset_input =
-        DatasetInput.update_source_url_with_query_params(
+        DatasetInput.update_source_url_and_query_params(
           current_state,
           "https://source.url.example.com",
           %{
@@ -542,7 +542,7 @@ defmodule Andi.InputSchemas.DatasetInputTest do
         })
 
       dataset_input =
-        DatasetInput.update_source_url_with_query_params(
+        DatasetInput.update_source_url_and_query_params(
           current_state,
           "https://source.url.example.com?somehow=existing&params=yes",
           %{

@@ -1,4 +1,7 @@
 defmodule Andi.URI do
+  @moduledoc """
+  Andi's utility module for manipulating and formatting URIs with query parameters.
+  """
   def merge_url_and_params(url, params) do
     {:ok, param_list_from_url} = extract_query_params(url)
     param_list_from_params = params_as_list_of_tuples(params)
