@@ -44,7 +44,7 @@ Datasets will be calculated and persisted to Redis with a key of `discovery-api:
   * Start the app and use `iex` to run the following commands:
 ```
 org = SmartCity.TestDataGenerator.create_organization([])
-datasets = Enum.map(1..3, fn _ -> SmartCity.TestDataGenerator.create_dataset(%{technical: %{orgId: org.id}}) end)
+datasets = Enum.map(1..3, fn _ -> SmartCity.TestDataGenerator.create_dataset(%{technical: %{orgId: org.id, sourceFormat: "CSV", private: false}}) end)
 Brook.Event.send(DiscoveryApi.instance(), "organization:update", :andi, org)
 Enum.each(datasets, &(Brook.Event.send(DiscoveryApi.instance(), "dataset:update", :andi, &1)))
 

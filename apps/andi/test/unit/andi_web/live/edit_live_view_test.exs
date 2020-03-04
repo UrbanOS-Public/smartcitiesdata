@@ -467,8 +467,7 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset = TDG.create_dataset(%{business: %{issuedDate: nil}})
       DatasetCache.put(dataset)
 
-      existing_dataset =
-        TDG.create_dataset(%{technical: %{dataName: dataset.technical.dataName, orgName: dataset.technical.orgName}})
+      existing_dataset = TDG.create_dataset(%{technical: %{dataName: dataset.technical.dataName, orgName: dataset.technical.orgName}})
 
       DatasetCache.put(existing_dataset)
 
@@ -532,6 +531,70 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(view, :test_url, %{})
 
       assert_called(UrlTest.test("123.com", query_params: [{"x", "y"}], headers: [{"api-key", "to-my-heart"}]))
+    end
+
+    data_test "sourceQueryParams are updated when query params are added to source url", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      html =
+        render_change(view, :validate, %{
+          "form_data" => %{"sourceUrl" => sourceUrl},
+          "_target" => ["form_data", "sourceUrl"]
+        })
+
+      assert Floki.find(html, ".url-form__source-query-params-key-input") |> Floki.attribute("value") == keys
+      assert Floki.find(html, ".url-form__source-query-params-value-input") |> Floki.attribute("value") == values
+
+      where([
+        [:sourceUrl, :keys, :values],
+        ["http://example.com?cat=dog", ["cat"], ["dog"]],
+        ["http://example.com?cat=dog&foo=bar", ["cat", "foo"], ["dog", "bar"]],
+        ["http://example.com?cat=dog&foo+biz=bar", ["cat", "foo biz"], ["dog", "bar"]],
+        ["http://example.com?cat=", ["cat"], [""]],
+        ["http://example.com?=dog", [""], ["dog"]]
+      ])
+    end
+
+    data_test "sourceUrl is updated when query params are added", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      send(
+        view.pid,
+        {:validate,
+         %{
+           "form_data" => %{
+             "sourceUrl" => intialSourceUrl,
+             "sourceQueryParams" => queryParams
+           },
+           "_target" => ["form_data", "sourceQueryParams"]
+         }}
+      )
+
+      assert render(view) |> Floki.find("#form_data_sourceUrl") |> Floki.attribute("value") == [updatedSourceUrl]
+
+      where([
+        [:intialSourceUrl, :queryParams, :updatedSourceUrl],
+        [
+          "http://example.com",
+          %{"0" => %{"key" => "dog", "value" => "car"}, "1" => %{"key" => "new", "value" => "thing"}},
+          "http://example.com?dog=car&new=thing"
+        ],
+        ["http://example.com?dog=cat&fish=water", %{"0" => %{"key" => "dog", "value" => "cat"}}, "http://example.com?dog=cat"],
+        ["http://example.com?dog=cat&fish=water", %{}, "http://example.com"],
+        [
+          "http://example.com?dog=cat",
+          %{"0" => %{"key" => "some space", "value" => "thing=whoa"}},
+          "http://example.com?some+space=thing%3Dwhoa"
+        ]
+      ])
     end
 
     test "status and time are displayed when source url is tested", %{conn: conn} do
@@ -685,6 +748,21 @@ defmodule AndiWeb.EditLiveViewTest do
         key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
         value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
       )
+    end
+
+    test "source url is updated when source query params are removed", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      Floki.find(html, ".url-form__source-query-params-delete-btn")
+      |> Floki.attribute("phx-value-id")
+      |> Enum.each(fn btn_id ->
+        render_click([view, "key_value_editor_source_query_params"], "remove", %{
+          "id" => btn_id,
+          "field" => Atom.to_string(:sourceQueryParams)
+        })
+      end)
+
+      assert render(view) |> Floki.find("#form_data_sourceUrl") |> Floki.attribute("value") == [dataset.technical.sourceUrl]
     end
   end
 

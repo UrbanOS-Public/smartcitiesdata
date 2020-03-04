@@ -21,9 +21,7 @@ defmodule Andi.CreateDatasetTest do
         assert value != nil
       end)
 
-      post("/api/v1/dataset/disable", %{id: dataset.id} |> Jason.encode!(),
-        headers: [{"content-type", "application/json"}]
-      )
+      post("/api/v1/dataset/disable", %{id: dataset.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
         values =
@@ -48,9 +46,7 @@ defmodule Andi.CreateDatasetTest do
         assert value != nil
       end)
 
-      post("/api/v1/dataset/delete", %{id: dataset.id} |> Jason.encode!(),
-        headers: [{"content-type", "application/json"}]
-      )
+      post("/api/v1/dataset/delete", %{id: dataset.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
         values =
