@@ -4,8 +4,7 @@ defmodule Pipeline.Writer.TableWriter.Statement.Rename do
   alias Pipeline.Writer.TableWriter.Statement
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
 
-  def create_new_table_with_existing_table(dataset) do
-    table_name = parse_table_name(dataset)
+  def create_new_table_with_existing_table(table_name) do
     new_table_name = parse_new_table_name(table_name)
 
     %{new_table_name: new_table_name, table_name: table_name}
@@ -13,15 +12,13 @@ defmodule Pipeline.Writer.TableWriter.Statement.Rename do
     |> PrestigeHelper.execute_query()
   end
 
-  def drop_table(dataset) do
-    table_name = parse_table_name(dataset)
-
+  def drop_table(table_name) do
     %{table: table_name}
     |> Statement.drop()
     |> PrestigeHelper.execute_query()
   end
 
-  defp parse_table_name(dataset) do
+  def parse_table_name(dataset) do
     "#{dataset.technical.orgName}__#{dataset.technical.dataName}"
   end
 

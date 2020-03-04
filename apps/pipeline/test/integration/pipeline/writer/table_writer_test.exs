@@ -12,13 +12,23 @@ defmodule Pipeline.Writer.TableWriterTest do
   @expected_table_values [
     %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "array(varchar)"},
     %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "row(three decimal(18,3))"},
-    %{"Column" => "four", "Comment" => "", "Extra" => "", "Type" => "array(row(five decimal(18,3)))"}
+    %{
+      "Column" => "four",
+      "Comment" => "",
+      "Extra" => "",
+      "Type" => "array(row(five decimal(18,3)))"
+    }
   ]
 
   @table_schema [
     %{name: "one", type: "list", itemType: "string"},
     %{name: "two", type: "map", subSchema: [%{name: "three", type: "decimal(18,3)"}]},
-    %{name: "four", type: "list", itemType: "map", subSchema: [%{name: "five", type: "decimal(18,3)"}]}
+    %{
+      name: "four",
+      type: "list",
+      itemType: "map",
+      subSchema: [%{name: "five", type: "decimal(18,3)"}]
+    }
   ]
 
   setup do
@@ -28,7 +38,10 @@ defmodule Pipeline.Writer.TableWriterTest do
 
   describe "init/1" do
     test "creates table with correct name and schema", %{session: session} do
-      dataset = TDG.create_dataset(%{technical: %{systemName: "org_name_dataset_name", schema: @table_schema}})
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{systemName: "org_name_dataset_name", schema: @table_schema}
+        })
 
       TableWriter.init(table: dataset.technical.systemName, schema: dataset.technical.schema)
 
