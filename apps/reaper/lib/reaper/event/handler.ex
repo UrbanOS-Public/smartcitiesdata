@@ -11,7 +11,8 @@ defmodule Reaper.Event.Handler do
       data_extract_end: 0,
       file_ingest_start: 0,
       file_ingest_end: 0,
-      dataset_disable: 0
+      dataset_disable: 0,
+      dataset_delete: 0
     ]
 
   alias Reaper.Collections.{Extractions, FileIngestions}
@@ -70,5 +71,10 @@ defmodule Reaper.Event.Handler do
   def handle_event(%Brook.Event{type: dataset_disable(), data: %SmartCity.Dataset{} = dataset}) do
     Reaper.Event.Handlers.DatasetDisable.handle(dataset)
     Extractions.disable_dataset(dataset.id)
+  end
+
+  def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = dataset}) do
+    Reaper.Event.Handlers.DatasetDelete.handle(dataset)
+    Extractions.delete_dataset(dataset.id)
   end
 end
