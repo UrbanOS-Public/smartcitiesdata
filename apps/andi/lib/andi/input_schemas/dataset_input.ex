@@ -119,16 +119,16 @@ defmodule Andi.InputSchemas.DatasetInput do
     |> update_source_url()
   end
 
-  def update_source_url_and_query_params(changeset, url, query_params) do
-    changeset = update_source_url(changeset, url, query_params)
-
-    source_url = changeset.changes.sourceUrl
-
-    update_source_query_params(changeset, source_url)
+  def adjust_source_url_for_query_params(changeset) do
+    changeset
+    |> update_source_url()
+    |> adjust_source_query_params_for_url()
   end
 
-  def update_source_query_params(changeset, url) do
-    case Andi.URI.extract_query_params(url) do
+  def adjust_source_query_params_for_url(changeset) do
+    source_url = Ecto.Changeset.get_field(changeset, :sourceUrl)
+
+    case Andi.URI.extract_query_params(source_url) do
       {:ok, params} ->
         key_value_changes = Enum.map(params, &convert_param_to_kv/1)
 
@@ -142,14 +142,10 @@ defmodule Andi.InputSchemas.DatasetInput do
   end
 
   defp update_source_url(changeset) do
-    source_url = changeset.changes.sourceUrl
+    source_url = Ecto.Changeset.get_field(changeset, :sourceUrl)
     source_query_params = Ecto.Changeset.get_field(changeset, :sourceQueryParams, [])
 
-    update_source_url(changeset, source_url, source_query_params)
-  end
-
-  defp update_source_url(changeset, url, query_params) do
-    updated_source_url = Andi.URI.update_url_with_params(url, query_params)
+    updated_source_url = Andi.URI.update_url_with_params(source_url, source_query_params)
 
     put_change(changeset, :sourceUrl, updated_source_url)
   end

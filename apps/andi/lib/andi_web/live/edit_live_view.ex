@@ -184,10 +184,10 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, testing: true)}
   end
 
-  def handle_event("validate", %{"form_data" => %{"sourceUrl" => source_url} = form_data, "_target" => ["form_data", "sourceUrl"]}, socket) do
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceUrl"]}, socket) do
     form_data
     |> InputConverter.form_changeset()
-    |> DatasetInput.update_source_query_params(source_url)
+    |> DatasetInput.adjust_source_query_params_for_url()
     |> complete_validation(socket)
   end
 
@@ -231,17 +231,10 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, test_results: results, testing: false)}
   end
 
-  def handle_info(
-        {:validate,
-         %{
-           "form_data" => %{"sourceUrl" => source_url, "sourceQueryParams" => source_query_params} = form_data,
-           "_target" => ["form_data", "sourceQueryParams" | _]
-         }},
-        socket
-      ) do
+  def handle_info({:validate, %{"form_data" => form_data, "_target" => ["form_data", "sourceQueryParams" | _]}}, socket) do
     form_data
     |> InputConverter.form_changeset()
-    |> DatasetInput.update_source_url_and_query_params(source_url, source_query_params)
+    |> DatasetInput.adjust_source_url_for_query_params()
     |> complete_validation(socket)
   end
 
