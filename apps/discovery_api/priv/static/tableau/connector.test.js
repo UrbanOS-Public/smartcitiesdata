@@ -20,6 +20,12 @@ global.auth0Client = {
   parseHash: jest.fn(),
   logout: jest.fn()
 }
+global.config = {
+  client_id: 'this-is-an-id',
+  auth_domain: 'localhost',
+  auth_url: 'http://localhost',
+  redirect_uri: 'http://localhost'
+}
 
 const connector = require('./connector.js')
 

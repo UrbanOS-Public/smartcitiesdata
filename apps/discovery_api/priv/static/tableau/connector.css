@@ -64,7 +64,7 @@ p {
   font-size: smaller;
 }
 
-p#error {
+p.error {
   color: red;
   font-size: smaller;
 }

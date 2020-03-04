@@ -27,6 +27,9 @@
       <span>Log In to Access Private Datasets</span>
     </div>
   </div>
+  <div class="content" id="login-error" style="display:none">
+    <p id="login-error-text" class="error">A log in error occurred.</p>
+  </div>
   <div class="header">
     <h1>Discovery API Tableau Web Data Connector</h1>
     <h5>Use this URL in a Tableau product to access data from the API.
@@ -42,7 +45,7 @@
     <p>Enter a custom SQL query below to refine your results. SQL queries use the <a href="https://prestodb.github.io/docs/current/sql/select.html" target="_blank">PrestoDB</a> query syntax.</p>
     <textarea id="query" placeholder="select * from..."></textarea>
     <button class="clickable" onclick="submit('query')">Submit a Query</button>
-    <p id="error" style="display:none">Please enter a query.</p>
+    <p id="error" class="error" style="display:none">Please enter a query.</p>
     <div>
 </body>
 

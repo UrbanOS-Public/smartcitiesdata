@@ -64,13 +64,21 @@ function _setupConnector() {
   tableau.registerConnector(connector);
 
   connector.init = function(initCallback) {
+    var error = _getUrlParameterByName('error')
+    if (error) {
+      var errorDescription = _getUrlParameterByName('error_description');
+      _displayLoginError(errorDescription)
+      window.history.replaceState(null, null, window.location.pathname);
+      return
+    }
+
     var code = _getUrlParameterByName('code')
     window.history.replaceState(null, null, window.location.pathname);
 
     if (code) {
       _fetchRefreshToken(code)
       .then(function(refreshToken) { tableau.password = refreshToken; })
-      .catch(function(error) { alert('Unable to authenticate: ' + error + '\nIf you need to access private datasets, contact your data curator.'); })
+      .catch(function(error) { _displayLoginError(error) })
       .then(function() { initCallback() })
     } else {
       initCallback();
@@ -315,4 +323,9 @@ function _encodeAsUriQueryString(obj) {
     }
   }
   return queryString
+}
+
+function _displayLoginError(errorText) {
+  document.getElementById('login-error').style.display = 'block';
+  document.getElementById('login-error-text').textContent = 'Unable to authenticate: ' + errorText + '\nIf you need to access private datasets, contact your data curator.';
 }
