@@ -246,32 +246,40 @@ defmodule Pipeline.Writer.TableWriterTest do
     end
   end
 
-  test "should rename the table when rename table is called", %{session: session} do
-    dataset = TDG.create_dataset(%{technical: %{systemName: "some_org_name_dataset_name", schema: @table_schema}})
+  test "should delete and rename the table when delete table is called", %{session: session} do
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{schema: @table_schema}
+      })
 
-    [table: dataset.technical.systemName, schema: dataset.technical.schema]
+    table_name =
+      "#{dataset.technical.orgName}__#{dataset.technical.dataName}"
+      |> String.downcase()
+
+    [table: table_name, schema: dataset.technical.schema]
     |> TableWriter.init()
 
     eventually(fn ->
       assert @expected_table_values ==
-               "DESCRIBE some_org_name_dataset_name"
-               |> execute_query(session)
-
-      assert [] ==
-               "SHOW TABLES LIKE '%some_new_org_name_dataset_name%'"
+               "DESCRIBE #{table_name}"
                |> execute_query(session)
     end)
 
-    [new_table_name: "some_new_org_name_dataset_name", table_name: "some_org_name_dataset_name"]
-    |> TableWriter.rename_table()
+    [dataset: dataset]
+    |> TableWriter.delete()
 
     eventually(fn ->
-      assert @expected_table_values ==
-               "DESCRIBE some_new_org_name_dataset_name"
-               |> execute_query(session)
+      expected_table_name =
+        "SHOW TABLES LIKE '%#{table_name}%'"
+        |> execute_query(session)
+        |> Enum.find(fn x ->
+          x["Table"]
+          |> String.ends_with?("#{table_name}")
+        end)
+        |> verify_deleted_table_name(table_name)
 
-      assert [] ==
-               "SHOW TABLES LIKE '%some_org_name_dataset_name%'"
+      assert @expected_table_values ==
+               "DESCRIBE #{expected_table_name}"
                |> execute_query(session)
     end)
   end
@@ -280,5 +288,12 @@ defmodule Pipeline.Writer.TableWriterTest do
     session
     |> Prestige.execute!(query)
     |> Prestige.Result.as_maps()
+  end
+
+  defp verify_deleted_table_name(table, table_name) do
+    case String.starts_with?(table["Table"], "deleted") do
+      true -> table["Table"]
+      _ -> nil
+    end
   end
 end

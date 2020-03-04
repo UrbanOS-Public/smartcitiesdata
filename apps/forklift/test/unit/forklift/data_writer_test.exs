@@ -94,21 +94,16 @@ defmodule Forklift.DataWriterTest do
       expect(MockReader, :init, 4, fn _ -> :ok end)
 
       dataset = TDG.create_dataset(%{})
-      allow Forklift.Datasets.get_all!(), return: [dataset, dataset, dataset, dataset]
+      allow(Forklift.Datasets.get_all!(), return: [dataset, dataset, dataset, dataset])
 
       assert :ok = DataWriter.compact_datasets()
     end
   end
 
-  test "should delete input topic when the topic names are provided" do
-    dataset_id = Faker.UUID.v4()
-    stub(MockTopic, :delete_topic, fn _ -> :ok end)
-    assert :ok == DataWriter.delete_topic(dataset_id)
-  end
-
-  test "should create new table with deleted tag and timestamp and delete the existing table when delete table is called" do
-    stub(MockTable, :rename_table, fn _ -> :ok end)
-    dataset = TDG.create_dataset(%{})
-    assert :ok == DataWriter.rename_table(dataset)
+  test "should delete table and topic and create new table with deleted tag and timestamp and when delete is called" do
+    stub(MockTable, :delete, fn _ -> :ok end)
+    stub(MockTopic, :delete, fn _ -> :ok end)
+    dataset = TDG.create_dataset(%{id: Faker.UUID.v4()})
+    assert :ok == DataWriter.delete(dataset)
   end
 end

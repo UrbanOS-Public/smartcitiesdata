@@ -83,8 +83,7 @@ defmodule Forklift.EventHandler do
 
   defp delete_dataset(dataset) do
     with :ok <- Forklift.DataReaderHelper.terminate(dataset),
-         :ok <- Forklift.DataWriter.delete_topic(dataset.id),
-         :ok <- Forklift.DataWriter.rename_table(dataset),
+         :ok <- Forklift.DataWriter.delete(dataset),
          :ok <- Forklift.Datasets.delete(dataset.id) do
       :ok
     else

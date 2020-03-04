@@ -96,6 +96,17 @@ defmodule Pipeline.Writer.S3Writer do
     end
   end
 
+  @impl Pipeline.Writer
+  @spec delete(new_table_name: String.t(), table_name: String.t()) :: :ok | {:error, term()}
+  def delete(args) do
+    new_table_name = Keyword.fetch!(args, :new_table_name)
+    table_name = Keyword.fetch!(args, :table_name)
+    Rename.create_new_table_with_existing_table(new_table_name, table_name)
+
+    table_name
+    |> Rename.drop_table()
+  end
+
   defp write_to_temporary_file(file_contents, table_name) do
     temporary_file_path = Temp.path!(table_name)
 

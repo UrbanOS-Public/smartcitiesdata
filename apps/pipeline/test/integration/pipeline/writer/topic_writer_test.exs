@@ -117,7 +117,7 @@ defmodule Pipeline.Writer.TopicWriterTest do
       assert true == Elsa.Topic.exists?(@brokers, topic)
     end)
 
-    assert :ok = TopicWriter.delete_topic(config)
+    assert :ok = TopicWriter.delete(config)
 
     eventually(fn ->
       assert false == Elsa.topic?(@brokers, topic)

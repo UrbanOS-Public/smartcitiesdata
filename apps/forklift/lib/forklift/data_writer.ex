@@ -57,21 +57,12 @@ defmodule Forklift.DataWriter do
   end
 
   @impl Pipeline.Writer
-  def delete_topic(dataset_id) do
+  def delete(dataset) do
     endpoints = Application.get_env(:forklift, :elsa_brokers)
-    topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{dataset_id}"
+    topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{dataset.id}"
 
-    [endpoints: endpoints, topic: topic]
-    |> @topic_writer.delete_topic()
-  end
-
-  @impl Pipeline.Writer
-  def rename_table(dataset) do
-    table_name = table_name(dataset)
-    new_table_name = new_table_name(table_name)
-
-    [new_table_name: new_table_name, table_name: table_name]
-    |> @table_writer.rename_table()
+    [endpoints: endpoints, topic: topic, dataset: dataset]
+    |> @topic_writer.delete()
   end
 
   @spec bootstrap() :: :ok | {:error, term()}
@@ -197,18 +188,5 @@ defmodule Forklift.DataWriter do
 
   defp s3_writer_bucket() do
     Application.get_env(:forklift, :s3_writer_bucket)
-  end
-
-  defp table_name(dataset) do
-    "#{dataset.technical.orgName}__#{dataset.technical.dataName}"
-  end
-
-  defp new_table_name(table_name) do
-    "deleted__#{current_timestamp()}__#{table_name}"
-  end
-
-  defp current_timestamp() do
-    DateTime.utc_now()
-    |> DateTime.to_unix(:millisecond)
   end
 end
