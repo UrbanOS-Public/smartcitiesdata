@@ -15,10 +15,59 @@ global.tableau = {
   connectionData: "{}"
 }
 global.fetch = jest.fn()
+global.auth0Client = {
+  authorize: jest.fn(),
+  parseHash: jest.fn(),
+  logout: jest.fn()
+}
+global.config = {
+  client_id: 'this-is-an-id',
+  auth_domain: 'localhost',
+  auth_url: 'http://localhost',
+  redirect_uri: 'http://localhost'
+}
 
 const connector = require('./connector.js')
 
 describe('Discovery API Tableau Web Data Connector', () => {
+  const successfulAccessTokenResponse = {access_token: 'fake-access-token'}
+
+  const datasetListFromApi = {
+    results: [{
+        id: 'dataset-one',
+        title: 'The first dataset',
+        fileTypes: ['CSV']
+      },
+      {
+        id: 'dataset two',
+        title: 'The second dataset',
+        fileTypes: ['GEOJSON']
+      }
+    ]
+  }
+  const datasetOneDictionaryFromApi = [{
+      name: 'Column One',
+      type: 'string'
+    },
+    {
+      name: 'column-two',
+      type: 'integer'
+    }
+  ]
+  const datasetTwoDictionaryFromApi = [{
+      name: 'properties-data',
+      type: 'double'
+    },
+    {
+      name: 'feature',
+      type: 'json'
+    }
+  ]
+
+  beforeEach(() => {
+    delete global.tableau.password
+  })
+
   describe('high level tests', () => {
     let registeredConnector
     beforeEach(() => {
@@ -26,37 +75,6 @@ describe('Discovery API Tableau Web Data Connector', () => {
       global.tableau.registerConnector = (connector) => { registeredConnector = connector }
     })
 
-    const datasetListFromApi = {
-      results: [{
-          id: 'dataset-one',
-          title: 'The first dataset',
-          fileTypes: ['CSV']
-        },
-        {
-          id: 'dataset two',
-          title: 'The second dataset',
-          fileTypes: ['GEOJSON']
-        }
-      ]
-    }
-    const datasetOneDictionaryFromApi = [{
-        name: 'Column One',
-        type: 'string'
-      },
-      {
-        name: 'column-two',
-        type: 'integer'
-      }
-    ]
-    const datasetTwoDictionaryFromApi = [{
-        name: 'properties-data',
-        type: 'double'
-      },
-      {
-        name: 'feature',
-        type: 'json'
-      }
-    ]
     const expectedTableSchemaForDatasetOne = {
       id: 'dataset_one',
       alias: 'The first dataset',
@@ -140,7 +158,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
     }
 
     beforeEach(() => {
-      DiscoveryWDCTranslator.setupConnector(global.tableau)
+      DiscoveryWDCTranslator.setupConnector()
     })
 
     test('the generated connector calls init callback on init', () => {
@@ -149,6 +167,33 @@ describe('Discovery API Tableau Web Data Connector', () => {
       registeredConnector.init(initCallback)
 
       expect(initCallback).toHaveBeenCalled()
+    })
+
+    test('sets up the connector with a refresh token if a code is found', (done) => {
+      mockFetches({
+        'token': {body: {refresh_token: 'this-is-a-refresh-token'}}
+      })
+      history.pushState({}, 'Test Title', '/connector.html?code=bobthecode');
+
+      DiscoveryWDCTranslator.setupConnector()
+      registeredConnector.init(() => {
+        expect(global.fetch).toHaveBeenCalledWithBodyContaining('token', 'bobthecode')
+        expect(global.tableau.password).toBe('this-is-a-refresh-token')
+        done()
+      })
+    })
+
+    test('after fetching the refresh token, clears the code param from the url', (done) => {
+      mockFetches({
+        'token': {body: {refresh_token: 'this-is-a-refresh-token'}}
+      })
+      history.pushState({}, 'Test Title', '/connector.html?code=bobtheothercode');
+
+      DiscoveryWDCTranslator.setupConnector()
+      registeredConnector.init(() => {
+        expect(window.location.search).toBe('')
+        done()
+      })
     })
 
     describe('on submit for discovery mode', () => {
@@ -217,19 +262,22 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
     describe('connector.getSchema', () => {
       describe('in data discovery mode', () => {
+        const datasetOneDictionaryUrl = `/api/v1/dataset/${datasetListFromApi.results[0].id}/dictionary`
+        const datasetTwoDictionaryUrl = `/api/v1/dataset/${datasetListFromApi.results[1].id}/dictionary`
+
         describe('success', () => {
           beforeEach(() => {
             global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
-            global.fetch.mockReset()
-            global.fetch.mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetListFromApi))
-              .mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetOneDictionaryFromApi))
-              .mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetTwoDictionaryFromApi))
+            mockFetches({
+              'search': {body: datasetListFromApi},
+              [datasetOneDictionaryUrl]: {body: datasetOneDictionaryFromApi},
+              [datasetTwoDictionaryUrl]: {body: datasetTwoDictionaryFromApi}
+            })
           })
 
           test('fetches datasets from the search API', (done) => {
             const schemaCallback = jest.fn(() => {
-              const firstCall = global.fetch.mock.calls[0][0]
-              expect(firstCall).toContain('/api/v1/dataset/search')
+              expect(global.fetch).toHaveBeenCalledWithUrl('/api/v1/dataset/search')
 
               done()
             })
@@ -239,10 +287,8 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
           test('fetches dataset dictionaries from the dictionary API', (done) => {
             const schemaCallback = jest.fn(() => {
-              const calls = global.fetch.mock.calls
-              expect(calls.length).toBe(3)
-              expect(calls[1][0]).toBe(`/api/v1/dataset/${datasetListFromApi.results[0].id}/dictionary`)
-              expect(calls[2][0]).toBe(`/api/v1/dataset/${datasetListFromApi.results[1].id}/dictionary`)
+              expect(global.fetch).toHaveBeenCalledWithUrl(datasetOneDictionaryUrl)
+              expect(global.fetch).toHaveBeenCalledWithUrl(datasetTwoDictionaryUrl)
 
               done()
             })
@@ -264,14 +310,50 @@ describe('Discovery API Tableau Web Data Connector', () => {
           })
         })
 
+        describe('with an access token', () => {
+          beforeEach(() => {
+            global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
+            global.tableau.password = 'herbert'
+            mockFetches({
+              'token': {body: successfulAccessTokenResponse},
+              'search': {body: datasetListFromApi},
+              [datasetOneDictionaryUrl]: {body: datasetOneDictionaryFromApi},
+              [datasetTwoDictionaryUrl]: {body: datasetTwoDictionaryFromApi}
+            })
+          })
+
+          test('gets an access token using the refresh token before making other requests', (done) => {
+            registeredConnector.getSchema(() => {
+              const firstCallUrl = global.fetch.mock.calls[0][0];
+              expect(firstCallUrl).toContain('token')
+              const firstCallParams = global.fetch.mock.calls[0][1];
+              expect(firstCallParams.body).toContain('grant_type=refresh_token')
+              expect(firstCallParams.body).toContain(`refresh_token=${global.tableau.password}`)
+
+              done()
+            })
+          })
+
+          test('uses fetched access token for all subsequent calls', (done) => {
+            registeredConnector.getSchema(() => {
+              expect(global.fetch).toHaveBeenCalledWithHeader('/api/v1/dataset/search', 'Authorization', `Bearer ${successfulAccessTokenResponse.access_token}`)
+              expect(global.fetch).toHaveBeenCalledWithHeader(datasetOneDictionaryUrl, 'Authorization', `Bearer ${successfulAccessTokenResponse.access_token}`)
+              expect(global.fetch).toHaveBeenCalledWithHeader(datasetTwoDictionaryUrl, 'Authorization', `Bearer ${successfulAccessTokenResponse.access_token}`)
+
+              done()
+            })
+          })
+        })
+
         describe('failing to fetch a dictionary', () => {
           beforeEach(() => {
             global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
             global.tableau.abortWithError.mockReset()
-            global.fetch.mockReset()
-            global.fetch.mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetListFromApi))
-              .mockReturnValueOnce(mockFailedFetchResponse(400, 'Bad Request'))
-              .mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetTwoDictionaryFromApi))
+            mockFetches({
+              'search': {body: datasetListFromApi},
+              [datasetOneDictionaryUrl]: {ok: false, status: 400, statusText: 'Bad Request'},
+              [datasetTwoDictionaryUrl]: {body: datasetTwoDictionaryFromApi}
+            })
           })
 
           test('calls the tableau.abortWithError callback', (done) => {
@@ -289,8 +371,9 @@ describe('Discovery API Tableau Web Data Connector', () => {
       describe('in query mode', () => {
         beforeEach(() => {
           global.tableau.connectionData = JSON.stringify({mode: 'query', query: expectedTableSchemaForQueryDataset.description})
-          global.fetch.mockReset()
-          global.fetch.mockReturnValueOnce(mockSuccessFetchResponseAsJson(queryDatasetDictionaryFromApi))
+          mockFetches({
+            "describe": {body: queryDatasetDictionaryFromApi}
+          })
         })
 
         test('fetches dataset dictionaries from the query describe API', (done) => {
@@ -298,7 +381,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
             const firstCallUrl = global.fetch.mock.calls[0][0]
             expect(firstCallUrl).toContain('/api/v1/query/describe?_format=json')
             const firstCallBody = global.fetch.mock.calls[0][1]
-            expect(firstCallBody).toEqual({method: 'POST', body: expectedTableSchemaForQueryDataset.description})
+            expect(firstCallBody.body).toEqual(expectedTableSchemaForQueryDataset.description)
 
             done()
           })
@@ -325,18 +408,19 @@ describe('Discovery API Tableau Web Data Connector', () => {
           tableInfo: expectedTableSchemaForDatasetTwo
         }
 
+        const queryUrl = `/api/v1/dataset/${expectedTableSchemaForDatasetTwo.description}/query?_format=json`
+
         describe('success', () => {
           beforeEach(() => {
             global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
-            global.fetch.mockReset()
-            global.fetch.mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetTwoDataFromApi))
+            mockFetches({
+              [queryUrl]: {body: datasetTwoDataFromApi}
+            })
           })
 
           test('fetches data from the dataset query API', (done) => {
             const doneCallback = () => {
-              const calls = global.fetch.mock.calls
-              expect(calls.length).toBe(1)
-              expect(calls[0][0]).toBe(`/api/v1/dataset/${expectedTableSchemaForDatasetTwo.description}/query?_format=json`)
+              expect(global.fetch).toHaveBeenCalledWithUrl(queryUrl)
 
               done()
             }
@@ -372,8 +456,9 @@ describe('Discovery API Tableau Web Data Connector', () => {
           beforeEach(() => {
             global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
             global.tableau.abortWithError.mockReset()
-            global.fetch.mockReset()
-            global.fetch.mockReturnValueOnce(mockFailedFetchResponse(500, 'Internal Server Error'))
+            mockFetches({
+              'query': {ok: false, status: 500, statusText: 'Internal Server Error'}
+            })
           })
 
           test('calls the tableau.abortWithError callback', (done) => {
@@ -390,27 +475,73 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
       describe('in query mode', () => {
         const query = 'select this from that'
-        beforeEach(() => {
-          global.tableau.connectionData = JSON.stringify({mode: 'query', query})
-          global.fetch.mockReset()
-          global.fetch.mockReturnValueOnce(mockSuccessFetchResponseAsJson(datasetTwoDataFromApi))
+
+        describe('success', () => {
+          beforeEach(() => {
+            global.tableau.connectionData = JSON.stringify({mode: 'query', query})
+            mockFetches({
+              'query': {body: datasetTwoDictionaryFromApi}
+            })
+          })
+
+          test('fetches data from the free-form query API', (done) => {
+            const table = {
+              appendRows: jest.fn(),
+              tableInfo: {...expectedTableSchemaForDatasetTwo, ...{description: query}}
+            }
+            const doneCallback = () => {
+              const firstCallUrl = global.fetch.mock.calls[0][0]
+              expect(firstCallUrl).toBe('/api/v1/query?_format=json')
+              const firstCallBody = global.fetch.mock.calls[0][1]
+              expect(firstCallBody.body).toEqual(query)
+
+              done()
+            }
+
+            registeredConnector.getData(table, doneCallback)
+          })
         })
 
-        test('fetches data from the free-form query API', (done) => {
-          const table = {
-            appendRows: jest.fn(),
-            tableInfo: {...expectedTableSchemaForDatasetTwo, ...{description: query}}
-          }
-          const doneCallback = () => {
-            const firstCallUrl = global.fetch.mock.calls[0][0]
-            expect(firstCallUrl).toBe('/api/v1/query?_format=json')
-            const firstCallBody = global.fetch.mock.calls[0][1]
-            expect(firstCallBody).toEqual({method: 'POST', body: query})
+        describe('with an access token', () => {
+          beforeEach(() => {
+            global.tableau.connectionData = JSON.stringify({mode: 'query', query})
+            global.tableau.password = 'calvin'
+            mockFetches({
+              'token': {body: successfulAccessTokenResponse},
+              'query': {body: datasetTwoDictionaryFromApi}
+            })
+          })
 
-            done()
-          }
+          test('gets an access token using the refresh token before making other requests', (done) => {
+            const table = {
+              appendRows: jest.fn(),
+              tableInfo: {...expectedTableSchemaForDatasetTwo, ...{description: query}}
+            }
+            const doneCallback = () => {
+              const firstCallUrl = global.fetch.mock.calls[0][0];
+              expect(firstCallUrl).toContain('token')
+              const firstCallParams = global.fetch.mock.calls[0][1];
+              expect(firstCallParams.body).toContain('grant_type=refresh_token')
+              expect(firstCallParams.body).toContain(`refresh_token=${global.tableau.password}`)
+              done()
+            }
 
-          registeredConnector.getData(table, doneCallback)
+            registeredConnector.getData(table, doneCallback)
+          })
+
+          test('uses fetched access token for all subsequent calls', (done) => {
+            const table = {
+              appendRows: jest.fn(),
+              tableInfo: {...expectedTableSchemaForDatasetTwo, ...{description: query}}
+            }
+            const doneCallback = () => {
+              expect(global.fetch).toHaveBeenCalledWithHeader('query', 'Authorization', `Bearer ${successfulAccessTokenResponse.access_token}`)
+
+              done()
+            }
+
+            registeredConnector.getData(table, doneCallback)
+          })
         })
       })
     })
@@ -591,19 +722,94 @@ describe('Discovery API Tableau Web Data Connector', () => {
       })
     })
   })
+
+  describe('auth', () => {
+    test('login calls auth0.authorize', () => {
+      DiscoveryAuthHandler.login()
+
+      expect(auth0Client.authorize).toHaveBeenCalled()
+    })
+
+    describe('logout', () => {
+      test('calls auth0.logout', () => {
+        DiscoveryAuthHandler.logout()
+
+        expect(auth0Client.logout).toHaveBeenCalled()
+      })
+
+      test('clears the saved token', () => {
+        global.tableau.password = "BobTheToken"
+        DiscoveryAuthHandler.logout()
+
+        expect(global.tableau.password).toBeFalsy()
+      })
+    })
+  })
 })
 
-function mockSuccessFetchResponseAsJson(body) {
-  return Promise.resolve({
-    ok: true,
-    json: () => (Promise.resolve(body))
+function mockFetches(responses) {
+  global.fetch = jest.fn((url) => {
+    const matchingUrl = Object.keys(responses).find(mockedUrl => {
+      return url.includes(mockedUrl)
+    })
+    const response = responses[matchingUrl]
+    if (!response) { throw `No response mocked for ${url}` }
+
+    if (response.ok === undefined || response.ok) {
+      return Promise.resolve({
+        ok: true,
+        json: () => (Promise.resolve(response.body))
+      })
+    } else {
+      return Promise.resolve({
+        ok: false,
+        status: response.status,
+        statusText: response.statusText
+      })
+    }
   })
 }
 
-function mockFailedFetchResponse(status, statusText) {
-  return Promise.resolve({
-    ok: false,
-    status,
-    statusText
-  })
-}
+expect.extend({
+  toHaveBeenCalledWithUrl(fetchMock, urlFragment) {
+    const matchingCalls = fetchMock.mock.calls.filter(call => {
+      return call[0].includes(urlFragment)
+    })
+    const pass = matchingCalls.length > 0
+    return {
+      pass,
+      message: () => { return pass ? '' : `fetch was not called with ${urlFragment}` }
+    }
+  }
+})
+
+expect.extend({
+  toHaveBeenCalledWithBodyContaining(fetchMock, urlFragment, bodyFragment) {
+    const matchingCalls = fetchMock.mock.calls.filter(call => {
+      return call[0].includes(urlFragment)
+    }).filter(call => {
+      return call[1].body.includes(bodyFragment)
+    })
+    const pass = matchingCalls.length > 0
+    return {
+      pass,
+      message: () => { return pass ? '' : `fetch was not called with ${bodyFragment}` }
+    }
+  }
+})
+
+expect.extend({
+  toHaveBeenCalledWithHeader(fetchMock, urlFragment, headerKey, headerValue) {
+    const matchingCalls = fetchMock.mock.calls.filter(call => {
+      return call[0].includes(urlFragment)
+    }).filter(call => {
+      return call[1].headers[headerKey] == headerValue
+    })
+
+    const pass = matchingCalls.length > 0
+    return {
+      pass,
+      message: () => { return pass ? '' : `fetch was not called with ${urlFragment}, ${headerKey}: ${headerValue}` }
+    }
+  }
+})
