@@ -38,6 +38,7 @@ function logout() {
 
 var datasetLimit = "1000000";
 var fileTypes = ["CSV", "GEOJSON"];
+// var apiPath = 'http://localhost:9001/api/v1/'
 var apiPath = '/api/v1/'
 
 function submit(mode) {
@@ -51,7 +52,6 @@ function submit(mode) {
   }
   _setConnectionData(connectionData)
 
-  // _setupConnector()
   tableau.submit()
 }
 
@@ -272,12 +272,11 @@ function _getUrlParameterByName(name) {
 function _fetchRefreshToken(code) {
   var params = {
     grant_type: 'authorization_code',
-    client_id: 'sfe5fZzFXsv5gIRXz8V3zkR7iaZBMvL0', // TODO: parameterize me
+    client_id: window.config.client_id,
     code: code,
-    redirect_uri: 'http://localhost:9001/connector.html' // TODO: parameterize me
+    redirect_uri: window.config.redirect_uri
   };
-  // TODO: parameterize me
-  return fetch('https://smartcolumbusos-demo.auth0.com/oauth/token', {
+  return fetch(window.config.auth_url + '/oauth/token', {
     method: 'POST',
     headers: {'content-type':'application/x-www-form-urlencoded'},
     body: _encodeAsUriQueryString(params)
@@ -292,18 +291,16 @@ function _fetchAccessToken(refreshToken) {
   }
   var params = {
     grant_type: 'refresh_token',
-    client_id: 'sfe5fZzFXsv5gIRXz8V3zkR7iaZBMvL0', // TODO: parameterize me
+    client_id: window.config.client_id,
     refresh_token: refreshToken
   };
-  // TODO: parameterize me
-  return fetch('https://smartcolumbusos-demo.auth0.com/oauth/token', {
+  return fetch(window.config.auth_url + '/oauth/token', {
     method: 'POST',
     headers: {'content-type':'application/x-www-form-urlencoded'},
     body: _encodeAsUriQueryString(params)
   })
   .then(_decodeAsJson)
   .then(function(body) {
-    // TODO: test that access token is presevered on window outside of simulator
     window.accessToken = body.access_token
     return body.access_token
   })
