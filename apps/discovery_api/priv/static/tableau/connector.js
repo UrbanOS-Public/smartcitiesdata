@@ -77,13 +77,13 @@ function _setupConnector() {
     if (code) {
       _fetchRefreshToken(code)
       .then(function(refreshToken) { tableau.password = refreshToken; })
-      .catch(function(error) { _displayLoginError(error) })
-      .then(function() { initCallback() })
       .then(function() {
         document.getElementById('login-text').textContent = 'Logged In';
-        document.getElementById('login-button').onclick = undefined;
+        document.getElementById('login-button').removeAttribute('onclick');
         document.getElementById('login-button').className = 'login-link';
        })
+      .catch(function(error) { _displayLoginError(error) })
+      .then(function() { initCallback() })
     } else {
       initCallback();
     }
@@ -330,5 +330,5 @@ function _encodeAsUriQueryString(obj) {
 
 function _displayLoginError(errorText) {
   document.getElementById('login-error').style.display = 'block';
-  document.getElementById('login-error-text').textContent = 'Unable to authenticate: ' + errorText + '\nIf you need to access private datasets, contact your data curator.';
+  document.getElementById('login-error-text').textContent = 'Unable to authenticate: ' + errorText + ' | If you need to access private datasets, contact your data curator.';
 }
