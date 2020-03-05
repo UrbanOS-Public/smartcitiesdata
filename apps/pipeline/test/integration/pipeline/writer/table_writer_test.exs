@@ -262,19 +262,15 @@ defmodule Pipeline.Writer.TableWriterTest do
   test "should delete and rename the table when delete table is called", %{session: session} do
     dataset =
       TDG.create_dataset(%{
-        technical: %{schema: @table_schema}
+        technical: %{systemName: "some_system_name", schema: @table_schema}
       })
 
-    table_name =
-      "#{dataset.technical.orgName}__#{dataset.technical.dataName}"
-      |> String.downcase()
-
-    [table: table_name, schema: dataset.technical.schema]
+    [table: dataset.technical.systemName, schema: dataset.technical.schema]
     |> TableWriter.init()
 
     eventually(fn ->
       assert @expected_table_values ==
-               "DESCRIBE #{table_name}"
+               "DESCRIBE #{dataset.technical.systemName}"
                |> execute_query(session)
     end)
 
@@ -283,13 +279,13 @@ defmodule Pipeline.Writer.TableWriterTest do
 
     eventually(fn ->
       expected_table_name =
-        "SHOW TABLES LIKE '%#{table_name}%'"
+        "SHOW TABLES LIKE '%#{dataset.technical.systemName}%'"
         |> execute_query(session)
         |> Enum.find(fn x ->
           x["Table"]
-          |> String.ends_with?("#{table_name}")
+          |> String.ends_with?(dataset.technical.systemName)
         end)
-        |> verify_deleted_table_name(table_name)
+        |> verify_deleted_table_name(dataset.technical.systemName)
 
       assert @expected_table_values ==
                "DESCRIBE #{expected_table_name}"

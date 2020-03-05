@@ -71,14 +71,12 @@ defmodule Pipeline.Writer.TableWriter do
   @impl Pipeline.Writer
   @spec delete(dataset: [term()]) :: :ok | {:error, term()}
   def delete(args) do
-    table_name =
-      Keyword.fetch!(args, :dataset)
-      |> StatementUtils.parse_table_name()
+    dataset = Keyword.fetch!(args, :dataset)
 
-    StatementUtils.parse_new_table_name(table_name)
-    |> StatementUtils.create_new_table_with_existing_table(table_name)
+    StatementUtils.parse_new_table_name(dataset.technical.systemName)
+    |> StatementUtils.create_new_table_with_existing_table(dataset.technical.systemName)
 
-    StatementUtils.drop_table(table_name)
+    StatementUtils.drop_table(dataset.technical.systemName)
   end
 
   defp parse_args(args) do

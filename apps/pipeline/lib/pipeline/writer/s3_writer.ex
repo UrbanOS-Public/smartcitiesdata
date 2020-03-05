@@ -100,13 +100,10 @@ defmodule Pipeline.Writer.S3Writer do
   @impl Pipeline.Writer
   @spec delete(dataset: [term()]) :: :ok | {:error, term()}
   def delete(args) do
-    table_name =
-      Keyword.fetch!(args, :dataset)
-      |> StatementUtils.parse_table_name()
-
-    new_table_name = StatementUtils.parse_new_table_name(table_name)
-    delete_orc_table(new_table_name, table_name)
-    delete_json_table(new_table_name, table_name)
+    dataset = Keyword.fetch!(args, :dataset)
+    new_table_name = StatementUtils.parse_new_table_name(dataset.technical.systemName)
+    delete_orc_table(new_table_name, dataset.technical.systemName)
+    delete_json_table(new_table_name, dataset.technical.systemNames)
   end
 
   defp write_to_temporary_file(file_contents, table_name) do

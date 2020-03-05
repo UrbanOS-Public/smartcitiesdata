@@ -16,10 +16,6 @@ defmodule Pipeline.Writer.TableWriter.Statement.StatementUtils do
     |> PrestigeHelper.execute_query()
   end
 
-  def parse_table_name(dataset) do
-    "#{dataset.technical.orgName}__#{dataset.technical.dataName}"
-  end
-
   def parse_new_table_name(table_name) do
     "deleted__#{current_timestamp()}__#{table_name}"
   end
