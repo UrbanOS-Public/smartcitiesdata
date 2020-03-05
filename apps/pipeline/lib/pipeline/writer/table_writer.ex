@@ -75,8 +75,8 @@ defmodule Pipeline.Writer.TableWriter do
       Keyword.fetch!(args, :dataset)
       |> StatementUtils.parse_table_name()
 
-    table_name
-    |> StatementUtils.create_new_table_with_existing_table()
+    StatementUtils.parse_new_table_name(table_name)
+    |> StatementUtils.create_new_table_with_existing_table(table_name)
 
     StatementUtils.drop_table(table_name)
   end

@@ -4,9 +4,7 @@ defmodule Pipeline.Writer.TableWriter.Statement.StatementUtils do
   alias Pipeline.Writer.TableWriter.Statement
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
 
-  def create_new_table_with_existing_table(table_name) do
-    new_table_name = parse_new_table_name(table_name)
-
+  def create_new_table_with_existing_table(new_table_name, table_name) do
     %{new_table_name: new_table_name, table_name: table_name}
     |> Statement.create_new_table_with_existing_table()
     |> PrestigeHelper.execute_query()
@@ -22,7 +20,7 @@ defmodule Pipeline.Writer.TableWriter.Statement.StatementUtils do
     "#{dataset.technical.orgName}__#{dataset.technical.dataName}"
   end
 
-  defp parse_new_table_name(table_name) do
+  def parse_new_table_name(table_name) do
     "deleted__#{current_timestamp()}__#{table_name}"
   end
 

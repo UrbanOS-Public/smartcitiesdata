@@ -397,6 +397,10 @@ defmodule Pipeline.Writer.S3WriterTest do
       assert @expected_table_values ==
                "DESCRIBE #{table_name}"
                |> execute_query(session)
+
+      assert @expected_table_values ==
+               "DESCRIBE #{table_name}__json"
+               |> execute_query(session)
     end)
 
     [dataset: dataset]
@@ -414,6 +418,10 @@ defmodule Pipeline.Writer.S3WriterTest do
 
       assert @expected_table_values ==
                "DESCRIBE #{expected_table_name}"
+               |> execute_query(session)
+
+      assert @expected_table_values ==
+               "DESCRIBE #{expected_table_name}__json"
                |> execute_query(session)
     end)
   end
