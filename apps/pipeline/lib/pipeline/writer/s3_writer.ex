@@ -102,8 +102,8 @@ defmodule Pipeline.Writer.S3Writer do
   def delete(args) do
     dataset = Keyword.fetch!(args, :dataset)
     new_table_name = StatementUtils.parse_new_table_name(dataset.technical.systemName)
-    delete_orc_table(new_table_name, dataset.technical.systemName)
-    delete_json_table(new_table_name, dataset.technical.systemName)
+    delete_table("ORC", new_table_name, dataset.technical.systemName)
+    delete_table("JSON", new_table_name, dataset.technical.systemName)
   end
 
   defp write_to_temporary_file(file_contents, table_name) do
@@ -182,23 +182,13 @@ defmodule Pipeline.Writer.S3Writer do
     end
   end
 
-  defp delete_json_table(new_table_name, table_name) do
-    json_table_name = table_name("JSON", table: table_name)
+  defp delete_table(type, new_table_name, table_name) do
+    table_name = table_name(type, table: table_name)
 
-    table_name("JSON", table: new_table_name)
-    |> StatementUtils.create_new_table_with_existing_table(json_table_name)
+    table_name(type, table: new_table_name)
+    |> StatementUtils.create_new_table_with_existing_table(table_name)
 
-    json_table_name
-    |> StatementUtils.drop_table()
-  end
-
-  defp delete_orc_table(new_table_name, table_name) do
-    orc_table_name = table_name("ORC", table: table_name)
-
-    table_name("ORC", table: new_table_name)
-    |> StatementUtils.create_new_table_with_existing_table(orc_table_name)
-
-    orc_table_name
+    table_name
     |> StatementUtils.drop_table()
   end
 end
