@@ -73,6 +73,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
     beforeEach(() => {
       global.tableau.connectionData = "{}"
       global.tableau.registerConnector = (connector) => { registeredConnector = connector }
+      document.body.innerHTML = '<div id="login-button" class="clickable login-link" onclick="login()"><span id="login-text">Log In to Access Private Datasets</span></div>'
     })
 
     const expectedTableSchemaForDatasetOne = {
@@ -192,6 +193,37 @@ describe('Discovery API Tableau Web Data Connector', () => {
       DiscoveryWDCTranslator.setupConnector()
       registeredConnector.init(() => {
         expect(window.location.search).toBe('')
+        done()
+      })
+    })
+
+    test('after fetching the refresh token, prevents the user from logging in again', (done) => {
+      document.body.innerHTML = '<div id="login-button" class="clickable login-link" onclick="login()"><span id="login-text">Log In to Access Private Datasets</span></div>'
+      var expectedHtml = '<div id="login-button" class="login-link"><span id="login-text">Logged In</span></div>'
+      mockFetches({
+        'token': {body: {refresh_token: 'this-is-a-refresh-token'}}
+      })
+      history.pushState({}, 'Test Title', '/connector.html?code=bobtheotherothercode');
+
+      DiscoveryWDCTranslator.setupConnector()
+      registeredConnector.init(() => {
+        expect(document.body.innerHTML).toEqual(expectedHtml)
+        done()
+      })
+    })
+
+    test('after failing to fetch the refresh token, shows an error and allows user to login again', (done) => {
+      document.body.innerHTML = '<div id="login-button" class="clickable login-link" onclick="login()"><span id="login-text">Log In to Access Private Datasets</span></div><div class="content" id="login-error" style="display:none"><p id="login-error-text" class="error">A log in error occurred.</p></div>'
+      var expectedHtml = '<div id="login-button" class="clickable login-link" onclick="login()"><span id="login-text">Log In to Access Private Datasets</span></div><div class="content" id="login-error" style="display: block;"><p id="login-error-text" class="error">Unable to authenticate: Request failed: 500 Real Bad | If you need to access private datasets, contact your data curator.</p></div>'
+
+      mockFetches({
+        'token': {ok: false, status: 500, statusText: 'Real Bad'}
+      })
+      history.pushState({}, 'Test Title', '/connector.html?code=bobtheotherothercode');
+
+      DiscoveryWDCTranslator.setupConnector()
+      registeredConnector.init(() => {
+        expect(document.body.innerHTML).toEqual(expectedHtml)
         done()
       })
     })

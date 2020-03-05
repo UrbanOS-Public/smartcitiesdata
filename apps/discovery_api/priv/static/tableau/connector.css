@@ -25,6 +25,10 @@ button:hover {
   cursor: pointer;
 }
 
+#login-button.clickable:hover {
+  color: #333;
+}
+
 textarea {
   width: 100%;
   border-color: black;
@@ -107,8 +111,4 @@ div.login-link {
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
-}
-
-div.login-link:hover {
-  color: #333
 }
