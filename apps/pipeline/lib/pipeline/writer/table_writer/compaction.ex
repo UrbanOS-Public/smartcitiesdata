@@ -1,13 +1,13 @@
 defmodule Pipeline.Writer.TableWriter.Compaction do
   @moduledoc false
-  alias Pipeline.Application
   alias Pipeline.Writer.TableWriter.Statement
+  alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   require Logger
 
   def setup(table) do
     %{table: "#{table}_compact"}
     |> Statement.drop()
-    |> execute()
+    |> PrestigeHelper.execute_query()
 
     table
   end
@@ -16,14 +16,14 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
     %{table: "#{table}_compact", as: "select * from #{table}"}
     |> Statement.create()
     |> elem(1)
-    |> execute_async()
+    |> PrestigeHelper.execute_async_query()
   end
 
   def measure(compaction_task, table) do
-    with count_task <- execute_async("select count(1) from #{table}"),
+    with count_task <- PrestigeHelper.execute_async_query("select count(1) from #{table}"),
          {:ok, orig_results} <- Task.await(count_task, :infinity),
          _ <- Task.await(compaction_task, :infinity),
-         {:ok, new_results} <- execute("select count(1) from #{table}_compact") do
+         {:ok, new_results} <- PrestigeHelper.execute_query("select count(1) from #{table}_compact") do
       [[new_row_count]] = new_results.rows
       [[old_row_count]] = orig_results.rows
       {new_row_count, old_row_count}
@@ -35,18 +35,18 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
 
     %{table: table}
     |> Statement.drop()
-    |> execute()
+    |> PrestigeHelper.execute_query()
 
     %{table: compact_table, alteration: "rename to #{table}"}
     |> Statement.alter()
-    |> execute()
+    |> PrestigeHelper.execute_query()
 
     :ok
   end
 
   def complete({new, old}, table) do
     Statement.drop(%{table: "#{table}_compact"})
-    |> execute()
+    |> PrestigeHelper.execute_query()
 
     message = "Failed '#{table}' compaction. New row count (#{new}) did not match original count (#{old})"
     Logger.error(message)
@@ -55,35 +55,15 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
   end
 
   def count(table) do
-    with {:ok, results} <- execute("select count(1) from #{table}") do
+    with {:ok, results} <- PrestigeHelper.execute_query("select count(1) from #{table}") do
       results.rows
     end
   end
 
   def count_async(table) do
-    with task <- execute_async("select count(1) from #{table}"),
+    with task <- PrestigeHelper.execute_async_query("select count(1) from #{table}"),
          {:ok, results} <- Task.await(task) do
       results.rows
     end
-  end
-
-  defp execute(statement) do
-    try do
-      Application.prestige_opts()
-      |> Prestige.new_session()
-      |> Prestige.execute(statement)
-    rescue
-      e -> e
-    end
-  end
-
-  defp execute_async(statement) do
-    Task.async(fn ->
-      try do
-        execute(statement)
-      rescue
-        e -> Logger.error("Failed to execute '#{statement}': #{inspect(e)}")
-      end
-    end)
   end
 end

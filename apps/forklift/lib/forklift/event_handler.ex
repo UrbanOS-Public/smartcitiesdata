@@ -7,7 +7,14 @@ defmodule Forklift.EventHandler do
   require Logger
 
   import SmartCity.Event,
-    only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0, data_write_complete: 0, error_dataset_update: 0]
+    only: [
+      data_ingest_start: 0,
+      dataset_update: 0,
+      data_ingest_end: 0,
+      data_write_complete: 0,
+      error_dataset_update: 0,
+      dataset_delete: 0
+    ]
 
   import Brook.ViewState
 
@@ -56,6 +63,28 @@ defmodule Forklift.EventHandler do
   rescue
     error ->
       Logger.error("Failure in last insert date migration" <> error)
+  end
+
+  def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = dataset}) do
+    Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset.id}")
+
+    case delete_dataset(dataset) do
+      :ok ->
+        Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{dataset.id}")
+
+      {:error, error} ->
+        Logger.error(
+          "#{__MODULE__}: Failed to delete dataset for dataset: #{dataset.id}, Reason: #{
+            inspect(error)
+          }"
+        )
+    end
+  end
+
+  defp delete_dataset(dataset) do
+    Forklift.DataReaderHelper.terminate(dataset)
+    Forklift.DataWriter.delete(dataset)
+    Forklift.Datasets.delete(dataset.id)
   end
 
   defp parse_dataset_id("forklift:last_insert_date:" <> dataset_id), do: dataset_id

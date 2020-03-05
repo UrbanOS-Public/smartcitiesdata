@@ -6,33 +6,48 @@ defmodule Pipeline.Writer.S3WriterTest do
   alias Pipeline.Writer.S3Writer
   alias Pipeline.Writer.TableWriter
   alias Pipeline.Writer.S3Writer.Compaction
-  alias Pipeline.Application
+  alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper, only: [eventually: 1]
 
-  setup do
-    session =
-      Application.prestige_opts()
-      |> Prestige.new_session()
+  @expected_table_values [
+    %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "array(varchar)"},
+    %{
+      "Column" => "two",
+      "Comment" => "",
+      "Extra" => "",
+      "Type" => "row(three decimal(18,3))"
+    },
+    %{
+      "Column" => "four",
+      "Comment" => "",
+      "Extra" => "",
+      "Type" => "array(row(five decimal(18,3)))"
+    }
+  ]
 
+  @table_schema [
+    %{name: "one", type: "list", itemType: "string"},
+    %{name: "two", type: "map", subSchema: [%{name: "three", type: "decimal(18,3)"}]},
+    %{
+      name: "four",
+      type: "list",
+      itemType: "map",
+      subSchema: [%{name: "five", type: "decimal(18,3)"}]
+    }
+  ]
+
+  setup do
+    session = PrestigeHelper.create_session()
     [session: session]
   end
 
   describe "init/1" do
     test "creates table with correct name and schema", %{session: session} do
-      expected = [
-        %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "array(varchar)"},
-        %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "row(three decimal(18,3))"},
-        %{"Column" => "four", "Comment" => "", "Extra" => "", "Type" => "array(row(five decimal(18,3)))"}
-      ]
-
-      schema = [
-        %{name: "one", type: "list", itemType: "string"},
-        %{name: "two", type: "map", subSchema: [%{name: "three", type: "decimal(18,3)"}]},
-        %{name: "four", type: "list", itemType: "map", subSchema: [%{name: "five", type: "decimal(18,3)"}]}
-      ]
-
-      dataset = TDG.create_dataset(%{technical: %{systemName: "org_name__dataset_name", schema: schema}})
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{systemName: "org_name__dataset_name", schema: @table_schema}
+        })
 
       S3Writer.init(table: dataset.technical.systemName, schema: dataset.technical.schema)
 
@@ -44,7 +59,7 @@ defmodule Pipeline.Writer.S3WriterTest do
           |> Prestige.execute!(table)
           |> Prestige.Result.as_maps()
 
-        assert result == expected
+        assert result == @expected_table_values
       end)
     end
 
@@ -362,6 +377,61 @@ defmodule Pipeline.Writer.S3WriterTest do
 
         assert result.rows == [[15]]
       end)
+    end
+  end
+
+  test "should delete and rename the orc and json table when delete table is called", %{session: session} do
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{systemName: "some_system_name", schema: @table_schema}
+      })
+
+    [table: dataset.technical.systemName, schema: dataset.technical.schema]
+    |> S3Writer.init()
+
+    eventually(fn ->
+      assert @expected_table_values ==
+               "DESCRIBE #{dataset.technical.systemName}"
+               |> execute_query(session)
+
+      assert @expected_table_values ==
+               "DESCRIBE #{dataset.technical.systemName}__json"
+               |> execute_query(session)
+    end)
+
+    [dataset: dataset]
+    |> S3Writer.delete()
+
+    eventually(fn ->
+      expected_table_name =
+        "SHOW TABLES LIKE '%#{dataset.technical.systemName}%'"
+        |> execute_query(session)
+        |> Enum.find(fn tables ->
+          tables["Table"]
+          |> String.ends_with?(dataset.technical.systemName)
+        end)
+        |> verify_deleted_table_name(dataset.technical.systemName)
+
+      assert @expected_table_values ==
+               "DESCRIBE #{expected_table_name}"
+               |> execute_query(session)
+
+      assert @expected_table_values ==
+               "DESCRIBE #{expected_table_name}__json"
+               |> execute_query(session)
+    end)
+  end
+
+  defp execute_query(query, session) do
+    session
+    |> Prestige.execute!(query)
+    |> Prestige.Result.as_maps()
+  end
+
+  defp verify_deleted_table_name(table, table_name) do
+    case String.starts_with?(table["Table"], "deleted") do
+      true -> table["Table"]
+      _ -> nil
     end
   end
 end

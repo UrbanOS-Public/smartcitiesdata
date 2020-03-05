@@ -56,6 +56,18 @@ defmodule Forklift.DataWriter do
     end
   end
 
+  @impl Pipeline.Writer
+  def delete(dataset) do
+    endpoints = Application.get_env(:forklift, :elsa_brokers)
+    topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{dataset.id}"
+
+    [endpoints: endpoints, topic: topic]
+    |> @topic_writer.delete()
+
+    [dataset: dataset]
+    |> @table_writer.delete()
+  end
+
   @spec bootstrap() :: :ok | {:error, term()}
   @doc """
   Initializes `:topic_writer` from Forklift's application environment if an

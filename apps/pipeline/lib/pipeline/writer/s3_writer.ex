@@ -7,7 +7,8 @@ defmodule Pipeline.Writer.S3Writer do
 
   alias Pipeline.Writer.S3Writer.{Compaction, S3SafeJson}
   alias Pipeline.Writer.TableWriter.{Statement}
-  alias Pipeline.Application
+  alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+  alias Pipeline.Writer.TableWriter.Statement.StatementUtils
   alias ExAws.S3
 
   require Logger
@@ -96,6 +97,15 @@ defmodule Pipeline.Writer.S3Writer do
     end
   end
 
+  @impl Pipeline.Writer
+  @spec delete(dataset: [term()]) :: :ok | {:error, term()}
+  def delete(args) do
+    dataset = Keyword.fetch!(args, :dataset)
+    new_table_name = StatementUtils.parse_new_table_name(dataset.technical.systemName)
+    delete_table("ORC", new_table_name, dataset.technical.systemName)
+    delete_table("JSON", new_table_name, dataset.technical.systemName)
+  end
+
   defp write_to_temporary_file(file_contents, table_name) do
     temporary_file_path = Temp.path!(table_name)
 
@@ -157,9 +167,7 @@ defmodule Pipeline.Writer.S3Writer do
 
   defp execute({:ok, statement}) do
     try do
-      Application.prestige_opts()
-      |> Prestige.new_session()
-      |> Prestige.execute(statement)
+      PrestigeHelper.execute_query(statement)
     rescue
       e -> e
     end
@@ -172,5 +180,15 @@ defmodule Pipeline.Writer.S3Writer do
       {:ok, _} -> true
       error -> error
     end
+  end
+
+  defp delete_table(type, new_table_name, table_name) do
+    table_name = table_name(type, table: table_name)
+
+    table_name(type, table: new_table_name)
+    |> StatementUtils.create_new_table_with_existing_table(table_name)
+
+    table_name
+    |> StatementUtils.drop_table()
   end
 end
