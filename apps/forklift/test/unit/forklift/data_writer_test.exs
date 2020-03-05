@@ -100,9 +100,16 @@ defmodule Forklift.DataWriterTest do
     end
   end
 
-  test "should delete table and topic and create new table with deleted tag and timestamp and when delete is called" do
-    stub(MockTable, :delete, fn _ -> :ok end)
-    stub(MockTopic, :delete, fn _ -> :ok end)
+  test "should delete table and topic when delete is called" do
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{systemName: "some_system_name"}
+      })
+
+    endpoints = Application.get_env(:forklift, :elsa_brokers)
+    topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{dataset.id}"
+    stub(MockTopic, :delete, fn [endpoints: endpoints, topic: topic] -> :ok end)
+    stub(MockTable, :delete, fn [dataset: dataset] -> :ok end)
     dataset = TDG.create_dataset(%{id: Faker.UUID.v4()})
     assert :ok == DataWriter.delete(dataset)
   end
