@@ -410,7 +410,6 @@ defmodule Pipeline.Writer.S3WriterTest do
           x["Table"]
           |> String.ends_with?("#{table_name}")
         end)
-        |> IO.inspect(label: "Tablesssss")
         |> verify_deleted_table_name("#{table_name}")
 
       assert @expected_table_values ==
