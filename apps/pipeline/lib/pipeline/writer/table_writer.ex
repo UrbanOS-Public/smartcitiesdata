@@ -6,7 +6,7 @@ defmodule Pipeline.Writer.TableWriter do
   @behaviour Pipeline.Writer
   alias Pipeline.Writer.TableWriter.{Compaction, Statement}
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
-  alias Pipeline.Writer.TableWriter.Statement.Rename
+  alias Pipeline.Writer.TableWriter.Statement.StatementUtils
   require Logger
 
   @type schema() :: [map()]
@@ -73,12 +73,12 @@ defmodule Pipeline.Writer.TableWriter do
   def delete(args) do
     table_name =
       Keyword.fetch!(args, :dataset)
-      |> Rename.parse_table_name()
+      |> StatementUtils.parse_table_name()
 
     table_name
-    |> Rename.create_new_table_with_existing_table()
+    |> StatementUtils.create_new_table_with_existing_table()
 
-    Rename.drop_table(table_name)
+    StatementUtils.drop_table(table_name)
   end
 
   defp parse_args(args) do

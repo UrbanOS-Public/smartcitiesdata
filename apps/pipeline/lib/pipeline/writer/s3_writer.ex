@@ -8,7 +8,7 @@ defmodule Pipeline.Writer.S3Writer do
   alias Pipeline.Writer.S3Writer.{Compaction, S3SafeJson}
   alias Pipeline.Writer.TableWriter.{Statement}
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
-  alias Pipeline.Writer.TableWriter.Statement.Rename
+  alias Pipeline.Writer.TableWriter.Statement.StatementUtils
   alias ExAws.S3
 
   require Logger
@@ -102,7 +102,7 @@ defmodule Pipeline.Writer.S3Writer do
   def delete(args) do
     table_name =
       Keyword.fetch!(args, :dataset)
-      |> Rename.parse_table_name()
+      |> StatementUtils.parse_table_name()
 
     delete_orc_table(table_name)
     delete_json_table(table_name)
@@ -188,19 +188,19 @@ defmodule Pipeline.Writer.S3Writer do
     json_table_name = table_name("JSON", table: table_name)
 
     json_table_name
-    |> Rename.create_new_table_with_existing_table()
+    |> StatementUtils.create_new_table_with_existing_table()
 
     json_table_name
-    |> Rename.drop_table()
+    |> StatementUtils.drop_table()
   end
 
   defp delete_orc_table(table_name) do
     orc_table_name = table_name("ORC", table: table_name)
 
     orc_table_name
-    |> Rename.create_new_table_with_existing_table()
+    |> StatementUtils.create_new_table_with_existing_table()
 
     orc_table_name
-    |> Rename.drop_table()
+    |> StatementUtils.drop_table()
   end
 end

@@ -1,4 +1,4 @@
-defmodule Pipeline.Writer.TableWriter.Statement.Rename do
+defmodule Pipeline.Writer.TableWriter.Statement.StatementUtils do
   @moduledoc false
 
   alias Pipeline.Writer.TableWriter.Statement
