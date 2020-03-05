@@ -101,16 +101,25 @@ defmodule Forklift.DataWriterTest do
   end
 
   test "should delete table and topic when delete is called" do
-    dataset =
+    expected_dataset =
       TDG.create_dataset(%{
         technical: %{systemName: "some_system_name"}
       })
 
-    endpoints = Application.get_env(:forklift, :elsa_brokers)
-    topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{dataset.id}"
-    stub(MockTopic, :delete, fn [endpoints: endpoints, topic: topic] -> :ok end)
-    stub(MockTable, :delete, fn [dataset: dataset] -> :ok end)
-    dataset = TDG.create_dataset(%{id: Faker.UUID.v4()})
-    assert :ok == DataWriter.delete(dataset)
+    expected_endpoints = Application.get_env(:forklift, :elsa_brokers)
+    expected_topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{expected_dataset.id}"
+
+    stub(MockTopic, :delete, fn [endpoints: actual_endpoints, topic: actual_topic] ->
+      assert expected_endpoints == actual_endpoints
+      assert expected_topic == actual_topic
+      :ok
+    end)
+
+    stub(MockTable, :delete, fn [dataset: actual_dataset] ->
+      assert expected_dataset == actual_dataset
+      :ok
+    end)
+
+    assert :ok == DataWriter.delete(expected_dataset)
   end
 end

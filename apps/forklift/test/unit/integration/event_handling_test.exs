@@ -104,7 +104,5 @@ defmodule Forklift.Integration.EventHandlingTest do
         )
       )
     end)
-
-    assert_called(Forklift.Datasets.delete(dataset.id))
   end
 end
