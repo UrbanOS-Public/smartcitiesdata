@@ -103,7 +103,7 @@ defmodule Pipeline.Writer.S3Writer do
     dataset = Keyword.fetch!(args, :dataset)
     new_table_name = StatementUtils.parse_new_table_name(dataset.technical.systemName)
     delete_orc_table(new_table_name, dataset.technical.systemName)
-    delete_json_table(new_table_name, dataset.technical.systemNames)
+    delete_json_table(new_table_name, dataset.technical.systemName)
   end
 
   defp write_to_temporary_file(file_contents, table_name) do
