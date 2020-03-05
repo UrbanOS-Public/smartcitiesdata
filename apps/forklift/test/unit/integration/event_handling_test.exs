@@ -93,7 +93,7 @@ defmodule Forklift.Integration.EventHandlingTest do
     expect(MockReader, :terminate, fn _ -> :ok end)
     expect(MockTopic, :delete, fn _ -> :ok end)
     expect(MockTable, :delete, fn _ -> :ok end)
-    expect(Forklift.Datasets.delete(any()), return: :ok)
+    expect(Forklift.Datasets.delete(dataset.id), return: :ok)
 
     Brook.Test.with_event(instance_name(), fn ->
       Forklift.EventHandler.handle_event(

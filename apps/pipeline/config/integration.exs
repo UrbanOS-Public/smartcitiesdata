@@ -3,7 +3,6 @@ use Mix.Config
 config :pipeline,
   elsa_brokers: [{:localhost, 9092}],
   output_topic: "output-topic",
-  output_topic_prefix: "transformed",
   producer_name: :"integration-producer",
   divo: [{DivoKafka, [outside_host: "localhost"]}, Pipeline.DivoPresto],
   divo_wait: [dwell: 1_000, max_tries: 120]
