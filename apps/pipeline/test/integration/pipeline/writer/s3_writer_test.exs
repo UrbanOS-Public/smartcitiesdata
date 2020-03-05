@@ -406,8 +406,8 @@ defmodule Pipeline.Writer.S3WriterTest do
       expected_table_name =
         "SHOW TABLES LIKE '%#{dataset.technical.systemName}%'"
         |> execute_query(session)
-        |> Enum.find(fn x ->
-          x["Table"]
+        |> Enum.find(fn tables ->
+          tables["Table"]
           |> String.ends_with?(dataset.technical.systemName)
         end)
         |> verify_deleted_table_name(dataset.technical.systemName)
