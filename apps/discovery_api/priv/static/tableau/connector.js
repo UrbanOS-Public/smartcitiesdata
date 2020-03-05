@@ -79,6 +79,11 @@ function _setupConnector() {
       .then(function(refreshToken) { tableau.password = refreshToken; })
       .catch(function(error) { _displayLoginError(error) })
       .then(function() { initCallback() })
+      .then(function() {
+        document.getElementById('login-text').textContent = 'Logged In';
+        document.getElementById('login-button').onclick = undefined;
+        document.getElementById('login-button').className = 'login-link';
+       })
     } else {
       initCallback();
     }
