@@ -3,7 +3,9 @@ defmodule DiscoveryApi.Data.DataJson do
   alias DiscoveryApi.Data.Model
 
   def translate_to_open_data_schema() do
-    models = Model.get_all() |> Enum.filter(&is_public?/1)
+    models = Model.get_all()
+      |> Enum.filter(&is_public?/1)
+      |> Enum.filter(&not_remote?/1)
 
     %{
       conformsTo: "https://project-open-data.cio.gov/v1.1/schema",
@@ -77,5 +79,9 @@ defmodule DiscoveryApi.Data.DataJson do
 
   defp is_public?(%Model{} = model) do
     model.private == false
+  end
+
+  defp not_remote?(%Model{} = model) do
+    model.sourceType !== "remote"
   end
 end

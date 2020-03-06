@@ -64,6 +64,15 @@ defmodule DiscoveryApi.Data.DataJsonTest do
     end)
   end
 
+  test "Remote Datasets are idempotent", %{organization_id: organization_id} do
+    remote_dataset = TDG.create_dataset(%{technical: %{orgId: organization_id, sourceType: "remote"}, business: %{dataTitle: "Im remote fools"}})
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", remote_dataset)
+
+    eventually(fn ->
+      assert Enum.count(get_data_json_datasets()) == 3
+    end)
+  end
+
   defp get_data_json_datasets() do
     "http://localhost:4000/api/v1/data_json"
     |> get_map_from_url()

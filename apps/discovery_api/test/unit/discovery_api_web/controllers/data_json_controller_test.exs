@@ -32,7 +32,8 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
         referenceUrls: ["a", "list", "of", "urls"],
         categories: ["things", "stuff", "other"],
         accessLevel: "public",
-        private: false
+        private: false,
+        sourceType: "ingest"
       })
 
     private_model =
