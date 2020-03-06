@@ -4,7 +4,7 @@ defmodule Andi.EventHandler do
   require Logger
 
   import SmartCity.Event,
-    only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0, data_ingest_end: 0]
+    only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0, data_ingest_end: 0, dataset_delete: 0]
 
   alias SmartCity.{Dataset, Organization}
   alias SmartCity.UserOrganizationAssociate
@@ -45,6 +45,13 @@ defmodule Andi.EventHandler do
     })
 
     {:create, :ingested_time, id, %{"id" => id, "ingested_time" => create_ts}}
+  end
+
+  def handle_event(%Brook.Event{
+        type: dataset_delete(),
+        data: %Dataset{} = dataset
+      }) do
+    Andi.DatasetUtil.delete(dataset.id)
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])
