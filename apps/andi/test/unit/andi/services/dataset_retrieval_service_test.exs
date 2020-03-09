@@ -37,8 +37,7 @@ defmodule Andi.Services.DatasetRetrievalTest do
 
     test "returns an error when brook returns an error" do
       expected = {:error, "bad things"}
-      allow(Brook.get_all_values(@brook_instance, :dataset), return: expected)
-
+      allow(DatasetRetrieval.get_all(@brook_instance), return: expected)
       actual = DatasetRetrieval.get_all(@brook_instance)
 
       assert expected == actual

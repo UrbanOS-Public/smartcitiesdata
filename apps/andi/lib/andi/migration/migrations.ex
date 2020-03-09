@@ -6,7 +6,7 @@ defmodule Andi.Migration.Migrations do
 
   import Andi, only: [instance_name: 0]
 
-  @instance instance_name()
+  alias Andi.Services.DatasetRetrieval
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
@@ -28,10 +28,10 @@ defmodule Andi.Migration.Migrations do
   end
 
   defp get_completed_flag(completed_flag_name) do
-    Brook.get!(@instance, :migration, completed_flag_name)
+    DatasetRetrieval.get!(completed_flag_name, :migration)
   end
 
-  defp send_brook_event(nil, event_name), do: Brook.Event.send(@instance, event_name, :andi, %{})
+  defp send_brook_event(nil, event_name), do: Brook.Event.send(instance_name(), event_name, :andi, %{})
 
   defp send_brook_event(_completed_flag, _event_name), do: nil
 end

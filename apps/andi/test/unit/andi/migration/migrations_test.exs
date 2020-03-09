@@ -10,9 +10,10 @@ defmodule Andi.Migration.MigrationsTest do
   @modified_date_event "migration:modified_date:start"
 
   alias Andi.Migration.Migrations
+  alias Andi.Services.DatasetRetrieval
 
   test "send the modified date migration event if it has not succeeded yet" do
-    allow(Brook.get!(@instance, :migration, "modified_date_migration_completed"), return: nil)
+    allow(DatasetRetrieval.get!("modified_date_migration_completed", :migration), return: nil)
     allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
     Migrations.migrate_once(@modified_date_completed_flag, @modified_date_event)
@@ -21,12 +22,12 @@ defmodule Andi.Migration.MigrationsTest do
   end
 
   test "Do not send the modified date migration event if it already succeeded" do
-    allow(Brook.get!(@instance, any(), any()), return: true)
+    allow(DatasetRetrieval.get!(any(), any()), return: true)
     allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
     Migrations.migrate_once(@modified_date_completed_flag, @modified_date_event)
 
-    refute_called Brook.get_all_values!(@instance, :dataset)
+    refute_called DatasetRetrieval.get_all!(any())
     refute_called Brook.Event.send(@instance, any(), any(), any())
   end
 end
