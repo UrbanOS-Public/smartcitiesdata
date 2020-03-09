@@ -2,17 +2,17 @@ defmodule Andi.Services.UserOrganizationAssociateService do
   @moduledoc """
   Service for associating a user with an organization
   """
-  import Andi
   import SmartCity.Event, only: [user_organization_associate: 0]
   alias SmartCity.Organization
   alias SmartCity.UserOrganizationAssociate
+  alias Andi.DatasetStore
   require Logger
 
   @doc """
   Associate a user to an organization
   """
   def associate(org_id, users) do
-    case Brook.get(instance_name(), :org, org_id) do
+    case DatasetStore.get_org(org_id) do
       {:ok, %Organization{}} ->
         send_events(org_id, users)
 

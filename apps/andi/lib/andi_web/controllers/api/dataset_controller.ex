@@ -11,6 +11,7 @@ defmodule AndiWeb.API.DatasetController do
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
   alias Andi.InputSchemas.InputConverter
+  alias Andi.DatasetStore
 
   @doc """
   Parse a data message and post the created dataset to redis
@@ -63,9 +64,9 @@ defmodule AndiWeb.API.DatasetController do
   @doc """
   Returns a dataset stored in redis
   """
-  @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
+  @spec get(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get(conn, params) do
-    case Brook.get(instance_name(), :dataset, Map.get(params, "dataset_id")) do
+    case DatasetStore.get(Map.get(params, "dataset_id")) do
       {:ok, nil} -> respond(conn, :not_found, "Dataset not found")
       {:ok, dataset} -> respond(conn, :ok, dataset)
     end

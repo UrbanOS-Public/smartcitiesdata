@@ -415,7 +415,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
   describe "GET /api/dataset/:dataset_id" do
     test "should return a given dataset when it exists", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      allow(Brook.get(instance_name(), :dataset, dataset.id), return: {:ok, dataset})
+      allow(DatasetStore.get(dataset.id), return: {:ok, dataset})
 
       conn = get(conn, "/api/v1/dataset/#{dataset.id}")
 
@@ -424,7 +424,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
     end
 
     test "should return a 404 when requested dataset does not exist", %{conn: conn} do
-      allow(Brook.get(instance_name(), :dataset, any()), return: {:ok, nil})
+      allow(DatasetStore.get(any()), return: {:ok, nil})
 
       conn = get(conn, "/api/v1/dataset/123")
 
