@@ -7,7 +7,7 @@ defmodule AndiWeb.API.DatasetController do
 
   require Logger
   alias SmartCity.Dataset
-  alias Andi.Services.DatasetRetrieval
+  alias Andi.DatasetStore
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
   alias Andi.InputSchemas.InputConverter
@@ -50,7 +50,7 @@ defmodule AndiWeb.API.DatasetController do
   Return all datasets stored in redis
   """
   def get_all(conn, _params) do
-    case DatasetRetrieval.get_all() do
+    case DatasetStore.get_all() do
       {:ok, datasets} ->
         respond(conn, :ok, datasets)
 

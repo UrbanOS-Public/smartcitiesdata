@@ -6,7 +6,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
   @get_datasets_route "/api/v1/datasets"
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.Services.DatasetRetrieval
+  alias Andi.DatasetStore
   alias Andi.DatasetCache
 
   import Andi
@@ -29,7 +29,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     example_datasets = [example_dataset_1, example_dataset_2]
 
-    allow(DatasetRetrieval.get_all(),
+    allow(DatasetStore.get_all(),
       return: {:ok, [example_dataset_1, example_dataset_2]},
       meck_options: [:passthrough]
     )
