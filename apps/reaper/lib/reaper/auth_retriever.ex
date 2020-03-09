@@ -7,17 +7,18 @@ defmodule Reaper.AuthRetriever do
 
   def retrieve(dataset_id, cache_ttl \\ 10_000) do
     dataset = Extractions.get_dataset!(dataset_id)
+    encode_method = get_in(dataset, [:technical, :authBodyEncodeMethod])
 
     body =
       dataset
       |> get_in([:technical, :authBody])
       |> evaluate_eex_map()
-      |> encode_body()
+      |> encode_body(encode_method)
 
     headers =
       dataset.technical.authHeaders
       |> evaluate_eex_map()
-      |> add_content_type(body)
+      |> add_content_type(body, encode_method)
 
     cache_id = hash_config(%{url: dataset.technical[:authUrl], body: body, headers: headers})
 
@@ -62,8 +63,10 @@ defmodule Reaper.AuthRetriever do
     {key, EEx.eval_string(value, [])}
   end
 
-  defp encode_body(body), do: URI.encode_query(body)
+  defp encode_body(body, "json"), do: Jason.encode!(body)
+  defp encode_body(body, _), do: URI.encode_query(body)
 
-  defp add_content_type(headers, ""), do: headers
-  defp add_content_type(headers, _body), do: Map.put(headers, "Content-Type", "application/x-www-form-urlencoded")
+  defp add_content_type(headers, "", _), do: headers
+  defp add_content_type(headers, _body, "json"), do: Map.put(headers, "Content-Type", "application/json")
+  defp add_content_type(headers, _body, _), do: Map.put(headers, "Content-Type", "application/x-www-form-urlencoded")
 end

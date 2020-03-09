@@ -100,6 +100,54 @@ defmodule AuthRetrieverTest do
 
       Reaper.AuthRetriever.retrieve(@dataset_id)
     end
+
+    test "retrieve response with json encoded body" do
+      bypass = Bypass.open()
+      url = "http://localhost:#{bypass.port}/auth"
+
+      expected_body = %{secret_thing: "secret"}
+
+      dataset =
+        TDG.create_dataset(%{
+          id: @dataset_id,
+          technical: %{authUrl: url, authBody: expected_body, authBodyEncodeMethod: "json"}
+        })
+
+      Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
+        {:ok, actual_body, _} = Plug.Conn.read_body(conn)
+        assert "application/json" == Plug.Conn.get_req_header(conn, "content-type") |> List.last()
+        assert actual_body == Jason.encode!(expected_body)
+        Plug.Conn.resp(conn, 200, @auth_response)
+      end)
+
+      allow Extractions.get_dataset!(@dataset_id), return: dataset
+
+      assert Reaper.AuthRetriever.retrieve(@dataset_id) == @auth_response
+    end
+
+    test "auth body encode method defaults to URI encoding when encoding method is not known" do
+      bypass = Bypass.open()
+      url = "http://localhost:#{bypass.port}/auth"
+
+      expected_body = %{secret_thing: "secret"}
+
+      dataset =
+        TDG.create_dataset(%{
+          id: @dataset_id,
+          technical: %{authUrl: url, authBody: expected_body, authBodyEncodeMethod: "fake_encode_method"}
+        })
+
+      Bypass.expect_once(bypass, "POST", "/auth", fn conn ->
+        {:ok, actual_body, _} = Plug.Conn.read_body(conn)
+        assert "application/x-www-form-urlencoded" == Plug.Conn.get_req_header(conn, "content-type") |> List.last()
+        assert actual_body == URI.encode_query(expected_body)
+        Plug.Conn.resp(conn, 200, @auth_response)
+      end)
+
+      allow Extractions.get_dataset!(@dataset_id), return: dataset
+
+      assert Reaper.AuthRetriever.retrieve(@dataset_id) == @auth_response
+    end
   end
 
   test "evaluate auth body" do
