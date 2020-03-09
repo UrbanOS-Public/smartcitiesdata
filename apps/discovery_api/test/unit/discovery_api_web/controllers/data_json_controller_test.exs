@@ -42,75 +42,82 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
         private: true
       })
 
+    remote_model = Helper.sample_model(%{sourceType: "remote"})
+
     on_exit(fn ->
       DataJsonService.delete_data_json()
     end)
 
-    {:ok,
-     %{
-       models: [private_model, public_model]
-     }}
+    %{models: [private_model, public_model, remote_model]}
   end
 
   describe "GET with all fields" do
-    setup %{conn: conn, models: [_private_model, public_model] = models} do
+    setup %{conn: conn, models: models} do
       allow(Model.get_all(), return: models)
-      results = conn |> get("/api/v1/data_json") |> json_response(200) |> Map.get("dataset")
+      data_json = conn |> get("/api/v1/data_json") |> json_response(200) |> Map.get("dataset")
 
-      {:ok, %{model: public_model, results: results}}
+      %{models: models, data_json: data_json}
     end
 
-    test "language is a list", %{results: [result | _]} do
-      assert is_list(result["language"]) == true
+    test "only a single dataset (the public one) is returned", %{data_json: data_json} do
+      assert 1 == Enum.count(data_json)
     end
 
-    test "removes optional fields with blanks from results", %{results: [result | _]} do
-      assert result["rights"] == nil
+    test "does not return non-public datasets", %{data_json: data_json} do
+      refute Enum.any?(data_json, fn dataset -> dataset["accessLevel"] == "non-public" end)
     end
 
-    test "never returns accrualPeriodicity", %{results: [result | _]} do
+    test "language is a list", %{data_json: [dataset | _]} do
+      assert is_list(dataset["language"]) == true
+    end
+
+    test "removes optional fields with blanks from results", %{data_json: [dataset | _]} do
+      assert dataset["rights"] == nil
+    end
+
+    test "never returns accrualPeriodicity", %{data_json: [dataset | _]} do
       # Decision was made to not return it since the values are not valid according to PODMS
-      assert result["accrualPeriodicity"] == nil
+      assert dataset["accrualPeriodicity"] == nil
     end
 
-    test "never returns temporal", %{results: [result | _]} do
+    test "never returns temporal", %{data_json: [dataset | _]} do
       # Decision was made to not return it since the values are not valid according to PODMS
-      assert result["temporal"] == nil
+      assert dataset["temporal"] == nil
     end
 
-    test "only a single dataset (the public one) is returned", %{results: results} do
-      assert 1 == Enum.count(results)
+    test "only the public dataset is exposed", %{data_json: [dataset | _]} do
+      assert "public" == dataset["accessLevel"]
     end
 
-    test "only the public dataset is exposed", %{results: [result | _]} do
-      assert "public" == result["accessLevel"]
+    test "maps fields of interest", %{models: models, data_json: [dataset | _]} do
+      model = get_public_ingest_model(models)
+
+      assert model.id == dataset["identifier"]
+      assert model.title == dataset["title"]
+      assert model.description == dataset["description"]
+      assert model.keywords == dataset["keyword"]
+      assert model.modifiedDate == dataset["modified"]
+      assert model.organization == dataset["publisher"]["name"]
+      assert model.contactName == dataset["contactPoint"]["fn"]
+      assert "mailto:" <> model.contactEmail == dataset["contactPoint"]["hasEmail"]
+      assert model.homepage == dataset["landingPage"]
+      assert model.license == dataset["license"]
+      assert model.accessLevel == dataset["accessLevel"]
+      assert model.spatial == dataset["spatial"]
+      assert model.conformsToUri == dataset["conformsTo"]
+      assert model.describedByUrl == dataset["describedBy"]
+      assert model.describedByMimeType == dataset["describedByType"]
+      assert model.parentDataset == dataset["isPartOf"]
+      assert model.issuedDate == dataset["issued"]
+      assert [model.language] == dataset["language"]
+      assert model.referenceUrls == dataset["references"]
+      assert model.categories == dataset["theme"]
     end
 
-    test "maps fields of interest", %{model: model, results: [result | _]} do
-      assert model.id == result["identifier"]
-      assert model.title == result["title"]
-      assert model.description == result["description"]
-      assert model.keywords == result["keyword"]
-      assert model.modifiedDate == result["modified"]
-      assert model.organization == result["publisher"]["name"]
-      assert model.contactName == result["contactPoint"]["fn"]
-      assert "mailto:" <> model.contactEmail == result["contactPoint"]["hasEmail"]
-      assert model.homepage == result["landingPage"]
-      assert model.license == result["license"]
-      assert model.accessLevel == result["accessLevel"]
-      assert model.spatial == result["spatial"]
-      assert model.conformsToUri == result["conformsTo"]
-      assert model.describedByUrl == result["describedBy"]
-      assert model.describedByMimeType == result["describedByType"]
-      assert model.parentDataset == result["isPartOf"]
-      assert model.issuedDate == result["issued"]
-      assert [model.language] == result["language"]
-      assert model.referenceUrls == result["references"]
-      assert model.categories == result["theme"]
-    end
+    test "correctly includes configured hostname for json distribution", %{models: models, data_json: [dataset | _]} do
+      model = get_public_ingest_model(models)
 
-    test "correctly includes configured hostname for json distribution", %{model: model, results: [result | _]} do
-      distribution = result["distribution"] |> Enum.find(fn dist -> dist["mediaType"] == "application/json" end)
+      distribution = dataset["distribution"] |> Enum.find(fn dist -> dist["mediaType"] == "application/json" end)
 
       assert "https://data.tests.example.com/api/v1/dataset/#{model.id}/download?_format=json" ==
                distribution["accessURL"]
@@ -118,8 +125,10 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
       assert "dcat:Distribution" == distribution["@type"]
     end
 
-    test "correctly includes configured hostname for csv distribution", %{model: model, results: [result | _]} do
-      distribution = result["distribution"] |> Enum.find(fn dist -> dist["mediaType"] == "text/csv" end)
+    test "correctly includes configured hostname for csv distribution", %{models: models, data_json: [dataset | _]} do
+      model = get_public_ingest_model(models)
+
+      distribution = dataset["distribution"] |> Enum.find(fn dist -> dist["mediaType"] == "text/csv" end)
 
       assert "https://data.tests.example.com/api/v1/dataset/#{model.id}/download?_format=csv" ==
                distribution["accessURL"]
@@ -170,5 +179,9 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
 
       assert required_keys == result_keys
     end
+  end
+
+  defp get_public_ingest_model(models) do
+    Enum.find(models, fn model -> model.private == false and model.sourceType == "ingest" end)
   end
 end
