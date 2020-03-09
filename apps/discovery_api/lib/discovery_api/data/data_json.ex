@@ -3,7 +3,8 @@ defmodule DiscoveryApi.Data.DataJson do
   alias DiscoveryApi.Data.Model
 
   def translate_to_open_data_schema() do
-    models = Model.get_all()
+    models =
+      Model.get_all()
       |> Enum.filter(&is_public?/1)
       |> Enum.reject(&is_remote?/1)
 

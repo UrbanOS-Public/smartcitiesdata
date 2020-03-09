@@ -73,11 +73,7 @@ defmodule Forklift.EventHandler do
         Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{dataset.id}")
 
       {:error, error} ->
-        Logger.error(
-          "#{__MODULE__}: Failed to delete dataset for dataset: #{dataset.id}, Reason: #{
-            inspect(error)
-          }"
-        )
+        Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{dataset.id}, Reason: #{inspect(error)}")
     end
   end
 
