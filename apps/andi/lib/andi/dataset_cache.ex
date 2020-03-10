@@ -4,7 +4,7 @@ defmodule Andi.DatasetCache do
 
   require Logger
 
-  import Andi, only: [instance_name: 0]
+  alias Andi.Services.DatasetStore
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
@@ -53,8 +53,8 @@ defmodule Andi.DatasetCache do
     # In this case Brook is already single threaded so it should be ok.
     pid = :ets.new(__MODULE__, [:set, :public, :named_table])
 
-    Brook.get_all_values!(instance_name(), :dataset) |> put()
-    Brook.get_all_values!(instance_name(), :ingested_time) |> put()
+    DatasetStore.get_all!() |> put()
+    DatasetStore.get_all_ingested_time!() |> put()
 
     {:ok, pid}
   end

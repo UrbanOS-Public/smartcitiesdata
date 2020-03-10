@@ -6,8 +6,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
   @get_datasets_route "/api/v1/datasets"
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.Services.DatasetRetrieval
   alias Andi.DatasetCache
+  alias Andi.Services.DatasetStore
 
   import Andi
   import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0]
@@ -29,7 +29,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     example_datasets = [example_dataset_1, example_dataset_2]
 
-    allow(DatasetRetrieval.get_all(),
+    allow(DatasetStore.get_all(),
       return: {:ok, [example_dataset_1, example_dataset_2]},
       meck_options: [:passthrough]
     )
@@ -279,7 +279,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
     end
 
     test "should send dataset:disable event", %{conn: conn, dataset: dataset} do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, dataset})
+      allow(DatasetStore.get(any()), return: {:ok, dataset})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/disable", %{id: dataset.id})
@@ -293,7 +293,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       conn: conn,
       dataset: dataset
     } do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, nil})
+      allow(DatasetStore.get(any()), return: {:ok, nil})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/disable", %{id: dataset.id})
@@ -304,7 +304,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     @tag capture_log: true
     test "handles error", %{conn: conn, dataset: dataset} do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, dataset})
+      allow(DatasetStore.get(any()), return: {:ok, dataset})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: {:error, "Mistakes were made"})
 
       post(conn, "#{@route}/disable", %{id: dataset.id})
@@ -319,7 +319,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
     end
 
     test "should send dataset:delete event", %{conn: conn, dataset: dataset} do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, dataset})
+      allow(DatasetStore.get(any()), return: {:ok, dataset})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/delete", %{id: dataset.id})
@@ -333,7 +333,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       conn: conn,
       dataset: dataset
     } do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, nil})
+      allow(DatasetStore.get(any()), return: {:ok, nil})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/delete", %{id: dataset.id})
@@ -344,7 +344,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     @tag capture_log: true
     test "handles error", %{conn: conn, dataset: dataset} do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, dataset})
+      allow(DatasetStore.get(any()), return: {:ok, dataset})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: {:error, "Mistakes were made"})
 
       post(conn, "#{@route}/delete", %{id: dataset.id})
@@ -415,7 +415,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
   describe "GET /api/dataset/:dataset_id" do
     test "should return a given dataset when it exists", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      allow(Brook.get(instance_name(), :dataset, dataset.id), return: {:ok, dataset})
+      allow(DatasetStore.get(dataset.id), return: {:ok, dataset})
 
       conn = get(conn, "/api/v1/dataset/#{dataset.id}")
 
@@ -424,7 +424,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
     end
 
     test "should return a 404 when requested dataset does not exist", %{conn: conn} do
-      allow(Brook.get(instance_name(), :dataset, any()), return: {:ok, nil})
+      allow(DatasetStore.get(any()), return: {:ok, nil})
 
       conn = get(conn, "/api/v1/dataset/123")
 

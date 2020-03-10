@@ -8,10 +8,11 @@ defmodule Andi.DatasetCacheTest do
 
   alias Brook.ViewState
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.Services.DatasetStore
 
   setup do
-    datasets = Brook.get_all_values!(instance_name(), :dataset)
-    timestamps = Brook.get_all_values!(instance_name(), :ingested_time)
+    datasets = DatasetStore.get_all!()
+    timestamps = DatasetStore.get_all_ingested_time!()
 
     Brook.Test.with_event(instance_name(), fn ->
       Enum.each(datasets, fn dataset ->

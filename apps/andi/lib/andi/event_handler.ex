@@ -10,6 +10,7 @@ defmodule Andi.EventHandler do
   alias SmartCity.UserOrganizationAssociate
 
   alias Andi.DatasetCache
+  alias Andi.Services.DatasetStore
 
   @ingested_time_topic "ingested_time_topic"
 
@@ -51,7 +52,7 @@ defmodule Andi.EventHandler do
         type: dataset_delete(),
         data: %Dataset{} = dataset
       }) do
-    Andi.DatasetUtil.delete(dataset.id)
+    DatasetStore.delete(dataset.id)
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])

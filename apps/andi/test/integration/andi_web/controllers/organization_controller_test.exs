@@ -6,6 +6,7 @@ defmodule Andi.CreateOrgTest do
 
   alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.Services.OrgStore
   import SmartCity.TestHelper, only: [eventually: 1]
   import Andi
 
@@ -35,7 +36,7 @@ defmodule Andi.CreateOrgTest do
       {:ok, happy_path} = Organization.new(response.body)
 
       eventually(fn ->
-        {:ok, %Organization{}} = Brook.get(instance_name(), :org, org.id)
+        {:ok, %Organization{}} = OrgStore.get(org.id)
       end)
 
       [happy_path: happy_path, response: response]
@@ -49,9 +50,9 @@ defmodule Andi.CreateOrgTest do
         post("/api/v1/organization/#{org.id}/users/add", body, headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
-        assert Brook.get(instance_name(), :org_to_users, org.id) == {:ok, MapSet.new(users)}
-        assert Brook.get(instance_name(), :user_to_orgs, 1) == {:ok, MapSet.new([org.id])}
-        assert Brook.get(instance_name(), :user_to_orgs, 2) == {:ok, MapSet.new([org.id])}
+        assert get_brook(org.id, :org_to_users) == {:ok, MapSet.new(users)}
+        assert get_brook(1, :user_to_orgs) == {:ok, MapSet.new([org.id])}
+        assert get_brook(2, :user_to_orgs) == {:ok, MapSet.new([org.id])}
       end)
     end
   end
@@ -68,5 +69,9 @@ defmodule Andi.CreateOrgTest do
     overrides
     |> TDG.create_organization()
     |> Map.from_struct()
+  end
+
+  defp get_brook(id, collection \\ :org) do
+    Brook.get(instance_name(), collection, id)
   end
 end

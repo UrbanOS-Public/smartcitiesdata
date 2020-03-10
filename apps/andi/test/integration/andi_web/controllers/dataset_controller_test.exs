@@ -7,6 +7,7 @@ defmodule Andi.CreateDatasetTest do
   import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0]
   import Andi
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.Services.DatasetStore
 
   plug(Tesla.Middleware.BaseUrl, "http://localhost:4000")
   @kafka_broker Application.get_env(:andi, :kafka_broker)
@@ -17,7 +18,7 @@ defmodule Andi.CreateDatasetTest do
       {:ok, _} = create(dataset)
 
       eventually(fn ->
-        {:ok, value} = Brook.get(instance_name(), :dataset, dataset.id)
+        {:ok, value} = DatasetStore.get(dataset.id)
         assert value != nil
       end)
 
@@ -42,7 +43,7 @@ defmodule Andi.CreateDatasetTest do
       {:ok, _} = create(dataset)
 
       eventually(fn ->
-        {:ok, value} = Brook.get(instance_name(), :dataset, dataset.id)
+        {:ok, value} = DatasetStore.get(dataset.id)
         assert value != nil
       end)
 

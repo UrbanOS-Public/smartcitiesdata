@@ -8,10 +8,11 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   alias SmartCity.Organization
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.Services.OrgStore
   import Andi
 
   setup do
-    allow(Brook.get(instance_name(), any(), any()), return: {:ok, nil}, meck_options: [:passthrough])
+    allow(OrgStore.get(any()), return: {:ok, nil}, meck_options: [:passthrough])
 
     request = %{
       "orgName" => "myOrg",
@@ -43,7 +44,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
     expected_orgs = [expected_org_1, expected_org_2]
 
-    allow(Brook.get_all_values(instance_name(), any()),
+    allow(OrgStore.get_all(),
       return: {:ok, [expected_org_1, expected_org_2]},
       meck_options: [:passthrough]
     )
@@ -112,14 +113,15 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   describe "id already exists" do
     setup do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(OrgStore.get(any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
       :ok
     end
 
     @tag capture_log: true
     test "post /api/v1/organization fails with explanation", %{conn: conn, request: req} do
       post(conn, @route, req)
-      refute_called(Brook.write(instance_name(), any(), any()))
+      refute_called(Brook.Event.send(instance_name(), any(), :andi, any()), once())
     end
   end
 
@@ -141,7 +143,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     setup do
       org = TDG.create_organization(%{})
 
-      allow(Brook.get(any(), any(), org.id),
+      allow(OrgStore.get(org.id),
         return: {:ok, org},
         meck_options: [:passthrough]
       )
@@ -166,7 +168,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
 
     test "returns a 400 if the organization doesn't exist", %{conn: conn, users: users} do
-      allow(Brook.get(any(), any(), any()),
+      allow(OrgStore.get(any()),
         return: {:ok, nil},
         meck_options: [:passthrough]
       )
@@ -196,7 +198,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
     @tag capture_log: true
     test "returns a 500 if unable to get organizations through Brook", %{conn: conn} do
-      allow(Brook.get(any(), any(), any()),
+      allow(OrgStore.get(any()),
         return: {:error, "bad stuff happened"},
         meck_options: [:passthrough]
       )
