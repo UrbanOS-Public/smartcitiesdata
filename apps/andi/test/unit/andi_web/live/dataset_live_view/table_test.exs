@@ -7,6 +7,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   alias Andi.DatasetCache
 
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.DatasetStore
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
@@ -16,14 +17,12 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   setup do
     Brook.Test.with_event(instance_name(), fn ->
-      instance_name()
-      |> Brook.get_all_values!(:dataset)
+      DatasetStore.get_all_dataset!()
       |> Enum.each(fn dataset ->
         Brook.ViewState.delete(:dataset, dataset.id)
       end)
 
-      instance_name()
-      |> Brook.get_all_values!(:ingested_time)
+      DatasetStore.get_all_ingested_time!()
       |> Enum.each(fn timestamp ->
         Brook.ViewState.delete(:ingested_time, timestamp["id"])
       end)

@@ -6,6 +6,7 @@ defmodule Andi.CreateOrgTest do
 
   alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.DatasetStore
   import SmartCity.TestHelper, only: [eventually: 1]
   import Andi
 
@@ -35,7 +36,7 @@ defmodule Andi.CreateOrgTest do
       {:ok, happy_path} = Organization.new(response.body)
 
       eventually(fn ->
-        {:ok, %Organization{}} = Brook.get(instance_name(), :org, org.id)
+        {:ok, %Organization{}} = DatasetStore.get_org(org.id)
       end)
 
       [happy_path: happy_path, response: response]

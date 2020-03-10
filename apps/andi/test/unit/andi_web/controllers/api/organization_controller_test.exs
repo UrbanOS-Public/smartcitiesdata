@@ -112,7 +112,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   describe "id already exists" do
     setup do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
+      allow(DatasetStore.get_org(any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
       :ok
     end
 
@@ -166,7 +166,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
 
     test "returns a 400 if the organization doesn't exist", %{conn: conn, users: users} do
-      allow(Brook.get(any(), any(), any()),
+      allow(DatasetStore.get_org(any()),
         return: {:ok, nil},
         meck_options: [:passthrough]
       )
@@ -196,7 +196,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
     @tag capture_log: true
     test "returns a 500 if unable to get organizations through Brook", %{conn: conn} do
-      allow(Brook.get(any(), any(), any()),
+      allow(DatasetStore.get_org(any()),
         return: {:error, "bad stuff happened"},
         meck_options: [:passthrough]
       )
