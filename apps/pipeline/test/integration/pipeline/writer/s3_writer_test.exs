@@ -149,7 +149,12 @@ defmodule Pipeline.Writer.S3WriterTest do
       ExAws.S3.upload(["Blarg"], "kdp-cloud-storage", "hive-s3/suprisingly__there/blarg.gz")
       |> ExAws.request()
 
-      assert {:error, _ } = S3Writer.write([datum1, datum2], table: dataset.technical.systemName, schema: schema, bucket: "kdp-cloud-storage")
+      assert {:error, _} =
+               S3Writer.write([datum1, datum2],
+                 table: dataset.technical.systemName,
+                 schema: schema,
+                 bucket: "kdp-cloud-storage"
+               )
     end
 
     test "inserts heavily nested records", %{session: session} do
