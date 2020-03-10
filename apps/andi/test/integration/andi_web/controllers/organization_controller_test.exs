@@ -50,9 +50,9 @@ defmodule Andi.CreateOrgTest do
         post("/api/v1/organization/#{org.id}/users/add", body, headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
-        assert Brook.get(instance_name(), :org_to_users, org.id) == {:ok, MapSet.new(users)}
-        assert Brook.get(instance_name(), :user_to_orgs, 1) == {:ok, MapSet.new([org.id])}
-        assert Brook.get(instance_name(), :user_to_orgs, 2) == {:ok, MapSet.new([org.id])}
+        assert OrgStore.get(org.id) == {:ok, MapSet.new(users)}
+        assert OrgStore.get(1) == {:ok, MapSet.new([org.id])}
+        assert OrgStore.get(2) == {:ok, MapSet.new([org.id])}
       end)
     end
   end
