@@ -44,7 +44,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
     expected_orgs = [expected_org_1, expected_org_2]
 
-    allow(Brook.get_all_values(instance_name(), any()),
+    allow(OrgStore.get_all(),
       return: {:ok, [expected_org_1, expected_org_2]},
       meck_options: [:passthrough]
     )
@@ -113,6 +113,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   describe "id already exists" do
     setup do
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
       allow(OrgStore.get(any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
       :ok
     end
@@ -120,7 +121,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     @tag capture_log: true
     test "post /api/v1/organization fails with explanation", %{conn: conn, request: req} do
       post(conn, @route, req)
-      refute_called(Brook.write(instance_name(), any(), any()))
+      refute_called(Brook.Event.send(instance_name(), any(), :andi, any()), once())
     end
   end
 
