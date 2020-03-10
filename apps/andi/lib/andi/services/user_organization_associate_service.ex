@@ -5,14 +5,14 @@ defmodule Andi.Services.UserOrganizationAssociateService do
   import SmartCity.Event, only: [user_organization_associate: 0]
   alias SmartCity.Organization
   alias SmartCity.UserOrganizationAssociate
-  alias Andi.DatasetStore
+  alias Andi.OrgStore
   require Logger
 
   @doc """
   Associate a user to an organization
   """
   def associate(org_id, users) do
-    case DatasetStore.get_org(org_id) do
+    case OrgStore.get(org_id) do
       {:ok, %Organization{}} ->
         send_events(org_id, users)
 

@@ -18,7 +18,7 @@ defmodule Andi.CreateDatasetTest do
       {:ok, _} = create(dataset)
 
       eventually(fn ->
-        {:ok, value} = DatasetStore.get_dataset(dataset.id)
+        {:ok, value} = DatasetStore.get(dataset.id)
         assert value != nil
       end)
 
@@ -43,7 +43,7 @@ defmodule Andi.CreateDatasetTest do
       {:ok, _} = create(dataset)
 
       eventually(fn ->
-        {:ok, value} = DatasetStore.get_dataset(dataset.id)
+        {:ok, value} = DatasetStore.get(dataset.id)
         assert value != nil
       end)
 

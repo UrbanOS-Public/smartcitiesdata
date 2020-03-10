@@ -53,7 +53,7 @@ defmodule Andi.DatasetCache do
     # In this case Brook is already single threaded so it should be ok.
     pid = :ets.new(__MODULE__, [:set, :public, :named_table])
 
-    DatasetStore.get_all_dataset!() |> put()
+    DatasetStore.get_all!() |> put()
     DatasetStore.get_all_ingested_time!() |> put()
 
     {:ok, pid}

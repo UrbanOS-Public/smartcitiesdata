@@ -13,7 +13,7 @@ defmodule Andi.Migration.ModifiedDateMigration do
   @instance Andi.instance_name()
 
   def do_migration() do
-    DatasetStore.get_all_dataset!()
+    DatasetStore.get_all!()
     |> Enum.each(&migrate_dataset/1)
   end
 

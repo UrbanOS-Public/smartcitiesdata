@@ -11,7 +11,7 @@ defmodule Andi.DatasetCacheTest do
   alias Andi.DatasetStore
 
   setup do
-    datasets = DatasetStore.get_all_dataset!()
+    datasets = DatasetStore.get_all!()
     timestamps = DatasetStore.get_all_ingested_time!()
 
     Brook.Test.with_event(instance_name(), fn ->

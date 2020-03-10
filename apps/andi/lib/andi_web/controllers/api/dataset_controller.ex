@@ -50,7 +50,7 @@ defmodule AndiWeb.API.DatasetController do
   Return all datasets stored in redis
   """
   def get_all(conn, _params) do
-    case DatasetStore.get_all_dataset() do
+    case DatasetStore.get_all() do
       {:ok, datasets} ->
         respond(conn, :ok, datasets)
 
@@ -65,7 +65,7 @@ defmodule AndiWeb.API.DatasetController do
   """
   @spec get(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get(conn, params) do
-    case DatasetStore.get_dataset(Map.get(params, "dataset_id")) do
+    case DatasetStore.get(Map.get(params, "dataset_id")) do
       {:ok, nil} -> respond(conn, :not_found, "Dataset not found")
       {:ok, dataset} -> respond(conn, :ok, dataset)
     end

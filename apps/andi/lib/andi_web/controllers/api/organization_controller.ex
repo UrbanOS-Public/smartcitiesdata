@@ -6,7 +6,7 @@ defmodule AndiWeb.API.OrganizationController do
 
   require Logger
   alias SmartCity.Organization
-  alias Andi.DatasetStore
+  alias Andi.OrgStore
   import Andi
   import SmartCity.Event, only: [organization_update: 0]
 
@@ -37,7 +37,7 @@ defmodule AndiWeb.API.OrganizationController do
   end
 
   defp ensure_new_org(id) do
-    case DatasetStore.get_org(id) do
+    case OrgStore.get(id) do
       {:ok, %Organization{}} ->
         Logger.error("ID #{id} already exists")
         %RuntimeError{message: "ID #{id} already exists"}
@@ -77,7 +77,7 @@ defmodule AndiWeb.API.OrganizationController do
   """
   @spec get_all(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get_all(conn, _params) do
-    case DatasetStore.get_all_org() do
+    case OrgStore.get_all() do
       {:ok, orgs} ->
         conn
         |> put_status(:ok)

@@ -17,14 +17,14 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   setup do
     Brook.Test.with_event(instance_name(), fn ->
-      DatasetStore.get_all_dataset!()
+      DatasetStore.get_all!()
       |> Enum.each(fn dataset ->
-        Brook.ViewState.delete(:dataset, dataset.id)
+        DatasetStore.delete(dataset.id)
       end)
 
       DatasetStore.get_all_ingested_time!()
       |> Enum.each(fn timestamp ->
-        Brook.ViewState.delete(:ingested_time, timestamp["id"])
+        DatasetStore.delete_ingested_time(timestamp["id"])
       end)
     end)
 

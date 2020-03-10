@@ -17,7 +17,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   setup do
     Brook.Test.with_event(instance_name(), fn ->
-      DatasetStore.get_all_dataset!()
+      DatasetStore.get_all!()
       |> Enum.each(fn dataset ->
         DatasetStore.delete(dataset.id)
       end)
