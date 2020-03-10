@@ -11,7 +11,7 @@ defmodule Andi.Services.DatasetDisable do
   """
   @spec disable(term()) :: {:ok, SmartCity.Dataset.t()} | {:error, any()} | {:not_found, any()}
   def disable(dataset_id) do
-    with {:ok, dataset} when not is_nil(dataset) <- DatasetStore.get(dataset_id),
+    with {:ok, dataset} when not is_nil(dataset) <- DatasetStore.get_dataset(dataset_id),
          :ok <- Brook.Event.send(instance_name(), dataset_disable(), :andi, dataset) do
       {:ok, dataset}
     else

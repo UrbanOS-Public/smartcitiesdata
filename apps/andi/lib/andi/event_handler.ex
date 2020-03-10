@@ -52,7 +52,7 @@ defmodule Andi.EventHandler do
         type: dataset_delete(),
         data: %Dataset{} = dataset
       }) do
-    DatasetStore.delete(dataset.id)
+    DatasetStore.delete_dataset(dataset.id)
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])

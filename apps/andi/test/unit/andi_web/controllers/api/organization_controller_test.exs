@@ -8,10 +8,11 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   alias SmartCity.Organization
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.DatasetStore
   import Andi
 
   setup do
-    allow(Brook.get(instance_name(), any(), any()), return: {:ok, nil}, meck_options: [:passthrough])
+    allow(DatasetStore.get_org(any()), return: {:ok, nil}, meck_options: [:passthrough])
 
     request = %{
       "orgName" => "myOrg",
@@ -141,7 +142,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     setup do
       org = TDG.create_organization(%{})
 
-      allow(Brook.get(any(), any(), org.id),
+      allow(DatasetStore.get_org(org.id),
         return: {:ok, org},
         meck_options: [:passthrough]
       )

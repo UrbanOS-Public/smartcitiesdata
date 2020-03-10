@@ -27,6 +27,6 @@ defmodule EventHandlerTest do
     Brook.Event.new(type: dataset_delete(), data: dataset, author: :author)
     |> Andi.EventHandler.handle_event()
 
-    assert :ok = DatasetStore.delete(dataset.id)
+    assert :ok = DatasetStore.delete_dataset(dataset.id)
   end
 end

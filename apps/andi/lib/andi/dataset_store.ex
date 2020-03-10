@@ -13,7 +13,7 @@ defmodule Andi.DatasetStore do
     Brook.ViewState.merge(@collection_dataset, dataset.id, dataset)
   end
 
-  def get(id) do
+  def get_dataset(id) do
     Brook.get(instance_name(), @collection_dataset, id)
   end
 
@@ -25,19 +25,12 @@ defmodule Andi.DatasetStore do
     Brook.get!(instance_name(), @collection_ingested_time, id)
   end
 
-  def get_all() do
+  def get_all_dataset() do
     Brook.get_all_values(instance_name(), @collection_dataset)
   end
 
   def get_all_org() do
     Brook.get_all_values(instance_name(), @collection_org)
-  end
-
-  def get_all!() do
-    case get_all() do
-      {:ok, datasets} -> datasets
-      {:error, reason} -> raise reason
-    end
   end
 
   def get_all_dataset!() do
@@ -48,7 +41,11 @@ defmodule Andi.DatasetStore do
     Brook.get_all_values!(instance_name(), @collection_ingested_time)
   end
 
-  def delete(id) do
+  def delete_dataset(id) do
     Brook.ViewState.delete(@collection_dataset, id)
+  end
+
+  def delete_ingested_time(id) do
+    Brook.ViewState.delete(@collection_ingested_time, id)
   end
 end
