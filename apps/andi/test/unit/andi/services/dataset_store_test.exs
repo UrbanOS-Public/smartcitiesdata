@@ -1,9 +1,9 @@
-defmodule Andi.DatasetStoreTest do
+defmodule Andi.Services.DatasetStoreTest do
   use ExUnit.Case
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.DatasetStore
+  alias Andi.Services.DatasetStore
 
   describe "get_all/0" do
     test "retrieves all events from Brook" do

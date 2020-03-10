@@ -1,4 +1,4 @@
-defmodule Andi.OrgStore do
+defmodule Andi.Services.OrgStore do
   @moduledoc """
   An Abstraction that handle the specifics of the Brook View state for andi org.
   """

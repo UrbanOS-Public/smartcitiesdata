@@ -7,7 +7,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.DatasetCache
-  alias Andi.DatasetStore
+  alias Andi.Services.DatasetStore
 
   import Andi
   import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0]

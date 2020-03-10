@@ -8,7 +8,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   alias SmartCity.Organization
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.OrgStore
+  alias Andi.Services.OrgStore
   import Andi
 
   setup do

@@ -4,7 +4,7 @@ defmodule Andi.Services.DatasetDelete do
   """
   import Andi
   import SmartCity.Event, only: [dataset_delete: 0]
-  alias Andi.DatasetStore
+  alias Andi.Services.DatasetStore
 
   @doc """
   Delete a dataset

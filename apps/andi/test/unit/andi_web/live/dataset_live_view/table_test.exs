@@ -7,7 +7,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   alias Andi.DatasetCache
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.DatasetStore
+  alias Andi.Services.DatasetStore
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"

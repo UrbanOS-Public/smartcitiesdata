@@ -8,7 +8,7 @@ defmodule Andi.DatasetCacheTest do
 
   alias Brook.ViewState
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.DatasetStore
+  alias Andi.Services.DatasetStore
 
   setup do
     datasets = DatasetStore.get_all!()

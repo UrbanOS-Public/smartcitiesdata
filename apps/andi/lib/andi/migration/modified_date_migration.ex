@@ -8,7 +8,7 @@ defmodule Andi.Migration.ModifiedDateMigration do
 
   require Logger
   require Andi
-  alias Andi.DatasetStore
+  alias Andi.Services.DatasetStore
 
   @instance Andi.instance_name()
 

@@ -6,7 +6,7 @@ defmodule AndiWeb.API.OrganizationController do
 
   require Logger
   alias SmartCity.Organization
-  alias Andi.OrgStore
+  alias Andi.Services.OrgStore
   import Andi
   import SmartCity.Event, only: [organization_update: 0]
 

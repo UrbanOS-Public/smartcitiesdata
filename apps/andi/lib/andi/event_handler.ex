@@ -10,7 +10,7 @@ defmodule Andi.EventHandler do
   alias SmartCity.UserOrganizationAssociate
 
   alias Andi.DatasetCache
-  alias Andi.DatasetStore
+  alias Andi.Services.DatasetStore
 
   @ingested_time_topic "ingested_time_topic"
 

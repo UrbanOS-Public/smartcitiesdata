@@ -6,7 +6,7 @@ defmodule EventHandlerTest do
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.Event, only: [data_ingest_end: 0, dataset_delete: 0]
   import Andi, only: [instance_name: 0]
-  alias Andi.DatasetStore
+  alias Andi.Services.DatasetStore
 
   use Placebo
 

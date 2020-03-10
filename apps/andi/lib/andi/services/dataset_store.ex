@@ -1,4 +1,4 @@
-defmodule Andi.DatasetStore do
+defmodule Andi.Services.DatasetStore do
   @moduledoc """
   An Abstraction that handle the specifics of the Brook View state for andi dataset.
   """

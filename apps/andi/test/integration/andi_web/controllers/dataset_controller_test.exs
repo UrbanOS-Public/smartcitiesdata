@@ -7,7 +7,7 @@ defmodule Andi.CreateDatasetTest do
   import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0]
   import Andi
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.DatasetStore
+  alias Andi.Services.DatasetStore
 
   plug(Tesla.Middleware.BaseUrl, "http://localhost:4000")
   @kafka_broker Application.get_env(:andi, :kafka_broker)

@@ -7,7 +7,7 @@ defmodule AndiWeb.API.DatasetController do
 
   require Logger
   alias SmartCity.Dataset
-  alias Andi.DatasetStore
+  alias Andi.Services.DatasetStore
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
   alias Andi.InputSchemas.InputConverter

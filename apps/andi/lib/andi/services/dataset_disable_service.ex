@@ -4,7 +4,7 @@ defmodule Andi.Services.DatasetDisable do
   """
   import Andi
   import SmartCity.Event, only: [dataset_disable: 0]
-  alias Andi.DatasetStore
+  alias Andi.Services.DatasetStore
 
   @doc """
   Disable a dataset

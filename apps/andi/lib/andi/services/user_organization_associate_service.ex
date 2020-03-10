@@ -5,7 +5,7 @@ defmodule Andi.Services.UserOrganizationAssociateService do
   import SmartCity.Event, only: [user_organization_associate: 0]
   alias SmartCity.Organization
   alias SmartCity.UserOrganizationAssociate
-  alias Andi.OrgStore
+  alias Andi.Services.OrgStore
   require Logger
 
   @doc """
