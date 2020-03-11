@@ -55,12 +55,14 @@ defmodule DiscoveryApiWeb.MultipleDataController do
   defp authorized_session(conn, statement) do
     current_user = conn.assigns.current_user
 
-    with true <- QueryAccessUtils.authorized_to_query?(statement, current_user),
-         session_opts = DiscoveryApi.prestige_opts(),
-         session = Prestige.new_session(session_opts) do
-      {:ok, session}
-    else
-      false -> {:error, "Session not authorized"}
+    case QueryAccessUtils.authorized_to_query?(statement, current_user) do
+      true ->
+        session_opts = DiscoveryApi.prestige_opts()
+        session = Prestige.new_session(session_opts)
+        {:ok, session}
+
+      false ->
+        {:error, "Session not authorized"}
     end
   end
 end
