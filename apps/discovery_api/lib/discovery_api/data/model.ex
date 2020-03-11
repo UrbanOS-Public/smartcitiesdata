@@ -2,7 +2,12 @@ defmodule DiscoveryApi.Data.Model do
   @moduledoc """
   utilities to persist and load discovery data models
   """
+
+  import DiscoveryApi
+
   alias DiscoveryApi.Data.Persistence
+
+  @collection :models
 
   @behaviour Access
 
@@ -77,7 +82,7 @@ defmodule DiscoveryApi.Data.Model do
 
   @spec get(any) :: any
   def get(id) do
-    {:ok, model} = Brook.ViewState.get(DiscoveryApi.instance(), :models, id)
+    {:ok, model} = Brook.ViewState.get(instance(), @collection, id)
 
     model
     |> ensure_struct()
@@ -85,7 +90,7 @@ defmodule DiscoveryApi.Data.Model do
   end
 
   def get_all() do
-    {:ok, models} = Brook.ViewState.get_all(DiscoveryApi.instance(), :models)
+    {:ok, models} = Brook.ViewState.get_all(instance(), @collection)
 
     models
     |> Map.values()
@@ -93,12 +98,16 @@ defmodule DiscoveryApi.Data.Model do
   end
 
   def get_all(ids) do
-    {:ok, models} = Brook.ViewState.get_all(DiscoveryApi.instance(), :models)
+    {:ok, models} = Brook.ViewState.get_all(instance(), @collection)
 
     models
     |> Enum.filter(fn {k, _v} -> k in ids end)
     |> Enum.map(fn {_k, v} -> v end)
     |> add_system_attributes()
+  end
+
+  def delete(id) do
+    Brook.ViewState.delete(@collection, id)
   end
 
   def get_completeness({id, completeness}) do

@@ -22,6 +22,10 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCache do
     Logger.debug(fn -> "Cache cleared" end)
   end
 
+  def delete(conn, true = _match) do
+    Cachex.del(__MODULE__, {conn.request_path, conn.params})
+  end
+
   defp do_call(conn, true = _match) do
     case Cachex.get(__MODULE__, {conn.request_path, conn.params}) do
       {:ok, nil} ->

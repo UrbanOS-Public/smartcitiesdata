@@ -2,7 +2,10 @@ defmodule DiscoveryApi.EventHandler do
   @moduledoc "Event Handler for event stream"
 
   use Brook.Event.Handler
-  import SmartCity.Event, only: [organization_update: 0, user_organization_associate: 0, dataset_update: 0, data_write_complete: 0]
+
+  import SmartCity.Event,
+    only: [organization_update: 0, user_organization_associate: 0, dataset_update: 0, data_write_complete: 0, dataset_delete: 0]
+
   require Logger
   alias SmartCity.{Organization, UserOrganizationAssociate, Dataset}
   alias DiscoveryApi.Schemas.{Organizations, Users}
@@ -60,6 +63,30 @@ defmodule DiscoveryApi.EventHandler do
         Logger.error("Unable to process message `#{inspect(dataset)}` : ERROR: #{inspect(reason)}")
         :discard
     end
+  end
+
+  def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{} = dataset}) do
+    Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset.id}")
+    {:ok, organization} = DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId)
+    model = Mapper.to_data_model(dataset, organization)
+    # DatasetJsonService - Done
+    DataJsonService.delete_data_json()
+    # ResponseCache - Done
+    ResponseCache.invalidate()
+    # DiscoveryApi.RecommendationEngine
+    DiscoveryApi.RecommendationEngine.save(dataset)
+    # SystemNameCache - Done
+    SystemNameCache.delete(organization.name, dataset.technical.dataName)
+    # DiscoveryApi.Search.Storage
+    DiscoveryApi.Search.Storage.index(model)
+
+    Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{dataset.id}")
+
+    # :ok
+
+    # {:error, error} ->
+    # Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{dataset.id}, Reason: #{inspect(error)}")
+    # :discard
   end
 
   defp save_dataset_to_recommendation_engine(%Dataset{technical: %{private: false, schema: schema}} = dataset) when length(schema) > 0 do
