@@ -308,6 +308,51 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
              } = body
     end
 
+    test "GET /visualization/id returns update and create_copy actions when user is owner", %{subject_id: subject_id, token: token} do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+
+      allow(Visualizations.get_visualization_by_id(@id),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart}}
+      )
+
+      allow(QueryAccessUtils.authorized_to_query?(@query, any()), return: true)
+
+      body = get_visualization_body_with_code(token, 200)
+
+      assert %{"allowed_actions" => [%{"name" => "update"}, %{"name" => "create_copy"}]} = body
+    end
+
+    test "GET /visualization/id returns only create_copy action when user is not the owner", %{subject_id: subject_id, token: token} do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+
+      allow(Visualizations.get_visualization_by_id(@id),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "someone else", chart: @encoded_chart}}
+      )
+
+      allow(QueryAccessUtils.authorized_to_query?(@query, any()), return: true)
+
+      body = get_visualization_body_with_code(token, 200)
+
+      assert %{"allowed_actions" => [%{"name" => "create_copy"}]} = body
+    end
+
+    test "GET /visualization/id returns no allowed actions when no user is signed in" do
+      allow(Visualizations.get_visualization_by_id(@id),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "someone else", chart: @encoded_chart}}
+      )
+
+      allow(QueryAccessUtils.authorized_to_query?(@query, any()), return: true)
+
+      body =
+        build_conn()
+        |> put_req_header("content-type", "application/json")
+        |> get("/api/v1/visualization/#{@id}")
+        |> response(200)
+        |> Jason.decode!()
+
+      assert %{"allowed_actions" => []} = body
+    end
+
     test "GET /visualization/id returns OK but empty chart if it is not decodable", %{subject_id: subject_id, token: token} do
       undecodable_chart = ~s({"data": ]]})
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})

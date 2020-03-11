@@ -16,9 +16,10 @@ defmodule DiscoveryApiWeb.VisualizationController do
 
   def show(conn, %{"id" => id}) do
     with {:ok, %{query: query} = visualization} <- Visualizations.get_visualization_by_id(id),
-         user <- Map.get(conn.assigns, :current_user),
-         true <- owns_visualization(visualization, user) || QueryAccessUtils.authorized_to_query?(query, user) do
-      render(conn, :visualization, %{visualization: visualization})
+         user = Map.get(conn.assigns, :current_user),
+         true <- owns_visualization(visualization, user) || QueryAccessUtils.authorized_to_query?(query, user),
+         allowed_actions = get_allowed_actions(visualization, user) do
+      render(conn, :visualization, %{visualization: visualization, allowed_actions: allowed_actions})
     else
       {:error, _} -> render_error(conn, 404, "Not Found")
       false -> render_error(conn, 404, "Not Found")
@@ -58,5 +59,16 @@ defmodule DiscoveryApiWeb.VisualizationController do
 
   defp under_visualizations_limit?(visualizations) do
     Enum.count(visualizations) <= Application.get_env(:discovery_api, :user_visualization_limit)
+  end
+
+  defp get_allowed_actions(_visualization, nil), do: []
+
+  defp get_allowed_actions(visualization, user) do
+    create_copy = %{name: :create_copy}
+
+    case owns_visualization(visualization, user) do
+      true -> [%{name: :update}, create_copy]
+      false -> [create_copy]
+    end
   end
 end
