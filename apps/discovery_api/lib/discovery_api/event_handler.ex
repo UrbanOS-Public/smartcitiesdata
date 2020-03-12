@@ -52,9 +52,9 @@ defmodule DiscoveryApi.EventHandler do
          model <- Mapper.to_data_model(dataset, organization) do
       DiscoveryApi.Search.Storage.index(model)
       save_dataset_to_recommendation_engine(dataset)
-      ResponseCache.invalidate()
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
       merge(:models, model.id, model)
+      ResponseCache.invalidate()
       DataJsonService.delete_data_json()
 
       :ok
