@@ -13,6 +13,10 @@ defmodule DiscoveryApi.Search.Storage do
     GenServer.cast(__MODULE__, {:index, model})
   end
 
+  def delete(model) do
+    GenServer.cast(__MODULE__, {:delete, model})
+  end
+
   @spec search(String.t()) :: list(%DiscoveryApi.Data.Model{})
   def search(query) do
     query
@@ -52,6 +56,11 @@ defmodule DiscoveryApi.Search.Storage do
 
   def handle_cast(:clear, state) do
     :ets.match_delete(__MODULE__, {:_, :_})
+    {:noreply, state}
+  end
+
+  def handle_cast({:delete, model}, state) do
+    delete_all_for_model(model)
     {:noreply, state}
   end
 

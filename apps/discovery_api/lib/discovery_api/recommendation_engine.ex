@@ -21,6 +21,10 @@ defmodule DiscoveryApi.RecommendationEngine do
     end
   end
 
+  def delete(dataset_id) do
+    Persistence.delete(@prefix <> dataset_id)
+  end
+
   def get_recommendations(%DiscoveryApi.Data.Model{} = dataset_to_match) do
     get_all_view_state_items()
     |> Enum.filter(&recommend?(&1, dataset_to_match))

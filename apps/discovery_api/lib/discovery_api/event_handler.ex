@@ -69,24 +69,16 @@ defmodule DiscoveryApi.EventHandler do
     Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset.id}")
     {:ok, organization} = DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId)
     model = Mapper.to_data_model(dataset, organization)
-    # DatasetJsonService - Done
-    DataJsonService.delete_data_json()
-    # ResponseCache - Done
-    ResponseCache.invalidate()
-    # DiscoveryApi.RecommendationEngine
-    DiscoveryApi.RecommendationEngine.save(dataset)
-    # SystemNameCache - Done
+    DiscoveryApi.RecommendationEngine.delete(dataset.id)
     SystemNameCache.delete(organization.name, dataset.technical.dataName)
-    # DiscoveryApi.Search.Storage
-    DiscoveryApi.Search.Storage.index(model)
-
+    DiscoveryApi.Search.Storage.delete(model)
+    delete(:models, model.id)
+    ResponseCache.invalidate()
+    DataJsonService.delete_data_json()
     Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{dataset.id}")
-
-    # :ok
-
-    # {:error, error} ->
-    # Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{dataset.id}, Reason: #{inspect(error)}")
-    # :discard
+  rescue
+    error ->
+      Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{dataset.id}, Reason: #{inspect(error)}")
   end
 
   defp save_dataset_to_recommendation_engine(%Dataset{technical: %{private: false, schema: schema}} = dataset) when length(schema) > 0 do

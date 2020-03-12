@@ -10,6 +10,8 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApi.Schemas.Organizations
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
+  alias DiscoveryApi.Data.SystemNameCache
+  alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
 
   describe "handle_event/1 organization_update" do
@@ -73,7 +75,9 @@ defmodule DiscoveryApi.EventHandlerTest do
       )
 
       allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
-      allow(DiscoveryApi.RecommendationEngine.save(any()), return: :seriously_delete)
+      allow(DiscoveryApi.RecommendationEngine.delete(any()), return: :seriously_delete)
+      allow(ResponseCache.invalidate(), return: :seriously_do_not_care)
+      allow(SystemNameCache.delete(any(), any()), return: :its_very_serious)
       allow(DataJsonService.delete_data_json(), return: :ok)
 
       dataset = TDG.create_dataset(%{})

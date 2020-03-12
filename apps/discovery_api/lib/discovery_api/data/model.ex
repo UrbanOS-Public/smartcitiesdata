@@ -107,6 +107,9 @@ defmodule DiscoveryApi.Data.Model do
   end
 
   def delete(id) do
+    Persistence.delete("discovery-api:stats:#{id}")
+    Persistence.delete("smart_registry:downloads:count:#{id}")
+    Persistence.delete("smart_registry:queries:count:#{id}")
     Brook.ViewState.delete(@collection, id)
   end
 
