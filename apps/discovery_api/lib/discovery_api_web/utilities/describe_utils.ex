@@ -1,4 +1,6 @@
 defmodule DiscoveryApiWeb.Utilities.DescribeUtils do
+  @moduledoc false
+
   @valid_types ["integer", "decimal", "double", "float", "boolean", "date", "timestamp"]
   def convert_description(description) do
     Enum.map(description, &convert_column/1)

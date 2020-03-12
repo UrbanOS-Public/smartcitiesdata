@@ -5,20 +5,25 @@ defmodule DiscoveryApiWeb.VisualizationView do
     ["json"]
   end
 
-  def render("visualization.json", %{visualization: visualization}), do: visualization_response(visualization)
-
-  def render("visualizations.json", %{visualizations: visualizations}) do
-    Enum.map(visualizations, &visualization_response/1)
+  def render("visualization.json", %{visualization: visualization, allowed_actions: allowed_actions}) do
+    visualization_response(visualization, allowed_actions)
   end
 
-  defp visualization_response(visualization) do
+  def render("visualization.json", %{visualization: visualization}), do: visualization_response(visualization, nil)
+
+  def render("visualizations.json", %{visualizations: visualizations, allowed_actions: allowed_actions}) do
+    Enum.map(visualizations, &visualization_response(&1, allowed_actions))
+  end
+
+  defp visualization_response(visualization, allowed_actions) do
     %{
       id: visualization.public_id,
       title: visualization.title,
       query: visualization.query,
       chart: safely_decode(visualization.chart),
       created: visualization.inserted_at,
-      updated: visualization.updated_at
+      updated: visualization.updated_at,
+      allowed_actions: allowed_actions
     }
   end
 
