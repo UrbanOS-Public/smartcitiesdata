@@ -23,7 +23,7 @@ defmodule DiscoveryApiWeb.VisualizationView do
       chart: safely_decode(visualization.chart),
       created: visualization.inserted_at,
       updated: visualization.updated_at,
-      allowed_actions: allowed_actions
+      allowedActions: allowed_actions
     }
   end
 

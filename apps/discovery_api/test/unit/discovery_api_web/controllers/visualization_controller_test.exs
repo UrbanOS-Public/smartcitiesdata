@@ -115,7 +115,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
                "title" => @title,
                "id" => @id,
                "chart" => @decoded_chart,
-               "allowed_actions" => [%{"name" => "update"}, %{"name" => "create_copy"}]
+               "allowedActions" => [%{"name" => "update"}, %{"name" => "create_copy"}]
              } = body
     end
 
@@ -280,7 +280,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
                "query" => @query,
                "title" => @title,
                "id" => @id,
-               "allowed_actions" => [%{"name" => "update"}, %{"name" => "create_copy"}]
+               "allowedActions" => [%{"name" => "update"}, %{"name" => "create_copy"}]
              } = body
     end
 
@@ -314,7 +314,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
 
       body = get_visualization_body_with_code(token, 200)
 
-      assert %{"allowed_actions" => [%{"name" => "update"}, %{"name" => "create_copy"}]} = body
+      assert %{"allowedActions" => [%{"name" => "update"}, %{"name" => "create_copy"}]} = body
     end
 
     test "GET /visualization/id returns only create_copy action when user is not the owner", %{subject_id: subject_id, token: token} do
@@ -328,7 +328,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
 
       body = get_visualization_body_with_code(token, 200)
 
-      assert %{"allowed_actions" => [%{"name" => "create_copy"}]} = body
+      assert %{"allowedActions" => [%{"name" => "create_copy"}]} = body
     end
 
     test "GET /visualization/id returns no allowed actions when no user is signed in" do
@@ -345,7 +345,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         |> response(200)
         |> Jason.decode!()
 
-      assert %{"allowed_actions" => []} = body
+      assert %{"allowedActions" => []} = body
     end
 
     test "GET /visualization/id returns OK but empty chart if it is not decodable", %{subject_id: subject_id, token: token} do
@@ -406,8 +406,8 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         |> Jason.decode!()
 
       assert [
-               %{"id" => "1", "allowed_actions" => [%{"name" => "update"}, %{"name" => "create_copy"}]},
-               %{"id" => "2", "allowed_actions" => [%{"name" => "update"}, %{"name" => "create_copy"}]}
+               %{"id" => "1", "allowedActions" => [%{"name" => "update"}, %{"name" => "create_copy"}]},
+               %{"id" => "2", "allowedActions" => [%{"name" => "update"}, %{"name" => "create_copy"}]}
              ] = body
     end
 
