@@ -1,5 +1,3 @@
-defmodule Providers.Behaviour do
-  def hello do
-    :world
-  end
+defmodule Providers.Provider do
+  @callback provide(String.t(), map()) :: any()
 end

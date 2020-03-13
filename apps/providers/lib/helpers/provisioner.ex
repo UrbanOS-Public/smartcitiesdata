@@ -10,7 +10,7 @@ defmodule Providers.Helpers.Provisioner do
   end
 
   defp run_if_provider(%{provider: provider_name, version: version} = provider) do
-    provider_opts = Map.get(provider, :opts, [])
+    provider_opts = Map.get(provider, :opts, %{})
     apply(provider_module(provider_name), :provide, [version, provider_opts])
   end
 
