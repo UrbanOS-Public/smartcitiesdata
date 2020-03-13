@@ -95,18 +95,11 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       subject_id: subject_id,
       token: token
     } do
-      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+      user = %{id: @user_id}
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, user})
 
-      allow(Visualizations.get_visualization_by_id(any()),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @encoded_chart}}
-      )
-
-      allow(Visualization.changeset(any(), any()),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @encoded_chart}}
-      )
-
-      allow(Visualizations.update_visualization_by_id(any(), any(), any()),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @encoded_chart}}
+      allow(Visualizations.update_visualization_by_id(@id, any(), user),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart}}
       )
 
       body =
@@ -121,7 +114,8 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
                "query" => @query,
                "title" => @title,
                "id" => @id,
-               "chart" => @decoded_chart
+               "chart" => @decoded_chart,
+               "allowedActions" => [%{"name" => "update"}, %{"name" => "create_copy"}]
              } = body
     end
 
@@ -271,7 +265,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       allow(Visualizations.get_visualizations_by_owner_id(@user_id), return: [])
 
       allow(Visualizations.create_visualization(any()),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, chart: @encoded_chart}}
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart}}
       )
 
       body =
@@ -285,7 +279,8 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       assert %{
                "query" => @query,
                "title" => @title,
-               "id" => @id
+               "id" => @id,
+               "allowedActions" => [%{"name" => "update"}, %{"name" => "create_copy"}]
              } = body
     end
 
@@ -306,6 +301,51 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
                "id" => @id,
                "chart" => @decoded_chart
              } = body
+    end
+
+    test "GET /visualization/id returns update and create_copy actions when user is owner", %{subject_id: subject_id, token: token} do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+
+      allow(Visualizations.get_visualization_by_id(@id),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart}}
+      )
+
+      allow(QueryAccessUtils.authorized_to_query?(@query, any()), return: true)
+
+      body = get_visualization_body_with_code(token, 200)
+
+      assert %{"allowedActions" => [%{"name" => "update"}, %{"name" => "create_copy"}]} = body
+    end
+
+    test "GET /visualization/id returns only create_copy action when user is not the owner", %{subject_id: subject_id, token: token} do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+
+      allow(Visualizations.get_visualization_by_id(@id),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "someone else", chart: @encoded_chart}}
+      )
+
+      allow(QueryAccessUtils.authorized_to_query?(@query, any()), return: true)
+
+      body = get_visualization_body_with_code(token, 200)
+
+      assert %{"allowedActions" => [%{"name" => "create_copy"}]} = body
+    end
+
+    test "GET /visualization/id returns no allowed actions when no user is signed in" do
+      allow(Visualizations.get_visualization_by_id(@id),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "someone else", chart: @encoded_chart}}
+      )
+
+      allow(QueryAccessUtils.authorized_to_query?(@query, any()), return: true)
+
+      body =
+        build_conn()
+        |> put_req_header("content-type", "application/json")
+        |> get("/api/v1/visualization/#{@id}")
+        |> response(200)
+        |> Jason.decode!()
+
+      assert %{"allowedActions" => []} = body
     end
 
     test "GET /visualization/id returns OK but empty chart if it is not decodable", %{subject_id: subject_id, token: token} do
@@ -365,7 +405,10 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         |> response(200)
         |> Jason.decode!()
 
-      assert [%{"id" => "1"}, %{"id" => "2"}] = body
+      assert [
+               %{"id" => "1", "allowedActions" => [%{"name" => "update"}, %{"name" => "create_copy"}]},
+               %{"id" => "2", "allowedActions" => [%{"name" => "update"}, %{"name" => "create_copy"}]}
+             ] = body
     end
 
     test "GET /visualization returns UNAUTHENTICATED with no user signed in" do
