@@ -32,6 +32,13 @@ defmodule Reaper.DataExtract.SchemaFiller do
     end
   end
 
+  defp fill_missing_fields(%{name: name, default: default}, payload) do
+    case Map.get(payload, name) do
+      nil -> Map.put(payload, name, default)
+      _ -> payload
+    end
+  end
+
   defp fill_missing_fields(%{name: name}, payload) do
     case Map.has_key?(payload, name) do
       true -> payload
