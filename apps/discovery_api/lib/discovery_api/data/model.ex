@@ -8,6 +8,9 @@ defmodule DiscoveryApi.Data.Model do
   alias DiscoveryApi.Data.Persistence
 
   @collection :models
+  @downloads_key "smart_registry:downloads:count"
+  @queries_key "smart_registry:queries:count"
+  @stats_key "discovery-api:stats"
 
   @behaviour Access
 
@@ -107,10 +110,9 @@ defmodule DiscoveryApi.Data.Model do
   end
 
   def delete(id) do
-    Persistence.delete("discovery-api:stats:#{id}")
-    Persistence.delete("smart_registry:downloads:count:#{id}")
-    Persistence.delete("smart_registry:queries:count:#{id}")
-    Persistence.delete("discovery-api:completeness_calculated_date:#{id}")
+    Persistence.delete("#{@downloads_key}:#{id}")
+    Persistence.delete("#{@queries_key}:#{id}")
+
     Brook.ViewState.delete(@collection, id)
   end
 
@@ -171,9 +173,9 @@ defmodule DiscoveryApi.Data.Model do
       |> Persistence.get_many_with_keys()
 
     Enum.map(models, fn model ->
-      completeness = redis_kv_results["discovery-api:stats:#{model.id}"]
-      downloads = redis_kv_results["smart_registry:downloads:count:#{model.id}"]
-      queries = redis_kv_results["smart_registry:queries:count:#{model.id}"]
+      completeness = redis_kv_results["#{@stats_key}:#{model.id}"]
+      downloads = redis_kv_results["#{@downloads_key}:#{model.id}"]
+      queries = redis_kv_results["#{@queries_key}:#{model.id}"]
 
       model
       |> ensure_struct()
@@ -187,9 +189,9 @@ defmodule DiscoveryApi.Data.Model do
     ids
     |> Enum.map(fn id ->
       [
-        "smart_registry:downloads:count:#{id}",
-        "smart_registry:queries:count:#{id}",
-        "discovery-api:stats:#{id}"
+        "#{@downloads_key}:#{id}",
+        "#{@queries_key}:#{id}",
+        "#{@stats_key}:#{id}"
       ]
     end)
     |> List.flatten()

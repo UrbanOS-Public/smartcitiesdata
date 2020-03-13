@@ -10,6 +10,7 @@ defmodule DiscoveryApi.EventHandler do
   alias SmartCity.{Organization, UserOrganizationAssociate, Dataset}
   alias DiscoveryApi.Schemas.{Organizations, Users}
   alias DiscoveryApi.Data.{Mapper, SystemNameCache}
+  alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
 
@@ -66,13 +67,10 @@ defmodule DiscoveryApi.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{} = dataset}) do
-    Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset.id}")
-    {:ok, organization} = DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId)
-    model = Mapper.to_data_model(dataset, organization)
     DiscoveryApi.RecommendationEngine.delete(dataset.id)
-    SystemNameCache.delete(organization.name, dataset.technical.dataName)
-    DiscoveryApi.Search.Storage.delete(model)
-    delete(:models, model.id)
+    SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName)
+    DiscoveryApi.Search.Storage.delete(dataset)
+    StatsCalculator.delete_completeness(dataset.id)
     ResponseCache.invalidate()
     DataJsonService.delete_data_json()
     Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{dataset.id}")

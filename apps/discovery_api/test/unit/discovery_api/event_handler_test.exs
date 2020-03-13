@@ -11,6 +11,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Data.SystemNameCache
+  alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
 
@@ -70,12 +71,8 @@ defmodule DiscoveryApi.EventHandlerTest do
 
   describe "handle_event/1 #{dataset_delete()}" do
     test "tells the data json plug to delete its current data json cache" do
-      allow(DiscoveryApi.Schemas.Organizations.get_organization(any()),
-        return: {:ok, %DiscoveryApi.Schemas.Organizations.Organization{name: "delete_seriously"}}
-      )
-
-      allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
       allow(DiscoveryApi.RecommendationEngine.delete(any()), return: :seriously_delete)
+      allow(StatsCalculator.delete_completeness(any()), return: :whatever_seriously)
       allow(ResponseCache.invalidate(), return: :seriously_do_not_care)
       allow(SystemNameCache.delete(any(), any()), return: :its_very_serious)
       allow(DataJsonService.delete_data_json(), return: :ok)
