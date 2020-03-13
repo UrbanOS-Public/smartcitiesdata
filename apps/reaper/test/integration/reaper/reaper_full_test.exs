@@ -571,6 +571,45 @@ defmodule Reaper.FullTest do
     ])
   end
 
+  data_test "dataset:disable followed by a ingest or extract end or file ingest end", %{bypass: bypass} do
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          cadence: "once",
+          sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+          sourceFormat: "csv",
+          sourceType: source_type,
+          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
+        }
+      })
+
+    Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+
+    eventually(fn ->
+      assert view_state_module.is_enabled?(dataset.id) == true
+    end)
+
+    Brook.Event.send(@instance, dataset_delete(), :reaper, dataset)
+
+    eventually(fn ->
+      assert view_state_module.is_enabled?(dataset.id) == false
+    end)
+
+    Brook.Event.send(@instance, end_event_type, :reaper, dataset)
+
+    Process.sleep(5_000)
+
+    eventually(fn ->
+      assert view_state_module.is_enabled?(dataset.id) == false
+    end)
+
+    where([
+      [:end_event_type, :source_type, :view_state_module],
+      [data_extract_end(), "ingest", Reaper.Collections.Extractions],
+      [file_ingest_end(), "host", Reaper.Collections.FileIngestions]
+    ])
+  end
+
   defp fetch_event_messages_of_type(type) do
     Elsa.Fetch.search_keys([localhost: 9092], "event-stream", type)
     |> Enum.to_list()

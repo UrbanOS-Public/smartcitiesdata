@@ -31,11 +31,16 @@ defmodule Reaper.Collections.BaseDataset do
       end
 
       def is_enabled?(dataset_id) do
-        case Brook.get!(unquote(instance), unquote(collection), dataset_id) do
-          nil -> false
-          value -> Map.get(value, "enabled", true)
-        end
+        Brook.get!(unquote(instance), unquote(collection), dataset_id)
+        |> is_dataset_entry_enabled?()
       end
+
+      defp is_dataset_entry_enabled?(nil = _missing_dataset_entry), do: false
+
+      defp is_dataset_entry_enabled?(%{"dataset" => _} = dataset_entry_we_have_seen_an_update_for),
+        do: Map.get(dataset_entry_we_have_seen_an_update_for, "enabled", true)
+
+      defp is_dataset_entry_enabled?(incomplete_dataset_entry), do: Map.get(incomplete_dataset_entry, "enabled", false)
 
       def get_dataset!(id) do
         case Brook.get!(unquote(instance), unquote(collection), id) do
@@ -64,12 +69,15 @@ defmodule Reaper.Collections.BaseDataset do
         |> Enum.map(&Map.get(&1, "dataset"))
       end
 
-      defp should_start(%{"enabled" => true, "started_timestamp" => start_time, "last_fetched_timestamp" => end_time})
+      defp should_start(%{"started_timestamp" => start_time, "last_fetched_timestamp" => end_time} = dataset_entry)
            when not is_nil(start_time) and not is_nil(end_time) do
-        DateTime.compare(start_time, end_time) == :gt
+        is_dataset_entry_enabled?(dataset_entry) && DateTime.compare(start_time, end_time) == :gt
       end
 
-      defp should_start(%{"enabled" => true, "started_timestamp" => start_time}) when not is_nil(start_time), do: true
+      defp should_start(%{"started_timestamp" => start_time} = dataset_entry) when not is_nil(start_time) do
+        is_dataset_entry_enabled?(dataset_entry)
+      end
+
       defp should_start(_), do: false
     end
   end
