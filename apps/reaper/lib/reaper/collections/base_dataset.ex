@@ -6,16 +6,18 @@ defmodule Reaper.Collections.BaseDataset do
     collection = Keyword.fetch!(opts, :collection)
 
     quote do
-      def update_dataset(%SmartCity.Dataset{} = dataset, start_time \\ DateTime.utc_now()) do
+      def update_dataset(%SmartCity.Dataset{} = dataset) do
         Brook.ViewState.merge(unquote(collection), dataset.id, %{
-          "dataset" => dataset,
-          "started_timestamp" => start_time,
-          "enabled" => true
+          "dataset" => dataset
         })
       end
 
       def update_last_fetched_timestamp(id, fetched_time \\ DateTime.utc_now()) do
         Brook.ViewState.merge(unquote(collection), id, %{"last_fetched_timestamp" => fetched_time})
+      end
+
+      def update_started_timestamp(id, started_time \\ DateTime.utc_now()) do
+        Brook.ViewState.merge(unquote(collection), id, %{"started_timestamp" => started_time})
       end
 
       def disable_dataset(dataset_id) do
@@ -31,7 +33,7 @@ defmodule Reaper.Collections.BaseDataset do
       def is_enabled?(dataset_id) do
         case Brook.get!(unquote(instance), unquote(collection), dataset_id) do
           nil -> false
-          value -> value["enabled"]
+          value -> Map.get(value, "enabled", true)
         end
       end
 
@@ -39,6 +41,13 @@ defmodule Reaper.Collections.BaseDataset do
         case Brook.get!(unquote(instance), unquote(collection), id) do
           nil -> nil
           value -> value["dataset"]
+        end
+      end
+
+      def get_started_timestamp!(dataset_id) do
+        case Brook.get!(unquote(instance), unquote(collection), dataset_id) do
+          nil -> nil
+          value -> Map.get(value, "started_timestamp", nil)
         end
       end
 
