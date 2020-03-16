@@ -1,7 +1,18 @@
 defmodule Providers.Helpers.ProvisionerTest do
   use ExUnit.Case
+  import Mox
 
+  alias Provider.Exceptions
+
+  @moduletag capture_log: true
   describe "successful provisioning" do
+    setup do
+      Providers.Echo
+      |> stub(:provide, fn _, %{value: value} -> value end)
+
+      :ok
+    end
+
     test "provisions a map with a single provider" do
       map = %{
         id: "bob",
@@ -110,16 +121,16 @@ defmodule Providers.Helpers.ProvisionerTest do
               version: "1"
             },
             title: "Rep class 4"
-          },
+          }
         ]
       }
 
       provisioned_map = Providers.Helpers.Provisioner.provision(map)
 
       assert provisioned_map[:resources] == [
-        %{name: "Kelly", title: "Rep class 3"},
-        %{name: "Robin", title: "Rep class 4"}
-      ]
+               %{name: "Kelly", title: "Rep class 3"},
+               %{name: "Robin", title: "Rep class 4"}
+             ]
     end
   end
 
@@ -134,10 +145,29 @@ defmodule Providers.Helpers.ProvisionerTest do
         }
       }
 
-      provisioned_map = Providers.Helpers.Provisioner.provision(map)
+      assert_raise Exceptions.ProviderNotFound, fn ->
+        Providers.Helpers.Provisioner.provision(map)
+      end
+    end
 
-      assert provisioned_map[:title] == "Mr. President"
+    test "fails to provision a map if a provider fails to execute" do
+      Providers.ExceptionTest
+      |> expect(:provide, 1, fn _, _ -> raise ArgumentError, message: "This is real bad" end)
+
+      map = %{
+        id: "bob",
+        title: %{
+          provider: "ExceptionTest",
+          opts: %{},
+          version: "1"
+        }
+      }
+
+      assert_raise Exceptions.ProviderError,
+                   ~r/Provider ExceptionTest at version 1 encountered an error: This is real bad/,
+                   fn ->
+                     Providers.Helpers.Provisioner.provision(map)
+                   end
     end
   end
-
 end

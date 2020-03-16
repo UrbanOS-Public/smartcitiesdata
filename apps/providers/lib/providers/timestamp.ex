@@ -1,6 +1,6 @@
 defmodule Providers.Timestamp do
   @moduledoc """
-  This provider implementation returns an ISO8601 compliant date string.
+  This provider implementation returns the current timestamp in UTC as an ISO8601 compliant date string.
   """
   @behaviour Providers.Provider
   def provide("1", _opts) do
