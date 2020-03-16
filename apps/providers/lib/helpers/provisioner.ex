@@ -1,6 +1,14 @@
 defmodule Providers.Helpers.Provisioner do
+  @moduledoc """
+  Recursively traverses a map, list, or struct and executes any providers found. Raises exceptions from providers as `ProviderNotFound`
+  """
   alias Provider.Exceptions
   require Logger
+
+  def provision(%module{} = struct) do
+    destructed_struct = Map.from_struct(struct) |> provision()
+    struct(module, destructed_struct)
+  end
 
   def provision(map) when is_map(map) do
     map
@@ -24,7 +32,8 @@ defmodule Providers.Helpers.Provisioner do
         Logger.error(Exception.format(:error, error, __STACKTRACE__))
         raise(
           Exceptions.ProviderError,
-          message: "Provider #{provider_name} at version #{version} encountered an error: #{error.message}")
+          message: "Provider #{provider_name} at version #{version} encountered an error: #{error.message}"
+        )
     end
   end
 
@@ -36,6 +45,6 @@ defmodule Providers.Helpers.Provisioner do
     # to_existing_atom errors if the atom doesn't exist. Module names are pre-existing atoms.
     String.to_existing_atom("Elixir.Providers.#{provider_name}")
   rescue
-    _ -> raise Exceptions.ProviderNotFound
+    _ -> raise Exceptions.ProviderNotFound, message: "Could not find Providers.#{provider_name}"
   end
 end

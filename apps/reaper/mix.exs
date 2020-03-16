@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.16.1",
+      version: "0.17.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -45,6 +45,7 @@ defmodule Reaper.MixProject do
       {:cachex, "~> 3.2"},
       {:castore, "~> 0.1"},
       {:dead_letter, in_umbrella: true},
+      {:providers, in_umbrella: true},
       {:distillery, "~> 2.1"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0",
@@ -84,6 +85,7 @@ defmodule Reaper.MixProject do
       {:excoveralls, "~> 0.11", only: :test},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:mock, "~> 0.3", only: [:test, :integration], runtime: false},
+      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 1.2", only: [:test, :integration]},

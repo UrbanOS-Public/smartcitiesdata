@@ -1,3 +1,7 @@
+defmodule TestStruct do
+  defstruct name: nil, age: nil
+end
+
 defmodule Providers.Helpers.ProvisionerTest do
   use ExUnit.Case
   import Mox
@@ -47,6 +51,22 @@ defmodule Providers.Helpers.ProvisionerTest do
 
       assert provisioned_map[:title] == "Assistant Manager"
       assert provisioned_map[:rank] == "Assistant to the Manager"
+    end
+
+    test "provisions a struct" do
+      struct = %TestStruct{
+        name: %{
+          provider: "Echo",
+          opts: %{value: "Freddy"},
+          version: "1"
+        },
+        age: 25
+      }
+
+      %module{} = provisioned_map = Providers.Helpers.Provisioner.provision(struct)
+
+      assert provisioned_map.name == "Freddy"
+      assert module == TestStruct
     end
 
     test "provisions a map with providers at different levels" do
@@ -145,7 +165,7 @@ defmodule Providers.Helpers.ProvisionerTest do
         }
       }
 
-      assert_raise Exceptions.ProviderNotFound, fn ->
+      assert_raise Exceptions.ProviderNotFound, "Could not find Providers.ThisProviderDoesNotExist", fn ->
         Providers.Helpers.Provisioner.provision(map)
       end
     end
