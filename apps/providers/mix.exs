@@ -25,7 +25,8 @@ defmodule Providers.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]}
+      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:credo, "~> 1.1", only: [:dev, :test, :integration], runtime: false}
     ]
   end
 end

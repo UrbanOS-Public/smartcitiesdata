@@ -165,9 +165,11 @@ defmodule Providers.Helpers.ProvisionerTest do
         }
       }
 
-      assert_raise Exceptions.ProviderNotFound, "Could not find Providers.ThisProviderDoesNotExist", fn ->
-        Providers.Helpers.Provisioner.provision(map)
-      end
+      assert_raise Exceptions.ProviderNotFound,
+                   "Could not find Providers.ThisProviderDoesNotExist",
+                   fn ->
+                     Providers.Helpers.Provisioner.provision(map)
+                   end
     end
 
     test "fails to provision a map if a provider fails to execute" do

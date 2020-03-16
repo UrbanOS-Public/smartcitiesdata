@@ -29,11 +29,9 @@ defmodule Providers.Helpers.Provisioner do
       apply(provider_module, :provide, [version, provider_opts])
     rescue
       error ->
-        Logger.error(Exception.format(:error, error, __STACKTRACE__))
-        raise(
-          Exceptions.ProviderError,
-          message: "Provider #{provider_name} at version #{version} encountered an error: #{error.message}"
-        )
+        reraise Exceptions.ProviderError,
+                [message: error_message(provider_name, version, error.message)],
+                __STACKTRACE__
     end
   end
 
@@ -45,6 +43,13 @@ defmodule Providers.Helpers.Provisioner do
     # to_existing_atom errors if the atom doesn't exist. Module names are pre-existing atoms.
     String.to_existing_atom("Elixir.Providers.#{provider_name}")
   rescue
-    _ -> raise Exceptions.ProviderNotFound, message: "Could not find Providers.#{provider_name}"
+    _ ->
+      reraise Exceptions.ProviderNotFound,
+              [message: "Could not find Providers.#{provider_name}"],
+              __STACKTRACE__
+  end
+
+  defp error_message(name, version, message) do
+    "Provider #{name} at version #{version} encountered an error: #{message}"
   end
 end
