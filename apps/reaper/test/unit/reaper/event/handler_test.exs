@@ -39,6 +39,7 @@ defmodule Reaper.Event.HandlerTest do
 
   describe "#{dataset_update()}" do
     test "sends error event for known bad case of nil cadence" do
+      allow(Reaper.Scheduler.find_job(any()), return: nil)
       dataset = TDG.create_dataset(id: "ds-empty-cron", technical: %{cadence: nil, sourceType: "ingest"})
 
       assert :ok == Brook.Test.send(@instance, dataset_update(), "testing", dataset)
@@ -79,6 +80,8 @@ defmodule Reaper.Event.HandlerTest do
     test "should ask horde to start process with appropriate name", %{dataset: dataset} do
       test_pid = self()
 
+      Brook.Test.with_event(@instance, fn -> Reaper.Collections.Extractions.update_dataset(dataset) end)
+
       allow Reaper.DataExtract.Processor.process(any()),
         exec: fn processor_dataset ->
           [{_pid, _}] = Horde.Registry.lookup(Reaper.Horde.Registry, dataset.id)
@@ -92,6 +95,7 @@ defmodule Reaper.Event.HandlerTest do
 
     test "should persist the dataset and start time in the view state", %{dataset: dataset, date: date} do
       allow Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
+      Brook.Test.with_event(@instance, fn -> Reaper.Collections.Extractions.update_dataset(dataset) end)
       Brook.Test.send(@instance, data_extract_start(), "testing", dataset)
 
       eventually(fn ->
@@ -104,6 +108,7 @@ defmodule Reaper.Event.HandlerTest do
 
     test "should send ingest_start event", %{dataset: dataset} do
       allow Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
+      Brook.Test.with_event(@instance, fn -> Reaper.Collections.Extractions.update_dataset(dataset) end)
       Brook.Test.send(@instance, data_extract_start(), :reaper, dataset)
 
       assert_receive {:brook_event, %Brook.Event{type: "data:ingest:start", data: dataset}}
@@ -112,6 +117,7 @@ defmodule Reaper.Event.HandlerTest do
     test "should send ingest_start event for streaming data on the first event" do
       allow Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
       dataset = TDG.create_dataset(id: "ds2", technical: %{sourceType: "stream"})
+      Brook.Test.with_event(@instance, fn -> Reaper.Collections.Extractions.update_dataset(dataset) end)
       Brook.Test.send(@instance, data_extract_start(), :reaper, dataset)
 
       assert_receive {:brook_event, %Brook.Event{type: "data:ingest:start", data: dataset}}
@@ -120,6 +126,7 @@ defmodule Reaper.Event.HandlerTest do
     test "should not send ingest_start event for streaming data on subsequent events" do
       allow Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
       dataset = TDG.create_dataset(id: "ds2", technical: %{sourceType: "stream"})
+      Brook.Test.with_event(@instance, fn -> Reaper.Collections.Extractions.update_dataset(dataset) end)
       Brook.Test.send(@instance, data_extract_start(), :reaper, dataset)
       Brook.Test.send(@instance, data_extract_end(), :reaper, dataset)
 
@@ -132,6 +139,7 @@ defmodule Reaper.Event.HandlerTest do
     test "should send #{data_extract_end()} when processor is completed" do
       allow Reaper.DataExtract.Processor.process(any()), return: :ok
       dataset = TDG.create_dataset(id: "ds3", technical: %{sourceType: "ingest"})
+      Brook.Test.with_event(@instance, fn -> Reaper.Collections.Extractions.update_dataset(dataset) end)
       Brook.Test.send(@instance, data_extract_start(), :reaper, dataset)
 
       assert_receive {:brook_event, %Brook.Event{type: data_extract_end(), data: dataset}}
@@ -157,6 +165,7 @@ defmodule Reaper.Event.HandlerTest do
     test "should start the file ingest processor" do
       allow Reaper.FileIngest.Processor.process(any()), return: :ok
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
+      Brook.Test.with_event(@instance, fn -> Reaper.Collections.FileIngestions.update_dataset(dataset) end)
       Brook.Test.send(@instance, file_ingest_start(), :reaper, dataset)
 
       eventually(fn ->
@@ -169,6 +178,7 @@ defmodule Reaper.Event.HandlerTest do
       allow DateTime.utc_now(), return: date, meck_options: [:passthrough]
       allow Reaper.FileIngest.Processor.process(any()), return: :ok
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
+      Brook.Test.with_event(@instance, fn -> Reaper.Collections.FileIngestions.update_dataset(dataset) end)
       Brook.Test.send(@instance, file_ingest_start(), :reaper, dataset)
 
       eventually(fn ->
@@ -182,6 +192,7 @@ defmodule Reaper.Event.HandlerTest do
     test "sends file ingest end event when process completes" do
       allow Reaper.FileIngest.Processor.process(any()), return: :ok
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
+      Brook.Test.with_event(@instance, fn -> Reaper.Collections.FileIngestions.update_dataset(dataset) end)
       Brook.Test.send(@instance, file_ingest_start(), :reaper, dataset)
 
       assert_receive {:brook_event, %Brook.Event{type: file_ingest_end(), data: ^dataset}}
