@@ -7,11 +7,13 @@ defmodule DiscoveryApi.EventHandlerTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.EventHandler
+  alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Schemas.Organizations
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Stats.StatsCalculator
+  alias DiscoveryApi.Search.Storage
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
 
@@ -58,7 +60,7 @@ defmodule DiscoveryApi.EventHandlerTest do
       )
 
       allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
-      allow(DiscoveryApi.RecommendationEngine.save(any()), return: :seriously_whatever)
+      allow(RecommendationEngine.save(any()), return: :seriously_whatever)
       allow(DataJsonService.delete_data_json(), return: :ok)
 
       dataset = TDG.create_dataset(%{})
@@ -75,9 +77,9 @@ defmodule DiscoveryApi.EventHandlerTest do
     end
 
     test "should delete the dataset and return ok when dataset:delete is called", %{dataset: dataset} do
-      expect(DiscoveryApi.RecommendationEngine.delete(dataset.id), return: :ok)
+      expect(RecommendationEngine.delete(dataset.id), return: :ok)
       expect(StatsCalculator.delete_completeness(dataset.id), return: :ok)
-      expect(DiscoveryApi.Search.Storage.delete(dataset), return: :ok)
+      expect(Storage.delete(dataset), return: :ok)
       expect(ResponseCache.invalidate(), return: {:ok, true})
       expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
       expect(Model.delete(dataset.id), return: :ok)
@@ -89,7 +91,7 @@ defmodule DiscoveryApi.EventHandlerTest do
     test "should return ok if it throws error when dataset:delete is called", %{dataset: dataset} do
       error = "ERR value is not an integer or out of range"
 
-      allow(DiscoveryApi.RecommendationEngine.delete(dataset.id),
+      allow(RecommendationEngine.delete(dataset.id),
         exec: fn _ -> raise error end
       )
 

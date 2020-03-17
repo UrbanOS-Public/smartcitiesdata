@@ -8,9 +8,11 @@ defmodule DiscoveryApi.EventHandler do
 
   require Logger
   alias SmartCity.{Organization, UserOrganizationAssociate, Dataset}
+  alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Schemas.{Organizations, Users}
   alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
   alias DiscoveryApi.Stats.StatsCalculator
+  alias DiscoveryApi.Search.Storage
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
 
@@ -67,9 +69,9 @@ defmodule DiscoveryApi.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{} = dataset}) do
-    DiscoveryApi.RecommendationEngine.delete(dataset.id)
+    RecommendationEngine.delete(dataset.id)
     SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName)
-    DiscoveryApi.Search.Storage.delete(dataset)
+    Storage.delete(dataset)
     StatsCalculator.delete_completeness(dataset.id)
     Model.delete(dataset.id)
     ResponseCache.invalidate()
@@ -84,7 +86,7 @@ defmodule DiscoveryApi.EventHandler do
   end
 
   defp save_dataset_to_recommendation_engine(%Dataset{technical: %{private: false, schema: schema}} = dataset) when length(schema) > 0 do
-    DiscoveryApi.RecommendationEngine.save(dataset)
+    RecommendationEngine.save(dataset)
   end
 
   defp save_dataset_to_recommendation_engine(_dataset), do: :ok
