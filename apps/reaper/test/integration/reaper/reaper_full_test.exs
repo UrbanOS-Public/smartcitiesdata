@@ -3,10 +3,22 @@ defmodule Reaper.FullTest do
   use Divo
   use Tesla
   use Placebo
+  import Checkov
+
   require Logger
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [dataset_update: 0, dataset_delete: 0]
+
+  import SmartCity.Event,
+    only: [
+      dataset_update: 0,
+      dataset_disable: 0,
+      dataset_delete: 0,
+      data_extract_start: 0,
+      file_ingest_start: 0,
+      data_extract_end: 0,
+      file_ingest_end: 0
+    ]
 
   alias Reaper.Collections.Extractions
 
@@ -417,6 +429,194 @@ defmodule Reaper.FullTest do
         assert expected == last_one
       end)
     end
+  end
+
+  describe "#{dataset_disable()} then a #{dataset_update()}" do
+    setup %{bypass: bypass} do
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            cadence: "*/5 * * * * * *",
+            sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+            sourceFormat: "csv",
+            sourceType: "stream",
+            schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
+          }
+        })
+
+      Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+
+      eventually(fn ->
+        assert %{state: :active} = Reaper.Scheduler.find_job(String.to_atom(dataset.id))
+        assert Reaper.Collections.Extractions.is_enabled?(dataset.id) == true
+      end)
+
+      Brook.Event.send(@instance, dataset_disable(), :reaper, dataset)
+
+      eventually(fn ->
+        assert %{state: :inactive} = Reaper.Scheduler.find_job(String.to_atom(dataset.id))
+        assert Reaper.Collections.Extractions.is_enabled?(dataset.id) == false
+      end)
+
+      [dataset: dataset]
+    end
+
+    test "sending an update for the disabled dataset does NOT re-enable it", %{dataset: dataset} do
+      Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+
+      Process.sleep(5_000)
+
+      eventually(fn ->
+        assert %{state: :inactive} = Reaper.Scheduler.find_job(String.to_atom(dataset.id))
+        assert Reaper.Collections.Extractions.is_enabled?(dataset.id) == false
+      end)
+    end
+  end
+
+  test "dataset:update updates dataset definition in view state", %{bypass: bypass} do
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          cadence: "once",
+          sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+          sourceFormat: "csv",
+          sourceType: "ingest",
+          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
+        }
+      })
+
+    Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+
+    eventually(fn ->
+      assert Reaper.Collections.Extractions.get_dataset!(dataset.id) == dataset
+    end)
+  end
+
+  data_test "extracts and ingests update started_timestamp in view state", %{bypass: bypass} do
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          cadence: "once",
+          sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+          sourceFormat: "csv",
+          sourceType: source_type,
+          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
+        }
+      })
+
+    Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+
+    eventually(fn ->
+      assert view_state_module.is_enabled?(dataset.id) == true
+    end)
+
+    Brook.Event.send(@instance, start_event_type, :reaper, dataset)
+
+    eventually(fn ->
+      assert nil != view_state_module.get_started_timestamp!(dataset.id)
+    end)
+
+    now = DateTime.utc_now()
+    Brook.Event.send(@instance, start_event_type, :reaper, dataset)
+
+    eventually(fn ->
+      assert DateTime.compare(view_state_module.get_started_timestamp!(dataset.id), now) == :gt
+    end)
+
+    where([
+      [:start_event_type, :source_type, :view_state_module],
+      [data_extract_start(), "ingest", Reaper.Collections.Extractions],
+      [file_ingest_start(), "host", Reaper.Collections.FileIngestions]
+    ])
+  end
+
+  data_test "dataset:disable followed by a ingest or extract start", %{bypass: bypass} do
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          cadence: "once",
+          sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+          sourceFormat: "csv",
+          sourceType: source_type,
+          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
+        }
+      })
+
+    Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+
+    eventually(fn ->
+      assert view_state_module.is_enabled?(dataset.id) == true
+    end)
+
+    Brook.Event.send(@instance, dataset_disable(), :reaper, dataset)
+
+    eventually(fn ->
+      assert view_state_module.is_enabled?(dataset.id) == false
+    end)
+
+    marked_dataset = TDG.create_dataset(Map.merge(dataset, %{business: %{dataTitle: "this-should-not-extract"}}))
+    Brook.Event.send(@instance, start_event_type, :reaper, marked_dataset)
+
+    Process.sleep(5_000)
+
+    eventually(fn ->
+      assert view_state_module.is_enabled?(dataset.id) == false
+      assert not (marked_dataset in fetch_event_messages_of_type(end_event_type))
+    end)
+
+    where([
+      [:start_event_type, :end_event_type, :source_type, :view_state_module],
+      [data_extract_start(), data_extract_end(), "ingest", Reaper.Collections.Extractions],
+      [file_ingest_start(), file_ingest_end(), "host", Reaper.Collections.FileIngestions]
+    ])
+  end
+
+  data_test "dataset:disable followed by a ingest or extract end or file ingest end", %{bypass: bypass} do
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          cadence: "once",
+          sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+          sourceFormat: "csv",
+          sourceType: source_type,
+          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
+        }
+      })
+
+    Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+
+    eventually(fn ->
+      assert view_state_module.is_enabled?(dataset.id) == true
+    end)
+
+    Brook.Event.send(@instance, dataset_delete(), :reaper, dataset)
+
+    eventually(fn ->
+      assert view_state_module.is_enabled?(dataset.id) == false
+    end)
+
+    Brook.Event.send(@instance, end_event_type, :reaper, dataset)
+
+    Process.sleep(5_000)
+
+    eventually(fn ->
+      assert view_state_module.is_enabled?(dataset.id) == false
+    end)
+
+    where([
+      [:end_event_type, :source_type, :view_state_module],
+      [data_extract_end(), "ingest", Reaper.Collections.Extractions],
+      [file_ingest_end(), "host", Reaper.Collections.FileIngestions]
+    ])
+  end
+
+  defp fetch_event_messages_of_type(type) do
+    Elsa.Fetch.search_keys([localhost: 9092], "event-stream", type)
+    |> Enum.to_list()
+    |> Enum.map(fn %Elsa.Message{value: value} ->
+      {:ok, data} = Jason.decode!(value)["data"] |> Brook.Deserializer.deserialize()
+      data
+    end)
   end
 
   test "should delete the dataset and the view state when delete event is called" do

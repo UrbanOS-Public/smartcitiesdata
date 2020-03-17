@@ -32,6 +32,7 @@ defmodule Reaper.InitTest do
 
       Brook.Test.with_event(@instance, fn ->
         Extractions.update_dataset(dataset)
+        Extractions.update_started_timestamp(dataset.id)
         Extractions.update_last_fetched_timestamp(dataset.id, nil)
       end)
 
@@ -51,7 +52,8 @@ defmodule Reaper.InitTest do
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
 
       Brook.Test.with_event(@instance, fn ->
-        Extractions.update_dataset(dataset, start_time)
+        Extractions.update_dataset(dataset)
+        Extractions.update_started_timestamp(dataset.id, start_time)
         Extractions.update_last_fetched_timestamp(dataset.id, end_time)
       end)
 
@@ -68,7 +70,8 @@ defmodule Reaper.InitTest do
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
 
       Brook.Test.with_event(@instance, fn ->
-        Extractions.update_dataset(dataset, start_time)
+        Extractions.update_dataset(dataset)
+        Extractions.update_started_timestamp(dataset.id, start_time)
         Extractions.disable_dataset(dataset.id)
       end)
 
@@ -86,7 +89,8 @@ defmodule Reaper.InitTest do
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
 
       Brook.Test.with_event(@instance, fn ->
-        Extractions.update_dataset(dataset, start_time)
+        Extractions.update_dataset(dataset)
+        Extractions.update_started_timestamp(dataset.id, start_time)
         Extractions.update_last_fetched_timestamp(dataset.id, end_time)
       end)
 
@@ -119,6 +123,7 @@ defmodule Reaper.InitTest do
 
       Brook.Test.with_event(@instance, fn ->
         FileIngestions.update_dataset(dataset)
+        FileIngestions.update_started_timestamp(dataset.id)
       end)
 
       Reaper.Init.run()
@@ -137,7 +142,8 @@ defmodule Reaper.InitTest do
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
 
       Brook.Test.with_event(@instance, fn ->
-        FileIngestions.update_dataset(dataset, start_time)
+        FileIngestions.update_dataset(dataset)
+        FileIngestions.update_started_timestamp(dataset.id, start_time)
         FileIngestions.update_last_fetched_timestamp(dataset.id, end_time)
       end)
 
@@ -155,7 +161,8 @@ defmodule Reaper.InitTest do
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
 
       Brook.Test.with_event(@instance, fn ->
-        FileIngestions.update_dataset(dataset, start_time)
+        FileIngestions.update_dataset(dataset)
+        FileIngestions.update_started_timestamp(dataset.id, start_time)
         FileIngestions.update_last_fetched_timestamp(dataset.id, end_time)
       end)
 
