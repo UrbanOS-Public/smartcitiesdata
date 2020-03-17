@@ -73,13 +73,13 @@ defmodule DiscoveryApi.EventHandlerTest do
     setup do
       %{dataset: TDG.create_dataset(%{id: Faker.UUID.v4()})}
     end
+
     test "should delete the dataset and return ok when dataset:delete is called", %{dataset: dataset} do
       expect(DiscoveryApi.RecommendationEngine.delete(dataset.id), return: :ok)
       expect(StatsCalculator.delete_completeness(dataset.id), return: :ok)
       expect(ResponseCache.invalidate(), return: {:ok, true})
       expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
       expect(Model.delete(dataset.id), return: :ok)
-
       Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
       assert {:ok, []} == DataJsonService.delete_data_json()
     end
@@ -90,7 +90,6 @@ defmodule DiscoveryApi.EventHandlerTest do
       expect(ResponseCache.invalidate(), return: {:ok, true})
       expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
       expect(Model.delete(dataset.id), return: {:error, "ERR value is not an integer or out of range"})
-
       Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
       assert {:ok, []} == DataJsonService.delete_data_json()
     end
