@@ -58,7 +58,7 @@ defmodule DiscoveryApi.EventHandler do
       ResponseCache.invalidate()
       DataJsonService.delete_data_json()
 
-      :ok
+      :discard
     else
       {:error, reason} ->
         Logger.error("Unable to process message `#{inspect(dataset)}` : ERROR: #{inspect(reason)}")
@@ -74,10 +74,13 @@ defmodule DiscoveryApi.EventHandler do
     Model.delete(dataset.id)
     ResponseCache.invalidate()
     DataJsonService.delete_data_json()
-    Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{dataset.id}")
+    Logger.debug("#{__MODULE__}: Deleted dataset: #{dataset.id}")
+
+    :discard
   rescue
     error ->
-      Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{dataset.id}, Reason: #{inspect(error)}")
+      Logger.error("#{__MODULE__}: Failed to delete dataset: #{dataset.id}, Reason: #{inspect(error)}")
+      :discard
   end
 
   defp save_dataset_to_recommendation_engine(%Dataset{technical: %{private: false, schema: schema}} = dataset) when length(schema) > 0 do

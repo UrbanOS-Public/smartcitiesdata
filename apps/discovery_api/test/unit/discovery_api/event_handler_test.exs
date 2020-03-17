@@ -77,28 +77,25 @@ defmodule DiscoveryApi.EventHandlerTest do
     test "should delete the dataset and return ok when dataset:delete is called", %{dataset: dataset} do
       expect(DiscoveryApi.RecommendationEngine.delete(dataset.id), return: :ok)
       expect(StatsCalculator.delete_completeness(dataset.id), return: :ok)
+      expect(DiscoveryApi.Search.Storage.delete(dataset), return: :ok)
       expect(ResponseCache.invalidate(), return: {:ok, true})
       expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
       expect(Model.delete(dataset.id), return: :ok)
-      Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
-      assert_called(DiscoveryApi.RecommendationEngine.delete(dataset.id))
-      assert_called(StatsCalculator.delete_completeness(dataset.id))
-      assert_called(ResponseCache.invalidate())
-      assert_called(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName))
-      assert_called(Model.delete(dataset.id))
+      expect(DataJsonService.delete_data_json(), return: :ok)
 
-      assert {:ok, []} == DataJsonService.delete_data_json()
+      Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
     end
 
     test "should return ok if it throws error when dataset:delete is called", %{dataset: dataset} do
+      error = "ERR value is not an integer or out of range"
+
       allow(DiscoveryApi.RecommendationEngine.delete(dataset.id),
-        exec: fn _ -> raise {:error, "ERR value is not an integer or out of range"} end
+        exec: fn _ -> raise error end
       )
 
-      allow(StatsCalculator.delete_completeness(dataset.id), exec: fn _ -> raise {:error, "ERR value is not an integer or out of range"} end)
-
-      allow(Model.delete(dataset.id), exec: fn _ -> raise {:error, "ERR value is not an integer or out of range"} end)
-      assert {:ok, []} == DataJsonService.delete_data_json()
+      assert capture_log(fn ->
+               Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
+             end) =~ ~r/Failed to delete dataset: #{dataset.id}.*#{inspect(error)}/
     end
   end
 end
