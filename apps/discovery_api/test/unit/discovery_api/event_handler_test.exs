@@ -81,16 +81,23 @@ defmodule DiscoveryApi.EventHandlerTest do
       expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
       expect(Model.delete(dataset.id), return: :ok)
       Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
+      assert_called(DiscoveryApi.RecommendationEngine.delete(dataset.id))
+      assert_called(StatsCalculator.delete_completeness(dataset.id))
+      assert_called(ResponseCache.invalidate())
+      assert_called(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName))
+      assert_called(Model.delete(dataset.id))
+
       assert {:ok, []} == DataJsonService.delete_data_json()
     end
 
     test "should return ok if it throws error when dataset:delete is called", %{dataset: dataset} do
-      expect(DiscoveryApi.RecommendationEngine.delete(dataset.id), return: {:error, "ERR value is not an integer or out of range"})
-      expect(StatsCalculator.delete_completeness(dataset.id), return: {:error, "ERR value is not an integer or out of range"})
-      expect(ResponseCache.invalidate(), return: {:ok, true})
-      expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
-      expect(Model.delete(dataset.id), return: {:error, "ERR value is not an integer or out of range"})
-      Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
+      allow(DiscoveryApi.RecommendationEngine.delete(dataset.id),
+        exec: fn _ -> raise {:error, "ERR value is not an integer or out of range"} end
+      )
+
+      allow(StatsCalculator.delete_completeness(dataset.id), exec: fn _ -> raise {:error, "ERR value is not an integer or out of range"} end)
+
+      allow(Model.delete(dataset.id), exec: fn _ -> raise {:error, "ERR value is not an integer or out of range"} end)
       assert {:ok, []} == DataJsonService.delete_data_json()
     end
   end
