@@ -38,7 +38,8 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   end
 
   def handle(%SmartCity.Dataset{technical: %{cadence: cadence}} = dataset) do
-    with {:ok, cron} <- parse_cron(cadence),
+    with {:ok, _} <- check_job_disabled(dataset),
+         {:ok, cron} <- parse_cron(cadence),
          :ok <- delete_job(dataset) do
       create_job(cron, dataset)
     else
@@ -46,6 +47,13 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
     end
 
     :ok
+  end
+
+  defp check_job_disabled(dataset) do
+    case Reaper.Scheduler.find_job(String.to_atom(dataset.id)) do
+      %{state: :inactive} -> {:error, "dataset #{dataset.id} is disabled"}
+      _ -> {:ok, dataset}
+    end
   end
 
   defp parse_cron(cron_int) when is_integer(cron_int) do
