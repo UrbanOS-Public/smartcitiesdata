@@ -22,7 +22,7 @@ System.put_env("HOST", "localhost")
 
 config :reaper,
   divo: [
-    {DivoKafka, [create_topics: "streaming-raw:1:1"]},
+    {DivoKafka, [create_topics: "streaming-raw:1:1", kafka_image_version: "2.12-2.1.1"]},
     DivoRedis
   ],
   divo_wait: [dwell: 700, max_tries: 50]

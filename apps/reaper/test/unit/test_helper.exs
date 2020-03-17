@@ -3,6 +3,8 @@ Application.load(:reaper)
 Application.spec(:reaper, :applications)
 |> Enum.each(&Application.ensure_all_started/1)
 
+Mox.defmock(Providers.Echo, for: Providers.Provider)
+
 Application.ensure_all_started(:bypass)
 
 ExUnit.start(exclude: [:skip])
