@@ -23,7 +23,7 @@ jobs:
     - name: pipeline
       script: bash scripts/travis-test.sh pipeline
     - name: providers
-      script: bash scripts/travis-test.sh providers
+      script: bash scripts/travis-unit-test.sh providers
     - name: dead_letter
       script: bash scripts/travis-test.sh dead_letter
     - name: e2e

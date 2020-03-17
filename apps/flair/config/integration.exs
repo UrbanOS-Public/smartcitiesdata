@@ -11,7 +11,7 @@ config :flair,
   task_timeout: 5 * 60 * 1_000,
   table_name_timing: "operational_stats",
   divo: [
-    {DivoKafka, [create_topics: "persisted:1:1,dead-letters:1:1", outside_host: host]},
+    {DivoKafka, [create_topics: "persisted:1:1,dead-letters:1:1", outside_host: host, kafka_image_version: "2.12-2.1.1"]},
     Flair.DivoPresto
   ],
   divo_wait: [dwell: 1000, max_tries: 60],

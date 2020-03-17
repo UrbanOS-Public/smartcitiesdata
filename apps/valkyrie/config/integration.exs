@@ -23,7 +23,7 @@ config :valkyrie,
        create_topics: "raw:1:1,validated:1:1,dead-letters:1:1, event-stream:1:1",
        outside_host: host,
        auto_topic: false,
-       kafka_image_version: "2.12-2.0.1"
+       kafka_image_version: "2.12-2.1.1"
      ]},
     DivoRedis
   ],
