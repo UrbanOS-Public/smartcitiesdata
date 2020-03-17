@@ -4,7 +4,7 @@ config :pipeline,
   elsa_brokers: [{:localhost, 9092}],
   output_topic: "output-topic",
   producer_name: :"integration-producer",
-  divo: [{DivoKafka, [outside_host: "localhost"]}, Pipeline.DivoPresto],
+  divo: [{DivoKafka, [outside_host: "localhost", kafka_image_version: "2.12-2.1.1"]}, Pipeline.DivoPresto],
   divo_wait: [dwell: 1_000, max_tries: 120]
 
 config :prestige, :session_opts,

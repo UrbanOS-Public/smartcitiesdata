@@ -22,8 +22,12 @@ defmodule Reaper.DataExtract.Processor do
   Downloads, decodes, and sends data to a topic
   """
   @spec process(SmartCity.Dataset.t()) :: Redix.Protocol.redis_value() | no_return()
-  def process(%SmartCity.Dataset{} = dataset) do
+  def process(%SmartCity.Dataset{} = unprovisioned_dataset) do
     Process.flag(:trap_exit, true)
+
+    dataset =
+      unprovisioned_dataset
+      |> Providers.Helpers.Provisioner.provision()
 
     validate_destination(dataset)
     validate_cache(dataset)
@@ -44,11 +48,12 @@ defmodule Reaper.DataExtract.Processor do
     Persistence.remove_last_processed_index(dataset.id)
   rescue
     error ->
-      Logger.error("Unable to continue processing dataset #{inspect(dataset)} - Error #{inspect(error)}")
+      Logger.error(Exception.format_stacktrace(__STACKTRACE__))
+      Logger.error("Unable to continue processing dataset #{inspect(unprovisioned_dataset)} - Error #{inspect(error)}")
 
       reraise error, __STACKTRACE__
   after
-    dataset.id
+    unprovisioned_dataset.id
     |> DataSlurper.determine_filename()
     |> File.rm()
   end

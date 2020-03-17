@@ -11,7 +11,7 @@ endpoint = [{host, 9092}]
 
 config :andi,
   divo: [
-    {DivoKafka, [create_topics: "event-stream:1:1", outside_host: host]},
+    {DivoKafka, [create_topics: "event-stream:1:1", outside_host: host, kafka_image_version: "2.12-2.1.1"]},
     {DivoRedis, []}
   ],
   divo_wait: [dwell: 700, max_tries: 50],

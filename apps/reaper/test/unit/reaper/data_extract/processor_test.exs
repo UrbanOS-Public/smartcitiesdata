@@ -2,6 +2,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
   use ExUnit.Case
   use Placebo
   import ExUnit.CaptureLog
+  import Mox
 
   alias Reaper.{Cache, Persistence}
   alias Reaper.DataExtract.Processor
@@ -131,6 +132,49 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
     assert log =~ inspect(dataset)
     assert log =~ "some error"
+  end
+
+  test "process/2 should execute providers prior to processing", %{bypass: bypass} do
+    dataset_id = "prov-dataset-1234"
+    allow Elsa.produce(any(), any(), any(), any()), return: :ok
+    allow Persistence.remove_last_processed_index(dataset_id), return: :ok
+    allow Persistence.get_last_processed_index(dataset_id), return: -1
+    allow Persistence.record_last_processed_index(dataset_id, any()), return: "OK"
+
+    Providers.Echo
+    |> expect(:provide, fn _, %{value: value} -> value end)
+
+    provisioned_dataset = TDG.create_dataset(
+        id: "prov-dataset-1234",
+        technical: %{
+          sourceType: "ingest",
+          sourceFormat: "csv",
+          sourceUrl: "http://localhost:#{bypass.port}/api/csv",
+          cadence: 100,
+          schema: [
+            %{name: "a", type: "string"},
+            %{name: "b", type: "string"},
+            %{name: "c", type: "string"},
+            %{name: "p", type: "string", default: %{
+              provider: "Echo",
+              opts: %{value: "six of six"},
+              version: "1"
+            }}
+          ],
+          allow_duplicates: false
+        }
+      )
+
+    Processor.process(provisioned_dataset)
+
+    messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
+
+    expected = [
+      %{"a" => "one", "b" => "two", "c" => "three", "p" => "six of six"},
+      %{"a" => "four", "b" => "five", "c" => "six", "p" => "six of six"}
+    ]
+
+    assert expected == get_payloads(messages)
   end
 
   defp get_payloads(list) do

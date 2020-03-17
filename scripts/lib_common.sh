@@ -38,7 +38,7 @@ function publishable_apps_that_have_changed {
 function should_build_all {
   local -r commit_range=${1}
 
-  ! git diff --exit-code --quiet ${commit_range} -- mix.lock apps/pipeline apps/dead_letter
+  ! git diff --exit-code --quiet ${commit_range} -- mix.lock apps/pipeline apps/dead_letter apps/providers
 }
 
 function apps_that_have_changed {
