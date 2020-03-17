@@ -2,11 +2,17 @@ defmodule DiscoveryApi.EventHandler do
   @moduledoc "Event Handler for event stream"
 
   use Brook.Event.Handler
-  import SmartCity.Event, only: [organization_update: 0, user_organization_associate: 0, dataset_update: 0, data_write_complete: 0]
+
+  import SmartCity.Event,
+    only: [organization_update: 0, user_organization_associate: 0, dataset_update: 0, data_write_complete: 0, dataset_delete: 0]
+
   require Logger
   alias SmartCity.{Organization, UserOrganizationAssociate, Dataset}
+  alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Schemas.{Organizations, Users}
-  alias DiscoveryApi.Data.{Mapper, SystemNameCache}
+  alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
+  alias DiscoveryApi.Stats.StatsCalculator
+  alias DiscoveryApi.Search.Storage
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
 
@@ -49,12 +55,12 @@ defmodule DiscoveryApi.EventHandler do
          model <- Mapper.to_data_model(dataset, organization) do
       DiscoveryApi.Search.Storage.index(model)
       save_dataset_to_recommendation_engine(dataset)
-      ResponseCache.invalidate()
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
       merge(:models, model.id, model)
+      ResponseCache.invalidate()
       DataJsonService.delete_data_json()
 
-      :ok
+      :discard
     else
       {:error, reason} ->
         Logger.error("Unable to process message `#{inspect(dataset)}` : ERROR: #{inspect(reason)}")
@@ -62,8 +68,25 @@ defmodule DiscoveryApi.EventHandler do
     end
   end
 
+  def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{} = dataset}) do
+    RecommendationEngine.delete(dataset.id)
+    SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName)
+    Storage.delete(dataset)
+    StatsCalculator.delete_completeness(dataset.id)
+    Model.delete(dataset.id)
+    ResponseCache.invalidate()
+    DataJsonService.delete_data_json()
+    Logger.debug("#{__MODULE__}: Deleted dataset: #{dataset.id}")
+
+    :discard
+  rescue
+    error ->
+      Logger.error("#{__MODULE__}: Failed to delete dataset: #{dataset.id}, Reason: #{inspect(error)}")
+      :discard
+  end
+
   defp save_dataset_to_recommendation_engine(%Dataset{technical: %{private: false, schema: schema}} = dataset) when length(schema) > 0 do
-    DiscoveryApi.RecommendationEngine.save(dataset)
+    RecommendationEngine.save(dataset)
   end
 
   defp save_dataset_to_recommendation_engine(_dataset), do: :ok

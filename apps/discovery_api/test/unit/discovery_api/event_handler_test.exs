@@ -2,14 +2,19 @@ defmodule DiscoveryApi.EventHandlerTest do
   use ExUnit.Case
   use Placebo
 
-  import SmartCity.Event, only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0]
+  import SmartCity.Event, only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0, dataset_delete: 0]
   import ExUnit.CaptureLog
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.EventHandler
+  alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Schemas.Organizations
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
+  alias DiscoveryApi.Data.{Model, SystemNameCache}
+  alias DiscoveryApi.Stats.StatsCalculator
+  alias DiscoveryApi.Search.Storage
+  alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
 
   describe "handle_event/1 organization_update" do
@@ -55,7 +60,7 @@ defmodule DiscoveryApi.EventHandlerTest do
       )
 
       allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
-      allow(DiscoveryApi.RecommendationEngine.save(any()), return: :seriously_whatever)
+      allow(RecommendationEngine.save(any()), return: :seriously_whatever)
       allow(DataJsonService.delete_data_json(), return: :ok)
 
       dataset = TDG.create_dataset(%{})
@@ -63,6 +68,36 @@ defmodule DiscoveryApi.EventHandlerTest do
       Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_update(), data: dataset, author: :author))
 
       assert_called(DataJsonService.delete_data_json())
+    end
+  end
+
+  describe "handle_event/1 #{dataset_delete()}" do
+    setup do
+      %{dataset: TDG.create_dataset(%{id: Faker.UUID.v4()})}
+    end
+
+    test "should delete the dataset and return ok when dataset:delete is called", %{dataset: dataset} do
+      expect(RecommendationEngine.delete(dataset.id), return: :ok)
+      expect(StatsCalculator.delete_completeness(dataset.id), return: :ok)
+      expect(Storage.delete(dataset), return: :ok)
+      expect(ResponseCache.invalidate(), return: {:ok, true})
+      expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
+      expect(Model.delete(dataset.id), return: :ok)
+      expect(DataJsonService.delete_data_json(), return: :ok)
+
+      Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
+    end
+
+    test "should return ok if it throws error when dataset:delete is called", %{dataset: dataset} do
+      error = "ERR value is not an integer or out of range"
+
+      allow(RecommendationEngine.delete(dataset.id),
+        exec: fn _ -> raise error end
+      )
+
+      assert capture_log(fn ->
+               Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
+             end) =~ ~r/Failed to delete dataset: #{dataset.id}.*#{inspect(error)}/
     end
   end
 end

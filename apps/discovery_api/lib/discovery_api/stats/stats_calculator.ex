@@ -9,18 +9,24 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
   alias DiscoveryApi.Data.Model
 
   @completeness_key "discovery-api:completeness_calculated_date"
+  @stats_key "discovery-api:stats"
 
   @doc """
   Entry point for calculating completeness statistics.  This method will get all datasets from the SmartCity Registry and calculate their completeness stats, saving them to redis.
   """
   def produce_completeness_stats do
-    Persistence.persist("discovery-api:stats:start_time", DateTime.utc_now())
+    Persistence.persist("#{@stats_key}:start_time", DateTime.utc_now())
 
     Model.get_all()
     |> Enum.filter(&calculate_completeness?/1)
     |> Enum.each(&calculate_and_save_completeness/1)
 
-    Persistence.persist("discovery-api:stats:end_time", DateTime.utc_now())
+    Persistence.persist("#{@stats_key}:end_time", DateTime.utc_now())
+  end
+
+  def delete_completeness(id) do
+    Persistence.delete("#{@stats_key}:#{id}")
+    Persistence.delete("#{@completeness_key}:#{id}")
   end
 
   defp calculate_and_save_completeness(%Model{} = model) do
@@ -66,7 +72,7 @@ defmodule DiscoveryApi.Stats.StatsCalculator do
   end
 
   defp save_completeness(%{id: dataset_id, fields: fields} = dataset_stats) when not is_nil(fields) do
-    Persistence.persist("discovery-api:stats:#{dataset_id}", dataset_stats)
+    Persistence.persist("#{@stats_key}:#{dataset_id}", dataset_stats)
     Persistence.persist("#{@completeness_key}:#{dataset_id}", DateTime.to_iso8601(DateTime.utc_now()))
     :ok
   end

@@ -19,4 +19,8 @@ defmodule DiscoveryApi.Data.SystemNameCache do
   def get(org_name, data_name) do
     Cachex.get!(cache_name(), {org_name, data_name})
   end
+
+  def delete(org_name, data_name) do
+    Cachex.del(cache_name(), {org_name, data_name})
+  end
 end

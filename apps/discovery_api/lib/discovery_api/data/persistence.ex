@@ -27,6 +27,10 @@ defmodule DiscoveryApi.Data.Persistence do
     Redix.command(:redix, ["SET", key_string, Jason.encode!(value_map)])
   end
 
+  def delete(key_string) do
+    Redix.command(:redix, ["DEL", key_string])
+  end
+
   def get_keys(key_string) do
     Redix.command!(:redix, ["KEYS", key_string])
   end
