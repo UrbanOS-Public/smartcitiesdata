@@ -10,7 +10,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApi.Schemas.Organizations
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
-  alias DiscoveryApi.Data.SystemNameCache
+  alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
@@ -70,18 +70,29 @@ defmodule DiscoveryApi.EventHandlerTest do
   end
 
   describe "handle_event/1 #{dataset_delete()}" do
-    test "tells the data json plug to delete its current data json cache" do
-      allow(DiscoveryApi.RecommendationEngine.delete(any()), return: :seriously_delete)
-      allow(StatsCalculator.delete_completeness(any()), return: :whatever_seriously)
-      allow(ResponseCache.invalidate(), return: :seriously_do_not_care)
-      allow(SystemNameCache.delete(any(), any()), return: :its_very_serious)
-      allow(DataJsonService.delete_data_json(), return: :ok)
-
-      dataset = TDG.create_dataset(%{})
+    setup do
+      %{dataset: TDG.create_dataset(%{id: Faker.UUID.v4()})}
+    end
+    test "should delete the dataset when dataset:delete is called", %{dataset: dataset} do
+      allow(DiscoveryApi.RecommendationEngine.delete(dataset.id), return: :ok)
+      allow(StatsCalculator.delete_completeness(dataset.id), return: :ok)
+      allow(ResponseCache.invalidate(), return: {:ok, true})
+      allow(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
+      allow(Model.delete(dataset.id), return: :ok)
 
       Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
+      assert {:ok, []} == DataJsonService.delete_data_json()
+    end
 
-      assert_called(DataJsonService.delete_data_json())
+    test "should throw error when dataset:delete is called", %{dataset: dataset} do
+      allow(DiscoveryApi.RecommendationEngine.delete(dataset.id), return: {:error, "ERR value is not an integer or out of range"})
+      allow(StatsCalculator.delete_completeness(dataset.id), return: {:error, "ERR value is not an integer or out of range"})
+      allow(ResponseCache.invalidate(), return: {:ok, true})
+      allow(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
+      allow(Model.delete(dataset.id), return: {:error, "ERR value is not an integer or out of range"})
+
+      Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
+      assert {:ok, []} == DataJsonService.delete_data_json()
     end
   end
 end

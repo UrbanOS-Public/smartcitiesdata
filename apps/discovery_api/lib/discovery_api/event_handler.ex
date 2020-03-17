@@ -9,7 +9,7 @@ defmodule DiscoveryApi.EventHandler do
   require Logger
   alias SmartCity.{Organization, UserOrganizationAssociate, Dataset}
   alias DiscoveryApi.Schemas.{Organizations, Users}
-  alias DiscoveryApi.Data.{Mapper, SystemNameCache}
+  alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
@@ -71,6 +71,7 @@ defmodule DiscoveryApi.EventHandler do
     SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName)
     DiscoveryApi.Search.Storage.delete(dataset)
     StatsCalculator.delete_completeness(dataset.id)
+    Model.delete(dataset.id)
     ResponseCache.invalidate()
     DataJsonService.delete_data_json()
     Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{dataset.id}")
