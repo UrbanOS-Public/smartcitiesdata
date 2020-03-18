@@ -34,10 +34,16 @@ defmodule EstuaryWeb.EventLiveViewTest do
 
       assert {:ok, _view, html} = live(conn, "/events")
       actual_events = floki_get_text(html, ".events-index__table")
-      assert 2 == Floki.find(html, ".events-table__tr") |> Enum.count()
-      assert 4 == Floki.find(html, ".events-table__th") |> Enum.count()
-      assert 12 == Floki.find(html, ".events-table__cell") |> Enum.count()
+      assert 2 == find_element(html, ".events-table__tr") |> Enum.count()
+      assert 4 == find_element(html, ".events-table__th") |> Enum.count()
+      assert 12 == find_element(html, ".events-table__cell") |> Enum.count()
       assert expected_events == actual_events
     end
+  end
+
+  defp find_element(html, selector) do
+    html
+    |> Floki.parse_fragment!()
+    |> Floki.find(selector)
   end
 end

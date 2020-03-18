@@ -155,7 +155,7 @@ defmodule AndiWeb.EditLiveView do
     """
   end
 
-  def mount(%{dataset: dataset}, socket) do
+  def mount(_params, %{"dataset" => dataset}, socket) do
     new_changeset = InputConverter.changeset_from_dataset(dataset)
     Process.flag(:trap_exit, true)
 

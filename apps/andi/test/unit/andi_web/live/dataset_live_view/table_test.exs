@@ -141,9 +141,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     conn = get(conn, @url_path)
     {:ok, view, _html} = live(conn, @url_path <> "?foo=bar")
 
-    assert_redirect(view, @url_path <> "?foo=bar&order-by=data_title&order-dir=desc", fn ->
-      render_click([view, "datasets_table"], "order-by", %{"field" => "data_title"})
-    end)
+    render_click([view, "datasets_table"], "order-by", %{"field" => "data_title"})
+    assert_redirect(view, @url_path <> "?foo=bar&order-by=data_title&order-dir=desc")
   end
 
   test "ingested_time is optional", %{conn: conn} do
@@ -163,11 +162,19 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
     {:ok, _view, html} = live(conn, @url_path)
 
-    assert Floki.attribute(html, "a", "href") == ["#{@url_path}/#{dataset.id}"]
+    assert get_attribute(html, "a", "href") == ["#{@url_path}/#{dataset.id}"]
+  end
+
+  defp get_attribute(html, selector, attribute_name) do
+    html
+    |> Floki.parse_fragment!()
+    |> Floki.attribute(selector, attribute_name)
   end
 
   defp get_rendered_table_cells(html) do
-    Floki.find(html, ".datasets-table__tr")
+    html
+    |> Floki.parse_fragment!()
+    |> Floki.find(".datasets-table__tr")
     |> Enum.map(fn {_name, _attrs, children} ->
       Enum.map(children, fn {_name, _attrs, children} ->
         Floki.text(children)

@@ -63,7 +63,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert {:ok, _view, html} = live(conn, @url_path)
       table_text = floki_get_text(html, ".datasets-index__table")
 
-      assert 3 == Floki.find(html, ".datasets-index__table tr") |> Enum.count()
+      assert 3 == Floki.parse_fragment!(html) |> Floki.find(".datasets-index__table tr") |> Enum.count()
 
       Enum.each(datasets, fn dataset ->
         assert table_text =~ dataset.business.dataTitle
@@ -100,9 +100,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
       conn = get(conn, @url_path)
       {:ok, view, _html} = live(conn, @url_path <> "?order-by=dataTitle&order-dir=asc")
 
-      assert_redirect(view, @url_path <> "?order-by=dataTitle&order-dir=asc&search=search", fn ->
-        render_change(view, :search, %{"search-value" => "search"})
-      end)
+      render_change(view, :search, %{"search-value" => "search"})
+      assert_redirect(view, @url_path <> "?order-by=dataTitle&order-dir=asc&search=search")
     end
   end
 
@@ -152,13 +151,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
       {:ok, view, _html} = live(conn, @url_path)
 
       search_text = "Some search"
-
-      assert_redirect(view, @url_path <> "?search=" <> search_text, fn ->
-        assert [search_text] ==
-                 view
-                 |> render_change(:search, %{"search-value" => search_text})
-                 |> get_search_input_value()
-      end)
+      assert [search_text] ==  view
+        |> render_change(:search, %{"search-value" => search_text})
+        |> get_search_input_value()
+      assert_redirect(view, @url_path <> "?search=" <> search_text)
     end
   end
 
@@ -195,13 +191,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
       {:ok, view, _html} = live(conn, @url_path)
 
       search_text = "Some text"
-
-      assert_redirect(view, @url_path <> "?search=" <> search_text, fn ->
-        assert [search_text] ==
-                 view
-                 |> render_submit(:search, %{"search-value" => search_text})
-                 |> get_search_input_value()
-      end)
+      assert [search_text] == view
+        |> render_submit(:search, %{"search-value" => search_text})
+        |> get_search_input_value()
+      assert_redirect(view, @url_path <> "?search=" <> search_text)
     end
   end
 
@@ -242,6 +235,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   defp get_search_input_value(html) do
     html
+    |> Floki.parse_fragment!()
     |> Floki.find("input.datasets-index__search-input")
     |> Floki.attribute("value")
   end

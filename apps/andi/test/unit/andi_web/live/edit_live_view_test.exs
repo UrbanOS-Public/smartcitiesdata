@@ -143,7 +143,7 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      [subject] = Floki.find(html, "#form_data_keywords") |> Floki.attribute("value")
+      [subject] = get_values(html, "#form_data_keywords")
 
       assert subject =~ "one, two, three"
     end
@@ -153,7 +153,7 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      [subject] = Floki.find(html, "#form_data_keywords") |> Floki.attribute("value")
+      [subject] = get_values(html, "#form_data_keywords")
 
       assert subject == ""
     end
@@ -360,7 +360,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert Floki.attribute(html, "#form_data_sourceFormat", "readonly") == ["readonly"]
+      assert get_attributes(html, "#form_data_sourceFormat", "readonly") == ["readonly"]
     end
 
     test "organization title", %{conn: conn} do
@@ -370,7 +370,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert Floki.attribute(html, "#form_data_orgTitle", "readonly") == ["readonly"]
+      assert get_attributes(html, "#form_data_orgTitle", "readonly") == ["readonly"]
     end
   end
 
@@ -546,8 +546,8 @@ defmodule AndiWeb.EditLiveViewTest do
           "_target" => ["form_data", "sourceUrl"]
         })
 
-      assert Floki.find(html, ".url-form__source-query-params-key-input") |> Floki.attribute("value") == keys
-      assert Floki.find(html, ".url-form__source-query-params-value-input") |> Floki.attribute("value") == values
+      assert get_values(html, ".url-form__source-query-params-key-input") == keys
+      assert get_values(html, ".url-form__source-query-params-value-input") == values
 
       where([
         [:sourceUrl, :keys, :values],
@@ -578,7 +578,7 @@ defmodule AndiWeb.EditLiveViewTest do
          }}
       )
 
-      assert render(view) |> Floki.find("#form_data_sourceUrl") |> Floki.attribute("value") == [updatedSourceUrl]
+      assert render(view) |> get_values("#form_data_sourceUrl") == [updatedSourceUrl]
 
       where([
         [:intialSourceUrl, :queryParams, :updatedSourceUrl],
@@ -698,8 +698,8 @@ defmodule AndiWeb.EditLiveViewTest do
       render_click([view, component_id], "add", %{"field" => Atom.to_string(field)})
       html = render(view)
 
-      assert html |> Floki.find(key_class) |> length() == 3
-      assert html |> Floki.find(value_class) |> length() == 3
+      assert html |> find_element(key_class) |> length() == 3
+      assert html |> find_element(value_class) |> length() == 3
 
       where(
         field: [:sourceQueryParams, :sourceHeaders],
@@ -712,16 +712,16 @@ defmodule AndiWeb.EditLiveViewTest do
     data_test "key/value inputs are deleted when delete button is pressed for #{field}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      btn_id = Floki.find(html, btn_class) |> Floki.attribute("phx-value-id") |> hd()
+      btn_id = html |> Floki.parse_fragment!() |> Floki.find(btn_class) |> Floki.attribute("phx-value-id") |> hd()
 
       render_click([view, component_id], "remove", %{"id" => btn_id, "field" => Atom.to_string(field)})
       html = render(view)
 
-      key_input = html |> Floki.find(key_class)
+      key_input = html |>  Floki.parse_fragment!() |> Floki.find(key_class)
       assert length(key_input) == 1
       refute btn_id =~ hd(key_input) |> Floki.attribute("class") |> hd()
 
-      value_input = html |> Floki.find(value_class)
+      value_input = html |> Floki.parse_fragment!() |> Floki.find(value_class)
       assert length(value_input) == 1
       refute btn_id =~ hd(value_input) |> Floki.attribute("class") |> hd()
 
@@ -740,8 +740,8 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert html |> Floki.find(key_class) |> Enum.empty?()
-      assert html |> Floki.find(value_class) |> Enum.empty?()
+      assert html |> find_element(key_class) |> Enum.empty?()
+      assert html |> find_element(value_class) |> Enum.empty?()
 
       where(
         field: [:sourceQueryParams, :sourceHeaders],
@@ -753,8 +753,7 @@ defmodule AndiWeb.EditLiveViewTest do
     test "source url is updated when source query params are removed", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      Floki.find(html, ".url-form__source-query-params-delete-btn")
-      |> Floki.attribute("phx-value-id")
+      get_attributes(html, ".url-form__source-query-params-delete-btn", "phx-value-id")
       |> Enum.each(fn btn_id ->
         render_click([view, "key_value_editor_source_query_params"], "remove", %{
           "id" => btn_id,
@@ -762,7 +761,7 @@ defmodule AndiWeb.EditLiveViewTest do
         })
       end)
 
-      assert render(view) |> Floki.find("#form_data_sourceUrl") |> Floki.attribute("value") == [dataset.technical.sourceUrl]
+      assert render(view) |> get_values("#form_data_sourceUrl") == [dataset.technical.sourceUrl]
     end
   end
 
@@ -785,24 +784,44 @@ defmodule AndiWeb.EditLiveViewTest do
     # Once we start editing the schema in the form, we will need to address this (probably by changing the schema structure in the form data).
   end
 
-  defp get_value(html, id) do
-    Floki.find(html, id) |> Floki.attribute("value") |> List.first()
+  defp get_attributes(html, selector, attribute_name) do
+    html
+    |> Floki.parse_fragment!()
+    |> Floki.attribute(selector, attribute_name)
+  end
+
+  defp get_values(html, selector) do
+    get_attributes(html, selector, "value")
+  end
+
+  defp get_value(html, selector) do
+    get_values(html, selector) |> List.first()
   end
 
   defp get_text(html, id) do
-    Floki.find(html, id)
+    html
+    |> Floki.parse_fragment!()
+    |> Floki.find(id)
     |> Floki.text()
     |> String.trim()
   end
 
   defp get_select(html, id) do
     {_, [{_, value} | _], [text]} =
-      Floki.find(html, id)
+      html
+      |> Floki.parse_fragment!()
+      |> Floki.find(id)
       |> Floki.find("select option")
       |> Enum.filter(fn {_, list, _} -> list |> Enum.any?(&(&1 == {"selected", "selected"})) end)
       |> List.first()
 
     {value, text}
+  end
+
+  defp find_element(html, selector) do
+    html
+    |> Floki.parse_fragment!()
+    |> Floki.find(selector)
   end
 
   defp dataset_to_form_data(dataset) do
