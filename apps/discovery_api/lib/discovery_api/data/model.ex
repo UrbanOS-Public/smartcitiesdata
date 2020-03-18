@@ -157,6 +157,23 @@ defmodule DiscoveryApi.Data.Model do
   @impl Access
   def pop(data, key), do: Map.pop(data, key)
 
+  def to_table_info(model) do
+    columns_from_schema = Enum.map(model.schema, fn schema -> 
+      %{id: schema.name, description: schema.description, dataType: schema.type}
+    end)
+
+    %{
+      id: id_to_alphanumeric(model.id),
+      description: model.id,
+      alias: model.title,
+      columns: columns_from_schema 
+    }
+  end
+
+  defp id_to_alphanumeric(id) do
+    String.replace(id, ~r/[^a-zA-Z0-9_]/, "_") |> String.downcase()
+  end
+
   defp add_system_attributes(nil), do: nil
 
   defp add_system_attributes(%__MODULE__{} = model) do

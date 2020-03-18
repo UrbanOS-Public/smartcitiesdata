@@ -31,6 +31,21 @@ defmodule DiscoveryApiWeb.MultipleMetadataView do
     }
   end
 
+  def render("fetch_table_info.json", %{
+        models: models
+      }) do
+    datasets =
+      models
+      |> Enum.map(&translate_to_dataset/1)
+
+    %{
+      "metadata" => %{
+        "totalDatasets" => Enum.count(datasets)
+      },
+      "results" => datasets
+    }
+  end
+
   defp translate_to_dataset(%Model{} = model) do
     %{
       id: model.id,
