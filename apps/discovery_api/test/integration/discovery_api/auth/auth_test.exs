@@ -298,13 +298,14 @@ defmodule DiscoveryApi.Auth.AuthTest do
       %{status_code: status_code, body: body} =
         "http://localhost:4000/api/v1/dataset/search/"
         |> HTTPoison.get!(
-          Cookie: "something=true,#{Helper.default_guardian_token_key()}=#{token},somethingelse=false",
+          Cookie: "even=more",
+          Cookie: "something=true; #{Helper.default_guardian_token_key()}=#{token}; somethingelse=false",
           Origin: "jessies.house.example.com"
         )
 
       response = Jason.decode!(body, keys: :atoms)
-      assert response.message == "Not Found"
       assert status_code == 404
+      assert response.message == "Not Found"
     end
 
     test "eats cookies when from a similar but different origin (ajax)" do
@@ -313,7 +314,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       %{status_code: status_code} =
         "http://localhost:4000/api/v1/dataset/search/"
         |> HTTPoison.get!(
-          Cookie: "something=true,#{Helper.default_guardian_token_key()}=#{token},somethingelse=false",
+          Cookie: "something=true; #{Helper.default_guardian_token_key()}=#{token}; somethingelse=false",
           Origin: "jessies-integrationtests.example.com"
         )
 
@@ -325,7 +326,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
       %{status_code: status_code} =
         "http://localhost:4000/api/v1/dataset/search/"
-        |> HTTPoison.get!(Cookie: "something=true,#{Helper.default_guardian_token_key()}=#{token},somethingelse=false")
+        |> HTTPoison.get!(Cookie: "something=true; #{Helper.default_guardian_token_key()}=#{token}; somethingelse=false")
 
       assert status_code == 200
     end
@@ -336,7 +337,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       %{status_code: status_code} =
         "http://localhost:4000/api/v1/dataset/search/"
         |> HTTPoison.get!(
-          Cookie: "something=true,#{Helper.default_guardian_token_key()}=#{token},somethingelse=false",
+          Cookie: "something=true; #{Helper.default_guardian_token_key()}=#{token}; somethingelse=false",
           Origin: "null"
         )
 
@@ -349,7 +350,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       %{status_code: status_code} =
         "http://localhost:4000/api/v1/dataset/search/"
         |> HTTPoison.get!(
-          Cookie: "something=true,#{Helper.default_guardian_token_key()}=#{token},somethingelse=false",
+          Cookie: "something=true; #{Helper.default_guardian_token_key()}=#{token}; somethingelse=false",
           Origin: "discovery.integrationtests.example.com"
         )
 
@@ -362,7 +363,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       %{status_code: status_code} =
         "http://localhost:4000/api/v1/dataset/search/"
         |> HTTPoison.get!(
-          Cookie: "something=true,#{Helper.default_guardian_token_key()}=#{token},somethingelse=false",
+          Cookie: "something=true; #{Helper.default_guardian_token_key()}=#{token}; somethingelse=false",
           Origin: "integrationtests.example.com"
         )
 
