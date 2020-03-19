@@ -47,10 +47,18 @@ defmodule Reaper.Decoder.Json do
 
     {:ok, data}
   rescue
-    error -> {:error, error}
+    error ->
+      parse_json_file_query_errors(error)
   end
 
   def truncate_file_for_logging(filename) do
     File.stream!(filename, [], 1000) |> Enum.at(0)
+  end
+
+  defp parse_json_file_query_errors(error) do
+    case error do
+      %Jaxon.ParseError{unexpected: :end_array} -> {:ok, []}
+      _ -> {:error, error}
+    end
   end
 end
