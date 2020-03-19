@@ -14,19 +14,18 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
         generate_model("Spongebob", ~D(2091-09-15), "ingest", ["geojson"], false)
       ]
 
-      allow(Model.get_all(), return: mock_dataset_summaries)
+      allow(Model.get_all(), return: mock_dataset_summaries, meck_options: [:passthrough])
 
       response = conn |> get("api/v1/dataset/tableau/tableinfo") |> json_response(200)
 
       model_ids =
         response
-        |> Map.get("results")
         |> Enum.map(&Map.get(&1, "id"))
 
-      assert "Paul" in model_ids
-      assert "Richard" in model_ids
-      assert "Cam" not in model_ids
-      assert "Spongebob" in model_ids
+      assert "paul" in model_ids
+      assert "richard" in model_ids
+      assert "cam" not in model_ids
+      assert "spongebob" in model_ids
     end
 
     test "returns only datasets the user is authorized to view" , %{conn: conn}do
@@ -36,7 +35,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
         generate_model("Tim", ~D(2091-09-15), "ingest", ["csv", "json"], true)
       ]
 
-      allow(Model.get_all(), return: mock_dataset_summaries)
+      allow(Model.get_all(), return: mock_dataset_summaries, meck_options: [:passthrough])
       response = conn |> get("api/v1/dataset/tableau/tableinfo") |> json_response(200)
 
       allow(ModelAccessUtils.has_access?(%{id: "Tim"}, any()), return: false)
@@ -44,12 +43,11 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
 
       model_ids =
         response
-        |> Map.get("results")
         |> Enum.map(&Map.get(&1, "id"))
 
-      assert "Paul" in model_ids
-      assert "Richard" in model_ids
-      assert "Tim" not in model_ids
+      assert "paul" in model_ids
+      assert "richard" in model_ids
+      assert "tim" not in model_ids
     end
 
     test "returns only api-accessible datasets", %{conn: conn} do
@@ -59,19 +57,34 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
         generate_model("Cricket", ~D(2091-09-15), "host")
       ]
 
-      allow(Model.get_all(), return: mock_dataset_summaries)
+      allow(Model.get_all(), return: mock_dataset_summaries, meck_options: [:passthrough])
       allow(ModelAccessUtils.has_access?(any(), any()), return: true)
 
       response = conn |> get("api/v1/dataset/tableau/tableinfo") |> json_response(200)
 
       model_ids =
         response
-        |> Map.get("results")
         |> Enum.map(&Map.get(&1, "id"))
 
-      assert "Paul" not in model_ids
-      assert "Richard" in model_ids
-      assert "Cricket" not in model_ids
+      assert "paul" not in model_ids
+      assert "richard" in model_ids
+      assert "cricket" not in model_ids
+    end
+
+    test "returns models as tableinfos", %{conn: conn} do
+      mock_dataset_summaries = [
+        generate_model("Richard", ~D(2001-09-09), "ingest")
+      ]
+
+      allow(Model.get_all(), return: mock_dataset_summaries, meck_options: [:passthrough])
+      allow(ModelAccessUtils.has_access?(any(), any()), return: true)
+
+      first_model = conn |> get("api/v1/dataset/tableau/tableinfo") |> json_response(200) |> List.first()
+
+      assert Map.has_key?(first_model,  "id")
+      assert Map.has_key?(first_model,  "description")
+      assert Map.has_key?(first_model,  "alias")
+      assert Map.has_key?(first_model,  "columns")
     end
   end
 

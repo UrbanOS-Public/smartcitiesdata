@@ -58,12 +58,14 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
     |> filter_by_file_types(["csv", "geojson"])
     |> filter_by_source_type(true)
 
-    authorized_models = remove_unauthorized_models(conn, filtered_models)
+    authorized_table_infos =
+      remove_unauthorized_models(conn, filtered_models)
+      |> Enum.map(&Model.to_table_info/1)
 
     render(
       conn,
       :fetch_table_info,
-      models: authorized_models
+      models: authorized_table_infos
     )
   end
 
