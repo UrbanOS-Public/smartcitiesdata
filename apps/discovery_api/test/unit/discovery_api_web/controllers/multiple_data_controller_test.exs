@@ -162,12 +162,14 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       expected_response =
         [
           %{
-            name: "a",
-            type: "integer"
+            id: "a",
+            alias: "a",
+            dataType: "integer"
           },
           %{
-            name: "b",
-            type: "integer"
+            id: "b",
+            alias: "b",
+            dataType: "integer"
           }
         ]
         |> Jason.encode!()
@@ -235,12 +237,14 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       expected_response =
         [
           %{
-            name: "a",
-            type: "integer"
+            id: "a",
+            alias: "a",
+            dataType: "integer"
           },
           %{
-            name: "b",
-            type: "integer"
+            id: "b",
+            alias: "b",
+            dataType: "integer"
           }
         ]
         |> Jason.encode!()

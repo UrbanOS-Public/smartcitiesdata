@@ -5,6 +5,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
   alias DiscoveryApiWeb.MultipleMetadataView
   alias DiscoveryApi.Data.Model
+  alias DiscoveryApi.Data.TableInfoCache
   alias DiscoveryApi.Search.{DataModelFilterator, DataModelFacinator, DataModelSearchinator}
 
   @matched_params [
@@ -54,13 +55,21 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
 
   def fetch_table_info(conn, _params) do
     filtered_models =
-    Model.get_all()
-    |> filter_by_file_types(["CSV", "GEOJSON"])
-    |> filter_by_source_type(true)
+      case TableInfoCache.get() do
+        nil ->
+          table_info =
+            Model.get_all()
+            |> filter_by_file_types(["CSV", "GEOJSON"])
+            |> filter_by_source_type(true)
+            |> Enum.map(&Model.to_table_info/1)
 
-    authorized_table_infos =
-      remove_unauthorized_models(conn, filtered_models)
-      |> Enum.map(&Model.to_table_info/1)
+          TableInfoCache.put(table_info)
+          table_info
+
+        filtered_models -> filtered_models
+      end
+
+    authorized_table_infos = remove_unauthorized_models(conn, filtered_models)
 
     render(
       conn,

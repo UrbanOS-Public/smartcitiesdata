@@ -2,6 +2,7 @@ defmodule DiscoveryApi.EventHandler do
   @moduledoc "Event Handler for event stream"
 
   use Brook.Event.Handler
+  alias DiscoveryApi.Data.TableInfoCache
 
   import SmartCity.Event,
     only: [organization_update: 0, user_organization_associate: 0, dataset_update: 0, data_write_complete: 0, dataset_delete: 0]
@@ -59,6 +60,7 @@ defmodule DiscoveryApi.EventHandler do
       merge(:models, model.id, model)
       ResponseCache.invalidate()
       DataJsonService.delete_data_json()
+      TableInfoCache.invalidate()
 
       :discard
     else

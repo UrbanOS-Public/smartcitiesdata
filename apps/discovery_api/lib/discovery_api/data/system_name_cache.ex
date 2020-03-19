@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Data.SystemNameCache do
   require Logger
 
   def child_spec([]) do
-    Cachex.child_spec(cache_name())
+    Supervisor.child_spec({Cachex, cache_name()}, id: __MODULE__)
   end
 
   def cache_name() do

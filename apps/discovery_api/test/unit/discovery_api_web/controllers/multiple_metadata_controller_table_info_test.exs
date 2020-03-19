@@ -21,7 +21,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
       allow(ModelAccessUtils.has_access?(%{id: "private"}, any()), return: false)
       allow(ModelAccessUtils.has_access?(any(), any()), return: true)
 
-      response = build_conn() |> get("api/v1/dataset/tableau/tableinfo") |> json_response(200)
+      response = build_conn() |> get("api/v1/dataset/tableau/table_info") |> json_response(200)
 
       model_ids =
         response
