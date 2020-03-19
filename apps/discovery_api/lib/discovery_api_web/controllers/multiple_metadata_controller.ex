@@ -55,7 +55,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   def fetch_table_info(conn, _params) do
     filtered_models =
     Model.get_all()
-    |> filter_by_file_types(["csv", "geojson"])
+    |> filter_by_file_types(["CSV", "GEOJSON"])
     |> filter_by_source_type(true)
 
     authorized_table_infos =

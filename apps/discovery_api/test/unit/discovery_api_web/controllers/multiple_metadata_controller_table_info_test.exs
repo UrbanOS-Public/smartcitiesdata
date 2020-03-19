@@ -10,9 +10,9 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
       mock_dataset_summaries = [
         generate_model("csvstream", ~D(1970-01-01), "stream"),
         generate_model("csv", ~D(2001-09-09), "ingest"),
-        generate_model("json", ~D(2091-09-15), "ingest", ["json"], false),
-        generate_model("geojson", ~D(2091-09-15), "ingest", ["geojson"], false),
-        generate_model("private", ~D(2091-09-15), "ingest", ["csv", "json"], true),
+        generate_model("json", ~D(2091-09-15), "ingest", ["JSON"], false),
+        generate_model("geojson", ~D(2091-09-15), "ingest", ["GEOJSON"], false),
+        generate_model("private", ~D(2091-09-15), "ingest", ["CSV", "JSON"], true),
         generate_model("remote", ~D(1970-01-01), "remote"),
         generate_model("host", ~D(2091-09-15), "host")
       ]
@@ -53,7 +53,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
     end
   end
 
-  defp generate_model(id, date, sourceType, fileTypes \\ ["csv"], is_private \\ false) do
+  defp generate_model(id, date, sourceType, fileTypes \\ ["CSV"], is_private \\ false) do
     Helper.sample_model(%{
       description: "#{id}-description",
       fileTypes: fileTypes,
