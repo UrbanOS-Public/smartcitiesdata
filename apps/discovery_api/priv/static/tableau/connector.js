@@ -17,7 +17,6 @@ window.DiscoveryWDCTranslator = {
   setupConnector: _setupConnector,
   getTableSchemas: _getTableSchemas,
   getTableData: _getTableData,
-  convertDatasetToTableSchema: _convertDatasetToTableSchema,
   convertDictionaryToColumns: _convertDictionaryToColumns,
   convertDatasetRowToTableRow: _convertDatasetRowToTableRow
 };
@@ -51,7 +50,7 @@ function submit(mode) {
   }
   _setConnectionData(connectionData)
 
-  // tableau.submit()
+  tableau.submit()
 }
 
 function _setupConnector() {
@@ -98,7 +97,10 @@ function _getTableSchemas(schemaCallback) {
   _getDatasets()
     .then(_decodeAsJson)
     .then(_extractTableSchemas)
-    .catch(function (error) { console.log(error); tableau.abortWithError(error) })
+    .then(function(tableSchemaPromises) {
+      return Promise.all(tableSchemaPromises)
+    })
+    .catch(function (error) { tableau.abortWithError(error) })
     .then(schemaCallback)
 }
 
@@ -141,7 +143,7 @@ function _getData(tableInfo) {
   return _getMode() == 'query' ? _getQueryData(tableInfo) : _getDatasetData(tableInfo)
 }
 function _convertToTableSchema(info) {
-  return _getMode() == 'query' ? _convertQueryInfoToTableSchema(info) : _convertDatasetToTableSchema(info)
+  return _getMode() == 'query' ? _convertQueryInfoToTableSchema(info) : info
 }
 // ---
 
@@ -179,13 +181,6 @@ function _getDatasetData(tableInfo) {
   return _authorizedFetch(apiPath + "dataset/" + tableInfo.description + "/query?_format=json")
 }
 
-function _convertDatasetToTableSchema(dataset) {
-  return {
-    id: _tableauAcceptableIdentifier(dataset.id),
-    alias: dataset.title,
-    description: dataset.id,
-  }
-}
 // ---
 
 // Query Mode Functions
@@ -194,12 +189,10 @@ function _getQueryInfo() {
     resolve({
       ok: true,
       json: function () {
-        return {
-          results: [{
-            fileTypes: ['CSV'],
-            query: _getQueryString()
-          }]
-        }
+        return [{
+          fileTypes: ['CSV'],
+          query: _getQueryString()
+        }]
       }
     })
   })
@@ -259,8 +252,7 @@ function _extractTableSchema(dataset) {
 
 function _convertDictionaryToColumns(dictionary) {
   return dictionary.map(function (columnSpec) {
-    columnSpec.dataType = dataMap[columnSpec.dataType]
-    return columnSpec
+    return Object.assign({}, columnSpec, {dataType: dataMap[columnSpec.dataType]})
   })
 }
 
