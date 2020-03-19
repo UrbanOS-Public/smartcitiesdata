@@ -183,7 +183,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         conn
         |> put_req_header("accept", "application/json")
         |> put_req_header("content-type", "text/plain")
-        |> post("/api/v1/query/describe", statement)
+        |> post("/api/v1/query/tableau/describe", statement)
         |> response(200)
 
       assert expected_response == response_body
@@ -256,7 +256,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         conn
         |> put_req_header("accept", "application/json")
         |> put_req_header("content-type", "text/plain")
-        |> post("/api/v1/query/describe", statement)
+        |> post("/api/v1/query/tableau/describe", statement)
         |> response(200)
 
       assert expected_response == response_body
@@ -323,7 +323,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       assert conn
              |> put_req_header("accept", "application/json")
              |> put_req_header("content-type", "text/plain")
-             |> post("/api/v1/query/describe", statement)
+             |> post("/api/v1/query/tableau/describe", statement)
              |> response(400)
     end
 
@@ -346,7 +346,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       assert conn
              |> put_req_header("accept", "application/json")
              |> put_req_header("content-type", "text/plain")
-             |> post("/api/v1/query/describe", statement)
+             |> post("/api/v1/query/tableau/describe", statement)
              |> response(400)
 
       assert not called?(Prestige.query!(any(), any()))
@@ -371,7 +371,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       assert conn
              |> put_req_header("accept", "application/json")
              |> put_req_header("content-type", "text/plain")
-             |> post("/api/v1/query/describe", statement)
+             |> post("/api/v1/query/tableau/describe", statement)
              |> response(400)
     end
 
@@ -387,7 +387,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       assert conn
              |> put_req_header("accept", "application/json")
              |> put_req_header("content-type", "text/plain")
-             |> post("/api/v1/query/describe", statement)
+             |> post("/api/v1/query/tableau/describe", statement)
              |> response(400)
     end
 
