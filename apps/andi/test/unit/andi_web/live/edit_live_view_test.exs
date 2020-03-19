@@ -13,6 +13,16 @@ defmodule AndiWeb.EditLiveViewTest do
   alias Andi.InputSchemas.InputConverter
   alias Andi.Services.UrlTest
 
+  import FlokiHelpers,
+    only: [
+      get_attributes: 3,
+      get_select: 2,
+      get_text: 2,
+      get_value: 2,
+      get_values: 2,
+      find_elements: 2
+    ]
+
   alias SmartCity.TestDataGenerator, as: TDG
 
   @url_path "/datasets/"
@@ -143,7 +153,7 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      [subject] = Floki.find(html, "#form_data_keywords") |> Floki.attribute("value")
+      [subject] = get_values(html, "#form_data_keywords")
 
       assert subject =~ "one, two, three"
     end
@@ -153,7 +163,7 @@ defmodule AndiWeb.EditLiveViewTest do
       DatasetCache.put(dataset)
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-      [subject] = Floki.find(html, "#form_data_keywords") |> Floki.attribute("value")
+      [subject] = get_values(html, "#form_data_keywords")
 
       assert subject == ""
     end
@@ -296,15 +306,12 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       form_data = dataset_to_form_data(dataset) |> Map.put(field, %{"0" => %{"key" => "", "value" => "where's my key"}})
-      render_change([view, component_id], :validate, %{"form_data" => form_data})
+      render_change(view, :validate, %{"form_data" => form_data})
       html = render(view)
 
       assert get_text(html, "##{field}-error-msg") == "Please enter valid key(s)."
 
-      where(
-        field: [:sourceQueryParams, :sourceHeaders],
-        component_id: ["key_value_editor_source_query_params", "key_value_editor_source_headers"]
-      )
+      where(field: [:sourceQueryParams, :sourceHeaders])
     end
 
     data_test "displays error when #{field} is unset", %{conn: conn} do
@@ -360,7 +367,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert Floki.attribute(html, "#form_data_sourceFormat", "readonly") == ["readonly"]
+      assert get_attributes(html, "#form_data_sourceFormat", "readonly") == ["readonly"]
     end
 
     test "organization title", %{conn: conn} do
@@ -370,7 +377,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert Floki.attribute(html, "#form_data_orgTitle", "readonly") == ["readonly"]
+      assert get_attributes(html, "#form_data_orgTitle", "readonly") == ["readonly"]
     end
   end
 
@@ -546,8 +553,8 @@ defmodule AndiWeb.EditLiveViewTest do
           "_target" => ["form_data", "sourceUrl"]
         })
 
-      assert Floki.find(html, ".url-form__source-query-params-key-input") |> Floki.attribute("value") == keys
-      assert Floki.find(html, ".url-form__source-query-params-value-input") |> Floki.attribute("value") == values
+      assert get_values(html, ".url-form__source-query-params-key-input") == keys
+      assert get_values(html, ".url-form__source-query-params-value-input") == values
 
       where([
         [:sourceUrl, :keys, :values],
@@ -566,19 +573,19 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      send(
-        view.pid,
-        {:validate,
-         %{
-           "form_data" => %{
-             "sourceUrl" => intialSourceUrl,
-             "sourceQueryParams" => queryParams
-           },
-           "_target" => ["form_data", "sourceQueryParams"]
-         }}
+      render_change(
+        view,
+        "validate",
+        %{
+          "form_data" => %{
+            "sourceUrl" => intialSourceUrl,
+            "sourceQueryParams" => queryParams
+          },
+          "_target" => ["form_data", "sourceQueryParams"]
+        }
       )
 
-      assert render(view) |> Floki.find("#form_data_sourceUrl") |> Floki.attribute("value") == [updatedSourceUrl]
+      assert render(view) |> get_values("#form_data_sourceUrl") == [updatedSourceUrl]
 
       where([
         [:intialSourceUrl, :queryParams, :updatedSourceUrl],
@@ -695,15 +702,14 @@ defmodule AndiWeb.EditLiveViewTest do
     data_test "new key/value inputs are added when add button is pressed for #{field}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      render_click([view, component_id], "add", %{"field" => Atom.to_string(field)})
+      render_click(view, "add", %{"field" => Atom.to_string(field)})
       html = render(view)
 
-      assert html |> Floki.find(key_class) |> length() == 3
-      assert html |> Floki.find(value_class) |> length() == 3
+      assert html |> find_elements(key_class) |> length() == 3
+      assert html |> find_elements(value_class) |> length() == 3
 
       where(
         field: [:sourceQueryParams, :sourceHeaders],
-        component_id: ["key_value_editor_source_query_params", "key_value_editor_source_headers"],
         key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
         value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
       )
@@ -712,22 +718,19 @@ defmodule AndiWeb.EditLiveViewTest do
     data_test "key/value inputs are deleted when delete button is pressed for #{field}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      btn_id = Floki.find(html, btn_class) |> Floki.attribute("phx-value-id") |> hd()
+      btn_id = html |> get_attributes(btn_class, "phx-value-id") |> hd()
 
-      render_click([view, component_id], "remove", %{"id" => btn_id, "field" => Atom.to_string(field)})
+      render_click(view, "remove", %{"id" => btn_id, "field" => Atom.to_string(field)})
       html = render(view)
 
-      key_input = html |> Floki.find(key_class)
-      assert length(key_input) == 1
-      refute btn_id =~ hd(key_input) |> Floki.attribute("class") |> hd()
+      [key_input] = html |> get_attributes(key_class, "class")
+      refute btn_id =~ key_input
 
-      value_input = html |> Floki.find(value_class)
-      assert length(value_input) == 1
-      refute btn_id =~ hd(value_input) |> Floki.attribute("class") |> hd()
+      [value_input] = html |> get_attributes(value_class, "class")
+      refute btn_id =~ value_input
 
       where(
         field: [:sourceQueryParams, :sourceHeaders],
-        component_id: ["key_value_editor_source_query_params", "key_value_editor_source_headers"],
         btn_class: [".url-form__source-query-params-delete-btn", ".url-form__source-headers-delete-btn"],
         key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
         value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
@@ -740,8 +743,8 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert html |> Floki.find(key_class) |> Enum.empty?()
-      assert html |> Floki.find(value_class) |> Enum.empty?()
+      assert html |> find_elements(key_class) |> Enum.empty?()
+      assert html |> find_elements(value_class) |> Enum.empty?()
 
       where(
         field: [:sourceQueryParams, :sourceHeaders],
@@ -753,16 +756,15 @@ defmodule AndiWeb.EditLiveViewTest do
     test "source url is updated when source query params are removed", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      Floki.find(html, ".url-form__source-query-params-delete-btn")
-      |> Floki.attribute("phx-value-id")
+      get_attributes(html, ".url-form__source-query-params-delete-btn", "phx-value-id")
       |> Enum.each(fn btn_id ->
-        render_click([view, "key_value_editor_source_query_params"], "remove", %{
+        render_click(view, "remove", %{
           "id" => btn_id,
           "field" => Atom.to_string(:sourceQueryParams)
         })
       end)
 
-      assert render(view) |> Floki.find("#form_data_sourceUrl") |> Floki.attribute("value") == [dataset.technical.sourceUrl]
+      assert render(view) |> get_values("#form_data_sourceUrl") == [dataset.technical.sourceUrl]
     end
   end
 
@@ -783,26 +785,6 @@ defmodule AndiWeb.EditLiveViewTest do
 
     # For now, schema needs to be removed from the form data as it cannot be encoded in the form as an array of maps.
     # Once we start editing the schema in the form, we will need to address this (probably by changing the schema structure in the form data).
-  end
-
-  defp get_value(html, id) do
-    Floki.find(html, id) |> Floki.attribute("value") |> List.first()
-  end
-
-  defp get_text(html, id) do
-    Floki.find(html, id)
-    |> Floki.text()
-    |> String.trim()
-  end
-
-  defp get_select(html, id) do
-    {_, [{_, value} | _], [text]} =
-      Floki.find(html, id)
-      |> Floki.find("select option")
-      |> Enum.filter(fn {_, list, _} -> list |> Enum.any?(&(&1 == {"selected", "selected"})) end)
-      |> List.first()
-
-    {value, text}
   end
 
   defp dataset_to_form_data(dataset) do

@@ -23,7 +23,7 @@ defmodule DiscoveryApiWeb.Plugs.CookieMonster do
   defp cookie_token_exists?(conn) do
     conn
     |> Plug.Conn.get_req_header("cookie")
-    |> Enum.join(",")
+    |> Enum.join("; ")
     |> Plug.Conn.Cookies.decode()
     |> Map.has_key?(Guardian.Plug.Keys.token_key() |> Atom.to_string())
   end

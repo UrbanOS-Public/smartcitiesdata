@@ -5,7 +5,7 @@ defmodule AndiWeb.EditController do
   def show(conn, %{"id" => id}) do
     case DatasetCache.get(id) do
       %{"dataset" => dataset} ->
-        live_render(conn, AndiWeb.EditLiveView, session: %{dataset: dataset})
+        live_render(conn, AndiWeb.EditLiveView, session: %{"dataset" => dataset})
 
       _ ->
         conn

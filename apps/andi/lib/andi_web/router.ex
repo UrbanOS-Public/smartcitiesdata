@@ -11,8 +11,7 @@ defmodule AndiWeb.Router do
     plug Plug.Logger
     plug :accepts, ["html"]
     plug :fetch_session
-    plug :fetch_flash
-    plug Phoenix.LiveView.Flash
+    plug :fetch_live_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers, %{"content-security-policy" => @csp}
   end
@@ -26,7 +25,7 @@ defmodule AndiWeb.Router do
     pipe_through :browser
 
     get "/", Redirect, to: "/datasets"
-    live "/datasets", DatasetLiveView, session: [:path_params]
+    live "/datasets", DatasetLiveView, layout: {AndiWeb.LayoutView, :app}
     get "/datasets/:id", EditController, :show
   end
 

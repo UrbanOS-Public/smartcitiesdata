@@ -9,6 +9,11 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetStore
 
+  import FlokiHelpers,
+    only: [
+      get_attributes: 3
+    ]
+
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
 
@@ -56,37 +61,37 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     end
 
     test "dataTitle descending", %{view: view, row_a: row_a, row_b: row_b} do
-      render_click([view, "datasets_table"], "order-by", %{"field" => "data_title"})
+      render_click(view, "order-by", %{"field" => "data_title"})
       html = render(view)
 
       assert get_rendered_table_cells(html) == [row_b, row_a]
     end
 
     test "orgTitle ascending", %{view: view, row_a: row_a, row_b: row_b} do
-      render_click([view, "datasets_table"], "order-by", %{"field" => "org_title"})
+      render_click(view, "order-by", %{"field" => "org_title"})
       html = render(view)
 
       assert get_rendered_table_cells(html) == [row_b, row_a]
     end
 
     test "orgTitle descending", %{view: view, row_a: row_a, row_b: row_b} do
-      render_click([view, "datasets_table"], "order-by", %{"field" => "org_title"})
-      render_click([view, "datasets_table"], "order-by", %{"field" => "org_title"})
+      render_click(view, "order-by", %{"field" => "org_title"})
+      render_click(view, "order-by", %{"field" => "org_title"})
       html = render(view)
 
       assert get_rendered_table_cells(html) == [row_a, row_b]
     end
 
     test "ingested status ascending", %{view: view, row_a: row_a, row_b: row_b} do
-      render_click([view, "datasets_table"], "order-by", %{"field" => "ingested_time"})
+      render_click(view, "order-by", %{"field" => "ingested_time"})
       html = render(view)
 
       assert get_rendered_table_cells(html) == [row_a, row_b]
     end
 
     test "ingested status descending", %{view: view, row_a: row_a, row_b: row_b} do
-      render_click([view, "datasets_table"], "order-by", %{"field" => "ingested_time"})
-      render_click([view, "datasets_table"], "order-by", %{"field" => "ingested_time"})
+      render_click(view, "order-by", %{"field" => "ingested_time"})
+      render_click(view, "order-by", %{"field" => "ingested_time"})
       html = render(view)
 
       assert get_rendered_table_cells(html) == [row_b, row_a]
@@ -141,9 +146,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     conn = get(conn, @url_path)
     {:ok, view, _html} = live(conn, @url_path <> "?foo=bar")
 
-    assert_redirect(view, @url_path <> "?foo=bar&order-by=data_title&order-dir=desc", fn ->
-      render_click([view, "datasets_table"], "order-by", %{"field" => "data_title"})
-    end)
+    render_click(view, "order-by", %{"field" => "data_title"})
+    assert_redirect(view, @url_path <> "?foo=bar&order-by=data_title&order-dir=desc")
   end
 
   test "ingested_time is optional", %{conn: conn} do
@@ -163,11 +167,13 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
     {:ok, _view, html} = live(conn, @url_path)
 
-    assert Floki.attribute(html, "a", "href") == ["#{@url_path}/#{dataset.id}"]
+    assert get_attributes(html, "a", "href") == ["#{@url_path}/#{dataset.id}"]
   end
 
   defp get_rendered_table_cells(html) do
-    Floki.find(html, ".datasets-table__tr")
+    html
+    |> Floki.parse_fragment!()
+    |> Floki.find(".datasets-table__tr")
     |> Enum.map(fn {_name, _attrs, children} ->
       Enum.map(children, fn {_name, _attrs, children} ->
         Floki.text(children)

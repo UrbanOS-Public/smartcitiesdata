@@ -43,20 +43,5 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
     """
   end
 
-  def handle_event("add", payload, socket) do
-    send(self(), {:add_key_value, payload})
-    {:noreply, socket}
-  end
-
-  def handle_event("remove", payload, socket) do
-    send(self(), {:remove_key_value, payload})
-    {:noreply, socket}
-  end
-
-  def handle_event("validate", payload, socket) do
-    send(self(), {:validate, payload})
-    {:noreply, socket}
-  end
-
   defp is_set?(%{source: %{changes: changes}}, field), do: changes[field] != nil
 end

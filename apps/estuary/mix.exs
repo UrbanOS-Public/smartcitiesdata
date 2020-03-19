@@ -4,7 +4,7 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.6.4",
+      version: "0.7.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -39,7 +39,11 @@ defmodule Estuary.MixProject do
       {:jason, "~> 1.1"},
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
-      {:phoenix_html, "~> 2.13"},
+      # temporary lock to a version that includes `inputs_for` that can wrap a `live_component` - see https://github.com/phoenixframework/phoenix_html/issues/291
+      {:phoenix_html,
+       github: "phoenixframework/phoenix_html",
+       ref: "9034602e10be566f8c96e49f991521568c8e3d24",
+       override: true},
       {:phoenix_live_reload, "~> 1.2", only: [:dev, :integration]},
       {:phoenix_live_view, "~>0.4"},
       {:phoenix_pubsub, "~> 1.1"},

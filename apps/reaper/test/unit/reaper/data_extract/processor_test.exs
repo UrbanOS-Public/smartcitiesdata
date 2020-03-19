@@ -144,7 +144,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
     Providers.Echo
     |> expect(:provide, fn _, %{value: value} -> value end)
 
-    provisioned_dataset = TDG.create_dataset(
+    provisioned_dataset =
+      TDG.create_dataset(
         id: "prov-dataset-1234",
         technical: %{
           sourceType: "ingest",
@@ -155,11 +156,15 @@ defmodule Reaper.DataExtract.ProcessorTest do
             %{name: "a", type: "string"},
             %{name: "b", type: "string"},
             %{name: "c", type: "string"},
-            %{name: "p", type: "string", default: %{
-              provider: "Echo",
-              opts: %{value: "six of six"},
-              version: "1"
-            }}
+            %{
+              name: "p",
+              type: "string",
+              default: %{
+                provider: "Echo",
+                opts: %{value: "six of six"},
+                version: "1"
+              }
+            }
           ],
           allow_duplicates: false
         }
