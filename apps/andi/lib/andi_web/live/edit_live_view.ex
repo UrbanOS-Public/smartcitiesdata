@@ -191,6 +191,13 @@ defmodule AndiWeb.EditLiveView do
     |> complete_validation(socket)
   end
 
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceQueryParams" | _]}, socket) do
+    form_data
+    |> InputConverter.form_changeset()
+    |> DatasetInput.adjust_source_url_for_query_params()
+    |> complete_validation(socket)
+  end
+
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
     |> InputConverter.form_changeset()
@@ -220,6 +227,19 @@ defmodule AndiWeb.EditLiveView do
     end
   end
 
+  def handle_event("add", %{"field" => field}, socket) do
+    socket = reset_save_success(socket)
+    changeset = DatasetInput.add_key_value(socket.assigns.changeset, SmartCity.Helpers.safe_string_to_atom(field))
+    {:noreply, assign(socket, changeset: changeset)}
+  end
+
+  def handle_event("remove", %{"id" => id, "field" => field}, socket) do
+    socket = reset_save_success(socket)
+    changeset = DatasetInput.remove_key_value(socket.assigns.changeset, SmartCity.Helpers.safe_string_to_atom(field), id)
+
+    {:noreply, assign(socket, changeset: changeset)}
+  end
+
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
   # Flags should be reset here.
@@ -229,32 +249,6 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info({_, {:test_results, results}}, socket) do
     {:noreply, assign(socket, test_results: results, testing: false)}
-  end
-
-  def handle_info({:validate, %{"form_data" => form_data, "_target" => ["form_data", "sourceQueryParams" | _]}}, socket) do
-    form_data
-    |> InputConverter.form_changeset()
-    |> DatasetInput.adjust_source_url_for_query_params()
-    |> complete_validation(socket)
-  end
-
-  def handle_info({:validate, %{"form_data" => form_data}}, socket) do
-    form_data
-    |> InputConverter.form_changeset()
-    |> complete_validation(socket)
-  end
-
-  def handle_info({:add_key_value, %{"field" => field}}, socket) do
-    socket = reset_save_success(socket)
-    changeset = DatasetInput.add_key_value(socket.assigns.changeset, SmartCity.Helpers.safe_string_to_atom(field))
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
-  def handle_info({:remove_key_value, %{"id" => id, "field" => field}}, socket) do
-    socket = reset_save_success(socket)
-    changeset = DatasetInput.remove_key_value(socket.assigns.changeset, SmartCity.Helpers.safe_string_to_atom(field), id)
-
-    {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_info(message, socket) do

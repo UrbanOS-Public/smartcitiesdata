@@ -35,11 +35,6 @@ defmodule AndiWeb.DatasetLiveView.Table do
     """
   end
 
-  def handle_event("order-by", %{"field" => field}, socket) do
-    send(self(), {:order, field})
-    {:noreply, socket}
-  end
-
   defp ingest_status(dataset) do
     case dataset["ingested_time"] do
       nil -> ""

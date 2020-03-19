@@ -37,17 +37,6 @@ defmodule AndiWeb.DatasetLiveView do
     {:ok, assign(socket, datasets: nil, search_text: nil, order: {"data_title", "asc"}, params: %{})}
   end
 
-  def handle_info({:order, field}, socket) do
-    order_dir =
-      case socket.assigns.order do
-        %{^field => "asc"} -> "desc"
-        _ -> "asc"
-      end
-
-    params = Map.merge(socket.assigns.params, %{"order-by" => field, "order-dir" => order_dir})
-    {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, params))}
-  end
-
   def handle_info(%{topic: @ingested_time_topic, payload: %{"id" => id, "ingested_time" => ingested_time}}, socket) do
     updated_datasets = update_ingest_time(id, ingested_time, socket.assigns.datasets)
     updated_state = assign(socket, :datasets, updated_datasets)
@@ -70,6 +59,17 @@ defmodule AndiWeb.DatasetLiveView do
   def handle_event("search", %{"search-value" => value}, socket) do
     search_params = Map.merge(socket.assigns.params, %{"search" => value})
     {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
+  end
+
+  def handle_event("order-by", %{"field" => field}, socket) do
+    order_dir =
+      case socket.assigns.order do
+        %{^field => "asc"} -> "desc"
+        _ -> "asc"
+      end
+
+    params = Map.merge(socket.assigns.params, %{"order-by" => field, "order-dir" => order_dir})
+    {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, params))}
   end
 
   defp filter_on_search_change(search_value, socket) do

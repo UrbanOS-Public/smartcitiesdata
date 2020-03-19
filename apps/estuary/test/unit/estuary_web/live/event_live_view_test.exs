@@ -5,7 +5,7 @@ defmodule EstuaryWeb.EventLiveViewTest do
 
   import Phoenix.LiveViewTest
 
-  import FlokiHelpers, only: [floki_get_text: 2]
+  import FlokiHelpers, only: [get_text: 2]
 
   alias Estuary.Services.EventRetrievalService
 
@@ -33,15 +33,15 @@ defmodule EstuaryWeb.EventLiveViewTest do
       allow(EventRetrievalService.get_all(), return: {:ok, events})
 
       assert {:ok, _view, html} = live(conn, "/events")
-      actual_events = floki_get_text(html, ".events-index__table")
-      assert 2 == find_element(html, ".events-table__tr") |> Enum.count()
-      assert 4 == find_element(html, ".events-table__th") |> Enum.count()
-      assert 12 == find_element(html, ".events-table__cell") |> Enum.count()
+      actual_events = get_text(html, ".events-index__table")
+      assert 2 == find_elements(html, ".events-table__tr") |> Enum.count()
+      assert 4 == find_elements(html, ".events-table__th") |> Enum.count()
+      assert 12 == find_elements(html, ".events-table__cell") |> Enum.count()
       assert expected_events == actual_events
     end
   end
 
-  defp find_element(html, selector) do
+  defp find_elements(html, selector) do
     html
     |> Floki.parse_fragment!()
     |> Floki.find(selector)
