@@ -57,14 +57,8 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
     filtered_models =
       case TableInfoCache.get() do
         nil ->
-          table_info =
-            Model.get_all()
-            |> filter_by_file_types(["CSV", "GEOJSON"])
-            |> filter_by_source_type(true)
-            |> Enum.map(&Model.to_table_info/1)
-
-          TableInfoCache.put(table_info)
-          table_info
+          get_filtered_table_info()
+          |> TableInfoCache.put()
 
         filtered_models -> filtered_models
       end
@@ -76,6 +70,13 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
       :fetch_table_info,
       models: authorized_table_infos
     )
+  end
+
+  defp get_filtered_table_info() do
+      Model.get_all()
+      |> filter_by_file_types(["CSV", "GEOJSON"])
+      |> filter_by_source_type(true)
+      |> Enum.map(&Model.to_table_info/1)
   end
 
   defp parse_api_accessible(params) do

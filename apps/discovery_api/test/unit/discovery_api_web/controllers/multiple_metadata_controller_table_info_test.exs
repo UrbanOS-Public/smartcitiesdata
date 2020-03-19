@@ -7,6 +7,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
 
   describe "fetch tableau table info" do
     setup do
+      DiscoveryApi.Data.TableInfoCache.invalidate()
       mock_dataset_summaries = [
         generate_model("csvstream", ~D(1970-01-01), "stream"),
         generate_model("csv", ~D(2001-09-09), "ingest"),
@@ -50,6 +51,12 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
       keys = response |> List.first() |> Map.keys()
 
       assert keys == ["alias", "columns", "description", "id"]
+    end
+
+    test "table info is cached" do
+      build_conn() |> get("api/v1/dataset/tableau/table_info") |> json_response(200)
+
+      assert_called Model.get_all(), once()
     end
   end
 

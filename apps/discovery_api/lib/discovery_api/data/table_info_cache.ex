@@ -11,6 +11,7 @@ defmodule DiscoveryApi.Data.TableInfoCache do
 
   def put(data) do
     Cachex.put(cache_name(), "table_info", data)
+    data
   end
 
   def get() do
