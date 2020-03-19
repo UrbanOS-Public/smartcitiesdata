@@ -51,7 +51,7 @@ function submit(mode) {
   }
   _setConnectionData(connectionData)
 
-  tableau.submit()
+  // tableau.submit()
 }
 
 function _setupConnector() {
@@ -97,7 +97,8 @@ function _getTableSchemas(schemaCallback) {
 
   _getDatasets()
     .then(_decodeAsJson)
-    .catch(function (error) { tableau.abortWithError(error) })
+    .then(_extractTableSchemas)
+    .catch(function (error) { console.log(error); tableau.abortWithError(error) })
     .then(schemaCallback)
 }
 
@@ -160,11 +161,18 @@ function _authorizedFetch(url, params) {
 
 // Discovery Mode Functions
 function _getDatasetList() {
-  return _authorizedFetch(apiPath + "dataset/tableau" + datasetLimit);
+  return _authorizedFetch(apiPath + "dataset/tableau/table_info");
 }
 
 function _getDatasetDictionary(dataset) {
-  return _authorizedFetch(apiPath + "dataset/" + dataset.id + "/dictionary");
+  return new Promise(function (resolve) {
+    resolve({
+      ok: true,
+      json: function () {
+        return dataset.columns
+      }
+    })
+  })
 }
 
 function _getDatasetData(tableInfo) {
@@ -198,7 +206,7 @@ function _getQueryInfo() {
 }
 
 function _getQueryDictionary(queryInfo) {
-  return _authorizedFetch(apiPath + "query/describe?_format=json", { method: 'POST', body: queryInfo.query });
+  return _authorizedFetch(apiPath + "query/tableau/describe?_format=json", { method: 'POST', body: queryInfo.query });
 }
 
 function _getQueryData(tableInfo) {
@@ -233,12 +241,7 @@ function _supportsDesiredFileTypes(dataset) {
 }
 
 function _extractTableSchemas(response) {
-  var datasets = response.results;
-
-  var extractedSchemas = datasets.filter(_supportsDesiredFileTypes)
-    .map(_extractTableSchema)
-
-  return extractedSchemas
+  return response.map(_extractTableSchema)
 }
 
 function _extractTableSchema(dataset) {
@@ -256,12 +259,8 @@ function _extractTableSchema(dataset) {
 
 function _convertDictionaryToColumns(dictionary) {
   return dictionary.map(function (columnSpec) {
-    return {
-      id: _tableauAcceptableIdentifier(columnSpec.name),
-      alias: columnSpec.name.toLowerCase(),
-      description: columnSpec.name.toLowerCase(),
-      dataType: dataMap[columnSpec.type]
-    }
+    columnSpec.dataType = dataMap[columnSpec.dataType]
+    return columnSpec
   })
 }
 

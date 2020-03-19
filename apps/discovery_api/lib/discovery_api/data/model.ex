@@ -159,7 +159,8 @@ defmodule DiscoveryApi.Data.Model do
 
   def to_table_info(model) do
     columns_from_schema = Enum.map(model.schema, fn schema ->
-      %{id: id_to_alphanumeric(schema.name), alias: schema.name, description: schema.description, dataType: schema.type}
+      description = Map.get(schema, :description, "")
+      %{id: id_to_alphanumeric(schema.name), alias: schema.name, description: description, dataType: schema.type}
     end)
 
     %{
@@ -170,7 +171,7 @@ defmodule DiscoveryApi.Data.Model do
     }
   end
 
-  defp id_to_alphanumeric(id) do
+  def id_to_alphanumeric(id) do
     String.replace(id, ~r/[^a-zA-Z0-9_]/, "_") |> String.downcase()
   end
 
