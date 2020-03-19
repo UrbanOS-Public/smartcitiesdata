@@ -9,9 +9,10 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetStore
 
-  import FlokiHelpers, only: [
-    get_attributes: 3
-  ]
+  import FlokiHelpers,
+    only: [
+      get_attributes: 3
+    ]
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"

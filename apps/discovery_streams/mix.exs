@@ -51,7 +51,8 @@ defmodule DiscoveryStreams.Mixfile do
       {:phoenix, "~> 1.4"},
       {:phoenix_pubsub, "~> 1.0"},
       # temporary lock to a version that includes `inputs_for` that can wrap a `live_component` - see https://github.com/phoenixframework/phoenix_html/issues/291
-      {:phoenix_html, github: "phoenixframework/phoenix_html", ref: "9034602e10be566f8c96e49f991521568c8e3d24", override: true},
+      {:phoenix_html,
+       github: "phoenixframework/phoenix_html", ref: "9034602e10be566f8c96e49f991521568c8e3d24", override: true},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:prometheus_phoenix, "~> 1.2"},
       {:prometheus_plugs, "~> 1.1"},

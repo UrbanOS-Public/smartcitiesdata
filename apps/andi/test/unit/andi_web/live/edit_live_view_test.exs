@@ -12,14 +12,16 @@ defmodule AndiWeb.EditLiveViewTest do
   alias Andi.DatasetCache
   alias Andi.InputSchemas.InputConverter
   alias Andi.Services.UrlTest
-  import FlokiHelpers, only: [
-    get_attributes: 3,
-    get_select: 2,
-    get_text: 2,
-    get_value: 2,
-    get_values: 2,
-    find_elements: 2
-  ]
+
+  import FlokiHelpers,
+    only: [
+      get_attributes: 3,
+      get_select: 2,
+      get_text: 2,
+      get_value: 2,
+      get_values: 2,
+      find_elements: 2
+    ]
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -309,9 +311,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert get_text(html, "##{field}-error-msg") == "Please enter valid key(s)."
 
-      where(
-        field: [:sourceQueryParams, :sourceHeaders]
-      )
+      where(field: [:sourceQueryParams, :sourceHeaders])
     end
 
     data_test "displays error when #{field} is unset", %{conn: conn} do
@@ -723,7 +723,7 @@ defmodule AndiWeb.EditLiveViewTest do
       render_click(view, "remove", %{"id" => btn_id, "field" => Atom.to_string(field)})
       html = render(view)
 
-      [key_input] = html |>  get_attributes(key_class, "class")
+      [key_input] = html |> get_attributes(key_class, "class")
       refute btn_id =~ key_input
 
       [value_input] = html |> get_attributes(value_class, "class")

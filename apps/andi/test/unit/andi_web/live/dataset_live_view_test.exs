@@ -5,11 +5,13 @@ defmodule AndiWeb.DatasetLiveViewTest do
   import Andi, only: [instance_name: 0]
   import SmartCity.Event, only: [data_ingest_end: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
-  import FlokiHelpers, only: [
-    get_text: 2,
-    get_values: 2,
-    find_elements: 2
-  ]
+
+  import FlokiHelpers,
+    only: [
+      get_text: 2,
+      get_values: 2,
+      find_elements: 2
+    ]
 
   alias Andi.DatasetCache
 
@@ -155,9 +157,12 @@ defmodule AndiWeb.DatasetLiveViewTest do
       {:ok, view, _html} = live(conn, @url_path)
 
       search_text = "Some search"
-      assert [search_text] ==  view
-        |> render_change(:search, %{"search-value" => search_text})
-        |> get_values("input.datasets-index__search-input")
+
+      assert [search_text] ==
+               view
+               |> render_change(:search, %{"search-value" => search_text})
+               |> get_values("input.datasets-index__search-input")
+
       assert_redirect(view, @url_path <> "?search=" <> search_text)
     end
   end
@@ -195,9 +200,12 @@ defmodule AndiWeb.DatasetLiveViewTest do
       {:ok, view, _html} = live(conn, @url_path)
 
       search_text = "Some text"
-      assert [search_text] == view
-        |> render_submit(:search, %{"search-value" => search_text})
-        |> get_values("input.datasets-index__search-input")
+
+      assert [search_text] ==
+               view
+               |> render_submit(:search, %{"search-value" => search_text})
+               |> get_values("input.datasets-index__search-input")
+
       assert_redirect(view, @url_path <> "?search=" <> search_text)
     end
   end

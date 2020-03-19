@@ -7,8 +7,7 @@ defmodule AndiWeb.Endpoint do
 
   use Phoenix.Endpoint, otp_app: :andi
 
-  socket "/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]]
+  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   plug Plug.Static,
     at: "/",
