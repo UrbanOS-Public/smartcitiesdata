@@ -63,6 +63,24 @@ defmodule Reaper.Decoder.JsonTest do
       assert result == expected
     end
 
+    data_test "json decoder handles empty arrays with topLevelSelector: #{selector}" do
+      dataset_with_selector = TDG.create_dataset(%{technical: %{sourceFormat: "json", topLevelSelector: selector}})
+
+      body = body |> Jason.encode!()
+      File.write!(@filename, body)
+
+      {:ok, result} = Decoder.Json.decode({:file, @filename}, dataset_with_selector)
+
+      assert result == []
+
+      where([
+        [:body, :selector],
+        [%{data: []}, "$.data[*]"],
+        [%{data: %{nested_data: []}}, "$.data.nested_data[*]"],
+        [%{data: [%{nested_data: []}]}, "$.data[*].nested_data[*]"]
+      ])
+    end
+
     test "Decodes json array using the top level selector key" do
       dataset_with_selector =
         TDG.create_dataset(id: "ds1", technical: %{topLevelSelector: "$.[*].data", sourceFormat: "json"})
