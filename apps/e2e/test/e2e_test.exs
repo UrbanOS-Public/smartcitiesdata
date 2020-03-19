@@ -180,18 +180,22 @@ defmodule E2ETest do
         assert Elsa.topic?(@brokers, topic)
       end)
 
-      eventually(fn ->
-        assert :ok = Forklift.DataWriter.compact_dataset(ds)
-      end, 5_000)
+      eventually(
+        fn ->
+          assert :ok = Forklift.DataWriter.compact_dataset(ds)
+        end,
+        5_000
+      )
 
       eventually(
         fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
-          assert [%{"one" => true, "three" => 10, "two" => "foobar"}] == query(
-                   "select * from #{table}",
-                   true
-                 )
+          assert [%{"one" => true, "three" => 10, "two" => "foobar"}] ==
+                   query(
+                     "select * from #{table}",
+                     true
+                   )
         end,
         10_000
       )
@@ -278,9 +282,12 @@ defmodule E2ETest do
         assert Elsa.topic?(@brokers, topic)
       end)
 
-      eventually(fn ->
-        assert :ok = Forklift.DataWriter.compact_dataset(ds)
-      end, 10_000)
+      eventually(
+        fn ->
+          assert :ok = Forklift.DataWriter.compact_dataset(ds)
+        end,
+        10_000
+      )
 
       eventually(
         fn ->
@@ -350,9 +357,12 @@ defmodule E2ETest do
     test "persists geojson in PrestoDB", %{geo_dataset: ds} do
       table = ds.technical.systemName
 
-      eventually(fn ->
-        assert :ok = Forklift.DataWriter.compact_dataset(ds)
-      end, 5_000)
+      eventually(
+        fn ->
+          assert :ok = Forklift.DataWriter.compact_dataset(ds)
+        end,
+        5_000
+      )
 
       eventually(
         fn ->
