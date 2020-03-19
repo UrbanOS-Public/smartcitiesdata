@@ -6,85 +6,50 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
   alias DiscoveryApi.Test.Helper
 
   describe "fetch tableau table info" do
-    test "returns only models with csv or geojson as an available file type" , %{conn: conn}do
+    setup do
       mock_dataset_summaries = [
-        generate_model("Paul", ~D(1970-01-01), "stream"),
-        generate_model("Richard", ~D(2001-09-09), "ingest"),
-        generate_model("Cam", ~D(2091-09-15), "ingest", ["json"], false),
-        generate_model("Spongebob", ~D(2091-09-15), "ingest", ["geojson"], false)
+        generate_model("csvstream", ~D(1970-01-01), "stream"),
+        generate_model("csv", ~D(2001-09-09), "ingest"),
+        generate_model("json", ~D(2091-09-15), "ingest", ["json"], false),
+        generate_model("geojson", ~D(2091-09-15), "ingest", ["geojson"], false),
+        generate_model("private", ~D(2091-09-15), "ingest", ["csv", "json"], true),
+        generate_model("remote", ~D(1970-01-01), "remote"),
+        generate_model("host", ~D(2091-09-15), "host")
       ]
 
       allow(Model.get_all(), return: mock_dataset_summaries, meck_options: [:passthrough])
+      allow(ModelAccessUtils.has_access?(%{id: "private"}, any()), return: false)
+      allow(ModelAccessUtils.has_access?(any(), any()), return: true)
 
-      response = conn |> get("api/v1/dataset/tableau/tableinfo") |> json_response(200)
+      response = build_conn() |> get("api/v1/dataset/tableau/tableinfo") |> json_response(200)
 
       model_ids =
         response
         |> Enum.map(&Map.get(&1, "id"))
 
-      assert "paul" in model_ids
-      assert "richard" in model_ids
-      assert "cam" not in model_ids
-      assert "spongebob" in model_ids
+      {:ok, %{response: response, model_ids: model_ids}}
     end
 
-    test "returns only datasets the user is authorized to view" , %{conn: conn}do
-      mock_dataset_summaries = [
-        generate_model("Paul", ~D(1970-01-01), "stream"),
-        generate_model("Richard", ~D(2001-09-09), "ingest"),
-        generate_model("Tim", ~D(2091-09-15), "ingest", ["csv", "json"], true)
-      ]
-
-      allow(Model.get_all(), return: mock_dataset_summaries, meck_options: [:passthrough])
-      response = conn |> get("api/v1/dataset/tableau/tableinfo") |> json_response(200)
-
-      allow(ModelAccessUtils.has_access?(%{id: "Tim"}, any()), return: false)
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true)
-
-      model_ids =
-        response
-        |> Enum.map(&Map.get(&1, "id"))
-
-      assert "paul" in model_ids
-      assert "richard" in model_ids
-      assert "tim" not in model_ids
+    test "returns only models with csv or geojson as an available file type" , %{model_ids: model_ids} do
+      assert "csv" in model_ids
+      assert "csvstream" in model_ids
+      assert "json" not in model_ids
+      assert "geojson" in model_ids
     end
 
-    test "returns only api-accessible datasets", %{conn: conn} do
-      mock_dataset_summaries = [
-        generate_model("Paul", ~D(1970-01-01), "remote"),
-        generate_model("Richard", ~D(2001-09-09), "ingest"),
-        generate_model("Cricket", ~D(2091-09-15), "host")
-      ]
-
-      allow(Model.get_all(), return: mock_dataset_summaries, meck_options: [:passthrough])
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true)
-
-      response = conn |> get("api/v1/dataset/tableau/tableinfo") |> json_response(200)
-
-      model_ids =
-        response
-        |> Enum.map(&Map.get(&1, "id"))
-
-      assert "paul" not in model_ids
-      assert "richard" in model_ids
-      assert "cricket" not in model_ids
+    test "returns only datasets the user is authorized to view" , %{model_ids: model_ids} do
+      assert "private" not in model_ids
     end
 
-    test "returns models as tableinfos", %{conn: conn} do
-      mock_dataset_summaries = [
-        generate_model("Richard", ~D(2001-09-09), "ingest")
-      ]
+    test "returns only api-accessible datasets", %{model_ids: model_ids} do
+      assert "remote" not in model_ids
+      assert "host" not in model_ids
+    end
 
-      allow(Model.get_all(), return: mock_dataset_summaries, meck_options: [:passthrough])
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true)
+    test "returns models as tableinfos", %{response: response} do
+      keys = response |> List.first() |> Map.keys()
 
-      first_model = conn |> get("api/v1/dataset/tableau/tableinfo") |> json_response(200) |> List.first()
-
-      assert Map.has_key?(first_model,  "id")
-      assert Map.has_key?(first_model,  "description")
-      assert Map.has_key?(first_model,  "alias")
-      assert Map.has_key?(first_model,  "columns")
+      assert keys == ["alias", "columns", "description", "id"]
     end
   end
 
