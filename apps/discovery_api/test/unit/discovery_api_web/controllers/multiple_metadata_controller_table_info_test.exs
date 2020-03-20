@@ -58,6 +58,12 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
 
       assert_called Model.get_all(), once()
     end
+
+    test "table info is cached per user" do
+      build_conn() |> Plug.Conn.assign(:current_user, %{subject_id: "bob123"}) |> get("api/v1/dataset/tableau/table_info") |> json_response(200)
+
+      assert_called Model.get_all(), times(2)
+    end
   end
 
   defp generate_model(id, date, sourceType, fileTypes \\ ["CSV"], is_private \\ false) do

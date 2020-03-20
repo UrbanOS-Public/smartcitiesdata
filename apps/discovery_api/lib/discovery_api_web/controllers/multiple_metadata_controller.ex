@@ -54,26 +54,33 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   end
 
   def fetch_table_info(conn, _params) do
+    user_id = get_user_id(conn) |> IO.inspect(label: "user")
     filtered_models =
-      case TableInfoCache.get() do
+      case TableInfoCache.get(user_id) do
         nil ->
-          get_filtered_table_info()
-          |> TableInfoCache.put()
+          remove_unauthorized_models(conn, Model.get_all())
+          |> get_filtered_table_info()
+          |> TableInfoCache.put(user_id)
 
         filtered_models -> filtered_models
       end
 
-    authorized_table_infos = remove_unauthorized_models(conn, filtered_models)
-
     render(
       conn,
       :fetch_table_info,
-      models: authorized_table_infos
+      models: filtered_models
     )
   end
 
-  defp get_filtered_table_info() do
-      Model.get_all()
+  defp get_user_id(conn) do
+    case (conn.assigns.current_user) do
+      nil -> nil
+      user -> Map.get(user, :subject_id)
+    end
+  end
+
+  defp get_filtered_table_info(models) do
+      models
       |> filter_by_file_types(["CSV", "GEOJSON"])
       |> filter_by_source_type(true)
       |> Enum.map(&Model.to_table_info/1)

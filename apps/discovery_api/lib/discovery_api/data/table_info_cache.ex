@@ -9,13 +9,13 @@ defmodule DiscoveryApi.Data.TableInfoCache do
 
   end
 
-  def put(data) do
-    Cachex.put(cache_name(), "table_info", data)
+  def put(data, id) do
+    Cachex.put(cache_name(), id, data)
     data
   end
 
-  def get() do
-    Cachex.get!(cache_name(), "table_info")
+  def get(id) do
+    Cachex.get!(cache_name(), id)
   end
 
   def invalidate() do
