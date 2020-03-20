@@ -320,7 +320,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
           test('fetches datasets from the search API', (done) => {
             const schemaCallback = jest.fn(() => {
-              expect(global.fetch).toHaveBeenCalledWithUrl('/api/v1/dataset/tableau/table_info')
+              expect(global.fetch).toHaveBeenCalledWithUrl('/api/v1/tableau/table_info')
 
               done()
             })
@@ -348,7 +348,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
             global.tableau.password = 'herbert'
             mockFetches({
               'token': {body: successfulAccessTokenResponse},
-              'dataset/tableau/table_info': {body: datasetListFromApi}
+              'tableau/table_info': {body: datasetListFromApi}
             })
           })
 
@@ -366,7 +366,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
           test('uses fetched access token for all subsequent calls', (done) => {
             registeredConnector.getSchema(() => {
-              expect(global.fetch).toHaveBeenCalledWithHeader('/api/v1/dataset/tableau/table_info', 'Authorization', `Bearer ${successfulAccessTokenResponse.access_token}`)
+              expect(global.fetch).toHaveBeenCalledWithHeader('/api/v1/tableau/table_info', 'Authorization', `Bearer ${successfulAccessTokenResponse.access_token}`)
               
               done()
             })
