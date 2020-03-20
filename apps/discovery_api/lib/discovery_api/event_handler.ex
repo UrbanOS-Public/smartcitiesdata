@@ -28,6 +28,9 @@ defmodule DiscoveryApi.EventHandler do
       result -> result
     end
 
+    # This caches some tables that a user can access. This event can change that.
+    TableInfoCache.invalidate()
+
     :discard
   end
 

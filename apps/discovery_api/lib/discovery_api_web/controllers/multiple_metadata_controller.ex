@@ -54,7 +54,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   end
 
   def fetch_table_info(conn, _params) do
-    user_id = get_user_id(conn) |> IO.inspect(label: "user")
+    user_id = get_user_id(conn)
     filtered_models =
       case TableInfoCache.get(user_id) do
         nil ->

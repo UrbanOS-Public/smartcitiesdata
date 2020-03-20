@@ -35,8 +35,9 @@ defmodule DiscoveryApi.EventHandlerTest do
       %{association_event: association_event}
     end
 
-    test "should save user/organization association to ecto", %{association_event: association_event} do
+    test "should save user/organization association to ecto and clear relevant caches", %{association_event: association_event} do
       allow(Users.associate_with_organization(any(), any()), return: {:ok, %User{}})
+      expect(TableInfoCache.invalidate(), return: {:ok, true})
 
       EventHandler.handle_event(Brook.Event.new(type: user_organization_associate(), data: association_event, author: :author))
 
