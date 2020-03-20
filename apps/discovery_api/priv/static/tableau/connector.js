@@ -163,7 +163,7 @@ function _authorizedFetch(url, params) {
 
 // Discovery Mode Functions
 function _getDatasetList() {
-  return _authorizedFetch(apiPath + "dataset/tableau/table_info");
+  return _authorizedFetch(apiPath + "tableau/table_info");
 }
 
 function _getDatasetDictionary(dataset) {
@@ -199,7 +199,7 @@ function _getQueryInfo() {
 }
 
 function _getQueryDictionary(queryInfo) {
-  return _authorizedFetch(apiPath + "query/tableau/describe?_format=json", { method: 'POST', body: queryInfo.query });
+  return _authorizedFetch(apiPath + "tableau/query_describe?_format=json", { method: 'POST', body: queryInfo.query });
 }
 
 function _getQueryData(tableInfo) {

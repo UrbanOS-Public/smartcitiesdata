@@ -385,7 +385,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
         test('fetches dataset dictionaries from the query describe API', (done) => {
           const schemaCallback = jest.fn(() => {
             const firstCallUrl = global.fetch.mock.calls[0][0]
-            expect(firstCallUrl).toContain('/api/v1/query/tableau/describe?_format=json')
+            expect(firstCallUrl).toContain('/api/v1/tableau/query_describe?_format=json')
             const firstCallBody = global.fetch.mock.calls[0][1]
             expect(firstCallBody.body).toEqual(expectedTableSchemaForQueryDataset.description)
 

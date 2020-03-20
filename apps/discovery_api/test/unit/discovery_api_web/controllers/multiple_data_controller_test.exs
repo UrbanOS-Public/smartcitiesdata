@@ -139,58 +139,6 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       assert expected_response == response_body
     end
 
-    test "can describe queries for some public datasets", %{
-      conn: conn,
-      public_tables: public_tables
-    } do
-      statement = """
-        WITH public_one AS (select a from public__one), public_two AS (select b from public__two)
-        SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
-      """
-
-      allowed_response = [
-        %{
-          "Column Name" => "a",
-          "Type" => "integer"
-        },
-        %{
-          "Column Name" => "b",
-          "Type" => "integer"
-        }
-      ]
-
-      expected_response =
-        [
-          %{
-            id: "a",
-            alias: "a",
-            dataType: "integer"
-          },
-          %{
-            id: "b",
-            alias: "b",
-            dataType: "integer"
-          }
-        ]
-        |> Jason.encode!()
-
-      allow(Prestige.prepare!(any(), any(), any()), return: [:result])
-      allow(Prestige.execute!(any(), any()), return: :result)
-      allow(Prestige.Result.as_maps(:result), return: allowed_response)
-      allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
-
-      response_body =
-        conn
-        |> put_req_header("accept", "application/json")
-        |> put_req_header("content-type", "text/plain")
-        |> post("/api/v1/query/tableau/describe", statement)
-        |> response(200)
-
-      assert expected_response == response_body
-    end
-
     test "can select from some authorized private datasets", %{
       conn: conn,
       private_tables: private_tables,
@@ -205,65 +153,13 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       allow(Prestige.Result.as_maps(:result), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       assert conn
              |> put_req_header("accept", "application/json")
              |> put_req_header("content-type", "text/plain")
              |> post("/api/v1/query", statement)
              |> response(200)
-    end
-
-    test "can describe queries for some authorized private datasets", %{
-      conn: conn,
-      private_tables: private_tables
-    } do
-      statement = """
-      WITH private_one AS (select a from private__one), private_two AS (select b from private__two)
-      SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
-      """
-
-      allowed_response = [
-        %{
-          "Column Name" => "a",
-          "Type" => "integer"
-        },
-        %{
-          "Column Name" => "b",
-          "Type" => "integer"
-        }
-      ]
-
-      expected_response =
-        [
-          %{
-            id: "a",
-            alias: "a",
-            dataType: "integer"
-          },
-          %{
-            id: "b",
-            alias: "b",
-            dataType: "integer"
-          }
-        ]
-        |> Jason.encode!()
-
-      allow(Prestige.prepare!(any(), any(), any()), return: [:result])
-      allow(Prestige.execute!(any(), any()), return: :result)
-      allow(Prestige.Result.as_maps(:result), return: allowed_response)
-      allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
-
-      response_body =
-        conn
-        |> put_req_header("accept", "application/json")
-        |> put_req_header("content-type", "text/plain")
-        |> post("/api/v1/query/tableau/describe", statement)
-        |> response(200)
-
-      assert expected_response == response_body
     end
 
     test "can't select from some unauthorized private datasets", %{
@@ -280,7 +176,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       allow(Prestige.Result.as_maps(:result), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any()), seq: [false, true])
+      allow(QueryAccessUtils.authorized_to_query?(any(), any()), seq: [false, true], meck_options: [:passthrough])
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -300,7 +196,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any()), seq: [false, true])
+      allow(QueryAccessUtils.authorized_to_query?(any(), any()), seq: [false, true], meck_options: [:passthrough])
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -323,12 +219,6 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
              |> put_req_header("content-type", "text/plain")
              |> post("/api/v1/query", statement)
              |> response(400)
-
-      assert conn
-             |> put_req_header("accept", "application/json")
-             |> put_req_header("content-type", "text/plain")
-             |> post("/api/v1/query/tableau/describe", statement)
-             |> response(400)
     end
 
     test "unable to query or describe datasets which are not in redis", %{conn: conn} do
@@ -346,12 +236,6 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         |> put_req_header("content-type", "text/plain")
         |> post("/api/v1/query", statement)
         |> response(400)
-
-      assert conn
-             |> put_req_header("accept", "application/json")
-             |> put_req_header("content-type", "text/plain")
-             |> post("/api/v1/query/tableau/describe", statement)
-             |> response(400)
 
       assert not called?(Prestige.query!(any(), any()))
     end
@@ -371,12 +255,6 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
              |> put_req_header("content-type", "text/plain")
              |> post("/api/v1/query", statement)
              |> response(400)
-
-      assert conn
-             |> put_req_header("accept", "application/json")
-             |> put_req_header("content-type", "text/plain")
-             |> post("/api/v1/query/tableau/describe", statement)
-             |> response(400)
     end
 
     test "does not accept requests with no statement in the body", %{conn: conn} do
@@ -386,12 +264,6 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
              |> put_req_header("accept", "application/json")
              |> put_req_header("content-type", "text/plain")
              |> post("/api/v1/query", statement)
-             |> response(400)
-
-      assert conn
-             |> put_req_header("accept", "application/json")
-             |> put_req_header("content-type", "text/plain")
-             |> post("/api/v1/query/tableau/describe", statement)
              |> response(400)
     end
 

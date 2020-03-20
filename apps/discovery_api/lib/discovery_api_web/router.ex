@@ -55,10 +55,11 @@ defmodule DiscoveryApiWeb.Router do
     pipe_through([:reject_cookies_from_ajax, :verify_token, :add_user_details, :global_headers])
 
     get("/dataset/search", MultipleMetadataController, :search)
-    get("/dataset/tableau/table_info", MultipleMetadataController, :fetch_table_info)
-    post("/query/tableau/describe", MultipleDataController, :describe)
     get("/data_json", DataJsonController, :show)
     post("/query", MultipleDataController, :query)
+
+    get("/tableau/table_info", TableauController, :fetch_table_info)
+    post("/tableau/query_describe", TableauController, :describe)
 
     get("/organization/:id", OrganizationController, :fetch_detail)
 

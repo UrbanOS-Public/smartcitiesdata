@@ -31,10 +31,6 @@ defmodule DiscoveryApiWeb.MultipleMetadataView do
     }
   end
 
-  def render("fetch_table_info.json", %{models: models}) do
-    models
-  end
-
   defp translate_to_dataset(%Model{} = model) do
     %{
       id: model.id,

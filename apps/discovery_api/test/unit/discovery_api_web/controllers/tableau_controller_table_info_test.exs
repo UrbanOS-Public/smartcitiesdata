@@ -1,4 +1,4 @@
-defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
+defmodule DiscoveryApiWeb.TableauControllerTableInfoTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   alias DiscoveryApi.Data.Model
@@ -23,7 +23,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
       allow(ModelAccessUtils.has_access?(%{id: "private"}, any()), return: false)
       allow(ModelAccessUtils.has_access?(any(), any()), return: true)
 
-      response = build_conn() |> get("api/v1/dataset/tableau/table_info") |> json_response(200)
+      response = build_conn() |> get("api/v1/tableau/table_info") |> json_response(200)
 
       model_ids =
         response
@@ -55,15 +55,15 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
     end
 
     test "table info is cached" do
-      build_conn() |> get("api/v1/dataset/tableau/table_info") |> json_response(200)
+      build_conn() |> get("api/v1/tableau/table_info") |> json_response(200)
 
       assert_called Model.get_all(), once()
     end
 
     test "table info is cached per user" do
       allow(Guardian.Plug.current_resource(any()), return: %{subject_id: "bob123"}, meck_options: [:passthrough])
-      build_conn() |> get("api/v1/dataset/tableau/table_info") |> json_response(200)
-      build_conn() |> get("api/v1/dataset/tableau/table_info") |> json_response(200)
+      build_conn() |> get("api/v1/tableau/table_info") |> json_response(200)
+      build_conn() |> get("api/v1/tableau/table_info") |> json_response(200)
 
       assert_called Model.get_all(), times(2)
     end
