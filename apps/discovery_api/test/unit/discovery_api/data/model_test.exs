@@ -111,17 +111,18 @@ defmodule DiscoveryApi.Data.ModelTest do
 
   describe "to_table_info/1" do
     test "creates table info object with id, description, and alias fields" do
-      model = Helper.sample_model(%{
-        id: "dataset-id-blah",
-        title: "dataset-title-blah",
-        schema: [
-          %{
-            name: "cam",
-            description: "cam",
-            type: "cam"
-          }
-        ]
-      })
+      model =
+        Helper.sample_model(%{
+          id: "dataset-id-blah",
+          title: "dataset-title-blah",
+          schema: [
+            %{
+              name: "cam",
+              description: "cam",
+              type: "cam"
+            }
+          ]
+        })
 
       expected_table_info = %{
         id: "dataset_id_blah",
@@ -139,34 +140,35 @@ defmodule DiscoveryApi.Data.ModelTest do
       model = Helper.sample_model()
 
       expected_columns = [
-          %{
-            dataType: "integer",
-            alias: "number",
-            description: "a number",
-            id: "number"
-          },
-          %{
-            dataType: "string",
-            alias: "name",
-            description: "a name",
-            id: "name"
-          }
-        ]
+        %{
+          dataType: "integer",
+          alias: "number",
+          description: "a number",
+          id: "number"
+        },
+        %{
+          dataType: "string",
+          alias: "name",
+          description: "a name",
+          id: "name"
+        }
+      ]
 
       actual_columns = model |> Model.to_table_info() |> Map.get(:columns)
       assert actual_columns == expected_columns
     end
 
     test "converts mixed case schema fields" do
-      model = Helper.sample_model(%{
-        schema: [
-          %{
-            name: "bob-Field",
-            type: "string",
-            description: "this is a field"
-          }
-        ]
-      })
+      model =
+        Helper.sample_model(%{
+          schema: [
+            %{
+              name: "bob-Field",
+              type: "string",
+              description: "this is a field"
+            }
+          ]
+        })
 
       expected_columns = [
         %{

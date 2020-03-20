@@ -8,6 +8,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
   describe "fetch tableau table info" do
     setup do
       DiscoveryApi.Data.TableInfoCache.invalidate()
+
       mock_dataset_summaries = [
         generate_model("csvstream", ~D(1970-01-01), "stream"),
         generate_model("csv", ~D(2001-09-09), "ingest"),
@@ -31,14 +32,14 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.TableInfoTest do
       {:ok, %{response: response, model_ids: model_ids}}
     end
 
-    test "returns only models with csv or geojson as an available file type" , %{model_ids: model_ids} do
+    test "returns only models with csv or geojson as an available file type", %{model_ids: model_ids} do
       assert "csv" in model_ids
       assert "csvstream" in model_ids
       assert "json" not in model_ids
       assert "geojson" in model_ids
     end
 
-    test "returns only datasets the user is authorized to view" , %{model_ids: model_ids} do
+    test "returns only datasets the user is authorized to view", %{model_ids: model_ids} do
       assert "private" not in model_ids
     end
 

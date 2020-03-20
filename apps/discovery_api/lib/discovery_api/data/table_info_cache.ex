@@ -6,7 +6,6 @@ defmodule DiscoveryApi.Data.TableInfoCache do
 
   def child_spec([]) do
     Supervisor.child_spec({Cachex, cache_name()}, id: __MODULE__)
-
   end
 
   def put(data, id) do

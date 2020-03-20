@@ -158,10 +158,11 @@ defmodule DiscoveryApi.Data.Model do
   def pop(data, key), do: Map.pop(data, key)
 
   def to_table_info(model) do
-    columns_from_schema = Enum.map(model.schema, fn schema ->
-      description = Map.get(schema, :description, "")
-      %{id: id_to_alphanumeric(schema.name), alias: schema.name, description: description, dataType: schema.type}
-    end)
+    columns_from_schema =
+      Enum.map(model.schema, fn schema ->
+        description = Map.get(schema, :description, "")
+        %{id: id_to_alphanumeric(schema.name), alias: schema.name, description: description, dataType: schema.type}
+      end)
 
     %{
       id: id_to_alphanumeric(model.id),

@@ -77,7 +77,6 @@ defmodule DiscoveryApi.EventHandlerTest do
     test "invalidates the table info cache" do
       assert_called(TableInfoCache.invalidate())
     end
-
   end
 
   describe "handle_event/1 #{dataset_delete()}" do
