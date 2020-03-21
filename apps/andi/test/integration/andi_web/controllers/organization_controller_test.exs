@@ -4,53 +4,13 @@ defmodule Andi.CreateOrgTest do
   use Placebo
   use Tesla
 
-  alias SmartCity.Registry.Organization, as: RegOrganization
   alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.Services.OrgStore
   import SmartCity.TestHelper, only: [eventually: 1]
   import Andi
 
   plug Tesla.Middleware.BaseUrl, "http://localhost:4000"
-
-  @ou Application.get_env(:andi, :ldap_env_ou)
-
-  setup_all do
-    Redix.command!(:smart_city_registry, ["FLUSHALL"])
-
-    user = Application.get_env(:andi, :ldap_user)
-    pass = Application.get_env(:andi, :ldap_pass)
-    Paddle.authenticate(user, pass)
-
-    Paddle.add([ou: @ou], objectClass: ["top", "organizationalunit"], ou: @ou)
-
-    org = organization()
-    {:ok, response} = create(org)
-
-    eventually(fn ->
-      {:ok, %Organization{}} = Brook.get(instance_name(), :org, org.id)
-    end)
-
-    {:ok, happy_path_org} = RegOrganization.new(response.body)
-    [happy_path: happy_path_org, response: response]
-  end
-
-  # Delete after event stream integration is complete
-  describe "failure to persist new organization" do
-    setup do
-      allow(RegOrganization.write(any()), return: {:error, :reason}, meck_options: [:passthrough])
-      org = organization(%{orgName: "unhappyPath"})
-      {:ok, response} = create(org)
-      [unhappy_path: org, response: response]
-    end
-
-    test "responds with a 500", %{response: response} do
-      assert response.status == 500
-    end
-
-    test "removes organization from LDAP", %{unhappy_path: expected} do
-      assert {:error, :noSuchObject} = Paddle.get(filter: [cn: expected.orgName, ou: @ou])
-    end
-  end
 
   describe "failure to send new organization to event stream" do
     setup do
@@ -67,13 +27,21 @@ defmodule Andi.CreateOrgTest do
     test "responds with a 500", %{response: response} do
       assert response.status == 500
     end
-
-    test "removes organization from LDAP", %{unhappy_path: expected} do
-      assert {:error, :noSuchObject} = Paddle.get(filter: [cn: expected.orgName, ou: @ou])
-    end
   end
 
   describe "user organization associate" do
+    setup do
+      org = organization()
+      {:ok, response} = create(org)
+      {:ok, happy_path} = Organization.new(response.body)
+
+      eventually(fn ->
+        {:ok, %Organization{}} = OrgStore.get(org.id)
+      end)
+
+      [happy_path: happy_path, response: response]
+    end
+
     test "happy path", %{happy_path: org} do
       users = [1, 2]
       body = Jason.encode!(%{org_id: org.id, users: users})
@@ -82,9 +50,9 @@ defmodule Andi.CreateOrgTest do
         post("/api/v1/organization/#{org.id}/users/add", body, headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
-        assert Brook.get(instance_name(), :org_to_users, org.id) == {:ok, MapSet.new(users)}
-        assert Brook.get(instance_name(), :user_to_orgs, 1) == {:ok, MapSet.new([org.id])}
-        assert Brook.get(instance_name(), :user_to_orgs, 2) == {:ok, MapSet.new([org.id])}
+        assert get_brook(org.id, :org_to_users) == {:ok, MapSet.new(users)}
+        assert get_brook(1, :user_to_orgs) == {:ok, MapSet.new([org.id])}
+        assert get_brook(2, :user_to_orgs) == {:ok, MapSet.new([org.id])}
       end)
     end
   end
@@ -101,5 +69,9 @@ defmodule Andi.CreateOrgTest do
     overrides
     |> TDG.create_organization()
     |> Map.from_struct()
+  end
+
+  defp get_brook(id, collection \\ :org) do
+    Brook.get(instance_name(), collection, id)
   end
 end

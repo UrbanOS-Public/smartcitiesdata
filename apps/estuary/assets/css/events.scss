@@ -1,0 +1,83 @@
+.events-index {
+  padding: 1rem 3rem;
+}
+
+.events-index__title {
+  font-size: 1.5rem;
+}
+
+.events-index__search-input-container {
+  display: flex;
+  width: 50%;
+  margin: 0.5rem;
+  border: 1px solid $search-unfocused;
+}
+
+.events-index__search-input-container:focus-within {
+  border: 1px solid $search-focused;
+}
+
+.events-index__search-icon {
+  padding: 0.1rem;
+  color: $search-unfocused;
+  text-align: center;
+}
+
+.events-index__search-input {
+  width: 100%;
+  padding: 0.1rem;
+  outline: none;
+  border: none;
+}
+
+.events-index__search-input::placeholder,
+.events-index__search-input::-webkit-input-placeholder,
+.events-index__search-input::-ms-input-placeholder {
+  color: $search-unfocused;
+}
+
+.events-table {
+  width: 100%;
+  border: $table-border;
+}
+
+.events-table__tr:nth-child(odd) {
+  background-color: $color-table-stripe;
+}
+
+.events-table__th {
+  padding: $table-padding;
+  border-right: $table-border;
+  text-align: left;
+  background: $color-table-header;
+}
+
+.events-table__cell {
+  padding: $table-padding;
+  border-right: $table-border;
+  height: $table-height;
+  max-width: 30rem;
+}
+
+.events-table__ingested-cell {
+  text-align: center;
+  color: green;
+}
+
+.events-table__cell--break {
+  word-break: break-word;
+}
+
+.events-table__th--asc {
+  -webkit-box-shadow: inset 0 0.2rem 0 0 $header-shadow;
+  box-shadow: inset 0 0.2rem 0 0 $header-shadow;
+}
+
+.events-table__th--desc {
+  -webkit-box-shadow: inset 0 -0.2rem 0 0 $header-shadow;
+  box-shadow: inset 0 -0.2rem 0 0 $header-shadow;
+}
+
+.events-table__th--sortable {
+  cursor: pointer;
+}

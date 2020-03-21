@@ -4,7 +4,7 @@ defmodule DeadLetter.MixProject do
   def project do
     [
       app: :dead_letter,
-      version: "1.0.7",
+      version: "1.0.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -20,15 +20,16 @@ defmodule DeadLetter.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {DeadLetter.Application, []}
     ]
   end
 
   defp deps do
     [
-      {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.1", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
-      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:placebo, "~> 1.2", only: [:test, :integration]},
       {:ex_doc, "~> 0.21", only: :dev},
       {:jason, "~> 1.1"},
       {:elsa, "~> 0.10.0"},

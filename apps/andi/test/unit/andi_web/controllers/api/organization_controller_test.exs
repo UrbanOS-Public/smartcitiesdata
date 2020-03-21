@@ -5,18 +5,14 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   @route "/api/v1/organization"
   @get_orgs_route "/api/v1/organizations"
-  @get_repost_orgs_route "/api/v1/repost_org_updates"
-  @ou Application.get_env(:andi, :ldap_env_ou)
   alias SmartCity.Organization
   alias SmartCity.UserOrganizationAssociate
-  alias SmartCity.Registry.Organization, as: RegOrganization
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.Services.OrgStore
   import Andi
 
   setup do
-    allow(Paddle.authenticate(any(), any()), return: :ok)
-    allow(Brook.get(instance_name(), any(), any()), return: {:ok, nil}, meck_options: [:passthrough])
-    allow(RegOrganization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
+    allow(OrgStore.get(any()), return: {:ok, nil}, meck_options: [:passthrough])
 
     request = %{
       "orgName" => "myOrg",
@@ -48,7 +44,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
     expected_orgs = [expected_org_1, expected_org_2]
 
-    allow(Brook.get_all_values(instance_name(), any()),
+    allow(OrgStore.get_all(),
       return: {:ok, [expected_org_1, expected_org_2]},
       meck_options: [:passthrough]
     )
@@ -58,9 +54,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   describe "post /api/ with valid data" do
     setup %{conn: conn, request: request} do
-      allow(RegOrganization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
       allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
-      allow(Paddle.add(any(), any()), return: :ok)
       [conn: post(conn, @route, request)]
     end
 
@@ -71,27 +65,13 @@ defmodule AndiWeb.API.OrganizationControllerTest do
       assert uuid?(response["id"])
     end
 
-    test "writes organization to registry", %{message: message} do
-      struct = capture(RegOrganization.write(any()), 1)
-      assert struct.orgName == message["orgName"]
-      assert uuid?(struct.id)
-    end
-
     test "writes organization to event stream", %{message: _message} do
       assert_called(Brook.Event.send(instance_name(), any(), :andi, any()), once())
-    end
-
-    test "writes organization to LDAP", %{message: %{"orgName" => name}} do
-      attrs = [objectClass: ["top", "groupofnames"], cn: name, member: "cn=admin"]
-      assert_called(Paddle.add([cn: name, ou: @ou], attrs), once())
     end
   end
 
   describe "post /api/ with valid data and imported id" do
     setup %{conn: conn} do
-      allow(RegOrganization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
-      allow(Paddle.add(any(), any()), return: :ok)
-
       req_with_id = %{
         "id" => "123",
         "orgName" => "yourOrg",
@@ -109,45 +89,6 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
   end
 
-  describe "failed write to LDAP" do
-    setup do
-      allow(RegOrganization.write(any()), return: {:ok, "id"}, meck_options: [:passthrough])
-      allow(Paddle.add(any(), any()), return: {:error, :reason})
-      :ok
-    end
-
-    @tag capture_log: true
-    test "returns 500", %{conn: conn, request: req} do
-      conn = post(conn, @route, req)
-      assert json_response(conn, 500) =~ "Unable to process your request"
-    end
-
-    @tag capture_log: true
-    test "never persists organization to registry", %{conn: conn, request: req} do
-      post(conn, @route, req)
-      refute_called(RegOrganization.write(any()))
-    end
-  end
-
-  describe "failed write to Redis" do
-    setup %{conn: conn, request: req} do
-      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
-        return: {:error, :reason},
-        meck_options: [:passthrough]
-      )
-
-      allow(Paddle.add(any(), any()), return: :ok, meck_options: [:passthrough])
-      allow(Paddle.delete(any()), return: :ok)
-
-      [conn: post(conn, @route, req), request: req]
-    end
-
-    @tag capture_log: true
-    test "removes organization from LDAP" do
-      assert_called(Paddle.delete(cn: "myOrg", ou: @ou))
-    end
-  end
-
   @tag capture_log: true
   test "post /api/ without data returns 500", %{conn: conn} do
     conn = post(conn, @route)
@@ -162,7 +103,6 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   @tag capture_log: true
   test "post /api/ with blank id should create org with generated id", %{conn: conn} do
-    allow(Paddle.add(any(), any()), return: :ok, meck_options: [:passthrough])
     conn = post(conn, @route, %{"id" => "", "orgName" => "blankIDOrg", "orgTitle" => "Blank ID Org Title"})
 
     response = json_response(conn, 201)
@@ -173,16 +113,15 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   describe "id already exists" do
     setup do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(OrgStore.get(any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
       :ok
     end
 
     @tag capture_log: true
     test "post /api/v1/organization fails with explanation", %{conn: conn, request: req} do
       post(conn, @route, req)
-      # Remove after completing event streams rewrite
-      refute_called(RegOrganization.write(any()))
-      refute_called(Brook.write(instance_name(), any(), any()))
+      refute_called(Brook.Event.send(instance_name(), any(), :andi, any()), once())
     end
   end
 
@@ -200,29 +139,11 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
   end
 
-  describe "rePOSTs orgs from /api/vi/repost_org_updates" do
-    test "returns a 200", %{conn: conn} do
-      allow(Andi.Services.OrganizationReposter.repost_all_orgs(), return: :ok)
-      conn = post(conn, @get_repost_orgs_route)
-      response = json_response(conn, 200)
-
-      assert "Orgs successfully reposted" == response
-    end
-
-    test "returns a 500 if there was an error", %{conn: conn} do
-      allow(Andi.Services.OrganizationReposter.repost_all_orgs(), return: {:error, "mistakes were made"})
-      conn = post(conn, @get_repost_orgs_route)
-      response = json_response(conn, 500)
-
-      assert "Failed to repost organizations" == response
-    end
-  end
-
   describe "organization/:org_id/users/add" do
     setup do
       org = TDG.create_organization(%{})
 
-      allow(Brook.get(any(), any(), org.id),
+      allow(OrgStore.get(org.id),
         return: {:ok, org},
         meck_options: [:passthrough]
       )
@@ -247,7 +168,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
 
     test "returns a 400 if the organization doesn't exist", %{conn: conn, users: users} do
-      allow(Brook.get(any(), any(), any()),
+      allow(OrgStore.get(any()),
         return: {:ok, nil},
         meck_options: [:passthrough]
       )
@@ -275,8 +196,9 @@ defmodule AndiWeb.API.OrganizationControllerTest do
       assert_called(Brook.Event.send(instance_name(), any(), :andi, expected_2), once())
     end
 
+    @tag capture_log: true
     test "returns a 500 if unable to get organizations through Brook", %{conn: conn} do
-      allow(Brook.get(any(), any(), any()),
+      allow(OrgStore.get(any()),
         return: {:error, "bad stuff happened"},
         meck_options: [:passthrough]
       )
@@ -290,6 +212,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
       refute_called(Brook.Event.send(instance_name(), any(), :andi, any()))
     end
 
+    @tag capture_log: true
     test "returns a 500 if unable to send events", %{conn: conn, org: org} do
       allow(Brook.Event.send(instance_name(), any(), :andi, any()),
         return: {:error, "unable to send event"},

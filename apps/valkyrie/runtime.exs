@@ -1,7 +1,16 @@
 use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
-redis_host = System.get_env("REDIS_HOST")
+get_redix_args = fn (host, password) ->
+  [host: host, password: password]
+  |> Enum.filter(fn
+    {_, nil} -> false
+    {_, ""} -> false
+    _ -> true
+  end)
+end
+redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
+
 input_topic_prefix = System.get_env("INPUT_TOPIC_PREFIX")
 output_topic_prefix = System.get_env("OUTPUT_TOPIC_PREFIX")
 processor_stages = System.get_env("PROCESSOR_STAGES") || "1"
@@ -49,25 +58,23 @@ if kafka_brokers do
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [
-      redix_args: [host: redis_host],
+      redix_args: redix_args,
       namespace: "valkyrie:view"
     ]
   ]
-
-  config :yeet,
-    topic: System.get_env("DLQ_TOPIC"),
-    endpoint: endpoints
 
   config :valkyrie,
     elsa_brokers: endpoints,
     input_topic_prefix: input_topic_prefix,
     output_topic_prefix: output_topic_prefix,
-    processor_stages: String.to_integer(processor_stages),
-    topic_subscriber_config: [
-      begin_offset: :earliest,
-      offset_reset_policy: :reset_to_earliest,
-      max_bytes: 1_000_000,
-      min_bytes: 500_000,
-      max_wait_time: 10_000
+    processor_stages: String.to_integer(processor_stages)
+
+  config :dead_letter,
+    driver: [
+      module: DeadLetter.Carrier.Kafka,
+      init_args: [
+        endpoints: endpoints,
+        topic: "streaming-dead-letters"
+      ]
     ]
 end

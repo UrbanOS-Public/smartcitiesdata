@@ -4,7 +4,7 @@ defmodule Valkyrie.MixProject do
   def project do
     [
       app: :valkyrie,
-      version: "0.2.3",
+      version: "1.1.2",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -36,8 +36,9 @@ defmodule Valkyrie.MixProject do
       {:benchee, "~> 1.0", only: [:integration]},
       {:brook, "~> 0.4"},
       {:cachex, "~> 3.1"},
-      {:checkov, "~> 0.4.0", only: [:test]},
+      {:checkov, "~> 0.5.0", only: [:test]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:divo_kafka, "~> 0.1", only: [:integration]},
@@ -46,15 +47,14 @@ defmodule Valkyrie.MixProject do
       {:tasks, in_umbrella: true, only: :dev},
       {:jason, "~> 1.1"},
       {:libcluster, "~> 3.1"},
-      {:mix_test_watch, "~> 0.9", only: :dev, runtime: false},
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:observer_cli, "~> 1.4"},
       {:off_broadway_kafka, "~> 0.4.0"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:retry, "~> 0.13"},
-      {:smart_city, "~> 3.0", override: true},
+      {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
-      {:timex, "~> 3.6"},
-      {:yeet, "~> 1.0"}
+      {:timex, "~> 3.6"}
     ]
   end
 

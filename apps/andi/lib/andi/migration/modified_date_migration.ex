@@ -8,10 +8,12 @@ defmodule Andi.Migration.ModifiedDateMigration do
 
   require Logger
   require Andi
+  alias Andi.Services.DatasetStore
+
   @instance Andi.instance_name()
 
   def do_migration() do
-    Brook.get_all_values!(@instance, :dataset)
+    DatasetStore.get_all!()
     |> Enum.each(&migrate_dataset/1)
   end
 
@@ -24,7 +26,7 @@ defmodule Andi.Migration.ModifiedDateMigration do
       updated_dataset = update_modified_date(dataset, corrected_date)
 
       Brook.Event.send(@instance, dataset_update(), :andi, updated_dataset)
-      Brook.ViewState.merge(:dataset, updated_dataset.id, updated_dataset)
+      DatasetStore.update(updated_dataset)
     end
   end
 

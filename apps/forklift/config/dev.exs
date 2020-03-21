@@ -6,10 +6,10 @@ config :forklift,
   message_processing_cadence: 15_000,
   user: "forklift"
 
-config :prestige, base_url: "http://127.0.0.1:8080"
+config :prestige, :session_opts, url: "http://127.0.0.1:8080"
 
 config :redix,
-  host: "localhost"
+  args: [host: "localhost"]
 
 config :forklift, :brook,
   instance: :forklift,
@@ -19,12 +19,6 @@ config :forklift, :brook,
     init_arg: [
       namespace: "forklift:view"
     ]
-  ]
-
-config :forklift, :dead_letter,
-  driver: [
-    module: DeadLetter.Carrier.Test,
-    init_args: []
   ]
 
 config :libcluster,

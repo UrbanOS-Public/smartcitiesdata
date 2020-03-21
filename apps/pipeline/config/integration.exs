@@ -4,16 +4,28 @@ config :pipeline,
   elsa_brokers: [{:localhost, 9092}],
   output_topic: "output-topic",
   producer_name: :"integration-producer",
-  divo: [{DivoKafka, [outside_host: "localhost"]}, Pipeline.DivoPresto],
+  divo: [{DivoKafka, [outside_host: "localhost", kafka_image_version: "2.12-2.1.1"]}, Pipeline.DivoPresto],
   divo_wait: [dwell: 1_000, max_tries: 120]
 
-config :prestige,
-  base_url: "http://localhost:8080",
-  headers: [
-    catalog: "hive",
-    schema: "default",
-    user: "foobar"
-  ]
+config :prestige, :session_opts,
+  url: "http://localhost:8080",
+  catalog: "hive",
+  schema: "default",
+  user: "foobar"
+
+config :ex_aws,
+  debug_requests: true,
+  access_key_id: "testing_access_key",
+  secret_access_key: "testing_secret_key",
+  region: "local"
+
+config :ex_aws, :s3,
+  scheme: "http://",
+  region: "local",
+  host: %{
+    "local" => "localhost"
+  },
+  port: 9000
 
 defmodule Pipeline.DivoPresto do
   @moduledoc """

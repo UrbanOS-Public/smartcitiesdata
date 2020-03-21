@@ -3,9 +3,11 @@ Application.load(:reaper)
 Application.spec(:reaper, :applications)
 |> Enum.each(&Application.ensure_all_started/1)
 
+Mox.defmock(Providers.Echo, for: Providers.Provider)
+
 Application.ensure_all_started(:bypass)
 
-ExUnit.start(exclude: [:skip], slowest: 5)
+ExUnit.start(exclude: [:skip])
 
 defmodule TestHelper do
   use ExUnit.Case

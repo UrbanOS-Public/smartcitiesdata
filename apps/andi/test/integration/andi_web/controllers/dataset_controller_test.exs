@@ -7,15 +7,10 @@ defmodule Andi.CreateDatasetTest do
   import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0]
   import Andi
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.Services.DatasetStore
 
   plug(Tesla.Middleware.BaseUrl, "http://localhost:4000")
   @kafka_broker Application.get_env(:andi, :kafka_broker)
-
-  setup_all do
-    Redix.command!(:smart_city_registry, ["FLUSHALL"])
-    Process.sleep(5000)
-    :ok
-  end
 
   describe "dataset disable" do
     test "sends dataset:disable event" do
@@ -23,13 +18,11 @@ defmodule Andi.CreateDatasetTest do
       {:ok, _} = create(dataset)
 
       eventually(fn ->
-        {:ok, value} = Brook.get(instance_name(), :dataset, dataset.id)
+        {:ok, value} = DatasetStore.get(dataset.id)
         assert value != nil
       end)
 
-      post("/api/v1/dataset/disable", %{id: dataset.id} |> Jason.encode!(),
-        headers: [{"content-type", "application/json"}]
-      )
+      post("/api/v1/dataset/disable", %{id: dataset.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
         values =
@@ -50,13 +43,11 @@ defmodule Andi.CreateDatasetTest do
       {:ok, _} = create(dataset)
 
       eventually(fn ->
-        {:ok, value} = Brook.get(instance_name(), :dataset, dataset.id)
+        {:ok, value} = DatasetStore.get(dataset.id)
         assert value != nil
       end)
 
-      post("/api/v1/dataset/delete", %{id: dataset.id} |> Jason.encode!(),
-        headers: [{"content-type", "application/json"}]
-      )
+      post("/api/v1/dataset/delete", %{id: dataset.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
         values =

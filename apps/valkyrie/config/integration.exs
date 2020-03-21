@@ -6,6 +6,8 @@ host =
     defined -> defined
   end
 
+redix_args = [host: host]
+
 endpoints = [{String.to_atom(host), 9092}]
 
 config :logger,
@@ -21,7 +23,7 @@ config :valkyrie,
        create_topics: "raw:1:1,validated:1:1,dead-letters:1:1, event-stream:1:1",
        outside_host: host,
        auto_topic: false,
-       kafka_image_version: "2.12-2.0.1"
+       kafka_image_version: "2.12-2.1.1"
      ]},
     DivoRedis
   ],
@@ -45,11 +47,7 @@ config :valkyrie, :brook,
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [
-      redix_args: [host: host],
+      redix_args: redix_args,
       namespace: "valkyrie:view"
     ]
   ]
-
-config :yeet,
-  topic: "dead-letters",
-  endpoint: endpoints

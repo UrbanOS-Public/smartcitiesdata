@@ -24,4 +24,7 @@ erl_crash.dump
 .elixir_ls
 
 node_modules/
+
 .DS_Store
+
+.vscode/

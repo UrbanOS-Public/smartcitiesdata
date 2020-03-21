@@ -1,0 +1,134 @@
+@import "./variables.scss";
+@import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
+
+body {
+  background: $color-background;
+}
+
+.root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  font-family: "Roboto", Arial, Helvetica, sans-serif;
+  font-size: 1em;
+  color: $color-text-primary;
+}
+
+.root__main {
+  flex: 1;
+  background: $color-content-background;
+  box-shadow: $box-shadow;
+  margin: 1em;
+}
+
+@mixin area($block, $element) {
+  .#{$block}__#{$element} {
+    grid-area: $element;
+    margin: 10px 0 10px 0;
+  }
+}
+
+.btn {
+  padding: 0.3rem 1.2rem;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+  background-color: black;
+  color: white;
+
+  &:hover {
+    background-color: lighten(black, 20%);
+  }
+
+  &:active {
+    background-color: lighten(black, 40%);
+  }
+}
+
+.error-msg {
+  color: red;
+  display: block;
+  margin: 5px 0 5px 0;
+}
+
+.btn--cancel {
+  padding: 0.4rem 1.7rem;
+  font-size: 1.5rem;
+  min-width: 10rem;
+}
+
+.btn--save {
+  @extend .btn--cancel;
+  float: right;
+  color: $color-text-link;
+  background-color: white;
+  border: 2px solid $color-text-link;
+  margin-right: 1rem;
+}
+
+.btn--next {
+  @extend .btn--save;
+  float: right;
+  color: white;
+  background-color: $color-text-link;
+  border: 2px solid $color-text-link;
+  margin-right: 0;
+}
+
+.btn--save:hover {
+  background: $color-text-link;
+  color: white;
+  border: 2px solid $color-text-link;
+}
+.btn--next:hover {
+  background: white;
+  color: $color-text-link;
+  border: 2px solid $color-text-link;
+}
+
+.label {
+  color: #7f7676;
+  display: block;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.03rem;
+  font-size: 1.2rem;
+}
+
+.label--inline {
+  display: inline-block;
+  font-size: 1rem;
+  letter-spacing: 0rem;
+}
+
+.label--required::after {
+  content: " *";
+}
+
+.input {
+  width: 25rem;
+  padding: 0.5rem;
+  border: 1px solid #e2e5ea;
+  border-radius: 2px;
+}
+
+.input--text:read-only {
+  background: #f3f3f3;
+  color: $disabled-background;
+}
+
+.textarea {
+  width: 100%;
+  max-width: 35rem;
+  height: 65%;
+}
+
+.select {
+  background-color: white;
+  font-size: 1rem;
+  width: 26rem;
+  height: 2.3rem;
+  border: 1px solid #e2e5ea;
+}
+
+@import "./events.scss";

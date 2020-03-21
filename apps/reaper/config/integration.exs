@@ -9,6 +9,7 @@ host =
   end
 
 endpoints = [{String.to_atom(host), 9092}]
+redix_args = [host: host]
 
 System.put_env("HOST", host)
 
@@ -21,8 +22,9 @@ config :reaper,
   divo: [
     {DivoKafka,
      [
-       create_topics: "event-stream:1:1,streaming-dead-letters:1:1",
-       outside_host: host
+       create_topics: "event-stream:1:1,dead-letters:1:1",
+       outside_host: host,
+       kafka_image_version: "2.12-2.1.1"
      ]},
     DivoRedis,
     Reaper.DivoSftp,
@@ -50,7 +52,7 @@ config :reaper, :brook,
   storage: %{
     module: Brook.Storage.Redis,
     init_arg: [
-      redix_args: [host: host],
+      redix_args: redix_args,
       namespace: "reaper:view"
     ]
   },
@@ -60,14 +62,9 @@ config :reaper, Reaper.Scheduler,
   storage: Reaper.Quantum.Storage,
   overlap: false
 
-config :reaper, Reaper.Quantum.Storage, host: host
+config :reaper, Reaper.Quantum.Storage, redix_args
 
-config :redix,
-  host: host
-
-config :yeet,
-  endpoint: endpoints,
-  topic: "streaming-dead-letters"
+config :redix, :args, redix_args
 
 config :ex_aws,
   debug_requests: true,

@@ -22,18 +22,6 @@ defmodule DeadLetterTest do
 
   @dataset_id "ds1"
 
-  setup do
-    config = [driver: [module: DeadLetter.Carrier.Test, init_args: [size: 3_000]]]
-
-    {:ok, dlq} = DeadLetter.start_link(config)
-
-    on_exit(fn ->
-      ref = Process.monitor(dlq)
-      Process.exit(dlq, :normal)
-      assert_receive {:DOWN, ^ref, _, _, _}
-    end)
-  end
-
   describe "process/2" do
     @tag capture_log: true
     test "sends formatted message to the queue" do

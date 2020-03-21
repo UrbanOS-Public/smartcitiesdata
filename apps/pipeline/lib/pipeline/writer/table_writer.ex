@@ -5,6 +5,8 @@ defmodule Pipeline.Writer.TableWriter do
 
   @behaviour Pipeline.Writer
   alias Pipeline.Writer.TableWriter.{Compaction, Statement}
+  alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+  alias Pipeline.Writer.TableWriter.Statement.StatementUtils
   require Logger
 
   @type schema() :: [map()]
@@ -18,7 +20,7 @@ defmodule Pipeline.Writer.TableWriter do
     config = parse_args(args)
 
     with {:ok, statement} <- Statement.create(config),
-         [[true]] <- execute(statement) do
+         {:ok, _} <- PrestigeHelper.execute_query(statement) do
       Logger.info("Created #{config.table} table")
       :ok
     else
@@ -44,9 +46,9 @@ defmodule Pipeline.Writer.TableWriter do
 
     parse_args(config)
     |> Statement.insert(payloads)
-    |> execute()
+    |> PrestigeHelper.execute_query()
     |> case do
-      [[_]] -> :ok
+      {:ok, _} -> :ok
       error -> {:error, error}
     end
   end
@@ -66,16 +68,21 @@ defmodule Pipeline.Writer.TableWriter do
     |> Compaction.complete(table)
   end
 
+  @impl Pipeline.Writer
+  @spec delete(dataset: [term()]) :: :ok | {:error, term()}
+  def delete(args) do
+    dataset = Keyword.fetch!(args, :dataset)
+
+    StatementUtils.parse_new_table_name(dataset.technical.systemName)
+    |> StatementUtils.create_new_table_with_existing_table(dataset.technical.systemName)
+
+    StatementUtils.drop_table(dataset.technical.systemName)
+  end
+
   defp parse_args(args) do
     %{
       table: Keyword.fetch!(args, :table),
       schema: Keyword.fetch!(args, :schema)
     }
-  end
-
-  defp execute(statement) do
-    statement
-    |> Prestige.execute()
-    |> Prestige.prefetch()
   end
 end

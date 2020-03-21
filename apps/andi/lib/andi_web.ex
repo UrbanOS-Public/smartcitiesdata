@@ -39,7 +39,7 @@ defmodule AndiWeb do
       # Import convenience functions from controllers
       import Phoenix.Controller, only: [get_flash: 1, get_flash: 2, view_module: 1]
 
-      import Phoenix.LiveView, only: [live_render: 2, live_render: 3]
+      import Phoenix.LiveView.Helpers, only: [live_render: 2, live_render: 3]
 
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
@@ -63,6 +63,16 @@ defmodule AndiWeb do
     quote do
       use Phoenix.Channel
       import AndiWeb.Gettext
+    end
+  end
+
+  def live_view do
+    quote do
+      use Phoenix.LiveView
+      import AndiWeb.ErrorHelpers
+      import Phoenix.HTML.Form
+      import Phoenix.HTML.Link
+      alias AndiWeb.Router.Helpers, as: Routes
     end
   end
 

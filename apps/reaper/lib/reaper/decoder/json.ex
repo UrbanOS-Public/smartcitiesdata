@@ -5,6 +5,19 @@ defmodule Reaper.Decoder.Json do
   @behaviour Reaper.Decoder
 
   @impl Reaper.Decoder
+
+  def decode({:file, filename}, %{technical: %{topLevelSelector: top_level_selector}} = _dataset)
+      when not is_nil(top_level_selector) do
+    with {:ok, query} <- Jaxon.Path.parse(top_level_selector),
+         {:ok, data} <- json_file_query(filename, query) do
+      decoded = List.wrap(data)
+      {:ok, decoded}
+    else
+      {:error, error} ->
+        {:error, truncate_file_for_logging(filename), error}
+    end
+  end
+
   def decode({:file, filename}, _dataset) do
     data = File.read!(filename)
 
@@ -13,7 +26,7 @@ defmodule Reaper.Decoder.Json do
         {:ok, List.wrap(response)}
 
       {:error, error} ->
-        {:error, data, error}
+        {:error, truncate_file_for_logging(filename), error}
     end
   end
 
@@ -23,4 +36,29 @@ defmodule Reaper.Decoder.Json do
   end
 
   def handle?(_source_format), do: false
+
+  def json_file_query(filename, query) do
+    data =
+      filename
+      |> File.stream!()
+      |> Jaxon.Stream.query(query)
+      |> Enum.to_list()
+      |> List.flatten()
+
+    {:ok, data}
+  rescue
+    error ->
+      parse_json_file_query_errors(error)
+  end
+
+  def truncate_file_for_logging(filename) do
+    File.stream!(filename, [], 1000) |> Enum.at(0)
+  end
+
+  defp parse_json_file_query_errors(error) do
+    case error do
+      %Jaxon.ParseError{unexpected: :end_array} -> {:ok, []}
+      _ -> {:error, error}
+    end
+  end
 end

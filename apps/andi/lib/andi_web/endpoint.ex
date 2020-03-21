@@ -1,7 +1,13 @@
 defmodule AndiWeb.Endpoint do
+  @session_options [
+    store: :cookie,
+    key: "_andi_key",
+    signing_salt: "SekoFX7T"
+  ]
+
   use Phoenix.Endpoint, otp_app: :andi
 
-  socket "/live", Phoenix.LiveView.Socket
+  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   plug Plug.Static,
     at: "/",
@@ -28,10 +34,7 @@ defmodule AndiWeb.Endpoint do
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
-  plug Plug.Session,
-    store: :cookie,
-    key: "_andi_key",
-    signing_salt: "SekoFX7T"
+  plug Plug.Session, @session_options
 
   plug AndiWeb.Router
 end

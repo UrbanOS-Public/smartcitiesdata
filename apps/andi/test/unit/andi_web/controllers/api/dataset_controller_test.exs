@@ -4,14 +4,17 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
   @route "/api/v1/dataset"
   @get_datasets_route "/api/v1/datasets"
-  alias SmartCity.Registry.Dataset, as: RegDataset
   alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.Services.DatasetRetrieval
+  alias Andi.DatasetCache
+  alias Andi.Services.DatasetStore
+
   import Andi
   import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0]
 
   setup do
+    GenServer.call(DatasetCache, :reset)
+
     example_dataset_1 = TDG.create_dataset(%{})
 
     example_dataset_1 =
@@ -26,12 +29,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     example_datasets = [example_dataset_1, example_dataset_2]
 
-    allow(RegDataset.write(any()),
-      return: {:ok, "id"},
-      meck_options: [:passthrough]
-    )
-
-    allow(DatasetRetrieval.get_all(),
+    allow(DatasetStore.get_all(),
       return: {:ok, [example_dataset_1, example_dataset_2]},
       meck_options: [:passthrough]
     )
@@ -51,7 +49,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
         "sourceType" => "stream",
         "sourceFormat" => "gtfs",
         "cadence" => 9000,
-        "schema" => [%{"name" => "billy", "type" => "writer"}],
+        "schema" => [%{name: "billy", type: "writer"}],
         "private" => false,
         "headers" => %{
           "accepts" => "application/foobar"
@@ -64,6 +62,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
         "validations" => []
       },
       "business" => %{
+        "benefitRating" => 0.5,
         "dataTitle" => "dataset title",
         "description" => "description",
         "modifiedDate" => "",
@@ -73,7 +72,10 @@ defmodule AndiWeb.API.DatasetControllerTest do
         "license" => "license",
         "rights" => "rights information",
         "homepage" => "",
-        "keywords" => []
+        "keywords" => [],
+        "issuedDate" => "2020-01-01T00:00:00Z",
+        "publishFrequency" => "all day, ey'r day",
+        "riskRating" => 1.0
       },
       "_metadata" => %{
         "intendedUse" => [],
@@ -92,7 +94,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
   describe "PUT /api/ without systemName" do
     setup %{conn: conn, request: request} do
-      allow DatasetRetrieval.get_all!(), return: []
       {_, request} = pop_in(request, ["technical", "systemName"])
       [conn: put(conn, @route, request)]
     end
@@ -107,9 +108,9 @@ defmodule AndiWeb.API.DatasetControllerTest do
     end
 
     test "writes data to event stream", %{message: message} do
-      {:ok, _struct} = Dataset.new(message)
+      {:ok, struct} = Dataset.new(message)
 
-      assert_called(Brook.Event.send(instance_name(), any(), :andi, any()), once())
+      assert_called(Brook.Event.send(instance_name(), any(), :andi, struct), once())
     end
   end
 
@@ -130,14 +131,14 @@ defmodule AndiWeb.API.DatasetControllerTest do
         }
       )
 
-    allow DatasetRetrieval.get_all!(), return: [existing_dataset]
+    DatasetCache.put(existing_dataset)
 
-    response =
+    %{"errors" => errors} =
       conn
       |> put(@route, request)
       |> json_response(400)
 
-    assert %{"reason" => ["Existing dataset has the same orgName and dataName"]} == response
+    assert errors["dataName"] == ["existing dataset has the same orgName and dataName"]
   end
 
   test "put returns 400 when systemName has dashes", %{
@@ -156,18 +157,13 @@ defmodule AndiWeb.API.DatasetControllerTest do
         }
       )
 
-    allow(DatasetRetrieval.get_all!(), return: [])
-
-    %{"reason" => errors} =
+    %{"errors" => errors} =
       conn
       |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
       |> json_response(400)
 
-    joined_errors = Enum.join(errors, ", ")
-
-    assert String.contains?(joined_errors, "orgName")
-    assert String.contains?(joined_errors, "dataName")
-    assert String.contains?(joined_errors, "dashes")
+    assert errors["orgName"] == ["cannot contain dashes"]
+    assert errors["dataName"] == ["cannot contain dashes"]
   end
 
   test "put returns 400 when modifiedDate is invalid", %{
@@ -181,16 +177,71 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> struct_to_map_with_string_keys()
       |> put_in(["business", "modifiedDate"], "badDate")
 
-    allow(DatasetRetrieval.get_all!(), return: [])
-
-    %{"reason" => errors} =
+    %{"errors" => errors} =
       conn
       |> put(@route, new_dataset)
       |> json_response(400)
 
-    joined_errors = Enum.join(errors, ", ")
+    assert errors["modifiedDate"] == ["is invalid"]
+  end
 
-    assert String.contains?(joined_errors, "iso8601 formatted")
+  test "put returns 400 and errors when fields are invalid", %{
+    conn: conn
+  } do
+    new_dataset =
+      TDG.create_dataset(
+        id: "my-new-dataset",
+        business: %{
+          dataTitle: "",
+          description: nil,
+          contactEmail: "not-a-valid-email",
+          license: "",
+          publishFrequency: nil,
+          benefitRating: nil
+        },
+        technical: %{
+          sourceFormat: "",
+          sourceHeaders: %{"" => "where's my key"},
+          sourceQueryParams: %{"" => "where's MY key"}
+        }
+      )
+      |> struct_to_map_with_string_keys()
+      |> delete_in([
+        ["business", "contactName"],
+        ["business", "orgTitle"],
+        ["business", "issuedDate"],
+        ["business", "riskRating"],
+        ["technical", "sourceFormat"],
+        ["technical", "private"]
+      ])
+
+    %{"errors" => actual_errors} =
+      conn
+      |> put(@route, new_dataset)
+      |> json_response(400)
+
+    expected_error_keys = [
+      "benefitRating",
+      "dataTitle",
+      "description",
+      "contactName",
+      "contactEmail",
+      "issuedDate",
+      "license",
+      "publishFrequency",
+      "orgTitle",
+      "private",
+      "riskRating",
+      "sourceFormat",
+      "sourceHeaders",
+      "sourceQueryParams"
+    ]
+
+    for key <- expected_error_keys do
+      assert Map.has_key?(actual_errors, key) == true
+    end
+
+    assert Map.keys(actual_errors) |> length() == length(expected_error_keys)
   end
 
   test "put trims fields on dataset", %{
@@ -208,8 +259,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
           keywords: ["  a keyword", " another keyword", "etc"]
         }
       )
-
-    allow(DatasetRetrieval.get_all!(), return: [])
 
     response =
       conn
@@ -230,7 +279,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
     end
 
     test "should send dataset:disable event", %{conn: conn, dataset: dataset} do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, dataset})
+      allow(DatasetStore.get(any()), return: {:ok, dataset})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/disable", %{id: dataset.id})
@@ -244,7 +293,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       conn: conn,
       dataset: dataset
     } do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, nil})
+      allow(DatasetStore.get(any()), return: {:ok, nil})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/disable", %{id: dataset.id})
@@ -255,7 +304,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     @tag capture_log: true
     test "handles error", %{conn: conn, dataset: dataset} do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, dataset})
+      allow(DatasetStore.get(any()), return: {:ok, dataset})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: {:error, "Mistakes were made"})
 
       post(conn, "#{@route}/disable", %{id: dataset.id})
@@ -270,7 +319,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
     end
 
     test "should send dataset:delete event", %{conn: conn, dataset: dataset} do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, dataset})
+      allow(DatasetStore.get(any()), return: {:ok, dataset})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/delete", %{id: dataset.id})
@@ -284,7 +333,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       conn: conn,
       dataset: dataset
     } do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, nil})
+      allow(DatasetStore.get(any()), return: {:ok, nil})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/delete", %{id: dataset.id})
@@ -295,7 +344,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     @tag capture_log: true
     test "handles error", %{conn: conn, dataset: dataset} do
-      allow(Brook.get(instance_name(), any(), any()), return: {:ok, dataset})
+      allow(DatasetStore.get(any()), return: {:ok, dataset})
       allow(Brook.Event.send(instance_name(), any(), any(), any()), return: {:error, "Mistakes were made"})
 
       post(conn, "#{@route}/delete", %{id: dataset.id})
@@ -305,7 +354,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
   describe "PUT /api/ with systemName" do
     setup %{conn: conn, request: request} do
-      allow DatasetRetrieval.get_all!(), return: []
       req = put_in(request, ["technical", "systemName"], "org__dataset_akdjbas")
       [conn: put(conn, @route, req)]
     end
@@ -353,8 +401,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
   end
 
   test "PUT /api/ dataset passed without UUID generates UUID for dataset", %{conn: conn, request: request} do
-    allow DatasetRetrieval.get_all!(), return: []
-
     {_, request} = pop_in(request, ["id"])
     conn = put(conn, @route, request)
 
@@ -369,7 +415,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
   describe "GET /api/dataset/:dataset_id" do
     test "should return a given dataset when it exists", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      allow(Brook.get(instance_name(), :dataset, dataset.id), return: {:ok, dataset})
+      allow(DatasetStore.get(dataset.id), return: {:ok, dataset})
 
       conn = get(conn, "/api/v1/dataset/#{dataset.id}")
 
@@ -378,7 +424,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
     end
 
     test "should return a 404 when requested dataset does not exist", %{conn: conn} do
-      allow(Brook.get(instance_name(), :dataset, any()), return: {:ok, nil})
+      allow(DatasetStore.get(any()), return: {:ok, nil})
 
       conn = get(conn, "/api/v1/dataset/123")
 
@@ -390,5 +436,11 @@ defmodule AndiWeb.API.DatasetControllerTest do
     dataset
     |> Jason.encode!()
     |> Jason.decode!()
+  end
+
+  defp delete_in(data, paths) do
+    Enum.reduce(paths, data, fn path, working ->
+      working |> pop_in(path) |> elem(1)
+    end)
   end
 end

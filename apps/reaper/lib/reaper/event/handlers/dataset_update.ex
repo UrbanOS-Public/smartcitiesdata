@@ -38,7 +38,8 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   end
 
   def handle(%SmartCity.Dataset{technical: %{cadence: cadence}} = dataset) do
-    with {:ok, cron} <- parse_cron(cadence),
+    with {:ok, _} <- check_job_disabled(dataset),
+         {:ok, cron} <- parse_cron(cadence),
          :ok <- delete_job(dataset) do
       create_job(cron, dataset)
     else
@@ -46,6 +47,13 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
     end
 
     :ok
+  end
+
+  defp check_job_disabled(dataset) do
+    case Reaper.Scheduler.find_job(String.to_atom(dataset.id)) do
+      %{state: :inactive} -> {:error, "dataset #{dataset.id} is disabled"}
+      _ -> {:ok, dataset}
+    end
   end
 
   defp parse_cron(cron_int) when is_integer(cron_int) do
@@ -80,11 +88,19 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   end
 
   defp create_job(cron_expression, dataset) do
+    {:ok, serialized_dataset} = Brook.Serializer.serialize(dataset)
+
     Reaper.Scheduler.new_job()
     |> Job.set_name(String.to_atom(dataset.id))
     |> Job.set_schedule(cron_expression)
-    |> Job.set_task({Brook.Event, :send, [@instance, determine_event(dataset), :reaper, dataset]})
+    |> Job.set_task({__MODULE__, :protected_event_send, [serialized_dataset]})
     |> Reaper.Scheduler.add_job()
+  end
+
+  def protected_event_send(dataset_json) do
+    {:ok, safe_dataset} = Brook.Deserializer.deserialize(dataset_json)
+
+    Brook.Event.send(@instance, determine_event(safe_dataset), :reaper, safe_dataset)
   end
 
   defp determine_event(%SmartCity.Dataset{technical: %{sourceType: "host"}}) do

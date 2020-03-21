@@ -3,7 +3,7 @@ defmodule Valkyrie.DatasetHandlerTest do
   use Placebo
   use Brook.Event.Handler
   import Checkov
-  import SmartCity.Event, only: [data_ingest_start: 0, data_standardization_end: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Valkyrie.DatasetHandler
@@ -75,6 +75,23 @@ defmodule Valkyrie.DatasetHandlerTest do
       end)
 
       assert_called(DatasetProcessor.stop("ds1"))
+    end
+
+    test "should delete dataset when dataset:delete event fires" do
+      dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: "ingest"})
+      allow(DatasetProcessor.delete(any()), return: :ok)
+
+      Brook.Test.with_event(@instance, fn ->
+        DatasetHandler.handle_event(
+          Brook.Event.new(
+            type: dataset_delete(),
+            data: dataset,
+            author: :author
+          )
+        )
+      end)
+
+      assert_called(DatasetProcessor.delete(dataset.id))
     end
   end
 end

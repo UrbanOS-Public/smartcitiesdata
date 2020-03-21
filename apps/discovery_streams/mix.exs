@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.Mixfile do
   def project do
     [
       app: :discovery_streams,
-      version: "2.2.0",
+      version: "2.4.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -46,11 +46,13 @@ defmodule DiscoveryStreams.Mixfile do
       {:httpoison, "~> 1.6"},
       {:kaffe, "~> 1.14"},
       {:libcluster, "~> 3.1"},
-      {:mix_test_watch, "~> 0.6", only: :dev, runtime: false},
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:patiently, "~> 0.2", only: [:test, :integration], override: true},
       {:phoenix, "~> 1.4"},
       {:phoenix_pubsub, "~> 1.0"},
-      {:phoenix_html, "~> 2.10"},
+      # temporary lock to a version that includes `inputs_for` that can wrap a `live_component` - see https://github.com/phoenixframework/phoenix_html/issues/291
+      {:phoenix_html,
+       github: "phoenixframework/phoenix_html", ref: "9034602e10be566f8c96e49f991521568c8e3d24", override: true},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:prometheus_phoenix, "~> 1.2"},
       {:prometheus_plugs, "~> 1.1"},

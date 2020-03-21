@@ -5,27 +5,32 @@ defmodule AndiWeb.DatasetLiveViewTest do
   import Andi, only: [instance_name: 0]
   import SmartCity.Event, only: [data_ingest_end: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
-  import FlokiHelpers, only: [floki_get_text: 2]
+
+  import FlokiHelpers,
+    only: [
+      get_text: 2,
+      get_values: 2,
+      find_elements: 2
+    ]
 
   alias Andi.DatasetCache
 
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.Services.DatasetStore
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
 
   setup do
     Brook.Test.with_event(instance_name(), fn ->
-      instance_name()
-      |> Brook.get_all_values!(:dataset)
+      DatasetStore.get_all!()
       |> Enum.each(fn dataset ->
-        Brook.ViewState.delete(:dataset, dataset.id)
+        DatasetStore.delete(dataset.id)
       end)
 
-      instance_name()
-      |> Brook.get_all_values!(:ingested_time)
+      DatasetStore.get_all_ingested_time!()
       |> Enum.each(fn timestamp ->
-        Brook.ViewState.delete(:ingested_time, timestamp["id"])
+        DatasetStore.delete_ingested_time(timestamp["id"])
       end)
     end)
 
@@ -40,7 +45,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       assert {:ok, _view, html} = live(conn, @url_path)
 
-      table_text = floki_get_text(html, ".datasets-index__table")
+      table_text = get_text(html, ".datasets-index__table")
 
       Enum.each(datasets, fn dataset ->
         assert table_text =~ dataset.business.dataTitle
@@ -50,8 +55,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
     test "shows No Datasets when there are no rows to show", %{conn: conn} do
       assert {:ok, view, html} = live(conn, @url_path)
 
-      assert floki_get_text(html, ".datasets-index__title") =~ "All Datasets"
-      assert floki_get_text(html, ".datasets-index__table") =~ "No Datasets"
+      assert get_text(html, ".datasets-index__title") =~ "All Datasets"
+      assert get_text(html, ".datasets-index__table") =~ "No Datasets"
     end
 
     test "does not load datasets that only contain a timestamp", %{conn: conn} do
@@ -62,9 +67,9 @@ defmodule AndiWeb.DatasetLiveViewTest do
       DatasetCache.put(timestamp)
 
       assert {:ok, _view, html} = live(conn, @url_path)
-      table_text = floki_get_text(html, ".datasets-index__table")
+      table_text = get_text(html, ".datasets-index__table")
 
-      assert 3 == Floki.find(html, ".datasets-index__table tr") |> Enum.count()
+      assert 3 == find_elements(html, ".datasets-index__table tr") |> Enum.count()
 
       Enum.each(datasets, fn dataset ->
         assert table_text =~ dataset.business.dataTitle
@@ -77,7 +82,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       search_text = "Where's Waldo?"
 
       assert {:ok, view, html} = live(conn, @url_path <> "?search=" <> search_text)
-      assert [search_text] = get_search_input_value(html)
+      assert [search_text] = get_values(html, "input.datasets-index__search-input")
     end
 
     test "filters results based on search", %{conn: conn} do
@@ -93,17 +98,16 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> "?search=" <> dataset_a.business.dataTitle)
 
-      assert floki_get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
-      refute floki_get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
+      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
 
     test "updating search field does not override other params", %{conn: conn} do
       conn = get(conn, @url_path)
       {:ok, view, _html} = live(conn, @url_path <> "?order-by=dataTitle&order-dir=asc")
 
-      assert_redirect(view, @url_path <> "?order-by=dataTitle&order-dir=asc&search=search", fn ->
-        render_change(view, :search, %{"search-value" => "search"})
-      end)
+      render_change(view, :search, %{"search-value" => "search"})
+      assert_redirect(view, @url_path <> "?order-by=dataTitle&order-dir=asc&search=search")
     end
   end
 
@@ -118,8 +122,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       html = render_change(view, :search, %{"search-value" => dataset_a.business.orgTitle})
 
-      assert floki_get_text(html, ".datasets-index__table") =~ dataset_a.business.orgTitle
-      refute floki_get_text(html, ".datasets-index__table") =~ dataset_b.business.orgTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.orgTitle
+      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.orgTitle
     end
 
     test "search filters datasets on dataTitle", %{conn: conn} do
@@ -132,8 +136,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       html = render_change(view, :search, %{"search-value" => dataset_a.business.dataTitle})
 
-      assert floki_get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
-      refute floki_get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
+      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
 
     test "shows No Datasets if no results returned", %{conn: conn} do
@@ -146,7 +150,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       html = render_change(view, :search, %{"search-value" => "__NOT_RESULTS_SHOULD RETURN__"})
 
-      assert floki_get_text(html, ".datasets-index__table") =~ "No Datasets"
+      assert get_text(html, ".datasets-index__table") =~ "No Datasets"
     end
 
     test "Search Change event triggers redirect and updates search box value", %{conn: conn} do
@@ -154,12 +158,12 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       search_text = "Some search"
 
-      assert_redirect(view, @url_path <> "?search=" <> search_text, fn ->
-        assert [search_text] ==
-                 view
-                 |> render_change(:search, %{"search-value" => search_text})
-                 |> get_search_input_value()
-      end)
+      assert [search_text] ==
+               view
+               |> render_change(:search, %{"search-value" => search_text})
+               |> get_values("input.datasets-index__search-input")
+
+      assert_redirect(view, @url_path <> "?search=" <> search_text)
     end
   end
 
@@ -174,8 +178,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
 
-      assert floki_get_text(html, ".datasets-index__table") =~ dataset_a.business.orgTitle
-      refute floki_get_text(html, ".datasets-index__table") =~ dataset_b.business.orgTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.orgTitle
+      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.orgTitle
     end
 
     test "filters on dataTitle", %{conn: conn} do
@@ -188,8 +192,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       html = render_submit(view, :search, %{"search-value" => dataset_a.business.dataTitle})
 
-      assert floki_get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
-      refute floki_get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
+      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
 
     test "Search Submit event triggers redirect and updates search box value", %{conn: conn} do
@@ -197,12 +201,12 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       search_text = "Some text"
 
-      assert_redirect(view, @url_path <> "?search=" <> search_text, fn ->
-        assert [search_text] ==
-                 view
-                 |> render_submit(:search, %{"search-value" => search_text})
-                 |> get_search_input_value()
-      end)
+      assert [search_text] ==
+               view
+               |> render_submit(:search, %{"search-value" => search_text})
+               |> get_values("input.datasets-index__search-input")
+
+      assert_redirect(view, @url_path <> "?search=" <> search_text)
     end
   end
 
@@ -211,13 +215,13 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
     DatasetCache.put(dataset)
     assert {:ok, view, _html} = live(conn, @url_path)
-    table_text = floki_get_text(render(view), ".datasets-index__table")
+    table_text = get_text(render(view), ".datasets-index__table")
     assert not (table_text =~ "check")
 
     Brook.Test.send(instance_name(), data_ingest_end(), :andi, dataset)
 
     eventually(fn ->
-      table_text = floki_get_text(render(view), ".datasets-index__table")
+      table_text = get_text(render(view), ".datasets-index__table")
       assert table_text =~ "check"
     end)
   end
@@ -229,21 +233,15 @@ defmodule AndiWeb.DatasetLiveViewTest do
     DatasetCache.put(datasets)
 
     assert {:ok, view, _html} = live(conn, @url_path)
-    initial_table_text = floki_get_text(render(view), ".datasets-index__table")
+    initial_table_text = get_text(render(view), ".datasets-index__table")
 
     Brook.Test.send(instance_name(), data_ingest_end(), :andi, dataset)
 
     eventually(fn ->
-      table_text = floki_get_text(render(view), ".datasets-index__table")
+      table_text = get_text(render(view), ".datasets-index__table")
       assert table_text =~ "check"
       # If we remove the check that was added, is everything else the same?
       assert initial_table_text == String.replace(table_text, "check", "")
     end)
-  end
-
-  defp get_search_input_value(html) do
-    html
-    |> Floki.find("input.datasets-index__search-input")
-    |> Floki.attribute("value")
   end
 end

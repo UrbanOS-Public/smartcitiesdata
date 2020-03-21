@@ -5,13 +5,28 @@ defmodule AndiWeb.ErrorHelpers do
 
   use Phoenix.HTML
 
+  alias Andi.InputSchemas.DisplayNames
+
   @doc """
   Generates tag for inlined form input errors.
   """
-  def error_tag(form, field) do
+  def error_tag(form, field, options \\ []) do
     Enum.map(Keyword.get_values(form.errors, field), fn error ->
-      content_tag(:span, translate_error(error), class: "help-block")
+      translated = error |> interpret_error(field) |> translate_error()
+
+      content_tag(:span, translated,
+        class: "error-msg",
+        id: "#{field}-error-msg",
+        data: get_additional_content_tag_data(form, field, options)
+      )
     end)
+  end
+
+  # Fixes the bug with non text-input fields not rendering the error message when clearing a valid value
+  # https://elixirforum.com/t/liveview-phx-change-attribute-does-not-emit-event-on-input-text/21280
+  defp get_additional_content_tag_data(form, field, options) do
+    bind_to_input = Keyword.get(options, :bind_to_input, true)
+    if bind_to_input, do: [phx_error_for: input_id(form, field)], else: []
   end
 
   @doc """
@@ -41,4 +56,18 @@ defmodule AndiWeb.ErrorHelpers do
       Gettext.dgettext(AndiWeb.Gettext, "errors", msg, opts)
     end
   end
+
+  defp interpret_error(error, field) do
+    {_, opts} = error
+
+    updated_message =
+      case field do
+        field when field in [:sourceHeaders, :sourceQueryParams] -> "Please enter valid key(s)."
+        _ -> "Please enter a valid #{get_downcased_display_name(field)}."
+      end
+
+    {updated_message, opts}
+  end
+
+  def get_downcased_display_name(field_key), do: field_key |> DisplayNames.get() |> String.downcase()
 end

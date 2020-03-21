@@ -10,7 +10,7 @@ defmodule Reaper.Scheduler.Supervisor do
 
   def init(_args) do
     children = [
-      {Reaper.Quantum.Storage, Application.get_env(:reaper, Reaper.Quantum.Storage)},
+      {Reaper.Quantum.Storage, Application.get_env(:reaper, Reaper.Quantum.Storage, [])},
       Reaper.Scheduler
     ]
 

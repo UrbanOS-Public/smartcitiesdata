@@ -15,7 +15,15 @@ Enum.each(required_envars, fn var ->
 end)
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
-redis_host = System.get_env("REDIS_HOST")
+get_redix_args = fn (host, password) ->
+  [host: host, password: password]
+  |> Enum.filter(fn
+    {_, nil} -> false
+    {_, ""} -> false
+    _ -> true
+  end)
+end
+redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
 
 endpoints =
   kafka_brokers
@@ -63,7 +71,7 @@ config :reaper, :brook,
   storage: %{
     module: Brook.Storage.Redis,
     init_arg: [
-      redix_args: [host: redis_host],
+      redix_args: redix_args,
       namespace: "reaper:view",
       event_limits: %{
         "data:extract:start" => 1000,
@@ -80,14 +88,19 @@ config :reaper, Reaper.Scheduler,
   overlap: false
 
 config :reaper, Reaper.Quantum.Storage,
-  host: redis_host
+  redix_args
 
-config :redix,
-  host: redis_host
+config :redix, :args,
+  redix_args
 
-config :yeet,
-  endpoint: endpoints,
-  topic: System.get_env("DLQ_TOPIC")
+config :dead_letter,
+  driver: [
+    module: DeadLetter.Carrier.Kafka,
+    init_args: [
+      endpoints: endpoints,
+      topic: "streaming-dead-letters"
+    ]
+  ]
 
 config :ex_aws,
   region: System.get_env("AWS_REGION") || "us-west-2"

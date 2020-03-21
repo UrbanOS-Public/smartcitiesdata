@@ -30,9 +30,11 @@ defmodule E2E.MixProject do
       {:valkyrie, in_umbrella: true},
       {:forklift, in_umbrella: true},
       {:odo, in_umbrella: true},
+      {:estuary, in_umbrella: true, only: [:integration]},
       {:flair, in_umbrella: true},
       {:discovery_streams, in_umbrella: true},
-      {:divo, "~> 1.1", only: [:dev, :test, :integration]}
+      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
+      {:smart_city, "~> 3.0"}
     ]
   end
 

@@ -1,6 +1,7 @@
 defmodule Forklift.PerformanceTest do
   use ExUnit.Case
   use Divo
+  use Retry
   require Logger
 
   alias Forklift.TopicManager
@@ -43,10 +44,10 @@ defmodule Forklift.PerformanceTest do
 
   @tag timeout: :infinity
   test "run performance test" do
-    small_messages = generate_messages(10, 1_000)
+    # small_messages = generate_messages(10, 1_000)
     # medium_messages = generate_messages(10, 10_000)
     # big_messages = generate_messages(10, 100_000)
-    # huge_messages = generate_messages(10, 1_000_000)
+    huge_messages = generate_messages(10, 1_000_000)
     # wide_messages = generate_messages(100, 10_000)
     # stout_messages = generate_messages(500, 10_000)
 
@@ -69,7 +70,7 @@ defmodule Forklift.PerformanceTest do
         end
       },
       inputs: %{
-        "small" => %SetupConfig{messages: small_messages}
+        # "small" => %SetupConfig{messages: small_messages}
         # "medium_1_batch" => %SetupConfig{messages: medium_messages, batch_stages: 1},
         # "medium_2_batch" => %SetupConfig{messages: medium_messages, batch_stages: 2},
         # "medium_4_batch" => %SetupConfig{messages: medium_messages, batch_stages: 4},
@@ -83,7 +84,7 @@ defmodule Forklift.PerformanceTest do
         # "big_pref_b1M" => %SetupConfig{messages: big_messages, processor_stages: 8, prefetch_bytes: 1_000_000},
         # "big_pref_b10M" => %SetupConfig{messages: big_messages, processor_stages: 8, prefetch_bytes: 10_000_000},
         # "big_pref_b100M" => %SetupConfig{messages: big_messages, processor_stages: 8, prefetch_bytes: 100_000_000},
-        # "huge_pref_b5M" => %SetupConfig{messages: huge_messages, processor_stages: 8, prefetch_bytes: 5_000_000},
+        "huge_pref_b5M" => %SetupConfig{messages: huge_messages}
         # "huge_pref_b10M" => %SetupConfig{messages: huge_messages, processor_stages: 8, prefetch_bytes: 10_000_000},
         # "huge_pref_b100M" => %SetupConfig{messages: huge_messages, processor_stages: 8, prefetch_bytes: 100_000_000},
         # "medium_pref_m10000" => %SetupConfig{messages: medium_messages, processor_stages: 8, prefetch_count: 10_000},
@@ -127,9 +128,7 @@ defmodule Forklift.PerformanceTest do
         {dataset, count, input_topic, output_topic}
       end,
       after_each: fn {dataset, input_topic, output_topic} = _output_from_run ->
-        schema = Forklift.Datasets.DatasetSchema.from_dataset(dataset)
-
-        Forklift.Datasets.DatasetHandler.stop_dataset_ingest(schema)
+        Forklift.DataReaderHelper.terminate(dataset)
 
         Elsa.delete_topic(@endpoints, input_topic)
         Elsa.delete_topic(@endpoints, output_topic)
@@ -156,8 +155,8 @@ defmodule Forklift.PerformanceTest do
 
     Elsa.create_topic(@endpoints, input_topic)
     Elsa.create_topic(@endpoints, output_topic)
-    TopicManager.wait_for_topic(input_topic)
-    TopicManager.wait_for_topic(output_topic)
+    wait_for_topic!(input_topic)
+    wait_for_topic!(output_topic)
 
     {input_topic, output_topic}
   end
@@ -167,7 +166,9 @@ defmodule Forklift.PerformanceTest do
     producer_name = :"#{topic}_producer"
 
     Logger.debug("Loading #{expected_count} messages into kafka with #{num_producers} producers")
-    {:ok, producer_pid} = Elsa.Producer.Supervisor.start_link(endpoints: @endpoints, topic: topic, name: producer_name)
+
+    {:ok, producer_pid} =
+      Elsa.Supervisor.start_link(endpoints: @endpoints, producer: [topic: topic], connection: producer_name)
 
     messages
     |> Stream.map(&prepare_messages(&1, dataset))
@@ -204,7 +205,7 @@ defmodule Forklift.PerformanceTest do
       chunk
       |> Stream.chunk_every(1000)
       |> Enum.each(fn load_chunk ->
-        Elsa.produce_sync(topic, load_chunk, name: producer_name, partition: 0)
+        Elsa.produce(producer_name, topic, load_chunk, partition: 0)
       end)
     end)
   end
@@ -232,9 +233,9 @@ defmodule Forklift.PerformanceTest do
       |> Enum.map(fn i -> ~s|"name-#{i}" varchar| end)
       |> Enum.join(", ")
 
-    "create table #{dataset.technical.systemName} (#{fields})"
-    |> Prestige.execute()
-    |> Prestige.prefetch()
+    prestige_opts()
+    |> Prestige.new_session()
+    |> Prestige.execute("create table #{dataset.technical.systemName} (#{fields})")
   end
 
   defp create_data_message(dataset) do
@@ -247,5 +248,19 @@ defmodule Forklift.PerformanceTest do
 
     data = TDG.create_data(dataset_id: dataset.id, payload: payload)
     {"", data}
+  end
+
+  def prestige_opts() do
+    Application.get_env(:prestige, :session_opts)
+  end
+
+  defp wait_for_topic!(topic) do
+    wait exponential_backoff(100) |> Stream.take(10) do
+      Elsa.topic?(@endpoints, topic)
+    after
+      _ -> topic
+    else
+      _ -> raise "Timed out waiting for #{topic} to be available"
+    end
   end
 end

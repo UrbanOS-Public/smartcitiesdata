@@ -6,12 +6,12 @@ defmodule Reaper.Http.DownloaderTest do
   alias Reaper.Http.Downloader
 
   setup do
+    on_exit(fn -> File.rm("test.output") end)
+
     [bypass: Bypass.open()]
   end
 
   test "downloads the file correctly", %{bypass: bypass} do
-    on_exit(fn -> File.rm("test.output") end)
-
     Bypass.stub(bypass, "GET", "/file/to/download", fn conn ->
       conn = Conn.send_chunked(conn, 200)
 
@@ -43,8 +43,6 @@ defmodule Reaper.Http.DownloaderTest do
 
   @tag capture_log: true
   test "raises an error when request returns a non 200 status code", %{bypass: bypass} do
-    on_exit(fn -> File.rm("test.output") end)
-
     Bypass.expect(bypass, fn conn ->
       Conn.send_resp(conn, 404, "Not Found")
     end)
@@ -75,7 +73,6 @@ defmodule Reaper.Http.DownloaderTest do
   end
 
   test "raises an error when processing a stream message", %{bypass: bypass} do
-    on_exit(fn -> File.rm("test.output") end)
     allow(Mint.HTTP.connect(any(), any(), any(), any()), return: {:ok, :connection})
     allow(Mint.HTTP.request(:connection, any(), any(), any(), any()), return: {:ok, :connection, :ref})
 
@@ -97,8 +94,6 @@ defmodule Reaper.Http.DownloaderTest do
   end
 
   test "handles 301 redirects", %{bypass: bypass} do
-    on_exit(fn -> File.rm("test.output") end)
-
     Bypass.stub(bypass, "GET", "/some/file.csv", fn conn ->
       conn
       |> Conn.put_resp_header("location", "http://localhost:#{bypass.port}/some/other/file.csv")
@@ -115,8 +110,6 @@ defmodule Reaper.Http.DownloaderTest do
   end
 
   test "handles 302 redirects", %{bypass: bypass} do
-    on_exit(fn -> File.rm("test.output") end)
-
     Bypass.stub(bypass, "GET", "/some/file.csv", fn conn ->
       conn
       |> Conn.put_resp_header("location", "http://localhost:#{bypass.port}/some/other/file.csv")

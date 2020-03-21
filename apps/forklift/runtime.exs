@@ -16,10 +16,21 @@ Enum.each(required_envars, fn var ->
 end)
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
-redis_host = System.get_env("REDIS_HOST")
+get_redix_args = fn (host, password) ->
+  [host: host, password: password]
+  |> Enum.filter(fn
+    {_, nil} -> false
+    {_, ""} -> false
+    _ -> true
+  end)
+end
+redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
+
 topic = System.get_env("DATA_TOPIC_PREFIX")
 output_topic = System.get_env("OUTPUT_TOPIC")
 metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
+s3_writer_bucket = System.get_env("S3_WRITER_BUCKET")
+secrets_endpoint = System.get_env("SECRETS_ENDPOINT")
 
 endpoints =
   kafka_brokers
@@ -39,14 +50,16 @@ config :forklift,
   elsa_brokers: elsa_brokers,
   input_topic_prefix: topic,
   output_topic: output_topic,
+  s3_writer_bucket: s3_writer_bucket,
+  secrets_endpoint: secrets_endpoint,
   producer_name: :"#{output_topic}-producer",
   metrics_port: metrics_port,
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,
-    max_bytes: 1_000_000,
-    min_bytes: 500_000,
-    max_wait_time: 10_000
+    max_bytes: 10_000_000,
+    min_bytes: 5_000_000,
+    max_wait_time: 60_000
   ]
 
 config :forklift, :brook,
@@ -57,7 +70,7 @@ config :forklift, :brook,
       endpoints: elsa_brokers,
       topic: "event-stream",
       group: "forklift-events",
-      config: [
+      consumer_config: [
         begin_offset: :earliest
       ]
     ]
@@ -66,27 +79,29 @@ config :forklift, :brook,
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [
-      redix_args: [host: redis_host],
+      redix_args: redix_args,
       namespace: "forklift:view"
     ]
   ]
 
-config :forklift, :dead_letter,
+config :dead_letter,
   driver: [
     module: DeadLetter.Carrier.Kafka,
     init_args: [
-      name: :forklift_dead_letters,
       endpoints: endpoints,
       topic: "streaming-dead-letters"
     ]
   ]
 
-config :prestige,
-  base_url: System.get_env("PRESTO_URL"),
-  headers: [user: System.get_env("PRESTO_USER")]
+config :prestige, :session_opts,
+  url: System.get_env("PRESTO_URL"),
+  user: System.get_env("PRESTO_USER")
 
 config :redix,
-  host: redis_host
+  args: redix_args
+
+config :ex_aws,
+  region: System.get_env("AWS_REGION") || "us-west-2"
 
 if System.get_env("COMPACTION_SCHEDULE") do
   config :forklift, Forklift.Quantum.Scheduler,

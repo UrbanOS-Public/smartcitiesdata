@@ -69,3 +69,10 @@ release :valkyrie do
   set applications: [:runtime_tools, :valkyrie]
   set overlays: [{:copy, "apps/valkyrie/runtime.exs", "etc/runtime.exs"}]
 end
+
+release :discovery_api do
+  set version: current_version(:discovery_api)
+  set applications: [:runtime_tools, :discovery_api]
+  set overlays: [{:copy, "apps/discovery_api/runtime.exs", "etc/runtime.exs"}]
+  set commands: ["migrate": "rel/commands/discovery-api-migrate.sh"]
+end

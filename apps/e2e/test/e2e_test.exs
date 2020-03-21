@@ -56,11 +56,7 @@ defmodule E2ETest do
     Temp.track!()
     Application.put_env(:odo, :working_dir, Temp.mkdir!())
     bypass = Bypass.open()
-    user = Application.get_env(:andi, :ldap_user)
-    pass = Application.get_env(:andi, :ldap_pass)
     shapefile = File.read!("test/support/shapefile.zip")
-    Paddle.authenticate(user, pass)
-    Paddle.add([ou: "integration"], objectClass: ["top", "organizationalunit"], ou: "integration")
 
     Bypass.stub(bypass, "GET", "/path/to/the/data.csv", fn conn ->
       Plug.Conn.resp(conn, 200, "true,foobar,10")
@@ -134,16 +130,15 @@ defmodule E2ETest do
         %{"Column" => "three", "Comment" => "", "Extra" => "", "Type" => "integer"}
       ]
 
-      eventually(fn ->
-        table =
-          try do
-            query("describe hive.default.end_to__end", true)
-          rescue
-            _ -> []
-          end
+      eventually(
+        fn ->
+          table = query("describe hive.default.end_to__end", true)
 
-        assert table == expected
-      end)
+          assert table == expected
+        end,
+        500,
+        20
+      )
     end
 
     test "stores a definition that can be retrieved", %{dataset: expected} do
@@ -176,7 +171,7 @@ defmodule E2ETest do
       end)
     end
 
-    @tag timeout: :infinity
+    @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
@@ -187,12 +182,33 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert [[table] | _] = query("show tables like '#{table}'")
+          assert :ok = Forklift.DataWriter.compact_dataset(ds)
+        end,
+        5_000
+      )
 
-          assert [[true, "foobar", 10]] = query("select * from #{table}")
+      eventually(
+        fn ->
+          assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
+
+          assert [%{"one" => true, "three" => 10, "two" => "foobar"}] ==
+                   query(
+                     "select * from #{table}",
+                     true
+                   )
         end,
         10_000
       )
+    end
+
+    test "forklift sends event to update last ingested time", %{dataset: _ds} do
+      eventually(fn ->
+        messages =
+          Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete")
+          |> Enum.to_list()
+
+        assert 1 == length(messages)
+      end)
     end
 
     test "is profiled by flair", %{dataset: ds} do
@@ -201,11 +217,28 @@ defmodule E2ETest do
       expected = ["SmartCityOS", "forklift", "valkyrie", "reaper"]
 
       eventually(fn ->
-        actual = query("select distinct dataset_id, app from #{table}")
+        actual = query("select distinct dataset_id, app from #{table}", true)
 
-        Enum.each(expected, fn app -> assert [ds.id, app] in actual end)
+        Enum.each(expected, fn app -> assert %{"app" => app, "dataset_id" => ds.id} in actual end)
       end)
     end
+
+    test "events have been stored in estuary" do
+      table = Application.get_env(:estuary, :table_name)
+
+      eventually(fn ->
+        actual = query("SELECT count(1) FROM #{table}", false)
+        [row_count] = actual.rows
+
+        assert row_count > 0
+      end)
+    end
+  end
+
+  test "should return status code 200, when estuary is called to get the events" do
+    resp = HTTPoison.get!("http://localhost:4010/api/v1/events")
+
+    assert resp.status_code == 200
   end
 
   describe "streaming data" do
@@ -240,7 +273,7 @@ defmodule E2ETest do
       end)
     end
 
-    @tag timeout: :infinity
+    @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{streaming_dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
@@ -251,9 +284,19 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert [[table] | _] = query("show tables like '#{table}'")
+          assert :ok = Forklift.DataWriter.compact_dataset(ds)
+        end,
+        10_000
+      )
 
-          assert [[true, "foobar", 10] | _] = query("select * from #{table}")
+      eventually(
+        fn ->
+          assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
+
+          assert %{"one" => true, "three" => 10, "two" => "foobar"} in query(
+                   "select * from #{table}",
+                   true
+                 )
         end,
         5_000
       )
@@ -275,54 +318,94 @@ defmodule E2ETest do
       assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000)
     end
 
+    test "forklift sends event to update last ingested time for streaming datasets", %{
+      streaming_dataset: _ds
+    } do
+      eventually(fn ->
+        messages =
+          Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete")
+          |> Enum.to_list()
+
+        assert length(messages) > 0
+      end)
+    end
+
     test "is profiled by flair", %{streaming_dataset: ds} do
       table = Application.get_env(:flair, :table_name_timing)
 
       expected = ["SmartCityOS", "forklift", "valkyrie", "reaper"]
 
       eventually(fn ->
-        actual = query("select distinct dataset_id, app from #{table}")
+        actual = query("select distinct dataset_id, app from #{table}", true)
 
-        Enum.each(expected, fn app -> assert [ds.id, app] in actual end)
+        Enum.each(expected, fn app -> assert %{"app" => app, "dataset_id" => ds.id} in actual end)
       end)
     end
   end
 
   describe "geospatial data" do
     test "creating a dataset via RESTful PUT", %{geo_dataset: ds} do
-      resp = HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-        {"Content-Type", "application/json"}
-          ])
+      resp =
+        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
+          {"Content-Type", "application/json"}
+        ])
 
       assert resp.status_code == 201
     end
 
-    @tag timeout: :infinity
+    @tag timeout: :infinity, capture_log: true
     test "persists geojson in PrestoDB", %{geo_dataset: ds} do
-
       table = ds.technical.systemName
 
       eventually(
         fn ->
-          assert [[table | _]] = query("show tables like '#{table}'")
-          assert [[actual | _] | _] = query("select * from #{table}")
+          assert :ok = Forklift.DataWriter.compact_dataset(ds)
+        end,
+        5_000
+      )
+
+      eventually(
+        fn ->
+          assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
+
+          assert [%{"feature" => actual} | _] = features = query("select * from #{table}", true)
+
+          assert Enum.count(features) <= 88
 
           result = Jason.decode!(actual)
 
-          assert Map.keys(result) == ["bbox", "geometry","properties", "type"]
+          assert Map.keys(result) == ["bbox", "geometry", "properties", "type"]
 
           [coordinates] = result["geometry"]["coordinates"]
 
-          assert 253 == Enum.count(coordinates)
+          assert Enum.count(coordinates) > 0
         end,
-        10_000
+        10_000,
+        10
       )
     end
   end
 
-  def query(statement, toggle \\ false) do
-    statement
-    |> Prestige.execute(rows_as_maps: toggle)
-    |> Prestige.prefetch()
+  def query(statment, toggle \\ false)
+
+  def query(statement, false) do
+    prestige_session()
+    |> Prestige.execute(statement)
+    |> case do
+      {:ok, result} -> result
+      {:error, error} -> {:error, error}
+    end
   end
+
+  def query(statement, true) do
+    prestige_session()
+    |> Prestige.execute(statement)
+    |> case do
+      {:ok, result} -> Prestige.Result.as_maps(result)
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  defp prestige_session(),
+    do: Application.get_env(:prestige, :session_opts) |> Prestige.new_session()
 end

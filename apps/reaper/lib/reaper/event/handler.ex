@@ -5,12 +5,14 @@ defmodule Reaper.Event.Handler do
   import SmartCity.Event,
     only: [
       dataset_update: 0,
+      error_dataset_update: 0,
       data_ingest_start: 0,
       data_extract_start: 0,
       data_extract_end: 0,
       file_ingest_start: 0,
       file_ingest_end: 0,
-      dataset_disable: 0
+      dataset_disable: 0,
+      dataset_delete: 0
     ]
 
   alias Reaper.Collections.{Extractions, FileIngestions}
@@ -18,17 +20,27 @@ defmodule Reaper.Event.Handler do
   @instance Reaper.Application.instance()
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %SmartCity.Dataset{} = dataset}) do
+    Extractions.update_dataset(dataset)
+    FileIngestions.update_dataset(dataset)
     Reaper.Event.Handlers.DatasetUpdate.handle(dataset)
+  rescue
+    reason ->
+      Brook.Event.send(@instance, error_dataset_update(), :reaper, %{"reason" => reason, "dataset" => dataset})
+      :discard
   end
 
   def handle_event(%Brook.Event{type: data_extract_start(), data: %SmartCity.Dataset{} = dataset}) do
-    Reaper.Horde.Supervisor.start_data_extract(dataset)
+    if Extractions.is_enabled?(dataset.id) do
+      Reaper.Horde.Supervisor.start_data_extract(dataset)
 
-    if Extractions.should_send_data_ingest_start?(dataset) do
-      Brook.Event.send(@instance, data_ingest_start(), :reaper, dataset)
+      if Extractions.should_send_data_ingest_start?(dataset) do
+        Brook.Event.send(@instance, data_ingest_start(), :reaper, dataset)
+      end
+
+      Extractions.update_started_timestamp(dataset.id)
     end
 
-    Extractions.update_dataset(dataset)
+    :ok
   end
 
   def handle_event(%Brook.Event{type: data_extract_end(), data: %SmartCity.Dataset{} = dataset}) do
@@ -36,8 +48,13 @@ defmodule Reaper.Event.Handler do
   end
 
   def handle_event(%Brook.Event{type: file_ingest_start(), data: %SmartCity.Dataset{} = dataset}) do
-    Reaper.Horde.Supervisor.start_file_ingest(dataset)
-    FileIngestions.update_dataset(dataset)
+    if FileIngestions.is_enabled?(dataset.id) do
+      Reaper.Horde.Supervisor.start_file_ingest(dataset)
+
+      FileIngestions.update_started_timestamp(dataset.id)
+    end
+
+    :ok
   end
 
   def handle_event(%Brook.Event{type: file_ingest_end(), data: %SmartCity.Dataset{} = dataset}) do
@@ -65,5 +82,12 @@ defmodule Reaper.Event.Handler do
   def handle_event(%Brook.Event{type: dataset_disable(), data: %SmartCity.Dataset{} = dataset}) do
     Reaper.Event.Handlers.DatasetDisable.handle(dataset)
     Extractions.disable_dataset(dataset.id)
+    FileIngestions.disable_dataset(dataset.id)
+  end
+
+  def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = dataset}) do
+    Reaper.Event.Handlers.DatasetDelete.handle(dataset)
+    Extractions.delete_dataset(dataset.id)
+    FileIngestions.disable_dataset(dataset.id)
   end
 end

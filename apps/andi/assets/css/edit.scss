@@ -6,11 +6,26 @@
   padding: 2rem;
 }
 
-.metadata-form {
+.form-section {
+  border: $table-border;
+  padding: 2rem;
+  margin-bottom: 4rem;
+}
+
+.form-grid {
   display: grid;
   grid-column-gap: 10rem;
   grid-row-gap: 1rem;
+}
+
+.edit-button-group {
   grid-template-areas:
+    "cancel-btn messages save-btn";
+}
+
+.metadata-form {
+  grid-template-areas:
+    "top-header ."
     "title last-updated"
     "description spatial"
     "description temporal"
@@ -19,28 +34,145 @@
     "maintainer-email language"
     "release-date homepage"
     "license ."
-    "update-frequency ."
-    "keywords .";
+    "update-frequency benefit-rating"
+    "keywords risk-rating";
 }
 
-@include area(metadata-form, title)
-@include area(metadata-form, description)
-@include area(metadata-form, format)
-@include area(metadata-form, maintainer-name)
-@include area(metadata-form, maintainer-email)
-@include area(metadata-form, release-date)
-@include area(metadata-form, license)
-@include area(metadata-form, update-frequency)
-@include area(metadata-form, keywords)
+.url-form {
+  grid-template-areas:
+    "top-header ."
+    "source-url source-url"
+    "source-query-params source-query-params"
+    "source-headers source-headers"
+    "test-section .";
 
-@include area(metadata-form, last-updated)
-@include area(metadata-form, spatial)
-@include area(metadata-form, temporal)
-@include area(metadata-form, organization)
-@include area(metadata-form, level-of-access)
-@include area(metadata-form, language)
-@include area(metadata-form, homepage)
+  .url-form-table {
+    width: 100%;
+    font-size: 0.8em;
 
-.metadata-form__cancel-btn {
-  justify-self: start;
+    .url-form-table__title {
+      padding: 0.5rem;
+      color: $color-form-label;
+      background-color: $color-form-table-header;
+      border-left: $table-border;
+      border-top: $table-border;
+      border-right: $table-border;
+    }
+
+    .url-form-table__table {
+      width: 100%;
+      border-collapse: collapse;
+
+      .url-form-table__row {
+        padding: 0;
+        border: $table-border;
+      }
+
+      .url-form-table__cell {
+        padding: 0;
+        text-align: left;
+
+        input {
+          border: none
+        }
+      }
+
+      .url-form-table__cell--bordered {
+        border-left: $table-border;
+      }
+
+      .url-form-table__cell--delete {
+        padding: 0.2em;
+        text-align: center;
+      }
+
+      .url-form-table__cell--header {
+        padding: 0.5rem;
+      }
+    }
+  }
+
+  .url-form-table__btn {
+    cursor: pointer;
+    max-width: 0;
+    text-align: center;
+  }
+}
+
+.metadata__error-message {
+  text-align: right;
+  padding-right: 2em;
+  color: $color-error;
+}
+
+.metadata__success-message {
+  text-align: right;
+  padding-right: 2em;
+  color: $color-success;
+}
+
+.test-status {
+  display: inline-block;
+  margin-left: 1rem;
+}
+
+.test-status__code {
+  margin-right: 1rem;
+}
+
+.test-status__code--good {
+  color: $color-success
+}
+
+.test-status__code--bad {
+  color: $color-error
+}
+
+.full-width {
+  width: 100%;
+  box-sizing:border-box;
+}
+
+@include area(metadata-form, top-header);
+@include area(metadata-form, title);
+@include area(metadata-form, description);
+@include area(metadata-form, format);
+@include area(metadata-form, maintainer-name);
+@include area(metadata-form, maintainer-email);
+@include area(metadata-form, release-date);
+@include area(metadata-form, license);
+@include area(metadata-form, update-frequency);
+@include area(metadata-form, keywords);
+@include area(metadata-form, last-updated);
+@include area(metadata-form, spatial);
+@include area(metadata-form, temporal);
+@include area(metadata-form, organization);
+@include area(metadata-form, level-of-access);
+@include area(metadata-form, language);
+@include area(metadata-form, homepage);
+@include area(metadata-form, benefit-rating);
+@include area(metadata-form, risk-rating);
+
+@include area(edit-button-group, cancel-btn);
+@include area(edit-button-group, save-btn);
+@include area(edit-button-group, test-btn);
+@include area(edit-button-group, messages);
+
+@include area(url-form, source-url);
+@include area(url-form, source-query-params);
+@include area(url-form, source-headers);
+@include area(url-form, test-section);
+
+
+.edit-page__box-header {
+  margin-top: -2.75rem;
+  background-color: white;
+  width: fit-content;
+  padding: 0rem 2rem;
+  color: #7f7676;
+}
+
+.edit-button-group__messages {
+  margin: auto;
+  text-align: center;
 }

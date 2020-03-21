@@ -1,12 +1,9 @@
 use Mix.Config
 
 config :logger,
-  level: :info
+  level: :warn
 
 config :phoenix, :json_library, Jason
-
-config :yeet,
-  topic: "dead-letters"
 
 config :reaper,
   output_topic_prefix: "raw",

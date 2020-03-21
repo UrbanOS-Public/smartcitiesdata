@@ -14,6 +14,16 @@ defmodule Pipeline.Writer.TableWriter.Statement do
     {:ok, "create table #{name} as (#{select})"}
   end
 
+  def create(%{table: name, schema: schema, format: format}) do
+    {:ok, Create.compose(name, schema, format)}
+  rescue
+    e in FieldTypeError ->
+      {:error, e.message}
+
+    e ->
+      {:error, "Unable to parse schema: #{inspect(e)}"}
+  end
+
   def create(%{table: name, schema: schema}) do
     {:ok, Create.compose(name, schema)}
   rescue
@@ -34,7 +44,21 @@ defmodule Pipeline.Writer.TableWriter.Statement do
     "drop table if exists #{table}"
   end
 
+  def truncate(%{table: table}) do
+    "delete from #{table}"
+  end
+
   def alter(%{table: table, alteration: change}) do
     "alter table #{table} #{change}"
+  end
+
+  def union(table_one, table_two) do
+    "select * from #{table_one} union all select * from #{table_two}"
+  end
+
+  def create_new_table_with_existing_table(%{new_table_name: new_table_name, table_name: table_name}) do
+    %{table: "#{new_table_name}", as: "select * from #{table_name}"}
+    |> create()
+    |> elem(1)
   end
 end

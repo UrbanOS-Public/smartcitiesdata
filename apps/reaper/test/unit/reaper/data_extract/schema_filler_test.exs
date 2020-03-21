@@ -225,4 +225,56 @@ defmodule Reaper.DataExtract.SchemaFillerTest do
       assert expected == actual
     end
   end
+
+  describe "default values" do
+    setup do
+      basic_schema = [
+        %{name: "id", type: "string", default: "123"},
+        %{name: "designation", type: "string"}
+      ]
+
+      [
+        basic_schema: basic_schema
+      ]
+    end
+
+    test "missing key is filled with default value", %{basic_schema: schema} do
+      payload = %{"designation" => "frank"}
+
+      expected = %{
+        "id" => "123",
+        "designation" => "frank"
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "nil field is filled with default value", %{basic_schema: schema} do
+      payload = %{"id" => nil, "designation" => "frank"}
+
+      expected = %{
+        "id" => "123",
+        "designation" => "frank"
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "missing key without default is filled with nil", %{basic_schema: schema} do
+      payload = %{"id" => "456"}
+
+      expected = %{
+        "id" => "456",
+        "designation" => nil
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+  end
 end

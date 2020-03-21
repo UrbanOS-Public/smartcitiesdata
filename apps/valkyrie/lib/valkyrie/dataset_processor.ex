@@ -18,4 +18,10 @@ defmodule Valkyrie.DatasetProcessor do
   def stop(dataset_id) do
     Valkyrie.DatasetSupervisor.ensure_stopped(dataset_id)
   end
+
+  def delete(dataset_id) do
+    Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset_id}")
+    Valkyrie.DatasetSupervisor.ensure_stopped(dataset_id)
+    Valkyrie.TopicManager.delete_topics(dataset_id)
+  end
 end

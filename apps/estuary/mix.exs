@@ -4,7 +4,7 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.2.0",
+      version: "0.7.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -15,35 +15,57 @@ defmodule Estuary.MixProject do
       aliases: aliases(),
       docs: docs(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      test_paths: test_paths(Mix.env())
+      test_paths: test_paths(Mix.env()),
+      compilers: [:phoenix, :gettext] ++ Mix.compilers()
     ]
   end
 
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :runtime_tools],
       mod: {Estuary.Application, []}
     ]
   end
 
   defp deps do
     [
-      {:credo, "~> 1.1", only: :dev, runtime: false},
+      {:credo, "~> 1.1", only: [:dev], runtime: false},
+      {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:elsa, "~> 0.10.0"},
-      {:mock, "~> 0.3", only: [:test, :integration], runtime: false},
+      {:floki, "~> 0.23", only: [:dev, :test, :integration]},
+      {:jason, "~> 1.1"},
+      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:phoenix, "~> 1.4"},
+      # temporary lock to a version that includes `inputs_for` that can wrap a `live_component` - see https://github.com/phoenixframework/phoenix_html/issues/291
+      {:phoenix_html,
+       github: "phoenixframework/phoenix_html",
+       ref: "9034602e10be566f8c96e49f991521568c8e3d24",
+       override: true},
+      {:phoenix_live_reload, "~> 1.2", only: [:dev, :integration]},
+      {:phoenix_live_view, "~>0.4"},
+      {:phoenix_pubsub, "~> 1.1"},
+      {:pipeline, in_umbrella: true},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
-      {:prestige, "~> 0.3"},
+      {:plug_cowboy, "~> 2.1"},
+      {:plug_heartbeat, "~> 0.2.0"},
+      {:prestige, "~> 1.0"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
-      {:yeet, "~> 1.0"}
+      {:sobelow, "~> 0.8", only: :dev},
+      {:quantum, "~>2.3"},
+      {:timex, "~> 3.6"}
     ]
   end
 
   defp aliases do
     [
-      verify: ["format --check-formatted", "credo"]
+      verify: [
+        "format --check-formatted",
+        "credo",
+        "sobelow -i Config.HTTPS --skip --compact --exit low"
+      ]
     ]
   end
 

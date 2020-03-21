@@ -1,6 +1,4 @@
 use Mix.Config
-# We should turn this into a repo to share with Reaper
-import_config "../test/support/divo_minio.ex"
 
 host =
   case System.get_env("HOST_IP") do
@@ -17,12 +15,6 @@ bucket_name = "kdp-cloud-storage"
 endpoints = [{String.to_atom(host), 9092}]
 
 config :odo,
-  divo: [
-    {DivoKafka, [create_topics: "event-stream:1:1", outside_host: host]},
-    DivoRedis,
-    Odo.DivoMinio
-  ],
-  divo_wait: [dwell: 1000, max_tries: 120],
   kafka_broker: endpoints,
   hosted_file_bucket: bucket_name,
   working_dir: "tmp",

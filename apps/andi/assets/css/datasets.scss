@@ -39,6 +39,7 @@
 .datasets-table {
   width: 100%;
   border: $table-border;
+  border-collapse: collapse;
 }
 
 .datasets-table__tr:nth-child(odd) {

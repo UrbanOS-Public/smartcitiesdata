@@ -16,7 +16,8 @@ defmodule Forklift.DataWriter do
 
   @topic_writer Application.get_env(:forklift, :topic_writer)
   @table_writer Application.get_env(:forklift, :table_writer)
-  @max_wait_time 1_000 * 60 * 60
+  @max_wait Application.get_env(:forklift, :retry_max_wait)
+  @retry_count Application.get_env(:forklift, :retry_count)
 
   @impl Pipeline.Writer
   @doc """
@@ -41,17 +42,30 @@ defmodule Forklift.DataWriter do
 
     case ingest_status(data) do
       {:ok, batch_data} ->
-        :ok =
-          Enum.reverse(batch_data)
-          |> do_write(dataset)
+        Enum.reverse(batch_data)
+        |> do_write(dataset)
 
       {:final, batch_data} ->
-        :ok =
+        results =
           Enum.reverse(batch_data)
           |> do_write(dataset)
 
         Brook.Event.send(instance_name(), data_ingest_end(), :forklift, dataset)
+
+        results
     end
+  end
+
+  @impl Pipeline.Writer
+  def delete(dataset) do
+    endpoints = Application.get_env(:forklift, :elsa_brokers)
+    topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{dataset.id}"
+
+    [endpoints: endpoints, topic: topic]
+    |> @topic_writer.delete()
+
+    [dataset: dataset]
+    |> @table_writer.delete()
   end
 
   @spec bootstrap() :: :ok | {:error, term()}
@@ -85,17 +99,23 @@ defmodule Forklift.DataWriter do
     Logger.info("Beginning dataset compaction")
 
     Forklift.Datasets.get_all!()
-    |> Enum.each(fn dataset ->
-      Compaction.init(dataset: dataset)
-
-      start = Time.utc_now()
-
-      Compaction.compact(dataset: dataset)
-      Compaction.terminate(dataset: dataset)
-      Compaction.write({start, Time.utc_now()}, dataset: dataset)
-    end)
+    |> Enum.each(&compact_dataset/1)
 
     Logger.info("Completed dataset compaction")
+  end
+
+  def compact_dataset(dataset) do
+    Compaction.init(dataset: dataset)
+
+    start = Time.utc_now()
+
+    compaction_result = Compaction.compact(dataset: dataset)
+
+    Compaction.terminate(dataset: dataset)
+
+    Compaction.write({start, Time.utc_now()}, dataset: dataset)
+
+    compaction_result
   end
 
   defp ingest_status(data) do
@@ -113,28 +133,29 @@ defmodule Forklift.DataWriter do
   defp do_write(data, dataset) do
     started_data = Enum.map(data, &add_start_time/1)
 
-    retry with: exponential_backoff(100) |> cap(@max_wait_time) do
+    retry with: exponential_backoff(100) |> cap(@max_wait) |> Stream.take(@retry_count) do
       write_to_table(started_data, dataset)
     after
       {:ok, write_timing} ->
         Enum.map(started_data, &Data.add_timing(&1, write_timing))
         |> Enum.map(&add_total_time/1)
-        |> write_to_topic()
     else
-      {:error, reason} -> raise reason
+      {:error, reason} ->
+        raise RuntimeError, inspect(reason)
     end
   end
 
   defp write_to_table(data, %{technical: metadata}) do
     with write_start <- Data.Timing.current_time(),
-         :ok <- @table_writer.write(data, table: metadata.systemName, schema: metadata.schema),
+         :ok <-
+           @table_writer.write(data, table: metadata.systemName, schema: metadata.schema, bucket: s3_writer_bucket()),
          write_end <- Data.Timing.current_time(),
          write_timing <- Data.Timing.new(instance_name(), "presto_insert_time", write_start, write_end) do
       {:ok, write_timing}
     end
   end
 
-  defp write_to_topic(data) do
+  def write_to_topic(data) do
     max_bytes = Application.get_env(:forklift, :max_outgoing_bytes, 900_000)
     writer_args = [instance: instance_name(), producer_name: Application.get_env(:forklift, :producer_name)]
 
@@ -166,5 +187,9 @@ defmodule Forklift.DataWriter do
       retry_count: Application.get_env(:forklift, :retry_count),
       retry_delay: Application.get_env(:forklift, :retry_initial_delay)
     ]
+  end
+
+  defp s3_writer_bucket() do
+    Application.get_env(:forklift, :s3_writer_bucket)
   end
 end
