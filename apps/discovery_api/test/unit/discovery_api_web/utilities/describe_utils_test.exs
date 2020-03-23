@@ -19,12 +19,12 @@ defmodule DiscoveryApiWeb.Utilities.DescribeUtilsTest do
       expected_schema = [
         %{
           id: "a",
-          alias: "a",
+          description: "a",
           dataType: "integer"
         },
         %{
           id: "b",
-          alias: "b",
+          description: "b",
           dataType: "integer"
         }
       ]
@@ -44,7 +44,7 @@ defmodule DiscoveryApiWeb.Utilities.DescribeUtilsTest do
       expected_schema = [
         %{
           id: "ab_ba",
-          alias: "ab-ba",
+          description: "ab-ba",
           dataType: "integer"
         }
       ]
@@ -68,12 +68,12 @@ defmodule DiscoveryApiWeb.Utilities.DescribeUtilsTest do
       expected_schema = [
         %{
           id: "a",
-          alias: "a",
+          description: "a",
           dataType: "long"
         },
         %{
           id: "b",
-          alias: "b",
+          description: "b",
           dataType: "string"
         }
       ]
@@ -97,12 +97,12 @@ defmodule DiscoveryApiWeb.Utilities.DescribeUtilsTest do
       expected_schema = [
         %{
           id: "a",
-          alias: "a",
+          description: "a",
           dataType: "nested"
         },
         %{
           id: "b",
-          alias: "b",
+          description: "b",
           dataType: "nested"
         }
       ]
@@ -113,7 +113,7 @@ defmodule DiscoveryApiWeb.Utilities.DescribeUtilsTest do
 
     data_test "converts #{dataType} to itself" do
       query_description = [%{"Column Name" => "a", "Type" => dataType}]
-      expected_schema = [%{id: "a", alias: "a", dataType: dataType}]
+      expected_schema = [%{id: "a", description: "a", dataType: dataType}]
 
       actual_schema = DescribeUtils.convert_description(query_description)
       assert actual_schema == expected_schema
@@ -123,7 +123,7 @@ defmodule DiscoveryApiWeb.Utilities.DescribeUtilsTest do
 
     data_test "converts unhandled dataType #{dataType} to string" do
       query_description = [%{"Column Name" => "a", "Type" => dataType}]
-      expected_schema = [%{id: "a", alias: "a", dataType: "string"}]
+      expected_schema = [%{id: "a", description: "a", dataType: "string"}]
 
       actual_schema = DescribeUtils.convert_description(query_description)
       assert actual_schema == expected_schema

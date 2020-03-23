@@ -34,13 +34,11 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
   const datasetTwoDictionaryFromApi = [
     {
-      alias: "properties-data",
       dataType: "double",
       description: "properties-data",
       id: "properties_data",
     },
     {
-      alias: "feature",
       dataType: "json",
       id: "feature",
       description: "feature"
@@ -52,13 +50,11 @@ describe('Discovery API Tableau Web Data Connector', () => {
     description: "dataset-one",
     columns: [
       {
-        alias: "column-one",
         dataType: "string",
         description: "column one",
         id: "column_one",
       },
       {
-        alias: "column-two",
         dataType: "integer",
         description: "column two",
         id: "column_two",
@@ -94,13 +90,11 @@ describe('Discovery API Tableau Web Data Connector', () => {
       description: 'dataset-one',
       columns: [{
           id: 'column_one',
-          alias: 'column-one',
           dataType: tableau.dataTypeEnum.string,
           description: 'column one'
         },
         {
           id: 'column_two',
-          alias: 'column-two',
           dataType: tableau.dataTypeEnum.int,
           description: 'column two'
         }
@@ -113,13 +107,11 @@ describe('Discovery API Tableau Web Data Connector', () => {
       description: 'dataset two',
       columns: [{
           id: 'properties_data',
-          alias: 'properties-data',
           dataType: tableau.dataTypeEnum.float,
           description: 'properties-data'
         },
         {
           id: 'feature',
-          alias: 'feature',
           dataType: tableau.dataTypeEnum.geometry,
           description: 'feature'
         }
@@ -153,7 +145,6 @@ describe('Discovery API Tableau Web Data Connector', () => {
     const queryDatasetDictionaryFromApi = [
           {
             id: 'column_one',
-            alias: 'column one',
             dataType: "string",
             description: 'column one'
           }
@@ -165,7 +156,6 @@ describe('Discovery API Tableau Web Data Connector', () => {
       description: 'select * from something',
       columns: [{
           id: 'column_one',
-          alias: 'column one',
           dataType: tableau.dataTypeEnum.string,
           description: 'column one'
         }
@@ -621,17 +611,17 @@ describe('Discovery API Tableau Web Data Connector', () => {
         tableInfo: {
           columns: [{
               id: 'first_column',
-              alias: 'first-column',
+              description: 'first-column',
               dataType: tableau.dataTypeEnum.string
             },
             {
               id: 'second_column',
-              alias: 'second column',
+              description: 'second column',
               dataType: tableau.dataTypeEnum.geometry
             },
             {
               id: 'third_column',
-              alias: 'third_column',
+              description: 'third_column',
               dataType: tableau.dataTypeEnum.int
             }
           ]
