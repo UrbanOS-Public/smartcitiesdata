@@ -110,7 +110,7 @@ defmodule DiscoveryApi.Data.ModelTest do
   end
 
   describe "to_table_info/1" do
-    test "creates table info object with id, description, and alias fields" do
+    test "creates table info object with id and description fields" do
       model =
         Helper.sample_model(%{
           id: "dataset-id-blah",
@@ -118,7 +118,6 @@ defmodule DiscoveryApi.Data.ModelTest do
           schema: [
             %{
               name: "cam",
-              description: "cam",
               type: "cam"
             }
           ]
@@ -129,7 +128,7 @@ defmodule DiscoveryApi.Data.ModelTest do
         description: model.id,
         alias: model.title,
         columns: [
-          %{id: "cam", description: "cam", dataType: "cam", alias: "cam"}
+          %{id: "cam", description: "cam", dataType: "cam"}
         ]
       }
 
@@ -142,14 +141,12 @@ defmodule DiscoveryApi.Data.ModelTest do
       expected_columns = [
         %{
           dataType: "integer",
-          alias: "number",
-          description: "a number",
+          description: "number",
           id: "number"
         },
         %{
           dataType: "string",
-          alias: "name",
-          description: "a name",
+          description: "name",
           id: "name"
         }
       ]
@@ -164,8 +161,7 @@ defmodule DiscoveryApi.Data.ModelTest do
           schema: [
             %{
               name: "bob-Field",
-              type: "string",
-              description: "this is a field"
+              type: "string"
             }
           ]
         })
@@ -173,8 +169,7 @@ defmodule DiscoveryApi.Data.ModelTest do
       expected_columns = [
         %{
           dataType: "string",
-          description: "this is a field",
-          alias: "bob-Field",
+          description: "bob-Field",
           id: "bob_field"
         }
       ]

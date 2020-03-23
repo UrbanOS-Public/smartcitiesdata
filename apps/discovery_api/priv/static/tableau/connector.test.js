@@ -621,17 +621,17 @@ describe('Discovery API Tableau Web Data Connector', () => {
         tableInfo: {
           columns: [{
               id: 'first_column',
-              alias: 'first-column',
+              description: 'first-column',
               dataType: tableau.dataTypeEnum.string
             },
             {
               id: 'second_column',
-              alias: 'second column',
+              description: 'second column',
               dataType: tableau.dataTypeEnum.geometry
             },
             {
               id: 'third_column',
-              alias: 'third_column',
+              description: 'third_column',
               dataType: tableau.dataTypeEnum.int
             }
           ]
