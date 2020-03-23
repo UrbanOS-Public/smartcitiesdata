@@ -20,8 +20,6 @@ config :ex_json_schema,
        :remote_schema_resolver,
        fn url -> URLResolver.resolve_url(url) end
 
-config :paddle, Paddle, base: "dc=example,dc=org"
-
 config :discovery_api, :brook,
   instance: :discovery_api,
   driver: [

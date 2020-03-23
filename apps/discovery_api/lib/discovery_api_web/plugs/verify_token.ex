@@ -12,14 +12,6 @@ defmodule DiscoveryApiWeb.Plugs.VerifyToken do
   end
 
   def call(conn, opts) do
-    case Application.get_env(:discovery_api, :auth_provider) do
-      "auth0" ->
-        DiscoveryApiWeb.Plugs.VerifyHeaderAuth0.call(conn, opts)
-
-      _ ->
-        conn
-        |> Guardian.Plug.VerifyHeader.call(opts)
-        |> Guardian.Plug.VerifyCookie.call(opts)
-    end
+    DiscoveryApiWeb.Plugs.VerifyHeaderAuth0.call(conn, opts)
   end
 end

@@ -33,16 +33,6 @@ defmodule DiscoveryApiWeb.Plugs.VerifyTokenTest do
       end)
     end
 
-    test "calls Verifies Header then Cookie with default auth provider" do
-      Application.put_env(:discovery_api, :auth_provider, "default")
-
-      result = VerifyToken.call(:initial_conn, :opts)
-
-      assert result == :cookie_conn
-      assert_called(VerifyHeader.call(:initial_conn, :opts), times(1))
-      assert_called(VerifyCookie.call(:header_conn, :opts), times(1))
-    end
-
     test "delegates to VerifyHeaderAuth0 with auth0 auth provider" do
       Application.put_env(:discovery_api, :auth_provider, "auth0")
 
