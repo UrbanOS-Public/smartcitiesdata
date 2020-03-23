@@ -52,7 +52,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
     description: "dataset-one",
     columns: [
       {
-        alias: "column one",
+        alias: "column-one",
         dataType: "string",
         description: "column one",
         id: "column_one",
@@ -60,7 +60,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
       {
         alias: "column-two",
         dataType: "integer",
-        description: "column-two",
+        description: "column two",
         id: "column_two",
       }
     ]
@@ -94,7 +94,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
       description: 'dataset-one',
       columns: [{
           id: 'column_one',
-          alias: 'column one',
+          alias: 'column-one',
           dataType: tableau.dataTypeEnum.string,
           description: 'column one'
         },
@@ -102,7 +102,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
           id: 'column_two',
           alias: 'column-two',
           dataType: tableau.dataTypeEnum.int,
-          description: 'column-two'
+          description: 'column two'
         }
       ]
     }
@@ -621,17 +621,17 @@ describe('Discovery API Tableau Web Data Connector', () => {
         tableInfo: {
           columns: [{
               id: 'first_column',
-              description: 'first-column',
+              alias: 'first-column',
               dataType: tableau.dataTypeEnum.string
             },
             {
               id: 'second_column',
-              description: 'second column',
+              alias: 'second column',
               dataType: tableau.dataTypeEnum.geometry
             },
             {
               id: 'third_column',
-              description: 'third_column',
+              alias: 'third_column',
               dataType: tableau.dataTypeEnum.int
             }
           ]
