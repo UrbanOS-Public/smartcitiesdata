@@ -124,9 +124,9 @@ function _convertDatasetRowToTableRow(tableInfo) {
   return function (row) {
     return tableInfo.columns.map(function (column) {
       if (column.dataType == tableau.dataTypeEnum.geometry) {
-        return row[column.alias].geometry;
+        return row[column.description].geometry;
       } else {
-        return row[column.alias];
+        return row[column.description];
       }
     });
   }
