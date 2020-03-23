@@ -9,7 +9,7 @@ defmodule DiscoveryApiWeb.Utilities.DescribeUtils do
   end
 
   defp convert_column(%{"Column Name" => name, "Type" => type}) do
-    %{alias: name, id: Model.id_to_alphanumeric(name), dataType: translate_type(type)}
+    %{description: name, id: Model.id_to_alphanumeric(name), dataType: translate_type(type)}
   end
 
   defp translate_type("bigint"), do: "long"

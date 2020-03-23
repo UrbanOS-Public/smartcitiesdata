@@ -107,12 +107,12 @@ defmodule DiscoveryApiWeb.TableauControllerQueryDescribeTest do
         [
           %{
             id: "a",
-            alias: "a",
+            description: "a",
             dataType: "integer"
           },
           %{
             id: "b",
-            alias: "b",
+            description: "b",
             dataType: "integer"
           }
         ]
@@ -159,12 +159,12 @@ defmodule DiscoveryApiWeb.TableauControllerQueryDescribeTest do
         [
           %{
             id: "a",
-            alias: "a",
+            description: "a",
             dataType: "integer"
           },
           %{
             id: "b",
-            alias: "b",
+            description: "b",
             dataType: "integer"
           }
         ]
