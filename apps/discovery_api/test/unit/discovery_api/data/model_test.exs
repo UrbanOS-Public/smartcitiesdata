@@ -109,6 +109,81 @@ defmodule DiscoveryApi.Data.ModelTest do
     assert Model.remote?(subject) == false
   end
 
+  describe "to_table_info/1" do
+    test "creates table info object with id, description, and alias fields" do
+      model =
+        Helper.sample_model(%{
+          id: "dataset-id-blah",
+          title: "dataset-title-blah",
+          schema: [
+            %{
+              name: "cam",
+              description: "cam",
+              type: "cam"
+            }
+          ]
+        })
+
+      expected_table_info = %{
+        id: "dataset_id_blah",
+        description: model.id,
+        alias: model.title,
+        columns: [
+          %{id: "cam", description: "cam", dataType: "cam", alias: "cam"}
+        ]
+      }
+
+      assert Model.to_table_info(model) == expected_table_info
+    end
+
+    test "converts schema to list of column definitions" do
+      model = Helper.sample_model()
+
+      expected_columns = [
+        %{
+          dataType: "integer",
+          alias: "number",
+          description: "a number",
+          id: "number"
+        },
+        %{
+          dataType: "string",
+          alias: "name",
+          description: "a name",
+          id: "name"
+        }
+      ]
+
+      actual_columns = model |> Model.to_table_info() |> Map.get(:columns)
+      assert actual_columns == expected_columns
+    end
+
+    test "converts mixed case schema fields" do
+      model =
+        Helper.sample_model(%{
+          schema: [
+            %{
+              name: "bob-Field",
+              type: "string",
+              description: "this is a field"
+            }
+          ]
+        })
+
+      expected_columns = [
+        %{
+          dataType: "string",
+          description: "this is a field",
+          alias: "bob-Field",
+          id: "bob_field"
+        }
+      ]
+
+      actual_columns = model |> Model.to_table_info() |> Map.get(:columns)
+      assert actual_columns == expected_columns
+    end
+  end
+
   defp get_many_with_keys_result(nil) do
     id = "nil_id"
 

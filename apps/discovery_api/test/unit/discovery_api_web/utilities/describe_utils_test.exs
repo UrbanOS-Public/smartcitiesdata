@@ -18,12 +18,34 @@ defmodule DiscoveryApiWeb.Utilities.DescribeUtilsTest do
 
       expected_schema = [
         %{
-          name: "a",
-          type: "integer"
+          id: "a",
+          alias: "a",
+          dataType: "integer"
         },
         %{
-          name: "b",
-          type: "integer"
+          id: "b",
+          alias: "b",
+          dataType: "integer"
+        }
+      ]
+
+      actual_schema = DescribeUtils.convert_description(query_description)
+      assert actual_schema == expected_schema
+    end
+
+    test "converts a table description's name to a tableau compliant id" do
+      query_description = [
+        %{
+          "Column Name" => "ab-ba",
+          "Type" => "integer"
+        }
+      ]
+
+      expected_schema = [
+        %{
+          id: "ab_ba",
+          alias: "ab-ba",
+          dataType: "integer"
         }
       ]
 
@@ -45,12 +67,14 @@ defmodule DiscoveryApiWeb.Utilities.DescribeUtilsTest do
 
       expected_schema = [
         %{
-          name: "a",
-          type: "long"
+          id: "a",
+          alias: "a",
+          dataType: "long"
         },
         %{
-          name: "b",
-          type: "string"
+          id: "b",
+          alias: "b",
+          dataType: "string"
         }
       ]
 
@@ -72,12 +96,14 @@ defmodule DiscoveryApiWeb.Utilities.DescribeUtilsTest do
 
       expected_schema = [
         %{
-          name: "a",
-          type: "nested"
+          id: "a",
+          alias: "a",
+          dataType: "nested"
         },
         %{
-          name: "b",
-          type: "nested"
+          id: "b",
+          alias: "b",
+          dataType: "nested"
         }
       ]
 
@@ -85,24 +111,24 @@ defmodule DiscoveryApiWeb.Utilities.DescribeUtilsTest do
       assert actual_schema == expected_schema
     end
 
-    data_test "converts #{type} to itself" do
-      query_description = [%{"Column Name" => "a", "Type" => type}]
-      expected_schema = [%{name: "a", type: type}]
+    data_test "converts #{dataType} to itself" do
+      query_description = [%{"Column Name" => "a", "Type" => dataType}]
+      expected_schema = [%{id: "a", alias: "a", dataType: dataType}]
 
       actual_schema = DescribeUtils.convert_description(query_description)
       assert actual_schema == expected_schema
 
-      where(type: ["integer", "decimal", "double", "float", "boolean", "date", "timestamp"])
+      where(dataType: ["integer", "decimal", "double", "float", "boolean", "date", "timestamp"])
     end
 
-    data_test "converts unhandled type #{type} to string" do
-      query_description = [%{"Column Name" => "a", "Type" => type}]
-      expected_schema = [%{name: "a", type: "string"}]
+    data_test "converts unhandled dataType #{dataType} to string" do
+      query_description = [%{"Column Name" => "a", "Type" => dataType}]
+      expected_schema = [%{id: "a", alias: "a", dataType: "string"}]
 
       actual_schema = DescribeUtils.convert_description(query_description)
       assert actual_schema == expected_schema
 
-      where(type: ["bob", "#badtype", "timestamp with time zone"])
+      where(dataType: ["bob", "#baddataType", "timestamp with time zone"])
     end
   end
 end

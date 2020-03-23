@@ -4,6 +4,8 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   use DiscoveryApiWeb, :controller
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
   alias DiscoveryApiWeb.MultipleMetadataView
+  alias DiscoveryApi.Data.Model
+  alias DiscoveryApi.Data.TableInfoCache
   alias DiscoveryApi.Search.{DataModelFilterator, DataModelFacinator, DataModelSearchinator}
 
   @matched_params [
@@ -51,6 +53,41 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
       reraise e, __STACKTRACE__
   end
 
+  def fetch_table_info(conn, _params) do
+    user_id = get_user_id(conn)
+
+    filtered_models =
+      case TableInfoCache.get(user_id) do
+        nil ->
+          remove_unauthorized_models(conn, Model.get_all())
+          |> get_filtered_table_info()
+          |> TableInfoCache.put(user_id)
+
+        filtered_models ->
+          filtered_models
+      end
+
+    render(
+      conn,
+      :fetch_table_info,
+      models: filtered_models
+    )
+  end
+
+  defp get_user_id(conn) do
+    case conn.assigns.current_user do
+      nil -> nil
+      user -> Map.get(user, :subject_id)
+    end
+  end
+
+  defp get_filtered_table_info(models) do
+    models
+    |> filter_by_file_types(["CSV", "GEOJSON"])
+    |> filter_by_source_type(true)
+    |> Enum.map(&Model.to_table_info/1)
+  end
+
   defp parse_api_accessible(params) do
     params
     |> Map.get("apiAccessible", "false")
@@ -59,6 +96,16 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
       "true" -> true
       _ -> false
     end
+  end
+
+  defp filter_by_file_types(datasets, accepted_file_types) do
+    Enum.filter(datasets, fn dataset ->
+      matching_file_types =
+        dataset.fileTypes
+        |> Enum.filter(&Enum.member?(accepted_file_types, &1))
+
+      Enum.count(matching_file_types) > 0
+    end)
   end
 
   defp filter_by_source_type(datasets, false), do: datasets

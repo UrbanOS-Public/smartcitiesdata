@@ -32,37 +32,49 @@ const connector = require('./connector.js')
 describe('Discovery API Tableau Web Data Connector', () => {
   const successfulAccessTokenResponse = {access_token: 'fake-access-token'}
 
-  const datasetListFromApi = {
-    results: [{
-        id: 'dataset-one',
-        title: 'The first dataset',
-        fileTypes: ['CSV']
+  const datasetTwoDictionaryFromApi = [
+    {
+      alias: "properties-data",
+      dataType: "double",
+      description: "properties-data",
+      id: "properties_data",
+    },
+    {
+      alias: "feature",
+      dataType: "json",
+      id: "feature",
+      description: "feature"
+    }
+  ]
+  const datasetListFromApi = [{
+    id: 'dataset_one',
+    alias: 'The first dataset',
+    description: "dataset-one",
+    columns: [
+      {
+        alias: "column-one",
+        dataType: "string",
+        description: "column one",
+        id: "column_one",
       },
       {
-        id: 'dataset two',
-        title: 'The second dataset',
-        fileTypes: ['GEOJSON']
+        alias: "column-two",
+        dataType: "integer",
+        description: "column two",
+        id: "column_two",
       }
     ]
+  },
+  {
+    id: 'dataset_two',
+    alias: 'The second dataset',
+    description: "dataset two",
+    columns: datasetTwoDictionaryFromApi
   }
-  const datasetOneDictionaryFromApi = [{
-      name: 'Column One',
-      type: 'string'
-    },
-    {
-      name: 'column-two',
-      type: 'integer'
-    }
   ]
-  const datasetTwoDictionaryFromApi = [{
-      name: 'properties-data',
-      type: 'double'
-    },
-    {
-      name: 'feature',
-      type: 'json'
-    }
-  ]
+
+
+  
 
   beforeEach(() => {
     delete global.tableau.password
@@ -82,7 +94,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
       description: 'dataset-one',
       columns: [{
           id: 'column_one',
-          alias: 'column one',
+          alias: 'column-one',
           dataType: tableau.dataTypeEnum.string,
           description: 'column one'
         },
@@ -90,7 +102,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
           id: 'column_two',
           alias: 'column-two',
           dataType: tableau.dataTypeEnum.int,
-          description: 'column-two'
+          description: 'column two'
         }
       ]
     }
@@ -139,11 +151,13 @@ describe('Discovery API Tableau Web Data Connector', () => {
     ]
 
     const queryDatasetDictionaryFromApi = [
-      {
-        name: 'Column One',
-        type: 'string'
-      }
-    ]
+          {
+            id: 'column_one',
+            alias: 'column one',
+            dataType: "string",
+            description: 'column one'
+          }
+        ]
 
     const expectedTableSchemaForQueryDataset = {
       id: 'query',
@@ -169,7 +183,6 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
       expect(initCallback).toHaveBeenCalled()
     })
-
     test('sets up the connector with a refresh token if a code is found', (done) => {
       mockFetches({
         'token': {body: {refresh_token: 'this-is-a-refresh-token'}}
@@ -294,33 +307,20 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
     describe('connector.getSchema', () => {
       describe('in data discovery mode', () => {
-        const datasetOneDictionaryUrl = `/api/v1/dataset/${datasetListFromApi.results[0].id}/dictionary`
-        const datasetTwoDictionaryUrl = `/api/v1/dataset/${datasetListFromApi.results[1].id}/dictionary`
+        const datasetOneDictionaryUrl = `/api/v1/dataset/${datasetListFromApi[0].id}/dictionary`
+        const datasetTwoDictionaryUrl = `/api/v1/dataset/${datasetListFromApi[1].id}/dictionary`
 
         describe('success', () => {
           beforeEach(() => {
             global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
             mockFetches({
-              'search': {body: datasetListFromApi},
-              [datasetOneDictionaryUrl]: {body: datasetOneDictionaryFromApi},
-              [datasetTwoDictionaryUrl]: {body: datasetTwoDictionaryFromApi}
+              'table_info': {body: datasetListFromApi}
             })
           })
 
           test('fetches datasets from the search API', (done) => {
             const schemaCallback = jest.fn(() => {
-              expect(global.fetch).toHaveBeenCalledWithUrl('/api/v1/dataset/search')
-
-              done()
-            })
-
-            registeredConnector.getSchema(schemaCallback)
-          })
-
-          test('fetches dataset dictionaries from the dictionary API', (done) => {
-            const schemaCallback = jest.fn(() => {
-              expect(global.fetch).toHaveBeenCalledWithUrl(datasetOneDictionaryUrl)
-              expect(global.fetch).toHaveBeenCalledWithUrl(datasetTwoDictionaryUrl)
+              expect(global.fetch).toHaveBeenCalledWithUrl('/api/v1/tableau/table_info')
 
               done()
             })
@@ -330,7 +330,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
           test('the generated connector sends table schemas to what will be a tableau-internal callback', (done) => {
             const schemaCallback = jest.fn((tableSchemas) => {
-              expect(tableSchemas).toEqual([
+              expect(tableSchemas).toMatchObject([
                 expectedTableSchemaForDatasetOne,
                 expectedTableSchemaForDatasetTwo
               ])
@@ -348,9 +348,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
             global.tableau.password = 'herbert'
             mockFetches({
               'token': {body: successfulAccessTokenResponse},
-              'search': {body: datasetListFromApi},
-              [datasetOneDictionaryUrl]: {body: datasetOneDictionaryFromApi},
-              [datasetTwoDictionaryUrl]: {body: datasetTwoDictionaryFromApi}
+              'tableau/table_info': {body: datasetListFromApi}
             })
           })
 
@@ -368,34 +366,10 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
           test('uses fetched access token for all subsequent calls', (done) => {
             registeredConnector.getSchema(() => {
-              expect(global.fetch).toHaveBeenCalledWithHeader('/api/v1/dataset/search', 'Authorization', `Bearer ${successfulAccessTokenResponse.access_token}`)
-              expect(global.fetch).toHaveBeenCalledWithHeader(datasetOneDictionaryUrl, 'Authorization', `Bearer ${successfulAccessTokenResponse.access_token}`)
-              expect(global.fetch).toHaveBeenCalledWithHeader(datasetTwoDictionaryUrl, 'Authorization', `Bearer ${successfulAccessTokenResponse.access_token}`)
-
+              expect(global.fetch).toHaveBeenCalledWithHeader('/api/v1/tableau/table_info', 'Authorization', `Bearer ${successfulAccessTokenResponse.access_token}`)
+              
               done()
             })
-          })
-        })
-
-        describe('failing to fetch a dictionary', () => {
-          beforeEach(() => {
-            global.tableau.connectionData = JSON.stringify({mode: 'discovery'})
-            global.tableau.abortWithError.mockReset()
-            mockFetches({
-              'search': {body: datasetListFromApi},
-              [datasetOneDictionaryUrl]: {ok: false, status: 400, statusText: 'Bad Request'},
-              [datasetTwoDictionaryUrl]: {body: datasetTwoDictionaryFromApi}
-            })
-          })
-
-          test('calls the tableau.abortWithError callback', (done) => {
-            const schemaCallback = jest.fn(() => {
-              expect(tableau.abortWithError).toHaveBeenCalledWith('Request failed: 400 Bad Request')
-
-              done()
-            })
-
-            registeredConnector.getSchema(schemaCallback)
           })
         })
       })
@@ -411,7 +385,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
         test('fetches dataset dictionaries from the query describe API', (done) => {
           const schemaCallback = jest.fn(() => {
             const firstCallUrl = global.fetch.mock.calls[0][0]
-            expect(firstCallUrl).toContain('/api/v1/query/describe?_format=json')
+            expect(firstCallUrl).toContain('/api/v1/tableau/query_describe?_format=json')
             const firstCallBody = global.fetch.mock.calls[0][1]
             expect(firstCallBody.body).toEqual(expectedTableSchemaForQueryDataset.description)
 
@@ -584,40 +558,31 @@ describe('Discovery API Tableau Web Data Connector', () => {
       let columns
       const dictionary = [
         {
-          name: 'First Column',
-          type: 'integer'
+          dataType: 'integer'
         },
         {
-          name: 'Second-Column',
-          type: 'long'
+          dataType: 'long'
         },
         {
-          name: 'Third#Column',
-          type: 'string'
+          dataType: 'string'
         },
         {
-          name: '4th__Column',
-          type: 'double'
+          dataType: 'double'
         },
         {
-          name: 'Fifth-C0lumn',
-          type: 'float'
+          dataType: 'float'
         },
         {
-          name: '$ixth-Column',
-          type: 'boolean'
+          dataType: 'boolean'
         },
         {
-          name: ' 7venth  Column ',
-          type: 'date'
+          dataType: 'date'
         },
         {
-          name: '8th\ncolumn',
-          type: 'timestamp'
+          dataType: 'timestamp'
         },
         {
-          name: 'ninthcolumn',
-          type: 'json'
+          dataType: 'json'
         }
       ]
       beforeEach(() => {
@@ -638,79 +603,9 @@ describe('Discovery API Tableau Web Data Connector', () => {
           tableau.dataTypeEnum.geometry
         ])
       })
-
-      test('converts the dictionary field names to WDC friendly ids', () => {
-        const columnsWithOnlyIds = columns.map((column) => (column.id))
-        expect(columnsWithOnlyIds).toEqual([
-          'first_column',
-          'second_column',
-          'third_column',
-          '4th__column',
-          'fifth_c0lumn',
-          '_ixth_column',
-          '7venth__column',
-          '8th_column',
-          'ninthcolumn'
-        ])
-      })
-
-      test('puts the original field names in the description field for later use by the data downloader', () => {
-        const columnsWithOnlyDescs = columns.map((column) => (column.description))
-        expect(columnsWithOnlyDescs).toEqual([
-          'first column',
-          'second-column',
-          'third#column',
-          '4th__column',
-          'fifth-c0lumn',
-          '$ixth-column',
-          ' 7venth  column ',
-          '8th\ncolumn',
-          'ninthcolumn'
-        ])
-      })
-
-      test('puts the original field names in the alias field so they show up nice in Tableau', () => {
-        const columnsWithOnlyAliases = columns.map((column) => (column.alias))
-
-        expect(columnsWithOnlyAliases).toEqual([
-          'first column',
-          'second-column',
-          'third#column',
-          '4th__column',
-          'fifth-c0lumn',
-          '$ixth-column',
-          ' 7venth  column ',
-          '8th\ncolumn',
-          'ninthcolumn'
-        ])
-      })
     })
   })
-  describe('convertDatasetToTableSchema', () => {
-    describe('given a valid dataset', () => {
-      let tableSchema
-      const dataset = {
-        id: 'first-dataset',
-        title: 'First Dataset'
-      }
-
-      beforeEach(() => {
-        tableSchema = DiscoveryWDCTranslator.convertDatasetToTableSchema(dataset)
-      })
-
-      test('converts dataset id to WDC friendly id', () => {
-        expect(tableSchema.id).toEqual('first_dataset')
-      })
-
-      test('puts the original dataset id in the description field for later use by the data downloader', () => {
-        expect(tableSchema.description).toEqual(dataset.id)
-      })
-
-      test('puts the dataset title in the alias field so it shows up nice in Tableau', () => {
-        expect(tableSchema.alias).toEqual(dataset.title)
-      })
-    })
-  })
+  
   describe('convertDatasetRowToTableRow', () => {
     describe('given a valid WDC table and table schema with original ids in the description', () => {
       let tableRow
@@ -726,17 +621,17 @@ describe('Discovery API Tableau Web Data Connector', () => {
         tableInfo: {
           columns: [{
               id: 'first_column',
-              description: 'first-column',
+              alias: 'first-column',
               dataType: tableau.dataTypeEnum.string
             },
             {
               id: 'second_column',
-              description: 'second column',
+              alias: 'second column',
               dataType: tableau.dataTypeEnum.geometry
             },
             {
               id: 'third_column',
-              description: 'third_column',
+              alias: 'third_column',
               dataType: tableau.dataTypeEnum.int
             }
           ]

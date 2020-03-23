@@ -11,7 +11,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApi.Schemas.Organizations
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
-  alias DiscoveryApi.Data.{Model, SystemNameCache}
+  alias DiscoveryApi.Data.{Model, SystemNameCache, TableInfoCache}
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApi.Search.Storage
   alias DiscoveryApiWeb.Plugs.ResponseCache
@@ -35,8 +35,9 @@ defmodule DiscoveryApi.EventHandlerTest do
       %{association_event: association_event}
     end
 
-    test "should save user/organization association to ecto", %{association_event: association_event} do
+    test "should save user/organization association to ecto and clear relevant caches", %{association_event: association_event} do
       allow(Users.associate_with_organization(any(), any()), return: {:ok, %User{}})
+      expect(TableInfoCache.invalidate(), return: {:ok, true})
 
       EventHandler.handle_event(Brook.Event.new(type: user_organization_associate(), data: association_event, author: :author))
 
@@ -54,7 +55,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   end
 
   describe "handle_event/1 #{dataset_update()}" do
-    test "tells the data json plug to delete its current data json cache" do
+    setup do
       allow(DiscoveryApi.Schemas.Organizations.get_organization(any()),
         return: {:ok, %DiscoveryApi.Schemas.Organizations.Organization{name: "seriously"}}
       )
@@ -62,12 +63,19 @@ defmodule DiscoveryApi.EventHandlerTest do
       allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
       allow(RecommendationEngine.save(any()), return: :seriously_whatever)
       allow(DataJsonService.delete_data_json(), return: :ok)
+      allow(TableInfoCache.invalidate(), return: :ok)
 
       dataset = TDG.create_dataset(%{})
 
       Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_update(), data: dataset, author: :author))
+    end
 
+    test "tells the data json plug to delete its current data json cache" do
       assert_called(DataJsonService.delete_data_json())
+    end
+
+    test "invalidates the table info cache" do
+      assert_called(TableInfoCache.invalidate())
     end
   end
 
@@ -81,6 +89,7 @@ defmodule DiscoveryApi.EventHandlerTest do
       expect(StatsCalculator.delete_completeness(dataset.id), return: :ok)
       expect(Storage.delete(dataset), return: :ok)
       expect(ResponseCache.invalidate(), return: {:ok, true})
+      expect(TableInfoCache.invalidate(), return: {:ok, true})
       expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
       expect(Model.delete(dataset.id), return: :ok)
       expect(DataJsonService.delete_data_json(), return: :ok)

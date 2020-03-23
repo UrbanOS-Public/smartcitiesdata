@@ -2,6 +2,7 @@ defmodule DiscoveryApi.EventHandler do
   @moduledoc "Event Handler for event stream"
 
   use Brook.Event.Handler
+  alias DiscoveryApi.Data.TableInfoCache
 
   import SmartCity.Event,
     only: [organization_update: 0, user_organization_associate: 0, dataset_update: 0, data_write_complete: 0, dataset_delete: 0]
@@ -26,6 +27,9 @@ defmodule DiscoveryApi.EventHandler do
       {:error, _} = error -> Logger.error("Unable to handle event: #{inspect(event)},\nerror: #{inspect(error)}")
       result -> result
     end
+
+    # This caches some tables that a user can access. This event can change that.
+    TableInfoCache.invalidate()
 
     :discard
   end
@@ -57,8 +61,7 @@ defmodule DiscoveryApi.EventHandler do
       save_dataset_to_recommendation_engine(dataset)
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
       merge(:models, model.id, model)
-      ResponseCache.invalidate()
-      DataJsonService.delete_data_json()
+      clear_caches()
 
       :discard
     else
@@ -74,8 +77,7 @@ defmodule DiscoveryApi.EventHandler do
     Storage.delete(dataset)
     StatsCalculator.delete_completeness(dataset.id)
     Model.delete(dataset.id)
-    ResponseCache.invalidate()
-    DataJsonService.delete_data_json()
+    clear_caches()
     Logger.debug("#{__MODULE__}: Deleted dataset: #{dataset.id}")
 
     :discard
@@ -83,6 +85,12 @@ defmodule DiscoveryApi.EventHandler do
     error ->
       Logger.error("#{__MODULE__}: Failed to delete dataset: #{dataset.id}, Reason: #{inspect(error)}")
       :discard
+  end
+
+  defp clear_caches() do
+    ResponseCache.invalidate()
+    DataJsonService.delete_data_json()
+    TableInfoCache.invalidate()
   end
 
   defp save_dataset_to_recommendation_engine(%Dataset{technical: %{private: false, schema: schema}} = dataset) when length(schema) > 0 do

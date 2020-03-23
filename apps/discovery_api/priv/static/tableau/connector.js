@@ -17,7 +17,6 @@ window.DiscoveryWDCTranslator = {
   setupConnector: _setupConnector,
   getTableSchemas: _getTableSchemas,
   getTableData: _getTableData,
-  convertDatasetToTableSchema: _convertDatasetToTableSchema,
   convertDictionaryToColumns: _convertDictionaryToColumns,
   convertDatasetRowToTableRow: _convertDatasetRowToTableRow
 };
@@ -41,7 +40,7 @@ var fileTypes = ["CSV", "GEOJSON"];
 var apiPath = '/api/v1/'
 
 function submit(mode) {
-  var connectionData = {mode: mode}
+  var connectionData = { mode: mode }
   if (mode == "query") {
     connectionData.query = document.getElementById("query").value
     if (connectionData.query == "") {
@@ -62,7 +61,7 @@ function _setupConnector() {
 
   tableau.registerConnector(connector);
 
-  connector.init = function(initCallback) {
+  connector.init = function (initCallback) {
     var error = _getUrlParameterByName('error')
     if (error) {
       var errorDescription = _getUrlParameterByName('error_description');
@@ -76,14 +75,14 @@ function _setupConnector() {
 
     if (code) {
       _fetchRefreshToken(code)
-      .then(function(refreshToken) { tableau.password = refreshToken; })
-      .then(function() {
-        document.getElementById('login-text').textContent = 'Logged In';
-        document.getElementById('login-button').removeAttribute('onclick');
-        document.getElementById('login-button').className = 'login-link';
-       })
-      .catch(function(error) { _displayLoginError(error) })
-      .then(function() { initCallback() })
+        .then(function (refreshToken) { tableau.password = refreshToken; })
+        .then(function () {
+          document.getElementById('login-text').textContent = 'Logged In';
+          document.getElementById('login-button').removeAttribute('onclick');
+          document.getElementById('login-button').className = 'login-link';
+        })
+        .catch(function (error) { _displayLoginError(error) })
+        .then(function () { initCallback() })
     } else {
       initCallback();
     }
@@ -94,13 +93,14 @@ _setupConnector()
 
 function _getTableSchemas(schemaCallback) {
   delete window.accessToken
+
   _getDatasets()
     .then(_decodeAsJson)
     .then(_extractTableSchemas)
     .then(function(tableSchemaPromises) {
       return Promise.all(tableSchemaPromises)
     })
-    .catch(function(error) {tableau.abortWithError(error)})
+    .catch(function (error) { tableau.abortWithError(error) })
     .then(schemaCallback)
 }
 
@@ -110,23 +110,23 @@ function _getTableData(table, doneCallback) {
     .then(_decodeAsJson)
     .then(_convertDatasetRowsToTableRows(table.tableInfo))
     .then(table.appendRows)
-    .catch(function(error) {tableau.abortWithError(error)})
+    .catch(function (error) { tableau.abortWithError(error) })
     .then(doneCallback)
 }
 
 function _convertDatasetRowsToTableRows(tableInfo) {
-  return function(datasetData) {
+  return function (datasetData) {
     return datasetData.map(_convertDatasetRowToTableRow(tableInfo));
   }
 }
 
 function _convertDatasetRowToTableRow(tableInfo) {
-  return function(row) {
-    return tableInfo.columns.map(function(column) {
+  return function (row) {
+    return tableInfo.columns.map(function (column) {
       if (column.dataType == tableau.dataTypeEnum.geometry) {
-        return row[column.description].geometry;
+        return row[column.alias].geometry;
       } else {
-        return row[column.description];
+        return row[column.alias];
       }
     });
   }
@@ -143,7 +143,7 @@ function _getData(tableInfo) {
   return _getMode() == 'query' ? _getQueryData(tableInfo) : _getDatasetData(tableInfo)
 }
 function _convertToTableSchema(info) {
-  return _getMode() == 'query' ? _convertQueryInfoToTableSchema(info) : _convertDatasetToTableSchema(info)
+  return _getMode() == 'query' ? _convertQueryInfoToTableSchema(info) : info
 }
 // ---
 
@@ -163,24 +163,24 @@ function _authorizedFetch(url, params) {
 
 // Discovery Mode Functions
 function _getDatasetList() {
-  return _authorizedFetch(apiPath + "dataset/search?apiAccessible=true&offset=0&limit=" + datasetLimit);
+  return _authorizedFetch(apiPath + "tableau/table_info");
 }
 
 function _getDatasetDictionary(dataset) {
-  return _authorizedFetch(apiPath + "dataset/" + dataset.id + "/dictionary");
+  return new Promise(function (resolve) {
+    resolve({
+      ok: true,
+      json: function () {
+        return dataset.columns
+      }
+    })
+  })
 }
 
 function _getDatasetData(tableInfo) {
   return _authorizedFetch(apiPath + "dataset/" + tableInfo.description + "/query?_format=json")
 }
 
-function _convertDatasetToTableSchema(dataset) {
-  return {
-    id: _tableauAcceptableIdentifier(dataset.id),
-    alias: dataset.title,
-    description: dataset.id,
-  }
-}
 // ---
 
 // Query Mode Functions
@@ -189,24 +189,22 @@ function _getQueryInfo() {
     resolve({
       ok: true,
       json: function () {
-        return {
-          results: [{
-            fileTypes: ['CSV'],
-            query: _getQueryString()
-          }]
-        }
+        return [{
+          fileTypes: ['CSV'],
+          query: _getQueryString()
+        }]
       }
     })
   })
 }
 
 function _getQueryDictionary(queryInfo) {
-  return _authorizedFetch(apiPath + "query/describe?_format=json", {method: 'POST', body: queryInfo.query});
+  return _authorizedFetch(apiPath + "tableau/query_describe?_format=json", { method: 'POST', body: queryInfo.query });
 }
 
 function _getQueryData(tableInfo) {
   // Tableau has limited places to store things in the table struct. We use the description to store the query.
-  return _authorizedFetch(apiPath + "query?_format=json", {method: 'POST', body: tableInfo.description});
+  return _authorizedFetch(apiPath + "query?_format=json", { method: 'POST', body: tableInfo.description });
 }
 
 function _convertQueryInfoToTableSchema(queryInfo) {
@@ -230,18 +228,13 @@ function _decodeAsJson(response) {
 }
 
 function _supportsDesiredFileTypes(dataset) {
-  return fileTypes.some(function(desiredFileType) {
+  return fileTypes.some(function (desiredFileType) {
     return dataset.fileTypes.includes(desiredFileType);
   })
 }
 
 function _extractTableSchemas(response) {
-  var datasets = response.results;
-
-  var extractedSchemas = datasets.filter(_supportsDesiredFileTypes)
-    .map(_extractTableSchema)
-
-  return extractedSchemas
+  return response.map(_extractTableSchema)
 }
 
 function _extractTableSchema(dataset) {
@@ -250,7 +243,7 @@ function _extractTableSchema(dataset) {
   return _getDictionary(dataset)
     .then(_decodeAsJson)
     .then(_convertDictionaryToColumns)
-    .then(function(columns) {
+    .then(function (columns) {
       return Object.assign({}, tableSchema, {
         columns: columns
       })
@@ -258,13 +251,8 @@ function _extractTableSchema(dataset) {
 }
 
 function _convertDictionaryToColumns(dictionary) {
-  return dictionary.map(function(columnSpec) {
-    return {
-      id: _tableauAcceptableIdentifier(columnSpec.name),
-      alias: columnSpec.name.toLowerCase(),
-      description: columnSpec.name.toLowerCase(),
-      dataType: dataMap[columnSpec.type]
-    }
+  return dictionary.map(function (columnSpec) {
+    return Object.assign({}, columnSpec, {dataType: dataMap[columnSpec.dataType]})
   })
 }
 
@@ -290,11 +278,11 @@ function _fetchRefreshToken(code) {
   };
   return fetch(window.config.auth_url + '/oauth/token', {
     method: 'POST',
-    headers: {'content-type':'application/x-www-form-urlencoded'},
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: _encodeAsUriQueryString(params)
   })
-  .then(_decodeAsJson)
-  .then(function(body) { return body.refresh_token })
+    .then(_decodeAsJson)
+    .then(function (body) { return body.refresh_token })
 }
 
 function _fetchAccessToken(refreshToken) {
@@ -308,19 +296,19 @@ function _fetchAccessToken(refreshToken) {
   };
   return fetch(window.config.auth_url + '/oauth/token', {
     method: 'POST',
-    headers: {'content-type':'application/x-www-form-urlencoded'},
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: _encodeAsUriQueryString(params)
   })
-  .then(_decodeAsJson)
-  .then(function(body) {
-    window.accessToken = body.access_token
-    return body.access_token
-  })
+    .then(_decodeAsJson)
+    .then(function (body) {
+      window.accessToken = body.access_token
+      return body.access_token
+    })
 }
 
 function _encodeAsUriQueryString(obj) {
   var queryString = ''
-  for(var key in obj) {
+  for (var key in obj) {
     if (obj.hasOwnProperty(key)) {
       queryString += encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]) + '&'
     }
