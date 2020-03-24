@@ -6,6 +6,20 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
 
+  def authorized_session(conn, statement) do
+    current_user = conn.assigns.current_user
+
+    case authorized_to_query?(statement, current_user) do
+      true ->
+        session_opts = DiscoveryApi.prestige_opts()
+        session = Prestige.new_session(session_opts)
+        {:ok, session}
+
+      false ->
+        {:error, "Session not authorized"}
+    end
+  end
+
   def authorized_to_query?(statement, user) do
     with true <- PrestoService.is_select_statement?(statement),
          session_opts <- DiscoveryApi.prestige_opts(),

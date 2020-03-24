@@ -57,7 +57,9 @@ defmodule DiscoveryApiWeb.Router do
     get("/dataset/search", MultipleMetadataController, :search)
     get("/data_json", DataJsonController, :show)
     post("/query", MultipleDataController, :query)
-    post("/query/describe", MultipleDataController, :describe)
+
+    get("/tableau/table_info", TableauController, :fetch_table_info)
+    post("/tableau/query_describe", TableauController, :describe)
 
     get("/organization/:id", OrganizationController, :fetch_detail)
 

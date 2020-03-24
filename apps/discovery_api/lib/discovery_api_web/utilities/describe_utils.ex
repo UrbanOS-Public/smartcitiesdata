@@ -1,13 +1,15 @@
 defmodule DiscoveryApiWeb.Utilities.DescribeUtils do
   @moduledoc false
 
+  alias DiscoveryApi.Data.Model
+
   @valid_types ["integer", "decimal", "double", "float", "boolean", "date", "timestamp"]
   def convert_description(description) do
     Enum.map(description, &convert_column/1)
   end
 
   defp convert_column(%{"Column Name" => name, "Type" => type}) do
-    %{name: name, type: translate_type(type)}
+    %{description: name, id: Model.id_to_alphanumeric(name), dataType: translate_type(type)}
   end
 
   defp translate_type("bigint"), do: "long"

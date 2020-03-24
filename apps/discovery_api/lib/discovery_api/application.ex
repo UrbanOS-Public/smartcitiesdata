@@ -27,7 +27,8 @@ defmodule DiscoveryApi.Application do
         {Brook, Application.get_env(:discovery_api, :brook)},
         DiscoveryApi.Data.CachePopulator,
         supervisor(DiscoveryApiWeb.Endpoint, []),
-        DiscoveryApi.Quantum.Scheduler
+        DiscoveryApi.Quantum.Scheduler,
+        DiscoveryApi.Data.TableInfoCache
       ]
       |> List.flatten()
 
