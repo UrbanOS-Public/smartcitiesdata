@@ -31,8 +31,6 @@ defmodule DiscoveryApi.Data.QueryTest do
 
     organization = Helper.create_persisted_organization(%{id: @private_org_id, orgName: @organization_name})
 
-
-
     public_dataset =
       TDG.create_dataset(%{
         id: @public_dataset_id,

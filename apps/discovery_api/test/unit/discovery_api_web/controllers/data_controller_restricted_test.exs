@@ -67,7 +67,11 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
       %{subject_id: subject_id, token: token}
     end
 
-    data_test "downloads a restricted dataset if the given user has access to it, via token", %{conn: conn, subject_id: subject_id, token: token} do
+    data_test "downloads a restricted dataset if the given user has access to it, via token", %{
+      conn: conn,
+      subject_id: subject_id,
+      token: token
+    } do
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
       conn
