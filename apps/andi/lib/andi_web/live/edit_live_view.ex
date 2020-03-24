@@ -7,6 +7,7 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.DisplayNames
   alias Andi.InputSchemas.Options
   alias AndiWeb.EditLiveView.KeyValueEditor
+  alias AndiWeb.EditLiveView.DataDictionaryTree
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -104,6 +105,22 @@ defmodule AndiWeb.EditLiveView do
           <%= label(f, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
           <%= select(f, :riskRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
           <%= error_tag(f, :riskRating, bind_to_input: false) %>
+        </div>
+      </div>
+
+      <div class="data-dictionary-form form-section form-grid">
+        <h2 class="data-dictionary-form__top-header edit-page__box-header">Data Dictionary</h2>
+        <div class="data-dictionary-form__tree-section">
+          <div class="data-dictionay-form__tree-header data-dictionay-form-tree-header">
+            <div class="label">Enter/Edit Fields</div>
+            <div class="label label--inline">TYPE</div>
+          </div>
+          <div class="data-dictionary-form__tree-content data-dictionay-form-tree-content">
+          <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: f, field: :schema ) %>
+          </div>
+        </div>
+        <div class="data-dictionary-form__edit-section">
+          EDIT COMING SOON
         </div>
       </div>
 

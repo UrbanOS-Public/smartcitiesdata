@@ -69,6 +69,8 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:modifiedDate, nil, &date_to_iso8601_datetime/1)
       |> Map.update(:sourceUrl, nil, &Andi.URI.clear_query_params/1)
       |> restruct_key_values()
+      # ignore changes to schema until we want to actually save them in later work
+      |> Map.delete(:schema)
 
     business = Map.merge(dataset.business, get_business(formatted_changes)) |> Map.from_struct()
     technical = Map.merge(dataset.technical, get_technical(formatted_changes)) |> Map.from_struct()

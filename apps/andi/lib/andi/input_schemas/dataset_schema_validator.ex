@@ -18,11 +18,11 @@ defmodule Andi.InputSchemas.DatasetSchemaValidator do
   end
 
   defp selector_required(item) do
-    {&has_selector?/1, "a selector property is required for field: '#{item[:name]}' in the schema", true}
+    {&has_selector?/1, "a selector property is required for field: '#{Map.get(item, :name)}' in the schema", true}
   end
 
   defp has_selector?(schema_item) do
-    case schema_item[:selector] do
+    case Map.get(schema_item, :selector, nil) do
       nil -> false
       selector -> String.trim(selector) != ""
     end

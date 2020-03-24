@@ -38,6 +38,15 @@
     "keywords risk-rating";
 }
 
+.data-dictionary-form {
+  grid-template-columns: 40% 60%;
+  grid-column-gap: 2rem;
+  grid-row-gap: 0rem;
+  grid-template-areas:
+    "top-header ."
+    "tree-section edit-section";
+}
+
 .url-form {
   grid-template-areas:
     "top-header ."
@@ -99,6 +108,103 @@
   }
 }
 
+$nesting-width: 2rem;
+$tick-width: $nesting-width - 0.7rem;
+$field-padding: 0.5rem;
+$tick-height: 1rem + $field-padding - 0.25;
+
+.data-dictionary-form {
+  .data-dictionary-form__edit-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    color: #7f7676;
+  }
+
+  .data-dictionay-form-tree-header {
+    display: inline-flex;
+    width: 100%;
+  }
+
+  .data-dictionay-form-tree-content {
+    border: solid 1px  #C9C7C7;
+    padding: $field-padding;
+    padding-left: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .data-dictionay-form-tree-header div:first-child {
+    margin-left: $field-padding;
+    margin-right: auto;
+  }
+
+  .data-dictionay-form-tree-header div:last-child {
+    margin-right: $field-padding;
+  }
+
+  .data-dictionary-tree {
+    border-left: 1px solid #C9C7C7;
+
+    .data-dictionary-tree__sub-dictionary {
+      margin-left: $nesting-width;
+    }
+
+    .data-dictionary-tree-field:before {
+      content: '';
+      border-top: 1px solid #C9C7C7;
+      width: $tick-width;
+    }
+
+    .data-dictionary-tree-field {
+      display: inline-flex;
+      width: 100%;
+      padding: $field-padding $field-padding $field-padding 0;
+      color: #C9C7C7;
+      align-items: center;
+      transform: translateY($tick-height);
+      position: relative;
+      cursor: pointer;
+    }
+
+    .data-dictionary-tree-field div:nth-child(2) {
+      margin-right: auto;
+      color: #7f7676;
+      margin-left: 1rem;
+    }
+
+    .data-dictionary-tree-field__action {
+      width: 24px;
+      height: 24px;
+      background-repeat: no-repeat;
+    }
+
+    .data-dictionary-tree__field--collapsed .data-dictionary-tree-field__action {
+      background-image: url('/images/expanded.svg');
+    }
+    
+    .data-dictionary-tree__field--expanded .data-dictionary-tree-field__action {
+      background-image: url('/images/collapsed.svg');
+    }
+
+    .data-dictionary-tree__field--checked .data-dictionary-tree-field__action {
+      background-image: url('/images/checked.svg');
+    }
+    
+    .data-dictionary-tree__field--unchecked .data-dictionary-tree-field__action {
+      background-image: url('/images/unchecked.svg');
+    }
+
+    .data-dictionary-tree__sub-dictionary--collapsed {
+      display: none;
+    }
+
+    .data-dictionary-tree__field--checked {
+      background-color: #EEEFF1;
+    }
+  }
+}
+
 .metadata__error-message {
   text-align: right;
   padding-right: 2em;
@@ -157,6 +263,9 @@
 @include area(edit-button-group, save-btn);
 @include area(edit-button-group, test-btn);
 @include area(edit-button-group, messages);
+
+@include area(data-dictionary-form, tree-section);
+@include area(data-dictionary-form, edit-section);
 
 @include area(url-form, source-url);
 @include area(url-form, source-query-params);
