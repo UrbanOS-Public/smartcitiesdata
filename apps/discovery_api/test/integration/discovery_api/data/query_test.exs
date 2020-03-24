@@ -5,6 +5,8 @@ defmodule DiscoveryApi.Data.QueryTest do
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
+  alias DiscoveryApi.Test.AuthHelper
+  alias DiscoveryApi.Auth.GuardianConfigurator
 
   import SmartCity.Event, only: [dataset_update: 0]
 
