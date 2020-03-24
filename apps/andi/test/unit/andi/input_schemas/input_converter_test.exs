@@ -117,4 +117,60 @@ defmodule Andi.InputSchemas.InputConverterTest do
              ]
            } = dataset_input
   end
+
+  test "excluding the schema from the changes you want to overlay on the dataset does not blow up" do
+    dataset =
+      TestDataGenerator.create_dataset(%{
+        technical: %{
+          schema: [
+            %{
+              name: "hello",
+              type: "string"
+            },
+            %{
+              name: "world",
+              type: "map",
+              subSchema: [
+                %{
+                  name: "goodbye",
+                  type: "list",
+                  itemType: "string"
+                },
+                %{
+                  name: "richard",
+                  type: "float"
+                }
+              ]
+            }
+          ]
+        }
+      })
+
+    dataset_input =
+      InputConverter.changeset_from_dataset(dataset, %{})
+      |> Ecto.Changeset.apply_changes()
+
+    assert %{
+             schema: [
+               %{
+                 name: "hello",
+                 type: "string"
+               },
+               %{
+                 name: "world",
+                 type: "map",
+                 subSchema: [
+                   %{
+                     name: "goodbye",
+                     type: "list"
+                   },
+                   %{
+                     name: "richard",
+                     type: "float"
+                   }
+                 ]
+               }
+             ]
+           } = dataset_input
+  end
 end
