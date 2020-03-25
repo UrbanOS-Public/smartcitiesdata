@@ -579,7 +579,8 @@ defmodule AndiWeb.EditLiveViewTest do
         %{
           "form_data" => %{
             "sourceUrl" => intialSourceUrl,
-            "sourceQueryParams" => queryParams
+            "sourceQueryParams" => queryParams,
+            "schema" => dummy_schema()
           },
           "_target" => ["form_data", "sourceQueryParams"]
         }
@@ -781,10 +782,12 @@ defmodule AndiWeb.EditLiveViewTest do
     changeset
     |> Ecto.Changeset.apply_changes()
     |> Map.update!(:keywords, &Enum.join(&1, ", "))
-    |> Map.delete(:schema)
+    # until we add the ability to edit the schema/dictionary, putting a fake one on there for validation
+    |> Map.put(:schema, dummy_schema())
+  end
 
-    # For now, schema needs to be removed from the form data as it cannot be encoded in the form as an array of maps.
-    # Once we start editing the schema in the form, we will need to address this (probably by changing the schema structure in the form data).
+  defp dummy_schema() do
+    %{"0" => %{"name" => "ignored_name", "type" => "ignored_type"}}
   end
 
   defp dataset_to_form_data(dataset) do

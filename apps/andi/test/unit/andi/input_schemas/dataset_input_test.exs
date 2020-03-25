@@ -147,27 +147,29 @@ defmodule Andi.InputSchemas.DatasetInputTest do
 
       changeset = DatasetInput.light_validation_changeset(changes)
 
-      assert changeset.valid? == valid
-      assert changeset.errors == errors
+      assert changeset.valid? == false
+      assert {:schema, {"is required", [validation: :required]}} in changeset.errors
 
       where(
-        source_type: ["ingest", "stream", "ingest", "something-else"],
-        schema: [nil, nil, [], nil],
-        errors: [
-          [{:schema, {"is required", [validation: :required]}}],
-          [{:schema, {"is required", [validation: :required]}}],
-          [{:schema, {"cannot be empty", []}}],
-          []
-        ],
-        valid: [false, false, false, true]
+        source_type: ["ingest", "stream", "ingest"],
+        schema: [nil, nil, []]
       )
+    end
+
+    test "a missing schema is valid when the sourceType is not ingest or stream" do
+      changes = @valid_changes |> Map.delete(:schema) |> Map.put(:sourceType, "something-else")
+
+      changeset = DatasetInput.light_validation_changeset(changes)
+
+      assert changeset.valid? == true
+      assert Enum.empty?(changeset.errors)
     end
 
     test "xml source format requires all fields in the schema to have selectors" do
       schema = [
-        %{name: "field_name"},
-        %{name: "other_field", selector: "this is the only selector"},
-        %{name: "another_field", selector: ""}
+        %{name: "field_name", type: "string"},
+        %{name: "other_field", type: "string", selector: "this is the only selector"},
+        %{name: "another_field", type: "integer", selector: ""}
       ]
 
       changes =
