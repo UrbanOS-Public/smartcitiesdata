@@ -3,7 +3,6 @@
 Computes data processing statistics off of Kafka data messages and stores them in Presto.
 
 ## To run the tests
-
   * Run `mix test` to run the tests a single time
   * Run `mix test.watch` to re-run the tests when a file changes
   * Run `mix test.watch --stale` to only rerun the tests for modules that have changes
