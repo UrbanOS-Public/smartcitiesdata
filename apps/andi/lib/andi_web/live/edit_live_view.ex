@@ -8,6 +8,7 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.Options
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.EditLiveView.DataDictionaryTree
+  alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -120,7 +121,7 @@ defmodule AndiWeb.EditLiveView do
           </div>
         </div>
         <div class="data-dictionary-form__edit-section">
-          EDIT COMING SOON
+          <%= live_component(@socket, DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item) %>
         </div>
       </div>
 
@@ -180,6 +181,7 @@ defmodule AndiWeb.EditLiveView do
      assign(socket,
        dataset: dataset,
        changeset: new_changeset,
+       current_data_dictionary_item: :loading,
        has_validation_errors: false,
        save_success: false,
        page_error: false,
@@ -255,6 +257,13 @@ defmodule AndiWeb.EditLiveView do
     changeset = DatasetInput.remove_key_value(socket.assigns.changeset, SmartCity.Helpers.safe_string_to_atom(field), id)
 
     {:noreply, assign(socket, changeset: changeset)}
+  end
+
+  def handle_info({:assign_editable_dictionary_field, field}, socket) do
+    # updated_checked_field_id = send(self(), :toggle_check)
+
+    # {:noreply, assign(socket, checked_field_id: updated_checked_field_id)}
+    {:noreply, assign(socket, current_data_dictionary_item: field)}
   end
 
   # This handle_info takes care of all exceptions in a generic way.

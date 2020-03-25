@@ -47,8 +47,8 @@ defmodule Andi.InputSchemas.InputConverter do
   end
 
   @spec form_changeset(map()) :: Ecto.Changeset.t()
-  def form_changeset(params \\ %{}) do
-    params
+  def form_changeset(form_data \\ %{}) do
+    form_data
     |> adjust_form_input()
     |> DatasetInput.light_validation_changeset()
   end

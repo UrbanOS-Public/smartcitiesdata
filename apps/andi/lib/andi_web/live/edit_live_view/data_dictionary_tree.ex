@@ -16,6 +16,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
     <%= if is_set?(@form, @field) do %>
     <div id="<%= @id %>" class="data-dictionary-tree">
       <%= for field <- inputs_for(@form, @field) do %>
+        <%= hidden_input(field, :id) %> 
+        <%= hidden_input(field, :name) %> 
+        <%= hidden_input(field, :type) %> 
       <% {action, modifier, target} = get_action(field, assigns) %>
       <div class="data-dictionary-tree-field data-dictionary-tree__field data-dictionary-tree__field--<%= modifier %>" phx-target="#<%= target %>" phx-click=<%= action %> phx-value-field-id="<%= input_value(field, :id) %>">
         <div class="data-dictionary-tree-field__action data-dictionary-tree-field__action"></div>
@@ -39,6 +42,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
 
   def handle_event("toggle_checked", %{"field-id" => field_id}, %{assigns: %{checked_field_id: checked_field_id}} = socket) do
     updated_checked_field_id = toggle_check(field_id, checked_field_id)
+
+    # send(self(), {:toggle_checked, updated_checked_field_id})
 
     {:noreply, assign(socket, checked_field_id: updated_checked_field_id)}
   end
@@ -66,6 +71,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
       expansion_map: expansion_map,
       checked_field_id: checked_field_id
     } = assigns
+
     id = input_value(field, :id)
 
     if is_set?(field, :subSchema) do
@@ -76,6 +82,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
       end
     else
       if id == checked_field_id do
+        send(self(), {:assign_editable_dictionary_field, field})
         {"toggle_checked", "checked", assigns.root_id}
       else
         {"toggle_checked", "unchecked", assigns.root_id}
