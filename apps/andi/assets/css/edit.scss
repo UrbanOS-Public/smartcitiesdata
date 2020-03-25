@@ -144,7 +144,7 @@ $tick-height: 1rem + $field-padding - 0.25;
   }
 
   .data-dictionary-tree {
-    border-left: 1px solid #C9C7C7;
+    border-left: 1px solid rgba(201, 199, 199, 0.4);
 
     .data-dictionary-tree__sub-dictionary {
       margin-left: $nesting-width;
@@ -152,7 +152,7 @@ $tick-height: 1rem + $field-padding - 0.25;
 
     .data-dictionary-tree-field:before {
       content: '';
-      border-top: 1px solid #C9C7C7;
+      border-top: 1px solid rgba(201, 199, 199, 0.4);
       width: $tick-width;
     }
 
