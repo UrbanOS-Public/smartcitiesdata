@@ -17,13 +17,10 @@ config :logger, :console,
   metadata: [:user_id]
 
 config :discovery_api,
-  auth_provider: "default",
   collector: StreamingMetrics.PrometheusMetricCollector,
   hsts_enabled: true,
   download_link_expire_seconds: 60,
   presign_key: "test_presign_key"
-
-config :paddle, Paddle, host: "localhost", account_subdn: "ou=People"
 
 # NOTE: To generate a secret_key:  mix guardian.gen.secret
 # secret set as variable to pass sobelow check on hard coded secrets

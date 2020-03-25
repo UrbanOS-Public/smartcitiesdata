@@ -30,7 +30,6 @@ defmodule DiscoveryApiWeb.Router do
 
   pipeline :reject_cookies_from_ajax do
     plug(DiscoveryApiWeb.Plugs.SetAllowedOrigin)
-    plug(DiscoveryApiWeb.Plugs.CookieMonster)
   end
 
   pipeline :global_headers do
@@ -38,17 +37,9 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:reject_cookies_from_ajax, :global_headers])
-
-    get("/login", LoginController, :login)
-  end
-
-  scope "/api/v1", DiscoveryApiWeb do
     pipe_through([:reject_cookies_from_ajax, :verify_token, :ensure_authenticated, :global_headers])
 
     post("/logged-in", UserController, :logged_in)
-
-    get("/logout", LoginController, :logout)
   end
 
   scope "/api/v1", DiscoveryApiWeb do

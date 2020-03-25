@@ -7,9 +7,6 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApi.Schemas.Users
-  alias DiscoveryApi.Test.AuthHelper
-  alias DiscoveryApi.Auth.GuardianConfigurator
-  alias DiscoveryApi.Auth.Auth0.CachedJWKS
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -376,33 +373,10 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
   describe "with Auth0 auth provider" do
     setup do
-      secret_key = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian) |> Keyword.get(:secret_key)
-      GuardianConfigurator.configure("auth0", issuer: AuthHelper.valid_issuer())
+      %{subject_id: subject_id, token: token, exit_fn: exit_fn} = Helper.auth0_setup()
+      on_exit(exit_fn)
 
-      jwks = AuthHelper.valid_jwks()
-      CachedJWKS.set(jwks)
-
-      bypass = Bypass.open()
-
-      really_far_in_the_future = 3_000_000_000_000
-      AuthHelper.set_allowed_guardian_drift(really_far_in_the_future)
-
-      Application.put_env(
-        :discovery_api,
-        :user_info_endpoint,
-        "http://localhost:#{bypass.port}/userinfo"
-      )
-
-      Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
-        Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z"}))
-      end)
-
-      on_exit(fn ->
-        AuthHelper.set_allowed_guardian_drift(0)
-        GuardianConfigurator.configure("default", secret_key: secret_key)
-      end)
-
-      %{subject_id: AuthHelper.valid_jwt_sub(), token: AuthHelper.valid_jwt()}
+      %{subject_id: subject_id, token: token}
     end
 
     test "returns a presigned url for private datasets when valid token is passed", %{conn: conn, subject_id: subject_id, token: token} do

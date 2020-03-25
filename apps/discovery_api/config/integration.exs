@@ -10,8 +10,6 @@ config :discovery_api,
   allowed_origins: ["integrationtests.example.com", "localhost:9001"],
   divo: "test/integration/docker-compose.yaml",
   divo_wait: [dwell: 2000, max_tries: 35],
-  ldap_user: [cn: "admin"],
-  ldap_pass: "admin",
   hosted_bucket: "kdp-cloud-storage",
   hosted_region: aws_region
 
@@ -27,11 +25,6 @@ config :ex_json_schema,
        fn url -> URLResolver.resolve_url(url) end
 
 config :prestige, :session_opts, url: "http://#{host}:8080"
-
-config :paddle, Paddle,
-  host: host,
-  base: "dc=example,dc=org",
-  timeout: 3000
 
 config :ex_aws, :s3,
   scheme: "http://",

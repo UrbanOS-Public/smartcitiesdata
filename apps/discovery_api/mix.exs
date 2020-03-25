@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
-      version: "0.38.0",
+      version: "0.39.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -39,7 +39,6 @@ defmodule DiscoveryApi.Mixfile do
       {:ibrowse, "~> 4.4"},
       {:libvault, "~> 0.2"},
       {:sweet_xml, "~> 0.6"},
-      {:paddle, "~> 0.1"},
       {:brook, "~> 0.4"},
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:cachex, "~> 3.0"},
