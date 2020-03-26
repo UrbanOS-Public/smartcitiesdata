@@ -260,9 +260,6 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_info({:assign_editable_dictionary_field, field}, socket) do
-    # updated_checked_field_id = send(self(), :toggle_check)
-
-    # {:noreply, assign(socket, checked_field_id: updated_checked_field_id)}
     {:noreply, assign(socket, current_data_dictionary_item: field)}
   end
 

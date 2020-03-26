@@ -57,23 +57,23 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       [expandable_one_id, expandable_two_id] =
-        get_attributes(html, ".data-dictionary-tree__field[phx-click='toggle_expanded']", "phx-value-field-id")
+        get_attributes(html, ".data-dictionary-tree-field__action[phx-click='toggle_expanded']", "phx-value-field-id")
 
       [expandable_one_target, expandable_two_target] =
-        get_attributes(html, ".data-dictionary-tree__field[phx-click='toggle_expanded']", "phx-target")
+        get_attributes(html, ".data-dictionary-tree-field__action[phx-click='toggle_expanded']", "phx-target")
 
-      [checkable_one_id, checkable_two_id] =
-        get_attributes(html, ".data-dictionary-tree__field[phx-click='toggle_checked']", "phx-value-field-id")
+      [checkable_one_id, _, _, checkable_two_id] =
+        get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_selected']", "phx-value-field-id")
 
-      [checkable_one_target, checkable_two_target] =
-        get_attributes(html, ".data-dictionary-tree__field[phx-click='toggle_checked']", "phx-target")
+      [checkable_one_target, _, _, checkable_two_target] =
+        get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_selected']", "phx-target")
 
       [
         view: view,
         html: html,
         expandable_one: %{id: expandable_one_id, target: expandable_one_target},
         expandable_two: %{id: expandable_two_id, target: expandable_two_target},
-        checkable_one: %{id: checkable_one_id, target: checkable_one_target, name: "one-one", type: "string"},
+        checkable_one: %{id: checkable_one_id, target: checkable_one_target, name: "one", type: "list"},
         checkable_two: %{id: checkable_two_id, target: checkable_two_target}
       ]
     end
@@ -82,7 +82,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       one_id = expandable_one.id
       two_id = expandable_two.id
 
-      assert [^one_id, ^two_id] = get_attributes(html, ".data-dictionary-tree__field--expanded", "phx-value-field-id")
+      assert [^one_id, ^two_id] = get_action_field_ids(html, "expanded")
     end
 
     test "clicking an expandable field once collapses it", %{view: view, expandable_one: expandable_one} do
@@ -90,7 +90,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
 
       html = render_click([view, expandable_one.target], "toggle_expanded", %{"field-id" => expandable_one.id})
 
-      assert [^one_id] = get_attributes(html, ".data-dictionary-tree__field--collapsed", "phx-value-field-id")
+      assert [^one_id] = get_action_field_ids(html, "collapsed")
     end
 
     test "clicking an expandable field twice toggles it", %{view: view, expandable_one: expandable_one} do
@@ -99,7 +99,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       _html = render_click([view, expandable_one.target], "toggle_expanded", %{"field-id" => expandable_one.id})
       html = render_click([view, expandable_one.target], "toggle_expanded", %{"field-id" => expandable_one.id})
 
-      assert [^one_id | _] = get_attributes(html, ".data-dictionary-tree__field--expanded", "phx-value-field-id")
+      assert [^one_id | _] = get_action_field_ids(html, "expanded")
     end
 
     test "clicking an expandable field does not affect another field", %{
@@ -111,39 +111,50 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       one_id = expandable_one.id
       two_id = expandable_two.id
 
-      assert [^one_id, ^two_id] = get_attributes(html, ".data-dictionary-tree__field--expanded", "phx-value-field-id")
+      assert [^one_id, ^two_id] = get_action_field_ids(html, "expanded")
 
       html = render_click([view, expandable_two.target], "toggle_expanded", %{"field-id" => expandable_two.id})
 
-      assert [^one_id] = get_attributes(html, ".data-dictionary-tree__field--expanded", "phx-value-field-id")
-      assert [^two_id] = get_attributes(html, ".data-dictionary-tree__field--collapsed", "phx-value-field-id")
+      assert [^one_id] = get_action_field_ids(html, "expanded")
+      assert [^two_id] = get_action_field_ids(html, "collapsed")
     end
 
-    test "initially checkable fields are unchecked", %{html: html, checkable_one: checkable_one, checkable_two: checkable_two} do
+    test "initially selectable fields are unselected", %{html: html, checkable_one: checkable_one, checkable_two: checkable_two} do
       one_id = checkable_one.id
       two_id = checkable_two.id
 
-      assert [^one_id, ^two_id] = get_attributes(html, ".data-dictionary-tree__field--unchecked", "phx-value-field-id")
+      assert one_id in get_action_field_ids(html, "unselected")
+      assert two_id in get_action_field_ids(html, "unselected")
     end
 
-    test "clicking a checkable field once collapses it", %{view: view, checkable_one: checkable_one} do
+    test "clicking a selectable and expandable field once selects it but leaves it expanded", %{view: view, checkable_one: checkable_one} do
       one_id = checkable_one.id
 
-      html = render_click([view, checkable_one.target], "toggle_checked", %{"field-id" => checkable_one.id})
+      html = render_click([view, checkable_one.target], "toggle_selected", %{"field-id" => checkable_one.id})
 
-      assert [^one_id] = get_attributes(html, ".data-dictionary-tree__field--checked", "phx-value-field-id")
+      assert [^one_id] = get_action_field_ids(html, "selected")
+      assert [^one_id | _] = get_action_field_ids(html, "expanded")
     end
 
-    test "clicking a checkable field twice toggles it", %{view: view, checkable_one: checkable_one} do
+    test "clicking a selectable and checkable field once selects and checks it", %{view: view, checkable_two: checkable_two} do
+      two_id = checkable_two.id
+
+      html = render_click([view, checkable_two.target], "toggle_selected", %{"field-id" => checkable_two.id})
+
+      assert [^two_id] = get_action_field_ids(html, "selected")
+      assert [^two_id | _] = get_action_field_ids(html, "checked")
+    end
+
+    test "clicking a checkable field twice does not unselect it", %{view: view, checkable_one: checkable_one} do
       one_id = checkable_one.id
 
-      _html = render_click([view, checkable_one.target], "toggle_checked", %{"field-id" => checkable_one.id})
-      html = render_click([view, checkable_one.target], "toggle_checked", %{"field-id" => checkable_one.id})
+      _html = render_click([view, checkable_one.target], "toggle_selected", %{"field-id" => checkable_one.id})
+      html = render_click([view, checkable_one.target], "toggle_selected", %{"field-id" => checkable_one.id})
 
-      assert [^one_id | _] = get_attributes(html, ".data-dictionary-tree__field--unchecked", "phx-value-field-id")
+      assert [^one_id] = get_action_field_ids(html, "selected")
     end
 
-    test "clicking an checkable field unchecks other field (only one checked at a time)", %{
+    test "clicking a selectable field unselects other field (only one checked at a time)", %{
       view: view,
       html: html,
       checkable_one: checkable_one,
@@ -152,17 +163,18 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       one_id = checkable_one.id
       two_id = checkable_two.id
 
-      assert [^one_id, ^two_id] = get_attributes(html, ".data-dictionary-tree__field--unchecked", "phx-value-field-id")
+      assert one_id in get_action_field_ids(html, "unselected")
+      assert two_id in get_action_field_ids(html, "unselected")
 
-      html = render_click([view, checkable_two.target], "toggle_checked", %{"field-id" => checkable_two.id})
+      html = render_click([view, checkable_two.target], "toggle_selected", %{"field-id" => checkable_two.id})
 
-      assert [^one_id] = get_attributes(html, ".data-dictionary-tree__field--unchecked", "phx-value-field-id")
-      assert [^two_id] = get_attributes(html, ".data-dictionary-tree__field--checked", "phx-value-field-id")
+      assert one_id in get_action_field_ids(html, "unselected")
+      assert two_id in get_action_field_ids(html, "selected")
 
-      html = render_click([view, checkable_one.target], "toggle_checked", %{"field-id" => checkable_one.id})
+      html = render_click([view, checkable_one.target], "toggle_selected", %{"field-id" => checkable_one.id})
 
-      assert [^one_id] = get_attributes(html, ".data-dictionary-tree__field--checked", "phx-value-field-id")
-      assert [^two_id] = get_attributes(html, ".data-dictionary-tree__field--unchecked", "phx-value-field-id")
+      assert one_id in get_action_field_ids(html, "selected")
+      assert two_id in get_action_field_ids(html, "unselected")
     end
 
     test "clicking a checkable field fills the field editor with its corresponding values", %{view: view, checkable_one: checkable_one} do
@@ -170,12 +182,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       one_name = checkable_one.name
       one_type = checkable_one.type
 
-      html = render_click([view, checkable_one.target], "toggle_checked", %{"field-id" => checkable_one.id})
+      _html = render_click([view, checkable_one.target], "toggle_selected", %{"field-id" => checkable_one.id})
 
       eventually(fn ->
         html = render(view)
         assert [one_name] == get_attributes(html, ".data-dictionary-field-editor__name", "value")
-        assert {one_type, one_type} == get_select(html, ".data-dictionary-field-editor__type")
+        assert {one_type, Macro.camelize(one_type)} == get_select(html, ".data-dictionary-field-editor__type")
       end)
     end
   end
@@ -272,5 +284,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
 
       assert ["string", "map", "integer", "list", "float", "map", "string"] == get_texts(html, ".data-dictionary-tree-field__type")
     end
+  end
+
+  def get_action_field_ids(html, action) do
+    get_attributes(html, ".data-dictionary-tree__field--#{action} > .data-dictionary-tree-field__action", "phx-value-field-id")
   end
 end
