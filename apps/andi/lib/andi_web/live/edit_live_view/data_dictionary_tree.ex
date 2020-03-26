@@ -22,13 +22,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
       <% {icon_modifier, selected_modifier} = get_action(field, assigns) %>
       <div class="data-dictionary-tree-field data-dictionary-tree__field data-dictionary-tree__field--<%= icon_modifier %> data-dictionary-tree__field--<%= selected_modifier %>">
         <div phx-click="<%= if is_set?(field, :subSchema), do: "toggle_expanded", else: "toggle_checked" %>" phx-value-field-id="<%= input_value(field, :id) %>" phx-target="#<%= @root_id %>" class="data-dictionary-tree-field__action data-dictionary-tree-field__action"></div>
-        <span phx-click="toggle_checked" phx-value-field-id="<%= input_value(field, :id) %>" phx-target="#<%= @root_id %>">
+        <div class="data-dictionary-tree-field__text" phx-click="toggle_checked" phx-value-field-id="<%= input_value(field, :id) %>" phx-target="#<%= @root_id %>">
           <div class="data-dictionary-tree-field__name data-dictionary-tree-field-attribute"><%= input_value(field, :name) %></div>
           <div class="data-dictionary-tree-field__type data-dictionary-tree-field-attribute"><%= input_value(field, :type) %></div>
-        </span>
+        </div>
       </div>
       <div class="data-dictionary-tree__sub-dictionary data-dictionary-tree__sub-dictionary--<%= icon_modifier %>">
-        <%= live_component(@socket, DataDictionaryTree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, checked_field_id: @checked_field_id, form: field, field: :subSchema) %>
+        <%= live_component(@socket, DataDictionaryTree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, checked_field_id: @checked_field_id, form: field, field: :subSchema, expansion_map: @expansion_map) %>
       </div>
       <% end %>
     </div>
@@ -51,11 +51,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
   end
 
   defp toggle_check(field_id, checked_field_id) do
-    if field_id == checked_field_id do
-      :unassigned
-    else
-      field_id
-    end
+    # if field_id == checked_field_id do
+    #   :unassigned
+    # else
+    field_id
+    # end
   end
 
   defp toggle_expansion(field_id, expansion_map) do
@@ -76,26 +76,28 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
 
     id = input_value(field, :id)
 
-    icon_modifier = if is_set?(field, :subSchema) do
-      if expanded?(id, expansion_map) do
-        "expanded"
+    icon_modifier =
+      if is_set?(field, :subSchema) do
+        if expanded?(id, expansion_map) do
+          "expanded"
+        else
+          "collapsed"
+        end
       else
-        "collapsed"
+        if id == checked_field_id do
+          "checked"
+        else
+          "unchecked"
+        end
       end
-    else
-      if id == checked_field_id do
-        "checked"
-      else
-        "unchecked"
-      end
-    end
 
-    selected_modifier = if id == checked_field_id do
-      send(self(), {:assign_editable_dictionary_field, field})
-      "selected"
-    else
-      "unselected"
-    end
+    selected_modifier =
+      if id == checked_field_id do
+        send(self(), {:assign_editable_dictionary_field, field})
+        "selected"
+      else
+        "unselected"
+      end
 
     {icon_modifier, selected_modifier}
   end

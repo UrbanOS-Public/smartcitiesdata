@@ -25,38 +25,48 @@ defmodule Andi.InputSchemas.Options do
 
   def items() do
     %{
-      "string" => "string",
-      "map" => "map",
-      "boolean" => "boolean",
-      "date" => "date",
-      "timestamp" => "timestamp",
-      "integer" => "integer",
-      "float" => "float",
-      "list" => "list"
+      "string" => "String",
+      "map" => "Map",
+      "boolean" => "Boolean",
+      "date" => "Date",
+      "timestamp" => "Timestamp",
+      "integer" => "Integer",
+      "float" => "Float",
+      "list" => "List"
     }
   end
 
   def pii() do
     %{
-      "None" => "None"
+      "none" => "None",
+      "direct" => "Direct",
+      "indirect" => "Indirect"
     }
   end
 
   def demographic_traits() do
     %{
-      "None" => "None"
+      "none" => "None",
+      "gender" => "Gender",
+      "race" => "Race",
+      "age" => "Age",
+      "income" => "Income",
+      "other" => "Other"
     }
   end
 
   def biased() do
     %{
-      "No" => "No"
+      "no" => "No",
+      "yes" => "Yes"
     }
   end
 
   def masked() do
     %{
-      "N/A" => "N/A"
+      "n/a" => "N/A",
+      "yes" => "Yes",
+      "no" => "No"
     }
   end
 end
