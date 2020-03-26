@@ -7,6 +7,7 @@ Behaviors describing component edges with some common concrete implementations.
 Add `:pipeline` to any umbrella sub-project that implements an edge behavior or uses one 
 of the implementations.
 
+
 ```elixir
 def deps do
   [

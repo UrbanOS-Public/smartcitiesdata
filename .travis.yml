@@ -59,13 +59,14 @@ jobs:
       script: bash scripts/travis-publish.sh reaper
     - name: publish discovery_api
       script: bash scripts/travis-publish.sh discovery_api
+    - name: publish estuary
+      script: bash scripts/travis-publish.sh estuary
     - name: publish microservices
       script:
       - | 
         bash scripts/travis-publish.sh valkyrie
         bash scripts/travis-publish.sh forklift
         bash scripts/travis-publish.sh flair
-        bash scripts/travis-publish.sh estuary
         bash scripts/travis-publish.sh discovery_streams
         bash scripts/travis-publish.sh odo
     - name: release
