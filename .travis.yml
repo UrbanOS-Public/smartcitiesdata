@@ -16,7 +16,7 @@ before_cache:
 stages:
   - build
   - name: publish
-    if: (branch == master || branch == travis-test) && type != pull_request
+    if: branch == master && type != pull_request
 jobs:
   include:
     - stage: build
@@ -74,6 +74,5 @@ jobs:
       script: bash scripts/travis-publish.sh
 branches:
   only:
-  - travis-test
   - master
   - /(andi|reaper|valkyrie|forklift|flair|estuary|discovery_streams|odo|discovery_api)@\d{1,3}\.\d{1,3}\.\d{1,3}/
