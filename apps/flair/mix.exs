@@ -53,6 +53,9 @@ defmodule Flair.MixProject do
       {:distillery, "~> 2.1"},
       {:pipeline, in_umbrella: true},
       {:tasks, in_umbrella: true, only: :dev}
+
+
+
     ]
   end
 
