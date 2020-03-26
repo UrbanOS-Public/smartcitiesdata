@@ -11,6 +11,8 @@ cache:
     - _build/dev
     - _build/test
     - _build/integration
+before_script:
+  - source scripts/set-env.sh
 before_cache:
   - bash scripts/travis-uncache.sh
 stages:
@@ -40,6 +42,7 @@ jobs:
       script: bash scripts/travis-test.sh andi
     - name: flair
       script: bash scripts/travis-test.sh flair
+      if: env(flair_BUILD) == true
     - name: forklift
       script: bash scripts/travis-test.sh forklift
     - name: valkyrie
