@@ -2,11 +2,11 @@
 
 set -e
 
-source ./scripts/lib_common.sh
-
 git clone https://github.com/smartcitiesdata/smartcitiesdata.git -b $TRAVIS_PULL_REQUEST_BRANCH
 
-ls
+cd smartcitiesdata
+
+source ./scripts/lib_common.sh
 
 apps=$(apps_needing_built "${TRAVIS_COMMIT_RANGE}")
 if [[ -z ${apps} ]]; then
