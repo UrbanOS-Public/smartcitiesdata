@@ -16,7 +16,7 @@ before_cache:
 stages:
   - build
   - name: publish
-    if: branch == master || branch == travis-test && type != pull_request
+    if: (branch == master || branch == travis-test) && type != pull_request
 jobs:
   include:
     - stage: build
