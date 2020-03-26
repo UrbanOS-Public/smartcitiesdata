@@ -78,6 +78,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       ]
     end
 
+    test "first field is selected by default", %{html: html, expandable_one: expandable_one} do
+      one_id = expandable_one.id
+
+      assert [^one_id] = get_action_field_ids(html, "selected")
+    end
+
     test "initially expandable fields are expanded", %{html: html, expandable_one: expandable_one, expandable_two: expandable_two} do
       one_id = expandable_one.id
       two_id = expandable_two.id

@@ -117,7 +117,7 @@ defmodule AndiWeb.EditLiveView do
             <div class="label label--inline">TYPE</div>
           </div>
           <div class="data-dictionary-form__tree-content data-dictionay-form-tree-content">
-          <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: f, field: :schema ) %>
+          <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: f, field: :schema, selected_field_id: @selected_field_id ) %>
           </div>
         </div>
         <div class="data-dictionary-form__edit-section">
@@ -181,13 +181,13 @@ defmodule AndiWeb.EditLiveView do
      assign(socket,
        dataset: dataset,
        changeset: new_changeset,
-       current_data_dictionary_item: :loading,
        has_validation_errors: false,
        save_success: false,
        page_error: false,
        test_results: nil,
        testing: false
-     )}
+     )
+     |> assign(get_default_dictionary_field(new_changeset))}
   end
 
   def handle_event("test_url", _, socket) do
@@ -260,7 +260,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_info({:assign_editable_dictionary_field, field}, socket) do
-    {:noreply, assign(socket, current_data_dictionary_item: field)}
+    {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: input_value(field, :id))}
   end
 
   # This handle_info takes care of all exceptions in a generic way.
@@ -317,4 +317,11 @@ defmodule AndiWeb.EditLiveView do
 
   defp disabled?(true), do: "disabled"
   defp disabled?(_), do: ""
+
+  defp get_default_dictionary_field(changeset) do
+    [
+      current_data_dictionary_item: form_for(changeset, "#", as: :form_data) |> inputs_for(:schema) |> hd(),
+      selected_field_id: Ecto.Changeset.get_field(changeset, :schema) |> hd() |> Map.get(:id)
+    ]
+  end
 end
