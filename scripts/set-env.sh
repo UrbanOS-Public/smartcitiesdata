@@ -4,6 +4,10 @@ set -e
 
 source ./scripts/lib_common.sh
 
+git clone https://github.com/smartcitiesdata/smartcitiesdata.git -b $TRAVIS_PULL_REQUEST_BRANCH
+
+ls
+
 apps=$(apps_needing_built "${TRAVIS_COMMIT_RANGE}")
 if [[ -z ${apps} ]]; then
     echo "No apps need to be published with a development tag. Exiting."
