@@ -13,6 +13,10 @@ cache:
     - _build/integration
 before_cache:
   - bash scripts/travis-uncache.sh
+stages:
+  - build
+  - name: publish
+    if: branch == master || branch == travis-test && type != pull_request
 jobs:
   include:
     - stage: build
@@ -49,9 +53,7 @@ jobs:
     - name: odo
       script: bash scripts/travis-test.sh odo
     - stage: publish
-      name: development
-      if: branch == master || branch == travis-test && type != pull_request
-    - name: publish andi
+      name: publish andi
       script: bash scripts/travis-publish.sh andi
     - name: publish reaper
       script: bash scripts/travis-publish.sh reaper
