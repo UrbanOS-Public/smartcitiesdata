@@ -30,7 +30,7 @@ elif ([[ "$TRAVIS_BRANCH" == "master" ]] || [[ "$TRAVIS_BRANCH" == "travis-test"
     for app_to_publish in $apps; do
         if [[ $app_to_publish == "$app" ]]; then
             echo "App '$app' needs to be published."
-            ./scripts/build.sh $app development
+            ./scripts/build.sh $app development false
             ./scripts/publish.sh $app development
             break
         fi
