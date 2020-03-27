@@ -7,6 +7,7 @@ defmodule EventHandlerTest do
   import SmartCity.Event, only: [data_ingest_end: 0, dataset_delete: 0]
   import Andi, only: [instance_name: 0]
   alias Andi.Services.DatasetStore
+  alias Andi.DatasetCache
 
   use Placebo
 
@@ -27,6 +28,7 @@ defmodule EventHandlerTest do
     Brook.Event.new(type: dataset_delete(), data: dataset, author: :author)
     |> Andi.EventHandler.handle_event()
 
-    assert :ok = DatasetStore.delete(dataset.id)
+    assert true == DatasetCache.delete(dataset.id)
+    assert :ok == DatasetStore.delete(dataset.id)
   end
 end
