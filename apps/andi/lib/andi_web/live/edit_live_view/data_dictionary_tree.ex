@@ -11,27 +11,28 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
     {:ok, assign(socket, expansion_map: %{})}
   end
 
+  # TODO - try out a call instead of a send for the selected_input event
+  # TODO - editor tests -> default selector field, disabling selectors
+
   def render(assigns) do
     ~L"""
     <%= if is_set?(@form, @field) do %>
-    <div id="<%= @id %>" class="data-dictionary-tree">
-      <%= for field <- inputs_for(@form, @field) do %>
-        <%= hidden_input(field, :id) %> 
-        <%= hidden_input(field, :name) %> 
-        <%= hidden_input(field, :type) %> 
-      <% {icon_modifier, selected_modifier} = get_action(field, assigns) %>
-      <div class="data-dictionary-tree-field data-dictionary-tree__field data-dictionary-tree__field--<%= icon_modifier %> data-dictionary-tree__field--<%= selected_modifier %>">
-        <div class="data-dictionary-tree-field__action" phx-click="<%= if is_set?(field, :subSchema), do: "toggle_expanded", else: "toggle_selected" %>" phx-value-field-id="<%= input_value(field, :id) %>" phx-target="#<%= @root_id %>"></div>
-        <div class="data-dictionary-tree-field__text" phx-click="toggle_selected" phx-value-field-id="<%= input_value(field, :id) %>" phx-target="#<%= @root_id %>">
-          <div class="data-dictionary-tree-field__name data-dictionary-tree-field-attribute"><%= input_value(field, :name) %></div>
-          <div class="data-dictionary-tree-field__type data-dictionary-tree-field-attribute"><%= input_value(field, :type) %></div>
-        </div>
+      <div id="<%= @id %>" class="data-dictionary-tree">
+        <%= for field <- inputs_for(@form, @field) do %>
+          <%= hidden_inputs(field) %> 
+          <% {icon_modifier, selected_modifier} = get_action(field, assigns) %>
+          <div class="data-dictionary-tree-field data-dictionary-tree__field data-dictionary-tree__field--<%= icon_modifier %> data-dictionary-tree__field--<%= selected_modifier %>">
+            <div class="data-dictionary-tree-field__action" phx-click="<%= if is_set?(field, :subSchema), do: "toggle_expanded", else: "toggle_selected" %>" phx-value-field-id="<%= input_value(field, :id) %>" phx-target="#<%= @root_id %>"></div>
+            <div class="data-dictionary-tree-field__text" phx-click="toggle_selected" phx-value-field-id="<%= input_value(field, :id) %>" phx-target="#<%= @root_id %>">
+              <div class="data-dictionary-tree-field__name data-dictionary-tree-field-attribute"><%= input_value(field, :name) %></div>
+              <div class="data-dictionary-tree-field__type data-dictionary-tree-field-attribute"><%= input_value(field, :type) %></div>
+            </div>
+          </div>
+          <div class="data-dictionary-tree__sub-dictionary data-dictionary-tree__sub-dictionary--<%= icon_modifier %>">
+            <%= live_component(@socket, DataDictionaryTree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, selected_field_id: @selected_field_id, form: field, field: :subSchema, expansion_map: @expansion_map) %>
+          </div>
+        <% end %>
       </div>
-      <div class="data-dictionary-tree__sub-dictionary data-dictionary-tree__sub-dictionary--<%= icon_modifier %>">
-        <%= live_component(@socket, DataDictionaryTree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, selected_field_id: @selected_field_id, form: field, field: :subSchema, expansion_map: @expansion_map) %>
-      </div>
-      <% end %>
-    </div>
     <% end %>
     """
   end
@@ -91,4 +92,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
   end
 
   defp is_set?(%{source: %{changes: changes}}, field), do: changes[field] != nil
+
+  defp hidden_inputs(form_field) do
+    form_field.data
+    |> Map.from_struct()
+    |> Map.delete(:subSchema)
+    |> Enum.map(fn {k, v} ->
+      hidden_input(form_field, k)
+    end)
+  end
 end

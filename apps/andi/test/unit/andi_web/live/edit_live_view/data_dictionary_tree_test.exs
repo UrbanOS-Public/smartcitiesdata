@@ -12,7 +12,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
     only: [
       get_texts: 2,
       get_select: 2,
-      get_attributes: 3
+      get_attributes: 3,
+      find_elements: 2
     ]
 
   @url_path "/datasets/"
@@ -71,7 +72,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       [
         view: view,
         html: html,
-        expandable_one: %{id: expandable_one_id, target: expandable_one_target},
+        expandable_one: %{id: expandable_one_id, target: expandable_one_target, name: "one"},
         expandable_two: %{id: expandable_two_id, target: expandable_two_target},
         checkable_one: %{id: checkable_one_id, target: checkable_one_target, name: "one", type: "list"},
         checkable_two: %{id: checkable_two_id, target: checkable_two_target}
@@ -82,6 +83,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       one_id = expandable_one.id
 
       assert [^one_id] = get_action_field_ids(html, "selected")
+    end
+
+    test "first field values are displayed in the editor by default", %{html: html, expandable_one: expandable_one} do
+      assert [expandable_one.name] == get_attributes(html, ".data-dictionary-field-editor__name", "value")
     end
 
     test "initially expandable fields are expanded", %{html: html, expandable_one: expandable_one, expandable_two: expandable_two} do
@@ -289,6 +294,60 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
                )
 
       assert ["string", "map", "integer", "list", "float", "map", "string"] == get_texts(html, ".data-dictionary-tree-field__type")
+    end
+
+    test "generates hiddent inputs for each form field", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [
+              %{
+                name: "one",
+                type: "list",
+                subType: "map",
+                description: "this is a list of maps",
+                subSchema: [
+                  %{
+                    name: "one-one",
+                    type: "string"
+                  }
+                ]
+              },
+              %{
+                name: "two",
+                type: "map",
+                subSchema: [
+                  %{
+                    name: "two-one",
+                    type: "integer"
+                  }
+                ]
+              }
+            ]
+          }
+        })
+
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert Enum.count(find_elements(html, "input[type='hidden']#form_data_schema_0_description")) > 0
+    end
+
+    test "handles datasets with no schema fields", %{conn: conn} do
+      dataset = TDG.create_dataset(%{}) |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
+
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    end
+
+    test "handles datasets with empty schema fields", %{conn: conn} do
+      dataset = TDG.create_dataset(%{schema: []})
+
+      DatasetCache.put(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
   end
 

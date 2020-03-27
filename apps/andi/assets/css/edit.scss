@@ -198,6 +198,7 @@ $tick-height: 1rem + $field-padding - 0.25;
       width: 3rem;
       height: 24px;
       background-repeat: no-repeat;
+      background-color: white;
     }
 
     .data-dictionary-tree__field--collapsed .data-dictionary-tree-field__action {
@@ -206,6 +207,10 @@ $tick-height: 1rem + $field-padding - 0.25;
     
     .data-dictionary-tree__field--expanded .data-dictionary-tree-field__action {
       background-image: url('/images/collapsed.svg');
+    }
+
+    .data-dictionary-tree__field--selected .data-dictionary-tree-field__action {
+      background-color: #EEEFF1; 
     }
 
     .data-dictionary-tree__field--checked .data-dictionary-tree-field__action {

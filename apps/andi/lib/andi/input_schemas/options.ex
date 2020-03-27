@@ -25,6 +25,7 @@ defmodule Andi.InputSchemas.Options do
 
   def items() do
     %{
+      "" => "",
       "string" => "String",
       "map" => "Map",
       "boolean" => "Boolean",

@@ -318,10 +318,17 @@ defmodule AndiWeb.EditLiveView do
   defp disabled?(true), do: "disabled"
   defp disabled?(_), do: ""
 
-  defp get_default_dictionary_field(changeset) do
+  defp get_default_dictionary_field(%{changes: %{schema: schema}} = changeset) when schema != [] do
     [
       current_data_dictionary_item: form_for(changeset, "#", as: :form_data) |> inputs_for(:schema) |> hd(),
       selected_field_id: Ecto.Changeset.get_field(changeset, :schema) |> hd() |> Map.get(:id)
+    ]
+  end
+
+  defp get_default_dictionary_field(_changeset) do
+    [
+      current_data_dictionary_item: :no_dictionary,
+      selected_field_id: :no_dictionary
     ]
   end
 end
