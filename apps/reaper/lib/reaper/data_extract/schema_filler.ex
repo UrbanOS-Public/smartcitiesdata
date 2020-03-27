@@ -2,7 +2,7 @@ defmodule Reaper.DataExtract.SchemaFiller do
   @moduledoc false
 
   @doc """
-  Given a schema, recursively replace a payload's empty maps with nils and add missing keys to maps that don't have their full set of keys.
+  Given a schema, recursively replace a payload's empty maps with nils and add missing keys to maps that don't have their full set of keys. If a schema field has a default value, apply that to the field if missing or null.
   """
   def fill(schema, payload) do
     Enum.reduce(schema, payload, &fill_missing_fields/2)
