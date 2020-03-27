@@ -130,14 +130,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       assert [^two_id] = get_action_field_ids(html, "collapsed")
     end
 
-    test "initially selectable fields are unselected", %{html: html, checkable_one: checkable_one, checkable_two: checkable_two} do
-      one_id = checkable_one.id
-      two_id = checkable_two.id
-
-      assert one_id in get_action_field_ids(html, "unselected")
-      assert two_id in get_action_field_ids(html, "unselected")
-    end
-
     test "clicking a selectable and expandable field once selects it but leaves it expanded", %{view: view, checkable_one: checkable_one} do
       one_id = checkable_one.id
 
@@ -174,7 +166,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       one_id = checkable_one.id
       two_id = checkable_two.id
 
-      assert one_id in get_action_field_ids(html, "unselected")
+      assert one_id in get_action_field_ids(html, "selected")
       assert two_id in get_action_field_ids(html, "unselected")
 
       html = render_click([view, checkable_two.target], "toggle_selected", %{"field-id" => checkable_two.id})
@@ -296,7 +288,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       assert ["string", "map", "integer", "list", "float", "map", "string"] == get_texts(html, ".data-dictionary-tree-field__type")
     end
 
-    test "generates hiddent inputs for each form field", %{conn: conn} do
+    test "generates hidden inputs for fields that are not selected", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
           technical: %{
@@ -305,7 +297,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
                 name: "one",
                 type: "list",
                 subType: "map",
-                description: "this is a list of maps",
+                description: "description",
                 subSchema: [
                   %{
                     name: "one-one",
@@ -316,6 +308,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
               %{
                 name: "two",
                 type: "map",
+                description: "this is a map",
                 subSchema: [
                   %{
                     name: "two-one",
@@ -331,7 +324,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert Enum.count(find_elements(html, "input[type='hidden']#form_data_schema_0_description")) > 0
+      assert Enum.is_empty?(find_elements(html, "input[type='hidden']#form_data_schema_0_description"))
+      assert Enum.count(find_elements(html, "input[type='hidden']#form_data_schema_1_description")) > 0
     end
 
     test "handles datasets with no schema fields", %{conn: conn} do

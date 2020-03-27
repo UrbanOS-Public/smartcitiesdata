@@ -1,6 +1,5 @@
 defmodule FlokiHelpers do
   @moduledoc false
-  import Phoenix.LiveViewTest
 
   def get_text(html, selector) do
     html
@@ -33,15 +32,28 @@ defmodule FlokiHelpers do
   end
 
   def get_select(html, selector) do
-    {_, [{_, value} | _], [text]} =
+    selected_fields =
       html
       |> Floki.parse_fragment!()
       |> Floki.find(selector)
       |> Floki.find("select option")
       |> Enum.filter(fn {_, list, _} -> list |> Enum.any?(&(&1 == {"selected", "selected"})) end)
-      |> List.first()
 
-    {value, text}
+    case selected_fields do
+      [] -> []
+      [{_, [{_, value} | _], [text]} | _] -> {value, text}
+    end
+  end
+
+  def get_select_first_option(html, selector) do
+    {_, [{_, value} | _], text_list} =
+      html
+      |> Floki.parse_fragment!()
+      |> Floki.find(selector)
+      |> Floki.find("select option")
+      |> hd()
+
+    {value, text_list}
   end
 
   def find_elements(html, selector) do

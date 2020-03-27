@@ -39,6 +39,7 @@ defmodule Andi.InputSchemas.Options do
 
   def pii() do
     %{
+      "" => "",
       "none" => "None",
       "direct" => "Direct",
       "indirect" => "Indirect"
@@ -47,6 +48,7 @@ defmodule Andi.InputSchemas.Options do
 
   def demographic_traits() do
     %{
+      "" => "",
       "none" => "None",
       "gender" => "Gender",
       "race" => "Race",
@@ -58,6 +60,7 @@ defmodule Andi.InputSchemas.Options do
 
   def biased() do
     %{
+      "" => "",
       "no" => "No",
       "yes" => "Yes"
     }
@@ -65,6 +68,7 @@ defmodule Andi.InputSchemas.Options do
 
   def masked() do
     %{
+      "" => "",
       "n/a" => "N/A",
       "yes" => "Yes",
       "no" => "No"
