@@ -16,6 +16,7 @@ defmodule Andi.InputSchemas.DataDictionary do
     field(:description, :string)
     field(:masked, :string)
     field(:pii, :string)
+    field(:rationale, :string)
     embeds_many(:subSchema, DataDictionary)
   end
 
