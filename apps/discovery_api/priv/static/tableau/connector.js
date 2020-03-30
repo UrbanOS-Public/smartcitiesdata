@@ -63,6 +63,9 @@ function _setupConnector() {
 
   connector.init = function (initCallback) {
     var error = _getUrlParameterByName('error')
+    if (document.getElementById("query")) {
+      document.getElementById("query").value = _getQueryString()
+    }
     if (error) {
       var errorDescription = _getUrlParameterByName('error_description');
       _displayLoginError(errorDescription)

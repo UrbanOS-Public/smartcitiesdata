@@ -155,7 +155,7 @@ defmodule DiscoveryApi.Data.ModelTest do
       assert actual_columns == expected_columns
     end
 
-    test "converts mixed case schema fields" do
+    test "converts mixed case schema fields by converting to a safe id and downcasing the description" do
       model =
         Helper.sample_model(%{
           schema: [
@@ -169,7 +169,7 @@ defmodule DiscoveryApi.Data.ModelTest do
       expected_columns = [
         %{
           dataType: "string",
-          description: "bob-Field",
+          description: "bob-field",
           id: "bob_field"
         }
       ]

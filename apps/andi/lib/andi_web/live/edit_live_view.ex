@@ -8,6 +8,7 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.Options
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.EditLiveView.DataDictionaryTree
+  alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -116,11 +117,11 @@ defmodule AndiWeb.EditLiveView do
             <div class="label label--inline">TYPE</div>
           </div>
           <div class="data-dictionary-form__tree-content data-dictionay-form-tree-content">
-          <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: f, field: :schema ) %>
+          <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: f, field: :schema, selected_field_id: @selected_field_id ) %>
           </div>
         </div>
         <div class="data-dictionary-form__edit-section">
-          EDIT COMING SOON
+          <%= live_component(@socket, DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item) %>
         </div>
       </div>
 
@@ -185,7 +186,8 @@ defmodule AndiWeb.EditLiveView do
        page_error: false,
        test_results: nil,
        testing: false
-     )}
+     )
+     |> assign(get_default_dictionary_field(new_changeset))}
   end
 
   def handle_event("test_url", _, socket) do
@@ -257,6 +259,10 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
+  def handle_info({:assign_editable_dictionary_field, field}, socket) do
+    {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: input_value(field, :id))}
+  end
+
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
   # Flags should be reset here.
@@ -311,4 +317,18 @@ defmodule AndiWeb.EditLiveView do
 
   defp disabled?(true), do: "disabled"
   defp disabled?(_), do: ""
+
+  defp get_default_dictionary_field(%{changes: %{schema: schema}} = changeset) when schema != [] do
+    [
+      current_data_dictionary_item: form_for(changeset, "#", as: :form_data) |> inputs_for(:schema) |> hd(),
+      selected_field_id: Ecto.Changeset.get_field(changeset, :schema) |> hd() |> Map.get(:id)
+    ]
+  end
+
+  defp get_default_dictionary_field(_changeset) do
+    [
+      current_data_dictionary_item: :no_dictionary,
+      selected_field_id: :no_dictionary
+    ]
+  end
 end

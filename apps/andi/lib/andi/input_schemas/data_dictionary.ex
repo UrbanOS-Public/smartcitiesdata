@@ -9,7 +9,14 @@ defmodule Andi.InputSchemas.DataDictionary do
     field(:id, Ecto.UUID)
     field(:name, :string)
     field(:type, :string)
+    field(:itemType, :string)
     field(:selector, :string)
+    field(:biased, :string)
+    field(:demographic, :string)
+    field(:description, :string)
+    field(:masked, :string)
+    field(:pii, :string)
+    field(:rationale, :string)
     embeds_many(:subSchema, DataDictionary)
   end
 
@@ -21,7 +28,7 @@ defmodule Andi.InputSchemas.DataDictionary do
     with_id = Map.put_new(changes, :id, Ecto.UUID.generate())
 
     key_value
-    |> cast(with_id, [:id, :name, :type, :selector], empty_values: [])
+    |> cast(with_id, [:id, :name, :type, :selector, :itemType, :biased, :demographic, :description, :masked, :pii, :rationale], empty_values: [])
     |> cast_embed(:subSchema)
     |> validate_required([:id, :name, :type])
   end
