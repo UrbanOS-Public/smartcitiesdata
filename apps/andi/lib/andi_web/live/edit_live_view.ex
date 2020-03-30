@@ -259,12 +259,8 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
-  def handle_info({:assign_editable_dictionary_field, field}, %{assigns: %{selected_field_id: selected_field_id}} = socket) do
-    if selected_field_id != input_value(field, :id) do
-      {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: input_value(field, :id))}
-    else
-      {:noreply, socket}
-    end
+  def handle_info({:assign_editable_dictionary_field, field}, socket) do
+    {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: input_value(field, :id))}
   end
 
   # This handle_info takes care of all exceptions in a generic way.

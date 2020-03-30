@@ -32,6 +32,22 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
     assert get_attributes(html, ".data-dictionary-field-editor__item-type", "disabled") != []
   end
 
+  test "item type selector is enabled when field type is a list", %{conn: conn} do
+    dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "one", type: "string"}]}})
+
+    DatasetCache.put(dataset)
+
+    {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+    assert get_attributes(html, ".data-dictionary-field-editor__item-type", "disabled") != []
+
+    dataset_map = EditorHelpers.dataset_to_form_data(dataset) |> Map.put(:schema, %{"0" => %{"name" => "one", "type" => "list"}})
+
+    html = render_change(view, :validate, %{"form_data" => dataset_map})
+
+    assert get_attributes(html, ".data-dictionary-field-editor__item-type", "disabled") == []
+  end
+
   data_test "empty values for #{selector_name} are selected by default", %{conn: conn} do
     dataset = TDG.create_dataset(%{technical: %{schema: [], sourceType: "remote"}})
 
