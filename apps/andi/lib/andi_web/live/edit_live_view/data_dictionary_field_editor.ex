@@ -19,7 +19,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
         <%= hidden_input(@form, :id) %>
         <div class="data-dictionary-field-editor__name">
           <%= label(@form, :name, "Name", class: "label label--required") %>
-          <%= text_input(@form, :name, id: id <> "_name", class: "data-dictionary-field-editor__name input") %>
+          <%= text_input(@form, :name, id: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000") %>
         </div>
         <div class="data-dictionary-field-editor__type">
           <%= label(@form, :type, "Type", class: "label label--required") %>
@@ -31,7 +31,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
         </div>
         <div class="data-dictionary-field-editor__description">
           <%= label(@form, :description, "Description", class: "label") %>
-          <%= textarea(@form, :description, id: id <> "_description", class: "data-dictionary-field-editor__description input textarea") %>
+          <%= textarea(@form, :description, id: id <> "_description", class: "data-dictionary-field-editor__description input textarea", "phx-debounce": "blur") %>
         </div>
         <div class="data-dictionary-field-editor__pii">
           <%= label(@form, :pii, "P.I.I.", class: "label") %>
@@ -51,7 +51,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
         </div>
         <div class="data-dictionary-field-editor__rationale">
           <%= label(@form, :rationale, "Rationale", class: "label") %>
-          <%= text_input(@form, :rationale, id: id <> "_rationale", class: "data-dictionary-field-editor__rationale input") %>
+          <%= text_input(@form, :rationale, id: id <> "_rationale", class: "data-dictionary-field-editor__rationale input", "phx-debounce": "1000") %>
         </div>
       </div>
     """
