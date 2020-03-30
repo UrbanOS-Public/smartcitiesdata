@@ -51,3 +51,6 @@ config :valkyrie, :brook,
       namespace: "valkyrie:view"
     ]
   ]
+
+config :profiling,
+  status: true

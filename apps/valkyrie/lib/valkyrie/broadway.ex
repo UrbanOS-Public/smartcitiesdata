@@ -61,7 +61,7 @@ defmodule Valkyrie.Broadway do
     with {:ok, smart_city_data} <- SmartCity.Data.new(message_data.value),
          {:ok, standardized_payload} <- standardize_data(dataset, smart_city_data.payload),
          smart_city_data <- %{smart_city_data | payload: standardized_payload},
-         smart_city_data <- Data.add_timing(smart_city_data, create_timing(start_time)),
+         smart_city_data <- add_timing(smart_city_data, start_time),
          {:ok, json_data} <- Jason.encode(smart_city_data) do
       %{message | data: %{message.data | value: json_data}}
     else
@@ -89,6 +89,13 @@ defmodule Valkyrie.Broadway do
     case Valkyrie.standardize_data(dataset, payload) do
       {:ok, new_payload} -> {:ok, new_payload}
       {:error, reason} -> {:failed_schema_validation, reason}
+    end
+  end
+
+  defp add_timing(smart_city_data, start_time) do
+    case Application.get_env(:profiling, :status) do
+      true -> Data.add_timing(smart_city_data, create_timing(start_time))
+      _ -> smart_city_data
     end
   end
 
