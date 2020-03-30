@@ -324,7 +324,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert Enum.is_empty?(find_elements(html, "input[type='hidden']#form_data_schema_0_description"))
+      assert Enum.empty?(find_elements(html, "input[type='hidden']#form_data_schema_0_description"))
       assert Enum.count(find_elements(html, "input[type='hidden']#form_data_schema_1_description")) > 0
     end
 
