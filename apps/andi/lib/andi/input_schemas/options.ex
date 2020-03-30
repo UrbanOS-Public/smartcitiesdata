@@ -33,7 +33,8 @@ defmodule Andi.InputSchemas.Options do
       "timestamp" => "Timestamp",
       "integer" => "Integer",
       "float" => "Float",
-      "list" => "List"
+      "list" => "List",
+      "json" => "JSON"
     }
   end
 
