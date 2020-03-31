@@ -65,7 +65,7 @@ defmodule Valkyrie.BroadwayTest do
   end
 
   test "applies valkyrie message timing", %{broadway: broadway} do
-    Application.put_env(:profiling, :status, true)
+    Application.put_env(:valkyrie, :profiling_status, true)
     data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
     kafka_message = %{value: Jason.encode!(data)}
 
@@ -91,7 +91,7 @@ defmodule Valkyrie.BroadwayTest do
   end
 
   test "should return empty timing when profiling status is not true", %{broadway: broadway} do
-    Application.put_env(:profiling, :status, false)
+    Application.put_env(:valkyrie, :profiling_status, false)
     data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
     kafka_message = %{value: Jason.encode!(data)}
 

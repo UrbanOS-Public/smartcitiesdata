@@ -93,7 +93,7 @@ defmodule Valkyrie.Broadway do
   end
 
   defp add_timing(smart_city_data, start_time) do
-    case Application.get_env(:profiling, :status) do
+    case Application.get_env(:valkyrie, :profiling_status) do
       true -> Data.add_timing(smart_city_data, create_timing(start_time))
       _ -> smart_city_data
     end

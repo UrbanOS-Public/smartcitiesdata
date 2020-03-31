@@ -80,5 +80,5 @@ if kafka_brokers do
     ]
 end
 
-config :profiling,
-  status: profiling_status
+config :valkyrie,
+  profiling_status: profiling_status
