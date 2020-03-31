@@ -15,7 +15,7 @@ input_topic_prefix = System.get_env("INPUT_TOPIC_PREFIX")
 output_topic_prefix = System.get_env("OUTPUT_TOPIC_PREFIX")
 processor_stages = System.get_env("PROCESSOR_STAGES") || "1"
 log_level = (System.get_env("LOG_LEVEL") || "warn") |> String.to_atom()
-profiling_status = System.get_env("PROFILING_STATUS")
+profiling_enabled = System.get_env("PROFILING_ENABLED")
 
 config :logger,
   level: log_level
@@ -81,4 +81,4 @@ if kafka_brokers do
 end
 
 config :valkyrie,
-  profiling_status: profiling_status
+  profiling_enabled: profiling_enabled
