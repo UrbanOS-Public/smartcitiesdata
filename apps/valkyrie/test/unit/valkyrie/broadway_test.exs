@@ -65,6 +65,7 @@ defmodule Valkyrie.BroadwayTest do
   end
 
   test "applies valkyrie message timing", %{broadway: broadway} do
+    Application.put_env(:valkyrie, :profiling_status, true)
     data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
     kafka_message = %{value: Jason.encode!(data)}
 
@@ -87,6 +88,25 @@ defmodule Valkyrie.BroadwayTest do
                start_time: @current_time
              }
            ]
+  end
+
+  test "should return empty timing when profiling status is not true", %{broadway: broadway} do
+    Application.put_env(:valkyrie, :profiling_status, false)
+    data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
+    kafka_message = %{value: Jason.encode!(data)}
+
+    Broadway.test_messages(broadway, [kafka_message])
+
+    assert_receive {:ack, _ref, messages, _}, 5_000
+
+    timing =
+      messages
+      |> Enum.map(fn message -> Data.new(message.data.value) end)
+      |> Enum.map(fn {:ok, data} -> data.operational.timing end)
+      |> List.flatten()
+      |> Enum.filter(fn timing -> timing.app == "valkyrie" end)
+
+    assert timing == []
   end
 
   test "should yeet message when it fails to parse properly", %{broadway: broadway} do
