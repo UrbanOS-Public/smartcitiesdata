@@ -264,7 +264,15 @@ function _setConnectionData(data) {
 }
 
 function _getMode() { return JSON.parse(tableau.connectionData).mode }
-function _getQueryString() { return JSON.parse(tableau.connectionData).query }
+function _getQueryString() {
+  try {
+    return JSON.parse(tableau.connectionData).query
+  }
+  catch(err) {
+    console.error(err)
+    return ""
+  }
+}
 
 function _getUrlParameterByName(name) {
   var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
