@@ -63,6 +63,9 @@ function _setupConnector() {
 
   connector.init = function (initCallback) {
     var error = _getUrlParameterByName('error')
+    if (document.getElementById("query")) {
+      document.getElementById("query").value = _getQueryString()
+    }
     if (error) {
       var errorDescription = _getUrlParameterByName('error_description');
       _displayLoginError(errorDescription)
@@ -261,7 +264,15 @@ function _setConnectionData(data) {
 }
 
 function _getMode() { return JSON.parse(tableau.connectionData).mode }
-function _getQueryString() { return JSON.parse(tableau.connectionData).query }
+function _getQueryString() {
+  try {
+    return JSON.parse(tableau.connectionData).query
+  }
+  catch(err) {
+    console.error(err)
+    return ""
+  }
+}
 
 function _getUrlParameterByName(name) {
   var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');

@@ -118,42 +118,18 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
 
       allow(Model.get(@dataset_id), return: model)
 
-      :ok
-    end
+      %{subject_id: subject_id, token: token, exit_fn: exit_fn} = Helper.auth0_setup()
+      on_exit(exit_fn)
 
-    test "does not retrieve a restricted dataset if the given user is not a member of the dataset's group",
-         %{
-           conn: conn
-         } do
-      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: []}})
-
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
-
-      conn
-      |> put_req_cookie(Helper.default_guardian_token_key(), token)
-      |> get("/api/v1/dataset/#{@dataset_id}")
-      |> json_response(404)
-    end
-
-    test "retrieves a restricted dataset if the given user has access to it, via cookie", %{
-      conn: conn
-    } do
-      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
-
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
-
-      conn
-      |> put_req_cookie(Helper.default_guardian_token_key(), token)
-      |> get("/api/v1/dataset/#{@dataset_id}")
-      |> json_response(200)
+      %{subject_id: subject_id, token: token}
     end
 
     test "retrieves a restricted dataset if the given user has access to it, via token", %{
-      conn: conn
+      conn: conn,
+      subject_id: subject_id,
+      token: token
     } do
-      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
-
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
       conn
       |> put_req_header("authorization", "Bearer #{token}")

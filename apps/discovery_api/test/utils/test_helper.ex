@@ -4,9 +4,11 @@ defmodule DiscoveryApi.Test.Helper do
   """
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Schemas.Users
+  alias DiscoveryApi.Test.AuthHelper
+  alias DiscoveryApi.Auth.Auth0.CachedJWKS
+  alias DiscoveryApi.Auth.GuardianConfigurator
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @ldap_people_ou "People"
   @instance DiscoveryApi.instance()
 
   def sample_model(values \\ %{}) do
@@ -78,17 +80,34 @@ defmodule DiscoveryApi.Test.Helper do
     Brook.Test.clear_view_state(@instance, :models)
   end
 
-  def ldap_user(values \\ %{}) do
-    %{
-      "cn" => ["bigbadbob"],
-      "displayName" => ["big bad"],
-      "dn" => "uid=bigbadbob,cn=users,cn=accounts",
-      "ou" => [@ldap_people_ou],
-      "sn" => ["bad"],
-      "uid" => ["bigbadbob"],
-      "uidNumber" => ["1501200034"]
-    }
-    |> Map.merge(values)
+  def auth0_setup() do
+    secret_key = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian) |> Keyword.get(:secret_key)
+    GuardianConfigurator.configure(issuer: AuthHelper.valid_issuer())
+
+    jwks = AuthHelper.valid_jwks()
+    CachedJWKS.set(jwks)
+
+    bypass = Bypass.open()
+
+    really_far_in_the_future = 3_000_000_000_000
+    AuthHelper.set_allowed_guardian_drift(really_far_in_the_future)
+
+    Application.put_env(
+      :discovery_api,
+      :user_info_endpoint,
+      "http://localhost:#{bypass.port}/userinfo"
+    )
+
+    Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
+      Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z"}))
+    end)
+
+    exit_fn = fn ->
+      AuthHelper.set_allowed_guardian_drift(0)
+      GuardianConfigurator.configure(secret_key: secret_key)
+    end
+
+    %{subject_id: AuthHelper.valid_jwt_sub(), token: AuthHelper.valid_jwt(), exit_fn: exit_fn}
   end
 
   def extract_token(cookie_string) do
@@ -112,45 +131,6 @@ defmodule DiscoveryApi.Test.Helper do
   end
 
   def default_guardian_token_key(), do: Guardian.Plug.Keys.token_key() |> Atom.to_string()
-
-  def setup_ldap() do
-    Paddle.authenticate([cn: "admin"], "admin")
-    Paddle.add([ou: @ldap_people_ou], objectClass: ["top", "organizationalunit"], ou: @ldap_people_ou)
-  end
-
-  def create_ldap_user(username) do
-    dn = [uid: username, ou: @ldap_people_ou]
-
-    user_request = [
-      objectClass: ["account", "posixAccount"],
-      cn: username,
-      uid: username,
-      loginShell: "/bin/bash",
-      homeDirectory: "/home/user",
-      uidNumber: 501,
-      gidNumber: 100,
-      userPassword: "{SSHA}/02KaNTR+p0r0KSDfDZfFQiYgyekBsdH"
-    ]
-
-    case Paddle.add(dn, user_request) do
-      status when status in [:ok, {:error, :entryAlreadyExists}] ->
-        {:ok, [_user | _]} = Paddle.get(base: "uid=#{username},ou=#{@ldap_people_ou}")
-        create_persisted_user(username)
-
-      error ->
-        raise error
-    end
-  end
-
-  def get_token_from_login(username, password \\ "admin") do
-    %{status_code: 200, headers: headers} =
-      "http://localhost:4000/api/v1/login"
-      |> HTTPoison.get!([], hackney: [basic_auth: {username, password}])
-      |> Map.from_struct()
-
-    {"token", token} = Enum.find(headers, fn {header, _value} -> header == "token" end)
-    token
-  end
 
   def stringify_keys(map) do
     map

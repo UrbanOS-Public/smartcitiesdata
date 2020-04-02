@@ -18,6 +18,19 @@ defmodule Reaper.DataSlurper.S3Test do
       assert_called ExAws.S3.download_file("bucket", "subdir/file.ext", filename)
     end
 
+    test "sets ExAws region conditionally if x-scos-amzn-s3-region is set in sourceHeaders" do
+      allow ExAws.S3.download_file(any(), any(), any()), return: :ok
+      allow ExAws.request(any(), any()), return: {:ok, any()}
+
+      source_url = "s3://bucket/subdir/file.ext"
+      dataset_id = "12345-6789"
+      filename = "#{@download_dir}#{dataset_id}"
+
+      assert {:file, filename} == Reaper.DataSlurper.S3.slurp(source_url, dataset_id, %{"x-scos-amzn-s3-region": "us-east-1"})
+      assert_called ExAws.request(any(), region: "us-east-1")
+      refute_called ExAws.request(any(), [])
+    end
+
     test "raises in the event of a download issue" do
       allow ExAws.request(any()), return: {:error, "download failed"}
 

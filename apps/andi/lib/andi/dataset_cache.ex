@@ -47,6 +47,10 @@ defmodule Andi.DatasetCache do
     :ets.match(__MODULE__, {:_, :"$1"}) |> List.flatten()
   end
 
+  def delete(id) do
+    :ets.match_delete(__MODULE__, {id, :"$1"})
+  end
+
   # Callbacks
   def init(_) do
     # Warning: Be extremely careful using :public for ETS tables. This can lead to race conditions and all kinds of bad things.

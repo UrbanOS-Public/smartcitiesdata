@@ -69,9 +69,6 @@ describe('Discovery API Tableau Web Data Connector', () => {
   }
   ]
 
-
-  
-
   beforeEach(() => {
     delete global.tableau.password
   })
@@ -227,6 +224,34 @@ describe('Discovery API Tableau Web Data Connector', () => {
       DiscoveryWDCTranslator.setupConnector()
       registeredConnector.init(() => {
         expect(document.body.innerHTML).toEqual(expectedHtml)
+        done()
+      })
+    })
+
+    test('sets the query box to a pre-existing query', (done) => {
+      document.body.innerHTML = '<textarea id="query" placeholder="select * from..."></textarea>'
+      global.tableau.connectionData = JSON.stringify({mode: 'query', query: expectedTableSchemaForQueryDataset.description})
+      mockFetches({
+        'token': {body: {refresh_token: 'this-is-a-refresh-token'}}
+      })
+
+      DiscoveryWDCTranslator.setupConnector()
+      registeredConnector.init(() => {
+        expect(document.getElementById("query").value).toEqual(expectedTableSchemaForQueryDataset.description)
+        done()
+      })
+    })
+
+    test('does not crash when attempting to decode an invalid connectionData', (done) => {
+      document.body.innerHTML = '<textarea id="query" placeholder="select * from..."></textarea>'
+      global.tableau.connectionData = "{bob: bob}"
+      mockFetches({
+        'token': {body: {refresh_token: 'this-is-a-refresh-token'}}
+      })
+
+      DiscoveryWDCTranslator.setupConnector()
+      registeredConnector.init(() => {
+        expect(document.getElementById("query").value).toEqual("")
         done()
       })
     })

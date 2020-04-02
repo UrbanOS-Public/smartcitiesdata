@@ -52,6 +52,7 @@ defmodule Andi.EventHandler do
         type: dataset_delete(),
         data: %Dataset{} = dataset
       }) do
+    DatasetCache.delete(dataset.id)
     DatasetStore.delete(dataset.id)
   end
 

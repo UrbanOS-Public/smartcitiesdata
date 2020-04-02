@@ -177,4 +177,12 @@ defmodule Andi.DatasetCacheTest do
       end)
     end
   end
+
+  test "should delete dataset cache when delete is called" do
+    dataset = TDG.create_dataset(%{id: Faker.UUID.v4()})
+    DatasetCache.put(dataset)
+    assert %{"dataset" => dataset, "id" => dataset.id} == DatasetCache.get(dataset.id)
+    assert true == DatasetCache.delete(dataset.id)
+    assert %{} == DatasetCache.get(dataset.id)
+  end
 end

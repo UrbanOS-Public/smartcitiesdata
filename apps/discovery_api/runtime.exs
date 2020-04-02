@@ -26,8 +26,6 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   ]
 
 config :discovery_api,
-  ldap_user: System.get_env("LDAP_USER"),
-  ldap_pass: System.get_env("LDAP_PASS"),
   hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
   hosted_region: System.get_env("HOSTED_FILE_REGION"),
   presign_key: System.get_env("PRESIGN_KEY")
@@ -67,25 +65,11 @@ config :redix,
 
 config :prestige, :session_opts, url: System.get_env("PRESTO_URL")
 
-config :paddle, Paddle,
-  host: System.get_env("LDAP_HOST"),
-  base: System.get_env("LDAP_BASE"),
-  account_subdn: System.get_env("LDAP_ACCOUNT_SUBDN")
-
-auth_provider = (System.get_env("AUTH_PROVIDER") || "default") |> String.downcase()
+config :discovery_api, DiscoveryApi.Auth.Guardian, issuer: System.get_env("AUTH_JWT_ISSUER")
 
 config :discovery_api,
-  auth_provider: auth_provider
-
-if auth_provider == "auth0" do
-  config :discovery_api, DiscoveryApi.Auth.Guardian, issuer: System.get_env("AUTH_JWT_ISSUER")
-
-  config :discovery_api,
-    jwks_endpoint: System.get_env("AUTH_JWKS_ENDPOINT"),
-    user_info_endpoint: System.get_env("AUTH_USER_INFO_ENDPOINT")
-else
-  config :discovery_api, DiscoveryApi.Auth.Guardian, secret_key: System.get_env("GUARDIAN_KEY")
-end
+  jwks_endpoint: System.get_env("AUTH_JWKS_ENDPOINT"),
+  user_info_endpoint: System.get_env("AUTH_USER_INFO_ENDPOINT")
 
 config :ex_aws,
   region: System.get_env("HOSTED_FILE_REGION")

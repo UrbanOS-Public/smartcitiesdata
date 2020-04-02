@@ -14,7 +14,7 @@ defmodule DiscoveryApiWeb.UserControllerTest do
   describe "POST /logged-in with Auth0 auth provider" do
     setup do
       secret_key = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian) |> Keyword.get(:secret_key)
-      GuardianConfigurator.configure("auth0", issuer: AuthHelper.valid_issuer())
+      GuardianConfigurator.configure(issuer: AuthHelper.valid_issuer())
 
       jwks = AuthHelper.valid_jwks()
       CachedJWKS.set(jwks)
@@ -29,7 +29,7 @@ defmodule DiscoveryApiWeb.UserControllerTest do
 
       on_exit(fn ->
         AuthHelper.set_allowed_guardian_drift(0)
-        GuardianConfigurator.configure("default", secret_key: secret_key)
+        GuardianConfigurator.configure(secret_key: secret_key)
       end)
 
       %{bypass: bypass}

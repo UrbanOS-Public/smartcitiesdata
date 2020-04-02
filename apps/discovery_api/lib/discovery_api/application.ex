@@ -9,8 +9,7 @@ defmodule DiscoveryApi.Application do
   def start(_type, _args) do
     import Supervisor.Spec
 
-    Application.get_env(:discovery_api, :auth_provider)
-    |> GuardianConfigurator.configure()
+    GuardianConfigurator.configure()
 
     DiscoveryApi.MetricsExporter.setup()
     DiscoveryApiWeb.Endpoint.Instrumenter.setup()

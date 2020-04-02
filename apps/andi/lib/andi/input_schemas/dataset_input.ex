@@ -8,6 +8,7 @@ defmodule Andi.InputSchemas.DatasetInput do
   alias Andi.InputSchemas.DatasetSchemaValidator
   alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.KeyValue
+  alias Andi.InputSchemas.DataDictionary
 
   @business_fields %{
     benefitRating: :float,
@@ -32,7 +33,7 @@ defmodule Andi.InputSchemas.DatasetInput do
     dataName: :string,
     orgName: :string,
     private: :boolean,
-    schema: {:array, :map},
+    schema: {:embed, DataDictionary.relationship_definition(:sourceHeaders)},
     sourceFormat: :string,
     sourceHeaders: {:embed, KeyValue.relationship_definition(:sourceHeaders)},
     sourceQueryParams: {:embed, KeyValue.relationship_definition(:sourceQueryParams)},
@@ -47,7 +48,9 @@ defmodule Andi.InputSchemas.DatasetInput do
 
   @key_value_type_keys [:sourceQueryParams, :sourceHeaders]
 
-  @non_embedded_types Map.drop(@types, @key_value_type_keys)
+  @embedded_types @key_value_type_keys ++ [:schema]
+
+  @non_embedded_types Map.drop(@types, @embedded_types)
 
   @required_fields [
     :benefitRating,
@@ -155,7 +158,7 @@ defmodule Andi.InputSchemas.DatasetInput do
   end
 
   defp cast_embedded(changeset) do
-    Enum.reduce(@key_value_type_keys, changeset, fn key, acc_changeset -> cast_embed(acc_changeset, key) end)
+    Enum.reduce(@embedded_types, changeset, fn key, acc_changeset -> cast_embed(acc_changeset, key) end)
   end
 
   defp validate_unique_system_name(changeset) do
@@ -186,7 +189,7 @@ defmodule Andi.InputSchemas.DatasetInput do
 
   defp validate_schema(%{changes: %{sourceType: source_type}} = changeset)
        when source_type in ["ingest", "stream"] do
-    case Map.get(changeset.changes, :schema) do
+    case Ecto.Changeset.get_field(changeset, :schema, nil) do
       [] -> add_error(changeset, :schema, "cannot be empty")
       nil -> add_error(changeset, :schema, "is required", validation: :required)
       _ -> validate_schema_internals(changeset)
@@ -196,7 +199,7 @@ defmodule Andi.InputSchemas.DatasetInput do
   defp validate_schema(changeset), do: changeset
 
   defp validate_schema_internals(%{changes: changes} = changeset) do
-    DatasetSchemaValidator.validate(changes[:schema], changes[:sourceFormat])
+    DatasetSchemaValidator.validate(Ecto.Changeset.get_field(changeset, :schema, []), changes[:sourceFormat])
     |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
   end
 

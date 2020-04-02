@@ -5,18 +5,22 @@ defmodule DiscoveryApi.Data.QueryTest do
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
+  alias DiscoveryApi.Test.AuthHelper
+  alias DiscoveryApi.Auth.GuardianConfigurator
 
   import SmartCity.Event, only: [dataset_update: 0]
 
   @public_dataset_id "123-456-789"
   @private_dataset_id "111-222-333"
   @organization_name "org1"
-  @username_with_public_access "jessie"
-  @username_with_private_access "aloha"
+  @private_org_id "444-444"
   @public_dataset_name "public_data"
   @private_dataset_name "private_data"
 
   setup_all do
+    auth0_setup()
+    |> on_exit()
+
     Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
 
@@ -25,14 +29,7 @@ defmodule DiscoveryApi.Data.QueryTest do
       |> Keyword.merge(receive_timeout: 10_000)
       |> Prestige.new_session()
 
-    Helper.setup_ldap()
-
-    private_access_user = Helper.create_ldap_user(@username_with_private_access)
-    _public_access_user = Helper.create_ldap_user(@username_with_public_access)
-
-    organization = Helper.create_persisted_organization(%{orgName: @organization_name})
-
-    Helper.associate_user_with_organization(private_access_user.id, organization.id)
+    organization = Helper.create_persisted_organization(%{id: @private_org_id, orgName: @organization_name})
 
     public_dataset =
       TDG.create_dataset(%{
@@ -122,14 +119,11 @@ defmodule DiscoveryApi.Data.QueryTest do
       )
     end)
 
-    public_token = Helper.get_token_from_login(@username_with_public_access)
-    private_token = Helper.get_token_from_login(@username_with_private_access)
-
     {:ok,
      %{
        organization: organization,
-       public_token: public_token,
-       private_token: private_token,
+       public_token: AuthHelper.valid_jwt(),
+       private_token: AuthHelper.valid_jwt(),
        private_table: private_table,
        public_table: public_table,
        public_dataset: public_dataset,
@@ -201,20 +195,14 @@ defmodule DiscoveryApi.Data.QueryTest do
     end
   end
 
-  describe "api/v1/query" do
-    test "authorized user can query private and public datasets in one statement", %{
-      public_table: public_table,
-      private_table: private_table,
-      private_token: private_token
-    } do
-      request_body = """
-        WITH public_one AS (select id from #{public_table}), private_one AS (select id from #{private_table})
-        SELECT * FROM public_one JOIN private_one ON public_one.id = private_one.id
-      """
+  describe "api/v1/query as a user with no access" do
+    setup context do
+      organization = Helper.create_persisted_organization(%{id: "123-000", orgName: "public-org"})
 
-      actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
+      user = Helper.create_persisted_user(AuthHelper.valid_jwt_sub())
+      Helper.associate_user_with_organization(user.id, organization.id)
 
-      assert actual.body == "[{\"id\":3}]"
+      context
     end
 
     test "unauthorized user can't query private and public datasets in one statement", %{
@@ -230,6 +218,43 @@ defmodule DiscoveryApi.Data.QueryTest do
       actual = post("http://localhost:4000/api/v1/query", request_body, public_token)
 
       assert actual.status_code == 400
+    end
+
+    test "another user can query public datasets in one statement", %{
+      public_table: public_table,
+      public_token: public_token
+    } do
+      request_body = """
+        SELECT * FROM #{public_table} AS one JOIN #{public_table} AS two ON one.id = two.id
+      """
+
+      actual = post("http://localhost:4000/api/v1/query", request_body, public_token)
+
+      assert actual.body == "[{\"id\":1,\"name\":\"Fred\"},{\"id\":2,\"name\":\"Gred\"},{\"id\":3,\"name\":\"Hred\"}]"
+    end
+  end
+
+  describe "api/v1/query" do
+    setup context do
+      user = Helper.create_persisted_user(AuthHelper.valid_jwt_sub())
+      Helper.associate_user_with_organization(user.id, @private_org_id)
+
+      context
+    end
+
+    test "authorized user can query private and public datasets in one statement", %{
+      public_table: public_table,
+      private_table: private_table,
+      private_token: private_token
+    } do
+      request_body = """
+        WITH public_one AS (select id from #{public_table}), private_one AS (select id from #{private_table})
+        SELECT * FROM public_one JOIN private_one ON public_one.id = private_one.id
+      """
+
+      actual = post("http://localhost:4000/api/v1/query", request_body, private_token)
+
+      assert actual.body == "[{\"id\":3}]"
     end
 
     test "anonymous user can't query private datasets as a subquery with public datasets in one statement", %{
@@ -258,19 +283,6 @@ defmodule DiscoveryApi.Data.QueryTest do
       actual = post("http://localhost:4000/api/v1/query", request_body)
 
       assert actual.status_code == 400
-    end
-
-    test "another user can query public datasets in one statement", %{
-      public_table: public_table,
-      public_token: public_token
-    } do
-      request_body = """
-        SELECT * FROM #{public_table} AS one JOIN #{public_table} AS two ON one.id = two.id
-      """
-
-      actual = post("http://localhost:4000/api/v1/query", request_body, public_token)
-
-      assert actual.body == "[{\"id\":1,\"name\":\"Fred\"},{\"id\":2,\"name\":\"Gred\"},{\"id\":3,\"name\":\"Hred\"}]"
     end
 
     test "anonymous user can query public datasets in one statement", %{public_table: public_table} do
@@ -610,5 +622,31 @@ defmodule DiscoveryApi.Data.QueryTest do
   defp post(url, body, %{} = headers) do
     response = HTTPoison.post!(url, body, headers)
     Map.from_struct(response)
+  end
+
+  defp auth0_setup do
+    secret_key = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian) |> Keyword.get(:secret_key)
+    GuardianConfigurator.configure(issuer: AuthHelper.valid_issuer())
+
+    really_far_in_the_future = 3_000_000_000_000
+    AuthHelper.set_allowed_guardian_drift(really_far_in_the_future)
+
+    bypass = Bypass.open()
+
+    Bypass.stub(bypass, "GET", "/jwks", fn conn ->
+      Plug.Conn.resp(conn, :ok, Jason.encode!(AuthHelper.valid_jwks()))
+    end)
+
+    Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
+      Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z"}))
+    end)
+
+    Application.put_env(:discovery_api, :jwks_endpoint, "http://localhost:#{bypass.port}/jwks")
+    Application.put_env(:discovery_api, :user_info_endpoint, "http://localhost:#{bypass.port}/userinfo")
+
+    fn ->
+      AuthHelper.set_allowed_guardian_drift(0)
+      GuardianConfigurator.configure(secret_key: secret_key)
+    end
   end
 end

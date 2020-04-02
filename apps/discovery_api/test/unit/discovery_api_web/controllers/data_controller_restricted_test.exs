@@ -6,6 +6,7 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Services.{PrestoService, MetricsService}
+  alias DiscoveryApi.Test.Helper
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -59,68 +60,19 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
   end
 
   describe "accessing restricted datasets" do
-    data_test "does not allow access if a restricted dataset if the given user is not a member of the dataset's group", %{conn: conn} do
-      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: []}})
+    setup do
+      %{subject_id: subject_id, token: token, exit_fn: exit_fn} = Helper.auth0_setup()
+      on_exit(exit_fn)
 
-      {:ok, guardian_token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
-
-      conn
-      |> put_req_cookie(Helper.default_guardian_token_key(), guardian_token)
-      |> put_req_header("accept", accepts)
-      |> get(url)
-      |> json_response(response_code)
-
-      where([
-        [:url, :accepts, :response_code],
-        ["/api/v1/dataset/1234-4567-89101/download/presigned_url", "application/json", 404],
-        ["/api/v1/dataset/1234-4567-89101/download", "application/json", 404],
-        ["/api/v1/dataset/1234-4567-89101/query", "application/json", 404],
-        ["/api/v1/dataset/1234-4567-89101/preview", "application/json", 404]
-      ])
+      %{subject_id: subject_id, token: token}
     end
 
-    data_test "querying or previewing a restricted dataset via #{url} if the given user has access to it, via token", %{conn: conn} do
-      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
-
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
-
-      conn
-      |> put_req_cookie(Helper.default_guardian_token_key(), token)
-      |> put_req_header("accept", accepts)
-      |> get(url)
-      |> json_response(response_code)
-
-      where([
-        [:url, :accepts, :response_code],
-        ["/api/v1/dataset/1234-4567-89101/download/presigned_url", "application/json", 200],
-        ["/api/v1/dataset/1234-4567-89101/query", "application/json", 200],
-        ["/api/v1/dataset/1234-4567-89101/preview", "application/json", 200]
-      ])
-    end
-
-    test "presigned url returns everything needed to download dataset", %{conn: conn} do
-      url = "/api/v1/dataset/1234-4567-89101/download/presigned_url"
-      accepts = "application/json"
-      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
-
-      response =
-        conn
-        |> put_req_cookie(Helper.default_guardian_token_key(), token)
-        |> put_req_header("accept", accepts)
-        |> get(url)
-        |> json_response(200)
-
-      assert "https://data.tests.example.com/api/v1/dataset/1234-4567-89101/download?key=" <>
-               <<key::binary-size(64)>> <> "&expires=" <> expires = response
-
-      assert is_number(String.to_integer(expires))
-    end
-
-    data_test "downloads a restricted dataset if the given user has access to it, via token", %{conn: conn} do
-      allow(Users.get_user_with_organizations(@subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
-
-      {:ok, token, _} = DiscoveryApi.Auth.Guardian.encode_and_sign(@subject_id, %{}, token_type: "refresh")
+    data_test "downloads a restricted dataset if the given user has access to it, via token", %{
+      conn: conn,
+      subject_id: subject_id,
+      token: token
+    } do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
       conn
       |> put_req_header("authorization", "Bearer #{token}")

@@ -2,6 +2,8 @@
 
 set -e
 
+app="${1}"
+
 source ./scripts/lib_common.sh
 
 if [[ ! -z "$TRAVIS_TAG" ]]; then
@@ -25,9 +27,13 @@ elif [[ "$TRAVIS_BRANCH" == "master" ]]; then
         exit 0
     fi
 
-    for app in $apps; do
-        ./scripts/build.sh $app development
-        ./scripts/publish.sh $app development
+    for app_to_publish in $apps; do
+        if [[ $app_to_publish == "$app" ]]; then
+            echo "App '$app' needs to be published."
+            ./scripts/build.sh $app development false
+            ./scripts/publish.sh $app development
+            break
+        fi
     done
 else
     echo "Branch $TRAVIS_BRANCH should not be published. Exiting."

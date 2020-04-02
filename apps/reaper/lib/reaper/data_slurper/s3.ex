@@ -11,16 +11,24 @@ defmodule Reaper.DataSlurper.S3 do
   def handle?(url), do: String.starts_with?(url, "s3")
 
   @impl DataSlurper
-  def slurp("s3://" <> location = _url, dataset_id, _headers \\ [], _protocol \\ nil) do
+  def slurp("s3://" <> location = _url, dataset_id, headers \\ [], _protocol \\ nil) do
     filename = DataSlurper.determine_filename(dataset_id)
     [bucket, key] = String.split(location, "/", parts: 2)
 
     bucket
     |> S3.download_file(key, filename)
-    |> ExAws.request()
+    |> download_s3_file_request(headers)
     |> case do
       {:ok, _} -> {:file, filename}
       {:error, err} -> raise "Error downloading file for #{bucket}/#{key}: #{err}"
     end
+  end
+
+  def download_s3_file_request(s3_download_struct, %{"x-scos-amzn-s3-region": region}) do
+    ExAws.request(s3_download_struct, region: region)
+  end
+
+  def download_s3_file_request(s3_download_struct, _headers) do
+    ExAws.request(s3_download_struct)
   end
 end

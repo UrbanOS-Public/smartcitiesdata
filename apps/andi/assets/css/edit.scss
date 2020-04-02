@@ -38,6 +38,14 @@
     "keywords risk-rating";
 }
 
+.data-dictionary-form {
+  grid-template-columns: 40% 60%;
+  grid-column-gap: 2rem;
+  grid-template-areas:
+    "top-header ."
+    "tree-section edit-section";
+}
+
 .url-form {
   grid-template-areas:
     "top-header ."
@@ -99,6 +107,128 @@
   }
 }
 
+$nesting-width: 2rem;
+$tick-width: $nesting-width - 0.5rem;
+$field-padding: 0.5rem;
+$tick-height: 1rem + $field-padding - 0.44;
+
+.data-dictionary-form {
+
+  .data-dictionary-field-editor {
+    border: solid 1px  #C9C7C7;
+    display: grid;
+    padding: 2rem;
+    margin-right: 2rem;
+    margin-top: 1.7rem;
+    grid-template-areas: 
+      "name . ."
+      "type . item-type"
+      "description description description" 
+      "pii masked demographic"
+      "biased rationale ."; 
+ 
+      .select, .input {
+        width: 90%; 
+      }
+
+      .textarea {
+        max-width: 90%;
+        height: 7rem;
+      }
+    }
+
+  .data-dictionay-form-tree-header {
+    display: inline-flex;
+    width: 100%;
+  }
+
+  .data-dictionay-form-tree-content {
+    border: solid 1px  #C9C7C7;
+    padding-left: 2rem;
+    padding-bottom: 2rem;
+    overflow-y: scroll;
+    height: 40.5rem;
+  }
+
+  .data-dictionay-form-tree-header div:first-child {
+    margin-left: $field-padding;
+    margin-right: auto;
+  }
+
+  .data-dictionay-form-tree-header div:last-child {
+    margin-right: $field-padding;
+  }
+
+  .data-dictionary-tree {
+    border-left: 1px solid rgba(201, 199, 199, 0.4);
+
+    .data-dictionary-tree__sub-dictionary {
+      margin-left: $nesting-width;
+    }
+
+    .data-dictionary-tree-field:before {
+      content: '';
+      border-top: 1px solid rgba(201, 199, 199, 0.4);
+      width: $tick-width;
+    }
+
+    .data-dictionary-tree-field {
+      display: inline-flex;
+      width: 100%;
+      color: #C9C7C7;
+      align-items: center;
+      transform: translateY($tick-height);
+      cursor: pointer;
+
+      .data-dictionary-tree-field__text {
+        width: 100%;
+        display: inline-flex;
+        justify-content: space-between;
+        padding: $field-padding $field-padding $field-padding 0;
+      }
+    }
+
+    .data-dictionary-tree-field__text div:nth-child(1) {
+      color: #7f7676;
+    }
+
+    .data-dictionary-tree-field__action {
+      width: 3rem;
+      height: 24px;
+      background-repeat: no-repeat;
+      background-color: white;
+    }
+
+    .data-dictionary-tree__field--collapsed .data-dictionary-tree-field__action {
+      background-image: url('/images/expanded.svg');
+    }
+    
+    .data-dictionary-tree__field--expanded .data-dictionary-tree-field__action {
+      background-image: url('/images/collapsed.svg');
+    }
+
+    .data-dictionary-tree__field--selected .data-dictionary-tree-field__action {
+      background-color: #EEEFF1; 
+    }
+
+    .data-dictionary-tree__field--checked .data-dictionary-tree-field__action {
+      background-image: url('/images/checked.svg');
+    }
+    
+    .data-dictionary-tree__field--unchecked .data-dictionary-tree-field__action {
+      background-image: url('/images/unchecked.svg');
+    }
+
+    .data-dictionary-tree__sub-dictionary--collapsed {
+      display: none;
+    }
+
+    .data-dictionary-tree__field--selected {
+      background-color: #EEEFF1;
+    }
+  }
+}
+
 .metadata__error-message {
   text-align: right;
   padding-right: 2em;
@@ -157,6 +287,19 @@
 @include area(edit-button-group, save-btn);
 @include area(edit-button-group, test-btn);
 @include area(edit-button-group, messages);
+
+@include area(data-dictionary-form, tree-section);
+@include area(data-dictionary-form, edit-section);
+
+@include area(data-dictionary-field-editor, name);
+@include area(data-dictionary-field-editor, type);
+@include area(data-dictionary-field-editor, item-type);
+@include area(data-dictionary-field-editor, masked);
+@include area(data-dictionary-field-editor, biased);
+@include area(data-dictionary-field-editor, demographic);
+@include area(data-dictionary-field-editor, pii);
+@include area(data-dictionary-field-editor, description);
+@include area(data-dictionary-field-editor, rationale);
 
 @include area(url-form, source-url);
 @include area(url-form, source-query-params);
