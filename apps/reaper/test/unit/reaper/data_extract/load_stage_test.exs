@@ -28,6 +28,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
   describe "handle_events/3 check duplicates" do
     setup do
+      Application.put_env(:reaper, :profiling_enabled, true)
       allow Elsa.produce(any(), any(), any(), any()), return: :ok
       allow Persistence.record_last_processed_index(any(), any()), return: :ok
 
@@ -96,6 +97,26 @@ defmodule Reaper.DataExtract.LoadStageTest do
     end
   end
 
+  test "should return empty list of timing when profiling enabled is set to false" do
+    Application.put_env(:reaper, :profiling_enabled, false)
+    allow Elsa.produce(any(), any(), any(), any()), return: :ok
+    allow Persistence.record_last_processed_index(any(), any()), return: :ok
+
+    state = %{
+      cache: @cache,
+      dataset: TDG.create_dataset(id: "ds1", technical: %{allow_duplicates: false}),
+      batch: [],
+      bytes: 0,
+      originals: [],
+      start_time: DateTime.utc_now()
+    }
+
+    incoming_events = ?a..?c |> create_messages() |> Enum.with_index()
+
+    {:noreply, [], new_state} = LoadStage.handle_events(incoming_events, self(), state)
+    assert new_state.batch == create_data_messages(?c..?a, "ds1")
+  end
+
   defp create_messages(range, opts \\ []) do
     range
     |> Enum.map(&List.to_string([&1]))
@@ -109,21 +130,26 @@ defmodule Reaper.DataExtract.LoadStageTest do
   end
 
   defp create_data_messages(range, dataset_id) do
-    timing = %{app: "reaper", label: "Ingested", start_time: @iso_output, end_time: @iso_output}
-
     range
     |> create_messages()
     |> Enum.map(fn payload ->
       %{
         dataset_id: dataset_id,
         payload: payload,
-        operational: %{timing: [timing]},
+        operational: %{timing: add_timing()},
         _metadata: %{}
       }
     end)
     |> Enum.map(&SmartCity.Data.new/1)
     |> Enum.map(&elem(&1, 1))
     |> Enum.map(&Jason.encode!/1)
+  end
+
+  defp add_timing() do
+    case Application.get_env(:reaper, :profiling_enabled) do
+      true -> [%{app: "reaper", label: "Ingested", start_time: @iso_output, end_time: @iso_output}]
+      _ -> []
+    end
   end
 
   defp kill(pid) do
