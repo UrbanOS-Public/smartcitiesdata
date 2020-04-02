@@ -81,19 +81,6 @@ defmodule Reaper.UrlBuilderTest do
           }
         ),
         "https://my-url.com?end_date=19700102&start_date=19700101"
-      ],
-      [
-        SmartCity.TestDataGenerator.create_dataset(
-          id: "",
-          technical: %{
-            sourceUrl: "s3://bucket-name/key/within/subdirectory.ext",
-            sourceQueryParams: %{
-              start_date: "foo",
-              end_date: "bar"
-            }
-          }
-        ),
-        "s3://bucket-name/key/within/subdirectory.ext"
       ]
     ])
   end
