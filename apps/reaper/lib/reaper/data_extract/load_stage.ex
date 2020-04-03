@@ -96,13 +96,9 @@ defmodule Reaper.DataExtract.LoadStage do
   end
 
   defp convert_to_data_message(payload, state) do
-    start = format_date(state.start_time)
-    stop = format_date(DateTime.utc_now())
-    timing = %{app: "reaper", label: "Ingested", start_time: start, end_time: stop}
-
     data = %{
       dataset_id: state.dataset.id,
-      operational: %{timing: [timing]},
+      operational: %{timing: add_timing(state)},
       payload: payload,
       _metadata: %{}
     }
@@ -110,6 +106,16 @@ defmodule Reaper.DataExtract.LoadStage do
     case Data.new(data) do
       {:error, reason} -> {:error, {:smart_city_data, reason}}
       result -> result
+    end
+  end
+
+  defp add_timing(state) do
+    case Application.get_env(:reaper, :profiling_enabled) do
+      true ->
+        start = format_date(state.start_time)
+        stop = format_date(DateTime.utc_now())
+        [%{app: "reaper", label: "Ingested", start_time: start, end_time: stop}]
+      _ -> []
     end
   end
 
