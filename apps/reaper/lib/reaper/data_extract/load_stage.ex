@@ -110,13 +110,14 @@ defmodule Reaper.DataExtract.LoadStage do
   end
 
   defp add_timing(state) do
-    start = format_date(state.start_time)
-    stop = format_date(DateTime.utc_now())
-    timing = %{app: "reaper", label: "Ingested", start_time: start, end_time: stop}
-
     case Application.get_env(:reaper, :profiling_enabled) do
-      true -> [timing]
-      _ -> []
+      true ->
+        start = format_date(state.start_time)
+        stop = format_date(DateTime.utc_now())
+        [%{app: "reaper", label: "Ingested", start_time: start, end_time: stop}]
+
+      _ ->
+        []
     end
   end
 
