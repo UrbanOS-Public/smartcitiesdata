@@ -8,10 +8,4 @@ defmodule Providers.Timestamp do
     NaiveDateTime.utc_now() |> NaiveDateTime.to_iso8601()
   end
 
-  def provide("2", opts) do
-    case Map.get(opts, :format) do
-      nil -> NaiveDateTime.utc_now() |> NaiveDateTime.to_iso8601()
-      format -> NaiveDateTime.utc_now() |> Timex.format!(format)
-    end
-  end
 end
