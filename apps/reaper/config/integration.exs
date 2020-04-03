@@ -33,7 +33,8 @@ config :reaper,
   divo_wait: [dwell: 1000, max_tries: 120],
   elsa_brokers: endpoints,
   output_topic_prefix: "raw",
-  hosted_file_bucket: bucket_name
+  hosted_file_bucket: bucket_name,
+  profiling_enabled: true
 
 config :reaper, :brook,
   driver: %{
