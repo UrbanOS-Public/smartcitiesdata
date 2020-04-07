@@ -136,9 +136,7 @@ defmodule Forklift.DataWriter do
     retry with: exponential_backoff(100) |> cap(@max_wait) |> Stream.take(@retry_count) do
       write_to_table(started_data, dataset)
     after
-      {:ok, write_timing} ->
-        Enum.map(started_data, &Data.add_timing(&1, write_timing))
-        |> Enum.map(&add_total_time/1)
+      {:ok, write_timing} -> add_total_time(data, started_data, write_timing)
     else
       {:error, reason} ->
         raise RuntimeError, inspect(reason)
@@ -170,24 +168,19 @@ defmodule Forklift.DataWriter do
     Forklift.Util.add_to_metadata(datum, :forklift_start_time, Data.Timing.current_time())
   end
 
-  defp add_total_time(datum) do
+  defp add_total_time(data, started_data, write_timing) do
     case Application.get_env(:forklift, :profiling_enabled) do
-      true -> add_timing(datum)
-      false -> remove_timing(datum)
+      true ->  Enum.map(started_data, &Data.add_timing(&1, write_timing))
+      |> Enum.map(&add_timing/1)
+      false -> data
     end
-    |> Forklift.Util.remove_from_metadata(:forklift_start_time)
   end
 
   defp add_timing(datum) do
     start_time = datum._metadata.forklift_start_time
     timing = Data.Timing.new("forklift", "total_time", start_time, Data.Timing.current_time())
     Data.add_timing(datum, timing)
-  end
-
-  defp remove_timing(datum) do
-    Map.update!(datum, :operational, fn operational ->
-      Map.put(operational, :timing, [])
-    end)
+    |> Forklift.Util.remove_from_metadata(:forklift_start_time)
   end
 
   defp bootstrap_args(topic) do
