@@ -31,7 +31,8 @@ config :forklift,
     max_bytes: 1_000_000,
     min_bytes: 0,
     max_wait_time: 10_000
-  ]
+  ],
+  profiling_enabled: true
 
 config :forklift, :brook,
   instance: :forklift,
