@@ -60,7 +60,8 @@ config :forklift,
     max_bytes: 10_000_000,
     min_bytes: 5_000_000,
     max_wait_time: 60_000
-  ]
+  ],
+  profiling_enabled: System.get_env("PROFILING_ENABLED") == "true"
 
 config :forklift, :brook,
   instance: :forklift,

@@ -171,11 +171,23 @@ defmodule Forklift.DataWriter do
   end
 
   defp add_total_time(datum) do
+    case Application.get_env(:forklift, :profiling_enabled) do
+      true -> add_timing(datum)
+      false -> remove_timing(datum)
+    end
+    |> Forklift.Util.remove_from_metadata(:forklift_start_time)
+  end
+
+  defp add_timing(datum) do
     start_time = datum._metadata.forklift_start_time
     timing = Data.Timing.new("forklift", "total_time", start_time, Data.Timing.current_time())
-
     Data.add_timing(datum, timing)
-    |> Forklift.Util.remove_from_metadata(:forklift_start_time)
+  end
+
+  defp remove_timing(datum) do
+    Map.update!(datum, :operational, fn operational ->
+      Map.put(operational, :timing, [])
+    end)
   end
 
   defp bootstrap_args(topic) do
