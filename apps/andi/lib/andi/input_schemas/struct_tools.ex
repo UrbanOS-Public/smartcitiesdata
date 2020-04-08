@@ -1,4 +1,5 @@
 defmodule Andi.InputSchemas.StructTools do
+  @moduledoc false
   def to_map(%_{} = struct) do
     struct
     |> struct_to_map()

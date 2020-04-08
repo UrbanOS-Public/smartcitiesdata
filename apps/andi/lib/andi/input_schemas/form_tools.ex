@@ -1,4 +1,5 @@
 defmodule Andi.InputSchemas.FormTools do
+  @moduledoc false
   alias Andi.InputSchemas.StructTools
 
   def adjust_source_url_for_query_params(form_data) do
@@ -45,17 +46,22 @@ defmodule Andi.InputSchemas.FormTools do
   def form_data_from_andi_dataset(dataset) do
     dataset
     |> StructTools.to_map()
-    |> Map.update(:business, %{}, fn business ->
-      Map.update(business, :keywords, nil, &Enum.join(&1, ", "))
-    end)
-    |> Map.update!(:technical, fn technical ->
-      technical
-      |> Map.update(:schema, [], fn schema ->
-        schema
-        |> Enum.with_index()
-        |> Enum.reduce(%{}, fn {v, i}, acc ->
-          Map.put(acc, to_string(i), v)
-        end)
+    |> Map.update(:business, %{}, &convert_form_business/1)
+    |> Map.update(:technical, %{}, &convert_form_technical/1)
+  end
+
+  defp convert_form_business(business) do
+    business
+    |> Map.update(:keywords, nil, &Enum.join(&1, ", "))
+  end
+
+  defp convert_form_technical(technical) do
+    technical
+    |> Map.update(:schema, [], fn schema ->
+      schema
+      |> Enum.with_index()
+      |> Enum.reduce(%{}, fn {v, i}, acc ->
+        Map.put(acc, to_string(i), v)
       end)
     end)
   end

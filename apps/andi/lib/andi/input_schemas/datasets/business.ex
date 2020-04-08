@@ -1,4 +1,5 @@
 defmodule Andi.InputSchemas.Datasets.Business do
+  @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
   alias Andi.InputSchemas.Options
