@@ -19,12 +19,12 @@ config :andi,
   kafka_broker: endpoint
 
 config :andi, Andi.Repo,
-  database: "randi",
+  database: "andi",
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox,
-  port: "5432"
+  port: "5456"
 
 config :andi, AndiWeb.Endpoint,
   http: [port: 4000],
@@ -88,7 +88,7 @@ defmodule Andi.DivoPostgres do
       postgres: %{
         logging: %{driver: "none"},
         image: "postgres:9.6.16",
-        ports: ["5432:5432"]
+        ports: ["5456:5432"]
       }
     }
   end
