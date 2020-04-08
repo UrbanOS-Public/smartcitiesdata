@@ -153,15 +153,15 @@ defmodule Andi.CreateDatasetTest do
           Elsa.Fetch.fetch(@kafka_broker, "event-stream")
           |> elem(2)
           |> Enum.map(fn message ->
-          {:ok, brook_message} =  Brook.Deserializer.deserialize(message.value)
-          brook_message
-        end)
-        |> Enum.filter(fn message ->
-          message.type == dataset_update()
-        end)
-        |> Enum.map(fn message ->
-          message.data
-        end)
+            {:ok, brook_message} = Brook.Deserializer.deserialize(message.value)
+            brook_message
+          end)
+          |> Enum.filter(fn message ->
+            message.type == dataset_update()
+          end)
+          |> Enum.map(fn message ->
+            message.data
+          end)
 
         assert struct in values
       end)
@@ -187,8 +187,10 @@ defmodule Andi.CreateDatasetTest do
       end)
 
       {:ok, %{status: 400, body: body}} = create(existing_dataset)
-      errors = Jason.decode!(body)
-      |> Map.get("errors")
+
+      errors =
+        Jason.decode!(body)
+        |> Map.get("errors")
 
       assert errors["dataName"] == ["existing dataset has the same orgName and dataName"]
     end
@@ -208,9 +210,11 @@ defmodule Andi.CreateDatasetTest do
         )
 
       {:ok, %{status: 400, body: body}} = create(new_dataset)
-      errors = Jason.decode!(body)
-      |> Map.get("errors")
-      |> Map.get("technical")
+
+      errors =
+        Jason.decode!(body)
+        |> Map.get("errors")
+        |> Map.get("technical")
 
       assert errors["orgName"] == ["cannot contain dashes"]
       assert errors["dataName"] == ["cannot contain dashes"]
@@ -226,9 +230,11 @@ defmodule Andi.CreateDatasetTest do
         |> put_in(["business", "modifiedDate"], "badDate")
 
       {:ok, %{status: 400, body: body}} = create(new_dataset)
-      errors = Jason.decode!(body)
-      |> Map.get("errors")
-      |> Map.get("business")
+
+      errors =
+        Jason.decode!(body)
+        |> Map.get("errors")
+        |> Map.get("business")
 
       assert errors["modifiedDate"] == ["is invalid"]
     end
@@ -262,8 +268,10 @@ defmodule Andi.CreateDatasetTest do
         ])
 
       {:ok, %{status: 400, body: body}} = create(new_dataset)
-      actual_errors = Jason.decode!(body)
-      |> Map.get("errors")
+
+      actual_errors =
+        Jason.decode!(body)
+        |> Map.get("errors")
 
       expected_error_keys = [
         ["business", "contactName"],
@@ -286,8 +294,11 @@ defmodule Andi.CreateDatasetTest do
         assert get_in(actual_errors, key) != nil
       end
 
-      assert Map.keys(actual_errors["technical"]) |> length() == Enum.filter(expected_error_keys, fn [area, _] -> area == "technical" end) |> length()
-      assert Map.keys(actual_errors["business"]) |> length() == Enum.filter(expected_error_keys, fn [area, _] -> area == "business" end) |> length()
+      assert Map.keys(actual_errors["technical"]) |> length() ==
+               Enum.filter(expected_error_keys, fn [area, _] -> area == "technical" end) |> length()
+
+      assert Map.keys(actual_errors["business"]) |> length() ==
+               Enum.filter(expected_error_keys, fn [area, _] -> area == "business" end) |> length()
     end
 
     test "put trims fields on dataset" do
@@ -323,20 +334,23 @@ defmodule Andi.CreateDatasetTest do
         )
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)
-      system_name = Jason.decode!(body)
-      |> get_in(["technical", "systemName"])
+
+      system_name =
+        Jason.decode!(body)
+        |> get_in(["technical", "systemName"])
 
       assert system_name != "this_will__get_tossed"
     end
 
     test "PUT /api/ dataset passed without UUID generates UUID for dataset" do
-      new_dataset =
-        TDG.create_dataset(%{})
+      new_dataset = TDG.create_dataset(%{})
       {_, new_dataset} = pop_in(new_dataset, ["id"])
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)
-      uuid = Jason.decode!(body)
-      |> get_in(["id"])
+
+      uuid =
+        Jason.decode!(body)
+        |> get_in(["id"])
 
       assert uuid != nil
     end

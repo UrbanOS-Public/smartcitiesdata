@@ -8,13 +8,15 @@ defmodule AndiWeb.EditLiveViewTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
-  import FlokiHelpers, only: [
-    get_attributes: 3,
-    get_value: 2,
-    get_values: 2,
-    get_texts: 2,
-    find_elements: 2
-  ]
+
+  import FlokiHelpers,
+    only: [
+      get_attributes: 3,
+      get_value: 2,
+      get_values: 2,
+      get_texts: 2,
+      find_elements: 2
+    ]
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -25,12 +27,13 @@ defmodule AndiWeb.EditLiveViewTest do
 
   describe "updating source params" do
     setup do
-      dataset = TDG.create_dataset(%{
-        technical: %{
-          sourceQueryParams: %{foo: "bar", baz: "biz"},
-          sourceHeaders: %{fool: "barl", bazl: "bizl"}
-        }
-      })
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            sourceQueryParams: %{foo: "bar", baz: "biz"},
+            sourceHeaders: %{fool: "barl", bazl: "bizl"}
+          }
+        })
 
       {:ok, _andi_dataset} = Datasets.update(dataset)
 
@@ -61,8 +64,9 @@ defmodule AndiWeb.EditLiveViewTest do
       assert html |> find_elements(key_class) |> length() == 2
       assert html |> find_elements(value_class) |> length() == 2
 
-      btn_id = get_attributes(html, btn_class, "phx-value-id")
-      |> hd()
+      btn_id =
+        get_attributes(html, btn_class, "phx-value-id")
+        |> hd()
 
       html = render_click(view, "remove", %{"id" => btn_id, "field" => Atom.to_string(field)})
 
@@ -112,7 +116,6 @@ defmodule AndiWeb.EditLiveViewTest do
       assert render(view) |> get_values(".url-form__source-url input") == [dataset.technical.sourceUrl]
     end
 
-
     test "source query params added by source url updates can be removed", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
@@ -121,18 +124,20 @@ defmodule AndiWeb.EditLiveViewTest do
       source_url_on_page = get_value(html, ".url-form__source-url input")
       updated_source_url = source_url_on_page <> "&knuckles=true"
 
-      html = render_change(view, :validate, %{
-        "form_data" => %{"id" => dataset.id, "technical" => %{"sourceUrl" => updated_source_url}},
-        "_target" => ["form_data", "technical", "sourceUrl"]
-      })
+      html =
+        render_change(view, :validate, %{
+          "form_data" => %{"id" => dataset.id, "technical" => %{"sourceUrl" => updated_source_url}},
+          "_target" => ["form_data", "technical", "sourceUrl"]
+        })
 
       assert html |> find_elements(".url-form__source-query-params-delete-btn") |> length() == 3
+
       get_attributes(html, ".url-form__source-query-params-delete-btn", "phx-value-id")
       |> Enum.each(fn btn_id ->
         render_click(view, "remove", %{
-              "id" => btn_id,
-              "field" => Atom.to_string(:sourceQueryParams)
-                     })
+          "id" => btn_id,
+          "field" => Atom.to_string(:sourceQueryParams)
+        })
       end)
 
       assert render(view) |> get_value(".url-form__source-url input") == dataset.technical.sourceUrl
@@ -143,23 +148,23 @@ defmodule AndiWeb.EditLiveViewTest do
     test "given a schema with no nesting it displays the three fields in a well-known (BEM) way", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
-              technical: %{
-                schema: [
-                  %{
-                    name: "one",
-                    type: "string"
-                  },
-                  %{
-                    name: "two",
-                    type: "integer"
-                  },
-                  %{
-                    name: "three",
-                    type: "float"
-                  }
-                ]
+          technical: %{
+            schema: [
+              %{
+                name: "one",
+                type: "string"
+              },
+              %{
+                name: "two",
+                type: "integer"
+              },
+              %{
+                name: "three",
+                type: "float"
               }
-                                      })
+            ]
+          }
+        })
 
       {:ok, _} = Datasets.update(dataset)
 
@@ -221,7 +226,7 @@ defmodule AndiWeb.EditLiveViewTest do
                get_texts(html, ".data-dictionary-tree-field__name")
 
       assert ["two", "three", "three-two"] ==
-        get_texts(html, ".data-dictionary-tree__field--expanded .data-dictionary-tree-field__name")
+               get_texts(html, ".data-dictionary-tree__field--expanded .data-dictionary-tree-field__name")
 
       assert ["two-one", "three-one", "three-two", "three-two-one"] ==
                get_texts(html, ".data-dictionary-tree__sub-dictionary .data-dictionary-tree-field__name")

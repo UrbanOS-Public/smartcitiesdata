@@ -9,9 +9,10 @@ defmodule DatasetHelpers do
   require Placebo
 
   def create_dataset(overrides) do
-    changes = overrides
-    |> TDG.create_dataset()
-    |> InputConverter.prepare_smrt_dataset_for_casting()
+    changes =
+      overrides
+      |> TDG.create_dataset()
+      |> InputConverter.prepare_smrt_dataset_for_casting()
 
     Dataset.changeset_for_draft(%Dataset{}, changes)
     |> Ecto.Changeset.apply_changes()

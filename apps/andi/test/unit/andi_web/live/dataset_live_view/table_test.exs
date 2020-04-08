@@ -17,10 +17,13 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   describe "order by click" do
     setup %{conn: conn} do
-      dataset_a = DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
-      |> Map.put(:ingestedTime, @ingested_time_a)
-      dataset_b = DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
-      |> Map.put(:ingestedTime, @ingested_time_b)
+      dataset_a =
+        DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
+        |> Map.put(:ingestedTime, @ingested_time_a)
+
+      dataset_b =
+        DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
+        |> Map.put(:ingestedTime, @ingested_time_b)
 
       DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
@@ -74,10 +77,13 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   describe "order by url params" do
     setup %{conn: conn} do
-      dataset_a = DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
-      |> Map.put(:ingestedTime, @ingested_time_a)
-      dataset_b = DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
-      |> Map.put(:ingestedTime, @ingested_time_b)
+      dataset_a =
+        DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
+        |> Map.put(:ingestedTime, @ingested_time_a)
+
+      dataset_b =
+        DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
+        |> Map.put(:ingestedTime, @ingested_time_b)
 
       DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 

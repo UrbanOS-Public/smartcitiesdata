@@ -7,10 +7,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
 
   import FlokiHelpers,
     only: [
-      get_texts: 2,
       get_select: 2,
-      get_attributes: 3,
-      find_elements: 2
+      get_attributes: 3
     ]
 
   @url_path "/datasets/"
@@ -45,7 +43,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
             ]
           }
         })
-
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 

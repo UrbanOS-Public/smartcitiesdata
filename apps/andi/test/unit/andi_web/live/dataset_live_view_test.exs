@@ -19,12 +19,13 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   describe "Basic live page load" do
     test "loads all datasets", %{conn: conn} do
-      datasets = Enum.map(
-        1..3,
-        fn _x ->
-          DatasetHelpers.create_dataset(%{})
-        end
-      )
+      datasets =
+        Enum.map(
+          1..3,
+          fn _x ->
+            DatasetHelpers.create_dataset(%{})
+          end
+        )
 
       DatasetHelpers.replace_all_datasets_in_repo(datasets)
 
@@ -54,16 +55,15 @@ defmodule AndiWeb.DatasetLiveViewTest do
         technical: %{}
       }
 
-      datasets = Enum.map(
-        1..3,
-        fn _x ->
-          DatasetHelpers.create_dataset(%{})
-        end
-      )
+      datasets =
+        Enum.map(
+          1..3,
+          fn _x ->
+            DatasetHelpers.create_dataset(%{})
+          end
+        )
 
-      DatasetHelpers.replace_all_datasets_in_repo(
-        datasets ++ [dataset_with_only_timestamp]
-      )
+      DatasetHelpers.replace_all_datasets_in_repo(datasets ++ [dataset_with_only_timestamp])
 
       assert {:ok, _view, html} = live(conn, @url_path)
       table_text = get_text(html, ".datasets-index__table")

@@ -102,8 +102,9 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   defp validate_schema(changeset), do: changeset
 
   defp validate_schema_internals(%{changes: changes} = changeset) do
-    schema = Ecto.Changeset.get_field(changeset, :schema, [])
-    |> StructTools.to_map()
+    schema =
+      Ecto.Changeset.get_field(changeset, :schema, [])
+      |> StructTools.to_map()
 
     DatasetSchemaValidator.validate(schema, changes[:sourceFormat])
     |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)

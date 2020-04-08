@@ -38,13 +38,15 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   test "data_ingest_end events does not change dataset order", %{conn: conn} do
-    datasets = Enum.map(1..3, fn _x ->
-      dataset = TDG.create_dataset(%{})
+    datasets =
+      Enum.map(1..3, fn _x ->
+        dataset = TDG.create_dataset(%{})
 
-      {:ok, _andi_dataset} = Datasets.update(dataset)
+        {:ok, _andi_dataset} = Datasets.update(dataset)
 
-      dataset
-    end)
+        dataset
+      end)
+
     dataset = Enum.at(datasets, 1)
 
     assert {:ok, view, _html} = live(conn, @url_path)

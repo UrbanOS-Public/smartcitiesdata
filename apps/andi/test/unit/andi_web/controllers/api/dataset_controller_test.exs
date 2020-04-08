@@ -29,6 +29,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       return: {:ok, [example_dataset_1, example_dataset_2]},
       meck_options: [:passthrough]
     )
+
     allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
 
     uuid = Faker.UUID.v4()

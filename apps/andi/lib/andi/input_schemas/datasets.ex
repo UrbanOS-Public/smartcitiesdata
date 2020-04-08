@@ -25,15 +25,18 @@ defmodule Andi.InputSchemas.Datasets do
   end
 
   def update(%Dataset{} = andi_dataset) do
-    original_dataset = case get(andi_dataset.id) do
-      nil -> %Dataset{}
-      dataset -> dataset
-    end
+    original_dataset =
+      case get(andi_dataset.id) do
+        nil -> %Dataset{}
+        dataset -> dataset
+      end
+
     update(original_dataset, andi_dataset)
   end
 
   def update(%Dataset{} = from_dataset, changes) do
     changes_as_map = StructTools.to_map(changes)
+
     Dataset.changeset_for_draft(from_dataset, changes_as_map)
     |> save()
   end
@@ -52,18 +55,19 @@ defmodule Andi.InputSchemas.Datasets do
   def delete(dataset_id) do
     Repo.delete(%Dataset{id: dataset_id})
   rescue
-    _e in  Ecto.StaleEntryError ->
+    _e in Ecto.StaleEntryError ->
       {:error, "attempted to remove a dataset (id: #{dataset_id}) that does not exist."}
   end
 
   def add_source_header(dataset_id) do
     from_dataset = get(dataset_id)
 
-    added = Map.update!(from_dataset, :technical, fn technical ->
-      Map.update(technical, :sourceHeaders, [%Header{}], fn source_headers ->
-        source_headers ++ [%Header{}]
+    added =
+      Map.update!(from_dataset, :technical, fn technical ->
+        Map.update(technical, :sourceHeaders, [%Header{}], fn source_headers ->
+          source_headers ++ [%Header{}]
+        end)
       end)
-    end)
 
     update(from_dataset, added)
   end
@@ -71,11 +75,12 @@ defmodule Andi.InputSchemas.Datasets do
   def add_source_query_param(dataset_id) do
     from_dataset = get(dataset_id)
 
-    added = Map.update!(from_dataset, :technical, fn technical ->
-      Map.update(technical, :sourceQueryParams, [%QueryParam{}], fn source_query_params ->
-        source_query_params ++ [%QueryParam{}]
+    added =
+      Map.update!(from_dataset, :technical, fn technical ->
+        Map.update(technical, :sourceQueryParams, [%QueryParam{}], fn source_query_params ->
+          source_query_params ++ [%QueryParam{}]
+        end)
       end)
-    end)
 
     update(from_dataset, added)
   end
@@ -84,9 +89,8 @@ defmodule Andi.InputSchemas.Datasets do
     Repo.delete(%Header{id: source_header_id})
 
     {:ok, get(dataset_id)}
-
   rescue
-    _e in  Ecto.StaleEntryError ->
+    _e in Ecto.StaleEntryError ->
       Logger.error("attempted to remove a source header (id: #{source_header_id}) that does not exist.")
       {:ok, get(dataset_id)}
   end
@@ -95,15 +99,17 @@ defmodule Andi.InputSchemas.Datasets do
     Repo.delete(%QueryParam{id: source_query_param_id})
 
     from_dataset = get(dataset_id)
-    updated = Map.update!(from_dataset, :technical, fn technical ->
-      Map.update(technical, :sourceUrl, "", fn source_url ->
-        Andi.URI.update_url_with_params(source_url, Map.get(technical, :sourceQueryParams, []))
+
+    updated =
+      Map.update!(from_dataset, :technical, fn technical ->
+        Map.update(technical, :sourceUrl, "", fn source_url ->
+          Andi.URI.update_url_with_params(source_url, Map.get(technical, :sourceQueryParams, []))
+        end)
       end)
-    end)
 
     update(from_dataset, updated)
   rescue
-    _e in  Ecto.StaleEntryError ->
+    _e in Ecto.StaleEntryError ->
       Logger.error("attempted to remove a source query param (id: #{source_query_param_id}) that does not exist.")
       {:ok, get(dataset_id)}
   end

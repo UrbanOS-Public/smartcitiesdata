@@ -22,7 +22,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       description: "description",
       issuedDate: "2020-01-01T00:00:00Z",
       license: "license",
-      publishFrequency: "publishFrequency",
+      publishFrequency: "publishFrequency"
     },
     technical: %{
       dataName: "dataName",
@@ -101,11 +101,12 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       changeset = Dataset.changeset(changes)
 
       refute changeset.valid?
+
       assert accumulate_errors(changeset) == %{
-        business: %{
-          contactEmail: [{:contactEmail, {"has invalid format", [validation: :format]}}]
-        }
-      }
+               business: %{
+                 contactEmail: [{:contactEmail, {"has invalid format", [validation: :format]}}]
+               }
+             }
     end
 
     data_test "requires #{inspect(field_path)} be a date" do
@@ -154,29 +155,32 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       refute changeset.valid?
 
       assert accumulate_errors(changeset) == %{
-        technical: %{
-          topLevelSelector: [{:topLevelSelector, {"is required", [validation: :required]}}]
-        }
-      }
+               technical: %{
+                 topLevelSelector: [{:topLevelSelector, {"is required", [validation: :required]}}]
+               }
+             }
 
       where(source_format: ["xml", "text/xml"])
     end
 
     data_test "validates the schema appropriately when sourceType is #{source_type} and schema is #{inspect(schema)}" do
-      changes = @valid_changes
-      |> put_in([:technical, :schema], schema)
-      |> put_in([:technical, :sourceType], source_type)
+      changes =
+        @valid_changes
+        |> put_in([:technical, :schema], schema)
+        |> put_in([:technical, :sourceType], source_type)
 
       changeset = Dataset.changeset(changes)
 
       assert changeset.valid? == false
 
-      error_tuple = case message_type do
-        :required ->
-          {"is required", [validation: :assoc, type: {:array, :map}]}
-        :not_empty ->
-          {"cannot be empty", []}
-      end
+      error_tuple =
+        case message_type do
+          :required ->
+            {"is required", [validation: :assoc, type: {:array, :map}]}
+
+          :not_empty ->
+            {"cannot be empty", []}
+        end
 
       errors = accumulate_errors(changeset)
 
@@ -190,9 +194,10 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
     end
 
     test "a missing schema is valid when the sourceType is not ingest or stream" do
-      changes = @valid_changes
-      |> delete_in([:technical, :schema])
-      |> put_in([:technical, :sourceType], "something-else")
+      changes =
+        @valid_changes
+        |> delete_in([:technical, :schema])
+        |> put_in([:technical, :sourceType], "something-else")
 
       changeset = Dataset.changeset(changes)
 
@@ -210,17 +215,17 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       changes =
         @valid_changes
         |> Map.merge(%{
-            technical: %{
-              dataName: "dataName",
-              orgName: "orgName",
-              private: false,
-              sourceUrl: "sourceUrl",
-              schema: schema,
-              sourceFormat: "xml",
-              topLevelSelector: "whatever",
-              sourceType: "ingest"
-            }
-          })
+          technical: %{
+            dataName: "dataName",
+            orgName: "orgName",
+            private: false,
+            sourceUrl: "sourceUrl",
+            schema: schema,
+            sourceFormat: "xml",
+            topLevelSelector: "whatever",
+            sourceType: "ingest"
+          }
+        })
 
       changeset = Dataset.changeset(changes)
 
@@ -254,7 +259,8 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
     end
 
     test "given a url with at least one invalid query param it marks the dataset as invalid" do
-      form_data = FormTools.adjust_source_query_params_for_url(%{"technical" => %{"sourceUrl" => "https://source.url.example.com?=oops&a=b"}})
+      form_data =
+        FormTools.adjust_source_query_params_for_url(%{"technical" => %{"sourceUrl" => "https://source.url.example.com?=oops&a=b"}})
 
       changeset = InputConverter.form_data_to_ui_changeset(form_data)
 
@@ -262,7 +268,8 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
 
       assert {:sourceQueryParams, {"has invalid format", [validation: :format]}} in changeset.changes.technical.errors
 
-      assert %{technical: %{sourceQueryParams: [%{key: nil, value: "oops"}, %{key: "a", value: "b"}]}}= Ecto.Changeset.apply_changes(changeset)
+      assert %{technical: %{sourceQueryParams: [%{key: nil, value: "oops"}, %{key: "a", value: "b"}]}} =
+               Ecto.Changeset.apply_changes(changeset)
     end
 
     data_test "#{inspect(field_path)} are invalid when any key is not set" do

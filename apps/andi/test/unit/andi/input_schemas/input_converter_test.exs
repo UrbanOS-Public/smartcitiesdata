@@ -97,14 +97,14 @@ defmodule Andi.InputSchemas.InputConverterTest do
         |> InputConverter.andi_dataset_to_smrt_dataset()
 
       assert %SmartCity.Dataset{
-              technical: %{
-                sourceUrl: "http://example.com",
-                sourceQueryParams: %{
-                  "key" => "value",
-                  "key1" => "value1"
-                }
-              }
-            } = smrt_dataset
+               technical: %{
+                 sourceUrl: "http://example.com",
+                 sourceQueryParams: %{
+                   "key" => "value",
+                   "key1" => "value1"
+                 }
+               }
+             } = smrt_dataset
     end
 
     test "converting a dataset to a changeset syncs source url and query params" do
@@ -122,15 +122,15 @@ defmodule Andi.InputSchemas.InputConverterTest do
         |> Ecto.Changeset.apply_changes()
 
       assert %{
-              technical: %{
-                sourceUrl: "http://example.com?dog=cat&squashed=bro&wont=get",
-                sourceQueryParams: [
-                  %{key: "dog", value: "cat"},
-                  %{key: "squashed", value: "bro"},
-                  %{key: "wont", value: "get"}
-                ]
-              }
-            } = dataset
+               technical: %{
+                 sourceUrl: "http://example.com?dog=cat&squashed=bro&wont=get",
+                 sourceQueryParams: [
+                   %{key: "dog", value: "cat"},
+                   %{key: "squashed", value: "bro"},
+                   %{key: "wont", value: "get"}
+                 ]
+               }
+             } = dataset
     end
 
     test "excluding the schema from the changes you want to overlay on the dataset does not blow up" do
@@ -168,29 +168,29 @@ defmodule Andi.InputSchemas.InputConverterTest do
         |> Ecto.Changeset.apply_changes()
 
       assert %{
-              technical: %{
-                schema: [
-                  %{
-                    name: "hello",
-                    type: "string"
-                  },
-                  %{
-                    name: "world",
-                    type: "map",
-                    subSchema: [
-                      %{
-                        name: "goodbye",
-                        type: "list"
-                      },
-                      %{
-                        name: "richard",
-                        type: "float"
-                      }
-                    ]
-                  }
-                ]
-              }
-            } = dataset_input
+               technical: %{
+                 schema: [
+                   %{
+                     name: "hello",
+                     type: "string"
+                   },
+                   %{
+                     name: "world",
+                     type: "map",
+                     subSchema: [
+                       %{
+                         name: "goodbye",
+                         type: "list"
+                       },
+                       %{
+                         name: "richard",
+                         type: "float"
+                       }
+                     ]
+                   }
+                 ]
+               }
+             } = dataset_input
     end
   end
 
@@ -206,7 +206,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
       "description" => "description",
       "issuedDate" => "2020-01-01T00:00:00Z",
       "license" => "license",
-      "publishFrequency" => "publishFrequency",
+      "publishFrequency" => "publishFrequency"
     },
     "technical" => %{
       "dataName" => "dataName",
@@ -266,14 +266,14 @@ defmodule Andi.InputSchemas.InputConverterTest do
       assert changeset.action == nil
 
       assert %{
-        technical: %{
-          sourceUrl: "http://example.com?key=value&key1=value1",
-          sourceQueryParams: [
-            %{key: "key", value: "value"},
-            %{key: "key1", value: "value1"}
-          ]
-        }
-      } = Ecto.Changeset.apply_changes(changeset)
+               technical: %{
+                 sourceUrl: "http://example.com?key=value&key1=value1",
+                 sourceQueryParams: [
+                   %{key: "key", value: "value"},
+                   %{key: "key1", value: "value1"}
+                 ]
+               }
+             } = Ecto.Changeset.apply_changes(changeset)
     end
 
     test "given a full and valid piece of form data it returns a diff that includes whole dataset" do
@@ -342,15 +342,15 @@ defmodule Andi.InputSchemas.InputConverterTest do
       refute changeset.valid?
 
       assert %{
-        id: "existing id?",
-        technical: %{
-          sourceUrl: "http://example.com?key=value&key1=value1",
-          sourceQueryParams: [
-            %{key: "key", value: "value"},
-            %{key: "key1", value: "value1"}
-          ]
-        }
-      } = Ecto.Changeset.apply_changes(changeset)
+               id: "existing id?",
+               technical: %{
+                 sourceUrl: "http://example.com?key=value&key1=value1",
+                 sourceQueryParams: [
+                   %{key: "key", value: "value"},
+                   %{key: "key1", value: "value1"}
+                 ]
+               }
+             } = Ecto.Changeset.apply_changes(changeset)
     end
 
     test "given a full and valid piece of form data it returns a diff that includes whole dataset" do

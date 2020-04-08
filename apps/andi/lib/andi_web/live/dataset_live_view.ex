@@ -43,8 +43,9 @@ defmodule AndiWeb.DatasetLiveView do
     %{search_text: search_text, order: order} = socket.assigns
     {order_by, order_dir} = coerce_order_into_tuple(order)
 
-    updated_datasets = refresh_datasets(search_text)
-    |> sort_by_dir(order_by, order_dir)
+    updated_datasets =
+      refresh_datasets(search_text)
+      |> sort_by_dir(order_by, order_dir)
 
     updated_state = assign(socket, :datasets, updated_datasets)
 
@@ -52,6 +53,7 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   defp coerce_order_into_tuple(order) when is_tuple(order), do: order
+
   defp coerce_order_into_tuple(order) when is_map(order) do
     [{order_by, order_dir}] = Map.to_list(order)
     {order_by, order_dir}

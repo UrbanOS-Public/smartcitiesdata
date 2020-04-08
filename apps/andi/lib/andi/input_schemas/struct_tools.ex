@@ -27,33 +27,45 @@ defmodule Andi.InputSchemas.StructTools do
   end
 
   def preload(nil, _fields), do: nil
+
   def preload(list, fields) when is_list(list) do
     Enum.map(list, &preload(&1, fields))
   end
+
   def preload(%struct_type{} = struct, fields) do
-    preloaded = Andi.Repo.preload(struct, fields)
-    |> Map.from_struct()
-    |> Enum.map(fn
-      {k, []} -> {k, []}
-      {k, nil} -> {k, nil}
-      {k, v} when is_list(v) ->
-        case k in fields do
-          true ->
-            [%v_type{} | _] = v
-            {k, v_type.preload(v)}
-          false -> {k, v}
-        end
-      {k, v} ->
-        case k in fields do
-          true ->
-            %v_type{} = v
-            {k, v_type.preload(v)}
-          false -> {k, v}
-        end
-    end)
-    |> Enum.reject(fn {_k, v} ->
-      is_nil(v)
-    end)
+    preloaded =
+      Andi.Repo.preload(struct, fields)
+      |> Map.from_struct()
+      |> Enum.map(fn
+        {k, []} ->
+          {k, []}
+
+        {k, nil} ->
+          {k, nil}
+
+        {k, v} when is_list(v) ->
+          case k in fields do
+            true ->
+              [%v_type{} | _] = v
+              {k, v_type.preload(v)}
+
+            false ->
+              {k, v}
+          end
+
+        {k, v} ->
+          case k in fields do
+            true ->
+              %v_type{} = v
+              {k, v_type.preload(v)}
+
+            false ->
+              {k, v}
+          end
+      end)
+      |> Enum.reject(fn {_k, v} ->
+        is_nil(v)
+      end)
 
     struct(struct_type, preloaded)
   end
@@ -74,6 +86,7 @@ defmodule Andi.InputSchemas.StructTools do
   def safe_from_struct(list) when is_list(list) do
     Enum.map(list, &safe_from_struct/1)
   end
+
   def safe_from_struct(%_{} = struct), do: Map.from_struct(struct)
   def safe_from_struct(map), do: map
 

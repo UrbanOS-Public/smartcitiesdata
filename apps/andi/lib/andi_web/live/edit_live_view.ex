@@ -370,11 +370,12 @@ defmodule AndiWeb.EditLiveView do
   defp disabled?(_), do: ""
 
   defp get_default_dictionary_field(%{params: %{"technical" => %{schema: schema}}} = changeset) when schema != [] do
-    first_data_dictionary_item = form_for(changeset, "#", as: :form_data)
-    |> inputs_for(:technical)
-    |> hd()
-    |> inputs_for(:schema)
-    |> hd()
+    first_data_dictionary_item =
+      form_for(changeset, "#", as: :form_data)
+      |> inputs_for(:technical)
+      |> hd()
+      |> inputs_for(:schema)
+      |> hd()
 
     first_selected_field_id = input_value(first_data_dictionary_item, :id)
 
@@ -392,9 +393,11 @@ defmodule AndiWeb.EditLiveView do
   end
 
   defp safe_calendar_value(nil), do: nil
+
   defp safe_calendar_value(%{calendar: _, day: day, month: month, year: year}) do
     Timex.parse!("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}")
     |> NaiveDateTime.to_date()
   end
+
   defp safe_calendar_value(value), do: value
 end

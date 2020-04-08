@@ -197,12 +197,17 @@ defmodule Andi.InputSchemas.InputConverter do
     map
     |> Map.get_and_update(:modifiedDate, fn
       %{calendar: "Elixir.Calendar.ISO", day: day, month: month, year: year} ->
-        date = Timex.parse!("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}")
+        date =
+          Timex.parse!("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}")
+          |> NaiveDateTime.to_date()
 
-        |> NaiveDateTime.to_date()
         {date, date}
-      "" -> {"", nil}
-      current_value -> {current_value, current_value}
+
+      "" ->
+        {"", nil}
+
+      current_value ->
+        {current_value, current_value}
     end)
     |> elem(1)
   end

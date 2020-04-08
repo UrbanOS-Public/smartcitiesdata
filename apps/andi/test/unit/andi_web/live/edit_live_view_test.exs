@@ -74,8 +74,9 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:business, :language], "spanish")
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:business, :language], "spanish")
 
       html = render_change(view, :validate, %{"form_data" => form_data})
 
@@ -187,8 +188,9 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:business, :keywords], Enum.join(dataset.business.keywords, ", "))
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:business, :keywords], Enum.join(dataset.business.keywords, ", "))
 
       expected = Enum.join(dataset.business.keywords, ", ")
 
@@ -205,8 +207,9 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:business, :keywords], "a , good ,  keyword   , is .... hard , to find")
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:business, :keywords], "a , good ,  keyword   , is .... hard , to find")
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
       html = render_change(view, :validate, %{"form_data" => form_data})
@@ -223,8 +226,9 @@ defmodule AndiWeb.EditLiveViewTest do
 
       expected = Enum.join(dataset.business.keywords, ", ")
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:business, :keywords], expected)
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:business, :keywords], expected)
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
       html = render_change(view, :validate, %{"form_data" => form_data})
@@ -235,14 +239,15 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "displays all other fields", %{conn: conn} do
-      dataset = DatasetHelpers.create_dataset(%{
-            business: %{
-              description: "A description with no special characters",
-              benefitRating: 1.0,
-              riskRating: 0.5
-            },
-            technical: %{private: true}
-          })
+      dataset =
+        DatasetHelpers.create_dataset(%{
+          business: %{
+            description: "A description with no special characters",
+            benefitRating: 1.0,
+            riskRating: 0.5
+          },
+          technical: %{private: true}
+        })
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
@@ -252,7 +257,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_value(html, ".metadata-form__format input") == dataset.technical.sourceFormat
       assert {"true", "Private"} == get_select(html, ".metadata-form__level-of-access")
       assert get_value(html, ".metadata-form__maintainer-name input") == dataset.business.contactName
-      assert dataset.business.modifiedDate  |> Date.to_string() =~ get_value(html, ".metadata-form__last-updated input")
+      assert dataset.business.modifiedDate |> Date.to_string() =~ get_value(html, ".metadata-form__last-updated input")
       assert get_value(html, ".metadata-form__maintainer-email input") == dataset.business.contactEmail
       assert dataset.business.issuedDate |> Date.to_string() =~ get_value(html, ".metadata-form__release-date input")
       assert get_value(html, ".metadata-form__license input") == dataset.business.license
@@ -276,8 +281,9 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_select(html, ".metadata-form__level-of-access") == {"true", "Private"}
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:technical, :private], false)
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:technical, :private], false)
 
       html = render_change(view, :validate, %{"form_data" => form_data})
       assert get_select(html, ".metadata-form__level-of-access") == {"false", "Public"}
@@ -320,8 +326,9 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:technical, :sourceFormat], "")
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:technical, :sourceFormat], "")
 
       html = render_change(view, :validate, %{"form_data" => form_data})
 
@@ -335,8 +342,9 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:technical, field], %{"0" => %{"key" => "", "value" => "where's my key"}})
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:technical, field], %{"0" => %{"key" => "", "value" => "where's my key"}})
 
       html = render_change(view, :validate, %{"form_data" => form_data})
 
@@ -353,8 +361,9 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, "##{field}-error-msg") == ""
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:business, field], "")
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:business, field], "")
 
       html = render_change(view, :validate, %{"form_data" => form_data})
 
@@ -380,8 +389,9 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert get_text(html, "#issuedDate-error-msg") == "Please enter a valid release date."
 
-      updated_form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:business, :issuedDate], "2020-01-03")
+      updated_form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:business, :issuedDate], "2020-01-03")
 
       html = render_change(view, :validate, %{"form_data" => updated_form_data})
 
@@ -419,14 +429,12 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert get_attributes(html, "#form_data_technical_#{name}", "type") == ["hidden"]
 
-      where(
-        [
-          [:name],
-          ["orgName"],
-          ["dataName"],
-          ["sourceType"]
-        ]
-      )
+      where([
+        [:name],
+        ["orgName"],
+        ["dataName"],
+        ["sourceType"]
+      ])
     end
   end
 
@@ -440,12 +448,14 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:business, :issuedDate], "2020-01-03")
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:business, :issuedDate], "2020-01-03")
 
-      dataset_from_save = dataset
-      |> InputConverter.form_data_to_full_changeset(form_data)
-      |> Ecto.Changeset.apply_changes()
+      dataset_from_save =
+        dataset
+        |> InputConverter.form_data_to_full_changeset(form_data)
+        |> Ecto.Changeset.apply_changes()
 
       allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
@@ -463,9 +473,10 @@ defmodule AndiWeb.EditLiveViewTest do
 
       form_data = FormTools.form_data_from_andi_dataset(dataset)
 
-      dataset_from_save = dataset
-      |> InputConverter.form_data_to_full_changeset(form_data)
-      |> Ecto.Changeset.apply_changes()
+      dataset_from_save =
+        dataset
+        |> InputConverter.form_data_to_full_changeset(form_data)
+        |> Ecto.Changeset.apply_changes()
 
       allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
@@ -487,12 +498,14 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert get_text(html, "#success-message") == ""
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:business, :issuedDate], "2020-01-03")
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:business, :issuedDate], "2020-01-03")
 
-      dataset_from_save = dataset
-      |> InputConverter.form_data_to_full_changeset(form_data)
-      |> Ecto.Changeset.apply_changes()
+      dataset_from_save =
+        dataset
+        |> InputConverter.form_data_to_full_changeset(form_data)
+        |> Ecto.Changeset.apply_changes()
 
       allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
@@ -511,12 +524,14 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:business, :modifiedDate], nil)
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:business, :modifiedDate], nil)
 
-      dataset_from_save = dataset
-      |> InputConverter.form_data_to_full_changeset(form_data)
-      |> Ecto.Changeset.apply_changes()
+      dataset_from_save =
+        dataset
+        |> InputConverter.form_data_to_full_changeset(form_data)
+        |> Ecto.Changeset.apply_changes()
 
       allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
@@ -534,12 +549,14 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetHelpers.add_dataset_to_repo(dataset, unique: false)
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:business, :issuedDate], "2020-01-03")
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:business, :issuedDate], "2020-01-03")
 
-      dataset_from_save = dataset
-      |> InputConverter.form_data_to_full_changeset(form_data)
-      |> Ecto.Changeset.apply_changes()
+      dataset_from_save =
+        dataset
+        |> InputConverter.form_data_to_full_changeset(form_data)
+        |> Ecto.Changeset.apply_changes()
 
       allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
@@ -558,12 +575,14 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      |> Map.update!(:technical, &Map.delete(&1, field))
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> Map.update!(:technical, &Map.delete(&1, field))
 
-      dataset_from_save = dataset
-      |> InputConverter.form_data_to_full_changeset(form_data)
-      |> Ecto.Changeset.apply_changes()
+      dataset_from_save =
+        dataset
+        |> InputConverter.form_data_to_full_changeset(form_data)
+        |> Ecto.Changeset.apply_changes()
 
       allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
@@ -581,13 +600,14 @@ defmodule AndiWeb.EditLiveViewTest do
   describe "sourceUrl testing" do
     @tag capture_log: true
     test "uses provided query params and headers", %{conn: conn} do
-      dataset = DatasetHelpers.create_dataset(%{
-            technical: %{
-              sourceUrl: "123.com",
-              sourceQueryParams: %{"x" => "y"},
-              sourceHeaders: %{"api-key" => "to-my-heart"}
-            }
-      })
+      dataset =
+        DatasetHelpers.create_dataset(%{
+          technical: %{
+            sourceUrl: "123.com",
+            sourceQueryParams: %{"x" => "y"},
+            sourceHeaders: %{"api-key" => "to-my-heart"}
+          }
+        })
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
@@ -632,15 +652,16 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      html = render_change(view, :validate, %{
-          "form_data" => %{"technical" => %{
+      html =
+        render_change(view, :validate, %{
+          "form_data" => %{
+            "technical" => %{
               "sourceUrl" => intialSourceUrl,
               "sourceQueryParams" => queryParams
             }
           },
           "_target" => ["form_data", "technical", "sourceQueryParams"]
-        }
-      )
+        })
 
       assert get_values(html, ".url-form__source-url input") == [updatedSourceUrl]
 

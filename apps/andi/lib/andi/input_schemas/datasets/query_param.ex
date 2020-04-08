@@ -35,6 +35,5 @@ defmodule Andi.InputSchemas.Datasets.QueryParam do
     |> foreign_key_constraint(:technical_id)
   end
 
-
   def preload(struct), do: struct
 end

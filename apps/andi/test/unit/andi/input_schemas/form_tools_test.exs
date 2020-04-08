@@ -169,10 +169,10 @@ defmodule Andi.InputSchemas.FormToolsTest do
       updated_form_data = FormTools.adjust_source_url_for_query_params(current_form_data)
 
       assert %{
-        "technical" => %{
-          "sourceUrl" => "https://source.url.example.com"
-        }
-      } = updated_form_data
+               "technical" => %{
+                 "sourceUrl" => "https://source.url.example.com"
+               }
+             } = updated_form_data
     end
   end
 end

@@ -18,6 +18,7 @@ defmodule Andi.URI do
   end
 
   def update_url_with_params(nil, params), do: update_url_with_params("", params)
+
   def update_url_with_params(url, params) do
     query_params = Andi.URI.encode_query(params)
     uri = Andi.URI.parse(url)
@@ -30,6 +31,7 @@ defmodule Andi.URI do
   def clear_query_params(url), do: update_url_with_params(url, [])
 
   def extract_query_params(nil), do: extract_query_params("")
+
   def extract_query_params(url) do
     url
     |> Andi.URI.parse()
