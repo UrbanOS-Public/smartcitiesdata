@@ -3,10 +3,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
   use Phoenix.ConnTest
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper
-
-  alias Andi.DatasetCache
-
-  alias SmartCity.TestDataGenerator, as: TDG
+  use Placebo
 
   import FlokiHelpers,
     only: [
@@ -18,14 +15,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
 
   @url_path "/datasets/"
 
-  setup do
-    GenServer.call(DatasetCache, :reset)
-  end
-
   describe "expand/collapse and check/uncheck" do
     setup %{conn: conn} do
       dataset =
-        TDG.create_dataset(%{
+        DatasetHelpers.create_dataset(%{
           technical: %{
             schema: [
               %{
@@ -53,7 +46,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
           }
         })
 
-      DatasetCache.put(dataset)
+
+      DatasetHelpers.add_dataset_to_repo(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
@@ -192,156 +186,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
         assert [one_name] == get_attributes(html, ".data-dictionary-field-editor__name", "value")
         assert {one_type, Macro.camelize(one_type)} == get_select(html, ".data-dictionary-field-editor__type")
       end)
-    end
-  end
-
-  describe "render/1 " do
-    test "given a schema with no nesting it displays the three fields in a well-known (BEM) way", %{conn: conn} do
-      dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            schema: [
-              %{
-                name: "one",
-                type: "string"
-              },
-              %{
-                name: "two",
-                type: "integer"
-              },
-              %{
-                name: "three",
-                type: "float"
-              }
-            ]
-          }
-        })
-
-      DatasetCache.put(dataset)
-
-      assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-
-      assert ["one", "two", "three"] == get_texts(html, ".data-dictionary-tree-field__name")
-      assert ["string", "integer", "float"] == get_texts(html, ".data-dictionary-tree-field__type")
-    end
-
-    test "given a schema with nesting it displays the three fields in a well-known (BEM) way", %{conn: conn} do
-      dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            schema: [
-              %{
-                name: "one",
-                type: "string"
-              },
-              %{
-                name: "two",
-                type: "map",
-                subSchema: [
-                  %{
-                    name: "two-one",
-                    type: "integer"
-                  }
-                ]
-              },
-              %{
-                name: "three",
-                type: "list",
-                subType: "map",
-                subSchema: [
-                  %{
-                    name: "three-one",
-                    type: "float"
-                  },
-                  %{
-                    name: "three-two",
-                    type: "map",
-                    subSchema: [
-                      %{
-                        name: "three-two-one",
-                        type: "string"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        })
-
-      DatasetCache.put(dataset)
-
-      assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
-
-      assert ["one", "two", "two-one", "three", "three-one", "three-two", "three-two-one"] ==
-               get_texts(html, ".data-dictionary-tree-field__name")
-
-      assert ["two-one", "three-one", "three-two", "three-two-one"] ==
-               get_texts(html, ".data-dictionary-tree__sub-dictionary .data-dictionary-tree-field__name")
-
-      assert ["three-two-one"] ==
-               get_texts(
-                 html,
-                 ".data-dictionary-tree__sub-dictionary .data-dictionary-tree__sub-dictionary .data-dictionary-tree-field__name"
-               )
-
-      assert ["string", "map", "integer", "list", "float", "map", "string"] == get_texts(html, ".data-dictionary-tree-field__type")
-    end
-
-    test "generates hidden inputs for fields that are not selected", %{conn: conn} do
-      dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            schema: [
-              %{
-                name: "one",
-                type: "list",
-                subType: "map",
-                description: "description",
-                subSchema: [
-                  %{
-                    name: "one-one",
-                    type: "string"
-                  }
-                ]
-              },
-              %{
-                name: "two",
-                type: "map",
-                description: "this is a map",
-                subSchema: [
-                  %{
-                    name: "two-one",
-                    type: "integer"
-                  }
-                ]
-              }
-            ]
-          }
-        })
-
-      DatasetCache.put(dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-      assert Enum.empty?(find_elements(html, "input[type='hidden']#form_data_schema_0_description"))
-      assert Enum.count(find_elements(html, "input[type='hidden']#form_data_schema_1_description")) > 0
-    end
-
-    test "handles datasets with no schema fields", %{conn: conn} do
-      dataset = TDG.create_dataset(%{}) |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
-
-      DatasetCache.put(dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-    end
-
-    test "handles datasets with empty schema fields", %{conn: conn} do
-      dataset = TDG.create_dataset(%{schema: []})
-
-      DatasetCache.put(dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
   end
 

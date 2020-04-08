@@ -44,3 +44,10 @@ config :andi, AndiWeb.Endpoint,
   live_view: [
     signing_salt: live_view_salt
   ]
+
+config :andi, Andi.Repo,
+  database: System.get_env("POSTGRES_DBNAME"),
+  username: System.get_env("POSTGRES_USER"),
+  password: System.get_env("POSTGRES_PASSWORD"),
+  hostname: System.get_env("POSTGRES_HOST"),
+  port: System.get_env("POSTGRES_PORT")

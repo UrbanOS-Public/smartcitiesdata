@@ -4,173 +4,363 @@ defmodule Andi.InputSchemas.InputConverterTest do
   alias Ecto.Changeset
   alias Andi.InputSchemas.InputConverter
   alias SmartCity.TestDataGenerator
+  alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.Dataset
 
-  test "SmartCity.Dataset => Changeset => SmartCity.Dataset" do
-    dataset =
-      TestDataGenerator.create_dataset(%{
-        business: %{issuedDate: "2020-01-03 00:00:00Z", modifiedDate: "2020-01-05 00:00:00Z"}
-      })
+  use Placebo
 
-    new_dataset =
-      dataset
-      |> InputConverter.changeset_from_dataset()
-      |> Changeset.apply_changes()
-      |> InputConverter.restruct(dataset)
+  describe "main conversions" do
+    setup do
+      allow(Datasets.is_unique?(any(), any(), any()), return: true)
 
-    assert new_dataset == dataset
-  end
+      :ok
+    end
 
-  test "SmartCity.Dataset => Changeset => SmartCity.Dataset with source params" do
-    dataset =
-      TestDataGenerator.create_dataset(%{
-        business: %{issuedDate: "2020-01-03 00:00:00Z", modifiedDate: "2020-01-05 00:00:00Z"},
-        technical: %{
-          sourceQueryParams: %{"foo" => "bar", "baz" => "biz"},
-          sourceHeaders: %{"food" => "bard", "bad" => "bid"}
-        }
-      })
+    test "SmartCity.Dataset => Changeset => SmartCity.Dataset" do
+      dataset =
+        TestDataGenerator.create_dataset(%{
+          business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: "2020-01-05T00:00:00Z"}
+        })
 
-    new_dataset =
-      dataset
-      |> InputConverter.changeset_from_dataset()
-      |> Changeset.apply_changes()
-      |> InputConverter.restruct(dataset)
+      {:ok, new_dataset} =
+        dataset
+        |> InputConverter.smrt_dataset_to_full_changeset()
+        |> Ecto.Changeset.apply_changes()
+        |> InputConverter.andi_dataset_to_smrt_dataset()
 
-    assert new_dataset == dataset
-  end
+      assert new_dataset == dataset
+    end
 
-  test "conversion preserves empty string modified date" do
-    dataset =
-      TestDataGenerator.create_dataset(%{
-        business: %{issuedDate: "2020-01-03 00:00:00Z", modifiedDate: ""}
-      })
-
-    new_dataset =
-      dataset
-      |> InputConverter.changeset_from_dataset()
-      |> Changeset.apply_changes()
-      |> InputConverter.restruct(dataset)
-
-    assert new_dataset == dataset
-  end
-
-  test "removes query params from sourceUrl on restruct" do
-    dataset =
-      TestDataGenerator.create_dataset(%{
-        technical: %{
-          sourceUrl: "http://example.com",
-          sourceQueryParams: %{}
-        }
-      })
-
-    dataset =
-      dataset
-      |> InputConverter.changeset_from_dataset(%{
-        "sourceUrl" => "http://example.com?key=value&key1=value1",
-        "sourceQueryParams" => %{
-          "0" => %{
-            "key" => "key",
-            "value" => "value"
-          },
-          "1" => %{
-            "key" => "key1",
-            "value" => "value1"
+    test "SmartCity.Dataset => Changeset => SmartCity.Dataset with source params" do
+      dataset =
+        TestDataGenerator.create_dataset(%{
+          business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: "2020-01-05T00:00:00Z"},
+          technical: %{
+            sourceQueryParams: %{"foo" => "bar", "baz" => "biz"},
+            sourceHeaders: %{"food" => "bard", "bad" => "bid"}
           }
-        }
-      })
-      |> Changeset.apply_changes()
-      |> InputConverter.restruct(dataset)
+        })
 
-    assert %SmartCity.Dataset{
-             technical: %{
-               sourceUrl: "http://example.com",
-               sourceQueryParams: %{
-                 "key" => "value",
-                 "key1" => "value1"
-               }
-             }
-           } = dataset
-  end
+      {:ok, new_dataset} =
+        dataset
+        |> InputConverter.smrt_dataset_to_full_changeset()
+        |> Ecto.Changeset.apply_changes()
+        |> InputConverter.andi_dataset_to_smrt_dataset()
 
-  test "converting a dataset to a changeset syncs source url and query params" do
-    dataset =
-      TestDataGenerator.create_dataset(%{
-        technical: %{
-          sourceUrl: "http://example.com?dog=cat&wont=get",
-          sourceQueryParams: %{
-            "wont" => "get",
-            "squashed" => "bro"
+      assert new_dataset == dataset
+    end
+
+    test "conversion preserves empty string modified date" do
+      dataset =
+        TestDataGenerator.create_dataset(%{
+          business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: ""}
+        })
+
+      {:ok, new_dataset} =
+        dataset
+        |> InputConverter.smrt_dataset_to_full_changeset()
+        |> Ecto.Changeset.apply_changes()
+        |> InputConverter.andi_dataset_to_smrt_dataset()
+
+      assert new_dataset == dataset
+    end
+
+    test "removes query params from sourceUrl on andi_dataset_to_smrt_dataset" do
+      dataset =
+        TestDataGenerator.create_dataset(%{
+          technical: %{
+            sourceUrl: "http://example.com",
+            sourceQueryParams: %{}
           }
-        }
-      })
+        })
+        |> InputConverter.smrt_dataset_to_full_changeset()
+        |> Ecto.Changeset.apply_changes()
 
-    dataset_input =
-      InputConverter.changeset_from_dataset(dataset)
-      |> Ecto.Changeset.apply_changes()
-
-    assert %{
-             sourceUrl: "http://example.com?dog=cat&squashed=bro&wont=get",
-             sourceQueryParams: [
-               %{key: "dog", value: "cat"},
-               %{key: "squashed", value: "bro"},
-               %{key: "wont", value: "get"}
-             ]
-           } = dataset_input
-  end
-
-  test "excluding the schema from the changes you want to overlay on the dataset does not blow up" do
-    dataset =
-      TestDataGenerator.create_dataset(%{
-        technical: %{
-          schema: [
-            %{
-              name: "hello",
-              type: "string"
-            },
-            %{
-              name: "world",
-              type: "map",
-              subSchema: [
-                %{
-                  name: "goodbye",
-                  type: "list",
-                  itemType: "string"
-                },
-                %{
-                  name: "richard",
-                  type: "float"
-                }
-              ]
+      {:ok, smrt_dataset} =
+        dataset
+        |> InputConverter.form_data_to_full_changeset(%{
+          "technical" => %{
+            "sourceUrl" => "http://example.com?key=value&key1=value1",
+            "sourceQueryParams" => %{
+              "0" => %{
+                "key" => "key",
+                "value" => "value"
+              },
+              "1" => %{
+                "key" => "key1",
+                "value" => "value1"
+              }
             }
+          }
+        })
+        |> Changeset.apply_changes()
+        |> InputConverter.andi_dataset_to_smrt_dataset()
+
+      assert %SmartCity.Dataset{
+              technical: %{
+                sourceUrl: "http://example.com",
+                sourceQueryParams: %{
+                  "key" => "value",
+                  "key1" => "value1"
+                }
+              }
+            } = smrt_dataset
+    end
+
+    test "converting a dataset to a changeset syncs source url and query params" do
+      dataset =
+        TestDataGenerator.create_dataset(%{
+          technical: %{
+            sourceUrl: "http://example.com?dog=cat&wont=get",
+            sourceQueryParams: %{
+              "wont" => "get",
+              "squashed" => "bro"
+            }
+          }
+        })
+        |> InputConverter.smrt_dataset_to_full_changeset()
+        |> Ecto.Changeset.apply_changes()
+
+      assert %{
+              technical: %{
+                sourceUrl: "http://example.com?dog=cat&squashed=bro&wont=get",
+                sourceQueryParams: [
+                  %{key: "dog", value: "cat"},
+                  %{key: "squashed", value: "bro"},
+                  %{key: "wont", value: "get"}
+                ]
+              }
+            } = dataset
+    end
+
+    test "excluding the schema from the changes you want to overlay on the dataset does not blow up" do
+      dataset =
+        TestDataGenerator.create_dataset(%{
+          technical: %{
+            schema: [
+              %{
+                name: "hello",
+                type: "string"
+              },
+              %{
+                name: "world",
+                type: "map",
+                subSchema: [
+                  %{
+                    name: "goodbye",
+                    type: "list",
+                    itemType: "string"
+                  },
+                  %{
+                    name: "richard",
+                    type: "float"
+                  }
+                ]
+              }
+            ]
+          }
+        })
+        |> InputConverter.smrt_dataset_to_full_changeset()
+        |> Ecto.Changeset.apply_changes()
+
+      dataset_input =
+        InputConverter.form_data_to_full_changeset(dataset, %{})
+        |> Ecto.Changeset.apply_changes()
+
+      assert %{
+              technical: %{
+                schema: [
+                  %{
+                    name: "hello",
+                    type: "string"
+                  },
+                  %{
+                    name: "world",
+                    type: "map",
+                    subSchema: [
+                      %{
+                        name: "goodbye",
+                        type: "list"
+                      },
+                      %{
+                        name: "richard",
+                        type: "float"
+                      }
+                    ]
+                  }
+                ]
+              }
+            } = dataset_input
+    end
+  end
+
+  @valid_form_data %{
+    "id" => "id",
+    "business" => %{
+      "benefitRating" => 0,
+      "riskRating" => 1,
+      "contactEmail" => "contact@email.com",
+      "contactName" => "contactName",
+      "dataTitle" => "dataTitle",
+      "orgTitle" => "orgTitle",
+      "description" => "description",
+      "issuedDate" => "2020-01-01T00:00:00Z",
+      "license" => "license",
+      "publishFrequency" => "publishFrequency",
+    },
+    "technical" => %{
+      "dataName" => "dataName",
+      "orgName" => "orgName",
+      "private" => false,
+      "schema" => %{
+        "0" => %{"id" => Ecto.UUID.generate(), "name" => "name", "type" => "type"}
+      },
+      "sourceFormat" => "sourceFormat",
+      "sourceHeaders" => %{
+        "0" => %{"id" => Ecto.UUID.generate(), "key" => "foo", "value" => "bar"},
+        "1" => %{"id" => Ecto.UUID.generate(), "key" => "fizzle", "value" => "bizzle"}
+      },
+      "sourceQueryParams" => %{
+        "0" => %{"id" => Ecto.UUID.generate(), "key" => "chain", "value" => "city"},
+        "1" => %{"id" => Ecto.UUID.generate(), "key" => "F# minor", "value" => "add"}
+      },
+      "sourceType" => "sourceType",
+      "sourceUrl" => "https://sourceurl.com?chain=city&F%23+minor=add"
+    }
+  }
+
+  describe "form_data_to_ui_changeset/1" do
+    setup do
+      allow(Datasets.is_unique?(any(), any(), any()), return: false)
+
+      :ok
+    end
+
+    test "given empty form data it returns a diff that includes whole dataset" do
+      changeset = InputConverter.form_data_to_ui_changeset(%{})
+
+      refute changeset.valid?
+      assert changeset.action == nil
+    end
+
+    test "given partial form data it returns a diff that includes whole dataset" do
+      form_data = %{
+        "technical" => %{
+          "sourceUrl" => "http://example.com?key=value&key1=value1",
+          "sourceQueryParams" => %{
+            "0" => %{
+              "key" => "key",
+              "value" => "value"
+            },
+            "1" => %{
+              "key" => "key1",
+              "value" => "value1"
+            }
+          }
+        }
+      }
+
+      changeset = InputConverter.form_data_to_ui_changeset(form_data)
+
+      refute changeset.valid?
+      assert changeset.action == nil
+
+      assert %{
+        technical: %{
+          sourceUrl: "http://example.com?key=value&key1=value1",
+          sourceQueryParams: [
+            %{key: "key", value: "value"},
+            %{key: "key1", value: "value1"}
           ]
         }
-      })
+      } = Ecto.Changeset.apply_changes(changeset)
+    end
 
-    dataset_input =
-      InputConverter.changeset_from_dataset(dataset, %{})
-      |> Ecto.Changeset.apply_changes()
+    test "given a full and valid piece of form data it returns a diff that includes whole dataset" do
+      changeset = InputConverter.form_data_to_ui_changeset(@valid_form_data)
 
-    assert %{
-             schema: [
-               %{
-                 name: "hello",
-                 type: "string"
-               },
-               %{
-                 name: "world",
-                 type: "map",
-                 subSchema: [
-                   %{
-                     name: "goodbye",
-                     type: "list"
-                   },
-                   %{
-                     name: "richard",
-                     type: "float"
-                   }
-                 ]
-               }
-             ]
-           } = dataset_input
+      assert changeset.valid?
+      assert changeset.action == nil
+
+      valid_id = @valid_form_data["id"]
+
+      assert %{id: ^valid_id} = Ecto.Changeset.apply_changes(changeset)
+    end
+  end
+
+  describe "form_data_to_full_ui_changeset/1" do
+    setup do
+      allow(Datasets.is_unique?(any(), any(), any()), return: false)
+
+      :ok
+    end
+
+    test "given otherwise valid form data, it applies full validation (unique check)" do
+      changeset = InputConverter.form_data_to_full_ui_changeset(@valid_form_data)
+
+      refute changeset.valid?
+      assert changeset.action == nil
+
+      valid_id = @valid_form_data["id"]
+
+      assert %{id: ^valid_id} = Ecto.Changeset.apply_changes(changeset)
+    end
+  end
+
+  describe "form_data_to_full_changeset/2" do
+    setup do
+      allow(Datasets.is_unique?(any(), any(), any()), return: true)
+
+      :ok
+    end
+
+    test "given empty form data it returns a diff that includes whole dataset" do
+      changeset = InputConverter.form_data_to_full_changeset(%Dataset{}, %{})
+
+      refute changeset.valid?
+    end
+
+    test "given partial form data it returns a diff that includes whole dataset" do
+      form_data = %{
+        "technical" => %{
+          "sourceUrl" => "http://example.com?key=value&key1=value1",
+          "sourceQueryParams" => %{
+            "0" => %{
+              "key" => "key",
+              "value" => "value"
+            },
+            "1" => %{
+              "key" => "key1",
+              "value" => "value1"
+            }
+          }
+        }
+      }
+
+      changeset = InputConverter.form_data_to_full_changeset(%Dataset{id: "existing id?"}, form_data)
+
+      refute changeset.valid?
+
+      assert %{
+        id: "existing id?",
+        technical: %{
+          sourceUrl: "http://example.com?key=value&key1=value1",
+          sourceQueryParams: [
+            %{key: "key", value: "value"},
+            %{key: "key1", value: "value1"}
+          ]
+        }
+      } = Ecto.Changeset.apply_changes(changeset)
+    end
+
+    test "given a full and valid piece of form data it returns a diff that includes whole dataset" do
+      changeset = InputConverter.form_data_to_full_changeset(%Dataset{id: "overwritten?"}, @valid_form_data)
+
+      assert changeset.valid?
+
+      valid_id = @valid_form_data["id"]
+
+      assert %{id: ^valid_id} = Ecto.Changeset.apply_changes(changeset)
+    end
   end
 end

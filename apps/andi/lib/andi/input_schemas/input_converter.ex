@@ -3,84 +3,141 @@ defmodule Andi.InputSchemas.InputConverter do
   Used to convert between SmartCity.Datasets, form data (defined by Andi.InputSchemas.DatasetInput), and Ecto.Changesets.
   """
 
-  alias SmartCity.Dataset
-  alias Andi.InputSchemas.DatasetInput
+  alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.StructTools
 
-  @type dataset :: map() | Dataset.t()
+  def smrt_dataset_to_full_changeset(smrt_dataset) do
+    smrt_dataset_to_full_changeset(%Dataset{}, smrt_dataset)
+  end
 
-  @spec changeset_from_dataset(dataset) :: Ecto.Changeset.t()
-  def changeset_from_dataset(%{"id" => _} = dataset) do
+  def smrt_dataset_to_full_changeset(nil, smrt_dataset) do
+    smrt_dataset_to_full_changeset(%Dataset{}, smrt_dataset)
+  end
+
+  def smrt_dataset_to_full_changeset(%Dataset{} = andi_dataset, %{"id" => _} = smrt_dataset) do
+    changes = atomize_dataset_map(smrt_dataset)
+
+    smrt_dataset_to_full_changeset(andi_dataset, changes)
+  end
+
+  def smrt_dataset_to_full_changeset(%Dataset{} = andi_dataset, smrt_dataset) do
+    changes = prepare_smrt_dataset_for_casting(smrt_dataset)
+
+    Dataset.full_validation_changeset(andi_dataset, changes)
+  end
+
+  def prepare_smrt_dataset_for_casting(dataset) do
     dataset
-    |> atomize_dataset_map()
-    |> changeset_from_dataset()
-  end
-
-  def changeset_from_dataset(%{id: id, business: business, technical: technical}) do
-    from_business =
-      get_business(business)
-      |> fix_modified_date()
-
-    from_technical =
-      get_technical(technical)
-      |> convert_key_values_for_fields()
-      |> convert_source_url()
-
-    %{id: id}
-    |> Map.merge(from_business)
-    |> Map.merge(from_technical)
+    |> StructTools.to_map()
+    |> convert_smrt_business()
+    |> convert_smrt_technical()
     |> AtomicMap.convert(safe: false, underscore: false)
-    |> DatasetInput.full_validation_changeset()
   end
 
-  @spec changeset_from_dataset(Dataset.t(), map()) :: Ecto.Changeset.t()
-  def changeset_from_dataset(%SmartCity.Dataset{} = original_dataset, changes) do
-    adjusted_changes = adjust_form_input(changes)
+  def form_data_to_ui_changeset(form_data \\ %{}) do
+    form_data_as_params = adjust_form_input(form_data)
 
-    original_dataset_flattened =
-      original_dataset
-      |> changeset_from_dataset()
-      |> Ecto.Changeset.apply_changes()
-
-    all_changes = Map.merge(original_dataset_flattened, adjusted_changes)
-
-    DatasetInput.full_validation_changeset(all_changes)
+    Dataset.changeset(%Dataset{}, form_data_as_params)
   end
 
-  @spec form_changeset(map()) :: Ecto.Changeset.t()
-  def form_changeset(form_data \\ %{}) do
-    form_data
-    |> adjust_form_input()
-    |> DatasetInput.light_validation_changeset()
+  def form_data_to_full_ui_changeset(form_data \\ %{}) do
+    form_data_to_full_changeset(%Dataset{}, form_data)
+  end
+
+  def form_data_to_full_changeset(andi_dataset, form_data \\ %{}) do
+    form_data_as_params = adjust_form_input(form_data)
+
+    Dataset.full_validation_changeset(andi_dataset, form_data_as_params)
   end
 
   defp adjust_form_input(params) do
     params
     |> AtomicMap.convert(safe: false, underscore: false)
-    |> Map.update(:keywords, nil, &keywords_to_list/1)
-    |> fix_modified_date()
-    |> reset_key_values()
+    |> convert_form_business()
+    |> convert_form_technical()
   end
 
-  @spec restruct(map(), Dataset.t()) :: Dataset.t()
-  def restruct(changes, dataset) do
-    formatted_changes =
-      changes
+  def andi_dataset_to_full_ui_changeset(%Dataset{} = dataset) do
+    dataset_as_map = StructTools.to_map(dataset)
+
+    Dataset.full_validation_changeset(%Dataset{}, dataset_as_map)
+  end
+
+  def andi_dataset_to_smrt_dataset(%Dataset{} = dataset) do
+    dataset
+    |> StructTools.to_map()
+    |> convert_andi_business()
+    |> convert_andi_technical()
+    |> SmartCity.Dataset.new()
+  end
+
+  defp convert_smrt_business(smrt_dataset) do
+    smrt_dataset
+    |> Map.update(:business, %{}, fn business ->
+      business
+      |> fix_modified_date()
+    end)
+  end
+
+  defp convert_andi_business(andi_dataset) do
+    andi_dataset
+    |> Map.update!(:business, fn business ->
+      business
       |> Map.update(:issuedDate, nil, &date_to_iso8601_datetime/1)
       |> Map.update(:modifiedDate, nil, &date_to_iso8601_datetime/1)
+    end)
+  end
+
+  defp convert_form_business(form_dataset) do
+    form_dataset
+    |> Map.update(:business, %{}, fn business ->
+      business
+      |> fix_modified_date()
+      |> Map.update(:keywords, nil, &keywords_to_list/1)
+    end)
+  end
+
+  defp convert_smrt_technical(smrt_dataset) do
+    smrt_dataset
+    |> Map.update(:technical, %{}, fn technical ->
+      technical
+      |> Map.update(:sourceHeaders, [], &to_key_value_list/1)
+      |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
+      |> convert_source_url()
+      |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
+    end)
+  end
+
+  defp convert_andi_technical(andi_dataset) do
+    andi_dataset
+    |> Map.update!(:technical, fn technical ->
+      technical
       |> Map.update(:sourceUrl, nil, &Andi.URI.clear_query_params/1)
-      |> restruct_key_values()
-      # ignore changes to schema until we want to actually save them in later work
-      |> Map.delete(:schema)
+      |> Map.update(:sourceQueryParams, nil, &convert_key_value_to_map/1)
+      |> Map.update(:sourceHeaders, nil, &convert_key_value_to_map/1)
+      |> Map.update(:schema, nil, fn schema ->
+        Enum.map(schema, &drop_ids_from_dictionary_item/1)
+      end)
+    end)
+  end
 
-    business = Map.merge(dataset.business, get_business(formatted_changes)) |> Map.from_struct()
-    technical = Map.merge(dataset.technical, get_technical(formatted_changes)) |> Map.from_struct()
+  defp drop_ids_from_dictionary_item(schema) do
+    schema
+    |> Map.delete(:id)
+    |> Map.update(:subSchema, nil, fn sub_schema ->
+      Enum.map(sub_schema, &drop_ids_from_dictionary_item/1)
+    end)
+    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+    |> Map.new()
+  end
 
-    %{}
-    |> Map.put(:id, dataset.id)
-    |> Map.put(:business, business)
-    |> Map.put(:technical, technical)
-    |> SmartCity.Dataset.new()
-    |> (fn {:ok, dataset} -> dataset end).()
+  defp convert_form_technical(form_dataset) do
+    form_dataset
+    |> Map.update(:technical, %{}, fn technical ->
+      technical
+      |> Map.put_new(:sourceQueryParams, %{})
+      |> Map.put_new(:sourceHeaders, %{})
+    end)
   end
 
   defp atomize_dataset_map(dataset) when is_map(dataset) do
@@ -95,14 +152,6 @@ defmodule Andi.InputSchemas.InputConverter do
     Map.new(map, fn {key, val} -> {SmartCity.Helpers.safe_string_to_atom(key), val} end)
   end
 
-  defp get_business(map) when is_map(map) do
-    Map.take(map, DatasetInput.business_keys())
-  end
-
-  defp get_technical(map) when is_map(map) do
-    Map.take(map, DatasetInput.technical_keys())
-  end
-
   defp keywords_to_list(nil), do: []
   defp keywords_to_list(""), do: []
 
@@ -114,37 +163,16 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp keywords_to_list(keywords) when is_list(keywords), do: keywords
 
+  defp date_to_iso8601_datetime(nil), do: nil
+
   defp date_to_iso8601_datetime(date) do
     time_const = "00:00:00Z"
 
-    "#{Date.to_iso8601(date)} #{time_const}"
+    "#{Date.to_iso8601(date)}T#{time_const}"
   end
 
-  defp fix_modified_date(map) do
-    map
-    |> Map.get_and_update(:modifiedDate, fn
-      "" -> {"", nil}
-      current_value -> {current_value, current_value}
-    end)
-    |> elem(1)
-  end
-
-  defp reset_key_values(map) do
-    Enum.reduce(DatasetInput.key_value_keys(), map, fn field, acc ->
-      Map.put_new(acc, field, %{})
-    end)
-  end
-
-  defp convert_key_values_for_fields(map) do
-    Enum.reduce(DatasetInput.key_value_keys(), map, fn field, acc -> convert_key_values_for_fields(acc, field) end)
-  end
-
-  defp convert_key_values_for_fields(map, field) do
-    Map.update(map, field, [], &convert_key_values/1)
-  end
-
-  defp convert_key_values(key_values) do
-    Enum.map(key_values, fn {k, v} -> %{key: to_string(k), value: v} end)
+  defp convert_key_value_to_map(key_value) do
+    Enum.reduce(key_value, %{}, fn entry, acc -> Map.put(acc, entry.key, entry.value) end)
   end
 
   defp convert_source_url(map) do
@@ -154,16 +182,28 @@ defmodule Andi.InputSchemas.InputConverter do
     {url, params} = Andi.URI.merge_url_and_params(source_url, source_query_params)
 
     Map.put(map, :sourceUrl, url)
-    |> Map.put(:sourceQueryParams, convert_key_values(params))
+    |> Map.put(:sourceQueryParams, params)
   end
 
-  defp restruct_key_values(map) do
-    Enum.reduce(DatasetInput.key_value_keys(), map, fn field, acc -> restruct_key_values(acc, field) end)
+  defp to_key_value_list(field_as_map) do
+    Enum.map(field_as_map, &to_key_value/1)
   end
 
-  defp restruct_key_values(map, field) do
-    Map.update(map, field, %{}, fn key_values ->
-      Enum.reduce(key_values, %{}, fn entry, acc -> Map.put(acc, entry.key, entry.value) end)
+  defp to_key_value({k, v}) do
+    %{key: to_string(k), value: v}
+  end
+
+  defp fix_modified_date(map) do
+    map
+    |> Map.get_and_update(:modifiedDate, fn
+      %{calendar: "Elixir.Calendar.ISO", day: day, month: month, year: year} ->
+        date = Timex.parse!("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}")
+
+        |> NaiveDateTime.to_date()
+        {date, date}
+      "" -> {"", nil}
+      current_value -> {current_value, current_value}
     end)
+    |> elem(1)
   end
 end

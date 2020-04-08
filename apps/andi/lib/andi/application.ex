@@ -4,15 +4,26 @@ defmodule Andi.Application do
   use Application
 
   def start(_type, _args) do
-    children = [
-      AndiWeb.Endpoint,
-      {Brook, Application.get_env(:andi, :brook)},
-      Andi.DatasetCache,
-      Andi.Migration.Migrations
-    ]
+    children =
+      [
+        AndiWeb.Endpoint,
+        ecto_repo(),
+        {Brook, Application.get_env(:andi, :brook)},
+        Andi.DatasetCache,
+        Andi.Migration.Migrations
+      ]
+      |> List.flatten()
 
     opts = [strategy: :one_for_one, name: Andi.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp ecto_repo do
+    Application.get_env(:andi, Andi.Repo)
+    |> case do
+      nil -> []
+      _ -> Supervisor.Spec.worker(Andi.Repo, [])
+    end
   end
 
   # Tell Phoenix to update the endpoint configuration
