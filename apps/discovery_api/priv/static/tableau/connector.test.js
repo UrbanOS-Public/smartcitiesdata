@@ -242,6 +242,20 @@ describe('Discovery API Tableau Web Data Connector', () => {
       })
     })
 
+    test('does not crash when attempting to decode an invalid connectionData', (done) => {
+      document.body.innerHTML = '<textarea id="query" placeholder="select * from..."></textarea>'
+      global.tableau.connectionData = "{bob: bob}"
+      mockFetches({
+        'token': {body: {refresh_token: 'this-is-a-refresh-token'}}
+      })
+
+      DiscoveryWDCTranslator.setupConnector()
+      registeredConnector.init(() => {
+        expect(document.getElementById("query").value).toEqual("")
+        done()
+      })
+    })
+
     describe('on submit for discovery mode', () => {
       beforeEach(() => {
         DiscoveryWDCTranslator.submit('discovery')

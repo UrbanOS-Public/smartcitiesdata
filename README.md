@@ -28,15 +28,11 @@ Finally, user access, discovery, and analysis is facilitated by a ReactJS web ap
 a RESTful API, or a web socket API for streaming data feeds.
 
 ## local development
-### starting the entire stack in docker compose
-```bash
-docker pull && docker-compose up -d
-```
+### starting the entire stack in minikube or Docker Desktop embedded Kubernetes cluster
+The current best approach to locally running the stack is in a local instance of Kubernetes, either in the minikube virtual machine or in the Kubernetes instance that can be run natively from Docker Desktop for Mac or Docker Desktop for Windows. Both options are viable, although in recent versions of the Docker version, exposing services via a `LoadBalancer` type allow the service to be reachable from the host machine without additional network manipulation.
 
-### stopping resources
-```bash
-docker-compose down
-```
+Once you have a Kubernetes cluster running, check out the `smartcitiesdata/charts` repo and the `platform` chart for standing up the complete platform or any ad hoc components you'd like to enable.
+
 
 ### port mappings
 | application       | port     | url                                  |

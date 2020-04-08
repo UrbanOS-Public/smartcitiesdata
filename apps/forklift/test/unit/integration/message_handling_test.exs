@@ -17,6 +17,10 @@ defmodule Forklift.Integration.MessageHandlingTest do
   end
 
   describe "on receiving a data message" do
+    setup do
+      Application.put_env(:forklift, :profiling_enabled, true)
+    end
+
     test "retries to persist to Presto if failing" do
       test = self()
       expect(MockTopic, :write, fn _, _ -> :ok end)
@@ -131,6 +135,26 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
       assert {:ack, _} = Forklift.MessageHandler.handle_messages([message1, message2], %{dataset: dataset})
     end
+  end
+
+  test "should return empty timing data when profiling is set to false" do
+    Application.put_env(:forklift, :profiling_enabled, false)
+    test = self()
+    expect(MockTable, :write, fn _, _ -> :ok end)
+    expect(MockTopic, :write, fn msg, _ -> send(test, msg) end)
+
+    allow(Brook.Event.send(any(), any(), any(), any()), return: :whatever)
+
+    dataset = TDG.create_dataset(%{})
+    datum = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foo" => "baz"}, operational: %{timing: []}})
+    message = %Elsa.Message{key: "key_two", value: Jason.encode!(datum)}
+
+    Forklift.MessageHandler.handle_messages([message], %{dataset: dataset})
+
+    assert_receive [{"key_two", msg}]
+
+    assert [] == Jason.decode!(msg)["operational"]["timing"]
+    wait_for_mox()
   end
 
   describe "on receiving end-of-data message" do

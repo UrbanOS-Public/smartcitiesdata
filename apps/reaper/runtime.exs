@@ -52,7 +52,8 @@ config :reaper,
   elsa_brokers: endpoints,
   output_topic_prefix: System.get_env("OUTPUT_TOPIC_PREFIX"),
   download_dir: System.get_env("DOWNLOAD_DIR") || "/downloads/",
-  hosted_file_bucket: System.get_env("HOSTED_FILE_BUCKET") || "hosted-dataset-files"
+  hosted_file_bucket: System.get_env("HOSTED_FILE_BUCKET") || "hosted-dataset-files",
+  profiling_enabled: System.get_env("PROFILING_ENABLED") == "true"
 
 config :reaper, :brook,
   driver: %{
