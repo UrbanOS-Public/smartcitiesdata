@@ -34,6 +34,7 @@ defmodule Andi.InputSchemas.Datasets.Business do
   use Accessible
 
   @cast_fields [
+    :id,
     :benefitRating,
     :contactEmail,
     :contactName,

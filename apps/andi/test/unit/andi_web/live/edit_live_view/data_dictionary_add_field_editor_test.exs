@@ -57,6 +57,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditorTest do
     end
 
     test "given schema that has a nested list field, it returns a list with that field and its parent" do
+      technical_field_id = UUID.uuid4()
       schema_parent_field_id = UUID.uuid4()
       schema_child_field_id = UUID.uuid4()
 
@@ -75,8 +76,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditorTest do
         })
         |> InputConverter.smrt_dataset_to_changeset()
         |> Ecto.Changeset.apply_changes()
+        |> put_in([:technical, :id], technical_field_id)
 
-      assert [{schema_parent_field_id, "list_field_parent"}, {schema_child_field_id, "list_field_parent > list_field_child"}] ==
+      assert [{"Top Level", technical_field_id}, {"list_field_parent", schema_parent_field_id}, {"list_field_parent > list_field_child", schema_child_field_id}] ==
                DataDictionaryAddFieldEditor.get_parent_ids(dataset)
     end
   end

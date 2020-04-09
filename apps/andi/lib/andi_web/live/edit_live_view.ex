@@ -10,6 +10,7 @@ defmodule AndiWeb.EditLiveView do
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.EditLiveView.DataDictionaryTree
   alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
+  alias AndiWeb.EditLiveView.DataDictionaryAddFieldEditor
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -181,7 +182,7 @@ defmodule AndiWeb.EditLiveView do
 
       </form>
 
-      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor) %>
+      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset)) %>
     </div>
     """
   end
@@ -405,6 +406,17 @@ defmodule AndiWeb.EditLiveView do
       current_data_dictionary_item: :no_dictionary,
       selected_field_id: :no_dictionary
     ]
+  end
+
+  defp get_eligible_data_dictionary_parents(changeset) do
+    dataset = Ecto.Changeset.apply_changes(changeset)
+    [{_, top_level_id} | _] = parent_ids = DataDictionaryAddFieldEditor.get_parent_ids(dataset.technical)
+
+    %{
+      top_level_id: top_level_id,
+      parent_ids: parent_ids
+    }
+    |> IO.inspect(label: "parents")
   end
 
   defp safe_calendar_value(nil), do: nil

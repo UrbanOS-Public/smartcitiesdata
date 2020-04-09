@@ -33,6 +33,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   use Accessible
 
   @cast_fields [
+    :id,
     :dataName,
     :orgName,
     :private,

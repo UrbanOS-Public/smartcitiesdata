@@ -35,9 +35,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
         </div>
         <div>
           <%= label(form, :parent_id, "Child Of", class: "label") %>
-          <%= select(form, :parent_id, [{:laksn, "a58ed8fc-4e9f-4839-8393-6ebdbda29db4"}],  id: id <> "_child-of", class: "select") %>
+          <%= select(form, :parent_id, @eligible_parents.parent_ids,  id: id <> "_child-of", class: "select") %>
         </div>
-
         <div>
           <button class="btn btn--large">Cancel</button>
           <%= submit("Add Field", id: "add_field_button", class: "btn btn--large") %>
@@ -49,34 +48,49 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
 
   def handle_event("add_field", %{"field" => %{"name" => name, "type" => type, "parent_id" => parent} = field}, socket) do
     field_as_atomic_map = AtomicMap.convert(field, safe: false)
+    |> IO.inspect(label: "field")
+
+
+    # set parent_id to what was in the dropdopwn value
+    # set technical_id to waht wasin dropdown value
     changeset = DataDictionary.changeset_with_parent_id(%DataDictionary{}, field_as_atomic_map) |> IO.inspect(label: "changeset")
 
-    if changeset.valid? do
-      {:ok, data_dictionary} = Andi.Repo.insert_or_update(changeset)
-      send(self(), {:new_dictionary_field_added, data_dictionary.id})
-    end
+    # if changeset.valid? do
+    #   {:ok, data_dictionary} = Andi.Repo.insert_or_update(changeset)
+    #   send(self(), {:new_dictionary_field_added, data_dictionary.id})
+    # end
 
     new_changeset = Map.put(changeset, :action, :update)
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
-  def get_parent_ids(dataset) do
-    dataset
+  def get_parent_ids(technical) do
+    technical
     |> StructTools.to_map()
-    |> get_in([:technical, :schema])
-    |> get_child_ids([])
+    |> Map.get(:schema)
+    |> get_child_ids([{"Top Level", technical.id}])
     |> Enum.reverse()
   end
 
   defp get_child_ids(nil, id_list, _), do: id_list
   defp get_child_ids(parent, id_list, parent_bread_crumb \\ "") do
+    parent
+    |> Enum.map(fn field ->
+      field.type
+    end)
+    |> IO.inspect(label: "WTF")
+
     Enum.reduce(parent, id_list, fn schema_field, acc ->
+      IO.inspect(schema_field.type, label: "evalutating")
       case schema_field.type do
         item when item in ["map", "list"] ->
+          IO.inspect(item, label: "not skipping")
           child_bread_crumb = parent_bread_crumb <> schema_field.name
-          acc = [{schema_field.id, child_bread_crumb} | acc]
+          acc = [{child_bread_crumb, schema_field.id} | acc]
           get_child_ids(schema_field[:subSchema], acc, child_bread_crumb <> " > ")
-        _ -> acc
+        type ->
+          IO.inspect(type, label: "skipping")
+          acc
       end
     end)
   end
