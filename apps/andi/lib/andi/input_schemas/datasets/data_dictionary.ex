@@ -54,6 +54,17 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> validate_required(@required_fields, message: "is required")
   end
 
+  def changeset_with_parent_id(dictionary, changes) do
+    changes_with_id = StructTools.ensure_id(dictionary, changes)
+
+    dictionary
+    |> cast(changes_with_id, [:id, :name, :type, :parent_id], empty_values: [])
+    |> foreign_key_constraint(:technical_id)
+    |> foreign_key_constraint(:parent_id)
+    |> validate_required(@required_fields, message: "is required")
+  end
+
+
   def changeset_for_draft(dictionary, changes) do
     changes_with_id = StructTools.ensure_id(dictionary, changes)
 

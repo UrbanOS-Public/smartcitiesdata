@@ -176,7 +176,12 @@ defmodule AndiWeb.EditLiveView do
         </div>
       </div>
 
+   <button phx-click="do_thing">Do thing</button>
+
+
       </form>
+
+      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor) %>
     </div>
     """
   end
@@ -197,6 +202,10 @@ defmodule AndiWeb.EditLiveView do
        testing: false
      )
      |> assign(get_default_dictionary_field(new_changeset))}
+  end
+
+  def handle_event("do_thing", _, socket) do
+
   end
 
   def handle_event("test_url", _, socket) do
@@ -314,6 +323,12 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: input_value(field, :id))}
   end
 
+  def handle_info({:assign_selected_field_id, id}, socket) do
+    dataset = Datasets.get(socket.assigns.dataset.id)
+    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
+
+    {:noreply, assign(socket, changeset: changeset, selected_field_id: id)}
+  end
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
   # Flags should be reset here.
