@@ -6,6 +6,7 @@ defmodule Reaper.FileIngest.Processor do
   import SmartCity.Event, only: [file_ingest_end: 0]
   alias SmartCity.HostedFile
   alias ExAws.S3
+  alias Providers.Helpers.Provisioner
 
   alias Reaper.{
     UrlBuilder,
@@ -17,7 +18,8 @@ defmodule Reaper.FileIngest.Processor do
   @doc """
   Process a hosted dataset
   """
-  def process(%SmartCity.Dataset{} = dataset) do
+  def process(%SmartCity.Dataset{} = unprovisioned_dataset) do
+    dataset = Provisioner.provision(unprovisioned_dataset)
     filename = get_filename(dataset)
 
     dataset
@@ -28,11 +30,11 @@ defmodule Reaper.FileIngest.Processor do
     send_event(dataset, filename)
   rescue
     error ->
-      Logger.error("Unable to continue processing dataset #{inspect(dataset)} - Error #{inspect(error)}")
+      Logger.error("Unable to continue processing dataset #{inspect(unprovisioned_dataset)} - Error #{inspect(error)}")
 
       reraise error, __STACKTRACE__
   after
-    dataset.id
+    unprovisioned_dataset.id
     |> DataSlurper.determine_filename()
     |> File.rm()
   end
