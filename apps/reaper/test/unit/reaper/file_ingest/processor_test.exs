@@ -7,16 +7,21 @@ defmodule Reaper.FileIngest.ProcessorTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.Event, only: [file_ingest_end: 0]
+  import Mox
 
   @dataset_id "12345"
   @bucket Application.get_env(:reaper, :hosted_file_bucket)
   @instance Reaper.Application.instance()
 
   @download_dir System.get_env("TMPDIR") || "/tmp/reaper/"
+  @source_url "http://localhost/api/hosted"
   use TempEnv, reaper: [download_dir: @download_dir]
 
   setup do
     expect(ExAws.request(any()), return: {:ok, :done}, meck_options: [:passthrough])
+
+    Providers.Echo
+    |> expect(:provide, 1, fn _, %{value: value} -> value end)
 
     dataset =
       TDG.create_dataset(
@@ -24,7 +29,11 @@ defmodule Reaper.FileIngest.ProcessorTest do
         technical: %{
           sourceType: "host",
           sourceFormat: "txt",
-          sourceUrl: "http://localhost/api/hosted",
+          sourceUrl: %{
+            provider: "Echo",
+            opts: %{value: @source_url},
+            version: "1"
+          },
           cadence: 100
         }
       )
@@ -33,8 +42,8 @@ defmodule Reaper.FileIngest.ProcessorTest do
   end
 
   describe "process/1 happy path" do
-    test "downloads file and uploads to s3", %{dataset: dataset} do
-      expect(Reaper.DataSlurper.slurp(dataset.technical.sourceUrl, dataset.id, any(), any()),
+    test "downloads file and uploads to s3 with provisioned url", %{dataset: dataset} do
+      expect(Reaper.DataSlurper.slurp(@source_url, dataset.id, any(), any()),
         meck_options: [:passthrough],
         return: {:file, "filename"}
       )

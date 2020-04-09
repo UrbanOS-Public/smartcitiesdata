@@ -142,7 +142,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
     allow Persistence.record_last_processed_index(dataset_id, any()), return: "OK"
 
     Providers.Echo
-    |> expect(:provide, fn _, %{value: value} -> value end)
+    |> expect(:provide, 2, fn _, %{value: value} -> value end)
 
     provisioned_dataset =
       TDG.create_dataset(
@@ -150,7 +150,11 @@ defmodule Reaper.DataExtract.ProcessorTest do
         technical: %{
           sourceType: "ingest",
           sourceFormat: "csv",
-          sourceUrl: "http://localhost:#{bypass.port}/api/csv",
+          sourceUrl: %{
+            provider: "Echo",
+            opts: %{value: "http://localhost:#{bypass.port}/api/csv"},
+            version: "1"
+          },
           cadence: 100,
           schema: [
             %{name: "a", type: "string"},
