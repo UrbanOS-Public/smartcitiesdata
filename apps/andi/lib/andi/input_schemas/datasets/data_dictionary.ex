@@ -64,7 +64,6 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> validate_required(@required_fields, message: "is required")
   end
 
-
   def changeset_for_draft(dictionary, changes) do
     changes_with_id = StructTools.ensure_id(dictionary, changes)
 

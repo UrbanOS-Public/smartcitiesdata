@@ -5,8 +5,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
   import AndiWeb.ErrorHelpers
+  import Ecto.Query, only: [from: 2]
 
   alias Andi.InputSchemas.Options
+  alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Datasets.DataDictionary
 
@@ -51,10 +53,31 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
 
     if changeset.valid? do
       {:ok, data_dictionary} = Andi.Repo.insert_or_update(changeset)
-      send(self(), {:assign_selected_field_id, data_dictionary.id})
+      send(self(), {:new_dictionary_field_added, data_dictionary.id})
     end
 
     new_changeset = Map.put(changeset, :action, :update)
     {:noreply, assign(socket, changeset: new_changeset)}
+  end
+
+  def get_parent_ids(dataset) do
+    dataset
+    |> StructTools.to_map()
+    |> get_in([:technical, :schema])
+    |> get_child_ids([])
+    |> Enum.reverse()
+  end
+
+  defp get_child_ids(nil, id_list, _), do: id_list
+  defp get_child_ids(parent, id_list, parent_bread_crumb \\ "") do
+    Enum.reduce(parent, id_list, fn schema_field, acc ->
+      case schema_field.type do
+        item when item in ["map", "list"] ->
+          child_bread_crumb = parent_bread_crumb <> schema_field.name
+          acc = [{schema_field.id, child_bread_crumb} | acc]
+          get_child_ids(schema_field[:subSchema], acc, child_bread_crumb <> " > ")
+        _ -> acc
+      end
+    end)
   end
 end

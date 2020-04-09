@@ -36,11 +36,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
     assert get_attributes(html, ".data-dictionary-field-editor__item-type", "disabled") != []
 
-    dataset_map = FormTools.form_data_from_andi_dataset(dataset)
-    |> put_in(
-      [:technical, :schema],
-      %{"0" => %{"id" => field_id, "name" => "one", "type" => "list"}}
-    )
+    dataset_map =
+      FormTools.form_data_from_andi_dataset(dataset)
+      |> put_in(
+        [:technical, :schema],
+        %{"0" => %{"id" => field_id, "name" => "one", "type" => "list"}}
+      )
 
     render_change(view, :validate, %{"form_data" => dataset_map})
 

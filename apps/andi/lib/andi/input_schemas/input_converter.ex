@@ -26,6 +26,12 @@ defmodule Andi.InputSchemas.InputConverter do
     Dataset.full_validation_changeset(andi_dataset, changes)
   end
 
+  def smrt_dataset_to_changeset(smrt_dataset) do
+    changes = prepare_smrt_dataset_for_casting(smrt_dataset)
+
+    Dataset.changeset(%Dataset{}, changes)
+  end
+
   def prepare_smrt_dataset_for_casting(dataset) do
     dataset
     |> StructTools.to_map()

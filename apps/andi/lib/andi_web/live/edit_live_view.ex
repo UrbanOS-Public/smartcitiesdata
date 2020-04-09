@@ -176,7 +176,7 @@ defmodule AndiWeb.EditLiveView do
         </div>
       </div>
 
-   <button phx-click="do_thing">Do thing</button>
+    <button phx-click="do_thing">Do thing</button>
 
 
       </form>
@@ -205,7 +205,6 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("do_thing", _, socket) do
-
   end
 
   def handle_event("test_url", _, socket) do
@@ -329,6 +328,7 @@ defmodule AndiWeb.EditLiveView do
 
     {:noreply, assign(socket, changeset: changeset, selected_field_id: id)}
   end
+
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
   # Flags should be reset here.
