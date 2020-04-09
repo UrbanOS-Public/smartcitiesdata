@@ -23,7 +23,10 @@ defmodule Providers.TimestampTest do
     end
 
     test "provides a valid timestamp in the provided timezone" do
-      timestamp = Providers.Timestamp.provide("2", %{format: "{ISO:Basic}", timezone: "Asia/Ulaanbaatar"})
+      timestamp = Providers.Timestamp.provide(
+        "2",
+        %{format: "{ISO:Basic}", timezone: "Asia/Ulaanbaatar"}
+      )
 
       assert String.contains?(timestamp, "+0800")
     end
@@ -31,10 +34,16 @@ defmodule Providers.TimestampTest do
     test "provides a valid timestamp offset by seconds" do
       format = "{YYYY}-{0M}-{0D}"
       offset_in_days = -1
-      timestamp = Providers.Timestamp.provide("2", %{offset_in_seconds: offset_in_days * 24 * 60 * 60, format: format})
 
-      assert Timex.now() |> Timex.add(Timex.Duration.from_days(offset_in_days)) |> Timex.format!(format) == timestamp
+      timestamp =
+        Providers.Timestamp.provide("2", %{
+          offset_in_seconds: offset_in_days * 24 * 60 * 60,
+          format: format
+        })
+
+      assert Timex.now()
+             |> Timex.add(Timex.Duration.from_days(offset_in_days))
+             |> Timex.format!(format) == timestamp
     end
   end
-
 end

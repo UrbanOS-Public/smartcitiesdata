@@ -23,7 +23,8 @@ defmodule Providers.DateTest do
 
       result = Providers.Date.provide("1", %{offset_in_days: offset_in_days})
 
-      assert offset_in_days >= Timex.diff(Timex.parse!(result, @default_format), Timex.now(), :day)
+      assert offset_in_days >=
+               Timex.diff(Timex.parse!(result, @default_format), Timex.now(), :day)
     end
 
     test "provides a date with offset applied before formatting" do
@@ -32,7 +33,9 @@ defmodule Providers.DateTest do
 
       result = Providers.Date.provide("1", %{format: format, offset_in_days: offset_in_days})
 
-      assert Timex.now() |> Timex.add(Timex.Duration.from_days(offset_in_days)) |> Timex.format!(format) == result
+      assert Timex.now()
+             |> Timex.add(Timex.Duration.from_days(offset_in_days))
+             |> Timex.format!(format) == result
     end
   end
 end

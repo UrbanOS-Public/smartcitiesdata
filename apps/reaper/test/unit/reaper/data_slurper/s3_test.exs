@@ -26,7 +26,9 @@ defmodule Reaper.DataSlurper.S3Test do
       dataset_id = "12345-6789"
       filename = "#{@download_dir}#{dataset_id}"
 
-      assert {:file, filename} == Reaper.DataSlurper.S3.slurp(source_url, dataset_id, %{"x-scos-amzn-s3-region": "us-east-1"})
+      assert {:file, filename} ==
+               Reaper.DataSlurper.S3.slurp(source_url, dataset_id, %{"x-scos-amzn-s3-region": "us-east-1"})
+
       assert_called ExAws.request(any(), region: "us-east-1")
       refute_called ExAws.request(any(), [])
     end

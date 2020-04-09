@@ -28,7 +28,7 @@ defmodule Providers.MixProject do
     [
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
       {:credo, "~> 1.1", only: [:dev, :test, :integration], runtime: false},
-      {:timex, "~> 3.6"},
+      {:timex, "~> 3.6"}
     ]
   end
 
