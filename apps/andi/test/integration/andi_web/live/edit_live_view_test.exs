@@ -14,6 +14,10 @@ defmodule AndiWeb.EditLiveViewTest do
       get_attributes: 3,
       get_value: 2,
       get_values: 2,
+      get_select: 2,
+      get_all_select_options: 2,
+      get_select_first_option: 2,
+      get_text: 2,
       get_texts: 2,
       find_elements: 2
     ]
@@ -21,6 +25,7 @@ defmodule AndiWeb.EditLiveViewTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.FormTools
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
@@ -40,9 +45,9 @@ defmodule AndiWeb.EditLiveViewTest do
           }
         })
 
-      {:ok, _andi_dataset} = Datasets.update(dataset)
+      {:ok, andi_dataset} = Datasets.update(dataset)
 
-      %{dataset: dataset}
+      %{dataset: andi_dataset}
     end
 
     data_test "new key/value inputs are added when add button is pressed for #{field}", %{conn: conn, dataset: dataset} do
@@ -118,7 +123,9 @@ defmodule AndiWeb.EditLiveViewTest do
         })
       end)
 
-      assert render(view) |> get_values(".url-form__source-url input") == [dataset.technical.sourceUrl]
+      url_with_no_query_params = Andi.URI.clear_query_params(dataset.technical.sourceUrl)
+
+      assert render(view) |> get_values(".url-form__source-url input") == [url_with_no_query_params]
     end
 
     test "source query params added by source url updates can be removed", %{conn: conn, dataset: dataset} do
@@ -131,7 +138,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       html =
         render_change(view, :validate, %{
-          "form_data" => %{"id" => dataset.id, "technical" => %{"sourceUrl" => updated_source_url}},
+          "form_data" => %{"id" => dataset.id, "technical" => %{"id" => dataset.technical.id, "sourceUrl" => updated_source_url}},
           "_target" => ["form_data", "technical", "sourceUrl"]
         })
 
@@ -145,7 +152,9 @@ defmodule AndiWeb.EditLiveViewTest do
         })
       end)
 
-      assert render(view) |> get_value(".url-form__source-url input") == dataset.technical.sourceUrl
+      url_with_no_query_params = Andi.URI.clear_query_params(dataset.technical.sourceUrl)
+
+      assert render(view) |> get_value(".url-form__source-url input") == url_with_no_query_params
     end
   end
 
@@ -303,46 +312,161 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   describe "add dictionary field modal" do
-    test "" do
+    setup do
       dataset =
-        TDG.create_dataset(%{
-              technical: %{
-                schema: [
-                  %{
-                    name: "one",
-                    type: "list",
-                    subType: "map",
-                    description: "description",
-                    subSchema: [
-                      %{
-                        name: "one-one",
-                        type: "string"
-                      }
-                    ]
-                  },
-                  %{
-                    name: "two",
-                    type: "map",
-                    description: "this is a map",
-                    subSchema: [
-                      %{
-                        name: "two-one",
-                        type: "integer"
-                      }
-                    ]
-                  }
-                ]
-              }
-            })
+        TDG.create_dataset(
+          %{
+            technical: %{
+              schema: [
+                %{
+                  name: "one",
+                  type: "list",
+                  subType: "map",
+                  description: "description",
+                  subSchema: [
+                    %{
+                      name: "one-one",
+                      type: "string"
+                    }
+                  ]
+                },
+                %{
+                  name: "two",
+                  type: "map",
+                  description: "this is a map",
+                  subSchema: [
+                    %{
+                      name: "two-one",
+                      type: "integer"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        )
 
-      {:ok, _} = Datasets.update(dataset)
+      {:ok, andi_dataset} = Datasets.update(dataset)
+      [dataset: andi_dataset]
+    end
 
+    test "adds field as a sub schema", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      # render_click on the add field button
-      # render_submit on the add field form
-      # render on view on last time
-      # assert that we see the field where we expect it
+      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+
+      html = render_click(view, "add_data_dictionary_field", %{})
+
+      refute Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+      assert [
+        {"Top Level", _},
+        {"one", field_one_id},
+        {"two", _}
+      ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+
+      assert {_, ["Top Level"]} = get_select_first_option(html, ".data-dictionary-add-field-editor__parent-id select")
+
+      form_data = %{
+        "field" => %{
+          "name" => "Natty",
+          "type" => "string",
+          "parent_id" => field_one_id
+        }
+      }
+
+      render_submit([view, "data_dictionary_add_field_editor"], "add_field", form_data)
+
+      html = render(view)
+
+      assert "Natty" == get_text(html, "#data_dictionary_tree_one .data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+    end
+
+    test "adds field as part of top level schema", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+
+      html = render_click(view, "add_data_dictionary_field", %{})
+
+      refute Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+      assert [
+        {"Top Level", technical_id},
+        {"one", _},
+        {"two", _}
+      ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+
+      assert {_, ["Top Level"]} = get_select_first_option(html, ".data-dictionary-add-field-editor__parent-id select")
+
+      form_data = %{
+        "field" => %{
+          "name" => "Steeeeeeez",
+          "type" => "string",
+          "parent_id" => technical_id
+        }
+      }
+
+      render_submit([view, "data_dictionary_add_field_editor"], "add_field", form_data)
+
+      html = render(view)
+
+      assert "Steeeeeeez" == get_text(html, "#data_dictionary_tree .data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+    end
+
+    test "dictionary fields with changed types are eligible for adding a field to", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      form_data = dataset
+      |> put_in([:technical, :schema, Access.at(0), :subSchema, Access.at(0), :type], "map")
+      |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data})
+
+      html = render_click(view, "add_data_dictionary_field", %{})
+
+      assert [
+        {"Top Level", technical_id},
+        {"one", _},
+        {"two", _},
+        {"one > one-one", new_eligible_parent_id}
+      ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+
+      add_field_form_data = %{
+        "field" => %{
+          "name" => "Jared",
+          "type" => "integer",
+          "parent_id" => new_eligible_parent_id
+        }
+      }
+
+      render_submit([view, "data_dictionary_add_field_editor"], "add_field", add_field_form_data)
+
+      html = render(view)
+
+      assert "Jared" == get_text(html, "#data_dictionary_tree_one_one-one .data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+    end
+
+    test "cancels back to modal not being visible", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+
+      render_click(view, "add_data_dictionary_field", %{})
+
+      render_click([view, "data_dictionary_add_field_editor"], "cancel", %{})
+
+      html = render(view)
+
+      assert nil == get_value(html, ".data-dictionary-add-field-editor__name input")
+
+      assert [] == get_select(html, ".data-dictionary-add-field-editor__type select")
+
+      assert [] == get_select(html, ".data-dictionary-add-field-editor__parent-id select")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
     end
   end
 end

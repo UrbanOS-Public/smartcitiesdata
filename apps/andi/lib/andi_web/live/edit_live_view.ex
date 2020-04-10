@@ -3,6 +3,7 @@ defmodule AndiWeb.EditLiveView do
 
   alias Phoenix.HTML.Link
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.DisplayNames
   alias Andi.InputSchemas.Options
@@ -182,7 +183,7 @@ defmodule AndiWeb.EditLiveView do
 
       </form>
 
-      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset)) %>
+      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible) %>
     </div>
     """
   end
@@ -200,12 +201,10 @@ defmodule AndiWeb.EditLiveView do
        save_success: false,
        page_error: false,
        test_results: nil,
-       testing: false
+       testing: false,
+       add_data_dictionary_field_visible: false
      )
      |> assign(get_default_dictionary_field(new_changeset))}
-  end
-
-  def handle_event("do_thing", _, socket) do
   end
 
   def handle_event("test_url", _, socket) do
@@ -319,15 +318,27 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
+  def handle_event("add_data_dictionary_field", _, socket) do
+    pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
+    {:ok, andi_dataset} = Datasets.update(pending_dataset)
+    changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
+
+    {:noreply, assign(socket, changeset: changeset, add_data_dictionary_field_visible: true)}
+  end
+
   def handle_info({:assign_editable_dictionary_field, field}, socket) do
     {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: input_value(field, :id))}
   end
 
-  def handle_info({:assign_selected_field_id, id}, socket) do
+  def handle_info({:add_data_dictionary_field_cancelled}, socket) do
+    {:noreply, assign(socket, add_data_dictionary_field_visible: false)}
+  end
+
+  def handle_info({:add_data_dictionary_field_succeeded, id}, socket) do
     dataset = Datasets.get(socket.assigns.dataset.id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
-    {:noreply, assign(socket, changeset: changeset, selected_field_id: id)}
+    {:noreply, assign(socket, changeset: changeset, selected_field_id: id, add_data_dictionary_field_visible: false)}
   end
 
   # This handle_info takes care of all exceptions in a generic way.
@@ -409,14 +420,8 @@ defmodule AndiWeb.EditLiveView do
   end
 
   defp get_eligible_data_dictionary_parents(changeset) do
-    dataset = Ecto.Changeset.apply_changes(changeset)
-    [{_, top_level_id} | _] = parent_ids = DataDictionaryAddFieldEditor.get_parent_ids(dataset.technical)
-
-    %{
-      top_level_id: top_level_id,
-      parent_ids: parent_ids
-    }
-    |> IO.inspect(label: "parents")
+    Ecto.Changeset.apply_changes(changeset)
+    |> DataDictionaryFields.get_parent_ids()
   end
 
   defp safe_calendar_value(nil), do: nil

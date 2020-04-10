@@ -11,9 +11,12 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
 
   @top_level_bread_crumb "Top Level"
 
-  # TODO - edit live needs to get parent ids and pass them to add field component
-  # TODO - add field component needs to call this add_field_to_parent
   # TODO - need to deal with hiding/showing/clearing the add field component
+  # TODO - stretch goal - rename DataDictionary to DataDictionaryField
+  # TODO - stretch goal - any sort of sad path for anything at all
+  # TODO - manually migrate datasets from view state into repo
+  # TODO - make sure estuary isn't completely busted :|
+  # TODO - add tf rds module to andi-deploy
 
   def add_field_to_parent(original_field, parent_bread_crumb) do
     updated_field = adjust_parent_details(original_field, parent_bread_crumb)

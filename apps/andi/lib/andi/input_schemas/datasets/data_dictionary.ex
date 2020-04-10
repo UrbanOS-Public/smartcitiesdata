@@ -47,7 +47,9 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   ]
   @required_fields [
     :name,
-    :type
+    :type,
+    :dataset_id,
+    :bread_crumb
   ]
 
   def changeset(dictionary, changes) do
@@ -56,16 +58,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     dictionary
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> cast_assoc(:subSchema, with: &__MODULE__.changeset/2)
-    |> foreign_key_constraint(:technical_id)
-    |> foreign_key_constraint(:parent_id)
-    |> validate_required(@required_fields, message: "is required")
-  end
-
-  def changeset_with_parent_id(dictionary, changes) do
-    changes_with_id = StructTools.ensure_id(dictionary, changes)
-
-    dictionary
-    |> cast(changes_with_id, [:id, :name, :type, :parent_id], empty_values: [])
+    |> foreign_key_constraint(:dataset_id)
     |> foreign_key_constraint(:technical_id)
     |> foreign_key_constraint(:parent_id)
     |> validate_required(@required_fields, message: "is required")
@@ -77,6 +70,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     dictionary
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> cast_assoc(:subSchema, with: &__MODULE__.changeset_for_draft/2)
+    |> foreign_key_constraint(:dataset_id)
     |> foreign_key_constraint(:technical_id)
     |> foreign_key_constraint(:parent_id)
   end

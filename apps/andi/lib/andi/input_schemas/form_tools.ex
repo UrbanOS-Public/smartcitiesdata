@@ -56,13 +56,25 @@ defmodule Andi.InputSchemas.FormTools do
   end
 
   defp convert_form_technical(technical) do
-    technical
-    |> Map.update(:schema, [], fn schema ->
-      schema
-      |> Enum.with_index()
-      |> Enum.reduce(%{}, fn {v, i}, acc ->
-        Map.put(acc, to_string(i), v)
-      end)
+    replace(technical, :schema, &convert_form_schema/1)
+  end
+
+  defp convert_form_schema(schema) do
+    schema
+    |> Enum.with_index()
+    |> Enum.reduce(%{}, fn {v, i}, acc ->
+      Map.put(
+        acc,
+        to_string(i),
+        replace(v, :subSchema, &convert_form_schema/1)
+      )
     end)
+  end
+
+  defp replace(map, key, function) do
+    case Map.fetch(map, key) do
+      {:ok, value} -> Map.put(map, key, function.(value))
+      :error -> map
+    end
   end
 end
