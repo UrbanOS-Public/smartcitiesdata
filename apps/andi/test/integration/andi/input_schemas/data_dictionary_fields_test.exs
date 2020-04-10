@@ -7,11 +7,6 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.DataDictionaryFields
-  alias Andi.InputSchemas.Datasets.Business
-  alias Andi.InputSchemas.Datasets.Technical
-  alias Andi.InputSchemas.Datasets.DataDictionary
-  alias Andi.InputSchemas.InputConverter
-  alias Andi.InputSchemas.StructTools
 
   setup_all do
     Application.ensure_all_started(:andi)
@@ -59,7 +54,7 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
         parent_id: technical_id
       }
 
-      {:ok, field} = DataDictionaryFields.add_field_to_parent(field_as_map, top_level_bread_crumb)
+      {:ok, _field} = DataDictionaryFields.add_field_to_parent(field_as_map, top_level_bread_crumb)
 
       updated_dataset = Datasets.get(dataset.id)
       assert [
@@ -87,7 +82,7 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
         parent_id: parent_id
       }
 
-      {:ok, field} = DataDictionaryFields.add_field_to_parent(field_as_map, field_level_bread_crumb)
+      {:ok, _field} = DataDictionaryFields.add_field_to_parent(field_as_map, field_level_bread_crumb)
 
       updated_dataset = Datasets.get(dataset.id)
       assert [
@@ -106,6 +101,30 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
           ]
         }
       ] = updated_dataset.technical.schema
+    end
+
+    test "given an invalid field as a map, it returns an error tuple with a changeset that reflects the original change", %{dataset: dataset} do
+      parent_ids = DataDictionaryFields.get_parent_ids(dataset)
+
+      {top_level_bread_crumb, technical_id} = parent_ids |> hd()
+
+      field_name = ""
+      field_type = ""
+
+      field_as_map = %{
+        name: field_name,
+        type: field_type,
+        parent_id: technical_id
+      }
+
+      {:error, changeset} = DataDictionaryFields.add_field_to_parent(field_as_map, top_level_bread_crumb)
+
+      refute changeset.valid?
+
+      bad_field = Ecto.Changeset.apply_changes(changeset)
+
+      assert bad_field.technical_id == nil
+      assert bad_field.parent_id == technical_id
     end
   end
 

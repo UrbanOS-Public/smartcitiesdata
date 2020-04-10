@@ -11,20 +11,32 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
 
   @top_level_bread_crumb "Top Level"
 
-  def add_field_to_parent(field_as_map, parent_bread_crumb) do
-    field_with_correct_foreign_key = case parent_bread_crumb do
-      @top_level_bread_crumb ->
-        {id, field} = Map.pop(field_as_map, :parent_id)
-        Map.put(field, :technical_id, id)
-        |> Map.put(:bread_crumb, field_as_map.name)
-      _ ->
-        field_as_map
-        |> Map.put(:bread_crumb, parent_bread_crumb <> " > " <> field_as_map.name)
+  # TODO - edit live needs to get parent ids and pass them to add field component
+  # TODO - add field component needs to call this add_field_to_parent
+  # TODO - need to deal with hiding/showing/clearing the add field component
+
+  def add_field_to_parent(original_field, parent_bread_crumb) do
+    updated_field = adjust_parent_details(original_field, parent_bread_crumb)
+    changeset = DataDictionary.changeset(%DataDictionary{}, updated_field)
+
+    case Repo.insert_or_update(changeset) do
+      {:error, _changeset} ->
+        {:error, DataDictionary.changeset(%DataDictionary{}, original_field)}
+      good -> good
     end
+  end
 
-    changeset = DataDictionary.changeset(%DataDictionary{}, field_with_correct_foreign_key)
+  defp adjust_parent_details(field, parent_bread_crumb) do
+    case parent_bread_crumb do
+      @top_level_bread_crumb ->
+        {id, field} = Map.pop(field, :parent_id)
 
-    Repo.insert_or_update(changeset)
+        Map.put(field, :technical_id, id)
+        |> Map.put(:bread_crumb, field.name)
+      _ ->
+        field
+        |> Map.put(:bread_crumb, parent_bread_crumb <> " > " <> field.name)
+    end
   end
 
   def get_parent_ids(dataset) do

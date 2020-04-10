@@ -61,6 +61,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
     # end
 
     new_changeset = Map.put(changeset, :action, :update)
+
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
