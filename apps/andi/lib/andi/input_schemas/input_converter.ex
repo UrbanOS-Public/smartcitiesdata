@@ -35,9 +35,9 @@ defmodule Andi.InputSchemas.InputConverter do
   def prepare_smrt_dataset_for_casting(dataset) do
     dataset
     |> StructTools.to_map()
+    |> AtomicMap.convert(safe: false, underscore: false)
     |> convert_smrt_business()
     |> convert_smrt_technical()
-    |> AtomicMap.convert(safe: false, underscore: false)
   end
 
   def form_data_to_ui_changeset(form_data \\ %{}) do
@@ -111,6 +111,19 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
       |> convert_source_url()
       |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
+      |> replace(:schema, fn schema ->
+        Enum.map(schema, &add_dataset_id(&1, smrt_dataset.id))
+      end)
+    end)
+  end
+
+  defp add_dataset_id(schema, dataset_id, parent_bread_crumb \\ "") do
+    bread_crumb = parent_bread_crumb <> schema.name
+    schema
+    |> Map.put(:dataset_id, dataset_id)
+    |> Map.put(:bread_crumb, bread_crumb)
+    |> replace(:subSchema, fn sub_schema ->
+      Enum.map(sub_schema, &add_dataset_id(&1, dataset_id, bread_crumb <> " > "))
     end)
   end
 
@@ -216,5 +229,12 @@ defmodule Andi.InputSchemas.InputConverter do
         {current_value, current_value}
     end)
     |> elem(1)
+  end
+
+  defp replace(map, key, function) do
+    case Map.fetch(map, key) do
+      {:ok, value} -> Map.put(map, key, function.(value))
+      :error -> map
+    end
   end
 end

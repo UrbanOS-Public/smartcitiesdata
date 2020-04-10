@@ -2,6 +2,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+  alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.StructTools
 
@@ -17,10 +18,12 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     field(:masked, :string)
     field(:pii, :string)
     field(:rationale, :string)
+    field(:bread_crumb, :string)
     has_many(:subSchema, __MODULE__, foreign_key: :parent_id, on_replace: :delete)
 
     belongs_to(:data_dictionary, __MODULE__, type: Ecto.UUID, foreign_key: :parent_id)
     belongs_to(:technical, Technical, type: Ecto.UUID, foreign_key: :technical_id)
+    belongs_to(:dataset, Dataset, type: :string, foreign_key: :dataset_id)
   end
 
   use Accessible
@@ -36,7 +39,11 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :description,
     :masked,
     :pii,
-    :rationale
+    :rationale,
+    :dataset_id,
+    :technical_id,
+    :parent_id,
+    :bread_crumb
   ]
   @required_fields [
     :name,

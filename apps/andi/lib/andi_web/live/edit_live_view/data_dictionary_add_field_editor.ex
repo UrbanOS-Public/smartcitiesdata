@@ -64,13 +64,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
-  def get_parent_ids(technical) do
-    technical
-    |> StructTools.to_map()
-    |> Map.get(:schema)
-    |> get_child_ids([{"Top Level", technical.id}])
-    |> Enum.reverse()
-  end
 
   defp get_child_ids(nil, id_list, _), do: id_list
   defp get_child_ids(parent, id_list, parent_bread_crumb \\ "") do

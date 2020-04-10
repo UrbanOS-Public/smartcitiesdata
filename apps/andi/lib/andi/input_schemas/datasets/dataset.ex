@@ -8,6 +8,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Business
   alias Andi.InputSchemas.Datasets.Technical
+  alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.StructTools
 
   @primary_key {:id, :string, autogenerate: false}
@@ -15,6 +16,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     has_one(:technical, Technical, on_replace: :update)
     has_one(:business, Business, on_replace: :update)
     field(:ingestedTime, :utc_datetime, default: nil)
+    has_many(:data_dictionaries, DataDictionary)
   end
 
   use Accessible
