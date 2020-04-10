@@ -1,17 +1,12 @@
 defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
   use ExUnit.Case
-  # use Divo
+  use Divo
   use Andi.DataCase
 
   alias SmartCity.TestDataGenerator, as: TDG
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.DataDictionaryFields
-
-  setup_all do
-    Application.ensure_all_started(:andi)
-    :ok
-  end
 
   describe "add_field_to_parent/2" do
     setup do

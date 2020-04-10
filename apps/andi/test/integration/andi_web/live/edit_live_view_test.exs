@@ -1,6 +1,6 @@
 defmodule AndiWeb.EditLiveViewTest do
   use ExUnit.Case
-  use Divo
+  # use Divo
   use Andi.DataCase
   use AndiWeb.ConnCase
   import Checkov
@@ -24,6 +24,11 @@ defmodule AndiWeb.EditLiveViewTest do
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
+
+  setup_all do
+    Application.ensure_all_started(:andi)
+    :ok
+  end
 
   describe "updating source params" do
     setup do
@@ -294,6 +299,50 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    end
+  end
+
+  describe "add dictionary field modal" do
+    test "" do
+      dataset =
+        TDG.create_dataset(%{
+              technical: %{
+                schema: [
+                  %{
+                    name: "one",
+                    type: "list",
+                    subType: "map",
+                    description: "description",
+                    subSchema: [
+                      %{
+                        name: "one-one",
+                        type: "string"
+                      }
+                    ]
+                  },
+                  %{
+                    name: "two",
+                    type: "map",
+                    description: "this is a map",
+                    subSchema: [
+                      %{
+                        name: "two-one",
+                        type: "integer"
+                      }
+                    ]
+                  }
+                ]
+              }
+            })
+
+      {:ok, _} = Datasets.update(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      # render_click on the add field button
+      # render_submit on the add field form
+      # render on view on last time
+      # assert that we see the field where we expect it
     end
   end
 end
