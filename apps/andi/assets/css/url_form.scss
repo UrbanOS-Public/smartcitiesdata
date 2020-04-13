@@ -1,0 +1,82 @@
+.url-form {
+  grid-template-areas:
+    "top-header ."
+    "source-url source-url"
+    "source-query-params source-query-params"
+    "source-headers source-headers"
+    "test-section .";
+
+  .url-form-table {
+    width: 100%;
+    font-size: 0.8em;
+
+    .url-form-table__title {
+      padding: 0.5rem;
+      color: $color-form-label;
+      background-color: $color-form-table-header;
+      border-left: $table-border;
+      border-top: $table-border;
+      border-right: $table-border;
+    }
+
+    .url-form-table__table {
+      width: 100%;
+      border-collapse: collapse;
+
+      .url-form-table__row {
+        padding: 0;
+        border: $table-border;
+      }
+
+      .url-form-table__cell {
+        padding: 0;
+        text-align: left;
+
+        input {
+          border: none
+        }
+      }
+
+      .url-form-table__cell--bordered {
+        border-left: $table-border;
+      }
+
+      .url-form-table__cell--delete {
+        padding: 0.2em;
+        text-align: center;
+      }
+
+      .url-form-table__cell--header {
+        padding: 0.5rem;
+      }
+    }
+  }
+
+  .url-form-table__btn {
+    cursor: pointer;
+    max-width: 0;
+    text-align: center;
+  }
+}
+
+.test-status {
+  display: inline-block;
+  margin-left: 1rem;
+}
+
+.test-status__code {
+  margin-right: 1rem;
+}
+
+.test-status__code--good {
+  color: $color-success
+}
+
+.test-status__code--bad {
+  color: $color-error
+}
+
+@include area(url-form, source-url);
+@include area(url-form, source-query-params);
+@include area(url-form, source-headers);
+@include area(url-form, test-section);

@@ -30,6 +30,7 @@ defmodule AndiWeb.EditLiveView do
       <%= hidden_input(technical, :orgName) %>
       <%= hidden_input(technical, :dataName) %>
       <%= hidden_input(technical, :sourceType) %>
+
       <div class="metadata-form form-section form-grid">
         <h2 class="metadata-form__top-header edit-page__box-header">Metadata</h2>
         <div class="metadata-form__title">
@@ -123,11 +124,11 @@ defmodule AndiWeb.EditLiveView do
       <div class="data-dictionary-form form-section form-grid">
         <h2 class="data-dictionary-form__top-header edit-page__box-header">Data Dictionary</h2>
         <div class="data-dictionary-form__tree-section">
-          <div class="data-dictionay-form__tree-header data-dictionay-form-tree-header">
+          <div class="data-dictionary-form__tree-header data-dictionary-form-tree-header">
             <div class="label">Enter/Edit Fields</div>
             <div class="label label--inline">TYPE</div>
           </div>
-          <div class="data-dictionary-form__tree-content data-dictionay-form-tree-content">
+          <div class="data-dictionary-form__tree-content data-dictionary-form-tree-content">
           <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: technical, field: :schema, selected_field_id: @selected_field_id ) %>
           </div>
         </div>
