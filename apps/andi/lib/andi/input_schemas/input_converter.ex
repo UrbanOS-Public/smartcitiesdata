@@ -119,6 +119,7 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp add_dataset_id(schema, dataset_id, parent_bread_crumb \\ "") do
     bread_crumb = parent_bread_crumb <> schema.name
+
     schema
     |> Map.put(:dataset_id, dataset_id)
     |> Map.put(:bread_crumb, bread_crumb)
@@ -135,16 +136,18 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:sourceQueryParams, nil, &convert_key_value_to_map/1)
       |> Map.update(:sourceHeaders, nil, &convert_key_value_to_map/1)
       |> Map.update(:schema, nil, fn schema ->
-        Enum.map(schema, &drop_ids_from_dictionary_item/1)
+        Enum.map(schema, &drop_fields_from_dictionary_item/1)
       end)
     end)
   end
 
-  defp drop_ids_from_dictionary_item(schema) do
+  defp drop_fields_from_dictionary_item(schema) do
     schema
     |> Map.delete(:id)
+    |> Map.delete(:dataset_id)
+    |> Map.delete(:bread_crumb)
     |> Map.update(:subSchema, nil, fn sub_schema ->
-      Enum.map(sub_schema, &drop_ids_from_dictionary_item/1)
+      Enum.map(sub_schema, &drop_fields_from_dictionary_item/1)
     end)
     |> Enum.reject(fn {_k, v} -> is_nil(v) end)
     |> Map.new()

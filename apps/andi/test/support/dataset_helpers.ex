@@ -24,6 +24,7 @@ defmodule DatasetHelpers do
     Placebo.allow(Datasets.get(dataset.id), return: dataset)
     Placebo.allow(Datasets.is_unique?(dataset.id, :_, :_), return: unique)
     Placebo.allow(Datasets.is_unique?(nil, :_, :_), return: unique)
+    Placebo.allow(Andi.Repo.all(:_), return: [{"Top Level", dataset.technical.id}])
   end
 
   def ensure_dataset_removed_from_repo(id, _opts \\ []) do

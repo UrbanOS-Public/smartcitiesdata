@@ -13,23 +13,25 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       schema_parent_field_id = UUID.uuid4()
       schema_child_field_id = UUID.uuid4()
 
-      dataset = TDG.create_dataset(%{
-            technical: %{
-              schema: [
-                %{
-                  name: "map_field_parent",
-                  id: schema_parent_field_id,
-                  type: "map",
-                  subSchema: [
-                    %{name: "map_field_child_list", id: schema_child_field_id, type: "list"},
-                    %{name: "map_field_child_string", type: "string"}
-                  ]
-                }
-              ]
-            }
-          })
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [
+              %{
+                name: "map_field_parent",
+                id: schema_parent_field_id,
+                type: "map",
+                subSchema: [
+                  %{name: "map_field_child_list", id: schema_child_field_id, type: "list"},
+                  %{name: "map_field_child_string", type: "string"}
+                ]
+              }
+            ]
+          }
+        })
 
       {:ok, andi_dataset} = Datasets.update(dataset)
+
       [
         dataset: andi_dataset
       ]
@@ -53,6 +55,7 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       {:ok, _field} = DataDictionaryFields.add_field_to_parent(field_as_map, top_level_bread_crumb)
 
       updated_dataset = Datasets.get(dataset.id)
+
       assert [
         _,
         %{
@@ -77,12 +80,12 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
         type: field_type,
         parent_id: parent_id,
         dataset_id: dataset.id
-
       }
 
       {:ok, _field} = DataDictionaryFields.add_field_to_parent(field_as_map, field_level_bread_crumb)
 
       updated_dataset = Datasets.get(dataset.id)
+
       assert [
         %{
           subSchema: [
@@ -101,7 +104,9 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       ] = updated_dataset.technical.schema
     end
 
-    test "given an invalid field as a map, it returns an error tuple with a changeset that reflects the original change", %{dataset: dataset} do
+    test "given an invalid field as a map, it returns an error tuple with a changeset that reflects the original change", %{
+      dataset: dataset
+    } do
       parent_ids = DataDictionaryFields.get_parent_ids(dataset)
 
       {top_level_bread_crumb, technical_id} = parent_ids |> hd()
@@ -132,21 +137,22 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       schema_parent_field_id = UUID.uuid4()
       schema_child_field_id = UUID.uuid4()
 
-      dataset = TDG.create_dataset(%{
-        technical: %{
-          schema: [
-            %{
-              name: "map_field_parent",
-              id: schema_parent_field_id,
-              type: "map",
-              subSchema: [
-                %{name: "map_field_child_list", id: schema_child_field_id, type: "list"},
-                %{name: "map_field_child_string", type: "string"},
-              ]
-            }
-          ]
-        }
-      })
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [
+              %{
+                name: "map_field_parent",
+                id: schema_parent_field_id,
+                type: "map",
+                subSchema: [
+                  %{name: "map_field_child_list", id: schema_child_field_id, type: "list"},
+                  %{name: "map_field_child_string", type: "string"}
+                ]
+              }
+            ]
+          }
+        })
 
       {:ok, andi_dataset} = Datasets.update(dataset)
 

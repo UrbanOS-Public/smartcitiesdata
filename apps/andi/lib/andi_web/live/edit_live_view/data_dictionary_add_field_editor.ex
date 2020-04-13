@@ -5,22 +5,20 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
   import AndiWeb.ErrorHelpers
-  import Ecto.Query, only: [from: 2]
 
   alias Andi.InputSchemas.Options
-  alias Andi.InputSchemas.StructTools
-  alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
 
   def render(assigns) do
     id = Atom.to_string(assigns.id)
 
-    modifier = if assigns.visible do
-      "visible"
-    else
-      "invisible"
-    end
+    modifier =
+      if assigns.visible do
+        "visible"
+      else
+        "invisible"
+      end
 
     ~L"""
     <div id=<%= @id %> class="data-dictionary-add-field-editor data-dictionary-add-field-editor--<%= modifier %>">
@@ -47,6 +45,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
       </div>
     """
   end
+
   def mount(socket) do
     changeset = blank_changeset()
     {:ok, assign(socket, changeset: changeset, visible: false)}
@@ -57,10 +56,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
     {:noreply, assign(socket, changeset: blank_changeset(), visible: false)}
   end
 
-  def handle_event("add_field", %{"field" => %{"name" => name, "type" => type, "parent_id" => parent} = field}, socket) do
-    field_as_atomic_map = field
-    |> AtomicMap.convert(safe: false)
-    |> Map.put(:dataset_id, socket.assigns.dataset_id)
+  def handle_event("add_field", %{"field" => field}, socket) do
+    field_as_atomic_map =
+      field
+      |> AtomicMap.convert(safe: false)
+      |> Map.put(:dataset_id, socket.assigns.dataset_id)
 
     parent_bread_crumb = Enum.map(socket.assigns.eligible_parents, fn {n, i} ->
       {i, n}
@@ -84,16 +84,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
   end
 
   defp get_item_types(), do: map_to_dropdown_options(Options.items())
-  defp get_item_types(field), do: map_to_dropdown_options(field, Options.items())
 
   defp map_to_dropdown_options(options) do
     Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
-  end
-
-  defp map_to_dropdown_options(field, options) do
-    case input_value(field, :type) do
-      "list" -> Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
-      _ -> []
-    end
   end
 end

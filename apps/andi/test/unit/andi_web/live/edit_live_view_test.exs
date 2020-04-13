@@ -626,9 +626,13 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:technical, :sourceUrl], sourceUrl)
+
       html =
         render_change(view, :validate, %{
-          "form_data" => %{"technical" => %{"sourceUrl" => sourceUrl}},
+          "form_data" => form_data,
           "_target" => ["form_data", "technical", "sourceUrl"]
         })
 
@@ -652,14 +656,14 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
+      form_data =
+        FormTools.form_data_from_andi_dataset(dataset)
+        |> put_in([:technical, :sourceUrl], intialSourceUrl)
+        |> put_in([:technical, :sourceQueryParams], queryParams)
+
       html =
         render_change(view, :validate, %{
-          "form_data" => %{
-            "technical" => %{
-              "sourceUrl" => intialSourceUrl,
-              "sourceQueryParams" => queryParams
-            }
-          },
+          "form_data" => form_data,
           "_target" => ["form_data", "technical", "sourceQueryParams"]
         })
 

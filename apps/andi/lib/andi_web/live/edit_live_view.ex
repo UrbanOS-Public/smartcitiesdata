@@ -11,7 +11,6 @@ defmodule AndiWeb.EditLiveView do
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.EditLiveView.DataDictionaryTree
   alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
-  alias AndiWeb.EditLiveView.DataDictionaryAddFieldEditor
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]

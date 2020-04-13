@@ -314,37 +314,35 @@ defmodule AndiWeb.EditLiveViewTest do
   describe "add dictionary field modal" do
     setup do
       dataset =
-        TDG.create_dataset(
-          %{
-            technical: %{
-              schema: [
-                %{
-                  name: "one",
-                  type: "list",
-                  subType: "map",
-                  description: "description",
-                  subSchema: [
-                    %{
-                      name: "one-one",
-                      type: "string"
-                    }
-                  ]
-                },
-                %{
-                  name: "two",
-                  type: "map",
-                  description: "this is a map",
-                  subSchema: [
-                    %{
-                      name: "two-one",
-                      type: "integer"
-                    }
-                  ]
-                }
-              ]
-            }
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [
+              %{
+                name: "one",
+                type: "list",
+                subType: "map",
+                description: "description",
+                subSchema: [
+                  %{
+                    name: "one-one",
+                    type: "string"
+                  }
+                ]
+              },
+              %{
+                name: "two",
+                type: "map",
+                description: "this is a map",
+                subSchema: [
+                  %{
+                    name: "two-one",
+                    type: "integer"
+                  }
+                ]
+              }
+            ]
           }
-        )
+        })
 
       {:ok, andi_dataset} = Datasets.update(dataset)
       [dataset: andi_dataset]
@@ -358,6 +356,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render_click(view, "add_data_dictionary_field", %{})
 
       refute Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+
       assert [
         {"Top Level", _},
         {"one", field_one_id},
@@ -391,6 +390,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render_click(view, "add_data_dictionary_field", %{})
 
       refute Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+
       assert [
         {"Top Level", technical_id},
         {"one", _},
@@ -419,20 +419,21 @@ defmodule AndiWeb.EditLiveViewTest do
     test "dictionary fields with changed types are eligible for adding a field to", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      form_data = dataset
-      |> put_in([:technical, :schema, Access.at(0), :subSchema, Access.at(0), :type], "map")
-      |> FormTools.form_data_from_andi_dataset()
+      form_data =
+        dataset
+        |> put_in([:technical, :schema, Access.at(0), :subSchema, Access.at(0), :type], "map")
+        |> FormTools.form_data_from_andi_dataset()
 
       render_change(view, "validate", %{"form_data" => form_data})
 
       html = render_click(view, "add_data_dictionary_field", %{})
 
       assert [
-        {"Top Level", technical_id},
-        {"one", _},
-        {"two", _},
-        {"one > one-one", new_eligible_parent_id}
-      ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+               {"Top Level", technical_id},
+               {"one", _},
+               {"two", _},
+               {"one > one-one", new_eligible_parent_id}
+             ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
 
       add_field_form_data = %{
         "field" => %{
@@ -446,7 +447,8 @@ defmodule AndiWeb.EditLiveViewTest do
 
       html = render(view)
 
-      assert "Jared" == get_text(html, "#data_dictionary_tree_one_one-one .data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+      assert "Jared" ==
+               get_text(html, "#data_dictionary_tree_one_one-one .data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
     end
 
     test "cancels back to modal not being visible", %{conn: conn, dataset: dataset} do

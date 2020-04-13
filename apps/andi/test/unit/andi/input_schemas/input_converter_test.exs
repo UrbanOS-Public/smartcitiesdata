@@ -197,49 +197,51 @@ defmodule Andi.InputSchemas.InputConverterTest do
 
   describe "smrt_dataset_to_full_changeset/?" do
     test "given schema that has a nested list field, it attaches bread crumbs to it" do
-      technical_field_id = UUID.uuid4()
       schema_parent_field_id = UUID.uuid4()
       schema_child_field_id = UUID.uuid4()
 
-      dataset = TDG.create_dataset(%{
-              technical: %{
-                schema: [
-                  %{
-                    name: "list_field_parent",
-                    id: schema_parent_field_id,
-                    type: "list",
-                    subSchema: [
-                      %{name: "list_field_child_one", id: schema_child_field_id, type: "list"},
-                      %{name: "list_field_child_two", id: UUID.uuid4(), type: "string"}
-                    ]
-                  }
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [
+              %{
+                name: "list_field_parent",
+                id: schema_parent_field_id,
+                type: "list",
+                subSchema: [
+                  %{name: "list_field_child_one", id: schema_child_field_id, type: "list"},
+                  %{name: "list_field_child_two", id: UUID.uuid4(), type: "string"}
                 ]
               }
-      })
+            ]
+          }
+        })
+
       dataset_id = dataset.id
       changeset = InputConverter.smrt_dataset_to_changeset(dataset)
 
-      schema = Ecto.Changeset.apply_changes(changeset)
-      |> get_in([:technical, :schema])
+      schema =
+        Ecto.Changeset.apply_changes(changeset)
+        |> get_in([:technical, :schema])
 
       assert [
-        %{
-          id: ^schema_parent_field_id,
-          dataset_id: ^dataset_id,
-          bread_crumb: "list_field_parent",
-          subSchema: [
-            %{
-              id: ^schema_child_field_id,
-              dataset_id: ^dataset_id,
-              bread_crumb: "list_field_parent > list_field_child_one"
-            },
-            %{
-              dataset_id: ^dataset_id,
-              bread_crumb: "list_field_parent > list_field_child_two"
-            }
-          ]
-        }
-      ] = schema
+               %{
+                 id: ^schema_parent_field_id,
+                 dataset_id: ^dataset_id,
+                 bread_crumb: "list_field_parent",
+                 subSchema: [
+                   %{
+                     id: ^schema_child_field_id,
+                     dataset_id: ^dataset_id,
+                     bread_crumb: "list_field_parent > list_field_child_one"
+                   },
+                   %{
+                     dataset_id: ^dataset_id,
+                     bread_crumb: "list_field_parent > list_field_child_two"
+                   }
+                 ]
+               }
+             ] = schema
     end
   end
 
@@ -262,7 +264,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
       "orgName" => "orgName",
       "private" => false,
       "schema" => %{
-        "0" => %{"id" => Ecto.UUID.generate(), "name" => "name", "type" => "type"}
+        "0" => %{"id" => Ecto.UUID.generate(), "name" => "name", "type" => "type", "dataset_id" => "id", "bread_crumb" => "name"}
       },
       "sourceFormat" => "sourceFormat",
       "sourceHeaders" => %{

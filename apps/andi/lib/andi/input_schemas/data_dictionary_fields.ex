@@ -1,7 +1,6 @@
 defmodule Andi.InputSchemas.DataDictionaryFields do
   @moduledoc false
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.Repo
 
@@ -36,6 +35,7 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
 
         Map.put(field, :technical_id, id)
         |> Map.put(:bread_crumb, field.name)
+
       _ ->
         field
         |> Map.put(:bread_crumb, parent_bread_crumb <> " > " <> field.name)
