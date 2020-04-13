@@ -1,6 +1,6 @@
 defmodule AndiWeb.EditLiveViewTest do
   use ExUnit.Case
-  # use Divo
+  use Divo
   use Andi.DataCase
   use AndiWeb.ConnCase
   import Checkov

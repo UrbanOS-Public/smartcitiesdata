@@ -58,7 +58,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
   end
 
   def handle_event("add_field", %{"field" => %{"name" => name, "type" => type, "parent_id" => parent} = field}, socket) do
-    field_as_atomic_map = AtomicMap.convert(field, safe: false)
+    field_as_atomic_map = field
+    |> AtomicMap.convert(safe: false)
+    |> Map.put(:dataset_id, socket.assigns.dataset_id)
 
     parent_bread_crumb = Enum.map(socket.assigns.eligible_parents, fn {n, i} ->
       {i, n}

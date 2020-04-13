@@ -60,7 +60,7 @@ defmodule Andi.Repo.Migrations.CreateDatasets do
       add :bread_crumb, :string
       add :technical_id, references(:technical, type: :uuid, on_delete: :delete_all)
       add :parent_id, references(:data_dictionary, type: :uuid, on_delete: :delete_all)
-      add :dataset_id, references(:datasets, type: :string)
+      add :dataset_id, references(:datasets, type: :string, on_delete: :delete_all)
     end
 
     create table(:source_headers, primary_key: false) do

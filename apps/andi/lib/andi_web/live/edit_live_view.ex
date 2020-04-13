@@ -18,6 +18,8 @@ defmodule AndiWeb.EditLiveView do
   require Logger
 
   def render(assigns) do
+    dataset_id = assigns.dataset.id
+
     ~L"""
     <div class="edit-page">
       <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
@@ -177,13 +179,9 @@ defmodule AndiWeb.EditLiveView do
           <%= submit("Save", id: "save-button", class: "btn btn--save btn--large") %>
         </div>
       </div>
+    </form>
 
-    <button phx-click="do_thing">Do thing</button>
-
-
-      </form>
-
-      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible) %>
+      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible, dataset_id: dataset_id) %>
     </div>
     """
   end

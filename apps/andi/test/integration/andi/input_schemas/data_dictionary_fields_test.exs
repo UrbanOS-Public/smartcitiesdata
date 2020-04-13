@@ -8,7 +8,6 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.DataDictionaryFields
 
-  # TODO - fix these to work with the required dataset_id
   describe "add_field_to_parent/2" do
     setup do
       schema_parent_field_id = UUID.uuid4()
@@ -47,7 +46,8 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       field_as_map = %{
         name: field_name,
         type: field_type,
-        parent_id: technical_id
+        parent_id: technical_id,
+        dataset_id: dataset.id
       }
 
       {:ok, _field} = DataDictionaryFields.add_field_to_parent(field_as_map, top_level_bread_crumb)
@@ -75,7 +75,9 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       field_as_map = %{
         name: field_name,
         type: field_type,
-        parent_id: parent_id
+        parent_id: parent_id,
+        dataset_id: dataset.id
+
       }
 
       {:ok, _field} = DataDictionaryFields.add_field_to_parent(field_as_map, field_level_bread_crumb)
@@ -110,7 +112,8 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       field_as_map = %{
         name: field_name,
         type: field_type,
-        parent_id: technical_id
+        parent_id: technical_id,
+        dataset_id: dataset.id
       }
 
       {:error, changeset} = DataDictionaryFields.add_field_to_parent(field_as_map, top_level_bread_crumb)
