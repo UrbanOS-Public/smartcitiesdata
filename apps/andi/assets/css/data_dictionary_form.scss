@@ -49,10 +49,11 @@ $tick-height: 1rem + $field-padding - 0.44;
 
   .data-dictionary-form-tree-content {
       border: solid 1px  #C9C7C7;
+      border-bottom: none;
       padding-left: 2rem;
       padding-bottom: 2rem;
       overflow-y: scroll;
-      height: 40.5rem;
+      height: 37.5rem;
   }
 
   .data-dictionary-tree {
@@ -122,6 +123,30 @@ $tick-height: 1rem + $field-padding - 0.44;
     .data-dictionary-tree__field--selected {
       background-color: #EEEFF1;
     }
+  }
+
+  .data-dictionary-form-tree-footer {
+      border: solid 1px  #C9C7C7;
+      border-top: none;
+      display: inline-flex;
+      height: 2.5rem;
+      width: -webkit-fill-available;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.25rem 0.75rem 0.25rem 0.75rem;
+      position: relative;
+      box-shadow: 0 -1rem 3rem -1rem gray;
+
+      .data-dictionary-form__add-field-button {
+          width: 1.5rem;
+          height: 24px;
+          background-image: url('/images/add_field.svg');
+      }
+
+      .data-dictionary-form__remove-field-button {
+          width: 1.5rem;
+          height: 24px;
+      }
   }
 }
 
