@@ -73,6 +73,7 @@ defmodule DiscoveryApi.Data.Model do
     {k, v}
   end
 
+  # sobelow_skip ["DOS.StringToAtom"]
   defp string_to_atom({k, v}) when is_binary(k) do
     {String.to_atom(k), v}
   end

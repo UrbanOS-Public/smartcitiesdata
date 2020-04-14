@@ -2,6 +2,7 @@ defmodule DiscoveryApi.Services.DataJsonService do
   @moduledoc false
   alias DiscoveryApi.Data.DataJson
 
+  # sobelow_skip ["Traversal.FileModule"]
   def delete_data_json() do
     File.rm_rf(file_path())
   end
@@ -13,6 +14,7 @@ defmodule DiscoveryApi.Services.DataJsonService do
     end
   end
 
+  # sobelow_skip ["Traversal.FileModule"]
   defp create_data_json() do
     with results <- DataJson.translate_to_open_data_schema(),
          {:ok, json} <- Jason.encode(results),

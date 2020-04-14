@@ -28,7 +28,9 @@ defmodule Andi.InputSchemas.DataDictionary do
     with_id = Map.put_new(changes, :id, Ecto.UUID.generate())
 
     key_value
-    |> cast(with_id, [:id, :name, :type, :selector, :itemType, :biased, :demographic, :description, :masked, :pii, :rationale], empty_values: [])
+    |> cast(with_id, [:id, :name, :type, :selector, :itemType, :biased, :demographic, :description, :masked, :pii, :rationale],
+      empty_values: []
+    )
     |> cast_embed(:subSchema)
     |> validate_required([:id, :name, :type])
   end
