@@ -23,10 +23,11 @@ defmodule Providers.TimestampTest do
     end
 
     test "provides a valid timestamp in the provided timezone" do
-      timestamp = Providers.Timestamp.provide(
-        "2",
-        %{format: "{ISO:Basic}", timezone: "Asia/Ulaanbaatar"}
-      )
+      timestamp =
+        Providers.Timestamp.provide(
+          "2",
+          %{format: "{ISO:Basic}", timezone: "Asia/Ulaanbaatar"}
+        )
 
       assert String.contains?(timestamp, "+0800")
     end
