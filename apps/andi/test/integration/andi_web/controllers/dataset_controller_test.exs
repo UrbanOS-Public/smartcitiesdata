@@ -14,10 +14,10 @@ defmodule Andi.CreateDatasetTest do
   plug(Tesla.Middleware.BaseUrl, "http://localhost:4000")
   @kafka_broker Application.get_env(:andi, :kafka_broker)
 
-  # setup_all do
-  #   Application.ensure_all_started(:andi)
-  #   :ok
-  # end
+  setup_all do
+    Application.ensure_all_started(:andi)
+    :ok
+  end
 
   describe "dataset disable" do
     test "sends dataset:disable event" do
