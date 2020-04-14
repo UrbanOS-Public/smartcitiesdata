@@ -135,7 +135,7 @@ defmodule AndiWeb.EditLiveView do
             </div>
 
             <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
-              <div class="data-dictionary-form__add-field-button"></div>
+              <div class="data-dictionary-form__add-field-button" phx-click="show_add_field_modal"></div>
               <div class="data-dictionary-form__remove-field-button"></div>
             </div>
           </div>

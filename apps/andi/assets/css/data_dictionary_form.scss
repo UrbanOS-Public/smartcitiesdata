@@ -135,12 +135,13 @@ $tick-height: 1rem + $field-padding - 0.44;
       align-items: center;
       padding: 0.25rem 0.75rem 0.25rem 0.75rem;
       position: relative;
-      box-shadow: 0 -1rem 3rem -1rem gray;
+      box-shadow: 0 -1rem 3rem -1rem #C9C7C7;
 
       .data-dictionary-form__add-field-button {
           width: 1.5rem;
           height: 24px;
           background-image: url('/images/add_field.svg');
+          cursor: pointer;
       }
 
       .data-dictionary-form__remove-field-button {
@@ -148,6 +149,79 @@ $tick-height: 1rem + $field-padding - 0.44;
           height: 24px;
       }
   }
+}
+
+.data-dictionary-add-field-editor--hidden {
+    display: none;
+}
+
+.data-dictionary-add-field-editor--visible {
+    position: fixed;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    z-index: 998;
+    background-color: rgba(255,255,255,0.7);
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.data-dictionary-add-field-editor-form-container--visible {
+    position: relative;
+    z-index: 999;
+    background-color: white;
+    padding: 0 2rem 2rem 2rem;
+    -webkit-box-shadow: 0 0 2rem gray;
+    box-shadow: 0 0 2rem gray;
+
+    h2 {
+        font-size: 22px;
+        font-weight: normal;
+        color: rgb(70,70,70);
+    }
+
+
+    .form-input-container {
+        padding: 1rem;
+
+        .form-block {
+            margin-bottom: 1rem;
+        }
+
+        .form-input {
+            display: flex;
+            justify-content: space-between;
+
+            .label {
+                align-self: center;
+            }
+
+            .select {
+                margin-left: 1rem;
+                width: 18rem;
+            }
+
+            .input {
+                margin-left: 1rem;
+                width: 17rem;
+            }
+        }
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: space-between;
+
+        .btn {
+            height: 2.5rem;
+        }
+
+        #add_field_button {
+            background-color: #26ADEB;
+        }
+    }
 }
 
 @include area(data-dictionary-form, tree-section);

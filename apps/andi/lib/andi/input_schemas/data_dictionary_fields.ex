@@ -10,6 +10,7 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
 
   @top_level_bread_crumb "Top Level"
 
+  # TODO - check why saving fails
   # TODO - need to deal with hiding/showing/clearing the add field component
   # TODO - stretch goal - rename DataDictionary to DataDictionaryField
   # TODO - stretch goal - any sort of sad path for anything at all

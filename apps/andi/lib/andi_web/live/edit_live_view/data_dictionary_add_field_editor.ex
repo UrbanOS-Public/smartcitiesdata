@@ -17,31 +17,45 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
       if assigns.visible do
         "visible"
       else
-        "invisible"
+        "hidden"
       end
 
     ~L"""
     <div id=<%= @id %> class="data-dictionary-add-field-editor data-dictionary-add-field-editor--<%= modifier %>">
-    <%= form = form_for @changeset, "#", [phx_submit: "add_field", phx_target: "##{id}", as: :field] %>
-        <div class="data-dictionary-add-field-editor__name">
-          <%= label(form, :name, "Name", class: "label label--required") %>
-          <%= text_input(form, :name, id: id <> "_name", class: "input") %>
-          <%= error_tag(form, :name) %>
+    <div class="data-dictionary-add-field-editor-form-container data-dictionary-add-field-editor-form-container--<%= modifier %>">
+        <h2>Add New Field</h2>
+        <%= form = form_for @changeset, "#", [phx_submit: "add_field", phx_target: "##{id}", as: :field] %>
+            <div class="form-input-container">
+              <div class="data-dictionary-add-field-editor__name form-block">
+                <div class="form-input">
+                  <%= label(form, :name, "Name", class: "label label--required") %>
+                  <%= text_input(form, :name, id: id <> "_name", class: "input blah") %>
+                </div>
+                <%= error_tag(form, :name) %>
+              </div>
+
+              <div class="data-dictionary-add-field-editor__type form-block">
+                <div class="form-input">
+                  <%= label(form, :type, "Type", class: "label label--required") %>
+                  <%= select(form, :type, get_item_types(), id: id <> "_type", class: "select blah") %>
+                </div>
+                <%= error_tag(form, :type) %>
+              </div>
+
+              <div class="data-dictionary-add-field-editor__parent-id form-block">
+                <div class="form-input">
+                  <%= label(form, :parent_id, "Child Of", class: "label") %>
+                  <%= select(form, :parent_id, @eligible_parents,  id: id <> "_child-of", class: "select blah") %>
+                </div>
+              </div>
+            </div>
+
+            <div class="button-container">
+              <button class="btn" phx-click="cancel" phx-target="<%= @myself %>">CANCEL</button>
+              <%= submit("ADD FIELD", id: "add_field_button", class: "btn") %>
+            </div>
+          </form>
         </div>
-        <div class="data-dictionary-add-field-editor__type">
-          <%= label(form, :type, "Type", class: "label label--required") %>
-          <%= select(form, :type, get_item_types(), id: id <> "_type", class: "select") %>
-          <%= error_tag(form, :type) %>
-        </div>
-        <div class="data-dictionary-add-field-editor__parent-id">
-          <%= label(form, :parent_id, "Child Of", class: "label") %>
-          <%= select(form, :parent_id, @eligible_parents,  id: id <> "_child-of", class: "select") %>
-        </div>
-        <div>
-          <button class="btn btn--large" phx-click="cancel">Cancel</button>
-          <%= submit("Add Field", id: "add_field_button", class: "btn btn--large") %>
-        </div>
-       </form>
       </div>
     """
   end
@@ -51,6 +65,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
     {:ok, assign(socket, changeset: changeset, visible: false)}
   end
 
+  # TODO - error messages in the rerender of this guy
   def handle_event("cancel", _, socket) do
     send(self(), {:add_data_dictionary_field_cancelled})
     {:noreply, assign(socket, changeset: blank_changeset(), visible: false)}
