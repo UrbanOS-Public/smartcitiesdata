@@ -359,10 +359,10 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
 
       assert [
-        {"Top Level", _},
-        {"one", field_one_id},
-        {"two", _}
-      ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+               {"Top Level", _},
+               {"one", field_one_id},
+               {"two", _}
+             ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
 
       assert {_, ["Top Level"]} = get_select_first_option(html, ".data-dictionary-add-field-editor__parent-id select")
 
@@ -393,10 +393,10 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
 
       assert [
-        {"Top Level", technical_id},
-        {"one", _},
-        {"two", _}
-      ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+               {"Top Level", technical_id},
+               {"one", _},
+               {"two", _}
+             ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
 
       assert {_, ["Top Level"]} = get_select_first_option(html, ".data-dictionary-add-field-editor__parent-id select")
 
@@ -412,7 +412,8 @@ defmodule AndiWeb.EditLiveViewTest do
 
       html = render(view)
 
-      assert "Steeeeeeez" == get_text(html, "#data_dictionary_tree .data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+      assert "Steeeeeeez" ==
+               get_text(html, "#data_dictionary_tree .data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
     end

@@ -57,13 +57,13 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       updated_dataset = Datasets.get(dataset.id)
 
       assert [
-        _,
-        %{
-          name: ^field_name,
-          type: ^field_type,
-          bread_crumb: ^field_name
-        }
-      ] = updated_dataset.technical.schema
+               _,
+               %{
+                 name: ^field_name,
+                 type: ^field_type,
+                 bread_crumb: ^field_name
+               }
+             ] = updated_dataset.technical.schema
     end
 
     test "given field as a map, parent id and parent bread crumb", %{dataset: dataset} do
@@ -87,21 +87,21 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       updated_dataset = Datasets.get(dataset.id)
 
       assert [
-        %{
-          subSchema: [
-            %{
-              subSchema: [
-                %{
-                  name: ^field_name,
-                  type: ^field_type,
-                  bread_crumb: ^expected_field_breadcrumb
-                }
-              ]
-            } = _list_child_list_field,
-            _list_child_string_field
-          ]
-        }
-      ] = updated_dataset.technical.schema
+               %{
+                 subSchema: [
+                   %{
+                     subSchema: [
+                       %{
+                         name: ^field_name,
+                         type: ^field_type,
+                         bread_crumb: ^expected_field_breadcrumb
+                       }
+                     ]
+                   } = _list_child_list_field,
+                   _list_child_string_field
+                 ]
+               }
+             ] = updated_dataset.technical.schema
     end
 
     test "given an invalid field as a map, it returns an error tuple with a changeset that reflects the original change", %{
@@ -161,10 +161,10 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       parent_ids = DataDictionaryFields.get_parent_ids(andi_dataset)
 
       assert parent_ids == [
-        {"Top Level", technical_id},
-        {"map_field_parent", schema_parent_field_id},
-        {"map_field_parent > map_field_child_list", schema_child_field_id}
-      ]
+               {"Top Level", technical_id},
+               {"map_field_parent", schema_parent_field_id},
+               {"map_field_parent > map_field_child_list", schema_child_field_id}
+             ]
     end
   end
 end
