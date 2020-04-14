@@ -2,6 +2,7 @@ defmodule DiscoveryApiWeb.DataJsonController do
   use DiscoveryApiWeb, :controller
   alias DiscoveryApi.Services.DataJsonService
 
+  # sobelow_skip ["Traversal.SendFile"]
   def show(conn, _params) do
     case DataJsonService.ensure_data_json_file() do
       {:local, file_path} ->
