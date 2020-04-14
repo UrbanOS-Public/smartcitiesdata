@@ -159,8 +159,26 @@ defmodule Andi.InputSchemas.InputConverter do
       technical
       |> Map.put_new(:sourceQueryParams, %{})
       |> Map.put_new(:sourceHeaders, %{})
+      |> replace(:schema, &convert_form_schema(&1, form_dataset.id))
     end)
   end
+
+  defp convert_form_schema(schema, form_data_id, parent_bread_crumb \\ "") do
+    schema
+    |> Enum.map(fn {_index, schema_field} ->
+      add_dataset_id_to_form(schema_field, form_data_id, parent_bread_crumb)
+    end)
+  end
+
+  defp add_dataset_id_to_form(schema, dataset_id, parent_bread_crumb) do
+    bread_crumb = parent_bread_crumb <> schema.name
+
+    schema
+    |> Map.put(:dataset_id, dataset_id)
+    |> Map.put(:bread_crumb, bread_crumb)
+    |> replace(:subSchema, &convert_form_schema(&1, dataset_id, bread_crumb <> " > "))
+  end
+
 
   defp atomize_dataset_map(dataset) when is_map(dataset) do
     dataset
