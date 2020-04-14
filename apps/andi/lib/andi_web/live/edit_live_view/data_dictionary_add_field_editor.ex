@@ -76,19 +76,22 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
       |> AtomicMap.convert(safe: false)
       |> Map.put(:dataset_id, socket.assigns.dataset_id)
 
-    parent_bread_crumb = Enum.map(socket.assigns.eligible_parents, fn {n, i} ->
-      {i, n}
-    end)
-    |> Map.new()
-    |> Map.get(field_as_atomic_map.parent_id)
+    parent_bread_crumb =
+      Enum.map(socket.assigns.eligible_parents, fn {n, i} ->
+        {i, n}
+      end)
+      |> Map.new()
+      |> Map.get(field_as_atomic_map.parent_id)
 
-    new_changeset = case DataDictionaryFields.add_field_to_parent(field_as_atomic_map, parent_bread_crumb) do
-      {:ok, field} ->
-        send(self(), {:add_data_dictionary_field_succeeded, field.id})
-        blank_changeset()
-      {:error, changeset} ->
-        Map.put(changeset, :action, :update)
-    end
+    new_changeset =
+      case DataDictionaryFields.add_field_to_parent(field_as_atomic_map, parent_bread_crumb) do
+        {:ok, field} ->
+          send(self(), {:add_data_dictionary_field_succeeded, field.id})
+          blank_changeset()
+
+        {:error, changeset} ->
+          Map.put(changeset, :action, :update)
+      end
 
     {:noreply, assign(socket, changeset: new_changeset)}
   end

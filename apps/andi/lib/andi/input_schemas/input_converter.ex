@@ -179,7 +179,6 @@ defmodule Andi.InputSchemas.InputConverter do
     |> replace(:subSchema, &convert_form_schema(&1, dataset_id, bread_crumb <> " > "))
   end
 
-
   defp atomize_dataset_map(dataset) when is_map(dataset) do
     dataset
     |> atomize_top_level()

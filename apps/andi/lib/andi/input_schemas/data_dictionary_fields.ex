@@ -17,7 +17,9 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
     case Repo.insert_or_update(changeset) do
       {:error, _changeset} ->
         {:error, DataDictionary.changeset(%DataDictionary{}, original_field)}
-      good -> good
+
+      good ->
+        good
     end
   end
 
@@ -39,11 +41,13 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
     dataset_id = dataset.id
     top_cheddar = [{@top_level_bread_crumb, dataset.technical.id}]
 
-    dd_query = from d in Dataset,
-      join: dd in DataDictionary,
-      on: dd.dataset_id == d.id,
-      where: dd.type in ["map", "list"] and d.id == ^dataset_id,
-      select: {dd.bread_crumb, dd.id}
+    dd_query =
+      from(d in Dataset,
+        join: dd in DataDictionary,
+        on: dd.dataset_id == d.id,
+        where: dd.type in ["map", "list"] and d.id == ^dataset_id,
+        select: {dd.bread_crumb, dd.id}
+      )
 
     dd_results = Repo.all(dd_query)
 
