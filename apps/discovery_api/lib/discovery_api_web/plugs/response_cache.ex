@@ -26,6 +26,7 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCache do
     Cachex.del(__MODULE__, {conn.request_path, conn.params})
   end
 
+  # sobelow_skip ["XSS.SendResp"]
   defp do_call(conn, true = _match) do
     case Cachex.get(__MODULE__, {conn.request_path, conn.params}) do
       {:ok, nil} ->

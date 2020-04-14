@@ -170,15 +170,19 @@ defmodule Forklift.DataWriter do
 
   defp add_total_time(data, started_data, write_timing) do
     case Application.get_env(:forklift, :profiling_enabled) do
-      true ->  Enum.map(started_data, &Data.add_timing(&1, write_timing))
-      |> Enum.map(&add_timing/1)
-      false -> data
+      true ->
+        Enum.map(started_data, &Data.add_timing(&1, write_timing))
+        |> Enum.map(&add_timing/1)
+
+      false ->
+        data
     end
   end
 
   defp add_timing(datum) do
     start_time = datum._metadata.forklift_start_time
     timing = Data.Timing.new("forklift", "total_time", start_time, Data.Timing.current_time())
+
     Data.add_timing(datum, timing)
     |> Forklift.Util.remove_from_metadata(:forklift_start_time)
   end

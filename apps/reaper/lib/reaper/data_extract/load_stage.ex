@@ -115,7 +115,9 @@ defmodule Reaper.DataExtract.LoadStage do
         start = format_date(state.start_time)
         stop = format_date(DateTime.utc_now())
         [%{app: "reaper", label: "Ingested", start_time: start, end_time: stop}]
-      _ -> []
+
+      _ ->
+        []
     end
   end
 
