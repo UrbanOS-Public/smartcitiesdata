@@ -10,11 +10,6 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
 
   @top_level_bread_crumb "Top Level"
 
-  # TODO - check why saving fails
-  # TODO - manually migrate datasets from view state into repo
-  # TODO - make sure estuary isn't completely busted :|
-  # TODO - add tf rds module to andi-deploy
-
   def add_field_to_parent(original_field, parent_bread_crumb) do
     updated_field = adjust_parent_details(original_field, parent_bread_crumb)
     changeset = DataDictionary.changeset(%DataDictionary{}, updated_field)

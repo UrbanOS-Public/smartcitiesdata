@@ -51,7 +51,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
             </div>
 
             <div class="button-container">
-              <button class="btn" phx-click="cancel" phx-target="<%= @myself %>">CANCEL</button>
+              <%= reset("CANCEL", phx_click: "cancel", phx_target: "##{id}", class: "btn") %>
               <%= submit("ADD FIELD", id: "add_field_button", class: "btn") %>
             </div>
           </form>
@@ -65,7 +65,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
     {:ok, assign(socket, changeset: changeset, visible: false)}
   end
 
-  # TODO - error messages in the rerender of this guy
   def handle_event("cancel", _, socket) do
     send(self(), {:add_data_dictionary_field_cancelled})
     {:noreply, assign(socket, changeset: blank_changeset(), visible: false)}
