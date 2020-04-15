@@ -39,18 +39,18 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
 
   def get_parent_ids(dataset) do
     dataset_id = dataset.id
-    top_cheddar = [{@top_level_bread_crumb, dataset.technical.id}]
+    top_level_parent = [{@top_level_bread_crumb, dataset.technical.id}]
 
-    dd_query =
-      from(d in Dataset,
-        join: dd in DataDictionary,
-        on: dd.dataset_id == d.id,
-        where: dd.type in ["map", "list"] and d.id == ^dataset_id,
-        select: {dd.bread_crumb, dd.id}
+    data_dictionary_query =
+      from(saved_dataset in Dataset,
+        join: data_dictionary in DataDictionary,
+        on: data_dictionary.dataset_id == saved_dataset.id,
+        where: data_dictionary.type in ["map", "list"] and saved_dataset.id == ^dataset_id,
+        select: {data_dictionary.bread_crumb, data_dictionary.id}
       )
 
-    dd_results = Repo.all(dd_query)
+    data_dictionary_results = Repo.all(data_dictionary_query)
 
-    top_cheddar ++ dd_results
+    top_level_parent ++ data_dictionary_results
   end
 end

@@ -25,7 +25,6 @@
   color: $color-success;
 }
 
-// @include area(metadata-form, top-header);
 @include area(metadata-form, title);
 @include area(metadata-form, description);
 @include area(metadata-form, format);

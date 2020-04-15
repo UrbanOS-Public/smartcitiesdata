@@ -46,7 +46,6 @@ defmodule FlokiHelpers do
   end
 
   def get_all_select_options(html, selector) do
-    selected_fields =
       html
       |> Floki.parse_fragment!()
       |> Floki.find(selector)
