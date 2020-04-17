@@ -8,17 +8,21 @@ defmodule Estuary.MessageHandler do
   @updated_event_stream "updated_event_stream"
 
   def handle_messages(messages) do
-    event = messages
+    messages
     |> Enum.map(fn message ->
       message.value
       |> Jason.decode!()
+      |> broadcast_event()
     end)
-    EstuaryWeb.Endpoint.broadcast!(@updated_event_stream, "updated_event_stream", event)
-    event
     |> DataWriter.write()
     |> error_dead_letter()
 
     :ack
+  end
+
+  defp broadcast_event(event) do
+    EstuaryWeb.Endpoint.broadcast!(@updated_event_stream, "updated_event_stream", event)
+    event
   end
 
   defp error_dead_letter({:error, event, reason}) do
