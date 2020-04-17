@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.22.0",
+      version: "0.23.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -34,11 +34,12 @@ defmodule Andi.MixProject do
 
   defp deps do
     [
+      {:accessible, "~> 0.2.1"},
       {:atomic_map, "~> 0.9"},
       {:brook, "~> 0.4.0"},
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
-      {:checkov, "~> 0.5.0", only: :test},
+      {:checkov, "~> 0.5.0", only: [:test, :integration]},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1.4", only: [:dev, :integration]},
@@ -50,13 +51,13 @@ defmodule Andi.MixProject do
       {:sobelow, "~> 0.8", only: :dev},
       {:phoenix, "~> 1.4"},
       {:phoenix_live_view, "~>0.4"},
-      # temporary lock to a version that includes `inputs_for` that can wrap a `live_component` - see https://github.com/phoenixframework/phoenix_html/issues/291
-      {:phoenix_html, github: "phoenixframework/phoenix_html", ref: "9034602e10be566f8c96e49f991521568c8e3d24", override: true},
+      {:phoenix_html, "~> 2.14.1"},
       {:phoenix_live_reload, "~> 1.2", only: [:dev, :integration]},
       {:phoenix_ecto, "~> 4.0"},
       {:phoenix_pubsub, "~> 1.1"},
       {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.1"},
+      {:postgrex, "~> 0.15.1"},
       {:simply_validate, ">= 0.2.0"},
       {:smart_city, "~> 3.0"},
       {:tesla, "~> 1.3"},

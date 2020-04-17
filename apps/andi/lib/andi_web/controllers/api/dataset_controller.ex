@@ -34,15 +34,19 @@ defmodule AndiWeb.API.DatasetController do
   end
 
   def validate_changes(dataset) do
-    changeset = InputConverter.changeset_from_dataset(dataset)
+    changeset = InputConverter.smrt_dataset_to_full_changeset(dataset)
 
-    if changeset.valid?, do: :valid, else: {:invalid, format_changeset_errors(changeset)}
+    if changeset.valid? do
+      :valid
+    else
+      {:invalid, format_changeset_errors(changeset)}
+    end
   end
 
-  defp format_changeset_errors(%{errors: errors}) do
-    errors
-    |> Enum.reduce(%{}, fn {field_name, {message, _}}, acc ->
-      Map.update(acc, field_name, [message], fn current -> [message | current] end)
+  defp format_changeset_errors(changeset) do
+    changeset
+    |> Ecto.Changeset.traverse_errors(fn {msg, _opts} ->
+      msg
     end)
   end
 

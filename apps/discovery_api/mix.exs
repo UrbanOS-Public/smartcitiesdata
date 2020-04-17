@@ -58,8 +58,7 @@ defmodule DiscoveryApi.Mixfile do
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:patiently, "~> 0.2"},
       {:phoenix, "~> 1.4"},
-      # temporary lock to a version that includes `inputs_for` that can wrap a `live_component` - see https://github.com/phoenixframework/phoenix_html/issues/291
-      {:phoenix_html, github: "phoenixframework/phoenix_html", ref: "9034602e10be566f8c96e49f991521568c8e3d24", override: true},
+      {:phoenix_html, "~> 2.14.1"},
       {:phoenix_pubsub, "~> 1.0"},
       {:nanoid, "~> 2.0"},
       {:placebo, "~> 1.2.2", only: [:dev, :test]},

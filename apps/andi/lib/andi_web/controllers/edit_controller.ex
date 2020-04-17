@@ -1,17 +1,17 @@
 defmodule AndiWeb.EditController do
   use AndiWeb, :controller
-  alias Andi.DatasetCache
+  alias Andi.InputSchemas.Datasets
 
   def show(conn, %{"id" => id}) do
-    case DatasetCache.get(id) do
-      %{"dataset" => dataset} ->
-        live_render(conn, AndiWeb.EditLiveView, session: %{"dataset" => dataset})
-
-      _ ->
+    case Datasets.get(id) do
+      nil ->
         conn
         |> put_view(AndiWeb.ErrorView)
         |> put_status(404)
         |> render("404.html")
+
+      dataset ->
+        live_render(conn, AndiWeb.EditLiveView, session: %{"dataset" => dataset})
     end
   end
 end

@@ -1,10 +1,9 @@
 defmodule AndiWeb.DatasetLiveViewTest do
   use AndiWeb.ConnCase
   use Phoenix.ConnTest
+  use Placebo
+
   import Phoenix.LiveViewTest
-  import Andi, only: [instance_name: 0]
-  import SmartCity.Event, only: [data_ingest_end: 0]
-  import SmartCity.TestHelper, only: [eventually: 1]
 
   import FlokiHelpers,
     only: [
@@ -13,35 +12,22 @@ defmodule AndiWeb.DatasetLiveViewTest do
       find_elements: 2
     ]
 
-  alias Andi.DatasetCache
-
-  alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.Services.DatasetStore
+  alias Andi.InputSchemas.Datasets.Dataset
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
 
-  setup do
-    Brook.Test.with_event(instance_name(), fn ->
-      DatasetStore.get_all!()
-      |> Enum.each(fn dataset ->
-        DatasetStore.delete(dataset.id)
-      end)
-
-      DatasetStore.get_all_ingested_time!()
-      |> Enum.each(fn timestamp ->
-        DatasetStore.delete_ingested_time(timestamp["id"])
-      end)
-    end)
-
-    GenServer.call(DatasetCache, :reset)
-  end
-
   describe "Basic live page load" do
     test "loads all datasets", %{conn: conn} do
-      datasets = Enum.map(1..3, fn _x -> TDG.create_dataset([]) end)
+      datasets =
+        Enum.map(
+          1..3,
+          fn _x ->
+            DatasetHelpers.create_dataset(%{})
+          end
+        )
 
-      DatasetCache.put(datasets)
+      DatasetHelpers.replace_all_datasets_in_repo(datasets)
 
       assert {:ok, _view, html} = live(conn, @url_path)
 
@@ -53,6 +39,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "shows No Datasets when there are no rows to show", %{conn: conn} do
+      DatasetHelpers.replace_all_datasets_in_repo([])
+
       assert {:ok, view, html} = live(conn, @url_path)
 
       assert get_text(html, ".datasets-index__title") =~ "All Datasets"
@@ -60,11 +48,22 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "does not load datasets that only contain a timestamp", %{conn: conn} do
-      datasets = Enum.map(1..3, fn _x -> TDG.create_dataset([]) end)
-      timestamp = %{"id" => "timestamp_id", "ingested_time" => "create_ts"}
+      dataset_with_only_timestamp = %Dataset{
+        id: UUID.uuid4(),
+        ingestedTime: DateTime.utc_now(),
+        business: %{},
+        technical: %{}
+      }
 
-      DatasetCache.put(datasets)
-      DatasetCache.put(timestamp)
+      datasets =
+        Enum.map(
+          1..3,
+          fn _x ->
+            DatasetHelpers.create_dataset(%{})
+          end
+        )
+
+      DatasetHelpers.replace_all_datasets_in_repo(datasets ++ [dataset_with_only_timestamp])
 
       assert {:ok, _view, html} = live(conn, @url_path)
       table_text = get_text(html, ".datasets-index__table")
@@ -79,6 +78,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   describe "Live connection with search params in URL" do
     test "populates search box", %{conn: conn} do
+      DatasetHelpers.replace_all_datasets_in_repo([])
+
       search_text = "Where's Waldo?"
 
       assert {:ok, view, html} = live(conn, @url_path <> "?search=" <> search_text)
@@ -86,10 +87,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "filters results based on search", %{conn: conn} do
-      dataset_a = TDG.create_dataset(business: %{dataTitle: "data_a"})
-      dataset_b = TDG.create_dataset(business: %{dataTitle: "data_b"})
+      dataset_a = DatasetHelpers.create_dataset(business: %{dataTitle: "data_a"})
+      dataset_b = DatasetHelpers.create_dataset(business: %{dataTitle: "data_b"})
 
-      DatasetCache.put([dataset_a, dataset_b])
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
       # For most of our tests, we can let live/2 handle both the static connection
       # and the live update. That wasn't working correctly for this one so doing the
@@ -103,6 +104,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "updating search field does not override other params", %{conn: conn} do
+      DatasetHelpers.replace_all_datasets_in_repo([])
       conn = get(conn, @url_path)
       {:ok, view, _html} = live(conn, @url_path <> "?order-by=dataTitle&order-dir=asc")
 
@@ -113,10 +115,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   describe "When form change executes search" do
     test "search filters datasets on orgTitle", %{conn: conn} do
-      dataset_a = TDG.create_dataset(business: %{orgTitle: "org_a"})
-      dataset_b = TDG.create_dataset(business: %{orgTitle: "org_b"})
+      dataset_a = DatasetHelpers.create_dataset(business: %{orgTitle: "org_a"})
+      dataset_b = DatasetHelpers.create_dataset(business: %{orgTitle: "org_b"})
 
-      DatasetCache.put([dataset_a, dataset_b])
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
       {:ok, view, _html} = live(conn, @url_path)
 
@@ -127,10 +129,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "search filters datasets on dataTitle", %{conn: conn} do
-      dataset_a = TDG.create_dataset(business: %{dataTitle: "data_a"})
-      dataset_b = TDG.create_dataset(business: %{dataTitle: "data_b"})
+      dataset_a = DatasetHelpers.create_dataset(business: %{dataTitle: "data_a"})
+      dataset_b = DatasetHelpers.create_dataset(business: %{dataTitle: "data_b"})
 
-      DatasetCache.put([dataset_a, dataset_b])
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
       {:ok, view, _html} = live(conn, @url_path)
 
@@ -141,10 +143,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "shows No Datasets if no results returned", %{conn: conn} do
-      dataset_a = TDG.create_dataset(business: %{dataTitle: "data_a"})
-      dataset_b = TDG.create_dataset(business: %{dataTitle: "data_b"})
+      dataset_a = DatasetHelpers.create_dataset(business: %{dataTitle: "data_a"})
+      dataset_b = DatasetHelpers.create_dataset(business: %{dataTitle: "data_b"})
 
-      DatasetCache.put([dataset_a, dataset_b])
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
       {:ok, view, _html} = live(conn, @url_path)
 
@@ -154,6 +156,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "Search Change event triggers redirect and updates search box value", %{conn: conn} do
+      DatasetHelpers.replace_all_datasets_in_repo([])
+
       {:ok, view, _html} = live(conn, @url_path)
 
       search_text = "Some search"
@@ -169,10 +173,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   describe "When form submit executes search" do
     test "filters on orgTitle", %{conn: conn} do
-      dataset_a = TDG.create_dataset(business: %{orgTitle: "org_a"})
-      dataset_b = TDG.create_dataset(business: %{orgTitle: "org_b"})
+      dataset_a = DatasetHelpers.create_dataset(business: %{orgTitle: "org_a"})
+      dataset_b = DatasetHelpers.create_dataset(business: %{orgTitle: "org_b"})
 
-      DatasetCache.put([dataset_a, dataset_b])
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
       {:ok, view, _html} = live(conn, @url_path)
 
@@ -183,10 +187,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "filters on dataTitle", %{conn: conn} do
-      dataset_a = TDG.create_dataset(business: %{dataTitle: "data_a"})
-      dataset_b = TDG.create_dataset(business: %{dataTitle: "data_b"})
+      dataset_a = DatasetHelpers.create_dataset(business: %{dataTitle: "data_a"})
+      dataset_b = DatasetHelpers.create_dataset(business: %{dataTitle: "data_b"})
 
-      DatasetCache.put([dataset_a, dataset_b])
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
       {:ok, view, _html} = live(conn, @url_path)
 
@@ -197,6 +201,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "Search Submit event triggers redirect and updates search box value", %{conn: conn} do
+      DatasetHelpers.replace_all_datasets_in_repo([])
+
       {:ok, view, _html} = live(conn, @url_path)
 
       search_text = "Some text"
@@ -208,40 +214,5 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       assert_redirect(view, @url_path <> "?search=" <> search_text)
     end
-  end
-
-  test "data_ingest_end events update ingested time", %{conn: conn} do
-    dataset = TDG.create_dataset(%{})
-
-    DatasetCache.put(dataset)
-    assert {:ok, view, _html} = live(conn, @url_path)
-    table_text = get_text(render(view), ".datasets-index__table")
-    assert not (table_text =~ "check")
-
-    Brook.Test.send(instance_name(), data_ingest_end(), :andi, dataset)
-
-    eventually(fn ->
-      table_text = get_text(render(view), ".datasets-index__table")
-      assert table_text =~ "check"
-    end)
-  end
-
-  test "data_ingest_end events does not change dataset order", %{conn: conn} do
-    datasets = Enum.map(1..3, fn _x -> TDG.create_dataset(%{}) end)
-    dataset = Enum.at(datasets, 1)
-
-    DatasetCache.put(datasets)
-
-    assert {:ok, view, _html} = live(conn, @url_path)
-    initial_table_text = get_text(render(view), ".datasets-index__table")
-
-    Brook.Test.send(instance_name(), data_ingest_end(), :andi, dataset)
-
-    eventually(fn ->
-      table_text = get_text(render(view), ".datasets-index__table")
-      assert table_text =~ "check"
-      # If we remove the check that was added, is everything else the same?
-      assert initial_table_text == String.replace(table_text, "check", "")
-    end)
   end
 end

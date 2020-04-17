@@ -19,6 +19,7 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
       </tr>
       <%= if is_set?(@form, @field) do %>
         <%= inputs_for @form, @field, fn f -> %>
+        <%= hidden_input(f, :id) %>
         <tr class="url-form-table__row url-form-table__row--bordered">
           <td class="url-form-table__cell url-form-table__cell--bordered">
             <%= text_input(f, :key, class: "input full-width url-form__#{@css_label}-key-input #{input_value(f, :id)}") %>
@@ -43,5 +44,12 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
     """
   end
 
-  defp is_set?(%{source: %{changes: changes}}, field), do: changes[field] != nil
+  defp is_set?(%{source: changeset}, field) do
+    case Ecto.Changeset.fetch_field(changeset, field) do
+      :error -> false
+      {:data, []} -> false
+      {:changes, []} -> false
+      _ -> true
+    end
+  end
 end

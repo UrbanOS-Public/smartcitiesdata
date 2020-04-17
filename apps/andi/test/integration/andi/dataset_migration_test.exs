@@ -25,9 +25,9 @@ defmodule Andi.DatasetMigrationTest do
 
     Process.unlink(brook)
 
-    dataset_with_proper_modified_date_id = 1
-    dataset_bad_modified_date_id = 2
-    invalid_dataset_id = 3
+    dataset_with_proper_modified_date_id = UUID.uuid4()
+    dataset_bad_modified_date_id = UUID.uuid4()
+    invalid_dataset_id = UUID.uuid4()
 
     good_date = "2017-08-08T13:03:48.000Z"
     bad_date = "Jan 13, 2018"

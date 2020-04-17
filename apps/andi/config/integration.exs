@@ -12,10 +12,19 @@ endpoint = [{host, 9092}]
 config :andi,
   divo: [
     {DivoKafka, [create_topics: "event-stream:1:1", outside_host: host, kafka_image_version: "2.12-2.1.1"]},
-    {DivoRedis, []}
+    {DivoRedis, []},
+    {Andi.DivoPostgres, []}
   ],
   divo_wait: [dwell: 700, max_tries: 50],
   kafka_broker: endpoint
+
+config :andi, Andi.Repo,
+  database: "andi",
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
+  pool: Ecto.Adapters.SQL.Sandbox,
+  port: "5456"
 
 config :andi, AndiWeb.Endpoint,
   http: [port: 4000],
@@ -67,3 +76,20 @@ config :andi, AndiWeb.Endpoint,
   live_view: [
     signing_salt: "SUPER VERY TOP SECRET!!!"
   ]
+
+defmodule Andi.DivoPostgres do
+  @moduledoc """
+  Defines a postgres stack compatible with divo
+  for building a docker-compose file.
+  """
+
+  def gen_stack(_envar) do
+    %{
+      postgres: %{
+        logging: %{driver: "none"},
+        image: "postgres:9.6.16",
+        ports: ["5456:5432"]
+      }
+    }
+  end
+end

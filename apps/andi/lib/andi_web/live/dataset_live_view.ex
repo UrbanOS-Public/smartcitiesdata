@@ -3,6 +3,8 @@ defmodule AndiWeb.DatasetLiveView do
   alias AndiWeb.Router.Helpers, as: Routes
   alias AndiWeb.DatasetLiveView.Table
 
+  alias Andi.InputSchemas.Datasets
+
   @ingested_time_topic "ingested_time_topic"
 
   def render(assigns) do
@@ -37,11 +39,24 @@ defmodule AndiWeb.DatasetLiveView do
     {:ok, assign(socket, datasets: nil, search_text: nil, order: {"data_title", "asc"}, params: %{})}
   end
 
-  def handle_info(%{topic: @ingested_time_topic, payload: %{"id" => id, "ingested_time" => ingested_time}}, socket) do
-    updated_datasets = update_ingest_time(id, ingested_time, socket.assigns.datasets)
+  def handle_info(%{topic: @ingested_time_topic}, socket) do
+    %{search_text: search_text, order: order} = socket.assigns
+    {order_by, order_dir} = coerce_order_into_tuple(order)
+
+    updated_datasets =
+      refresh_datasets(search_text)
+      |> sort_by_dir(order_by, order_dir)
+
     updated_state = assign(socket, :datasets, updated_datasets)
 
     {:noreply, updated_state}
+  end
+
+  defp coerce_order_into_tuple(order) when is_tuple(order), do: order
+
+  defp coerce_order_into_tuple(order) when is_map(order) do
+    [{order_by, order_dir}] = Map.to_list(order)
+    {order_by, order_dir}
   end
 
   def handle_params(params, _uri, socket) do
@@ -74,27 +89,31 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp filter_on_search_change(search_value, socket) do
     case search_value == socket.assigns.search_text do
-      false ->
-        Andi.DatasetCache.get_all()
-        |> ignore_incomplete_models
-        |> filter_models(search_value)
-        |> Enum.map(&to_view_model/1)
-
-      _ ->
-        socket.assigns.datasets
+      false -> refresh_datasets(search_value)
+      _ -> socket.assigns.datasets
     end
   end
 
-  defp ignore_incomplete_models(models) do
-    Enum.reject(models, fn model -> is_nil(model["dataset"]) end)
+  defp refresh_datasets(search_value) do
+    Datasets.get_all()
+    |> reject_partial_datasets()
+    |> filter_datasets(search_value)
+    |> Enum.map(&to_view_model/1)
   end
 
-  defp filter_models(models, ""), do: models
+  defp reject_partial_datasets(datasets) do
+    Enum.reject(datasets, fn
+      %{business: %{id: _bid}, technical: %{id: _tid}} -> false
+      _ -> true
+    end)
+  end
 
-  defp filter_models(models, value) do
-    Enum.filter(models, fn model ->
-      search_contains?(model["dataset"].business.orgTitle, value) ||
-        search_contains?(model["dataset"].business.dataTitle, value)
+  defp filter_datasets(datasets, ""), do: datasets
+
+  defp filter_datasets(datasets, value) do
+    Enum.filter(datasets, fn dataset ->
+      search_contains?(dataset.business.orgTitle, value) ||
+        search_contains?(dataset.business.dataTitle, value)
     end)
   end
 
@@ -110,29 +129,12 @@ defmodule AndiWeb.DatasetLiveView do
     end
   end
 
-  defp update_ingest_time(id, ingested_time, datasets) do
-    exisiting_index = Enum.find_index(datasets, fn dataset -> id == dataset["id"] end)
-
-    case is_nil(exisiting_index) do
-      true ->
-        datasets
-
-      _ ->
-        updated_dataset =
-          datasets
-          |> Enum.at(exisiting_index)
-          |> Map.put("ingested_time", ingested_time)
-
-        List.replace_at(datasets, exisiting_index, updated_dataset)
-    end
-  end
-
-  defp to_view_model(model) do
+  defp to_view_model(dataset) do
     %{
-      "id" => model["id"],
-      "org_title" => model["dataset"].business.orgTitle,
-      "data_title" => model["dataset"].business.dataTitle,
-      "ingested_time" => Map.get(model, "ingested_time")
+      "id" => dataset.id,
+      "org_title" => dataset.business.orgTitle,
+      "data_title" => dataset.business.dataTitle,
+      "ingested_time" => dataset.ingestedTime
     }
   end
 end

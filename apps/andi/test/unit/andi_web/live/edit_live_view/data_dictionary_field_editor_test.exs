@@ -1,12 +1,10 @@
-defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
+defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
   use AndiWeb.ConnCase
   use Phoenix.ConnTest
   import Phoenix.LiveViewTest
   import Checkov
 
-  alias Andi.DatasetCache
-
-  alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.InputSchemas.FormTools
 
   import FlokiHelpers,
     only: [
@@ -18,14 +16,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
 
   @url_path "/datasets/"
 
-  setup do
-    GenServer.call(DatasetCache, :reset)
-  end
-
   test "item type selector is disabled when field type is not a list", %{conn: conn} do
-    dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "one", type: "string"}]}})
+    dataset = DatasetHelpers.create_dataset(%{technical: %{schema: [%{name: "one", type: "string"}]}})
 
-    DatasetCache.put(dataset)
+    DatasetHelpers.add_dataset_to_repo(dataset)
 
     {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 
@@ -33,25 +27,31 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
   end
 
   test "item type selector is enabled when field type is a list", %{conn: conn} do
-    dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "one", type: "string"}]}})
+    field_id = UUID.uuid4()
+    dataset = DatasetHelpers.create_dataset(%{technical: %{schema: [%{id: field_id, name: "one", type: "string"}]}})
 
-    DatasetCache.put(dataset)
+    DatasetHelpers.add_dataset_to_repo(dataset)
 
     {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
     assert get_attributes(html, ".data-dictionary-field-editor__item-type", "disabled") != []
 
-    dataset_map = EditorHelpers.dataset_to_form_data(dataset) |> Map.put(:schema, %{"0" => %{"name" => "one", "type" => "list"}})
+    dataset_map =
+      FormTools.form_data_from_andi_dataset(dataset)
+      |> put_in(
+        [:technical, :schema],
+        %{"0" => %{"id" => field_id, "name" => "one", "type" => "list"}}
+      )
 
-    html = render_change(view, :validate, %{"form_data" => dataset_map})
+    render_change(view, :validate, %{"form_data" => dataset_map})
 
-    assert get_attributes(html, ".data-dictionary-field-editor__item-type", "disabled") == []
+    assert get_attributes(render(view), ".data-dictionary-field-editor__item-type", "disabled") == []
   end
 
   data_test "empty values for #{selector_name} are selected by default", %{conn: conn} do
-    dataset = TDG.create_dataset(%{technical: %{schema: [], sourceType: "remote"}})
+    dataset = DatasetHelpers.create_dataset(%{technical: %{schema: [], sourceType: "remote"}})
 
-    DatasetCache.put(dataset)
+    DatasetHelpers.add_dataset_to_repo(dataset)
 
     {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 
@@ -68,7 +68,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       [:selector_name, :field_type],
       ["name", "text"],
       ["type", "select"],
-      ["item-type", "select"],
       ["description", "text"],
       ["pii", "select"],
       ["masked", "select"],
