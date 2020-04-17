@@ -16,7 +16,7 @@ defmodule Andi.Repo.Migrations.CreateDatasets do
       add :systemName, :string
       add :sourceFormat, :string
       add :sourceType, :string
-      add :sourceUrl, :string
+      add :sourceUrl, :text
       add :topLevelSelector, :string
       add :orgId, :string
       add :cadence, :string
