@@ -5,12 +5,16 @@ defmodule Estuary.MessageHandler do
   use Elsa.Consumer.MessageHandler
   alias Estuary.DataWriter
 
+  @updated_event_stream "updated_event_stream"
+
   def handle_messages(messages) do
-    messages
+    event = messages
     |> Enum.map(fn message ->
       message.value
       |> Jason.decode!()
     end)
+    EstuaryWeb.Endpoint.broadcast!(@updated_event_stream, "updated_event_stream", event)
+    event
     |> DataWriter.write()
     |> error_dead_letter()
 
