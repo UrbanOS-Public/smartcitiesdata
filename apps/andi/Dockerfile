@@ -16,4 +16,5 @@ WORKDIR /app
 COPY --from=builder /app/_build/prod/rel/andi/ .
 ENV PORT 80
 EXPOSE ${PORT}
-CMD ["bin/andi", "foreground"]
+COPY start.sh /
+CMD ["/start.sh"]
