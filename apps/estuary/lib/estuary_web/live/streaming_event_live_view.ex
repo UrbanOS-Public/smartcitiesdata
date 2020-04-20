@@ -19,13 +19,22 @@ defmodule EstuaryWeb.StreamingEventLiveView do
   end
 
   def handle_info(
-        %{topic: @updated_event_stream, event: @updated_event_stream, payload: %{}},
+        %{topic: @updated_event_stream, payload: %{"author" => author, "create_ts" => create_ts, "data" => data, "type" => type}},
         socket
       ) do
-    # updated_events = update_event_stream(create_ts, socket.assigns.events)
-    # updated_state = assign(socket, :events, updated_events)
+    updated_events = update_event_stream(create_ts, socket.assigns.events)
+    updated_state = assign(socket, :events, updated_events)
 
-    # {:noreply, updated_state}
+    {:noreply, updated_state}
+  end
+
+  def handle_params(params, _uri, socket) do
+    order_by = Map.get(params, "order-by", "create_ts")
+    order_dir = Map.get(params, "order-dir", "asc")
+   
+     view_models = socket.assigns.events
+
+    {:noreply, assign(socket, events: view_models, order: %{order_by => order_dir}, params: params)}
   end
 
   defp update_event_stream(create_ts, events) do
@@ -43,5 +52,15 @@ defmodule EstuaryWeb.StreamingEventLiveView do
 
         List.replace_at(events, exisiting_index, updated_event)
     end
+  end
+
+  defp to_view_model(model) do
+    IO.inspect(model, label: "dddddddd")
+    %{
+      "author" => model["author"],
+      "create_ts" => model["create_ts"],
+      "data" => model["data"],
+      "type" => model["type"]
+    }
   end
 end
