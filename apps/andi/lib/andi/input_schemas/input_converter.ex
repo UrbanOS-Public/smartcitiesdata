@@ -43,13 +43,7 @@ defmodule Andi.InputSchemas.InputConverter do
   def form_data_to_ui_changeset(form_data \\ %{}) do
     form_data_as_params =
       form_data
-      |> Map.update("technical", %{}, fn technical ->
-        replace(technical, "schema", fn schema ->
-          Enum.sort_by(schema, fn {k, _v} ->
-            Integer.parse(k)
-          end)
-        end)
-      end)
+      |> sort_form_data_schema_by_index()
       |> adjust_form_input()
 
     Dataset.changeset(%Dataset{}, form_data_as_params)
@@ -239,6 +233,19 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp to_key_value({k, v}) do
     %{key: to_string(k), value: v}
+  end
+
+  defp sort_form_data_schema_by_index(form_data) do
+    form_data
+    |> Map.update("technical", %{}, fn technical ->
+      replace(technical, "schema", &sort_map_by_numerical_keys/1)
+    end)
+  end
+
+  defp sort_map_by_numerical_keys(map) do
+    Enum.sort_by(map, fn {k, _v} ->
+      Integer.parse(k)
+    end)
   end
 
   defp fix_modified_date(map) do
