@@ -26,7 +26,7 @@ defmodule EstuaryWeb.Router do
 
     get("/", Redirect, to: "/events")
     live("/events", EventLiveView)
-    live("/streaming-events", StreamingEventLiveView)
+    live("/streaming-events", StreamingEventLiveView, layout: {EstuaryWeb.LayoutView, :root})
   end
 
   scope "/api", EstuaryWeb.API do
