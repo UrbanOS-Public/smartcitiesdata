@@ -21,7 +21,6 @@ defmodule EstuaryWeb.EventLiveView.StreamingTable do
         <%= if @events == [] do %>
           <tr><td class="events-table__cell" colspan="100%">No Events Found!</td></tr>
         <% else %>
-          <% IO.inspect(@events, label: "111111")%>
           <%= for event <- @events do %>
           <tr class="events-table__tr">
             <td class="events-table__cell events-table__cell--break"><%= event["author"] %></td>
@@ -35,11 +34,4 @@ defmodule EstuaryWeb.EventLiveView.StreamingTable do
     </div>
     """
   end
-
-  # defp create_status(event) do
-  #   case event["create_ts"] do
-  #     nil -> ""
-  #     _ -> ~E(<i class="material-icons">check</i>)
-  #   end
-  # end
 end
