@@ -14,8 +14,8 @@ defmodule EstuaryWeb.EventLiveView.StreamingTable do
       <thead>
         <th class="events-table__th events-table__cell" phx-value-field="author">Author </th>
         <th class="events-table__th events-table__cell" phx-value-field="create_ts">Create Timestamp </th>
-        <th class="events-table__th events-table__cell" phx-value-field="data">Data</th>
-        <th class="events-table__th events-table__cell" phx-value-field="type">Type</th>
+        <th class="events-table__th events-table__cell" phx-value-field="data">Data </th>
+        <th class="events-table__th events-table__cell" phx-value-field="type">Type </th>
         </thead>
 
         <%= if @events == [] do %>

@@ -19,32 +19,14 @@ defmodule EstuaryWeb.StreamingEventLiveView do
   end
 
   def handle_info(
-        %{topic: @updated_event_stream, payload: %{"create_ts" => create_ts} = event},
+        %{topic: @updated_event_stream, payload: %{} = event},
         socket
       ) do
     updated_events =
-      (socket.assigns.events ++ [event])
-      |> update_event_stream(create_ts)
-
+    [event] ++ socket.assigns.events
+    |> Enum.take(1000)
     updated_state = assign(socket, :events, updated_events)
 
     {:noreply, updated_state}
-  end
-
-  defp update_event_stream(events, create_ts) do
-    exisiting_index = Enum.find_index(events, fn event -> create_ts == event["create_ts"] end)
-
-    case is_nil(exisiting_index) do
-      true ->
-        events
-
-      _ ->
-        updated_event =
-          events
-          |> Enum.at(exisiting_index)
-          |> Map.put("create_ts", create_ts)
-
-        List.replace_at(events, exisiting_index, updated_event)
-    end
   end
 end
