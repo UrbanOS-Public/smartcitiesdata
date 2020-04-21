@@ -23,8 +23,9 @@ defmodule EstuaryWeb.StreamingEventLiveView do
         socket
       ) do
     updated_events =
-    [event] ++ socket.assigns.events
-    |> Enum.take(1000)
+      [event] ++ socket.assigns.events
+      |> Enum.take(1000)
+
     updated_state = assign(socket, :events, updated_events)
 
     {:noreply, updated_state}
