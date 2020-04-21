@@ -36,13 +36,14 @@ defmodule EstuaryWeb.StreamingEventLiveViewTest do
       expected_events =
         "Author Create Timestamp Data Type Author-2020-04-21 23:29:20.171519Z1579649360Data-2020-04-21 23:29:20.171538ZType-2020-04-21 23:29:20.171543ZAuthor-2020-04-21 23:25:52.522084Z1579649152Data-2020-04-21 23:25:52.522107ZType-2020-04-21 23:25:52.522111Z"
 
+      assert {:ok, view, html} = live(conn, "/streaming-events")
+
       MessageHandler.handle_messages(messages)
 
       eventually(
         fn ->
-          assert {:ok, view, html} = live(conn, "/streaming-events")
           html = render(view)
-          actual_events = get_text(html, ".events-index__table") |> IO.inspect(label: "Show Meeee")
+          actual_events = get_text(html, ".events-index__table")
           assert 2 == find_elements(html, ".events-table__tr") |> Enum.count()
           assert 4 == find_elements(html, ".events-table__th") |> Enum.count()
           assert 12 == find_elements(html, ".events-table__cell") |> Enum.count()
