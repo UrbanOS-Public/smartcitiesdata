@@ -6,6 +6,9 @@ defmodule Andi.InputSchemas.Datasets do
   alias Andi.Repo
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
+
+  import Ecto.Query, only: [from: 2]
+
   require Logger
 
   def get(id) do
@@ -14,8 +17,13 @@ defmodule Andi.InputSchemas.Datasets do
   end
 
   def get_all() do
-    Repo.all(Dataset)
-    |> Enum.map(&Repo.preload(&1, [:business, :technical]))
+    query = from(dataset in Dataset,
+      join: technical in assoc(dataset, :technical),
+      join: business in assoc(dataset, :business),
+      preload: [business: business, technical: technical]
+    )
+
+    Repo.all(query)
   end
 
   def update(%SmartCity.Dataset{} = smrt_dataset) do
