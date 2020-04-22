@@ -12,17 +12,20 @@ defmodule Estuary.MessageHandler do
     |> Enum.map(fn message ->
       message.value
       |> Jason.decode!()
-      |> broadcast_event()
     end)
+    |> broadcast_event()
     |> DataWriter.write()
     |> error_dead_letter()
 
     :ack
   end
 
-  defp broadcast_event(event) do
-    EstuaryWeb.Endpoint.broadcast!(@updated_event_stream, "updated_event_stream", event)
-    event
+  defp broadcast_event(events) do
+    EstuaryWeb.Endpoint.broadcast!(@updated_event_stream, "updated_event_stream", %{
+      events: events
+    })
+
+    events
   end
 
   defp error_dead_letter({:error, event, reason}) do
