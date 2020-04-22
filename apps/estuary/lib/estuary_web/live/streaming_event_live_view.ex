@@ -20,7 +20,7 @@ defmodule EstuaryWeb.StreamingEventLiveView do
 
   def handle_info(%{topic: @updated_event_stream, payload: %{} = event}, socket) do
     updated_events =
-      [event] ++ socket.assigns.events
+      ([event] ++ socket.assigns.events)
       |> Enum.take(1000)
       |> Enum.sort(&(&1["create_ts"] >= &2["create_ts"]))
 
