@@ -18,10 +18,7 @@ defmodule EstuaryWeb.StreamingEventLiveView do
     {:ok, assign(socket, events: [], order: {"create_ts", "desc"}, params: %{})}
   end
 
-  def handle_info(
-        %{topic: @updated_event_stream, payload: %{} = event},
-        socket
-      ) do
+  def handle_info(%{topic: @updated_event_stream, payload: %{} = event}, socket) do
     updated_events =
       [event] ++ socket.assigns.events
       |> Enum.take(1000)
