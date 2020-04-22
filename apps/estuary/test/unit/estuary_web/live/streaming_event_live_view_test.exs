@@ -31,7 +31,7 @@ defmodule EstuaryWeb.StreamingEventLiveViewTest do
         "Author Create Timestamp Data Type Author-2020-04-21 23:29:20.171519Z1579649360Data-2020-04-21 23:29:20.171538ZType-2020-04-21 23:29:20.171543Z"
 
       expected_events =
-        "Author Create Timestamp Data Type Author-2020-04-21 23:25:52.522084Z1579649152Data-2020-04-21 23:25:52.522107ZType-2020-04-21 23:25:52.522111ZAuthor-2020-04-21 23:29:20.171519Z1579649360Data-2020-04-21 23:29:20.171538ZType-2020-04-21 23:29:20.171543Z"
+        "Author Create Timestamp Data Type Author-2020-04-21 23:29:20.171519Z1579649360Data-2020-04-21 23:29:20.171538ZType-2020-04-21 23:29:20.171543ZAuthor-2020-04-21 23:25:52.522084Z1579649152Data-2020-04-21 23:25:52.522107ZType-2020-04-21 23:25:52.522111Z"
 
       assert {:ok, view, html} = live(conn, "/streaming-events")
       assert 4 == find_elements(html, ".events-table__th") |> Enum.count()

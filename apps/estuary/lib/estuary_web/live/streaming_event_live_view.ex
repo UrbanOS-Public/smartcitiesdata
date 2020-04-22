@@ -15,7 +15,7 @@ defmodule EstuaryWeb.StreamingEventLiveView do
 
   def mount(_params, _session, socket) do
     EstuaryWeb.Endpoint.subscribe(@updated_event_stream)
-    {:ok, assign(socket, events: [], order: {"create_ts", "asc"}, params: %{})}
+    {:ok, assign(socket, events: [], order: {"create_ts", "desc"}, params: %{})}
   end
 
   def handle_info(
@@ -25,9 +25,8 @@ defmodule EstuaryWeb.StreamingEventLiveView do
     updated_events =
       [event] ++ socket.assigns.events
       |> Enum.take(1000)
+      |> Enum.sort(&(&1["create_ts"] >= &2["create_ts"]))
 
-    updated_state = assign(socket, :events, updated_events)
-
-    {:noreply, updated_state}
+    {:noreply, assign(socket, :events, updated_events)}
   end
 end
