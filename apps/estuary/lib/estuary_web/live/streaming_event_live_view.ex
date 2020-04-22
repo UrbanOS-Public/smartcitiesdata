@@ -1,6 +1,6 @@
 defmodule EstuaryWeb.StreamingEventLiveView do
   use Phoenix.LiveView
-  alias EstuaryWeb.EventLiveView.StreamingTable
+  alias EstuaryWeb.EventLiveView.Table
 
   @updated_event_stream "updated_event_stream"
 
@@ -8,7 +8,7 @@ defmodule EstuaryWeb.StreamingEventLiveView do
     ~L"""
     <div class="events-index">
       <h1 class="events-index__title">All Events</h1>
-      <%= live_component(@socket, StreamingTable, id: :events_table, events: @events, order: @order) %>
+      <%= live_component(@socket, Table, id: :events_table, events: @events, order: @order) %>
     </div>
     """
   end
