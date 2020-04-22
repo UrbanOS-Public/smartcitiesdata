@@ -4,17 +4,13 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
   @route "/api/v1/dataset"
   @get_datasets_route "/api/v1/datasets"
-  alias SmartCity.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.DatasetCache
   alias Andi.Services.DatasetStore
 
   import Andi
   import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0]
 
   setup do
-    GenServer.call(DatasetCache, :reset)
-
     example_dataset_1 = TDG.create_dataset(%{})
 
     example_dataset_1 =
@@ -48,7 +44,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
         "sourceUrl" => "https://example.com",
         "sourceType" => "stream",
         "sourceFormat" => "gtfs",
-        "cadence" => 9000,
+        "cadence" => "9000",
         "schema" => [%{name: "billy", type: "writer"}],
         "private" => false,
         "headers" => %{
@@ -90,186 +86,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> struct_to_map_with_string_keys()
 
     {:ok, request: request, message: message, example_datasets: example_datasets}
-  end
-
-  describe "PUT /api/ without systemName" do
-    setup %{conn: conn, request: request} do
-      {_, request} = pop_in(request, ["technical", "systemName"])
-      [conn: put(conn, @route, request)]
-    end
-
-    test "return a 201", %{conn: conn} do
-      system_name =
-        conn
-        |> json_response(201)
-        |> get_in(["technical", "systemName"])
-
-      assert system_name == "org__dataset"
-    end
-
-    test "writes data to event stream", %{message: message} do
-      {:ok, struct} = Dataset.new(message)
-
-      assert_called(Brook.Event.send(instance_name(), any(), :andi, struct), once())
-    end
-  end
-
-  test "put returns 400 when systemName matches existing systemName", %{
-    conn: conn,
-    request: request
-  } do
-    org_name = request["technical"]["orgName"]
-    data_name = request["technical"]["dataName"]
-
-    existing_dataset =
-      TDG.create_dataset(
-        id: "existing-ds1",
-        technical: %{
-          dataName: data_name,
-          orgName: org_name,
-          systemName: "#{org_name}__#{data_name}"
-        }
-      )
-
-    DatasetCache.put(existing_dataset)
-
-    %{"errors" => errors} =
-      conn
-      |> put(@route, request)
-      |> json_response(400)
-
-    assert errors["dataName"] == ["existing dataset has the same orgName and dataName"]
-  end
-
-  test "put returns 400 when systemName has dashes", %{
-    conn: conn
-  } do
-    org_name = "what-a-great"
-    data_name = "system-name"
-
-    new_dataset =
-      TDG.create_dataset(
-        id: "my-new-dataset",
-        technical: %{
-          dataName: data_name,
-          orgName: org_name,
-          systemName: "#{org_name}__#{data_name}"
-        }
-      )
-
-    %{"errors" => errors} =
-      conn
-      |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
-      |> json_response(400)
-
-    assert errors["orgName"] == ["cannot contain dashes"]
-    assert errors["dataName"] == ["cannot contain dashes"]
-  end
-
-  test "put returns 400 when modifiedDate is invalid", %{
-    conn: conn
-  } do
-    new_dataset =
-      TDG.create_dataset(
-        id: "my-new-dataset",
-        technical: %{dataName: "my_little_dataset"}
-      )
-      |> struct_to_map_with_string_keys()
-      |> put_in(["business", "modifiedDate"], "badDate")
-
-    %{"errors" => errors} =
-      conn
-      |> put(@route, new_dataset)
-      |> json_response(400)
-
-    assert errors["modifiedDate"] == ["is invalid"]
-  end
-
-  test "put returns 400 and errors when fields are invalid", %{
-    conn: conn
-  } do
-    new_dataset =
-      TDG.create_dataset(
-        id: "my-new-dataset",
-        business: %{
-          dataTitle: "",
-          description: nil,
-          contactEmail: "not-a-valid-email",
-          license: "",
-          publishFrequency: nil,
-          benefitRating: nil
-        },
-        technical: %{
-          sourceFormat: "",
-          sourceHeaders: %{"" => "where's my key"},
-          sourceQueryParams: %{"" => "where's MY key"}
-        }
-      )
-      |> struct_to_map_with_string_keys()
-      |> delete_in([
-        ["business", "contactName"],
-        ["business", "orgTitle"],
-        ["business", "issuedDate"],
-        ["business", "riskRating"],
-        ["technical", "sourceFormat"],
-        ["technical", "private"]
-      ])
-
-    %{"errors" => actual_errors} =
-      conn
-      |> put(@route, new_dataset)
-      |> json_response(400)
-
-    expected_error_keys = [
-      "benefitRating",
-      "dataTitle",
-      "description",
-      "contactName",
-      "contactEmail",
-      "issuedDate",
-      "license",
-      "publishFrequency",
-      "orgTitle",
-      "private",
-      "riskRating",
-      "sourceFormat",
-      "sourceHeaders",
-      "sourceQueryParams"
-    ]
-
-    for key <- expected_error_keys do
-      assert Map.has_key?(actual_errors, key) == true
-    end
-
-    assert Map.keys(actual_errors) |> length() == length(expected_error_keys)
-  end
-
-  test "put trims fields on dataset", %{
-    conn: conn
-  } do
-    new_dataset =
-      TDG.create_dataset(
-        id: " my-new-dataset  ",
-        technical: %{
-          dataName: "   the_data_name ",
-          orgName: " the_org_name   "
-        },
-        business: %{
-          contactName: " some  body  ",
-          keywords: ["  a keyword", " another keyword", "etc"]
-        }
-      )
-
-    response =
-      conn
-      |> put(@route, new_dataset |> Jason.encode!() |> Jason.decode!())
-      |> json_response(201)
-
-    assert response["id"] == "my-new-dataset"
-    assert response["business"]["contactName"] == "some  body"
-    assert response["business"]["keywords"] == ["a keyword", "another keyword", "etc"]
-    assert response["technical"]["dataName"] == "the_data_name"
-    assert response["technical"]["orgName"] == "the_org_name"
   end
 
   describe "POST /dataset/disable" do
@@ -352,27 +168,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
     end
   end
 
-  describe "PUT /api/ with systemName" do
-    setup %{conn: conn, request: request} do
-      req = put_in(request, ["technical", "systemName"], "org__dataset_akdjbas")
-      [conn: put(conn, @route, req)]
-    end
-
-    test "return 201", %{conn: conn} do
-      system_name =
-        conn
-        |> json_response(201)
-        |> get_in(["technical", "systemName"])
-
-      assert system_name == "org__dataset"
-    end
-
-    test "writes to event stream", %{message: message} do
-      {:ok, struct} = Dataset.new(message)
-      assert_called(Brook.Event.send(instance_name(), any(), :andi, struct), once())
-    end
-  end
-
   @tag capture_log: true
   test "PUT /api/ without data returns 500", %{conn: conn} do
     conn = put(conn, @route)
@@ -400,18 +195,6 @@ defmodule AndiWeb.API.DatasetControllerTest do
     end
   end
 
-  test "PUT /api/ dataset passed without UUID generates UUID for dataset", %{conn: conn, request: request} do
-    {_, request} = pop_in(request, ["id"])
-    conn = put(conn, @route, request)
-
-    uuid =
-      conn
-      |> json_response(201)
-      |> get_in(["id"])
-
-    assert uuid != nil
-  end
-
   describe "GET /api/dataset/:dataset_id" do
     test "should return a given dataset when it exists", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
@@ -436,11 +219,5 @@ defmodule AndiWeb.API.DatasetControllerTest do
     dataset
     |> Jason.encode!()
     |> Jason.decode!()
-  end
-
-  defp delete_in(data, paths) do
-    Enum.reduce(paths, data, fn path, working ->
-      working |> pop_in(path) |> elem(1)
-    end)
   end
 end

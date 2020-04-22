@@ -71,7 +71,7 @@ defmodule Andi.CreateOrgTest do
     |> Map.from_struct()
   end
 
-  defp get_brook(id, collection \\ :org) do
+  defp get_brook(id, collection) do
     Brook.get(instance_name(), collection, id)
   end
 end

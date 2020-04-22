@@ -45,6 +45,16 @@ defmodule FlokiHelpers do
     end
   end
 
+  def get_all_select_options(html, selector) do
+    html
+    |> Floki.parse_fragment!()
+    |> Floki.find(selector)
+    |> Floki.find("select option")
+    |> Enum.map(fn {_option, [{_value, value}], [text]} ->
+      {text, value}
+    end)
+  end
+
   def get_select_first_option(html, selector) do
     {_, [{_, value} | _], text_list} =
       html

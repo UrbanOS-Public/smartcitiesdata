@@ -1,23 +1,18 @@
 defmodule AndiWeb.EditControllerTest do
   use AndiWeb.ConnCase
-  alias Andi.DatasetCache
-  alias SmartCity.TestDataGenerator, as: TDG
 
   @url_path "/datasets"
 
-  setup do
-    GenServer.call(DatasetCache, :reset)
-  end
-
   describe "EditController" do
     test "gives 404 if dataset is not found", %{conn: conn} do
+      DatasetHelpers.ensure_dataset_removed_from_repo("111")
       conn = get(conn, "#{@url_path}/111")
       assert response(conn, 404)
     end
 
     test "gives 200 if dataset is found", %{conn: conn} do
-      dataset = TDG.create_dataset([])
-      DatasetCache.put(dataset)
+      dataset = DatasetHelpers.create_dataset([])
+      DatasetHelpers.add_dataset_to_repo(dataset)
 
       conn = get(conn, "#{@url_path}/#{dataset.id}")
       assert response(conn, 200)

@@ -7,7 +7,7 @@ defmodule EditorHelpers do
 
   def dataset_to_form_data(dataset) do
     dataset
-    |> InputConverter.changeset_from_dataset()
+    |> InputConverter.smrt_dataset_to_full_changeset()
     |> form_data_for_save()
   end
 

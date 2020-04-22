@@ -26,6 +26,7 @@ release :andi do
   set version: current_version(:andi)
   set applications: [:runtime_tools, :andi]
   set overlays: [{:copy, "apps/andi/runtime.exs", "etc/runtime.exs"}]
+  set commands: ["migrate": "rel/commands/andi-migrate.sh"]
 end
 
 release :discovery_streams do

@@ -25,7 +25,7 @@ defmodule AndiWeb.Router do
     pipe_through :browser
 
     get "/", Redirect, to: "/datasets"
-    live "/datasets", DatasetLiveView, layout: {AndiWeb.LayoutView, :app}
+    live "/datasets", DatasetLiveView, layout: {AndiWeb.LayoutView, :root}
     get "/datasets/:id", EditController, :show
   end
 

@@ -53,6 +53,9 @@ defmodule E2ETest do
   }
 
   setup_all do
+    Mix.Tasks.Ecto.Create.run([])
+    Mix.Tasks.Ecto.Migrate.run([])
+
     Temp.track!()
     Application.put_env(:odo, :working_dir, Temp.mkdir!())
     bypass = Bypass.open()

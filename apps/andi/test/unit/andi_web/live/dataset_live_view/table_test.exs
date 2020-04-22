@@ -2,12 +2,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   use AndiWeb.ConnCase
   use Phoenix.ConnTest
   import Phoenix.LiveViewTest
-  import Andi, only: [instance_name: 0]
-
-  alias Andi.DatasetCache
-
-  alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.Services.DatasetStore
+  use Placebo
 
   import FlokiHelpers,
     only: [
@@ -20,35 +15,17 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   @ingested_time_a "123123213"
   @ingested_time_b "454699234"
 
-  setup do
-    Brook.Test.with_event(instance_name(), fn ->
-      DatasetStore.get_all!()
-      |> Enum.each(fn dataset ->
-        DatasetStore.delete(dataset.id)
-      end)
-
-      DatasetStore.get_all_ingested_time!()
-      |> Enum.each(fn timestamp ->
-        DatasetStore.delete_ingested_time(timestamp["id"])
-      end)
-    end)
-
-    GenServer.call(DatasetCache, :reset)
-  end
-
   describe "order by click" do
     setup %{conn: conn} do
-      GenServer.call(DatasetCache, :reset)
+      dataset_a =
+        DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
+        |> Map.put(:ingestedTime, @ingested_time_a)
 
-      dataset_a = TDG.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
-      dataset_b = TDG.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
+      dataset_b =
+        DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
+        |> Map.put(:ingestedTime, @ingested_time_b)
 
-      DatasetCache.put([dataset_a, dataset_b])
-
-      DatasetCache.put([
-        %{"id" => dataset_a.id, "ingested_time" => @ingested_time_a},
-        %{"id" => dataset_b.id, "ingested_time" => @ingested_time_b}
-      ])
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
       {:ok, view, _} =
         get(conn, @url_path)
@@ -100,15 +77,15 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   describe "order by url params" do
     setup %{conn: conn} do
-      dataset_a = TDG.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
-      dataset_b = TDG.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
+      dataset_a =
+        DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
+        |> Map.put(:ingestedTime, @ingested_time_a)
 
-      DatasetCache.put([dataset_a, dataset_b])
+      dataset_b =
+        DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
+        |> Map.put(:ingestedTime, @ingested_time_b)
 
-      DatasetCache.put([
-        %{"id" => dataset_a.id, "ingested_time" => @ingested_time_a},
-        %{"id" => dataset_b.id, "ingested_time" => @ingested_time_b}
-      ])
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
       conn = get(conn, @url_path)
 
@@ -138,10 +115,10 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   end
 
   test "ordering does not affect other query params", %{conn: conn} do
-    dataset_a = TDG.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
-    dataset_b = TDG.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
+    dataset_a = DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
+    dataset_b = DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
 
-    DatasetCache.put([dataset_a, dataset_b])
+    DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
     conn = get(conn, @url_path)
     {:ok, view, _html} = live(conn, @url_path <> "?foo=bar")
@@ -151,9 +128,9 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   end
 
   test "ingested_time is optional", %{conn: conn} do
-    dataset = TDG.create_dataset(%{})
+    dataset = DatasetHelpers.create_dataset(%{})
 
-    DatasetCache.put(dataset)
+    DatasetHelpers.replace_all_datasets_in_repo([dataset])
 
     {:ok, _view, html} = live(conn, @url_path)
 
@@ -161,9 +138,9 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   end
 
   test "edit buttons link to dataset edit", %{conn: conn} do
-    dataset = TDG.create_dataset(%{})
+    dataset = DatasetHelpers.create_dataset(%{})
 
-    DatasetCache.put(dataset)
+    DatasetHelpers.replace_all_datasets_in_repo([dataset])
 
     {:ok, _view, html} = live(conn, @url_path)
 

@@ -16,8 +16,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
     <%= if is_set?(@form, @field) do %>
       <div id="<%= @id %>" class="data-dictionary-tree">
         <%= for field <- inputs_for(@form, @field) do %>
-          <%= hidden_inputs(field, @selected_field_id) %> 
+          <%= hidden_inputs(field, @selected_field_id) %>
           <% {icon_modifier, selected_modifier} = get_action(field, assigns) %>
+
           <div class="data-dictionary-tree-field data-dictionary-tree__field data-dictionary-tree__field--<%= icon_modifier %> data-dictionary-tree__field--<%= selected_modifier %>">
             <div class="data-dictionary-tree-field__action" phx-click="<%= if is_set?(field, :subSchema), do: "toggle_expanded", else: "toggle_selected" %>" phx-value-field-id="<%= input_value(field, :id) %>" phx-target="#<%= @root_id %>"></div>
             <div class="data-dictionary-tree-field__text" phx-click="toggle_selected" phx-value-field-id="<%= input_value(field, :id) %>" phx-target="#<%= @root_id %>">
@@ -25,6 +26,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
               <div class="data-dictionary-tree-field__type data-dictionary-tree-field-attribute"><%= input_value(field, :type) %></div>
             </div>
           </div>
+
           <div class="data-dictionary-tree__sub-dictionary data-dictionary-tree__sub-dictionary--<%= icon_modifier %>">
             <%= live_component(@socket, DataDictionaryTree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, selected_field_id: @selected_field_id, form: field, field: :subSchema, expansion_map: @expansion_map) %>
           </div>
@@ -88,14 +90,22 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
     {icon_modifier, selected_modifier}
   end
 
-  defp is_set?(%{source: %{changes: changes}}, field), do: changes[field] != nil
+  defp is_set?(%{source: changeset}, field) do
+    case Ecto.Changeset.fetch_field(changeset, field) do
+      :error -> false
+      {:data, []} -> false
+      {:changes, []} -> false
+      _ -> true
+    end
+  end
 
   defp hidden_inputs(form_field, selected_field_id) do
     if input_value(form_field, :id) != selected_field_id do
-      form_field.data
-      |> Map.from_struct()
-      |> Map.delete(:subSchema)
-      |> Enum.map(fn {k, _v} ->
+      form_field.data.__struct__.__schema__(:fields)
+      |> List.delete(:parent_id)
+      |> List.delete(:technical_id)
+      |> List.delete(:dataset_id)
+      |> Enum.map(fn k ->
         hidden_input(form_field, k)
       end)
     end
