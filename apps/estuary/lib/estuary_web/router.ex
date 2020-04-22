@@ -25,7 +25,8 @@ defmodule EstuaryWeb.Router do
     pipe_through(:browser)
 
     get("/", Redirect, to: "/events")
-    live("/events", EventLiveView)
+    live("/events", EventLiveView, layout: {EstuaryWeb.LayoutView, :root})
+    live("/streaming-events", StreamingEventLiveView, layout: {EstuaryWeb.LayoutView, :root})
   end
 
   scope "/api", EstuaryWeb.API do

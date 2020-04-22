@@ -12,7 +12,7 @@ config :estuary,
 config :estuary, EstuaryWeb.Endpoint,
   url: [host: "localhost"],
   # it should be overwriten as part of deploying the platform.
-  secret_key_base: "JP4PY/+nvfRe5ASIu9a4O46q",
+  secret_key_base: "4gV3z+mTeMzrnd+E1lI9xFei/79xYDJ6kN25HlD70cjtspfJ/WIK1mi3sxWIco1v",
   render_errors: [view: EstuaryWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: Estuary.PubSub, adapter: Phoenix.PubSub.PG2],
   check_origin: ["http://localhost:4000", "https://*.smartcolumbusos.com"]
