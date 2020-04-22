@@ -13,14 +13,14 @@ defmodule Estuary.MessageHandler do
       message.value
       |> Jason.decode!()
     end)
-    |> broadcast_event()
+    |> broadcast_events()
     |> DataWriter.write()
     |> error_dead_letter()
 
     :ack
   end
 
-  defp broadcast_event(events) do
+  defp broadcast_events(events) do
     EstuaryWeb.Endpoint.broadcast!(@updated_event_stream, "updated_event_stream", %{
       events: events
     })
