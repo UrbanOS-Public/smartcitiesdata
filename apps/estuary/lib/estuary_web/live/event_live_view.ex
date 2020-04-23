@@ -14,7 +14,6 @@ defmodule EstuaryWeb.EventLiveView do
 
   def mount(_params, _session, socket) do
     {:ok, events} = EventRetrievalService.get_all()
-    IO.inspect(Enum.to_list(events), label: "StreamEventsToList")
     {:ok, assign(socket, events: events, no_events: "No Events Found!")}
   end
 end
