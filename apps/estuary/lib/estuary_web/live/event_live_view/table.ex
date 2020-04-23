@@ -14,10 +14,10 @@ defmodule EstuaryWeb.EventLiveView.Table do
         <th class="events-table__th events-table__cell" phx-value-field="create_ts">Create Timestamp </th>
         <th class="events-table__th events-table__cell" phx-value-field="data">Data </th>
         <th class="events-table__th events-table__cell" phx-value-field="type">Type </th>
-        </thead>
+      </thead>
 
-        <%= if @events == [] do %>
-          <tr><td class="events-table__cell" colspan="100%">No Events Found!</td></tr>
+        <%= if Enum.empty?(@events) do %>
+          <tr><td class="events-table__cell" colspan="100%"><%= @no_events %></td></tr>
         <% else %>
           <%= for event <- @events do %>
             <tr class="events-table__tr">
