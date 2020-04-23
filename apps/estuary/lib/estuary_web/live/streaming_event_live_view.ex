@@ -29,9 +29,9 @@ defmodule EstuaryWeb.StreamingEventLiveView do
 
   defp validate_events(events, socket_events) do
     cond do
-      events == nil and socket_events == [nil] -> nil
+      events == nil and (socket_events == nil or socket_events == [nil]) -> nil
       events == nil -> socket_events
-      socket_events == nil -> events
+      socket_events == nil or socket_events == [nil] -> events
       true -> events ++ socket_events
     end
   end
