@@ -16,7 +16,7 @@ defmodule EstuaryWeb.EventLiveView.Table do
         <th class="events-table__th events-table__cell" phx-value-field="type">Type </th>
       </thead>
 
-        <%= if @events == [] do %>
+        <%= if Enum.empty?(@events) do %>
           <tr><td class="events-table__cell" colspan="100%"><%= @no_events %></td></tr>
         <% else %>
           <%= for event <- @events do %>
