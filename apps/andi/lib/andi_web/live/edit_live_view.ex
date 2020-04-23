@@ -3,8 +3,10 @@ defmodule AndiWeb.EditLiveView do
 
   alias Phoenix.HTML.Link
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.DisplayNames
   alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.FormTools
@@ -18,6 +20,8 @@ defmodule AndiWeb.EditLiveView do
 
   def render(assigns) do
     dataset_id = assigns.dataset.id
+
+    IO.inspect(assigns.selected_field_id, label: "got")
 
     ~L"""
       <div class="edit-page">
@@ -332,8 +336,10 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: changeset, add_data_dictionary_field_visible: true)}
   end
 
-  def handle_info({:assign_editable_dictionary_field, field}, socket) do
-    {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: input_value(field, :id))}
+  def handle_info({:assign_editable_dictionary_field, field_id}, socket) do
+    field_as_changes = Andi.Repo.get(DataDictionary, field_id) |> StructTools.to_map()
+    field = DataDictionary.changeset(%DataDictionary{}, field_as_changes) |> form_for(:update)
+    {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
   end
 
   def handle_info({:add_data_dictionary_field_cancelled}, socket) do

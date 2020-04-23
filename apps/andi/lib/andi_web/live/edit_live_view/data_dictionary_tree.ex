@@ -43,6 +43,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
   end
 
   def handle_event("toggle_selected", %{"field-id" => field_id}, socket) do
+    IO.inspect(field_id, label: "new_id")
+    send(self(),  {:assign_editable_dictionary_field, field_id})
     {:noreply, assign(socket, selected_field_id: field_id)}
   end
 
@@ -81,7 +83,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
 
     selected_modifier =
       if id == selected_field_id do
-        send(self(), {:assign_editable_dictionary_field, field})
         "selected"
       else
         "unselected"

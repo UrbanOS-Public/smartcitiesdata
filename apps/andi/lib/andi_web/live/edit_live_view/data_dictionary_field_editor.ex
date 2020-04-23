@@ -14,6 +14,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
   def render(assigns) do
     id = Atom.to_string(assigns.id)
 
+    IO.inspect(assigns.form)
     ~L"""
       <div id="<%= @id %>" class="data-dictionary-field-editor" >
         <%= hidden_input(@form, :id, id: id <> "_id") %>

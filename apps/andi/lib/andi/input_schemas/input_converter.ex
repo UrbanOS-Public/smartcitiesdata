@@ -162,7 +162,7 @@ defmodule Andi.InputSchemas.InputConverter do
       technical
       |> Map.put_new(:sourceQueryParams, %{})
       |> Map.put_new(:sourceHeaders, %{})
-      |> replace(:schema, &convert_form_schema(&1, form_dataset.id))
+      |> replace(:schema, &convert_form_schema(&1, form_dataset[:id]))
     end)
   end
 
