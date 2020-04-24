@@ -43,9 +43,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
   end
 
   def handle_event("toggle_selected", %{"field-id" => field_id, "index" => index, "name" => name, "id" => id}, socket) do
-    IO.inspect(field_id, label: "new_id")
-    # Maybe send here if we can send the field along
-    send(self(),  {:assign_editable_dictionary_field, field_id, index, name, id})
+    send(self(), {:assign_editable_dictionary_field, field_id, index, name, id})
     {:noreply, assign(socket, selected_field_id: field_id)}
   end
 

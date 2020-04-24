@@ -17,11 +17,12 @@ defmodule Andi.InputSchemas.Datasets do
   end
 
   def get_all() do
-    query = from(dataset in Dataset,
-      join: technical in assoc(dataset, :technical),
-      join: business in assoc(dataset, :business),
-      preload: [business: business, technical: technical]
-    )
+    query =
+      from(dataset in Dataset,
+        join: technical in assoc(dataset, :technical),
+        join: business in assoc(dataset, :business),
+        preload: [business: business, technical: technical]
+      )
 
     Repo.all(query)
   end

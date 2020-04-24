@@ -3,16 +3,15 @@ defmodule AndiWeb.EditLiveView do
 
   alias Phoenix.HTML.Link
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.InputConverter
-  alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.DisplayNames
   alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.FormTools
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.EditLiveView.DataDictionaryTree
   alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
+  alias Ecto.Changeset
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -20,8 +19,6 @@ defmodule AndiWeb.EditLiveView do
 
   def render(assigns) do
     dataset_id = assigns.dataset.id
-
-    IO.inspect(assigns.selected_field_id, label: "got")
 
     ~L"""
       <div class="edit-page">
@@ -337,10 +334,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
-    # Maybe create field here from ecto
-    field_as_changes = Andi.Repo.get(DataDictionary, field_id)
-    |> StructTools.to_map()
-    new_form = DataDictionary.changeset(%DataDictionary{}, field_as_changes) |> form_for(nil)
+    new_form = find_field_changeset(socket.assigns.changeset, field_id) |> form_for(nil)
     field = %{new_form | index: index, name: name, id: id}
 
     {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
@@ -371,6 +365,26 @@ defmodule AndiWeb.EditLiveView do
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
+  end
+
+  defp find_field_changeset(changeset, field_id) do
+    changeset
+    |> Changeset.fetch_change!(:technical)
+    |> Changeset.fetch_change!(:schema)
+    |> find_field_changeset_in_schema(field_id)
+  end
+
+  defp find_field_changeset_in_schema(schema, field_id) do
+    Enum.reduce_while(schema, nil, fn field, _ ->
+      if Changeset.get_field(field, :id) == field_id do
+        {:halt, field}
+      else
+        case find_field_changeset_in_schema(Changeset.get_change(field, :subSchema, []), field_id) do
+          nil -> {:cont, nil}
+          value -> {:halt, value}
+        end
+      end
+    end)
   end
 
   defp complete_validation(changeset, socket) do
