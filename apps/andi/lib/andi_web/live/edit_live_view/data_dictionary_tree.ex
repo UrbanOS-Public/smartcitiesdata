@@ -20,8 +20,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
           <% {icon_modifier, selected_modifier} = get_action(field, assigns) %>
 
           <div class="data-dictionary-tree-field data-dictionary-tree__field data-dictionary-tree__field--<%= icon_modifier %> data-dictionary-tree__field--<%= selected_modifier %>">
-            <div class="data-dictionary-tree-field__action" phx-click="<%= if is_set?(field, :subSchema), do: "toggle_expanded", else: "toggle_selected" %>" phx-value-field-id="<%= input_value(field, :id) %>" phx-target="#<%= @root_id %>"></div>
-            <div class="data-dictionary-tree-field__text" phx-click="toggle_selected" phx-value-field-id="<%= input_value(field, :id) %>" phx-target="#<%= @root_id %>">
+          <div class="data-dictionary-tree-field__action" phx-click="<%= if is_set?(field, :subSchema), do: "toggle_expanded", else: "toggle_selected" %>" phx-value-field-id="<%= input_value(field, :id) %>" phx-value-index="<%= field.index %>" phx-value-name="<%= field.name %>" phx-value-id="<%= field.id %>" phx-target="#<%= @root_id %>"></div>
+          <div class="data-dictionary-tree-field__text" phx-click="toggle_selected" phx-value-field-id="<%= input_value(field, :id) %>" phx-value-index="<%= field.index %>" phx-value-name="<%= field.name %>" phx-value-id="<%= field.id %>" phx-target="#<%= @root_id %>">
               <div class="data-dictionary-tree-field__name data-dictionary-tree-field-attribute"><%= input_value(field, :name) %></div>
               <div class="data-dictionary-tree-field__type data-dictionary-tree-field-attribute"><%= input_value(field, :type) %></div>
             </div>
@@ -42,9 +42,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
     {:noreply, assign(socket, expansion_map: updated_expansion_map)}
   end
 
-  def handle_event("toggle_selected", %{"field-id" => field_id}, socket) do
+  def handle_event("toggle_selected", %{"field-id" => field_id, "index" => index, "name" => name, "id" => id}, socket) do
     IO.inspect(field_id, label: "new_id")
-    send(self(),  {:assign_editable_dictionary_field, field_id})
+    # Maybe send here if we can send the field along
+    send(self(),  {:assign_editable_dictionary_field, field_id, index, name, id})
     {:noreply, assign(socket, selected_field_id: field_id)}
   end
 

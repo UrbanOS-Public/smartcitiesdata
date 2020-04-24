@@ -336,9 +336,13 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: changeset, add_data_dictionary_field_visible: true)}
   end
 
-  def handle_info({:assign_editable_dictionary_field, field_id}, socket) do
-    field_as_changes = Andi.Repo.get(DataDictionary, field_id) |> StructTools.to_map()
-    field = DataDictionary.changeset(%DataDictionary{}, field_as_changes) |> form_for(:update)
+  def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
+    # Maybe create field here from ecto
+    field_as_changes = Andi.Repo.get(DataDictionary, field_id)
+    |> StructTools.to_map()
+    new_form = DataDictionary.changeset(%DataDictionary{}, field_as_changes) |> form_for(nil)
+    field = %{new_form | index: index, name: name, id: id}
+
     {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
   end
 
