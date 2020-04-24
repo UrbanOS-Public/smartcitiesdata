@@ -28,13 +28,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
   test "item type selector is enabled when field type is a list", %{conn: conn} do
     field_id = UUID.uuid4()
-    dataset = DatasetHelpers.create_dataset(%{technical: %{schema: [%{id: field_id, name: "one", type: "string"}]}})
+    dataset = DatasetHelpers.create_dataset(%{technical: %{schema: [%{id: field_id, name: "one", type: "list"}]}})
 
     DatasetHelpers.add_dataset_to_repo(dataset)
 
     {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-    assert get_attributes(html, ".data-dictionary-field-editor__item-type", "disabled") != []
+    assert get_attributes(html, ".data-dictionary-field-editor__item-type", "disabled") == []
 
     dataset_map =
       FormTools.form_data_from_andi_dataset(dataset)

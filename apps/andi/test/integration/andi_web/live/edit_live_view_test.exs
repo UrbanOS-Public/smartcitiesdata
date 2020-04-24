@@ -468,8 +468,6 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert [] == get_select(html, ".data-dictionary-add-field-editor__type select")
 
-      assert [] == get_select(html, ".data-dictionary-add-field-editor__parent-id select")
-
       assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
     end
   end
