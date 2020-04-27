@@ -50,13 +50,17 @@ defmodule DiscoveryApi.Data.HostedFileTest do
 
     Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
-    eventually(fn ->
-      assert download_and_checksum(
-        organization.orgName,
-        dataset.technical.dataName,
-        "application/geo+json"
-      ) == @expected_checksum
-    end, 2000, 10)
+    eventually(
+      fn ->
+        assert download_and_checksum(
+                 organization.orgName,
+                 dataset.technical.dataName,
+                 "application/geo+json"
+               ) == @expected_checksum
+      end,
+      2000,
+      10
+    )
   end
 
   @moduletag capture_log: true
@@ -75,13 +79,17 @@ defmodule DiscoveryApi.Data.HostedFileTest do
 
     Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
-    eventually(fn ->
-      assert download_and_checksum(
-        organization.orgName,
-        dataset.technical.dataName,
-        "application/zip"
-      ) == @expected_checksum
-    end, 2000, 10)
+    eventually(
+      fn ->
+        assert download_and_checksum(
+                 organization.orgName,
+                 dataset.technical.dataName,
+                 "application/zip"
+               ) == @expected_checksum
+      end,
+      2000,
+      10
+    )
   end
 
   @moduletag capture_log: true
@@ -100,13 +108,17 @@ defmodule DiscoveryApi.Data.HostedFileTest do
 
     Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
-    eventually(fn ->
-      assert download_and_checksum_with_format(
-        organization.orgName,
-        dataset.technical.dataName,
-        "shp"
-      ) == @expected_checksum
-    end, 2000, 10)
+    eventually(
+      fn ->
+        assert download_and_checksum_with_format(
+                 organization.orgName,
+                 dataset.technical.dataName,
+                 "shp"
+               ) == @expected_checksum
+      end,
+      2000,
+      10
+    )
   end
 
   @moduletag capture_log: true
@@ -125,14 +137,18 @@ defmodule DiscoveryApi.Data.HostedFileTest do
 
     Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
-    eventually(fn ->
-      %{status_code: status_code, body: _body} =
-        "http://localhost:4000/api/v1/organization/#{organization.orgName}/dataset/#{dataset.technical.dataName}/download"
-        |> HTTPoison.get!([{"Accept", "audio/ATRAC3"}])
-        |> Map.from_struct()
+    eventually(
+      fn ->
+        %{status_code: status_code, body: _body} =
+          "http://localhost:4000/api/v1/organization/#{organization.orgName}/dataset/#{dataset.technical.dataName}/download"
+          |> HTTPoison.get!([{"Accept", "audio/ATRAC3"}])
+          |> Map.from_struct()
 
-      assert status_code == 406
-    end, 2000, 10)
+        assert status_code == 406
+      end,
+      2000,
+      10
+    )
   end
 
   defp download_and_checksum(org_name, dataset_name, accept_header) do

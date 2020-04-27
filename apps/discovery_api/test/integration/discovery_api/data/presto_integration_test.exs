@@ -28,9 +28,13 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
 
     Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
-    eventually(fn ->
-      assert get_dataset_preview(dataset.id) == []
-    end, 2000, 20)
+    eventually(
+      fn ->
+        assert get_dataset_preview(dataset.id) == []
+      end,
+      2000,
+      20
+    )
   end
 
   @moduletag capture_log: true
@@ -54,9 +58,13 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
 
     expected = [%{"id" => 1, "name" => "bob"}, %{"id" => 2, "name" => "mike"}]
 
-    eventually(fn ->
-      assert get_dataset_preview(dataset.id) == expected
-    end, 2000, 10)
+    eventually(
+      fn ->
+        assert get_dataset_preview(dataset.id) == expected
+      end,
+      2000,
+      10
+    )
   end
 
   defp get_dataset_preview(dataset_id) do
