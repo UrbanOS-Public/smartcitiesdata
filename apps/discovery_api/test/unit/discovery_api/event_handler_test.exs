@@ -14,6 +14,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApi.Data.{Model, SystemNameCache, TableInfoCache}
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApi.Search.Storage
+  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
 
@@ -63,6 +64,7 @@ defmodule DiscoveryApi.EventHandlerTest do
       allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
       allow(RecommendationEngine.save(any()), return: :seriously_whatever)
       allow(DataJsonService.delete_data_json(), return: :ok)
+      allow(DatasetSearchIndex.update(any()), return: {:ok, :all_right_all_right})
       allow(TableInfoCache.invalidate(), return: :ok)
 
       dataset = TDG.create_dataset(%{})

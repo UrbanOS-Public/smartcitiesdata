@@ -42,4 +42,8 @@ config :mime, :types, %{
 config :discovery_api,
   user_visualization_limit: 1_000
 
+config :elastix,
+  json_codec: Jason,
+  json_options: [keys: :atoms]
+
 import_config "#{Mix.env()}.exs"
