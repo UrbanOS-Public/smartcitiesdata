@@ -8,11 +8,6 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
   alias DiscoveryApi.Data.Model
 
-  # setup_all do
-  #   Application.ensure_all_started(:discovery_api)
-  #   :ok
-  # end
-
   describe "create_index/0" do
     test "it creates the datasets index", %{es_indices: %{datasets: index}} do
       assert {:ok, _} = DatasetSearchIndex.delete_index()
