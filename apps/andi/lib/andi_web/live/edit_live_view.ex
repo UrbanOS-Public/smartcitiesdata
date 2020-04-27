@@ -349,7 +349,13 @@ defmodule AndiWeb.EditLiveView do
     dataset = Datasets.get(socket.assigns.dataset.id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
-    {:noreply, assign(socket, changeset: changeset, selected_field_id: field_id, add_data_dictionary_field_visible: false, new_field_initial_render: true)}
+    {:noreply,
+     assign(socket,
+       changeset: changeset,
+       selected_field_id: field_id,
+       add_data_dictionary_field_visible: false,
+       new_field_initial_render: true
+     )}
   end
 
   # This handle_info takes care of all exceptions in a generic way.
@@ -393,7 +399,11 @@ defmodule AndiWeb.EditLiveView do
 
     new_changeset = Map.put(changeset, :action, :update)
 
-    {:noreply, assign(socket, changeset: new_changeset)}
+    current_form = socket.assigns.current_data_dictionary_item
+    new_form_template = find_field_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
+    updated_current_field = %{current_form | source: new_form_template.source, params: new_form_template.params}
+
+    {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)}
   end
 
   defp key_values_to_keyword_list(form_data, field) do
