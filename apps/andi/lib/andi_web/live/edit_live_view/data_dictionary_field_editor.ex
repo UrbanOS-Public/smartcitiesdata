@@ -8,7 +8,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
   alias Andi.InputSchemas.Options
 
   def mount(socket) do
-    {:ok, assign(socket, expansion_map: %{}, selected_field_id: :unassigned)}
+    {:ok, assign(socket, expansion_map: %{})}
   end
 
   def render(assigns) do

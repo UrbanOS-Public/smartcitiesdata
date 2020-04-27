@@ -132,7 +132,7 @@ defmodule AndiWeb.EditLiveView do
             </div>
 
             <div class="data-dictionary-form__tree-content data-dictionary-form-tree-content">
-              <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: technical, field: :schema, selected_field_id: @selected_field_id ) %>
+              <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: technical, field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
             </div>
 
             <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
@@ -209,6 +209,7 @@ defmodule AndiWeb.EditLiveView do
        page_error: false,
        test_results: nil,
        testing: false,
+       new_field_initial_render: false,
        add_data_dictionary_field_visible: false
      )
      |> assign(get_default_dictionary_field(new_changeset))}
@@ -344,11 +345,11 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, add_data_dictionary_field_visible: false)}
   end
 
-  def handle_info({:add_data_dictionary_field_succeeded, id}, socket) do
+  def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do
     dataset = Datasets.get(socket.assigns.dataset.id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
-    {:noreply, assign(socket, changeset: changeset, selected_field_id: id, add_data_dictionary_field_visible: false)}
+    {:noreply, assign(socket, changeset: changeset, selected_field_id: field_id, add_data_dictionary_field_visible: false, new_field_initial_render: true)}
   end
 
   # This handle_info takes care of all exceptions in a generic way.

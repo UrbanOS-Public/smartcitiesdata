@@ -16,6 +16,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
     <%= if is_set?(@form, @field) do %>
       <div id="<%= @id %>" class="data-dictionary-tree">
         <%= for field <- inputs_for(@form, @field) do %>
+        <% if input_value(field, :id) == @selected_field_id and @new_field_initial_render, do: assign_current_dictionary_field(input_value(field, :id), field.index, field.name, field.id) %>
           <%= hidden_inputs(field, @selected_field_id) %>
           <% {icon_modifier, selected_modifier} = get_action(field, assigns) %>
 
@@ -28,7 +29,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
           </div>
 
           <div class="data-dictionary-tree__sub-dictionary data-dictionary-tree__sub-dictionary--<%= icon_modifier %>">
-            <%= live_component(@socket, DataDictionaryTree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, selected_field_id: @selected_field_id, form: field, field: :subSchema, expansion_map: @expansion_map) %>
+            <%= live_component(@socket, DataDictionaryTree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, selected_field_id: @selected_field_id, form: field, field: :subSchema, expansion_map: @expansion_map, new_field_initial_render: @new_field_initial_render) %>
           </div>
         <% end %>
       </div>
@@ -43,8 +44,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
   end
 
   def handle_event("toggle_selected", %{"field-id" => field_id, "index" => index, "name" => name, "id" => id}, socket) do
+    assign_current_dictionary_field(field_id, index, name, id)
+    {:noreply, assign(socket, selected_field_id: field_id, new_field_initial_render: false)}
+  end
+
+  defp assign_current_dictionary_field(field_id, index, name, id) do
     send(self(), {:assign_editable_dictionary_field, field_id, index, name, id})
-    {:noreply, assign(socket, selected_field_id: field_id)}
   end
 
   defp toggle_expansion(field_id, expansion_map) do
