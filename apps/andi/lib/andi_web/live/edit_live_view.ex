@@ -3,6 +3,7 @@ defmodule AndiWeb.EditLiveView do
 
   alias Phoenix.HTML.Link
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.DisplayNames
@@ -377,12 +378,12 @@ defmodule AndiWeb.EditLiveView do
   defp find_field_changeset(changeset, field_id) do
     changeset
     |> Changeset.fetch_change!(:technical)
-    |> Changeset.fetch_change!(:schema)
+    |> Changeset.get_change(:schema, [])
     |> find_field_changeset_in_schema(field_id)
   end
 
   defp find_field_changeset_in_schema(schema, field_id) do
-    Enum.reduce_while(schema, nil, fn field, _ ->
+    Enum.reduce_while(schema, DataDictionary.changeset(%DataDictionary{}, %{}), fn field, _ ->
       if Changeset.get_field(field, :id) == field_id do
         {:halt, field}
       else
@@ -400,8 +401,16 @@ defmodule AndiWeb.EditLiveView do
     new_changeset = Map.put(changeset, :action, :update)
 
     current_form = socket.assigns.current_data_dictionary_item
-    new_form_template = find_field_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
-    updated_current_field = %{current_form | source: new_form_template.source, params: new_form_template.params}
+
+    updated_current_field =
+      case current_form do
+        :no_dictionary ->
+          :no_dictionary
+
+        _ ->
+          new_form_template = find_field_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
+          %{current_form | source: new_form_template.source, params: new_form_template.params}
+      end
 
     {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)}
   end

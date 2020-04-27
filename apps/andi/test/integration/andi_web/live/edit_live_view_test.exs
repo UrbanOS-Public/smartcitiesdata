@@ -26,7 +26,6 @@ defmodule AndiWeb.EditLiveViewTest do
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.FormTools
-  alias Andi.InputSchemas.InputConverter
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
