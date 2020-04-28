@@ -45,7 +45,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
               <div class="data-dictionary-add-field-editor__parent-id form-block">
                 <div class="form-input">
                   <%= label(form, :parent_id, "Child Of", class: "label") %>
-                  <%= select(form, :parent_id, @eligible_parents,  id: id <> "_child-of", class: "select blah") %>
+                  <%= select(form, :parent_id, @eligible_parents, selected: @selected_field_id, id: id <> "_child-of", class: "select blah") %>
                 </div>
               </div>
             </div>

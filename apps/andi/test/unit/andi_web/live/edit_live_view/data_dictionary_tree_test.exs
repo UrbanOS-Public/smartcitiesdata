@@ -124,7 +124,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
     test "clicking a selectable and expandable field once selects it but leaves it expanded", %{view: view, checkable_one: checkable_one} do
       one_id = checkable_one.id
 
-      html = render_click([view, checkable_one.target], "toggle_selected", %{"field-id" => checkable_one.id})
+      html =
+        render_click([view, checkable_one.target], "toggle_selected", %{
+          "field-id" => checkable_one.id,
+          "index" => nil,
+          "name" => nil,
+          "id" => nil
+        })
 
       assert [^one_id] = get_action_field_ids(html, "selected")
       assert [^one_id | _] = get_action_field_ids(html, "expanded")
@@ -133,7 +139,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
     test "clicking a selectable and checkable field once selects and checks it", %{view: view, checkable_two: checkable_two} do
       two_id = checkable_two.id
 
-      html = render_click([view, checkable_two.target], "toggle_selected", %{"field-id" => checkable_two.id})
+      html =
+        render_click([view, checkable_two.target], "toggle_selected", %{
+          "field-id" => checkable_two.id,
+          "index" => nil,
+          "name" => nil,
+          "id" => nil
+        })
 
       assert [^two_id] = get_action_field_ids(html, "selected")
       assert [^two_id | _] = get_action_field_ids(html, "checked")
@@ -142,8 +154,21 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
     test "clicking a checkable field twice does not unselect it", %{view: view, checkable_one: checkable_one} do
       one_id = checkable_one.id
 
-      _html = render_click([view, checkable_one.target], "toggle_selected", %{"field-id" => checkable_one.id})
-      html = render_click([view, checkable_one.target], "toggle_selected", %{"field-id" => checkable_one.id})
+      _html =
+        render_click([view, checkable_one.target], "toggle_selected", %{
+          "field-id" => checkable_one.id,
+          "index" => nil,
+          "name" => nil,
+          "id" => nil
+        })
+
+      html =
+        render_click([view, checkable_one.target], "toggle_selected", %{
+          "field-id" => checkable_one.id,
+          "index" => nil,
+          "name" => nil,
+          "id" => nil
+        })
 
       assert [^one_id] = get_action_field_ids(html, "selected")
     end
@@ -160,23 +185,40 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       assert one_id in get_action_field_ids(html, "selected")
       assert two_id in get_action_field_ids(html, "unselected")
 
-      html = render_click([view, checkable_two.target], "toggle_selected", %{"field-id" => checkable_two.id})
+      html =
+        render_click([view, checkable_two.target], "toggle_selected", %{
+          "field-id" => checkable_two.id,
+          "index" => nil,
+          "name" => nil,
+          "id" => nil
+        })
 
       assert one_id in get_action_field_ids(html, "unselected")
       assert two_id in get_action_field_ids(html, "selected")
 
-      html = render_click([view, checkable_one.target], "toggle_selected", %{"field-id" => checkable_one.id})
+      html =
+        render_click([view, checkable_one.target], "toggle_selected", %{
+          "field-id" => checkable_one.id,
+          "index" => nil,
+          "name" => nil,
+          "id" => nil
+        })
 
       assert one_id in get_action_field_ids(html, "selected")
       assert two_id in get_action_field_ids(html, "unselected")
     end
 
     test "clicking a checkable field fills the field editor with its corresponding values", %{view: view, checkable_one: checkable_one} do
-      # one_id = checkable_one.id
       one_name = checkable_one.name
       one_type = checkable_one.type
 
-      _html = render_click([view, checkable_one.target], "toggle_selected", %{"field-id" => checkable_one.id})
+      _html =
+        render_click([view, checkable_one.target], "toggle_selected", %{
+          "field-id" => checkable_one.id,
+          "index" => nil,
+          "name" => nil,
+          "id" => nil
+        })
 
       eventually(fn ->
         html = render(view)
