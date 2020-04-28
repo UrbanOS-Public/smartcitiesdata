@@ -177,7 +177,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     Enum.map(datasets, fn dataset ->
       [
         %{index: %{_id: dataset.id, _index: dataset_index_name()}},
-        dataset
+        dataset_to_map(dataset)
       ]
     end)
     |> List.flatten()
@@ -207,6 +207,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   defp dataset_to_map(dataset) do
     dataset
     |> Map.from_struct()
+    |> Map.drop([:completeness])
     |> Enum.reject(fn {_k, v} -> is_nil(v) end)
     |> Map.new()
   end

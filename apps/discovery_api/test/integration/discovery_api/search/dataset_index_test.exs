@@ -525,6 +525,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset
       |> Map.from_struct()
       |> AtomicMap.convert(safe: false, underscore: false)
+      |> Map.delete(:completeness)
 
     struct(Model, map)
   end
