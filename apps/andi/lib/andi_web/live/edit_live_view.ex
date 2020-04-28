@@ -380,10 +380,11 @@ defmodule AndiWeb.EditLiveView do
     |> Changeset.fetch_change!(:technical)
     |> Changeset.get_change(:schema, [])
     |> find_field_changeset_in_schema(field_id)
+    |> handle_field_not_found()
   end
 
   defp find_field_changeset_in_schema(schema, field_id) do
-    Enum.reduce_while(schema, DataDictionary.changeset(%DataDictionary{}, %{}), fn field, _ ->
+    Enum.reduce_while(schema, nil, fn field, _ ->
       if Changeset.get_field(field, :id) == field_id do
         {:halt, field}
       else
@@ -394,6 +395,9 @@ defmodule AndiWeb.EditLiveView do
       end
     end)
   end
+
+  defp handle_field_not_found(nil), do: DataDictionary.changeset(%DataDictionary{}, %{})
+  defp handle_field_not_found(found_field), do: found_field
 
   defp complete_validation(changeset, socket) do
     socket = reset_save_success(socket)
