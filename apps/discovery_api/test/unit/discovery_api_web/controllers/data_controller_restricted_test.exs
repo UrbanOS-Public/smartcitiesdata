@@ -13,7 +13,6 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
   @org_id "org1_id"
   @org_name "org1"
   @data_name "data1"
-  @subject_id "bigbadbob"
 
   setup do
     model =

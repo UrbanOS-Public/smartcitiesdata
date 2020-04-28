@@ -3,6 +3,7 @@ defmodule DiscoveryApi.EventHandler do
 
   use Brook.Event.Handler
   alias DiscoveryApi.Data.TableInfoCache
+  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
 
   import SmartCity.Event,
     only: [organization_update: 0, user_organization_associate: 0, dataset_update: 0, data_write_complete: 0, dataset_delete: 0]
@@ -57,6 +58,7 @@ defmodule DiscoveryApi.EventHandler do
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
          {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
          model <- Mapper.to_data_model(dataset, organization) do
+      DatasetSearchIndex.update(model)
       DiscoveryApi.Search.Storage.index(model)
       save_dataset_to_recommendation_engine(dataset)
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)

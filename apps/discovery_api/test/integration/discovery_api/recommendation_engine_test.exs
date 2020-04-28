@@ -4,7 +4,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
   alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Test.Helper
 
-  use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres"]
+  use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres", :elasticsearch]
   use DiscoveryApi.DataCase
 
   import SmartCity.Event, only: [dataset_update: 0]

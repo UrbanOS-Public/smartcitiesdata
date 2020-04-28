@@ -34,6 +34,35 @@ config :ex_aws, :s3,
   },
   port: 9000
 
+config :discovery_api, :elasticsearch,
+  url: "http://#{host}:9200",
+  indices: %{
+    datasets: %{
+      name: "datasets",
+      options: %{
+        settings: %{
+          number_of_shards: 1
+        },
+        mappings: %{
+          properties: %{
+            title: %{
+              type: "keyword",
+              index: true
+            },
+            organizationDetails: %{
+              properties: %{
+                id: %{
+                  type: "keyword",
+                  index: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
 config :discovery_api, ecto_repos: [DiscoveryApi.Repo]
 
 config :discovery_api, DiscoveryApi.Repo,
