@@ -11,6 +11,9 @@
   "license": "ISC",
   "devDependencies": {
     "es-check": "^5.1.0",
-    "jest": "^25.1.0"
-  }
+    "jest": "^25.1.0",
+    "acorn": "^7.1.1",
+    "minimist": "^1.2.5"
+  },
+  "dependencies": {}
 }

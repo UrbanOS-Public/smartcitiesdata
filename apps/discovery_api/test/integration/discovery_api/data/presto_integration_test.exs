@@ -1,11 +1,12 @@
 defmodule DiscoveryApi.Data.PrestoIngrationTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :presto, :metastore, :postgres, :minio, :zookeeper, :kafka, :"ecto-postgres"]
+  use Divo, services: [:redis, :presto, :metastore, :postgres, :minio, :zookeeper, :kafka, :"ecto-postgres", :elasticsearch]
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
 
   import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.TestHelper, only: [eventually: 3]
 
   setup do
     Helper.wait_for_brook_to_be_ready()
@@ -15,30 +16,33 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
 
   @moduletag capture_log: true
   test "returns empty list when dataset has no data saved" do
-    dataset_id = "123"
-    system_name = "not_saved"
+    organization = Helper.create_persisted_organization()
+
+    dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+    system_name = dataset.technical.systemName
 
     DiscoveryApi.prestige_opts()
     |> Keyword.merge(receive_timeout: 10_000)
     |> Prestige.new_session()
     |> Prestige.query!("create table if not exists #{system_name} (id integer, name varchar)")
 
-    organization = Helper.create_persisted_organization()
-
-    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
     Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
-    Patiently.wait_for!(
-      fn -> get_dataset_preview(dataset_id) == [] end,
-      dwell: 2000,
-      max_tries: 20
+    eventually(
+      fn ->
+        assert get_dataset_preview(dataset.id) == []
+      end,
+      2000,
+      20
     )
   end
 
   @moduletag capture_log: true
   test "returns results for datasets stored in presto" do
-    dataset_id = "1234-4567-89101"
-    system_name = "foobar__company_data"
+    organization = Helper.create_persisted_organization()
+
+    dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+    system_name = dataset.technical.systemName
 
     DiscoveryApi.prestige_opts()
     |> Keyword.merge(receive_timeout: 10_000)
@@ -50,17 +54,16 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     |> Prestige.new_session()
     |> Prestige.query!(~s|insert into "#{system_name}" values (1, 'bob'), (2, 'mike')|)
 
-    organization = Helper.create_persisted_organization()
-
-    dataset = TDG.create_dataset(%{id: dataset_id, technical: %{systemName: system_name, orgId: organization.id}})
     Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
     expected = [%{"id" => 1, "name" => "bob"}, %{"id" => 2, "name" => "mike"}]
 
-    Patiently.wait_for!(
-      fn -> get_dataset_preview(dataset_id) == expected end,
-      dwell: 2000,
-      max_tries: 10
+    eventually(
+      fn ->
+        assert get_dataset_preview(dataset.id) == expected
+      end,
+      2000,
+      10
     )
   end
 

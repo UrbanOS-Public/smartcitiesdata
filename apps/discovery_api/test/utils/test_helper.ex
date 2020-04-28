@@ -159,7 +159,7 @@ defmodule DiscoveryApi.Test.Helper do
         DiscoveryApi.Schemas.Organizations.get_organization!(organization.id) != nil
       end,
       dwell: 500,
-      mat_tries: 20
+      max_tries: 100
     )
     |> case do
       :ok -> :ok

@@ -78,3 +78,15 @@ services:
       interval: 10s
       timeout: 20s
       retries: 3
+  elasticsearch:
+    image: elasticsearch:7.4.2
+    ports:
+    - "9200:9200"
+    - "9300:9300"
+    environment:
+    - "discovery.type=single-node"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail 'http://localhost:9200/_cluster/health?wait_for_status=green&timeout=5s'"]
+      interval: 10s
+      timeout: 10s
+      retries: 10

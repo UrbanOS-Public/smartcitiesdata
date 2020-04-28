@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
-      version: "0.39.3",
+      version: "0.40.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -28,6 +28,7 @@ defmodule DiscoveryApi.Mixfile do
 
   defp deps do
     [
+      {:atomic_map, "~> 0.9"},
       {:assertions, "~> 0.14.1", only: [:test, :integration], runtime: false},
       {:ex_aws, "~> 2.1"},
       # This commit allows us to stream files off of S3 through memory. Release pending.
@@ -50,6 +51,7 @@ defmodule DiscoveryApi.Mixfile do
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:ex_json_schema, "~> 0.7", only: [:test, :integration]},
       {:ecto_sql, "~> 3.0"},
+      {:elastix, "~> 0.8.0"},
       {:guardian, "~> 2.0"},
       {:gettext, "~> 0.17"},
       {:httpoison, "~> 1.5"},
@@ -78,8 +80,9 @@ defmodule DiscoveryApi.Mixfile do
       {:sobelow, "~> 0.8", only: :dev},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:distillery, "~> 2.1"},
-      {:poison, "3.1.0"},
+      {:poison, "3.1.0", override: true},
       # poison breaks @ 4.0.1 due to encode_to_iotdata missing from 4.0
+      # additionally, nearly no library that includes it as a dep is actually configured to use it
       {:tasks, in_umbrella: true, only: :dev}
     ]
   end

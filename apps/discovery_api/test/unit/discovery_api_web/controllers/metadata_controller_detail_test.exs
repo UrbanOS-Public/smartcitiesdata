@@ -8,7 +8,6 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
 
   @dataset_id "123"
   @org_id "456"
-  @subject_id "bigbadbob"
 
   describe "fetch dataset detail" do
     test "retrieves dataset + organization from retriever when organization found", %{conn: conn} do

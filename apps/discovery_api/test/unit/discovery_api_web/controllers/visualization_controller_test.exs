@@ -5,7 +5,6 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
   alias DiscoveryApi.Auth.GuardianConfigurator
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users
-  alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Schemas.Visualizations
   alias DiscoveryApi.Schemas.Visualizations.Visualization
   alias DiscoveryApi.Auth.Auth0.CachedJWKS
