@@ -101,8 +101,7 @@ defmodule EstuaryWeb.StreamingEventLiveViewTest do
       |> MessageHandler.handle_messages()
 
       {:ok, view, _html} = live(conn, @url_path) |> IO.inspect(label: "yyyy")
-      html = render(view)
-      # html = render_change(view, :search, %{"search-value" => @event_1["author"]})
+      html = render_change(view, :search, %{"search-value" => @event_1["author"]})
 
       assert get_text(html, ".events-index__table") =~ @event_1["author"]
       refute get_text(html, ".events-index__table") =~ @event_2["author"]
