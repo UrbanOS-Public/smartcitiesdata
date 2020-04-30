@@ -1,11 +1,12 @@
 defmodule EstuaryWeb.LiveViewHelper do
-
   def filter_on_search_change(search_value, socket) do
     case search_value == socket.assigns.search_text do
       false ->
         List.wrap(socket.assigns.events)
         |> refresh_events(search_value)
-      _ -> socket.assigns.events
+
+      _ ->
+        socket.assigns.events
     end
   end
 

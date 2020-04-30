@@ -64,10 +64,9 @@ defmodule EstuaryWeb.StreamingEventLiveViewTest do
       assert expected_events == actual_events
     end
 
-    test "shows Waiting For The Events when there are no rows to show", %{conn: conn} do
+    test "should show Waiting For The Events when there are no rows to show", %{conn: conn} do
+      assert {:ok, _view, html} = live(conn, @url_path)
       MessageHandler.handle_messages([])
-
-      assert {:ok, view, html} = live(conn, @url_path)
 
       assert get_text(html, ".events-index__title") =~ "All Streaming Events"
       assert get_text(html, ".events-index__table") =~ "Waiting For The Events"
@@ -75,21 +74,9 @@ defmodule EstuaryWeb.StreamingEventLiveViewTest do
   end
 
   describe "When form change executes search" do
-    # setup do
-    #   [
-    #     %{
-    #       value: Jason.encode!(@event_1)
-    #     },
-    #     %{
-    #       value: Jason.encode!(@event_2)
-    #     }
-    #   ]
-    #   |> MessageHandler.handle_messages()
+    setup %{conn: conn} do
+      {:ok, view, _html} = live(conn, @url_path)
 
-    # #   {:ok, view, _html} = live(conn, @url_path) |> IO.inspect(label: "Pelloooo")
-    # end
-
-    test "search filters events on author", %{conn: conn} do
       [
         %{
           value: Jason.encode!(@event_1)
@@ -100,54 +87,47 @@ defmodule EstuaryWeb.StreamingEventLiveViewTest do
       ]
       |> MessageHandler.handle_messages()
 
-      {:ok, view, _html} = live(conn, @url_path) |> IO.inspect(label: "yyyy")
+      %{view: view}
+    end
+
+    test "should search and filters events on author", %{view: view} do
       html = render_change(view, :search, %{"search-value" => @event_1["author"]})
 
       assert get_text(html, ".events-index__table") =~ @event_1["author"]
       refute get_text(html, ".events-index__table") =~ @event_2["author"]
     end
 
-    test "search filters events on create timestamp", view do
+    test "should search and filters events on create timestamp", %{view: view} do
       html = render_change(view, :search, %{"search-value" => @event_1["create_ts"]})
 
-      assert get_text(html, ".events-index__table") =~ @event_1["create_ts"]
-      refute get_text(html, ".events-index__table") =~ @event_2["create_ts"]
+      assert get_text(html, ".events-index__table") =~
+               @event_1["create_ts"] |> Integer.to_string()
+
+      refute get_text(html, ".events-index__table") =~
+               @event_2["create_ts"] |> Integer.to_string()
     end
 
-    test "search filters events on data", view do
+    test "should search and filters events on data", %{view: view} do
       html = render_change(view, :search, %{"search-value" => @event_1["data"]})
 
       assert get_text(html, ".events-index__table") =~ @event_1["data"]
       refute get_text(html, ".events-index__table") =~ @event_2["data"]
     end
 
-    test "search filters events on type", view do
+    test "should search and filters events on type", %{view: view} do
       html = render_change(view, :search, %{"search-value" => @event_1["type"]})
 
       assert get_text(html, ".events-index__table") =~ @event_1["type"]
-      refute get_text(html, ".events-index__table") =~ @event_2["typr"]
+      refute get_text(html, ".events-index__table") =~ @event_2["type"]
     end
+  end
 
-    test "shows No Events if no results returned", view do
-      html = render_change(view, :search, %{"search-value" => "__NOT_RESULTS_SHOULD RETURN__"})
+  test "shows No Events if no results returned", %{conn: conn} do
+    assert {:ok, view, _html} = live(conn, @url_path)
+    MessageHandler.handle_messages([])
+    html = render_change(view, :search, %{"search-value" => "__NOT_RESULTS_SHOULD RETURN__"})
 
-      assert get_text(html, ".events-index__table") =~ "Waiting For The Events"
-    end
-
-    # test "Search Change event triggers redirect and updates search box value", %{conn: conn} do
-    #   MessageHandler.handle_messages([])
-
-    #   {:ok, view, _html} = live(conn, @url_path)
-
-    #   search_text = "Some search"
-
-    #   assert [search_text] ==
-    #            view
-    #            |> render_change(:search, %{"search-value" => search_text})
-    #            |> get_values("input.events-index__search-input")
-
-    #   assert_redirect(view, @url_path <> "?search=" <> search_text)
-    # end
+    assert get_text(html, ".events-index__table") =~ "Waiting For The Events"
   end
 
   defp find_elements(html, selector) do
