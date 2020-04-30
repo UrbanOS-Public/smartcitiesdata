@@ -138,7 +138,7 @@ defmodule AndiWeb.EditLiveView do
 
             <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
               <div class="data-dictionary-form__add-field-button" phx-click="add_data_dictionary_field"></div>
-              <div class="data-dictionary-form__remove-field-button"></div>
+              <div class="data-dictionary-form__remove-field-button" phx-click="remove_data_dictionary_field"></div>
             </div>
           </div>
 
@@ -192,6 +192,7 @@ defmodule AndiWeb.EditLiveView do
       </form>
 
     <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible, dataset_id: dataset_id,  selected_field_id: @selected_field_id ) %>
+    <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field_id: @selected_field_id, visible: @remove_data_dictionary_field_visible) %>
     </div>
     """
   end
@@ -211,7 +212,8 @@ defmodule AndiWeb.EditLiveView do
        test_results: nil,
        testing: false,
        new_field_initial_render: false,
-       add_data_dictionary_field_visible: false
+       add_data_dictionary_field_visible: false,
+       remove_data_dictionary_field_visible: false
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end
@@ -335,6 +337,10 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: changeset, add_data_dictionary_field_visible: true)}
   end
 
+  def handle_event("remove_data_dictionary_field", _, socket) do
+    {:noreply, assign(socket, remove_data_dictionary_field_visible: true)}
+  end
+
   def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
     new_form = find_field_changeset(socket.assigns.changeset, field_id) |> form_for(nil)
     field = %{new_form | index: index, name: name, id: id}
@@ -344,6 +350,10 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info({:add_data_dictionary_field_cancelled}, socket) do
     {:noreply, assign(socket, add_data_dictionary_field_visible: false)}
+  end
+
+  def handle_info({:remove_data_dictionary_field_cancelled}, socket) do
+    {:noreply, assign(socket, remove_data_dictionary_field_visible: false)}
   end
 
   def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do
@@ -358,6 +368,14 @@ defmodule AndiWeb.EditLiveView do
        new_field_initial_render: true
      )}
   end
+
+  def handle_info({:remove_data_dictionary_field_succeeded}, socket) do
+    dataset = Datasets.get(socket.assigns.dataset.id)
+    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
+
+    {:noreply, assign(socket, changeset: changeset, remove_data_dictionary_field_visible: false)}
+  end
+
 
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.

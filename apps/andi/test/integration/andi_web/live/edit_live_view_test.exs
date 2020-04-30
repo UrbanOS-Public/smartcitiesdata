@@ -1,6 +1,6 @@
 defmodule AndiWeb.EditLiveViewTest do
   use ExUnit.Case
-  use Divo
+  # use Divo
   use Andi.DataCase
   use AndiWeb.ConnCase
   import Checkov
@@ -468,6 +468,58 @@ defmodule AndiWeb.EditLiveViewTest do
       assert [] == get_select(html, ".data-dictionary-add-field-editor__type select")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+    end
+  end
+
+  describe "remove dictionary field modal" do
+    setup do
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [
+              %{
+                name: "one",
+                type: "string",
+                subType: "map",
+                description: "description"
+              },
+              %{
+                name: "two",
+                type: "map",
+                description: "this is a map",
+                subSchema: [
+                  %{
+                    name: "two-one",
+                    type: "integer"
+                  }
+                ]
+              }
+            ]
+          }
+        })
+
+      {:ok, andi_dataset} = Datasets.update(dataset)
+      [dataset: andi_dataset]
+    end
+
+    test "removes non parent field from subschema", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      html = render_click(view, "remove_data_dictionary_field", %{})
+
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+
+      html = render(view)
+
+      selected_field_name = get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      refute selected_field_name in get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
     end
   end
 end

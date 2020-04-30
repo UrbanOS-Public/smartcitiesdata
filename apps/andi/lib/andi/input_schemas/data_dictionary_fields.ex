@@ -10,30 +10,28 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
 
   @top_level_bread_crumb "Top Level"
 
-  def add_field_to_parent(original_field, parent_bread_crumb) do
-    updated_field = adjust_parent_details(original_field, parent_bread_crumb)
-    changeset = DataDictionary.changeset(%DataDictionary{}, updated_field)
+  def add_field_to_parent(new_field, parent_bread_crumb) do
+    new_field_updated = adjust_parent_details(new_field, parent_bread_crumb)
+    changeset = DataDictionary.changeset(%DataDictionary{}, new_field_updated)
 
     case Repo.insert_or_update(changeset) do
       {:error, _changeset} ->
-        {:error, DataDictionary.changeset(%DataDictionary{}, original_field)}
+        {:error, DataDictionary.changeset(%DataDictionary{}, new_field)}
 
       good ->
         good
     end
   end
 
-  defp adjust_parent_details(field, parent_bread_crumb) do
-    case parent_bread_crumb do
-      @top_level_bread_crumb ->
-        {id, field} = Map.pop(field, :parent_id)
+  def remove_field(existing_field_id) do
+    existing_field = Repo.get!(DataDictionary, existing_field_id)
 
-        Map.put(field, :technical_id, id)
-        |> Map.put(:bread_crumb, field.name)
+    case Repo.delete(existing_field) do
+      {:error, _changeset} ->
+        {:error, DataDictionary.changeset(%DataDictionary{}, existing_field)}
 
-      _ ->
-        field
-        |> Map.put(:bread_crumb, parent_bread_crumb <> " > " <> field.name)
+      good ->
+        good
     end
   end
 
@@ -53,4 +51,19 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
 
     top_level_parent ++ data_dictionary_results
   end
+
+  defp adjust_parent_details(field, parent_bread_crumb) do
+    case parent_bread_crumb do
+      @top_level_bread_crumb ->
+        {id, field} = Map.pop(field, :parent_id)
+
+        Map.put(field, :technical_id, id)
+        |> Map.put(:bread_crumb, field.name)
+
+      _ ->
+        field
+        |> Map.put(:bread_crumb, parent_bread_crumb <> " > " <> field.name)
+    end
+  end
+
 end
