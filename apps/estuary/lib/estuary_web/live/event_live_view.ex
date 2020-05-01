@@ -40,7 +40,8 @@ defmodule EstuaryWeb.EventLiveView do
   end
 
   def handle_params(params, _uri, socket) do
-    filtered_events = LiveViewHelper.filter_on_search_change(params["search"], socket)
+    {:ok, events} = EventRetrievalService.get_all()
+    filtered_events = LiveViewHelper.filter_events(events, params["search"])
 
     {:noreply,
      assign(socket,

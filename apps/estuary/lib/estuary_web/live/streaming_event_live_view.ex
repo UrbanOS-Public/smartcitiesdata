@@ -48,13 +48,13 @@ defmodule EstuaryWeb.StreamingEventLiveView do
   def handle_info(%{topic: @updated_event_stream, payload: %{events: events}}, socket) do
     updated_events =
       (List.wrap(events) ++ List.wrap(socket.assigns.events))
-      |> LiveViewHelper.refresh_events(socket.assigns.search_text)
+      |> refresh_events(socket.assigns.search_text)
 
     {:noreply, assign(socket, :events, updated_events)}
   end
 
   def handle_params(params, _uri, socket) do
-    filtered_events = LiveViewHelper.filter_on_search_change(params["search"], socket)
+    filtered_events = refresh_events(socket.assigns.events, params["search"])
 
     {:noreply,
      assign(socket,
@@ -68,5 +68,13 @@ defmodule EstuaryWeb.StreamingEventLiveView do
     search_params = Map.merge(socket.assigns.params, %{"search" => value})
 
     {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
+  end
+
+  defp refresh_events(events, search_value) do
+    events
+    |> Enum.filter(&(!is_nil(&1)))
+    |> LiveViewHelper.filter_events(search_value)
+    |> Enum.take(1000)
+    |> Enum.sort(&(&1["create_ts"] >= &2["create_ts"]))
   end
 end
