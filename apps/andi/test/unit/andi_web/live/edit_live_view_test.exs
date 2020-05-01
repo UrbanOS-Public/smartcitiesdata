@@ -22,7 +22,8 @@ defmodule AndiWeb.EditLiveViewTest do
       get_select: 2,
       get_text: 2,
       get_value: 2,
-      get_values: 2
+      get_values: 2,
+      find_elements: 2
     ]
 
   @url_path "/datasets/"

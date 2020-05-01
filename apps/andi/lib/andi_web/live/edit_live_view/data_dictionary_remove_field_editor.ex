@@ -38,9 +38,14 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
   end
 
   def handle_event("remove_field", _, socket) do
-    case DataDictionaryFields.remove_field(socket.assigns.selected_field_id) do
+    selected_field = socket.assigns.selected_field
+    selected_field_id = selected_field.source.changes.id
+    selected_field_index = selected_field.index
+    selected_field_parent_id = get_parent_of_field(selected_field.source.changes)
+
+    case DataDictionaryFields.remove_field(selected_field_id) do
       {:ok, deleted_field} ->
-        send(self(), {:remove_data_dictionary_field_succeeded})
+        send(self(), {:remove_data_dictionary_field_succeeded, selected_field_parent_id, selected_field_index})
 
       {:error, changeset} ->
         IO.inspect(changeset, label: "failed to delete")
@@ -55,7 +60,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
     {:noreply, assign(socket, visible: false)}
   end
 
-  defp blank_changeset() do
-    DataDictionary.changeset(%DataDictionary{}, %{})
-  end
+  defp get_parent_of_field(%{parent_id: parent_id} = field), do: parent_id
+  defp get_parent_of_field(%{technical_id: technical_id} = field), do: technical_id
+  defp get_parent_of_field(_), do: {:error, "parent not found"}
 end

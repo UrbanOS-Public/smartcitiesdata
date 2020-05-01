@@ -65,5 +65,4 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
         |> Map.put(:bread_crumb, parent_bread_crumb <> " > " <> field.name)
     end
   end
-
 end

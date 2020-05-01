@@ -480,7 +480,6 @@ defmodule AndiWeb.EditLiveViewTest do
               %{
                 name: "one",
                 type: "string",
-                subType: "map",
                 description: "description"
               },
               %{
@@ -504,22 +503,48 @@ defmodule AndiWeb.EditLiveViewTest do
 
     test "removes non parent field from subschema", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
       html = render_click(view, "remove_data_dictionary_field", %{})
-
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
       render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
-
       html = render(view)
-
-      selected_field_name = get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+      selected_field_name = "one"
 
       refute selected_field_name in get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name")
-
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+    end
+
+    test "removing a field selects the next sibling", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      assert "one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+      html = render(view)
+
+      assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+    end
+
+    test "removes parent field along with its children", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+      html = render(view)
+      assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      # html = render_click(view, "remove_data_dictionary_field", %{})
+      # refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      # render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+      # html = render(view)
+      # selected_field_name = "two"
+
+      # refute selected_field_name in get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name")
+      # assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
     end
   end
 end

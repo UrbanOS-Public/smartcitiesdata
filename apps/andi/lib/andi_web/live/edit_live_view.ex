@@ -192,7 +192,8 @@ defmodule AndiWeb.EditLiveView do
       </form>
 
     <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible, dataset_id: dataset_id,  selected_field_id: @selected_field_id ) %>
-    <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field_id: @selected_field_id, visible: @remove_data_dictionary_field_visible) %>
+
+    <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field: @current_data_dictionary_item, visible: @remove_data_dictionary_field_visible) %>
     </div>
     """
   end
@@ -369,13 +370,17 @@ defmodule AndiWeb.EditLiveView do
      )}
   end
 
-  def handle_info({:remove_data_dictionary_field_succeeded}, socket) do
+  def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index}, socket) do
+    new_selected_field_id =
+      socket.assigns.changeset
+      |> get_selected_index_from_deleted_field(deleted_field_parent_id, deleted_field_index)
+      |> Changeset.fetch_change!(:id)
+
     dataset = Datasets.get(socket.assigns.dataset.id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
-    {:noreply, assign(socket, changeset: changeset, remove_data_dictionary_field_visible: false)}
+    {:noreply, assign(socket, changeset: changeset, selected_field_id: new_selected_field_id, remove_data_dictionary_field_visible: false)}
   end
-
 
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
@@ -391,6 +396,32 @@ defmodule AndiWeb.EditLiveView do
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
+  end
+
+  defp get_selected_index_from_deleted_field(changeset, parent_id, deleted_field_index) do
+    technical_changeset = Changeset.fetch_change!(changeset, :technical)
+    technical_id = Changeset.fetch_change!(technical_changeset, :id)
+
+    if parent_id == technical_id do
+      technical_changeset
+      |> Changeset.fetch_change!(:schema)
+      |> get_next_sibling(deleted_field_index)
+    else
+      changeset
+      |> find_field_changeset(parent_id)
+      |> Changeset.get_change(:subSchema, [])
+      |> get_next_sibling(deleted_field_index)
+    end
+  end
+
+  defp get_next_sibling(parent_schema, _) when length(parent_schema) <= 1, do: nil
+
+  defp get_next_sibling(parent_schema, deleted_field_index) when deleted_field_index == 0 do
+    Enum.at(parent_schema, deleted_field_index + 1)
+  end
+
+  defp get_next_sibling(parent_schema, deleted_field_index) do
+    Enum.at(parent_schema, deleted_field_index - 1)
   end
 
   defp find_field_changeset(changeset, field_id) do
