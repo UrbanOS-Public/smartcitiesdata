@@ -14,12 +14,12 @@ defmodule EstuaryWeb.LiveViewHelper do
     end)
   end
 
-  defp search_contains?(str, search_str) when is_integer(str) do
-    Integer.to_string(str)
+  defp search_contains?(event_field, search_str) when is_integer(event_field) do
+    Integer.to_string(event_field)
     |> search_contains?(search_str)
   end
 
-  defp search_contains?(str, search_str) do
-    String.downcase(str) =~ String.downcase(search_str)
+  defp search_contains?(event_field, search_str) do
+    String.downcase(event_field) =~ String.downcase(search_str)
   end
 end
