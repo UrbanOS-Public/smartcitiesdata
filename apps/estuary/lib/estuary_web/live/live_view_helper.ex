@@ -1,4 +1,6 @@
 defmodule EstuaryWeb.LiveViewHelper do
+  @moduledoc false
+
   def filter_events(events, nil), do: events
 
   def filter_events(events, ""), do: events
