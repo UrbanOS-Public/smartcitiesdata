@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.23.1",
+      version: "0.23.3",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -72,7 +72,7 @@ defmodule Andi.MixProject do
   defp aliases do
     [
       verify: ["format --check-formatted", "credo", "sobelow -i Config.HTTPS --skip --compact --exit low"],
-      start: ["phx.server"]
+      start: ["ecto.create --quiet", "ecto.migrate", "phx.server"]
     ]
   end
 end

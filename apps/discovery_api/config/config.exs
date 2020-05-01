@@ -42,4 +42,9 @@ config :mime, :types, %{
 config :discovery_api,
   user_visualization_limit: 1_000
 
+config :elastix,
+  json_codec: Jason,
+  json_options: [keys: :atoms],
+  httpoison_options: [timeout: 120_000, recv_timeout: 120_000]
+
 import_config "#{Mix.env()}.exs"

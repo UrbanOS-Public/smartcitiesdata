@@ -24,7 +24,7 @@ defmodule DiscoveryApi.Application do
         redis(),
         ecto_repo(),
         {Brook, Application.get_env(:discovery_api, :brook)},
-        DiscoveryApi.Data.CachePopulator,
+        cache_populator(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
         DiscoveryApi.Quantum.Scheduler,
         DiscoveryApi.Data.TableInfoCache
@@ -60,6 +60,14 @@ defmodule DiscoveryApi.Application do
     |> case do
       nil -> []
       _ -> Supervisor.Spec.worker(DiscoveryApi.Repo, [])
+    end
+  end
+
+  defp cache_populator do
+    Application.get_env(:discovery_api, :elasticsearch)
+    |> case do
+      nil -> []
+      _ -> DiscoveryApi.Data.CachePopulator
     end
   end
 end

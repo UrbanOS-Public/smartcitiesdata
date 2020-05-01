@@ -92,3 +92,32 @@ config :discovery_api, :brook,
     module: Brook.Storage.Redis,
     init_arg: [redix_args: redix_args, namespace: "discovery-api:view"]
   ]
+
+config :discovery_api, :elasticsearch,
+  url: "https://" <> System.get_env("ELASTICSEARCH_HOST"),
+  indices: %{
+    datasets: %{
+      name: "datasets",
+      options: %{
+        settings: %{
+          number_of_shards: 1
+        },
+        mappings: %{
+          properties: %{
+            title: %{
+              type: "keyword",
+              index: true
+            },
+            organizationDetails: %{
+              properties: %{
+                id: %{
+                  type: "keyword",
+                  index: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }

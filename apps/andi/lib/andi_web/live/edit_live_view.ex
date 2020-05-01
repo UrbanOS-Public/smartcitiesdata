@@ -3,6 +3,7 @@ defmodule AndiWeb.EditLiveView do
 
   alias Phoenix.HTML.Link
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.DisplayNames
@@ -11,6 +12,7 @@ defmodule AndiWeb.EditLiveView do
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.EditLiveView.DataDictionaryTree
   alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
+  alias Ecto.Changeset
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -131,7 +133,7 @@ defmodule AndiWeb.EditLiveView do
             </div>
 
             <div class="data-dictionary-form__tree-content data-dictionary-form-tree-content">
-              <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: technical, field: :schema, selected_field_id: @selected_field_id ) %>
+              <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: technical, field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
             </div>
 
             <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
@@ -189,7 +191,7 @@ defmodule AndiWeb.EditLiveView do
         </div>
       </form>
 
-      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible, dataset_id: dataset_id) %>
+    <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible, dataset_id: dataset_id,  selected_field_id: @selected_field_id ) %>
     </div>
     """
   end
@@ -208,6 +210,7 @@ defmodule AndiWeb.EditLiveView do
        page_error: false,
        test_results: nil,
        testing: false,
+       new_field_initial_render: false,
        add_data_dictionary_field_visible: false
      )
      |> assign(get_default_dictionary_field(new_changeset))}
@@ -332,19 +335,28 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: changeset, add_data_dictionary_field_visible: true)}
   end
 
-  def handle_info({:assign_editable_dictionary_field, field}, socket) do
-    {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: input_value(field, :id))}
+  def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
+    new_form = find_field_changeset(socket.assigns.changeset, field_id) |> form_for(nil)
+    field = %{new_form | index: index, name: name, id: id}
+
+    {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
   end
 
   def handle_info({:add_data_dictionary_field_cancelled}, socket) do
     {:noreply, assign(socket, add_data_dictionary_field_visible: false)}
   end
 
-  def handle_info({:add_data_dictionary_field_succeeded, id}, socket) do
+  def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do
     dataset = Datasets.get(socket.assigns.dataset.id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
-    {:noreply, assign(socket, changeset: changeset, selected_field_id: id, add_data_dictionary_field_visible: false)}
+    {:noreply,
+     assign(socket,
+       changeset: changeset,
+       selected_field_id: field_id,
+       add_data_dictionary_field_visible: false,
+       new_field_initial_render: true
+     )}
   end
 
   # This handle_info takes care of all exceptions in a generic way.
@@ -363,12 +375,48 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, socket}
   end
 
+  defp find_field_changeset(changeset, field_id) do
+    changeset
+    |> Changeset.fetch_change!(:technical)
+    |> Changeset.get_change(:schema, [])
+    |> find_field_changeset_in_schema(field_id)
+    |> handle_field_not_found()
+  end
+
+  defp find_field_changeset_in_schema(schema, field_id) do
+    Enum.reduce_while(schema, nil, fn field, _ ->
+      if Changeset.get_field(field, :id) == field_id do
+        {:halt, field}
+      else
+        case find_field_changeset_in_schema(Changeset.get_change(field, :subSchema, []), field_id) do
+          nil -> {:cont, nil}
+          value -> {:halt, value}
+        end
+      end
+    end)
+  end
+
+  defp handle_field_not_found(nil), do: DataDictionary.changeset(%DataDictionary{}, %{})
+  defp handle_field_not_found(found_field), do: found_field
+
   defp complete_validation(changeset, socket) do
     socket = reset_save_success(socket)
 
     new_changeset = Map.put(changeset, :action, :update)
 
-    {:noreply, assign(socket, changeset: new_changeset)}
+    current_form = socket.assigns.current_data_dictionary_item
+
+    updated_current_field =
+      case current_form do
+        :no_dictionary ->
+          :no_dictionary
+
+        _ ->
+          new_form_template = find_field_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
+          %{current_form | source: new_form_template.source, params: new_form_template.params}
+      end
+
+    {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)}
   end
 
   defp key_values_to_keyword_list(form_data, field) do

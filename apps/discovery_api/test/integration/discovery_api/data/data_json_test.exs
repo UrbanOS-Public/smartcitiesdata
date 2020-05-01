@@ -1,6 +1,6 @@
 defmodule DiscoveryApi.Data.DataJsonTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres"]
+  use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres", :elasticsearch]
   use DiscoveryApi.DataCase
 
   import SmartCity.Event, only: [dataset_update: 0]

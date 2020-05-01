@@ -26,7 +26,6 @@ defmodule AndiWeb.EditLiveViewTest do
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.FormTools
-  alias Andi.InputSchemas.InputConverter
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
@@ -467,8 +466,6 @@ defmodule AndiWeb.EditLiveViewTest do
       assert nil == get_value(html, ".data-dictionary-add-field-editor__name input")
 
       assert [] == get_select(html, ".data-dictionary-add-field-editor__type select")
-
-      assert [] == get_select(html, ".data-dictionary-add-field-editor__parent-id select")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
     end

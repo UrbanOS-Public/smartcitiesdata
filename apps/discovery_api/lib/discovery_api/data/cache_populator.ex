@@ -4,6 +4,8 @@ defmodule DiscoveryApi.Data.CachePopulator do
   """
   alias DiscoveryApi.Data.SystemNameCache
   alias DiscoveryApi.Search
+  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
+
   use GenServer, restart: :transient
 
   def start_link(_) do
@@ -17,6 +19,8 @@ defmodule DiscoveryApi.Data.CachePopulator do
       SystemNameCache.put(model.id, model.organizationDetails.orgName, model.name)
       Search.Storage.index(model)
     end)
+
+    DatasetSearchIndex.replace_all(models)
 
     {:ok, nil, {:continue, :stop}}
   end

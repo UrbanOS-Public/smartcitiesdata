@@ -4,6 +4,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
   use DiscoveryApi.DataCase
 
   import ExUnit.CaptureLog
+  import SmartCity.TestHelper, only: [eventually: 3]
 
   alias DiscoveryApi.Auth.GuardianConfigurator
   alias DiscoveryApi.Test.Helper
@@ -146,13 +147,24 @@ defmodule DiscoveryApi.Auth.AuthTest do
     test "saves logged in user" do
       subject_id = AuthHelper.valid_jwt_sub()
 
-      HTTPoison.post!("localhost:4000/api/v1/logged-in", "", Authorization: "Bearer #{AuthHelper.valid_jwt()}")
+      eventually(
+        fn ->
+          assert {:ok, _} =
+                   HTTPoison.post(
+                     "localhost:4000/api/v1/logged-in",
+                     "",
+                     Authorization: "Bearer #{AuthHelper.valid_jwt()}"
+                   )
 
-      assert {:ok, actual} = Users.get_user(subject_id, :subject_id)
+          assert {:ok, actual} = Users.get_user(subject_id, :subject_id)
 
-      assert subject_id == actual.subject_id
-      assert "x@y.z" == actual.email
-      assert actual.id != nil
+          assert subject_id == actual.subject_id
+          assert "x@y.z" == actual.email
+          assert actual.id != nil
+        end,
+        2000,
+        10
+      )
     end
 
     test "returns 'unauthorized' when token is invalid" do

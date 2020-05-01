@@ -1,13 +1,15 @@
 defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
   use ExUnit.Case
   use Placebo
+
+  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
   alias DiscoveryApi.Data.SystemNameCache
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Schemas.Organizations
-  alias SmartCity.TestDataGenerator, as: TDG
 
   import SmartCity.Event, only: [dataset_update: 0, data_write_complete: 0]
 
+  alias SmartCity.TestDataGenerator, as: TDG
   import DiscoveryApi.Test.Helper
   import Checkov
 
@@ -16,6 +18,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
   describe "handle_dataset/1" do
     setup do
       clear_saved_models()
+      allow(DatasetSearchIndex.update(any()), return: {:ok, :all_right_all_right})
       allow(ResponseCache.invalidate(), return: :ok)
       allow(DiscoveryApi.Search.Storage.index(any()), return: :ok)
       allow(DiscoveryApi.RecommendationEngine.save(any()), return: :ok)
