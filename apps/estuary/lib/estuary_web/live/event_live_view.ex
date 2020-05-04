@@ -61,9 +61,9 @@ defmodule EstuaryWeb.EventLiveView do
   defp all_events(socket_events, filter_param) do
     if(filter_param == nil or filter_param == "") do
       {:ok, events} = EventRetrievalService.get_all()
-        events
+      events
     else
-        socket_events
+      socket_events
     end
   end
 end
