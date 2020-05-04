@@ -58,7 +58,7 @@ defmodule EstuaryWeb.EventLiveView do
     {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
   end
 
-  defp all_events(events, filter_param) do
+  defp all_events(socket_events, filter_param) do
     cond do
       filter_param == nil ->
         {:ok, events} = EventRetrievalService.get_all()
@@ -69,7 +69,7 @@ defmodule EstuaryWeb.EventLiveView do
         events
 
       true ->
-        events
+        socket_events
     end
   end
 end
