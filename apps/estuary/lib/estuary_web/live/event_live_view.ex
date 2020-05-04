@@ -60,14 +60,9 @@ defmodule EstuaryWeb.EventLiveView do
 
   defp all_events(socket_events, filter_param) do
     cond do
-      filter_param == nil ->
+      filter_param == nil or filter_param == ""  ->
         {:ok, events} = EventRetrievalService.get_all()
         events
-
-      filter_param == "" ->
-        {:ok, events} = EventRetrievalService.get_all()
-        events
-
       true ->
         socket_events
     end
