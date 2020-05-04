@@ -40,8 +40,9 @@ defmodule EstuaryWeb.EventLiveView do
   end
 
   def handle_params(params, _uri, socket) do
-    {:ok, events} = EventRetrievalService.get_all()
-    filtered_events = LiveViewHelper.filter_events(events, params["search"])
+    filtered_events =
+      all_events(socket.assigns.events, params["search"])
+      |> LiveViewHelper.filter_events(params["search"])
 
     {:noreply,
      assign(socket,
@@ -51,9 +52,26 @@ defmodule EstuaryWeb.EventLiveView do
      )}
   end
 
+  @spec handle_event(<<_::48>>, map, Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("search", %{"search-value" => value}, socket) do
     search_params = Map.merge(socket.assigns.params, %{"search" => value})
 
     {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
+  end
+
+  defp all_events(events, filter_param) do
+    cond do
+      filter_param == nil ->
+        {:ok, events} = EventRetrievalService.get_all()
+        events
+
+      filter_param == "" ->
+        {:ok, events} = EventRetrievalService.get_all()
+        events
+
+      true ->
+        events
+    end
   end
 end
