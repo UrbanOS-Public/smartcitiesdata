@@ -52,8 +52,6 @@ defmodule EstuaryWeb.EventLiveView do
      )}
   end
 
-  @spec handle_event(<<_::48>>, map, Phoenix.LiveView.Socket.t()) ::
-          {:noreply, Phoenix.LiveView.Socket.t()}
   def handle_event("search", %{"search-value" => value}, socket) do
     search_params = Map.merge(socket.assigns.params, %{"search" => value})
 
