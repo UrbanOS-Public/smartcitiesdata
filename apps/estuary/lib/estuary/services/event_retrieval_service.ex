@@ -10,8 +10,8 @@ defmodule Estuary.Services.EventRetrievalService do
     SELECT events.author, events.create_ts, events.data, events.type
     FROM (SELECT author, create_ts, data, type
     FROM #{DatasetSchema.table_name()}
-    WHERE create_ts >= to_unixtime(now() - interval '3' hour) LIMIT 5000) events
-    ORDER BY events.create_ts DESC LIMIT 1000
+    WHERE create_ts >= to_unixtime(now() - interval '2' hour) LIMIT 3000) events
+    ORDER BY events.create_ts DESC LIMIT 500
     """
     |> PrestigeHelper.execute_query_stream()
   end
