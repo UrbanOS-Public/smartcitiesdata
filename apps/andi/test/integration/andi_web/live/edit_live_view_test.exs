@@ -591,10 +591,10 @@ defmodule AndiWeb.EditLiveViewTest do
       render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
       html = render(view)
 
-      assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+      assert "" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
 
       html = render_click(view, "remove_data_dictionary_field", %{})
-      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
     end
 
     test "cannot remove field when none is selected", %{conn: conn, dataset: dataset} do

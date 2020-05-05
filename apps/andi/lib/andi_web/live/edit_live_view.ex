@@ -379,17 +379,17 @@ defmodule AndiWeb.EditLiveView do
 
     new_selected_field_id =
       case new_selected_field do
-        :no_dictionary ->
-          technical_id =
-            socket.assigns.changeset
-            |> Changeset.fetch_change!(:technical)
-            |> Changeset.fetch_change!(:id)
+        :no_dictionary -> :no_dictionary
+          # technical_id =
+          #   socket.assigns.changeset
+          #   |> Changeset.fetch_change!(:technical)
+          #   |> Changeset.fetch_change!(:id)
 
-          if deleted_field_parent_id == technical_id do
-            :no_dictionary
-          else
-            deleted_field_parent_id
-          end
+          # if deleted_field_parent_id == technical_id do
+          #   :no_dictionary
+          # else
+          #   deleted_field_parent_id
+          # end
 
         new_selected ->
           Changeset.fetch_field!(new_selected, :id)

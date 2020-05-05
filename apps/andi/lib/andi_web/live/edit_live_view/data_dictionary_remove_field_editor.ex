@@ -18,6 +18,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
         "hidden"
       end
 
+    has_error_msg =
+    if assigns.error_msg != "" do
+      "visible"
+    else
+      "hidden"
+    end
+
     ~L"""
     <div id=<%= @id %> class="data-dictionary-remove-field-editor data-dictionary-remove-field-editor--<%= modifier %>">
       <div class="modal-form-container">
@@ -28,13 +35,15 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
           <%= reset("CANCEL", phx_click: "cancel", phx_target: "##{id}", class: "btn") %>
           <%= submit("DELETE", phx_click: "remove_field", phx_target: "##{id}", class: "btn submit_button") %>
         </div>
+
+        <p class="error-msg data-dictionary-remove-field-editor__error-msg--<% has_error_msg %>"><%= @error_msg %></p>
       </div>
     </div>
     """
   end
 
   def mount(socket) do
-    {:ok, assign(socket, visible: false)}
+    {:ok, assign(socket, visible: false, error_msg: "")}
   end
 
   def handle_event("remove_field", _, socket) do
@@ -46,13 +55,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
     case DataDictionaryFields.remove_field(selected_field_id) do
       {:ok, deleted_field} ->
         send(self(), {:remove_data_dictionary_field_succeeded, selected_field_parent_id, selected_field_index})
+        {:noreply, assign(socket, visible: false)}
 
-      _ ->
+      nil ->
         IO.inspect("failed to delete")
-        # Map.put(changeset, :action, :update)
+        {:noreply, assign(socket, error_msg: "The selected field was not found in the database")}
     end
 
-    {:noreply, assign(socket, visible: false)}
   end
 
   def handle_event("cancel", _, socket) do
