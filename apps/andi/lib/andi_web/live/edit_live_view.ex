@@ -22,7 +22,7 @@ defmodule AndiWeb.EditLiveView do
     dataset_id = assigns.dataset.id
 
     ~L"""
-      <div class="edit-page">
+      <div class="edit-page" id="dataset-edit-page">
         <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
@@ -138,7 +138,7 @@ defmodule AndiWeb.EditLiveView do
 
             <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
               <div class="data-dictionary-form__add-field-button" phx-click="add_data_dictionary_field"></div>
-              <div class="data-dictionary-form__remove-field-button" phx-click="remove_data_dictionary_field"></div>
+              <div class="data-dictionary-form__remove-field-button" phx-click="remove_data_dictionary_field" phx-target="#dataset-edit-page"></div>
             </div>
           </div>
 
@@ -339,7 +339,9 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("remove_data_dictionary_field", _, socket) do
-    {:noreply, assign(socket, remove_data_dictionary_field_visible: true)}
+    should_show_remove_field_modal = socket.assigns.selected_field_id != :no_dictionary
+
+    {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
   end
 
   def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
@@ -371,10 +373,27 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index}, socket) do
-    new_selected_field_id =
+    new_selected_field =
       socket.assigns.changeset
-      |> get_selected_index_from_deleted_field(deleted_field_parent_id, deleted_field_index)
-      |> Changeset.fetch_change!(:id)
+      |> get_new_selected_field(deleted_field_parent_id, deleted_field_index)
+
+    new_selected_field_id =
+      case new_selected_field do
+        :no_dictionary ->
+          technical_id =
+            socket.assigns.changeset
+            |> Changeset.fetch_change!(:technical)
+            |> Changeset.fetch_change!(:id)
+
+          if deleted_field_parent_id == technical_id do
+            :no_dictionary
+          else
+            deleted_field_parent_id
+          end
+
+        new_selected ->
+          Changeset.fetch_field!(new_selected, :id)
+      end
 
     dataset = Datasets.get(socket.assigns.dataset.id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
@@ -398,7 +417,7 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, socket}
   end
 
-  defp get_selected_index_from_deleted_field(changeset, parent_id, deleted_field_index) do
+  defp get_new_selected_field(changeset, parent_id, deleted_field_index) do
     technical_changeset = Changeset.fetch_change!(changeset, :technical)
     technical_id = Changeset.fetch_change!(technical_changeset, :id)
 
@@ -414,7 +433,7 @@ defmodule AndiWeb.EditLiveView do
     end
   end
 
-  defp get_next_sibling(parent_schema, _) when length(parent_schema) <= 1, do: nil
+  defp get_next_sibling(parent_schema, _) when length(parent_schema) <= 1, do: :no_dictionary
 
   defp get_next_sibling(parent_schema, deleted_field_index) when deleted_field_index == 0 do
     Enum.at(parent_schema, deleted_field_index + 1)

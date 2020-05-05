@@ -24,14 +24,16 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
   end
 
   def remove_field(existing_field_id) do
-    existing_field = Repo.get!(DataDictionary, existing_field_id)
+    existing_field = Repo.get(DataDictionary, existing_field_id)
 
-    case Repo.delete(existing_field) do
-      {:error, _changeset} ->
-        {:error, DataDictionary.changeset(%DataDictionary{}, existing_field)}
+    if existing_field != nil do
+      case Repo.delete(existing_field) do
+        {:error, _changeset} ->
+          {:error, DataDictionary.changeset(%DataDictionary{}, existing_field)}
 
-      good ->
-        good
+        good ->
+          good
+      end
     end
   end
 

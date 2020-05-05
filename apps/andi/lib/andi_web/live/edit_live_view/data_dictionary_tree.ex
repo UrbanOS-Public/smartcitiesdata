@@ -12,6 +12,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
   end
 
   def render(assigns) do
+    if assigns.selected_field_id == :no_dictionary do
+      assign_current_dictionary_field(:no_dictionary, nil, nil, nil)
+    end
+
     ~L"""
     <%= if is_set?(@form, @field) do %>
       <div id="<%= @id %>" class="data-dictionary-tree">

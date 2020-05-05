@@ -39,7 +39,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
 
   def handle_event("remove_field", _, socket) do
     selected_field = socket.assigns.selected_field
-    selected_field_id = selected_field.source.changes.id
+    selected_field_id = Ecto.Changeset.get_field(selected_field.source, :id)
     selected_field_index = selected_field.index
     selected_field_parent_id = get_parent_of_field(selected_field.source.changes)
 
@@ -47,8 +47,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
       {:ok, deleted_field} ->
         send(self(), {:remove_data_dictionary_field_succeeded, selected_field_parent_id, selected_field_index})
 
-      {:error, changeset} ->
-        IO.inspect(changeset, label: "failed to delete")
+      _ ->
+        IO.inspect("failed to delete")
         # Map.put(changeset, :action, :update)
     end
 
