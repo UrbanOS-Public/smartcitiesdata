@@ -5,7 +5,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
-  alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
 
   def render(assigns) do
@@ -19,11 +18,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
       end
 
     has_error_msg =
-    if assigns.error_msg != "" do
-      "visible"
-    else
-      "hidden"
-    end
+      if assigns.error_msg != "" do
+        "visible"
+      else
+        "hidden"
+      end
 
     ~L"""
     <div id=<%= @id %> class="data-dictionary-remove-field-editor data-dictionary-remove-field-editor--<%= modifier %>">
@@ -36,7 +35,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
           <%= submit("DELETE", phx_click: "remove_field", phx_target: "##{id}", class: "btn submit_button") %>
         </div>
 
-        <p class="error-msg data-dictionary-remove-field-editor__error-msg--<% has_error_msg %>"><%= @error_msg %></p>
+        <p class="error-msg data-dictionary-remove-field-editor__error-msg--<%= has_error_msg %>"><%= @error_msg %></p>
       </div>
     </div>
     """
@@ -53,15 +52,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
     selected_field_parent_id = get_parent_of_field(selected_field.source.changes)
 
     case DataDictionaryFields.remove_field(selected_field_id) do
-      {:ok, deleted_field} ->
+      {:ok, _} ->
         send(self(), {:remove_data_dictionary_field_succeeded, selected_field_parent_id, selected_field_index})
         {:noreply, assign(socket, visible: false)}
 
       nil ->
-        IO.inspect("failed to delete")
         {:noreply, assign(socket, error_msg: "The selected field was not found in the database")}
     end
-
   end
 
   def handle_event("cancel", _, socket) do
@@ -69,7 +66,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
     {:noreply, assign(socket, visible: false)}
   end
 
-  defp get_parent_of_field(%{parent_id: parent_id} = field), do: parent_id
-  defp get_parent_of_field(%{technical_id: technical_id} = field), do: technical_id
+  defp get_parent_of_field(%{parent_id: parent_id}), do: parent_id
+  defp get_parent_of_field(%{technical_id: technical_id}), do: technical_id
   defp get_parent_of_field(_), do: {:error, "parent not found"}
 end

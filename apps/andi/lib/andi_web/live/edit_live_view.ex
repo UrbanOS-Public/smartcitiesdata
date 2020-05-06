@@ -345,7 +345,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
-    new_form = find_field_changeset(socket.assigns.changeset, field_id) |> form_for(nil)
+    new_form = find_field_in_changeset(socket.assigns.changeset, field_id) |> form_for(nil)
     field = %{new_form | index: index, name: name, id: id}
 
     {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
@@ -379,17 +379,8 @@ defmodule AndiWeb.EditLiveView do
 
     new_selected_field_id =
       case new_selected_field do
-        :no_dictionary -> :no_dictionary
-          # technical_id =
-          #   socket.assigns.changeset
-          #   |> Changeset.fetch_change!(:technical)
-          #   |> Changeset.fetch_change!(:id)
-
-          # if deleted_field_parent_id == technical_id do
-          #   :no_dictionary
-          # else
-          #   deleted_field_parent_id
-          # end
+        :no_dictionary ->
+          :no_dictionary
 
         new_selected ->
           Changeset.fetch_field!(new_selected, :id)
@@ -417,33 +408,27 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, socket}
   end
 
-  defp get_new_selected_field(changeset, parent_id, deleted_field_index) do
-    technical_changeset = Changeset.fetch_change!(changeset, :technical)
-    technical_id = Changeset.fetch_change!(technical_changeset, :id)
+  defp complete_validation(changeset, socket) do
+    socket = reset_save_success(socket)
 
-    if parent_id == technical_id do
-      technical_changeset
-      |> Changeset.fetch_change!(:schema)
-      |> get_next_sibling(deleted_field_index)
-    else
-      changeset
-      |> find_field_changeset(parent_id)
-      |> Changeset.get_change(:subSchema, [])
-      |> get_next_sibling(deleted_field_index)
-    end
+    new_changeset = Map.put(changeset, :action, :update)
+
+    current_form = socket.assigns.current_data_dictionary_item
+
+    updated_current_field =
+      case current_form do
+        :no_dictionary ->
+          :no_dictionary
+
+        _ ->
+          new_form_template = find_field_in_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
+          %{current_form | source: new_form_template.source, params: new_form_template.params}
+      end
+
+    {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)}
   end
 
-  defp get_next_sibling(parent_schema, _) when length(parent_schema) <= 1, do: :no_dictionary
-
-  defp get_next_sibling(parent_schema, deleted_field_index) when deleted_field_index == 0 do
-    Enum.at(parent_schema, deleted_field_index + 1)
-  end
-
-  defp get_next_sibling(parent_schema, deleted_field_index) do
-    Enum.at(parent_schema, deleted_field_index - 1)
-  end
-
-  defp find_field_changeset(changeset, field_id) do
+  defp find_field_in_changeset(changeset, field_id) do
     changeset
     |> Changeset.fetch_change!(:technical)
     |> Changeset.get_change(:schema, [])
@@ -467,24 +452,30 @@ defmodule AndiWeb.EditLiveView do
   defp handle_field_not_found(nil), do: DataDictionary.changeset(%DataDictionary{}, %{})
   defp handle_field_not_found(found_field), do: found_field
 
-  defp complete_validation(changeset, socket) do
-    socket = reset_save_success(socket)
+  defp get_new_selected_field(changeset, parent_id, deleted_field_index) do
+    technical_changeset = Changeset.fetch_change!(changeset, :technical)
+    technical_id = Changeset.fetch_change!(technical_changeset, :id)
 
-    new_changeset = Map.put(changeset, :action, :update)
+    if parent_id == technical_id do
+      technical_changeset
+      |> Changeset.fetch_change!(:schema)
+      |> get_next_sibling(deleted_field_index)
+    else
+      changeset
+      |> find_field_in_changeset(parent_id)
+      |> Changeset.get_change(:subSchema, [])
+      |> get_next_sibling(deleted_field_index)
+    end
+  end
 
-    current_form = socket.assigns.current_data_dictionary_item
+  defp get_next_sibling(parent_schema, _) when length(parent_schema) <= 1, do: :no_dictionary
 
-    updated_current_field =
-      case current_form do
-        :no_dictionary ->
-          :no_dictionary
+  defp get_next_sibling(parent_schema, deleted_field_index) when deleted_field_index == 0 do
+    Enum.at(parent_schema, deleted_field_index + 1)
+  end
 
-        _ ->
-          new_form_template = find_field_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
-          %{current_form | source: new_form_template.source, params: new_form_template.params}
-      end
-
-    {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)}
+  defp get_next_sibling(parent_schema, deleted_field_index) do
+    Enum.at(parent_schema, deleted_field_index - 1)
   end
 
   defp key_values_to_keyword_list(form_data, field) do

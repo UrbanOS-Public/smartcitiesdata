@@ -1,6 +1,6 @@
 defmodule AndiWeb.EditLiveViewTest do
   use ExUnit.Case
-  # use Divo
+  use Divo
   use Andi.DataCase
   use AndiWeb.ConnCase
   import Checkov
@@ -609,6 +609,26 @@ defmodule AndiWeb.EditLiveViewTest do
       render_click(view, "remove_data_dictionary_field", %{})
       html = render(view)
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+    end
+
+    test "shows error message when ecto delete fails", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      render_click(view, "remove_data_dictionary_field", %{})
+      html = render(view)
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--hidden"))
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+
+      render_click(view, "remove_data_dictionary_field", %{})
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--visible"))
     end
   end
 end
