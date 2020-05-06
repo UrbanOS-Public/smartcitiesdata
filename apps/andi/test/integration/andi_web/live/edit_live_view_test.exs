@@ -508,7 +508,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render_click(view, "remove_data_dictionary_field", %{})
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
-      render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
       html = render(view)
       selected_field_name = "one"
 
@@ -523,7 +523,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert "one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
 
-      render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
       html = render(view)
 
       assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
@@ -542,7 +542,13 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
       assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
 
-      render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "true"})
+      html = render(view)
+
+      assert "WARNING! Removing this field will also remove its children. Would you like to continue?" ==
+               get_text(html, ".data-dicitionary-remove-field-editor__message")
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
       html = render(view)
 
       assert Enum.empty?(get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name"))
@@ -562,7 +568,7 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
       assert "one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
 
-      render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
       html = render(view)
 
       assert Enum.empty?(get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name"))
@@ -588,7 +594,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert "two-one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
 
-      render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
       html = render(view)
 
       assert "" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
@@ -620,11 +626,11 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--hidden"))
 
-      render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
 
       render_click(view, "remove_data_dictionary_field", %{})
 
-      render_click([view, "data_dictionary_remove_field_editor"], "remove_field")
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
       html = render(view)
 
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
