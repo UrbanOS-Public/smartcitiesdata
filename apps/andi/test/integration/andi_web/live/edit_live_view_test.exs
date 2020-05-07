@@ -23,7 +23,7 @@ defmodule AndiWeb.EditLiveViewTest do
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
-
+  alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.FormTools
 
@@ -468,6 +468,174 @@ defmodule AndiWeb.EditLiveViewTest do
       assert [] == get_select(html, ".data-dictionary-add-field-editor__type select")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+    end
+  end
+
+  describe "remove dictionary field modal" do
+    setup do
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [
+              %{
+                name: "one",
+                type: "string",
+                description: "description"
+              },
+              %{
+                name: "two",
+                type: "map",
+                description: "this is a map",
+                subSchema: [
+                  %{
+                    name: "two-one",
+                    type: "integer"
+                  }
+                ]
+              }
+            ]
+          }
+        })
+
+      {:ok, andi_dataset} = Datasets.update(dataset)
+      [dataset: andi_dataset]
+    end
+
+    test "removes non parent field from subschema", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      html = render_click(view, "remove_data_dictionary_field", %{})
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      html = render(view)
+      selected_field_name = "one"
+
+      refute selected_field_name in get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name")
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+    end
+
+    test "removing a field selects the next sibling", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      assert "one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      html = render(view)
+
+      assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+    end
+
+    test "removes parent field along with its children", %{conn: conn, dataset: dataset} do
+      dataset
+      |> update_in([:technical, :schema], &List.delete_at(&1, 0))
+      |> Datasets.update()
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      render_click(view, "remove_data_dictionary_field", %{})
+      html = render(view)
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "true"})
+      html = render(view)
+
+      assert "WARNING! Removing this field will also remove its children. Would you like to continue?" ==
+               get_text(html, ".data-dicitionary-remove-field-editor__message")
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      html = render(view)
+
+      assert Enum.empty?(get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name"))
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+    end
+
+    test "no field is selected when the schema is empty", %{conn: conn, dataset: dataset} do
+      dataset
+      |> update_in([:technical, :schema], &List.delete_at(&1, 1))
+      |> Datasets.update()
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      render_click(view, "remove_data_dictionary_field", %{})
+      html = render(view)
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      assert "one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      html = render(view)
+
+      assert Enum.empty?(get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name"))
+      assert Enum.empty?(find_elements(html, ".data-dictionary-tree__field--selected"))
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+    end
+
+    test "no field is selected when subschema is empty", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      child_target = get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_selected']", "phx-target") |> List.last()
+      child_id = get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_selected']", "phx-value-field-id") |> List.last()
+
+      render_click([view, child_target], "toggle_selected", %{
+        "field-id" => child_id,
+        "index" => nil,
+        "name" => nil,
+        "id" => nil
+      })
+
+      html = render(view)
+
+      assert "two-one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      html = render(view)
+
+      assert "" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      html = render_click(view, "remove_data_dictionary_field", %{})
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+    end
+
+    test "cannot remove field when none is selected", %{conn: conn, dataset: dataset} do
+      dataset
+      |> update_in([:technical, :schema], fn _ -> [] end)
+      |> Datasets.update()
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      assert Enum.empty?(find_elements(html, ".data-dictionary-tree__field--selected"))
+
+      render_click(view, "remove_data_dictionary_field", %{})
+      html = render(view)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+    end
+
+    test "shows error message when ecto delete fails", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      render_click(view, "remove_data_dictionary_field", %{})
+      html = render(view)
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--hidden"))
+
+      [selected_field_id] =
+        get_attributes(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__text", "phx-value-field-id")
+
+      assert {:ok, _} = DataDictionaryFields.remove_field(selected_field_id)
+
+      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--visible"))
     end
   end
 end

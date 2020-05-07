@@ -22,7 +22,7 @@ defmodule AndiWeb.EditLiveView do
     dataset_id = assigns.dataset.id
 
     ~L"""
-      <div class="edit-page">
+      <div class="edit-page" id="dataset-edit-page">
         <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
@@ -138,7 +138,7 @@ defmodule AndiWeb.EditLiveView do
 
             <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
               <div class="data-dictionary-form__add-field-button" phx-click="add_data_dictionary_field"></div>
-              <div class="data-dictionary-form__remove-field-button"></div>
+              <div class="data-dictionary-form__remove-field-button" phx-click="remove_data_dictionary_field" phx-target="#dataset-edit-page"></div>
             </div>
           </div>
 
@@ -192,6 +192,8 @@ defmodule AndiWeb.EditLiveView do
       </form>
 
     <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible, dataset_id: dataset_id,  selected_field_id: @selected_field_id ) %>
+
+    <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field: @current_data_dictionary_item, visible: @remove_data_dictionary_field_visible) %>
     </div>
     """
   end
@@ -211,7 +213,8 @@ defmodule AndiWeb.EditLiveView do
        test_results: nil,
        testing: false,
        new_field_initial_render: false,
-       add_data_dictionary_field_visible: false
+       add_data_dictionary_field_visible: false,
+       remove_data_dictionary_field_visible: false
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end
@@ -335,8 +338,14 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: changeset, add_data_dictionary_field_visible: true)}
   end
 
+  def handle_event("remove_data_dictionary_field", _, socket) do
+    should_show_remove_field_modal = socket.assigns.selected_field_id != :no_dictionary
+
+    {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
+  end
+
   def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
-    new_form = find_field_changeset(socket.assigns.changeset, field_id) |> form_for(nil)
+    new_form = find_field_in_changeset(socket.assigns.changeset, field_id) |> form_for(nil)
     field = %{new_form | index: index, name: name, id: id}
 
     {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
@@ -344,6 +353,10 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info({:add_data_dictionary_field_cancelled}, socket) do
     {:noreply, assign(socket, add_data_dictionary_field_visible: false)}
+  end
+
+  def handle_info({:remove_data_dictionary_field_cancelled}, socket) do
+    {:noreply, assign(socket, remove_data_dictionary_field_visible: false)}
   end
 
   def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do
@@ -356,6 +369,32 @@ defmodule AndiWeb.EditLiveView do
        selected_field_id: field_id,
        add_data_dictionary_field_visible: false,
        new_field_initial_render: true
+     )}
+  end
+
+  def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index}, socket) do
+    new_selected_field =
+      socket.assigns.changeset
+      |> get_new_selected_field(deleted_field_parent_id, deleted_field_index)
+
+    new_selected_field_id =
+      case new_selected_field do
+        :no_dictionary ->
+          :no_dictionary
+
+        new_selected ->
+          Changeset.fetch_field!(new_selected, :id)
+      end
+
+    dataset = Datasets.get(socket.assigns.dataset.id)
+    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
+
+    {:noreply,
+     assign(socket,
+       changeset: changeset,
+       selected_field_id: new_selected_field_id,
+       new_field_initial_render: true,
+       remove_data_dictionary_field_visible: false
      )}
   end
 
@@ -375,7 +414,27 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, socket}
   end
 
-  defp find_field_changeset(changeset, field_id) do
+  defp complete_validation(changeset, socket) do
+    socket = reset_save_success(socket)
+
+    new_changeset = Map.put(changeset, :action, :update)
+
+    current_form = socket.assigns.current_data_dictionary_item
+
+    updated_current_field =
+      case current_form do
+        :no_dictionary ->
+          :no_dictionary
+
+        _ ->
+          new_form_template = find_field_in_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
+          %{current_form | source: new_form_template.source, params: new_form_template.params}
+      end
+
+    {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)}
+  end
+
+  defp find_field_in_changeset(changeset, field_id) do
     changeset
     |> Changeset.fetch_change!(:technical)
     |> Changeset.get_change(:schema, [])
@@ -399,24 +458,30 @@ defmodule AndiWeb.EditLiveView do
   defp handle_field_not_found(nil), do: DataDictionary.changeset(%DataDictionary{}, %{})
   defp handle_field_not_found(found_field), do: found_field
 
-  defp complete_validation(changeset, socket) do
-    socket = reset_save_success(socket)
+  defp get_new_selected_field(changeset, parent_id, deleted_field_index) do
+    technical_changeset = Changeset.fetch_change!(changeset, :technical)
+    technical_id = Changeset.fetch_change!(technical_changeset, :id)
 
-    new_changeset = Map.put(changeset, :action, :update)
+    if parent_id == technical_id do
+      technical_changeset
+      |> Changeset.fetch_change!(:schema)
+      |> get_next_sibling(deleted_field_index)
+    else
+      changeset
+      |> find_field_in_changeset(parent_id)
+      |> Changeset.get_change(:subSchema, [])
+      |> get_next_sibling(deleted_field_index)
+    end
+  end
 
-    current_form = socket.assigns.current_data_dictionary_item
+  defp get_next_sibling(parent_schema, _) when length(parent_schema) <= 1, do: :no_dictionary
 
-    updated_current_field =
-      case current_form do
-        :no_dictionary ->
-          :no_dictionary
+  defp get_next_sibling(parent_schema, deleted_field_index) when deleted_field_index == 0 do
+    Enum.at(parent_schema, deleted_field_index + 1)
+  end
 
-        _ ->
-          new_form_template = find_field_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
-          %{current_form | source: new_form_template.source, params: new_form_template.params}
-      end
-
-    {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)}
+  defp get_next_sibling(parent_schema, deleted_field_index) do
+    Enum.at(parent_schema, deleted_field_index - 1)
   end
 
   defp key_values_to_keyword_list(form_data, field) do

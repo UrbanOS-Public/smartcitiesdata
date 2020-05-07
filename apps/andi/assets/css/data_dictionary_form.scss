@@ -147,8 +147,32 @@ $tick-height: 1rem + $field-padding - 0.44;
       .data-dictionary-form__remove-field-button {
           width: 1.5rem;
           height: 24px;
+          background-image: url('/images/delete_field.svg');
+          cursor: pointer;
+      }
+
+      .data-dictionary-form__remove-field-button {
+          width: 1.5rem;
+          height: 24px;
       }
   }
+}
+
+.data-dictionary-remove-field-editor--hidden {
+    display: none;
+}
+
+.data-dictionary-remove-field-editor--visible {
+    position: fixed;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    z-index: 998;
+    background-color: rgba(255,255,255,0.7);
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }
 
 .data-dictionary-add-field-editor--hidden {
@@ -168,7 +192,7 @@ $tick-height: 1rem + $field-padding - 0.44;
     right: 0;
 }
 
-.data-dictionary-add-field-editor-form-container--visible {
+.modal-form-container {
     position: relative;
     z-index: 999;
     background-color: white;
@@ -218,7 +242,7 @@ $tick-height: 1rem + $field-padding - 0.44;
             height: 2.5rem;
         }
 
-        #add_field_button {
+        .submit_button {
             background-color: #26ADEB;
         }
     }
