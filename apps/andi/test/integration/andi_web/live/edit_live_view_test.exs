@@ -23,7 +23,7 @@ defmodule AndiWeb.EditLiveViewTest do
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
-
+  alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.FormTools
 
@@ -576,7 +576,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
     end
 
-    test "no field as selected when subschema is empty", %{conn: conn, dataset: dataset} do
+    test "no field is selected when subschema is empty", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
@@ -626,9 +626,10 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--hidden"))
 
-      render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      [selected_field_id] =
+        get_attributes(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__text", "phx-value-field-id")
 
-      render_click(view, "remove_data_dictionary_field", %{})
+      assert {:ok, _} = DataDictionaryFields.remove_field(selected_field_id)
 
       render_click([view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
       html = render(view)

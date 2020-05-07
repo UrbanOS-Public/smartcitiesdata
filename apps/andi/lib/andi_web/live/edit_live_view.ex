@@ -389,7 +389,13 @@ defmodule AndiWeb.EditLiveView do
     dataset = Datasets.get(socket.assigns.dataset.id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
-    {:noreply, assign(socket, changeset: changeset, selected_field_id: new_selected_field_id, remove_data_dictionary_field_visible: false)}
+    {:noreply,
+     assign(socket,
+       changeset: changeset,
+       selected_field_id: new_selected_field_id,
+       new_field_initial_render: true,
+       remove_data_dictionary_field_visible: false
+     )}
   end
 
   # This handle_info takes care of all exceptions in a generic way.

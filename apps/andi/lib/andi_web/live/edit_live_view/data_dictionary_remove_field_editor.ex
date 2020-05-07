@@ -66,13 +66,20 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
   def handle_event("remove_field", %{"parent" => "false"}, socket) do
     selected_field = socket.assigns.selected_field
     selected_field_id = Ecto.Changeset.get_field(selected_field.source, :id)
-    selected_field_index = selected_field.index
+    selected_field_index = parse_index(selected_field.index)
     selected_field_parent_id = get_parent_of_field(selected_field.source.changes)
 
     case DataDictionaryFields.remove_field(selected_field_id) do
       {:ok, _} ->
         send(self(), {:remove_data_dictionary_field_succeeded, selected_field_parent_id, selected_field_index})
-        {:noreply, assign(socket, visible: false)}
+
+        {:noreply,
+         assign(socket,
+           visible: false,
+           error_msg: "",
+           requires_warning: true,
+           modal_text: "Are you sure you want to remove this field?"
+         )}
 
       nil ->
         {:noreply, assign(socket, error_msg: "The selected field was not found in the database")}
@@ -86,6 +93,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
      assign(socket,
        visible: false,
        requires_warning: true,
+       error_msg: "",
        modal_text: "Are you sure you want to remove this field?"
      )}
   end
@@ -101,4 +109,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
   defp get_parent_of_field(%{parent_id: parent_id}), do: parent_id
   defp get_parent_of_field(%{technical_id: technical_id}), do: technical_id
   defp get_parent_of_field(_), do: {:error, "parent not found"}
+
+  defp parse_index(index) when is_integer(index), do: index
+  defp parse_index(index) when is_binary(index), do: String.to_integer(index)
+  defp parse_index(index), do: index
 end
