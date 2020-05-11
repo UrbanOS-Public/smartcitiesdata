@@ -19,10 +19,10 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
     setup %{conn: conn} do
       dataset =
         DatasetHelpers.create_dataset(%{
-              technical: %{
-                cadence: "once"
-              }
-                                      })
+          technical: %{
+            cadence: "once"
+          }
+        })
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
@@ -44,15 +44,14 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
     end
   end
 
-
   describe "repeat ingestion" do
     setup %{conn: conn} do
       dataset =
         DatasetHelpers.create_dataset(%{
-              technical: %{
-                cadence: "0 * * * * *"
-              }
-          })
+          technical: %{
+            cadence: "0 * * * * *"
+          }
+        })
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
@@ -87,8 +86,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
         ["daily", "0 0 0 * * *"],
         ["weekly", "0 0 0 * * 0"],
         ["monthly", "0 0 0 1 * *"],
-        ["yearly", "0 0 0 1 1 *"],
-
+        ["yearly", "0 0 0 1 1 *"]
       ])
     end
   end
