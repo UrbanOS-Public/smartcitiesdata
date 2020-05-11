@@ -73,22 +73,6 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
       assert "0 * * * * *" == get_crontab_from_html(html)
     end
-
-    data_test "quick schedule #{schedule}", %{view: view} do
-      render_click([view, "finalize_form_editor"], "quick_schedule", %{"schedule" => schedule})
-      html = render(view)
-
-      assert expected_crontab == get_crontab_from_html(html)
-
-      where([
-        [:schedule, :expected_crontab],
-        ["hourly", "0 0 * * * *"],
-        ["daily", "0 0 0 * * *"],
-        ["weekly", "0 0 0 * * 0"],
-        ["monthly", "0 0 0 1 * *"],
-        ["yearly", "0 0 0 1 1 *"]
-      ])
-    end
   end
 
   defp get_crontab_from_html(html) do

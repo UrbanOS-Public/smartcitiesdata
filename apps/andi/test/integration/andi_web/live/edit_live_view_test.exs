@@ -638,4 +638,43 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--visible"))
     end
   end
+
+
+  describe "finalize form" do
+    setup do
+      dataset =
+        TDG.create_dataset(%{
+              technical: %{
+                cadence: "0 * * * * *"
+              }
+        })
+
+      {:ok, andi_dataset} = Datasets.update(dataset)
+      [dataset: andi_dataset]
+    end
+
+    data_test "quick schedule #{schedule}", %{dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      render_click([view, "finalize_form_editor"], "quick_schedule", %{"schedule" => schedule})
+      html = render(view)
+
+      assert expected_crontab == get_crontab_from_html(html)
+
+      where([
+        [:schedule, :expected_crontab],
+        ["hourly", "0 0 * * * *"],
+        ["daily", "0 0 0 * * *"],
+        ["weekly", "0 0 0 * * 0"],
+        ["monthly", "0 0 0 1 * *"],
+        ["yearly", "0 0 0 1 1 *"]
+      ])
+    end
+  end
+
+  defp get_crontab_from_html(html) do
+    html
+    |> get_values(".finalize-form-schedule-input__field")
+    |> Enum.join(" ")
+  end
 end

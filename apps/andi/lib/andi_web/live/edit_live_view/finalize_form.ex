@@ -5,6 +5,8 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
+  alias Andi.InputSchemas.Datasets
+
   def mount(socket) do
     {:ok, socket}
   end
@@ -20,7 +22,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     crontab_list = parse_crontab(assigns.crontab)
 
     ~L"""
-    <div id="<%= @id %>" class="finalize-form form-section">
+    <div id="<%= @id %>">
       <h2 class="edit-page__box-header">Finalize</h2>
 
       <div "finalize-form__schedule">
@@ -42,12 +44,12 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
           <h4>Quick Schedule</h4>
 
           <div class="finalize-form__quick-schedule">
-            <button class="finalize-form-cron-button">Startup</button>
-            <button class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="hourly" phx-target="<%= @myself %>">Hourly</button>
-            <button class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="daily" phx-target="<%= @myself %>">Daily</button>
-            <button class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="weekly" phx-target="<%= @myself %>">Weekly</button>
-            <button class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="monthly" phx-target="<%= @myself %>">Monthly</button>
-            <button class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="yearly" phx-target="<%= @myself %>">Yearly</button>
+            <button type="button" class="finalize-form-cron-button">Startup</button>
+            <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="hourly" phx-target="<%= @myself %>">Hourly</button>
+            <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="daily" phx-target="<%= @myself %>">Daily</button>
+            <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="weekly" phx-target="<%= @myself %>">Weekly</button>
+            <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="monthly" phx-target="<%= @myself %>">Monthly</button>
+            <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="yearly" phx-target="<%= @myself %>">Yearly</button>
           </div>
 
           <div class="finalize-form__schedule-input">
@@ -75,7 +77,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
               <label>Week</label>
               <input class="finalize-form-schedule-input__field" value="<%= crontab_list.week %>" />
             </div>
-            <button class="finalize-form-cron-button cron-input-submit">Set</button>
+            <button type="button" class="finalize-form-cron-button cron-input-submit">Set</button>
           </div>
         </div>
       </div>
@@ -84,26 +86,34 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   end
 
   def handle_event("quick_schedule", %{"schedule" => "hourly"}, socket) do
+    Datasets.update_cadence(socket.assigns.dataset_id, "0 0 * * * *")
     send(self(), {:assign_crontab, "0 0 * * * *"})
+
     {:noreply, socket}
   end
 
   def handle_event("quick_schedule", %{"schedule" => "daily"}, socket) do
+    Datasets.update_cadence(socket.assigns.dataset_id, "0 0 0 * * *")
     send(self(), {:assign_crontab, "0 0 0 * * *"})
+
     {:noreply, socket}
+    # {:noreply, assign(socket, crontab: "0 0 0 * * *")}
   end
 
   def handle_event("quick_schedule", %{"schedule" => "weekly"}, socket) do
+    Datasets.update_cadence(socket.assigns.dataset_id, "0 0 0 * * 0")
     send(self(), {:assign_crontab, "0 0 0 * * 0"})
     {:noreply, socket}
   end
 
   def handle_event("quick_schedule", %{"schedule" => "monthly"}, socket) do
+    Datasets.update_cadence(socket.assigns.dataset_id, "0 0 0 1 * *")
     send(self(), {:assign_crontab, "0 0 0 1 * *"})
     {:noreply, socket}
   end
 
   def handle_event("quick_schedule", %{"schedule" => "yearly"}, socket) do
+    Datasets.update_cadence(socket.assigns.dataset_id, "0 0 0 1 1 *")
     send(self(), {:assign_crontab, "0 0 0 1 1 *"})
     {:noreply, socket}
   end
