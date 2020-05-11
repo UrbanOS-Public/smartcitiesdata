@@ -11,6 +11,18 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:ok, socket}
   end
 
+  def update(assigns, socket) do
+    repeat_ingestion? = input_value(assigns.form, :cadence) != "once"
+    crontab_list = parse_crontab(assigns.crontab)
+
+    updated_assigns =
+      assigns
+      |> Map.put(:crontab_list, crontab_list)
+      |> Map.put(:repeat_ingestion?, repeat_ingestion?)
+
+    {:ok, assign(socket, updated_assigns)}
+  end
+
   def render(assigns) do
     modifier =
       if assigns.repeat_ingestion? do
@@ -18,8 +30,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       else
         "hidden"
       end
-
-    crontab_list = parse_crontab(assigns.crontab)
 
     ~L"""
     <div id="<%= @id %>">
@@ -55,34 +65,43 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
           <div class="finalize-form__schedule-input">
             <div class="finalize-form__schedule-input-field">
               <label>Second</label>
-              <input class="finalize-form-schedule-input__field" value="<%= crontab_list.second %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="second" phx-target="<%= @myself %>" value="<%= @crontab_list.second %>" />
+
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Minute</label>
-              <input class="finalize-form-schedule-input__field" value="<%= crontab_list.minute %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="minute" phx-target="<%= @myself %>" value="<%= @crontab_list.minute %>" />
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Hour</label>
-              <input class="finalize-form-schedule-input__field" value="<%= crontab_list.hour %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="hour" phx-target="<%= @myself %>" value="<%= @crontab_list.hour %>" />
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Day</label>
-              <input class="finalize-form-schedule-input__field" value="<%= crontab_list.day %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="day" phx-target="<%= @myself %>" value="<%= @crontab_list.day %>" />
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Month</label>
-              <input class="finalize-form-schedule-input__field" value="<%= crontab_list.month %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="month" phx-target="<%= @myself %>" value="<%= @crontab_list.month %>" />
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Week</label>
-              <input class="finalize-form-schedule-input__field" value="<%= crontab_list.week %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="week" phx-target="<%= @myself %>" value="<%= @crontab_list.week %>" />
             </div>
-            <button type="button" class="finalize-form-cron-button cron-input-submit">Set</button>
+            <button type="button" class="finalize-form-cron-button cron-input-submit" phx-click="set_schedule" phx-target="<%= @myself %>">Set</button>
           </div>
+
         </div>
       </div>
     </div>
     """
+  end
+
+  def handle_event("set_schedule", _, socket) do
+    socket.assigns.crontab_list
+    |> cronlist_to_cronstring()
+
+    {:noreply, socket}
   end
 
   def handle_event("quick_schedule", %{"schedule" => "hourly"}, socket) do
@@ -97,7 +116,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     send(self(), {:assign_crontab, "0 0 0 * * *"})
 
     {:noreply, socket}
-    # {:noreply, assign(socket, crontab: "0 0 0 * * *")}
   end
 
   def handle_event("quick_schedule", %{"schedule" => "weekly"}, socket) do
@@ -118,11 +136,25 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, socket}
   end
 
+
+  def handle_event("update_cron", %{"input-field" => input_field, "value" => value}, socket) do
+    new_crontab = Map.put(socket.assigns.crontab_list, String.to_atom(input_field), value)
+    {:noreply, assign(socket, crontab_list: new_crontab)}
+  end
+
   defp parse_crontab(cron_string) do
     cron_list = String.split(cron_string)
 
     [:second, :minute, :hour, :day, :month, :week]
     |> Enum.zip(cron_list)
     |> Map.new()
+  end
+
+
+  defp cronlist_to_cronstring(cronlist) do
+    [:minute, :hour, :day, :month, :week]
+    |> Enum.reduce(cronlist.second, fn field, acc ->
+      acc <> " " <> cronlist[field]
+    end)
   end
 end

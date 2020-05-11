@@ -170,7 +170,7 @@ defmodule AndiWeb.EditLiveView do
         </div>
 
         <div class="finalize-form form-section">
-          <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, crontab: @crontab, repeat_ingestion?: input_value(technical, :cadence) != "once") %>
+          <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, crontab: @crontab) %>
         </div>
 
         <div class="edit-button-group form-grid">
