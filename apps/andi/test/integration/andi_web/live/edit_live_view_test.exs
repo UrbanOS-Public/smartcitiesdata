@@ -690,7 +690,7 @@ defmodule AndiWeb.EditLiveViewTest do
       render_click([view, "finalize_form_editor"], "set_schedule")
       html = render(view)
 
-      assert dataset.technical.cadence == get_crontab_from_html(html)
+      assert "0 " <> dataset.technical.cadence == get_crontab_from_html(html)
       assert Enum.empty?(find_elements(html, ".finalize-form__error-msg--visible"))
     end
 
