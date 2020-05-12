@@ -645,7 +645,7 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset =
         TDG.create_dataset(%{
               technical: %{
-                cadence: "0 * * * * *"
+                cadence: "1 1 1 * * *"
               }
         })
 
@@ -653,7 +653,7 @@ defmodule AndiWeb.EditLiveViewTest do
       [dataset: andi_dataset]
     end
 
-    data_test "quick schedule #{schedule}", %{dataset: dataset} do
+    data_test "quick schedule #{schedule}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       render_click([view, "finalize_form_editor"], "quick_schedule", %{"schedule" => schedule})
@@ -670,6 +670,17 @@ defmodule AndiWeb.EditLiveViewTest do
         ["yearly", "0 0 0 1 1 *"]
       ])
     end
+
+    test "set schedule manually", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      render_click([view, "finalize_form_editor"], "set_schedule")
+      html = render(view)
+
+      assert dataset.technical.cadence == get_crontab_from_html(html)
+    end
+
+
   end
 
   defp get_crontab_from_html(html) do

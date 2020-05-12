@@ -98,8 +98,11 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   end
 
   def handle_event("set_schedule", _, socket) do
-    socket.assigns.crontab_list
+    new_cron = socket.assigns.crontab_list
     |> cronlist_to_cronstring()
+
+    Datasets.update_cadence(socket.assigns.dataset_id, new_cron)
+    send(self(), {:assign_crontab, new_cron})
 
     {:noreply, socket}
   end
