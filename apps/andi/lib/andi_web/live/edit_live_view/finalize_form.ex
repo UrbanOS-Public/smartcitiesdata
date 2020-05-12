@@ -139,24 +139,26 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, socket}
   end
 
+  # TODO: map of quick schedules to clean this up? ^
 
   def handle_event("update_cron", %{"input-field" => input_field, "value" => value}, socket) do
     new_crontab = Map.put(socket.assigns.crontab_list, String.to_atom(input_field), value)
     {:noreply, assign(socket, crontab_list: new_crontab)}
   end
 
-  defp parse_crontab(cron_string) when byte_size(cron_string) == 11 do
-    cron_list = String.split(cron_string)
-
-    [:second, :minute, :hour, :day, :month, :week]
-    |> Enum.zip(cron_list)
-    |> Map.new()
-  end
+  defp parse_crontab("never"), do: []
 
   defp parse_crontab(cron_string) do
     cron_list = String.split(cron_string)
+    default_keys = [:minute, :hour, :day, :month, :week]
 
-    [:minute, :hour, :day, :month, :week]
+    keys =
+      case crontab_length(cron_string) do
+        6 -> [:second | default_keys]
+        _ -> default_keys
+      end
+
+    keys
     |> Enum.zip(cron_list)
     |> Map.new()
   end
@@ -173,5 +175,11 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     |> Enum.reduce(cronlist.minute, fn field, acc ->
       acc <> " " <> cronlist[field]
     end)
+  end
+
+  defp crontab_length(cronstring) do
+    cronstring
+    |> String.split()
+    |> Enum.count
   end
 end

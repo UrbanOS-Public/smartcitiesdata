@@ -691,6 +691,14 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert dataset.technical.cadence == get_crontab_from_html(html)
     end
+
+    test "handles cadence of never", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{cadence: "never"}})
+      {:ok, _} = Datasets.update(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert "" == get_crontab_from_html(html)
+    end
   end
 
   defp get_crontab_from_html(html) do
