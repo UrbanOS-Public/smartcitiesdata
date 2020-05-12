@@ -65,28 +65,28 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
           <div class="finalize-form__schedule-input">
             <div class="finalize-form__schedule-input-field">
               <label>Second</label>
-              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="second" phx-target="<%= @myself %>" value="<%= @crontab_list.second %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="second" phx-target="<%= @myself %>" value="<%= @crontab_list[:second] %>" />
 
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Minute</label>
-              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="minute" phx-target="<%= @myself %>" value="<%= @crontab_list.minute %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="minute" phx-target="<%= @myself %>" value="<%= @crontab_list[:minute] %>" />
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Hour</label>
-              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="hour" phx-target="<%= @myself %>" value="<%= @crontab_list.hour %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="hour" phx-target="<%= @myself %>" value="<%= @crontab_list[:hour] %>" />
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Day</label>
-              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="day" phx-target="<%= @myself %>" value="<%= @crontab_list.day %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="day" phx-target="<%= @myself %>" value="<%= @crontab_list[:day] %>" />
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Month</label>
-              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="month" phx-target="<%= @myself %>" value="<%= @crontab_list.month %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="month" phx-target="<%= @myself %>" value="<%= @crontab_list[:month] %>" />
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Week</label>
-              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="week" phx-target="<%= @myself %>" value="<%= @crontab_list.week %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="week" phx-target="<%= @myself %>" value="<%= @crontab_list[:week] %>" />
             </div>
             <button type="button" class="finalize-form-cron-button cron-input-submit" phx-click="set_schedule" phx-target="<%= @myself %>">Set</button>
           </div>
@@ -145,7 +145,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, assign(socket, crontab_list: new_crontab)}
   end
 
-  defp parse_crontab(cron_string) do
+  defp parse_crontab(cron_string) when byte_size(cron_string) == 11 do
     cron_list = String.split(cron_string)
 
     [:second, :minute, :hour, :day, :month, :week]
@@ -153,10 +153,24 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     |> Map.new()
   end
 
+  defp parse_crontab(cron_string) do
+    cron_list = String.split(cron_string)
 
-  defp cronlist_to_cronstring(cronlist) do
+    [:minute, :hour, :day, :month, :week]
+    |> Enum.zip(cron_list)
+    |> Map.new()
+  end
+
+  defp cronlist_to_cronstring(cronlist) when map_size(cronlist) == 6 do
     [:minute, :hour, :day, :month, :week]
     |> Enum.reduce(cronlist.second, fn field, acc ->
+      acc <> " " <> cronlist[field]
+    end)
+  end
+
+  defp cronlist_to_cronstring(cronlist) do
+    [:hour, :day, :month, :week]
+    |> Enum.reduce(cronlist.minute, fn field, acc ->
       acc <> " " <> cronlist[field]
     end)
   end

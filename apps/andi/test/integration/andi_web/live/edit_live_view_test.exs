@@ -680,12 +680,23 @@ defmodule AndiWeb.EditLiveViewTest do
       assert dataset.technical.cadence == get_crontab_from_html(html)
     end
 
+    test "handles five-character cronstrings", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{cadence: "4 2 7 * *"}})
+      {:ok, _} = Datasets.update(dataset)
 
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      render_click([view, "finalize_form_editor"], "set_schedule")
+      html = render(view)
+
+      assert dataset.technical.cadence == get_crontab_from_html(html)
+    end
   end
 
   defp get_crontab_from_html(html) do
     html
     |> get_values(".finalize-form-schedule-input__field")
     |> Enum.join(" ")
+    |> String.trim_leading()
   end
 end
