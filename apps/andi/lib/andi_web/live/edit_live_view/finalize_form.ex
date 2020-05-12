@@ -5,27 +5,20 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
+
   alias Andi.InputSchemas.Datasets
-
-  def mount(socket) do
-    {:ok, socket}
-  end
-
-  def update(assigns, socket) do
-    repeat_ingestion? = input_value(assigns.form, :cadence) != "once"
-    crontab_list = parse_crontab(assigns.crontab)
-
-    updated_assigns =
-      assigns
-      |> Map.put(:crontab_list, crontab_list)
-      |> Map.put(:repeat_ingestion?, repeat_ingestion?)
-
-    {:ok, assign(socket, updated_assigns)}
-  end
+  alias Crontab.CronExpression
 
   def render(assigns) do
     modifier =
       if assigns.repeat_ingestion? do
+        "visible"
+      else
+        "hidden"
+      end
+
+    has_error_msg =
+      if assigns.error_msg != "" do
         "visible"
       else
         "hidden"
@@ -91,20 +84,44 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
             <button type="button" class="finalize-form-cron-button cron-input-submit" phx-click="set_schedule" phx-target="<%= @myself %>">Set</button>
           </div>
 
+          <p class="error-msg finalize-form__error-msg--<%= has_error_msg %>"><%= @error_msg %></p>
         </div>
       </div>
     </div>
     """
   end
 
+  def mount(socket) do
+    {:ok, assign(socket, error_msg: "")}
+  end
+
+  def update(assigns, socket) do
+    repeat_ingestion? = input_value(assigns.form, :cadence) != "once"
+    crontab_list = parse_crontab(assigns.crontab)
+
+    updated_assigns =
+      assigns
+      |> Map.put(:crontab_list, crontab_list)
+      |> Map.put(:repeat_ingestion?, repeat_ingestion?)
+
+    {:ok, assign(socket, updated_assigns)}
+  end
+
   def handle_event("set_schedule", _, socket) do
     new_cron = socket.assigns.crontab_list
     |> cronlist_to_cronstring()
+    |> IO.inspect()
 
-    Datasets.update_cadence(socket.assigns.dataset_id, new_cron)
-    send(self(), {:assign_crontab, new_cron})
+    case CronExpression.Parser.parse(new_cron, true) do
+      {:ok, _} ->
+        Datasets.update_cadence(socket.assigns.dataset_id, new_cron)
+        send(self(), {:assign_crontab, new_cron})
+        {:noreply, assign(socket, error_msg: "")}
 
-    {:noreply, socket}
+      {:error, error_msg} ->
+        {:noreply, assign(socket, crontab: new_cron, error_msg: error_msg)}
+    end
+
   end
 
   def handle_event("quick_schedule", %{"schedule" => "hourly"}, socket) do
@@ -146,7 +163,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, assign(socket, crontab_list: new_crontab)}
   end
 
-  defp parse_crontab("never"), do: []
+  defp parse_crontab("never"), do: %{}
 
   defp parse_crontab(cron_string) do
     cron_list = String.split(cron_string)
@@ -163,6 +180,19 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     |> Map.new()
   end
 
+
+ # TODO fix this up
+  defp cronlist_to_cronstring(cronlist) when map_size(cronlist) < 5 do
+    [:second, :minute, :hour, :day, :month, :week]
+    |> Enum.reduce("", fn field, acc ->
+      case Map.has_key?(cronlist, field) do
+        true -> acc <> " " <> cronlist[field]
+        false -> acc <> " nil"
+      end
+    end)
+    |> String.trim_leading()
+  end
+
   defp cronlist_to_cronstring(cronlist) when map_size(cronlist) == 6 do
     [:minute, :hour, :day, :month, :week]
     |> Enum.reduce(cronlist.second, fn field, acc ->
@@ -172,8 +202,11 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   defp cronlist_to_cronstring(cronlist) do
     [:hour, :day, :month, :week]
-    |> Enum.reduce(cronlist.minute, fn field, acc ->
-      acc <> " " <> cronlist[field]
+    |> Enum.reduce(cronlist[:minute], fn field, acc ->
+      case Map.has_key?(cronlist, field) do
+        true -> acc <> " " <> cronlist[field]
+        false -> acc <> " nil"
+      end
     end)
   end
 
