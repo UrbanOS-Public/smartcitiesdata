@@ -151,7 +151,11 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     Datasets.update_cadence(socket.assigns.dataset_id, cronstring)
     send(self(), {:assign_crontab})
 
-    {:noreply, assign(socket, crontab_list: parse_crontab(cronstring), schedule_msg: {:success, "Cadence successfully set to: #{cronstring}"})}
+    {:noreply,
+     assign(socket,
+       crontab_list: parse_crontab(cronstring),
+       schedule_msg: {:success, "Cadence successfully set to: #{cronstring}"}
+     )}
   end
 
   def handle_event("update_cron", %{"input-field" => input_field, "value" => value}, socket) do
