@@ -207,11 +207,11 @@ defmodule AndiWeb.EditLiveView do
 
     Process.flag(:trap_exit, true)
 
-    crontab = case dataset.technical.cadence do
-                "once" -> "0 * * * * *"
-                "never" -> "0 * * * * *"
-                cron -> cron
-              end
+    crontab =
+      case dataset.technical.cadence do
+        cadence when cadence in ["once", "never"] -> "0 * * * * *"
+        cron -> cron
+      end
 
     {:ok,
      assign(socket,

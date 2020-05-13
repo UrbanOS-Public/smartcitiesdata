@@ -64,9 +64,10 @@ defmodule Andi.InputSchemas.Datasets do
   def update_cadence(dataset_id, cadence) do
     from_dataset = get(dataset_id) || %Dataset{id: dataset_id}
 
-    updated = Map.update!(from_dataset, :technical, fn technical ->
-      Map.put(technical, :cadence, cadence)
-    end)
+    updated =
+      Map.update!(from_dataset, :technical, fn technical ->
+        Map.put(technical, :cadence, cadence)
+      end)
 
     update(from_dataset, updated)
   end

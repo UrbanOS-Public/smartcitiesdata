@@ -22,7 +22,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   def update(assigns, socket) do
     crontab = Map.get(assigns, :crontab, input_value(assigns.form, :cadence))
-    repeat_ingestion? = input_value(assigns.form, :cadence) != "once"
+    repeat_ingestion? = input_value(assigns.form, :cadence) not in ["once", "never"]
 
     updated_assigns =
       assigns
@@ -116,8 +116,9 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   end
 
   def handle_event("set_schedule", _, socket) do
-    new_cron = socket.assigns.crontab_list
-    |> cronlist_to_cronstring()
+    new_cron =
+      socket.assigns.crontab_list
+      |> cronlist_to_cronstring()
 
     case CronExpression.Parser.parse(new_cron, true) do
       {:ok, _} ->
@@ -128,7 +129,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       {:error, error_msg} ->
         {:noreply, assign(socket, error_msg: error_msg)}
     end
-
   end
 
   def handle_event("quick_schedule", %{"schedule" => schedule}, socket) do

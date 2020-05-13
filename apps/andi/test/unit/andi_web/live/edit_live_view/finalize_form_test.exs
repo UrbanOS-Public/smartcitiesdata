@@ -4,7 +4,6 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
   import Phoenix.LiveViewTest
 
   use Placebo
-  import Checkov
 
   import FlokiHelpers,
     only: [

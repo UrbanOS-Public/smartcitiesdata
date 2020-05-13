@@ -639,14 +639,13 @@ defmodule AndiWeb.EditLiveViewTest do
     end
   end
 
-
   describe "finalize form" do
     setup do
       dataset =
         TDG.create_dataset(%{
-              technical: %{
-                cadence: "1 1 1 * * *"
-              }
+          technical: %{
+            cadence: "1 1 1 * * *"
+          }
         })
 
       {:ok, andi_dataset} = Datasets.update(dataset)
@@ -699,7 +698,6 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert "" == get_crontab_from_html(html)
       assert Enum.empty?(find_elements(html, ".finalize-form__error-msg--visible"))
     end
 
