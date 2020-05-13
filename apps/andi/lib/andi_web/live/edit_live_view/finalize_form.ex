@@ -16,6 +16,23 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     "yearly" => "0 0 0 1 1 *"
   }
 
+  def mount(socket) do
+    {:ok, assign(socket, error_msg: "")}
+  end
+
+  def update(assigns, socket) do
+    crontab = Map.get(assigns, :crontab, input_value(assigns.form, :cadence))
+    repeat_ingestion? = input_value(assigns.form, :cadence) != "once"
+
+    updated_assigns =
+      assigns
+      |> Map.put_new(:crontab_list, parse_crontab(crontab))
+      |> Map.put(:repeat_ingestion?, repeat_ingestion?)
+      |> Map.put(:error_msg, "")
+
+    {:ok, assign(socket, updated_assigns)}
+  end
+
   def render(assigns) do
     modifier =
       if assigns.repeat_ingestion? do
@@ -98,23 +115,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     """
   end
 
-  def mount(socket) do
-    {:ok, assign(socket, error_msg: "")}
-  end
-
-  def update(assigns, socket) do
-    repeat_ingestion? = input_value(assigns.form, :cadence) != "once"
-    crontab_list = parse_crontab(assigns.crontab)
-
-    updated_assigns =
-      assigns
-      |> Map.put(:crontab_list, crontab_list)
-      |> Map.put(:repeat_ingestion?, repeat_ingestion?)
-      |> Map.put(:error_msg, "")
-
-    {:ok, assign(socket, updated_assigns)}
-  end
-
   def handle_event("set_schedule", _, socket) do
     new_cron = socket.assigns.crontab_list
     |> cronlist_to_cronstring()
@@ -126,7 +126,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
         {:noreply, assign(socket, error_msg: "")}
 
       {:error, error_msg} ->
-        {:noreply, assign(socket, crontab: new_cron, error_msg: error_msg)}
+        {:noreply, assign(socket, error_msg: error_msg)}
     end
 
   end
@@ -144,20 +144,21 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, assign(socket, crontab_list: new_crontab)}
   end
 
+  defp parse_crontab(nil), do: %{}
   defp parse_crontab("never"), do: %{}
 
-  defp parse_crontab(cron_string) do
-    cron_list = String.split(cron_string)
+  defp parse_crontab(cronstring) do
+    cronlist = String.split(cronstring)
     default_keys = [:minute, :hour, :day, :month, :week]
 
     keys =
-      case crontab_length(cron_string) do
+      case crontab_length(cronstring) do
         6 -> [:second | default_keys]
         _ -> default_keys
       end
 
     keys
-    |> Enum.zip(cron_list)
+    |> Enum.zip(cronlist)
     |> Map.new()
   end
 

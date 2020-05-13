@@ -209,7 +209,8 @@ defmodule AndiWeb.EditLiveView do
 
     crontab = case dataset.technical.cadence do
                 "once" -> "0 * * * * *"
-                cronstring -> cronstring
+                "never" -> "0 * * * * *"
+                cron -> cron
               end
 
     {:ok,
