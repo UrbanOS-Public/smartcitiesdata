@@ -18,11 +18,12 @@
     }
 
     .finalize-form__quick-schedule {
-        margin-bottom: 3rem;
+        margin-bottom: 2rem;
     }
 
     .finalize-form__schedule-input {
         display: inline-flex;
+        margin: 1rem 0 1rem 0;
 
         .finalize-form__schedule-input-field {
             display: grid;
@@ -55,4 +56,26 @@
         font-size: 0.85rem;
         padding: 0 0.6rem 0 0.6rem;
     }
+
+    .finalize-form__help-link {
+        font-size: 0.85rem;
+    }
+
+    .finalize-form__schedule-msg {
+        display: block;
+        margin: 5px 0 5px 0;
+    }
+
+    .finalize-form__schedule-msg--error {
+        color: red;
+    }
+
+    .finalize-form__schedule-msg--success {
+        color: green;
+    }
+
+    .finalize-form__schedule-msg--hidden {
+        display: none;
+    }
+
 }

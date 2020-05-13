@@ -170,7 +170,7 @@ defmodule AndiWeb.EditLiveView do
         </div>
 
         <div class="finalize-form form-section">
-          <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, crontab: @crontab) %>
+          <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical) %>
         </div>
 
         <div class="edit-button-group form-grid">
@@ -207,17 +207,10 @@ defmodule AndiWeb.EditLiveView do
 
     Process.flag(:trap_exit, true)
 
-    crontab =
-      case dataset.technical.cadence do
-        cadence when cadence in ["once", "never"] -> "0 * * * * *"
-        cron -> cron
-      end
-
     {:ok,
      assign(socket,
        add_data_dictionary_field_visible: false,
        changeset: new_changeset,
-       crontab: crontab,
        dataset: dataset,
        has_validation_errors: false,
        new_field_initial_render: false,
@@ -410,11 +403,11 @@ defmodule AndiWeb.EditLiveView do
      )}
   end
 
-  def handle_info({:assign_crontab, crontab}, socket) do
+  def handle_info({:assign_crontab}, socket) do
     dataset = Datasets.get(socket.assigns.dataset.id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
-    {:noreply, assign(socket, changeset: changeset, crontab: crontab)}
+    {:noreply, assign(socket, changeset: changeset)}
   end
 
   # This handle_info takes care of all exceptions in a generic way.

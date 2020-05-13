@@ -17,18 +17,26 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   }
 
   def mount(socket) do
-    {:ok, assign(socket, error_msg: "")}
+    {:ok, assign(socket, schedule_msg: {:none, ""})}
   end
 
   def update(assigns, socket) do
-    crontab = Map.get(assigns, :crontab, input_value(assigns.form, :cadence))
+    default_cron =
+      case input_value(assigns.form, :cadence) do
+        cadence when cadence in ["once", "never"] -> "0 * * * * *"
+        cron -> cron
+      end
+
+    crontab = Map.get(assigns, :crontab, default_cron)
+    crontab_list = Map.get(assigns, :crontab_list, parse_crontab(crontab))
     repeat_ingestion? = input_value(assigns.form, :cadence) not in ["once", "never"]
 
     updated_assigns =
       assigns
-      |> Map.put_new(:crontab_list, parse_crontab(crontab))
+      |> Map.put_new(:crontab, default_cron)
+      |> Map.put_new(:crontab_list, crontab_list)
       |> Map.put(:repeat_ingestion?, repeat_ingestion?)
-      |> Map.put(:error_msg, "")
+      |> Map.put(:schedule_msg, {:none, ""})
 
     {:ok, assign(socket, updated_assigns)}
   end
@@ -41,11 +49,11 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
         "hidden"
       end
 
-    has_error_msg =
-      if assigns.error_msg != "" do
-        "visible"
-      else
-        "hidden"
+    message_type =
+      case assigns.schedule_msg do
+        {:error, _} -> "error"
+        {:success, _} -> "success"
+        _ -> "hidden"
       end
 
     ~L"""
@@ -60,7 +68,10 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
             <%= label(@form, :cadence, "Immediately", class: "finalize-form__schedule-option-label") %>
             <%= radio_button(@form, :cadence, "once") %>
           </div>
-
+          <div class="finalize-form__schedule-option">
+          <%= label(@form, :cadence, "Never", class: "finalize-form__schedule-option-label") %>
+          <%= radio_button(@form, :cadence, "never") %>
+          </div>
           <div class="finalize-form__schedule-option">
             <%= label(@form, :cadence, "Repeat", class: "finalize-form__schedule-option-label") %>
             <%= radio_button(@form, :cadence, @crontab) %>
@@ -71,12 +82,15 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
           <h4>Quick Schedule</h4>
 
           <div class="finalize-form__quick-schedule">
-            <button type="button" class="finalize-form-cron-button">Startup</button>
             <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="hourly" phx-target="<%= @myself %>">Hourly</button>
             <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="daily" phx-target="<%= @myself %>">Daily</button>
             <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="weekly" phx-target="<%= @myself %>">Weekly</button>
             <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="monthly" phx-target="<%= @myself %>">Monthly</button>
             <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="yearly" phx-target="<%= @myself %>">Yearly</button>
+          </div>
+
+          <div class="finalize-form__help-link">
+            <a href="https://en.wikipedia.org/wiki/Cron" target="_blank">Cron Schedule Help</a>
           </div>
 
           <div class="finalize-form__schedule-input">
@@ -108,7 +122,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
             <button type="button" class="finalize-form-cron-button cron-input-submit" phx-click="set_schedule" phx-target="<%= @myself %>">Set</button>
           </div>
 
-          <p class="error-msg finalize-form__error-msg--<%= has_error_msg %>"><%= @error_msg %></p>
+          <p class="finalize-form__schedule-msg finalize-form__schedule-msg--<%= message_type %>"><%= elem(@schedule_msg, 1) %></p>
         </div>
       </div>
     </div>
@@ -123,20 +137,21 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     case CronExpression.Parser.parse(new_cron, true) do
       {:ok, _} ->
         Datasets.update_cadence(socket.assigns.dataset_id, new_cron)
-        send(self(), {:assign_crontab, new_cron})
-        {:noreply, assign(socket, error_msg: "")}
+        send(self(), {:assign_crontab})
+
+        {:noreply, assign(socket, schedule_msg: {:success, "Cadence successfully set to: #{new_cron}"})}
 
       {:error, error_msg} ->
-        {:noreply, assign(socket, error_msg: error_msg)}
+        {:noreply, assign(socket, schedule_msg: {:error, "Error: #{error_msg}"})}
     end
   end
 
   def handle_event("quick_schedule", %{"schedule" => schedule}, socket) do
     cronstring = @quick_schedules[schedule]
     Datasets.update_cadence(socket.assigns.dataset_id, cronstring)
-    send(self(), {:assign_crontab, cronstring})
+    send(self(), {:assign_crontab})
 
-    {:noreply, socket}
+    {:noreply, assign(socket, crontab_list: parse_crontab(cronstring), schedule_msg: {:success, "Cadence successfully set to: #{cronstring}"})}
   end
 
   def handle_event("update_cron", %{"input-field" => input_field, "value" => value}, socket) do
@@ -162,7 +177,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     |> Map.new()
   end
 
-  defp cronlist_to_cronstring(%{second: _} = cronlist) do
+  defp cronlist_to_cronstring(%{second: second} = cronlist) when second != "" do
     [:second, :minute, :hour, :day, :month, :week]
     |> Enum.reduce("", fn field, acc ->
       acc <> " " <> Map.get(cronlist, field, "nil")
