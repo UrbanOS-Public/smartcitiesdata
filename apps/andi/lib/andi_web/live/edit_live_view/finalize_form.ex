@@ -39,6 +39,12 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       |> Map.put_new(:crontab_list, crontab_list)
       |> Map.put(:repeat_ingestion?, repeat_ingestion?)
 
+    updated_assigns =
+      case repeat_ingestion? do
+        true -> updated_assigns
+        false -> Map.put(updated_assigns, :schedule_msg, {:none, ""})
+      end
+
     {:ok, assign(socket, updated_assigns)}
   end
 
@@ -67,11 +73,11 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
         <div class="finalize-form__schedule-options">
           <div class="finalize-form__schedule-option">
             <%= label(@form, :cadence, "Immediately", class: "finalize-form__schedule-option-label") %>
-            <%= radio_button(@form, :cadence, "once", phx_click: "reset_message", phx_target: @myself) %>
+            <%= radio_button(@form, :cadence, "once")%>
           </div>
           <div class="finalize-form__schedule-option">
           <%= label(@form, :cadence, "Never", class: "finalize-form__schedule-option-label") %>
-          <%= radio_button(@form, :cadence, "never", phx_click: "reset_message", phx_target: @myself) %>
+          <%= radio_button(@form, :cadence, "never") %>
           </div>
           <div class="finalize-form__schedule-option">
             <%= label(@form, :cadence, "Repeat", class: "finalize-form__schedule-option-label") %>
@@ -158,10 +164,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   def handle_event("update_cron", %{"input-field" => input_field, "value" => value}, socket) do
     new_crontab = Map.put(socket.assigns.crontab_list, String.to_existing_atom(input_field), value)
     {:noreply, assign(socket, crontab_list: new_crontab)}
-  end
-
-  def handle_event("reset_message", _, socket) do
-    {:noreply, assign(socket, schedule_msg: {:none, ""})}
   end
 
   defp validate_cron(%{second: second}) when second in @invalid_seconds,
