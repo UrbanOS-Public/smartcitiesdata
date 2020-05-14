@@ -638,4 +638,93 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--visible"))
     end
   end
+
+  describe "finalize form" do
+    setup do
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            cadence: "1 1 1 * * *"
+          }
+        })
+
+      {:ok, andi_dataset} = Datasets.update(dataset)
+      [dataset: andi_dataset]
+    end
+
+    data_test "quick schedule #{schedule}", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      render_click([view, "finalize_form_editor"], "quick_schedule", %{"schedule" => schedule})
+      html = render(view)
+
+      assert expected_crontab == get_crontab_from_html(html)
+      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--success"))
+
+      where([
+        [:schedule, :expected_crontab],
+        ["hourly", "0 0 * * * *"],
+        ["daily", "0 0 0 * * *"],
+        ["weekly", "0 0 0 * * 0"],
+        ["monthly", "0 0 0 1 * *"],
+        ["yearly", "0 0 0 1 1 *"]
+      ])
+    end
+
+    test "set schedule manually", %{conn: conn, dataset: dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      render_click([view, "finalize_form_editor"], "set_schedule")
+      html = render(view)
+
+      assert dataset.technical.cadence == get_crontab_from_html(html)
+      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--success"))
+    end
+
+    test "handles five-character cronstrings", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{cadence: "4 2 7 * *"}})
+      {:ok, _} = Datasets.update(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      render_click([view, "finalize_form_editor"], "set_schedule")
+      html = render(view)
+
+      assert "0 " <> dataset.technical.cadence == get_crontab_from_html(html)
+      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--success"))
+    end
+
+    test "handles cadence of never", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{cadence: "never"}})
+      {:ok, _} = Datasets.update(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--error"))
+    end
+
+    data_test "marks #{cronstring} as invalid", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{cadence: cronstring}})
+      {:ok, _} = Datasets.update(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      render_click([view, "finalize_form_editor"], "set_schedule")
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--error"))
+
+      where([
+        [:cronstring],
+        [""],
+        ["1 2 3 4"],
+        ["1 nil 2 3 4 5"]
+      ])
+    end
+  end
+
+  defp get_crontab_from_html(html) do
+    html
+    |> get_values(".finalize-form-schedule-input__field")
+    |> Enum.join(" ")
+    |> String.trim_leading()
+  end
 end

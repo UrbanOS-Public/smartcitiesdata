@@ -1,0 +1,81 @@
+.finalize-form {
+    .finalize-form__schedule-options {
+        display: inline-flex;
+        margin-bottom: 1rem;
+
+        .finalize-form__schedule-option {
+            margin-right: 2rem;
+        }
+
+        .finalize-form__schedule-option-label {
+            color: #7f7676;
+            letter-spacing: 0.03rem;
+        }
+    }
+
+    .finalize-form__scheduler--hidden {
+        display: none;
+    }
+
+    .finalize-form__quick-schedule {
+        margin-bottom: 2rem;
+    }
+
+    .finalize-form__schedule-input {
+        display: inline-flex;
+        margin: 1rem 0 1rem 0;
+
+        .finalize-form__schedule-input-field {
+            display: grid;
+            margin-right: 2rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+        }
+
+        input {
+            border-radius: 3px;
+            border: none;
+            border: 1px solid #d8d9db;
+            height: 1.75rem;
+            width: 4rem;
+        }
+
+        .cron-input-submit {
+            align-self: center;
+        }
+    }
+
+    .finalize-form-cron-button {
+        border-radius: 3px;
+        border-color: #1a7bb9;
+        background-color: #1a7bb9;
+        color: #d7e1e5;
+        height: 2rem;
+        font-size: 0.85rem;
+        padding: 0 0.6rem 0 0.6rem;
+    }
+
+    .finalize-form__help-link {
+        font-size: 0.85rem;
+    }
+
+    .finalize-form__schedule-msg {
+        display: block;
+        margin: 5px 0 5px 0;
+    }
+
+    .finalize-form__schedule-msg--error {
+        color: red;
+    }
+
+    .finalize-form__schedule-msg--success {
+        color: green;
+    }
+
+    .finalize-form__schedule-msg--hidden {
+        display: none;
+    }
+
+}

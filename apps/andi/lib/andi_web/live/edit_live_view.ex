@@ -169,6 +169,10 @@ defmodule AndiWeb.EditLiveView do
           </div>
         </div>
 
+        <div class="finalize-form form-section">
+          <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical) %>
+        </div>
+
         <div class="edit-button-group form-grid">
           <div class="edit-button-group__cancel-btn">
             <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
@@ -205,16 +209,17 @@ defmodule AndiWeb.EditLiveView do
 
     {:ok,
      assign(socket,
-       dataset: dataset,
-       changeset: new_changeset,
-       has_validation_errors: false,
-       save_success: false,
-       page_error: false,
-       test_results: nil,
-       testing: false,
-       new_field_initial_render: false,
        add_data_dictionary_field_visible: false,
-       remove_data_dictionary_field_visible: false
+       changeset: new_changeset,
+       dataset: dataset,
+       has_validation_errors: false,
+       new_field_initial_render: false,
+       page_error: false,
+       remove_data_dictionary_field_visible: false,
+       save_success: false,
+       save_success: false,
+       test_results: nil,
+       testing: false
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end
@@ -396,6 +401,13 @@ defmodule AndiWeb.EditLiveView do
        new_field_initial_render: true,
        remove_data_dictionary_field_visible: false
      )}
+  end
+
+  def handle_info({:assign_crontab}, socket) do
+    dataset = Datasets.get(socket.assigns.dataset.id)
+    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
+
+    {:noreply, assign(socket, changeset: changeset)}
   end
 
   # This handle_info takes care of all exceptions in a generic way.
