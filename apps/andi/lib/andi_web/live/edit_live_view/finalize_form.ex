@@ -16,6 +16,8 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     "yearly" => "0 0 0 1 1 *"
   }
 
+  @invalid_seconds ["*", "*/1", "*/2", "*/3", "*/4", "*/5", "*/6", "*/7", "*/8", "*/9"]
+
   def mount(socket) do
     {:ok, assign(socket, schedule_msg: {:none, ""})}
   end
@@ -129,12 +131,8 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   end
 
   def handle_event("set_schedule", _, socket) do
-    new_cron =
-      socket.assigns.crontab_list
-      |> cronlist_to_cronstring()
-
-    case CronExpression.Parser.parse(new_cron, true) do
-      {:ok, _} ->
+    case validate_cron(socket.assigns.crontab_list) do
+      {:ok, new_cron} ->
         Datasets.update_cadence(socket.assigns.dataset_id, new_cron)
         send(self(), {:assign_crontab})
 
@@ -164,6 +162,18 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   def handle_event("reset_message", _, socket) do
     {:noreply, assign(socket, schedule_msg: {:none, ""})}
+  end
+
+  defp validate_cron(%{second: second}) when second in @invalid_seconds,
+    do: {:error, "Cron schedule has a minimum interval of every 10 seconds"}
+
+  defp validate_cron(cronlist) do
+    new_cron = cronlist_to_cronstring(cronlist)
+
+    case CronExpression.Parser.parse(new_cron, true) do
+      {:error, error_msg} -> {:error, "Error: #{error_msg}"}
+      {:ok, _} -> {:ok, new_cron}
+    end
   end
 
   defp parse_crontab(nil), do: %{}

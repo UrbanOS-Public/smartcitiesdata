@@ -4,6 +4,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
   import Phoenix.LiveViewTest
 
   use Placebo
+  import Checkov
 
   import FlokiHelpers,
     only: [
@@ -100,6 +101,25 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       assert Enum.empty?(find_elements(html, ".finalize-form__scheduler--hidden"))
 
       assert "0 * * * * *" == get_crontab_from_html(html)
+    end
+
+    data_test "does not allow schedules more frequent than every 10 seconds", %{conn: conn} do
+      dataset =
+        DatasetHelpers.create_dataset(%{
+          technical: %{
+            cadence: "*/#{second_interval} * * * * *"
+          }
+        })
+
+      DatasetHelpers.add_dataset_to_repo(dataset)
+      assert {:ok, view, _} = live(conn, @url_path <> dataset.id)
+
+      render_click([view, "finalize_form_editor"], "set_schedule")
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--error"))
+
+      where(second_interval: ["1", "2", "3", "4", "5", "6", "7", "8", "9"])
     end
   end
 
