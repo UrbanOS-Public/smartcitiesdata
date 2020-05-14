@@ -43,6 +43,35 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
     end
   end
 
+  describe "never ingestion" do
+    setup %{conn: conn} do
+      dataset =
+        DatasetHelpers.create_dataset(%{
+          technical: %{
+            cadence: "never"
+          }
+        })
+
+      DatasetHelpers.add_dataset_to_repo(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      [
+        view: view,
+        html: html
+      ]
+    end
+
+    test "shows the Never ingestion button selected", %{html: html} do
+      refute Enum.empty?(get_attributes(html, "#form_data_technical_cadence_never", "checked"))
+    end
+
+    test "does not show cron scheduler", %{html: html} do
+      assert Enum.empty?(find_elements(html, ".finalize-form__scheduler--visible"))
+      refute Enum.empty?(find_elements(html, ".finalize-form__scheduler--hidden"))
+    end
+  end
+
   describe "repeat ingestion" do
     setup %{conn: conn} do
       dataset =

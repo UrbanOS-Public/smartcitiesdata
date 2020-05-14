@@ -659,6 +659,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render(view)
 
       assert expected_crontab == get_crontab_from_html(html)
+      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--success"))
 
       where([
         [:schedule, :expected_crontab],
@@ -677,7 +678,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render(view)
 
       assert dataset.technical.cadence == get_crontab_from_html(html)
-      assert Enum.empty?(find_elements(html, ".finalize-form__error-msg--visible"))
+      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--success"))
     end
 
     test "handles five-character cronstrings", %{conn: conn} do
@@ -690,7 +691,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render(view)
 
       assert "0 " <> dataset.technical.cadence == get_crontab_from_html(html)
-      assert Enum.empty?(find_elements(html, ".finalize-form__error-msg--visible"))
+      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--success"))
     end
 
     test "handles cadence of never", %{conn: conn} do
@@ -698,7 +699,7 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert Enum.empty?(find_elements(html, ".finalize-form__error-msg--visible"))
+      assert Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--error"))
     end
 
     data_test "marks #{cronstring} as invalid", %{conn: conn} do
@@ -709,8 +710,7 @@ defmodule AndiWeb.EditLiveViewTest do
       render_click([view, "finalize_form_editor"], "set_schedule")
       html = render(view)
 
-      assert Enum.empty?(find_elements(html, ".finalize-form__error-msg--hidden"))
-      refute Enum.empty?(find_elements(html, ".finalize-form__error-msg--visible"))
+      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--error"))
 
       where([
         [:cronstring],
