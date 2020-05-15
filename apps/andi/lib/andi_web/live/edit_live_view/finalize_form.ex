@@ -38,12 +38,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       |> Map.put_new(:crontab, default_cron)
       |> Map.put_new(:crontab_list, crontab_list)
       |> Map.put(:repeat_ingestion?, repeat_ingestion?)
-
-    updated_assigns =
-      case repeat_ingestion? do
-        true -> updated_assigns
-        false -> Map.put(updated_assigns, :schedule_msg, {:none, ""})
-      end
+      |> reset_schedule_message()
 
     {:ok, assign(socket, updated_assigns)}
   end
@@ -173,8 +168,8 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     new_cron = cronlist_to_cronstring(cronlist)
 
     case CronExpression.Parser.parse(new_cron, true) do
-      {:error, error_msg} -> {:error, "Error: #{error_msg}"}
       {:ok, _} -> {:ok, new_cron}
+      error -> error
     end
   end
 
@@ -215,4 +210,13 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     |> String.split()
     |> Enum.count()
   end
+
+  defp reset_schedule_message(%{repeat_ingestion?: repeat_ingestion?, save_success: save_success} = assigns)
+       when repeat_ingestion? == false or save_success == true do
+    assigns
+    |> Map.put(:schedule_msg, {:none, ""})
+    |> Map.put(:save_success, false)
+  end
+
+  defp reset_schedule_message(assigns), do: assigns
 end
