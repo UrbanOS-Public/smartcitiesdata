@@ -170,7 +170,7 @@ defmodule AndiWeb.EditLiveView do
         </div>
 
         <div class="finalize-form form-section">
-          <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical) %>
+          <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, save_success: @save_success) %>
         </div>
 
         <div class="edit-button-group form-grid">
@@ -216,7 +216,6 @@ defmodule AndiWeb.EditLiveView do
        new_field_initial_render: false,
        page_error: false,
        remove_data_dictionary_field_visible: false,
-       save_success: false,
        save_success: false,
        test_results: nil,
        testing: false
