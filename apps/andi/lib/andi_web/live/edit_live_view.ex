@@ -403,6 +403,8 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_info({:assign_crontab}, socket) do
+    socket = reset_save_success(socket)
+
     dataset = Datasets.get(socket.assigns.dataset.id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
