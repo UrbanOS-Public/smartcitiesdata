@@ -179,7 +179,7 @@ defmodule AndiWeb.EditLiveView do
           </div>
           <div class="edit-button-group__messages">
             <%= if @save_success do %>
-              <div id="success-message" class="metadata__success-message">Saved Successfully</div>
+              <div id="success-message" class="metadata__success-message"><%= @success_message %></div>
             <% end %>
             <%= if @has_validation_errors do %>
               <div id="validation-error-message" class="metadata__error-message">There were errors with the dataset you tried to submit.</div>
@@ -190,7 +190,8 @@ defmodule AndiWeb.EditLiveView do
           </div>
           <div class="edit-button-group__save-btn">
             <%= Link.button("Next", to: "/", method: "get", id: "next-button", class: "btn btn--next btn--large btn--action", disabled: true, title: "Not implemented yet.") %>
-            <%= submit("Save", id: "save-button", class: "btn btn--save btn--large") %>
+            <%= submit("Publish", id: "publish-button", name: "publish-button", class: "btn btn--publish btn--action btn--large", phx_value_action: "publish") %>
+            <%= submit("Save Draft", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft") %>
           </div>
         </div>
       </form>
@@ -217,7 +218,7 @@ defmodule AndiWeb.EditLiveView do
        page_error: false,
        remove_data_dictionary_field_visible: false,
        save_success: false,
-       save_success: false,
+       success_message: "Saved successfully.",
        test_results: nil,
        testing: false
      )
@@ -259,27 +260,40 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("save", %{"form_data" => form_data}, socket) do
-    socket = reset_save_success(socket)
-    changeset = InputConverter.form_data_to_full_ui_changeset(form_data)
+    changeset = form_data |> InputConverter.form_data_to_changeset_draft
+    pending_dataset = Ecto.Changeset.apply_changes(changeset)
+    {:ok, _} = Datasets.update(pending_dataset)
 
-    if changeset.valid? do
-      pending_dataset = Ecto.Changeset.apply_changes(changeset)
-      {:ok, andi_dataset} = Datasets.update(pending_dataset)
-      {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(andi_dataset)
-      changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
+    {_, updated_socket} = form_data
+    |> InputConverter.form_data_to_ui_changeset()
+    |> complete_validation(socket)
 
-      case Brook.Event.send(instance_name(), dataset_update(), :andi, smrt_dataset) do
-        :ok ->
-          {:noreply, assign(socket, dataset: andi_dataset, changeset: changeset, save_success: true, page_error: false)}
+    {:noreply, assign(updated_socket, save_success: true, success_message: "Saved successfully. You may need to fix errors before publishing.")}
+  end
 
-        error ->
-          Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
+  def handle_event("publish", %{"form_data" => form_data}, socket) do
+    # socket = reset_save_success(socket)
+    # changeset = InputConverter.form_data_to_full_ui_changeset(form_data)
 
-          {:noreply, assign(socket, changeset: changeset)}
-      end
-    else
-      {:noreply, assign(socket, changeset: %{changeset | action: :save}, has_validation_errors: true)}
-    end
+    # if changeset.valid? do
+    #   pending_dataset = Ecto.Changeset.apply_changes(changeset)
+    #   {:ok, andi_dataset} = Datasets.update(pending_dataset)
+    #   {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(andi_dataset)
+    #   changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
+
+    #   case Brook.Event.send(instance_name(), dataset_update(), :andi, smrt_dataset) do
+    #     :ok ->
+    #       {:noreply, assign(socket, dataset: andi_dataset, changeset: changeset, save_success: true, page_error: false)}
+
+    #     error ->
+    #       Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
+
+    #       {:noreply, assign(socket, changeset: changeset)}
+    #   end
+    # else
+      # {:noreply, assign(socket, changeset: %{changeset | action: :save}, has_validation_errors: true)}
+    # end
+    {:noreply, socket}
   end
 
   def handle_event("add", %{"field" => "sourceQueryParams"}, socket) do

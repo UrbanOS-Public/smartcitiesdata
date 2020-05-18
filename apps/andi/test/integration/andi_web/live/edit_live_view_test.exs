@@ -26,6 +26,7 @@ defmodule AndiWeb.EditLiveViewTest do
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.FormTools
+  alias Andi.InputSchemas.InputConverter
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
@@ -719,6 +720,27 @@ defmodule AndiWeb.EditLiveViewTest do
         ["1 nil 2 3 4 5"]
       ])
     end
+  end
+
+  describe "dataset finalizing buttons" do
+    test "allows saving invalid form as draft", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, andi_dataset} = Datasets.update(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      form_data = FormTools.form_data_from_andi_dataset(andi_dataset) |> put_in([:business, :dataTitle], "")
+      form_data_changeset = InputConverter.form_data_to_full_changeset(andi_dataset, form_data)
+
+      render_change(view, :validate, %{"form_data" => form_data})
+      html = render_change(view, :save, %{"form_data" => form_data})
+
+      refute form_data_changeset.valid?
+      assert Datasets.get(dataset.id) |> get_in([:business, :dataTitle]) == ""
+      assert get_text(html, "#form_data_business_dataTitle") == ""
+      refute Enum.empty?(find_elements(html, "#dataTitle-error-msg"))
+    end
+
   end
 
   defp get_crontab_from_html(html) do

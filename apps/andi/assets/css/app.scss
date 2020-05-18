@@ -85,12 +85,22 @@ body {
   }
 }
 
+.btn--publish {
+    float: right;
+    margin-right: 1rem;
+}
+
 .btn--save:hover {
   background: $color-text-link;
   color: white;
   border: 2px solid $color-text-link;
 }
 .btn--next:hover {
+  background: white;
+  color: $color-text-link;
+  border: 2px solid $color-text-link;
+}
+.btn--publish:hover {
   background: white;
   color: $color-text-link;
   border: 2px solid $color-text-link;
