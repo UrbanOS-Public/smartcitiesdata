@@ -551,6 +551,38 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
       assert {:ok, [atomized_dataset_one]} == DatasetSearchIndex.search("Olivanders")
     end
+
+    test "given a dataset with a keyword in a search term" do
+      dataset_one = Helper.sample_model(%{keywords: ["Newts", "Scales", "Tails"]})
+      dataset_two = Helper.sample_model()
+
+      atomized_dataset_one = expected_dataset(dataset_one)
+      atomized_dataset_two = expected_dataset(dataset_two)
+
+      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_one)
+      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_two)
+
+      assert {:ok, [atomized_dataset_one]} == DatasetSearchIndex.search("Newts")
+    end
+
+    test "given multiple datasets with the same search term" do
+      dataset_one = Helper.sample_model(%{title: "Ingredients", keywords: ["Newt", "Scale", "Tail"]})
+      dataset_two = Helper.sample_model(%{title: "Reports", description: "Newt Scamander's reports 1920-1930"})
+      dataset_three = Helper.sample_model(%{title: "Others"})
+
+      atomized_dataset_one = expected_dataset(dataset_one)
+      atomized_dataset_two = expected_dataset(dataset_two)
+
+      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_one)
+      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_two)
+      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_three)
+
+      {:ok, models} = DatasetSearchIndex.search("Newt")
+      assert 2 == length(models)
+      assert Enum.any?(models, fn model -> model.title == "Reports" end)
+      assert Enum.any?(models, fn model -> model.title == "Ingredients" end)
+      refute Enum.any?(models, fn model -> model.title == "Others" end)
+    end
   end
 
   defp reconfigure_es_url(url) do
