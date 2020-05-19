@@ -18,6 +18,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
   import FlokiHelpers,
     only: [
+      find_elements: 2,
       get_attributes: 3,
       get_select: 2,
       get_text: 2,
@@ -442,7 +443,7 @@ defmodule AndiWeb.EditLiveViewTest do
     test "valid form data is saved on publish", %{conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      dataset = DatasetHelpers.create_dataset(%{business: %{issuedDate: "", modifiedDate: "2020-01-04T01:02:03Z"}})
+      dataset = DatasetHelpers.create_dataset(%{business: %{modifiedDate: "2020-01-04T01:02:03Z"}})
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
@@ -459,7 +460,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
-      render_change(view, :save, %{"form_data" => form_data})
+      render_change(view, :publish)
 
       {:ok, saved_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_from_save)
 
@@ -512,7 +513,8 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(view, :validate, %{"form_data" => form_data})
       html = render_change(view, :save, %{"form_data" => form_data})
 
-      assert get_text(html, "#success-message") == "Saved Successfully"
+      refute Enum.empty?(find_elements(html, "#success-message"))
+      assert get_text(html, "#success-message") != ""
     end
 
     test "saving form as draft does not send brook event", %{conn: conn} do
@@ -575,7 +577,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
-      render_change(view, :save, %{"form_data" => form_data})
+      render_change(view, :publish)
 
       {:ok, expected_updated_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_from_save)
 
@@ -601,7 +603,7 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      render_change(view, :save, %{"form_data" => form_data})
+      render_change(view, :publish)
 
       refute_called(Brook.Event.send(any(), any(), any(), any()))
 
@@ -627,7 +629,7 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      render_change(view, :save, %{"form_data" => form_data})
+      render_change(view, :publish)
 
       {:ok, expected_updated_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_from_save)
 
