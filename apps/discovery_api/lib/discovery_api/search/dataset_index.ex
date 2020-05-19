@@ -64,6 +64,40 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     end
   end
 
+  def search(term) do
+    query_options = %{
+      "from" => 0,
+      "query" => %{
+        "bool" => %{
+          "must" => [
+              %{
+                  "multi_match" => %{
+                      "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
+                      "fuzziness" => "AUTO",
+                      "prefix_length" => 2,
+                      "query" => term,
+                      "type" => "most_fields"
+                  }
+              }
+          ],
+          "filter" => [
+            %{ "term" =>  %{ "private" => false }}
+          ]
+        }
+      },
+      "size" => 10,
+      "sort" => [%{"title" => %{"order" => "asc"}}]
+    }
+
+    case elastic_search(query_options) do
+      {:ok, documents} ->
+        {:ok, Enum.map(documents, &struct(Model, &1))}
+
+      error ->
+        error
+    end
+  end
+
   def update(%Model{} = dataset) do
     put(dataset, &elastic_update_document/1)
   end

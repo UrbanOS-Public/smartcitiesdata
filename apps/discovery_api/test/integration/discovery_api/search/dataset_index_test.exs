@@ -4,6 +4,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   use DiscoveryApi.ElasticSearchCase
 
   alias DiscoveryApi.Test.Helper
+  alias SmartCity.TestDataGenerator, as: TDG
 
   alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
   alias DiscoveryApi.Data.Model
@@ -506,6 +507,49 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
       datasets = [Helper.sample_model(), Helper.sample_model()]
       assert {:error, _} = DatasetSearchIndex.replace_all(datasets)
+    end
+  end
+
+  describe "search/?" do
+    test "given a dataset with a matching search term" do
+      dataset_one = Helper.sample_model(%{title: "Nazderaldac"})
+      dataset_two = Helper.sample_model()
+
+      atomized_dataset_one = expected_dataset(dataset_one)
+      atomized_dataset_two = expected_dataset(dataset_two)
+
+      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_one)
+      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_two)
+
+      assert {:ok, [atomized_dataset_one]} == DatasetSearchIndex.search("Nazderaldac")
+    end
+
+    test "given a dataset that is private" do
+      dataset_one = Helper.sample_model(%{description: "Accio Dataset!", private: true})
+      dataset_two = Helper.sample_model(%{description: "Accio Dataset!", private: false})
+
+      atomized_dataset_one = expected_dataset(dataset_one)
+      atomized_dataset_two = expected_dataset(dataset_two)
+
+      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_one)
+      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_two)
+
+      assert {:ok, [atomized_dataset_two]} == DatasetSearchIndex.search("Accio Dataset")
+    end
+
+    test "given a dataset with an org in a search term" do
+      organization_1_name = "Olivanders Emporium"
+      organization_1 = TDG.create_organization(%{orgTitle: organization_1_name}) |> Map.from_struct()
+      dataset_one = Helper.sample_model(%{organizationDetails: organization_1})
+      dataset_two = Helper.sample_model()
+
+      atomized_dataset_one = expected_dataset(dataset_one)
+      atomized_dataset_two = expected_dataset(dataset_two)
+
+      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_one)
+      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_two)
+
+      assert {:ok, [atomized_dataset_one]} == DatasetSearchIndex.search("Olivanders")
     end
   end
 
