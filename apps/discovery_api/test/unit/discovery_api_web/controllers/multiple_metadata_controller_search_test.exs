@@ -4,6 +4,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
   import Checkov
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
+  alias DiscoveryApi.Search.DatasetIndex
 
   setup do
     mock_dataset_summaries = [
@@ -124,6 +125,25 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
         [[limit: "not a number"]],
         [[facets: %{"not a facet" => ["ignored value"]}]]
       ])
+    end
+  end
+
+  describe "advanced search" do
+    test "api/v2/search works", %{conn: conn} do
+      mock_dataset_summaries = [
+        generate_model("DataOne", ~D(1970-01-01), "remote"),
+        generate_model("DataTwo", ~D(2001-09-09), "ingest")
+      ]
+
+      expect(DatasetIndex.search("Bob"), return: {:ok, mock_dataset_summaries})
+
+      params = %{query: "Bob"}
+      response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+      total_datasets = get_in(response_map, ["metadata", "totalDatasets"])
+      dataset_ids = get_in(response_map, ["results", Access.all(), "id"])
+
+      assert total_datasets == 2
+      assert dataset_ids == ["DataOne", "DataTwo"]
     end
   end
 

@@ -7,6 +7,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Data.TableInfoCache
   alias DiscoveryApi.Search.{DataModelFilterator, DataModelFacinator, DataModelSearchinator}
+  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
 
   @matched_params [
     %{"query" => "", "limit" => "10", "offset" => "0", "apiAccessible" => "false"},
@@ -38,6 +39,34 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
         sort: sort_by,
         offset: offset,
         limit: limit
+      )
+    else
+      {:request_error, reason} ->
+        render_error(conn, 400, reason)
+
+      {:error, reason} ->
+        Logger.error("Unhandled error in search #{inspect(reason)}")
+        render_error(conn, 500, reason)
+    end
+  rescue
+    e ->
+      Logger.error("Unhandled error in search #{inspect(e)}")
+      reraise e, __STACKTRACE__
+  end
+
+  def advanced_search(conn, params) do
+    sort_by = Map.get(params, "sort", "name_asc")
+    query = Map.get(params, "query", "")
+
+    with {:ok, models} <- DatasetSearchIndex.search(query) do
+      render(
+        conn,
+        :search_dataset_summaries,
+        models: models,
+        facets: %{},
+        sort: sort_by,
+        offset: 0,
+        limit: 10
       )
     else
       {:request_error, reason} ->
