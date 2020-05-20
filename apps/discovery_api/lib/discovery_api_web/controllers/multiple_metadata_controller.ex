@@ -58,19 +58,17 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
     sort_by = Map.get(params, "sort", "name_asc")
     query = Map.get(params, "query", "")
 
-    with {:ok, models} <- DatasetSearchIndex.search(query) do
-      render(
-        conn,
-        :search_dataset_summaries,
-        models: models,
-        facets: %{},
-        sort: sort_by,
-        offset: 0,
-        limit: 10
-      )
-    else
-      {:request_error, reason} ->
-        render_error(conn, 400, reason)
+    case DatasetSearchIndex.search(query) do
+      {:ok, models} ->
+        render(
+          conn,
+          :search_dataset_summaries,
+          models: models,
+          facets: %{},
+          sort: sort_by,
+          offset: 0,
+          limit: 10
+        )
 
       {:error, reason} ->
         Logger.error("Unhandled error in search #{inspect(reason)}")
