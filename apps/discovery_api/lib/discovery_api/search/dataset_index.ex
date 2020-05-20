@@ -251,17 +251,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
       "from" => 0,
       "query" => %{
         "bool" => %{
-          "must" => [
-              %{
-                  "multi_match" => %{
-                      "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
-                      "fuzziness" => "AUTO",
-                      "prefix_length" => 2,
-                      "query" => term,
-                      "type" => "most_fields"
-                  }
-              }
-          ],
+          "must" => build_must(term),
           "filter" => [
             %{ "term" =>  %{ "private" => false }}
           ]
@@ -270,5 +260,27 @@ defmodule DiscoveryApi.Search.DatasetIndex do
       "size" => 10,
       "sort" => [%{"title" => %{"order" => "asc"}}]
     }
+  end
+
+  defp build_must(term) when term == "" do
+    [
+      %{
+        "match_all" => %{}
+      }
+    ]
+  end
+
+  defp build_must(term) do
+    [
+      %{
+          "multi_match" => %{
+              "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
+              "fuzziness" => "AUTO",
+              "prefix_length" => 2,
+              "query" => term,
+              "type" => "most_fields"
+          }
+      }
+    ]
   end
 end

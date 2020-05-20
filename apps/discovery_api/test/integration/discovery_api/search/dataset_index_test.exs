@@ -512,76 +512,76 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
   describe "search/?" do
     test "given a dataset with a matching search term" do
-      dataset_one = Helper.sample_model(%{title: "Nazderaldac"})
-      dataset_two = Helper.sample_model()
+      dataset_one = index_model(%{title: "Nazderaldac"})
+      index_model()
 
-      atomized_dataset_one = expected_dataset(dataset_one)
-      atomized_dataset_two = expected_dataset(dataset_two)
-
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_one)
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_two)
-
-      assert {:ok, [atomized_dataset_one]} == DatasetSearchIndex.search("Nazderaldac")
+      assert {:ok, [dataset_one]} == DatasetSearchIndex.search("Nazderaldac")
     end
 
     test "given a dataset that is private" do
-      dataset_one = Helper.sample_model(%{description: "Accio Dataset!", private: true})
-      dataset_two = Helper.sample_model(%{description: "Accio Dataset!", private: false})
+      index_model(%{description: "Accio Dataset!", private: true})
+      dataset_two = index_model(%{description: "Accio Dataset!", private: false})
 
-      atomized_dataset_one = expected_dataset(dataset_one)
-      atomized_dataset_two = expected_dataset(dataset_two)
-
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_one)
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_two)
-
-      assert {:ok, [atomized_dataset_two]} == DatasetSearchIndex.search("Accio Dataset")
+      assert {:ok, [dataset_two]} == DatasetSearchIndex.search("Accio Dataset")
     end
 
     test "given a dataset with an org in a search term" do
       organization_1_name = "Olivanders Emporium"
       organization_1 = TDG.create_organization(%{orgTitle: organization_1_name}) |> Map.from_struct()
-      dataset_one = Helper.sample_model(%{organizationDetails: organization_1})
-      dataset_two = Helper.sample_model()
+      dataset_one = index_model(%{organizationDetails: organization_1})
+      index_model()
 
-      atomized_dataset_one = expected_dataset(dataset_one)
-      atomized_dataset_two = expected_dataset(dataset_two)
-
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_one)
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_two)
-
-      assert {:ok, [atomized_dataset_one]} == DatasetSearchIndex.search("Olivanders")
+      assert {:ok, [dataset_one]} == DatasetSearchIndex.search("Olivanders")
     end
 
     test "given a dataset with a keyword in a search term" do
-      dataset_one = Helper.sample_model(%{keywords: ["Newts", "Scales", "Tails"]})
-      dataset_two = Helper.sample_model()
+      dataset_one = index_model(%{keywords: ["Newts", "Scales", "Tails"]})
+      index_model()
 
-      atomized_dataset_one = expected_dataset(dataset_one)
-      atomized_dataset_two = expected_dataset(dataset_two)
-
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_one)
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_two)
-
-      assert {:ok, [atomized_dataset_one]} == DatasetSearchIndex.search("Newts")
+      assert {:ok, [dataset_one]} == DatasetSearchIndex.search("Newts")
     end
 
     test "given multiple datasets with the same search term" do
-      dataset_one = Helper.sample_model(%{title: "Ingredients", keywords: ["Newt", "Scale", "Tail"]})
-      dataset_two = Helper.sample_model(%{title: "Reports", description: "Newt Scamander's reports 1920-1930"})
-      dataset_three = Helper.sample_model(%{title: "Others"})
-
-      atomized_dataset_one = expected_dataset(dataset_one)
-      atomized_dataset_two = expected_dataset(dataset_two)
-
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_one)
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_two)
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_three)
+      index_model(%{title: "Ingredients", keywords: ["Newt", "Scale", "Tail"]})
+      index_model(%{title: "Reports", description: "Newt Scamander's reports 1920-1930"})
+      index_model(%{title: "Others"})
 
       {:ok, models} = DatasetSearchIndex.search("Newt")
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Reports" end)
       assert Enum.any?(models, fn model -> model.title == "Ingredients" end)
       refute Enum.any?(models, fn model -> model.title == "Others" end)
+    end
+
+    test "given multiple datasets covered by multiple search terms" do
+      index_model(%{title: "Library Records"})
+      index_model(%{title: "Class Reports", keywords: ["Records"]})
+      index_model(%{title: "Room Inventory", keywords: ["Library"]})
+      index_model(%{title: "Others"})
+
+      {:ok, models} = DatasetSearchIndex.search("Library Records")
+      assert 3 == length(models)
+      assert Enum.any?(models, fn model -> model.title == "Library Records" end)
+      assert Enum.any?(models, fn model -> model.title == "Class Reports" end)
+      assert Enum.any?(models, fn model -> model.title == "Room Inventory" end)
+      refute Enum.any?(models, fn model -> model.title == "Others" end)
+    end
+
+    test "given no datasets with the search term" do
+      index_model()
+      index_model()
+
+      assert {:ok, []} == DatasetSearchIndex.search("Hippogriff")
+    end
+
+    test "given datasets but no search term" do
+      index_model(%{title: "Student Roster"})
+      index_model(%{title: "Inventory"})
+
+      {:ok, models} = DatasetSearchIndex.search("")
+      assert 2 == length(models)
+      assert Enum.any?(models, fn model -> model.title == "Student Roster" end)
+      assert Enum.any?(models, fn model -> model.title == "Inventory" end)
     end
   end
 
@@ -604,5 +604,13 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       |> Map.delete(:completeness)
 
     struct(Model, map)
+  end
+
+  defp index_model(overrides \\ %{}) do
+    dataset = Helper.sample_model(overrides)
+
+    assert {:ok, _saved} = DatasetSearchIndex.update(dataset)
+
+    expected_dataset(dataset)
   end
 end
