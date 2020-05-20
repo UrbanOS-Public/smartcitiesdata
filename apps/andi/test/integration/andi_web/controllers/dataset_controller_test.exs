@@ -88,7 +88,7 @@ defmodule Andi.CreateDatasetTest do
           "sourceUrl" => "https://example.com",
           "sourceType" => "stream",
           "sourceFormat" => "gtfs",
-          "cadence" => "9000",
+          "cadence" => "*/9000 * * * * *",
           "schema" => [%{name: "billy", type: "writer"}],
           "private" => false,
           "headers" => %{

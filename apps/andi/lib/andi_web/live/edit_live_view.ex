@@ -171,6 +171,7 @@ defmodule AndiWeb.EditLiveView do
 
         <div class="finalize-form form-section">
           <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical) %>
+          <%= error_tag(technical, :cadence) %>
         </div>
 
         <div class="edit-button-group form-grid">
@@ -271,7 +272,14 @@ defmodule AndiWeb.EditLiveView do
 
       case Brook.Event.send(instance_name(), dataset_update(), :andi, smrt_dataset) do
         :ok ->
-          {:noreply, assign(socket, dataset: andi_dataset, changeset: changeset, save_success: true, success_message: "Published successfully", page_error: false)}
+          {:noreply,
+           assign(socket,
+             dataset: andi_dataset,
+             changeset: changeset,
+             save_success: true,
+             success_message: "Published successfully",
+             page_error: false
+           )}
 
         error ->
           Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
@@ -284,17 +292,18 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("save", %{"form_data" => form_data}, socket) do
-    changeset = form_data |> InputConverter.form_data_to_changeset_draft
+    changeset = form_data |> InputConverter.form_data_to_changeset_draft()
     pending_dataset = Ecto.Changeset.apply_changes(changeset)
     {:ok, _} = Datasets.update(pending_dataset)
 
-    {_, updated_socket} = form_data
-    |> InputConverter.form_data_to_ui_changeset()
-    |> complete_validation(socket)
+    {_, updated_socket} =
+      form_data
+      |> InputConverter.form_data_to_ui_changeset()
+      |> complete_validation(socket)
 
-    {:noreply, assign(updated_socket, save_success: true, success_message: "Saved successfully. You may need to fix errors before publishing.")}
+    {:noreply,
+     assign(updated_socket, save_success: true, success_message: "Saved successfully. You may need to fix errors before publishing.")}
   end
-
 
   def handle_event("add", %{"field" => "sourceQueryParams"}, socket) do
     socket = reset_save_success(socket)
@@ -419,7 +428,11 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info({:assign_crontab}, socket) do
     dataset = Datasets.get(socket.assigns.dataset.id)
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
+
+    changeset =
+      dataset
+      |> InputConverter.andi_dataset_to_full_ui_changeset()
+      |> Map.put(:action, :update)
 
     {:noreply, assign(socket, changeset: changeset)}
   end

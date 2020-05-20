@@ -525,6 +525,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       form_data = FormTools.form_data_from_andi_dataset(dataset)
+
       dataset_from_save =
         dataset
         |> InputConverter.form_data_to_full_changeset(form_data)
@@ -546,6 +547,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, _} = live(conn, @url_path <> dataset.id)
 
       form_data = FormTools.form_data_from_andi_dataset(dataset)
+
       dataset_from_save =
         dataset
         |> InputConverter.form_data_to_full_changeset(form_data)

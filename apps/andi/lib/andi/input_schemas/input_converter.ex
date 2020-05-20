@@ -58,7 +58,6 @@ defmodule Andi.InputSchemas.InputConverter do
     Dataset.changeset_for_draft(%Dataset{}, form_data_as_params)
   end
 
-
   def form_data_to_full_ui_changeset(form_data \\ %{}) do
     form_data_to_full_changeset(%Dataset{}, form_data)
   end

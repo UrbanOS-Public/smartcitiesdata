@@ -660,7 +660,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render(view)
 
       assert expected_crontab == get_crontab_from_html(html)
-      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--success"))
+      assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
 
       where([
         [:schedule, :expected_crontab],
@@ -679,7 +679,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render(view)
 
       assert dataset.technical.cadence == get_crontab_from_html(html)
-      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--success"))
+      assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
     end
 
     test "handles five-character cronstrings", %{conn: conn} do
@@ -692,7 +692,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render(view)
 
       assert "0 " <> dataset.technical.cadence == get_crontab_from_html(html)
-      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--success"))
+      assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
     end
 
     test "handles cadence of never", %{conn: conn} do
@@ -700,25 +700,7 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--error"))
-    end
-
-    data_test "marks #{cronstring} as invalid", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{cadence: cronstring}})
-      {:ok, _} = Datasets.update(dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      render_click([view, "finalize_form_editor"], "set_schedule")
-      html = render(view)
-
-      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--error"))
-
-      where([
-        [:cronstring],
-        [""],
-        ["1 2 3 4"],
-        ["1 nil 2 3 4 5"]
-      ])
+      assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
     end
   end
 
@@ -740,7 +722,6 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_text(html, "#form_data_business_dataTitle") == ""
       refute Enum.empty?(find_elements(html, "#dataTitle-error-msg"))
     end
-
   end
 
   defp get_crontab_from_html(html) do
