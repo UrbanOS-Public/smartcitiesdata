@@ -26,6 +26,7 @@ defmodule AndiWeb.EditLiveViewTest do
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.FormTools
+  alias Andi.InputSchemas.InputConverter
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
@@ -659,7 +660,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render(view)
 
       assert expected_crontab == get_crontab_from_html(html)
-      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--success"))
+      assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
 
       where([
         [:schedule, :expected_crontab],
@@ -678,7 +679,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render(view)
 
       assert dataset.technical.cadence == get_crontab_from_html(html)
-      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--success"))
+      assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
     end
 
     test "handles five-character cronstrings", %{conn: conn} do
@@ -691,7 +692,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render(view)
 
       assert "0 " <> dataset.technical.cadence == get_crontab_from_html(html)
-      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--success"))
+      assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
     end
 
     test "handles cadence of never", %{conn: conn} do
@@ -699,25 +700,27 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--error"))
+      assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
     end
+  end
 
-    data_test "marks #{cronstring} as invalid", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{cadence: cronstring}})
-      {:ok, _} = Datasets.update(dataset)
+  describe "dataset finalizing buttons" do
+    test "allows saving invalid form as draft", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, andi_dataset} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      render_click([view, "finalize_form_editor"], "set_schedule")
-      html = render(view)
 
-      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--error"))
+      form_data = FormTools.form_data_from_andi_dataset(andi_dataset) |> put_in([:business, :dataTitle], "")
+      form_data_changeset = InputConverter.form_data_to_full_changeset(andi_dataset, form_data)
 
-      where([
-        [:cronstring],
-        [""],
-        ["1 2 3 4"],
-        ["1 nil 2 3 4 5"]
-      ])
+      render_change(view, :validate, %{"form_data" => form_data})
+      html = render_change(view, :save, %{"form_data" => form_data})
+
+      refute form_data_changeset.valid?
+      assert Datasets.get(dataset.id) |> get_in([:business, :dataTitle]) == ""
+      assert get_text(html, "#form_data_business_dataTitle") == ""
+      refute Enum.empty?(find_elements(html, "#dataTitle-error-msg"))
     end
   end
 
