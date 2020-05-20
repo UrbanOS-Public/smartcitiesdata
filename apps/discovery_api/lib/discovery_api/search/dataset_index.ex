@@ -65,7 +65,8 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   end
 
   def search(term) do
-    query = searchQuery(term)
+    query = search_query(term)
+
     case elastic_search(query) do
       {:ok, documents} ->
         {:ok, Enum.map(documents, &struct(Model, &1))}
@@ -246,14 +247,14 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     |> Map.new()
   end
 
-  defp searchQuery(term) do
+  defp search_query(term) do
     %{
       "from" => 0,
       "query" => %{
         "bool" => %{
           "must" => build_must(term),
           "filter" => [
-            %{ "term" =>  %{ "private" => false }}
+            %{"term" => %{"private" => false}}
           ]
         }
       },
@@ -273,13 +274,13 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   defp build_must(term) do
     [
       %{
-          "multi_match" => %{
-              "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
-              "fuzziness" => "AUTO",
-              "prefix_length" => 2,
-              "query" => term,
-              "type" => "most_fields"
-          }
+        "multi_match" => %{
+          "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
+          "fuzziness" => "AUTO",
+          "prefix_length" => 2,
+          "query" => term,
+          "type" => "most_fields"
+        }
       }
     ]
   end
