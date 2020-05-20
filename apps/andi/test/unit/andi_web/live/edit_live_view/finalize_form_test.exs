@@ -6,6 +6,9 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
   use Placebo
   import Checkov
 
+  alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.Datasets
+
   import FlokiHelpers,
     only: [
       get_values: 2,
@@ -114,12 +117,45 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       DatasetHelpers.add_dataset_to_repo(dataset)
       assert {:ok, view, _} = live(conn, @url_path <> dataset.id)
 
+      dataset_from_save =
+        dataset
+        |> InputConverter.smrt_dataset_to_changeset()
+        |> Ecto.Changeset.apply_changes()
+
+      allow(Datasets.update_cadence(any(), any()), return: {:ok, dataset_from_save})
+
       render_click([view, "finalize_form_editor"], "set_schedule")
       html = render(view)
 
-      refute Enum.empty?(find_elements(html, ".finalize-form__schedule-msg--error"))
+      refute Enum.empty?(find_elements(html, "#cadence-error-msg"))
 
       where(second_interval: ["1", "2", "3", "4", "5", "6", "7", "8", "9"])
+    end
+
+    data_test "marks #{cronstring} as invalid", %{conn: conn} do
+      dataset = DatasetHelpers.create_dataset(%{technical: %{cadence: cronstring}})
+      DatasetHelpers.add_dataset_to_repo(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      dataset_from_save =
+        dataset
+        |> InputConverter.smrt_dataset_to_changeset()
+        |> Ecto.Changeset.apply_changes()
+
+      allow(Datasets.update_cadence(any(), any()), return: {:ok, dataset_from_save})
+
+      render_click([view, "finalize_form_editor"], "set_schedule")
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, "#cadence-error-msg"))
+
+      where([
+        [:cronstring],
+        [""],
+        ["1 2 3 4"],
+        ["1 nil 2 3 4 5"]
+      ])
     end
   end
 
