@@ -64,6 +64,18 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     end
   end
 
+  def search(term) do
+    query = search_query(term)
+
+    case elastic_search(query) do
+      {:ok, documents} ->
+        {:ok, Enum.map(documents, &struct(Model, &1))}
+
+      error ->
+        error
+    end
+  end
+
   def update(%Model{} = dataset) do
     put(dataset, &elastic_update_document/1)
   end
@@ -233,5 +245,43 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   defp configuration() do
     Application.get_env(:discovery_api, :elasticsearch)
     |> Map.new()
+  end
+
+  defp search_query(term) do
+    %{
+      "from" => 0,
+      "query" => %{
+        "bool" => %{
+          "must" => build_must(term),
+          "filter" => [
+            %{"term" => %{"private" => false}}
+          ]
+        }
+      },
+      "size" => 10,
+      "sort" => [%{"title" => %{"order" => "asc"}}]
+    }
+  end
+
+  defp build_must(term) when term == "" do
+    [
+      %{
+        "match_all" => %{}
+      }
+    ]
+  end
+
+  defp build_must(term) do
+    [
+      %{
+        "multi_match" => %{
+          "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
+          "fuzziness" => "AUTO",
+          "prefix_length" => 2,
+          "query" => term,
+          "type" => "most_fields"
+        }
+      }
+    ]
   end
 end
