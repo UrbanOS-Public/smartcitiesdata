@@ -301,8 +301,13 @@ defmodule AndiWeb.EditLiveView do
       |> InputConverter.form_data_to_ui_changeset()
       |> complete_validation(socket)
 
-    {:noreply,
-     assign(updated_socket, save_success: true, success_message: "Saved successfully. You may need to fix errors before publishing.")}
+    success_message =
+      case socket.assigns.changeset.valid? do
+        true -> "Saved successfully."
+        false -> "Saved successfully. You may need to fix errors before publishing."
+      end
+
+    {:noreply, assign(updated_socket, save_success: true, success_message: success_message)}
   end
 
   def handle_event("add", %{"field" => "sourceQueryParams"}, socket) do

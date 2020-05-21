@@ -675,7 +675,8 @@ defmodule AndiWeb.EditLiveViewTest do
     test "set schedule manually", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      render_click([view, "finalize_form_editor"], "set_schedule")
+      form_data = FormTools.form_data_from_andi_dataset(dataset)
+      render_change(view, :save, %{"form_data" => form_data})
       html = render(view)
 
       assert dataset.technical.cadence == get_crontab_from_html(html)
@@ -684,14 +685,15 @@ defmodule AndiWeb.EditLiveViewTest do
 
     test "handles five-character cronstrings", %{conn: conn} do
       dataset = TDG.create_dataset(%{technical: %{cadence: "4 2 7 * *"}})
-      {:ok, _} = Datasets.update(dataset)
+      {:ok, andi_dataset} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      render_click([view, "finalize_form_editor"], "set_schedule")
+      form_data = FormTools.form_data_from_andi_dataset(andi_dataset)
+      render_change(view, :save, %{"form_data" => form_data})
       html = render(view)
 
-      assert "0 " <> dataset.technical.cadence == get_crontab_from_html(html)
+      assert dataset.technical.cadence == get_crontab_from_html(html)
       assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
     end
 
