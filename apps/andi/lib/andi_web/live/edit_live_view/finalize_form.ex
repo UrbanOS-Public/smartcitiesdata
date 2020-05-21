@@ -87,30 +87,29 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
           <div class="finalize-form__schedule-input">
             <div class="finalize-form__schedule-input-field">
               <label>Second</label>
-              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="second" phx-target="<%= @myself %>" value="<%= @crontab_list[:second] %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="second" phx-target="<%= @myself %>" value="<%= @crontab_list[:second] %>" />
 
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Minute</label>
-              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="minute" phx-target="<%= @myself %>" value="<%= @crontab_list[:minute] %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="minute" phx-target="<%= @myself %>" value="<%= @crontab_list[:minute] %>" />
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Hour</label>
-              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="hour" phx-target="<%= @myself %>" value="<%= @crontab_list[:hour] %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="hour" phx-target="<%= @myself %>" value="<%= @crontab_list[:hour] %>" />
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Day</label>
-              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="day" phx-target="<%= @myself %>" value="<%= @crontab_list[:day] %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="day" phx-target="<%= @myself %>" value="<%= @crontab_list[:day] %>" />
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Month</label>
-              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="month" phx-target="<%= @myself %>" value="<%= @crontab_list[:month] %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="month" phx-target="<%= @myself %>" value="<%= @crontab_list[:month] %>" />
             </div>
             <div class="finalize-form__schedule-input-field">
               <label>Week</label>
-              <input class="finalize-form-schedule-input__field" phx-keyup="update_cron" phx-value-input-field="week" phx-target="<%= @myself %>" value="<%= @crontab_list[:week] %>" />
+              <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="week" phx-target="<%= @myself %>" value="<%= @crontab_list[:week] %>" />
             </div>
-            <button type="button" class="finalize-form-cron-button cron-input-submit" phx-click="set_schedule" phx-target="<%= @myself %>">Set</button>
           </div>
         </div>
       </div>
@@ -118,13 +117,14 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     """
   end
 
-  def handle_event("set_schedule", _, socket) do
-    new_cron = cronlist_to_cronstring(socket.assigns.crontab_list)
+  def handle_event("set_schedule", %{"input-field" => input_field, "value" => value}, socket) do
+    new_crontab_list = Map.put(socket.assigns.crontab_list, String.to_existing_atom(input_field), value)
+    new_cron = cronlist_to_cronstring(new_crontab_list)
 
     Datasets.update_cadence(socket.assigns.dataset_id, new_cron)
     send(self(), {:assign_crontab})
 
-    {:noreply, socket}
+    {:noreply, assign(socket, crontab_list: new_crontab_list)}
   end
 
   def handle_event("quick_schedule", %{"schedule" => schedule}, socket) do
@@ -133,11 +133,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     send(self(), {:assign_crontab})
 
     {:noreply, assign(socket, crontab_list: parse_crontab(cronstring))}
-  end
-
-  def handle_event("update_cron", %{"input-field" => input_field, "value" => value}, socket) do
-    new_crontab = Map.put(socket.assigns.crontab_list, String.to_existing_atom(input_field), value)
-    {:noreply, assign(socket, crontab_list: new_crontab)}
   end
 
   defp parse_crontab(nil), do: %{}

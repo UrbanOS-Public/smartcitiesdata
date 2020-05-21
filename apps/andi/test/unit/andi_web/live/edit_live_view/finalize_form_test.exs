@@ -7,6 +7,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
   import Checkov
 
   alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.Datasets
 
   import FlokiHelpers,
@@ -123,8 +124,10 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
         |> Ecto.Changeset.apply_changes()
 
       allow(Datasets.update_cadence(any(), any()), return: {:ok, dataset_from_save})
+      allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
-      render_click([view, "finalize_form_editor"], "set_schedule")
+      form_data = FormTools.form_data_from_andi_dataset(dataset)
+      render_change(view, :save, %{"form_data" => form_data})
       html = render(view)
 
       refute Enum.empty?(find_elements(html, "#cadence-error-msg"))
@@ -144,8 +147,10 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
         |> Ecto.Changeset.apply_changes()
 
       allow(Datasets.update_cadence(any(), any()), return: {:ok, dataset_from_save})
+      allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
-      render_click([view, "finalize_form_editor"], "set_schedule")
+      form_data = FormTools.form_data_from_andi_dataset(dataset)
+      render_change(view, :save, %{"form_data" => form_data})
       html = render(view)
 
       refute Enum.empty?(find_elements(html, "#cadence-error-msg"))

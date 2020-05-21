@@ -307,8 +307,7 @@ defmodule AndiWeb.EditLiveView do
         false -> "Saved successfully. You may need to fix errors before publishing."
       end
 
-    {:noreply,
-     assign(updated_socket, save_success: true, success_message: success_message)}
+    {:noreply, assign(updated_socket, save_success: true, success_message: success_message)}
   end
 
   def handle_event("add", %{"field" => "sourceQueryParams"}, socket) do
