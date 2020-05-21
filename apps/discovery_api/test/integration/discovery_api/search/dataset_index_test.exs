@@ -4,6 +4,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   use DiscoveryApi.ElasticSearchCase
 
   alias DiscoveryApi.Test.Helper
+  alias SmartCity.TestDataGenerator, as: TDG
 
   alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
   alias DiscoveryApi.Data.Model
@@ -509,6 +510,81 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
     end
   end
 
+  describe "search/?" do
+    test "given a dataset with a matching search term" do
+      dataset_one = index_model(%{title: "Nazderaldac"})
+      index_model()
+
+      assert {:ok, [dataset_one]} == DatasetSearchIndex.search("Nazderaldac")
+    end
+
+    test "given a dataset that is private" do
+      index_model(%{description: "Accio Dataset!", private: true})
+      dataset_two = index_model(%{description: "Accio Dataset!", private: false})
+
+      assert {:ok, [dataset_two]} == DatasetSearchIndex.search("Accio Dataset")
+    end
+
+    test "given a dataset with an org in a search term" do
+      organization_1_name = "Olivanders Emporium"
+      organization_1 = TDG.create_organization(%{orgTitle: organization_1_name}) |> Map.from_struct()
+      dataset_one = index_model(%{organizationDetails: organization_1})
+      index_model()
+
+      assert {:ok, [dataset_one]} == DatasetSearchIndex.search("Olivanders")
+    end
+
+    test "given a dataset with a keyword in a search term" do
+      dataset_one = index_model(%{keywords: ["Newts", "Scales", "Tails"]})
+      index_model()
+
+      assert {:ok, [dataset_one]} == DatasetSearchIndex.search("Newts")
+    end
+
+    test "given multiple datasets with the same search term" do
+      index_model(%{title: "Ingredients", keywords: ["Newt", "Scale", "Tail"]})
+      index_model(%{title: "Reports", description: "Newt Scamander's reports 1920-1930"})
+      index_model(%{title: "Others"})
+
+      {:ok, models} = DatasetSearchIndex.search("Newt")
+      assert 2 == length(models)
+      assert Enum.any?(models, fn model -> model.title == "Reports" end)
+      assert Enum.any?(models, fn model -> model.title == "Ingredients" end)
+      refute Enum.any?(models, fn model -> model.title == "Others" end)
+    end
+
+    test "given multiple datasets covered by multiple search terms" do
+      index_model(%{title: "Library Records"})
+      index_model(%{title: "Class Reports", keywords: ["Records"]})
+      index_model(%{title: "Room Inventory", keywords: ["Library"]})
+      index_model(%{title: "Others"})
+
+      {:ok, models} = DatasetSearchIndex.search("Library Records")
+      assert 3 == length(models)
+      assert Enum.any?(models, fn model -> model.title == "Library Records" end)
+      assert Enum.any?(models, fn model -> model.title == "Class Reports" end)
+      assert Enum.any?(models, fn model -> model.title == "Room Inventory" end)
+      refute Enum.any?(models, fn model -> model.title == "Others" end)
+    end
+
+    test "given no datasets with the search term" do
+      index_model()
+      index_model()
+
+      assert {:ok, []} == DatasetSearchIndex.search("Hippogriff")
+    end
+
+    test "given datasets but no search term" do
+      index_model(%{title: "Student Roster"})
+      index_model(%{title: "Inventory"})
+
+      {:ok, models} = DatasetSearchIndex.search("")
+      assert 2 == length(models)
+      assert Enum.any?(models, fn model -> model.title == "Student Roster" end)
+      assert Enum.any?(models, fn model -> model.title == "Inventory" end)
+    end
+  end
+
   defp reconfigure_es_url(url) do
     original_config = Application.get_env(:discovery_api, :elasticsearch)
     updated_config = Keyword.put(original_config, :url, url)
@@ -528,5 +604,13 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       |> Map.delete(:completeness)
 
     struct(Model, map)
+  end
+
+  defp index_model(overrides \\ %{}) do
+    dataset = Helper.sample_model(overrides)
+
+    assert {:ok, _saved} = DatasetSearchIndex.update(dataset)
+
+    expected_dataset(dataset)
   end
 end
