@@ -15,8 +15,13 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
   def render(assigns) do
     ~L"""
-        <div class="url-form form-section form-grid">
-          <h2 class="url-form__top-header edit-page__box-header">Configure Upload</h2>
+      <div class="url-form">
+        <div class="component-header">
+          <h3 class="component-section-number">3</h3>
+          <h2 class="component-section-title component--expanded full-width"">Configure Upload</h2>
+        </div>
+
+        <div class="url-form-edit-section form-section form-grid">
           <div class="url-form__source-url">
             <%= label(@technical, :sourceUrl, DisplayNames.get(:sourceUrl), class: "label label--required") %>
             <%= text_input(@technical, :sourceUrl, class: "input full-width", disabled: @testing) %>
@@ -36,7 +41,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
             <% end %>
           </div>
         </div>
-
+      </div>
     """
   end
 

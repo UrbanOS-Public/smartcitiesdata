@@ -1,5 +1,5 @@
 $component-number-width: 4rem;
-$component-header-height: 3rem;
+$component-header-height: 5.5rem;
 
 .edit-page {
   display: grid;
@@ -11,7 +11,7 @@ $component-header-height: 3rem;
 
 .form-section {
     padding-left: $component-number-width - 1rem;
-    margin-bottom: 4rem;
+    padding-bottom: 4rem;
     margin-top: -$component-header-height;
     padding-top: $component-header-height;
     margin-left: 1rem;
@@ -45,11 +45,15 @@ $component-header-height: 3rem;
 @include area(url-form, test-section);
 
 .form-component {
-    padding: 0 2rem 2rem 2rem;
 }
 
 .component-header {
     display: flex;
+}
+
+.metadata-form > .form-section {
+    margin-top: -3rem;
+    padding-top: 3rem;
 }
 
 .component-section-number {

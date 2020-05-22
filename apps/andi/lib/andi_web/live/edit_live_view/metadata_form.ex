@@ -16,7 +16,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
   def render(assigns) do
     ~L"""
-    <div class="metadata-form full-width">
+    <div class="metadata-form full-width form-component">
       <div class="component-header">
         <h3 class="component-section-number">1</h3>
         <h2 class="component-section-title component--expanded full-width">Enter Metadata</h2>

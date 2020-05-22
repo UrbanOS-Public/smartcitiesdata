@@ -31,31 +31,36 @@ defmodule AndiWeb.EditLiveView do
         <%= hidden_input(technical, :sourceType) %>
 
 
-        <div class="metadata-form-component form-component">
+        <div class="metadata-form-component">
           <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical, save_success: @save_success, has_validation_errors: @has_validation_errors, page_error: @page_error) %>
         </div>
 
-        <div class="data-dictionary-form form-section form-grid">
-          <h2 class="data-dictionary-form__top-header edit-page__box-header">Data Dictionary</h2>
-
-          <div class="data-dictionary-form__tree-section">
-            <div class="data-dictionary-form__tree-header data-dictionary-form-tree-header">
-              <div class="label">Enter/Edit Fields</div>
-              <div class="label label--inline">TYPE</div>
-            </div>
-
-            <div class="data-dictionary-form__tree-content data-dictionary-form-tree-content">
-              <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: technical, field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
-            </div>
-
-            <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
-              <div class="data-dictionary-form__add-field-button" phx-click="add_data_dictionary_field"></div>
-              <div class="data-dictionary-form__remove-field-button" phx-click="remove_data_dictionary_field" phx-target="#dataset-edit-page"></div>
-            </div>
+        <div class="data-dictionary-form form-component">
+          <div class="component-header">
+            <h3 class="component-section-number">2</h3>
+            <h2 class="component-section-title component--expanded full-width"">Data Dictionary</h2>
           </div>
 
-          <div class="data-dictionary-form__edit-section">
-            <%= live_component(@socket, DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item) %>
+          <div class="data-dictionary-form-edit-section form-section form-grid">
+            <div class="data-dictionary-form__tree-section">
+              <div class="data-dictionary-form__tree-header data-dictionary-form-tree-header">
+                <div class="label">Enter/Edit Fields</div>
+                <div class="label label--inline">TYPE</div>
+              </div>
+
+              <div class="data-dictionary-form__tree-content data-dictionary-form-tree-content">
+                <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: technical, field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
+              </div>
+
+              <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
+                <div class="data-dictionary-form__add-field-button" phx-click="add_data_dictionary_field"></div>
+                <div class="data-dictionary-form__remove-field-button" phx-click="remove_data_dictionary_field" phx-target="#dataset-edit-page"></div>
+              </div>
+            </div>
+
+            <div class="data-dictionary-form__edit-section">
+              <%= live_component(@socket, DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item) %>
+            </div>
           </div>
         </div>
 
@@ -63,7 +68,7 @@ defmodule AndiWeb.EditLiveView do
           <%= live_component(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, technical: technical, testing: @testing, test_results: @test_results ) %>
         </div>
 
-        <div class="finalize-form form-section">
+        <div class="finalize-form-component ">
           <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical) %>
           <%= error_tag(technical, :cadence) %>
         </div>
