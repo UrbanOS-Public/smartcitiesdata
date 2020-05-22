@@ -1,3 +1,6 @@
+$component-number-width: 4rem;
+$component-header-height: 3rem;
+
 .edit-page {
   display: grid;
   grid-template-columns: 1fr;
@@ -7,9 +10,12 @@
 }
 
 .form-section {
-  border: $table-border;
-  padding: 2rem;
-  margin-bottom: 4rem;
+    padding-left: $component-number-width - 1rem;
+    margin-bottom: 4rem;
+    margin-top: -$component-header-height;
+    padding-top: $component-header-height;
+    margin-left: 1rem;
+    border-left: 2px solid #C9C7C7;
 }
 
 .form-grid {
@@ -25,7 +31,7 @@
 
 .full-width {
   width: 100%;
-  box-sizing:border-box;
+  box-sizing: border-box;
 }
 
 @include area(edit-button-group, cancel-btn);
@@ -38,13 +44,38 @@
 @include area(url-form, source-headers);
 @include area(url-form, test-section);
 
+.form-component {
+    padding: 0 2rem 2rem 2rem;
+}
 
-.edit-page__box-header {
-  margin-top: -2.75rem;
-  background-color: white;
-  width: fit-content;
-  padding: 0rem 2rem;
-  color: #7f7676;
+.component-header {
+    display: flex;
+}
+
+.component-section-number {
+    margin-right: 2rem;
+    height: 2rem;
+    width: 2rem;
+    border: 1px solid $color-text-link;
+    border-radius:50%;
+    -moz-border-radius:50%;
+    -webkit-border-radius:50%;
+    line-height: 2rem;
+    text-align: center;
+    background-color: $color-text-link;
+    color: white;
+}
+
+.component-section-title {
+    font-weight: 300;
+    border-bottom: 1px solid #C9C7C7;
+    padding-bottom: 0.5rem;
+    width: 100%;
+    line-height: 2rem;
+}
+
+.component-header--collapsed {
+    color: #C9C7C7;
 }
 
 .edit-button-group__messages {

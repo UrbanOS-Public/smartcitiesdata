@@ -31,8 +31,8 @@ defmodule AndiWeb.EditLiveView do
         <%= hidden_input(technical, :sourceType) %>
 
 
-        <div class="metadata-form-component">
-          <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical) %>
+        <div class="metadata-form-component form-component">
+          <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical, save_success: @save_success, has_validation_errors: @has_validation_errors, page_error: @page_error) %>
         </div>
 
         <div class="data-dictionary-form form-section form-grid">
@@ -59,7 +59,7 @@ defmodule AndiWeb.EditLiveView do
           </div>
         </div>
 
-        <div class="url-editor-component">
+        <div class="url-form-component">
           <%= live_component(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, technical: technical, testing: @testing, test_results: @test_results ) %>
         </div>
 
