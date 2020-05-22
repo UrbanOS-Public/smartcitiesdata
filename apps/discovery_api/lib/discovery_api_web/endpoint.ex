@@ -14,6 +14,8 @@ defmodule DiscoveryApiWeb.Endpoint do
 
   plug(DiscoveryApiWeb.Plugs.SecureHeaders)
 
+  plug(DiscoveryApiWeb.Plugs.StripServerHeader)
+
   plug(Corsica,
     origins: "*",
     allow_credentials: true,
