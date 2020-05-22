@@ -15,30 +15,32 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
   def render(assigns) do
     ~L"""
-      <div class="url-form">
-        <div class="component-header">
-          <h3 class="component-section-number">3</h3>
-          <h2 class="component-section-title component--expanded full-width"">Configure Upload</h2>
+      <div class="url-form form-component">
+        <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="url_form">
+          <h3 class="component-number component-number--<%= @visibility %>">3</h3>
+          <h2 class="component-title component-title--<%= @visibility %>">Configure Upload</h2>
         </div>
 
-        <div class="url-form-edit-section form-section form-grid">
-          <div class="url-form__source-url">
-            <%= label(@technical, :sourceUrl, DisplayNames.get(:sourceUrl), class: "label label--required") %>
-            <%= text_input(@technical, :sourceUrl, class: "input full-width", disabled: @testing) %>
-            <%= ErrorHelpers.error_tag(@technical, :sourceUrl) %>
-          </div>
+        <div class="form-section">
+          <div class="component-edit-section--<%= @visibility %> url-form-edit-section form-grid">
+            <div class="url-form__source-url">
+              <%= label(@technical, :sourceUrl, DisplayNames.get(:sourceUrl), class: "label label--required") %>
+              <%= text_input(@technical, :sourceUrl, class: "input full-width", disabled: @testing) %>
+              <%= ErrorHelpers.error_tag(@technical, :sourceUrl) %>
+            </div>
 
-          <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_query_params, css_label: "source-query-params", form: @technical, field: :sourceQueryParams ) %>
-          <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_headers, css_label: "source-headers", form: @technical, field: :sourceHeaders ) %>
+            <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_query_params, css_label: "source-query-params", form: @technical, field: :sourceQueryParams ) %>
+            <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_headers, css_label: "source-headers", form: @technical, field: :sourceHeaders ) %>
 
-          <div class="url-form__test-section">
-            <button type="button" class="url-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
-            <%= if @test_results do %>
-              <div class="test-status">
-              Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) %></span>
-              Time: <span class="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
-              </div>
-            <% end %>
+            <div class="url-form__test-section">
+              <button type="button" class="url-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
+              <%= if @test_results do %>
+                <div class="test-status">
+                Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) %></span>
+                Time: <span class="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
+                </div>
+              <% end %>
+            </div>
           </div>
         </div>
       </div>

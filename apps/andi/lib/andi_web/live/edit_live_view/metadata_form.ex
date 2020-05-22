@@ -16,115 +16,117 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
   def render(assigns) do
     ~L"""
-    <div class="metadata-form full-width form-component">
-      <div class="component-header">
-        <h3 class="component-section-number">1</h3>
-        <h2 class="component-section-title component--expanded full-width">Enter Metadata</h2>
+    <div class="metadata-form form-component">
+      <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="metadata_form">
+        <h3 class="component-number component-number--<%= @visibility %>">1</h3>
+        <h2 class="component-title component-title--<%= @visibility %> full-width">Enter Metadata</h2>
       </div>
 
-      <div class="metadata-form-edit-section form-section form-grid">
-        <div class="metadata-form__title">
-          <%= label(@business, :dataTitle, DisplayNames.get(:dataTitle), class: "label label--required") %>
-          <%= text_input(@business, :dataTitle, class: "input") %>
-          <%= ErrorHelpers.error_tag(@business, :dataTitle) %>
-        </div>
+      <div class="form-section">
+        <div class="component-edit-section--<%= @visibility %> metadata-form-edit-section form-grid">
+          <div class="metadata-form__title">
+            <%= label(@business, :dataTitle, DisplayNames.get(:dataTitle), class: "label label--required") %>
+            <%= text_input(@business, :dataTitle, class: "input") %>
+            <%= ErrorHelpers.error_tag(@business, :dataTitle) %>
+          </div>
 
-        <div class="metadata-form__description">
-          <%= label(@business, :description, DisplayNames.get(:description), class: "label label--required") %>
-          <%= textarea(@business, :description, class: "input textarea") %>
-          <%= ErrorHelpers.error_tag(@business, :description) %>
-        </div>
+          <div class="metadata-form__description">
+            <%= label(@business, :description, DisplayNames.get(:description), class: "label label--required") %>
+            <%= textarea(@business, :description, class: "input textarea") %>
+            <%= ErrorHelpers.error_tag(@business, :description) %>
+          </div>
 
-        <div class="metadata-form__maintainer-name">
-          <%= label(@business, :contactName, DisplayNames.get(:contactName), class: "label label--required") %>
-          <%= text_input(@business, :contactName, class: "input") %>
-          <%= ErrorHelpers.error_tag(@business, :contactName) %>
-        </div>
+          <div class="metadata-form__maintainer-name">
+            <%= label(@business, :contactName, DisplayNames.get(:contactName), class: "label label--required") %>
+            <%= text_input(@business, :contactName, class: "input") %>
+            <%= ErrorHelpers.error_tag(@business, :contactName) %>
+          </div>
 
-        <div class="metadata-form__maintainer-email">
-          <%= label(@business, :contactEmail, DisplayNames.get(:contactEmail), class: "label label--required") %>
-          <%= text_input(@business, :contactEmail, class: "input") %>
-          <%= ErrorHelpers.error_tag(@business, :contactEmail) %>
-        </div>
+          <div class="metadata-form__maintainer-email">
+            <%= label(@business, :contactEmail, DisplayNames.get(:contactEmail), class: "label label--required") %>
+            <%= text_input(@business, :contactEmail, class: "input") %>
+            <%= ErrorHelpers.error_tag(@business, :contactEmail) %>
+          </div>
 
-        <div class="metadata-form__release-date">
-          <%= label(@business, :issuedDate, DisplayNames.get(:issuedDate), class: "label label--required") %>
-          <%= date_input(@business, :issuedDate, class: "input", value: safe_calendar_value(input_value(@business, :issuedDate))) %>
-          <%= ErrorHelpers.error_tag(@business, :issuedDate, bind_to_input: false) %>
-        </div>
+          <div class="metadata-form__release-date">
+            <%= label(@business, :issuedDate, DisplayNames.get(:issuedDate), class: "label label--required") %>
+            <%= date_input(@business, :issuedDate, class: "input", value: safe_calendar_value(input_value(@business, :issuedDate))) %>
+            <%= ErrorHelpers.error_tag(@business, :issuedDate, bind_to_input: false) %>
+          </div>
 
-        <div class="metadata-form__license">
-          <%= label(@business, :license, DisplayNames.get(:license), class: "label label--required") %>
-          <%= text_input(@business, :license, class: "input") %>
-          <%= ErrorHelpers.error_tag(@business, :license) %>
-        </div>
+          <div class="metadata-form__license">
+            <%= label(@business, :license, DisplayNames.get(:license), class: "label label--required") %>
+            <%= text_input(@business, :license, class: "input") %>
+            <%= ErrorHelpers.error_tag(@business, :license) %>
+          </div>
 
-        <div class="metadata-form__update-frequency">
-          <%= label(@business, :publishFrequency, DisplayNames.get(:publishFrequency), class: "label label--required") %>
-          <%= text_input(@business, :publishFrequency, class: "input") %>
-          <%= ErrorHelpers.error_tag(@business, :publishFrequency) %>
-        </div>
+          <div class="metadata-form__update-frequency">
+            <%= label(@business, :publishFrequency, DisplayNames.get(:publishFrequency), class: "label label--required") %>
+            <%= text_input(@business, :publishFrequency, class: "input") %>
+            <%= ErrorHelpers.error_tag(@business, :publishFrequency) %>
+          </div>
 
-        <div class="metadata-form__keywords">
-          <%= label(@business, :keywords, DisplayNames.get(:keywords), class: "label") %>
-          <%= text_input(@business, :keywords, value: keywords_to_string(input_value(@business, :keywords)), class: "input") %>
-          <div class="label label--inline">Separated by comma</div>
-        </div>
+          <div class="metadata-form__keywords">
+            <%= label(@business, :keywords, DisplayNames.get(:keywords), class: "label") %>
+            <%= text_input(@business, :keywords, value: keywords_to_string(input_value(@business, :keywords)), class: "input") %>
+            <div class="label label--inline">Separated by comma</div>
+          </div>
 
-        <div class="metadata-form__last-updated">
-          <%= label(@business, :modifiedDate, DisplayNames.get(:modifiedDate), class: "label") %>
-          <%= date_input(@business, :modifiedDate, class: "input", value: safe_calendar_value(input_value(@business, :modifiedDate))) %>
-        </div>
+          <div class="metadata-form__last-updated">
+            <%= label(@business, :modifiedDate, DisplayNames.get(:modifiedDate), class: "label") %>
+            <%= date_input(@business, :modifiedDate, class: "input", value: safe_calendar_value(input_value(@business, :modifiedDate))) %>
+          </div>
 
-        <div class="metadata-form__spatial">
-          <%= label(@business, :spatial, DisplayNames.get(:spatial), class: "label") %>
-          <%= text_input(@business, :spatial, class: "input") %>
-        </div>
+          <div class="metadata-form__spatial">
+            <%= label(@business, :spatial, DisplayNames.get(:spatial), class: "label") %>
+            <%= text_input(@business, :spatial, class: "input") %>
+          </div>
 
-        <div class="metadata-form__temporal">
-          <%= label(@business, :temporal, DisplayNames.get(:temporal), class: "label") %>
-          <%= text_input(@business, :temporal, class: "input") %>
-          <%= ErrorHelpers.error_tag(@business, :temporal) %>
-        </div>
+          <div class="metadata-form__temporal">
+            <%= label(@business, :temporal, DisplayNames.get(:temporal), class: "label") %>
+            <%= text_input(@business, :temporal, class: "input") %>
+            <%= ErrorHelpers.error_tag(@business, :temporal) %>
+          </div>
 
-        <div class="metadata-form__organization">
-          <%= label(@business, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
-          <%= text_input(@business, :orgTitle, [class: "input input--text", readonly: true]) %>
-          <%= ErrorHelpers.error_tag(@business, :orgTitle) %>
-        </div>
+          <div class="metadata-form__organization">
+            <%= label(@business, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
+            <%= text_input(@business, :orgTitle, [class: "input input--text", readonly: true]) %>
+            <%= ErrorHelpers.error_tag(@business, :orgTitle) %>
+          </div>
 
-        <div class="metadata-form__language">
-          <%= label(@business, :language, DisplayNames.get(:language), class: "label") %>
-          <%= select(@business, :language, get_language_options(), value: get_language(input_value(@business, :language)), class: "select") %>
-        </div>
+          <div class="metadata-form__language">
+            <%= label(@business, :language, DisplayNames.get(:language), class: "label") %>
+            <%= select(@business, :language, get_language_options(), value: get_language(input_value(@business, :language)), class: "select") %>
+          </div>
 
-        <div class="metadata-form__homepage">
-          <%= label(@business, :homepage, DisplayNames.get(:homepage), class: "label") %>
-          <%= text_input(@business, :homepage, class: "input") %>
-        </div>
+          <div class="metadata-form__homepage">
+            <%= label(@business, :homepage, DisplayNames.get(:homepage), class: "label") %>
+            <%= text_input(@business, :homepage, class: "input") %>
+          </div>
 
-        <div class="metadata-form__format">
-          <%= label(@technical, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-          <%= text_input(@technical, :sourceFormat, [class: "input--text input", readonly: true]) %>
-          <%= ErrorHelpers.error_tag(@technical, :sourceFormat) %>
-        </div>
+          <div class="metadata-form__format">
+            <%= label(@technical, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
+            <%= text_input(@technical, :sourceFormat, [class: "input--text input", readonly: true]) %>
+            <%= ErrorHelpers.error_tag(@technical, :sourceFormat) %>
+          </div>
 
-        <div class="metadata-form__level-of-access">
-          <%= label(@technical, :private, DisplayNames.get(:private), class: "label label--required") %>
-          <%= select(@technical, :private, get_level_of_access_options(), class: "select") %>
-          <%= ErrorHelpers.error_tag(@technical, :private) %>
-        </div>
+          <div class="metadata-form__level-of-access">
+            <%= label(@technical, :private, DisplayNames.get(:private), class: "label label--required") %>
+            <%= select(@technical, :private, get_level_of_access_options(), class: "select") %>
+            <%= ErrorHelpers.error_tag(@technical, :private) %>
+          </div>
 
-        <div class="metadata-form__benefit-rating">
-          <%= label(@business, :benefitRating, DisplayNames.get(:benefitRating), class: "label label--required") %>
-          <%= select(@business, :benefitRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
-          <%= ErrorHelpers.error_tag(@business, :benefitRating, bind_to_input: false) %>
-        </div>
+          <div class="metadata-form__benefit-rating">
+            <%= label(@business, :benefitRating, DisplayNames.get(:benefitRating), class: "label label--required") %>
+            <%= select(@business, :benefitRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
+            <%= ErrorHelpers.error_tag(@business, :benefitRating, bind_to_input: false) %>
+          </div>
 
-        <div class="metadata-form__risk-rating">
-          <%= label(@business, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
-          <%= select(@business, :riskRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
-          <%= ErrorHelpers.error_tag(@business, :riskRating, bind_to_input: false) %>
+          <div class="metadata-form__risk-rating">
+            <%= label(@business, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
+            <%= select(@business, :riskRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
+            <%= ErrorHelpers.error_tag(@business, :riskRating, bind_to_input: false) %>
+          </div>
         </div>
       </div>
     </div>

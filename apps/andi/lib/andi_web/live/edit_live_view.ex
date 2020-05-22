@@ -32,44 +32,46 @@ defmodule AndiWeb.EditLiveView do
 
 
         <div class="metadata-form-component">
-          <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical, save_success: @save_success, has_validation_errors: @has_validation_errors, page_error: @page_error) %>
+          <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical, save_success: @save_success, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["metadata_form"]) %>
         </div>
 
         <div class="data-dictionary-form form-component">
-          <div class="component-header">
-            <h3 class="component-section-number">2</h3>
-            <h2 class="component-section-title component--expanded full-width"">Data Dictionary</h2>
-          </div>
-
-          <div class="data-dictionary-form-edit-section form-section form-grid">
-            <div class="data-dictionary-form__tree-section">
-              <div class="data-dictionary-form__tree-header data-dictionary-form-tree-header">
-                <div class="label">Enter/Edit Fields</div>
-                <div class="label label--inline">TYPE</div>
-              </div>
-
-              <div class="data-dictionary-form__tree-content data-dictionary-form-tree-content">
-                <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: technical, field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
-              </div>
-
-              <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
-                <div class="data-dictionary-form__add-field-button" phx-click="add_data_dictionary_field"></div>
-                <div class="data-dictionary-form__remove-field-button" phx-click="remove_data_dictionary_field" phx-target="#dataset-edit-page"></div>
-              </div>
+          <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="data_dictionary_form">
+            <h3 class="component-number component-number--<%= @component_visibility["data_dictionary_form"] %>">2</h3>
+            <h2 class="component-title component-title--<%= @component_visibility["data_dictionary_form"] %> full-width">Data Dictionary</h2>
             </div>
 
-            <div class="data-dictionary-form__edit-section">
-              <%= live_component(@socket, DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item) %>
+          <div class="form-section">
+            <div class="component-edit-section--<%= @component_visibility["data_dictionary_form"] %> data-dictionary-form-edit-section form-grid">
+              <div class="data-dictionary-form__tree-section">
+                <div class="data-dictionary-form__tree-header data-dictionary-form-tree-header">
+                  <div class="label">Enter/Edit Fields</div>
+                  <div class="label label--inline">TYPE</div>
+                </div>
+
+                <div class="data-dictionary-form__tree-content data-dictionary-form-tree-content">
+                  <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: technical, field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
+                </div>
+
+                <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
+                  <div class="data-dictionary-form__add-field-button" phx-click="add_data_dictionary_field"></div>
+                  <div class="data-dictionary-form__remove-field-button" phx-click="remove_data_dictionary_field" phx-target="#dataset-edit-page"></div>
+                </div>
+              </div>
+
+              <div class="data-dictionary-form__edit-section">
+                <%= live_component(@socket, DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item) %>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="url-form-component">
-          <%= live_component(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, technical: technical, testing: @testing, test_results: @test_results ) %>
+          <%= live_component(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, technical: technical, testing: @testing, test_results: @test_results, visibility: @component_visibility["url_form"]) %>
         </div>
 
         <div class="finalize-form-component ">
-          <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical) %>
+          <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, visibility: @component_visibility["finalize_form"]) %>
           <%= error_tag(technical, :cadence) %>
         </div>
 
@@ -106,12 +108,20 @@ defmodule AndiWeb.EditLiveView do
   def mount(_params, %{"dataset" => dataset}, socket) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
+    component_visibility = %{
+      "metadata_form" => "expanded",
+      "data_dictionary_form" => "collapsed",
+      "url_form" => "collapsed",
+      "finalize_form" => "collapsed"
+    }
+
     Process.flag(:trap_exit, true)
 
     {:ok,
      assign(socket,
        add_data_dictionary_field_visible: false,
        changeset: new_changeset,
+       component_visibility: component_visibility,
        dataset: dataset,
        has_validation_errors: false,
        new_field_initial_render: false,
@@ -207,6 +217,17 @@ defmodule AndiWeb.EditLiveView do
       end
 
     {:noreply, assign(updated_socket, save_success: true, success_message: success_message)}
+  end
+
+  def handle_event("toggle-component-visibility", %{"component" => component}, socket) do
+    new_visibility =
+      case Map.get(socket.assigns.component_visibility, component) do
+        "expanded" -> Map.put(socket.assigns.component_visibility, component, "collapsed")
+        "collapsed" -> Map.put(socket.assigns.component_visibility, component, "expanded")
+      end
+
+
+    {:noreply, assign(socket, component_visibility: new_visibility)}
   end
 
   def handle_event("add", %{"field" => "sourceQueryParams"}, socket) do
