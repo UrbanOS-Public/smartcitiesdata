@@ -232,6 +232,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     |> Map.from_struct()
     |> Map.drop([:completeness])
     |> Map.put(:keywordFacets, Map.get(dataset, :keywords))
+    |> Map.put(:orgTitleFacet, get_in(dataset, [:organizationDetails, :orgTitle]))
     |> Enum.reject(fn {_k, v} -> is_nil(v) end)
     |> Map.new()
   end
@@ -259,16 +260,16 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     |> Map.new()
   end
 
-  defp search_query(term, keywords, org_id, api_accessible) do
+  defp search_query(term, keywords, org_title, api_accessible) do
     %{
       "aggs" => %{
         "keywords" => %{"terms" => %{"field" => "keywordFacets"}},
-        "orgs" => %{"terms" => %{"field" => "organizationDetails.id"}}
+        "orgs" => %{"terms" => %{"field" => "orgTitleFacet"}}
       },
       "from" => 0,
       "query" => %{
         "bool" => %{
-          "must" => build_must(term, keywords, org_id, api_accessible),
+          "must" => build_must(term, keywords, org_title, api_accessible),
           "filter" => [
             %{"term" => %{"private" => false}}
           ]
@@ -279,11 +280,11 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     }
   end
 
-  defp build_must(term, keywords, org_id, api_accessible) do
+  defp build_must(term, keywords, org_title, api_accessible) do
     [
       match_terms(term),
       match_keywords(keywords),
-      match_organization(org_id),
+      match_organization(org_title),
       api_accessible(api_accessible)
     ] |> Enum.reject(&is_nil/1)
   end
@@ -333,10 +334,10 @@ defmodule DiscoveryApi.Search.DatasetIndex do
 
   defp match_organization(nil), do: nil
 
-  defp match_organization(org_id) do
+  defp match_organization(org_title) do
     %{
       "term" => %{
-        "organizationDetails.id" => org_id
+        "organizationDetails.orgTitle" => org_title
       }
     }
   end

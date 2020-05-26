@@ -624,15 +624,15 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{organizationDetails: organization})
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("", [], organization.id)
-      assert [dataset_one] == models
+      {:ok, models, _facets} = DatasetSearchIndex.search("", [], organization.orgTitle)
+      assert List.first(dataset_one) == models
     end
 
     test "given no datasets with matching organization" do
       index_model()
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("", [], "1234567890")
+      {:ok, models, _facets} = DatasetSearchIndex.search("", [], "Orthagan Alley Inc.")
       assert [] == models
     end
 
@@ -657,15 +657,15 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
     end
 
     test "given datasets that have organizations" do
-      organization1 = TDG.create_organization(%{id: "1"}) |> Map.from_struct()
-      organization2 = TDG.create_organization(%{id: "2"}) |> Map.from_struct()
+      organization1 = TDG.create_organization(%{orgTitle: "Faculty"}) |> Map.from_struct()
+      organization2 = TDG.create_organization(%{orgTitle: "Headmaster's Office"}) |> Map.from_struct()
       index_model(%{title: "Form 2 Student List", organizationDetails: organization1})
       index_model(%{title: "House Leaders", organizationDetails: organization1})
       index_model(%{title: "Headmaster's List", organizationDetails: organization2})
 
       {:ok, _models, %{orgs: org_facets}} = DatasetSearchIndex.search("")
       assert 2 == length(org_facets)
-      assert [%{name: "1", count: 2}, %{name: "2", count: 1}] == org_facets
+      assert [ %{name: "Faculty", count: 2}, %{name: "Headmaster's Office", count: 1}] == org_facets
     end
   end
 

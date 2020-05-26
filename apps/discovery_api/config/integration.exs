@@ -57,6 +57,10 @@ config :discovery_api, :elasticsearch,
               type: "text",
               index: true
             },
+            orgTitleFacet: %{
+              type: "keyword",
+              index: true
+            },
             organizationDetails: %{
               properties: %{
                 id: %{
