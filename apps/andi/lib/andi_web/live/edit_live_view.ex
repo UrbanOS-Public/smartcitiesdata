@@ -67,7 +67,7 @@ defmodule AndiWeb.EditLiveView do
 
               <div class="edit-button-group form-grid">
                 <div class="edit-button-group__cancel-btn">
-                  <a href="#metadata-form" id="back-button" class="btn btn--back btn--large">Back</a>
+                  <a href="#metadata-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form" phx-value-component-collapse="data_dictionary_form">Back</a>
                   <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
                 </div>
 
@@ -84,7 +84,7 @@ defmodule AndiWeb.EditLiveView do
                 </div>
 
                 <div class="edit-button-group__save-btn">
-                  <a href="#url-form" id="next-button" class="btn btn--next btn--large btn--action">Next</a>
+                  <a href="#url-form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="url_form" phx-value-component-collapse="data_dictionary_form">Next</a>
                   <%= submit("Save", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft") %>
                 </div>
               </div>
@@ -225,12 +225,16 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("toggle-component-visibility", %{"component" => component}, socket) do
-    new_visibility =
-      case Map.get(socket.assigns.component_visibility, component) do
-        "expanded" -> Map.put(socket.assigns.component_visibility, component, "collapsed")
-        "collapsed" -> Map.put(socket.assigns.component_visibility, component, "expanded")
-      end
+    new_visibility = update_component_visibility([component], socket.assigns.component_visibility)
 
+    {:noreply, assign(socket, component_visibility: new_visibility)}
+  end
+
+  def handle_event("toggle-component-visibility", %{"component-expand" => component_expand, "component-collapse" => component_collapse}, socket) do
+    new_visibility =
+      socket.assigns.component_visibility
+      |> Map.put(component_expand, "expanded")
+      |> Map.put(component_collapse, "collapsed")
 
     {:noreply, assign(socket, component_visibility: new_visibility)}
   end
@@ -489,5 +493,14 @@ defmodule AndiWeb.EditLiveView do
   defp get_eligible_data_dictionary_parents(changeset) do
     Ecto.Changeset.apply_changes(changeset)
     |> DataDictionaryFields.get_parent_ids()
+  end
+
+  defp update_component_visibility(components, component_visibility) do
+    Enum.reduce(components, component_visibility, fn component, acc ->
+      component_visibility = case Map.get(acc, component) do
+        "expanded" -> Map.put(acc, component, "collapsed")
+        "collapsed" -> Map.put(acc, component, "expanded")
+      end
+    end)
   end
 end

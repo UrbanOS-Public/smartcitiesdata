@@ -47,7 +47,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
             <div class="edit-button-group form-grid">
               <div class="edit-button-group__cancel-btn">
-                <a href="#data-dictionary-form" id="back-button" class="btn btn--back btn--large">Back</a>
+                <a href="#data-dictionary-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-collapse="url_form" phx-value-component-expand="data_dictionary_form">Back</a>
                 <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
               </div>
 
@@ -64,7 +64,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
               </div>
 
               <div class="edit-button-group__save-btn">
-                <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action">Next</a>
+                <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-collapse="url_form" phx-value-component-expand="finalize_form">Next</a>
                 <%= submit("Save", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft") %>
               </div>
             </div>

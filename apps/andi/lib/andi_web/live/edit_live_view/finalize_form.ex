@@ -124,7 +124,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
           <div class="edit-button-group form-grid">
             <div class="edit-button-group__cancel-btn">
-              <a href="#url-form" id="back-button" class="btn btn--back btn--large">Back</a>
+              <a href="#url-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-collapse="finalize_form" phx-value-component-expand="url_form">Back</a>
               <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
             </div>
 
