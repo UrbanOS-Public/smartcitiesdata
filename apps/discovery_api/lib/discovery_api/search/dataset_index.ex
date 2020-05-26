@@ -64,8 +64,8 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     end
   end
 
-  def search(term) do
-    query = search_query(term)
+  def search(term, keywords \\ [], organization \\ nil, api_accessible \\ false) do
+    query = search_query(term, keywords, organization, api_accessible)
 
     case elastic_search(query) do
       {:ok, documents} ->
@@ -247,12 +247,12 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     |> Map.new()
   end
 
-  defp search_query(term) do
+  defp search_query(term, keywords, org_id, api_accessible) do
     %{
       "from" => 0,
       "query" => %{
         "bool" => %{
-          "must" => build_must(term),
+          "must" => build_must(term, keywords, org_id, api_accessible),
           "filter" => [
             %{"term" => %{"private" => false}}
           ]
@@ -263,25 +263,65 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     }
   end
 
-  defp build_must(term) when term == "" do
+  defp build_must(term, keywords, org_id, api_accessible) do
     [
-      %{
-        "match_all" => %{}
-      }
-    ]
+      match_terms(term),
+      match_keywords(keywords),
+      match_organization(org_id),
+      api_accessible(api_accessible)
+    ] |> Enum.reject(&is_nil/1)
   end
 
-  defp build_must(term) do
-    [
-      %{
-        "multi_match" => %{
-          "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
-          "fuzziness" => "AUTO",
-          "prefix_length" => 2,
-          "query" => term,
-          "type" => "most_fields"
+  defp match_terms("") do
+    %{
+      "match_all" => %{}
+    }
+  end
+
+  defp match_terms(term) do
+    %{
+      "multi_match" => %{
+        "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
+        "fuzziness" => "AUTO",
+        "prefix_length" => 2,
+        "query" => term,
+        "type" => "most_fields"
+      }
+    }
+  end
+
+  defp match_keywords([]), do: nil
+
+  defp match_keywords(keywords) do
+    %{
+      "terms_set" => %{
+        "keywords" => %{
+            "terms" => keywords,
+            "minimum_should_match_script" => %{
+               "source" => "return #{length(keywords)}"
+            }
         }
       }
-    ]
+    }
+  end
+
+  defp api_accessible(false), do: nil
+
+  defp api_accessible(true) do
+    %{
+      "terms" => %{
+        "sourceType" => ["ingest", "stream"]
+      }
+    }
+  end
+
+  defp match_organization(nil), do: nil
+
+  defp match_organization(org_id) do
+    %{
+      "term" => %{
+        "organizationDetails.id" => org_id
+      }
+    }
   end
 end

@@ -583,6 +583,44 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       assert Enum.any?(models, fn model -> model.title == "Student Roster" end)
       assert Enum.any?(models, fn model -> model.title == "Inventory" end)
     end
+
+    test "given a dataset with a matching keyword" do
+      index_model(%{title: "Room List (West Wing)", keywords: ["inventory"]})
+      index_model(%{title: "Passageways -- GEOJSON"})
+
+      {:ok, models} = DatasetSearchIndex.search("", ["inventory"])
+      assert 1 == length(models)
+      assert Enum.any?(models, fn model -> model.title == "Room List (West Wing)" end)
+    end
+
+    test "given a dataset with all matching keywords" do
+      index_model(%{title: "Room List (East Wing)", keywords: ["inventory"]})
+      index_model(%{title: "Ingredient List", keywords: ["inventory", "magic"]})
+      index_model(%{title: "Passageways (Dungeon) -- GEOJSON", keywords: ["magic"]})
+
+      {:ok, models} = DatasetSearchIndex.search("", ["inventory", "magic"])
+      assert 1 == length(models)
+      assert Enum.any?(models, fn model -> model.title == "Ingredient List" end)
+    end
+
+    test "given a dataset with a matching organization" do
+      organization = TDG.create_organization(%{}) |> Map.from_struct()
+      dataset_one = index_model(%{organizationDetails: organization})
+      index_model()
+
+      assert {:ok, [dataset_one]} == DatasetSearchIndex.search("", [], organization.id)
+    end
+
+    test "given a dataset that is api accessible" do
+      index_model(%{title: "Mail Status", sourceType: "stream"})
+      index_model(%{title: "Owl Registry", sourceType: "ingest"})
+      index_model(%{title: "Hallways -- GEOJSON", sourceType: "host"})
+
+      {:ok, models} = DatasetSearchIndex.search("", [], nil, true)
+      assert 2 == length(models)
+      assert Enum.any?(models, fn model -> model.title == "Mail Status" end)
+      assert Enum.any?(models, fn model -> model.title == "Owl Registry" end)
+    end
   end
 
   defp reconfigure_es_url(url) do
