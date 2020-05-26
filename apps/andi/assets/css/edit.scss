@@ -28,10 +28,14 @@ $component-header-height: 7.5rem;
 }
 
 .edit-button-group {
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
   grid-template-areas:
     "cancel-btn messages save-btn";
+}
+
+.edit-button-group__messages {
+    text-align: center;
 }
 
 .full-width {

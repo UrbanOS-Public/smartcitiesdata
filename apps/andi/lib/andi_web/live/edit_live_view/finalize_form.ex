@@ -7,6 +7,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   alias Phoenix.HTML.Link
   alias Andi.InputSchemas.Datasets
+  alias AndiWeb.ErrorHelpers
 
   @quick_schedules %{
     "hourly" => "0 0 * * * *",
@@ -119,6 +120,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
                   </div>
                 </div>
               </div>
+              <%= ErrorHelpers.error_tag(@form, :cadence) %>
             </div>
           </div>
 
