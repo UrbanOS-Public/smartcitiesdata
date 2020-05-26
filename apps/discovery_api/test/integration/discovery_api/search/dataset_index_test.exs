@@ -603,12 +603,27 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       assert Enum.any?(models, fn model -> model.title == "Ingredient List" end)
     end
 
+    test "given no datasets with matching keywords" do
+      index_model(%{title: "Room List (East Wing)", keywords: ["inventory"]})
+      index_model(%{title: "Ingredient List", keywords: ["inventory", "magic"]})
+      index_model(%{title: "Passageways (Dungeon) -- GEOJSON", keywords: ["magic"]})
+
+      assert {:ok, []} == DatasetSearchIndex.search("", ["goblin", "gnome"])
+    end
+
     test "given a dataset with a matching organization" do
       organization = TDG.create_organization(%{}) |> Map.from_struct()
       dataset_one = index_model(%{organizationDetails: organization})
       index_model()
 
       assert {:ok, [dataset_one]} == DatasetSearchIndex.search("", [], organization.id)
+    end
+
+    test "given no datasets with matching organization" do
+      index_model()
+      index_model()
+
+      assert {:ok, []} == DatasetSearchIndex.search("", [], "1234567890")
     end
 
     test "given a dataset that is api accessible" do
