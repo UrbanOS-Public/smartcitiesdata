@@ -49,6 +49,14 @@ config :discovery_api, :elasticsearch,
               type: "keyword",
               index: true
             },
+            keywordFacets: %{
+              type: "keyword",
+              index: true
+            },
+            keywords: %{
+              type: "text",
+              index: true
+            },
             organizationDetails: %{
               properties: %{
                 id: %{

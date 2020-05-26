@@ -56,7 +56,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
 
   def get_all() do
     case elastic_search() do
-      {:ok, documents} ->
+      {:ok, documents, _facets} ->
         {:ok, Enum.map(documents, &struct(Model, &1))}
 
       error ->
@@ -68,8 +68,8 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     query = search_query(term, keywords, organization, api_accessible)
 
     case elastic_search(query) do
-      {:ok, documents} ->
-        {:ok, Enum.map(documents, &struct(Model, &1))}
+      {:ok, documents, facets} ->
+        {:ok, Enum.map(documents, &struct(Model, &1)), facets}
 
       error ->
         error
@@ -171,11 +171,22 @@ defmodule DiscoveryApi.Search.DatasetIndex do
          |> handle_response_with_body() do
       {:ok, body} ->
         documents = get_in(body, [:hits, :hits, Access.all(), :_source])
-        {:ok, documents}
+        facets = body |> Map.get(:aggregations, %{}) |> extract_facets()
+        {:ok, documents, facets}
 
       error ->
         error
     end
+  end
+
+  defp extract_facets(aggregations) do
+    aggregations
+    |> Enum.map(fn {facet, %{buckets: buckets}} -> {facet, buckets_to_facet_values(buckets)} end)
+    |> Enum.reduce(%{}, fn {facet, values}, facets -> Map.put(facets, facet, values) end)
+  end
+
+  defp buckets_to_facet_values(buckets) do
+    Enum.map(buckets, fn %{doc_count: count, key: name} -> %{name: name, count: count} end)
   end
 
   defp elastic_bulk_document_load(datasets) do
@@ -220,6 +231,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     dataset
     |> Map.from_struct()
     |> Map.drop([:completeness])
+    |> Map.put(:keywordFacets, Map.get(dataset, :keywords))
     |> Enum.reject(fn {_k, v} -> is_nil(v) end)
     |> Map.new()
   end
@@ -249,6 +261,10 @@ defmodule DiscoveryApi.Search.DatasetIndex do
 
   defp search_query(term, keywords, org_id, api_accessible) do
     %{
+      "aggs" => %{
+        "keywords" => %{"terms" => %{"field" => "keywordFacets"}},
+        "orgs" => %{"terms" => %{"field" => "organizationDetails.id"}}
+      },
       "from" => 0,
       "query" => %{
         "bool" => %{
@@ -295,7 +311,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   defp match_keywords(keywords) do
     %{
       "terms_set" => %{
-        "keywords" => %{
+        "keywordFacets" => %{
             "terms" => keywords,
             "minimum_should_match_script" => %{
                "source" => "return #{length(keywords)}"
