@@ -1,5 +1,5 @@
 $component-number-width: 4rem;
-$component-header-height: 5.5rem;
+$component-header-height: 7.5rem;
 
 .edit-page {
   display: grid;
@@ -28,6 +28,8 @@ $component-header-height: 5.5rem;
 }
 
 .edit-button-group {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
   grid-template-areas:
     "cancel-btn messages save-btn";
 }
@@ -53,7 +55,7 @@ $component-header-height: 5.5rem;
     cursor: pointer;
 }
 
-.metadata-form > .form-section {
+#metadata-form > .form-section {
     margin-top: -3rem;
     padding-top: 3rem;
 }

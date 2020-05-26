@@ -5,6 +5,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
+  alias Phoenix.HTML.Link
   alias Andi.InputSchemas.Datasets
 
   @quick_schedules %{
@@ -48,74 +49,100 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       end
 
     ~L"""
-    <div id="<%= @id %>" class="finalize-form finalize-form--<%= @visibility %> form-component">
+    <div id="<%= @id %>" class="finalize-form finalize-form--<%= @visibility %>">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="finalize_form">
         <h3 class="component-number component-number--<%= @visibility %>">4</h3>
         <h2 class="component-title component-title--<%= @visibility %>">Finalize</h2>
       </div>
 
       <div class="form-section">
-        <div class="component-edit-section--<%= @visibility %> finalize-form-edit-section form-grid">
-          <div "finalize-form__schedule">
-            <h3>Schedule Job</h3>
+        <div class="component-edit-section--<%= @visibility %>">
+          <div class="finalize-form-edit-section form-grid">
+            <div "finalize-form__schedule">
+              <h3>Schedule Job</h3>
 
-            <div class="finalize-form__schedule-options">
-              <div class="finalize-form__schedule-option">
-                <%= label(@form, :cadence, "Immediately", class: "finalize-form__schedule-option-label") %>
-                <%= radio_button(@form, :cadence, "once")%>
+              <div class="finalize-form__schedule-options">
+                <div class="finalize-form__schedule-option">
+                  <%= label(@form, :cadence, "Immediately", class: "finalize-form__schedule-option-label") %>
+                  <%= radio_button(@form, :cadence, "once")%>
+                </div>
+                <div class="finalize-form__schedule-option">
+                <%= label(@form, :cadence, "Never", class: "finalize-form__schedule-option-label") %>
+                <%= radio_button(@form, :cadence, "never") %>
+                </div>
+                <div class="finalize-form__schedule-option">
+                  <%= label(@form, :cadence, "Repeat", class: "finalize-form__schedule-option-label") %>
+                  <%= radio_button(@form, :cadence, @crontab) %>
+                </div>
               </div>
-              <div class="finalize-form__schedule-option">
-              <%= label(@form, :cadence, "Never", class: "finalize-form__schedule-option-label") %>
-              <%= radio_button(@form, :cadence, "never") %>
-              </div>
-              <div class="finalize-form__schedule-option">
-                <%= label(@form, :cadence, "Repeat", class: "finalize-form__schedule-option-label") %>
-                <%= radio_button(@form, :cadence, @crontab) %>
+
+              <div class="finalize-form__scheduler--<%= modifier %>">
+                <h4>Quick Schedule</h4>
+
+                <div class="finalize-form__quick-schedule">
+                  <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="hourly" phx-target="<%= @myself %>">Hourly</button>
+                  <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="daily" phx-target="<%= @myself %>">Daily</button>
+                  <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="weekly" phx-target="<%= @myself %>">Weekly</button>
+                  <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="monthly" phx-target="<%= @myself %>">Monthly</button>
+                  <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="yearly" phx-target="<%= @myself %>">Yearly</button>
+                </div>
+
+                <div class="finalize-form__help-link">
+                  <a href="https://en.wikipedia.org/wiki/Cron" target="_blank">Cron Schedule Help</a>
+                </div>
+
+                <div class="finalize-form__schedule-input">
+                  <div class="finalize-form__schedule-input-field">
+                    <label>Second</label>
+                    <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="second" phx-target="<%= @myself %>" value="<%= @crontab_list[:second] %>" />
+
+                  </div>
+                  <div class="finalize-form__schedule-input-field">
+                    <label>Minute</label>
+                    <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="minute" phx-target="<%= @myself %>" value="<%= @crontab_list[:minute] %>" />
+                  </div>
+                  <div class="finalize-form__schedule-input-field">
+                    <label>Hour</label>
+                    <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="hour" phx-target="<%= @myself %>" value="<%= @crontab_list[:hour] %>" />
+                  </div>
+                  <div class="finalize-form__schedule-input-field">
+                    <label>Day</label>
+                    <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="day" phx-target="<%= @myself %>" value="<%= @crontab_list[:day] %>" />
+                  </div>
+                  <div class="finalize-form__schedule-input-field">
+                    <label>Month</label>
+                    <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="month" phx-target="<%= @myself %>" value="<%= @crontab_list[:month] %>" />
+                  </div>
+                  <div class="finalize-form__schedule-input-field">
+                    <label>Week</label>
+                    <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="week" phx-target="<%= @myself %>" value="<%= @crontab_list[:week] %>" />
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="finalize-form__scheduler--<%= modifier %>">
-              <h4>Quick Schedule</h4>
+          <div class="edit-button-group form-grid">
+            <div class="edit-button-group__cancel-btn">
+              <a href="#url-form" id="back-button" class="btn btn--back btn--large">Back</a>
+              <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
+            </div>
 
-              <div class="finalize-form__quick-schedule">
-                <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="hourly" phx-target="<%= @myself %>">Hourly</button>
-                <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="daily" phx-target="<%= @myself %>">Daily</button>
-                <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="weekly" phx-target="<%= @myself %>">Weekly</button>
-                <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="monthly" phx-target="<%= @myself %>">Monthly</button>
-                <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="yearly" phx-target="<%= @myself %>">Yearly</button>
-              </div>
+            <div class="edit-button-group__messages">
+              <%= if @save_success do %>
+                <div id="success-message" class="metadata__success-message"><%= @success_message %></div>
+              <% end %>
+              <%= if @has_validation_errors do %>
+                <div id="validation-error-message" class="metadata__error-message">There were errors with the dataset you tried to submit.</div>
+              <% end %>
+              <%= if @page_error do %>
+                <div id="page-error-message" class="metadata__error-message">A page error occurred</div>
+              <% end %>
+            </div>
 
-              <div class="finalize-form__help-link">
-                <a href="https://en.wikipedia.org/wiki/Cron" target="_blank">Cron Schedule Help</a>
-              </div>
-
-              <div class="finalize-form__schedule-input">
-                <div class="finalize-form__schedule-input-field">
-                  <label>Second</label>
-                  <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="second" phx-target="<%= @myself %>" value="<%= @crontab_list[:second] %>" />
-
-                </div>
-                <div class="finalize-form__schedule-input-field">
-                  <label>Minute</label>
-                  <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="minute" phx-target="<%= @myself %>" value="<%= @crontab_list[:minute] %>" />
-                </div>
-                <div class="finalize-form__schedule-input-field">
-                  <label>Hour</label>
-                  <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="hour" phx-target="<%= @myself %>" value="<%= @crontab_list[:hour] %>" />
-                </div>
-                <div class="finalize-form__schedule-input-field">
-                  <label>Day</label>
-                  <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="day" phx-target="<%= @myself %>" value="<%= @crontab_list[:day] %>" />
-                </div>
-                <div class="finalize-form__schedule-input-field">
-                  <label>Month</label>
-                  <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="month" phx-target="<%= @myself %>" value="<%= @crontab_list[:month] %>" />
-                </div>
-                <div class="finalize-form__schedule-input-field">
-                  <label>Week</label>
-                  <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="week" phx-target="<%= @myself %>" value="<%= @crontab_list[:week] %>" />
-                </div>
-              </div>
+            <div class="edit-button-group__save-btn">
+              <button type="button" id="publish-button" class="btn btn--publish btn--action btn--large" phx-click="publish">Publish</button>
+              <%= submit("Save", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft") %>
             </div>
           </div>
         </div>
