@@ -15,14 +15,23 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   end
 
   def render(assigns) do
+    action =
+      case assigns.visibility do
+        "collapsed" -> "EDIT"
+        "expanded" -> "MINIMIZE"
+      end
+
     ~L"""
     <div id="metadata-form" class="form-component">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="metadata_form">
         <h3 class="component-number component-number--<%= @visibility %>">1</h3>
 
         <div class="component-title full-width">
-          <h2 class="component-title-text component-title-text--<%= @visibility %> ">Enter Metadata</h2>
-          <div class="component-title-edit-icon"></div>
+          <h2 class="component-title-text component-title-text--<%= @visibility %>">Enter Metadata</h2>
+          <div class="component-title-action">
+            <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
+            <div class="component-title-icon--<%= @visibility %>"></div>
+          </div>
         </div>
       </div>
 

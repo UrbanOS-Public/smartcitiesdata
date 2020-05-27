@@ -16,8 +16,8 @@ defmodule AndiWeb.EditLiveView do
     dataset_id = assigns.dataset.id
 
     ~L"""
-      <div class="edit-page" id="dataset-edit-page">
-      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data, phx_hook: "showSnackbar"] %>
+    <div class="edit-page" id="dataset-edit-page">
+      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>

@@ -49,13 +49,24 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
         "hidden"
       end
 
+    action =
+      case assigns.visibility do
+        "collapsed" -> "EDIT"
+        "expanded" -> "MINIMIZE"
+      end
+
+    publish_message? = !String.contains?(assigns.success_message, "Saved successfully")
+
     ~L"""
     <div id="finalize_form" class="finalize-form finalize-form--<%= @visibility %>">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="finalize_form">
         <h3 class="component-number component-number--<%= @visibility %>">4</h3>
         <div class="component-title full-width">
           <h2 class="component-title-text component-title-text--<%= @visibility %> ">Finalize</h2>
-          <div class="component-title-edit-icon"></div>
+          <div class="component-title-action">
+            <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
+            <div class="component-title-icon--<%= @visibility %>"></div>
+          </div>
         </div>
       </div>
 
@@ -133,9 +144,21 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
               <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
             </div>
 
+            <div class="edit-button-group__messages">
+              <%= if @save_success and publish_message? do %>
+                <div class="metadata__success-message"><%= @success_message %></div>
+              <% end %>
+              <%= if @has_validation_errors do %>
+                <div id="validation-error-message" class="metadata__error-message">There were errors with the dataset you tried to submit.</div>
+              <% end %>
+              <%= if @page_error do %>
+                <div id="page-error-message" class="metadata__error-message">A page error occurred</div>
+              <% end %>
+            </div>
+
             <div class="edit-button-group__save-btn">
               <button type="button" id="publish-button" class="btn btn--publish btn--action btn--large" phx-click="publish">Publish</button>
-              <%= submit("Save", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft") %>
+              <%= submit("Save", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft", phx_hook: "showSnackbar") %>
             </div>
           </div>
         </div>

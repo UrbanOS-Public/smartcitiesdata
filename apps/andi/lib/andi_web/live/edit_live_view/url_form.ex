@@ -15,13 +15,22 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   end
 
   def render(assigns) do
+    action =
+      case assigns.visibility do
+        "collapsed" -> "EDIT"
+        "expanded" -> "MINIMIZE"
+      end
+
     ~L"""
       <div id="url-form" class="form-component">
         <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="url_form">
           <h3 class="component-number component-number--<%= @visibility %>">3</h3>
           <div class="component-title full-width">
             <h2 class="component-title-text component-title-text--<%= @visibility %> ">Configure Upload</h2>
-            <div class="component-title-edit-icon"></div>
+            <div class="component-title-action">
+              <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
+              <div class="component-title-icon--<%= @visibility %>"></div>
+            </div>
           </div>
         </div>
 

@@ -1,0 +1,12 @@
+<svg id="Minimize" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 41 24">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #26adeb;
+        fill-rule: evenodd;
+      }
+    </style>
+  </defs>
+  <path class="cls-1" d="M-0.121,4.121L4.121-.121l20,20-4.243,4.243Z"/>
+  <path id="Shape_1183_copy" data-name="Shape 1183 copy" class="cls-1" d="M41.121,4.121L36.879-.121l-20,20,4.243,4.243Z"/>
+</svg>

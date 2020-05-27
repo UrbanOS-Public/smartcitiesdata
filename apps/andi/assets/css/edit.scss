@@ -15,10 +15,10 @@ $component-header-height: 7.5rem;
 
 .form-section {
   padding-left: $component-number-width - 1rem;
-  margin-top: -$component-header-height;
+  margin-top: -$component-header-height + 1rem;
   padding-top: $component-header-height;
   margin-left: 1rem;
-  border-left: 2px solid #C9C7C7;
+  border-left: 2px solid $color-form-border;
 }
 
 .form-grid {
@@ -61,11 +61,11 @@ $component-header-height: 7.5rem;
 
 #metadata-form > .form-section {
     margin-top: -3rem;
-    padding-top: 3rem;
+    padding-top: 4rem;
 }
 
 .finalize-form--collapsed > .form-section {
-  margin-top: -$component-header-height * 1.5;
+  margin-top: -9.5rem;
   margin-bottom: 4rem;
 }
 
@@ -87,25 +87,26 @@ $component-header-height: 7.5rem;
 }
 
 .component-number--collapsed {
-    background-color: #C9C7C7;
+    background-color: $color-form-border;
     color: white;
-    border: 1px solid #C9C7C7;
+    border: 1px solid $color-form-border;
 }
 
-.component-title{
+.component-title {
     display: inline-flex;
+    height: 3.5rem;
+    border-bottom: 1px solid $color-form-border;
 }
 
 .component-title-text {
     font-weight: 300;
-    border-bottom: 1px solid #C9C7C7;
     padding-bottom: 0.5rem;
     width: 100%;
     line-height: 2rem;
 }
 
 .component-title-text--collapsed {
-    color: #C9C7C7;
+    color: $color-form-border;
 }
 
 .edit-button-group__messages {
@@ -113,12 +114,28 @@ $component-header-height: 7.5rem;
   text-align: center;
 }
 
-.component-title-edit-icon {
+.component-title-action {
+    display: inline-flex;
     float: right;
+    margin-top: 1.5rem;
+}
+
+.component-title-action-text--collapsed {
+    color: $color-form-border;
+}
+
+.component-title-icon--collapsed {
+    background-image: url('/images/edit.svg');
     height: 16px;
     width: 16px;
-    margin-top: 1.5rem;
-    background-image: url('/images/edit.svg');
+    margin-left: 0.75rem;
+}
+
+.component-title-icon--expanded {
+    background-image: url('/images/arrow.svg');
+    height: 20px;
+    width: 20px;
+    margin-left: 1rem;
 }
 
 #snackbar {
@@ -133,8 +150,8 @@ $component-header-height: 7.5rem;
     z-index: 1;
     left: 45%;
     bottom: 30px;
-    -webkit-box-shadow: 0 0 1rem #C9C7C7;
-    box-shadow: 0 0 1rem #C9C7C7;
+    -webkit-box-shadow: 0 0 1rem $color-form-border;
+    box-shadow: 0 0 1rem $color-form-border;
 }
 
 #snackbar.show {
