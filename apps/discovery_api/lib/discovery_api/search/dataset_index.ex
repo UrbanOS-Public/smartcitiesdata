@@ -64,8 +64,8 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     end
   end
 
-  def search(term, keywords \\ [], organization \\ nil, api_accessible \\ false) do
-    query = search_query(term, keywords, organization, api_accessible)
+  def search(search_opts \\ []) do
+    query = search_query(search_opts)
 
     case elastic_search(query) do
       {:ok, documents, facets} ->
@@ -260,7 +260,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     |> Map.new()
   end
 
-  defp search_query(term, keywords, org_title, api_accessible) do
+  defp search_query(search_opts) do
     %{
       "aggs" => %{
         "keywords" => %{"terms" => %{"field" => "keywordFacets"}},
@@ -269,7 +269,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
       "from" => 0,
       "query" => %{
         "bool" => %{
-          "must" => build_must(term, keywords, org_title, api_accessible),
+          "must" => build_must(search_opts),
           "filter" => [
             %{"term" => %{"private" => false}}
           ]
@@ -280,16 +280,21 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     }
   end
 
-  defp build_must(term, keywords, org_title, api_accessible) do
+  defp build_must(search_opts) do
+    query = Keyword.get(search_opts, :query, "")
+    keywords = Keyword.get(search_opts, :keywords, [])
+    org_title = Keyword.get(search_opts, :org_title, nil)
+    api_accessible = Keyword.get(search_opts, :api_accessible, false)
+
     [
-      match_terms(term),
+      match_terms(query),
       match_keywords(keywords),
       match_organization(org_title),
       api_accessible(api_accessible)
     ] |> Enum.reject(&is_nil/1)
   end
 
-  defp match_terms("") do
+  defp match_terms(term) when term in ["", nil] do
     %{
       "match_all" => %{}
     }

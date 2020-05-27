@@ -515,7 +515,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{title: "Nazderaldac"})
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("Nazderaldac")
+      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Nazderaldac")
       assert [dataset_one] == models
     end
 
@@ -523,7 +523,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{description: "Accio Dataset!", private: true})
       dataset_two = index_model(%{description: "Accio Dataset!", private: false})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("Accio Dataset")
+      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Accio Dataset")
       assert [dataset_two] == models
     end
 
@@ -533,7 +533,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{organizationDetails: organization_1})
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("Olivanders")
+      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Olivanders")
       assert [dataset_one] == models
     end
 
@@ -541,7 +541,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{keywords: ["Newts", "Scales", "Tails"]})
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("Newts")
+      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Newts")
       assert [dataset_one] == models
     end
 
@@ -550,7 +550,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Reports", description: "Newt Scamander's reports 1920-1930"})
       index_model(%{title: "Others"})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("Newt")
+      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Newt")
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Reports" end)
       assert Enum.any?(models, fn model -> model.title == "Ingredients" end)
@@ -563,7 +563,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Room Inventory", keywords: ["Library"]})
       index_model(%{title: "Others"})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("Library Records")
+      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Library Records")
       assert 3 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Library Records" end)
       assert Enum.any?(models, fn model -> model.title == "Class Reports" end)
@@ -575,7 +575,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model()
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("Hippogriff")
+      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Hippogriff")
       assert [] == models
     end
 
@@ -583,7 +583,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Student Roster"})
       index_model(%{title: "Inventory"})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("")
+      {:ok, models, _facets} = DatasetSearchIndex.search(query: "")
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Student Roster" end)
       assert Enum.any?(models, fn model -> model.title == "Inventory" end)
@@ -593,7 +593,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Room List (West Wing)", keywords: ["inventory"]})
       index_model(%{title: "Passageways -- GEOJSON"})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("", ["inventory"])
+      {:ok, models, _facets} = DatasetSearchIndex.search(keywords: ["inventory"])
       assert 1 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Room List (West Wing)" end)
     end
@@ -604,7 +604,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Passageways (Dungeon) -- GEOJSON", keywords: ["magic"]})
       index_model(%{title: "Ingredient List (Restricted)", keywords: ["inventory", "magic", "test"]})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("", ["inventory", "magic"])
+      {:ok, models, _facets} = DatasetSearchIndex.search(keywords: ["inventory", "magic"])
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Ingredient List" end)
       assert Enum.any?(models, fn model -> model.title == "Ingredient List (Restricted)" end)
@@ -615,7 +615,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Ingredient List", keywords: ["inventory", "magic"]})
       index_model(%{title: "Passageways (Faculty Level) -- GEOJSON", keywords: ["magic"]})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("", ["goblin", "gnome"])
+      {:ok, models, _facets} = DatasetSearchIndex.search(keywords: ["goblin", "gnome"])
       assert [] == models
     end
 
@@ -624,7 +624,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{organizationDetails: organization})
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("", [], organization.orgTitle)
+      {:ok, models, _facets} = DatasetSearchIndex.search(org_title: organization.orgTitle)
       assert dataset_one == List.first(models)
     end
 
@@ -632,7 +632,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model()
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("", [], "Orthagan Alley Inc.")
+      {:ok, models, _facets} = DatasetSearchIndex.search(org_title: "Orthagan Alley Inc.")
       assert [] == models
     end
 
@@ -641,7 +641,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Owl Registry", sourceType: "ingest"})
       index_model(%{title: "Hallways -- GEOJSON", sourceType: "host"})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search("", [], nil, true)
+      {:ok, models, _facets} = DatasetSearchIndex.search(api_accessible: true)
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Mail Status" end)
       assert Enum.any?(models, fn model -> model.title == "Owl Registry" end)
@@ -651,7 +651,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Form 1 Student List", keywords: ["students", "forms"]})
       index_model(%{title: "House Prefects", keywords: ["students", "houses"]})
 
-      {:ok, _models, %{keywords: keyword_facets}} = DatasetSearchIndex.search("")
+      {:ok, _models, %{keywords: keyword_facets}} = DatasetSearchIndex.search()
       assert 3 == length(keyword_facets)
       assert [%{name: "students", count: 2}, %{name: "forms", count: 1}, %{name: "houses", count: 1}] == keyword_facets
     end
@@ -663,7 +663,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "House Leaders", organizationDetails: organization1})
       index_model(%{title: "Headmaster's List", organizationDetails: organization2})
 
-      {:ok, _models, %{orgs: org_facets}} = DatasetSearchIndex.search("")
+      {:ok, _models, %{orgs: org_facets}} = DatasetSearchIndex.search()
       assert 2 == length(org_facets)
       assert [ %{name: "Faculty", count: 2}, %{name: "Headmaster's Office", count: 1}] == org_facets
     end
