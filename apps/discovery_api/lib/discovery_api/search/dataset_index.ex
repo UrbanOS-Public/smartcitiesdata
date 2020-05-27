@@ -337,7 +337,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   defp match_organization(org_title) do
     %{
       "term" => %{
-        "organizationDetails.orgTitle" => org_title
+        "orgTitleFacet" => org_title
       }
     }
   end

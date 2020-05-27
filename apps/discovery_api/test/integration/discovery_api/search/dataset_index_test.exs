@@ -620,12 +620,12 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
     end
 
     test "given a dataset with a matching organization" do
-      organization = TDG.create_organization(%{}) |> Map.from_struct()
+      organization = TDG.create_organization(%{orgTitle: "School"}) |> Map.from_struct()
       dataset_one = index_model(%{organizationDetails: organization})
       index_model()
 
       {:ok, models, _facets} = DatasetSearchIndex.search("", [], organization.orgTitle)
-      assert List.first(dataset_one) == models
+      assert dataset_one == List.first(models)
     end
 
     test "given no datasets with matching organization" do
