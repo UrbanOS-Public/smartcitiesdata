@@ -19,7 +19,11 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     <div id="metadata-form" class="form-component">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="metadata_form">
         <h3 class="component-number component-number--<%= @visibility %>">1</h3>
-        <h2 class="component-title component-title--<%= @visibility %> full-width">Enter Metadata</h2>
+
+        <div class="component-title full-width">
+          <h2 class="component-title-text component-title-text--<%= @visibility %> ">Enter Metadata</h2>
+          <div class="component-title-edit-icon"></div>
+        </div>
       </div>
 
       <div class="form-section">

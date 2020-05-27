@@ -92,7 +92,11 @@ $component-header-height: 7.5rem;
     border: 1px solid #C9C7C7;
 }
 
-.component-title {
+.component-title{
+    display: inline-flex;
+}
+
+.component-title-text {
     font-weight: 300;
     border-bottom: 1px solid #C9C7C7;
     padding-bottom: 0.5rem;
@@ -100,13 +104,21 @@ $component-header-height: 7.5rem;
     line-height: 2rem;
 }
 
-.component-title--collapsed {
+.component-title-text--collapsed {
     color: #C9C7C7;
 }
 
 .edit-button-group__messages {
   margin: auto;
   text-align: center;
+}
+
+.component-title-edit-icon {
+    float: right;
+    height: 16px;
+    width: 16px;
+    margin-top: 1.5rem;
+    background-image: url('/images/edit.svg');
 }
 
 @include area(edit-button-group, cancel-btn);

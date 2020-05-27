@@ -19,7 +19,10 @@ defmodule AndiWeb.EditLiveView.UrlForm do
       <div id="url-form" class="form-component">
         <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="url_form">
           <h3 class="component-number component-number--<%= @visibility %>">3</h3>
-          <h2 class="component-title component-title--<%= @visibility %>">Configure Upload</h2>
+          <div class="component-title full-width">
+            <h2 class="component-title-text component-title-text--<%= @visibility %> ">Configure Upload</h2>
+            <div class="component-title-edit-icon"></div>
+          </div>
         </div>
 
         <div class="form-section">

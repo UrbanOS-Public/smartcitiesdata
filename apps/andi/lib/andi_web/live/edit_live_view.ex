@@ -42,7 +42,7 @@ defmodule AndiWeb.EditLiveView do
         </div>
 
         <div class="finalize-form-component ">
-        <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form, dataset_id: dataset_id, form: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["finalize_form"]) %>
+        <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["finalize_form"]) %>
         </div>
 
       </form>

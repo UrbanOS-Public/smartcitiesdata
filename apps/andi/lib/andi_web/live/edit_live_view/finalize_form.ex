@@ -50,10 +50,13 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       end
 
     ~L"""
-    <div id="<%= @id %>" class="finalize-form finalize-form--<%= @visibility %>">
+    <div id="finalize_form" class="finalize-form finalize-form--<%= @visibility %>">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="finalize_form">
         <h3 class="component-number component-number--<%= @visibility %>">4</h3>
-        <h2 class="component-title component-title--<%= @visibility %>">Finalize</h2>
+        <div class="component-title full-width">
+          <h2 class="component-title-text component-title-text--<%= @visibility %> ">Finalize</h2>
+          <div class="component-title-edit-icon"></div>
+        </div>
       </div>
 
       <div class="form-section">
