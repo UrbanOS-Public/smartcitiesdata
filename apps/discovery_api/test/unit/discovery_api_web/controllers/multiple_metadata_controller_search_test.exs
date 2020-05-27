@@ -189,7 +189,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
       conn |> get("/api/v2/dataset/search", params) |> json_response(200)
     end
 
-    test "api/v2/search with bad facets returns 400", %{conn: conn, mock_dataset_summaries: mock_dataset_summaries} do
+    test "api/v2/search with bad facets returns 400", %{conn: conn} do
       params = %{query: "Bob", facets: %{"not a facet" => ["ignored value"]}}
       conn |> get("/api/v2/dataset/search", params) |> json_response(400)
     end

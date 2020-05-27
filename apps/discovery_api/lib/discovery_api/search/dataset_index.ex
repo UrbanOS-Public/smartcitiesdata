@@ -231,11 +231,23 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     dataset
     |> Map.from_struct()
     |> Map.drop([:completeness])
-    |> Map.put(:keywordFacets, Map.get(dataset, :keywords))
-    |> Map.put(:orgTitleFacet, get_in(dataset, [:organizationDetails, :orgTitle]))
     |> Enum.reject(fn {_k, v} -> is_nil(v) end)
     |> Map.new()
+    |> populate_org_facets()
+    |> populate_keyword_facets()
   end
+
+  defp populate_org_facets(%{organizationDetails: %{orgTitle: org_title}} = dataset) do
+    Map.put(dataset, :orgTitleFacet, org_title)
+  end
+
+  defp populate_org_facets(dataset), do: dataset
+
+  defp populate_keyword_facets(%{keywords: keywords} = dataset) do
+    Map.put(dataset, :keywordFacets, keywords)
+  end
+
+  defp populate_keyword_facets(dataset), do: dataset
 
   defp url() do
     Map.fetch!(configuration(), :url)
