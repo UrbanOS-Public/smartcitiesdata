@@ -133,18 +133,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
               <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
             </div>
 
-            <div class="edit-button-group__messages">
-              <%= if @save_success do %>
-                <div id="success-message" class="metadata__success-message"><%= @success_message %></div>
-              <% end %>
-              <%= if @has_validation_errors do %>
-                <div id="validation-error-message" class="metadata__error-message">There were errors with the dataset you tried to submit.</div>
-              <% end %>
-              <%= if @page_error do %>
-                <div id="page-error-message" class="metadata__error-message">A page error occurred</div>
-              <% end %>
-            </div>
-
             <div class="edit-button-group__save-btn">
               <button type="button" id="publish-button" class="btn btn--publish btn--action btn--large" phx-click="publish">Publish</button>
               <%= submit("Save", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft") %>

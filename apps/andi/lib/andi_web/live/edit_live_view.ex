@@ -17,7 +17,7 @@ defmodule AndiWeb.EditLiveView do
 
     ~L"""
       <div class="edit-page" id="dataset-edit-page">
-        <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
+      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data, phx_hook: "showSnackbar"] %>
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>
@@ -47,9 +47,21 @@ defmodule AndiWeb.EditLiveView do
 
       </form>
 
-    <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible, dataset_id: dataset_id,  selected_field_id: @selected_field_id ) %>
+      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible, dataset_id: dataset_id,  selected_field_id: @selected_field_id ) %>
 
-    <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field: @current_data_dictionary_item, visible: @remove_data_dictionary_field_visible) %>
+      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field: @current_data_dictionary_item, visible: @remove_data_dictionary_field_visible) %>
+
+      <%= if @save_success do %>
+        <div id="snackbar" class="success-message"><%= @success_message %></div>
+      <% end %>
+
+      <%= if @has_validation_errors do %>
+        <div id="snackbar" class="error-message">There were errors with the dataset you tried to submit.</div>
+      <% end %>
+
+      <%= if @page_error do %>
+        <div id="snackbar" class="error-message">A page error occurred</div>
+      <% end %>
     </div>
     """
   end
@@ -174,7 +186,11 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, component_visibility: new_visibility)}
   end
 
-  def handle_event("toggle-component-visibility", %{"component-expand" => component_expand, "component-collapse" => component_collapse}, socket) do
+  def handle_event(
+        "toggle-component-visibility",
+        %{"component-expand" => component_expand, "component-collapse" => component_collapse},
+        socket
+      ) do
     new_visibility =
       socket.assigns.component_visibility
       |> Map.put(component_expand, "expanded")
