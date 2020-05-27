@@ -497,7 +497,7 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Brook.Event.send(any(), any(), :andi, any()), return: :ok)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert get_text(html, "#success-message") == ""
+      assert get_text(html, "#snackbar") == ""
 
       form_data =
         FormTools.form_data_from_andi_dataset(dataset)
@@ -513,8 +513,8 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(view, :validate, %{"form_data" => form_data})
       html = render_change(view, :save, %{"form_data" => form_data})
 
-      refute Enum.empty?(find_elements(html, "#success-message"))
-      assert get_text(html, "#success-message") != ""
+      refute Enum.empty?(find_elements(html, "#snackbar.success-message"))
+      assert get_text(html, "#snackbar") != ""
     end
 
     test "saving form as draft does not send brook event", %{conn: conn} do
@@ -556,7 +556,7 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(Datasets.update(any()), return: {:ok, dataset_from_save})
       html = render_change(view, :save, %{"form_data" => form_data})
 
-      assert get_text(html, "#success-message") == "Saved successfully. You may need to fix errors before publishing."
+      assert get_text(html, "#snackbar") == "Saved successfully. You may need to fix errors before publishing."
     end
 
     test "allows clearing modified date", %{conn: conn} do
@@ -609,7 +609,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       refute_called(Brook.Event.send(any(), any(), any(), any()))
 
-      assert render(view) |> get_text(".metadata__error-message") =~ "errors"
+      assert render(view) |> get_text("#snackbar") =~ "errors"
     end
 
     data_test "allows saving with empty #{field}", %{conn: conn} do
@@ -796,13 +796,13 @@ defmodule AndiWeb.EditLiveViewTest do
       allow(UrlTest.test(dataset.technical.sourceUrl, any()), exec: fn _ -> raise "derp" end)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert get_text(html, "#page-error-message") == ""
+      assert get_text(html, "#snackbar") == ""
 
       render_change(view, :test_url, %{})
 
       eventually(fn ->
         html = render(view)
-        assert get_text(html, "#page-error-message") == "A page error occurred"
+        assert get_text(html, "#snackbar") == "A page error occurred"
       end)
     end
   end

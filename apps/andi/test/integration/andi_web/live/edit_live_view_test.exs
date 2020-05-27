@@ -656,7 +656,7 @@ defmodule AndiWeb.EditLiveViewTest do
     data_test "quick schedule #{schedule}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      render_click([view, "finalize_form_editor"], "quick_schedule", %{"schedule" => schedule})
+      render_click([view, "finalize_form"], "quick_schedule", %{"schedule" => schedule})
       html = render(view)
 
       assert expected_crontab == get_crontab_from_html(html)
