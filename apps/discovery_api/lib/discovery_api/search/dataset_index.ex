@@ -291,7 +291,8 @@ defmodule DiscoveryApi.Search.DatasetIndex do
       match_keywords(keywords),
       match_organization(org_title),
       api_accessible(api_accessible)
-    ] |> Enum.reject(&is_nil/1)
+    ]
+    |> Enum.reject(&is_nil/1)
   end
 
   defp match_terms(term) when term in ["", nil] do
@@ -318,10 +319,10 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     %{
       "terms_set" => %{
         "keywordFacets" => %{
-            "terms" => keywords,
-            "minimum_should_match_script" => %{
-               "source" => "return #{length(keywords)}"
-            }
+          "terms" => keywords,
+          "minimum_should_match_script" => %{
+            "source" => "return #{length(keywords)}"
+          }
         }
       }
     }
