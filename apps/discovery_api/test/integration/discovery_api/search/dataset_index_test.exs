@@ -663,7 +663,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "House Leaders", organizationDetails: organization1})
       index_model(%{title: "Headmaster's List", organizationDetails: organization2})
 
-      {:ok, _models, %{orgs: org_facets}} = DatasetSearchIndex.search()
+      {:ok, _models, %{organization: org_facets}} = DatasetSearchIndex.search()
       assert 2 == length(org_facets)
       assert [ %{name: "Faculty", count: 2}, %{name: "Headmaster's Office", count: 1}] == org_facets
     end

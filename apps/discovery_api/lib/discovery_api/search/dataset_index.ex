@@ -264,7 +264,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     %{
       "aggs" => %{
         "keywords" => %{"terms" => %{"field" => "keywordFacets"}},
-        "orgs" => %{"terms" => %{"field" => "orgTitleFacet"}}
+        "organization" => %{"terms" => %{"field" => "orgTitleFacet"}}
       },
       "from" => 0,
       "query" => %{

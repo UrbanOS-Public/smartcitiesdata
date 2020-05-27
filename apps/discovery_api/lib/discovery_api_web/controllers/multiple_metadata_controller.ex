@@ -56,19 +56,21 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
 
   def advanced_search(conn, params) do
     sort_by = Map.get(params, "sort", "name_asc")
-    query = Map.get(params, "query", "")
 
-    case DatasetSearchIndex.search(query) do
-      {:ok, models} ->
-        render(
-          conn,
-          :search_dataset_summaries,
-          models: models,
-          facets: %{},
-          sort: sort_by,
-          offset: 0,
-          limit: 10
-        )
+    with {:ok, search_opts} <- build_search_opts(params),
+         {:ok, models, facets} <- DatasetSearchIndex.search(search_opts) do
+      render(
+        conn,
+        :search_dataset_summaries,
+        models: models,
+        facets: facets,
+        sort: sort_by,
+        offset: 0,
+        limit: 10
+      )
+    else
+      {:request_error, reason} ->
+        render_error(conn, 400, reason)
 
       {:error, reason} ->
         Logger.error("Unhandled error in search #{inspect(reason)}")
@@ -99,6 +101,29 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
       :fetch_table_info,
       models: filtered_models
     )
+  end
+
+  defp build_search_opts(params) do
+    query = Map.get(params, "query", "")
+    facets = Map.get(params, "facets", %{})
+    api_accessible = parse_api_accessible(params)
+
+    case validate_facets(facets) do
+      {:ok, filter_facets} ->
+        opts =
+          [
+            query: query,
+            api_accessible: api_accessible,
+            keywords: Map.get(filter_facets, :keywords),
+            org_title: Map.get(filter_facets, :organization, []) |> List.first()
+          ]
+          |> Enum.reject(fn {_opt, value} -> is_nil(value) end)
+
+        {:ok, opts}
+
+      error ->
+        error
+    end
   end
 
   defp get_user_id(conn) do

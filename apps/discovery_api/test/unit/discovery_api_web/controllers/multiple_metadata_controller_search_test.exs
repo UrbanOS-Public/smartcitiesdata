@@ -129,13 +129,16 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
   end
 
   describe "advanced search" do
-    test "api/v2/search works", %{conn: conn} do
+    setup do
       mock_dataset_summaries = [
         generate_model("DataOne", ~D(1970-01-01), "remote"),
         generate_model("DataTwo", ~D(2001-09-09), "ingest")
       ]
+      {:ok, mock_dataset_summaries: mock_dataset_summaries}
+    end
 
-      expect(DatasetIndex.search("Bob"), return: {:ok, mock_dataset_summaries})
+    test "api/v2/search works", %{conn: conn, mock_dataset_summaries: mock_dataset_summaries} do
+      expect(DatasetIndex.search([query: "Bob", api_accessible: false]), return: {:ok, mock_dataset_summaries, %{}})
 
       params = %{query: "Bob"}
       response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
@@ -144,6 +147,46 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
 
       assert total_datasets == 2
       assert dataset_ids == ["DataOne", "DataTwo"]
+    end
+
+    test "api/v2/search with keywords works", %{conn: conn, mock_dataset_summaries: mock_dataset_summaries} do
+      mock_facets = %{
+        "keywords" => [%{"name" => "bobber", "count" => 1},%{"name" => "bobbington", "count" => 1}]
+      }
+
+      expect(DatasetIndex.search([query: "Bob", api_accessible: false, keywords: ["bobber", "bobbington"]]), return: {:ok, mock_dataset_summaries, mock_facets})
+
+      params = %{query: "Bob", facets: %{keywords: ["bobber", "bobbington"]}}
+      response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+      facets = get_in(response_map, ["metadata", "facets"])
+
+      assert facets == mock_facets
+    end
+
+    test "api/v2/search with org title works", %{conn: conn, mock_dataset_summaries: mock_dataset_summaries} do
+      mock_facets = %{
+        "organization" => [%{"name" => "Bobco", "count" => 2}]
+      }
+
+      expect(DatasetIndex.search([query: "Bob", api_accessible: false, org_title: "Bobco"]), return: {:ok, mock_dataset_summaries, mock_facets})
+
+      params = %{query: "Bob", facets: %{organization: ["Bobco"]}}
+      response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+      facets = get_in(response_map, ["metadata", "facets"])
+
+      assert facets == mock_facets
+    end
+
+    test "api/v2/search with api_accessible works", %{conn: conn, mock_dataset_summaries: mock_dataset_summaries} do
+      expect(DatasetIndex.search([query: "Bob", api_accessible: true]), return: {:ok, mock_dataset_summaries, %{}})
+
+      params = %{query: "Bob", apiAccessible: "true"}
+      conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+    end
+
+    test "api/v2/search with bad facets returns 400", %{conn: conn, mock_dataset_summaries: mock_dataset_summaries} do
+      params = %{query: "Bob", facets: %{"not a facet" => ["ignored value"]}}
+      conn |> get("/api/v2/dataset/search", params) |> json_response(400)
     end
   end
 
