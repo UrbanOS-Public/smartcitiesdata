@@ -3,11 +3,10 @@ $tick-width: $nesting-width - 0.5rem;
 $field-padding: 0.5rem;
 $tick-height: 1rem + $field-padding - 0.44;
 
-.data-dictionary-form {
+.data-dictionary-form-edit-section {
   grid-template-columns: 40% 60%;
   grid-column-gap: 2rem;
   grid-template-areas:
-    "top-header ."
     "tree-section edit-section";
 
   .data-dictionary-field-editor {
@@ -105,7 +104,7 @@ $tick-height: 1rem + $field-padding - 0.44;
     }
 
     .data-dictionary-tree__field--selected .data-dictionary-tree-field__action {
-      background-color: #EEEFF1; 
+      background-color: #EEEFF1;
     }
 
     .data-dictionary-tree__field--checked .data-dictionary-tree-field__action {

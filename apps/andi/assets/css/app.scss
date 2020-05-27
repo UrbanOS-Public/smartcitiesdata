@@ -53,7 +53,7 @@ body {
 }
 
 .btn--large {
-  padding: 0.4rem 1.7rem;
+  padding: 0.6rem 1.7rem;
   font-size: 1.5rem;
   min-width: 10rem;
 }
@@ -75,6 +75,14 @@ body {
 .btn--next {
   float: right;
   margin-right: 0;
+  text-align: center;
+  min-width: 6.5rem;
+}
+
+.btn--back {
+    margin-right: 1rem;
+    text-align: center;
+    min-width: 6.5rem;
 }
 
 .btn--test {
