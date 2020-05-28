@@ -9,8 +9,6 @@ defmodule AndiWeb.Endpoint do
 
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
-  plug(AndiWeb.Plugs.StripServerHeader)
-
   plug Plug.Static,
     at: "/",
     from: :andi,
