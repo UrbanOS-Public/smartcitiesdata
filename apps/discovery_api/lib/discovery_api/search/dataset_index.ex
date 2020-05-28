@@ -4,7 +4,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   """
   alias DiscoveryApi.Data.Model
 
-  @elasticsearch_max_buckets 2147483647
+  @elasticsearch_max_buckets 2_147_483_647
 
   def create_index() do
     %{name: name, options: options} = dataset_index()
