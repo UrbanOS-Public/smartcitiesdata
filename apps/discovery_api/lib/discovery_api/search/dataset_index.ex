@@ -56,7 +56,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
 
   def get_all() do
     case elastic_search() do
-      {:ok, documents} ->
+      {:ok, documents, _facets} ->
         {:ok, Enum.map(documents, &struct(Model, &1))}
 
       error ->
@@ -64,12 +64,12 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     end
   end
 
-  def search(term) do
-    query = search_query(term)
+  def search(search_opts \\ []) do
+    query = search_query(search_opts)
 
     case elastic_search(query) do
-      {:ok, documents} ->
-        {:ok, Enum.map(documents, &struct(Model, &1))}
+      {:ok, documents, facets} ->
+        {:ok, Enum.map(documents, &struct(Model, &1)), facets}
 
       error ->
         error
@@ -171,11 +171,22 @@ defmodule DiscoveryApi.Search.DatasetIndex do
          |> handle_response_with_body() do
       {:ok, body} ->
         documents = get_in(body, [:hits, :hits, Access.all(), :_source])
-        {:ok, documents}
+        facets = body |> Map.get(:aggregations, %{}) |> extract_facets()
+        {:ok, documents, facets}
 
       error ->
         error
     end
+  end
+
+  defp extract_facets(aggregations) do
+    aggregations
+    |> Enum.map(fn {facet, %{buckets: buckets}} -> {facet, buckets_to_facet_values(buckets)} end)
+    |> Enum.reduce(%{}, fn {facet, values}, facets -> Map.put(facets, facet, values) end)
+  end
+
+  defp buckets_to_facet_values(buckets) do
+    Enum.map(buckets, fn %{doc_count: count, key: name} -> %{name: name, count: count} end)
   end
 
   defp elastic_bulk_document_load(datasets) do
@@ -222,7 +233,23 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     |> Map.drop([:completeness])
     |> Enum.reject(fn {_k, v} -> is_nil(v) end)
     |> Map.new()
+    |> populate_org_facets()
+    |> populate_keyword_facets()
   end
+
+  defp populate_org_facets(%{organizationDetails: %{orgTitle: org_title}} = dataset) do
+    Map.put_new(dataset, :facets, %{})
+    |> put_in([:facets, :orgTitle], org_title)
+  end
+
+  defp populate_org_facets(dataset), do: dataset
+
+  defp populate_keyword_facets(%{keywords: keywords} = dataset) do
+    Map.put_new(dataset, :facets, %{})
+    |> put_in([:facets, :keywords], keywords)
+  end
+
+  defp populate_keyword_facets(dataset), do: dataset
 
   defp url() do
     Map.fetch!(configuration(), :url)
@@ -247,12 +274,16 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     |> Map.new()
   end
 
-  defp search_query(term) do
+  defp search_query(search_opts) do
     %{
+      "aggs" => %{
+        "keywords" => %{"terms" => %{"field" => "facets.keywords"}},
+        "organization" => %{"terms" => %{"field" => "facets.orgTitle"}}
+      },
       "from" => 0,
       "query" => %{
         "bool" => %{
-          "must" => build_must(term),
+          "must" => build_must(search_opts),
           "filter" => [
             %{"term" => %{"private" => false}}
           ]
@@ -263,25 +294,71 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     }
   end
 
-  defp build_must(term) when term == "" do
+  defp build_must(search_opts) do
+    query = Keyword.get(search_opts, :query, "")
+    keywords = Keyword.get(search_opts, :keywords, [])
+    org_title = Keyword.get(search_opts, :org_title, nil)
+    api_accessible = Keyword.get(search_opts, :api_accessible, false)
+
     [
-      %{
-        "match_all" => %{}
-      }
+      match_terms(query),
+      match_keywords(keywords),
+      match_organization(org_title),
+      api_accessible(api_accessible)
     ]
+    |> Enum.reject(&is_nil/1)
   end
 
-  defp build_must(term) do
-    [
-      %{
-        "multi_match" => %{
-          "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
-          "fuzziness" => "AUTO",
-          "prefix_length" => 2,
-          "query" => term,
-          "type" => "most_fields"
+  defp match_terms(term) when term in ["", nil] do
+    %{
+      "match_all" => %{}
+    }
+  end
+
+  defp match_terms(term) do
+    %{
+      "multi_match" => %{
+        "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
+        "fuzziness" => "AUTO",
+        "prefix_length" => 2,
+        "query" => term,
+        "type" => "most_fields"
+      }
+    }
+  end
+
+  defp match_keywords([]), do: nil
+
+  defp match_keywords(keywords) do
+    %{
+      "terms_set" => %{
+        "facets.keywords" => %{
+          "terms" => keywords,
+          "minimum_should_match_script" => %{
+            "source" => "return #{length(keywords)}"
+          }
         }
       }
-    ]
+    }
+  end
+
+  defp api_accessible(false), do: nil
+
+  defp api_accessible(true) do
+    %{
+      "terms" => %{
+        "sourceType" => ["ingest", "stream"]
+      }
+    }
+  end
+
+  defp match_organization(nil), do: nil
+
+  defp match_organization(org_title) do
+    %{
+      "term" => %{
+        "facets.orgTitle" => org_title
+      }
+    }
   end
 end

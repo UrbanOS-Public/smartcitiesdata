@@ -108,9 +108,25 @@ config :discovery_api, :elasticsearch,
               type: "keyword",
               index: true
             },
+            keywords: %{
+              type: "text",
+              index: true
+            },
             organizationDetails: %{
               properties: %{
                 id: %{
+                  type: "keyword",
+                  index: true
+                }
+              }
+            },
+            facets: %{
+              properties: %{
+                orgTitle: %{
+                  type: "keyword",
+                  index: true
+                },
+                keywords: %{
                   type: "keyword",
                   index: true
                 }
