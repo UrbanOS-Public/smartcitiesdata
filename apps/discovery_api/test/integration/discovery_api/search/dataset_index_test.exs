@@ -3,6 +3,8 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   use Divo, services: [:redis, :"ecto-postgres", :zookeeper, :kafka, :elasticsearch]
   use DiscoveryApi.ElasticSearchCase
 
+  import SmartCity.TestHelper, only: [eventually: 1]
+
   alias DiscoveryApi.Test.Helper
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -32,6 +34,19 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
       index_name_as_atom = String.to_atom(index.name)
       assert gotten[index_name_as_atom][:mappings] != %{}
+    end
+  end
+
+  describe "delete/1" do
+    test "removes dataset from index" do
+      dataset = index_model(%{description: "Sensor Data"})
+
+      {:ok, _response} = DatasetSearchIndex.delete(dataset.id)
+
+      eventually(fn ->
+        {:ok, models, _facets} = DatasetSearchIndex.search(query: "Sensor Data")
+        assert 0 == length(models)
+      end)
     end
   end
 
@@ -536,7 +551,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
       {:ok, models, _facets} = DatasetSearchIndex.search(query: "Parking Transactions", authorized_organization_ids: ["o1", "o2"])
 
-      extract_id_and_sort = &(Enum.map(&1, fn model -> model.id end ) |> Enum.sort())
+      extract_id_and_sort = &(Enum.map(&1, fn model -> model.id end) |> Enum.sort())
       expected_dataset_ids = extract_id_and_sort.([public, private_org_1, private_org_2])
       actual_dataset_ids = extract_id_and_sort.(models)
       assert expected_dataset_ids == actual_dataset_ids

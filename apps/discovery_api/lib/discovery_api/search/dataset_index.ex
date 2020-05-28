@@ -86,6 +86,11 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     put(dataset, &elastic_index_document/1)
   end
 
+
+  def delete(dataset_id) do
+    elastic_delete_document(dataset_id)
+  end
+
   def replace_all(datasets) do
     case reset_index(dataset_index()) do
       {:ok, _} -> elastic_bulk_document_load(datasets)
@@ -133,6 +138,15 @@ defmodule DiscoveryApi.Search.DatasetIndex do
       refresh: true
     )
     |> handle_response()
+  end
+
+  defp elastic_delete_document(dataset_id) do
+    Elastix.Document.delete(
+      url(),
+      dataset_index_name(),
+      "_doc",
+      dataset_id
+    )
   end
 
   defp elastic_create_index(name, options) do
