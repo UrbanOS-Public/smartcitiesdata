@@ -238,13 +238,15 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   end
 
   defp populate_org_facets(%{organizationDetails: %{orgTitle: org_title}} = dataset) do
-    Map.put(dataset, :orgTitleFacet, org_title)
+    Map.put_new(dataset, :facets, %{})
+    |> put_in([:facets, :orgTitle], org_title)
   end
 
   defp populate_org_facets(dataset), do: dataset
 
   defp populate_keyword_facets(%{keywords: keywords} = dataset) do
-    Map.put(dataset, :keywordFacets, keywords)
+    Map.put_new(dataset, :facets, %{})
+    |> put_in([:facets, :keywords], keywords)
   end
 
   defp populate_keyword_facets(dataset), do: dataset
@@ -275,8 +277,8 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   defp search_query(search_opts) do
     %{
       "aggs" => %{
-        "keywords" => %{"terms" => %{"field" => "keywordFacets"}},
-        "organization" => %{"terms" => %{"field" => "orgTitleFacet"}}
+        "keywords" => %{"terms" => %{"field" => "facets.keywords"}},
+        "organization" => %{"terms" => %{"field" => "facets.orgTitle"}}
       },
       "from" => 0,
       "query" => %{
@@ -330,7 +332,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   defp match_keywords(keywords) do
     %{
       "terms_set" => %{
-        "keywordFacets" => %{
+        "facets.keywords" => %{
           "terms" => keywords,
           "minimum_should_match_script" => %{
             "source" => "return #{length(keywords)}"
@@ -355,7 +357,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   defp match_organization(org_title) do
     %{
       "term" => %{
-        "orgTitleFacet" => org_title
+        "facets.orgTitle" => org_title
       }
     }
   end
