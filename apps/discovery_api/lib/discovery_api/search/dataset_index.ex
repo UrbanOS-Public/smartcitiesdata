@@ -286,9 +286,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
       "query" => %{
         "bool" => %{
           "must" => build_must(search_opts),
-          "filter" => [
-            %{"term" => %{"private" => false}}
-          ]
+          "filter" => build_filter(search_opts)
         }
       },
       "size" => 10,
@@ -362,5 +360,39 @@ defmodule DiscoveryApi.Search.DatasetIndex do
         "facets.orgTitle" => org_title
       }
     }
+  end
+
+  defp build_filter(search_opts) do
+    authorized_organization_ids = Keyword.get(search_opts, :authorized_organization_ids, [])
+
+    [
+      %{
+        "bool" => %{
+          "should" => [
+            %{
+              "term" => %{
+                "private" => false
+              }
+            },
+            %{
+              "bool" => %{
+                "must" => [
+                  %{
+                    "term" => %{
+                      "private" => true
+                    }
+                  },
+                  %{
+                    "terms" => %{
+                      "organizationDetails.id" => authorized_organization_ids
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
   end
 end
