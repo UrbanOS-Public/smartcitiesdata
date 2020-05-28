@@ -277,8 +277,8 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   defp search_query(search_opts) do
     %{
       "aggs" => %{
-        "keywords" => %{"terms" => %{"field" => "facets.keywords"}},
-        "organization" => %{"terms" => %{"field" => "facets.orgTitle"}}
+        "keywords" => %{"terms" => %{"field" => "facets.keywords", "size" => "2147483647"}},
+        "organization" => %{"terms" => %{"field" => "facets.orgTitle", "size" => "2147483647"}}
       },
       "from" => 0,
       "query" => %{
