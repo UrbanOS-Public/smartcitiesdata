@@ -1,17 +1,11 @@
 defmodule AndiWeb.EditLiveView do
   use AndiWeb, :live_view
 
-  alias Phoenix.HTML.Link
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.InputConverter
-  alias Andi.InputSchemas.DisplayNames
-  alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.FormTools
-  alias AndiWeb.EditLiveView.KeyValueEditor
-  alias AndiWeb.EditLiveView.DataDictionaryTree
-  alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
   alias Ecto.Changeset
 
   import Andi
@@ -22,8 +16,8 @@ defmodule AndiWeb.EditLiveView do
     dataset_id = assigns.dataset.id
 
     ~L"""
-      <div class="edit-page" id="dataset-edit-page">
-        <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
+    <div class="edit-page" id="dataset-edit-page">
+      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>
@@ -33,173 +27,41 @@ defmodule AndiWeb.EditLiveView do
         <%= hidden_input(technical, :dataName) %>
         <%= hidden_input(technical, :sourceType) %>
 
-        <div class="metadata-form form-section form-grid">
-          <h2 class="metadata-form__top-header edit-page__box-header">Metadata</h2>
-          <div class="metadata-form__title">
-            <%= label(business, :dataTitle, DisplayNames.get(:dataTitle), class: "label label--required") %>
-            <%= text_input(business, :dataTitle, class: "input") %>
-            <%= error_tag(business, :dataTitle) %>
-          </div>
-          <div class="metadata-form__description">
-            <%= label(business, :description, DisplayNames.get(:description), class: "label label--required") %>
-            <%= textarea(business, :description, class: "input textarea") %>
-            <%= error_tag(business, :description) %>
-          </div>
-          <div class="metadata-form__maintainer-name">
-            <%= label(business, :contactName, DisplayNames.get(:contactName), class: "label label--required") %>
-            <%= text_input(business, :contactName, class: "input") %>
-            <%= error_tag(business, :contactName) %>
-          </div>
-          <div class="metadata-form__maintainer-email">
-            <%= label(business, :contactEmail, DisplayNames.get(:contactEmail), class: "label label--required") %>
-            <%= text_input(business, :contactEmail, class: "input") %>
-            <%= error_tag(business, :contactEmail) %>
-          </div>
-          <div class="metadata-form__release-date">
-            <%= label(business, :issuedDate, DisplayNames.get(:issuedDate), class: "label label--required") %>
-            <%= date_input(business, :issuedDate, class: "input", value: safe_calendar_value(input_value(business, :issuedDate))) %>
-            <%= error_tag(business, :issuedDate, bind_to_input: false) %>
-          </div>
-          <div class="metadata-form__license">
-            <%= label(business, :license, DisplayNames.get(:license), class: "label label--required") %>
-            <%= text_input(business, :license, class: "input") %>
-            <%= error_tag(business, :license) %>
-          </div>
-          <div class="metadata-form__update-frequency">
-            <%= label(business, :publishFrequency, DisplayNames.get(:publishFrequency), class: "label label--required") %>
-            <%= text_input(business, :publishFrequency, class: "input") %>
-            <%= error_tag(business, :publishFrequency) %>
-          </div>
-          <div class="metadata-form__keywords">
-            <%= label(business, :keywords, DisplayNames.get(:keywords), class: "label") %>
-            <%= text_input(business, :keywords, value: keywords_to_string(input_value(business, :keywords)), class: "input") %>
-            <div class="label label--inline">Separated by comma</div>
-          </div>
-          <div class="metadata-form__last-updated">
-            <%= label(business, :modifiedDate, DisplayNames.get(:modifiedDate), class: "label") %>
-            <%= date_input(business, :modifiedDate, class: "input", value: safe_calendar_value(input_value(business, :modifiedDate))) %>
-          </div>
-          <div class="metadata-form__spatial">
-            <%= label(business, :spatial, DisplayNames.get(:spatial), class: "label") %>
-            <%= text_input(business, :spatial, class: "input") %>
-          </div>
-          <div class="metadata-form__temporal">
-            <%= label(business, :temporal, DisplayNames.get(:temporal), class: "label") %>
-            <%= text_input(business, :temporal, class: "input") %>
-            <%= error_tag(business, :temporal) %>
-          </div>
-          <div class="metadata-form__organization">
-            <%= label(business, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
-            <%= text_input(business, :orgTitle, [class: "input input--text", readonly: true]) %>
-            <%= error_tag(business, :orgTitle) %>
-          </div>
-          <div class="metadata-form__language">
-            <%= label(business, :language, DisplayNames.get(:language), class: "label") %>
-            <%= select(business, :language, get_language_options(), value: get_language(input_value(business, :language)), class: "select") %>
-          </div>
-          <div class="metadata-form__homepage">
-            <%= label(business, :homepage, DisplayNames.get(:homepage), class: "label") %>
-            <%= text_input(business, :homepage, class: "input") %>
-          </div>
-          <div class="metadata-form__format">
-            <%= label(technical, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-            <%= text_input(technical, :sourceFormat, [class: "input--text input", readonly: true]) %>
-            <%= error_tag(technical, :sourceFormat) %>
-          </div>
-          <div class="metadata-form__level-of-access">
-            <%= label(technical, :private, DisplayNames.get(:private), class: "label label--required") %>
-            <%= select(technical, :private, get_level_of_access_options(), class: "select") %>
-            <%= error_tag(technical, :private) %>
-          </div>
-          <div class="metadata-form__benefit-rating">
-            <%= label(business, :benefitRating, DisplayNames.get(:benefitRating), class: "label label--required") %>
-            <%= select(business, :benefitRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
-            <%= error_tag(business, :benefitRating, bind_to_input: false) %>
-          </div>
-          <div class="metadata-form__risk-rating">
-            <%= label(business, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
-            <%= select(business, :riskRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
-            <%= error_tag(business, :riskRating, bind_to_input: false) %>
-          </div>
+
+        <div class="metadata-form-component">
+          <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["metadata_form"]) %>
         </div>
 
-        <div class="data-dictionary-form form-section form-grid">
-          <h2 class="data-dictionary-form__top-header edit-page__box-header">Data Dictionary</h2>
-
-          <div class="data-dictionary-form__tree-section">
-            <div class="data-dictionary-form__tree-header data-dictionary-form-tree-header">
-              <div class="label">Enter/Edit Fields</div>
-              <div class="label label--inline">TYPE</div>
-            </div>
-
-            <div class="data-dictionary-form__tree-content data-dictionary-form-tree-content">
-              <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: technical, field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
-            </div>
-
-            <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
-              <div class="data-dictionary-form__add-field-button" phx-click="add_data_dictionary_field"></div>
-              <div class="data-dictionary-form__remove-field-button" phx-click="remove_data_dictionary_field" phx-target="#dataset-edit-page"></div>
-            </div>
-          </div>
-
-          <div class="data-dictionary-form__edit-section">
-            <%= live_component(@socket, DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item) %>
-          </div>
+        <div class="data-dictionary-form-component">
+          <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render, current_data_dictionary_item: @current_data_dictionary_item, technical: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["data_dictionary_form"]) %>
         </div>
 
-        <div class="url-form form-section form-grid">
-          <h2 class="url-form__top-header edit-page__box-header">Configure Upload</h2>
-          <div class="url-form__source-url">
-            <%= label(technical, :sourceUrl, DisplayNames.get(:sourceUrl), class: "label label--required") %>
-            <%= text_input(technical, :sourceUrl, class: "input full-width", disabled: @testing) %>
-            <%= error_tag(technical, :sourceUrl) %>
-          </div>
 
-          <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_query_params, css_label: "source-query-params", form: technical, field: :sourceQueryParams ) %>
-          <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_headers, css_label: "source-headers", form: technical, field: :sourceHeaders ) %>
-
-          <div class="url-form__test-section">
-            <button type="button" class="url-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
-            <%= if @test_results do %>
-              <div class="test-status">
-              Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) %></span>
-              Time: <span class="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
-              </div>
-            <% end %>
-          </div>
+        <div class="url-form-component">
+        <%= live_component(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, technical: technical, testing: @testing, test_results: @test_results, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["url_form"]) %>
         </div>
 
-        <div class="finalize-form form-section">
-          <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical) %>
-          <%= error_tag(technical, :cadence) %>
+        <div class="finalize-form-component ">
+        <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["finalize_form"]) %>
         </div>
 
-        <div class="edit-button-group form-grid">
-          <div class="edit-button-group__cancel-btn">
-            <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
-          </div>
-          <div class="edit-button-group__messages">
-            <%= if @save_success do %>
-              <div id="success-message" class="metadata__success-message"><%= @success_message %></div>
-            <% end %>
-            <%= if @has_validation_errors do %>
-              <div id="validation-error-message" class="metadata__error-message">There were errors with the dataset you tried to submit.</div>
-            <% end %>
-            <%= if @page_error do %>
-              <div id="page-error-message" class="metadata__error-message">A page error occurred</div>
-            <% end %>
-          </div>
-          <div class="edit-button-group__save-btn">
-            <%= Link.button("Next", to: "/", method: "get", id: "next-button", class: "btn btn--next btn--large btn--action", disabled: true, title: "Not implemented yet.") %>
-            <button type="button" id="publish-button" class="btn btn--publish btn--action btn--large" phx-click="publish">Publish</button>
-            <%= submit("Save Draft", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft") %>
-          </div>
-        </div>
       </form>
 
-    <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible, dataset_id: dataset_id,  selected_field_id: @selected_field_id ) %>
+      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible, dataset_id: dataset_id,  selected_field_id: @selected_field_id ) %>
 
-    <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field: @current_data_dictionary_item, visible: @remove_data_dictionary_field_visible) %>
+      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field: @current_data_dictionary_item, visible: @remove_data_dictionary_field_visible) %>
+
+      <%= if @save_success do %>
+        <div id="snackbar" class="success-message"><%= @success_message %></div>
+      <% end %>
+
+      <%= if @has_validation_errors do %>
+        <div id="snackbar" class="error-message">There were errors with the dataset you tried to submit.</div>
+      <% end %>
+
+      <%= if @page_error do %>
+        <div id="snackbar" class="error-message">A page error occurred</div>
+      <% end %>
     </div>
     """
   end
@@ -207,12 +69,20 @@ defmodule AndiWeb.EditLiveView do
   def mount(_params, %{"dataset" => dataset}, socket) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
+    component_visibility = %{
+      "metadata_form" => "expanded",
+      "data_dictionary_form" => "collapsed",
+      "url_form" => "collapsed",
+      "finalize_form" => "collapsed"
+    }
+
     Process.flag(:trap_exit, true)
 
     {:ok,
      assign(socket,
        add_data_dictionary_field_visible: false,
        changeset: new_changeset,
+       component_visibility: component_visibility,
        dataset: dataset,
        has_validation_errors: false,
        new_field_initial_render: false,
@@ -308,6 +178,25 @@ defmodule AndiWeb.EditLiveView do
       end
 
     {:noreply, assign(updated_socket, save_success: true, success_message: success_message)}
+  end
+
+  def handle_event("toggle-component-visibility", %{"component" => component}, socket) do
+    new_visibility = update_component_visibility([component], socket.assigns.component_visibility)
+
+    {:noreply, assign(socket, component_visibility: new_visibility)}
+  end
+
+  def handle_event(
+        "toggle-component-visibility",
+        %{"component-expand" => component_expand, "component-collapse" => component_collapse},
+        socket
+      ) do
+    new_visibility =
+      socket.assigns.component_visibility
+      |> Map.put(component_expand, "expanded")
+      |> Map.put(component_collapse, "collapsed")
+
+    {:noreply, assign(socket, component_visibility: new_visibility)}
   end
 
   def handle_event("add", %{"field" => "sourceQueryParams"}, socket) do
@@ -538,29 +427,6 @@ defmodule AndiWeb.EditLiveView do
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
 
-  defp get_language_options(), do: map_to_dropdown_options(Options.language())
-  defp get_level_of_access_options, do: map_to_dropdown_options(Options.level_of_access())
-  defp get_rating_options(), do: map_to_dropdown_options(Options.ratings())
-
-  defp map_to_dropdown_options(options) do
-    Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
-  end
-
-  defp keywords_to_string(nil), do: ""
-  defp keywords_to_string(keywords) when is_binary(keywords), do: keywords
-  defp keywords_to_string(keywords), do: Enum.join(keywords, ", ")
-
-  defp get_language(nil), do: "english"
-  defp get_language(lang), do: lang
-
-  defp rating_selection_prompt(), do: "Please Select a Value"
-
-  defp status_class(%{status: status}) when status in 200..399, do: "test-status__code--good"
-  defp status_class(%{status: _}), do: "test-status__code--bad"
-
-  defp disabled?(true), do: "disabled"
-  defp disabled?(_), do: ""
-
   defp get_default_dictionary_field(%{params: %{"technical" => %{schema: schema}}} = changeset) when schema != [] do
     first_data_dictionary_item =
       form_for(changeset, "#", as: :form_data)
@@ -589,12 +455,12 @@ defmodule AndiWeb.EditLiveView do
     |> DataDictionaryFields.get_parent_ids()
   end
 
-  defp safe_calendar_value(nil), do: nil
-
-  defp safe_calendar_value(%{calendar: _, day: day, month: month, year: year}) do
-    Timex.parse!("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}")
-    |> NaiveDateTime.to_date()
+  defp update_component_visibility(components, component_visibility) do
+    Enum.reduce(components, component_visibility, fn component, acc ->
+      case Map.get(acc, component) do
+        "expanded" -> Map.put(acc, component, "collapsed")
+        "collapsed" -> Map.put(acc, component, "expanded")
+      end
+    end)
   end
-
-  defp safe_calendar_value(value), do: value
 end

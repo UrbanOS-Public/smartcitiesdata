@@ -1,3 +1,6 @@
+$component-number-width: 4rem;
+$component-header-height: 7.5rem;
+
 .edit-page {
   display: grid;
   grid-template-columns: 1fr;
@@ -6,10 +9,16 @@
   padding: 2rem;
 }
 
+.form-component {
+    margin-right: 3rem;
+}
+
 .form-section {
-  border: $table-border;
-  padding: 2rem;
-  margin-bottom: 4rem;
+  padding-left: $component-number-width - 1rem;
+  margin-top: -$component-header-height + 1rem;
+  padding-top: $component-header-height;
+  margin-left: 1rem;
+  border-left: 2px solid $color-form-border;
 }
 
 .form-grid {
@@ -19,13 +28,164 @@
 }
 
 .edit-button-group {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
   grid-template-areas:
     "cancel-btn messages save-btn";
 }
 
+.edit-button-group__messages {
+    text-align: center;
+}
+
 .full-width {
   width: 100%;
-  box-sizing:border-box;
+  box-sizing: border-box;
+}
+
+.component-edit-section--collapsed {
+    display: none;
+}
+
+.component-edit-section--expanded {
+    padding-bottom: 2rem;
+}
+
+.component-header {
+    display: flex;
+}
+
+.component-header:hover {
+    cursor: pointer;
+}
+
+#metadata-form > .form-section {
+    margin-top: -3rem;
+    padding-top: 4rem;
+}
+
+.finalize-form--collapsed > .form-section {
+  margin-top: -9.5rem;
+  margin-bottom: 4rem;
+}
+
+.component-number {
+    margin-right: 2rem;
+    height: 2rem;
+    width: 2rem;
+    line-height: 2rem;
+    text-align: center;
+    border-radius: 50%;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+}
+
+.component-number--expanded {
+    background-color: $color-text-link;
+    color: white;
+    border: 1px solid $color-text-link;
+}
+
+.component-number--collapsed {
+    background-color: $color-form-border;
+    color: white;
+    border: 1px solid $color-form-border;
+}
+
+.component-title {
+    display: inline-flex;
+    height: 3.5rem;
+    border-bottom: 1px solid $color-form-border;
+}
+
+.component-title-text {
+    font-weight: 300;
+    padding-bottom: 0.5rem;
+    width: 100%;
+    line-height: 2rem;
+}
+
+.component-title-text--collapsed {
+    color: $color-form-border;
+}
+
+.edit-button-group__messages {
+  margin: auto;
+  text-align: center;
+}
+
+.component-title-action {
+    display: inline-flex;
+    float: right;
+    margin-top: 1.5rem;
+}
+
+.component-title-action-text--collapsed {
+    color: $color-form-border;
+}
+
+.component-title-icon--collapsed {
+    background-image: url('/images/edit.svg');
+    height: 16px;
+    width: 16px;
+    margin-left: 0.75rem;
+}
+
+.component-title-icon--expanded {
+    background-image: url('/images/arrow.svg');
+    height: 20px;
+    width: 20px;
+    margin-left: 1rem;
+}
+
+#snackbar {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px;
+    background-color: white;
+    text-align: center;
+    border-radius: 2px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1;
+    left: 45%;
+    bottom: 30px;
+    -webkit-box-shadow: 0 0 1rem $color-form-border;
+    box-shadow: 0 0 1rem $color-form-border;
+}
+
+#snackbar.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+#snackbar.error-message {
+    color: $color-error;
+}
+
+#snackbar.success-message {
+    color: $color-success;
+}
+
+@-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
 }
 
 @include area(edit-button-group, cancel-btn);
@@ -37,17 +197,3 @@
 @include area(url-form, source-query-params);
 @include area(url-form, source-headers);
 @include area(url-form, test-section);
-
-
-.edit-page__box-header {
-  margin-top: -2.75rem;
-  background-color: white;
-  width: fit-content;
-  padding: 0rem 2rem;
-  color: #7f7676;
-}
-
-.edit-button-group__messages {
-  margin: auto;
-  text-align: center;
-}

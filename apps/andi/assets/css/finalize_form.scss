@@ -1,4 +1,6 @@
 .finalize-form {
+    margin-right: 2.75rem;
+
     .finalize-form__schedule-options {
         display: inline-flex;
         margin-bottom: 1rem;
@@ -59,5 +61,13 @@
 
     .finalize-form__help-link {
         font-size: 0.85rem;
+    }
+
+    .edit-button-group {
+        margin-bottom: 0;
+    }
+
+    .component-edit-section--expanded {
+        padding-bottom: 0;
     }
 }
