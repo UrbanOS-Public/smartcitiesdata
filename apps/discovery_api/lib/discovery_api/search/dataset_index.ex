@@ -4,6 +4,8 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   """
   alias DiscoveryApi.Data.Model
 
+  @elasticsearch_max_buckets 2147483647
+
   def create_index() do
     %{name: name, options: options} = dataset_index()
     create_index(name, options)
@@ -277,8 +279,8 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   defp search_query(search_opts) do
     %{
       "aggs" => %{
-        "keywords" => %{"terms" => %{"field" => "facets.keywords", "size" => "2147483647"}},
-        "organization" => %{"terms" => %{"field" => "facets.orgTitle", "size" => "2147483647"}}
+        "keywords" => %{"terms" => %{"field" => "facets.keywords", "size" => @elasticsearch_max_buckets}},
+        "organization" => %{"terms" => %{"field" => "facets.orgTitle", "size" => @elasticsearch_max_buckets}}
       },
       "from" => 0,
       "query" => %{
