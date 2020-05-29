@@ -63,7 +63,7 @@ defmodule AndiWeb.ErrorHelpers do
     updated_message =
       case field do
         field when field in [:sourceHeaders, :sourceQueryParams] -> "Please enter valid key(s)."
-        :cadence -> "Error: #{message}"
+        field when field in [:cadence, :topLevelSelector] -> "Error: #{message}"
         _ -> "Please enter a valid #{get_downcased_display_name(field)}."
       end
 

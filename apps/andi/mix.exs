@@ -48,6 +48,7 @@ defmodule Andi.MixProject do
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},
       {:gettext, "~> 0.17"},
       {:jason, "~> 1.1"},
+      {:jaxon, "~> 1.0"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:sobelow, "~> 0.8", only: :dev},
       {:phoenix, "~> 1.4"},

@@ -158,7 +158,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
             <div class="edit-button-group__save-btn">
               <button type="button" id="publish-button" class="btn btn--publish btn--action btn--large" phx-click="publish">Publish</button>
-              <%= submit("Save", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft", phx_hook: "showSnackbar") %>
+              <%= submit("Save Draft", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft", phx_hook: "showSnackbar") %>
             </div>
           </div>
         </div>
