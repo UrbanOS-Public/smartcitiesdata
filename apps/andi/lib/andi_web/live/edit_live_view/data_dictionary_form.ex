@@ -65,7 +65,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
             <div class="edit-button-group__save-btn">
               <a href="#url-form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="url_form" phx-value-component-collapse="data_dictionary_form">Next</a>
-              <%= submit("Save", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft") %>
+              <%= submit("Save Draft", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft") %>
             </div>
           </div>
         </div>

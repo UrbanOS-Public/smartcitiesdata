@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.26.0",
+      version: "0.26.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -48,6 +48,7 @@ defmodule Andi.MixProject do
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},
       {:gettext, "~> 0.17"},
       {:jason, "~> 1.1"},
+      {:jaxon, "~> 1.0"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:sobelow, "~> 0.8", only: :dev},
       {:phoenix, "~> 1.4"},
@@ -61,8 +62,8 @@ defmodule Andi.MixProject do
       {:postgrex, "~> 0.15.1"},
       {:simply_validate, ">= 0.2.0"},
       {:smart_city, "~> 3.0"},
-      {:tesla, "~> 1.3"},
       {:smart_city_test, "~> 0.9", only: [:test, :integration]},
+      {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
       {:elixir_uuid, "~> 1.2"},
       {:distillery, "~> 2.1"},

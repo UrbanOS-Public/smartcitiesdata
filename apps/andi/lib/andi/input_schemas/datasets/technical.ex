@@ -87,9 +87,16 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
   def preload(struct), do: StructTools.preload(struct, [:schema, :sourceQueryParams, :sourceHeaders])
 
-  defp validate_top_level_selector(%{changes: %{sourceFormat: source_format}} = changeset)
-       when source_format in ["xml", "text/xml"] do
+  defp validate_top_level_selector(%{changes: %{sourceFormat: source_format}} = changeset) when source_format in ["xml", "text/xml"] do
     validate_required(changeset, [:topLevelSelector], message: "is required")
+  end
+
+  defp validate_top_level_selector(%{changes: %{sourceFormat: source_format, topLevelSelector: top_level_selector}} = changeset)
+       when source_format in ["json", "application/json"] do
+    case Jaxon.Path.parse(top_level_selector) do
+      {:error, error_msg} -> add_error(changeset, :topLevelSelector, error_msg.message)
+      _ -> changeset
+    end
   end
 
   defp validate_top_level_selector(changeset), do: changeset
