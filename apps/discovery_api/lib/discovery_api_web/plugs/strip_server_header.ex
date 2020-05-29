@@ -14,7 +14,7 @@ defmodule DiscoveryApiWeb.Plugs.StripServerHeader do
     headers = Map.drop(headers, ["server"])
     :cowboy_stream.info(stream_id, {:response, status, headers, body}, state)
   end
-  
+
   def info(stream_id, info, state), do: :cowboy_stream.info(stream_id, info, state)
 
   def init(stream_id, req, opts), do: :cowboy_stream.init(stream_id, req, opts)
