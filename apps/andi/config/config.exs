@@ -15,7 +15,7 @@ config :andi, AndiWeb.Endpoint,
   render_errors: [view: AndiWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: Andi.PubSub, adapter: Phoenix.PubSub.PG2],
   check_origin: ["http://localhost:4000", "https://*.smartcolumbusos.com"],
-  http: [stream_handlers: [AndiWeb.Plugs.StripServerHeader, :cowboy_stream_h]]
+  http: [stream_handlers: [Web.StreamHandlers.StripServerHeader, :cowboy_stream_h]]
 
 # Configures Elixir's Logger
 config :logger, :console,

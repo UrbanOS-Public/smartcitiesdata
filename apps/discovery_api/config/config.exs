@@ -12,7 +12,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   instrumenters: [DiscoveryApiWeb.Endpoint.Instrumenter],
   http: [
     port: 4000,
-    stream_handlers: [DiscoveryApiWeb.Plugs.StripServerHeader, :cowboy_stream_h],
+    stream_handlers: [Web.StreamHandlers.StripServerHeader, :cowboy_stream_h],
     protocol_options: [idle_timeout: 7_200_000]
   ]
 

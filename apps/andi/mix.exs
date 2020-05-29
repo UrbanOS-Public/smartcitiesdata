@@ -67,7 +67,8 @@ defmodule Andi.MixProject do
       {:timex, "~> 3.6"},
       {:elixir_uuid, "~> 1.2"},
       {:distillery, "~> 2.1"},
-      {:tasks, in_umbrella: true, only: :dev}
+      {:tasks, in_umbrella: true, only: :dev},
+      {:web, in_umbrella: true}
     ]
   end
 

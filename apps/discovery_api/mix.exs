@@ -83,7 +83,8 @@ defmodule DiscoveryApi.Mixfile do
       {:poison, "3.1.0", override: true},
       # poison breaks @ 4.0.1 due to encode_to_iotdata missing from 4.0
       # additionally, nearly no library that includes it as a dep is actually configured to use it
-      {:tasks, in_umbrella: true, only: :dev}
+      {:tasks, in_umbrella: true, only: :dev},
+      {:web, in_umbrella: true}
     ]
   end
 

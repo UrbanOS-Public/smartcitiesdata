@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
-  http: [port: 4001, stream_handlers: [DiscoveryStreamsWeb.Plugs.StripServerHeader, :cowboy_stream_h]],
+  http: [port: 4001, stream_handlers: [Web.StreamHandlers.StripServerHeader, :cowboy_stream_h]],
   secret_key_base: "This is a test key",
   render_errors: [view: DiscoveryStreamsWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: DiscoveryStreams.PubSub, adapter: Phoenix.PubSub.PG2],
