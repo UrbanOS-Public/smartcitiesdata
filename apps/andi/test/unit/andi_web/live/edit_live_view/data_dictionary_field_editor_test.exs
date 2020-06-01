@@ -76,4 +76,22 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
       ["rationale", "text"]
     ])
   end
+
+  test "xml selector is disabled when source type is not xml", %{conn: conn} do
+    dataset = DatasetHelpers.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
+    DatasetHelpers.add_dataset_to_repo(dataset)
+
+    {:ok, _view, html} = live(conn, @url_path <> dataset.id)
+
+    refute Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__selector", "disabled"))
+  end
+
+  test "xml selector is enabled when source type is xml", %{conn: conn} do
+    dataset = DatasetHelpers.create_dataset(%{technical: %{sourceFormat: "text/xml"}})
+    DatasetHelpers.add_dataset_to_repo(dataset)
+
+    {:ok, _view, html} = live(conn, @url_path <> dataset.id)
+
+    assert Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__selector", "disabled"))
+  end
 end

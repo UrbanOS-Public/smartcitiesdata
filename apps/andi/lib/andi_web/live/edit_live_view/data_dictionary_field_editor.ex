@@ -21,6 +21,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
           <%= label(@form, :name, "Name", class: "label label--required") %>
           <%= text_input(@form, :name, id: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000") %>
         </div>
+        <div class="data-dictionary-field-editor__selector">
+          <%= label(@form, :name, "Selector", class: "label label--required") %>
+          <%= text_input(@form, :selector, id: id <> "_name", class: "data-dictionary-field-editor__selector input", disabled: !is_source_format_xml(@source_format)) %>
+        </div>
         <div class="data-dictionary-field-editor__type">
           <%= label(@form, :type, "Type", class: "label label--required") %>
           <%= select(@form, :type, get_item_types(), id: id <> "_type", class: "data-dictionary-field-editor__type select") %>
@@ -78,4 +82,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
   defp is_type_not_list(field) do
     input_value(field, :type) != "list"
   end
+
+  defp is_source_format_xml(format) when format in ["xml", "text/xml"], do: true
+  defp is_source_format_xml(_), do: false
 end
