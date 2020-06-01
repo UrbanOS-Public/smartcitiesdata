@@ -359,6 +359,7 @@ defmodule Andi.CreateDatasetTest do
   describe "dataset get" do
     test "andi doesn't return server in response headers" do
       {:ok, %Tesla.Env{headers: headers}} = get("/api/v1/datasets", headers: [{"content-type", "application/json"}])
+      refute headers |> Map.new() |> Map.has_key?("server")
       refute Enum.any?(headers, fn x -> elem(x, 0) === "server" end)
     end
   end
