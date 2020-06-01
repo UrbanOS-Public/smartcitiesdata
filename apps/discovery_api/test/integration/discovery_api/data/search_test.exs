@@ -38,12 +38,12 @@ defmodule DiscoveryApi.Data.SearchTest do
   end
 
   describe "/api/v1/search" do
-
     @tag :wip
     test "discovery_api doesn't return server in response headers" do
-      %HTTPoison.Response{status_code: _, headers: headers, body: _} = 
-          "http://localhost:4000/api/v1/dataset/search"
-          |> HTTPoison.get!()
+      %HTTPoison.Response{status_code: _, headers: headers, body: _} =
+        "http://localhost:4000/api/v1/dataset/search"
+        |> HTTPoison.get!()
+
       refute headers |> Map.new() |> Map.has_key?("server")
     end
 
