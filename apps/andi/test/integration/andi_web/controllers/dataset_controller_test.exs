@@ -356,6 +356,13 @@ defmodule Andi.CreateDatasetTest do
     end
   end
 
+  describe "dataset get" do
+    test "andi doesn't return server in response headers" do
+      {:ok, %Tesla.Env{headers: headers}} = get("/api/v1/datasets", headers: [{"content-type", "application/json"}])
+      refute headers |> Map.new() |> Map.has_key?("server")
+    end
+  end
+
   defp create(dataset) do
     struct = Jason.encode!(dataset)
     put("/api/v1/dataset", struct, headers: [{"content-type", "application/json"}])

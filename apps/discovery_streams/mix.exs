@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.Mixfile do
   def project do
     [
       app: :discovery_streams,
-      version: "2.4.0",
+      version: "2.4.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -65,7 +65,9 @@ defmodule DiscoveryStreams.Mixfile do
       {:sobelow, "~> 0.8", only: :dev, runtime: false},
       {:distillery, "~> 2.1"},
       {:poison, "~> 3.1", override: true},
-      {:tasks, in_umbrella: true, only: :dev}
+      {:tasks, in_umbrella: true, only: :dev},
+      {:decimal, "~> 1.0"},
+      {:web, in_umbrella: true}
     ]
   end
 

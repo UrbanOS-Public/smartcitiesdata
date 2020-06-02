@@ -59,6 +59,14 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
     )
   end
 
+  test "discovery_streams doesn't return server in response headers" do
+    %HTTPoison.Response{status_code: _, headers: headers, body: _} =
+      "http://localhost:4001/socket/nodelist"
+      |> HTTPoison.get!()
+
+    refute headers |> Map.new() |> Map.has_key?("server")
+  end
+
   defp validate_subscribed_topics(expected) do
     Patiently.wait_for!(
       fn ->

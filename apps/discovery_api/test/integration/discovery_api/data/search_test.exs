@@ -38,6 +38,14 @@ defmodule DiscoveryApi.Data.SearchTest do
   end
 
   describe "/api/v1/search" do
+    test "discovery_api doesn't return server in response headers" do
+      %HTTPoison.Response{status_code: _, headers: headers, body: _} =
+        "http://localhost:4000/api/v1/dataset/search"
+        |> HTTPoison.get!()
+
+      refute headers |> Map.new() |> Map.has_key?("server")
+    end
+
     test "returns zero count facets when no results are found" do
       params_that_return_nothing = Plug.Conn.Query.encode(%{query: "zero", facets: %{keywords: ["model"]}})
 
