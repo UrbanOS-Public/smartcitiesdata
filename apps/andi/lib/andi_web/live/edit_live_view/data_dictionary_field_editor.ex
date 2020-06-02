@@ -6,6 +6,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
   import Phoenix.HTML.Form
 
   alias Andi.InputSchemas.Options
+  alias AndiWeb.ErrorHelpers
 
   def mount(socket) do
     {:ok, assign(socket, expansion_map: %{})}
@@ -13,6 +14,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
 
   def render(assigns) do
     id = Atom.to_string(assigns.id)
+    form_with_errors = Map.put(assigns.form, :errors, assigns.form.source.errors)
 
     ~L"""
       <div id="<%= @id %>" class="data-dictionary-field-editor" >
@@ -20,18 +22,22 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
         <div class="data-dictionary-field-editor__name">
           <%= label(@form, :name, "Name", class: "label label--required") %>
           <%= text_input(@form, :name, id: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000") %>
+          <%= ErrorHelpers.error_tag(form_with_errors, :name) %>
         </div>
         <div class="data-dictionary-field-editor__selector">
           <%= label(@form, :name, "Selector", class: "label label--required") %>
           <%= text_input(@form, :selector, id: id <> "_name", class: "data-dictionary-field-editor__selector input", disabled: !is_source_format_xml(@source_format)) %>
+          <%= ErrorHelpers.error_tag(form_with_errors, :selector) %>
         </div>
         <div class="data-dictionary-field-editor__type">
           <%= label(@form, :type, "Type", class: "label label--required") %>
           <%= select(@form, :type, get_item_types(), id: id <> "_type", class: "data-dictionary-field-editor__type select") %>
+          <%= ErrorHelpers.error_tag(form_with_errors, :type) %>
         </div>
         <div class="data-dictionary-field-editor__item-type">
           <%= label(@form, :itemType, "Item Type", class: "label label--required") %>
           <%= select(@form, :itemType, get_item_types(@form), id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select", disabled: is_type_not_list(@form)) %>
+          <%= ErrorHelpers.error_tag(form_with_errors, :itemType) %>
         </div>
         <div class="data-dictionary-field-editor__description">
           <%= label(@form, :description, "Description", class: "label") %>

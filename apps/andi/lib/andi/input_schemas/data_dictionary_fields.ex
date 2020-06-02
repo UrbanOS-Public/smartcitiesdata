@@ -12,11 +12,11 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
 
   def add_field_to_parent(new_field, parent_bread_crumb) do
     new_field_updated = adjust_parent_details(new_field, parent_bread_crumb)
-    changeset = DataDictionary.changeset(%DataDictionary{}, new_field_updated)
+    changeset = DataDictionary.changeset_for_new_field(%DataDictionary{}, new_field_updated)
 
     case Repo.insert_or_update(changeset) do
-      {:error, _changeset} ->
-        {:error, DataDictionary.changeset(%DataDictionary{}, new_field)}
+      {:error, changeset} ->
+        {:error, DataDictionary.changeset_for_new_field(%DataDictionary{}, new_field)}
 
       good ->
         good
@@ -29,7 +29,7 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
     if existing_field != nil do
       case Repo.delete(existing_field) do
         {:error, _changeset} ->
-          {:error, DataDictionary.changeset(%DataDictionary{}, existing_field)}
+          {:error, DataDictionary.changeset_for_new_field(%DataDictionary{}, existing_field)}
 
         good ->
           good

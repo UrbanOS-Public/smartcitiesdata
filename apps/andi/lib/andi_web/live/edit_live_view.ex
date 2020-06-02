@@ -390,7 +390,7 @@ defmodule AndiWeb.EditLiveView do
     end)
   end
 
-  defp handle_field_not_found(nil), do: DataDictionary.changeset(%DataDictionary{}, %{})
+  defp handle_field_not_found(nil), do: DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
   defp handle_field_not_found(found_field), do: found_field
 
   defp get_new_selected_field(changeset, parent_id, deleted_field_index) do
