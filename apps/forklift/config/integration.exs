@@ -24,7 +24,7 @@ config :forklift,
   s3_writer_bucket: "kdp-cloud-storage",
   output_topic: output_topic,
   producer_name: :"#{output_topic}-producer",
-  metrics_port: 9002,
+  metrics_port: 9005,
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,
