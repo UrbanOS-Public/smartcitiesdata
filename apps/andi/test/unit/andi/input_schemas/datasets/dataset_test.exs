@@ -272,6 +272,18 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
                Ecto.Changeset.apply_changes(changeset)
     end
 
+    test "given a dataset with a schema that has a date or timestamp field, format is required" do
+      changes = @valid_changes |> put_in([:technical, :schema], [%{name: "datefield", type: "date", dataset_id: "123", bread_crumb: "thing"}])
+
+      changeset = Dataset.changeset(changes)
+
+      first_schema_field = changeset.changes.technical.changes.schema |> hd()
+
+      assert {:format, {"is required", [validation: :required]}} in first_schema_field.errors
+
+      refute changeset.valid?
+    end
+
     data_test "#{inspect(field_path)} are invalid when any key is not set" do
       changes =
         @valid_changes

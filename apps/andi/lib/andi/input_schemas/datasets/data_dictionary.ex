@@ -19,6 +19,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     field(:pii, :string)
     field(:rationale, :string)
     field(:bread_crumb, :string)
+    field(:format, :string)
     has_many(:subSchema, __MODULE__, foreign_key: :parent_id, on_replace: :delete)
 
     belongs_to(:data_dictionary, __MODULE__, type: Ecto.UUID, foreign_key: :parent_id)
@@ -63,6 +64,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:parent_id)
     |> validate_required(@required_fields, message: "is required")
     |> validate_item_type()
+    |> validate_format()
     |> validate_selector(source_format)
   end
 
@@ -102,4 +104,10 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   end
 
   defp validate_selector(changeset, _), do: changeset
+
+  defp validate_format(%{changes: %{type: type}} = changeset) when type in ["date", "timestamp"] do
+    validate_required(changeset, :format, message: "is required")
+  end
+
+  defp validate_format(changeset), do: changeset
 end
