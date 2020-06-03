@@ -29,7 +29,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       orgName: "orgName",
       private: false,
       schema: [
-        %{id: Ecto.UUID.generate(), name: "name", type: "type", bread_crumb: "name", dataset_id: "id"}
+        %{id: Ecto.UUID.generate(), name: "name", type: "type", bread_crumb: "name", dataset_id: "id", selector: "/cam/cam"}
       ],
       sourceFormat: "sourceFormat",
       sourceHeaders: [

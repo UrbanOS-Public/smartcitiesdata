@@ -109,10 +109,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
       refute Enum.empty?(find_elements(html, ".data-dictionary-field-editor__#{class} > .error-msg"))
 
-      where([
+      where(
         field: [:name, :type, :item_type, :selector],
         class: ["name", "type", "item-type", "selector"]
-      ])
+      )
     end
 
     test "dataset with no schema does not perform field editor validation", %{conn: conn} do
@@ -127,6 +127,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
   defp remove_field_from_schema(schema, field_key) do
     schema_head = schema |> hd()
+
     if field_key in Map.keys(schema_head) do
       schema_head
       |> Map.put(field_key, "")
