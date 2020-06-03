@@ -22,7 +22,7 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
                 id: schema_parent_field_id,
                 type: "map",
                 subSchema: [
-                  %{name: "map_field_child_list", id: schema_child_field_id, type: "list"},
+                  %{name: "map_field_child_list", id: schema_child_field_id, type: "list", itemType: "string"},
                   %{name: "map_field_child_string", type: "string"}
                 ]
               }
@@ -146,7 +146,7 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
                 id: schema_parent_field_id,
                 type: "map",
                 subSchema: [
-                  %{name: "map_field_child_list", id: schema_child_field_id, type: "list"},
+                  %{name: "map_field_child_list", id: schema_child_field_id, type: "list", itemType: "string"},
                   %{name: "map_field_child_string", type: "string"}
                 ]
               }
