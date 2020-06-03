@@ -266,6 +266,12 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
   end
 
+  def handle_info({:assign_editable_dictionary_field, :no_dictionary, _, _, _}, socket) do
+    current_data_dictionary_item = DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil)
+
+    {:noreply, assign(socket, current_data_dictionary_item: current_data_dictionary_item, selected_field_id: :no_dictionary)}
+  end
+
   def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
     new_form = find_field_in_changeset(socket.assigns.changeset, field_id) |> form_for(nil)
     field = %{new_form | index: index, name: name, id: id}
@@ -390,7 +396,7 @@ defmodule AndiWeb.EditLiveView do
     end)
   end
 
-  defp handle_field_not_found(nil), do: DataDictionary.changeset(%DataDictionary{}, %{})
+  defp handle_field_not_found(nil), do: DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
   defp handle_field_not_found(found_field), do: found_field
 
   defp get_new_selected_field(changeset, parent_id, deleted_field_index) do

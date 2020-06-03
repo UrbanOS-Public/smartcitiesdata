@@ -52,12 +52,26 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :bread_crumb
   ]
 
-  def changeset(dictionary, changes) do
+  def changeset(dictionary, changes, source_format) do
     changes_with_id = StructTools.ensure_id(dictionary, changes)
 
     dictionary
     |> cast(changes_with_id, @cast_fields, empty_values: [])
-    |> cast_assoc(:subSchema, with: &__MODULE__.changeset/2)
+    |> cast_assoc(:subSchema, with: &__MODULE__.changeset(&1, &2, source_format))
+    |> foreign_key_constraint(:dataset_id)
+    |> foreign_key_constraint(:technical_id)
+    |> foreign_key_constraint(:parent_id)
+    |> validate_required(@required_fields, message: "is required")
+    |> validate_item_type()
+    |> validate_selector(source_format)
+  end
+
+  def changeset_for_new_field(dictionary, changes) do
+    changes_with_id = StructTools.ensure_id(dictionary, changes)
+
+    dictionary
+    |> cast(changes_with_id, @cast_fields, empty_values: [])
+    |> cast_assoc(:subSchema, with: &__MODULE__.changeset_for_new_field/2)
     |> foreign_key_constraint(:dataset_id)
     |> foreign_key_constraint(:technical_id)
     |> foreign_key_constraint(:parent_id)
@@ -76,4 +90,16 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   end
 
   def preload(struct), do: StructTools.preload(struct, [:subSchema])
+
+  defp validate_item_type(%{changes: %{type: "list"}} = changeset) do
+    validate_required(changeset, [:itemType], message: "is required")
+  end
+
+  defp validate_item_type(changeset), do: changeset
+
+  defp validate_selector(changeset, source_format) when source_format in ["xml", "text/xml"] do
+    validate_required(changeset, :selector, message: "is required")
+  end
+
+  defp validate_selector(changeset, _), do: changeset
 end
