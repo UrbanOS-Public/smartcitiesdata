@@ -10,8 +10,6 @@ defmodule DiscoveryStreamsWeb.Endpoint do
 
   socket("/socket", DiscoveryStreamsWeb.UserSocket)
 
-  plug(DiscoveryStreams.MetricsExporter)
-
   plug(
     Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
