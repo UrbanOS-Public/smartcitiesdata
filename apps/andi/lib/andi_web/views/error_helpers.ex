@@ -10,7 +10,10 @@ defmodule AndiWeb.ErrorHelpers do
   @doc """
   Generates tag for inlined form input errors.
   """
-  def error_tag(form, field, options \\ []) do
+  def error_tag(form, field, options \\ [])
+  def error_tag(form, _, _) when not is_map(form), do: []
+
+  def error_tag(form, field, options) do
     Enum.map(Keyword.get_values(form.errors, field), fn error ->
       translated = error |> interpret_error(field) |> translate_error()
 
@@ -64,6 +67,8 @@ defmodule AndiWeb.ErrorHelpers do
       case field do
         field when field in [:sourceHeaders, :sourceQueryParams] -> "Please enter valid key(s)."
         :cadence -> "Error: #{message}"
+        :selector when message != "is required" -> message
+        :topLevelSelector when message != "is required" -> "Error: #{message}"
         _ -> "Please enter a valid #{get_downcased_display_name(field)}."
       end
 

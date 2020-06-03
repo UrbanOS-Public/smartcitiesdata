@@ -316,7 +316,8 @@ defmodule AndiWeb.EditLiveViewTest do
         [:sourceUrl, %{technical: %{sourceUrl: ""}}, "Please enter a valid base url."],
         [:license, %{business: %{license: ""}}, "Please enter a valid license."],
         [:benefitRating, %{business: %{benefitRating: ""}}, "Please enter a valid benefit."],
-        [:riskRating, %{business: %{riskRating: ""}}, "Please enter a valid risk."]
+        [:riskRating, %{business: %{riskRating: ""}}, "Please enter a valid risk."],
+        [:topLevelSelector, %{technical: %{sourceFormat: "text/xml", topLevelSelector: ""}}, "Please enter a valid top level selector."]
       ])
     end
 
@@ -397,6 +398,28 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render_change(view, :validate, %{"form_data" => updated_form_data})
 
       assert get_text(html, "#issuedDate-error-msg") == ""
+    end
+
+    test "displays error when topLevelSelector jpath is invalid", %{conn: conn} do
+      dataset = DatasetHelpers.create_dataset(%{technical: %{sourceFormat: "application/json", topLevelSelector: "$.data[x]"}})
+
+      DatasetHelpers.add_dataset_to_repo(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      form_data = FormTools.form_data_from_andi_dataset(dataset)
+
+      html = render_change(view, :validate, %{"form_data" => form_data})
+
+      assert get_text(html, "#topLevelSelector-error-msg") == "Error: Expected an integer at `x]`"
+    end
+
+    test "topLevelSelector is read only when sourceFormat is not xml nor json", %{conn: conn} do
+      dataset = DatasetHelpers.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
+      DatasetHelpers.add_dataset_to_repo(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      refute Enum.empty?(get_attributes(html, "#form_data_technical_topLevelSelector", "readonly"))
     end
   end
 

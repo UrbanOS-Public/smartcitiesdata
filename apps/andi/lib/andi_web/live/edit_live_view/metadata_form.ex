@@ -74,6 +74,12 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               <%= ErrorHelpers.error_tag(@business, :license) %>
             </div>
 
+            <div class="metadata-form__top-level-selector">
+              <%= label(@technical, :topLevelSelector, DisplayNames.get(:topLevelSelector), class: top_level_selector_label_class(input_value(@technical, :sourceFormat))) %>
+              <%= text_input(@technical, :topLevelSelector, [class: "input--text input", readonly: input_value(@technical, :sourceFormat) not in ["xml", "json", "text/xml", "application/json"]]) %>
+              <%= ErrorHelpers.error_tag(@technical, :topLevelSelector) %>
+            </div>
+
             <div class="metadata-form__update-frequency">
               <%= label(@business, :publishFrequency, DisplayNames.get(:publishFrequency), class: "label label--required") %>
               <%= text_input(@business, :publishFrequency, class: "input") %>
@@ -150,7 +156,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
             <div class="edit-button-group__save-btn">
               <a href="#data-dictionary-form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-collapse="metadata_form" phx-value-component-expand="data_dictionary_form">Next</a>
-              <%= submit("Save", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft") %>
+              <%= submit("Save Draft", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft") %>
             </div>
           </div>
         </div>
@@ -158,6 +164,9 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     </div>
     """
   end
+
+  defp top_level_selector_label_class(source_format) when source_format in ["text/xml", "xml"], do: "label label--required"
+  defp top_level_selector_label_class(_), do: "label"
 
   defp map_to_dropdown_options(options) do
     Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)

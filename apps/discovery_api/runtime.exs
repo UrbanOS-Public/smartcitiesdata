@@ -9,6 +9,7 @@ get_redix_args = fn (host, password) ->
   end)
 end
 redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
+metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 endpoint =
@@ -28,7 +29,8 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
 config :discovery_api,
   hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
   hosted_region: System.get_env("HOSTED_FILE_REGION"),
-  presign_key: System.get_env("PRESIGN_KEY")
+  presign_key: System.get_env("PRESIGN_KEY"),
+  metrics_port: metrics_port
 
 config :discovery_api, DiscoveryApi.Repo,
   database: System.get_env("POSTGRES_DBNAME"),
