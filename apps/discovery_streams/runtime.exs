@@ -2,6 +2,10 @@ use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
+metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
+
+config :discovery_streams,
+  metrics_port: metrics_port
 
 if kafka_brokers do
   endpoints =

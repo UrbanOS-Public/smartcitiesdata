@@ -22,6 +22,7 @@ defmodule DiscoveryStreams.Application do
         DiscoveryStreams.CachexSupervisor,
         supervisor(DiscoveryStreamsWeb.Endpoint, []),
         libcluster(),
+        metrics(),
         DiscoveryStreams.CacheGenserver,
         {Brook, Application.get_env(:discovery_streams, :brook)},
         kaffe(),
@@ -50,6 +51,20 @@ defmodule DiscoveryStreams.Application do
           Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, []),
           DiscoveryStreams.TopicSubscriber
         ]
+    end
+  end
+
+  defp metrics() do
+    case Application.get_env(:discovery_streams, :metrics_port) do
+      nil ->
+        []
+
+      metrics_port ->
+        Plug.Cowboy.child_spec(
+          scheme: :http,
+          plug: DiscoveryStreams.MetricsExporter,
+          options: [port: metrics_port]
+        )
     end
   end
 end

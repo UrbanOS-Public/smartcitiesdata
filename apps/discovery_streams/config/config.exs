@@ -20,7 +20,10 @@ config :logger,
   format: "$time $metadata[$level] $message\n",
   metadata: [:user_id]
 
-config :discovery_streams, ttl: 600_000, topic_prefix: "transformed-"
+config :discovery_streams,
+  ttl: 600_000,
+  topic_prefix: "transformed-",
+  metrics_port: 9004
 
 config :ex_aws,
   region: "us-east-2"

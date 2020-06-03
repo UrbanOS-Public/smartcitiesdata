@@ -22,6 +22,7 @@ defmodule DiscoveryApi.Application do
         DiscoveryApi.Search.Storage,
         DiscoveryApiWeb.Plugs.ResponseCache,
         redis(),
+        metrics(),
         ecto_repo(),
         {Brook, Application.get_env(:discovery_api, :brook)},
         cache_populator(),
@@ -68,6 +69,20 @@ defmodule DiscoveryApi.Application do
     |> case do
       nil -> []
       _ -> DiscoveryApi.Data.CachePopulator
+    end
+  end
+
+  defp metrics() do
+    case Application.get_env(:discovery_api, :metrics_port) do
+      nil ->
+        []
+
+      metrics_port ->
+        Plug.Cowboy.child_spec(
+          scheme: :http,
+          plug: DiscoveryApi.MetricsExporter,
+          options: [port: metrics_port]
+        )
     end
   end
 end
