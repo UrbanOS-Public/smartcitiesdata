@@ -14,7 +14,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
 
   def render(assigns) do
     id = Atom.to_string(assigns.id)
-    form_with_errors = Map.put(assigns.form, :errors, assigns.form.source.errors)
+    form_with_errors = add_errors_to_form(assigns.form)
 
     ~L"""
       <div id="<%= @id %>" class="data-dictionary-field-editor" >
@@ -91,4 +91,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
 
   defp is_source_format_xml(format) when format in ["xml", "text/xml"], do: true
   defp is_source_format_xml(_), do: false
+
+  defp add_errors_to_form(:no_dictionary), do: :no_dictionary
+  defp add_errors_to_form(form), do: Map.put(form, :errors, form.source.errors)
 end

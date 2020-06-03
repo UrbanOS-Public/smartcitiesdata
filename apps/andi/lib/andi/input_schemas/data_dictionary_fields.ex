@@ -15,7 +15,7 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
     changeset = DataDictionary.changeset_for_new_field(%DataDictionary{}, new_field_updated)
 
     case Repo.insert_or_update(changeset) do
-      {:error, changeset} ->
+      {:error, _} ->
         {:error, DataDictionary.changeset_for_new_field(%DataDictionary{}, new_field)}
 
       good ->
@@ -28,7 +28,7 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
 
     if existing_field != nil do
       case Repo.delete(existing_field) do
-        {:error, _changeset} ->
+        {:error, _} ->
           {:error, DataDictionary.changeset_for_new_field(%DataDictionary{}, existing_field)}
 
         good ->

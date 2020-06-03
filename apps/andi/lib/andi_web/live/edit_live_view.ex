@@ -266,6 +266,7 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
   end
 
+  def handle_info({:assign_editable_dictionary_field, :no_dictionary, _, _, _}, socket), do: {:noreply, socket} |> IO.inspect
   def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
     new_form = find_field_in_changeset(socket.assigns.changeset, field_id) |> form_for(nil)
     field = %{new_form | index: index, name: name, id: id}
