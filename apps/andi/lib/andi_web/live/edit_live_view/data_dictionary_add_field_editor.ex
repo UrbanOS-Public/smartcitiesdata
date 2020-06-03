@@ -97,7 +97,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
   end
 
   defp blank_changeset() do
-    DataDictionary.changeset(%DataDictionary{}, %{})
+    DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
   end
 
   defp get_item_types(), do: map_to_dropdown_options(Options.items())

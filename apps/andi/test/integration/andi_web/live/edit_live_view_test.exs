@@ -211,7 +211,7 @@ defmodule AndiWeb.EditLiveViewTest do
               %{
                 name: "three",
                 type: "list",
-                subType: "map",
+                itemType: "map",
                 subSchema: [
                   %{
                     name: "three-one",
@@ -263,7 +263,7 @@ defmodule AndiWeb.EditLiveViewTest do
               %{
                 name: "one",
                 type: "list",
-                subType: "map",
+                itemType: "map",
                 description: "description",
                 subSchema: [
                   %{
@@ -321,7 +321,7 @@ defmodule AndiWeb.EditLiveViewTest do
               %{
                 name: "one",
                 type: "list",
-                subType: "map",
+                itemType: "string",
                 description: "description",
                 subSchema: [
                   %{

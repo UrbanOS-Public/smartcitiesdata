@@ -58,10 +58,11 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
   def changeset(technical, changes) do
     changes_with_id = StructTools.ensure_id(technical, changes)
+    source_format = Map.get(changes, :sourceFormat, nil)
 
     technical
     |> cast(changes_with_id, @cast_fields, empty_values: [])
-    |> cast_assoc(:schema, with: &DataDictionary.changeset/2, invalid_message: "is required")
+    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> cast_assoc(:sourceHeaders, with: &Header.changeset/2)
     |> cast_assoc(:sourceQueryParams, with: &QueryParam.changeset/2)
     |> foreign_key_constraint(:dataset_id)
