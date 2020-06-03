@@ -24,7 +24,8 @@ config :discovery_api,
   collector: StreamingMetrics.PrometheusMetricCollector,
   hsts_enabled: true,
   download_link_expire_seconds: 60,
-  presign_key: "test_presign_key"
+  presign_key: "test_presign_key",
+  metrics_port: 9006
 
 # NOTE: To generate a secret_key:  mix guardian.gen.secret
 # secret set as variable to pass sobelow check on hard coded secrets
