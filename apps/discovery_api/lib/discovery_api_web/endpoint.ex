@@ -10,8 +10,6 @@ defmodule DiscoveryApiWeb.Endpoint do
 
   plug(PlugHeartbeat, path: "/healthcheck")
 
-  plug(DiscoveryApi.MetricsExporter)
-
   plug(DiscoveryApiWeb.Plugs.SecureHeaders)
 
   plug(Corsica,
