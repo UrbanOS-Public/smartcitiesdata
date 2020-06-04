@@ -95,6 +95,7 @@ defmodule DiscoveryApi.EventHandlerTest do
       expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
       expect(Model.delete(dataset.id), return: :ok)
       expect(DataJsonService.delete_data_json(), return: :ok)
+      expect(DatasetSearchIndex.delete(dataset.id), return: :ok)
 
       Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
     end

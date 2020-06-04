@@ -77,6 +77,7 @@ defmodule DiscoveryApi.EventHandler do
     RecommendationEngine.delete(dataset.id)
     SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName)
     Storage.delete(dataset)
+    DatasetSearchIndex.delete(dataset.id)
     StatsCalculator.delete_completeness(dataset.id)
     Model.delete(dataset.id)
     clear_caches()

@@ -86,6 +86,10 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     put(dataset, &elastic_index_document/1)
   end
 
+  def delete(dataset_id) do
+    elastic_delete_document(dataset_id)
+  end
+
   def replace_all(datasets) do
     case reset_index(dataset_index()) do
       {:ok, _} -> elastic_bulk_document_load(datasets)
@@ -133,6 +137,15 @@ defmodule DiscoveryApi.Search.DatasetIndex do
       refresh: true
     )
     |> handle_response()
+  end
+
+  defp elastic_delete_document(dataset_id) do
+    Elastix.Document.delete(
+      url(),
+      dataset_index_name(),
+      "_doc",
+      dataset_id
+    )
   end
 
   defp elastic_create_index(name, options) do
@@ -286,9 +299,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
       "query" => %{
         "bool" => %{
           "must" => build_must(search_opts),
-          "filter" => [
-            %{"term" => %{"private" => false}}
-          ]
+          "filter" => build_filter(search_opts)
         }
       },
       "size" => 10,
@@ -362,5 +373,39 @@ defmodule DiscoveryApi.Search.DatasetIndex do
         "facets.orgTitle" => org_title
       }
     }
+  end
+
+  defp build_filter(search_opts) do
+    authorized_organization_ids = Keyword.get(search_opts, :authorized_organization_ids, [])
+
+    [
+      %{
+        "bool" => %{
+          "should" => [
+            %{
+              "term" => %{
+                "private" => false
+              }
+            },
+            %{
+              "bool" => %{
+                "must" => [
+                  %{
+                    "term" => %{
+                      "private" => true
+                    }
+                  },
+                  %{
+                    "terms" => %{
+                      "organizationDetails.id" => authorized_organization_ids
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
   end
 end
