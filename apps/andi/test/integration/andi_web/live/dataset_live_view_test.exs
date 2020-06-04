@@ -20,7 +20,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   @url_path "/datasets"
 
   test "data_ingest_end events updates ingested time", %{conn: conn} do
-    dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "cam", type: "string"}]}})
+    dataset = TDG.create_dataset(%{})
 
     {:ok, _andi_dataset} = Datasets.update(dataset)
 
@@ -40,7 +40,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   test "data_ingest_end events does not change dataset order", %{conn: conn} do
     datasets =
       Enum.map(1..3, fn _x ->
-        dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "cam", type: "string"}]}})
+        dataset = TDG.create_dataset(%{})
 
         {:ok, _andi_dataset} = Datasets.update(dataset)
 

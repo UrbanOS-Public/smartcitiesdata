@@ -21,7 +21,7 @@ defmodule Andi.CreateDatasetTest do
 
   describe "dataset disable" do
     test "sends dataset:disable event" do
-      dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "cam", type: "string"}]}})
+      dataset = TDG.create_dataset(%{})
       {:ok, _} = create(dataset)
 
       eventually(fn ->
@@ -46,7 +46,7 @@ defmodule Andi.CreateDatasetTest do
 
   describe "dataset delete" do
     test "sends dataset:delete event" do
-      dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "cam", type: "string"}]}})
+      dataset = TDG.create_dataset(%{})
       {:ok, _} = create(dataset)
 
       eventually(fn ->
@@ -254,8 +254,7 @@ defmodule Andi.CreateDatasetTest do
           technical: %{
             sourceFormat: "",
             sourceHeaders: %{"" => "where's my key"},
-            sourceQueryParams: %{"" => "where's MY key"},
-            schema: [%{name: "cam", type: "string"}]
+            sourceQueryParams: %{"" => "where's MY key"}
           }
         )
         |> struct_to_map_with_string_keys()
@@ -308,8 +307,7 @@ defmodule Andi.CreateDatasetTest do
           id: " my-new-dataset  ",
           technical: %{
             dataName: "   the_data_name ",
-            orgName: " the_org_name   ",
-            schema: [%{name: "cam", type: "string"}]
+            orgName: " the_org_name   "
           },
           business: %{
             contactName: " some  body  ",
@@ -328,13 +326,7 @@ defmodule Andi.CreateDatasetTest do
     end
 
     test "put with a system name does not reflect it back" do
-      new_dataset =
-        TDG.create_dataset(
-          technical: %{
-            systemName: "this_will__get_tossed",
-            schema: [%{name: "cam", type: "string"}]
-          }
-        )
+      new_dataset = TDG.create_dataset(technical: %{systemName: "this_will__get_tossed"})
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)
 
@@ -346,7 +338,7 @@ defmodule Andi.CreateDatasetTest do
     end
 
     test "PUT /api/ dataset passed without UUID generates UUID for dataset" do
-      new_dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "cam", type: "string"}]}})
+      new_dataset = TDG.create_dataset(%{})
       {_, new_dataset} = pop_in(new_dataset, ["id"])
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)
