@@ -108,10 +108,12 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
     query = Map.get(params, "query", "")
     facets = Map.get(params, "facets", %{})
     api_accessible = parse_api_accessible(params)
-    authorized_organization_ids = case current_user do
-      nil -> nil
-      _ -> Enum.map(current_user.organizations, fn organization -> organization.id end)
-    end
+
+    authorized_organization_ids =
+      case current_user do
+        nil -> nil
+        _ -> Enum.map(current_user.organizations, fn organization -> organization.id end)
+      end
 
     case validate_facets(facets) do
       {:ok, filter_facets} ->

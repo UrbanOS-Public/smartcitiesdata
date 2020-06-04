@@ -196,8 +196,14 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
       conn |> get("/api/v2/dataset/search", params) |> json_response(400)
     end
 
-    test "api/v2/search passes logged in user organization ids to elasticsearch", %{conn: conn, mock_dataset_summaries: mock_dataset_summaries} do
-      expect(DatasetIndex.search(query: "Bob", api_accessible: false, authorized_organization_ids: ["1", "2"]), return: {:ok, mock_dataset_summaries, %{}})
+    test "api/v2/search passes logged in user organization ids to elasticsearch", %{
+      conn: conn,
+      mock_dataset_summaries: mock_dataset_summaries
+    } do
+      expect(DatasetIndex.search(query: "Bob", api_accessible: false, authorized_organization_ids: ["1", "2"]),
+        return: {:ok, mock_dataset_summaries, %{}}
+      )
+
       params = %{query: "Bob"}
       user = %User{organizations: [%Organization{id: "1"}, %Organization{id: "2"}]}
       allow(Guardian.Plug.current_resource(any()), return: user, meck_options: [:passthrough])

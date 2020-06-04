@@ -86,7 +86,6 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     put(dataset, &elastic_index_document/1)
   end
 
-
   def delete(dataset_id) do
     elastic_delete_document(dataset_id)
   end
