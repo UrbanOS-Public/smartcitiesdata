@@ -45,6 +45,7 @@ defmodule DiscoveryApiWeb.Router do
     pipe_through([:reject_cookies_from_ajax, :verify_token, :ensure_authenticated, :global_headers])
 
     post("/logged-in", UserController, :logged_in)
+    post("/logged-out", UserController, :logged_out)
   end
 
   scope "/api/v1", DiscoveryApiWeb do

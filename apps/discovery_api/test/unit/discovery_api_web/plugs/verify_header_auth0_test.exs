@@ -6,7 +6,7 @@ defmodule DiscoveryApiWeb.Plugs.VerifyHeaderAuth0Test do
   alias DiscoveryApiWeb.Plugs.VerifyHeaderAuth0
   alias DiscoveryApi.Auth.Auth0.CachedJWKS
 
-  @verified_conn Guardian.Plug.put_current_token(%Plug.Conn{}, "fake_token")
+  @verified_conn DiscoveryApiWeb.AuthTokens.Guardian.Plug.put_current_token(%Plug.Conn{}, "fake_token")
   @unverified_conn %Plug.Conn{}
   @opts [{:fake, "options"}]
 

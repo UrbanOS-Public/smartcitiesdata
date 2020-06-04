@@ -8,7 +8,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
   def init(default), do: default
 
   def call(conn, _) do
-    current_user = Guardian.Plug.current_resource(conn)
+    current_user = DiscoveryApiWeb.AuthTokens.Guardian.Plug.current_resource(conn)
     assign(conn, :current_user, current_user)
   end
 end

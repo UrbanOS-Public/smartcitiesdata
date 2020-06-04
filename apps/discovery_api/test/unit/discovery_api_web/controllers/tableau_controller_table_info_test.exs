@@ -61,7 +61,7 @@ defmodule DiscoveryApiWeb.TableauControllerTableInfoTest do
     end
 
     test "table info is cached per user" do
-      allow(Guardian.Plug.current_resource(any()), return: %{subject_id: "bob123"}, meck_options: [:passthrough])
+      allow(DiscoveryApiWeb.AuthTokens.Guardian.Plug.current_resource(any()), return: %{subject_id: "bob123"}, meck_options: [:passthrough])
       build_conn() |> get("api/v1/tableau/table_info") |> json_response(200)
       build_conn() |> get("api/v1/tableau/table_info") |> json_response(200)
 

@@ -24,7 +24,7 @@ defmodule DiscoveryApiWeb.Plugs.VerifyHeaderAuth0 do
   end
 
   defp verification_failed?(conn) do
-    !Guardian.Plug.current_token(conn)
+    !DiscoveryApiWeb.AuthTokens.Guardian.Plug.current_token(conn)
   end
 
   defp jwks_cached?(jwks) do
