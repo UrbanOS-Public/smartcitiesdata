@@ -32,7 +32,11 @@ defmodule Andi.InputSchemas.DatasetsTest do
     test "given an existing source query param, it deletes it" do
       dataset =
         TDG.create_dataset(%{
-          technical: %{sourceUrl: "http://example.com?foo=baz&riz=bar", sourceQueryParams: %{"foo" => "baz", "riz" => "bar"}, schema: [%{name: "cam", type: "string"}]}
+          technical: %{
+            sourceUrl: "http://example.com?foo=baz&riz=bar",
+            sourceQueryParams: %{"foo" => "baz", "riz" => "bar"},
+            schema: [%{name: "cam", type: "string"}]
+          }
         })
 
       {:ok,
@@ -80,7 +84,10 @@ defmodule Andi.InputSchemas.DatasetsTest do
 
   describe "remove_source_header/2" do
     test "given an existing source header, it deletes it" do
-      dataset = TDG.create_dataset(%{technical: %{sourceHeaders: %{"api-key" => "to-my-heart", "some_other" => "one"}, schema: [%{name: "cam", type: "string"}]}})
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{sourceHeaders: %{"api-key" => "to-my-heart", "some_other" => "one"}, schema: [%{name: "cam", type: "string"}]}
+        })
 
       {:ok, %{technical: %{sourceHeaders: [%{id: original_id, key: "api-key", value: "to-my-heart"}, %{id: the_other_id}]}} = _andi_dataset} =
         Datasets.update(dataset)
@@ -150,8 +157,9 @@ defmodule Andi.InputSchemas.DatasetsTest do
     test "given an existing dataset, it adds a new, blank source header to it" do
       dataset = TDG.create_dataset(%{technical: %{sourceHeaders: %{"api-key" => "to-my-heart"}, schema: [%{name: "cam", type: "string"}]}})
 
-      {:ok, %{technical: %{sourceHeaders: [%{id: original_id, key: "api-key", value: "to-my-heart"}], schema: [%{name: "cam", type: "string"}]}} = _andi_dataset} =
-        Datasets.update(dataset)
+      {:ok,
+       %{technical: %{sourceHeaders: [%{id: original_id, key: "api-key", value: "to-my-heart"}], schema: [%{name: "cam", type: "string"}]}} =
+         _andi_dataset} = Datasets.update(dataset)
 
       assert {:ok, %{technical: %{sourceHeaders: [%{id: ^original_id}, %{id: _, key: nil, value: nil}]}}} =
                Datasets.add_source_header(dataset.id)

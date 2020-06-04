@@ -47,9 +47,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
     refute Enum.empty?(find_elements(html, ".data-dictionary-field-editor__format"))
 
-    where([
-      field: ["date", "timestamp"]
-    ])
+    where(field: ["date", "timestamp"])
   end
 
   data_test "empty values for #{selector_name} are selected by default", %{conn: conn} do

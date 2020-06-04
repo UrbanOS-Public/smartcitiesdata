@@ -79,8 +79,13 @@ defmodule AndiWeb.ErrorHelpers do
   def get_downcased_display_name(field_key), do: field_key |> DisplayNames.get() |> String.downcase()
 
   defp get_format_error_message("Format string cannot be empty" <> _), do: "format is required"
-  defp get_format_error_message("There were no formatting directives in the provided string" <> _), do: "format must adhere to directive format. Refer to the link above for help"
-  defp get_format_error_message("Invalid format string" <> _), do: "format must adhere to directive format. Refer to the link above for help"
+
+  defp get_format_error_message("There were no formatting directives in the provided string" <> _),
+    do: "format must adhere to directive format. Refer to the link above for help"
+
+  defp get_format_error_message("Invalid format string" <> _),
+    do: "format must adhere to directive format. Refer to the link above for help"
+
   defp get_format_error_message("Expected at least one parser to succeed" <> _), do: "failed to parse"
   defp get_format_error_message(message), do: message
 end
