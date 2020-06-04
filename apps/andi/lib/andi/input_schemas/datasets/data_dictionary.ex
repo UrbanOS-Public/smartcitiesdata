@@ -2,6 +2,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+  alias Timex.Format.DateTime.Formatter
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.StructTools
@@ -44,7 +45,8 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :dataset_id,
     :technical_id,
     :parent_id,
-    :bread_crumb
+    :bread_crumb,
+    :format
   ]
   @required_fields [
     :name,
@@ -78,6 +80,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:technical_id)
     |> foreign_key_constraint(:parent_id)
     |> validate_required(@required_fields, message: "is required")
+    |> validate_format()
   end
 
   def changeset_for_draft(dictionary, changes) do
@@ -105,9 +108,14 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
 
   defp validate_selector(changeset, _), do: changeset
 
-  defp validate_format(%{changes: %{type: type}} = changeset) when type in ["date", "timestamp"] do
-    validate_required(changeset, :format, message: "is required")
+  defp validate_format(%{changes: %{type: type, format: format}} = changeset) when type in ["date", "timestamp"] do
+    case Formatter.validate(format) do
+      :ok -> changeset
+      {:error, err} ->
+        add_error(changeset, :format, err)
+    end
   end
 
+  defp validate_format(%{changes: %{type: type}} = changeset) when type in ["date", "timestamp"], do: add_error(changeset, :format, "is required", validation: :required)
   defp validate_format(changeset), do: changeset
 end

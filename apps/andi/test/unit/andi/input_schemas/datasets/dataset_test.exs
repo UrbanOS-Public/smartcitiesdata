@@ -272,8 +272,8 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
                Ecto.Changeset.apply_changes(changeset)
     end
 
-    test "given a dataset with a schema that has a date or timestamp field, format is required" do
-      changes = @valid_changes |> put_in([:technical, :schema], [%{name: "datefield", type: "date", dataset_id: "123", bread_crumb: "thing"}])
+    data_test "given a dataset with a schema that has #{field}, format is required" do
+      changes = @valid_changes |> put_in([:technical, :schema], [%{name: "datefield", type: field, dataset_id: "123", bread_crumb: "thing"}])
 
       changeset = Dataset.changeset(changes)
 
@@ -282,6 +282,36 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       assert {:format, {"is required", [validation: :required]}} in first_schema_field.errors
 
       refute changeset.valid?
+
+      where([field: ["date", "timestamp"]])
+    end
+
+    data_test "invalid formats are rejected for #{field} schema fields" do
+      changes = @valid_changes |> put_in([:technical, :schema], [%{name: "datefield", type: field, dataset_id: "123", bread_crumb: "thing", format: "123"}])
+
+      changeset = Dataset.changeset(changes)
+
+      first_schema_field = changeset.changes.technical.changes.schema |> hd()
+
+      assert {:format, {"Invalid format string, must contain at least one directive.", []}} in first_schema_field.errors
+
+      refute changeset.valid?
+
+      where([field: ["date", "timestamp"]])
+    end
+
+    data_test "valid formats are accepted for #{field} schema fields" do
+      changes = @valid_changes |> put_in([:technical, :schema], [%{name: "datefield", type: field, dataset_id: "123", bread_crumb: "thing", format: format}])
+
+      changeset = Dataset.changeset(changes)
+
+      assert changeset.valid?
+
+      where([
+        [:field, :format],
+        ["date", "{YYYY}{0M}{0D}"],
+        ["timestamp", "{ISO:Extended}"],
+      ])
     end
 
     data_test "#{inspect(field_path)} are invalid when any key is not set" do
