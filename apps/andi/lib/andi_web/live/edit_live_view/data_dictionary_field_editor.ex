@@ -104,10 +104,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
     end
   end
 
-  defp is_type_not_list(field) do
-    input_value(field, :type) != "list"
-  end
-
   defp is_source_format_xml(format) when format in ["xml", "text/xml"], do: true
   defp is_source_format_xml(_), do: false
 

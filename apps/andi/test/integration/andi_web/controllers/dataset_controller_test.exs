@@ -21,7 +21,7 @@ defmodule Andi.CreateDatasetTest do
 
   describe "dataset disable" do
     test "sends dataset:disable event" do
-      dataset = TDG.create_dataset(%{})
+      dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "cam", type: "string"}]}})
       {:ok, _} = create(dataset)
 
       eventually(fn ->
@@ -46,7 +46,7 @@ defmodule Andi.CreateDatasetTest do
 
   describe "dataset delete" do
     test "sends dataset:delete event" do
-      dataset = TDG.create_dataset(%{})
+      dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "cam", type: "string"}]}})
       {:ok, _} = create(dataset)
 
       eventually(fn ->
@@ -254,7 +254,8 @@ defmodule Andi.CreateDatasetTest do
           technical: %{
             sourceFormat: "",
             sourceHeaders: %{"" => "where's my key"},
-            sourceQueryParams: %{"" => "where's MY key"}
+            sourceQueryParams: %{"" => "where's MY key"},
+            schema: [%{name: "cam", type: "string"}]
           }
         )
         |> struct_to_map_with_string_keys()
@@ -307,7 +308,8 @@ defmodule Andi.CreateDatasetTest do
           id: " my-new-dataset  ",
           technical: %{
             dataName: "   the_data_name ",
-            orgName: " the_org_name   "
+            orgName: " the_org_name   ",
+            schema: [%{name: "cam", type: "string"}]
           },
           business: %{
             contactName: " some  body  ",
@@ -329,7 +331,8 @@ defmodule Andi.CreateDatasetTest do
       new_dataset =
         TDG.create_dataset(
           technical: %{
-            systemName: "this_will__get_tossed"
+            systemName: "this_will__get_tossed",
+            schema: [%{name: "cam", type: "string"}]
           }
         )
 
@@ -343,7 +346,7 @@ defmodule Andi.CreateDatasetTest do
     end
 
     test "PUT /api/ dataset passed without UUID generates UUID for dataset" do
-      new_dataset = TDG.create_dataset(%{})
+      new_dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "cam", type: "string"}]}})
       {_, new_dataset} = pop_in(new_dataset, ["id"])
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)

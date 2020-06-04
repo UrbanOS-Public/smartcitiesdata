@@ -42,7 +42,8 @@ defmodule AndiWeb.EditLiveViewTest do
         TDG.create_dataset(%{
           technical: %{
             sourceQueryParams: %{foo: "bar", baz: "biz"},
-            sourceHeaders: %{fool: "barl", bazl: "bizl"}
+            sourceHeaders: %{fool: "barl", bazl: "bizl"},
+            schema: [%{name: "cam",type: "string"}]
           }
         })
 
@@ -96,7 +97,7 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     data_test "does not have key/value inputs when dataset has no source #{field}", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{field => %{}}})
+      dataset = TDG.create_dataset(%{technical: %{field => %{}, schema: [%{name: "cam",type: "string"}]}})
       {:ok, _andi_dataset} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -304,10 +305,9 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "handles datasets with empty schema fields", %{conn: conn} do
-      dataset = TDG.create_dataset(%{schema: []})
+      dataset = TDG.create_dataset(%{technical: %{sourceType: "remote", schema: []}})
 
       {:ok, _} = Datasets.update(dataset)
-
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
   end
@@ -645,7 +645,13 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset =
         TDG.create_dataset(%{
           technical: %{
-            cadence: "1 1 1 * * *"
+            cadence: "1 1 1 * * *",
+            schema: [
+              %{
+                name: "cam",
+                type: "string"
+              }
+            ]
           }
         })
 
@@ -684,7 +690,7 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "handles five-character cronstrings", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{cadence: "4 2 7 * *"}})
+      dataset = TDG.create_dataset(%{technical: %{cadence: "4 2 7 * *", schema: [%{name: "cam",type: "string"}]}})
       {:ok, andi_dataset} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -698,7 +704,7 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "handles cadence of never", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{cadence: "never"}})
+      dataset = TDG.create_dataset(%{technical: %{cadence: "never", schema: [%{name: "cam",type: "string"}]}})
       {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -708,7 +714,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
   describe "dataset finalizing buttons" do
     test "allows saving invalid form as draft", %{conn: conn} do
-      dataset = TDG.create_dataset(%{})
+      dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "cam",type: "string"}]}})
       {:ok, andi_dataset} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
