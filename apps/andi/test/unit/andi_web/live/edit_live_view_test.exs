@@ -466,7 +466,7 @@ defmodule AndiWeb.EditLiveViewTest do
     test "valid form data is saved on publish", %{conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      dataset = DatasetHelpers.create_dataset(%{business: %{modifiedDate: "2020-01-04T01:02:03Z"}})
+      dataset = DatasetHelpers.create_dataset(%{business: %{modifiedDate: "2020-01-04T01:02:03Z"}, technical: %{schema: [%{name: "cam", type: "string"}]}})
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
@@ -585,7 +585,7 @@ defmodule AndiWeb.EditLiveViewTest do
     test "allows clearing modified date", %{conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      dataset = DatasetHelpers.create_dataset(%{business: %{modifiedDate: "2020-01-01"}})
+      dataset = DatasetHelpers.create_dataset(%{business: %{modifiedDate: "2020-01-01"}, technical: %{schema: [%{name: "cam", type: "string"}]}})
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
@@ -638,7 +638,7 @@ defmodule AndiWeb.EditLiveViewTest do
     data_test "allows saving with empty #{field}", %{conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      dataset = DatasetHelpers.create_dataset(%{technical: %{field => %{"x" => "y"}}})
+      dataset = DatasetHelpers.create_dataset(%{technical: %{:schema => [%{name: "cam", type: "string"}], field => %{"x" => "y"}}})
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
