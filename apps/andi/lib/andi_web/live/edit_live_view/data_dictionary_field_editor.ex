@@ -15,6 +15,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
   def render(assigns) do
     id = Atom.to_string(assigns.id)
     form_with_errors = add_errors_to_form(assigns.form)
+    field_type = input_value(assigns.form, :type)
 
     ~L"""
       <div id="<%= @id %>" class="data-dictionary-field-editor" >
@@ -34,11 +35,29 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
           <%= select(@form, :type, get_item_types(), id: id <> "_type", class: "data-dictionary-field-editor__type select") %>
           <%= ErrorHelpers.error_tag(form_with_errors, :type) %>
         </div>
-        <div class="data-dictionary-field-editor__item-type">
-          <%= label(@form, :itemType, "Item Type", class: "label label--required") %>
-          <%= select(@form, :itemType, get_item_types(@form), id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select", disabled: is_type_not_list(@form)) %>
-          <%= ErrorHelpers.error_tag(form_with_errors, :itemType) %>
-        </div>
+
+      <div class="data-dictionary-field-editor__type-info">
+        <%= case field_type do %>
+
+          <% "list" -> %>
+              <%= label(@form, :itemType, "Item Type", class: "label label--required") %>
+              <%= select(@form, :itemType, get_item_types(@form), id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select") %>
+              <%= ErrorHelpers.error_tag(form_with_errors, :itemType) %>
+
+          <% field_type when field_type in ["date", "timestamp"] -> %>
+              <div class="format-label">
+                <%= label(@form, :format, "Format", class: "label label--required") %>
+                <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
+              </div>
+              <%= text_input(@form, :format, id: id <> "_format", class: "data-dictionary-field-editor__format input") %>
+              <%= ErrorHelpers.error_tag(form_with_errors, :format) %>
+
+          <% _ -> %>
+             <%= "" %>
+        <% end %>
+      </div>
+
+
         <div class="data-dictionary-field-editor__description">
           <%= label(@form, :description, "Description", class: "label") %>
           <%= textarea(@form, :description, id: id <> "_description", class: "data-dictionary-field-editor__description input textarea", "phx-debounce": "blur") %>
