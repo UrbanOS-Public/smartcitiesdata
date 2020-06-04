@@ -45,7 +45,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
       eventually(fn ->
         {:ok, models, _facets} = DatasetSearchIndex.search(query: "Sensor Data")
-        assert 0 == length(models)
+        assert Enum.empty?(models)
       end)
     end
   end
