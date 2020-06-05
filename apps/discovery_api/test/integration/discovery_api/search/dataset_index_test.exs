@@ -526,46 +526,6 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   end
 
   describe "search/?" do
-    test "sort should default sort by name_asc" do
-      index_model(%{id: "1", title: "Zoo"})
-      index_model(%{id: "2", title: "Alphabet"})
-      index_model(%{id: "3", title: "2020 Zones"})
-
-      {:ok, models, _facets} = DatasetSearchIndex.search([])
-
-      assert ["2020 Zones", "Alphabet", "Zoo"] == Enum.map(models, fn model -> model.title end )
-    end
-
-    test "sort should allow for name_desc" do
-      index_model(%{id: "1", title: "Zoo"})
-      index_model(%{id: "2", title: "Alphabet"})
-      index_model(%{id: "3", title: "2020 Zones"})
-
-      {:ok, models, _facets} = DatasetSearchIndex.search(sort: "name_desc")
-
-      assert ["Zoo", "Alphabet", "2020 Zones"] == Enum.map(models, fn model -> model.title end )
-    end
-
-    test "sort should allow for last_mod" do
-      index_model(%{id: "1", modifiedDate: "2020-03-11T00:00:00Z"})
-      index_model(%{id: "2", modifiedDate: "2020-06-01T00:00:00Z"})
-      index_model(%{id: "3", modifiedDate: "2000-01-01T00:00:00Z"})
-
-      {:ok, models, _facets} = DatasetSearchIndex.search(sort: "last_mod")
-
-      assert ["2", "1", "3"] == Enum.map(models, fn model -> model.id end )
-    end
-
-    test "sort should allow for relevance" do
-      index_model(%{id: "1", title: "Traffic Signals"})
-      index_model(%{id: "2", title: "Traffic"})
-      index_model(%{id: "3", title: "Traffic Signal Locations"})
-
-      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Traffic", sort: "relevance")
-
-      assert ["2", "1", "3"] == Enum.map(models, fn model -> model.id end )
-    end
-
     test "given a dataset with a matching search term" do
       dataset_one = index_model(%{title: "Nazderaldac"})
       index_model()

@@ -55,17 +55,16 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   end
 
   def advanced_search(conn, params) do
-    sort_by = Map.get(params, "sort", "name_asc")
+    sort = Map.get(params, "sort", "name_asc")
     current_user = conn.assigns.current_user
 
-    with {:ok, search_opts} <- build_search_opts(params, current_user),
+    with {:ok, search_opts} <- build_search_opts(params, current_user, sort),
          {:ok, models, facets} <- DatasetSearchIndex.search(search_opts) do
       render(
         conn,
-        :search_dataset_summaries,
+        :advanced_search_dataset_summaries,
         models: models,
         facets: facets,
-        sort: sort_by,
         offset: 0,
         limit: 10
       )
@@ -104,7 +103,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
     )
   end
 
-  defp build_search_opts(params, current_user) do
+  defp build_search_opts(params, current_user, sort) do
     query = Map.get(params, "query", "")
     facets = Map.get(params, "facets", %{})
     api_accessible = parse_api_accessible(params)
@@ -123,7 +122,8 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
             api_accessible: api_accessible,
             keywords: Map.get(filter_facets, :keywords),
             org_title: Map.get(filter_facets, :organization, []) |> List.first(),
-            authorized_organization_ids: authorized_organization_ids
+            authorized_organization_ids: authorized_organization_ids,
+            sort: sort
           ]
           |> Enum.reject(fn {_opt, value} -> is_nil(value) end)
 

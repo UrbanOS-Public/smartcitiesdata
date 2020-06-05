@@ -11,7 +11,8 @@ config :discovery_api,
   divo: "test/integration/docker-compose.yaml",
   divo_wait: [dwell: 2000, max_tries: 35],
   hosted_bucket: "kdp-cloud-storage",
-  hosted_region: aws_region
+  hosted_region: aws_region,
+  hsts_enabled: false
 
 config :redix,
   args: redix_args
@@ -51,6 +52,10 @@ config :discovery_api, :elasticsearch,
             },
             titleKeyword: %{
               type: "keyword",
+              index: true
+            },
+            modifiedDate: %{
+              type: "date",
               index: true
             },
             keywords: %{

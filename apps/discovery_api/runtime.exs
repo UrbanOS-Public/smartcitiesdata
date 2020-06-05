@@ -1,6 +1,6 @@
 use Mix.Config
 
-get_redix_args = fn (host, password) ->
+get_redix_args = fn host, password ->
   [host: host, password: password]
   |> Enum.filter(fn
     {_, nil} -> false
@@ -8,10 +8,12 @@ get_redix_args = fn (host, password) ->
     _ -> true
   end)
 end
+
 redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
 metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
+
 endpoint =
   kafka_brokers
   |> String.split(",")
@@ -112,6 +114,10 @@ config :discovery_api, :elasticsearch,
             },
             titleKeyword: %{
               type: "keyword",
+              index: true
+            },
+            modifiedDate: %{
+              type: "date",
               index: true
             },
             keywords: %{
