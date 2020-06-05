@@ -107,6 +107,10 @@ config :discovery_api, :elasticsearch,
         mappings: %{
           properties: %{
             title: %{
+              type: "text",
+              index: true
+            },
+            titleKeyword: %{
               type: "keyword",
               index: true
             },

@@ -3,6 +3,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   Manages an ElasticSearch index for datasets
   """
   alias DiscoveryApi.Data.Model
+  require Logger
 
   @elasticsearch_max_buckets 2_147_483_647
 
@@ -185,6 +186,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
          )
          |> handle_response_with_body() do
       {:ok, body} ->
+        Logger.debug("#{__MODULE__}: ElasticSearch Response: #{inspect(body)}")
         documents = get_in(body, [:hits, :hits, Access.all(), :_source])
         facets = body |> Map.get(:aggregations, %{}) |> extract_facets()
         {:ok, documents, facets}
@@ -250,6 +252,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
     |> Map.new()
     |> populate_org_facets()
     |> populate_keyword_facets()
+    |> populate_optimized_fields()
   end
 
   defp populate_org_facets(%{organizationDetails: %{orgTitle: org_title}} = dataset) do
@@ -265,6 +268,10 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   end
 
   defp populate_keyword_facets(dataset), do: dataset
+
+  defp populate_optimized_fields(dataset) do
+    put_in(dataset, [:titleKeyword], Map.get(dataset, :title))
+  end
 
   defp url() do
     Map.fetch!(configuration(), :url)
@@ -290,7 +297,7 @@ defmodule DiscoveryApi.Search.DatasetIndex do
   end
 
   defp search_query(search_opts) do
-    %{
+    query_json = %{
       "aggs" => %{
         "keywords" => %{"terms" => %{"field" => "facets.keywords", "size" => @elasticsearch_max_buckets}},
         "organization" => %{"terms" => %{"field" => "facets.orgTitle", "size" => @elasticsearch_max_buckets}}
@@ -303,8 +310,11 @@ defmodule DiscoveryApi.Search.DatasetIndex do
         }
       },
       "size" => 10,
-      "sort" => [%{"title" => %{"order" => "asc"}}]
+      "sort" => [build_sort_map(search_opts)]
     }
+
+    Logger.debug("#{__MODULE__}: ElasticSearch Query: #{inspect(query_json)}")
+    query_json
   end
 
   defp build_must(search_opts) do
@@ -407,5 +417,14 @@ defmodule DiscoveryApi.Search.DatasetIndex do
         }
       }
     ]
+  end
+
+  defp build_sort_map(search_opts) do
+    case Keyword.get(search_opts, :sort, "name_asc") do
+      "name_asc" -> %{"titleKeyword" => %{"order" => "asc"}}
+      "name_desc" -> %{"titleKeyword" => %{"order" => "desc"}}
+      "last_mod" -> %{"modifiedDate" => %{"order" => "desc"}}
+      "relevance" -> %{}
+    end
   end
 end
