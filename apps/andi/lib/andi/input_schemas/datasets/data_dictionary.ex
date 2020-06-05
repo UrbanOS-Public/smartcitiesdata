@@ -80,7 +80,6 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:technical_id)
     |> foreign_key_constraint(:parent_id)
     |> validate_required(@required_fields, message: "is required")
-    |> validate_format()
   end
 
   def changeset_for_draft(dictionary, changes) do
