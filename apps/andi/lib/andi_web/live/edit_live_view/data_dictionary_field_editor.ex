@@ -15,6 +15,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
   def render(assigns) do
     id = Atom.to_string(assigns.id)
     form_with_errors = add_errors_to_form(assigns.form)
+    field_type = input_value(assigns.form, :type)
 
     ~L"""
       <div id="<%= @id %>" class="data-dictionary-field-editor" >
@@ -34,11 +35,24 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
           <%= select(@form, :type, get_item_types(), id: id <> "_type", class: "data-dictionary-field-editor__type select") %>
           <%= ErrorHelpers.error_tag(form_with_errors, :type) %>
         </div>
-        <div class="data-dictionary-field-editor__item-type">
+
+      <div class="data-dictionary-field-editor__type-info">
+        <%= if field_type == "list" do %>
           <%= label(@form, :itemType, "Item Type", class: "label label--required") %>
-          <%= select(@form, :itemType, get_item_types(@form), id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select", disabled: is_type_not_list(@form)) %>
+          <%= select(@form, :itemType, get_item_types(@form), id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select") %>
           <%= ErrorHelpers.error_tag(form_with_errors, :itemType) %>
-        </div>
+        <% end %>
+
+        <%= if field_type in ["date", "timestamp"] do %>
+          <div class="format-label">
+            <%= label(@form, :format, "Format", class: "label label--required") %>
+            <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
+          </div>
+          <%= text_input(@form, :format, id: id <> "_format", class: "data-dictionary-field-editor__format input") %>
+          <%= ErrorHelpers.error_tag(form_with_errors, :format) %>
+        <% end %>
+      </div>
+
         <div class="data-dictionary-field-editor__description">
           <%= label(@form, :description, "Description", class: "label") %>
           <%= textarea(@form, :description, id: id <> "_description", class: "data-dictionary-field-editor__description input textarea", "phx-debounce": "blur") %>
@@ -83,10 +97,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
       "list" -> Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
       _ -> []
     end
-  end
-
-  defp is_type_not_list(field) do
-    input_value(field, :type) != "list"
   end
 
   defp is_source_format_xml(format) when format in ["xml", "text/xml"], do: true

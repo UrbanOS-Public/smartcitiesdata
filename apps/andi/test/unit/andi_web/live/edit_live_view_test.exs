@@ -466,7 +466,10 @@ defmodule AndiWeb.EditLiveViewTest do
     test "valid form data is saved on publish", %{conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      dataset = DatasetHelpers.create_dataset(%{business: %{modifiedDate: "2020-01-04T01:02:03Z"}})
+      dataset =
+        DatasetHelpers.create_dataset(%{
+          business: %{modifiedDate: "2020-01-04T01:02:03Z"}
+        })
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 

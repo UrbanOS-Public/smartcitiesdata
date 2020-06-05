@@ -2,6 +2,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+  alias Timex.Format.DateTime.Formatter
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.StructTools
@@ -19,6 +20,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     field(:pii, :string)
     field(:rationale, :string)
     field(:bread_crumb, :string)
+    field(:format, :string)
     has_many(:subSchema, __MODULE__, foreign_key: :parent_id, on_replace: :delete)
 
     belongs_to(:data_dictionary, __MODULE__, type: Ecto.UUID, foreign_key: :parent_id)
@@ -43,7 +45,8 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :dataset_id,
     :technical_id,
     :parent_id,
-    :bread_crumb
+    :bread_crumb,
+    :format
   ]
   @required_fields [
     :name,
@@ -63,6 +66,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:parent_id)
     |> validate_required(@required_fields, message: "is required")
     |> validate_item_type()
+    |> validate_format()
     |> validate_selector(source_format)
   end
 
@@ -76,6 +80,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:technical_id)
     |> foreign_key_constraint(:parent_id)
     |> validate_required(@required_fields, message: "is required")
+    |> validate_format()
   end
 
   def changeset_for_draft(dictionary, changes) do
@@ -102,4 +107,22 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   end
 
   defp validate_selector(changeset, _), do: changeset
+
+  defp validate_format(%{changes: %{type: type, format: format}} = changeset) when type in ["date", "timestamp"] do
+    case Formatter.validate(format) do
+      :ok ->
+        changeset
+
+      {:error, %RuntimeError{message: error_msg}} ->
+        add_error(changeset, :format, error_msg)
+
+      {:error, err} ->
+        add_error(changeset, :format, err)
+    end
+  end
+
+  defp validate_format(%{changes: %{type: type}} = changeset) when type in ["date", "timestamp"],
+    do: add_error(changeset, :format, "is required", validation: :required)
+
+  defp validate_format(changeset), do: changeset
 end

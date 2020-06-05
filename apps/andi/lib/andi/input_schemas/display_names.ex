@@ -8,6 +8,7 @@ defmodule Andi.InputSchemas.DisplayNames do
     contactName: "Maintainer Name",
     dataTitle: "Dataset Title",
     description: "Description",
+    format: "Format",
     homepage: "Data Homepage URL",
     issuedDate: "Release Date",
     itemType: "Item Type",

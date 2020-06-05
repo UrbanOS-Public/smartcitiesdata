@@ -32,7 +32,10 @@ defmodule Andi.InputSchemas.DatasetsTest do
     test "given an existing source query param, it deletes it" do
       dataset =
         TDG.create_dataset(%{
-          technical: %{sourceUrl: "http://example.com?foo=baz&riz=bar", sourceQueryParams: %{"foo" => "baz", "riz" => "bar"}}
+          technical: %{
+            sourceUrl: "http://example.com?foo=baz&riz=bar",
+            sourceQueryParams: %{"foo" => "baz", "riz" => "bar"}
+          }
         })
 
       {:ok,

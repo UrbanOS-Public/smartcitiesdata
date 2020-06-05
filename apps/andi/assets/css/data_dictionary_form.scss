@@ -15,20 +15,33 @@ $tick-height: 1rem + $field-padding - 0.44;
     padding: 2rem;
     margin-right: 2rem;
     margin-top: 1.7rem;
-    grid-template-areas: 
+    grid-template-columns: 33% 33% 33%;
+    grid-template-areas:
       "name . type"
-      "selector . item-type"
-      "description description description" 
+      "selector . type-info"
+      "description description description"
       "pii masked demographic"
-      "biased rationale ."; 
- 
+      "biased rationale .";
+
       .select, .input {
-        width: 90%; 
+        margin: 10px 0 10px 0;
+        width: 90%;
       }
 
       .textarea {
         max-width: 90%;
         height: 7rem;
+      }
+
+      .format-label {
+          display: inline-flex;
+          width: 95%;
+          position: relative;
+
+          a {
+              position: absolute;
+              right: 0;
+          }
       }
     }
 
@@ -253,7 +266,7 @@ $tick-height: 1rem + $field-padding - 0.44;
 @include area(data-dictionary-field-editor, name);
 @include area(data-dictionary-field-editor, selector);
 @include area(data-dictionary-field-editor, type);
-@include area(data-dictionary-field-editor, item-type);
+@include area(data-dictionary-field-editor, type-info);
 @include area(data-dictionary-field-editor, masked);
 @include area(data-dictionary-field-editor, biased);
 @include area(data-dictionary-field-editor, demographic);
