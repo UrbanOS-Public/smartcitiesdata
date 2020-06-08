@@ -200,7 +200,7 @@ defmodule DiscoveryApi.Data.QueryTest do
     setup context do
       organization = Helper.create_persisted_organization(%{id: "123-000", orgName: "public-org"})
 
-      {user, _, _} = AuthHelper.login()
+      user = Helper.create_persisted_user(AuthHelper.valid_jwt_sub())
       Helper.associate_user_with_organization(user.id, organization.id)
 
       context
@@ -237,7 +237,7 @@ defmodule DiscoveryApi.Data.QueryTest do
 
   describe "api/v1/query" do
     setup context do
-      {user, _, _} = AuthHelper.login()
+      user = Helper.create_persisted_user(AuthHelper.valid_jwt_sub())
       Helper.associate_user_with_organization(user.id, @private_org_id)
 
       context
