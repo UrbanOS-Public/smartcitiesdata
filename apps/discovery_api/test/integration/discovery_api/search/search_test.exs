@@ -46,16 +46,12 @@ defmodule DiscoveryApi.Data.Search.SearchTest do
       create_dataset(%{id: "3", business: %{dataTitle: "2020 Zones"}})
       params = %{sort: "name_desc"}
 
-      eventually(
-        fn ->
-          response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+      local_eventually(fn ->
+        response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
 
-          assert ["Zoo", "Alphabet", "2020 Zones"] ==
-                   response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
-        end,
-        250,
-        10
-      )
+        assert ["Zoo", "Alphabet", "2020 Zones"] ==
+                 response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
+      end)
     end
 
     test "sort should allow for last_mod", %{conn: conn} do
@@ -64,15 +60,11 @@ defmodule DiscoveryApi.Data.Search.SearchTest do
       create_dataset(%{id: "3", business: %{modifiedDate: "2000-01-01T00:00:00Z"}})
       params = %{sort: "last_mod"}
 
-      eventually(
-        fn ->
-          response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+      local_eventually(fn ->
+        response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
 
-          assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
-        end,
-        250,
-        10
-      )
+        assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
+      end)
     end
 
     test "sort should allow for relevance", %{conn: conn} do
@@ -82,15 +74,11 @@ defmodule DiscoveryApi.Data.Search.SearchTest do
       create_dataset(%{id: "3", business: %{dataTitle: "Traffic Signal Locations"}})
       params = %{sort: "relevance", query: "traffic"}
 
-      eventually(
-        fn ->
-          response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+      local_eventually(fn ->
+        response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
 
-          assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
-        end,
-        250,
-        10
-      )
+        assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
+      end)
     end
   end
 
@@ -109,5 +97,9 @@ defmodule DiscoveryApi.Data.Search.SearchTest do
   defp create_organization(id) do
     organization = TDG.create_organization(%{id: id})
     Brook.Event.send(DiscoveryApi.instance(), "organization:update", :integration_test, organization)
+  end
+
+  defp local_eventually(function) do
+    eventually(function, 250, 10)
   end
 end
