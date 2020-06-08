@@ -13,7 +13,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Visualizations
   alias DiscoveryApi.Repo
-  require IEx
 
   @organization_1_name "organization_one"
   @organization_2_name "organization_two"
@@ -66,8 +65,10 @@ defmodule DiscoveryApi.Auth.AuthTest do
       auth0_setup()
       |> on_exit()
 
-      {user, _} = AuthHelper.login()
+      {user, token, _} = AuthHelper.login()
       Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
+
+      [user_token: token]
     end
 
     @moduletag capture_log: true
@@ -75,7 +76,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       %{status_code: status_code, body: body} =
         get_with_authentication(
           "http://localhost:4000/api/v1/dataset/#{setup_map[:private_model_that_belongs_to_org_1].id}/",
-          AuthHelper.valid_jwt()
+          setup_map.user_token
         )
 
       assert 200 == status_code
@@ -100,8 +101,10 @@ defmodule DiscoveryApi.Auth.AuthTest do
       auth0_setup()
       |> on_exit()
 
-      {user, _} = AuthHelper.login()
+      {user, token, _} = AuthHelper.login()
       Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
+
+      [user_token: token]
     end
 
     test "filters all private datasets when no auth token provided", setup_map do
@@ -119,7 +122,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       %{body: %{results: results}} =
         get_with_authentication(
           "http://localhost:4000/api/v1/dataset/search/",
-          AuthHelper.valid_jwt()
+          setup_map.user_token
         )
 
       result_ids = Enum.map(results, fn result -> result[:id] end)
@@ -200,9 +203,8 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
     test "when user is logged-out, they can't re-add their token via logged-in" do
       subject = AuthHelper.revocable_jwt_sub()
-      token = AuthHelper.revocable_jwt()
 
-      assert {_, 200} = AuthHelper.login(subject, token)
+      {_, token, 200} = AuthHelper.login(subject, AuthHelper.revocable_jwt())
 
       assert %{status_code: 200} =
       "localhost:4000/api/v1/logged-out"
@@ -211,15 +213,14 @@ defmodule DiscoveryApi.Auth.AuthTest do
         Authorization: "Bearer " <> token
       )
 
-      assert {_, 401} = AuthHelper.login(subject, token)
+      assert {_, _, 401} = AuthHelper.login(subject, token)
     end
 
 
     test "logout is not idempotent" do
       subject = AuthHelper.revocable_jwt_sub()
-      token = AuthHelper.revocable_jwt()
 
-      assert {_, 200} = AuthHelper.login(subject, token)
+      {_, token, 200} = AuthHelper.login(subject, AuthHelper.revocable_jwt())
 
       assert %{status_code: 200} =
         "localhost:4000/api/v1/logged-out"
@@ -234,15 +235,14 @@ defmodule DiscoveryApi.Auth.AuthTest do
         Authorization: "Bearer " <> token
       )
 
-      assert {_, 401} = AuthHelper.login(subject, token)
+      assert {_, _, 401} = AuthHelper.login(subject, token)
     end
 
     test "when user is logged-out, they can't use their token to access protected resources, even when they attempt to re-add their token", %{private_model_that_belongs_to_org_1: model} do
       subject = AuthHelper.revocable_jwt_sub()
-      token = AuthHelper.revocable_jwt()
       model_id = model.id
 
-      assert {user, 200} = AuthHelper.login(subject, token)
+      {user, token, 200} = AuthHelper.login(subject, AuthHelper.revocable_jwt())
       Helper.associate_user_with_organization(
         user.id,
         model.organizationDetails.id
@@ -264,7 +264,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
         token
       )
 
-      assert {_, 401} = AuthHelper.login(subject, token)
+      assert {_, _, 401} = AuthHelper.login(subject, token)
 
       assert %{status_code: 401, body: %{message: "Unauthorized"}} = get_with_authentication(
         "http://localhost:4000/api/v1/dataset/#{model.id}/",
@@ -274,17 +274,15 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
     test "when user is logged-out, it doesn't affect other users", %{private_model_that_belongs_to_org_1: model} do
       subject = AuthHelper.revocable_jwt_sub()
-      token = AuthHelper.revocable_jwt()
       other_subject = AuthHelper.valid_jwt_sub()
-      other_token = AuthHelper.valid_jwt()
       model_id = model.id
 
-      assert {user, 200} = AuthHelper.login(subject, token)
+      {user, token, 200} = AuthHelper.login(subject, AuthHelper.revocable_jwt())
       Helper.associate_user_with_organization(
         user.id,
         model.organizationDetails.id
       )
-      assert {user, 200} = AuthHelper.login(other_subject, other_token)
+      {user, other_token, 200} = AuthHelper.login(other_subject, AuthHelper.valid_jwt())
       Helper.associate_user_with_organization(
         user.id,
         model.organizationDetails.id
@@ -316,13 +314,13 @@ defmodule DiscoveryApi.Auth.AuthTest do
     end
 
     test "adds owner data to the newly created visualization" do
-      {user, _} = AuthHelper.login()
+      {user, token, _} = AuthHelper.login()
 
       %{status_code: status_code, body: body} =
         post_with_authentication(
           "localhost:4000/api/v1/visualization",
           ~s({"query": "select * from tarps", "title": "My favorite title", "chart": {"data": "hello"}}),
-          AuthHelper.valid_jwt()
+          token
         )
 
       assert status_code == 201
@@ -375,7 +373,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
     test "returns visualization for private table when user has access", %{
       private_model_that_belongs_to_org_1: model
     } do
-      {user, _} = AuthHelper.login()
+      {user, token, _} = AuthHelper.login()
       Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
 
       capture_log(fn ->
@@ -389,7 +387,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       %{status_code: status_code} =
         get_with_authentication(
           "localhost:4000/api/v1/visualization/#{visualization.public_id}",
-          AuthHelper.valid_jwt()
+          token
         )
 
       assert status_code == 200

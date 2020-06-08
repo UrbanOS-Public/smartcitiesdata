@@ -62,7 +62,7 @@ defmodule DiscoveryApi.Test.AuthHelper do
       "Content-Type": "application/json"
     )
 
-    {user, status_code}
+    {user, token, status_code}
   end
 
   def set_allowed_guardian_drift(allowed_drift) do

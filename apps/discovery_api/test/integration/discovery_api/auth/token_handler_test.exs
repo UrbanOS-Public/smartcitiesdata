@@ -91,7 +91,6 @@ defmodule DiscoveryApi.Auth.TokenHandlerTest do
       )
     end
 
-    # given a revoked token, but missing/not missing yada yada yada
     test "given a revoked token/claim, and no option to store, it returns an error" do
       claims = claims()
       token = "also_ignored"
@@ -214,8 +213,8 @@ defmodule DiscoveryApi.Auth.TokenHandlerTest do
 
   defp claims(overrides \\ %{}) do
     demo_issuer = "https://smartcolumbusos-demo.auth0.com/"
-    demo_client_id = "sfe5fZzFXsv5gIRXz8V3zkR7iaZBMvL0"
-    darsh_subject = "auth0|5e3066daf048aa0e71bdd77e"
+    demo_client_id = "demo_client_id"
+    darsh_subject = "auth0|subject-id"
 
     %{
       "iss"=> demo_issuer,
