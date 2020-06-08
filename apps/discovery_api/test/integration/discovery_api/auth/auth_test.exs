@@ -7,13 +7,14 @@ defmodule DiscoveryApi.Auth.AuthTest do
   import SmartCity.TestHelper, only: [eventually: 3]
 
   alias DiscoveryApi.Auth.GuardianConfigurator
+  alias DiscoveryApiWeb.Auth.TokenHandler
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Visualizations
   alias DiscoveryApi.Repo
+  require IEx
 
-  @inactive_token "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkaXNjb3ZlcnlfYXBpIiwiZXhwIjoxNTU3NzczNTMzLCJpYXQiOjE1NTUzNTQzMzMsImlzcyI6ImRpc2NvdmVyeV9hcGkiLCJqdGkiOiIxYmJkMmUzMy01ZDc1LTRjNTYtYjQ4OS1mOGMxNzViZDg1NDEiLCJuYmYiOjE1NTUzNTQzMzIsInN1YiI6IkJhZFVzZXIiLCJ0eXAiOiJhY2Nlc3MifQ.TzTIVFiSJaPOioTiFYgvfg15BPzFCHx6qj1W1_vQeKPvo_Q4xuY_uA3-h1nobKq35fYu73TQdp_DYwwPQC5PDQ"
   @organization_1_name "organization_one"
   @organization_2_name "organization_two"
 
@@ -65,7 +66,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       auth0_setup()
       |> on_exit()
 
-      user = Helper.create_persisted_user(AuthHelper.valid_jwt_sub())
+      {user, _} = AuthHelper.login()
       Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
     end
 
@@ -99,7 +100,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       auth0_setup()
       |> on_exit()
 
-      user = Helper.create_persisted_user(AuthHelper.valid_jwt_sub())
+      {user, _} = AuthHelper.login()
       Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
     end
 
@@ -144,6 +145,18 @@ defmodule DiscoveryApi.Auth.AuthTest do
       assert status_code == 200
     end
 
+    test "login is IDEMpotent" do
+      assert %{status_code: 200} = HTTPoison.post!(
+        "localhost:4000/api/v1/logged-in", "",
+        Authorization: "Bearer #{AuthHelper.valid_jwt()}"
+      )
+
+      assert %{status_code: 200} = HTTPoison.post!(
+        "localhost:4000/api/v1/logged-in", "",
+        Authorization: "Bearer #{AuthHelper.valid_jwt()}"
+      )
+    end
+
     test "saves logged in user" do
       subject_id = AuthHelper.valid_jwt_sub()
 
@@ -170,11 +183,129 @@ defmodule DiscoveryApi.Auth.AuthTest do
     test "returns 'unauthorized' when token is invalid" do
       %{status_code: status_code} =
         "localhost:4000/api/v1/logged-in"
-        |> HTTPoison.post!("",
+        |> HTTPoison.post!(
+          "",
           Authorization: "Bearer !NOPE!"
         )
 
       assert status_code == 401
+    end
+  end
+
+  describe "POST /logged-out" do
+    setup do
+      auth0_setup()
+      |> on_exit()
+    end
+
+    test "when user is logged-out, they can't re-add their token via logged-in" do
+      subject = AuthHelper.revocable_jwt_sub()
+      token = AuthHelper.revocable_jwt()
+
+      assert {_, 200} = AuthHelper.login(subject, token)
+
+      assert %{status_code: 200} =
+      "localhost:4000/api/v1/logged-out"
+      |> HTTPoison.post!(
+        "",
+        Authorization: "Bearer " <> token
+      )
+
+      assert {_, 401} = AuthHelper.login(subject, token)
+    end
+
+
+    test "logout is not iDEMPoTent" do
+      subject = AuthHelper.revocable_jwt_sub()
+      token = AuthHelper.revocable_jwt()
+
+      assert {_, 200} = AuthHelper.login(subject, token)
+
+      assert %{status_code: 200} =
+        "localhost:4000/api/v1/logged-out"
+        |> HTTPoison.post!(
+        "",
+        Authorization: "Bearer " <> token
+      )
+      assert %{status_code: 401} =
+        "localhost:4000/api/v1/logged-out"
+        |> HTTPoison.post!(
+        "",
+        Authorization: "Bearer " <> token
+      )
+
+      assert {_, 401} = AuthHelper.login(subject, token)
+    end
+
+    test "when user is logged-out, they can't use their token to access protected resources, even when they attempt to re-add their token", %{private_model_that_belongs_to_org_1: model} do
+      subject = AuthHelper.revocable_jwt_sub()
+      token = AuthHelper.revocable_jwt()
+      model_id = model.id
+
+      assert {user, 200} = AuthHelper.login(subject, token)
+      Helper.associate_user_with_organization(
+        user.id,
+        model.organizationDetails.id
+      )
+
+      assert %{status_code: 200, body: %{id: ^model_id}} =
+      get_with_authentication(
+        "http://localhost:4000/api/v1/dataset/#{model.id}/",
+        token
+      )
+
+      assert %{status_code: 200} = HTTPoison.post!(
+        "localhost:4000/api/v1/logged-out", "",
+        Authorization: "Bearer " <> token
+      )
+
+      assert %{status_code: 401, body: %{message: "Unauthorized"}} = get_with_authentication(
+        "http://localhost:4000/api/v1/dataset/#{model.id}/",
+        token
+      )
+
+      assert {_, 401} = AuthHelper.login(subject, token)
+
+      assert %{status_code: 401, body: %{message: "Unauthorized"}} = get_with_authentication(
+        "http://localhost:4000/api/v1/dataset/#{model.id}/",
+        token
+      )
+    end
+
+    test "when user is logged-out, it doesn't affect other users", %{private_model_that_belongs_to_org_1: model} do
+      subject = AuthHelper.revocable_jwt_sub()
+      token = AuthHelper.revocable_jwt()
+      other_subject = AuthHelper.valid_jwt_sub()
+      other_token = AuthHelper.valid_jwt()
+      model_id = model.id
+
+      assert {user, 200} = AuthHelper.login(subject, token)
+      Helper.associate_user_with_organization(
+        user.id,
+        model.organizationDetails.id
+      )
+      assert {user, 200} = AuthHelper.login(other_subject, other_token)
+      Helper.associate_user_with_organization(
+        user.id,
+        model.organizationDetails.id
+      )
+
+      assert %{status_code: 200} = HTTPoison.post!(
+        "localhost:4000/api/v1/logged-out", "",
+        Authorization: "Bearer " <> token
+      )
+
+      assert %{status_code: 401, body: %{message: "Unauthorized"}} =
+      get_with_authentication(
+        "http://localhost:4000/api/v1/dataset/#{model.id}/",
+        token
+      )
+
+      assert %{status_code: 200, body: %{id: ^model_id}} =
+      get_with_authentication(
+        "http://localhost:4000/api/v1/dataset/#{model.id}/",
+        other_token
+      )
     end
   end
 
@@ -185,7 +316,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
     end
 
     test "adds owner data to the newly created visualization" do
-      user = Helper.create_persisted_user(AuthHelper.valid_jwt_sub())
+      {user, _} = AuthHelper.login()
 
       %{status_code: status_code, body: body} =
         post_with_authentication(
@@ -244,7 +375,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
     test "returns visualization for private table when user has access", %{
       private_model_that_belongs_to_org_1: model
     } do
-      user = Helper.create_persisted_user(AuthHelper.valid_jwt_sub())
+      {user, _} = AuthHelper.login()
       Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
 
       capture_log(fn ->
@@ -330,7 +461,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
   end
 
   defp auth0_setup do
-    secret_key = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian) |> Keyword.get(:secret_key)
+    secret_key = Application.get_env(:discovery_api, TokenHandler) |> Keyword.get(:secret_key)
     GuardianConfigurator.configure(issuer: AuthHelper.valid_issuer())
 
     really_far_in_the_future = 3_000_000_000_000

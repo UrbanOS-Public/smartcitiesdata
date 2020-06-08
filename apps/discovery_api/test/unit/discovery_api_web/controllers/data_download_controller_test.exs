@@ -7,6 +7,8 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApi.Schemas.Users
+  alias DiscoveryApiWeb.Auth.TokenHandler
+  alias DiscoveryApi.Test.AuthHelper
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -382,6 +384,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
     test "returns a presigned url for private datasets when valid token is passed", %{conn: conn, subject_id: subject_id, token: token} do
       dataset_id = "private_dataset"
 
+      allow(TokenHandler.on_verify(any(), any(), any()), exec: &AuthHelper.guardian_verify_passthrough/3, meck_options: [:passthrough])
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id, organizations: [%{id: "org_id"}]}})
 
       model =

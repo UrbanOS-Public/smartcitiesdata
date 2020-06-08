@@ -4,6 +4,7 @@ defmodule DiscoveryApiWeb.UserControllerTest do
 
   alias DiscoveryApi.Auth.GuardianConfigurator
   alias DiscoveryApi.Auth.Auth0.CachedJWKS
+  alias DiscoveryApiWeb.Auth.TokenHandler
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
@@ -13,7 +14,7 @@ defmodule DiscoveryApiWeb.UserControllerTest do
 
   describe "POST /logged-in with Auth0 auth provider" do
     setup do
-      secret_key = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian) |> Keyword.get(:secret_key)
+      secret_key = Application.get_env(:discovery_api, TokenHandler) |> Keyword.get(:secret_key)
       GuardianConfigurator.configure(issuer: AuthHelper.valid_issuer())
 
       jwks = AuthHelper.valid_jwks()
@@ -25,6 +26,7 @@ defmodule DiscoveryApiWeb.UserControllerTest do
       AuthHelper.set_allowed_guardian_drift(really_far_in_the_future)
       Application.put_env(:discovery_api, :user_info_endpoint, "http://localhost:#{bypass.port}/userinfo")
 
+      allow(TokenHandler.on_verify(any(), any(), any()), exec: &AuthHelper.guardian_verify_passthrough/3, meck_options: [:passthrough])
       allow(Users.create_or_update(any(), %{email: "x@y.z"}), return: {:ok, %User{}})
 
       on_exit(fn ->
@@ -71,6 +73,7 @@ defmodule DiscoveryApiWeb.UserControllerTest do
 
     @moduletag capture_log: true
     test "returns internal server error when user cannot be saved", %{conn: conn, bypass: bypass} do
+
       allow(Users.create_or_update(any(), %{email: "error_causing@e.mail"}), return: {:error, :bad_things})
 
       Bypass.stub(bypass, "GET", "/userinfo", fn conn -> Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "error_causing@e.mail"})) end)
