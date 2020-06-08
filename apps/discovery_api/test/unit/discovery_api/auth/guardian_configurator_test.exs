@@ -8,7 +8,7 @@ defmodule DiscoveryApi.Auth.GuardianConfiguratorTest do
 
   describe "with auth0 auth provider" do
     setup do
-      original_guardian_config = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian)
+      original_guardian_config = Application.get_env(:discovery_api, TokenHandler)
       Application.put_env(:discovery_api, TokenHandler, secret_key: "super secret", issuer: @issuer)
 
       GuardianConfigurator.configure()
