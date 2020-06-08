@@ -7,7 +7,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Data.TableInfoCache
   alias DiscoveryApi.Search.{DataModelFilterator, DataModelFacinator, DataModelSearchinator}
-  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
+  alias DiscoveryApi.Search.Elasticsearch.Search
 
   @matched_params [
     %{"query" => "", "limit" => "10", "offset" => "0", "apiAccessible" => "false"},
@@ -59,7 +59,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
     current_user = conn.assigns.current_user
 
     with {:ok, search_opts} <- build_search_opts(params, current_user, sort),
-         {:ok, models, facets} <- DatasetSearchIndex.search(search_opts) do
+         {:ok, models, facets} <- Search.search(search_opts) do
       render(
         conn,
         :advanced_search_dataset_summaries,

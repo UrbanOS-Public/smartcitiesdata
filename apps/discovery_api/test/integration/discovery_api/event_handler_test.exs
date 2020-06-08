@@ -11,7 +11,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   import SmartCity.Event, only: [dataset_update: 0]
 
   alias DiscoveryApi.Data.Model
-  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
+  alias DiscoveryApi.Search.Elasticsearch.DatasetIndex, as: DatasetSearchIndex
 
   setup_all do
     Helper.wait_for_brook_to_be_ready()

@@ -1,9 +1,9 @@
-defmodule DiscoveryApi.Search.ElasticsearchQueryBuilder do
+defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
   require Logger
 
   @elasticsearch_max_buckets 2_147_483_647
 
-  def build(search_opts) do
+  def build(search_opts \\ []) do
     query_json = %{
       "aggs" => %{
         "keywords" => %{"terms" => %{"field" => "facets.keywords", "size" => @elasticsearch_max_buckets}},

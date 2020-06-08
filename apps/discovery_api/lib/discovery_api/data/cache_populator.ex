@@ -4,7 +4,7 @@ defmodule DiscoveryApi.Data.CachePopulator do
   """
   alias DiscoveryApi.Data.SystemNameCache
   alias DiscoveryApi.Search
-  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
+  alias DiscoveryApi.Search.Elasticsearch.Document, as: ElasticsearchDocument
 
   use GenServer, restart: :transient
 
@@ -20,7 +20,7 @@ defmodule DiscoveryApi.Data.CachePopulator do
       Search.Storage.index(model)
     end)
 
-    DatasetSearchIndex.replace_all(models)
+    ElasticsearchDocument.replace_all(models)
 
     {:ok, nil, {:continue, :stop}}
   end

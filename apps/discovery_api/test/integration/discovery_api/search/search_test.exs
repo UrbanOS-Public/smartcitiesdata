@@ -17,10 +17,6 @@ defmodule DiscoveryApi.Data.Search.SearchTest do
     :ok
   end
 
-  # setup do
-  #   create_organization(@organization_id_1)
-  # end
-
   describe "sort" do
     test "should default by title ascending", %{conn: conn} do
       create_dataset(%{id: "1", business: %{dataTitle: "Zoo"}})
@@ -28,16 +24,12 @@ defmodule DiscoveryApi.Data.Search.SearchTest do
       create_dataset(%{id: "3", business: %{dataTitle: "2020 Zones"}})
       params = %{}
 
-      eventually(
-        fn ->
-          response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+      local_eventually(fn ->
+        response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
 
-          assert ["2020 Zones", "Alphabet", "Zoo"] ==
-                   response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
-        end,
-        250,
-        10
-      )
+        assert ["2020 Zones", "Alphabet", "Zoo"] ==
+                 response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
+      end)
     end
 
     test "should allow by title descending", %{conn: conn} do
@@ -82,7 +74,7 @@ defmodule DiscoveryApi.Data.Search.SearchTest do
     end
   end
 
-  defp create_dataset(overrides \\ %{}) do
+  defp create_dataset(overrides) do
     create_organization(@organization_id_1)
 
     dataset =
