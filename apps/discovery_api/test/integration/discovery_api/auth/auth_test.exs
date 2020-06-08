@@ -215,7 +215,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
     end
 
 
-    test "logout is not iDEMPoTent" do
+    test "logout is not idempotent" do
       subject = AuthHelper.revocable_jwt_sub()
       token = AuthHelper.revocable_jwt()
 
