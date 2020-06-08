@@ -149,15 +149,19 @@ defmodule DiscoveryApi.Auth.AuthTest do
     end
 
     test "login is IDEMpotent" do
-      assert %{status_code: 200} = HTTPoison.post!(
-        "localhost:4000/api/v1/logged-in", "",
-        Authorization: "Bearer #{AuthHelper.valid_jwt()}"
-      )
+      assert %{status_code: 200} =
+               HTTPoison.post!(
+                 "localhost:4000/api/v1/logged-in",
+                 "",
+                 Authorization: "Bearer #{AuthHelper.valid_jwt()}"
+               )
 
-      assert %{status_code: 200} = HTTPoison.post!(
-        "localhost:4000/api/v1/logged-in", "",
-        Authorization: "Bearer #{AuthHelper.valid_jwt()}"
-      )
+      assert %{status_code: 200} =
+               HTTPoison.post!(
+                 "localhost:4000/api/v1/logged-in",
+                 "",
+                 Authorization: "Bearer #{AuthHelper.valid_jwt()}"
+               )
     end
 
     test "saves logged in user" do
@@ -207,15 +211,14 @@ defmodule DiscoveryApi.Auth.AuthTest do
       {_, token, 200} = AuthHelper.login(subject, AuthHelper.revocable_jwt())
 
       assert %{status_code: 200} =
-      "localhost:4000/api/v1/logged-out"
-      |> HTTPoison.post!(
-        "",
-        Authorization: "Bearer " <> token
-      )
+               "localhost:4000/api/v1/logged-out"
+               |> HTTPoison.post!(
+                 "",
+                 Authorization: "Bearer " <> token
+               )
 
       assert {_, _, 401} = AuthHelper.login(subject, token)
     end
-
 
     test "logout is not idempotent" do
       subject = AuthHelper.revocable_jwt_sub()
@@ -223,53 +226,60 @@ defmodule DiscoveryApi.Auth.AuthTest do
       {_, token, 200} = AuthHelper.login(subject, AuthHelper.revocable_jwt())
 
       assert %{status_code: 200} =
-        "localhost:4000/api/v1/logged-out"
-        |> HTTPoison.post!(
-        "",
-        Authorization: "Bearer " <> token
-      )
+               "localhost:4000/api/v1/logged-out"
+               |> HTTPoison.post!(
+                 "",
+                 Authorization: "Bearer " <> token
+               )
+
       assert %{status_code: 401} =
-        "localhost:4000/api/v1/logged-out"
-        |> HTTPoison.post!(
-        "",
-        Authorization: "Bearer " <> token
-      )
+               "localhost:4000/api/v1/logged-out"
+               |> HTTPoison.post!(
+                 "",
+                 Authorization: "Bearer " <> token
+               )
 
       assert {_, _, 401} = AuthHelper.login(subject, token)
     end
 
-    test "when user is logged-out, they can't use their token to access protected resources, even when they attempt to re-add their token", %{private_model_that_belongs_to_org_1: model} do
+    test "when user is logged-out, they can't use their token to access protected resources, even when they attempt to re-add their token",
+         %{private_model_that_belongs_to_org_1: model} do
       subject = AuthHelper.revocable_jwt_sub()
       model_id = model.id
 
       {user, token, 200} = AuthHelper.login(subject, AuthHelper.revocable_jwt())
+
       Helper.associate_user_with_organization(
         user.id,
         model.organizationDetails.id
       )
 
       assert %{status_code: 200, body: %{id: ^model_id}} =
-      get_with_authentication(
-        "http://localhost:4000/api/v1/dataset/#{model.id}/",
-        token
-      )
+               get_with_authentication(
+                 "http://localhost:4000/api/v1/dataset/#{model.id}/",
+                 token
+               )
 
-      assert %{status_code: 200} = HTTPoison.post!(
-        "localhost:4000/api/v1/logged-out", "",
-        Authorization: "Bearer " <> token
-      )
+      assert %{status_code: 200} =
+               HTTPoison.post!(
+                 "localhost:4000/api/v1/logged-out",
+                 "",
+                 Authorization: "Bearer " <> token
+               )
 
-      assert %{status_code: 401, body: %{message: "Unauthorized"}} = get_with_authentication(
-        "http://localhost:4000/api/v1/dataset/#{model.id}/",
-        token
-      )
+      assert %{status_code: 401, body: %{message: "Unauthorized"}} =
+               get_with_authentication(
+                 "http://localhost:4000/api/v1/dataset/#{model.id}/",
+                 token
+               )
 
       assert {_, _, 401} = AuthHelper.login(subject, token)
 
-      assert %{status_code: 401, body: %{message: "Unauthorized"}} = get_with_authentication(
-        "http://localhost:4000/api/v1/dataset/#{model.id}/",
-        token
-      )
+      assert %{status_code: 401, body: %{message: "Unauthorized"}} =
+               get_with_authentication(
+                 "http://localhost:4000/api/v1/dataset/#{model.id}/",
+                 token
+               )
     end
 
     test "when user is logged-out, it doesn't affect other users", %{private_model_that_belongs_to_org_1: model} do
@@ -278,32 +288,37 @@ defmodule DiscoveryApi.Auth.AuthTest do
       model_id = model.id
 
       {user, token, 200} = AuthHelper.login(subject, AuthHelper.revocable_jwt())
-      Helper.associate_user_with_organization(
-        user.id,
-        model.organizationDetails.id
-      )
-      {user, other_token, 200} = AuthHelper.login(other_subject, AuthHelper.valid_jwt())
+
       Helper.associate_user_with_organization(
         user.id,
         model.organizationDetails.id
       )
 
-      assert %{status_code: 200} = HTTPoison.post!(
-        "localhost:4000/api/v1/logged-out", "",
-        Authorization: "Bearer " <> token
+      {user, other_token, 200} = AuthHelper.login(other_subject, AuthHelper.valid_jwt())
+
+      Helper.associate_user_with_organization(
+        user.id,
+        model.organizationDetails.id
       )
+
+      assert %{status_code: 200} =
+               HTTPoison.post!(
+                 "localhost:4000/api/v1/logged-out",
+                 "",
+                 Authorization: "Bearer " <> token
+               )
 
       assert %{status_code: 401, body: %{message: "Unauthorized"}} =
-      get_with_authentication(
-        "http://localhost:4000/api/v1/dataset/#{model.id}/",
-        token
-      )
+               get_with_authentication(
+                 "http://localhost:4000/api/v1/dataset/#{model.id}/",
+                 token
+               )
 
       assert %{status_code: 200, body: %{id: ^model_id}} =
-      get_with_authentication(
-        "http://localhost:4000/api/v1/dataset/#{model.id}/",
-        other_token
-      )
+               get_with_authentication(
+                 "http://localhost:4000/api/v1/dataset/#{model.id}/",
+                 other_token
+               )
     end
   end
 

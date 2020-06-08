@@ -132,7 +132,6 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
     } do
       allow(TokenHandler.on_verify(any(), any(), any()), exec: &AuthHelper.guardian_verify_passthrough/3, meck_options: [:passthrough])
 
-
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
       conn

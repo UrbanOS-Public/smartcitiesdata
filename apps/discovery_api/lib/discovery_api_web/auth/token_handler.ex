@@ -88,12 +88,14 @@ defmodule DiscoveryApiWeb.Auth.TokenHandler do
   end
 
   defp handle_verify_result({:ok, _} = good, _c, _t), do: good
+
   defp handle_verify_result({:error, :token_not_found}, claims, token) do
     case after_encode_and_sign(:na, claims, token, []) do
       {:ok, _} -> verify(claims, token, [])
       _ -> {:error, :invalid_token}
     end
   end
+
   defp handle_verify_result(_, _c, _t), do: {:error, :invalid_token}
 
   defp revoke_claims(claims, token) do

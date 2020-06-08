@@ -55,12 +55,13 @@ defmodule DiscoveryApi.Test.AuthHelper do
   def login(subject, token) do
     user = DiscoveryApi.Test.Helper.create_persisted_user(subject)
 
-    %{status_code: status_code} = HTTPoison.post!(
-      "http://localhost:4000/api/v1/logged-in",
-      "",
-      Authorization: "Bearer #{token}",
-      "Content-Type": "application/json"
-    )
+    %{status_code: status_code} =
+      HTTPoison.post!(
+        "http://localhost:4000/api/v1/logged-in",
+        "",
+        Authorization: "Bearer #{token}",
+        "Content-Type": "application/json"
+      )
 
     {user, token, status_code}
   end

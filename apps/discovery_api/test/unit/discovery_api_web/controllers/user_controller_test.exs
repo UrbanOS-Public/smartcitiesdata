@@ -73,7 +73,6 @@ defmodule DiscoveryApiWeb.UserControllerTest do
 
     @moduletag capture_log: true
     test "returns internal server error when user cannot be saved", %{conn: conn, bypass: bypass} do
-
       allow(Users.create_or_update(any(), %{email: "error_causing@e.mail"}), return: {:error, :bad_things})
 
       Bypass.stub(bypass, "GET", "/userinfo", fn conn -> Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "error_causing@e.mail"})) end)

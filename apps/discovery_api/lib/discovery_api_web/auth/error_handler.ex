@@ -8,9 +8,10 @@ defmodule DiscoveryApiWeb.Auth.ErrorHandler do
   def auth_error(conn, error, _opts) do
     Logger.error("Auth failed: #{inspect(error)}")
 
-    error_message = "Unauthorized"
-    |> DiscoveryApiWeb.ErrorView.fill_json_template()
-    |> Jason.encode!()
+    error_message =
+      "Unauthorized"
+      |> DiscoveryApiWeb.ErrorView.fill_json_template()
+      |> Jason.encode!()
 
     Plug.Conn.resp(conn, 401, error_message)
   end
