@@ -1,5 +1,5 @@
 defmodule DiscoveryApi.Data.Search.SearchTest do
-  use DiscoveryApiWeb.ConnCase
+  use ExUnit.Case
   use Divo, services: [:redis, :"ecto-postgres", :zookeeper, :kafka, :elasticsearch]
   use DiscoveryApi.ElasticSearchCase
   use DiscoveryApi.DataCase
@@ -18,48 +18,48 @@ defmodule DiscoveryApi.Data.Search.SearchTest do
   end
 
   describe "sort" do
-    test "should default by title ascending", %{conn: conn} do
+    test "should default by title ascending" do
       create_dataset(%{id: "1", business: %{dataTitle: "Zoo"}})
       create_dataset(%{id: "2", business: %{dataTitle: "Alphabet"}})
       create_dataset(%{id: "3", business: %{dataTitle: "2020 Zones"}})
       params = %{}
 
       local_eventually(fn ->
-        response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+        response_map = call_search_with_params(params)
 
         assert ["2020 Zones", "Alphabet", "Zoo"] ==
                  response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
       end)
     end
 
-    test "should allow by title descending", %{conn: conn} do
+    test "should allow by title descending" do
       create_dataset(%{id: "1", business: %{dataTitle: "Zoo"}})
       create_dataset(%{id: "2", business: %{dataTitle: "Alphabet"}})
       create_dataset(%{id: "3", business: %{dataTitle: "2020 Zones"}})
       params = %{sort: "name_desc"}
 
       local_eventually(fn ->
-        response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+        response_map = call_search_with_params(params)
 
         assert ["Zoo", "Alphabet", "2020 Zones"] ==
                  response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
       end)
     end
 
-    test "sort should allow for last_mod", %{conn: conn} do
+    test "sort should allow for last_mod" do
       create_dataset(%{id: "1", business: %{modifiedDate: "2020-03-11T00:00:00Z"}})
       create_dataset(%{id: "2", business: %{modifiedDate: "2020-06-01T00:00:00Z"}})
       create_dataset(%{id: "3", business: %{modifiedDate: "2000-01-01T00:00:00Z"}})
       params = %{sort: "last_mod"}
 
       local_eventually(fn ->
-        response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+        response_map = call_search_with_params(params)
 
         assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
       end)
     end
 
-    test "sort should allow for relevance", %{conn: conn} do
+    test "sort should allow for relevance" do
       create_dataset(%{id: "0", business: %{dataTitle: "Unrelated to the others"}})
       create_dataset(%{id: "1", business: %{dataTitle: "Traffic Signals"}})
       create_dataset(%{id: "2", business: %{dataTitle: "Traffic"}})
@@ -67,7 +67,7 @@ defmodule DiscoveryApi.Data.Search.SearchTest do
       params = %{sort: "relevance", query: "traffic"}
 
       local_eventually(fn ->
-        response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+        response_map = call_search_with_params(params)
 
         assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
       end)
@@ -93,5 +93,16 @@ defmodule DiscoveryApi.Data.Search.SearchTest do
 
   defp local_eventually(function) do
     eventually(function, 250, 10)
+  end
+
+  defp call_search_with_params(params) do
+    %{status_code: 200, body: json_response} =
+      HTTPoison.get!(
+        "localhost:4000/api/v2/dataset/search",
+        [],
+        params: params
+      )
+
+    Jason.decode!(json_response)
   end
 end
