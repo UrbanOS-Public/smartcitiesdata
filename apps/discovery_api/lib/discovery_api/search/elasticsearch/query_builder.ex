@@ -12,14 +12,14 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
         "keywords" => %{"terms" => %{"field" => "facets.keywords", "size" => @elasticsearch_max_buckets}},
         "organization" => %{"terms" => %{"field" => "facets.orgTitle", "size" => @elasticsearch_max_buckets}}
       },
-      "from" => 0,
       "query" => %{
         "bool" => %{
           "must" => build_must(search_opts),
           "filter" => build_filter(search_opts)
         }
       },
-      "size" => 10,
+      "from" => Keyword.get(search_opts, :offset, 0),
+      "size" => Keyword.get(search_opts, :limit, 10),
       "sort" => [build_sort_map(search_opts)]
     }
 
