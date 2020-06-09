@@ -7,8 +7,8 @@ defmodule DiscoveryApiWeb.Router do
   pipeline :verify_token do
     plug(Guardian.Plug.Pipeline,
       otp_app: :discovery_api,
-      module: DiscoveryApi.Auth.Guardian,
-      error_handler: DiscoveryApi.Auth.ErrorHandler
+      module: DiscoveryApiWeb.Auth.TokenHandler,
+      error_handler: DiscoveryApiWeb.Auth.ErrorHandler
     )
 
     plug(DiscoveryApiWeb.Plugs.VerifyToken)
@@ -45,6 +45,7 @@ defmodule DiscoveryApiWeb.Router do
     pipe_through([:reject_cookies_from_ajax, :verify_token, :ensure_authenticated, :global_headers])
 
     post("/logged-in", UserController, :logged_in)
+    post("/logged-out", UserController, :logged_out)
   end
 
   scope "/api/v1", DiscoveryApiWeb do

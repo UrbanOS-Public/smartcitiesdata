@@ -7,6 +7,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Auth.GuardianConfigurator
+  alias DiscoveryApiWeb.Auth.TokenHandler
 
   import SmartCity.Event, only: [dataset_update: 0]
 
@@ -625,7 +626,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   end
 
   defp auth0_setup do
-    secret_key = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian) |> Keyword.get(:secret_key)
+    secret_key = Application.get_env(:discovery_api, TokenHandler) |> Keyword.get(:secret_key)
     GuardianConfigurator.configure(issuer: AuthHelper.valid_issuer())
 
     really_far_in_the_future = 3_000_000_000_000

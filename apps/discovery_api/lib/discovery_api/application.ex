@@ -24,6 +24,7 @@ defmodule DiscoveryApi.Application do
         redis(),
         metrics(),
         ecto_repo(),
+        guardian_db_sweeper(),
         {Brook, Application.get_env(:discovery_api, :brook)},
         cache_populator(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
@@ -61,6 +62,14 @@ defmodule DiscoveryApi.Application do
     |> case do
       nil -> []
       _ -> Supervisor.Spec.worker(DiscoveryApi.Repo, [])
+    end
+  end
+
+  defp guardian_db_sweeper do
+    Application.get_env(:guardian, Guardian.DB)
+    |> case do
+      nil -> []
+      _ -> Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
     end
   end
 
