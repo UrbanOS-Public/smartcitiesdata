@@ -61,14 +61,15 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
     with {:ok, offset} <- extract_int_from_params(params, "offset", 0),
          {:ok, limit} <- extract_int_from_params(params, "limit", 10),
          {:ok, search_opts} <- build_search_opts(params, current_user, sort, offset, limit),
-         {:ok, models, facets, _total} <- Search.search(search_opts) do
+         {:ok, models, facets, total} <- Search.search(search_opts) do
       render(
         conn,
         :advanced_search_dataset_summaries,
         models: models,
         facets: facets,
         offset: offset,
-        limit: limit
+        limit: limit,
+        total: total
       )
     else
       {:request_error, reason} ->

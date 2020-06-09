@@ -730,6 +730,14 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       assert 2 == length(models)
       assert 5 == total
     end
+
+    test "given no matching datasets and an offset" do
+      Enum.each(1..5, fn x -> index_model(%{id: "dataset-#{x}"}) end)
+
+      {:ok, models, _facets, total} = Search.search(query: "Oscilliscope", limit: 3, offset: 3)
+      assert 0 == length(models)
+      assert 0 == total
+    end
   end
 
   describe "end to end search tests" do
@@ -811,6 +819,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         assert ["9", "8"] == results |> Enum.map(fn model -> Map.get(model, "id") end)
         assert 2 == metadata |> Map.get("limit")
         assert 0 == metadata |> Map.get("offset")
+        assert 10 == metadata |> Map.get("totalDatasets")
       end)
 
       local_eventually(fn ->
@@ -819,6 +828,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         assert ["7", "6"] == results |> Enum.map(fn model -> Map.get(model, "id") end)
         assert 2 == metadata |> Map.get("limit")
         assert 2 == metadata |> Map.get("offset")
+        assert 10 == metadata |> Map.get("totalDatasets")
       end)
     end
   end
