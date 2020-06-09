@@ -277,6 +277,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       )
 
       other_user = Helper.create_persisted_user(other_subject)
+
       Helper.associate_user_with_organization(
         other_user.id,
         model.organizationDetails.id

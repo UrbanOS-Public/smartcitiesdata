@@ -72,9 +72,10 @@ defmodule DiscoveryApiWeb.Auth.TokenHandler do
   end
 
   def to_revoked_claims(claims) do
-    jwtid = claims
-    |> Map.put("revoked", true)
-    |> claims_to_jwtid()
+    jwtid =
+      claims
+      |> Map.put("revoked", true)
+      |> claims_to_jwtid()
 
     claims
     |> Map.put("typ", @token_type)
