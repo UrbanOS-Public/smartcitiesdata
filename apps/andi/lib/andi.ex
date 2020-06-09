@@ -8,4 +8,6 @@ defmodule Andi do
   """
 
   defmacro instance_name, do: :andi
+
+  def prestige_opts(), do: Application.get_env(:prestige, :session_opts)
 end

@@ -23,3 +23,5 @@ config :andi, :brook,
     module: Brook.Storage.Ets,
     init_arg: []
   ]
+
+config :prestige, :session_opts, url: "http://localhost:8080"
