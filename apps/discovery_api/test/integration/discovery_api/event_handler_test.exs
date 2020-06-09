@@ -28,14 +28,14 @@ defmodule DiscoveryApi.EventHandlerTest do
       Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
       eventually(fn ->
-        assert {:ok, %Model{id: ^dataset_id}} = Elasticsearch.DatasetIndex.get(dataset_id)
+        assert {:ok, %Model{id: ^dataset_id}} = Elasticsearch.Document.get(dataset_id)
       end)
 
       updated_dataset = put_in(dataset, [:business, :dataTitle], "updated title")
       Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", updated_dataset)
 
       eventually(fn ->
-        assert {:ok, %Model{id: ^dataset_id, title: "updated title"}} = Elasticsearch.DatasetIndex.get(dataset_id)
+        assert {:ok, %Model{id: ^dataset_id, title: "updated title"}} = Elasticsearch.Document.get(dataset_id)
       end)
     end
   end
