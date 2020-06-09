@@ -1,4 +1,7 @@
 defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
+  @moduledoc """
+  Builds out the JSON body for an Elasticsearch query
+  """
   require Logger
 
   @elasticsearch_max_buckets 2_147_483_647

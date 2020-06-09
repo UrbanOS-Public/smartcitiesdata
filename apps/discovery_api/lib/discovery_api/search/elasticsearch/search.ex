@@ -1,4 +1,7 @@
 defmodule DiscoveryApi.Search.Elasticsearch.Search do
+  @moduledoc """
+  Manages invoking an Elasticsearch query and formatting it's response
+  """
   require Logger
   alias DiscoveryApi.Data.Model
   import DiscoveryApi.Search.Elasticsearch.Shared

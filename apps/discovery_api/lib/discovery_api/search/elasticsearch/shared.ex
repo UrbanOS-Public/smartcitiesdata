@@ -1,4 +1,7 @@
 defmodule DiscoveryApi.Search.Elasticsearch.Shared do
+  @moduledoc """
+  Shared functionality across the suite of Elasticsearch modules.
+  """
   def url() do
     Map.fetch!(configuration(), :url)
   end

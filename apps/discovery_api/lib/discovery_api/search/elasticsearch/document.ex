@@ -1,4 +1,7 @@
 defmodule DiscoveryApi.Search.Elasticsearch.Document do
+  @moduledoc """
+  Manages basic CRUD operations for a Dataset Document
+  """
   alias DiscoveryApi.Data.Model
   import DiscoveryApi.Search.Elasticsearch.Shared
 
