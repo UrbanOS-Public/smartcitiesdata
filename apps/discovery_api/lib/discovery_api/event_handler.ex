@@ -16,7 +16,7 @@ defmodule DiscoveryApi.EventHandler do
   alias DiscoveryApi.Search.Storage
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
-  alias DiscoveryApi.Search.Elasticsearch.Document, as: ElasticsearchDocument
+  alias DiscoveryApi.Search.Elasticsearch
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data}) do
     Organizations.create_or_update(data)
@@ -58,7 +58,7 @@ defmodule DiscoveryApi.EventHandler do
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
          {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
          model <- Mapper.to_data_model(dataset, organization) do
-      ElasticsearchDocument.update(model)
+      Elasticsearch.Document.update(model)
       DiscoveryApi.Search.Storage.index(model)
       save_dataset_to_recommendation_engine(dataset)
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
@@ -77,7 +77,7 @@ defmodule DiscoveryApi.EventHandler do
     RecommendationEngine.delete(dataset.id)
     SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName)
     Storage.delete(dataset)
-    ElasticsearchDocument.delete(dataset.id)
+    Elasticsearch.Document.delete(dataset.id)
     StatsCalculator.delete_completeness(dataset.id)
     Model.delete(dataset.id)
     clear_caches()

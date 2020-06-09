@@ -15,7 +15,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApi.Search.Storage
   alias DiscoveryApi.Search.Elasticsearch.DatasetIndex, as: DatasetSearchIndex
-  alias DiscoveryApi.Search.Elasticsearch.Document, as: ElasticsearchDocument
+  alias DiscoveryApi.Search.Elasticsearch
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
 
@@ -96,7 +96,7 @@ defmodule DiscoveryApi.EventHandlerTest do
       expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
       expect(Model.delete(dataset.id), return: :ok)
       expect(DataJsonService.delete_data_json(), return: :ok)
-      expect(ElasticsearchDocument.delete(dataset.id), return: :ok)
+      expect(Elasticsearch.Document.delete(dataset.id), return: :ok)
 
       Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
     end

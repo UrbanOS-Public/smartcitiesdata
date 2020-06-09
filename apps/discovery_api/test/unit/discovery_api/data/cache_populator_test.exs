@@ -9,13 +9,13 @@ defmodule DiscoveryApi.Data.CachePopulatorTest do
   alias DiscoveryApi.Data.CachePopulator
   alias DiscoveryApi.Data.SystemNameCache
   alias DiscoveryApi.Search.Elasticsearch.DatasetIndex, as: DatasetSearchIndex
-  alias DiscoveryApi.Search.Elasticsearch.Document, as: ElasticsearchDocument
+  alias DiscoveryApi.Search.Elasticsearch
 
   @instance DiscoveryApi.instance()
 
   describe "init/1" do
     test "Populates the cache with existing view state models" do
-      allow(ElasticsearchDocument.replace_all(any()), return: {:ok, :yarp})
+      allow(Elasticsearch.Document.replace_all(any()), return: {:ok, :yarp})
 
       Helper.clear_saved_models()
 
@@ -38,7 +38,7 @@ defmodule DiscoveryApi.Data.CachePopulatorTest do
         assert {"bob", model.id} in :ets.lookup(DiscoveryApi.Search.Storage, "bob")
       end)
 
-      assert_called ElasticsearchDocument.replace_all([model])
+      assert_called Elasticsearch.Document.replace_all([model])
     end
   end
 end
