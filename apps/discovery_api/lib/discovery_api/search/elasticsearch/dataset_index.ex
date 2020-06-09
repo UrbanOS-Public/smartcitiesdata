@@ -4,42 +4,42 @@ defmodule DiscoveryApi.Search.Elasticsearch.DatasetIndex do
   """
   import DiscoveryApi.Search.Elasticsearch.Shared
 
-  def create_index() do
+  def create() do
     %{name: name, options: options} = dataset_index()
-    create_index(name, options)
+    create(name, options)
   end
 
-  def create_index(name, options \\ %{}) do
+  def create(name, options \\ %{}) do
     elastic_create_index(name, options)
   end
 
-  def delete_index() do
-    delete_index(dataset_index_name())
+  def delete() do
+    delete(dataset_index_name())
   end
 
-  def delete_index(name) do
+  def delete(name) do
     elastic_delete_index(name)
   end
 
-  def get_index() do
-    get_index(dataset_index_name())
+  def get() do
+    get(dataset_index_name())
   end
 
-  def get_index(name) do
+  def get(name) do
     elastic_get_index(name)
   end
 
-  def reset_index() do
-    reset_index(dataset_index())
+  def reset() do
+    reset(dataset_index())
   end
 
-  def reset_index(name, options) do
-    reset_index(%{name: name, options: options})
+  def reset(name, options) do
+    reset(%{name: name, options: options})
   end
 
-  def reset_index(%{name: name, options: options}) do
-    case delete_index(name) do
-      {:ok, _} -> create_index(name, options)
+  def reset(%{name: name, options: options}) do
+    case delete(name) do
+      {:ok, _} -> create(name, options)
       error -> error
     end
   end

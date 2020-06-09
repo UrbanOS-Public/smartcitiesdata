@@ -9,7 +9,6 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   alias DiscoveryApi.Test.Helper
   alias SmartCity.TestDataGenerator, as: TDG
 
-  alias DiscoveryApi.Search.Elasticsearch.DatasetIndex, as: DatasetSearchIndex
   alias DiscoveryApi.Search.Elasticsearch.Search
   alias DiscoveryApi.Search.Elasticsearch
   alias DiscoveryApi.Data.Model
@@ -21,33 +20,33 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
     :ok
   end
 
-  describe "create_index/0" do
+  describe "create/0" do
     test "it creates the datasets index", %{es_indices: %{datasets: index}} do
-      assert {:ok, _} = DatasetSearchIndex.delete_index()
-      assert {:ok, created} = DatasetSearchIndex.create_index()
+      assert {:ok, _} = Elasticsearch.DatasetIndex.delete()
+      assert {:ok, created} = Elasticsearch.DatasetIndex.create()
 
       index_name_as_atom = String.to_atom(index.name)
       assert created[index_name_as_atom][:mappings] != %{}
     end
   end
 
-  describe "delete_index/0" do
+  describe "delete/0" do
     test "it deletes the datasets index" do
-      assert {:ok, _} = DatasetSearchIndex.delete_index()
-      assert {:error, _} = DatasetSearchIndex.get_index()
+      assert {:ok, _} = Elasticsearch.DatasetIndex.delete()
+      assert {:error, _} = Elasticsearch.DatasetIndex.get()
     end
   end
 
-  describe "get_index/0" do
+  describe "get/0" do
     test "it gets the datasets index", %{es_indices: %{datasets: index}} do
-      assert {:ok, gotten} = DatasetSearchIndex.get_index()
+      assert {:ok, gotten} = Elasticsearch.DatasetIndex.get()
 
       index_name_as_atom = String.to_atom(index.name)
       assert gotten[index_name_as_atom][:mappings] != %{}
     end
   end
 
-  describe "delete/1" do
+  describe "document delete/1" do
     test "removes dataset from index" do
       dataset = index_model(%{description: "Sensor Data"})
 
@@ -60,26 +59,26 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
     end
   end
 
-  describe "reset_index/0" do
+  describe "reset/0" do
     test "it resets the datasets index", %{es_indices: %{datasets: index}} do
-      assert {:ok, reset} = DatasetSearchIndex.reset_index()
+      assert {:ok, reset} = Elasticsearch.DatasetIndex.reset()
 
       index_name_as_atom = String.to_atom(index.name)
       assert reset[index_name_as_atom][:mappings] != %{}
     end
   end
 
-  describe "create_index/2" do
+  describe "create/2" do
     test "given an index name with no options, it creates it" do
       name =
         Faker.Name.first_name()
         |> String.downcase()
 
       on_exit(fn ->
-        DatasetSearchIndex.delete_index(name)
+        Elasticsearch.DatasetIndex.delete(name)
       end)
 
-      assert {:ok, _} = DatasetSearchIndex.create_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.create(name)
     end
 
     test "given an invalid index name (must be lowercase) it returns an error" do
@@ -87,7 +86,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Faker.Name.first_name()
         |> String.upcase()
 
-      assert {:error, _} = DatasetSearchIndex.create_index(name)
+      assert {:error, _} = Elasticsearch.DatasetIndex.create(name)
     end
 
     test "given an index name with some options (mapping) it creates it" do
@@ -109,23 +108,23 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       }
 
       on_exit(fn ->
-        DatasetSearchIndex.delete_index(name)
+        Elasticsearch.DatasetIndex.delete(name)
       end)
 
-      assert {:ok, _} = DatasetSearchIndex.create_index(name, options)
-      assert {:ok, index} = DatasetSearchIndex.get_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.create(name, options)
+      assert {:ok, index} = Elasticsearch.DatasetIndex.get(name)
 
       assert options.mappings == index[name_as_atom][:mappings]
     end
   end
 
-  describe "delete_index/1" do
+  describe "index delete/1" do
     test "given an index that does not exist, it does not error" do
       name =
         Faker.Name.first_name()
         |> String.downcase()
 
-      assert {:ok, _} = DatasetSearchIndex.delete_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.delete(name)
     end
 
     test "given an index that does exist, it does delete the index" do
@@ -133,10 +132,10 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Faker.Name.first_name()
         |> String.downcase()
 
-      assert {:ok, _} = DatasetSearchIndex.create_index(name)
-      assert {:ok, _} = DatasetSearchIndex.delete_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.create(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.delete(name)
 
-      assert {:error, error} = DatasetSearchIndex.get_index(name)
+      assert {:error, error} = Elasticsearch.DatasetIndex.get(name)
 
       assert %{type: "index_not_found_exception"} = error
     end
@@ -153,11 +152,11 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Plug.Conn.resp(conn, 500, ~s({"error": "darsh was here"}))
       end)
 
-      assert {:error, _} = DatasetSearchIndex.delete_index(name)
+      assert {:error, _} = Elasticsearch.DatasetIndex.delete(name)
     end
   end
 
-  describe "reset_index/1" do
+  describe "reset/1" do
     test "given an index that does not exist, it builds it" do
       name =
         Faker.Name.first_name()
@@ -177,11 +176,11 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       }
 
       on_exit(fn ->
-        DatasetSearchIndex.delete_index(name)
+        Elasticsearch.DatasetIndex.delete(name)
       end)
 
-      assert {:ok, _} = DatasetSearchIndex.reset_index(name, options)
-      assert {:ok, index} = DatasetSearchIndex.get_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.reset(name, options)
+      assert {:ok, index} = Elasticsearch.DatasetIndex.get(name)
       assert options.mappings == index[name_as_atom][:mappings]
     end
 
@@ -204,11 +203,11 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       }
 
       on_exit(fn ->
-        DatasetSearchIndex.delete_index(name)
+        Elasticsearch.DatasetIndex.delete(name)
       end)
 
-      assert {:ok, _} = DatasetSearchIndex.create_index(name, existing_options)
-      assert {:ok, existing_index} = DatasetSearchIndex.get_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.create(name, existing_options)
+      assert {:ok, existing_index} = Elasticsearch.DatasetIndex.get(name)
       assert existing_options.mappings == existing_index[name_as_atom][:mappings]
 
       new_options = %{
@@ -222,8 +221,8 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         }
       }
 
-      assert {:ok, _} = DatasetSearchIndex.reset_index(name, new_options)
-      assert {:ok, replaced_index} = DatasetSearchIndex.get_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.reset(name, new_options)
+      assert {:ok, replaced_index} = Elasticsearch.DatasetIndex.get(name)
       assert new_options.mappings == replaced_index[name_as_atom][:mappings]
     end
 
@@ -239,7 +238,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Plug.Conn.resp(conn, 500, ~s({"error": "yep"}))
       end)
 
-      assert {:error, _} = DatasetSearchIndex.reset_index(name, %{})
+      assert {:error, _} = Elasticsearch.DatasetIndex.reset(name, %{})
     end
 
     test "given a failure to create for some reason, it returns the error" do
@@ -258,7 +257,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Plug.Conn.resp(conn, 500, ~s({"error": "that's no good"}))
       end)
 
-      assert {:error, _} = DatasetSearchIndex.reset_index(name, %{})
+      assert {:error, _} = Elasticsearch.DatasetIndex.reset(name, %{})
     end
   end
 

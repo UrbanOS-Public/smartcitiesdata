@@ -25,7 +25,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.Document do
   end
 
   def replace_all(datasets) do
-    case DiscoveryApi.Search.Elasticsearch.DatasetIndex.reset_index(dataset_index()) do
+    case DiscoveryApi.Search.Elasticsearch.DatasetIndex.reset(dataset_index()) do
       {:ok, _} -> elastic_bulk_document_load(datasets)
       error -> error
     end

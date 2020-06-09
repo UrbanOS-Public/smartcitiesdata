@@ -14,7 +14,6 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApi.Data.{Model, SystemNameCache, TableInfoCache}
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApi.Search.Storage
-  alias DiscoveryApi.Search.Elasticsearch.DatasetIndex, as: DatasetSearchIndex
   alias DiscoveryApi.Search.Elasticsearch
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService

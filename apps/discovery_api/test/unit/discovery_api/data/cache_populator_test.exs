@@ -8,7 +8,6 @@ defmodule DiscoveryApi.Data.CachePopulatorTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Data.CachePopulator
   alias DiscoveryApi.Data.SystemNameCache
-  alias DiscoveryApi.Search.Elasticsearch.DatasetIndex, as: DatasetSearchIndex
   alias DiscoveryApi.Search.Elasticsearch
 
   @instance DiscoveryApi.instance()
