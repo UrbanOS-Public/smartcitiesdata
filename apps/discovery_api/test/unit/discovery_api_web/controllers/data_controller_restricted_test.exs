@@ -6,7 +6,8 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Services.{PrestoService, MetricsService}
-  alias DiscoveryApi.Test.Helper
+  alias DiscoveryApiWeb.Auth.TokenHandler
+  alias DiscoveryApi.Test.AuthHelper
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -71,6 +72,7 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
       subject_id: subject_id,
       token: token
     } do
+      allow(TokenHandler.on_verify(any(), any(), any()), exec: &AuthHelper.guardian_verify_passthrough/3, meck_options: [:passthrough])
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
       conn

@@ -89,6 +89,8 @@ config :discovery_api, DiscoveryApi.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   port: "5456"
 
+config :guardian, Guardian.DB, repo: DiscoveryApi.Repo
+
 config :discovery_api, :brook,
   instance: :discovery_api,
   driver: [

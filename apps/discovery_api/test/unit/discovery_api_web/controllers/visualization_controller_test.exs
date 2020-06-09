@@ -2,12 +2,13 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
 
-  alias DiscoveryApi.Auth.GuardianConfigurator
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Visualizations
   alias DiscoveryApi.Schemas.Visualizations.Visualization
+  alias DiscoveryApi.Auth.GuardianConfigurator
   alias DiscoveryApi.Auth.Auth0.CachedJWKS
+  alias DiscoveryApiWeb.Auth.TokenHandler
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
 
   @user_id "asdfkjashdflkjhasdkjkadsf"
@@ -20,11 +21,12 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
 
   describe "with Auth0 auth provider" do
     setup do
-      secret_key = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian) |> Keyword.get(:secret_key)
+      secret_key = Application.get_env(:discovery_api, TokenHandler) |> Keyword.get(:secret_key)
       GuardianConfigurator.configure(issuer: AuthHelper.valid_issuer())
 
       jwks = AuthHelper.valid_jwks()
       CachedJWKS.set(jwks)
+      allow(TokenHandler.on_verify(any(), any(), any()), exec: &AuthHelper.guardian_verify_passthrough/3, meck_options: [:passthrough])
 
       bypass = Bypass.open()
 

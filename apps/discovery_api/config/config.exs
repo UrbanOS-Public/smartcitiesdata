@@ -31,7 +31,7 @@ config :discovery_api,
 # secret set as variable to pass sobelow check on hard coded secrets
 secret = "this_is_a_secret"
 
-config :discovery_api, DiscoveryApi.Auth.Guardian, secret_key: secret
+config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler, secret_key: secret
 
 config :discovery_api, DiscoveryApi.Quantum.Scheduler,
   jobs: [
