@@ -68,10 +68,12 @@ defmodule AndiWeb.EditLiveView do
 
   def mount(_params, %{"dataset" => dataset}, socket) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
-    dataset_exists = case Andi.Services.DatasetStore.get(dataset.id) do
-      {:ok, _} -> true
-      _ -> false
-    end
+    dataset_exists =
+      case Andi.Services.DatasetStore.get(dataset.id) do
+        {:ok, nil} -> false
+        {:error, _} -> false
+        _ -> true
+      end
 
     component_visibility = %{
       "metadata_form" => "expanded",

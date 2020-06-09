@@ -36,7 +36,14 @@ defmodule Andi.InputSchemas.FormTools do
   end
 
   def adjust_data_name(form_data) do
-    data_name = form_data |> Map.get("business") |> Map.get("dataTitle")
+    data_title = form_data |> Map.get("business") |> Map.get("dataTitle")
+
+    data_name =
+      data_title
+      |> String.replace(" ", "_", global: true)
+      |> String.replace(~r/[^[:alnum:]_]/, "", global: true)
+      |> String.downcase()
+
     put_in(form_data, ["technical", "dataName"], data_name)
   end
 

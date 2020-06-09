@@ -457,7 +457,6 @@ defmodule AndiWeb.EditLiveViewTest do
       where([
         [:name],
         ["orgName"],
-        ["dataName"],
         ["sourceType"]
       ])
     end
@@ -882,6 +881,54 @@ defmodule AndiWeb.EditLiveViewTest do
       value = get_value(html, "#form_data_technical_dataName")
 
       assert value == "original name"
+    end
+
+    data_test "data title #{title} generates data name #{data_name}", %{conn: conn, blank_dataset: blank_dataset} do
+      DatasetHelpers.add_dataset_to_repo(blank_dataset)
+
+      Placebo.allow(DatasetStore.get(blank_dataset.id), return: {:error, blank_dataset})
+
+      assert {:ok, view, html} = live(conn, @url_path <> blank_dataset.id)
+
+      form_data =
+        blank_dataset
+        |> put_in([:business, :dataTitle], title)
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
+      html = render(view)
+
+      assert get_value(html, "#form_data_technical_dataName")== data_name
+
+      where([
+        [:title, :data_name],
+        ["title with spaces", "title_with_spaces"],
+        ["titl3! W@th sp#ci@l ch@rs", "titl3_wth_spcil_chrs"],
+        ["ALL CAPS TITLE", "all_caps_title"]
+      ])
+    end
+
+    data_test "#{title} generating an empty data name is invalid", %{conn: conn, blank_dataset: blank_dataset} do
+      DatasetHelpers.add_dataset_to_repo(blank_dataset)
+      Placebo.allow(DatasetStore.get(blank_dataset.id), return: {:error, blank_dataset})
+
+      assert {:ok, view, html} = live(conn, @url_path <> blank_dataset.id)
+
+      form_data =
+        blank_dataset
+        |> put_in([:business, :dataTitle], title)
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
+      html = render(view)
+
+      assert get_value(html, "#form_data_technical_dataName") == ""
+      refute Enum.empty?(find_elements(html, "#dataName-error-msg"))
+
+      where([
+        title: ["", "!@#$%"]
+      ])
+
     end
   end
 end

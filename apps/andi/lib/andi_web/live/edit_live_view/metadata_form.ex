@@ -40,13 +40,13 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
           <div class="metadata-form-edit-section form-grid">
             <div class="metadata-form__title">
               <%= label(@business, :dataTitle, DisplayNames.get(:dataTitle), class: "label label--required") %>
-              <%= text_input(@business, :dataTitle, class: "input") %>
+              <%= text_input(@business, :dataTitle, class: "input", phx_value_field: "dataTitle") %>
               <%= ErrorHelpers.error_tag(@business, :dataTitle) %>
             </div>
 
-            <div class="metadata-form__name">
+            <div class="metadata-form__data-name">
               <%= label(@technical, :dataName, DisplayNames.get(:dataName), class: "label label--required") %>
-              <%= text_input(@technical, :dataName, class: "input") %>
+              <%= text_input(@technical, :dataName, [class: "input input--text", readonly: true]) %>
               <%= ErrorHelpers.error_tag(@technical, :dataName) %>
             </div>
 
