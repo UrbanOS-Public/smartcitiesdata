@@ -13,6 +13,6 @@ defmodule Andi.TelemetryHelper do
         app: "andi",
         author: "andi",
         topic: Application.get_env(:andi, :topic),
-        event_type: "event_type"
+        event_type: event_type
       })
 end
