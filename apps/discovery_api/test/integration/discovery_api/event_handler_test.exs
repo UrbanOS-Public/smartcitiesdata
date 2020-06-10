@@ -11,7 +11,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   import SmartCity.Event, only: [dataset_update: 0]
 
   alias DiscoveryApi.Data.Model
-  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
+  alias DiscoveryApi.Search.Elasticsearch
 
   setup_all do
     Helper.wait_for_brook_to_be_ready()
@@ -28,14 +28,14 @@ defmodule DiscoveryApi.EventHandlerTest do
       Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
 
       eventually(fn ->
-        assert {:ok, %Model{id: ^dataset_id}} = DatasetSearchIndex.get(dataset_id)
+        assert {:ok, %Model{id: ^dataset_id}} = Elasticsearch.Document.get(dataset_id)
       end)
 
       updated_dataset = put_in(dataset, [:business, :dataTitle], "updated title")
       Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", updated_dataset)
 
       eventually(fn ->
-        assert {:ok, %Model{id: ^dataset_id, title: "updated title"}} = DatasetSearchIndex.get(dataset_id)
+        assert {:ok, %Model{id: ^dataset_id, title: "updated title"}} = Elasticsearch.Document.get(dataset_id)
       end)
     end
   end

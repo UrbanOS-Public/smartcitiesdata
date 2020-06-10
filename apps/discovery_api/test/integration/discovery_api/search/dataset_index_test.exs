@@ -2,74 +2,83 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   use ExUnit.Case
   use Divo, services: [:redis, :"ecto-postgres", :zookeeper, :kafka, :elasticsearch]
   use DiscoveryApi.ElasticSearchCase
+  use DiscoveryApi.DataCase
 
-  import SmartCity.TestHelper, only: [eventually: 1]
+  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   alias DiscoveryApi.Test.Helper
   alias SmartCity.TestDataGenerator, as: TDG
 
-  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
+  alias DiscoveryApi.Search.Elasticsearch.Search
+  alias DiscoveryApi.Search.Elasticsearch
   alias DiscoveryApi.Data.Model
 
-  describe "create_index/0" do
+  @organization_id_1 "11119ccf-de9f-4229-842f-e3733972d111"
+
+  setup_all do
+    Helper.wait_for_brook_to_be_ready()
+    :ok
+  end
+
+  describe "create/0" do
     test "it creates the datasets index", %{es_indices: %{datasets: index}} do
-      assert {:ok, _} = DatasetSearchIndex.delete_index()
-      assert {:ok, created} = DatasetSearchIndex.create_index()
+      assert {:ok, _} = Elasticsearch.DatasetIndex.delete()
+      assert {:ok, created} = Elasticsearch.DatasetIndex.create()
 
       index_name_as_atom = String.to_atom(index.name)
       assert created[index_name_as_atom][:mappings] != %{}
     end
   end
 
-  describe "delete_index/0" do
+  describe "delete/0" do
     test "it deletes the datasets index" do
-      assert {:ok, _} = DatasetSearchIndex.delete_index()
-      assert {:error, _} = DatasetSearchIndex.get_index()
+      assert {:ok, _} = Elasticsearch.DatasetIndex.delete()
+      assert {:error, _} = Elasticsearch.DatasetIndex.get()
     end
   end
 
-  describe "get_index/0" do
+  describe "get/0" do
     test "it gets the datasets index", %{es_indices: %{datasets: index}} do
-      assert {:ok, gotten} = DatasetSearchIndex.get_index()
+      assert {:ok, gotten} = Elasticsearch.DatasetIndex.get()
 
       index_name_as_atom = String.to_atom(index.name)
       assert gotten[index_name_as_atom][:mappings] != %{}
     end
   end
 
-  describe "delete/1" do
+  describe "document delete/1" do
     test "removes dataset from index" do
       dataset = index_model(%{description: "Sensor Data"})
 
-      {:ok, _response} = DatasetSearchIndex.delete(dataset.id)
+      {:ok, _response} = Elasticsearch.Document.delete(dataset.id)
 
       eventually(fn ->
-        {:ok, models, _facets} = DatasetSearchIndex.search(query: "Sensor Data")
+        {:ok, models, _facets, _total} = Search.search(query: "Sensor Data")
         assert Enum.empty?(models)
       end)
     end
   end
 
-  describe "reset_index/0" do
+  describe "reset/0" do
     test "it resets the datasets index", %{es_indices: %{datasets: index}} do
-      assert {:ok, reset} = DatasetSearchIndex.reset_index()
+      assert {:ok, reset} = Elasticsearch.DatasetIndex.reset()
 
       index_name_as_atom = String.to_atom(index.name)
       assert reset[index_name_as_atom][:mappings] != %{}
     end
   end
 
-  describe "create_index/2" do
+  describe "create/2" do
     test "given an index name with no options, it creates it" do
       name =
         Faker.Name.first_name()
         |> String.downcase()
 
       on_exit(fn ->
-        DatasetSearchIndex.delete_index(name)
+        Elasticsearch.DatasetIndex.delete(name)
       end)
 
-      assert {:ok, _} = DatasetSearchIndex.create_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.create(name)
     end
 
     test "given an invalid index name (must be lowercase) it returns an error" do
@@ -77,7 +86,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Faker.Name.first_name()
         |> String.upcase()
 
-      assert {:error, _} = DatasetSearchIndex.create_index(name)
+      assert {:error, _} = Elasticsearch.DatasetIndex.create(name)
     end
 
     test "given an index name with some options (mapping) it creates it" do
@@ -99,23 +108,23 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       }
 
       on_exit(fn ->
-        DatasetSearchIndex.delete_index(name)
+        Elasticsearch.DatasetIndex.delete(name)
       end)
 
-      assert {:ok, _} = DatasetSearchIndex.create_index(name, options)
-      assert {:ok, index} = DatasetSearchIndex.get_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.create(name, options)
+      assert {:ok, index} = Elasticsearch.DatasetIndex.get(name)
 
       assert options.mappings == index[name_as_atom][:mappings]
     end
   end
 
-  describe "delete_index/1" do
+  describe "index delete/1" do
     test "given an index that does not exist, it does not error" do
       name =
         Faker.Name.first_name()
         |> String.downcase()
 
-      assert {:ok, _} = DatasetSearchIndex.delete_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.delete(name)
     end
 
     test "given an index that does exist, it does delete the index" do
@@ -123,10 +132,10 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Faker.Name.first_name()
         |> String.downcase()
 
-      assert {:ok, _} = DatasetSearchIndex.create_index(name)
-      assert {:ok, _} = DatasetSearchIndex.delete_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.create(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.delete(name)
 
-      assert {:error, error} = DatasetSearchIndex.get_index(name)
+      assert {:error, error} = Elasticsearch.DatasetIndex.get(name)
 
       assert %{type: "index_not_found_exception"} = error
     end
@@ -143,11 +152,11 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Plug.Conn.resp(conn, 500, ~s({"error": "darsh was here"}))
       end)
 
-      assert {:error, _} = DatasetSearchIndex.delete_index(name)
+      assert {:error, _} = Elasticsearch.DatasetIndex.delete(name)
     end
   end
 
-  describe "reset_index/1" do
+  describe "reset/1" do
     test "given an index that does not exist, it builds it" do
       name =
         Faker.Name.first_name()
@@ -167,11 +176,11 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       }
 
       on_exit(fn ->
-        DatasetSearchIndex.delete_index(name)
+        Elasticsearch.DatasetIndex.delete(name)
       end)
 
-      assert {:ok, _} = DatasetSearchIndex.reset_index(name, options)
-      assert {:ok, index} = DatasetSearchIndex.get_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.reset(name, options)
+      assert {:ok, index} = Elasticsearch.DatasetIndex.get(name)
       assert options.mappings == index[name_as_atom][:mappings]
     end
 
@@ -194,11 +203,11 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       }
 
       on_exit(fn ->
-        DatasetSearchIndex.delete_index(name)
+        Elasticsearch.DatasetIndex.delete(name)
       end)
 
-      assert {:ok, _} = DatasetSearchIndex.create_index(name, existing_options)
-      assert {:ok, existing_index} = DatasetSearchIndex.get_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.create(name, existing_options)
+      assert {:ok, existing_index} = Elasticsearch.DatasetIndex.get(name)
       assert existing_options.mappings == existing_index[name_as_atom][:mappings]
 
       new_options = %{
@@ -212,8 +221,8 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         }
       }
 
-      assert {:ok, _} = DatasetSearchIndex.reset_index(name, new_options)
-      assert {:ok, replaced_index} = DatasetSearchIndex.get_index(name)
+      assert {:ok, _} = Elasticsearch.DatasetIndex.reset(name, new_options)
+      assert {:ok, replaced_index} = Elasticsearch.DatasetIndex.get(name)
       assert new_options.mappings == replaced_index[name_as_atom][:mappings]
     end
 
@@ -229,7 +238,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Plug.Conn.resp(conn, 500, ~s({"error": "yep"}))
       end)
 
-      assert {:error, _} = DatasetSearchIndex.reset_index(name, %{})
+      assert {:error, _} = Elasticsearch.DatasetIndex.reset(name, %{})
     end
 
     test "given a failure to create for some reason, it returns the error" do
@@ -248,7 +257,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Plug.Conn.resp(conn, 500, ~s({"error": "that's no good"}))
       end)
 
-      assert {:error, _} = DatasetSearchIndex.reset_index(name, %{})
+      assert {:error, _} = Elasticsearch.DatasetIndex.reset(name, %{})
     end
   end
 
@@ -256,16 +265,16 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
     test "given an existing dataset, it returns it" do
       dataset = Helper.sample_model()
       atomized_dataset = expected_dataset(dataset)
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset)
+      assert {:ok, _saved} = Elasticsearch.Document.update(dataset)
 
-      assert {:ok, gotten} = DatasetSearchIndex.get(dataset.id)
+      assert {:ok, gotten} = Elasticsearch.Document.get(dataset.id)
       assert atomized_dataset == gotten
     end
 
     test "given a missing dataset, it returns an error" do
       dataset = Helper.sample_model()
 
-      assert {:error, _} = DatasetSearchIndex.get(dataset.id)
+      assert {:error, _} = Elasticsearch.Document.get(dataset.id)
     end
   end
 
@@ -278,14 +287,14 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       atomized_dataset_two = expected_dataset(dataset_two)
       atomized_datasets = [atomized_dataset_one, atomized_dataset_two]
 
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_one)
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset_two)
+      assert {:ok, _saved} = Elasticsearch.Document.update(dataset_one)
+      assert {:ok, _saved} = Elasticsearch.Document.update(dataset_two)
 
-      assert {:ok, atomized_datasets} == DatasetSearchIndex.get_all()
+      assert {:ok, atomized_datasets} == Search.get_all()
     end
 
     test "given no existing datasets, it returns an empty list" do
-      assert {:ok, []} == DatasetSearchIndex.get_all()
+      assert {:ok, []} == Search.get_all()
     end
 
     test "given a search failure it returns an error", %{es_indices: %{datasets: %{name: datasets}}} do
@@ -296,7 +305,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Plug.Conn.resp(conn, 400, ~s({"error": "you think you can beat me?!"}))
       end)
 
-      assert {:error, _} = DatasetSearchIndex.get_all()
+      assert {:error, _} = Search.get_all()
     end
   end
 
@@ -305,21 +314,21 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset = Helper.sample_model()
       atomized_dataset = expected_dataset(dataset)
 
-      assert {:ok, _} = DatasetSearchIndex.update(dataset)
-      assert {:ok, saved} = DatasetSearchIndex.get(dataset.id)
+      assert {:ok, _} = Elasticsearch.Document.update(dataset)
+      assert {:ok, saved} = Elasticsearch.Document.get(dataset.id)
       assert atomized_dataset == saved
     end
 
     test "given an existing dataset, it merges the changes in elasticsearch" do
       existing_dataset = Helper.sample_model()
-      assert {:ok, _saved} = DatasetSearchIndex.update(existing_dataset)
+      assert {:ok, _saved} = Elasticsearch.Document.update(existing_dataset)
 
       original_title = existing_dataset.title
       updated_name = "Look at me, I'm a new name!"
       partial_update = %Model{id: existing_dataset.id, name: updated_name}
 
-      assert {:ok, _} = DatasetSearchIndex.update(partial_update)
-      assert {:ok, updated} = DatasetSearchIndex.get(partial_update.id)
+      assert {:ok, _} = Elasticsearch.Document.update(partial_update)
+      assert {:ok, updated} = Elasticsearch.Document.get(partial_update.id)
 
       assert %Model{title: ^original_title, name: ^updated_name} = updated
     end
@@ -328,9 +337,9 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset = Helper.sample_model()
       atomized_dataset = expected_dataset(dataset)
 
-      assert {:ok, _saved} = DatasetSearchIndex.update(dataset)
+      assert {:ok, _saved} = Elasticsearch.Document.update(dataset)
 
-      assert {:ok, [atomized_dataset]} == DatasetSearchIndex.get_all()
+      assert {:ok, [atomized_dataset]} == Search.get_all()
     end
 
     test "given a dataset with no id, it returns an error" do
@@ -338,7 +347,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Helper.sample_model()
         |> Map.delete(:id)
 
-      assert {:error, _reason} = DatasetSearchIndex.update(dataset)
+      assert {:error, _reason} = Elasticsearch.Document.update(dataset)
     end
 
     test "given a missing dataset index, it returns an error", %{es_indices: %{datasets: %{name: datasets}}} do
@@ -346,7 +355,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
       dataset = Helper.sample_model()
 
-      assert {:error, _reason} = DatasetSearchIndex.update(dataset)
+      assert {:error, _reason} = Elasticsearch.Document.update(dataset)
     end
 
     test "given an error from ES, it returns the error", %{es_indices: %{datasets: %{name: datasets}}} do
@@ -365,7 +374,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Plug.Conn.resp(conn, 400, ~s({"error": "something bad happened"}))
       end)
 
-      assert {:error, _reason} = DatasetSearchIndex.update(dataset)
+      assert {:error, _reason} = Elasticsearch.Document.update(dataset)
     end
   end
 
@@ -374,21 +383,21 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset = Helper.sample_model()
       atomized_dataset = expected_dataset(dataset)
 
-      assert {:ok, _} = DatasetSearchIndex.replace(dataset)
-      assert {:ok, saved} = DatasetSearchIndex.get(dataset.id)
+      assert {:ok, _} = Elasticsearch.Document.replace(dataset)
+      assert {:ok, saved} = Elasticsearch.Document.get(dataset.id)
       assert atomized_dataset == saved
     end
 
     test "given an existing dataset, it merges the changes in elasticsearch" do
       existing_dataset = Helper.sample_model()
-      assert {:ok, _saved} = DatasetSearchIndex.replace(existing_dataset)
+      assert {:ok, _saved} = Elasticsearch.Document.replace(existing_dataset)
 
       existing_id = existing_dataset.id
       updated_name = "Look at me, I'm a new name!"
       partial_update = %Model{id: existing_id, name: updated_name}
 
-      assert {:ok, _} = DatasetSearchIndex.replace(partial_update)
-      assert {:ok, replaced} = DatasetSearchIndex.get(partial_update.id)
+      assert {:ok, _} = Elasticsearch.Document.replace(partial_update)
+      assert {:ok, replaced} = Elasticsearch.Document.get(partial_update.id)
 
       assert %Model{id: existing_id, name: updated_name} == replaced
     end
@@ -397,9 +406,9 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset = Helper.sample_model()
       atomized_dataset = expected_dataset(dataset)
 
-      assert {:ok, _saved} = DatasetSearchIndex.replace(dataset)
+      assert {:ok, _saved} = Elasticsearch.Document.replace(dataset)
 
-      assert {:ok, [atomized_dataset]} == DatasetSearchIndex.get_all()
+      assert {:ok, [atomized_dataset]} == Search.get_all()
     end
 
     test "given a dataset with no id, it returns an error" do
@@ -407,7 +416,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Helper.sample_model()
         |> Map.delete(:id)
 
-      assert {:error, _reason} = DatasetSearchIndex.replace(dataset)
+      assert {:error, _reason} = Elasticsearch.Document.replace(dataset)
     end
 
     test "given a missing dataset index, it returns an error", %{es_indices: %{datasets: %{name: datasets}}} do
@@ -415,7 +424,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
       dataset = Helper.sample_model()
 
-      assert {:error, _reason} = DatasetSearchIndex.replace(dataset)
+      assert {:error, _reason} = Elasticsearch.Document.replace(dataset)
     end
 
     test "given an error returned from ES, it returns an error", %{es_indices: %{datasets: %{name: datasets}}} do
@@ -434,7 +443,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         Plug.Conn.resp(conn, 400, ~s({"error": "something bad happened"}))
       end)
 
-      assert {:error, _reason} = DatasetSearchIndex.replace(dataset)
+      assert {:error, _reason} = Elasticsearch.Document.replace(dataset)
     end
   end
 
@@ -450,14 +459,14 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       atomized_dataset_two = expected_dataset(dataset_two)
       atomized_datasets = [atomized_dataset_one, atomized_dataset_two]
 
-      assert {:ok, _} = DatasetSearchIndex.replace_all(datasets)
-      assert {:ok, saved} = DatasetSearchIndex.get_all()
+      assert {:ok, _} = Elasticsearch.Document.replace_all(datasets)
+      assert {:ok, saved} = Search.get_all()
       assert atomized_datasets == saved
     end
 
     test "given an existing index, it puts all datasets in the index, destroying anything that was there already" do
       existing_dataset = Helper.sample_model()
-      assert {:ok, _updated} = DatasetSearchIndex.update(existing_dataset)
+      assert {:ok, _updated} = Elasticsearch.Document.update(existing_dataset)
 
       dataset_one = Helper.sample_model()
       dataset_two = Helper.sample_model()
@@ -467,8 +476,8 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       atomized_dataset_two = expected_dataset(dataset_two)
       atomized_datasets = [atomized_dataset_one, atomized_dataset_two]
 
-      assert {:ok, _} = DatasetSearchIndex.replace_all(datasets)
-      assert {:ok, saved} = DatasetSearchIndex.get_all()
+      assert {:ok, _} = Elasticsearch.Document.replace_all(datasets)
+      assert {:ok, saved} = Search.get_all()
       assert atomized_datasets == saved
     end
 
@@ -481,7 +490,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       end)
 
       datasets = [Helper.sample_model(), Helper.sample_model()]
-      assert {:error, _} = DatasetSearchIndex.replace_all(datasets)
+      assert {:error, _} = Elasticsearch.Document.replace_all(datasets)
     end
 
     test "if it fails to create the index before replacing, it returns an error", %{es_indices: %{datasets: %{name: datasets}}} do
@@ -497,7 +506,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       end)
 
       datasets = [Helper.sample_model(), Helper.sample_model()]
-      assert {:error, _} = DatasetSearchIndex.replace_all(datasets)
+      assert {:error, _} = Elasticsearch.Document.replace_all(datasets)
     end
 
     test "if it fails while bulk putting the datasets, it retuns an error", %{es_indices: %{datasets: %{name: datasets}}} do
@@ -521,7 +530,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       end)
 
       datasets = [Helper.sample_model(), Helper.sample_model()]
-      assert {:error, _} = DatasetSearchIndex.replace_all(datasets)
+      assert {:error, _} = Elasticsearch.Document.replace_all(datasets)
     end
   end
 
@@ -530,7 +539,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{title: "Nazderaldac"})
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Nazderaldac")
+      {:ok, models, _facets, _total} = Search.search(query: "Nazderaldac")
       assert [dataset_one] == models
     end
 
@@ -538,7 +547,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{description: "Accio Dataset!", private: true})
       dataset_two = index_model(%{description: "Accio Dataset!", private: false})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Accio Dataset")
+      {:ok, models, _facets, _total} = Search.search(query: "Accio Dataset")
 
       assert [dataset_two] == models
     end
@@ -549,7 +558,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       private_org_1 = index_model(%{id: "3", description: "Parking Transactions", private: true, organizationDetails: %{id: "o1"}})
       private_org_2 = index_model(%{id: "4", description: "Parking Transactions", private: true, organizationDetails: %{id: "o2"}})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Parking Transactions", authorized_organization_ids: ["o1", "o2"])
+      {:ok, models, _facets, _total} = Search.search(query: "Parking Transactions", authorized_organization_ids: ["o1", "o2"])
 
       extract_id_and_sort = &(Enum.map(&1, fn model -> model.id end) |> Enum.sort())
       expected_dataset_ids = extract_id_and_sort.([public, private_org_1, private_org_2])
@@ -561,7 +570,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{description: "Accio Dataset!", private: true})
       dataset_two = index_model(%{description: "Accio Dataset!", private: false})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Accio Dataset")
+      {:ok, models, _facets, _total} = Search.search(query: "Accio Dataset")
       assert [dataset_two] == models
     end
 
@@ -571,7 +580,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{organizationDetails: organization_1})
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Olivanders")
+      {:ok, models, _facets, _total} = Search.search(query: "Olivanders")
       assert [dataset_one] == models
     end
 
@@ -579,7 +588,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{keywords: ["Newts", "Scales", "Tails"]})
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Newts")
+      {:ok, models, _facets, _total} = Search.search(query: "Newts")
       assert [dataset_one] == models
     end
 
@@ -588,7 +597,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Reports", description: "Newt Scamander's reports 1920-1930"})
       index_model(%{title: "Others"})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Newt")
+      {:ok, models, _facets, _total} = Search.search(query: "Newt")
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Reports" end)
       assert Enum.any?(models, fn model -> model.title == "Ingredients" end)
@@ -601,7 +610,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Room Inventory", keywords: ["Library"]})
       index_model(%{title: "Others"})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Library Records")
+      {:ok, models, _facets, _total} = Search.search(query: "Library Records")
       assert 3 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Library Records" end)
       assert Enum.any?(models, fn model -> model.title == "Class Reports" end)
@@ -613,7 +622,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model()
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(query: "Hippogriff")
+      {:ok, models, _facets, _total} = Search.search(query: "Hippogriff")
       assert [] == models
     end
 
@@ -621,7 +630,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Student Roster"})
       index_model(%{title: "Inventory"})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(query: "")
+      {:ok, models, _facets, _total} = Search.search(query: "")
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Student Roster" end)
       assert Enum.any?(models, fn model -> model.title == "Inventory" end)
@@ -631,7 +640,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Room List (West Wing)", keywords: ["inventory"]})
       index_model(%{title: "Passageways -- GEOJSON"})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(keywords: ["inventory"])
+      {:ok, models, _facets, _total} = Search.search(keywords: ["inventory"])
       assert 1 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Room List (West Wing)" end)
     end
@@ -642,7 +651,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Passageways (Dungeon) -- GEOJSON", keywords: ["magic"]})
       index_model(%{title: "Ingredient List (Restricted)", keywords: ["inventory", "magic", "test"]})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(keywords: ["inventory", "magic"])
+      {:ok, models, _facets, _total} = Search.search(keywords: ["inventory", "magic"])
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Ingredient List" end)
       assert Enum.any?(models, fn model -> model.title == "Ingredient List (Restricted)" end)
@@ -653,7 +662,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Ingredient List", keywords: ["inventory", "magic"]})
       index_model(%{title: "Passageways (Faculty Level) -- GEOJSON", keywords: ["magic"]})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(keywords: ["goblin", "gnome"])
+      {:ok, models, _facets, _total} = Search.search(keywords: ["goblin", "gnome"])
       assert [] == models
     end
 
@@ -662,7 +671,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{organizationDetails: organization})
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(org_title: organization.orgTitle)
+      {:ok, models, _facets, _total} = Search.search(org_title: organization.orgTitle)
       assert dataset_one == List.first(models)
     end
 
@@ -670,7 +679,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model()
       index_model()
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(org_title: "Orthagan Alley Inc.")
+      {:ok, models, _facets, _total} = Search.search(org_title: "Orthagan Alley Inc.")
       assert [] == models
     end
 
@@ -679,7 +688,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Owl Registry", sourceType: "ingest"})
       index_model(%{title: "Hallways -- GEOJSON", sourceType: "host"})
 
-      {:ok, models, _facets} = DatasetSearchIndex.search(api_accessible: true)
+      {:ok, models, _facets, _total} = Search.search(api_accessible: true)
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Mail Status" end)
       assert Enum.any?(models, fn model -> model.title == "Owl Registry" end)
@@ -689,7 +698,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Form 1 Student List", keywords: ["students", "forms"]})
       index_model(%{title: "House Prefects", keywords: ["students", "houses"]})
 
-      {:ok, _models, %{keywords: keyword_facets}} = DatasetSearchIndex.search()
+      {:ok, _models, %{keywords: keyword_facets}, _total} = Search.search()
       assert 3 == length(keyword_facets)
       assert [%{name: "students", count: 2}, %{name: "forms", count: 1}, %{name: "houses", count: 1}] == keyword_facets
     end
@@ -701,10 +710,160 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "House Leaders", organizationDetails: organization1})
       index_model(%{title: "Headmaster's List", organizationDetails: organization2})
 
-      {:ok, _models, %{organization: org_facets}} = DatasetSearchIndex.search()
+      {:ok, _models, %{organization: org_facets}, _total} = Search.search()
       assert 2 == length(org_facets)
       assert [%{name: "Faculty", count: 2}, %{name: "Headmaster's Office", count: 1}] == org_facets
     end
+
+    test "given more datasets than the provided limit" do
+      Enum.each(1..5, fn x -> index_model(%{id: "dataset-#{x}"}) end)
+
+      {:ok, models, _facets, total} = Search.search(limit: 3)
+      assert 3 == length(models)
+      assert 5 == total
+    end
+
+    test "given enough datasets to have a second page" do
+      Enum.each(1..5, fn x -> index_model(%{id: "dataset-#{x}"}) end)
+
+      {:ok, models, _facets, total} = Search.search(limit: 3, offset: 3)
+      assert 2 == length(models)
+      assert 5 == total
+    end
+
+    test "given no matching datasets and an offset" do
+      Enum.each(1..5, fn x -> index_model(%{id: "dataset-#{x}"}) end)
+
+      {:ok, models, _facets, total} = Search.search(query: "Oscilliscope", limit: 3, offset: 3)
+      assert Enum.empty?(models)
+      assert 0 == total
+    end
+  end
+
+  describe "end to end search tests" do
+    test "should handle a complex set of search params" do
+      create_dataset(%{id: "1", business: %{dataTitle: "Zoo", keywords: ["Fruit"]}, technical: %{sourceType: "ingest"}})
+      create_dataset(%{id: "2", business: %{dataTitle: "Alphabet"}})
+      create_dataset(%{id: "3", business: %{dataTitle: "2020 Zones"}})
+      params = %{sort: "last_mod", query: "Zoo", apiAccessible: true, "facets%5Bkeywords%5D%5B%5D": "Fruit"}
+
+      local_eventually(fn ->
+        response_map = call_search_endpoint_with_params(params)
+
+        assert ["Zoo"] ==
+                 response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
+      end)
+    end
+
+    test "sort should default by title ascending" do
+      create_dataset(%{id: "1", business: %{dataTitle: "Zoo"}})
+      create_dataset(%{id: "2", business: %{dataTitle: "Alphabet"}})
+      create_dataset(%{id: "3", business: %{dataTitle: "2020 Zones"}})
+      params = %{}
+
+      local_eventually(fn ->
+        response_map = call_search_endpoint_with_params(params)
+
+        assert ["2020 Zones", "Alphabet", "Zoo"] ==
+                 response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
+      end)
+    end
+
+    test "sort should allow by title descending" do
+      create_dataset(%{id: "1", business: %{dataTitle: "Zoo"}})
+      create_dataset(%{id: "2", business: %{dataTitle: "Alphabet"}})
+      create_dataset(%{id: "3", business: %{dataTitle: "2020 Zones"}})
+      params = %{sort: "name_desc"}
+
+      local_eventually(fn ->
+        response_map = call_search_endpoint_with_params(params)
+
+        assert ["Zoo", "Alphabet", "2020 Zones"] ==
+                 response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
+      end)
+    end
+
+    test "sort should allow for last_mod" do
+      create_dataset(%{id: "1", business: %{modifiedDate: "2020-03-11T00:00:00Z"}})
+      create_dataset(%{id: "2", business: %{modifiedDate: "2020-06-01T00:00:00Z"}})
+      create_dataset(%{id: "3", business: %{modifiedDate: "2000-01-01T00:00:00Z"}})
+      params = %{sort: "last_mod"}
+
+      local_eventually(fn ->
+        response_map = call_search_endpoint_with_params(params)
+
+        assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
+      end)
+    end
+
+    test "sort should allow for relevance" do
+      create_dataset(%{id: "0", business: %{dataTitle: "Unrelated to the others"}})
+      create_dataset(%{id: "1", business: %{dataTitle: "Traffic Signals"}})
+      create_dataset(%{id: "2", business: %{dataTitle: "Traffic"}})
+      create_dataset(%{id: "3", business: %{dataTitle: "Traffic Signal Locations"}})
+      params = %{sort: "relevance", query: "traffic"}
+
+      local_eventually(fn ->
+        response_map = call_search_endpoint_with_params(params)
+
+        assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
+      end)
+    end
+
+    test "pagination parameters are respected" do
+      Enum.each(0..9, fn x -> create_dataset(%{id: "#{x}", business: %{modifiedDate: "2020-03-01T00:0#{x}:00Z"}}) end)
+
+      local_eventually(fn ->
+        %{"results" => results, "metadata" => metadata} = call_search_endpoint_with_params(%{sort: "last_mod", limit: "2"})
+
+        assert ["9", "8"] == results |> Enum.map(fn model -> Map.get(model, "id") end)
+        assert 2 == metadata |> Map.get("limit")
+        assert 0 == metadata |> Map.get("offset")
+        assert 10 == metadata |> Map.get("totalDatasets")
+      end)
+
+      local_eventually(fn ->
+        %{"results" => results, "metadata" => metadata} = call_search_endpoint_with_params(%{sort: "last_mod", limit: "2", offset: "2"})
+
+        assert ["7", "6"] == results |> Enum.map(fn model -> Map.get(model, "id") end)
+        assert 2 == metadata |> Map.get("limit")
+        assert 2 == metadata |> Map.get("offset")
+        assert 10 == metadata |> Map.get("totalDatasets")
+      end)
+    end
+  end
+
+  defp create_dataset(overrides) do
+    create_organization(@organization_id_1)
+
+    dataset =
+      overrides
+      |> Map.put_new(:technical, %{})
+      |> put_in([:technical, :orgId], @organization_id_1)
+      |> TDG.create_dataset()
+
+    Brook.Event.send(DiscoveryApi.instance(), "dataset:update", :integration_test, dataset)
+    dataset
+  end
+
+  defp create_organization(id) do
+    organization = TDG.create_organization(%{id: id})
+    Brook.Event.send(DiscoveryApi.instance(), "organization:update", :integration_test, organization)
+  end
+
+  defp local_eventually(function) do
+    eventually(function, 250, 10)
+  end
+
+  defp call_search_endpoint_with_params(params) do
+    %{status_code: 200, body: json_response} =
+      HTTPoison.get!(
+        "localhost:4000/api/v2/dataset/search",
+        [],
+        params: params
+      )
+
+    Jason.decode!(json_response)
   end
 
   defp reconfigure_es_url(url) do
@@ -731,7 +890,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   defp index_model(overrides \\ %{}) do
     dataset = Helper.sample_model(overrides)
 
-    assert {:ok, _saved} = DatasetSearchIndex.update(dataset)
+    assert {:ok, _saved} = Elasticsearch.Document.update(dataset)
 
     expected_dataset(dataset)
   end

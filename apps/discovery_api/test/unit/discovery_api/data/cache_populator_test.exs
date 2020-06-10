@@ -8,13 +8,13 @@ defmodule DiscoveryApi.Data.CachePopulatorTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Data.CachePopulator
   alias DiscoveryApi.Data.SystemNameCache
-  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
+  alias DiscoveryApi.Search.Elasticsearch
 
   @instance DiscoveryApi.instance()
 
   describe "init/1" do
     test "Populates the cache with existing view state models" do
-      allow(DatasetSearchIndex.replace_all(any()), return: {:ok, :yarp})
+      allow(Elasticsearch.Document.replace_all(any()), return: {:ok, :yarp})
 
       Helper.clear_saved_models()
 
@@ -37,7 +37,7 @@ defmodule DiscoveryApi.Data.CachePopulatorTest do
         assert {"bob", model.id} in :ets.lookup(DiscoveryApi.Search.Storage, "bob")
       end)
 
-      assert_called DatasetSearchIndex.replace_all([model])
+      assert_called Elasticsearch.Document.replace_all([model])
     end
   end
 end

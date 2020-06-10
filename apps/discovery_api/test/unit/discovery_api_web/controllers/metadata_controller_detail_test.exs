@@ -5,6 +5,8 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
+  alias DiscoveryApiWeb.Auth.TokenHandler
+  alias DiscoveryApi.Test.AuthHelper
 
   @dataset_id "123"
   @org_id "456"
@@ -128,6 +130,8 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
       subject_id: subject_id,
       token: token
     } do
+      allow(TokenHandler.on_verify(any(), any(), any()), exec: &AuthHelper.guardian_verify_passthrough/3, meck_options: [:passthrough])
+
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
       conn

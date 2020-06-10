@@ -7,7 +7,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Data.TableInfoCache
   alias DiscoveryApi.Search.{DataModelFilterator, DataModelFacinator, DataModelSearchinator}
-  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
+  alias DiscoveryApi.Search.Elasticsearch.Search
 
   @matched_params [
     %{"query" => "", "limit" => "10", "offset" => "0", "apiAccessible" => "false"},
@@ -55,19 +55,21 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
   end
 
   def advanced_search(conn, params) do
-    sort_by = Map.get(params, "sort", "name_asc")
+    sort = Map.get(params, "sort", "name_asc")
     current_user = conn.assigns.current_user
 
-    with {:ok, search_opts} <- build_search_opts(params, current_user),
-         {:ok, models, facets} <- DatasetSearchIndex.search(search_opts) do
+    with {:ok, offset} <- extract_int_from_params(params, "offset", 0),
+         {:ok, limit} <- extract_int_from_params(params, "limit", 10),
+         {:ok, search_opts} <- build_search_opts(params, current_user, sort, offset, limit),
+         {:ok, models, facets, total} <- Search.search(search_opts) do
       render(
         conn,
-        :search_dataset_summaries,
+        :advanced_search_dataset_summaries,
         models: models,
         facets: facets,
-        sort: sort_by,
-        offset: 0,
-        limit: 10
+        offset: offset,
+        limit: limit,
+        total: total
       )
     else
       {:request_error, reason} ->
@@ -104,7 +106,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
     )
   end
 
-  defp build_search_opts(params, current_user) do
+  defp build_search_opts(params, current_user, sort, offset, limit) do
     query = Map.get(params, "query", "")
     facets = Map.get(params, "facets", %{})
     api_accessible = parse_api_accessible(params)
@@ -123,7 +125,10 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
             api_accessible: api_accessible,
             keywords: Map.get(filter_facets, :keywords),
             org_title: Map.get(filter_facets, :organization, []) |> List.first(),
-            authorized_organization_ids: authorized_organization_ids
+            authorized_organization_ids: authorized_organization_ids,
+            sort: sort,
+            offset: offset,
+            limit: limit
           ]
           |> Enum.reject(fn {_opt, value} -> is_nil(value) end)
 

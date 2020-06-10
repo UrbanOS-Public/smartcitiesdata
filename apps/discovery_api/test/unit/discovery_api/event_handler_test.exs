@@ -14,7 +14,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApi.Data.{Model, SystemNameCache, TableInfoCache}
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApi.Search.Storage
-  alias DiscoveryApi.Search.DatasetIndex, as: DatasetSearchIndex
+  alias DiscoveryApi.Search.Elasticsearch
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
 
@@ -64,7 +64,7 @@ defmodule DiscoveryApi.EventHandlerTest do
       allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
       allow(RecommendationEngine.save(any()), return: :seriously_whatever)
       allow(DataJsonService.delete_data_json(), return: :ok)
-      allow(DatasetSearchIndex.update(any()), return: {:ok, :all_right_all_right})
+      allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})
       allow(TableInfoCache.invalidate(), return: :ok)
 
       dataset = TDG.create_dataset(%{})
@@ -95,7 +95,7 @@ defmodule DiscoveryApi.EventHandlerTest do
       expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
       expect(Model.delete(dataset.id), return: :ok)
       expect(DataJsonService.delete_data_json(), return: :ok)
-      expect(DatasetSearchIndex.delete(dataset.id), return: :ok)
+      expect(Elasticsearch.Document.delete(dataset.id), return: :ok)
 
       Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
     end

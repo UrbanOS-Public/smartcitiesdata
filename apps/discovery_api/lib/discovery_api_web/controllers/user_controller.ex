@@ -4,6 +4,7 @@ defmodule DiscoveryApiWeb.UserController do
 
   alias DiscoveryApi.Services.AuthService
   alias DiscoveryApi.Schemas.Users
+  alias DiscoveryApiWeb.Auth.TokenHandler
 
   def logged_in(conn, _params) do
     with {:ok, user_info} <- AuthService.get_user_info(Guardian.Plug.current_token(conn)),
@@ -16,5 +17,10 @@ defmodule DiscoveryApiWeb.UserController do
         Logger.error("Unable to handle user logged_in: #{inspect(error)}")
         render_error(conn, 500, "Internal Server Error")
     end
+  end
+
+  def logged_out(conn, _params) do
+    TokenHandler.Plug.sign_out(conn)
+    |> send_resp(:ok, "")
   end
 end

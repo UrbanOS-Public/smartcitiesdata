@@ -31,6 +31,28 @@ defmodule DiscoveryApiWeb.MultipleMetadataView do
     }
   end
 
+  def render("advanced_search_dataset_summaries.json", %{
+        models: models,
+        facets: facets,
+        offset: offset,
+        limit: limit,
+        total: total
+      }) do
+    datasets =
+      models
+      |> Enum.map(&translate_to_dataset/1)
+
+    %{
+      "metadata" => %{
+        "totalDatasets" => total,
+        "facets" => facets,
+        "limit" => limit,
+        "offset" => offset
+      },
+      "results" => datasets
+    }
+  end
+
   defp translate_to_dataset(%Model{} = model) do
     %{
       id: model.id,

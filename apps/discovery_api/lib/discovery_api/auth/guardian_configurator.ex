@@ -4,13 +4,13 @@ defmodule DiscoveryApi.Auth.GuardianConfigurator do
   """
   require Logger
 
-  alias DiscoveryApi.Auth.Guardian
+  alias DiscoveryApiWeb.Auth.TokenHandler
 
   def configure(additional_config \\ []) do
-    current_config = Application.get_env(:discovery_api, Guardian)
+    current_config = Application.get_env(:discovery_api, TokenHandler)
     new_config = config_for_auth_provider(current_config)
 
-    Application.put_env(:discovery_api, Guardian, Keyword.merge(new_config, additional_config))
+    Application.put_env(:discovery_api, TokenHandler, Keyword.merge(new_config, additional_config))
   end
 
   defp config_for_auth_provider(current_config) do

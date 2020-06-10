@@ -11,7 +11,8 @@ config :discovery_api,
   divo: "test/integration/docker-compose.yaml",
   divo_wait: [dwell: 2000, max_tries: 35],
   hosted_bucket: "kdp-cloud-storage",
-  hosted_region: aws_region
+  hosted_region: aws_region,
+  hsts_enabled: false
 
 config :redix,
   args: redix_args
@@ -46,7 +47,15 @@ config :discovery_api, :elasticsearch,
         mappings: %{
           properties: %{
             title: %{
+              type: "text",
+              index: true
+            },
+            titleKeyword: %{
               type: "keyword",
+              index: true
+            },
+            modifiedDate: %{
+              type: "date",
               index: true
             },
             keywords: %{
@@ -88,6 +97,8 @@ config :discovery_api, DiscoveryApi.Repo,
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox,
   port: "5456"
+
+config :guardian, Guardian.DB, repo: DiscoveryApi.Repo
 
 config :discovery_api, :brook,
   instance: :discovery_api,
