@@ -53,7 +53,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       {:ok, _response} = Elasticsearch.Document.delete(dataset.id)
 
       eventually(fn ->
-        {:ok, models, _facets} = Search.search(query: "Sensor Data")
+        {:ok, models, _facets, _total} = Search.search(query: "Sensor Data")
         assert Enum.empty?(models)
       end)
     end
@@ -539,7 +539,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{title: "Nazderaldac"})
       index_model()
 
-      {:ok, models, _facets} = Search.search(query: "Nazderaldac")
+      {:ok, models, _facets, _total} = Search.search(query: "Nazderaldac")
       assert [dataset_one] == models
     end
 
@@ -547,7 +547,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{description: "Accio Dataset!", private: true})
       dataset_two = index_model(%{description: "Accio Dataset!", private: false})
 
-      {:ok, models, _facets} = Search.search(query: "Accio Dataset")
+      {:ok, models, _facets, _total} = Search.search(query: "Accio Dataset")
 
       assert [dataset_two] == models
     end
@@ -558,7 +558,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       private_org_1 = index_model(%{id: "3", description: "Parking Transactions", private: true, organizationDetails: %{id: "o1"}})
       private_org_2 = index_model(%{id: "4", description: "Parking Transactions", private: true, organizationDetails: %{id: "o2"}})
 
-      {:ok, models, _facets} = Search.search(query: "Parking Transactions", authorized_organization_ids: ["o1", "o2"])
+      {:ok, models, _facets, _total} = Search.search(query: "Parking Transactions", authorized_organization_ids: ["o1", "o2"])
 
       extract_id_and_sort = &(Enum.map(&1, fn model -> model.id end) |> Enum.sort())
       expected_dataset_ids = extract_id_and_sort.([public, private_org_1, private_org_2])
@@ -570,7 +570,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{description: "Accio Dataset!", private: true})
       dataset_two = index_model(%{description: "Accio Dataset!", private: false})
 
-      {:ok, models, _facets} = Search.search(query: "Accio Dataset")
+      {:ok, models, _facets, _total} = Search.search(query: "Accio Dataset")
       assert [dataset_two] == models
     end
 
@@ -580,7 +580,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{organizationDetails: organization_1})
       index_model()
 
-      {:ok, models, _facets} = Search.search(query: "Olivanders")
+      {:ok, models, _facets, _total} = Search.search(query: "Olivanders")
       assert [dataset_one] == models
     end
 
@@ -588,7 +588,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{keywords: ["Newts", "Scales", "Tails"]})
       index_model()
 
-      {:ok, models, _facets} = Search.search(query: "Newts")
+      {:ok, models, _facets, _total} = Search.search(query: "Newts")
       assert [dataset_one] == models
     end
 
@@ -597,7 +597,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Reports", description: "Newt Scamander's reports 1920-1930"})
       index_model(%{title: "Others"})
 
-      {:ok, models, _facets} = Search.search(query: "Newt")
+      {:ok, models, _facets, _total} = Search.search(query: "Newt")
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Reports" end)
       assert Enum.any?(models, fn model -> model.title == "Ingredients" end)
@@ -610,7 +610,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Room Inventory", keywords: ["Library"]})
       index_model(%{title: "Others"})
 
-      {:ok, models, _facets} = Search.search(query: "Library Records")
+      {:ok, models, _facets, _total} = Search.search(query: "Library Records")
       assert 3 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Library Records" end)
       assert Enum.any?(models, fn model -> model.title == "Class Reports" end)
@@ -622,7 +622,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model()
       index_model()
 
-      {:ok, models, _facets} = Search.search(query: "Hippogriff")
+      {:ok, models, _facets, _total} = Search.search(query: "Hippogriff")
       assert [] == models
     end
 
@@ -630,7 +630,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Student Roster"})
       index_model(%{title: "Inventory"})
 
-      {:ok, models, _facets} = Search.search(query: "")
+      {:ok, models, _facets, _total} = Search.search(query: "")
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Student Roster" end)
       assert Enum.any?(models, fn model -> model.title == "Inventory" end)
@@ -640,7 +640,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Room List (West Wing)", keywords: ["inventory"]})
       index_model(%{title: "Passageways -- GEOJSON"})
 
-      {:ok, models, _facets} = Search.search(keywords: ["inventory"])
+      {:ok, models, _facets, _total} = Search.search(keywords: ["inventory"])
       assert 1 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Room List (West Wing)" end)
     end
@@ -651,7 +651,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Passageways (Dungeon) -- GEOJSON", keywords: ["magic"]})
       index_model(%{title: "Ingredient List (Restricted)", keywords: ["inventory", "magic", "test"]})
 
-      {:ok, models, _facets} = Search.search(keywords: ["inventory", "magic"])
+      {:ok, models, _facets, _total} = Search.search(keywords: ["inventory", "magic"])
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Ingredient List" end)
       assert Enum.any?(models, fn model -> model.title == "Ingredient List (Restricted)" end)
@@ -662,7 +662,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Ingredient List", keywords: ["inventory", "magic"]})
       index_model(%{title: "Passageways (Faculty Level) -- GEOJSON", keywords: ["magic"]})
 
-      {:ok, models, _facets} = Search.search(keywords: ["goblin", "gnome"])
+      {:ok, models, _facets, _total} = Search.search(keywords: ["goblin", "gnome"])
       assert [] == models
     end
 
@@ -671,7 +671,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       dataset_one = index_model(%{organizationDetails: organization})
       index_model()
 
-      {:ok, models, _facets} = Search.search(org_title: organization.orgTitle)
+      {:ok, models, _facets, _total} = Search.search(org_title: organization.orgTitle)
       assert dataset_one == List.first(models)
     end
 
@@ -679,7 +679,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model()
       index_model()
 
-      {:ok, models, _facets} = Search.search(org_title: "Orthagan Alley Inc.")
+      {:ok, models, _facets, _total} = Search.search(org_title: "Orthagan Alley Inc.")
       assert [] == models
     end
 
@@ -688,7 +688,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Owl Registry", sourceType: "ingest"})
       index_model(%{title: "Hallways -- GEOJSON", sourceType: "host"})
 
-      {:ok, models, _facets} = Search.search(api_accessible: true)
+      {:ok, models, _facets, _total} = Search.search(api_accessible: true)
       assert 2 == length(models)
       assert Enum.any?(models, fn model -> model.title == "Mail Status" end)
       assert Enum.any?(models, fn model -> model.title == "Owl Registry" end)
@@ -698,7 +698,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "Form 1 Student List", keywords: ["students", "forms"]})
       index_model(%{title: "House Prefects", keywords: ["students", "houses"]})
 
-      {:ok, _models, %{keywords: keyword_facets}} = Search.search()
+      {:ok, _models, %{keywords: keyword_facets}, _total} = Search.search()
       assert 3 == length(keyword_facets)
       assert [%{name: "students", count: 2}, %{name: "forms", count: 1}, %{name: "houses", count: 1}] == keyword_facets
     end
@@ -710,13 +710,51 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       index_model(%{title: "House Leaders", organizationDetails: organization1})
       index_model(%{title: "Headmaster's List", organizationDetails: organization2})
 
-      {:ok, _models, %{organization: org_facets}} = Search.search()
+      {:ok, _models, %{organization: org_facets}, _total} = Search.search()
       assert 2 == length(org_facets)
       assert [%{name: "Faculty", count: 2}, %{name: "Headmaster's Office", count: 1}] == org_facets
+    end
+
+    test "given more datasets than the provided limit" do
+      Enum.each(1..5, fn x -> index_model(%{id: "dataset-#{x}"}) end)
+
+      {:ok, models, _facets, total} = Search.search(limit: 3)
+      assert 3 == length(models)
+      assert 5 == total
+    end
+
+    test "given enough datasets to have a second page" do
+      Enum.each(1..5, fn x -> index_model(%{id: "dataset-#{x}"}) end)
+
+      {:ok, models, _facets, total} = Search.search(limit: 3, offset: 3)
+      assert 2 == length(models)
+      assert 5 == total
+    end
+
+    test "given no matching datasets and an offset" do
+      Enum.each(1..5, fn x -> index_model(%{id: "dataset-#{x}"}) end)
+
+      {:ok, models, _facets, total} = Search.search(query: "Oscilliscope", limit: 3, offset: 3)
+      assert Enum.empty?(models)
+      assert 0 == total
     end
   end
 
   describe "end to end search tests" do
+    test "should handle a complex set of search params" do
+      create_dataset(%{id: "1", business: %{dataTitle: "Zoo", keywords: ["Fruit"]}, technical: %{sourceType: "ingest"}})
+      create_dataset(%{id: "2", business: %{dataTitle: "Alphabet"}})
+      create_dataset(%{id: "3", business: %{dataTitle: "2020 Zones"}})
+      params = %{sort: "last_mod", query: "Zoo", apiAccessible: true, "facets%5Bkeywords%5D%5B%5D": "Fruit"}
+
+      local_eventually(fn ->
+        response_map = call_search_endpoint_with_params(params)
+
+        assert ["Zoo"] ==
+                 response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
+      end)
+    end
+
     test "sort should default by title ascending" do
       create_dataset(%{id: "1", business: %{dataTitle: "Zoo"}})
       create_dataset(%{id: "2", business: %{dataTitle: "Alphabet"}})
@@ -771,14 +809,37 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
       end)
     end
+
+    test "pagination parameters are respected" do
+      Enum.each(0..9, fn x -> create_dataset(%{id: "#{x}", business: %{modifiedDate: "2020-03-01T00:0#{x}:00Z"}}) end)
+
+      local_eventually(fn ->
+        %{"results" => results, "metadata" => metadata} = call_search_endpoint_with_params(%{sort: "last_mod", limit: "2"})
+
+        assert ["9", "8"] == results |> Enum.map(fn model -> Map.get(model, "id") end)
+        assert 2 == metadata |> Map.get("limit")
+        assert 0 == metadata |> Map.get("offset")
+        assert 10 == metadata |> Map.get("totalDatasets")
+      end)
+
+      local_eventually(fn ->
+        %{"results" => results, "metadata" => metadata} = call_search_endpoint_with_params(%{sort: "last_mod", limit: "2", offset: "2"})
+
+        assert ["7", "6"] == results |> Enum.map(fn model -> Map.get(model, "id") end)
+        assert 2 == metadata |> Map.get("limit")
+        assert 2 == metadata |> Map.get("offset")
+        assert 10 == metadata |> Map.get("totalDatasets")
+      end)
+    end
   end
 
   defp create_dataset(overrides) do
     create_organization(@organization_id_1)
 
     dataset =
-      %{technical: %{orgId: @organization_id_1}}
-      |> Map.merge(overrides)
+      overrides
+      |> Map.put_new(:technical, %{})
+      |> put_in([:technical, :orgId], @organization_id_1)
       |> TDG.create_dataset()
 
     Brook.Event.send(DiscoveryApi.instance(), "dataset:update", :integration_test, dataset)
