@@ -25,6 +25,7 @@ defmodule EventHandlerTest do
     allow(Brook.ViewState.delete(any(), any()), return: :ok)
     allow(Datasets.delete(any()), return: {:ok, "good"})
     expect(TelemetryHelper.add_event_count(any()), return: :ok)
+
     Brook.Event.new(type: dataset_delete(), data: dataset, author: :author)
     |> Andi.EventHandler.handle_event()
 
