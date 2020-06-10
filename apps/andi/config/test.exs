@@ -24,4 +24,4 @@ config :andi, :brook,
     init_arg: []
   ]
 
-  config :andi, telemetry_port: 4050
+config :andi, telemetry_port: 9568

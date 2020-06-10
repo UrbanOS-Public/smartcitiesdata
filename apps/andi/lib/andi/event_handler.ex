@@ -44,6 +44,7 @@ defmodule Andi.EventHandler do
 
   def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{id: id}, create_ts: create_ts}) do
     TelemetryHelper.add_event_count("data_ingest_end")
+
     # Brook converts all maps to string keys when it retrieves a value from its state, even if they're inserted as atom keys. For that reason, make sure to insert as string keys so that we're consistent.
     Datasets.update_ingested_time(id, create_ts)
 
