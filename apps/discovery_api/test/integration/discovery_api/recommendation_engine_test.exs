@@ -67,7 +67,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
     RecommendationEngine.save(dataset_that_should_match)
     RecommendationEngine.save(dataset_that_doesnt_meet_column_count_threshold)
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset_to_get_recommendations_for)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset_to_get_recommendations_for)
 
     Patiently.wait_for!(
       fn -> DiscoveryApi.Data.Model.get(dataset_to_get_recommendations_for.id) != nil end,

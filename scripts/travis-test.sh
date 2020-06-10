@@ -22,4 +22,4 @@ sudo service postgresql stop
 
 # script
 cd apps/$app
-mix test.integration
+mix test.integration --max-failures 1

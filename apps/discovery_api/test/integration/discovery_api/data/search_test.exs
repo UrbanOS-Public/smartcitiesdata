@@ -5,6 +5,7 @@ defmodule DiscoveryApi.Data.SearchTest do
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.Event, only: [dataset_update: 0]
   import SmartCity.TestHelper
+  alias DiscoveryApi.Data.Model
 
   setup do
     Redix.command!(:redix, ["FLUSHALL"])
@@ -67,7 +68,11 @@ defmodule DiscoveryApi.Data.SearchTest do
           technical: %{orgId: organization.id, schema: []}
         })
 
-      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
+      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        assert nil != Model.get(dataset.id)
+      end)
 
       Redix.command!(:redix, ["FLUSHALL"])
 

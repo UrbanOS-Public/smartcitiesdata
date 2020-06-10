@@ -20,13 +20,13 @@ defmodule DiscoveryApi.Data.DataJsonTest do
     organization = Helper.create_persisted_organization()
 
     dataset_one = TDG.create_dataset(%{technical: %{orgId: organization.id, private: true}})
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset_one)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset_one)
 
     dataset_two = TDG.create_dataset(%{technical: %{orgId: organization.id}})
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset_two)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset_two)
 
     dataset_three = TDG.create_dataset(%{technical: %{orgId: organization.id}})
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset_three)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset_three)
 
     eventually(
       fn ->
@@ -55,7 +55,7 @@ defmodule DiscoveryApi.Data.DataJsonTest do
 
   test "Returns an additional dataset when we add one via an update", %{organization_id: organization_id} do
     additional_dataset = TDG.create_dataset(%{technical: %{orgId: organization_id}})
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", additional_dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, additional_dataset)
 
     eventually(fn ->
       assert Enum.count(get_data_json_datasets()) == 3

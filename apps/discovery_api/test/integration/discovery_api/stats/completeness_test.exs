@@ -44,8 +44,8 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
           }
         })
 
-      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset1)
-      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset2)
+      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset1)
+      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset2)
 
       dataset1
       |> PrestoTestHelper.create_test_table()
