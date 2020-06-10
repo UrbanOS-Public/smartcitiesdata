@@ -77,7 +77,7 @@ config :andi, AndiWeb.Endpoint,
     signing_salt: "SUPER VERY TOP SECRET!!!"
   ]
 
-config :andi, telemetry_port: 9568
+config :andi, metrics_port: 9002
 
 defmodule Andi.DivoPostgres do
   @moduledoc """

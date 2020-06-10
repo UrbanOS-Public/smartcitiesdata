@@ -34,5 +34,5 @@ defmodule Andi.Application do
     :ok
   end
 
-  def metrics_config, do: [port: Application.get_env(:andi, :telemetry_port), metrics: Andi.TelemetryHelper.metrics()]
+  def metrics_config, do: [port: Application.get_env(:andi, :metrics_port), metrics: Andi.TelemetryHelper.metrics()]
 end

@@ -53,4 +53,4 @@ config :andi, Andi.Repo,
   port: System.get_env("POSTGRES_PORT")
 
 config :andi,
-  telemetry_port: System.get_env("TELEMETRY_PORT")
+  metrics_port: System.get_env("METRICS_PORT")
