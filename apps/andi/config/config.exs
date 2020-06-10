@@ -35,8 +35,3 @@ config :andi, ecto_repos: [Andi.Repo]
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
-
-config :prestige, :session_opts,
-  user: "andi",
-  catalog: "hive",
-  schema: "default"
