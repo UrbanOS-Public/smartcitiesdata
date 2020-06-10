@@ -23,3 +23,5 @@ config :andi, :brook,
     module: Brook.Storage.Ets,
     init_arg: []
   ]
+
+config :andi, metrics_port: 9002

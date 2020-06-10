@@ -51,3 +51,6 @@ config :andi, Andi.Repo,
   password: System.get_env("POSTGRES_PASSWORD"),
   hostname: System.get_env("POSTGRES_HOST"),
   port: System.get_env("POSTGRES_PORT")
+
+config :andi,
+  metrics_port: System.get_env("METRICS_PORT")
