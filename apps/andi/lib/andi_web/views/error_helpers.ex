@@ -70,6 +70,7 @@ defmodule AndiWeb.ErrorHelpers do
         :selector when message != "is required" -> message
         :format -> "Error: " <> get_format_error_message(message)
         :topLevelSelector when message != "is required" -> "Error: #{message}"
+        :dataName when message == "existing dataset has the same orgName and dataName" -> "Error: #{message}"
         _ -> "Please enter a valid #{get_downcased_display_name(field)}."
       end
 

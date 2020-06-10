@@ -6,6 +6,7 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.FormTools
+  alias Andi.InputSchemas.Datasets.Dataset
   alias Ecto.Changeset
 
   import Andi
@@ -141,6 +142,12 @@ defmodule AndiWeb.EditLiveView do
     form_data
     |> InputConverter.form_data_to_ui_changeset()
     |> complete_validation(socket)
+  end
+
+  def handle_event("dataTitleBlur", _, socket) do
+    changeset = Dataset.validate_unique_system_name(socket.assigns.changeset)
+
+    {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("publish", _, socket) do

@@ -721,21 +721,32 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   describe "add new dataset" do
-    test "updating data title updates data name and checks uniqueness of system name" %{conn: conn} do
-      dataset1 = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camino", systemName: "kevino__camino"}})
-      dataset2 = TDG.create_dataset(%{technical: %{orgName: "carrabino", dataName: "blah", systemName: "kevino__blah"}})
+    test "updating data title updates data name and checks uniqueness of system name", %{conn: conn} do
 
+      dataset1 = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camino", systemName: "kevino__camino"}})
       {:ok, _} = Datasets.update(dataset1)
-      {:ok, _} = Datasets.update(dataset2)
-      assert {:ok, view, html} = live(conn, @url_path <> dataset2.id)
+
+      new_dataset = TDG.create_dataset(%{technical: %{orgName: "carrabino", dataName: "", systemName: ""}})
+      {:ok, updated_dataset} = Datasets.update(new_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> new_dataset.id)
 
       form_data =
-        blank_dataset
+        updated_dataset
         |> put_in([:business, :dataTitle], "camino")
         |> FormTools.form_data_from_andi_dataset()
 
       render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
       html = render(view)
+
+      render_change(view, :save, %{"form_data" => form_data})
+
+      html = render(view)
+
+      assert Enum.empty?(find_elements(html, "#dataName-error-msg"))
+
+      # render_change(view, :save, %{"form_data" => form_data})
+      # render_change(view, :publish, %{"form_data" => form_data})
 
       #TODO: check no errors here, make new dataset and find error
     end
