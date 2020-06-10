@@ -13,9 +13,8 @@ defmodule EventHandlerTest do
 
   test "Andi records completed ingestions" do
     dataset = TDG.create_dataset(%{})
-    allow(TelemetryHelper.add_event_count(any()), return: :ok)
     allow(Datasets.update_ingested_time(any(), any()), return: nil)
-
+    expect(TelemetryHelper.add_event_count(any()), return: :ok)
     Brook.Test.send(instance_name(), data_ingest_end(), :andi, dataset)
 
     assert_called Datasets.update_ingested_time(dataset.id, any())
@@ -23,10 +22,9 @@ defmodule EventHandlerTest do
 
   test "should delete the view state when dataset delete event is called" do
     dataset = TDG.create_dataset(%{id: Faker.UUID.v4()})
-    allow(TelemetryHelper.add_event_count(any()), return: :ok)
     allow(Brook.ViewState.delete(any(), any()), return: :ok)
     allow(Datasets.delete(any()), return: {:ok, "good"})
-
+    expect(TelemetryHelper.add_event_count(any()), return: :ok)
     Brook.Event.new(type: dataset_delete(), data: dataset, author: :author)
     |> Andi.EventHandler.handle_event()
 
