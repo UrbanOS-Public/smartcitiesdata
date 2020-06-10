@@ -54,12 +54,12 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     if Datasets.is_unique?(id, technical.dataName, technical.orgName) do
       changeset
     else
-      updated_changeset =
+      updated_technical_changeset =
         changeset
         |> Ecto.Changeset.get_change(:technical)
         |> add_data_name_error()
 
-      Ecto.Changeset.put_change(changeset, :technical, updated_changeset)
+      Ecto.Changeset.put_change(changeset, :technical, updated_technical_changeset)
     end
   end
 

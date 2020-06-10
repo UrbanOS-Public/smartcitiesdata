@@ -722,7 +722,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
   describe "add new dataset" do
     test "updating data title allows common data name across different orgs", %{conn: conn} do
-      existing_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camino", systemName: "kevino__camino"}})
+      existing_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camido", systemName: "kevino__camino"}})
       {:ok, _} = Datasets.update(existing_dataset)
 
       new_dataset = TDG.create_dataset(%{technical: %{orgName: "carrabino", dataName: "blah", systemName: "carrabino__blah"}})
@@ -732,7 +732,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       form_data =
         new_andi_dataset
-        |> put_in([:business, :dataTitle], "camino")
+        |> put_in([:business, :dataTitle], "camido")
         |> FormTools.form_data_from_andi_dataset()
 
       render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})

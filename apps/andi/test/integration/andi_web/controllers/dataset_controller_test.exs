@@ -191,6 +191,7 @@ defmodule Andi.CreateDatasetTest do
       errors =
         Jason.decode!(body)
         |> Map.get("errors")
+        |> Map.get("technical")
 
       assert errors["dataName"] == ["existing dataset has the same orgName and dataName"]
     end
