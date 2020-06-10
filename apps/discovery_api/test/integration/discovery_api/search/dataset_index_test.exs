@@ -853,6 +853,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
     eventually(fn ->
       assert {:ok, _} = Organizations.get_organization(organization.id)
     end)
+
     organization
   end
 
