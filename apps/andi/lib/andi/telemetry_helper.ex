@@ -9,10 +9,10 @@ defmodule Andi.TelemetryHelper do
 
   def add_event_count(event_type),
     do:
-      :telemetry.execute([:events_handled], %{count: 1}, %{
+      :telemetry.execute([:events_handled], %{}, %{
         app: "andi",
         author: "andi",
         topic: Application.get_env(:andi, :topic),
-        event_type: event_type
+        event_type: "event_type"
       })
 end
