@@ -1,17 +1,11 @@
 defmodule DiscoveryApi.UserOrganizationAssociationTest do
   use ExUnit.Case
-  use Divo
   use DiscoveryApi.DataCase
   import SmartCity.Event, only: [user_organization_associate: 0]
   import SmartCity.TestHelper
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
-
-  setup_all do
-    Helper.wait_for_brook_to_be_ready()
-    :ok
-  end
 
   test "when a user:organization:associate event is received then the association is persisted" do
     organization = Helper.create_persisted_organization()

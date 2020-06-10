@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.EventHandlerTest do
   use ExUnit.Case
-  use Divo
 
   use DiscoveryApi.DataCase
   use DiscoveryApi.ElasticSearchCase
@@ -12,11 +11,6 @@ defmodule DiscoveryApi.EventHandlerTest do
 
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Search.Elasticsearch
-
-  setup_all do
-    Helper.wait_for_brook_to_be_ready()
-    :ok
-  end
 
   describe "#{dataset_update()}" do
     test "updates the dataset in the search index" do

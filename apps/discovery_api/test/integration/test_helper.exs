@@ -1,5 +1,9 @@
-ExUnit.start()
+alias DiscoveryApi.Test.Helper
+
+Divo.Suite.start()
+Helper.wait_for_brook_to_be_ready()
 Faker.start()
+ExUnit.start()
 
 defmodule URLResolver do
   def resolve_url(url) do

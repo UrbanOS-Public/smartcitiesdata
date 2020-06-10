@@ -1,7 +1,6 @@
 defmodule DiscoveryApi.Data.QueryTest do
   import ExUnit.CaptureLog
   use ExUnit.Case
-  use Divo
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
@@ -22,7 +21,6 @@ defmodule DiscoveryApi.Data.QueryTest do
     auth0_setup()
     |> on_exit()
 
-    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
 
     prestige_session =

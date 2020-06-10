@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Data.HostedFileTest do
   use ExUnit.Case
-  use Divo
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
@@ -18,7 +17,6 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     Application.put_env(:ex_aws, :access_key_id, "testing_access_key")
     Application.put_env(:ex_aws, :secret_access_key, "testing_secret_key")
 
-    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
 
     "test/integration/test-file.test"

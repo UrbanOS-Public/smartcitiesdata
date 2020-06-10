@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Stats.CompletenessTest do
   use ExUnit.Case
-  use Divo
   use DiscoveryApi.DataCase
   import SmartCity.TestHelper
   alias SmartCity.TestDataGenerator, as: TDG
@@ -12,7 +11,6 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   import SmartCity.Event, only: [dataset_update: 0]
 
   setup do
-    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
     :ok
   end

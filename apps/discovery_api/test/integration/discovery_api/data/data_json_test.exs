@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Data.DataJsonTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres", :elasticsearch]
   use DiscoveryApi.DataCase
 
   import SmartCity.Event, only: [dataset_update: 0]
@@ -12,7 +11,6 @@ defmodule DiscoveryApi.Data.DataJsonTest do
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   setup_all do
-    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
 
     on_exit(fn ->

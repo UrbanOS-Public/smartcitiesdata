@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Data.SearchTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :zookeeper, :kafka, :zookeeper, :kafka, :"ecto-postgres"]
   use DiscoveryApi.DataCase
   alias DiscoveryApi.Test.Helper
   alias SmartCity.TestDataGenerator, as: TDG
@@ -8,7 +7,6 @@ defmodule DiscoveryApi.Data.SearchTest do
   import SmartCity.TestHelper
 
   setup do
-    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
 
     model_one =

@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Data.PrestoIngrationTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :presto, :metastore, :postgres, :minio, :zookeeper, :kafka, :"ecto-postgres", :elasticsearch]
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
@@ -9,7 +8,6 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
   import SmartCity.TestHelper, only: [eventually: 3]
 
   setup do
-    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
     :ok
   end

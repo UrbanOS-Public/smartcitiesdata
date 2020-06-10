@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :"ecto-postgres", :zookeeper, :kafka, :elasticsearch]
   use DiscoveryApi.ElasticSearchCase
   use DiscoveryApi.DataCase
 
@@ -14,11 +13,6 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   alias DiscoveryApi.Data.Model
 
   @organization_id_1 "11119ccf-de9f-4229-842f-e3733972d111"
-
-  setup_all do
-    Helper.wait_for_brook_to_be_ready()
-    :ok
-  end
 
   describe "create/0" do
     test "it creates the datasets index", %{es_indices: %{datasets: index}} do

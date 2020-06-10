@@ -40,6 +40,11 @@ defmodule DiscoveryApi.DataCase do
   setup_all do
     Mix.Tasks.Ecto.Create.run([])
     Mix.Tasks.Ecto.Migrate.run([])
+
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(DiscoveryApi.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(DiscoveryApi.Repo, :auto)
+
+    :ok
   end
 
   @doc """
