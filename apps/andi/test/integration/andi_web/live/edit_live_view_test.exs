@@ -211,7 +211,7 @@ defmodule AndiWeb.EditLiveViewTest do
               %{
                 name: "three",
                 type: "list",
-                subType: "map",
+                itemType: "map",
                 subSchema: [
                   %{
                     name: "three-one",
@@ -263,7 +263,7 @@ defmodule AndiWeb.EditLiveViewTest do
               %{
                 name: "one",
                 type: "list",
-                subType: "map",
+                itemType: "map",
                 description: "description",
                 subSchema: [
                   %{
@@ -304,10 +304,9 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "handles datasets with empty schema fields", %{conn: conn} do
-      dataset = TDG.create_dataset(%{schema: []})
+      dataset = TDG.create_dataset(%{technical: %{sourceType: "remote", schema: []}})
 
       {:ok, _} = Datasets.update(dataset)
-
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
   end
@@ -321,7 +320,7 @@ defmodule AndiWeb.EditLiveViewTest do
               %{
                 name: "one",
                 type: "list",
-                subType: "map",
+                itemType: "string",
                 description: "description",
                 subSchema: [
                   %{
@@ -642,12 +641,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
   describe "finalize form" do
     setup do
-      dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            cadence: "1 1 1 * * *"
-          }
-        })
+      dataset = TDG.create_dataset(%{technical: %{cadence: "1 1 1 * * *"}})
 
       {:ok, andi_dataset} = Datasets.update(dataset)
       [dataset: andi_dataset]

@@ -22,7 +22,7 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
                 id: schema_parent_field_id,
                 type: "map",
                 subSchema: [
-                  %{name: "map_field_child_list", id: schema_child_field_id, type: "list"},
+                  %{name: "map_field_child_list", id: schema_child_field_id, type: "list", itemType: "string"},
                   %{name: "map_field_child_string", type: "string"}
                 ]
               }
@@ -130,6 +130,21 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       assert bad_field.technical_id == nil
       assert bad_field.parent_id == technical_id
     end
+
+    test "allows adding date field with no format", %{dataset: dataset} do
+      parent_ids = DataDictionaryFields.get_parent_ids(dataset)
+
+      {top_level_bread_crumb, technical_id} = parent_ids |> hd()
+
+      field_as_map = %{
+        name: "cam",
+        type: "date",
+        parent_id: technical_id,
+        dataset_id: dataset.id
+      }
+
+      {:ok, _field} = DataDictionaryFields.add_field_to_parent(field_as_map, top_level_bread_crumb)
+    end
   end
 
   describe "get_parent_ids/1" do
@@ -146,7 +161,7 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
                 id: schema_parent_field_id,
                 type: "map",
                 subSchema: [
-                  %{name: "map_field_child_list", id: schema_child_field_id, type: "list"},
+                  %{name: "map_field_child_list", id: schema_child_field_id, type: "list", itemType: "string"},
                   %{name: "map_field_child_string", type: "string"}
                 ]
               }

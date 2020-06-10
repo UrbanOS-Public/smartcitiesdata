@@ -10,7 +10,10 @@ defmodule AndiWeb.ErrorHelpers do
   @doc """
   Generates tag for inlined form input errors.
   """
-  def error_tag(form, field, options \\ []) do
+  def error_tag(form, field, options \\ [])
+  def error_tag(form, _, _) when not is_map(form), do: []
+
+  def error_tag(form, field, options) do
     Enum.map(Keyword.get_values(form.errors, field), fn error ->
       translated = error |> interpret_error(field) |> translate_error()
 
@@ -63,8 +66,10 @@ defmodule AndiWeb.ErrorHelpers do
     updated_message =
       case field do
         field when field in [:sourceHeaders, :sourceQueryParams] -> "Please enter valid key(s)."
-        :topLevelSelector when message != "is required" -> "Error: #{message}"
         :cadence -> "Error: #{message}"
+        :selector when message != "is required" -> message
+        :format -> "Error: " <> get_format_error_message(message)
+        :topLevelSelector when message != "is required" -> "Error: #{message}"
         _ -> "Please enter a valid #{get_downcased_display_name(field)}."
       end
 
@@ -72,4 +77,15 @@ defmodule AndiWeb.ErrorHelpers do
   end
 
   def get_downcased_display_name(field_key), do: field_key |> DisplayNames.get() |> String.downcase()
+
+  defp get_format_error_message("Format string cannot be empty" <> _), do: "format is required"
+
+  defp get_format_error_message("There were no formatting directives in the provided string" <> _),
+    do: "format must adhere to directive format. Refer to the link above for help"
+
+  defp get_format_error_message("Invalid format string" <> _),
+    do: "format must adhere to directive format. Refer to the link above for help"
+
+  defp get_format_error_message("Expected at least one parser to succeed" <> _), do: "failed to parse"
+  defp get_format_error_message(message), do: message
 end

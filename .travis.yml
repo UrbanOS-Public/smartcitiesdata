@@ -25,6 +25,8 @@ jobs:
       script: bash scripts/travis-verify.sh
     - name: unit test
       script: mix test
+    - name: web
+      script: bash scripts/travis-test.sh web
     - name: pipeline
       script: bash scripts/travis-test.sh pipeline
     - name: providers

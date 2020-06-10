@@ -1,6 +1,6 @@
 use Mix.Config
 
-get_redix_args = fn (host, password) ->
+get_redix_args = fn host, password ->
   [host: host, password: password]
   |> Enum.filter(fn
     {_, nil} -> false
@@ -8,9 +8,12 @@ get_redix_args = fn (host, password) ->
     _ -> true
   end)
 end
+
 redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
+metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
+
 endpoint =
   kafka_brokers
   |> String.split(",")
@@ -28,7 +31,8 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
 config :discovery_api,
   hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
   hosted_region: System.get_env("HOSTED_FILE_REGION"),
-  presign_key: System.get_env("PRESIGN_KEY")
+  presign_key: System.get_env("PRESIGN_KEY"),
+  metrics_port: metrics_port
 
 config :discovery_api, DiscoveryApi.Repo,
   database: System.get_env("POSTGRES_DBNAME"),
@@ -65,7 +69,8 @@ config :redix,
 
 config :prestige, :session_opts, url: System.get_env("PRESTO_URL")
 
-config :discovery_api, DiscoveryApi.Auth.Guardian, issuer: System.get_env("AUTH_JWT_ISSUER")
+config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler, issuer: System.get_env("AUTH_JWT_ISSUER")
+config :guardian, Guardian.DB, repo: DiscoveryApi.Repo
 
 config :discovery_api,
   jwks_endpoint: System.get_env("AUTH_JWKS_ENDPOINT"),
@@ -105,7 +110,15 @@ config :discovery_api, :elasticsearch,
         mappings: %{
           properties: %{
             title: %{
+              type: "text",
+              index: true
+            },
+            titleKeyword: %{
               type: "keyword",
+              index: true
+            },
+            modifiedDate: %{
+              type: "date",
               index: true
             },
             keywords: %{

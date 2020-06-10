@@ -6,6 +6,7 @@ defmodule DiscoveryApi.Test.Helper do
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Auth.Auth0.CachedJWKS
+  alias DiscoveryApiWeb.Auth.TokenHandler
   alias DiscoveryApi.Auth.GuardianConfigurator
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -81,7 +82,7 @@ defmodule DiscoveryApi.Test.Helper do
   end
 
   def auth0_setup() do
-    secret_key = Application.get_env(:discovery_api, DiscoveryApi.Auth.Guardian) |> Keyword.get(:secret_key)
+    secret_key = Application.get_env(:discovery_api, TokenHandler) |> Keyword.get(:secret_key)
     GuardianConfigurator.configure(issuer: AuthHelper.valid_issuer())
 
     jwks = AuthHelper.valid_jwks()

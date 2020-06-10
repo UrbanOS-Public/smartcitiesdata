@@ -68,7 +68,8 @@ defmodule Andi.MixProject do
       {:elixir_uuid, "~> 1.2"},
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev},
-      {:telemetry_metrics_prometheus, "~> 0.5"}
+      {:telemetry_metrics_prometheus, "~> 0.5"},
+      {:web, in_umbrella: true}
     ]
   end
 

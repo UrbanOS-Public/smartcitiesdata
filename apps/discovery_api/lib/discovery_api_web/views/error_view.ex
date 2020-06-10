@@ -2,11 +2,15 @@ defmodule DiscoveryApiWeb.ErrorView do
   use DiscoveryApiWeb, :view
 
   def render("error.json", %{message: message}) do
-    %{message: message}
+    fill_json_template(message)
   end
 
   def render("error.csv", %{message: message}) do
     message
+  end
+
+  def fill_json_template(message) do
+    %{message: message}
   end
 
   # If you want to customize a particular status code

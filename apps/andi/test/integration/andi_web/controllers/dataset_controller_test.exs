@@ -326,12 +326,7 @@ defmodule Andi.CreateDatasetTest do
     end
 
     test "put with a system name does not reflect it back" do
-      new_dataset =
-        TDG.create_dataset(
-          technical: %{
-            systemName: "this_will__get_tossed"
-          }
-        )
+      new_dataset = TDG.create_dataset(technical: %{systemName: "this_will__get_tossed"})
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)
 
@@ -353,6 +348,13 @@ defmodule Andi.CreateDatasetTest do
         |> get_in(["id"])
 
       assert uuid != nil
+    end
+  end
+
+  describe "dataset get" do
+    test "andi doesn't return server in response headers" do
+      {:ok, %Tesla.Env{headers: headers}} = get("/api/v1/datasets", headers: [{"content-type", "application/json"}])
+      refute headers |> Map.new() |> Map.has_key?("server")
     end
   end
 

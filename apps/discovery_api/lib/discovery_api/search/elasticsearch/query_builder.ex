@@ -1,0 +1,140 @@
+defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
+  @moduledoc """
+  Builds out the JSON body for an Elasticsearch query
+  """
+  require Logger
+
+  @elasticsearch_max_buckets 2_147_483_647
+
+  def build(search_opts \\ []) do
+    query_json = %{
+      "aggs" => %{
+        "keywords" => %{"terms" => %{"field" => "facets.keywords", "size" => @elasticsearch_max_buckets}},
+        "organization" => %{"terms" => %{"field" => "facets.orgTitle", "size" => @elasticsearch_max_buckets}}
+      },
+      "from" => 0,
+      "query" => %{
+        "bool" => %{
+          "must" => build_must(search_opts),
+          "filter" => build_filter(search_opts)
+        }
+      },
+      "size" => 10,
+      "sort" => [build_sort_map(search_opts)]
+    }
+
+    Logger.debug("#{__MODULE__}: ElasticSearch Query: #{inspect(query_json)}")
+    query_json
+  end
+
+  defp build_must(search_opts) do
+    query = Keyword.get(search_opts, :query, "")
+    keywords = Keyword.get(search_opts, :keywords, [])
+    org_title = Keyword.get(search_opts, :org_title, nil)
+    api_accessible = Keyword.get(search_opts, :api_accessible, false)
+
+    [
+      match_terms(query),
+      match_keywords(keywords),
+      match_organization(org_title),
+      api_accessible(api_accessible)
+    ]
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp match_terms(term) when term in ["", nil] do
+    %{
+      "match_all" => %{}
+    }
+  end
+
+  defp match_terms(term) do
+    %{
+      "multi_match" => %{
+        "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
+        "fuzziness" => "AUTO",
+        "prefix_length" => 2,
+        "query" => term,
+        "type" => "most_fields"
+      }
+    }
+  end
+
+  defp match_keywords([]), do: nil
+
+  defp match_keywords(keywords) do
+    %{
+      "terms_set" => %{
+        "facets.keywords" => %{
+          "terms" => keywords,
+          "minimum_should_match_script" => %{
+            "source" => "return #{length(keywords)}"
+          }
+        }
+      }
+    }
+  end
+
+  defp api_accessible(false), do: nil
+
+  defp api_accessible(true) do
+    %{
+      "terms" => %{
+        "sourceType" => ["ingest", "stream"]
+      }
+    }
+  end
+
+  defp match_organization(nil), do: nil
+
+  defp match_organization(org_title) do
+    %{
+      "term" => %{
+        "facets.orgTitle" => org_title
+      }
+    }
+  end
+
+  defp build_filter(search_opts) do
+    authorized_organization_ids = Keyword.get(search_opts, :authorized_organization_ids, [])
+
+    [
+      %{
+        "bool" => %{
+          "should" => [
+            %{
+              "term" => %{
+                "private" => false
+              }
+            },
+            %{
+              "bool" => %{
+                "must" => [
+                  %{
+                    "term" => %{
+                      "private" => true
+                    }
+                  },
+                  %{
+                    "terms" => %{
+                      "organizationDetails.id" => authorized_organization_ids
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  end
+
+  defp build_sort_map(search_opts) do
+    case Keyword.get(search_opts, :sort, "name_asc") do
+      "name_asc" -> %{"titleKeyword" => %{"order" => "asc"}}
+      "name_desc" -> %{"titleKeyword" => %{"order" => "desc"}}
+      "last_mod" -> %{"modifiedDate" => %{"order" => "desc"}}
+      "relevance" -> %{}
+    end
+  end
+end

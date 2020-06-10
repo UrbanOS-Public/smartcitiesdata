@@ -4,7 +4,9 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
   import Checkov
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
-  alias DiscoveryApi.Search.DatasetIndex
+  alias DiscoveryApi.Search.Elasticsearch.Search
+  alias DiscoveryApi.Schemas.Users.User
+  alias DiscoveryApi.Schemas.Organizations.Organization
 
   setup do
     mock_dataset_summaries = [
@@ -139,7 +141,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
     end
 
     test "api/v2/search works", %{conn: conn, mock_dataset_summaries: mock_dataset_summaries} do
-      expect(DatasetIndex.search(query: "Bob", api_accessible: false), return: {:ok, mock_dataset_summaries, %{}})
+      expect(Search.search(query: "Bob", api_accessible: false, sort: "name_asc"), return: {:ok, mock_dataset_summaries, %{}})
 
       params = %{query: "Bob"}
       response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
@@ -155,7 +157,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
         "keywords" => [%{"name" => "bobber", "count" => 1}, %{"name" => "bobbington", "count" => 1}]
       }
 
-      expect(DatasetIndex.search(query: "Bob", api_accessible: false, keywords: ["bobber", "bobbington"]),
+      expect(Search.search(query: "Bob", api_accessible: false, keywords: ["bobber", "bobbington"], sort: "name_asc"),
         return: {:ok, mock_dataset_summaries, mock_facets}
       )
 
@@ -171,7 +173,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
         "organization" => [%{"name" => "Bobco", "count" => 2}]
       }
 
-      expect(DatasetIndex.search(query: "Bob", api_accessible: false, org_title: "Bobco"),
+      expect(Search.search(query: "Bob", api_accessible: false, org_title: "Bobco", sort: "name_asc"),
         return: {:ok, mock_dataset_summaries, mock_facets}
       )
 
@@ -183,7 +185,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
     end
 
     test "api/v2/search with api_accessible works", %{conn: conn, mock_dataset_summaries: mock_dataset_summaries} do
-      expect(DatasetIndex.search(query: "Bob", api_accessible: true), return: {:ok, mock_dataset_summaries, %{}})
+      expect(Search.search(query: "Bob", api_accessible: true, sort: "name_asc"), return: {:ok, mock_dataset_summaries, %{}})
 
       params = %{query: "Bob", apiAccessible: "true"}
       conn |> get("/api/v2/dataset/search", params) |> json_response(200)
@@ -192,6 +194,23 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
     test "api/v2/search with bad facets returns 400", %{conn: conn} do
       params = %{query: "Bob", facets: %{"not a facet" => ["ignored value"]}}
       conn |> get("/api/v2/dataset/search", params) |> json_response(400)
+    end
+
+    test "api/v2/search passes logged in user organization ids to elasticsearch", %{
+      conn: conn,
+      mock_dataset_summaries: mock_dataset_summaries
+    } do
+      expect(Search.search(query: "Bob", api_accessible: false, authorized_organization_ids: ["1", "2"], sort: "name_asc"),
+        return: {:ok, mock_dataset_summaries, %{}}
+      )
+
+      params = %{query: "Bob"}
+      user = %User{organizations: [%Organization{id: "1"}, %Organization{id: "2"}]}
+      allow(Guardian.Plug.current_resource(any()), return: user, meck_options: [:passthrough])
+
+      response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+
+      assert length(mock_dataset_summaries) == length(Map.get(response_map, "results"))
     end
   end
 

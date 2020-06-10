@@ -10,7 +10,11 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   render_errors: [view: DiscoveryApiWeb.ErrorView, accepts: ~w(json)],
   pubsub: [name: DiscoveryApi.PubSub, adapter: Phoenix.PubSub.PG2],
   instrumenters: [DiscoveryApiWeb.Endpoint.Instrumenter],
-  http: [port: 4000, protocol_options: [idle_timeout: 7_200_000]]
+  http: [
+    port: 4000,
+    stream_handlers: [Web.StreamHandlers.StripServerHeader, :cowboy_stream_h],
+    protocol_options: [idle_timeout: 7_200_000]
+  ]
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
@@ -20,13 +24,14 @@ config :discovery_api,
   collector: StreamingMetrics.PrometheusMetricCollector,
   hsts_enabled: true,
   download_link_expire_seconds: 60,
-  presign_key: "test_presign_key"
+  presign_key: "test_presign_key",
+  metrics_port: 9006
 
 # NOTE: To generate a secret_key:  mix guardian.gen.secret
 # secret set as variable to pass sobelow check on hard coded secrets
 secret = "this_is_a_secret"
 
-config :discovery_api, DiscoveryApi.Auth.Guardian, secret_key: secret
+config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler, secret_key: secret
 
 config :discovery_api, DiscoveryApi.Quantum.Scheduler,
   jobs: [

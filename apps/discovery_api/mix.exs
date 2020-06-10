@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
-      version: "0.42.2",
+      version: "0.43.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -53,6 +53,7 @@ defmodule DiscoveryApi.Mixfile do
       {:ecto_sql, "~> 3.0"},
       {:elastix, "~> 0.8.0"},
       {:guardian, "~> 2.0"},
+      {:guardian_db, "~> 2.0.3"},
       {:gettext, "~> 0.17"},
       {:httpoison, "~> 1.5"},
       {:faker, "~> 0.13"},
@@ -83,7 +84,8 @@ defmodule DiscoveryApi.Mixfile do
       {:poison, "3.1.0", override: true},
       # poison breaks @ 4.0.1 due to encode_to_iotdata missing from 4.0
       # additionally, nearly no library that includes it as a dep is actually configured to use it
-      {:tasks, in_umbrella: true, only: :dev}
+      {:tasks, in_umbrella: true, only: :dev},
+      {:web, in_umbrella: true}
     ]
   end
 

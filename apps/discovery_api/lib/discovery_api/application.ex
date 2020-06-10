@@ -22,7 +22,9 @@ defmodule DiscoveryApi.Application do
         DiscoveryApi.Search.Storage,
         DiscoveryApiWeb.Plugs.ResponseCache,
         redis(),
+        metrics(),
         ecto_repo(),
+        guardian_db_sweeper(),
         {Brook, Application.get_env(:discovery_api, :brook)},
         cache_populator(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
@@ -63,11 +65,33 @@ defmodule DiscoveryApi.Application do
     end
   end
 
+  defp guardian_db_sweeper do
+    Application.get_env(:guardian, Guardian.DB)
+    |> case do
+      nil -> []
+      _ -> Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
+    end
+  end
+
   defp cache_populator do
     Application.get_env(:discovery_api, :elasticsearch)
     |> case do
       nil -> []
       _ -> DiscoveryApi.Data.CachePopulator
+    end
+  end
+
+  defp metrics() do
+    case Application.get_env(:discovery_api, :metrics_port) do
+      nil ->
+        []
+
+      metrics_port ->
+        Plug.Cowboy.child_spec(
+          scheme: :http,
+          plug: DiscoveryApi.MetricsExporter,
+          options: [port: metrics_port]
+        )
     end
   end
 end
