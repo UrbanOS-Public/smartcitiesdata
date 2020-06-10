@@ -54,9 +54,27 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     if Datasets.is_unique?(id, technical.dataName, technical.orgName) do
       changeset
     else
-      technical_changeset = Ecto.Changeset.get_change(changeset, :technical)
-      update_changeset = add_error(technical_changeset, :dataName, "existing dataset has the same orgName and dataName")
-      Ecto.Changeset.put_change(changeset, :technical, update_changeset)
+      updated_changeset =
+        changeset
+        |> Ecto.Changeset.get_change(:technical)
+        |> add_data_name_error()
+
+      Ecto.Changeset.put_change(changeset, :technical, updated_changeset)
     end
+  end
+
+  defp add_data_name_error(nil), do: nil
+  defp add_data_name_error(technical_changeset) do
+    technical_changeset
+    |> clear_data_name_errors()
+    |> add_error(:dataName, "existing dataset has the same orgName and dataName")
+  end
+
+  defp clear_data_name_errors(technical_changeset) do
+    cleared_errors =
+      technical_changeset.errors
+      |> Keyword.drop([:dataName])
+
+    Map.put(technical_changeset, :errors, cleared_errors)
   end
 end

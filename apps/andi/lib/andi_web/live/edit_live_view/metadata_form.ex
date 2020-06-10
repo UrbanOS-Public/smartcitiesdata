@@ -40,7 +40,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
           <div class="metadata-form-edit-section form-grid">
             <div class="metadata-form__title">
               <%= label(@business, :dataTitle, DisplayNames.get(:dataTitle), class: "label label--required") %>
-              <%= text_input(@business, :dataTitle, class: "input", phx_value_field: "dataTitle", phx_blur: "dataTitleBlur") %>
+              <%= text_input(@business, :dataTitle, class: "input", phx_value_field: "dataTitle", phx_blur: "validate_system_name") %>
               <%= ErrorHelpers.error_tag(@business, :dataTitle) %>
             </div>
 

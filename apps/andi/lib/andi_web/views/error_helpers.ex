@@ -14,6 +14,8 @@ defmodule AndiWeb.ErrorHelpers do
   def error_tag(form, _, _) when not is_map(form), do: []
 
   def error_tag(form, field, options) do
+    IO.inspect(form)
+    IO.inspect(Keyword.get_values(form.errors, field))
     Enum.map(Keyword.get_values(form.errors, field), fn error ->
       translated = error |> interpret_error(field) |> translate_error()
 

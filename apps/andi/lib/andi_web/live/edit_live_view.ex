@@ -69,6 +69,7 @@ defmodule AndiWeb.EditLiveView do
 
   def mount(_params, %{"dataset" => dataset}, socket) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
+
     dataset_exists =
       case Andi.Services.DatasetStore.get(dataset.id) do
         {:ok, nil} -> false
@@ -131,7 +132,11 @@ defmodule AndiWeb.EditLiveView do
     |> complete_validation(socket)
   end
 
-  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle" | _]}, %{assigns: %{dataset_exists: false}} = socket) do
+  def handle_event(
+        "validate",
+        %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle" | _]},
+        %{assigns: %{dataset_exists: false}} = socket
+      ) do
     form_data
     |> FormTools.adjust_data_name()
     |> InputConverter.form_data_to_ui_changeset()
@@ -144,7 +149,7 @@ defmodule AndiWeb.EditLiveView do
     |> complete_validation(socket)
   end
 
-  def handle_event("dataTitleBlur", _, socket) do
+  def handle_event("validate_system_name", _, socket) do
     changeset = Dataset.validate_unique_system_name(socket.assigns.changeset)
 
     {:noreply, assign(socket, changeset: changeset)}
@@ -197,7 +202,9 @@ defmodule AndiWeb.EditLiveView do
         false -> "Saved successfully. You may need to fix errors before publishing."
       end
 
-    {:noreply, assign(updated_socket, save_success: true, success_message: success_message)}
+    changeset = Dataset.validate_unique_system_name(socket.assigns.changeset) |> IO.inspect()
+
+    {:noreply, assign(updated_socket, save_success: true, success_message: success_message, changeset: changeset)}
   end
 
   def handle_event("toggle-component-visibility", %{"component" => component}, socket) do

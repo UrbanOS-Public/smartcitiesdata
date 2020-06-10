@@ -898,7 +898,7 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
       html = render(view)
 
-      assert get_value(html, "#form_data_technical_dataName")== data_name
+      assert get_value(html, "#form_data_technical_dataName") == data_name
 
       where([
         [:title, :data_name],
@@ -925,10 +925,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_value(html, "#form_data_technical_dataName") == ""
       refute Enum.empty?(find_elements(html, "#dataName-error-msg"))
 
-      where([
-        title: ["", "!@#$%"]
-      ])
-
+      where(title: ["", "!@#$%"])
     end
   end
 end
