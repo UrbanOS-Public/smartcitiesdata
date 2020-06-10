@@ -64,6 +64,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
   end
 
   defp add_data_name_error(nil), do: nil
+
   defp add_data_name_error(technical_changeset) do
     technical_changeset
     |> clear_data_name_errors()

@@ -127,7 +127,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
       form_data = FormTools.form_data_from_andi_dataset(dataset)
-      render_change(view, :validate, %{"form_data" => form_data})
+      render_change(view, :save, %{"form_data" => form_data})
       html = render(view)
 
       refute Enum.empty?(find_elements(html, "#cadence-error-msg"))

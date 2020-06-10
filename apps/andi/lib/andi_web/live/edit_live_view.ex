@@ -202,7 +202,10 @@ defmodule AndiWeb.EditLiveView do
         false -> "Saved successfully. You may need to fix errors before publishing."
       end
 
-    changeset = Dataset.validate_unique_system_name(socket.assigns.changeset) |> IO.inspect()
+    changeset =
+      socket.assigns.changeset
+      |> Dataset.validate_unique_system_name()
+      |> Map.put(:action, :update)
 
     {:noreply, assign(updated_socket, save_success: true, success_message: success_message, changeset: changeset)}
   end
@@ -384,9 +387,7 @@ defmodule AndiWeb.EditLiveView do
 
   defp complete_validation(changeset, socket) do
     socket = reset_save_success(socket)
-
     new_changeset = Map.put(changeset, :action, :update)
-
     current_form = socket.assigns.current_data_dictionary_item
 
     updated_current_field =
