@@ -7,12 +7,13 @@ defmodule EventHandlerTest do
   import SmartCity.Event, only: [data_ingest_end: 0, dataset_delete: 0]
   import Andi, only: [instance_name: 0]
   alias Andi.InputSchemas.Datasets
+  alias Andi.TelemetryHelper
 
   use Placebo
 
   test "Andi records completed ingestions" do
     dataset = TDG.create_dataset(%{})
-
+    allow(TelemetryHelper.add_event_count(any()), return: :ok)
     allow(Datasets.update_ingested_time(any(), any()), return: nil)
 
     Brook.Test.send(instance_name(), data_ingest_end(), :andi, dataset)
@@ -22,6 +23,7 @@ defmodule EventHandlerTest do
 
   test "should delete the view state when dataset delete event is called" do
     dataset = TDG.create_dataset(%{id: Faker.UUID.v4()})
+    allow(TelemetryHelper.add_event_count(any()), return: :ok)
     allow(Brook.ViewState.delete(any(), any()), return: :ok)
     allow(Datasets.delete(any()), return: {:ok, "good"})
 

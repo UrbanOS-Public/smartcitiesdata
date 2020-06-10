@@ -23,3 +23,5 @@ config :andi, :brook,
     module: Brook.Storage.Ets,
     init_arg: []
   ]
+
+  config :andi, telemetry_port: 4050
