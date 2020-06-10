@@ -842,7 +842,7 @@ defmodule AndiWeb.EditLiveViewTest do
     test "generate dataName from data title", %{conn: conn, blank_dataset: blank_dataset} do
       DatasetHelpers.add_dataset_to_repo(blank_dataset)
 
-      Placebo.allow(DatasetStore.get(blank_dataset.id), return: {:error, blank_dataset})
+      Placebo.allow(DatasetStore.get(blank_dataset.id), return: {:ok, nil})
 
       assert {:ok, view, html} = live(conn, @url_path <> blank_dataset.id)
 
@@ -886,7 +886,7 @@ defmodule AndiWeb.EditLiveViewTest do
     data_test "data title #{title} generates data name #{data_name}", %{conn: conn, blank_dataset: blank_dataset} do
       DatasetHelpers.add_dataset_to_repo(blank_dataset)
 
-      Placebo.allow(DatasetStore.get(blank_dataset.id), return: {:error, blank_dataset})
+      Placebo.allow(DatasetStore.get(blank_dataset.id), return: {:ok, nil})
 
       assert {:ok, view, html} = live(conn, @url_path <> blank_dataset.id)
 
@@ -910,7 +910,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
     data_test "#{title} generating an empty data name is invalid", %{conn: conn, blank_dataset: blank_dataset} do
       DatasetHelpers.add_dataset_to_repo(blank_dataset)
-      Placebo.allow(DatasetStore.get(blank_dataset.id), return: {:error, blank_dataset})
+      Placebo.allow(DatasetStore.get(blank_dataset.id), return: {:ok, nil})
 
       assert {:ok, view, html} = live(conn, @url_path <> blank_dataset.id)
 

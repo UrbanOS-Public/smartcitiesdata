@@ -71,7 +71,6 @@ defmodule AndiWeb.EditLiveView do
     dataset_exists =
       case Andi.Services.DatasetStore.get(dataset.id) do
         {:ok, nil} -> false
-        {:error, _} -> false
         _ -> true
       end
 

@@ -720,6 +720,27 @@ defmodule AndiWeb.EditLiveViewTest do
     end
   end
 
+  describe "add new dataset" do
+    test "updating data title updates data name and checks uniqueness of system name" %{conn: conn} do
+      dataset1 = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camino", systemName: "kevino__camino"}})
+      dataset2 = TDG.create_dataset(%{technical: %{orgName: "carrabino", dataName: "blah", systemName: "kevino__blah"}})
+
+      {:ok, _} = Datasets.update(dataset1)
+      {:ok, _} = Datasets.update(dataset2)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset2.id)
+
+      form_data =
+        blank_dataset
+        |> put_in([:business, :dataTitle], "camino")
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
+      html = render(view)
+
+      #TODO: check no errors here, make new dataset and find error
+    end
+  end
+
   defp get_crontab_from_html(html) do
     html
     |> get_values(".finalize-form-schedule-input__field")

@@ -44,7 +44,11 @@ defmodule Andi.InputSchemas.FormTools do
       |> String.replace(~r/[^[:alnum:]_]/, "", global: true)
       |> String.downcase()
 
-    put_in(form_data, ["technical", "dataName"], data_name)
+    org_name = get_in(form_data, ["technical", "orgName"])
+    system_name = "#{org_name}__#{data_name}"
+
+    form_data = put_in(form_data, ["technical", "dataName"], data_name)
+    put_in(form_data, ["technical", "systemName"], system_name)
   end
 
   defp convert_param_to_form_data({value, index}, acc) do
