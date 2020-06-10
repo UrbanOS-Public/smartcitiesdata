@@ -735,7 +735,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       Enum.each(1..5, fn x -> index_model(%{id: "dataset-#{x}"}) end)
 
       {:ok, models, _facets, total} = Search.search(query: "Oscilliscope", limit: 3, offset: 3)
-      assert 0 == length(models)
+      assert Enum.empty?(models)
       assert 0 == total
     end
   end
