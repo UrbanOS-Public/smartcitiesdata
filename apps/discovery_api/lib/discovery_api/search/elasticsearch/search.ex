@@ -9,7 +9,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.Search do
 
   def get_all() do
     case elastic_search() do
-      {:ok, documents, _facets} ->
+      {:ok, documents, _facets, _total} ->
         {:ok, Enum.map(documents, &struct(Model, &1))}
 
       error ->
@@ -21,8 +21,8 @@ defmodule DiscoveryApi.Search.Elasticsearch.Search do
     query = QueryBuilder.build(search_opts)
 
     case elastic_search(query) do
-      {:ok, documents, facets} ->
-        {:ok, Enum.map(documents, &struct(Model, &1)), facets}
+      {:ok, documents, facets, total} ->
+        {:ok, Enum.map(documents, &struct(Model, &1)), facets, total}
 
       error ->
         error
@@ -39,9 +39,10 @@ defmodule DiscoveryApi.Search.Elasticsearch.Search do
          |> handle_response_with_body() do
       {:ok, body} ->
         Logger.debug("#{__MODULE__}: ElasticSearch Response: #{inspect(body)}")
+        total = get_in(body, [:hits, :total, :value])
         documents = get_in(body, [:hits, :hits, Access.all(), :_source])
         facets = body |> Map.get(:aggregations, %{}) |> extract_facets()
-        {:ok, documents, facets}
+        {:ok, documents, facets, total}
 
       error ->
         error

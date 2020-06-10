@@ -141,7 +141,9 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
     end
 
     test "api/v2/search works", %{conn: conn, mock_dataset_summaries: mock_dataset_summaries} do
-      expect(Search.search(query: "Bob", api_accessible: false, sort: "name_asc"), return: {:ok, mock_dataset_summaries, %{}})
+      expect(Search.search(query: "Bob", api_accessible: false, sort: "name_asc", offset: 0, limit: 10),
+        return: {:ok, mock_dataset_summaries, %{}, 2}
+      )
 
       params = %{query: "Bob"}
       response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
@@ -157,8 +159,8 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
         "keywords" => [%{"name" => "bobber", "count" => 1}, %{"name" => "bobbington", "count" => 1}]
       }
 
-      expect(Search.search(query: "Bob", api_accessible: false, keywords: ["bobber", "bobbington"], sort: "name_asc"),
-        return: {:ok, mock_dataset_summaries, mock_facets}
+      expect(Search.search(query: "Bob", api_accessible: false, keywords: ["bobber", "bobbington"], sort: "name_asc", offset: 0, limit: 10),
+        return: {:ok, mock_dataset_summaries, mock_facets, 0}
       )
 
       params = %{query: "Bob", facets: %{keywords: ["bobber", "bobbington"]}}
@@ -173,8 +175,8 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
         "organization" => [%{"name" => "Bobco", "count" => 2}]
       }
 
-      expect(Search.search(query: "Bob", api_accessible: false, org_title: "Bobco", sort: "name_asc"),
-        return: {:ok, mock_dataset_summaries, mock_facets}
+      expect(Search.search(query: "Bob", api_accessible: false, org_title: "Bobco", sort: "name_asc", offset: 0, limit: 10),
+        return: {:ok, mock_dataset_summaries, mock_facets, 0}
       )
 
       params = %{query: "Bob", facets: %{organization: ["Bobco"]}}
@@ -185,7 +187,9 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
     end
 
     test "api/v2/search with api_accessible works", %{conn: conn, mock_dataset_summaries: mock_dataset_summaries} do
-      expect(Search.search(query: "Bob", api_accessible: true, sort: "name_asc"), return: {:ok, mock_dataset_summaries, %{}})
+      expect(Search.search(query: "Bob", api_accessible: true, sort: "name_asc", offset: 0, limit: 10),
+        return: {:ok, mock_dataset_summaries, %{}, 0}
+      )
 
       params = %{query: "Bob", apiAccessible: "true"}
       conn |> get("/api/v2/dataset/search", params) |> json_response(200)
@@ -200,8 +204,9 @@ defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
       conn: conn,
       mock_dataset_summaries: mock_dataset_summaries
     } do
-      expect(Search.search(query: "Bob", api_accessible: false, authorized_organization_ids: ["1", "2"], sort: "name_asc"),
-        return: {:ok, mock_dataset_summaries, %{}}
+      expect(
+        Search.search(query: "Bob", api_accessible: false, authorized_organization_ids: ["1", "2"], sort: "name_asc", offset: 0, limit: 10),
+        return: {:ok, mock_dataset_summaries, %{}, 0}
       )
 
       params = %{query: "Bob"}
