@@ -52,11 +52,5 @@ config :andi, Andi.Repo,
   hostname: System.get_env("POSTGRES_HOST"),
   port: System.get_env("POSTGRES_PORT")
 
-if is_nil(System.get_env("PRESTO_URL")) do
-  raise ArgumentError, message: "Required environment variable #{var} is undefined"
-end
-
-config :prestige, :session_opts, url: System.get_env("PRESTO_URL")
-
 config :andi,
   metrics_port: System.get_env("METRICS_PORT")
