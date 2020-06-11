@@ -49,7 +49,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   def validate_unique_system_name(changeset) do
     id = Ecto.Changeset.get_field(changeset, :id)
-    technical = Ecto.Changeset.get_change(changeset, :technical)
+    technical = Ecto.Changeset.get_change(changeset, :technical, Technical.changeset(%Technical{}, %{}))
     data_name = Ecto.Changeset.get_field(technical, :dataName)
     org_name = Ecto.Changeset.get_field(technical, :orgName)
 
