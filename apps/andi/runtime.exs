@@ -57,3 +57,6 @@ if is_nil(System.get_env("PRESTO_URL")) do
 end
 
 config :prestige, :session_opts, url: System.get_env("PRESTO_URL")
+
+config :andi,
+  metrics_port: System.get_env("METRICS_PORT")

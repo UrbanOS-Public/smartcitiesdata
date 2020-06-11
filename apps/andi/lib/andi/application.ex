@@ -10,7 +10,8 @@ defmodule Andi.Application do
         ecto_repo(),
         {Brook, Application.get_env(:andi, :brook)},
         Andi.DatasetCache,
-        Andi.Migration.Migrations
+        Andi.Migration.Migrations,
+        {TelemetryMetricsPrometheus, metrics_config()}
       ]
       |> List.flatten()
 
@@ -32,4 +33,6 @@ defmodule Andi.Application do
     AndiWeb.Endpoint.config_change(changed, removed)
     :ok
   end
+
+  def metrics_config, do: [port: Application.get_env(:andi, :metrics_port), metrics: Andi.TelemetryHelper.metrics()]
 end
