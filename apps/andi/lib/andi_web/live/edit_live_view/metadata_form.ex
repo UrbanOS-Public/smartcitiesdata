@@ -47,7 +47,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
             <div class="metadata-form__data-name">
               <%= label(@technical, :dataName, DisplayNames.get(:dataName), class: "label label--required") %>
               <%= text_input(@technical, :dataName, [class: "input input--text", readonly: true]) %>
-              <%= ErrorHelpers.error_tag(@technical, :dataName) %>
+              <%= ErrorHelpers.error_tag(@technical, :dataName, bind_to_input: false) %>
             </div>
 
             <div class="metadata-form__description">
