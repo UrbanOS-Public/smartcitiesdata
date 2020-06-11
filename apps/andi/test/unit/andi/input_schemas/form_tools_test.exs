@@ -175,4 +175,23 @@ defmodule Andi.InputSchemas.FormToolsTest do
              } = updated_form_data
     end
   end
+
+  describe "adjust_data_name/1" do
+    test "updating the data name also updates the system name" do
+      current_form_data = %{
+        "business" => %{
+          "dataTitle" => "camio"
+        },
+        "technical" => %{
+          "dataName" => "camio",
+          "orgName" => "kevino",
+          "systemName" => "kevino__italiano"
+        }
+      }
+
+      new_form_data = FormTools.adjust_data_name(current_form_data)
+      assert get_in(new_form_data, ["technical", "dataName"]) == "camio"
+      assert get_in(new_form_data, ["technical", "systemName"]) == "kevino__camio"
+    end
+  end
 end

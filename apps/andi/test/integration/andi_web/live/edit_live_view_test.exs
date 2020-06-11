@@ -720,6 +720,52 @@ defmodule AndiWeb.EditLiveViewTest do
     end
   end
 
+  describe "add new dataset" do
+    test "updating data title allows common data name across different orgs", %{conn: conn} do
+      existing_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camido", systemName: "kevino__camino"}})
+      {:ok, _} = Datasets.update(existing_dataset)
+
+      new_dataset = TDG.create_dataset(%{technical: %{orgName: "carrabino", dataName: "blah", systemName: "carrabino__blah"}})
+      {:ok, new_andi_dataset} = Datasets.update(new_dataset)
+
+      assert {:ok, view, _} = live(conn, @url_path <> new_dataset.id)
+
+      form_data =
+        new_andi_dataset
+        |> put_in([:business, :dataTitle], "camido")
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
+      render(view)
+      render_change(view, "validate_system_name", nil)
+      html = render(view)
+
+      assert Enum.empty?(find_elements(html, "#dataName-error-msg"))
+    end
+
+    test "updating data title adds error when data name exists within same org", %{conn: conn} do
+      existing_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camino", systemName: "kevino__camino"}})
+      {:ok, _} = Datasets.update(existing_dataset)
+
+      new_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "harharhar", systemName: "kevino__harharhar"}})
+      {:ok, new_andi_dataset} = Datasets.update(new_dataset)
+
+      assert {:ok, view, _} = live(conn, @url_path <> new_dataset.id)
+
+      form_data =
+        new_andi_dataset
+        |> put_in([:business, :dataTitle], "camino")
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
+      render(view)
+      render_change(view, "validate_system_name", nil)
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, "#dataName-error-msg"))
+    end
+  end
+
   defp get_crontab_from_html(html) do
     html
     |> get_values(".finalize-form-schedule-input__field")

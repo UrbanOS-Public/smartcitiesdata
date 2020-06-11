@@ -15,6 +15,7 @@ defmodule AndiWeb.EditLiveViewTest do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.FormTools
   alias Andi.Services.UrlTest
+  alias Andi.Services.DatasetStore
 
   import FlokiHelpers,
     only: [
@@ -456,7 +457,6 @@ defmodule AndiWeb.EditLiveViewTest do
       where([
         [:name],
         ["orgName"],
-        ["dataName"],
         ["sourceType"]
       ])
     end
@@ -830,6 +830,102 @@ defmodule AndiWeb.EditLiveViewTest do
         html = render(view)
         assert get_text(html, "#snackbar") == "A page error occurred"
       end)
+    end
+  end
+
+  describe "create new dataset" do
+    setup do
+      blank_dataset = DatasetHelpers.create_empty_dataset()
+      [blank_dataset: blank_dataset]
+    end
+
+    test "generate dataName from data title", %{conn: conn, blank_dataset: blank_dataset} do
+      DatasetHelpers.add_dataset_to_repo(blank_dataset)
+
+      Placebo.allow(DatasetStore.get(blank_dataset.id), return: {:ok, nil})
+
+      assert {:ok, view, html} = live(conn, @url_path <> blank_dataset.id)
+
+      form_data =
+        blank_dataset
+        |> put_in([:business, :dataTitle], "simpledatatitle")
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
+
+      html = render(view)
+
+      value = get_value(html, "#form_data_technical_dataName")
+
+      assert value == "simpledatatitle"
+    end
+
+    test "validation is only triggered for new datasets", %{conn: conn} do
+      dataset = DatasetHelpers.create_dataset(%{technical: %{dataName: "original name"}})
+
+      Placebo.allow(DatasetStore.get(dataset.id), return: {:ok, dataset})
+
+      DatasetHelpers.add_dataset_to_repo(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      form_data =
+        dataset
+        |> put_in([:business, :dataTitle], "simpledatatitle")
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
+
+      html = render(view)
+
+      value = get_value(html, "#form_data_technical_dataName")
+
+      assert value == "original name"
+    end
+
+    data_test "data title #{title} generates data name #{data_name}", %{conn: conn, blank_dataset: blank_dataset} do
+      DatasetHelpers.add_dataset_to_repo(blank_dataset)
+
+      Placebo.allow(DatasetStore.get(blank_dataset.id), return: {:ok, nil})
+
+      assert {:ok, view, html} = live(conn, @url_path <> blank_dataset.id)
+
+      form_data =
+        blank_dataset
+        |> put_in([:business, :dataTitle], title)
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
+      html = render(view)
+
+      assert get_value(html, "#form_data_technical_dataName") == data_name
+
+      where([
+        [:title, :data_name],
+        ["title with spaces", "title_with_spaces"],
+        ["titl3! W@th sp#ci@l ch@rs", "titl3_wth_spcil_chrs"],
+        ["ALL CAPS TITLE", "all_caps_title"]
+      ])
+    end
+
+    data_test "#{title} generating an empty data name is invalid", %{conn: conn, blank_dataset: blank_dataset} do
+      DatasetHelpers.add_dataset_to_repo(blank_dataset)
+      Placebo.allow(DatasetStore.get(blank_dataset.id), return: {:ok, nil})
+
+      assert {:ok, view, html} = live(conn, @url_path <> blank_dataset.id)
+
+      form_data =
+        blank_dataset
+        |> put_in([:business, :dataTitle], title)
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
+      html = render(view)
+
+      assert get_value(html, "#form_data_technical_dataName") == ""
+      refute Enum.empty?(find_elements(html, "#dataName-error-msg"))
+
+      where(title: ["", "!@#$%"])
     end
   end
 end
