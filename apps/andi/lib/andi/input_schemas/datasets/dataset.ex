@@ -49,17 +49,20 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   def validate_unique_system_name(changeset) do
     id = Ecto.Changeset.get_field(changeset, :id)
-    technical = Ecto.Changeset.get_field(changeset, :technical)
+    technical = Ecto.Changeset.get_change(changeset, :technical)
+    data_name = Ecto.Changeset.get_field(technical, :dataName)
+    org_name = Ecto.Changeset.get_field(technical, :orgName)
 
-    if Datasets.is_unique?(id, technical.dataName, technical.orgName) do
-      changeset
-    else
-      updated_technical_changeset =
+    cond do
+      !technical.valid? ->
         changeset
-        |> Ecto.Changeset.get_change(:technical)
-        |> add_data_name_error()
 
-      Ecto.Changeset.put_change(changeset, :technical, updated_technical_changeset)
+      Datasets.is_unique?(id, data_name, org_name) ->
+        changeset
+
+      true ->
+        updated_technical_changeset = add_data_name_error(technical)
+        Ecto.Changeset.put_change(changeset, :technical, updated_technical_changeset)
     end
   end
 
