@@ -29,7 +29,7 @@ defmodule AndiWeb.EditLiveView do
 
 
         <div class="metadata-form-component">
-          <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["metadata_form"]) %>
+          <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["metadata_form"], dataset_exists: @dataset_exists) %>
         </div>
 
         <div class="data-dictionary-form-component">
@@ -69,6 +69,12 @@ defmodule AndiWeb.EditLiveView do
   def mount(_params, %{"dataset" => dataset}, socket) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
+    dataset_exists =
+      case Andi.Services.DatasetStore.get(dataset.id) do
+        {:ok, nil} -> false
+        _ -> true
+      end
+
     component_visibility = %{
       "metadata_form" => "expanded",
       "data_dictionary_form" => "collapsed",
@@ -91,7 +97,8 @@ defmodule AndiWeb.EditLiveView do
        save_success: false,
        success_message: "",
        test_results: nil,
-       testing: false
+       testing: false,
+       dataset_exists: dataset_exists
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end

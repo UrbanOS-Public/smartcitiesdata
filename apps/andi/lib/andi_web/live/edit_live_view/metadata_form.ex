@@ -126,7 +126,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
             <div class="metadata-form__format">
               <%= label(@technical, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-              <%= text_input(@technical, :sourceFormat, [class: "input--text input", readonly: true]) %>
+              <%= select(@technical, :sourceFormat, get_source_format_options(), [class: "select", disabled: @dataset_exists]) %>
               <%= ErrorHelpers.error_tag(@technical, :sourceFormat) %>
             </div>
 
@@ -177,6 +177,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   defp get_language_options(), do: map_to_dropdown_options(Options.language())
   defp get_level_of_access_options, do: map_to_dropdown_options(Options.level_of_access())
   defp get_rating_options(), do: map_to_dropdown_options(Options.ratings())
+  defp get_source_format_options(), do: map_to_dropdown_options(Options.source_format())
 
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang
