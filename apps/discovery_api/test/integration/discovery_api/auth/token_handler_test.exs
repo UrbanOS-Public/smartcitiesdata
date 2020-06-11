@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Auth.TokenHandlerTest do
   use ExUnit.Case
-  use Divo, services: [:"ecto-postgres", :redis, :zookeeper, :kafka]
   use DiscoveryApi.DataCase
 
   alias DiscoveryApiWeb.Auth.TokenHandler

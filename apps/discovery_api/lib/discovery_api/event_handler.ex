@@ -52,7 +52,7 @@ defmodule DiscoveryApi.EventHandler do
     end
   end
 
-  def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = dataset}) do
+  def handle_event(%Brook.Event{type: dataset_update(), author: author, data: %Dataset{} = dataset}) do
     Logger.debug(fn -> "Handling dataset: `#{dataset.technical.systemName}`" end)
 
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
@@ -68,7 +68,7 @@ defmodule DiscoveryApi.EventHandler do
       :discard
     else
       {:error, reason} ->
-        Logger.error("Unable to process message `#{inspect(dataset)}` : ERROR: #{inspect(reason)}")
+        Logger.error("Unable to process message `#{inspect(dataset)}` from `#{inspect(author)}` : ERROR: #{inspect(reason)}")
         :discard
     end
   end

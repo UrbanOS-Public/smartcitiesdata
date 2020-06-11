@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :"ecto-postgres", :zookeeper, :kafka, :elasticsearch]
   use DiscoveryApi.ElasticSearchCase
   use DiscoveryApi.DataCase
 
@@ -12,13 +11,9 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   alias DiscoveryApi.Search.Elasticsearch.Search
   alias DiscoveryApi.Search.Elasticsearch
   alias DiscoveryApi.Data.Model
+  alias DiscoveryApi.Schemas.Organizations
 
   @organization_id_1 "11119ccf-de9f-4229-842f-e3733972d111"
-
-  setup_all do
-    Helper.wait_for_brook_to_be_ready()
-    :ok
-  end
 
   describe "create/0" do
     test "it creates the datasets index", %{es_indices: %{datasets: index}} do
@@ -842,13 +837,24 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       |> put_in([:technical, :orgId], @organization_id_1)
       |> TDG.create_dataset()
 
-    Brook.Event.send(DiscoveryApi.instance(), "dataset:update", :integration_test, dataset)
+    Brook.Event.send(DiscoveryApi.instance(), "dataset:update", __MODULE__, dataset)
+
+    eventually(fn ->
+      assert nil != Model.get(dataset.id)
+    end)
+
     dataset
   end
 
   defp create_organization(id) do
     organization = TDG.create_organization(%{id: id})
-    Brook.Event.send(DiscoveryApi.instance(), "organization:update", :integration_test, organization)
+    Brook.Event.send(DiscoveryApi.instance(), "organization:update", __MODULE__, organization)
+
+    eventually(fn ->
+      assert {:ok, _} = Organizations.get_organization(organization.id)
+    end)
+
+    organization
   end
 
   defp local_eventually(function) do
