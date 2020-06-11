@@ -117,7 +117,7 @@ config :discovery_api, :elasticsearch,
               type: "keyword",
               index: true
             },
-            modifiedDate: %{
+            sortDate: %{
               type: "date",
               index: true
             },
