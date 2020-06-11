@@ -69,13 +69,10 @@ defmodule Andi.MixProject do
       {:tasks, in_umbrella: true, only: :dev},
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
-<<<<<<< HEAD
-=======
       {:elixir_uuid, "~> 1.2"},
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_metrics_prometheus, "~> 0.5"},
->>>>>>> master
       {:web, in_umbrella: true}
     ]
   end
