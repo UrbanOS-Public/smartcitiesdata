@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Data.HostedFileTest do
   use ExUnit.Case
-  use Divo
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
@@ -18,7 +17,6 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     Application.put_env(:ex_aws, :access_key_id, "testing_access_key")
     Application.put_env(:ex_aws, :secret_access_key, "testing_secret_key")
 
-    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
 
     "test/integration/test-file.test"
@@ -48,7 +46,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->
@@ -77,7 +75,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->
@@ -106,7 +104,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->
@@ -135,7 +133,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->

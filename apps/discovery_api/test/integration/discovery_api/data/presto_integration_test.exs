@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Data.PrestoIngrationTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :presto, :metastore, :postgres, :minio, :zookeeper, :kafka, :"ecto-postgres", :elasticsearch]
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
@@ -9,7 +8,6 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
   import SmartCity.TestHelper, only: [eventually: 3]
 
   setup do
-    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
     :ok
   end
@@ -26,7 +24,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     |> Prestige.new_session()
     |> Prestige.query!("create table if not exists #{system_name} (id integer, name varchar)")
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->
@@ -54,7 +52,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     |> Prestige.new_session()
     |> Prestige.query!(~s|insert into "#{system_name}" values (1, 'bob'), (2, 'mike')|)
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
 
     expected = [%{"id" => 1, "name" => "bob"}, %{"id" => 2, "name" => "mike"}]
 

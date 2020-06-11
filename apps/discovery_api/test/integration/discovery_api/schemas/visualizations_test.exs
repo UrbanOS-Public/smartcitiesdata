@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Schemas.VisualizationsTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :"ecto-postgres", :zookeeper, :kafka]
   use DiscoveryApi.DataCase
 
   alias DiscoveryApi.Repo
