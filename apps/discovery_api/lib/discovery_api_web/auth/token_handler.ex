@@ -65,22 +65,30 @@ defmodule DiscoveryApiWeb.Auth.TokenHandler do
     end
   end
 
-  defp claims_to_jwtid(claims) do
+  def claims_to_jwtid(claims) do
     claims
-    |> Jason.encode!()
+    |> to_sorted_list()
+    |> stringify()
     |> hash()
   end
 
   def to_revoked_claims(claims) do
-    jwtid =
-      claims
-      |> Map.put("revoked", true)
-      |> claims_to_jwtid()
+    jwtid = claims_to_jwtid(claims)
 
     claims
     |> Map.put("typ", @token_type)
     |> Map.put("jti", jwtid)
     |> Map.update("aud", "", &Enum.join(&1, " "))
+  end
+
+  defp to_sorted_list(claims) do
+    claims
+    |> Map.to_list()
+    |> Enum.sort_by(&elem(&1, 0))
+  end
+
+  defp stringify(claims) do
+    :erlang.term_to_binary(claims)
   end
 
   defp hash(hashable) do
