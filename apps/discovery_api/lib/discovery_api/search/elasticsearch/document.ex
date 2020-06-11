@@ -119,7 +119,13 @@ defmodule DiscoveryApi.Search.Elasticsearch.Document do
     |> populate_org_facets()
     |> populate_keyword_facets()
     |> populate_optimized_fields()
+    |> populate_sort_date()
   end
+
+  defp populate_sort_date(%{sourceType: "ingest", modifiedDate: sort_date} = model), do: Map.put(model, :sortDate, sort_date)
+  defp populate_sort_date(%{sourceType: "stream", lastUpdatedDate: sort_date} = model), do: Map.put(model, :sortDate, sort_date)
+  defp populate_sort_date(%{issuedDate: sort_date} = model), do: Map.put(model, :sortDate, sort_date)
+  defp populate_sort_date(model), do: model
 
   defp populate_org_facets(%{organizationDetails: %{orgTitle: org_title}} = dataset) do
     Map.put_new(dataset, :facets, %{})

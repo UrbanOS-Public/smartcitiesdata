@@ -1,6 +1,7 @@
 .metadata-form-edit-section {
   grid-template-areas:
     "title last-updated"
+    "data-name ."
     "description spatial"
     "description temporal"
     "format organization"
@@ -42,3 +43,4 @@
 @include area(metadata-form, homepage);
 @include area(metadata-form, benefit-rating);
 @include area(metadata-form, risk-rating);
+@include area(metadata-form, data-name);

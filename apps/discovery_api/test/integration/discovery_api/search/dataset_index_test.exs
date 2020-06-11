@@ -733,6 +733,46 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       assert Enum.empty?(models)
       assert 0 == total
     end
+
+    test "given ingest datasets, they are sorted by modified date" do
+      date = DateTime.utc_now()
+      index_model(%{id: "3", title: "ingest_test3", sourceType: "ingest", modifiedDate: DateTime.to_iso8601(date)})
+      index_model(%{id: "1", title: "ingest_test1", sourceType: "ingest", modifiedDate: DateTime.add(date, -4) |> DateTime.to_iso8601()})
+      index_model(%{id: "2", title: "ingest_test2", sourceType: "ingest", modifiedDate: DateTime.add(date, -2) |> DateTime.to_iso8601()})
+      {:ok, models, _facets, _total} = Search.search(query: "ingest_test", sort: "last_mod")
+      ids = models |> Enum.map(fn model -> Map.get(model, :id) end)
+      assert ids == ["3", "2", "1"]
+    end
+
+    test "given streaming datasets, they are sorted by last updated date" do
+      date = DateTime.utc_now()
+      index_model(%{id: "1", title: "stream_test1", sourceType: "stream", lastUpdatedDate: DateTime.add(date, -4) |> DateTime.to_iso8601()})
+      index_model(%{id: "3", title: "stream_test3", sourceType: "stream", lastUpdatedDate: DateTime.to_iso8601(date)})
+      index_model(%{id: "2", title: "stream_test2", sourceType: "stream", lastUpdatedDate: DateTime.add(date, -2) |> DateTime.to_iso8601()})
+      {:ok, models, _facets, _total} = Search.search(query: "stream_test", sort: "last_mod")
+      ids = models |> Enum.map(fn model -> Map.get(model, :id) end)
+      assert ids == ["3", "2", "1"]
+    end
+
+    test "given other types of datasets, they are sorted by issued date" do
+      date = DateTime.utc_now()
+      index_model(%{id: "1", title: "other_test1", sourceType: "continuous", issuedDate: DateTime.add(date, -4) |> DateTime.to_iso8601()})
+      index_model(%{id: "3", title: "other_test3", sourceType: "remote", issuedDate: DateTime.to_iso8601(date)})
+      index_model(%{id: "2", title: "other_test2", sourceType: "host", issuedDate: DateTime.add(date, -2) |> DateTime.to_iso8601()})
+      {:ok, models, _facets, _total} = Search.search(query: "other_test", sort: "last_mod")
+      ids = models |> Enum.map(fn model -> Map.get(model, :id) end)
+      assert ids == ["3", "2", "1"]
+    end
+
+    test "given a mix of dataset types, they are sorted by the appropriate sortDate" do
+      date = DateTime.utc_now()
+      index_model(%{id: "1", title: "all_test1", sourceType: "ingest", modifiedDate: DateTime.add(date, -4) |> DateTime.to_iso8601()})
+      index_model(%{id: "3", title: "all_test3", sourceType: "stream", lastUpdatedDate: DateTime.to_iso8601(date)})
+      index_model(%{id: "2", title: "all_test2", sourceType: "host", issuedDate: DateTime.add(date, -2) |> DateTime.to_iso8601()})
+      {:ok, models, _facets, _total} = Search.search(query: "all_test", sort: "last_mod")
+      ids = models |> Enum.map(fn model -> Map.get(model, :id) end)
+      assert ids == ["3", "2", "1"]
+    end
   end
 
   describe "end to end search tests" do

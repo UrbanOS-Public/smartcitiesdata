@@ -47,14 +47,38 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     changeset(schema, changes) |> validate_unique_system_name()
   end
 
-  defp validate_unique_system_name(changeset) do
+  def validate_unique_system_name(changeset) do
     id = Ecto.Changeset.get_field(changeset, :id)
-    technical = Ecto.Changeset.get_field(changeset, :technical)
+    technical = Ecto.Changeset.get_change(changeset, :technical, Technical.changeset(%Technical{}, %{}))
+    data_name = Ecto.Changeset.get_field(technical, :dataName)
+    org_name = Ecto.Changeset.get_field(technical, :orgName)
 
-    if Datasets.is_unique?(id, technical.dataName, technical.orgName) do
-      changeset
-    else
-      add_error(changeset, :dataName, "existing dataset has the same orgName and dataName")
+    cond do
+      !technical.valid? ->
+        changeset
+
+      Datasets.is_unique?(id, data_name, org_name) ->
+        changeset
+
+      true ->
+        updated_technical_changeset = add_data_name_error(technical)
+        Ecto.Changeset.put_change(changeset, :technical, updated_technical_changeset)
     end
+  end
+
+  defp add_data_name_error(nil), do: nil
+
+  defp add_data_name_error(technical_changeset) do
+    technical_changeset
+    |> clear_data_name_errors()
+    |> add_error(:dataName, "existing dataset has the same orgName and dataName")
+  end
+
+  defp clear_data_name_errors(technical_changeset) do
+    cleared_errors =
+      technical_changeset.errors
+      |> Keyword.drop([:dataName])
+
+    Map.put(technical_changeset, :errors, cleared_errors)
   end
 end

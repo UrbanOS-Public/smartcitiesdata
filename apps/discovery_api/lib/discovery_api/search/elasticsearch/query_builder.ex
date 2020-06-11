@@ -133,7 +133,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
     case Keyword.get(search_opts, :sort, "name_asc") do
       "name_asc" -> %{"titleKeyword" => %{"order" => "asc"}}
       "name_desc" -> %{"titleKeyword" => %{"order" => "desc"}}
-      "last_mod" -> %{"modifiedDate" => %{"order" => "desc"}}
+      "last_mod" -> %{"sortDate" => %{"order" => "desc"}}
       "relevance" -> %{}
     end
   end
