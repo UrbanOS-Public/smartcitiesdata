@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.27.1",
+      version: "0.28.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -68,6 +68,7 @@ defmodule Andi.MixProject do
       {:elixir_uuid, "~> 1.2"},
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev},
+      {:telemetry_metrics_prometheus, "~> 0.5"},
       {:web, in_umbrella: true}
     ]
   end
