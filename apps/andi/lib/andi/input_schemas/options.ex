@@ -75,4 +75,14 @@ defmodule Andi.InputSchemas.Options do
       "no" => "No"
     }
   end
+
+  def source_format() do
+    %{
+      "text/csv" => "CSV",
+      "application/json" => "JSON",
+      "text/xml" => "XML",
+      "application/geo+json" => "GeoJSON",
+      "application/gtfs+protobuf" => "GTFS Protobuf"
+    }
+  end
 end

@@ -256,7 +256,8 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
       assert get_value(html, ".metadata-form__title input") == dataset.business.dataTitle
       assert get_text(html, ".metadata-form__description textarea") == dataset.business.description
-      assert get_value(html, ".metadata-form__format input") == dataset.technical.sourceFormat
+      {selected_format, _} = get_select(html, ".metadata-form__format select")
+      assert selected_format == dataset.technical.sourceFormat
       assert {"true", "Private"} == get_select(html, ".metadata-form__level-of-access")
       assert get_value(html, ".metadata-form__maintainer-name input") == dataset.business.contactName
       assert dataset.business.modifiedDate |> Date.to_string() =~ get_value(html, ".metadata-form__last-updated input")
@@ -336,6 +337,18 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render_change(view, :validate, %{"form_data" => form_data})
 
       assert get_text(html, "#sourceFormat-error-msg") == "Please enter a valid source format."
+    end
+
+    test "source format before publish", %{conn: conn} do
+      dataset = DatasetHelpers.create_dataset(%{})
+
+      DatasetHelpers.add_dataset_to_repo(dataset)
+
+      Placebo.allow(Andi.Services.DatasetStore.get(dataset.id), return: {:ok, nil})
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert Enum.empty?(get_attributes(html, ".metadata-form__format select", "disabled"))
     end
 
     data_test "invalid #{field} displays proper error message", %{conn: conn} do
@@ -430,9 +443,11 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
+      Placebo.allow(Andi.Services.DatasetStore.get(dataset.id), return: {:ok, dataset})
+
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert get_attributes(html, ".metadata-form__format input", "readonly") == ["readonly"]
+      refute Enum.empty?(get_attributes(html, ".metadata-form__format select", "disabled"))
     end
 
     test "organization title", %{conn: conn} do
