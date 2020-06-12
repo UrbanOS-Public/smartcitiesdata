@@ -4,6 +4,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   use DiscoveryApi.DataCase
 
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.Event, only: [data_write_complete: 0]
 
   alias DiscoveryApi.Test.Helper
   alias SmartCity.TestDataGenerator, as: TDG
@@ -383,7 +384,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       assert atomized_dataset == saved
     end
 
-    test "given an existing dataset, it merges the changes in elasticsearch" do
+    test "given an existing dataset, it replaces the existing document in elasticsearch" do
       existing_dataset = Helper.sample_model()
       assert {:ok, _saved} = Elasticsearch.Document.replace(existing_dataset)
 
@@ -828,6 +829,22 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         response_map = call_search_endpoint_with_params(params)
 
         assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
+      end)
+    end
+
+    test "indexed datasets are updated with lastUpdatedDates" do
+      create_dataset(%{id: "A", business: %{modifiedDate: "2020-03-11T00:00:00Z"}})
+      create_dataset(%{id: "B", business: %{modifiedDate: "2020-06-01T00:00:00Z"}})
+      create_dataset(%{id: "C", technical: %{sourceType: "stream"}})
+      params = %{sort: "last_mod"}
+
+      {:ok, event} = SmartCity.DataWriteComplete.new(%{id: "C", timestamp: DateTime.utc_now() |> DateTime.to_iso8601()})
+      Brook.Test.send(DiscoveryApi.instance(), data_write_complete(), __MODULE__, event)
+
+      local_eventually(fn ->
+        response_map = call_search_endpoint_with_params(params)
+
+        assert ["C", "B", "A"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
       end)
     end
 
