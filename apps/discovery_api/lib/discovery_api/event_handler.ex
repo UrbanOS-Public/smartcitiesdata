@@ -44,6 +44,10 @@ defmodule DiscoveryApi.EventHandler do
         :discard
 
       {:ok, _} ->
+        model = go_get_model()
+        lastUpdate
+        Elasticsearch.Document.update(model)
+
         merge(:models, id, %{id: id, lastUpdatedDate: timestamp})
 
       error ->

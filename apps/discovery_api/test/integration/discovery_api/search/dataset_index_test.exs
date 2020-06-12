@@ -383,7 +383,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       assert atomized_dataset == saved
     end
 
-    test "given an existing dataset, it merges the changes in elasticsearch" do
+    test "given an existing dataset, it replaces the existing document in elasticsearch" do
       existing_dataset = Helper.sample_model()
       assert {:ok, _saved} = Elasticsearch.Document.replace(existing_dataset)
 
