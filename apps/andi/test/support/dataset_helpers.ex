@@ -18,6 +18,11 @@ defmodule DatasetHelpers do
     |> Ecto.Changeset.apply_changes()
   end
 
+  def create_empty_dataset() do
+    Dataset.changeset_for_draft(%Dataset{}, %{technical: %{}, business: %{}, id: UUID.uuid4()})
+    |> Ecto.Changeset.apply_changes()
+  end
+
   def add_dataset_to_repo(dataset, opts \\ []) do
     unique = Keyword.get(opts, :unique, true)
 

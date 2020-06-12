@@ -273,8 +273,10 @@ defmodule Andi.InputSchemas.DatasetsTest do
         |> Map.put(:id, UUID.uuid4())
         |> InputConverter.smrt_dataset_to_full_changeset()
 
+      technical_changeset = Ecto.Changeset.get_change(changeset, :technical)
+
       refute changeset.valid?
-      assert changeset.errors == [{:dataName, {"existing dataset has the same orgName and dataName", []}}]
+      assert technical_changeset.errors == [{:dataName, {"existing dataset has the same orgName and dataName", []}}]
     end
 
     test "allows same orgName and dataName when id is same" do

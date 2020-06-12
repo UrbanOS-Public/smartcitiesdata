@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Data.DictionaryTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :zookeeper, :kafka, :"ecto-postgres", :elasticsearch]
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
@@ -8,7 +7,6 @@ defmodule DiscoveryApi.Data.DictionaryTest do
   import SmartCity.Event, only: [dataset_update: 0]
 
   setup do
-    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
     :ok
   end
@@ -34,7 +32,7 @@ defmodule DiscoveryApi.Data.DictionaryTest do
           technical: %{orgId: organization.id, schema: schema}
         })
 
-      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
+      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
 
       eventually(fn ->
         %{status_code: status_code, body: body} =

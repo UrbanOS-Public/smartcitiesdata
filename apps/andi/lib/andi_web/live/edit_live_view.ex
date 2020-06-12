@@ -6,6 +6,7 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.FormTools
+  alias Andi.InputSchemas.Datasets.Dataset
   alias Ecto.Changeset
 
   import Andi
@@ -131,10 +132,27 @@ defmodule AndiWeb.EditLiveView do
     |> complete_validation(socket)
   end
 
+  def handle_event(
+        "validate",
+        %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle" | _]},
+        %{assigns: %{dataset_exists: false}} = socket
+      ) do
+    form_data
+    |> FormTools.adjust_data_name()
+    |> InputConverter.form_data_to_ui_changeset()
+    |> complete_validation(socket)
+  end
+
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
     |> InputConverter.form_data_to_ui_changeset()
     |> complete_validation(socket)
+  end
+
+  def handle_event("validate_system_name", _, socket) do
+    changeset = Dataset.validate_unique_system_name(socket.assigns.changeset)
+
+    {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("publish", _, socket) do
@@ -184,7 +202,12 @@ defmodule AndiWeb.EditLiveView do
         false -> "Saved successfully. You may need to fix errors before publishing."
       end
 
-    {:noreply, assign(updated_socket, save_success: true, success_message: success_message)}
+    changeset =
+      socket.assigns.changeset
+      |> Dataset.validate_unique_system_name()
+      |> Map.put(:action, :update)
+
+    {:noreply, assign(updated_socket, save_success: true, success_message: success_message, changeset: changeset)}
   end
 
   def handle_event("toggle-component-visibility", %{"component" => component}, socket) do
@@ -364,9 +387,7 @@ defmodule AndiWeb.EditLiveView do
 
   defp complete_validation(changeset, socket) do
     socket = reset_save_success(socket)
-
     new_changeset = Map.put(changeset, :action, :update)
-
     current_form = socket.assigns.current_data_dictionary_item
 
     updated_current_field =

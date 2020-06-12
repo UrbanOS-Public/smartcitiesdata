@@ -1,6 +1,5 @@
 defmodule DiscoveryApi.Auth.AuthTest do
   use ExUnit.Case
-  use Divo, services: [:"ecto-postgres", :redis, :presto, :zookeeper, :kafka]
   use DiscoveryApi.DataCase
 
   import ExUnit.CaptureLog
@@ -18,8 +17,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
   @organization_2_name "organization_two"
 
   setup_all do
-    Helper.wait_for_brook_to_be_ready()
-
     organization_1 = Helper.create_persisted_organization(%{orgName: @organization_1_name})
     organization_2 = Helper.create_persisted_organization(%{orgName: @organization_2_name})
 

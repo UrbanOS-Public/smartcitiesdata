@@ -1,15 +1,16 @@
 defmodule DiscoveryApi.Data.QueryTest do
   import ExUnit.CaptureLog
   use ExUnit.Case
-  use Divo
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Auth.GuardianConfigurator
   alias DiscoveryApiWeb.Auth.TokenHandler
+  alias DiscoveryApi.Data.Model
 
   import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   @public_dataset_id "123-456-789"
   @private_dataset_id "111-222-333"
@@ -22,7 +23,6 @@ defmodule DiscoveryApi.Data.QueryTest do
     auth0_setup()
     |> on_exit()
 
-    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
 
     prestige_session =
@@ -68,9 +68,15 @@ defmodule DiscoveryApi.Data.QueryTest do
         }
       })
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", public_dataset)
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", private_dataset)
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", geojson_dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, public_dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, private_dataset)
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, geojson_dataset)
+
+    eventually(fn ->
+      assert nil != Model.get(public_dataset.id)
+      assert nil != Model.get(private_dataset.id)
+      assert nil != Model.get(geojson_dataset.id)
+    end)
 
     public_table = public_dataset.technical.systemName
     private_table = private_dataset.technical.systemName

@@ -1,14 +1,13 @@
 defmodule DiscoveryApi.Data.SearchTest do
   use ExUnit.Case
-  use Divo, services: [:redis, :zookeeper, :kafka, :zookeeper, :kafka, :"ecto-postgres"]
   use DiscoveryApi.DataCase
   alias DiscoveryApi.Test.Helper
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.Event, only: [dataset_update: 0]
   import SmartCity.TestHelper
+  alias DiscoveryApi.Data.Model
 
   setup do
-    Helper.wait_for_brook_to_be_ready()
     Redix.command!(:redix, ["FLUSHALL"])
 
     model_one =
@@ -69,7 +68,11 @@ defmodule DiscoveryApi.Data.SearchTest do
           technical: %{orgId: organization.id, schema: []}
         })
 
-      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), "integration", dataset)
+      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        assert nil != Model.get(dataset.id)
+      end)
 
       Redix.command!(:redix, ["FLUSHALL"])
 
