@@ -5,6 +5,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
   alias DiscoveryApi.Data.SystemNameCache
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Schemas.Organizations
+  alias DiscoveryApi.Search.Elasticsearch
 
   import SmartCity.Event, only: [dataset_update: 0, data_write_complete: 0]
 
@@ -118,6 +119,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
     test "merges the write complete timsetamp into the model", %{data_model: %{id: id, title: title}} do
       write_complete_timestamp_iso = DateTime.utc_now() |> DateTime.to_iso8601()
 
+      expect(Elasticsearch.Document.update(any()), return: {:ok, :does_not_matter})
       {:ok, event} = SmartCity.DataWriteComplete.new(%{id: id, timestamp: write_complete_timestamp_iso})
 
       Brook.Test.send(@instance, data_write_complete(), "unit", event)
