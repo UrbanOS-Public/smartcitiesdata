@@ -4,6 +4,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.Document do
   """
   alias DiscoveryApi.Data.Model
   import DiscoveryApi.Search.Elasticsearch.Shared
+  require Logger
 
   def get(id) do
     case elastic_get(id) do
@@ -148,6 +149,10 @@ defmodule DiscoveryApi.Search.Elasticsearch.Document do
   defp handle_get_document_response({:ok, %{body: %{_id: id, found: false}}}), do: {:error, "Dataset with id #{id} not found!"}
   defp handle_get_document_response(response), do: handle_response_with_body(response)
 
-  defp handle_response({:ok, %{body: %{error: error}}}), do: {:error, error}
+  defp handle_response({:ok, %{body: %{error: error}}}) do
+    Logger.error("Error from elasticsearch: #{inspect(error)}")
+    {:error, error}
+  end
+
   defp handle_response(response), do: response
 end
