@@ -11,17 +11,20 @@ defmodule AndiWeb.EditLiveViewTest do
 
   import SmartCity.TestHelper
 
+  alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.FormTools
   alias Andi.Services.UrlTest
   alias Andi.Services.DatasetStore
+  alias Andi.Services.OrgStore
 
   import FlokiHelpers,
     only: [
       find_elements: 2,
       get_attributes: 3,
       get_select: 2,
+      get_select_first_option: 2,
       get_text: 2,
       get_value: 2,
       get_values: 2
@@ -926,6 +929,30 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, "#dataName-error-msg"))
 
       where(title: ["", "!@#$%"])
+    end
+
+    test "organization dropdown is populated with all organizations in the system", %{conn: conn, blank_dataset: blank_dataset} do
+      DatasetHelpers.add_dataset_to_repo(blank_dataset)
+
+      org1 = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title", id: "95254592-d611-4bcb-9478-7fa248f4118d"})
+      org2 = TDG.create_organization(%{orgTitle: "Very Readable", orgName: "very_readable", id: "95254592-4444-4bcb-9478-7fa248f4118d"})
+
+      Placebo.allow(OrgStore.get_all(), return: {:ok, [org1, org2]})
+      Placebo.allow(OrgStore.get(any()), return: {:ok, org2})
+
+      assert {:ok, view, html} = live(conn, @url_path <> blank_dataset.id)
+
+      assert {"95254592-d611-4bcb-9478-7fa248f4118d", ["Awesome Title"]} == get_select_first_option(html, "#form_data_business_orgTitle")
+
+      form_data =
+        blank_dataset
+        |> put_in([:business, :orgTitle], "Very Readable")
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "orgTitle"]})
+      html = render(view)
+
+      assert {"95254592-4444-4bcb-9478-7fa248f4118d", ["Very Readable"]} == get_select_first_option(html, "#form_data_business_orgTitle")
     end
   end
 end

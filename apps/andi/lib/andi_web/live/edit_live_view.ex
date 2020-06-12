@@ -7,6 +7,7 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.Services.OrgStore
   alias Ecto.Changeset
 
   import Andi
@@ -30,7 +31,7 @@ defmodule AndiWeb.EditLiveView do
 
 
         <div class="metadata-form-component">
-          <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["metadata_form"]) %>
+          <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["metadata_form"], organizations: @organizations) %>
         </div>
 
         <div class="data-dictionary-form-component">
@@ -83,6 +84,8 @@ defmodule AndiWeb.EditLiveView do
       "finalize_form" => "collapsed"
     }
 
+    organizations = OrgStore.get_all |> elem(1) |> Enum.map(&{&1.orgTitle, &1.id})
+
     Process.flag(:trap_exit, true)
 
     {:ok,
@@ -91,6 +94,7 @@ defmodule AndiWeb.EditLiveView do
        changeset: new_changeset,
        component_visibility: component_visibility,
        dataset: dataset,
+       organizations: organizations,
        has_validation_errors: false,
        new_field_initial_render: false,
        page_error: false,
@@ -140,6 +144,14 @@ defmodule AndiWeb.EditLiveView do
     form_data
     |> FormTools.adjust_data_name()
     |> InputConverter.form_data_to_ui_changeset()
+    |> complete_validation(socket)
+  end
+
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "orgTitle" | _]}, socket) do
+    form_data
+    |> FormTools.adjust_org_name()
+    |> InputConverter.form_data_to_ui_changeset()
+    |> IO.inspect(label: "done::")
     |> complete_validation(socket)
   end
 
