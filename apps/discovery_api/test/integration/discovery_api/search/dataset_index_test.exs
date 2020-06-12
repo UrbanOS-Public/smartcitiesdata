@@ -777,9 +777,24 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
     test "given a mix of dataset types, they fall back to issuedDate for sortDate when the other is blank" do
       date = DateTime.utc_now()
-      index_model(%{id: "1", title: "all_test1", sourceType: "ingest", modifiedDate: "", issuedDate: DateTime.add(date, -2) |> DateTime.to_iso8601()})
-      index_model(%{id: "3", title: "all_test3", sourceType: "stream", lastUpdatedDate: "", issuedDate: DateTime.add(date, -1) |> DateTime.to_iso8601()})
-      {:ok, models, _facets, _total} = Search.search(query: "all_test", sort: "last_mod")
+
+      index_model(%{
+        id: "1",
+        title: "fallback_test1",
+        sourceType: "ingest",
+        modifiedDate: "",
+        issuedDate: DateTime.add(date, -2) |> DateTime.to_iso8601()
+      })
+
+      index_model(%{
+        id: "3",
+        title: "fallback_test3",
+        sourceType: "stream",
+        lastUpdatedDate: "",
+        issuedDate: DateTime.add(date, -1) |> DateTime.to_iso8601()
+      })
+
+      {:ok, models, _facets, _total} = Search.search(query: "fallback_test", sort: "last_mod")
       ids = models |> Enum.map(fn model -> Map.get(model, :id) end)
       assert ids == ["3", "1"]
     end
