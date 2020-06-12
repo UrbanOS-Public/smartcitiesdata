@@ -43,10 +43,10 @@ defmodule DiscoveryApi.EventHandler do
         Logger.debug(fn -> "Discarded write complete for non-existent dataset #{inspect(id)}" end)
         :discard
 
-      {:ok, _} ->
-        model = go_get_model()
-        lastUpdate
-        Elasticsearch.Document.update(model)
+      {:ok, model} ->
+        model
+        |> Map.put(:lastUpdatedDate, timestamp)
+        |> Elasticsearch.Document.update()
 
         merge(:models, id, %{id: id, lastUpdatedDate: timestamp})
 
