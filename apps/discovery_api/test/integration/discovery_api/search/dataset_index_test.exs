@@ -833,18 +833,18 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
     end
 
     test "indexed datasets are updated with lastUpdatedDates" do
-      create_dataset(%{id: "1", business: %{modifiedDate: "2020-03-11T00:00:00Z"}})
-      create_dataset(%{id: "2", business: %{modifiedDate: "2020-06-01T00:00:00Z"}})
-      create_dataset(%{id: "3", technical: %{sourceType: "stream"}})
+      create_dataset(%{id: "A", business: %{modifiedDate: "2020-03-11T00:00:00Z"}})
+      create_dataset(%{id: "B", business: %{modifiedDate: "2020-06-01T00:00:00Z"}})
+      create_dataset(%{id: "C", technical: %{sourceType: "stream"}})
       params = %{sort: "last_mod"}
 
-      {:ok, event} = SmartCity.DataWriteComplete.new(%{id: "3", timestamp: DateTime.utc_now() |> DateTime.to_iso8601()})
+      {:ok, event} = SmartCity.DataWriteComplete.new(%{id: "C", timestamp: DateTime.utc_now() |> DateTime.to_iso8601()})
       Brook.Test.send(DiscoveryApi.instance(), data_write_complete(), __MODULE__, event)
 
       local_eventually(fn ->
         response_map = call_search_endpoint_with_params(params)
 
-        assert ["3", "2", "1"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
+        assert ["C", "B", "A"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
       end)
     end
 
