@@ -151,7 +151,6 @@ defmodule AndiWeb.EditLiveView do
     form_data
     |> FormTools.adjust_org_name()
     |> InputConverter.form_data_to_ui_changeset()
-    |> IO.inspect(label: "done::")
     |> complete_validation(socket)
   end
 

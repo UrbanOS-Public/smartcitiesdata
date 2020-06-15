@@ -956,18 +956,17 @@ defmodule AndiWeb.EditLiveViewTest do
       Placebo.allow(OrgStore.get(any()), return: {:ok, org2})
 
       assert {:ok, view, html} = live(conn, @url_path <> blank_dataset.id)
-
-      assert {"95254592-d611-4bcb-9478-7fa248f4118d", ["Awesome Title"]} == get_select_first_option(html, "#form_data_business_orgTitle")
+      assert {"95254592-d611-4bcb-9478-7fa248f4118d", ["Awesome Title"]} == get_select_first_option(html, "#form_data_technical_orgId")
 
       form_data =
         blank_dataset
-        |> put_in([:business, :orgTitle], "Very Readable")
+        |> put_in([:technical, :orgId], "95254592-4444-4bcb-9478-7fa248f4118d")
         |> FormTools.form_data_from_andi_dataset()
 
       render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "orgTitle"]})
       html = render(view)
 
-      assert {"95254592-4444-4bcb-9478-7fa248f4118d", ["Very Readable"]} == get_select_first_option(html, "#form_data_business_orgTitle")
+      assert {"95254592-4444-4bcb-9478-7fa248f4118d", "Very Readable"} == get_select(html, "#form_data_technical_orgId")
     end
   end
 end

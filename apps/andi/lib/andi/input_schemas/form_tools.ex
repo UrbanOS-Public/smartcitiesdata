@@ -70,6 +70,7 @@ defmodule Andi.InputSchemas.FormTools do
         form_data
         |> put_in(["business", "orgTitle"], "")
         |> put_in(["technical", "orgName"], "")
+        |> put_in(["technical", "orgId"], "")
     end
   end
 
