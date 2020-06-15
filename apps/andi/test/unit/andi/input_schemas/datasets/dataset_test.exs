@@ -118,11 +118,13 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       changeset = Dataset.changeset(changes)
 
       refute changeset.valid?
-      assert accumulate_errors(changeset) == %{
-        technical: %{
-          sourceFormat: [{:sourceFormat, {"invalid format for ingestion", []}}]
-        }
-      }
+
+      assert accumulate_errors(changeset) ==
+               %{
+                 technical: %{
+                   sourceFormat: [{:sourceFormat, {"invalid format for ingestion", []}}]
+                 }
+               }
     end
 
     data_test "requires #{inspect(field_path)} be a date" do
@@ -237,7 +239,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
             private: false,
             sourceUrl: "sourceUrl",
             schema: schema,
-            sourceFormat: "xml",
+            sourceFormat: "text/xml",
             topLevelSelector: "whatever",
             sourceType: "ingest"
           }

@@ -195,7 +195,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     map_to_dropdown_options(Options.source_format_extended())
   end
 
-  defp get_source_format_options(source_type), do: map_to_dropdown_options(Options.source_format())
+  defp get_source_format_options(_), do: map_to_dropdown_options(Options.source_format())
 
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang
