@@ -244,6 +244,10 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "displays all other fields", %{conn: conn} do
+      org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title", id: "95254592-d611-4bcb-9478-7fa248f4118d"})
+
+      Placebo.allow(OrgStore.get_all(), return: {:ok, [org]})
+
       dataset =
         DatasetHelpers.create_dataset(%{
           business: %{
@@ -270,7 +274,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_value(html, ".metadata-form__update-frequency input") == dataset.business.publishFrequency
       assert get_value(html, ".metadata-form__spatial input") == dataset.business.spatial
       assert get_value(html, ".metadata-form__temporal input") == dataset.business.temporal
-      assert get_value(html, ".metadata-form__organization input") == dataset.business.orgTitle
+      assert {"95254592-d611-4bcb-9478-7fa248f4118d", ["Awesome Title"]} == get_select_first_option(html, ".metadata-form__organization select")
       assert {"english", "English"} == get_select(html, ".metadata-form__language")
       assert get_value(html, ".metadata-form__homepage input") == dataset.business.homepage
       assert {"1.0", "High"} == get_select(html, ".metadata-form__benefit-rating")
@@ -458,9 +462,15 @@ defmodule AndiWeb.EditLiveViewTest do
 
       DatasetHelpers.add_dataset_to_repo(dataset)
 
+      Placebo.allow(Andi.Services.DatasetStore.get(dataset.id), return: {:ok, dataset})
+
+      org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title", id: "95254592-d611-4bcb-9478-7fa248f4118d"})
+
+      Placebo.allow(OrgStore.get_all(), return: {:ok, [org]})
+
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert get_attributes(html, ".metadata-form__organization input", "readonly") == ["readonly"]
+      assert get_attributes(html, ".metadata-form__organization select", "disabled") |> IO.inspect(label: "attributes") == ["disabled"]
     end
   end
 

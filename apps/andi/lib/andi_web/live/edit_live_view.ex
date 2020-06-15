@@ -84,7 +84,10 @@ defmodule AndiWeb.EditLiveView do
       "finalize_form" => "collapsed"
     }
 
-    organizations = OrgStore.get_all |> elem(1) |> Enum.map(&{&1.orgTitle, &1.id})
+    organizations = case OrgStore.get_all do
+      {:ok, organizations} -> organizations |> Enum.map(&{&1.orgTitle, &1.id})
+      {:error, _} -> []
+    end
 
     Process.flag(:trap_exit, true)
 
@@ -150,6 +153,7 @@ defmodule AndiWeb.EditLiveView do
   def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "orgTitle" | _]}, socket) do
     form_data
     |> FormTools.adjust_org_name()
+    |> FormTools.adjust_data_name()
     |> InputConverter.form_data_to_ui_changeset()
     |> complete_validation(socket)
   end
