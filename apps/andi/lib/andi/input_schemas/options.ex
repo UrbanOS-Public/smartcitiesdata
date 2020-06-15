@@ -83,6 +83,7 @@ defmodule Andi.InputSchemas.Options do
       "application/json" => "JSON",
       "text/xml" => "XML",
       "application/geo+json" => "GeoJSON",
+      "application/zip" => "Zip Archive",
       "application/gtfs+protobuf" => "GTFS Protobuf"
     }
   end
@@ -91,7 +92,6 @@ defmodule Andi.InputSchemas.Options do
     remote_host_formats = %{
       "application/octet-stream" => "Binary Data",
       "application/vnd.google-earth.kml+xml" => "KML",
-      "application/zip" => "Zip Archive",
       "other" => "other"
     }
 
