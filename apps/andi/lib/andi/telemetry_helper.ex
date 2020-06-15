@@ -4,15 +4,15 @@ defmodule Andi.TelemetryHelper do
 
   def metrics,
     do: [
-      Metrics.counter("events_handled.count", tags: [:app, :author, :topic, :event_type])
+      Metrics.counter("events_handled.count", tags: [:app, :author, :dataset_id, :event_type])
     ]
 
-  def add_event_count(event_type),
+  def add_event_count(event_type, dataset_id),
     do:
       :telemetry.execute([:events_handled], %{}, %{
         app: "andi",
         author: "andi",
-        topic: Application.get_env(:andi, :topic),
+        dataset_id: dataset_id,
         event_type: event_type
       })
 end

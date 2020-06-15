@@ -71,7 +71,6 @@ defmodule Andi.InputSchemas.FormTools do
         |> put_in(["business", "orgTitle"], "")
         |> put_in(["technical", "orgName"], "")
     end
-
   end
 
   defp convert_param_to_form_data({value, index}, acc) do

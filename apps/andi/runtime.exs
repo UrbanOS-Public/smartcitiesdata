@@ -53,4 +53,4 @@ config :andi, Andi.Repo,
   port: System.get_env("POSTGRES_PORT")
 
 config :andi,
-  metrics_port: System.get_env("METRICS_PORT")
+  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer()

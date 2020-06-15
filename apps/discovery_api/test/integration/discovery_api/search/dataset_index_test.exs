@@ -4,6 +4,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   use DiscoveryApi.DataCase
 
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.Event, only: [data_write_complete: 0]
 
   alias DiscoveryApi.Test.Helper
   alias SmartCity.TestDataGenerator, as: TDG
@@ -383,7 +384,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       assert atomized_dataset == saved
     end
 
-    test "given an existing dataset, it merges the changes in elasticsearch" do
+    test "given an existing dataset, it replaces the existing document in elasticsearch" do
       existing_dataset = Helper.sample_model()
       assert {:ok, _saved} = Elasticsearch.Document.replace(existing_dataset)
 
@@ -733,6 +734,70 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       assert Enum.empty?(models)
       assert 0 == total
     end
+
+    test "given ingest datasets, they are sorted by modified date" do
+      date = DateTime.utc_now()
+      index_model(%{id: "3", title: "ingest_test3", sourceType: "ingest", modifiedDate: DateTime.to_iso8601(date)})
+      index_model(%{id: "1", title: "ingest_test1", sourceType: "ingest", modifiedDate: DateTime.add(date, -4) |> DateTime.to_iso8601()})
+      index_model(%{id: "2", title: "ingest_test2", sourceType: "ingest", modifiedDate: DateTime.add(date, -2) |> DateTime.to_iso8601()})
+      {:ok, models, _facets, _total} = Search.search(query: "ingest_test", sort: "last_mod")
+      ids = models |> Enum.map(fn model -> Map.get(model, :id) end)
+      assert ids == ["3", "2", "1"]
+    end
+
+    test "given streaming datasets, they are sorted by last updated date" do
+      date = DateTime.utc_now()
+      index_model(%{id: "1", title: "stream_test1", sourceType: "stream", lastUpdatedDate: DateTime.add(date, -4) |> DateTime.to_iso8601()})
+      index_model(%{id: "3", title: "stream_test3", sourceType: "stream", lastUpdatedDate: DateTime.to_iso8601(date)})
+      index_model(%{id: "2", title: "stream_test2", sourceType: "stream", lastUpdatedDate: DateTime.add(date, -2) |> DateTime.to_iso8601()})
+      {:ok, models, _facets, _total} = Search.search(query: "stream_test", sort: "last_mod")
+      ids = models |> Enum.map(fn model -> Map.get(model, :id) end)
+      assert ids == ["3", "2", "1"]
+    end
+
+    test "given other types of datasets, they are sorted by issued date" do
+      date = DateTime.utc_now()
+      index_model(%{id: "1", title: "other_test1", sourceType: "continuous", issuedDate: DateTime.add(date, -4) |> DateTime.to_iso8601()})
+      index_model(%{id: "3", title: "other_test3", sourceType: "remote", issuedDate: DateTime.to_iso8601(date)})
+      index_model(%{id: "2", title: "other_test2", sourceType: "host", issuedDate: DateTime.add(date, -2) |> DateTime.to_iso8601()})
+      {:ok, models, _facets, _total} = Search.search(query: "other_test", sort: "last_mod")
+      ids = models |> Enum.map(fn model -> Map.get(model, :id) end)
+      assert ids == ["3", "2", "1"]
+    end
+
+    test "given a mix of dataset types, they are sorted by the appropriate sortDate" do
+      date = DateTime.utc_now()
+      index_model(%{id: "1", title: "all_test1", sourceType: "ingest", modifiedDate: DateTime.add(date, -4) |> DateTime.to_iso8601()})
+      index_model(%{id: "3", title: "all_test3", sourceType: "stream", lastUpdatedDate: DateTime.to_iso8601(date)})
+      index_model(%{id: "2", title: "all_test2", sourceType: "host", issuedDate: DateTime.add(date, -2) |> DateTime.to_iso8601()})
+      {:ok, models, _facets, _total} = Search.search(query: "all_test", sort: "last_mod")
+      ids = models |> Enum.map(fn model -> Map.get(model, :id) end)
+      assert ids == ["3", "2", "1"]
+    end
+
+    test "given a mix of dataset types, they fall back to issuedDate for sortDate when the other is blank" do
+      date = DateTime.utc_now()
+
+      index_model(%{
+        id: "1",
+        title: "fallback_test1",
+        sourceType: "ingest",
+        modifiedDate: "",
+        issuedDate: DateTime.add(date, -2) |> DateTime.to_iso8601()
+      })
+
+      index_model(%{
+        id: "3",
+        title: "fallback_test3",
+        sourceType: "stream",
+        lastUpdatedDate: "",
+        issuedDate: DateTime.add(date, -1) |> DateTime.to_iso8601()
+      })
+
+      {:ok, models, _facets, _total} = Search.search(query: "fallback_test", sort: "last_mod")
+      ids = models |> Enum.map(fn model -> Map.get(model, :id) end)
+      assert ids == ["3", "1"]
+    end
   end
 
   describe "end to end search tests" do
@@ -788,6 +853,22 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         response_map = call_search_endpoint_with_params(params)
 
         assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
+      end)
+    end
+
+    test "indexed datasets are updated with lastUpdatedDates" do
+      create_dataset(%{id: "A", business: %{modifiedDate: "2020-03-11T00:00:00Z"}})
+      create_dataset(%{id: "B", business: %{modifiedDate: "2020-06-01T00:00:00Z"}})
+      create_dataset(%{id: "C", technical: %{sourceType: "stream"}})
+      params = %{sort: "last_mod"}
+
+      {:ok, event} = SmartCity.DataWriteComplete.new(%{id: "C", timestamp: DateTime.utc_now() |> DateTime.to_iso8601()})
+      Brook.Test.send(DiscoveryApi.instance(), data_write_complete(), __MODULE__, event)
+
+      local_eventually(fn ->
+        response_map = call_search_endpoint_with_params(params)
+
+        assert ["C", "B", "A"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
       end)
     end
 

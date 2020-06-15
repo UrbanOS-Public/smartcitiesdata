@@ -67,12 +67,9 @@ defmodule Andi.MixProject do
       {:smart_city_test, "~> 0.9", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:tasks, in_umbrella: true, only: :dev},
+      {:telemetry_metrics_prometheus, "~> 0.5"},
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
-      {:elixir_uuid, "~> 1.2"},
-      {:distillery, "~> 2.1"},
-      {:tasks, in_umbrella: true, only: :dev},
-      {:telemetry_metrics_prometheus, "~> 0.5"},
       {:web, in_umbrella: true}
     ]
   end

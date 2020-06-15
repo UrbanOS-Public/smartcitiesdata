@@ -135,17 +135,10 @@ defmodule Andi.InputSchemas.Datasets do
   end
 
   def is_unique?(id, data_name, org_name) do
-    org_name = String.downcase(org_name)
-    data_name = String.downcase(data_name)
-
-    get_all()
-    |> Enum.filter(fn existing_dataset ->
-      existing_dataset[:technical] != nil
-    end)
-    |> Enum.all?(fn existing_dataset ->
-      org_name != String.downcase(existing_dataset.technical.orgName) ||
-        data_name != String.downcase(existing_dataset.technical.dataName) ||
-        id == existing_dataset.id
-    end)
+    from(technical in Andi.InputSchemas.Datasets.Technical,
+      where: technical.dataName == ^data_name and technical.orgName == ^org_name and technical.dataset_id != ^id
+    )
+    |> Repo.all()
+    |> Enum.empty?()
   end
 end
