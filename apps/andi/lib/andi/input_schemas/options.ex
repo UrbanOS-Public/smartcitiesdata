@@ -78,11 +78,33 @@ defmodule Andi.InputSchemas.Options do
 
   def source_format() do
     %{
+      "" => "",
       "text/csv" => "CSV",
       "application/json" => "JSON",
       "text/xml" => "XML",
       "application/geo+json" => "GeoJSON",
       "application/gtfs+protobuf" => "GTFS Protobuf"
+    }
+  end
+
+  def source_format_extended() do
+    remote_host_formats = %{
+      "application/octet-stream" => "Binary Data",
+      "application/vnd.google-earth.kml+xml" => "KML",
+      "application/zip" => "Zip Archive",
+      "other" => "other"
+    }
+
+    Map.merge(source_format(), remote_host_formats)
+  end
+
+  def source_type() do
+    %{
+      "" => "",
+      "ingest" => "Ingest",
+      "stream" => "Stream",
+      "host" => "Host",
+      "remote" => "Remote"
     }
   end
 end
