@@ -109,6 +109,22 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
              }
     end
 
+    test "sourceFormat must be valid for source type ingest and stream" do
+      changes =
+        @valid_changes
+        |> put_in([:technical, :sourceType], "ingest")
+        |> put_in([:technical, :sourceFormat], "kml")
+
+      changeset = Dataset.changeset(changes)
+
+      refute changeset.valid?
+      assert accumulate_errors(changeset) == %{
+        technical: %{
+          sourceFormat: [{:sourceFormat, {"invalid format for ingestion", []}}]
+        }
+      }
+    end
+
     data_test "requires #{inspect(field_path)} be a date" do
       changes = @valid_changes |> put_in(field_path, "2020-13-32")
 
