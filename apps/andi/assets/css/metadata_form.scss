@@ -1,16 +1,16 @@
 .metadata-form-edit-section {
   grid-template-areas:
     "title last-updated"
-    "data-name ."
-    "description spatial"
+    "data-name spatial"
     "description temporal"
-    "format organization"
-    "top-level-selector level-of-access"
-    "maintainer-name language"
-    "maintainer-email homepage"
-    "release-date license "
-    "update-frequency benefit-rating"
-    "keywords risk-rating";
+    "format type"
+    "top-level-selector organization"
+    "maintainer-name level-of-access"
+    "maintainer-email language"
+    "release-date homepage"
+    "update-frequency license "
+    "keywords benefit-rating"
+    "risk-rating .";
 }
 
 .metadata__error-message {
@@ -28,6 +28,8 @@
 @include area(metadata-form, title);
 @include area(metadata-form, description);
 @include area(metadata-form, format);
+@include area(metadata-form, type);
+@include area(metadata-form, top-level-selector);
 @include area(metadata-form, maintainer-name);
 @include area(metadata-form, maintainer-email);
 @include area(metadata-form, release-date);

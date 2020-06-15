@@ -47,7 +47,7 @@ defmodule E2ETest do
       systemName: "end_to__land",
       schema: [%{name: "feature", type: "json"}],
       sourceType: "ingest",
-      sourceFormat: "zip",
+      sourceFormat: "application/zip",
       cadence: "once"
     }
   }

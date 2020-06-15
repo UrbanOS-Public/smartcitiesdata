@@ -2,6 +2,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+
   alias Andi.InputSchemas.DatasetSchemaValidator
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets.Dataset
@@ -9,6 +10,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   alias Andi.InputSchemas.Datasets.Header
   alias Andi.InputSchemas.Datasets.QueryParam
   alias Crontab.CronExpression
+  alias Andi.InputSchemas.Options
 
   @no_dashes_regex ~r/^[^\-]+$/
   @invalid_seconds ["*", "*/1", "*/2", "*/3", "*/4", "*/5", "*/6", "*/7", "*/8", "*/9"]
@@ -69,6 +71,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
+    |> validate_source_format()
     |> validate_cadence()
     |> validate_top_level_selector()
     |> validate_schema()
@@ -87,6 +90,17 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   end
 
   def preload(struct), do: StructTools.preload(struct, [:schema, :sourceQueryParams, :sourceHeaders])
+
+  defp validate_source_format(%{changes: %{sourceType: source_type, sourceFormat: source_format}} = changeset)
+       when source_type in ["ingest", "stream"] do
+    if source_format in Map.keys(Options.source_format()) do
+      changeset
+    else
+      add_error(changeset, :sourceFormat, "invalid format for ingestion")
+    end
+  end
+
+  defp validate_source_format(changeset), do: changeset
 
   defp validate_top_level_selector(%{changes: %{sourceFormat: source_format}} = changeset) when source_format in ["xml", "text/xml"] do
     validate_required(changeset, [:topLevelSelector], message: "is required")
