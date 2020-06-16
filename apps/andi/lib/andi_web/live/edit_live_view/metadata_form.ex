@@ -130,9 +130,15 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               <%= text_input(@business, :homepage, class: "input") %>
             </div>
 
+            <div class="metadata-form__type">
+              <%= label(@technical, :sourceType, DisplayNames.get(:sourceType), class: "label label--required") %>
+              <%= select(@technical, :sourceType, get_source_type_options(), [class: "select", disabled: @dataset_exists]) %>
+              <%= ErrorHelpers.error_tag(@technical, :sourceType) %>
+            </div>
+
             <div class="metadata-form__format">
               <%= label(@technical, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-              <%= select(@technical, :sourceFormat, get_source_format_options(), [class: "select", disabled: @dataset_exists]) %>
+              <%= select(@technical, :sourceFormat, get_source_format_options(input_value(@technical, :sourceType)), [class: "select", disabled: @dataset_exists]) %>
               <%= ErrorHelpers.error_tag(@technical, :sourceFormat) %>
             </div>
 
@@ -183,7 +189,13 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   defp get_language_options(), do: map_to_dropdown_options(Options.language())
   defp get_level_of_access_options, do: map_to_dropdown_options(Options.level_of_access())
   defp get_rating_options(), do: map_to_dropdown_options(Options.ratings())
-  defp get_source_format_options(), do: map_to_dropdown_options(Options.source_format())
+  defp get_source_type_options(), do: map_to_dropdown_options(Options.source_type())
+
+  defp get_source_format_options(source_type) when source_type in ["remote", "host"] do
+    map_to_dropdown_options(Options.source_format_extended())
+  end
+
+  defp get_source_format_options(_), do: map_to_dropdown_options(Options.source_format())
 
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang
