@@ -70,6 +70,7 @@ defmodule Reaper.MixProject do
       {:smart_city, "~> 3.0"},
       {:saxy, "~> 0.10"},
       {:sweet_xml, "~> 0.6"},
+      {:telemetry_event, in_umbrella: true},
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
       # Test/Dev Dependencies
