@@ -7,7 +7,6 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.Services.OrgStore
   alias Ecto.Changeset
 
   import Andi
@@ -24,6 +23,7 @@ defmodule AndiWeb.EditLiveView do
         <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>
         <%= hidden_input(business, :id) %>
+        <%= hidden_input(business, :orgTitle) %>
         <%= hidden_input(technical, :id) %>
         <%= hidden_input(technical, :orgName) %>
         <%= hidden_input(technical, :dataName) %>
@@ -31,7 +31,7 @@ defmodule AndiWeb.EditLiveView do
 
 
         <div class="metadata-form-component">
-          <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["metadata_form"], dataset_exists: @dataset_exists, organizations: @organizations) %>
+          <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["metadata_form"], dataset_exists: @dataset_exists) %>
         </div>
 
         <div class="data-dictionary-form-component">
@@ -84,11 +84,6 @@ defmodule AndiWeb.EditLiveView do
       "finalize_form" => "collapsed"
     }
 
-    organizations = case OrgStore.get_all do
-      {:ok, organizations} -> organizations |> Enum.map(&{&1.orgTitle, &1.id})
-      {:error, _} -> []
-    end
-
     Process.flag(:trap_exit, true)
 
     {:ok,
@@ -97,7 +92,6 @@ defmodule AndiWeb.EditLiveView do
        changeset: new_changeset,
        component_visibility: component_visibility,
        dataset: dataset,
-       organizations: organizations,
        has_validation_errors: false,
        new_field_initial_render: false,
        page_error: false,
@@ -150,11 +144,15 @@ defmodule AndiWeb.EditLiveView do
     |> complete_validation(socket)
   end
 
-  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "orgTitle" | _]}, socket) do
+  def handle_event(
+        "validate",
+        %{"form_data" => form_data, "_target" => ["form_data", "technical", "orgId" | _]},
+        %{assigns: %{dataset_exists: false}} = socket
+      ) do
     form_data
     |> FormTools.adjust_org_name()
-    |> FormTools.adjust_data_name()
     |> InputConverter.form_data_to_ui_changeset()
+    |> Dataset.validate_unique_system_name()
     |> complete_validation(socket)
   end
 
@@ -165,7 +163,9 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("validate_system_name", _, socket) do
-    changeset = Dataset.validate_unique_system_name(socket.assigns.changeset)
+    changeset =
+      Dataset.validate_unique_system_name(socket.assigns.changeset)
+      |> Map.put(:action, :update)
 
     {:noreply, assign(socket, changeset: changeset)}
   end

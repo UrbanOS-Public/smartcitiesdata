@@ -93,7 +93,9 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
   defp validate_source_format(%{changes: %{sourceType: source_type, sourceFormat: source_format}} = changeset)
        when source_type in ["ingest", "stream"] do
-    if source_format in Map.keys(Options.source_format()) do
+    format_values = Options.source_format() |> Map.new() |> Map.values()
+
+    if source_format in format_values do
       changeset
     else
       add_error(changeset, :sourceFormat, "invalid format for ingestion")

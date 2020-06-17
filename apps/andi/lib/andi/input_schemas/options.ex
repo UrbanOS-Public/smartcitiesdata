@@ -1,6 +1,8 @@
 defmodule Andi.InputSchemas.Options do
   @moduledoc false
 
+  alias Andi.Services.OrgStore
+
   def ratings() do
     %{
       0.0 => "Low",
@@ -77,25 +79,24 @@ defmodule Andi.InputSchemas.Options do
   end
 
   def source_format() do
-    %{
-      "" => "",
-      "text/csv" => "CSV",
-      "application/json" => "JSON",
-      "text/xml" => "XML",
-      "application/geo+json" => "GeoJSON",
-      "application/zip" => "Zip Archive",
-      "application/gtfs+protobuf" => "GTFS Protobuf"
-    }
+    [
+      {"", ""},
+      {"CSV", "text/csv"},
+      {"JSON", "application/json"},
+      {"XML", "text/xml"},
+      {"GeoJSON", "application/geo+json"},
+      {"Zip Archive", "application/zip"},
+      {"GTFS Protobuf", "application/gtfs+protobuf"}
+    ]
   end
 
   def source_format_extended() do
-    remote_host_formats = %{
-      "application/octet-stream" => "Binary Data",
-      "application/vnd.google-earth.kml+xml" => "KML",
-      "other" => "other"
-    }
-
-    Map.merge(source_format(), remote_host_formats)
+    source_format() ++
+      [
+        {"Binary Data", "application/octet-stream"},
+        {"KML", "application/vnd.google-earth.kml+xml"},
+        {"Other", "other"}
+      ]
   end
 
   def source_type() do
@@ -106,5 +107,12 @@ defmodule Andi.InputSchemas.Options do
       "host" => "Host",
       "remote" => "Remote"
     }
+  end
+
+  def organizations() do
+    case OrgStore.get_all() do
+      {:ok, organizations} -> organizations |> Enum.map(&{&1.orgTitle, &1.id})
+      {:error, _} -> []
+    end
   end
 end

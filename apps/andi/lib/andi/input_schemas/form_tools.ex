@@ -54,7 +54,7 @@ defmodule Andi.InputSchemas.FormTools do
   end
 
   def adjust_org_name(form_data) do
-    org_id = form_data["business"]["orgTitle"]
+    org_id = form_data["technical"]["orgId"]
 
     case OrgStore.get(org_id) do
       {:ok, org} ->
@@ -63,14 +63,13 @@ defmodule Andi.InputSchemas.FormTools do
         org_id = org.id
 
         form_data
-          |> put_in(["business", "orgTitle"], org_title)
-          |> put_in(["technical", "orgName"], org_name)
-          |> put_in(["technical", "orgId"], org_id)
+        |> put_in(["business", "orgTitle"], org_title)
+        |> put_in(["technical", "orgName"], org_name)
+
       _ ->
         form_data
         |> put_in(["business", "orgTitle"], "")
         |> put_in(["technical", "orgName"], "")
-        |> put_in(["technical", "orgId"], "")
     end
   end
 

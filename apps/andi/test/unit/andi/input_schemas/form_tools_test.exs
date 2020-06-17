@@ -199,24 +199,27 @@ defmodule Andi.InputSchemas.FormToolsTest do
   end
 
   describe "adjust_org_name/1" do
-    test "updating the orgTitle updates the orgName" do
-      org = TDG.create_organization(%{orgTitle: "Another Org Title", orgName: "another_org_title", id: "95254592-d611-4bcb-9478-7fa248f4118d"})
+    test "updating the orgId updates the orgName" do
+      org = TDG.create_organization(%{orgTitle: "Existing Org Title", orgName: "existing_org_name", id: "existing_org_id"})
 
       Placebo.allow(OrgStore.get(any()), return: {:ok, org})
 
       current_form_data = %{
         "business" => %{
-          "orgTitle" => "95254592-d611-4bcb-9478-7fa248f4118d"
+          "orgTitle" => "Another Org Title"
         },
         "technical" => %{
           "orgName" => "something_not_related",
-          "orgId" => "95254592-d611-4bcb-9478-493583495843"
+          "orgId" => "existing_org_id"
         }
       }
 
       new_form_data = FormTools.adjust_org_name(current_form_data)
 
-      assert %{"business" => %{"orgTitle" => "Another Org Title"}, "technical" => %{"orgName" => "another_org_title", "orgId" => "95254592-d611-4bcb-9478-7fa248f4118d"}} == new_form_data
+      assert %{
+               "business" => %{"orgTitle" => "Existing Org Title"},
+               "technical" => %{"orgName" => "existing_org_name", "orgId" => "existing_org_id"}
+             } == new_form_data
     end
   end
 end
