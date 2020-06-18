@@ -13,6 +13,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.FormTools
   alias Andi.Services.UrlTest
@@ -655,7 +656,7 @@ defmodule AndiWeb.EditLiveViewTest do
         |> put_in([:business, :issuedDate], "2020-01-03")
 
       dataset_from_save =
-        dataset
+        %Dataset{}
         |> InputConverter.form_data_to_full_changeset(form_data)
         |> Ecto.Changeset.apply_changes()
 
