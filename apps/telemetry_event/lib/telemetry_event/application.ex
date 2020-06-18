@@ -13,6 +13,7 @@ defmodule TelemetryEvent.Application do
   end
 
   def metrics_config() do
+<<<<<<< HEAD
     metrics_port = Application.get_env(:reaper, :telemetry_event)
     Application.get_all_env(:telemetry_event)
     |> Keyword.fetch!(:metrics_port)
@@ -21,6 +22,11 @@ defmodule TelemetryEvent.Application do
     # __ENV__
     # |> IO.inspect(label: "Portttt")
     IO.inspect(__CALLER__.module, label: "Callerrrrrr")
+=======
+    metrics_port = Application.get_all_env(:telemetry_event)
+    |> Keyword.fetch!(:metrics_port)
+
+>>>>>>> Adding Telemetry Events to andi
     [port: metrics_port, metrics: TelemetryEvent.TelemetryHelper.metrics()]
   end
 end
