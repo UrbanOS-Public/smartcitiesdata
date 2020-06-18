@@ -116,7 +116,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
             <div class="metadata-form__organization">
               <%= label(@business, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
-              <%= text_input(@business, :orgTitle, [class: "input input--text", readonly: true]) %>
+              <%= select(@technical, :orgId, get_org_options(), [class: "select", disabled: @dataset_exists]) %>
               <%= ErrorHelpers.error_tag(@business, :orgTitle) %>
             </div>
 
@@ -190,12 +190,13 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   defp get_level_of_access_options, do: map_to_dropdown_options(Options.level_of_access())
   defp get_rating_options(), do: map_to_dropdown_options(Options.ratings())
   defp get_source_type_options(), do: map_to_dropdown_options(Options.source_type())
+  defp get_org_options(), do: Options.organizations()
 
   defp get_source_format_options(source_type) when source_type in ["remote", "host"] do
-    map_to_dropdown_options(Options.source_format_extended())
+    Options.source_format_extended()
   end
 
-  defp get_source_format_options(_), do: map_to_dropdown_options(Options.source_format())
+  defp get_source_format_options(_), do: Options.source_format()
 
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang

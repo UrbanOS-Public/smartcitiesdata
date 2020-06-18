@@ -5,9 +5,13 @@ defmodule AndiWeb.EditLiveViewTest do
   use AndiWeb.ConnCase
   import Checkov
 
+  alias Andi.Services.OrgStore
+
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
+  import SmartCity.Event, only: [organization_update: 0]
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   import FlokiHelpers,
     only: [
@@ -760,6 +764,44 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
       render(view)
       render_change(view, "validate_system_name", nil)
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, "#dataName-error-msg"))
+    end
+
+    test "changing org retriggers data_name validation", %{conn: conn} do
+      existing_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camino", systemName: "kevino__camino"}})
+      {:ok, _} = Datasets.update(existing_dataset)
+
+      new_dataset = TDG.create_dataset(%{technical: %{orgName: "benjino", dataName: "camino", systemName: "benjino__camino"}})
+      {:ok, new_andi_dataset} = Datasets.update(new_dataset)
+
+      org = SmartCity.TestDataGenerator.create_organization(%{id: "1", orgTitle: "kevin org", orgName: "kevino"})
+
+      Brook.Event.send(:andi, organization_update(), "andi", org)
+
+      eventually(fn -> OrgStore.get(org.id) != {:ok, nil} end)
+
+      assert {:ok, view, _} = live(conn, @url_path <> new_dataset.id)
+
+      form_data =
+        new_andi_dataset
+        |> put_in([:business, :dataTitle], "camino")
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle"]})
+      render(view)
+      render_change(view, "validate_system_name", nil)
+      html = render(view)
+
+      assert Enum.empty?(find_elements(html, "#dataName-error-msg"))
+
+      form_data =
+        new_andi_dataset
+        |> put_in([:technical, :orgId], "1")
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "technical", "orgId"]})
       html = render(view)
 
       refute Enum.empty?(find_elements(html, "#dataName-error-msg"))

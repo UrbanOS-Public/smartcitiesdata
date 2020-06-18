@@ -23,6 +23,7 @@ defmodule AndiWeb.EditLiveView do
         <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>
         <%= hidden_input(business, :id) %>
+        <%= hidden_input(business, :orgTitle) %>
         <%= hidden_input(technical, :id) %>
         <%= hidden_input(technical, :orgName) %>
         <%= hidden_input(technical, :dataName) %>
@@ -143,6 +144,18 @@ defmodule AndiWeb.EditLiveView do
     |> complete_validation(socket)
   end
 
+  def handle_event(
+        "validate",
+        %{"form_data" => form_data, "_target" => ["form_data", "technical", "orgId" | _]},
+        %{assigns: %{dataset_exists: false}} = socket
+      ) do
+    form_data
+    |> FormTools.adjust_org_name()
+    |> InputConverter.form_data_to_ui_changeset()
+    |> Dataset.validate_unique_system_name()
+    |> complete_validation(socket)
+  end
+
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
     |> InputConverter.form_data_to_ui_changeset()
@@ -150,7 +163,9 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("validate_system_name", _, socket) do
-    changeset = Dataset.validate_unique_system_name(socket.assigns.changeset)
+    changeset =
+      Dataset.validate_unique_system_name(socket.assigns.changeset)
+      |> Map.put(:action, :update)
 
     {:noreply, assign(socket, changeset: changeset)}
   end

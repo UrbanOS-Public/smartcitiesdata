@@ -79,6 +79,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:dataset_id)
     |> foreign_key_constraint(:technical_id)
     |> foreign_key_constraint(:parent_id)
+    |> add_default_format()
     |> validate_required(@required_fields, message: "is required")
   end
 
@@ -120,8 +121,14 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     end
   end
 
-  defp validate_format(%{changes: %{type: type}} = changeset) when type in ["date", "timestamp"],
-    do: add_error(changeset, :format, "is required", validation: :required)
+  defp validate_format(%{changes: %{type: type}} = changeset) when type in ["date", "timestamp"] do
+    put_change(changeset, :format, "{ISO:Extended}")
+  end
 
   defp validate_format(changeset), do: changeset
+
+  defp add_default_format(%{changes: %{type: type}} = changeset) when type in ["date", "timestamp"],
+    do: put_change(changeset, :format, "{ISO:Extended}")
+
+  defp add_default_format(changeset), do: changeset
 end

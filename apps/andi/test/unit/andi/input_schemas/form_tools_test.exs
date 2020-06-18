@@ -1,7 +1,10 @@
 defmodule Andi.InputSchemas.FormToolsTest do
   use ExUnit.Case
+  use Placebo
 
+  alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.FormTools
+  alias Andi.Services.OrgStore
 
   describe "adjust_source_query_params_for_url/1" do
     test "given a url it sets the query params to match what is in it" do
@@ -192,6 +195,31 @@ defmodule Andi.InputSchemas.FormToolsTest do
       new_form_data = FormTools.adjust_data_name(current_form_data)
       assert get_in(new_form_data, ["technical", "dataName"]) == "camio"
       assert get_in(new_form_data, ["technical", "systemName"]) == "kevino__camio"
+    end
+  end
+
+  describe "adjust_org_name/1" do
+    test "updating the orgId updates the orgName" do
+      org = TDG.create_organization(%{orgTitle: "Existing Org Title", orgName: "existing_org_name", id: "existing_org_id"})
+
+      Placebo.allow(OrgStore.get(any()), return: {:ok, org})
+
+      current_form_data = %{
+        "business" => %{
+          "orgTitle" => "Another Org Title"
+        },
+        "technical" => %{
+          "orgName" => "something_not_related",
+          "orgId" => "existing_org_id"
+        }
+      }
+
+      new_form_data = FormTools.adjust_org_name(current_form_data)
+
+      assert %{
+               "business" => %{"orgTitle" => "Existing Org Title"},
+               "technical" => %{"orgName" => "existing_org_name", "orgId" => "existing_org_id"}
+             } == new_form_data
     end
   end
 end
