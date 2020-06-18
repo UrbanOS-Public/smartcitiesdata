@@ -158,6 +158,11 @@ body {
   border: 1px solid #e2e5ea;
 }
 
+.select[disabled] {
+    background-color: #f3f3f3;
+    color: $disabled-background;
+}
+
 @import "./datasets.scss";
 @import "./edit.scss";
 @import "./data_dictionary_form.scss";

@@ -1,6 +1,7 @@
 defmodule Andi.InputSchemas.FormTools do
   @moduledoc false
   alias Andi.InputSchemas.StructTools
+  alias Andi.Services.OrgStore
 
   def adjust_source_url_for_query_params(form_data) do
     source_url = form_data["technical"]["sourceUrl"]
@@ -50,6 +51,26 @@ defmodule Andi.InputSchemas.FormTools do
     form_data
     |> put_in(["technical", "dataName"], data_name)
     |> put_in(["technical", "systemName"], system_name)
+  end
+
+  def adjust_org_name(form_data) do
+    org_id = form_data["technical"]["orgId"]
+
+    case OrgStore.get(org_id) do
+      {:ok, org} ->
+        org_name = org.orgName
+        org_title = org.orgTitle
+        org_id = org.id
+
+        form_data
+        |> put_in(["business", "orgTitle"], org_title)
+        |> put_in(["technical", "orgName"], org_name)
+
+      _ ->
+        form_data
+        |> put_in(["business", "orgTitle"], "")
+        |> put_in(["technical", "orgName"], "")
+    end
   end
 
   defp convert_param_to_form_data({value, index}, acc) do
