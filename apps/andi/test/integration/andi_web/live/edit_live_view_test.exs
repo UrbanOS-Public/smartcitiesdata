@@ -29,6 +29,7 @@ defmodule AndiWeb.EditLiveViewTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.InputConverter
 
@@ -712,7 +713,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       form_data = FormTools.form_data_from_andi_dataset(andi_dataset) |> put_in([:business, :dataTitle], "")
-      form_data_changeset = InputConverter.form_data_to_full_changeset(andi_dataset, form_data)
+      form_data_changeset = InputConverter.form_data_to_full_changeset(%Dataset{}, form_data)
 
       render_change(view, :validate, %{"form_data" => form_data})
       html = render_change(view, :save, %{"form_data" => form_data})
