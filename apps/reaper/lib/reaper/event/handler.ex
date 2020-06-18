@@ -119,8 +119,8 @@ defmodule Reaper.Event.Handler do
     [
       app: "reaper",
       author: "reaper",
-      dataset_id: "dataset_id",
-      event_type: "event_type"
+      dataset_id: dataset_id,
+      event_type: event_type
     ]
     |> TelemetryEvent.TelemetryHelper.add_event_count()
   end

@@ -1,4 +1,4 @@
-# DEAD_LETTER
+# TELEMETRY_EVENT
 
 Generates standard messages for Dead Letter Queue
 

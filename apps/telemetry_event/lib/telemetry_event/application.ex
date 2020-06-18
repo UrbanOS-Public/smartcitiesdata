@@ -12,6 +12,10 @@ defmodule TelemetryEvent.Application do
     Supervisor.start_link(children, strategy: :one_for_one, name: TelemetryEvent.Supervisor)
   end
 
-  def metrics_config,
-    do: [port: Application.get_env(:andi, :metrics_port), metrics: TelemetryEvent.TelemetryHelper.metrics()]
+  def metrics_config() do
+    metrics_port = Application.get_all_env(:telemetry_event)
+    |> Keyword.fetch!(:metrics_port)
+
+    [port: metrics_port, metrics: TelemetryEvent.TelemetryHelper.metrics()]
+  end
 end
