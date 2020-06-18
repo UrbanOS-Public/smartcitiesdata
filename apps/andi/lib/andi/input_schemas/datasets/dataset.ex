@@ -53,16 +53,13 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     data_name = Ecto.Changeset.get_field(technical, :dataName)
     org_name = Ecto.Changeset.get_field(technical, :orgName)
 
-    cond do
-      !technical.valid? ->
-        changeset
-
-      Datasets.is_unique?(id, data_name, org_name) ->
-        changeset
-
-      true ->
+    case Datasets.is_unique?(id, data_name, org_name) do
+      false ->
         updated_technical_changeset = add_data_name_error(technical)
         Ecto.Changeset.put_change(changeset, :technical, updated_technical_changeset)
+
+      _ ->
+        changeset
     end
   end
 
