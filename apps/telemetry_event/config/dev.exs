@@ -1,4 +1,3 @@
 use Mix.Config
 
-config :dead_letter,
-  driver: [module: DeadLetter.Carrier.Test]
+config :telemetry_event, metrics_port: 9002
