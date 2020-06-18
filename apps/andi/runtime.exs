@@ -52,5 +52,5 @@ config :andi, Andi.Repo,
   hostname: System.get_env("POSTGRES_HOST"),
   port: System.get_env("POSTGRES_PORT")
 
-config :andi,
+config :telemetry_event,
   metrics_port: System.get_env("METRICS_PORT") |> String.to_integer()

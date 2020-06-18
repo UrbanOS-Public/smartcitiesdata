@@ -80,3 +80,5 @@ config :ex_aws, :s3,
     "local" => "localhost"
   },
   port: 9000
+
+config :telemetry_event, metrics_port: 9004
