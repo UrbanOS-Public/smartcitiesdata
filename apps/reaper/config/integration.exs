@@ -80,8 +80,3 @@ config :ex_aws, :s3,
     "local" => "localhost"
   },
   port: 9000
-
-config :reaper,
-  telemetry_event: [
-    metrics_port: 9004
-  ]

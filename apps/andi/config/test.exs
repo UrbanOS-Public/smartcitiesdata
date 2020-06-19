@@ -23,8 +23,3 @@ config :andi, :brook,
     module: Brook.Storage.Ets,
     init_arg: []
   ]
-
-config :andi,
-  telemetry_event: [
-    metrics_port: 9003
-  ]

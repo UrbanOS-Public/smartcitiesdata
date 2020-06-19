@@ -27,7 +27,7 @@ defmodule TelemetryEvent.MixProject do
 
   defp deps do
     [
-      {:telemetry_metrics_prometheus, "~> 0.5"}
+      {:telemetry_metrics_prometheus, "~> 0.6"}
     ]
   end
 

@@ -77,11 +77,6 @@ config :andi, AndiWeb.Endpoint,
     signing_salt: "SUPER VERY TOP SECRET!!!"
   ]
 
-config :andi,
-  telemetry_event: [
-    metrics_port: 9003
-  ]
-
 defmodule Andi.DivoPostgres do
   @moduledoc """
   Defines a postgres stack compatible with divo
