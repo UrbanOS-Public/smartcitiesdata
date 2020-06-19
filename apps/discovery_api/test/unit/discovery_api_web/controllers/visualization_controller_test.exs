@@ -121,6 +121,24 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       |> response(400)
     end
 
+    test "DELETE /visualization returns BAD REQUEST for non existant visualization id", %{
+      conn: conn,
+      subject_id: subject_id,
+      token: token
+    } do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+
+      allow(Visualizations.get_visualization_by_id(@id), return: {:error, :does_not_matter})
+
+      refute_called(Visualizations.delete_visualization(any()))
+
+      conn
+      |> put_req_header("authorization", "Bearer #{token}")
+      |> put_req_header("content-type", "application/json")
+      |> delete("/api/v1/visualization/#{@id}")
+      |> response(400)
+    end
+
     test "GET /visualization/id returns OK for valid bearer token and id", %{subject_id: subject_id, token: token} do
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
 
