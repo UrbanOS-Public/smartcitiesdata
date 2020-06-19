@@ -18,7 +18,6 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     |> Repo.insert()
   end
 
-  @spec delete_visualization(any) :: any
   def delete_visualization(id) do
     Repo.delete(id)
   end
