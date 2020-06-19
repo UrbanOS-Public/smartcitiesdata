@@ -85,6 +85,6 @@ defmodule Andi.EventHandler do
       dataset_id: dataset_id,
       event_type: event_type
     ]
-    |> TelemetryEvent.TelemetryHelper.add_event_count()
+    |> TelemetryEvent.add_event_count()
   end
 end

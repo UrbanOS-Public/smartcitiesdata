@@ -14,6 +14,6 @@ defmodule TelemetryEvent.Application do
 
   def metrics_config() do
     metrics_port = Application.get_env(:telemetry_event, :metrics_port)
-    [port: metrics_port, metrics: TelemetryEvent.TelemetryHelper.metrics()]
+    [port: metrics_port, metrics: TelemetryEvent.metrics()]
   end
 end

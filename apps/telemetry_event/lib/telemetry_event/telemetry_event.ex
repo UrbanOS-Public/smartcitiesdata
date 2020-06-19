@@ -1,4 +1,4 @@
-defmodule TelemetryEvent.TelemetryHelper do
+defmodule TelemetryEvent do
   @moduledoc false
   alias Telemetry.Metrics
 
@@ -7,7 +7,7 @@ defmodule TelemetryEvent.TelemetryHelper do
       Metrics.counter("events_handled.count", tags: [:app, :author, :dataset_id, :event_type])
     ]
 
-  def add_event_count(options \\ []),
+  def add_event_count(options),
     do:
       :telemetry.execute([:events_handled], %{}, %{
         app: Keyword.get(options, :app),
