@@ -24,4 +24,7 @@ config :andi, :brook,
     init_arg: []
   ]
 
-config :telemetry_event, metrics_port: 9003
+config :andi,
+  telemetry_event: [
+    metrics_port: 9003
+  ]

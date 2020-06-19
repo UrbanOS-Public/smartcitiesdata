@@ -81,4 +81,7 @@ config :ex_aws, :s3,
   },
   port: 9000
 
-config :telemetry_event, metrics_port: 9004
+config :reaper,
+  telemetry_event: [
+    metrics_port: 9004
+  ]

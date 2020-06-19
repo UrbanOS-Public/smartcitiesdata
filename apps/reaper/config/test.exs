@@ -25,4 +25,7 @@ config :reaper, :brook,
   ],
   dispatcher: Brook.Dispatcher.Noop
 
-config :telemetry_event, metrics_port: 9004
+config :reaper,
+  telemetry_event: [
+    metrics_port: 9004
+  ]

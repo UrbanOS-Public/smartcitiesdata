@@ -1,3 +1,3 @@
 use Mix.Config
 
-config :telemetry_event, metrics_port: 9002
+# config :telemetry_event, metrics_port: 9002
