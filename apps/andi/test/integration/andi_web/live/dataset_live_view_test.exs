@@ -1,13 +1,18 @@
 defmodule AndiWeb.DatasetLiveViewTest do
   use ExUnit.Case
-  use Divo
   use Andi.DataCase
   use AndiWeb.ConnCase
 
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
-  import FlokiHelpers, only: [get_text: 2]
+
+  import FlokiHelpers,
+    only: [
+      find_elements: 2,
+      get_text: 2,
+      get_value: 2
+    ]
 
   alias SmartCity.TestDataGenerator, as: TDG
   import Andi, only: [instance_name: 0]
@@ -60,5 +65,22 @@ defmodule AndiWeb.DatasetLiveViewTest do
       # If we remove the check that was added, is everything else the same?
       assert initial_table_text == String.replace(table_text, "check", "")
     end)
+  end
+
+  test "add dataset button creates a dataset with a default dataTitle and dataName", %{conn: conn} do
+    assert {:ok, view, _html} = live(conn, @url_path)
+
+    {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+
+    assert {:ok, view, html} = live(conn, edit_page)
+
+    assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_business_dataTitle")
+
+    assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
+             get_value(html, "#form_data_technical_dataName")
+
+    html = render_change(view, :publish)
+
+    refute Enum.empty?(find_elements(html, "#orgTitle-error-msg"))
   end
 end

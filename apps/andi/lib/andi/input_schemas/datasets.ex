@@ -134,11 +134,21 @@ defmodule Andi.InputSchemas.Datasets do
       {:ok, get(dataset_id)}
   end
 
+  def is_unique?(_id, data_name, org_name) when is_nil(data_name) or is_nil(org_name), do: true
+
   def is_unique?(id, data_name, org_name) do
     from(technical in Andi.InputSchemas.Datasets.Technical,
       where: technical.dataName == ^data_name and technical.orgName == ^org_name and technical.dataset_id != ^id
     )
     |> Repo.all()
     |> Enum.empty?()
+  end
+
+  def data_title_to_data_name(data_title) do
+    data_title
+    |> String.replace(" ", "_", global: true)
+    |> String.replace(~r/[^[:alnum:]_]/, "", global: true)
+    |> String.replace(~r/_+/, "_", global: true)
+    |> String.downcase()
   end
 end
