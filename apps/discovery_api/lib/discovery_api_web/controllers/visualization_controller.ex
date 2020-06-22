@@ -60,7 +60,7 @@ defmodule DiscoveryApiWeb.VisualizationController do
     with user <- Map.get(conn.assigns, :current_user),
          {:ok, visualization} <- Visualizations.get_visualization_by_id(public_id),
          true <- owns_visualization(visualization, user),
-         {:ok, _} <- Visualizations.delete_visualization(visualization.id) do
+         {:ok, _} <- Visualizations.delete_visualization(visualization) do
       send_resp(conn, 204, "")
     else
       _ -> render_error(conn, 400, "Bad Request")

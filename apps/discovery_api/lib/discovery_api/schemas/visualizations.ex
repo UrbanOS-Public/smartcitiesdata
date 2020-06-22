@@ -18,8 +18,8 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     |> Repo.insert()
   end
 
-  def delete_visualization(id) do
-    Repo.delete(id)
+  def delete_visualization(visualization) do
+    Repo.delete(visualization)
   end
 
   def get_visualization_by_id(public_id) do

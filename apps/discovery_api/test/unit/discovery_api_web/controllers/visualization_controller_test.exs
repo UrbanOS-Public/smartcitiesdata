@@ -90,7 +90,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart, id: 1}}
       )
 
-      expect(Visualizations.delete_visualization(1),
+      expect(Visualizations.delete_visualization(any()),
         return: {:ok, :does_not_matter}
       )
 
@@ -112,7 +112,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "frank", chart: @encoded_chart, id: 1}}
       )
 
-      refute_called(Visualizations.delete_visualization(1))
+      refute_called(Visualizations.delete_visualization(any()))
 
       conn
       |> put_req_header("authorization", "Bearer #{token}")
