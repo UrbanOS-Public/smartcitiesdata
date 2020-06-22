@@ -1,6 +1,5 @@
 defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
   use ExUnit.Case
-  use Divo
   use Andi.DataCase
 
   alias SmartCity.TestDataGenerator, as: TDG

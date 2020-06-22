@@ -1,8 +1,13 @@
 defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
+  use ExUnit.Case
+  use Andi.DataCase
   use AndiWeb.ConnCase
-  use Phoenix.ConnTest
   import Phoenix.LiveViewTest
   import Checkov
+
+  alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.Datasets
+  alias SmartCity.TestDataGenerator, as: TDG
 
   import FlokiHelpers,
     only: [
@@ -16,9 +21,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
   @url_path "/datasets/"
 
   test "type-info input is not displayed when type is neither list, date, nor timestamp", %{conn: conn} do
-    dataset = DatasetHelpers.create_dataset(%{technical: %{schema: [%{name: "one", type: "string"}]}})
+    smrt_dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "one", type: "string"}]}})
 
-    DatasetHelpers.add_dataset_to_repo(dataset)
+    {:ok, dataset} = Datasets.update(smrt_dataset)
 
     {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 
@@ -28,9 +33,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
   test "item type selector is shown when field type is a list", %{conn: conn} do
     field_id = UUID.uuid4()
-    dataset = DatasetHelpers.create_dataset(%{technical: %{schema: [%{id: field_id, name: "one", type: "list"}]}})
+    smrt_dataset = TDG.create_dataset(%{technical: %{schema: [%{id: field_id, name: "one", itemType: "string", type: "list"}]}})
 
-    DatasetHelpers.add_dataset_to_repo(dataset)
+    {:ok, dataset} = Datasets.update(smrt_dataset)
 
     {:ok, _, html} = live(conn, @url_path <> dataset.id)
 
@@ -39,9 +44,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
   data_test "format input is shown when field type is #{field}", %{conn: conn} do
     field_id = UUID.uuid4()
-    dataset = DatasetHelpers.create_dataset(%{technical: %{schema: [%{id: field_id, name: "one", type: field}]}})
+    smrt_dataset = TDG.create_dataset(%{technical: %{schema: [%{id: field_id, name: "one", type: field, format: "{ISO:Extended}"}]}})
 
-    DatasetHelpers.add_dataset_to_repo(dataset)
+    {:ok, dataset} = Datasets.update(smrt_dataset)
 
     {:ok, _, html} = live(conn, @url_path <> dataset.id)
 
@@ -51,9 +56,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
   end
 
   data_test "empty values for #{selector_name} are selected by default", %{conn: conn} do
-    dataset = DatasetHelpers.create_dataset(%{technical: %{schema: [], sourceType: "remote"}})
+    smrt_dataset = TDG.create_dataset(%{technical: %{schema: [], sourceType: "remote"}})
 
-    DatasetHelpers.add_dataset_to_repo(dataset)
+    {:ok, dataset} = Datasets.update(smrt_dataset)
 
     {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 
@@ -80,8 +85,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
   end
 
   test "xml selector is disabled when source type is not xml", %{conn: conn} do
-    dataset = DatasetHelpers.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
-    DatasetHelpers.add_dataset_to_repo(dataset)
+    smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
+    {:ok, dataset} = Datasets.update(smrt_dataset)
 
     {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 
@@ -89,8 +94,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
   end
 
   test "xml selector is enabled when source type is xml", %{conn: conn} do
-    dataset = DatasetHelpers.create_dataset(%{technical: %{sourceFormat: "text/xml"}})
-    DatasetHelpers.add_dataset_to_repo(dataset)
+    smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/xml"}})
+
+    {:ok, dataset} =
+      InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
+      |> Datasets.save()
 
     {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 
@@ -103,8 +111,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
         [%{name: "cam", type: "list", item_type: "string", selector: "cam/cam"}]
         |> remove_field_from_schema(field)
 
-      dataset = DatasetHelpers.create_dataset(%{technical: %{sourceFormat: "text/xml", schema: schema}})
-      DatasetHelpers.add_dataset_to_repo(dataset)
+      smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/xml", schema: schema}})
+
+      {:ok, dataset} =
+        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
+        |> Datasets.save()
 
       {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 
@@ -117,8 +128,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     end
 
     test "dataset with no schema does not perform field editor validation", %{conn: conn} do
-      dataset = DatasetHelpers.create_dataset(%{technical: %{schema: []}})
-      DatasetHelpers.add_dataset_to_repo(dataset)
+      smrt_dataset = TDG.create_dataset(%{technical: %{schema: []}})
+
+      {:ok, dataset} =
+        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
+        |> Datasets.save()
 
       {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 

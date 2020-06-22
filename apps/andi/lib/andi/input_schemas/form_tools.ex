@@ -1,5 +1,6 @@
 defmodule Andi.InputSchemas.FormTools do
   @moduledoc false
+  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.StructTools
   alias Andi.Services.OrgStore
 
@@ -38,12 +39,7 @@ defmodule Andi.InputSchemas.FormTools do
 
   def adjust_data_name(form_data) do
     data_title = form_data |> Map.get("business") |> Map.get("dataTitle")
-
-    data_name =
-      data_title
-      |> String.replace(" ", "_", global: true)
-      |> String.replace(~r/[^[:alnum:]_]/, "", global: true)
-      |> String.downcase()
+    data_name = Datasets.data_title_to_data_name(data_title)
 
     org_name = get_in(form_data, ["technical", "orgName"])
     system_name = "#{org_name}__#{data_name}"
@@ -60,7 +56,6 @@ defmodule Andi.InputSchemas.FormTools do
       {:ok, org} ->
         org_name = org.orgName
         org_title = org.orgTitle
-        org_id = org.id
 
         form_data
         |> put_in(["business", "orgTitle"], org_title)
