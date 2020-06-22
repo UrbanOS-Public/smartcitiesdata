@@ -36,12 +36,18 @@ config :telemetry_event,
   metrics_port: 9002
 ```
 
-The above port no is just an example, its not mandatory to use the same port.
+The above port no is just an example, its not mandatory to use the same port for each app.
 
 
 ### PORT NO FOR TEST AND INTEGRATION
-- Upon starting any application it will show the port no as the message for example:
+- Upon starting any application for test and integration, it will assign the metrics port dynamically which can be fetched using Application.get_env, for example:
 
 ```
-Telemetry Prometheus Metrics is hosted on Port No: 9633
+Application.get_env(:telemetry_event, :metrics_port)
+```
+
+- It will return a four digit port no as output, for example:
+
+```
+2168
 ```
