@@ -6,7 +6,9 @@ defmodule TelemetryEvent do
     metrics_options = Application.get_env(:telemetry_event, :metrics_options)
 
     [
-      Metrics.counter(fetch_required(metrics_options, :metric_name), tags: fetch_required(metrics_options, :tags))
+      Metrics.counter(fetch_required(metrics_options, :metric_name),
+        tags: fetch_required(metrics_options, :tags)
+      )
     ]
   end
 
