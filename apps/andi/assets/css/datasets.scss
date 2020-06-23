@@ -6,6 +6,11 @@
   font-size: 1.5rem;
 }
 
+.datasets-index__header {
+    display: flex;
+    justify-content: space-between;
+}
+
 .datasets-index__search-input-container {
   display: flex;
   width: 50%;

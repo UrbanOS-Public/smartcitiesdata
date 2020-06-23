@@ -111,8 +111,16 @@ defmodule Andi.InputSchemas.Options do
 
   def organizations() do
     case OrgStore.get_all() do
-      {:ok, organizations} -> organizations |> Enum.map(&{&1.orgTitle, &1.id})
-      {:error, _} -> []
+      {:ok, organizations} ->
+        org_options =
+          organizations
+          |> Enum.sort_by(&Map.get(&1, :orgTitle))
+          |> Enum.map(&{&1.orgTitle, &1.id})
+
+        [{"Please select an oranization", ""}] ++ org_options
+
+      {:error, _} ->
+        []
     end
   end
 end

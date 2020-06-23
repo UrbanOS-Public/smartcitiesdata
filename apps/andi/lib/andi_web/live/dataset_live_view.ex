@@ -1,8 +1,8 @@
 defmodule AndiWeb.DatasetLiveView do
   use Phoenix.LiveView
+
   alias AndiWeb.Router.Helpers, as: Routes
   alias AndiWeb.DatasetLiveView.Table
-
   alias Andi.InputSchemas.Datasets
 
   @ingested_time_topic "ingested_time_topic"
@@ -10,7 +10,11 @@ defmodule AndiWeb.DatasetLiveView do
   def render(assigns) do
     ~L"""
     <div class="datasets-index">
-      <h1 class="datasets-index__title">All Datasets</h1>
+      <div class="datasets-index__header">
+        <h1 class="datasets-index__title">All Datasets</h1>
+        <button type="button" class="btn btn--add-dataset btn--action" phx-click="add-dataset">ADD DATASET</button>
+      </div>
+
       <div class="datasets-index__search">
         <form phx-change="search" phx-submit="search">
           <div class="datasets-index__search-input-container">
@@ -69,6 +73,12 @@ defmodule AndiWeb.DatasetLiveView do
       |> sort_by_dir(order_by, order_dir)
 
     {:noreply, assign(socket, search_text: search_text, datasets: view_models, order: %{order_by => order_dir}, params: params)}
+  end
+
+  def handle_event("add-dataset", _, socket) do
+    new_dataset = Datasets.create()
+
+    {:noreply, push_redirect(socket, to: "/datasets/#{new_dataset.id}")}
   end
 
   def handle_event("search", %{"search-value" => value}, socket) do
