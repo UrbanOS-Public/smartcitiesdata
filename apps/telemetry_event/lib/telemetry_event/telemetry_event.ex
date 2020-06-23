@@ -33,4 +33,29 @@ defmodule TelemetryEvent do
   defp reject_nil(value, _) when not is_nil(value) do
     value
   end
+
+  def metrics_port() do
+    case Application.get_env(:telemetry_event, :metrics_port) do
+      nil -> create_port_no()
+      port_no -> port_no
+    end
+  end
+
+  defp create_port_no() do
+    1_000..9_999
+    |> Enum.random()
+    |> verify_port_no()
+  end
+
+  defp verify_port_no(port_no) do
+    case :gen_tcp.listen(port_no, []) do
+      {:ok, port} ->
+        Port.close(port)
+        Application.put_env(:telemetry_event, :metrics_port, port_no)
+        port_no
+
+      {:error, :eaddrinuse} ->
+        create_port_no()
+    end
+  end
 end
