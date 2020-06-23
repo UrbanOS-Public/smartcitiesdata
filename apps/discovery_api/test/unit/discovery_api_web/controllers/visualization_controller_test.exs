@@ -79,6 +79,66 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
              } = body
     end
 
+    test "DELETE /visualization returns NO CONTENT for valid bearer token and an owned visualization id", %{
+      conn: conn,
+      subject_id: subject_id,
+      token: token
+    } do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+
+      allow(Visualizations.get_visualization_by_id(@id),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart, id: 1}}
+      )
+
+      expect(Visualizations.delete_visualization(any()),
+        return: {:ok, :does_not_matter}
+      )
+
+      conn
+      |> put_req_header("authorization", "Bearer #{token}")
+      |> put_req_header("content-type", "application/json")
+      |> delete("/api/v1/visualization/#{@id}")
+      |> response(204)
+    end
+
+    test "DELETE /visualization returns BAD REQUEST for valid bearer token and an unowned visualization id", %{
+      conn: conn,
+      subject_id: subject_id,
+      token: token
+    } do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+
+      allow(Visualizations.get_visualization_by_id(@id),
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "frank", chart: @encoded_chart, id: 1}}
+      )
+
+      refute_called(Visualizations.delete_visualization(any()))
+
+      conn
+      |> put_req_header("authorization", "Bearer #{token}")
+      |> put_req_header("content-type", "application/json")
+      |> delete("/api/v1/visualization/#{@id}")
+      |> response(400)
+    end
+
+    test "DELETE /visualization returns BAD REQUEST for non existant visualization id", %{
+      conn: conn,
+      subject_id: subject_id,
+      token: token
+    } do
+      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
+
+      allow(Visualizations.get_visualization_by_id(@id), return: {:error, :does_not_matter})
+
+      refute_called(Visualizations.delete_visualization(any()))
+
+      conn
+      |> put_req_header("authorization", "Bearer #{token}")
+      |> put_req_header("content-type", "application/json")
+      |> delete("/api/v1/visualization/#{@id}")
+      |> response(400)
+    end
+
     test "GET /visualization/id returns OK for valid bearer token and id", %{subject_id: subject_id, token: token} do
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
 
