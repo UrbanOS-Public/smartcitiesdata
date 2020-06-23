@@ -27,6 +27,25 @@ defmodule Andi.InputSchemas.Datasets do
     Repo.all(query)
   end
 
+  def create() do
+    new_dataset_id = UUID.uuid4()
+    new_dataset_title = "New Dataset - #{Date.utc_today()}"
+    new_dataset_name = data_title_to_data_name(new_dataset_title)
+
+    new_changeset =
+      Dataset.changeset_for_draft(
+        %Dataset{},
+        %{
+          id: new_dataset_id,
+          business: %{dataTitle: new_dataset_title},
+          technical: %{dataName: new_dataset_name}
+        }
+      )
+
+    {:ok, new_dataset} = save(new_changeset)
+    new_dataset
+  end
+
   def update(%SmartCity.Dataset{} = smrt_dataset) do
     andi_dataset = get(smrt_dataset.id)
     changeset = InputConverter.smrt_dataset_to_full_changeset(andi_dataset, smrt_dataset)
