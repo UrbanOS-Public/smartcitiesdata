@@ -159,6 +159,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
   describe "on receiving end-of-data message" do
     test "shuts down dataset reader" do
+      Application.put_env(:forklift, :profiling_enabled, false)
       expect(MockTable, :write, fn [%{payload: "foobar"}, %{payload: "foobaz"}], _ -> :ok end)
       expect(MockTopic, :write, fn _, _ -> :ok end)
 

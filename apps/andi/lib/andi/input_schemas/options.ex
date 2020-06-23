@@ -118,7 +118,6 @@ defmodule Andi.InputSchemas.Options do
           |> Enum.map(&{&1.orgTitle, &1.id})
 
         [{"Please select an organization", ""}] ++ org_options
-
       {:error, _} ->
         []
     end
