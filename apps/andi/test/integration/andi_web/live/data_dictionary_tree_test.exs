@@ -1,9 +1,12 @@
 defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
+  use ExUnit.Case
   use AndiWeb.ConnCase
-  use Phoenix.ConnTest
+  use Andi.DataCase
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper
-  use Placebo
+
+  alias Andi.InputSchemas.Datasets
+  alias SmartCity.TestDataGenerator, as: TDG
 
   import FlokiHelpers,
     only: [
@@ -11,18 +14,19 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       get_attributes: 3
     ]
 
+  @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
 
   describe "expand/collapse and check/uncheck" do
     setup %{conn: conn} do
       dataset =
-        DatasetHelpers.create_dataset(%{
+        TDG.create_dataset(%{
           technical: %{
             schema: [
               %{
                 name: "one",
                 type: "list",
-                subType: "map",
+                itemType: "map",
                 subSchema: [
                   %{
                     name: "one-one",
@@ -44,9 +48,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
           }
         })
 
-      DatasetHelpers.add_dataset_to_repo(dataset)
+      {:ok, andi_dataset} = Datasets.update(dataset)
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
 
       [expandable_one_id, expandable_two_id] =
         get_attributes(html, ".data-dictionary-tree-field__action[phx-click='toggle_expanded']", "phx-value-field-id")
