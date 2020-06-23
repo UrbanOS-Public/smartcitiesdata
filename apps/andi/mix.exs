@@ -5,10 +5,14 @@ defmodule Andi.MixProject do
     [
       app: :andi,
 <<<<<<< HEAD
+<<<<<<< HEAD
       version: "0.29.1",
 =======
       version: "0.28.5",
 >>>>>>> Andi version bump
+=======
+      version: "0.29.1",
+>>>>>>> Renaming function name
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
