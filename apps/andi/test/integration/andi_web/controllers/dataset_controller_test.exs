@@ -1,11 +1,12 @@
 defmodule Andi.CreateDatasetTest do
   use ExUnit.Case
-  use Divo
 
   use Andi.DataCase
   use Tesla
 
-  import SmartCity.TestHelper, only: [eventually: 1]
+  @moduletag shared_data_connection: true
+
+  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
   import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0, dataset_update: 0]
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetStore
@@ -13,11 +14,6 @@ defmodule Andi.CreateDatasetTest do
 
   plug(Tesla.Middleware.BaseUrl, "http://localhost:4000")
   @kafka_broker Application.get_env(:andi, :kafka_broker)
-
-  setup_all do
-    Application.ensure_all_started(:andi)
-    :ok
-  end
 
   describe "dataset disable" do
     test "sends dataset:disable event" do
@@ -132,6 +128,10 @@ defmodule Andi.CreateDatasetTest do
       {_, request} = pop_in(request, ["technical", "systemName"])
       assert {:ok, %{status: 201, body: body}} = create(request)
       response = Jason.decode!(body)
+
+      eventually(fn ->
+        assert DatasetStore.get(request["id"]) != {:ok, nil}
+      end)
 
       {:ok, response: response, message: message}
     end
@@ -319,6 +319,10 @@ defmodule Andi.CreateDatasetTest do
       {:ok, %{status: 201, body: body}} = create(new_dataset)
       response = Jason.decode!(body)
 
+      eventually(fn ->
+        assert DatasetStore.get("my-new-dataset") != {:ok, nil}
+      end)
+
       assert response["id"] == "my-new-dataset"
       assert response["business"]["contactName"] == "some  body"
       assert response["business"]["keywords"] == ["a keyword", "another keyword", "etc"]
@@ -330,6 +334,10 @@ defmodule Andi.CreateDatasetTest do
       new_dataset = TDG.create_dataset(technical: %{systemName: "this_will__get_tossed"})
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)
+
+      eventually(fn ->
+        assert DatasetStore.get(new_dataset.id) != {:ok, nil}
+      end)
 
       system_name =
         Jason.decode!(body)
@@ -343,6 +351,10 @@ defmodule Andi.CreateDatasetTest do
       {_, new_dataset} = pop_in(new_dataset, ["id"])
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)
+
+      eventually(fn ->
+        assert DatasetStore.get(new_dataset.id) != {:ok, nil}
+      end)
 
       uuid =
         Jason.decode!(body)

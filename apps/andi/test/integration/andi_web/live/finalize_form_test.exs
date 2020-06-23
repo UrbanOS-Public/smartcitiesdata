@@ -1,14 +1,19 @@
 defmodule AndiWeb.EditLiveView.FinalizeFormTest do
+  use ExUnit.Case
+  use Andi.DataCase
   use AndiWeb.ConnCase
-  use Phoenix.ConnTest
   import Phoenix.LiveViewTest
 
   use Placebo
   import Checkov
 
+  @moduletag shared_data_connection: true
+
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.Datasets
+
+  alias SmartCity.TestDataGenerator, as: TDG
 
   import FlokiHelpers,
     only: [
@@ -21,14 +26,14 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   describe "one-time ingestion" do
     setup %{conn: conn} do
-      dataset =
-        DatasetHelpers.create_dataset(%{
+      smrt_dataset =
+        TDG.create_dataset(%{
           technical: %{
             cadence: "once"
           }
         })
 
-      DatasetHelpers.add_dataset_to_repo(dataset)
+      {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
@@ -50,14 +55,14 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   describe "never ingestion" do
     setup %{conn: conn} do
-      dataset =
-        DatasetHelpers.create_dataset(%{
+      smrt_dataset =
+        TDG.create_dataset(%{
           technical: %{
             cadence: "never"
           }
         })
 
-      DatasetHelpers.add_dataset_to_repo(dataset)
+      {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
@@ -79,14 +84,16 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   describe "repeat ingestion" do
     setup %{conn: conn} do
-      dataset =
-        DatasetHelpers.create_dataset(%{
+      smrt_dataset =
+        TDG.create_dataset(%{
           technical: %{
             cadence: "0 * * * * *"
           }
         })
 
-      DatasetHelpers.add_dataset_to_repo(dataset)
+      {:ok, dataset} =
+        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
+        |> Datasets.save()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
@@ -108,23 +115,18 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
     end
 
     data_test "does not allow schedules more frequent than every 10 seconds", %{conn: conn} do
-      dataset =
-        DatasetHelpers.create_dataset(%{
+      smrt_dataset =
+        TDG.create_dataset(%{
           technical: %{
             cadence: "*/#{second_interval} * * * * *"
           }
         })
 
-      DatasetHelpers.add_dataset_to_repo(dataset)
+      {:ok, dataset} =
+        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
+        |> Datasets.save()
+
       assert {:ok, view, _} = live(conn, @url_path <> dataset.id)
-
-      dataset_from_save =
-        dataset
-        |> InputConverter.smrt_dataset_to_changeset()
-        |> Ecto.Changeset.apply_changes()
-
-      allow(Datasets.update_cadence(any(), any()), return: {:ok, dataset_from_save})
-      allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
       form_data = FormTools.form_data_from_andi_dataset(dataset)
       render_change(view, :save, %{"form_data" => form_data})
@@ -136,18 +138,13 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
     end
 
     data_test "marks #{cronstring} as invalid", %{conn: conn} do
-      dataset = DatasetHelpers.create_dataset(%{technical: %{cadence: cronstring}})
-      DatasetHelpers.add_dataset_to_repo(dataset)
+      smrt_dataset = TDG.create_dataset(%{technical: %{cadence: cronstring}})
+
+      {:ok, dataset} =
+        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
+        |> Datasets.save()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-      dataset_from_save =
-        dataset
-        |> InputConverter.smrt_dataset_to_changeset()
-        |> Ecto.Changeset.apply_changes()
-
-      allow(Datasets.update_cadence(any(), any()), return: {:ok, dataset_from_save})
-      allow(Datasets.update(any()), return: {:ok, dataset_from_save})
 
       form_data = FormTools.form_data_from_andi_dataset(dataset)
       render_change(view, :save, %{"form_data" => form_data})
