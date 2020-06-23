@@ -17,6 +17,20 @@ defmodule AndiWeb.EditLiveView do
     dataset_id = assigns.dataset.id
 
     ~L"""
+    <div class="unsaved-changes-modal unsaved-changes-modal--<%= @unsaved_changes %>">
+      <div class="modal-form-container">
+        <h3>Unsaved Changes</h3>
+        <p class="unsaved-changes-modal__message">
+          You have unsaved changes within this<br> section. Do you wish to continue without saving?
+        </p>
+        <br>
+        <div class="button-container">
+          <a href="#metadata-form" class="btn" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form" phx-value-component-collapse="data_dictionary_form">Save</a>
+          <a href="#metadata-form" class="btn submit_button" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form" phx-value-component-collapse="data_dictionary_form">Cancel</a>
+        </div>
+      </div>
+    </div>
+
     <div class="edit-page" id="dataset-edit-page">
       <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
         <% [business] = inputs_for(f, :business) %>
@@ -103,7 +117,8 @@ defmodule AndiWeb.EditLiveView do
        success_message: "",
        test_results: nil,
        testing: false,
-       dataset_exists: dataset_exists
+       dataset_exists: dataset_exists,
+       unsaved_changes: "visible"
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end
