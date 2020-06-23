@@ -7,12 +7,27 @@ defmodule TelemetryEvent do
       Metrics.counter("events_handled.count", tags: [:app, :author, :dataset_id, :event_type])
     ]
 
-  def add_event_count(options),
-    do:
-      :telemetry.execute([:events_handled], %{}, %{
-        app: Keyword.fetch!(options, :app),
-        author: Keyword.fetch!(options, :author),
-        dataset_id: Keyword.get(options, :dataset_id),
-        event_type: Keyword.fetch!(options, :event_type)
-      })
+  def add_event_count(options) do
+    :telemetry.execute([:events_handled], %{}, %{
+      app: fetch(options, :app),
+      author: fetch(options, :author),
+      dataset_id: Keyword.fetch!(options, :dataset_id),
+      event_type: fetch(options, :event_type)
+    })
+  rescue
+    error -> {:error, error}
+  end
+
+  defp fetch(options, keyword_name) do
+    Keyword.fetch!(options, keyword_name)
+    |> fetch_value(keyword_name)
+  end
+
+  defp fetch_value(value, keyword_name) when is_nil(value) do
+    raise "Keyword :#{keyword_name} cannot be nil"
+  end
+
+  defp fetch_value(value, _) when not is_nil(value) do
+    value
+  end
 end
