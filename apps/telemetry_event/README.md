@@ -22,10 +22,10 @@ TelemetryEvent.TelemetryHelper.add_event_count(options[])
 
 Options:
 
-  - app: Name of the app
-  - author: Name of the author
-  - dataset_id: Dataset Id
-  - event_type: Type of the event
+  - app: Name of the app (Mandatory Field)
+  - author: Name of the author (Mandatory Field)
+  - dataset_id: Dataset Id (Optional Field, can be `nil`)
+  - event_type: Type of the event (Mandatory Field)
 
 
 ### PORT NO FOR PROD

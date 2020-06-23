@@ -10,9 +10,9 @@ defmodule TelemetryEvent do
   def add_event_count(options),
     do:
       :telemetry.execute([:events_handled], %{}, %{
-        app: Keyword.get(options, :app),
-        author: Keyword.get(options, :author),
+        app: Keyword.fetch!(options, :app),
+        author: Keyword.fetch!(options, :author),
         dataset_id: Keyword.get(options, :dataset_id),
-        event_type: Keyword.get(options, :event_type)
+        event_type: Keyword.fetch!(options, :event_type)
       })
 end
