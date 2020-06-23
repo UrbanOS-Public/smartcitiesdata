@@ -28,12 +28,16 @@ Options:
   - event_type: Type of the event (Mandatory Field)
 
 
-### PORT NO FOR PROD
-- The port no can be configured in each app separately as follows:
+### PORT NO AND OTHER OPTIONS FOR PROD
+- The port no and other options can be configured in each app separately as follows:
 
 ```
 config :telemetry_event,
-  metrics_port: 9002
+  metrics_port: 9002,
+  metrics_options: [
+    metric_name: "events_handled.count",
+    tags: [:app, :author, :dataset_id, :event_type]
+  ]
 ```
 
 The above port no is just an example, its not mandatory to use the same port for each app.
