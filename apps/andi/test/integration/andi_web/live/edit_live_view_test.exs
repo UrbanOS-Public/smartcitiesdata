@@ -836,16 +836,17 @@ defmodule AndiWeb.EditLiveViewTest do
       end)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert {"", ["Please select an oranization"]} == get_select_first_option(html, "#form_data_technical_orgId")
+      assert {"", ["Please select an organization"]} == get_select_first_option(html, "#form_data_technical_orgId")
 
       form_data =
         dataset
+        |> put_in([:business, :dataTitle], "data title")
         |> put_in([:technical, :orgId], "95254592-4444-4bcb-9478-7fa248f4118d")
         |> FormTools.form_data_from_andi_dataset()
 
-      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "business", "orgTitle"]})
-      html = render(view)
+      html = render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "technical", "orgId"]})
 
+      assert "very_readable__data_title" == get_value(html, "#form_data_technical_systemName")
       assert {"95254592-4444-4bcb-9478-7fa248f4118d", "Very Readable"} == get_select(html, "#form_data_technical_orgId")
     end
 
