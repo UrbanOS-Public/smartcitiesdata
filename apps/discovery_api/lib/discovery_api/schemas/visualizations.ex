@@ -18,6 +18,10 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     |> Repo.insert()
   end
 
+  def delete_visualization(visualization) do
+    Repo.delete(visualization)
+  end
+
   def get_visualization_by_id(public_id) do
     case Repo.get_by(Visualization, public_id: public_id) |> Repo.preload(:owner) do
       nil -> {:error, "#{public_id} not found"}
