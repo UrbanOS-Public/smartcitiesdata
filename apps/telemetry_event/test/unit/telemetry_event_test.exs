@@ -8,16 +8,7 @@ defmodule TelemetryEventTest do
     expected_tags = [:any_app, :any_author, :any_dataset_id, :any_event_type]
     expected_unit = :unit
 
-    metric_options = [
-      metric_name: "any_events_handled.count",
-      tags: [:any_app, :any_author, :any_dataset_id, :any_event_type]
-    ]
-
-    actual_metrics =
-      metric_options
-      |> TelemetryEvent.metrics()
-      |> List.first()
-
+    actual_metrics = TelemetryEvent.metrics() |> List.first()
     assert expected_event_name == Map.get(actual_metrics, :event_name)
     assert expected_measurement == Map.get(actual_metrics, :measurement)
     assert expected_name == Map.get(actual_metrics, :name)

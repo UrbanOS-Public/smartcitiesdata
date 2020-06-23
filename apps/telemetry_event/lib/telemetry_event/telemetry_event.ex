@@ -2,9 +2,11 @@ defmodule TelemetryEvent do
   @moduledoc false
   alias Telemetry.Metrics
 
-  def metrics(options) do
+  def metrics() do
+    metrics_options = Application.get_env(:telemetry_event, :metrics_options)
+
     [
-      Metrics.counter(fetch(options, :metric_name), tags: fetch(options, :tags))
+      Metrics.counter(fetch(metrics_options, :metric_name), tags: fetch(metrics_options, :tags))
     ]
   end
 
