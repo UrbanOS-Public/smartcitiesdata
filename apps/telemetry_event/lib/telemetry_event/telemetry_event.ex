@@ -2,10 +2,11 @@ defmodule TelemetryEvent do
   @moduledoc false
   alias Telemetry.Metrics
 
-  def metrics,
-    do: [
-      Metrics.counter("events_handled.count", tags: [:app, :author, :dataset_id, :event_type])
+  def metrics(options) do
+    [
+      Metrics.counter(fetch(options, :metric_name), tags: fetch(options, :tags))
     ]
+  end
 
   def add_event_count(options) do
     :telemetry.execute([:events_handled], %{}, %{

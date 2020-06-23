@@ -14,6 +14,14 @@ defmodule TelemetryEvent.Application do
 
   def metrics_config() do
     metrics_port = Application.get_env(:telemetry_event, :metrics_port)
-    [port: metrics_port, metrics: TelemetryEvent.metrics()]
+    [port: metrics_port, metrics: metric_options()]
+  end
+
+  def metric_options() do
+    [
+      metric_name: "events_handled.count",
+      tags: [:app, :author, :dataset_id, :event_type]
+    ]
+    |> TelemetryEvent.metrics()
   end
 end
