@@ -25,7 +25,7 @@ defmodule Reaper.Event.HandlerTest do
     {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance))
     {:ok, horde_supervisor} = Horde.DynamicSupervisor.start_link(name: Reaper.Horde.Supervisor, strategy: :one_for_one)
     {:ok, reaper_horde_registry} = Reaper.Horde.Registry.start_link(name: Reaper.Horde.Registry, keys: :unique)
-
+    allow(TelemetryEvent.add_event_count(any()), return: :ok)
     Brook.Test.register(@instance)
 
     on_exit(fn ->
@@ -41,7 +41,6 @@ defmodule Reaper.Event.HandlerTest do
     test "sends error event for known bad case of nil cadence" do
       allow(Reaper.Scheduler.find_job(any()), return: nil)
       dataset = TDG.create_dataset(id: "ds-empty-cron", technical: %{cadence: nil, sourceType: "ingest"})
-      allow(TelemetryEvent.add_event_count(any()), return: :ok)
 
       assert :ok == Brook.Test.send(@instance, dataset_update(), "testing", dataset)
 
@@ -74,7 +73,6 @@ defmodule Reaper.Event.HandlerTest do
       date = DateTime.utc_now()
       allow DateTime.utc_now(), return: date, meck_options: [:passthrough]
       dataset = TDG.create_dataset(id: "ds2", technical: %{sourceType: "ingest"})
-      allow(TelemetryEvent.add_event_count(any()), return: :ok)
 
       [dataset: dataset, date: date]
     end
@@ -154,7 +152,6 @@ defmodule Reaper.Event.HandlerTest do
       allow DateTime.utc_now(), return: date, meck_options: [:passthrough]
       dataset = TDG.create_dataset(id: "ds1")
       Brook.Test.send(@instance, data_extract_end(), "testing", dataset)
-      allow(TelemetryEvent.add_event_count(any()), return: :ok)
 
       eventually(fn ->
         extraction = Brook.get!(@instance, :extractions, dataset.id)
@@ -170,7 +167,6 @@ defmodule Reaper.Event.HandlerTest do
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
       Brook.Test.with_event(@instance, fn -> Reaper.Collections.FileIngestions.update_dataset(dataset) end)
       Brook.Test.send(@instance, file_ingest_start(), :reaper, dataset)
-      allow(TelemetryEvent.add_event_count(any()), return: :ok)
 
       eventually(fn ->
         assert_called Reaper.FileIngest.Processor.process(dataset)
@@ -184,7 +180,6 @@ defmodule Reaper.Event.HandlerTest do
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
       Brook.Test.with_event(@instance, fn -> Reaper.Collections.FileIngestions.update_dataset(dataset) end)
       Brook.Test.send(@instance, file_ingest_start(), :reaper, dataset)
-      allow(TelemetryEvent.add_event_count(any()), return: :ok)
 
       eventually(fn ->
         view_state = Brook.get!(@instance, :file_ingestions, dataset.id)
@@ -199,7 +194,6 @@ defmodule Reaper.Event.HandlerTest do
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
       Brook.Test.with_event(@instance, fn -> Reaper.Collections.FileIngestions.update_dataset(dataset) end)
       Brook.Test.send(@instance, file_ingest_start(), :reaper, dataset)
-      allow(TelemetryEvent.add_event_count(any()), return: :ok)
 
       assert_receive {:brook_event, %Brook.Event{type: file_ingest_end(), data: ^dataset}}
     end
@@ -209,7 +203,6 @@ defmodule Reaper.Event.HandlerTest do
     setup do
       date = DateTime.utc_now()
       allow DateTime.utc_now(), return: date, meck_options: [:passthrough]
-      allow(TelemetryEvent.add_event_count(any()), return: :ok)
 
       [date: date]
     end
@@ -265,7 +258,6 @@ defmodule Reaper.Event.HandlerTest do
       dataset = TDG.create_dataset(id: Faker.UUID.v4())
       Brook.Test.send(@instance, data_extract_start(), :author, dataset)
       Brook.Test.send(@instance, dataset_disable(), :author, dataset)
-      allow(TelemetryEvent.add_event_count(any()), return: :ok)
 
       eventually(fn ->
         view_state = Brook.get!(@instance, :extractions, dataset.id)
@@ -284,7 +276,6 @@ defmodule Reaper.Event.HandlerTest do
       dataset = TDG.create_dataset(id: Faker.UUID.v4())
       Brook.Test.send(@instance, data_extract_start(), :author, dataset)
       Brook.Test.send(@instance, dataset_delete(), :author, dataset)
-      allow(TelemetryEvent.add_event_count(any()), return: :ok)
 
       eventually(fn ->
         assert nil == Brook.get!(@instance, :extractions, dataset.id)
