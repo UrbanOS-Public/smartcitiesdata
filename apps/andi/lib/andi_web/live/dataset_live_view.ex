@@ -76,19 +76,9 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   def handle_event("add-dataset", _, socket) do
-    new_dataset_id = UUID.uuid4()
-    new_dataset_title = "New Dataset - #{Date.utc_today()}"
-    new_dataset_name = Datasets.data_title_to_data_name(new_dataset_title)
+    new_dataset = Datasets.create()
 
-    new_changeset =
-      Datasets.Dataset.changeset_for_draft(
-        %Datasets.Dataset{},
-        %{id: new_dataset_id, business: %{dataTitle: new_dataset_title}, technical: %{dataName: new_dataset_name}}
-      )
-
-    Datasets.save(new_changeset)
-
-    {:noreply, push_redirect(socket, to: "/datasets/#{new_dataset_id}")}
+    {:noreply, push_redirect(socket, to: "/datasets/#{new_dataset.id}")}
   end
 
   def handle_event("search", %{"search-value" => value}, socket) do
