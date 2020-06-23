@@ -2,13 +2,22 @@ defmodule TelemetryEventTest do
   use ExUnit.Case
 
   test "should return Telemetry Metrics Counter when telemetry event metrics is called" do
-    expected_event_name = [:events_handled]
+    expected_event_name = [:any_events_handled]
     expected_measurement = :count
-    expected_name = [:events_handled, :count]
-    expected_tags = [:app, :author, :dataset_id, :event_type]
+    expected_name = [:any_events_handled, :count]
+    expected_tags = [:any_app, :any_author, :any_dataset_id, :any_event_type]
     expected_unit = :unit
 
-    actual_metrics = TelemetryEvent.metrics() |> List.first()
+    metric_options = [
+      metric_name: "any_events_handled.count",
+      tags: [:any_app, :any_author, :any_dataset_id, :any_event_type]
+    ]
+
+    actual_metrics =
+      metric_options
+      |> TelemetryEvent.metrics()
+      |> List.first()
+
     assert expected_event_name == Map.get(actual_metrics, :event_name)
     assert expected_measurement == Map.get(actual_metrics, :measurement)
     assert expected_name == Map.get(actual_metrics, :name)
