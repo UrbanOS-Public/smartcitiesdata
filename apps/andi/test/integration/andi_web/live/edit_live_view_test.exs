@@ -840,7 +840,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       form_data =
         dataset
-        |> put_in([:business, :dataTitle], "data title")
+        |> put_in([:technical, :dataName], "data_title")
         |> put_in([:technical, :orgId], "95254592-4444-4bcb-9478-7fa248f4118d")
         |> FormTools.form_data_from_andi_dataset()
 
