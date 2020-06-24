@@ -25,6 +25,23 @@
   color: $color-success;
 }
 
+.unsaved-changes-modal--visible {
+  position: fixed;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  z-index: 998;
+  background-color: rgba(255,255,255,0.7);
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.unsaved-changes-modal--hidden {
+  display: none;
+}
+
 @include area(metadata-form, title);
 @include area(metadata-form, description);
 @include area(metadata-form, format);

@@ -21,7 +21,29 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
         "expanded" -> "MINIMIZE"
       end
 
+    unsaved_changes_modifier =
+    if assigns.show_unsaved_changes_modal do
+      "visible"
+    else
+      "hidden"
+    end
+
     ~L"""
+
+    <div class="unsaved-changes-modal unsaved-changes-modal--<%= unsaved_changes_modifier %>">
+      <div class="modal-form-container">
+        <h3>Unsaved Changes</h3>
+        <p class="unsaved-changes-modal__message">
+          You have unsaved changes within this<br> section. Do you wish to continue without saving?
+        </p>
+        <br>
+        <div class="button-container">
+          <a href="#metadata-form" class="btn" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form" phx-value-component-collapse="data_dictionary_form">Save</a>
+          <a href="#metadata-form" class="btn submit_button" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form" phx-value-component-collapse="data_dictionary_form">Cancel</a>
+        </div>
+      </div>
+    </div>
+
     <div id="metadata-form" class="form-component">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="metadata_form">
         <h3 class="component-number component-number--<%= @visibility %>">1</h3>
