@@ -12,6 +12,7 @@ defmodule DiscoveryApi.Schemas.Visualizations.Visualization do
     field(:query, :string)
     field(:title, :string)
     field(:chart, :string)
+    field(:datasets, {:array, :string})
     belongs_to(:owner, User, type: Ecto.UUID, foreign_key: :owner_id)
 
     timestamps()

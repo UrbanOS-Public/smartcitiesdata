@@ -6,6 +6,12 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
   alias DiscoveryApi.Schemas.{Generators, Users, Visualizations}
   alias DiscoveryApi.Schemas.Visualizations.Visualization
   alias DiscoveryApi.Schemas.Users.User
+  alias DiscoveryApi.Test.Helper
+  alias SmartCity.TestDataGenerator, as: TDG
+  alias DiscoveryApi.Data.Model
+
+  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   describe "get/1" do
     test "given an existing visualization, it returns an :ok tuple with it" do
@@ -59,6 +65,39 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
       actual = Repo.get(Visualization, saved.id)
       assert query == actual.query
+    end
+
+    test "given a valid query, it is saved with a list of datasets used in it" do
+      organization = Helper.create_persisted_organization(%{id: "1234B", orgName: "Organized"})
+
+      public_dataset =
+        TDG.create_dataset(%{
+          id: "4321A",
+          technical: %{
+            private: false,
+            orgId: organization.id,
+            orgName: organization.orgName,
+            dataName: "pro_publica",
+            systemName: "#{organization.orgName}__pro_publica"
+          }
+        })
+
+      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, public_dataset)
+
+      eventually(fn ->
+        assert nil != Model.get(public_dataset.id)
+      end)
+
+      public_table = public_dataset.technical.systemName
+
+      query = "select * from #{public_table}"
+      title = "My first visualization"
+      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+
+      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
+
+      actual = Repo.get(Visualization, saved.id)
+      assert [public_table] == actual.datasets
     end
 
     test "given a missing query, it fails to create a visualization" do
