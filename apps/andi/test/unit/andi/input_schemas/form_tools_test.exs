@@ -209,6 +209,7 @@ defmodule Andi.InputSchemas.FormToolsTest do
           "orgTitle" => "Another Org Title"
         },
         "technical" => %{
+          "dataName" => "another_data_title",
           "orgName" => "something_not_related",
           "orgId" => "existing_org_id"
         }
@@ -218,7 +219,12 @@ defmodule Andi.InputSchemas.FormToolsTest do
 
       assert %{
                "business" => %{"orgTitle" => "Existing Org Title"},
-               "technical" => %{"orgName" => "existing_org_name", "orgId" => "existing_org_id"}
+               "technical" => %{
+                 "dataName" => "another_data_title",
+                 "orgName" => "existing_org_name",
+                 "orgId" => "existing_org_id",
+                 "systemName" => "existing_org_name__another_data_title"
+               }
              } == new_form_data
     end
   end
