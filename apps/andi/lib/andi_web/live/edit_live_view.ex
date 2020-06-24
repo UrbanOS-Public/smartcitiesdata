@@ -29,6 +29,7 @@ defmodule AndiWeb.EditLiveView do
         <%= hidden_input(technical, :dataName) %>
         <%= hidden_input(technical, :systemName) %>
         <%= hidden_input(technical, :sourceType) %>
+        <%= hidden_input(technical, :sourceFormat) %>
 
 
         <div class="metadata-form-component">
