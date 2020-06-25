@@ -29,7 +29,8 @@ defmodule DiscoveryApi.Application do
         cache_populator(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
         DiscoveryApi.Quantum.Scheduler,
-        DiscoveryApi.Data.TableInfoCache
+        DiscoveryApi.Data.TableInfoCache,
+        DiscoveryApi.Data.VisualizationMigrator
       ]
       |> List.flatten()
 
