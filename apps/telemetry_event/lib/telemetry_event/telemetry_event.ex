@@ -7,33 +7,29 @@ defmodule TelemetryEvent do
 
     [
       Metrics.counter(fetch_required(metrics_options, :metric_name),
-        tags: fetch_required(metrics_options, :tags)
+        tags: Keyword.fetch!(metrics_options, :tags)
       )
     ]
   end
 
   def add_event_count(options) do
-    :telemetry.execute([:events_handled], %{}, %{
-      app: fetch_required(options, :app),
-      author: fetch_required(options, :author),
-      dataset_id: Keyword.fetch!(options, :dataset_id),
-      event_type: fetch_required(options, :event_type)
-    })
+    :telemetry.execute([:events_handled], %{}, measurements(options))
   rescue
     error -> {:error, error}
   end
 
-  defp fetch_required(options, keyword_name) do
-    Keyword.fetch!(options, keyword_name)
-    |> reject_nil(keyword_name)
+  defp measurements(options) do
+    options
+    |> Enum.filter(fn {k, v} -> reject_nil(k, v) == true end)
+    |> Map.new()
   end
 
-  defp reject_nil(value, keyword_name) when is_nil(value) do
-    raise "Keyword :#{keyword_name} cannot be nil"
-  end
-
-  defp reject_nil(value, _) when not is_nil(value) do
-    value
+  defp reject_nil(keyword_name, value) do
+    if keyword_name == :dataset_id or value != nil do
+      true
+    else
+      raise "Keyword :#{keyword_name} cannot be nil"
+    end
   end
 
   def metrics_port() do
