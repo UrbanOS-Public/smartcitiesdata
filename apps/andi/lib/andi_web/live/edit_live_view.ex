@@ -242,7 +242,7 @@ defmodule AndiWeb.EditLiveView do
       true -> {:noreply, assign(socket, show_unsaved_changes_modal: true)}
       false ->
         new_visibility = update_component_visibility([component], socket.assigns.component_visibility)
-        {:noreply, assign(socket, component_visibility: new_visibility, show_unsaved_changes_modal: true)}
+        {:noreply, assign(socket, component_visibility: new_visibility, show_unsaved_changes_modal: false)}
     end
   end
 
@@ -263,6 +263,10 @@ defmodule AndiWeb.EditLiveView do
 
         {:noreply, assign(socket, component_visibility: new_visibility, show_unsaved_changes_modal: false)}
     end
+  end
+
+  def handle_event("unsaved-changes-canceled", _, socket) do
+    {:noreply, assign(socket, show_unsaved_changes_modal: false)}
   end
 
   def handle_event("add", %{"field" => "sourceQueryParams"}, socket) do

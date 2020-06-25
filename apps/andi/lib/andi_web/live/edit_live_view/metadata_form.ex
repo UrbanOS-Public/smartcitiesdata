@@ -38,8 +38,8 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
         </p>
         <br>
         <div class="button-container">
-          <a href="#metadata-form" class="btn" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form" phx-value-component-collapse="data_dictionary_form">Save</a>
-          <a href="#metadata-form" class="btn submit_button" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form" phx-value-component-collapse="data_dictionary_form">Cancel</a>
+          <a href="#metadata-form" class="btn" phx-click="unsaved-changes-canceled">Cancel</a>
+          <a href="#metadata-form" class="btn submit_button" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form" phx-value-component-collapse="data_dictionary_form">Continue</a>
         </div>
       </div>
     </div>
