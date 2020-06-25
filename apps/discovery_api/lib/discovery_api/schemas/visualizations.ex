@@ -71,6 +71,7 @@ defmodule DiscoveryApi.Schemas.Visualizations do
       |> Jason.decode!()
       |> Map.get("inputTableColumnInfos")
       |> Enum.map(fn %{"table" => %{"schemaTable" => %{"table" => table}}} -> table end)
+      |> get_dataset_ids()
 
     visualization
     |> Map.put(:datasets, datasets)
@@ -81,5 +82,11 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     visualization
     |> Map.put(:datasets, [])
     |> Map.put(:valid_query, false)
+  end
+
+  defp get_dataset_ids(system_names) do
+    Brook.get_all_values!(DiscoveryApi.instance(), :models)
+    |> Enum.filter(fn %{systemName: system_name} -> system_name in system_names end)
+    |> Enum.map(fn %{id: id} -> id end)
   end
 end

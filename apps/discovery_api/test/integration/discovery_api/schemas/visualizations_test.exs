@@ -69,21 +69,21 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     end
 
     test "given a valid query, it is created with a list of datasets used in it and is flagged" do
-      public_table = create_persisted_dataset("123A", "public_dataset", "public_org")
-      query = "select * from #{public_table}"
+      {table, id} = create_persisted_dataset("123A", "public_dataset", "public_org")
+      query = "select * from #{table}"
       title = "My first visualization"
       {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
 
       actual = Repo.get(Visualization, saved.id)
-      assert [public_table] == actual.datasets
+      assert [id] == actual.datasets
       assert actual.valid_query
     end
 
     test "given an invalid query, it is created with an empty list of datasets and is flagged" do
-      public_table = create_persisted_dataset("123A", "public_dataset", "public_org")
-      query = "select * from INVALID #{public_table}"
+      {table, _id} = create_persisted_dataset("123A", "public_dataset", "public_org")
+      query = "select * from INVALID #{table}"
       title = "My first visualization"
       {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
 
@@ -222,7 +222,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       created_visualization: created_visualization,
       owner: owner
     } do
-      table = create_persisted_dataset("123A", "a_table", "a_org")
+      {table, id} = create_persisted_dataset("123A", "a_table", "a_org")
 
       assert {:ok, updated_visualization} =
                Visualizations.update_visualization_by_id(
@@ -236,7 +236,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
       {:ok, actual_visualization} = Visualizations.get_visualization_by_id(created_visualization.public_id)
 
-      assert [table] == actual_visualization.datasets
+      assert [id] == actual_visualization.datasets
     end
   end
 
@@ -275,6 +275,6 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       )
     end)
 
-    table
+    {table, dataset.id}
   end
 end
