@@ -13,8 +13,9 @@ defmodule DiscoveryApi.Schemas.Visualizations do
   end
 
   def create_visualization(visualization_attributes) do
+    query = Map.get(visualization_attributes, :query)
     %Visualization{}
-    |> add_used_datasets(visualization_attributes)
+    |> add_used_datasets(query)
     |> Visualization.changeset(visualization_attributes)
     |> Repo.insert()
   end
@@ -43,6 +44,8 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     {:ok, existing_visualization} = get_visualization_by_id(id)
 
     if user.id == existing_visualization.owner_id do
+      visualization_changes = add_used_datasets(visualization_changes, Map.get(visualization_changes, :query))
+
       existing_visualization
       |> Visualization.changeset_update(visualization_changes)
       |> Repo.update()
@@ -51,24 +54,30 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     end
   end
 
-  def add_used_datasets(visualization, %{query: query}) do
-    datasets = DiscoveryApi.prestige_opts()
+  defp add_used_datasets(visualization, nil), do: visualization
+
+  defp add_used_datasets(visualization, query) do
+    DiscoveryApi.prestige_opts()
     |> Prestige.new_session()
     |> Prestige.query("EXPLAIN (TYPE IO, FORMAT JSON) #{query}")
-    |> handle_explain_response()
-
-    Map.put(visualization, :datasets, datasets)
+    |> handle_explain_response(visualization)
   end
 
-  def add_used_datasets(visualization, _), do: Map.put(visualization, :datasets, [])
-
-  def handle_explain_response({:ok, response}) do
-    response
+  defp handle_explain_response({:ok, response}, visualization) do
+    datasets = response
     |> Map.get(:rows)
     |> Jason.decode!()
     |> Map.get("inputTableColumnInfos")
     |> Enum.map(fn %{"table" => %{"schemaTable" => %{"table" => table}}} -> table end)
+
+    visualization
+    |> Map.put(:datasets, datasets)
+    |> Map.put(:valid_query, true)
   end
 
-  def handle_explain_response({:error, _}), do: []
+  defp handle_explain_response({:error, _}, visualization) do
+    visualization
+    |> Map.put(:datasets, [])
+    |> Map.put(:valid_query, false)
+  end
 end

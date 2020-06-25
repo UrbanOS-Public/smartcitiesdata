@@ -12,6 +12,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
   import SmartCity.Event, only: [dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
+  import ExUnit.CaptureLog
 
   describe "get/1" do
     test "given an existing visualization, it returns an :ok tuple with it" do
@@ -67,29 +68,8 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       assert query == actual.query
     end
 
-    test "given a valid query, it is saved with a list of datasets used in it" do
-      organization = Helper.create_persisted_organization(%{id: "1234B", orgName: "Organized"})
-
-      public_dataset =
-        TDG.create_dataset(%{
-          id: "4321A",
-          technical: %{
-            private: false,
-            orgId: organization.id,
-            orgName: organization.orgName,
-            dataName: "pro_publica",
-            systemName: "#{organization.orgName}__pro_publica"
-          }
-        })
-
-      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, public_dataset)
-
-      eventually(fn ->
-        assert nil != Model.get(public_dataset.id)
-      end)
-
-      public_table = public_dataset.technical.systemName
-
+    test "given a valid query, it is created with a list of datasets used in it and is flagged" do
+      public_table = create_persisted_dataset("123A", "public_dataset", "public_org")
       query = "select * from #{public_table}"
       title = "My first visualization"
       {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
@@ -98,6 +78,20 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
       actual = Repo.get(Visualization, saved.id)
       assert [public_table] == actual.datasets
+      assert actual.valid_query
+    end
+
+    test "given an invalid query, it is created with an empty list of datasets and is flagged" do
+      public_table = create_persisted_dataset("123A", "public_dataset", "public_org")
+      query = "select * from INVALID #{public_table}"
+      title = "My first visualization"
+      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+
+      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
+
+      actual = Repo.get(Visualization, saved.id)
+      assert [] == actual.datasets
+      refute actual.valid_query
     end
 
     test "given a missing query, it fails to create a visualization" do
@@ -223,5 +217,64 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
                  owner
                )
     end
+
+    test "given a valid query, it is updated with a list of datasets used in it", %{
+      created_visualization: created_visualization,
+      owner: owner
+    } do
+      table = create_persisted_dataset("123A", "a_table", "a_org")
+
+      assert {:ok, updated_visualization} =
+               Visualizations.update_visualization_by_id(
+                 created_visualization.public_id,
+                 %{
+                   title: "query title updated",
+                   query: "select * from #{table}"
+                 },
+                 owner
+               )
+
+      {:ok, actual_visualization} = Visualizations.get_visualization_by_id(created_visualization.public_id)
+
+      assert [table] == actual_visualization.datasets
+    end
+  end
+
+  defp create_persisted_dataset(id, name, orgName) do
+    organization = Helper.create_persisted_organization(%{id: "org#{id}", orgName: orgName})
+
+    dataset =
+      TDG.create_dataset(%{
+        id: id,
+        technical: %{
+          private: false,
+          orgId: organization.id,
+          orgName: organization.orgName,
+          dataName: name,
+          systemName: "#{organization.orgName}__#{name}"
+        }
+      })
+
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+
+    eventually(fn ->
+      assert nil != Model.get(dataset.id)
+    end)
+
+    table = dataset.technical.systemName
+
+    prestige_session =
+      DiscoveryApi.prestige_opts()
+      |> Keyword.merge(receive_timeout: 10_000)
+      |> Prestige.new_session()
+
+    capture_log(fn ->
+      Prestige.query(
+        prestige_session,
+        ~s|create table if not exists "#{table}" (id integer, name varchar)|
+      )
+    end)
+
+    table
   end
 end
