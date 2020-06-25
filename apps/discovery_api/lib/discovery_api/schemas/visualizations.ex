@@ -14,6 +14,7 @@ defmodule DiscoveryApi.Schemas.Visualizations do
 
   def create_visualization(visualization_attributes) do
     query = Map.get(visualization_attributes, :query)
+
     %Visualization{}
     |> add_used_datasets(query)
     |> Visualization.changeset(visualization_attributes)
@@ -64,11 +65,12 @@ defmodule DiscoveryApi.Schemas.Visualizations do
   end
 
   defp handle_explain_response({:ok, response}, visualization) do
-    datasets = response
-    |> Map.get(:rows)
-    |> Jason.decode!()
-    |> Map.get("inputTableColumnInfos")
-    |> Enum.map(fn %{"table" => %{"schemaTable" => %{"table" => table}}} -> table end)
+    datasets =
+      response
+      |> Map.get(:rows)
+      |> Jason.decode!()
+      |> Map.get("inputTableColumnInfos")
+      |> Enum.map(fn %{"table" => %{"schemaTable" => %{"table" => table}}} -> table end)
 
     visualization
     |> Map.put(:datasets, datasets)
