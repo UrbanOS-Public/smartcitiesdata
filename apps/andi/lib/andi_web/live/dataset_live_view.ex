@@ -127,6 +127,8 @@ defmodule AndiWeb.DatasetLiveView do
     end)
   end
 
+  defp search_contains?(nil, _search_str), do: false
+
   defp search_contains?(str, search_str) do
     String.downcase(str) =~ String.downcase(search_str)
   end
