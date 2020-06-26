@@ -21,12 +21,14 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
         "expanded" -> "MINIMIZE"
       end
 
+    is_visible = assigns.visibility == "expanded"
+
     unsaved_changes_modifier =
-    if assigns.show_unsaved_changes_modal do
-      "visible"
-    else
-      "hidden"
-    end
+      if assigns.show_unsaved_changes_modal && is_visible do
+        "visible"
+      else
+        "hidden"
+      end
 
     ~L"""
 
@@ -39,7 +41,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
         <br>
         <div class="button-container">
           <a href="#metadata-form" class="btn" phx-click="unsaved-changes-canceled">Cancel</a>
-          <a href="#metadata-form" class="btn submit_button" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form" phx-value-component-collapse="data_dictionary_form">Continue</a>
+          <a href="#metadata-form" class="btn submit_button" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form" phx-value-component-collapse="metadata_form" phx-value-continue-unsaved="true">Continue</a>
         </div>
       </div>
     </div>

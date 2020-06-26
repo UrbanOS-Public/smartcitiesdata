@@ -57,7 +57,31 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
     publish_message? = !String.contains?(assigns.success_message, "Saved successfully")
 
+    is_visible = assigns.visibility == "expanded"
+
+    unsaved_changes_modifier =
+      if assigns.show_unsaved_changes_modal && is_visible do
+        "visible"
+      else
+        "hidden"
+      end
+
     ~L"""
+
+    <div class="unsaved-changes-modal unsaved-changes-modal--<%= unsaved_changes_modifier %>">
+      <div class="modal-form-container">
+        <h3>Unsaved Changes</h3>
+        <p class="unsaved-changes-modal__message">
+          You have unsaved changes within this<br> section. Do you wish to continue without saving?
+        </p>
+        <br>
+        <div class="button-container">
+          <a href="#metadata-form" class="btn" phx-click="unsaved-changes-canceled">Cancel</a>
+          <a href="#metadata-form" class="btn submit_button" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form" phx-value-component-collapse="finalize_form" phx-value-continue-unsaved="true">Continue</a>
+        </div>
+      </div>
+    </div>
+
     <div id="finalize_form" class="finalize-form finalize-form--<%= @visibility %>">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="finalize_form">
         <h3 class="component-number component-number--<%= @visibility %>">4</h3>

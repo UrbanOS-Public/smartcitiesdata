@@ -20,7 +20,31 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         "expanded" -> "MINIMIZE"
       end
 
+    is_visible = assigns.visibility == "expanded"
+
+    unsaved_changes_modifier =
+      if assigns.show_unsaved_changes_modal && is_visible do
+        "visible"
+      else
+        "hidden"
+      end
+
     ~L"""
+
+    <div class="unsaved-changes-modal unsaved-changes-modal--<%= unsaved_changes_modifier %>">
+      <div class="modal-form-container">
+        <h3>Unsaved Changes</h3>
+        <p class="unsaved-changes-modal__message">
+          You have unsaved changes within this<br> section. Do you wish to continue without saving?
+        </p>
+        <br>
+        <div class="button-container">
+          <a href="#metadata-form" class="btn" phx-click="unsaved-changes-canceled">Cancel</a>
+          <a href="#metadata-form" class="btn submit_button" phx-click="toggle-component-visibility" phx-value-component-expand="url_form" phx-value-component-collapse="data_dictionary_form" phx-value-continue-unsaved="true">Continue</a>
+        </div>
+      </div>
+    </div>
+
     <div id="data-dictionary-form" class="form-component">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="data_dictionary_form">
         <h3 class="component-number component-number--<%= @visibility %>">2</h3>

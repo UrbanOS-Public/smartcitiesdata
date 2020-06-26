@@ -38,16 +38,16 @@ defmodule AndiWeb.EditLiveView do
         </div>
 
         <div class="data-dictionary-form-component">
-          <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render, current_data_dictionary_item: @current_data_dictionary_item, technical: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["data_dictionary_form"]) %>
+          <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render, current_data_dictionary_item: @current_data_dictionary_item, technical: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["data_dictionary_form"], show_unsaved_changes_modal: @show_unsaved_changes_modal) %>
         </div>
 
 
         <div class="url-form-component">
-        <%= live_component(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, technical: technical, testing: @testing, test_results: @test_results, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["url_form"]) %>
+        <%= live_component(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, technical: technical, testing: @testing, test_results: @test_results, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["url_form"], show_unsaved_changes_modal: @show_unsaved_changes_modal) %>
         </div>
 
         <div class="finalize-form-component ">
-        <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["finalize_form"]) %>
+        <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["finalize_form"], show_unsaved_changes_modal: @show_unsaved_changes_modal) %>
         </div>
 
       </form>
@@ -239,11 +239,26 @@ defmodule AndiWeb.EditLiveView do
     unsaved_changes = socket.assigns.unsaved_changes
 
     case unsaved_changes do
-      true -> {:noreply, assign(socket, show_unsaved_changes_modal: true)}
+      true ->
+        {:noreply, assign(socket, show_unsaved_changes_modal: true)}
+
       false ->
         new_visibility = update_component_visibility([component], socket.assigns.component_visibility)
-        {:noreply, assign(socket, component_visibility: new_visibility, show_unsaved_changes_modal: false)}
+        {:noreply, assign(socket, component_visibility: new_visibility, show_unsaved_changes_modal: false, unsaved_changes: false)}
     end
+  end
+
+  def handle_event(
+        "toggle-component-visibility",
+        %{"component-expand" => component_expand, "component-collapse" => component_collapse, "continue-unsaved" => _},
+        socket
+      ) do
+    new_visibility =
+      socket.assigns.component_visibility
+      |> Map.put(component_expand, "expanded")
+      |> Map.put(component_collapse, "collapsed")
+
+    {:noreply, assign(socket, component_visibility: new_visibility, show_unsaved_changes_modal: false, unsaved_changes: false)}
   end
 
   def handle_event(
@@ -254,14 +269,16 @@ defmodule AndiWeb.EditLiveView do
     unsaved_changes = socket.assigns.unsaved_changes
 
     case unsaved_changes do
-      true -> {:noreply, assign(socket, show_unsaved_changes_modal: true)}
+      true ->
+        {:noreply, assign(socket, show_unsaved_changes_modal: true)}
+
       false ->
         new_visibility =
           socket.assigns.component_visibility
           |> Map.put(component_expand, "expanded")
           |> Map.put(component_collapse, "collapsed")
 
-        {:noreply, assign(socket, component_visibility: new_visibility, show_unsaved_changes_modal: false)}
+        {:noreply, assign(socket, component_visibility: new_visibility, show_unsaved_changes_modal: false, unsaved_changes: false)}
     end
   end
 

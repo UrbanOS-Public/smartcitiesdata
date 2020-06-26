@@ -1592,7 +1592,10 @@ defmodule AndiWeb.EditLiveViewTest do
 
       refute [] == find_elements(html, ".unsaved-changes-modal--hidden")
 
-      render_change(view, "toggle-component-visibility", %{"component-expand" => "data_dictionary_form", "component-collapse" => "metadata_form"})
+      render_change(view, "toggle-component-visibility", %{
+        "component-expand" => "data_dictionary_form",
+        "component-collapse" => "metadata_form"
+      })
 
       html = render(view)
 
