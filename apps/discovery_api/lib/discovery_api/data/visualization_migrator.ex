@@ -7,19 +7,46 @@ defmodule DiscoveryApi.Data.VisualizationMigrator do
 
   use GenServer, restart: :transient
 
+  import Ecto.Query, only: [from: 2]
+
+  require Logger
+
   def start_link(_) do
     GenServer.start_link(__MODULE__, nil)
   end
 
   def init(_) do
-    DiscoveryApi.Repo.get_by(Visualization, valid_query: nil)
-    |> Enum.map(&update_visualization/1)
-
-    {:ok, nil, {:continue, :stop}}
+    {:ok, nil, {:continue, :run}}
   end
 
   def handle_continue(:stop, _) do
     {:stop, :normal, nil}
+  end
+
+  def handle_continue(:run, _) do
+    case migrate() do
+      :ok ->
+        Logger.info("Visualization Migration Successful")
+        {:noreply, nil, {:continue, :stop}}
+      :error ->
+        Logger.info("Visualization Migration Failed. Retrying.")
+        Process.sleep(2000)
+        {:noreply, nil, {:continue, :run}}
+    end
+  end
+
+  defp migrate() do
+    try do
+      Logger.info("Starting Migration of Visualizations")
+      query = from(v in Visualization, where: is_nil(v.valid_query))
+
+      DiscoveryApi.Repo.all(query)
+      |> Enum.map(&update_visualization/1)
+
+      :ok
+    rescue
+      _ -> :error
+    end
   end
 
   defp update_visualization(%{public_id: public_id, owner: owner} = visualization) do

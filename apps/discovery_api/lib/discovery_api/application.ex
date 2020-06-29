@@ -29,8 +29,7 @@ defmodule DiscoveryApi.Application do
         cache_populator(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
         DiscoveryApi.Quantum.Scheduler,
-        DiscoveryApi.Data.TableInfoCache,
-        DiscoveryApi.Data.VisualizationMigrator
+        DiscoveryApi.Data.TableInfoCache
       ]
       |> List.flatten()
 
@@ -62,7 +61,7 @@ defmodule DiscoveryApi.Application do
     Application.get_env(:discovery_api, DiscoveryApi.Repo)
     |> case do
       nil -> []
-      _ -> Supervisor.Spec.worker(DiscoveryApi.Repo, [])
+      _ -> [{DiscoveryApi.Repo, []}, DiscoveryApi.Data.VisualizationMigrator]
     end
   end
 

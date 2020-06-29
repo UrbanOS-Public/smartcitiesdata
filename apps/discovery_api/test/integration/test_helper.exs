@@ -1,6 +1,9 @@
 alias DiscoveryApi.Test.Helper
 
-Divo.Suite.start()
+Divo.Suite.start(auto_start: false)
+Mix.Tasks.Ecto.Create.run([])
+Mix.Tasks.Ecto.Migrate.run([])
+Application.ensure_all_started(:discovery_api)
 Helper.wait_for_brook_to_be_ready()
 Faker.start()
 ExUnit.start()
