@@ -28,6 +28,7 @@ defmodule DiscoveryApi.Data.VisualizationMigrator do
       :ok ->
         Logger.info("Visualization Migration Successful")
         {:noreply, nil, {:continue, :stop}}
+
       :error ->
         Logger.info("Visualization Migration Failed. Retrying.")
         Process.sleep(2000)
@@ -41,7 +42,7 @@ defmodule DiscoveryApi.Data.VisualizationMigrator do
       query = from(v in Visualization, where: is_nil(v.valid_query))
 
       DiscoveryApi.Repo.all(query)
-      |> Enum.map(&update_visualization/1)
+      |> Enum.each(&update_visualization/1)
 
       :ok
     rescue
