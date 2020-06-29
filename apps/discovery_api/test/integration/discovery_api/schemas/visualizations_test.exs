@@ -81,6 +81,19 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       assert actual.valid_query
     end
 
+    test "given a valid query using the same dataset twice, the saved list of datasets contains only one entry for it" do
+      {table, id} = create_persisted_dataset("123A", "public_dataset", "public_org")
+      query = "select * from #{table} union all select * from #{table}"
+      title = "My first visualization"
+      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+
+      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
+
+      actual = Repo.get(Visualization, saved.id)
+      assert [id] == actual.datasets
+      assert actual.valid_query
+    end
+
     test "given an invalid query, it is created with an empty list of datasets and is flagged" do
       {table, _id} = create_persisted_dataset("123A", "public_dataset", "public_org")
       query = "select * from INVALID #{table}"
