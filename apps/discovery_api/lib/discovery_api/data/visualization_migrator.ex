@@ -38,10 +38,7 @@ defmodule DiscoveryApi.Data.VisualizationMigrator do
 
   defp migrate() do
     try do
-      Logger.info("Starting Migration of Visualizations")
-      query = from(v in Visualization, where: is_nil(v.valid_query))
-
-      DiscoveryApi.Repo.all(query)
+      Visualizations.get_visualizations_to_be_migrated()
       |> Enum.each(&update_visualization/1)
 
       :ok

@@ -7,6 +7,7 @@ defmodule DiscoveryApi.Schemas.Visualizations do
 
   alias DiscoveryApi.Repo
   alias DiscoveryApi.Schemas.Visualizations.Visualization
+  alias DiscoveryApi.Services.PrestoService
 
   def list_visualizations do
     Repo.all(Visualization)
@@ -41,6 +42,11 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     Repo.all(query)
   end
 
+  def get_visualizations_to_be_migrated() do
+    from(v in Visualization, where: is_nil(v.valid_query))
+    |> Repo.all()
+  end
+
   def update_visualization_by_id(id, visualization_changes, user) do
     {:ok, existing_visualization} = get_visualization_by_id(id)
 
@@ -58,30 +64,18 @@ defmodule DiscoveryApi.Schemas.Visualizations do
   defp add_used_datasets(visualization, nil), do: visualization
 
   defp add_used_datasets(visualization, query) do
-    DiscoveryApi.prestige_opts()
-    |> Prestige.new_session()
-    |> Prestige.query("EXPLAIN (TYPE IO, FORMAT JSON) #{query}")
-    |> handle_explain_response(visualization)
-  end
+    session = Prestige.new_session(DiscoveryApi.prestige_opts())
+    case PrestoService.get_affected_tables(session, query) do
+      {:ok, tables} ->
+        visualization
+        |> Map.put(:datasets, get_dataset_ids(tables))
+        |> Map.put(:valid_query, true)
 
-  defp handle_explain_response({:ok, response}, visualization) do
-    datasets =
-      response
-      |> Map.get(:rows)
-      |> Jason.decode!()
-      |> Map.get("inputTableColumnInfos")
-      |> Enum.map(fn %{"table" => %{"schemaTable" => %{"table" => table}}} -> table end)
-      |> get_dataset_ids()
-
-    visualization
-    |> Map.put(:datasets, datasets)
-    |> Map.put(:valid_query, true)
-  end
-
-  defp handle_explain_response({:error, _}, visualization) do
-    visualization
-    |> Map.put(:datasets, [])
-    |> Map.put(:valid_query, false)
+      {:error, _} ->
+        visualization
+        |> Map.put(:datasets, [])
+        |> Map.put(:valid_query, false)
+    end
   end
 
   defp get_dataset_ids(system_names) do
