@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.19.0",
+      version: "0.20.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -70,6 +70,7 @@ defmodule Reaper.MixProject do
       {:smart_city, "~> 3.0"},
       {:saxy, "~> 0.10"},
       {:sweet_xml, "~> 0.6"},
+      {:telemetry_event, in_umbrella: true},
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
       # Test/Dev Dependencies

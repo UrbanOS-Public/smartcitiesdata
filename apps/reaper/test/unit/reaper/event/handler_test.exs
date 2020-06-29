@@ -25,7 +25,7 @@ defmodule Reaper.Event.HandlerTest do
     {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance))
     {:ok, horde_supervisor} = Horde.DynamicSupervisor.start_link(name: Reaper.Horde.Supervisor, strategy: :one_for_one)
     {:ok, reaper_horde_registry} = Reaper.Horde.Registry.start_link(name: Reaper.Horde.Registry, keys: :unique)
-
+    allow(TelemetryEvent.add_event_count(any()), return: :ok)
     Brook.Test.register(@instance)
 
     on_exit(fn ->

@@ -12,13 +12,12 @@ defmodule Andi.EventHandler do
   alias Andi.Services.DatasetStore
 
   alias Andi.InputSchemas.Datasets
-  alias Andi.TelemetryHelper
 
   @ingested_time_topic "ingested_time_topic"
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data}) do
     dataset_update()
-    |> TelemetryHelper.add_event_count(data.id)
+    |> add_event_count(data.id)
 
     Datasets.update(data)
     DatasetStore.update(data)
@@ -26,7 +25,7 @@ defmodule Andi.EventHandler do
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data}) do
     organization_update()
-    |> TelemetryHelper.add_event_count(data.id)
+    |> add_event_count(data.id)
 
     {:merge, :org, data.id, data}
   end
@@ -36,7 +35,7 @@ defmodule Andi.EventHandler do
         data: %UserOrganizationAssociate{user_id: user_id, org_id: org_id}
       }) do
     user_organization_associate()
-    |> TelemetryHelper.add_event_count(nil)
+    |> add_event_count(nil)
 
     merge(:org_to_users, org_id, &add_to_set(&1, user_id))
     merge(:user_to_orgs, user_id, &add_to_set(&1, org_id))
@@ -44,7 +43,7 @@ defmodule Andi.EventHandler do
 
   def handle_event(%Brook.Event{type: "migration:modified_date:start"}) do
     "migration:modified_date:start"
-    |> TelemetryHelper.add_event_count(nil)
+    |> add_event_count(nil)
 
     Andi.Migration.ModifiedDateMigration.do_migration()
     {:create, :migration, "modified_date_migration_completed", true}
@@ -52,7 +51,7 @@ defmodule Andi.EventHandler do
 
   def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{id: id}, create_ts: create_ts}) do
     data_ingest_end()
-    |> TelemetryHelper.add_event_count(id)
+    |> add_event_count(id)
 
     # Brook converts all maps to string keys when it retrieves a value from its state, even if they're inserted as atom keys. For that reason, make sure to insert as string keys so that we're consistent.
     Datasets.update_ingested_time(id, create_ts)
@@ -70,7 +69,7 @@ defmodule Andi.EventHandler do
         data: %Dataset{} = dataset
       }) do
     dataset_delete()
-    |> TelemetryHelper.add_event_count(dataset.id)
+    |> add_event_count(dataset.id)
 
     Datasets.delete(dataset.id)
     DatasetStore.delete(dataset.id)
@@ -78,4 +77,14 @@ defmodule Andi.EventHandler do
 
   defp add_to_set(nil, id), do: MapSet.new([id])
   defp add_to_set(set, id), do: MapSet.put(set, id)
+
+  defp add_event_count(event_type, dataset_id) do
+    [
+      app: "andi",
+      author: "andi",
+      dataset_id: dataset_id,
+      event_type: event_type
+    ]
+    |> TelemetryEvent.add_event_count()
+  end
 end

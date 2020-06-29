@@ -214,5 +214,24 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       assert_redirect(view, @url_path <> "?search=" <> search_text)
     end
+
+    test "Search Submit succeeds even with missing fields", %{conn: conn} do
+      dataset_a =
+        DatasetHelpers.create_dataset(business: %{orgTitle: "org_a"})
+        |> put_in([:business, :dataTitle], nil)
+
+      dataset_b =
+        DatasetHelpers.create_dataset(business: %{dataTitle: "data_b"})
+        |> put_in([:business, :orgTitle], nil)
+
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
+
+      {:ok, view, _html} = live(conn, @url_path)
+
+      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.orgTitle
+      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
+    end
   end
 end
