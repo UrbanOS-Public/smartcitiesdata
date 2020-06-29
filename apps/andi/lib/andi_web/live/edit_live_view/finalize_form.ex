@@ -5,7 +5,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
-  alias Phoenix.HTML.Link
   alias Andi.InputSchemas.Datasets
   alias AndiWeb.ErrorHelpers
 

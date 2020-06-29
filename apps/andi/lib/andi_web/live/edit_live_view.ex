@@ -261,7 +261,7 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event(
         "toggle-component-visibility",
-        %{"component-expand" => component_expand, "component-collapse" => component_collapse, "continue-unsaved" => _},
+        %{"component-expand" => component_expand, "component-collapse" => component_collapse},
         socket
       ) do
     new_visibility =
@@ -270,19 +270,6 @@ defmodule AndiWeb.EditLiveView do
       |> Map.put(component_collapse, "collapsed")
 
     {:noreply, assign(socket, component_visibility: new_visibility)}
-  end
-
-  def handle_event(
-        "toggle-component-visibility",
-        %{"component-expand" => component_expand, "component-collapse" => component_collapse},
-        socket
-      ) do
-        new_visibility =
-          socket.assigns.component_visibility
-          |> Map.put(component_expand, "expanded")
-          |> Map.put(component_collapse, "collapsed")
-
-        {:noreply, assign(socket, component_visibility: new_visibility)}
   end
 
   def handle_event("unsaved-changes-canceled", _, socket) do

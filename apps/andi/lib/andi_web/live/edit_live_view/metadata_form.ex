@@ -5,7 +5,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
-  alias Phoenix.HTML.Link
   alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.DisplayNames
   alias AndiWeb.ErrorHelpers

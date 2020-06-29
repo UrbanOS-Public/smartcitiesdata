@@ -5,7 +5,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
-  alias Phoenix.HTML.Link
   alias AndiWeb.EditLiveView.DataDictionaryTree
   alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
 

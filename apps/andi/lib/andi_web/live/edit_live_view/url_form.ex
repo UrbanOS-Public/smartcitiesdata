@@ -5,7 +5,6 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
-  alias Phoenix.HTML.Link
   alias AndiWeb.ErrorHelpers
   alias Andi.InputSchemas.DisplayNames
   alias AndiWeb.EditLiveView.KeyValueEditor

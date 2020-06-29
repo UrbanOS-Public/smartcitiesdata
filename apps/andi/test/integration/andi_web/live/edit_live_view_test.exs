@@ -1555,7 +1555,7 @@ defmodule AndiWeb.EditLiveViewTest do
       where(field: [:sourceQueryParams, :sourceHeaders])
     end
 
-    test "alert shows when section changes are unsaved on next action", %{conn: conn} do
+    test "alert shows when section changes are unsaved on cancel action", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -1570,14 +1570,14 @@ defmodule AndiWeb.EditLiveViewTest do
 
       refute [] == find_elements(html, ".unsaved-changes-modal--hidden")
 
-      render_change(view, "toggle-component-visibility", %{"component" => "metadata_form"})
+      render_change(view, "cancel-edit", %{})
 
       html = render(view)
 
       refute [] == find_elements(html, ".unsaved-changes-modal--visible")
     end
 
-    test "alert shows when section changes are unsaved on collapse", %{conn: conn} do
+    test "clicking continues takes you back to the datasets page without saved changes", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -1590,16 +1590,15 @@ defmodule AndiWeb.EditLiveViewTest do
 
       render_change(view, "validate", %{"form_data" => form_data})
 
-      refute [] == find_elements(html, ".unsaved-changes-modal--hidden")
-
-      render_change(view, "toggle-component-visibility", %{
-        "component-expand" => "data_dictionary_form",
-        "component-collapse" => "metadata_form"
-      })
+      render_change(view, "cancel-edit", %{})
 
       html = render(view)
 
       refute [] == find_elements(html, ".unsaved-changes-modal--visible")
+
+      render_change(view, "force-cancel-edit", %{})
+
+      assert_redirect(view, "/")
     end
   end
 
