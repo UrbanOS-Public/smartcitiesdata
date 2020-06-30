@@ -5,7 +5,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
-  alias Phoenix.HTML.Link
   alias AndiWeb.EditLiveView.DataDictionaryTree
   alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
 
@@ -60,7 +59,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
           <div class="edit-button-group form-grid">
             <div class="edit-button-group__cancel-btn">
               <a href="#metadata-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form" phx-value-component-collapse="data_dictionary_form">Back</a>
-              <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
+              <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
             </div>
 
             <div class="edit-button-group__save-btn">

@@ -138,6 +138,14 @@ $component-header-height: 7.5rem;
     margin-left: 1rem;
 }
 
+.unsaved-changes-modal--visible {
+    @include modal-wrapper()
+}
+  
+.unsaved-changes-modal--hidden {
+    display: none;
+}
+
 #snackbar {
     visibility: hidden;
     min-width: 250px;
