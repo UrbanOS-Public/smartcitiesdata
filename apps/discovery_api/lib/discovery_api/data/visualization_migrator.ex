@@ -43,7 +43,7 @@ defmodule DiscoveryApi.Data.VisualizationMigrator do
       :ok
     rescue
       error ->
-        Logger.error(inspect(error))
+        Logger.warn("Error trying to migrate visualizations. Retrying. #{inspect(error)}")
         :error
     end
   end
