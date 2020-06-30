@@ -16,26 +16,7 @@ defmodule AndiWeb.EditLiveView do
   def render(assigns) do
     dataset_id = assigns.dataset.id
 
-    modifier =
-      case assigns.show_unsaved_changes_modal do
-        true -> "visible"
-        false -> "hidden"
-      end
-
     ~L"""
-    <div class="unsaved-changes-modal unsaved-changes-modal--<%= modifier %>">
-      <div class="modal-form-container">
-        <h3>Unsaved Changes</h3>
-        <p class="unsaved-changes-modal__message">
-          You have unsaved changes within this<br> section. Do you wish to continue without saving?
-        </p>
-        <br>
-        <div class="button-container">
-          <button type="button" class="btn" phx-click="unsaved-changes-canceled">Cancel</a>
-          <button type="button" class="btn submit_button" phx-click="force-cancel-edit">Continue</a>
-        </div>
-      </div>
-    </div>
     <div class="edit-page" id="dataset-edit-page">
       <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
         <% [business] = inputs_for(f, :business) %>
@@ -74,6 +55,8 @@ defmodule AndiWeb.EditLiveView do
       <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible, dataset_id: dataset_id,  selected_field_id: @selected_field_id ) %>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field: @current_data_dictionary_item, visible: @remove_data_dictionary_field_visible) %>
+
+      <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, show_unsaved_changes_modal: @show_unsaved_changes_modal) %>
 
       <%= if @save_success do %>
         <div id="snackbar" class="success-message"><%= @success_message %></div>
@@ -278,7 +261,9 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("cancel-edit", _, socket) do
     case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, show_unsaved_changes_modal: true)}
+      true ->
+        {:noreply, assign(socket, show_unsaved_changes_modal: true)}
+
       false ->
         {:noreply, redirect(socket, to: "/")}
     end
