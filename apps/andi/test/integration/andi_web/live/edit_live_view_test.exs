@@ -1554,6 +1554,52 @@ defmodule AndiWeb.EditLiveViewTest do
 
       where(field: [:sourceQueryParams, :sourceHeaders])
     end
+
+    test "alert shows when section changes are unsaved on cancel action", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      form_data =
+        dataset
+        |> put_in([:business, :dataTitle], "a new datset title")
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data})
+
+      refute [] == find_elements(html, ".unsaved-changes-modal--hidden")
+
+      render_change(view, "cancel-edit", %{})
+
+      html = render(view)
+
+      refute [] == find_elements(html, ".unsaved-changes-modal--visible")
+    end
+
+    test "clicking continues takes you back to the datasets page without saved changes", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      form_data =
+        dataset
+        |> put_in([:business, :dataTitle], "a new datset title")
+        |> FormTools.form_data_from_andi_dataset()
+
+      render_change(view, "validate", %{"form_data" => form_data})
+
+      render_change(view, "cancel-edit", %{})
+
+      html = render(view)
+
+      refute [] == find_elements(html, ".unsaved-changes-modal--visible")
+
+      render_change(view, "force-cancel-edit", %{})
+
+      assert_redirect(view, "/")
+    end
   end
 
   describe "sourceUrl testing" do

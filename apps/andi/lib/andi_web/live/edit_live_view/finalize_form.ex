@@ -7,6 +7,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   alias Ecto.Changeset
 
   alias Phoenix.HTML.Link
+  alias Andi.InputSchemas.Datasets
   alias AndiWeb.ErrorHelpers
 
   alias AndiWeb.InputSchemas.FinalizeFormSchema
@@ -99,7 +100,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
           <div class="edit-button-group form-grid">
             <div class="edit-button-group__cancel-btn">
               <a href="#url-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-collapse="finalize_form" phx-value-component-expand="url_form">Back</a>
-              <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
+              <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
             </div>
 
             <div class="edit-button-group__messages">

@@ -175,16 +175,7 @@ $tick-height: 1rem + $field-padding - 0.44;
 }
 
 .data-dictionary-remove-field-editor--visible {
-    position: fixed;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    z-index: 998;
-    background-color: rgba(255,255,255,0.7);
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+  @include modal-wrapper()
 }
 
 .data-dictionary-add-field-editor--hidden {
@@ -192,16 +183,7 @@ $tick-height: 1rem + $field-padding - 0.44;
 }
 
 .data-dictionary-add-field-editor--visible {
-    position: fixed;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    z-index: 998;
-    background-color: rgba(255,255,255,0.7);
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+    @include modal-wrapper()
 }
 
 .modal-form-container {
