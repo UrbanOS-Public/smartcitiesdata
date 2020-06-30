@@ -8,6 +8,7 @@ defmodule DiscoveryApi.Schemas.Visualizations do
   alias DiscoveryApi.Repo
   alias DiscoveryApi.Schemas.Visualizations.Visualization
   alias DiscoveryApi.Services.PrestoService
+  alias DiscoveryApiWeb.Utilities.QueryAccessUtils
 
   def list_visualizations do
     Repo.all(Visualization)
@@ -15,9 +16,10 @@ defmodule DiscoveryApi.Schemas.Visualizations do
 
   def create_visualization(visualization_attributes) do
     query = Map.get(visualization_attributes, :query)
+    user = Map.get(visualization_attributes, :owner)
 
     %Visualization{}
-    |> add_used_datasets(query)
+    |> add_used_datasets(query, user)
     |> Visualization.changeset(visualization_attributes)
     |> Repo.insert()
   end
@@ -51,7 +53,7 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     {:ok, existing_visualization} = get_visualization_by_id(id)
 
     if user.id == existing_visualization.owner_id do
-      visualization_changes = add_used_datasets(visualization_changes, Map.get(visualization_changes, :query))
+      visualization_changes = add_used_datasets(visualization_changes, Map.get(visualization_changes, :query), user)
 
       existing_visualization
       |> Visualization.changeset_update(visualization_changes)
@@ -61,17 +63,18 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     end
   end
 
-  defp add_used_datasets(visualization, nil), do: visualization
+  defp add_used_datasets(visualization, nil, _user), do: visualization
 
-  defp add_used_datasets(visualization, query) do
+  defp add_used_datasets(visualization, query, user) do
     session = Prestige.new_session(DiscoveryApi.prestige_opts())
-    case PrestoService.get_affected_tables(session, query) do
-      {:ok, tables} ->
-        visualization
-        |> Map.put(:datasets, get_dataset_ids(tables))
-        |> Map.put(:valid_query, true)
 
-      {:error, _} ->
+    with true <- QueryAccessUtils.authorized_to_query?(query, user),
+         {:ok, tables} <- PrestoService.get_affected_tables(session, query) do
+      visualization
+      |> Map.put(:datasets, get_dataset_ids(tables))
+      |> Map.put(:valid_query, true)
+    else
+      _ ->
         visualization
         |> Map.put(:datasets, [])
         |> Map.put(:valid_query, false)
