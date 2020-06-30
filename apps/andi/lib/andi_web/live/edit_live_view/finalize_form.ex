@@ -7,9 +7,10 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   alias Phoenix.HTML.Link
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.FormTools
   alias AndiWeb.ErrorHelpers
 
-  import Crontab.CronExpression
+  import Andi.InputSchemas.CronTools
 
   @quick_schedules %{
     "hourly" => "0 0 * * * *",
@@ -25,57 +26,21 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   def update(assigns, socket) do
     cadence = input_value(assigns.form, :cadence)
-    cadence_type = Map.get(assigns.scheduler_data, "cadence_type", determine_cadence_type(cadence))
+    scheduler_data = Map.put_new(assigns.scheduler_data, "cadence_type", determine_cadence_type(cadence))
 
-    repeating_schedule = to_repeating(cadence_type, cadence)
-    default_future_schedule = to_future(repeating_schedule)
-    future_date = case Map.get(assigns.scheduler_data, "future_date", "") do
-      "" -> default_future_schedule.date
-      future_date -> future_date
-    end
-    future_time = case Map.get(assigns.scheduler_data, "future_time", "") do
-      "" -> default_future_schedule.time
-      future_time -> future_time
-    end
+    repeating_schedule = to_repeating(scheduler_data["cadence_type"], cadence)
+    default_future_schedule = cronlist_to_future_schedule(repeating_schedule)
+    scheduler_data = Map.merge(
+      default_future_schedule,
+      scheduler_data
+    )
 
     updated_assigns =
       assigns
       |> Map.put(:repeating_schedule, repeating_schedule)
-      |> Map.put(:future_schedule, %{date: future_date, time: future_time})
-      |> Map.put(:cadence_type, cadence_type)
+      |> Map.put(:scheduler_data, scheduler_data)
 
     {:ok, assign(socket, updated_assigns)}
-  end
-
-  defp to_repeating(type, nil) when type in ["repeating", "future"], do: %{}
-  defp to_repeating(type, "") when type in ["repeating", "future"], do: %{}
-  defp to_repeating(type, cadence) when type in ["repeating", "future"] and cadence not in ["once", "never"], do: cronstring_to_cronlist(cadence)
-  defp to_repeating(_type, cadence), do: cronstring_to_cronlist("0 * * * * *")
-
-  defp to_future(%{year: year, month: month, day: day, hour: hour, minute: minute, second: second} = _schedule) do
-    date = case Timex.parse("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}") do
-      {:error, _} -> nil
-      {:ok, nd} -> NaiveDateTime.to_date(nd)
-    end
-
-    time = case Timex.parse("#{hour}:#{minute}:#{second}", "{h24}:{m}:{s}") do
-      {:error, _} -> nil
-      {:ok, nt} -> NaiveDateTime.to_time(nt)
-    end
-
-    %{date: date, time: time}
-  end
-  defp to_future(%{month: _month, day: _day, hour: _hour, minute: _minute} = schedule) do
-    Map.put_new(schedule, :year, current_year())
-    |> Map.put_new(:second, 0)
-    |> to_future()
-  end
-  defp to_future(_), do: {nil, nil}
-
-  defp safe_time_new(hour, minute, second) do
-    Time.new(hour, minute, second)
-  rescue
-    e in FunctionClauseError -> {:error, :invalid}
   end
 
   def render(assigns) do
@@ -107,29 +72,29 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
               <h3>Schedule Ingestion</h3>
               <div class="finalize-form__schedule-options">
                 <div class="finalize-form__schedule-option">
-                  <%= radio_button(:scheduler, :cadence_type, "once", checked: @cadence_type == "once")%>
+                  <%= radio_button(:scheduler, :cadence_type, "once", checked: @scheduler_data["cadence_type"] == "once")%>
                   <%= label(:scheduler, :cadence_type, "Immediately", class: "finalize-form__schedule-option-label") %>
                 </div>
                 <div class="finalize-form__schedule-option">
-                  <%= radio_button(:scheduler, :cadence_type, "future", checked: @cadence_type == "future") %>
+                  <%= radio_button(:scheduler, :cadence_type, "future", checked: @scheduler_data["cadence_type"] == "future") %>
                   <%= label(:scheduler, :cadence_type, "Future", class: "finalize-form__schedule-option-label") %>
                 </div>
                 <div class="finalize-form__schedule-option">
-                  <%= radio_button(:scheduler, :cadence_type, "never", checked: @cadence_type == "never") %>
+                  <%= radio_button(:scheduler, :cadence_type, "never", checked: @scheduler_data["cadence_type"] == "never") %>
                   <%= label(:scheduler, :cadence_type, "Never", class: "finalize-form__schedule-option-label") %>
                 </div>
                 <div class="finalize-form__schedule-option">
-                  <%= radio_button(:scheduler, :cadence_type, "repeating", checked: @cadence_type == "repeating") %>
+                  <%= radio_button(:scheduler, :cadence_type, "repeating", checked: @scheduler_data["cadence_type"] == "repeating") %>
                   <%= label(:scheduler, :cadence_type, "Repeating", class: "finalize-form__schedule-option-label") %>
                 </div>
               </div>
               <%= hidden_input(@form, :cadence) %>
-              <%= if @cadence_type == "repeating", do: repeating_scheduler_form(%{repeating_schedule: @repeating_schedule, myself: @myself}) %>
-              <%= if @cadence_type == "future" do %>
-                <%= future_scheduler_form(%{future_schedule: @future_schedule, myself: @myself}) %>
+              <%= if @scheduler_data["cadence_type"] == "repeating", do: repeating_scheduler_form(%{repeating_schedule: @repeating_schedule, myself: @myself}) %>
+              <%= if @scheduler_data["cadence_type"] == "future" do %>
+                <%= future_scheduler_form(%{scheduler_data: @scheduler_data}) %>
               <%= else %>
-                <%= hidden_input(:scheduler, :future_date, value: @future_schedule.date) %>
-                <%= hidden_input(:scheduler, :future_time, value: @future_schedule.time) %>
+                <%= hidden_input(:scheduler, :future_date, value: @scheduler_data["future_date"]) %>
+                <%= hidden_input(:scheduler, :future_time, value: @scheduler_data["future_time"]) %>
               <% end %>
               <%= ErrorHelpers.error_tag(@form, :cadence) %>
             </div>
@@ -164,67 +129,14 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     """
   end
 
-  defp cronstring_to_cronlist(nil), do: %{}
-  defp cronstring_to_cronlist("never"), do: %{}
-
-  defp cronstring_to_cronlist(cronstring) do
-    cronlist = String.split(cronstring, " ")
-    default_keys = [:minute, :hour, :day, :month, :week]
-
-    keys =
-      case crontab_length(cronstring) do
-        6 -> [:second | default_keys]
-        7 -> [:second] ++ default_keys ++ [:year]
-        _ -> default_keys
-      end
-
-    keys
-    |> Enum.zip(cronlist)
-    |> Map.new()
-  end
-
-  defp to_calendar(%{day: day, month: month, year: year}) do
-    case Timex.parse("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}") do
-      {:ok, date} -> NaiveDateTime.to_date(date)
-      _ -> nil
-    end
-  end
-  defp to_calendar(%{day: day, month: month} = schedule) do
-    to_calendar(Map.put(schedule, :year, current_year()))
-  end
-  defp to_calendar(_), do: nil
-
-  defp cronlist_to_cronstring(%{second: second} = cronlist) when second != "" do
-    cronlist
-    |> IO.inspect(label: "what is the deal with cronlist")
-    [:second, :minute, :hour, :day, :month, :week, :year]
-    |> Enum.reduce("", fn field, acc ->
-      acc <> " " <> to_string(Map.get(cronlist, field, "nil"))
-    end)
-    |> String.trim_leading()
-    |> IO.inspect(label: "what is the deal with cronlist")
-  end
-
-  defp cronlist_to_cronstring(cronlist) do
-    cronlist
-    |> Map.put(:second, "0")
-    |> cronlist_to_cronstring()
-  end
-
-  defp crontab_length(cronstring) do
-    cronstring
-    |> String.split(" ")
-    |> Enum.count()
-  end
-
   defp future_scheduler_form(assigns) do
     ~L"""
       <div class="finalize-form__scheduler--visible">
         <div class="finalize-form__future-schedule">
           <%= label(:scheduler, :future_date, "Date of Future Ingestion") %>
-          <%= date_input(:scheduler, :future_date, value: @future_schedule.date) %>
+          <%= date_input(:scheduler, :future_date, value: @scheduler_data["future_date"]) %>
           <%= label(:scheduler, :future_time, "Time of Future Ingestion") %>
-          <%= time_input(:scheduler, :future_time, value: @future_schedule.time, precision: :second, step: 15) %>
+          <%= time_input(:scheduler, :future_time, value: @scheduler_data["future_time"], precision: :second, step: 15) %>
         </div>
       </div>
     """
@@ -280,7 +192,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   def handle_event("set_schedule", %{"input-field" => input_field, "value" => value}, socket) do
     new_repeating_schedule = Map.put(socket.assigns.repeating_schedule, String.to_existing_atom(input_field), value)
-    new_cron = cronlist_to_cronstring(new_repeating_schedule)
+    new_cron = cronlist_to_cronstring!(new_repeating_schedule)
 
     Datasets.update_cadence(socket.assigns.dataset_id, new_cron)
     send(self(), {:assign_crontab})
@@ -293,53 +205,15 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     Datasets.update_cadence(socket.assigns.dataset_id, cronstring)
     send(self(), {:assign_crontab})
 
-    {:noreply, assign(socket, repeating_schedule: cronstring_to_cronlist(cronstring))}
-  end
-
-  defp determine_cadence_type(nil), do: determine_cadence_type("")
-  defp determine_cadence_type(cadence) when cadence in ["once", "never"], do: cadence
-  defp determine_cadence_type(cadence) do
-    with {:ok, parsed_cadence} <- Crontab.CronExpression.Parser.parse(cadence),
-         {:error, _} <- Crontab.Scheduler.get_next_run_date(parsed_cadence) do
-      "future"
-    else
-      _ -> "repeating"
-    end
-  end
-
-  defp current_year() do
-    Date.utc_today()
-    |> Map.get(:year)
+    {:noreply, assign(socket, repeating_schedule: cronstring_to_cronlist!(cronstring))}
   end
 
   def update_form_with_schedule(%{"cadence_type" => cadence_type} = _sd, form_data) when cadence_type in ["once", "never"], do: put_in(form_data, ["technical", "cadence"], cadence_type)
   def update_form_with_schedule(%{"cadence_type" => "future"} = sd, form_data) do
     date = Map.get(sd, "future_date", "")
-    |> IO.inspect(label: "date")
     time = Map.get(sd, "future_time", "")
-    |> IO.inspect(label: "time")
 
-    cronstring = case {date, time} do
-      {"", ""} -> form_data["technical"]["cadence"]
-      {date, ""} ->
-        Timex.parse(date, "{YYYY}-{M}-{D}")
-        |> elem(1)
-        |> Map.from_struct()
-        |> Map.merge(%{hour: "*", minute: "*", second: "*", week: "*"})
-        |> cronlist_to_cronstring()
-      {"", time} ->
-        Timex.parse(time, "{h24}:{m}:{s}")
-        |> elem(1)
-        |> Map.from_struct()
-        |> Map.merge(%{year: "*", month: "*", day: "*", week: "*"})
-        |> cronlist_to_cronstring()
-      {date, time} ->
-        Timex.parse(date <> "T" <> time, "{YYYY}-{M}-{D}T{h24}:{m}:{s}")
-        |> elem(1)
-        |> Map.from_struct()
-        |> Map.merge(%{week: "*"})
-        |> cronlist_to_cronstring()
-    end
+    cronstring = date_and_time_to_cronstring(date, time) || form_data["technical"]["cadence"]
 
     put_in(form_data, ["technical", "cadence"], cronstring)
   end
