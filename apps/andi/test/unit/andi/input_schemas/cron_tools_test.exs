@@ -82,18 +82,20 @@ defmodule Andi.InputSchemas.CronToolsTest do
 
   describe "cronlist_to_future_schedule/1" do
     data_test "for #{case}, #{inspect(input)} returns #{inspect(output)}" do
-      assert output = CronTools.cronlist_to_future_schedule(input)
+      assert output == CronTools.cronlist_to_future_schedule(input)
 
       where([
         [:case, :input, :output],
         ["empty cronlist", %{}, %{"future_date" => nil, "future_time" => nil}],
-        ["with only date fields as fixed", %{day: "1", month: 3, year: "2015", second: "*", minute: "*", hour: "*"}, %{"future_date" => ~D[2015-03-01], "future_time" => nil}],
-        ["with only time fields as fixed", %{day: "*", month: "*", year: "*", second: "0", minute: "1", hour: "2"}, %{"future_date" => nil, "future_time" => ~T[02:01:00.000000]}],
-        ["with both date and time fields as fixed", %{day: "10", month: "11", year: "2010", second: "10", minute: "15", hour: "13"}, %{"future_date" => ~D[2010-11-10], "future_time" => ~T[13:15:10.000000]}],
+        ["with only date fields as fixed", %{day: "1", month: "3", year: "2015", second: "*", minute: "*", hour: "*"}, %{"future_date" => ~D[2015-03-01], "future_time" => nil}],
+        ["with only time fields as fixed", %{day: "*", month: "*", year: "*", second: "0", minute: "1", hour: "2"}, %{"future_date" => nil, "future_time" => ~T[02:01:00]}],
+        ["with both date and time fields as fixed", %{day: "10", month: "11", year: "2010", second: "10", minute: "15", hour: "13"}, %{"future_date" => ~D[2010-11-10], "future_time" => ~T[13:15:10]}],
         ["with both date and tiem fields as variable", %{day: "*", month: "*", year: "*", second: "*", minute: "*", hour: "*"}, %{"future_date" => nil, "future_time" => nil}],
         ["with an incomplete cronlist", %{month: "*", year: "*", second: "*", minute: "*", hour: "*"}, %{"future_date" => nil, "future_time" => nil}],
-        ["with an invalid date, but valid time", %{day: "343", month: "smarch", year: "2030", second: "0", minute: "0", hour: "0"}, %{"future_date" => nil, "future_time" => ~T[00:00:00.0000000]}],
+        ["with an invalid date, but valid time", %{day: "343", month: "smarch", year: "2030", second: "0", minute: "0", hour: "0"}, %{"future_date" => nil, "future_time" => ~T[00:00:00]}],
         ["with an invalid time, but valid date", %{day: "10", month: "5", year: "2020", second: "b0", minute: "0", hour: "0"}, %{"future_date" => ~D[2020-05-10], "future_time" => nil}],
+        ["with a missing year in date", %{day: "10", month: "5", second: "b0", minute: "0", hour: "0"}, %{"future_date" => nil, "future_time" => nil}],
+        ["with a missing second in time", %{year: "2050", day: "10", month: "5", minute: "0", hour: "1"}, %{"future_date" => ~D[2050-05-10], "future_time" => ~T[01:00:00]}],
       ])
     end
   end

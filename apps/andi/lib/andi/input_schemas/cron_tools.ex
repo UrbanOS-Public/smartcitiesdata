@@ -1,6 +1,10 @@
 defmodule Andi.InputSchemas.CronTools do
   @moduledoc false
 
+  @more_forgiving_iso_date_format "{YYYY}-{M}-{D}"
+  @more_forgiving_iso_time_format "{h24}:{m}:{s}"
+  @more_forgiving_iso_basic_format "#{@more_forgiving_iso_date_format}T#{@more_forgiving_iso_time_format}"
+
   def cronstring_to_cronlist!(nil), do: %{}
   def cronstring_to_cronlist!(""), do: %{}
   def cronstring_to_cronlist!("never"), do: %{}
@@ -60,30 +64,33 @@ defmodule Andi.InputSchemas.CronTools do
   def to_repeating(_type, cadence), do: cronstring_to_cronlist!("0 * * * * *")
 
   def cronlist_to_future_schedule(%{year: year, month: month, day: day, hour: hour, minute: minute, second: second} = _schedule) do
-    date = case Timex.parse("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}") do
+    date = case Timex.parse("#{year}-#{month}-#{day}", @more_forgiving_iso_date_format) do
       {:error, _} -> nil
       {:ok, nd} -> NaiveDateTime.to_date(nd)
     end
 
-    time = case Timex.parse("#{hour}:#{minute}:#{second}", "{h24}:{m}:{s}") do
+    time = case Timex.parse("#{gee_two_zeroes(hour)}:#{gee_two_zeroes(minute)}:#{gee_two_zeroes(second)}", @more_forgiving_iso_time_format) do
       {:error, _} -> nil
       {:ok, nt} -> NaiveDateTime.to_time(nt)
     end
 
     %{"future_date" => date, "future_time" => time}
   end
-  def cronlist_to_future_schedule(%{month: _month, day: _day, hour: _hour, minute: _minute} = schedule) do
-    Map.put_new(schedule, :year, current_year())
-    |> Map.put_new(:second, 0)
+  def cronlist_to_future_schedule(%{year: _year, month: _month, day: _day, hour: _hour, minute: _minute} = schedule) do
+    Map.put_new(schedule, :second, "0")
     |> cronlist_to_future_schedule()
   end
   def cronlist_to_future_schedule(_), do: %{"future_date" => nil, "future_time" => nil}
+
+  defp gee_two_zeroes(number) do
+    String.pad_leading(number, 2, "0")
+  end
 
   def date_and_time_to_cronstring("", ""), do: {:error, :cannot_convert}
   def date_and_time_to_cronstring(date, ""), do: {:error, :incomplete_data_and_time}
   def date_and_time_to_cronstring("", time), do: {:error, :incomplete_data_and_time}
   def date_and_time_to_cronstring(date, time) do
-    case Timex.parse(date <> "T" <> time, "{YYYY}-{M}-{D}T{h24}:{m}:{s}") do
+    case Timex.parse(date <> "T" <> time, @more_forgiving_iso_basic_format) do
       {:ok, datetime_struct} ->
         cronstring = Map.from_struct(datetime_struct)
         |> Map.merge(%{week: "*"})
@@ -92,9 +99,6 @@ defmodule Andi.InputSchemas.CronTools do
         {:ok, cronstring}
       error -> error
     end
-  end
-
-  defp parse_datetimestring(datetime, format, wildcards \\ %{}) do
   end
 
   defp current_year() do
