@@ -36,7 +36,7 @@ defmodule DiscoveryApi.Schemas.Visualizations.Visualization do
   @doc false
   def changeset_update(visualization, changes) do
     visualization
-    |> cast(changes, [:query, :title, :chart, :datasets])
+    |> cast(changes, [:query, :title, :chart, :datasets, :valid_query])
     |> validate_length(:chart, count: :bytes, max: 20_000)
     |> validate_required([:query, :title])
   end
