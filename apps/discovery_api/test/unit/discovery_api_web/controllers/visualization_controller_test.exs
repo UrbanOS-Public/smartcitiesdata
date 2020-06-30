@@ -144,7 +144,9 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
 
       allow(Visualizations.get_visualization_by_id(@id),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: @encoded_chart, datasets: datasets}}
+        return:
+          {:ok,
+           %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: @encoded_chart, datasets: datasets}}
       )
 
       allow(QueryAccessUtils.authorized_to_query?(@query, any()), return: true)

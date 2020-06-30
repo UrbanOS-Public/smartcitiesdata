@@ -412,12 +412,13 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
   defp create_visualization(table_name) do
     owner = Helper.create_persisted_user("me|you")
+    {:ok, owner_with_orgs} = Users.get_user_with_organizations(owner.id)
 
     {:ok, visualization} =
       Visualizations.create_visualization(%{
         query: "select * from #{table_name}",
         title: "My first visualization",
-        owner: owner
+        owner: owner_with_orgs
       })
 
     visualization
