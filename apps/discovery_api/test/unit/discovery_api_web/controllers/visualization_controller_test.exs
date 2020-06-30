@@ -140,10 +140,11 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
     end
 
     test "GET /visualization/id returns OK for valid bearer token and id", %{subject_id: subject_id, token: token} do
+      datasets = ["123"]
       allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id}})
 
       allow(Visualizations.get_visualization_by_id(@id),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: @encoded_chart}}
+        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: @encoded_chart, datasets: datasets}}
       )
 
       allow(QueryAccessUtils.authorized_to_query?(@query, any()), return: true)
@@ -154,7 +155,8 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
                "query" => @query,
                "title" => @title,
                "id" => @id,
-               "chart" => @decoded_chart
+               "chart" => @decoded_chart,
+               "usedDatasets" => datasets
              } = body
     end
 
