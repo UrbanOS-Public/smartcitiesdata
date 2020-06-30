@@ -3,11 +3,10 @@ defmodule DiscoveryApi.Data.VisualizationMigrator do
   Module to ensure all derived fields of visualizations are up to date.
   """
   alias DiscoveryApi.Schemas.Visualizations
-  alias DiscoveryApi.Schemas.Visualizations.Visualization
+  alias DiscoveryApi.Schemas.Users
+  alias DiscoveryApi.Repo
 
   use GenServer, restart: :transient
-
-  import Ecto.Query, only: [from: 2]
 
   require Logger
 
@@ -43,11 +42,19 @@ defmodule DiscoveryApi.Data.VisualizationMigrator do
 
       :ok
     rescue
-      _ -> :error
+      error ->
+        Logger.error(inspect(error))
+        :error
     end
   end
 
-  defp update_visualization(%{public_id: public_id, owner: owner} = visualization) do
-    Visualizations.update_visualization_by_id(public_id, visualization, owner)
+  defp update_visualization(%{public_id: public_id} = visualization) do
+    destructed_visualization =
+      visualization
+      |> Repo.preload(:owner)
+      |> Map.from_struct()
+
+    {:ok, owner_with_orgs} = Users.get_user_with_organizations(destructed_visualization.owner.id)
+    Visualizations.update_visualization_by_id(public_id, destructed_visualization, owner_with_orgs)
   end
 end
