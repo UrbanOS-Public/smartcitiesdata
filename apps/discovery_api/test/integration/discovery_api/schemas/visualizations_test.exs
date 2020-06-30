@@ -6,10 +6,19 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
   alias DiscoveryApi.Schemas.{Generators, Users, Visualizations}
   alias DiscoveryApi.Schemas.Visualizations.Visualization
   alias DiscoveryApi.Schemas.Users.User
+  alias DiscoveryApi.Test.Helper
+  alias SmartCity.TestDataGenerator, as: TDG
+  alias DiscoveryApi.Data.Model
+
+  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.TestHelper, only: [eventually: 1]
+  import ExUnit.CaptureLog
+
+  @user "me|you"
 
   describe "get/1" do
     test "given an existing visualization, it returns an :ok tuple with it" do
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       {:ok, %{id: saved_id, public_id: saved_public_id}} =
         Visualizations.create_visualization(%{query: "select * from turtles", owner: owner, title: "My first visualization"})
@@ -53,7 +62,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     test "given all required attributes, it creates a visualization" do
       query = "select * from turtles"
       title = "My first visualization"
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
 
@@ -61,16 +70,69 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       assert query == actual.query
     end
 
+    test "given a valid query, it is created with a list of datasets used in it and is flagged valid" do
+      {table, id} = create_persisted_dataset("123A", "public_dataset", "public_org")
+      query = "select * from #{table}"
+      title = "My first visualization"
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+
+      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
+
+      actual = Repo.get(Visualization, saved.id)
+      assert [id] == actual.datasets
+      assert actual.valid_query
+    end
+
+    test "given a valid query using the same dataset twice, the saved list of datasets contains only one entry for it" do
+      {table, id} = create_persisted_dataset("123A", "public_dataset", "public_org")
+      query = "select * from #{table} union all select * from #{table}"
+      title = "My first visualization"
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+
+      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
+
+      actual = Repo.get(Visualization, saved.id)
+      assert [id] == actual.datasets
+      assert actual.valid_query
+    end
+
+    test "given an invalid query, it is created with an empty list of datasets and is flagged invalid" do
+      {table, _id} = create_persisted_dataset("123A", "public_dataset", "public_org")
+      query = "select * from INVALID #{table}"
+      title = "My first visualization"
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+
+      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
+
+      actual = Repo.get(Visualization, saved.id)
+      assert [] == actual.datasets
+      refute actual.valid_query
+    end
+
+    test "given a query containing a dataset the user is not authorized to query, it is created with an empty list of datasets and is flagged invalid" do
+      {table, _id} = create_persisted_dataset("123A", "private_dataset", "private_org", true)
+      query = "select * from #{table}"
+      title = "My first visualization"
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner_with_orgs} = Users.get_user_with_organizations(owner.id)
+
+      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner_with_orgs, title: title})
+
+      actual = Repo.get(Visualization, saved.id)
+      assert [] == actual.datasets
+      refute actual.valid_query
+    end
+
     test "given a missing query, it fails to create a visualization" do
       title = "My first visualization"
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       assert {:error, _} = Visualizations.create_visualization(%{owner: owner, title: title})
     end
 
     test "given a missing title, it fails to create a visualization" do
       query = "select * from turtles"
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       assert {:error, _} = Visualizations.create_visualization(%{query: query, owner: owner})
     end
@@ -96,7 +158,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       query = "blah"
       title = "blah blah"
       chart = Faker.String.base64(20_001)
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       assert {:error, _} = Visualizations.create_visualization(%{query: query, title: title, owner: owner, chart: chart})
     end
@@ -104,7 +166,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     test "given a query larger than twenty thousand bytes, it fails to create a visualization" do
       query = Faker.String.base64(20_001)
       title = "blah blah"
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       assert {:error, _} = Visualizations.create_visualization(%{query: query, title: title, owner: owner})
     end
@@ -113,7 +175,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       query = Faker.String.base64(19_999)
       title = "blah blah"
       chart = Faker.String.base64(19_999)
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, title: title, owner: owner, chart: chart})
     end
@@ -130,7 +192,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
   describe "update/2" do
     setup do
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       visualization = %{title: "query title", query: "select * FROM table", owner: owner}
       {:ok, created_visualization} = Visualizations.create_visualization(visualization)
@@ -184,5 +246,64 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
                  owner
                )
     end
+
+    test "given a valid query, it is updated with a list of datasets used in it", %{
+      created_visualization: created_visualization,
+      owner: owner
+    } do
+      {table, id} = create_persisted_dataset("123A", "a_table", "a_org")
+
+      assert {:ok, updated_visualization} =
+               Visualizations.update_visualization_by_id(
+                 created_visualization.public_id,
+                 %{
+                   title: "query title updated",
+                   query: "select * from #{table}"
+                 },
+                 owner
+               )
+
+      {:ok, actual_visualization} = Visualizations.get_visualization_by_id(created_visualization.public_id)
+
+      assert [id] == actual_visualization.datasets
+    end
+  end
+
+  defp create_persisted_dataset(id, name, orgName, private \\ false) do
+    organization = Helper.create_persisted_organization(%{id: "org#{id}", orgName: orgName})
+
+    dataset =
+      TDG.create_dataset(%{
+        id: id,
+        technical: %{
+          private: private,
+          orgId: organization.id,
+          orgName: organization.orgName,
+          dataName: name,
+          systemName: "#{organization.orgName}__#{name}"
+        }
+      })
+
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+
+    eventually(fn ->
+      assert nil != Model.get(dataset.id)
+    end)
+
+    table = dataset.technical.systemName
+
+    prestige_session =
+      DiscoveryApi.prestige_opts()
+      |> Keyword.merge(receive_timeout: 10_000)
+      |> Prestige.new_session()
+
+    capture_log(fn ->
+      Prestige.query(
+        prestige_session,
+        ~s|create table if not exists "#{table}" (id integer, name varchar)|
+      )
+    end)
+
+    {table, dataset.id}
   end
 end
