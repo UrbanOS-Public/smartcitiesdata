@@ -213,9 +213,10 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     date = Map.get(sd, "future_date", "")
     time = Map.get(sd, "future_time", "")
 
-    cronstring = date_and_time_to_cronstring(date, time) || form_data["technical"]["cadence"]
-
-    put_in(form_data, ["technical", "cadence"], cronstring)
+    case date_and_time_to_cronstring(date, time) do
+      {:ok, cronstring} -> put_in(form_data, ["technical", "cadence"], cronstring)
+      {:error, _} -> put_in(form_data, ["technical", "cadence"], "")
+    end
   end
   def update_form_with_schedule(_sd, form_data), do: form_data
 end

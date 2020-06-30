@@ -80,28 +80,21 @@ defmodule Andi.InputSchemas.CronTools do
   def cronlist_to_future_schedule(_), do: %{"future_date" => nil, "future_time" => nil}
 
   def date_and_time_to_cronstring("", ""), do: {:error, :cannot_convert}
-  def date_and_time_to_cronstring(date, "") do
-    wildcards = %{hour: "*", minute: "*", second: "*", week: "*"}
-    parse_datetimestring(date, "{YYYY}-{M}-{D}", wildcards)
-  end
-  def date_and_time_to_cronstring("", time) do
-    wildcards = %{year: "*", month: "*", day: "*", week: "*"}
-    parse_datetimestring(time, "{h24}:{m}:{s}", wildcards)
-  end
+  def date_and_time_to_cronstring(date, ""), do: {:error, :incomplete_data_and_time}
+  def date_and_time_to_cronstring("", time), do: {:error, :incomplete_data_and_time}
   def date_and_time_to_cronstring(date, time) do
-    parse_datetimestring(date <> "T" <> time, "{YYYY}-{M}-{D}T{h24}:{m}:{s}")
-  end
-
-  defp parse_datetimestring(datetime, format, wildcards \\ %{}) do
-    case Timex.parse(datetime, format) do
+    case Timex.parse(date <> "T" <> time, "{YYYY}-{M}-{D}T{h24}:{m}:{s}") do
       {:ok, datetime_struct} ->
         cronstring = Map.from_struct(datetime_struct)
-        |> Map.merge(wildcards)
+        |> Map.merge(%{week: "*"})
         |> cronlist_to_cronstring!()
 
         {:ok, cronstring}
       error -> error
     end
+  end
+
+  defp parse_datetimestring(datetime, format, wildcards \\ %{}) do
   end
 
   defp current_year() do

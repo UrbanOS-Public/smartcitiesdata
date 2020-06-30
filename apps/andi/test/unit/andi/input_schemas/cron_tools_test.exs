@@ -59,17 +59,23 @@ defmodule Andi.InputSchemas.CronToolsTest do
 
   describe "date_and_time_to_cronstring/2" do
     data_test "for #{case}, #{date}, #{time} returns #{inspect(output)}" do
-      assert output = CronTools.date_and_time_to_cronstring(date, time)
+      result = CronTools.date_and_time_to_cronstring(date, time)
+
+      if output do
+        assert {^status, ^output} = result
+      else
+        assert {^status, _} = result
+      end
 
       where([
-        [:case, :date, :time, :output],
-        ["empty for both", "", "", {:error, :cannot_convert}],
-        ["only date", "2020-1-10", "", {:ok, "* * * 10 1 * 2020"}],
-        ["only time", "", "00:01:03", {:ok, "3 1 0 * * * *"}],
-        ["date and time", "2030-2-20", "01:02:03", {:ok, "3 2 1 20 2 * 2030"}],
-        ["bad date", "20b0-2-20", "", {:error, :_}],
-        ["bad time", "", "0901:03", {:error, :_}],
-        ["bad date and time", "20b0-2-20", "0901:03", {:error, :_}],
+        [:case, :date, :time, :status, :output],
+        ["empty for both", "", "", :error, nil],
+        ["only date", "2020-1-10", "", :error, nil],
+        ["only time", "", "00:01:03", :error, nil],
+        ["date and time", "2030-2-20", "01:02:03", :ok, "3 2 1 20 2 * 2030"],
+        ["bad date", "20b0-2-20", "", :error, nil],
+        ["bad time", "", "0901:03", :error, nil],
+        ["bad date and time", "20b0-2-20", "0901:03", :error, nil],
       ])
     end
   end
