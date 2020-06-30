@@ -9,6 +9,8 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.Datasets.Dataset
   alias Ecto.Changeset
 
+  alias AndiWeb.EditLiveView.FinalizeForm
+
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
   require Logger
@@ -47,7 +49,7 @@ defmodule AndiWeb.EditLiveView do
         </div>
 
         <div class="finalize-form-component ">
-        <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["finalize_form"]) %>
+        <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, scheduler_data: @scheduler_data, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["finalize_form"]) %>
         </div>
 
       </form>
@@ -103,7 +105,8 @@ defmodule AndiWeb.EditLiveView do
        success_message: "",
        test_results: nil,
        testing: false,
-       dataset_exists: dataset_exists
+       dataset_exists: dataset_exists,
+       scheduler_data: %{}
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end
@@ -156,6 +159,15 @@ defmodule AndiWeb.EditLiveView do
     |> FormTools.adjust_org_name()
     |> InputConverter.form_data_to_ui_changeset()
     |> Dataset.validate_unique_system_name()
+    |> complete_validation(socket)
+  end
+
+  def handle_event("validate", %{"form_data" => form_data, "scheduler" => scheduler_data}, socket) do
+    socket = assign(socket, :scheduler_data, scheduler_data)
+
+    scheduler_data
+    |> FinalizeForm.update_form_with_schedule(form_data)
+    |> InputConverter.form_data_to_ui_changeset()
     |> complete_validation(socket)
   end
 
