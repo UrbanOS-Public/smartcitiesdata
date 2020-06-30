@@ -46,7 +46,7 @@ defmodule DiscoveryApi.Services.PrestoService do
 
     {:ok, plan}
   rescue
-    Prestige.Error -> {:error, "bad thing happened"}
+    _ -> {:error, "Invalid Query"}
   end
 
   defp extract_query_plan(explanation) do
