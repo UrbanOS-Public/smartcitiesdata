@@ -29,6 +29,20 @@ Hooks.showSnackbar = {
     }
 }
 
+Hooks.Unload = {
+    hasChanged() {
+        return this.el.dataset.hasChanged
+    },
+    mounted() {
+        window.addEventListener("beforeunload", e => {
+            if (this.hasChanged()) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        })
+    }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
 let liveSocket = new LiveSocket('/live', Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
 liveSocket.connect()
