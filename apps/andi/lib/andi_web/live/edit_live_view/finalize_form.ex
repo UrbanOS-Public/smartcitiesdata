@@ -7,13 +7,10 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   alias Ecto.Changeset
 
   alias Phoenix.HTML.Link
-  alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.FormTools
   alias AndiWeb.ErrorHelpers
 
   alias AndiWeb.InputSchemas.FinalizeFormSchema
   alias Andi.InputSchemas.CronTools
-  import Andi.InputSchemas.CronTools
 
   @quick_schedules %{
     "hourly" => "0 0 * * * *",
@@ -128,12 +125,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     """
   end
 
-  defp timeout do
-"""
-
-"""
-  end
-
   defp future_scheduler_form(assigns) do
     ~L"""
       <% [future] = inputs_for(@fin, :future_schedule) %>
@@ -145,7 +136,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
         <%= label(future, :time, "Time of Future Ingestion") %>
         <%= time_input(future, :time, precision: :second, step: 1) %>
         </div>
-      <%= else %>
+      <% else %>
         <%= hidden_input(future, :date) %>
         <%= hidden_input(future, :time) %>
       <% end %>
@@ -198,7 +189,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
             <%= text_input(repeat, :week) %>
           </div>
         </div>
-        <%= else %>
+        <% else %>
           <%= hidden_input(repeat, :second) %>
           <%= hidden_input(repeat, :minute) %>
           <%= hidden_input(repeat, :hour) %>
