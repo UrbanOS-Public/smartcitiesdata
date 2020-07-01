@@ -30,12 +30,12 @@ Hooks.showSnackbar = {
 }
 
 Hooks.Unload = {
-    hasChanged() {
-        return this.el.dataset.hasChanged
+    unSavedModalDisplayed() {
+        return this.el.dataset.showUnsavedChangesModal == "true";
     },
     mounted() {
         window.addEventListener("beforeunload", e => {
-            if (this.hasChanged()) {
+            if (!this.unSavedModalDisplayed()) {
                 e.preventDefault();
                 e.returnValue = '';
             }
