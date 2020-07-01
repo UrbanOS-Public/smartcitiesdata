@@ -10,11 +10,22 @@ defmodule AndiWeb.InputSchemas.FinalizeForm.FutureSchedule do
   end
 
   def changeset(%__MODULE__{} = current, changes) do
+    changes = replace(changes, :time, &nillify_partial_times/1)
+
     current
     |> cast(changes, [:date, :time])
     |> validate_required([:date, :time])
     |> validate_date_in_future()
   end
+
+  defp nillify_partial_times(""), do: ""
+  defp nillify_partial_times(time) when is_binary(time) do
+    case Timex.parse(time, "{ISOtime}") do
+      {:ok, _} -> time
+      {:error, _} -> nil
+    end
+  end
+  defp nillify_partial_times(time), do: time
 
   defp validate_date_in_future(changeset) do
     date = get_field(changeset, :date)
@@ -32,6 +43,13 @@ defmodule AndiWeb.InputSchemas.FinalizeForm.FutureSchedule do
         else
           changeset
         end
+    end
+  end
+
+  def replace(map, key, function) do
+    case Map.fetch(map, key) do
+      {:ok, value} -> Map.put(map, key, function.(value))
+      :error -> map
     end
   end
 end
