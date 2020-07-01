@@ -165,9 +165,13 @@ defmodule AndiWeb.EditLiveView do
   def handle_event("validate", %{"form_data" => form_data, "finalize_form_data" => finalize_form_data}, socket) do
     socket = assign(socket, :finalize_form_data, finalize_form_data)
 
+    IO.inspect(finalize_form_data, label: "UP HERE?")
+
     finalize_form_data
     |> FinalizeForm.update_form_with_schedule(form_data)
+    |> IO.inspect(label: "do we ever get here?")
     |> InputConverter.form_data_to_ui_changeset()
+    |> IO.inspect(label: "or here?")
     |> complete_validation(socket)
   end
 

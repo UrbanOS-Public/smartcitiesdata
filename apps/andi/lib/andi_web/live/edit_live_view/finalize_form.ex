@@ -28,6 +28,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   end
 
   def update(assigns, socket) do
+    IO.inspect(label: "maybe here instead?")
     current_data = case Map.get(assigns, :finalize_form_data) do
       nil -> assigns.form.data
       dater -> dater
@@ -235,7 +236,9 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   end
   def update_form_with_schedule(%{"cadence_type" => "repeating"} = sd, form_data) do
     cronstring = Map.get(sd, "repeating_schedule", %{})
+    |> IO.inspect(label: "bad stuff there?")
     |> CronTools.cronlist_to_cronstring!()
+    |> IO.inspect(label: "bad stuff here?")
 
     put_in(form_data, ["technical", "cadence"], cronstring)
   end

@@ -27,7 +27,16 @@ defmodule Andi.InputSchemas.CronTools do
 
   def cronlist_to_cronstring!(nil), do: ""
   def cronlist_to_cronstring!(""), do: ""
-  def cronlist_to_cronstring!(%{second: second} = cronlist) when second != "" do
+  def cronlist_to_cronstring!(%{"second" => _} = cronlist) do
+    AtomicMap.convert(cronlist, safe: false)
+    |> cronlist_to_cronstring!()
+  end
+  def cronlist_to_cronstring!(%{second: second} = cronlist) when is_nil(second) or second == "" do
+    cronlist
+    |> Map.put(:second, "0")
+    |> cronlist_to_cronstring!()
+  end
+  def cronlist_to_cronstring!(%{second: _second} = cronlist) do
     [:second, :minute, :hour, :day, :month, :week, :year]
     |> Enum.reduce("", fn field, acc ->
       acc <> " " <> to_string(Map.get(cronlist, field, ""))
@@ -37,8 +46,7 @@ defmodule Andi.InputSchemas.CronTools do
   end
   def cronlist_to_cronstring!(cronlist) do
     cronlist
-    |> AtomicMap.convert(safe: false)
-    |> Map.put_new(:second, "0")
+    |> Map.put(:second, "0")
     |> cronlist_to_cronstring!()
   end
 

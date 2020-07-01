@@ -37,6 +37,8 @@ defmodule Andi.InputSchemas.CronToolsTest do
         ["missing second", %{hour: "*"}, "0  *"],
         ["properly filled", %{day: "3", hour: "15", minute: "15", month: "3", week: "*", second: "15", year: "2030"}, "15 15 15 3 3 * 2030"],
         ["handles string keys", %{"day" => "3", "hour" => "15", "minute" => "15", "month" => "3", "week" => "*", "second" => "15", "year" => "2030"}, "15 15 15 3 3 * 2030"],
+        ["doesn't blow up if some are empty strings", %{"day" => "", "hour" => "", "minute" => "15", "month" => "3", "week" => "", "second" => "15"}, "15 15   3"],
+        ["this one weird case", %{"day" => "", "hour" => "", "minute" => "", "month" => "", "second" => "", "week" => "*"}, "0     *"]
       ])
     end
   end
