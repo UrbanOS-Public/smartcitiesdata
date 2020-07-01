@@ -9,6 +9,16 @@ defmodule AndiWeb.InputSchemas.FinalizeFormTest do
   alias AndiWeb.InputSchemas.FinalizeForm
 
   describe "changeset/2 given a map with a cadence (the technical form)" do
+    test "deals with string keys" do
+      technical_form = %{
+        "cadence" => "43 45 16 22 7 * 2020"
+      }
+
+      changeset = FinalizeForm.changeset(%FinalizeForm{}, technical_form)
+
+      assert "future" == Changeset.get_field(changeset, :cadence_type)
+    end
+
     data_test "converts and validates the cadence pieces" do
       technical_form = %{
         cadence: cadence

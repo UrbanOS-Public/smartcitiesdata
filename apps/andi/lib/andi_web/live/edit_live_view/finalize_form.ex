@@ -29,7 +29,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   def update(assigns, socket) do
     current_data = case Map.get(assigns, :finalize_form_data) do
-      nil -> assigns.form.data
+      nil -> Changeset.apply_changes(assigns.form.source)
       dater -> dater
     end
 
