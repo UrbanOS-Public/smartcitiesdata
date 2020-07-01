@@ -1,4 +1,4 @@
-defmodule AndiWeb.InputSchemas.FinalizeFormTest do
+defmodule AndiWeb.InputSchemas.FinalizeFormSchemaTest do
   use ExUnit.Case
 
   import Checkov
@@ -6,7 +6,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormTest do
 
   alias Ecto.Changeset
 
-  alias AndiWeb.InputSchemas.FinalizeForm
+  alias AndiWeb.InputSchemas.FinalizeFormSchema
 
   describe "changeset/2 given a map with a cadence (the technical form)" do
     test "deals with string keys" do
@@ -14,7 +14,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormTest do
         "cadence" => "43 45 16 22 7 * 2020"
       }
 
-      changeset = FinalizeForm.changeset(%FinalizeForm{}, technical_form)
+      changeset = FinalizeFormSchema.changeset(%FinalizeFormSchema{}, technical_form)
 
       assert "future" == Changeset.get_field(changeset, :cadence_type)
     end
@@ -26,7 +26,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormTest do
       future_schedule_with_id = Map.put_new(future_schedule, :id, nil)
       repeating_schedule_with_id = Map.put_new(repeating_schedule, :id, nil)
 
-      changeset = FinalizeForm.changeset(%FinalizeForm{}, technical_form)
+      changeset = FinalizeFormSchema.changeset(%FinalizeFormSchema{}, technical_form)
 
       assert cadence_type == Changeset.get_field(changeset, :cadence_type)
       assert future_schedule_with_id == Changeset.get_field(changeset, :future_schedule) |> Map.from_struct()
@@ -48,7 +48,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormTest do
 
   describe "changeset/2 given a scheduler form (from UI)" do
     data_test "validation cases for input" do
-      changeset = FinalizeForm.changeset(%FinalizeForm{}, form)
+      changeset = FinalizeFormSchema.changeset(%FinalizeFormSchema{}, form)
 
       assert errors == errors_on(changeset)
 

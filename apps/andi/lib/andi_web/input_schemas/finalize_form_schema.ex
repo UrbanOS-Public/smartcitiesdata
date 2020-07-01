@@ -1,4 +1,4 @@
-defmodule AndiWeb.InputSchemas.FinalizeForm.FutureSchedule do
+defmodule AndiWeb.InputSchemas.FinalizeFormSchema.FutureSchedule do
   @moduledoc false
 
   use Ecto.Schema
@@ -34,16 +34,9 @@ defmodule AndiWeb.InputSchemas.FinalizeForm.FutureSchedule do
         end
     end
   end
-
-  def replace(map, key, function) do
-    case Map.fetch(map, key) do
-      {:ok, value} -> Map.put(map, key, function.(value))
-      :error -> map
-    end
-  end
 end
 
-defmodule AndiWeb.InputSchemas.FinalizeForm.RepeatingSchedule do
+defmodule AndiWeb.InputSchemas.FinalizeFormSchema.RepeatingSchedule do
   @moduledoc false
 
   use Ecto.Schema
@@ -74,15 +67,15 @@ defmodule AndiWeb.InputSchemas.FinalizeForm.RepeatingSchedule do
   end
 end
 
-defmodule AndiWeb.InputSchemas.FinalizeForm do
+defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
   @moduledoc false
 
   use Ecto.Schema
   import Ecto.Changeset
 
   alias Andi.InputSchemas.CronTools
-  alias AndiWeb.InputSchemas.FinalizeForm.FutureSchedule
-  alias AndiWeb.InputSchemas.FinalizeForm.RepeatingSchedule
+  alias AndiWeb.InputSchemas.FinalizeFormSchema.FutureSchedule
+  alias AndiWeb.InputSchemas.FinalizeFormSchema.RepeatingSchedule
 
   embedded_schema do
     field(:cadence_type, :string, default: "once")

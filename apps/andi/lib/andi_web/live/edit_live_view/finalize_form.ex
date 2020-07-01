@@ -11,7 +11,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   alias Andi.InputSchemas.FormTools
   alias AndiWeb.ErrorHelpers
 
-  alias AndiWeb.InputSchemas.FinalizeForm
+  alias AndiWeb.InputSchemas.FinalizeFormSchema
   alias Andi.InputSchemas.CronTools
   import Andi.InputSchemas.CronTools
 
@@ -33,8 +33,8 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       dater -> dater
     end
 
-    finalize_form_changeset = FinalizeForm.changeset(
-      %FinalizeForm{},
+    finalize_form_changeset = FinalizeFormSchema.changeset(
+      %FinalizeFormSchema{},
       current_data
     )
 
@@ -223,7 +223,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   def update_form_with_schedule(%{"cadence_type" => cadence_type} = _sd, form_data) when cadence_type in ["once", "never"], do: put_in(form_data, ["technical", "cadence"], cadence_type)
   def update_form_with_schedule(%{"cadence_type" => "future"} = ff, form_data) do
-    changeset = FinalizeForm.changeset(%FinalizeForm{}, ff)
+    changeset = FinalizeFormSchema.changeset(%FinalizeFormSchema{}, ff)
 
     if changeset.changes.future_schedule.valid? do
       %{"date" => date, "time" => time} = Map.get(ff, "future_schedule")
