@@ -28,16 +28,17 @@ defmodule Andi.InputSchemas.CronTools do
   def cronlist_to_cronstring!(nil), do: ""
   def cronlist_to_cronstring!(""), do: ""
   def cronlist_to_cronstring!(%{second: second} = cronlist) when second != "" do
-    cronlist
     [:second, :minute, :hour, :day, :month, :week, :year]
     |> Enum.reduce("", fn field, acc ->
-      acc <> " " <> to_string(Map.get(cronlist, field, "nil"))
+      acc <> " " <> to_string(Map.get(cronlist, field, ""))
     end)
     |> String.trim_leading()
+    |> String.trim_trailing()
   end
   def cronlist_to_cronstring!(cronlist) do
     cronlist
-    |> Map.put(:second, "0")
+    |> AtomicMap.convert(safe: false)
+    |> Map.put_new(:second, "0")
     |> cronlist_to_cronstring!()
   end
 
@@ -86,19 +87,11 @@ defmodule Andi.InputSchemas.CronTools do
     String.pad_leading(number, 2, "0")
   end
 
-  def date_and_time_to_cronstring("", ""), do: {:error, :cannot_convert}
-  def date_and_time_to_cronstring(date, ""), do: {:error, :incomplete_data_and_time}
-  def date_and_time_to_cronstring("", time), do: {:error, :incomplete_data_and_time}
-  def date_and_time_to_cronstring(date, time) do
-    case Timex.parse(date <> "T" <> time, @more_forgiving_iso_basic_format) do
-      {:ok, datetime_struct} ->
-        cronstring = Map.from_struct(datetime_struct)
-        |> Map.merge(%{week: "*"})
-        |> cronlist_to_cronstring!()
-
-        {:ok, cronstring}
-      error -> error
-    end
+  def date_and_time_to_cronstring!(date, time) do
+    Timex.parse!(date <> "T" <> time, @more_forgiving_iso_basic_format)
+    |> Map.from_struct()
+    |> Map.merge(%{week: "*"})
+    |> cronlist_to_cronstring!()
   end
 
   defp current_year() do

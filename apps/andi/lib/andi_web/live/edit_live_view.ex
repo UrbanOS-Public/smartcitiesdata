@@ -49,7 +49,7 @@ defmodule AndiWeb.EditLiveView do
         </div>
 
         <div class="finalize-form-component ">
-        <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, scheduler_data: @scheduler_data, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["finalize_form"]) %>
+        <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, finalize_form_data: @finalize_form_data, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["finalize_form"]) %>
         </div>
 
       </form>
@@ -106,7 +106,7 @@ defmodule AndiWeb.EditLiveView do
        test_results: nil,
        testing: false,
        dataset_exists: dataset_exists,
-       scheduler_data: %{}
+       finalize_form_data: nil
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end
@@ -162,12 +162,10 @@ defmodule AndiWeb.EditLiveView do
     |> complete_validation(socket)
   end
 
-  def handle_event("validate", %{"form_data" => form_data, "scheduler" => scheduler_data}, socket) do
-    # send sub-form to finalize view
-    socket = assign(socket, :scheduler_data, scheduler_data)
+  def handle_event("validate", %{"form_data" => form_data, "finalize_form_data" => finalize_form_data}, socket) do
+    socket = assign(socket, :finalize_form_data, finalize_form_data)
 
-    scheduler_data
-    # update cadence from sub-form
+    finalize_form_data
     |> FinalizeForm.update_form_with_schedule(form_data)
     |> InputConverter.form_data_to_ui_changeset()
     |> complete_validation(socket)
@@ -218,7 +216,9 @@ defmodule AndiWeb.EditLiveView do
     end
   end
 
-  def handle_event("save", %{"form_data" => form_data}, socket) do
+  def handle_event("save", %{"form_data" => form_data, "finalize_form_data" => finalize_form_data}, socket) do
+    socket = assign(socket, :finalize_form_data, finalize_form_data)
+
     changeset = form_data |> InputConverter.form_data_to_changeset_draft()
     pending_dataset = Ecto.Changeset.apply_changes(changeset)
     {:ok, _} = Datasets.update(pending_dataset)

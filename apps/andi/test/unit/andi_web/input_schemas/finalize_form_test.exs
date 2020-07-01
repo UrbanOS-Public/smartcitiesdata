@@ -52,19 +52,26 @@ defmodule AndiWeb.InputSchemas.FinalizeFormTest do
         [finalize_form(%{repeating_schedule: %{day: "b*"}}), %{repeating_schedule: %{day: ["has invalid format"]}}],
         [finalize_form(%{repeating_schedule: cronlist(%{second: nil})}), %{repeating_schedule: %{second: ["can't be blank"]}}],
         [finalize_form(), %{}],
+        [%{}, %{future_schedule: %{}, repeating_schedule: %{}}],
       ])
     end
   end
 
   defp finalize_form(overrides \\ %{}) do
-    %{
+    default_form = %{
       cadence_type: "repeating",
       future_schedule: %{
         date: future_date(),
         time: ~T[00:00:00]
       },
       repeating_schedule: cronlist(%{second: "*"})
-    } |> SmartCity.Helpers.deep_merge(overrides)
+    }
+
+    if overrides != %{} do
+      SmartCity.Helpers.deep_merge(default_form, overrides)
+    else
+      default_form
+    end
   end
 
   defp cronlist(overrides \\ %{}) do
