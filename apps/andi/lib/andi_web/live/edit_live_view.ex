@@ -163,9 +163,11 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("validate", %{"form_data" => form_data, "scheduler" => scheduler_data}, socket) do
+    # send sub-form to finalize view
     socket = assign(socket, :scheduler_data, scheduler_data)
 
     scheduler_data
+    # update cadence from sub-form
     |> FinalizeForm.update_form_with_schedule(form_data)
     |> InputConverter.form_data_to_ui_changeset()
     |> complete_validation(socket)

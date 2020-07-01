@@ -26,6 +26,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   def update(assigns, socket) do
     cadence = input_value(assigns.form, :cadence)
+
     scheduler_data = Map.put_new(assigns.scheduler_data, "cadence_type", determine_cadence_type(cadence))
 
     repeating_schedule = to_repeating(scheduler_data["cadence_type"], cadence)

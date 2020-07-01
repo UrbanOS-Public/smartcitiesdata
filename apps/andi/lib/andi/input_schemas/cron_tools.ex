@@ -74,13 +74,13 @@ defmodule Andi.InputSchemas.CronTools do
       {:ok, nt} -> NaiveDateTime.to_time(nt)
     end
 
-    %{"future_date" => date, "future_time" => time}
+    %{date: date, time: time}
   end
   def cronlist_to_future_schedule(%{year: _year, month: _month, day: _day, hour: _hour, minute: _minute} = schedule) do
     Map.put_new(schedule, :second, "0")
     |> cronlist_to_future_schedule()
   end
-  def cronlist_to_future_schedule(_), do: %{"future_date" => nil, "future_time" => nil}
+  def cronlist_to_future_schedule(_), do: %{date: nil, time: nil}
 
   defp gee_two_zeroes(number) do
     String.pad_leading(number, 2, "0")
