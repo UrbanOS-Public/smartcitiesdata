@@ -25,15 +25,16 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   end
 
   def update(assigns, socket) do
-    current_data = case Map.get(assigns, :finalize_form_data) do
-      nil -> Changeset.apply_changes(assigns.form.source)
-      dater -> dater
+    {action, current_data} = case Map.get(assigns, :finalize_form_data) do
+      nil -> {nil, Changeset.apply_changes(assigns.form.source)}
+      dater -> {:update, dater}
     end
 
     finalize_form_changeset = FinalizeFormSchema.changeset(
       %FinalizeFormSchema{},
       current_data
     )
+    |> Map.put(:action, action)
 
     updated_assigns =
       assigns
@@ -187,6 +188,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :week, "Week") %>
             <%= text_input(repeat, :week) %>
+            <%= ErrorHelpers.error_tag(repeat, :week) %>
           </div>
         </div>
         <% else %>
