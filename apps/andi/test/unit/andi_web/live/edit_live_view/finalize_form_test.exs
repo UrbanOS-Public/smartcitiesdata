@@ -24,6 +24,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       [finalize_form(%{"cadence_type" => "future", "future_schedule" => %{"date" => ""}}), %{"technical" => %{"cadence" => ""}}],
       [finalize_form(%{"cadence_type" => "future", "future_schedule" => %{"time" => ""}}), %{"technical" => %{"cadence" => ""}}],
       [finalize_form(%{"cadence_type" => "future", "repeating_schedule" => blank_cronlist()}), %{"technical" => %{"cadence" => "0 0 0 1 7 * 2021"}}],
+      [finalize_form(%{"cadence_type" => "future", "future_schedule" => %{"time" => "00:00"}}), %{"technical" => %{"cadence" => "0 0 0 1 7 * 2021"}}],
     ])
   end
 

@@ -48,8 +48,10 @@ defmodule AndiWeb.InputSchemas.FinalizeFormTest do
         [finalize_form(%{future_schedule: %{time: ""}}), %{future_schedule: %{time: ["can't be blank"]}}],
         [finalize_form(%{future_schedule: %{date: ~D[1900-01-01], time: ~T[00:00:00]}}), %{future_schedule: %{date: ["can't be in past"], time: ["can't be in past"]}}],
         [finalize_form(%{future_schedule: %{date: date_before_test(), time: time_before_test()}}), %{future_schedule: %{date: ["can't be in past"], time: ["can't be in past"]}}],
-        [finalize_form(%{future_schedule: %{date: "SDFDS", time: "df3dfd"}}), %{future_schedule: %{date: ["is invalid"], time: ["can't be blank"]}}],
-        [finalize_form(%{future_schedule: %{time: "00:01"}}), %{future_schedule: %{time: ["can't be blank"]}}],
+
+        [finalize_form(%{future_schedule: %{date: "SDFDS", time: "df3dfd"}}), %{future_schedule: %{date: ["is invalid"], time: ["is invalid"]}}],
+        [finalize_form(%{future_schedule: %{date: Date.to_string(future_date()), time: "00:00:00"}}), %{}],
+        [finalize_form(%{future_schedule: %{time: "00:01"}}), %{}],
         [finalize_form(%{repeating_schedule: %{day: "b*"}}), %{repeating_schedule: %{day: ["has invalid format"]}}],
         [finalize_form(%{repeating_schedule: cronlist(%{second: nil})}), %{repeating_schedule: %{second: ["can't be blank"]}}],
         [finalize_form(), %{}],

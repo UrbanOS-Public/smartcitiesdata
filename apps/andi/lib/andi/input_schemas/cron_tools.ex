@@ -96,6 +96,7 @@ defmodule Andi.InputSchemas.CronTools do
   end
 
   def date_and_time_to_cronstring!(date, time) do
+    time = String.pad_trailing(time, 8, ":00")
     Timex.parse!(date <> "T" <> time, @more_forgiving_iso_basic_format)
     |> Map.from_struct()
     |> Map.merge(%{week: "*"})
