@@ -8,7 +8,6 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   data_test "converts finalize form data to cadence in form data" do
     form_data = FinalizeForm.update_form_with_schedule(finalize_form_data, %{"technical" => %{}})
-
     assert expected_form_data == form_data
 
     where([
@@ -19,11 +18,12 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       [finalize_form(%{"cadence_type" => nil}), %{"technical" => %{}}],
       [finalize_form(%{"cadence_type" => "repeating"}), %{"technical" => %{"cadence" => "* * * * * *"}}],
       [finalize_form(%{"cadence_type" => "repeating", "repeating_schedule" => cronlist(%{"second" => 0})}), %{"technical" => %{"cadence" => "0 * * * * *"}}],
-      [finalize_form(%{"cadence_type" => "repeating", "repeating_schedule" => cronlist(%{"year" => "*"})}), %{"technical" => %{"cadence" => "* * * * * *"}}],
+      [finalize_form(%{"cadence_type" => "repeating", "repeating_schedule" => cronlist(%{"year" => "*"})}), %{"technical" => %{"cadence" => "0 * * * * * *"}}],
       [finalize_form(%{"cadence_type" => "future"}), %{"technical" => %{"cadence" => "0 0 0 #{future_day()} #{future_month()} * #{future_year()}"}}],
       [finalize_form(%{"cadence_type" => "future", "future_schedule" => %{"date" => "", "time" => ""}}), %{"technical" => %{"cadence" => ""}}],
       [finalize_form(%{"cadence_type" => "future", "future_schedule" => %{"date" => ""}}), %{"technical" => %{"cadence" => ""}}],
       [finalize_form(%{"cadence_type" => "future", "future_schedule" => %{"time" => ""}}), %{"technical" => %{"cadence" => ""}}],
+      [finalize_form(%{"cadence_type" => "future", "repeating_schedule" => blank_cronlist()}), %{"technical" => %{"cadence" => "0 0 0 1 7 * 2021"}}],
     ])
   end
 
@@ -73,5 +73,16 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       "minute" => "*",
       "second" => nil
     } |> Map.merge(overrides)
+  end
+
+  defp blank_cronlist() do
+    %{
+      "day" => "",
+      "hour" => "",
+      "minute" => "",
+      "month" => "",
+      "second" => "",
+      "week" => "*"
+    }
   end
 end

@@ -67,6 +67,7 @@ defmodule Andi.InputSchemas.CronToolsTest do
       where([
         [:case, :date, :time, :output],
         ["date and time", "2030-2-20", "01:02:03", "3 2 1 20 2 * 2030"],
+        ["short time", "2030-2-20", "01:02", "0 2 1 20 2 * 2030"],
       ])
     end
   end

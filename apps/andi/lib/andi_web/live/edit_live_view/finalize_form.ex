@@ -144,7 +144,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
         <%= label(future, :date, "Date of Future Ingestion") %>
         <%= date_input(future, :date) %>
         <%= label(future, :time, "Time of Future Ingestion") %>
-        <%= time_input(future, :time, precision: :second, step: 15) %>
+        <%= time_input(future, :time, precision: :second, step: 1) %>
         </div>
       <%= else %>
         <%= hidden_input(future, :date) %>
@@ -226,7 +226,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   def update_form_with_schedule(%{"cadence_type" => "future"} = ff, form_data) do
     changeset = FinalizeForm.changeset(%FinalizeForm{}, ff)
 
-    if changeset.valid? do
+    if changeset.changes.future_schedule.valid? do
       %{"date" => date, "time" => time} = Map.get(ff, "future_schedule")
       cronstring = CronTools.date_and_time_to_cronstring!(date, time)
       put_in(form_data, ["technical", "cadence"], cronstring)
@@ -236,9 +236,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   end
   def update_form_with_schedule(%{"cadence_type" => "repeating"} = sd, form_data) do
     cronstring = Map.get(sd, "repeating_schedule", %{})
-    |> IO.inspect(label: "bad stuff there?")
     |> CronTools.cronlist_to_cronstring!()
-    |> IO.inspect(label: "bad stuff here?")
 
     put_in(form_data, ["technical", "cadence"], cronstring)
   end
