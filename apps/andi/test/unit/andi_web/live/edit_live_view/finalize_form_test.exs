@@ -10,6 +10,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       finalize_form: 0,
       finalize_form: 1,
       cronlist: 1,
+      cronlist: 2,
       blank_cronlist: 0,
       future_hour: 0,
       future_day: 0,
@@ -17,8 +18,26 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       future_year: 0
     ]
 
+  data_test "updates both forms for quickcron selection #{type} => #{cronstring}" do
+    input_ffd = %{"cadence_type" => "repeating", "quick_cron" => type, "repeating_schedule" => %{"untouched" => true}}
+    {ffd, form_data} = FinalizeForm.update_form_with_schedule(input_ffd, %{"technical" => %{"cadence" => "untouched"}})
+    assert cronstring == form_data["technical"]["cadence"]
+    assert cronlist == ffd["repeating_schedule"]
+    assert "" == ffd["quick_cron"]
+
+    where([
+      [:type, :cronstring, :cronlist],
+      ["hourly", "0 0 * * * *", cronlist(%{"second" => "0", "minute" => "0"}, keys: :atoms)],
+      ["daily", "0 0 0 * * *", cronlist(%{"second" => "0", "minute" => "0", "hour" => "0"}, keys: :atoms)],
+      ["weekly", "0 0 0 * * 0", cronlist(%{"second" => "0", "minute" => "0", "hour" => "0", "week" => "0"}, keys: :atoms)],
+      ["monthly", "0 0 0 1 * *", cronlist(%{"second" => "0", "minute" => "0", "hour" => "0", "day" => "1"}, keys: :atoms)],
+      ["yearly", "0 0 0 1 1 *", cronlist(%{"second" => "0", "minute" => "0", "hour" => "0", "day" => "1", "month" => "1"}, keys: :atoms)],
+      ["", "0", %{"untouched" => true}],
+    ])
+  end
+
   data_test "converts finalize form data to cadence in form data for #{case}" do
-    form_data = FinalizeForm.update_form_with_schedule(finalize_form_data, %{"technical" => %{}})
+    {_ffd, form_data} = FinalizeForm.update_form_with_schedule(finalize_form_data, %{"technical" => %{}})
     assert expected_form_data == form_data
 
     where([
