@@ -4,7 +4,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchemaTest do
   import Checkov
   alias Ecto.Changeset
 
-  import AndiWeb.Test.CronTestHelpers, only: [
+  import Andi.Test.CronTestHelpers, only: [
     finalize_form: 2,
     cronlist: 2,
     future_date: 0,

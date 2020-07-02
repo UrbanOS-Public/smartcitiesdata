@@ -5,6 +5,10 @@ defmodule Andi.InputSchemas.CronToolsTest do
 
   alias Andi.InputSchemas.CronTools
 
+  import Andi.Test.CronTestHelpers, only: [
+    cronlist: 2
+  ]
+
   describe "cronstring_to_cronlist!/1" do
     data_test "for #{case}, #{input} returns #{inspect(output)}" do
       assert output == CronTools.cronstring_to_cronlist!(input)
@@ -61,7 +65,29 @@ defmodule Andi.InputSchemas.CronToolsTest do
     end
   end
 
-  # TODO - to repeating test
+  describe "cronstring_to_cronlist_with_default!/2" do
+    data_test "for #{case}, #{type} and #{cronstring}" do
+      assert output == CronTools.cronstring_to_cronlist_with_default!(type, cronstring)
+
+      where([
+        [:case, :type, :cronstring, :output],
+        ["once", "once", "once", cronlist(%{second: "0"}, keys: :atoms)],
+        ["never", "never", "never", cronlist(%{second: "0"}, keys: :atoms)],
+        ["repeating", "repeating", "* * * * * *", cronlist(%{second: "*"}, keys: :atoms)],
+        ["future", "future", "* * * * * *", cronlist(%{second: "*"}, keys: :atoms)],
+        ["future with previous once", "future", "once", cronlist(%{second: "0"}, keys: :atoms)],
+        ["future with previous never", "future", "never", cronlist(%{second: "0"}, keys: :atoms)],
+        ["repeating with previous once", "repeating", "once", cronlist(%{second: "0"}, keys: :atoms)],
+        ["repeating with previous never", "repeating", "never", cronlist(%{second: "0"}, keys: :atoms)],
+        ["future with nil cronstring", "future", nil, %{}],
+        ["repeating with nil cronstring", "repeating", nil, %{}],
+        ["future with empty cronstring", "future", "", %{}],
+        ["repeating with empty cronstring", "repeating", "", %{}],
+        ["future with bad cronstring produces goofiness", "future", "brok!", %{minute: "brok!"}],
+        ["repeating with bad cronstring produces goofiness", "repeating", "bork!", %{minute: "bork!"}],
+      ])
+    end
+  end
 
   describe "date_and_time_to_cronstring!/2" do
     data_test "for #{case}, #{date}, #{time} returns #{inspect(output)}" do

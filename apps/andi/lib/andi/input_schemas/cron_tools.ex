@@ -68,10 +68,10 @@ defmodule Andi.InputSchemas.CronTools do
     end
   end
 
-  def to_repeating(type, nil) when type in ["repeating", "future"], do: %{}
-  def to_repeating(type, "") when type in ["repeating", "future"], do: %{}
-  def to_repeating(type, cadence) when type in ["repeating", "future"] and cadence not in ["once", "never"], do: cronstring_to_cronlist!(cadence)
-  def to_repeating(_type, _cadence), do: cronstring_to_cronlist!("0 * * * * *")
+  def cronstring_to_cronlist_with_default!(type, nil) when type in ["repeating", "future"], do: %{}
+  def cronstring_to_cronlist_with_default!(type, "") when type in ["repeating", "future"], do: %{}
+  def cronstring_to_cronlist_with_default!(type, cadence) when type in ["repeating", "future"] and cadence not in ["once", "never"], do: cronstring_to_cronlist!(cadence)
+  def cronstring_to_cronlist_with_default!(_type, _cadence), do: cronstring_to_cronlist!("0 * * * * *")
 
   def cronlist_to_future_schedule(%{year: year, month: month, day: day, hour: hour, minute: minute, second: second} = _schedule) do
     date = case Timex.parse("#{year}-#{month}-#{day}", @more_forgiving_iso_date_format) do

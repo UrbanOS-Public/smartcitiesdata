@@ -5,7 +5,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   alias AndiWeb.EditLiveView.FinalizeForm
 
-  import AndiWeb.Test.CronTestHelpers, only: [
+  import Andi.Test.CronTestHelpers, only: [
     finalize_form: 0,
     finalize_form: 1,
     cronlist: 1,

@@ -1,4 +1,4 @@
-defmodule AndiWeb.Test.CronTestHelpers do
+defmodule Andi.Test.CronTestHelpers do
   @moduledoc """
   Helpers for generating the finalize form, cronlists and naivedatetimes
   """

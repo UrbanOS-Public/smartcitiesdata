@@ -101,7 +101,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
   def changeset(%__MODULE__{} = current, %{"cadence" => cadence}), do: changeset(current, %{cadence: cadence})
   def changeset(%__MODULE__{} = current, %{cadence: cadence} = _tech) do
     cadence_type = CronTools.determine_cadence_type(cadence)
-    repeating_cronlist = CronTools.to_repeating(cadence_type, cadence)
+    repeating_cronlist = CronTools.cronstring_to_cronlist_with_default!(cadence_type, cadence)
     future_schedule = CronTools.cronlist_to_future_schedule(repeating_cronlist)
 
     changes = %{
