@@ -45,11 +45,11 @@ defmodule DiscoveryApiWeb.VisualizationController do
   end
 
   def update(conn, %{"id" => public_id, "chart" => chart} = attribute_changes) do
-    atomic_attribute_changes = attribute_changes |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
+    parsed_attributes = parse_attributes(attribute_changes)
 
     with user <- Map.get(conn.assigns, :current_user),
          {:ok, json_chart} <- Jason.encode(chart),
-         changes_with_encoded_chart <- Map.put(atomic_attribute_changes, :chart, json_chart),
+         changes_with_encoded_chart <- Map.put(parsed_attributes, :chart, json_chart),
          {:ok, visualization} <- Visualizations.update_visualization_by_id(public_id, changes_with_encoded_chart, user) do
       allowed_actions = get_allowed_actions(visualization, user)
       render(conn, :visualization, %{visualization: visualization, allowed_actions: allowed_actions})
@@ -86,5 +86,11 @@ defmodule DiscoveryApiWeb.VisualizationController do
       true -> @owner_allowed_actions
       false -> [%{name: :create_copy}]
     end
+  end
+
+  defp parse_attributes(attributes) do
+    attributes
+    |> Enum.filter(fn {k, _v} -> k in ["chart", "query", "title"] end)
+    |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
   end
 end
