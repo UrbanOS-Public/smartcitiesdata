@@ -15,9 +15,6 @@ defmodule AndiWeb.ErrorHelpers do
 
   def error_tag(form, field, options) do
     Enum.map(Keyword.get_values(form.errors, field), fn error ->
-      if field == :week do
-        IO.inspect(error, label: "error?")
-      end
       translated = error |> interpret_error(field) |> translate_error()
 
       content_tag(:span, translated,

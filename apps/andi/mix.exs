@@ -70,6 +70,7 @@ defmodule Andi.MixProject do
       {:telemetry_event, in_umbrella: true},
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
+      {:tzdata, "~> 1.0"},
       {:web, in_umbrella: true}
     ]
   end

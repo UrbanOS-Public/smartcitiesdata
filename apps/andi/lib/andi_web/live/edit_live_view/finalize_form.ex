@@ -126,6 +126,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     """
   end
 
+  # TODO - fix formatting for errors and in general
   defp future_scheduler_form(assigns) do
     ~L"""
       <% [future] = inputs_for(@fin, :future_schedule) %>
@@ -134,8 +135,10 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
         <div class="finalize-form__future-schedule">
         <%= label(future, :date, "Date of Future Ingestion") %>
         <%= date_input(future, :date) %>
+        <%= ErrorHelpers.error_tag(future, :date) %>
         <%= label(future, :time, "Time of Future Ingestion") %>
         <%= time_input(future, :time, precision: :second, step: 1) %>
+        <%= ErrorHelpers.error_tag(future, :time) %>
         </div>
       <% else %>
         <%= hidden_input(future, :date) %>
@@ -145,6 +148,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     """
   end
 
+  # TODO - fix formatting for errors
   defp repeating_scheduler_form(assigns) do
     ~L"""
       <% [repeat] = inputs_for(@fin, :repeating_schedule) %>
@@ -168,22 +172,27 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :second, "Second") %>
             <%= text_input(repeat, :second) %>
+            <%= ErrorHelpers.error_tag(repeat, :second) %>
           </div>
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :minute, "Minute") %>
             <%= text_input(repeat, :minute) %>
+            <%= ErrorHelpers.error_tag(repeat, :minute) %>
           </div>
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :hour, "Hour") %>
             <%= text_input(repeat, :hour) %>
+            <%= ErrorHelpers.error_tag(repeat, :hour) %>
           </div>
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :day, "Day") %>
             <%= text_input(repeat, :day) %>
+            <%= ErrorHelpers.error_tag(repeat, :day) %>
           </div>
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :month, "Month") %>
             <%= text_input(repeat, :month) %>
+            <%= ErrorHelpers.error_tag(repeat, :month) %>
           </div>
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :week, "Week") %>

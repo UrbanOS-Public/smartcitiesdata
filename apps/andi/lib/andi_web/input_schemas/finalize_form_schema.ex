@@ -24,15 +24,30 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema.FutureSchedule do
       {bad, worse} when is_nil(bad) or is_nil(worse) -> changeset
       {bad, worse} when bad == "" or worse == "" -> changeset
       {date, time} ->
-        iso_string = "#{Date.to_string(date)}T#{Time.to_string(time)}"
-        {:ok, dt} = NaiveDateTime.from_iso8601(iso_string)
-        if Date.diff(dt, NaiveDateTime.utc_now()) <= 0 do
+        localized_datetime = date_and_time_to_local_datetime(date, time)
+        if DateTime.diff(localized_datetime, local_now()) <= 0 do
           add_error(changeset, :date, "can't be in past")
           |> add_error(:time, "can't be in past")
         else
           changeset
         end
     end
+  end
+
+  defp date_and_time_to_local_datetime(date, time) do
+    "#{Date.to_string(date)}T#{Time.to_string(time)}"
+    |> Timex.parse!("{ISOdate}T{ISOtime}")
+    |> Timex.to_datetime(local_timezone())
+  end
+
+  defp local_now() do
+    {:ok, dt} = DateTime.now(local_timezone())
+
+    dt
+  end
+
+  def local_timezone() do
+    Application.get_env(:andi, :timezone, "America/New_York")
   end
 end
 
@@ -84,7 +99,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
   end
 
   def changeset(%__MODULE__{} = current, %{"cadence" => cadence}), do: changeset(current, %{cadence: cadence})
-  def changeset(%__MODULE__{} = current, %{cadence: cadence} = tech) do
+  def changeset(%__MODULE__{} = current, %{cadence: cadence} = _tech) do
     cadence_type = CronTools.determine_cadence_type(cadence)
     repeating_cronlist = CronTools.to_repeating(cadence_type, cadence)
     future_schedule = CronTools.cronlist_to_future_schedule(repeating_cronlist)

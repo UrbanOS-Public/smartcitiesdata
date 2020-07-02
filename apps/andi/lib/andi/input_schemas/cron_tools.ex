@@ -1,10 +1,6 @@
 defmodule Andi.InputSchemas.CronTools do
   @moduledoc false
 
-  @more_forgiving_iso_date_format "{YYYY}-{M}-{D}"
-  @more_forgiving_iso_time_format "{h24}:{m}:{s}"
-  @more_forgiving_iso_basic_format "#{@more_forgiving_iso_date_format}T#{@more_forgiving_iso_time_format}"
-
   def cronstring_to_cronlist!(nil), do: %{}
   def cronstring_to_cronlist!(""), do: %{}
   def cronstring_to_cronlist!("never"), do: %{}
@@ -97,7 +93,8 @@ defmodule Andi.InputSchemas.CronTools do
 
   def date_and_time_to_cronstring!(date, time) do
     time = String.pad_trailing(time, 8, ":00")
-    Timex.parse!(date <> "T" <> time, @more_forgiving_iso_basic_format)
+
+    Timex.parse!(date <> "T" <> time, "{ISOdate}T{ISOtime}")
     |> Map.from_struct()
     |> Map.merge(%{week: "*"})
     |> cronlist_to_cronstring!()
