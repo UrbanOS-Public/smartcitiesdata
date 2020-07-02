@@ -25,6 +25,38 @@ defmodule AndiWeb.ErrorHelpers do
     end)
   end
 
+  defp to_prefix(field) do
+    camelized = Atom.to_string(field)
+    |> Macro.camelize()
+
+    camelized <> ": "
+  end
+  def concise_error_tag(form, field, options \\ []) do
+    prefix = Keyword.get(options, :prefix, true)
+
+    Enum.map(Keyword.get_values(form.errors, field), fn error ->
+      {_message, opts} = error
+
+      short_message = opts
+      |> Keyword.get(:validation)
+      |> to_string()
+
+      prefixed = case prefix do
+                   true -> to_prefix(field) <> short_message
+                   false -> short_message
+                   custom -> custom <> short_message
+                 end
+
+      translated = translate_error({prefixed, opts})
+
+      content_tag(:span, translated,
+        class: "error-msg",
+        id: "#{field}-error-msg",
+        data: get_additional_content_tag_data(form, field, options)
+      )
+    end)
+  end
+
   # Fixes the bug with non text-input fields not rendering the error message when clearing a valid value
   # https://elixirforum.com/t/liveview-phx-change-attribute-does-not-emit-event-on-input-text/21280
   defp get_additional_content_tag_data(form, field, options) do

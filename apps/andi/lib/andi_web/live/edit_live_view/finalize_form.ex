@@ -91,8 +91,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
               </div>
               <%= hidden_input(@form, :cadence) %>
               <%= future_scheduler_form(%{fin: fin}) %>
-              <%= repeating_scheduler_form(%{fin: fin, myself: @myself}) %>
-              <%= ErrorHelpers.error_tag(@form, :cadence) %>
+              <%= repeating_scheduler_form(%{fin: fin, myself: @myself, form: @form}) %>
             </div>
           </div>
 
@@ -126,19 +125,22 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     """
   end
 
-  # TODO - fix formatting for errors and in general
   defp future_scheduler_form(assigns) do
     ~L"""
       <% [future] = inputs_for(@fin, :future_schedule) %>
       <div class="finalize-form__scheduler--visible">
       <%= if input_value(@fin, :cadence_type) == "future" do %>
         <div class="finalize-form__future-schedule">
-        <%= label(future, :date, "Date of Future Ingestion") %>
-        <%= date_input(future, :date) %>
-        <%= ErrorHelpers.error_tag(future, :date) %>
-        <%= label(future, :time, "Time of Future Ingestion") %>
-        <%= time_input(future, :time, precision: :second, step: 1) %>
-        <%= ErrorHelpers.error_tag(future, :time) %>
+          <div class="finalize-form__future-schedule-input-field">
+            <%= label(future, :date, "Date of Future Ingestion") %>
+            <%= date_input(future, :date) %>
+            <%= ErrorHelpers.concise_error_tag(future, :date) %>
+          </div>
+          <div class="finalize-form__future-schedule-input-field">
+            <%= label(future, :time, "Time of Future Ingestion") %>
+            <%= time_input(future, :time, precision: :second, step: 1) %>
+            <%= ErrorHelpers.concise_error_tag(future, :time) %>
+          </div>
         </div>
       <% else %>
         <%= hidden_input(future, :date) %>
@@ -148,7 +150,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     """
   end
 
-  # TODO - fix formatting for errors
   defp repeating_scheduler_form(assigns) do
     ~L"""
       <% [repeat] = inputs_for(@fin, :repeating_schedule) %>
@@ -157,11 +158,16 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
         <h4>Quick Schedule</h4>
 
         <div class="finalize-form__quick-schedule">
-          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="hourly" phx-target="<%= @myself %>">Hourly</button>
-          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="daily" phx-target="<%= @myself %>">Daily</button>
-          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="weekly" phx-target="<%= @myself %>">Weekly</button>
-          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="monthly" phx-target="<%= @myself %>">Monthly</button>
-          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="yearly" phx-target="<%= @myself %>">Yearly</button>
+          <%= radio_button(@fin, :quick_cron, "hourly") %>
+          <%= label(@fin, :quick_cron_hourly, "Hourly") %>
+          <%= radio_button(@fin, :quick_scron, "daily") %>
+          <%= label(@fin, :quick_cron_daily, "Daily") %>
+          <%= radio_button(@fin, :quick_cron, "weekly") %>
+          <%= label(@fin, :quick_cron_weekly, "Weekly") %>
+          <%= radio_button(@fin, :quick_cron, "monthly") %>
+          <%= label(@fin, :quick_cron_monthly, "Monthly") %>
+          <%= radio_button(@fin, :quick_cron, "yearly") %>
+          <%= label(@fin, :quick_cron_yearly, "Yearly") %>
         </div>
 
         <div class="finalize-form__help-link">
@@ -172,34 +178,29 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :second, "Second") %>
             <%= text_input(repeat, :second) %>
-            <%= ErrorHelpers.error_tag(repeat, :second) %>
           </div>
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :minute, "Minute") %>
             <%= text_input(repeat, :minute) %>
-            <%= ErrorHelpers.error_tag(repeat, :minute) %>
           </div>
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :hour, "Hour") %>
             <%= text_input(repeat, :hour) %>
-            <%= ErrorHelpers.error_tag(repeat, :hour) %>
           </div>
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :day, "Day") %>
             <%= text_input(repeat, :day) %>
-            <%= ErrorHelpers.error_tag(repeat, :day) %>
           </div>
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :month, "Month") %>
             <%= text_input(repeat, :month) %>
-            <%= ErrorHelpers.error_tag(repeat, :month) %>
           </div>
           <div class="finalize-form__schedule-input-field">
             <%= label(repeat, :week, "Week") %>
             <%= text_input(repeat, :week) %>
-            <%= ErrorHelpers.error_tag(repeat, :week) %>
           </div>
         </div>
+        <%= ErrorHelpers.error_tag(@form, :cadence) %>
         <% else %>
           <%= hidden_input(repeat, :second) %>
           <%= hidden_input(repeat, :minute) %>
@@ -213,14 +214,12 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   end
 
   def handle_event("quick_schedule", %{"schedule" => schedule}, socket) do
-    cronlist = @quick_schedules[schedule]
-    |> CronTools.cronstring_to_cronlist!()
+    cronstring = @quick_schedules[schedule]
+    cronlist = CronTools.cronstring_to_cronlist!(cronstring)
 
-    changeset = socket.assigns.changeset
-    |> Changeset.put_change(:repeating_schedule, cronlist)
-    |> Map.put(:action, :update)
+    send(self(), {:assign_crontab, cronstring})
 
-    {:noreply, assign(socket, :changeset, changeset)}
+    {:noreply, socket}
   end
 
   def update_form_with_schedule(%{"cadence_type" => cadence_type} = _sd, form_data) when cadence_type in ["once", "never"], do: put_in(form_data, ["technical", "cadence"], cadence_type)

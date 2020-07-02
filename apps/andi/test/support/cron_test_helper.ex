@@ -3,8 +3,6 @@ defmodule Andi.Test.CronTestHelpers do
   Helpers for generating the finalize form, cronlists and naivedatetimes
   """
 
-  alias AndiWeb.InputSchemas.FinalizeFormSchema.FutureSchedule
-
   def finalize_form(overrides \\ %{}, opts \\ []) do
     keys = Keyword.get(opts, :keys, :strings)
     overrides = format_map(overrides, keys)
@@ -85,7 +83,7 @@ defmodule Andi.Test.CronTestHelpers do
 
   def future_hour() do
     as_utc = Timex.parse!("#{future_date(:strings)}T#{whatever_time(:strings)}", "{ISOdate}T{ISOtime}")
-    |> Timex.to_datetime(FutureSchedule.local_timezone())
+    |> Timex.to_datetime(Andi.timezone())
     |> Timex.to_datetime("UTC")
 
     as_utc.hour
@@ -104,7 +102,7 @@ defmodule Andi.Test.CronTestHelpers do
   end
 
   defp local_now() do
-    {:ok, dt} = DateTime.now(FutureSchedule.local_timezone())
+    {:ok, dt} = DateTime.now(Andi.timezone())
     dt
   end
 

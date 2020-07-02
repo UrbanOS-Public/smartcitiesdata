@@ -163,6 +163,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("validate", %{"form_data" => form_data, "finalize_form_data" => finalize_form_data}, socket) do
+    IO.inspect(finalize_form_data, label: "ff")
     socket = assign(socket, :finalize_form_data, finalize_form_data)
 
     finalize_form_data
@@ -219,13 +220,17 @@ defmodule AndiWeb.EditLiveView do
   def handle_event("save", %{"form_data" => form_data, "finalize_form_data" => finalize_form_data}, socket) do
     socket = assign(socket, :finalize_form_data, finalize_form_data)
 
-    changeset = form_data |> InputConverter.form_data_to_changeset_draft()
+    form_data = finalize_form_data
+    |> FinalizeForm.update_form_with_schedule(form_data)
+
+    changeset = InputConverter.form_data_to_changeset_draft(form_data)
     pending_dataset = Ecto.Changeset.apply_changes(changeset)
     {:ok, _} = Datasets.update(pending_dataset)
 
     {_, updated_socket} =
       form_data
       |> InputConverter.form_data_to_ui_changeset()
+      |> Dataset.validate_unique_system_name()
       |> complete_validation(socket)
 
     success_message =
@@ -234,12 +239,13 @@ defmodule AndiWeb.EditLiveView do
         false -> "Saved successfully. You may need to fix errors before publishing."
       end
 
-    changeset =
-      socket.assigns.changeset
-      |> Dataset.validate_unique_system_name()
-      |> Map.put(:action, :update)
+    # TODO - figure out why this was like this
+    # changeset =
+    #   socket.assigns.changeset
+    #   |> Dataset.validate_unique_system_name()
+    #   |> Map.put(:action, :update)
 
-    {:noreply, assign(updated_socket, save_success: true, success_message: success_message, changeset: changeset)}
+    {:noreply, assign(updated_socket, save_success: true, success_message: success_message)}
   end
 
   def handle_event("toggle-component-visibility", %{"component" => component}, socket) do
@@ -388,13 +394,14 @@ defmodule AndiWeb.EditLiveView do
      )}
   end
 
-  def handle_info({:assign_crontab}, socket) do
+  def handle_info({:assign_crontab, cronstring}, socket) do
     socket = reset_save_success(socket)
 
     dataset = Datasets.get(socket.assigns.dataset.id)
 
     changeset =
       dataset
+      |> put_in([:technical, :cadence], cronstring)
       |> InputConverter.andi_dataset_to_full_ui_changeset()
       |> Map.put(:action, :update)
 

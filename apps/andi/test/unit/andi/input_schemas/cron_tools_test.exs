@@ -108,15 +108,15 @@ defmodule Andi.InputSchemas.CronToolsTest do
       where([
         [:case, :input, :output],
         ["empty cronlist", %{}, %{date:  nil, time: nil}],
-        ["with only date fields as fixed", %{day: "1", month: "3", year: "2015", second: "*", minute: "*", hour: "*"}, %{date:  ~D[2015-03-01], time: nil}],
-        ["with only time fields as fixed", %{day: "*", month: "*", year: "*", second: "0", minute: "1", hour: "2"}, %{date:  nil, time: ~T[02:01:00]}],
-        ["with both date and time fields as fixed", %{day: "10", month: "11", year: "2010", second: "10", minute: "15", hour: "13"}, %{date:  ~D[2010-11-10], time: ~T[13:15:10]}],
+        ["with only date fields as fixed", %{day: "1", month: "3", year: "2015", second: "*", minute: "*", hour: "*"}, %{date: nil, time: nil}],
+        ["with only time fields as fixed", %{day: "*", month: "*", year: "*", second: "0", minute: "1", hour: "2"}, %{date:  nil, time: nil}],
+        ["with both date and time fields as fixed", %{day: "10", month: "11", year: "2010", second: "10", minute: "15", hour: "17"}, %{date:  ~D[2010-11-10], time: ~T[12:15:10]}],
         ["with both date and tiem fields as variable", %{day: "*", month: "*", year: "*", second: "*", minute: "*", hour: "*"}, %{date:  nil, time: nil}],
         ["with an incomplete cronlist", %{month: "*", year: "*", second: "*", minute: "*", hour: "*"}, %{date:  nil, time: nil}],
-        ["with an invalid date, but valid time", %{day: "343", month: "smarch", year: "2030", second: "0", minute: "0", hour: "0"}, %{date:  nil, time: ~T[00:00:00]}],
-        ["with an invalid time, but valid date", %{day: "10", month: "5", year: "2020", second: "b0", minute: "0", hour: "0"}, %{date:  ~D[2020-05-10], time: nil}],
+        ["with an invalid date, but valid time", %{day: "343", month: "smarch", year: "2030", second: "0", minute: "0", hour: "0"}, %{date:  nil, time: nil}],
+        ["with an invalid time, but valid date", %{day: "10", month: "5", year: "2020", second: "b0", minute: "0", hour: "0"}, %{date: nil, time: nil}],
         ["with a missing year in date", %{day: "10", month: "5", second: "b0", minute: "0", hour: "0"}, %{date:  nil, time: nil}],
-        ["with a missing second in time", %{year: "2050", day: "10", month: "5", minute: "0", hour: "1"}, %{date:  ~D[2050-05-10], time: ~T[01:00:00]}],
+        ["with a missing second in time", %{year: "2050", day: "10", month: "5", minute: "0", hour: "4"}, %{date:  ~D[2050-05-10], time: ~T[00:00:00]}],
       ])
     end
   end

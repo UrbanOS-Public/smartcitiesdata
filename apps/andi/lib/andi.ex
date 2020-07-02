@@ -8,4 +8,8 @@ defmodule Andi do
   """
 
   defmacro instance_name, do: :andi
+
+  def timezone() do
+    Application.get_env(:andi, :timezone, "America/New_York")
+  end
 end

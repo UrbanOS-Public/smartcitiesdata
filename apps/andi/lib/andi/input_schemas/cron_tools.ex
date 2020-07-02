@@ -74,17 +74,12 @@ defmodule Andi.InputSchemas.CronTools do
   def cronstring_to_cronlist_with_default!(_type, _cadence), do: cronstring_to_cronlist!("0 * * * * *")
 
   def cronlist_to_future_schedule(%{year: year, month: month, day: day, hour: hour, minute: minute, second: second} = _schedule) do
-    date = case Timex.parse("#{year}-#{month}-#{day}", @more_forgiving_iso_date_format) do
-      {:error, _} -> nil
-      {:ok, nd} -> NaiveDateTime.to_date(nd)
+    case Timex.parse("#{year}-#{month}-#{day}T#{pad(hour)}:#{pad(minute)}:#{pad(second)}", @more_forgiving_iso_datetime_format) do
+      {:error, _} -> %{date: nil, time: nil}
+      {:ok, dt} ->
+        datetime = convert_from_utc(dt)
+        %{date: DateTime.to_date(datetime), time: DateTime.to_time(datetime)}
     end
-
-    time = case Timex.parse("#{gee_two_zeroes(hour)}:#{gee_two_zeroes(minute)}:#{gee_two_zeroes(second)}", @more_forgiving_iso_time_format) do
-      {:error, _} -> nil
-      {:ok, nt} -> NaiveDateTime.to_time(nt)
-    end
-
-    %{date: date, time: time}
   end
   def cronlist_to_future_schedule(%{year: _year, month: _month, day: _day, hour: _hour, minute: _minute} = schedule) do
     Map.put_new(schedule, :second, "0")
@@ -92,18 +87,29 @@ defmodule Andi.InputSchemas.CronTools do
   end
   def cronlist_to_future_schedule(_), do: %{date: nil, time: nil}
 
-  defp gee_two_zeroes(number) do
-    String.pad_leading(number, 2, "0")
+  defp pad(padee, padding \\ "0", length \\ 2) do
+    String.pad_leading(padee, length, padding)
   end
 
   def date_and_time_to_cronstring!(date, time) do
     time = String.pad_trailing(time, 8, ":00")
 
     Timex.parse!(date <> "T" <> time, @more_forgiving_iso_datetime_format)
-    |> Timex.to_datetime(Application.get_env(:andi, :timezone, "America/New_York"))
-    |> Timex.to_datetime("UTC")
+    |> convert_to_utc()
     |> Map.from_struct()
     |> Map.merge(%{week: "*"})
     |> cronlist_to_cronstring!()
+  end
+
+  defp convert_to_utc(datetime) do
+    datetime
+    |> Timex.to_datetime(Andi.timezone())
+    |> Timex.to_datetime("UTC")
+  end
+
+  defp convert_from_utc(datetime) do
+    datetime
+    |> Timex.to_datetime("UTC")
+    |> Timex.to_datetime(Andi.timezone())
   end
 end

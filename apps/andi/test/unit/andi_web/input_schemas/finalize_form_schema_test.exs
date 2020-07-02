@@ -48,7 +48,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchemaTest do
         ["* * * * * * *", "repeating", %{date: nil, time: nil}, cronlist(%{second: "*"}, keys: :atoms)],
         ["0 0 1 1 *", "repeating", %{date: nil, time: nil}, cronlist(%{month: "1", day: "1", hour: "0", minute: "0"}, keys: :atoms)],
         ["10 10 10 2 2 *", "repeating", %{date: nil, time: nil}, cronlist(%{month: "2", day: "2", hour: "10", minute: "10", second: "10"}, keys: :atoms)],
-        ["15 15 15 3 3 * #{future_year()}", "future", %{date: Date.from_iso8601!("#{future_year()}-03-03"), time: ~T[15:15:15]}, cronlist(%{month: "3", day: "3", hour: "15", minute: "15", second: "15"}, keys: :atoms)],
+        ["15 15 15 3 3 * #{future_year()}", "future", %{date: Date.from_iso8601!("#{future_year()}-03-03"), time: ~T[10:15:15]}, cronlist(%{month: "3", day: "3", hour: "15", minute: "15", second: "15"}, keys: :atoms)],
       ])
     end
   end

@@ -26,8 +26,8 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema.FutureSchedule do
       {date, time} ->
         localized_datetime = date_and_time_to_local_datetime(date, time)
         if DateTime.diff(localized_datetime, local_now()) <= 0 do
-          add_error(changeset, :date, "can't be in past")
-          |> add_error(:time, "can't be in past")
+          add_error(changeset, :date, "can't be in past", validation: "can't be in past")
+          |> add_error(:time, "can't be in past", validation: "can't be in past")
         else
           changeset
         end
@@ -37,17 +37,13 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema.FutureSchedule do
   defp date_and_time_to_local_datetime(date, time) do
     "#{Date.to_string(date)}T#{Time.to_string(time)}"
     |> Timex.parse!("{ISOdate}T{ISOtime}")
-    |> Timex.to_datetime(local_timezone())
+    |> Timex.to_datetime(Andi.timezone())
   end
 
   defp local_now() do
-    {:ok, dt} = DateTime.now(local_timezone())
+    {:ok, dt} = DateTime.now(Andi.timezone())
 
     dt
-  end
-
-  def local_timezone() do
-    Application.get_env(:andi, :timezone, "America/New_York")
   end
 end
 
@@ -94,6 +90,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
 
   embedded_schema do
     field(:cadence_type, :string, default: "once")
+    field(:quick_cron, :string, default: "")
     embeds_one(:future_schedule, FutureSchedule)
     embeds_one(:repeating_schedule, RepeatingSchedule)
   end
@@ -107,7 +104,8 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
     changes = %{
       cadence_type: cadence_type,
       future_schedule: future_schedule,
-      repeating_schedule: repeating_cronlist
+      repeating_schedule: repeating_cronlist,
+      quick_cron: ""
     }
 
     changeset(current, changes)
@@ -115,7 +113,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
 
   def changeset(%__MODULE__{} = current, changes) do
     current
-    |> cast(changes, [:cadence_type])
+    |> cast(changes, [:cadence_type, :quick_cron])
     |> cast_embed(:future_schedule, required: true)
     |> cast_embed(:repeating_schedule)
   end
