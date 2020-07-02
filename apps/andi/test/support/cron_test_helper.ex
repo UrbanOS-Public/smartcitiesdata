@@ -7,6 +7,7 @@ defmodule AndiWeb.Test.CronTestHelpers do
 
   def finalize_form(overrides \\ %{}, opts \\ []) do
     keys = Keyword.get(opts, :keys, :strings)
+    overrides = format_map(overrides, keys)
 
     default_form = %{
       "cadence_type" => "once",
@@ -14,20 +15,20 @@ defmodule AndiWeb.Test.CronTestHelpers do
         "date" => future_date(keys),
         "time" => whatever_time(keys)
       },
-      "repeating_schedule" => cronlist(%{"second" => "*"})
+      "repeating_schedule" => cronlist(%{"second" => "*"}, keys: keys)
     }
+    |> format_map(keys)
 
-    overridden_form = if overrides != %{} do
+    if overrides != %{} do
       SmartCity.Helpers.deep_merge(default_form, overrides)
     else
       default_form
     end
-
-    format_map(overridden_form, keys)
   end
 
   def cronlist(overrides \\ %{}, opts \\ []) do
     keys = Keyword.get(opts, :keys, :strings)
+    overrides = format_map(overrides, keys)
 
     %{
       "week" => "*",
@@ -37,8 +38,8 @@ defmodule AndiWeb.Test.CronTestHelpers do
       "minute" => "*",
       "second" => nil
     }
-    |> Map.merge(overrides)
     |> format_map(keys)
+    |> Map.merge(overrides)
   end
 
   def blank_cronlist(opts \\ []) do
@@ -60,7 +61,7 @@ defmodule AndiWeb.Test.CronTestHelpers do
     AtomicMap.convert(map, safe: false)
   end
 
-  defp future_date(format \\ :atoms) do
+  def future_date(format \\ :atoms) do
     local_now()
     |> DateTime.to_date()
     |> Date.add(365)
@@ -82,25 +83,33 @@ defmodule AndiWeb.Test.CronTestHelpers do
     date.day
   end
 
-  defp local_now() do
-    {:ok, dt} = DateTime.now(FutureSchedule.local_timezone())
-    dt
+  def future_hour() do
+    as_utc = Timex.parse!("#{future_date(:strings)}T#{whatever_time(:strings)}", "{ISOdate}T{ISOtime}")
+    |> Timex.to_datetime(FutureSchedule.local_timezone())
+    |> Timex.to_datetime("UTC")
+
+    as_utc.hour
   end
 
-  defp date_before_test(format \\ :atoms) do
+  def date_before_test(format \\ :atoms) do
     local_now()
     |> DateTime.to_date()
     |> format_date(format)
   end
 
-  defp whatever_time(format) do
-    ~T[00:00:00]
+  def time_before_test(format \\ :atoms) do
+    local_now()
+    |> DateTime.to_time()
     |> format_time(format)
   end
 
-  defp time_before_test(format \\ :atoms) do
-    local_now()
-    |> DateTime.to_time()
+  defp local_now() do
+    {:ok, dt} = DateTime.now(FutureSchedule.local_timezone())
+    dt
+  end
+
+  defp whatever_time(format) do
+    ~T[00:00:00]
     |> format_time(format)
   end
 

@@ -116,7 +116,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
   def changeset(%__MODULE__{} = current, changes) do
     current
     |> cast(changes, [:cadence_type])
-    |> cast_embed(:future_schedule)
+    |> cast_embed(:future_schedule, required: true)
     |> cast_embed(:repeating_schedule)
   end
 end

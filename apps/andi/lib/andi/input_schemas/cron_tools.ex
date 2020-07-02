@@ -1,6 +1,11 @@
 defmodule Andi.InputSchemas.CronTools do
   @moduledoc false
 
+  @more_forgiving_iso_date_format "{YYYY}-{M}-{D}"
+  @more_forgiving_iso_time_format "{ISOtime}"
+  @more_forgiving_iso_datetime_format "#{@more_forgiving_iso_date_format}T#{@more_forgiving_iso_time_format}"
+
+
   def cronstring_to_cronlist!(nil), do: %{}
   def cronstring_to_cronlist!(""), do: %{}
   def cronstring_to_cronlist!("never"), do: %{}
@@ -66,7 +71,7 @@ defmodule Andi.InputSchemas.CronTools do
   def to_repeating(type, nil) when type in ["repeating", "future"], do: %{}
   def to_repeating(type, "") when type in ["repeating", "future"], do: %{}
   def to_repeating(type, cadence) when type in ["repeating", "future"] and cadence not in ["once", "never"], do: cronstring_to_cronlist!(cadence)
-  def to_repeating(_type, cadence), do: cronstring_to_cronlist!("0 * * * * *")
+  def to_repeating(_type, _cadence), do: cronstring_to_cronlist!("0 * * * * *")
 
   def cronlist_to_future_schedule(%{year: year, month: month, day: day, hour: hour, minute: minute, second: second} = _schedule) do
     date = case Timex.parse("#{year}-#{month}-#{day}", @more_forgiving_iso_date_format) do
@@ -94,14 +99,11 @@ defmodule Andi.InputSchemas.CronTools do
   def date_and_time_to_cronstring!(date, time) do
     time = String.pad_trailing(time, 8, ":00")
 
-    Timex.parse!(date <> "T" <> time, "{ISOdate}T{ISOtime}")
+    Timex.parse!(date <> "T" <> time, @more_forgiving_iso_datetime_format)
+    |> Timex.to_datetime(Application.get_env(:andi, :timezone, "America/New_York"))
+    |> Timex.to_datetime("UTC")
     |> Map.from_struct()
     |> Map.merge(%{week: "*"})
     |> cronlist_to_cronstring!()
-  end
-
-  defp current_year() do
-    Date.utc_today()
-    |> Map.get(:year)
   end
 end

@@ -226,8 +226,9 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   def update_form_with_schedule(%{"cadence_type" => cadence_type} = _sd, form_data) when cadence_type in ["once", "never"], do: put_in(form_data, ["technical", "cadence"], cadence_type)
   def update_form_with_schedule(%{"cadence_type" => "future"} = ff, form_data) do
     changeset = FinalizeFormSchema.changeset(%FinalizeFormSchema{}, ff)
+    future_schedule_change = Map.get(changeset.changes, :future_schedule, %{valid?: false})
 
-    if changeset.changes.future_schedule.valid? do
+    if future_schedule_change.valid? do
       %{"date" => date, "time" => time} = Map.get(ff, "future_schedule")
       cronstring = CronTools.date_and_time_to_cronstring!(date, time)
       put_in(form_data, ["technical", "cadence"], cronstring)

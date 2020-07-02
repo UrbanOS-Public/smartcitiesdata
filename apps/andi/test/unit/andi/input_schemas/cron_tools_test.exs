@@ -38,7 +38,8 @@ defmodule Andi.InputSchemas.CronToolsTest do
         ["properly filled", %{day: "3", hour: "15", minute: "15", month: "3", week: "*", second: "15", year: "2030"}, "15 15 15 3 3 * 2030"],
         ["handles string keys", %{"day" => "3", "hour" => "15", "minute" => "15", "month" => "3", "week" => "*", "second" => "15", "year" => "2030"}, "15 15 15 3 3 * 2030"],
         ["doesn't blow up if some are empty strings", %{"day" => "", "hour" => "", "minute" => "15", "month" => "3", "week" => "", "second" => "15"}, "15 15   3"],
-        ["this one weird case", %{"day" => "", "hour" => "", "minute" => "", "month" => "", "second" => "", "week" => "*"}, "0     *"]
+        ["this one weird case", %{"day" => "", "hour" => "", "minute" => "", "month" => "", "second" => "", "week" => "*"}, "0     *"],
+        ["deals with partial times", %{"day" => "", "hour" => "", "minute" => "", "month" => "", "second" => "", "week" => "*"}, "0     *"]
       ])
     end
   end
@@ -60,14 +61,16 @@ defmodule Andi.InputSchemas.CronToolsTest do
     end
   end
 
+  # TODO - to repeating test
+
   describe "date_and_time_to_cronstring!/2" do
     data_test "for #{case}, #{date}, #{time} returns #{inspect(output)}" do
       assert output == CronTools.date_and_time_to_cronstring!(date, time)
 
       where([
         [:case, :date, :time, :output],
-        ["date and time", "2030-2-20", "01:02:03", "3 2 1 20 2 * 2030"],
-        ["short time", "2030-2-20", "01:02", "0 2 1 20 2 * 2030"],
+        ["date and time convert to UTC", "2030-02-20", "01:02:03", "3 2 6 20 2 * 2030"],
+        ["short time converts to UTC", "2030-07-20", "01:02", "0 2 5 20 7 * 2030"],
       ])
     end
   end
