@@ -59,7 +59,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
   describe "GET /dataset/:dataset_id with auth0 auth provider" do
     setup %{private_model_that_belongs_to_org_1: model} do
-      auth0_setup()
+      AuthHelper.auth0_setup()
       |> on_exit()
 
       user = Helper.create_persisted_user(AuthHelper.valid_jwt_sub())
@@ -93,7 +93,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
   describe "/api/v1/search with auth0 auth provider" do
     setup %{private_model_that_belongs_to_org_1: model} do
-      auth0_setup()
+      AuthHelper.auth0_setup()
       |> on_exit()
 
       user = Helper.create_persisted_user(AuthHelper.valid_jwt_sub())
@@ -127,7 +127,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
   describe "POST /logged-in" do
     setup do
-      auth0_setup()
+      AuthHelper.auth0_setup()
       |> on_exit()
     end
 
@@ -194,7 +194,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
   describe "POST /logged-out" do
     setup do
-      auth0_setup()
+      AuthHelper.auth0_setup()
       |> on_exit()
     end
 
@@ -303,7 +303,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
   describe "POST /visualization" do
     setup do
-      auth0_setup()
+      AuthHelper.auth0_setup()
       |> on_exit()
     end
 
@@ -339,7 +339,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
   describe "GET /visualization/:id" do
     setup do
-      auth0_setup()
+      AuthHelper.auth0_setup()
       |> on_exit()
     end
 
@@ -451,31 +451,5 @@ defmodule DiscoveryApi.Auth.AuthTest do
       )
 
     %{status_code: status_code, body: Jason.decode!(body_json, keys: :atoms)}
-  end
-
-  defp auth0_setup do
-    secret_key = Application.get_env(:discovery_api, TokenHandler) |> Keyword.get(:secret_key)
-    GuardianConfigurator.configure(issuer: AuthHelper.valid_issuer())
-
-    really_far_in_the_future = 3_000_000_000_000
-    AuthHelper.set_allowed_guardian_drift(really_far_in_the_future)
-
-    bypass = Bypass.open()
-
-    Bypass.stub(bypass, "GET", "/jwks", fn conn ->
-      Plug.Conn.resp(conn, :ok, Jason.encode!(AuthHelper.valid_jwks()))
-    end)
-
-    Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
-      Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z"}))
-    end)
-
-    Application.put_env(:discovery_api, :jwks_endpoint, "http://localhost:#{bypass.port}/jwks")
-    Application.put_env(:discovery_api, :user_info_endpoint, "http://localhost:#{bypass.port}/userinfo")
-
-    fn ->
-      AuthHelper.set_allowed_guardian_drift(0)
-      GuardianConfigurator.configure(secret_key: secret_key)
-    end
   end
 end
