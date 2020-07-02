@@ -36,16 +36,16 @@ defmodule AndiWeb.EditLiveView do
 
 
         <div class="metadata-form-component">
-          <%= live_component(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, dataset_id: dataset_id, business: business, technical: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["metadata_form"], dataset_exists: @dataset_exists) %>
+          <%= live_render(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, session: %{"dataset" => @dataset}) %>
         </div>
 
         <div class="data-dictionary-form-component">
-          <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render, current_data_dictionary_item: @current_data_dictionary_item, technical: technical, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["data_dictionary_form"]) %>
+          <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset}) %>
         </div>
 
 
         <div class="url-form-component">
-        <%= live_component(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, technical: technical, testing: @testing, test_results: @test_results, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["url_form"]) %>
+        <%= live_render(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, session: %{"dataset" => @dataset}) %>
         </div>
 
         <div class="finalize-form-component ">
@@ -77,12 +77,6 @@ defmodule AndiWeb.EditLiveView do
 
   def mount(_params, %{"dataset" => dataset}, socket) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
-
-    dataset_exists =
-      case Andi.Services.DatasetStore.get(dataset.id) do
-        {:ok, nil} -> false
-        _ -> true
-      end
 
     component_visibility = %{
       "metadata_form" => "expanded",
@@ -523,11 +517,24 @@ defmodule AndiWeb.EditLiveView do
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
 
-  defp get_default_dictionary_field(%{params: %{"technical" => %{schema: schema}}} = changeset) when schema != [] do
+
+  defp get_eligible_data_dictionary_parents(changeset) do
+    Ecto.Changeset.apply_changes(changeset)
+    |> DataDictionaryFields.get_parent_ids()
+  end
+
+  defp update_component_visibility(components, component_visibility) do
+    Enum.reduce(components, component_visibility, fn component, acc ->
+      case Map.get(acc, component) do
+        "expanded" -> Map.put(acc, component, "collapsed")
+        "collapsed" -> Map.put(acc, component, "expanded")
+      end
+    end)
+  end
+
+  defp get_default_dictionary_field(%{params: %{schema: schema}} = changeset) when schema != [] do
     first_data_dictionary_item =
       form_for(changeset, "#", as: :form_data)
-      |> inputs_for(:technical)
-      |> hd()
       |> inputs_for(:schema)
       |> hd()
 
@@ -544,19 +551,5 @@ defmodule AndiWeb.EditLiveView do
       current_data_dictionary_item: :no_dictionary,
       selected_field_id: :no_dictionary
     ]
-  end
-
-  defp get_eligible_data_dictionary_parents(changeset) do
-    Ecto.Changeset.apply_changes(changeset)
-    |> DataDictionaryFields.get_parent_ids()
-  end
-
-  defp update_component_visibility(components, component_visibility) do
-    Enum.reduce(components, component_visibility, fn component, acc ->
-      case Map.get(acc, component) do
-        "expanded" -> Map.put(acc, component, "collapsed")
-        "collapsed" -> Map.put(acc, component, "expanded")
-      end
-    end)
   end
 end

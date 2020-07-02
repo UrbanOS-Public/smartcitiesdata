@@ -2,14 +2,22 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   @moduledoc """
   LiveComponent for editing dataset schema
   """
-  use Phoenix.LiveComponent
+  use Phoenix.LiveView
   import Phoenix.HTML.Form
 
   alias AndiWeb.EditLiveView.DataDictionaryTree
   alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
+  alias Andi.InputSchemas.Form.Dictionary
 
-  def mount(socket) do
-    {:ok, socket}
+  def mount(_, %{"dataset" => dataset}, socket) do
+    new_changeset = Dictionary.changeset_from_andi_dataset(dataset)
+    {:ok, assign(socket,
+        changeset: new_changeset,
+        sourceFormat: dataset.technical.sourceFormat,
+        visibility: "expanded",
+        new_field_initial_render: false
+      )
+      |> assign(get_default_dictionary_field(new_changeset))}
   end
 
   def render(assigns) do
@@ -42,7 +50,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
               </div>
 
               <div class="data-dictionary-form__tree-content data-dictionary-form-tree-content">
-                <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: @technical, field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
+                <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: @changeset, field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
               </div>
 
               <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
@@ -52,7 +60,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
             </div>
 
             <div class="data-dictionary-form__edit-section">
-              <%= live_component(@socket, DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, source_format: input_value(@technical, :sourceFormat)) %>
+              <%= live_component(@socket, DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, source_format: @sourceFormat) %>
             </div>
           </div>
 
@@ -71,5 +79,26 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       </div>
     </div>
     """
+  end
+
+  defp get_default_dictionary_field(%{params: %{schema: schema}} = changeset) when schema != [] do
+    first_data_dictionary_item =
+      form_for(changeset, "#", as: :form_data)
+      |> inputs_for(:schema)
+      |> hd()
+
+    first_selected_field_id = input_value(first_data_dictionary_item, :id)
+
+    [
+      current_data_dictionary_item: first_data_dictionary_item,
+      selected_field_id: first_selected_field_id
+    ]
+  end
+
+  defp get_default_dictionary_field(_changeset) do
+    [
+      current_data_dictionary_item: :no_dictionary,
+      selected_field_id: :no_dictionary
+    ]
   end
 end

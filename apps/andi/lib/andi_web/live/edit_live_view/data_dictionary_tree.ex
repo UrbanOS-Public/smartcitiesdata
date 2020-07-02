@@ -53,7 +53,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
   end
 
   defp assign_current_dictionary_field(field_id, index, name, id) do
-    send(self(), {:assign_editable_dictionary_field, field_id, index, name, id})
+    #TODO what is going on with the infinite loop
+    # send(self(), {:assign_editable_dictionary_field, field_id, index, name, id})
   end
 
   defp toggle_expansion(field_id, expansion_map) do
@@ -100,6 +101,16 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
   end
 
   defp is_set?(%{source: changeset}, field) do
+    case Ecto.Changeset.fetch_field(changeset, field) do
+      :error -> false
+      {:data, []} -> false
+      {:changes, []} -> false
+      _ -> true
+    end
+  end
+
+  #TODO delete me
+  defp is_set?(changeset, field) do
     case Ecto.Changeset.fetch_field(changeset, field) do
       :error -> false
       {:data, []} -> false
