@@ -26,26 +26,30 @@ defmodule AndiWeb.ErrorHelpers do
   end
 
   defp to_prefix(field) do
-    camelized = Atom.to_string(field)
-    |> Macro.camelize()
+    camelized =
+      Atom.to_string(field)
+      |> Macro.camelize()
 
     camelized <> ": "
   end
+
   def concise_error_tag(form, field, options \\ []) do
     prefix = Keyword.get(options, :prefix, true)
 
     Enum.map(Keyword.get_values(form.errors, field), fn error ->
       {_message, opts} = error
 
-      short_message = opts
-      |> Keyword.get(:validation)
-      |> to_string()
+      short_message =
+        opts
+        |> Keyword.get(:validation)
+        |> to_string()
 
-      prefixed = case prefix do
-                   true -> to_prefix(field) <> short_message
-                   false -> short_message
-                   custom -> custom <> short_message
-                 end
+      prefixed =
+        case prefix do
+          true -> to_prefix(field) <> short_message
+          false -> short_message
+          custom -> custom <> short_message
+        end
 
       translated = translate_error({prefixed, opts})
 

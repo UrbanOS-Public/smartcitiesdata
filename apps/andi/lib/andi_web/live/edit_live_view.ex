@@ -163,11 +163,11 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("validate", %{"form_data" => form_data, "finalize_form_data" => finalize_form_data}, socket) do
-    IO.inspect(finalize_form_data, label: "ff")
+    {finalize_form_data, form_data} = FinalizeForm.update_form_with_schedule(finalize_form_data, form_data)
+
     socket = assign(socket, :finalize_form_data, finalize_form_data)
 
-    finalize_form_data
-    |> FinalizeForm.update_form_with_schedule(form_data)
+    form_data
     |> InputConverter.form_data_to_ui_changeset()
     |> complete_validation(socket)
   end
@@ -218,10 +218,9 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("save", %{"form_data" => form_data, "finalize_form_data" => finalize_form_data}, socket) do
-    socket = assign(socket, :finalize_form_data, finalize_form_data)
+    {finalize_form_data, form_data} = FinalizeForm.update_form_with_schedule(finalize_form_data, form_data)
 
-    form_data = finalize_form_data
-    |> FinalizeForm.update_form_with_schedule(form_data)
+    socket = assign(socket, :finalize_form_data, finalize_form_data)
 
     changeset = InputConverter.form_data_to_changeset_draft(form_data)
     pending_dataset = Ecto.Changeset.apply_changes(changeset)

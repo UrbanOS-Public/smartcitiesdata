@@ -21,10 +21,15 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema.FutureSchedule do
     time = get_field(changeset, :time)
 
     case {date, time} do
-      {bad, worse} when is_nil(bad) or is_nil(worse) -> changeset
-      {bad, worse} when bad == "" or worse == "" -> changeset
+      {bad, worse} when is_nil(bad) or is_nil(worse) ->
+        changeset
+
+      {bad, worse} when bad == "" or worse == "" ->
+        changeset
+
       {date, time} ->
         localized_datetime = date_and_time_to_local_datetime(date, time)
+
         if DateTime.diff(localized_datetime, local_now()) <= 0 do
           add_error(changeset, :date, "can't be in past", validation: "can't be in past")
           |> add_error(:time, "can't be in past", validation: "can't be in past")
@@ -96,6 +101,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
   end
 
   def changeset(%__MODULE__{} = current, %{"cadence" => cadence}), do: changeset(current, %{cadence: cadence})
+
   def changeset(%__MODULE__{} = current, %{cadence: cadence} = _tech) do
     cadence_type = CronTools.determine_cadence_type(cadence)
     repeating_cronlist = CronTools.cronstring_to_cronlist_with_default!(cadence_type, cadence)

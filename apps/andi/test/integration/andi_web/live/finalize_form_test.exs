@@ -163,7 +163,6 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
     end
   end
 
-
   defp get_crontab_from_html(html) do
     html
     |> get_values(".finalize-form-schedule-input__field")

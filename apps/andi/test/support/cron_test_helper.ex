@@ -7,15 +7,16 @@ defmodule Andi.Test.CronTestHelpers do
     keys = Keyword.get(opts, :keys, :strings)
     overrides = format_map(overrides, keys)
 
-    default_form = %{
-      "cadence_type" => "once",
-      "future_schedule" => %{
-        "date" => future_date(keys),
-        "time" => whatever_time(keys)
-      },
-      "repeating_schedule" => cronlist(%{"second" => "*"}, keys: keys)
-    }
-    |> format_map(keys)
+    default_form =
+      %{
+        "cadence_type" => "once",
+        "future_schedule" => %{
+          "date" => future_date(keys),
+          "time" => whatever_time(keys)
+        },
+        "repeating_schedule" => cronlist(%{"second" => "*"}, keys: keys)
+      }
+      |> format_map(keys)
 
     if overrides != %{} do
       SmartCity.Helpers.deep_merge(default_form, overrides)
@@ -55,6 +56,7 @@ defmodule Andi.Test.CronTestHelpers do
   end
 
   defp format_map(map, :strings), do: map
+
   defp format_map(map, :atoms) do
     AtomicMap.convert(map, safe: false)
   end
@@ -82,9 +84,10 @@ defmodule Andi.Test.CronTestHelpers do
   end
 
   def future_hour() do
-    as_utc = Timex.parse!("#{future_date(:strings)}T#{whatever_time(:strings)}", "{ISOdate}T{ISOtime}")
-    |> Timex.to_datetime(Andi.timezone())
-    |> Timex.to_datetime("UTC")
+    as_utc =
+      Timex.parse!("#{future_date(:strings)}T#{whatever_time(:strings)}", "{ISOdate}T{ISOtime}")
+      |> Timex.to_datetime(Andi.timezone())
+      |> Timex.to_datetime("UTC")
 
     as_utc.hour
   end

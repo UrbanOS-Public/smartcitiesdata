@@ -4,14 +4,15 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchemaTest do
   import Checkov
   alias Ecto.Changeset
 
-  import Andi.Test.CronTestHelpers, only: [
-    finalize_form: 2,
-    cronlist: 2,
-    future_date: 0,
-    future_year: 0,
-    date_before_test: 0,
-    time_before_test: 0,
-  ]
+  import Andi.Test.CronTestHelpers,
+    only: [
+      finalize_form: 2,
+      cronlist: 2,
+      future_date: 0,
+      future_year: 0,
+      date_before_test: 0,
+      time_before_test: 0
+    ]
 
   alias AndiWeb.InputSchemas.FinalizeFormSchema
 
@@ -30,6 +31,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchemaTest do
       technical_form = %{
         cadence: cadence
       }
+
       future_schedule_with_id = Map.put_new(future_schedule, :id, nil)
       repeating_schedule_with_id = Map.put_new(repeating_schedule, :id, nil)
 
@@ -47,8 +49,18 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchemaTest do
         ["* * * * * *", "repeating", %{date: nil, time: nil}, cronlist(%{second: "*"}, keys: :atoms)],
         ["* * * * * * *", "repeating", %{date: nil, time: nil}, cronlist(%{second: "*"}, keys: :atoms)],
         ["0 0 1 1 *", "repeating", %{date: nil, time: nil}, cronlist(%{month: "1", day: "1", hour: "0", minute: "0"}, keys: :atoms)],
-        ["10 10 10 2 2 *", "repeating", %{date: nil, time: nil}, cronlist(%{month: "2", day: "2", hour: "10", minute: "10", second: "10"}, keys: :atoms)],
-        ["15 15 15 3 3 * #{future_year()}", "future", %{date: Date.from_iso8601!("#{future_year()}-03-03"), time: ~T[10:15:15]}, cronlist(%{month: "3", day: "3", hour: "15", minute: "15", second: "15"}, keys: :atoms)],
+        [
+          "10 10 10 2 2 *",
+          "repeating",
+          %{date: nil, time: nil},
+          cronlist(%{month: "2", day: "2", hour: "10", minute: "10", second: "10"}, keys: :atoms)
+        ],
+        [
+          "15 15 15 3 3 * #{future_year()}",
+          "future",
+          %{date: Date.from_iso8601!("#{future_year()}-03-03"), time: ~T[10:15:15]},
+          cronlist(%{month: "3", day: "3", hour: "15", minute: "15", second: "15"}, keys: :atoms)
+        ]
       ])
     end
   end
@@ -61,19 +73,33 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchemaTest do
 
       where([
         [:form, :errors],
-        [finalize_form(%{future_schedule: %{date: "", time: ""}}, keys: :atoms), %{future_schedule: %{date: ["can't be blank"], time: ["can't be blank"]}}],
+        [
+          finalize_form(%{future_schedule: %{date: "", time: ""}}, keys: :atoms),
+          %{future_schedule: %{date: ["can't be blank"], time: ["can't be blank"]}}
+        ],
         [finalize_form(%{future_schedule: %{time: ""}}, keys: :atoms), %{future_schedule: %{time: ["can't be blank"]}}],
-        [finalize_form(%{future_schedule: %{date: ~D[1900-01-01], time: ~T[00:00:00]}}, keys: :atoms), %{future_schedule: %{date: ["can't be in past"], time: ["can't be in past"]}}],
-        [finalize_form(%{future_schedule: %{date: date_before_test(), time: time_before_test()}}, keys: :atoms), %{future_schedule: %{date: ["can't be in past"], time: ["can't be in past"]}}],
-
-        [finalize_form(%{future_schedule: %{date: "SDFDS", time: "df3dfd"}}, keys: :atoms), %{future_schedule: %{date: ["is invalid"], time: ["is invalid"]}}],
+        [
+          finalize_form(%{future_schedule: %{date: ~D[1900-01-01], time: ~T[00:00:00]}}, keys: :atoms),
+          %{future_schedule: %{date: ["can't be in past"], time: ["can't be in past"]}}
+        ],
+        [
+          finalize_form(%{future_schedule: %{date: date_before_test(), time: time_before_test()}}, keys: :atoms),
+          %{future_schedule: %{date: ["can't be in past"], time: ["can't be in past"]}}
+        ],
+        [
+          finalize_form(%{future_schedule: %{date: "SDFDS", time: "df3dfd"}}, keys: :atoms),
+          %{future_schedule: %{date: ["is invalid"], time: ["is invalid"]}}
+        ],
         [finalize_form(%{future_schedule: %{date: Date.to_string(future_date()), time: "00:00:00"}}, keys: :atoms), %{}],
         [finalize_form(%{future_schedule: %{time: "00:01"}}, keys: :atoms), %{}],
         [finalize_form(%{repeating_schedule: %{day: "b*"}}, keys: :atoms), %{repeating_schedule: %{day: ["has invalid format"]}}],
-        [finalize_form(%{repeating_schedule: cronlist(%{second: nil}, keys: :atoms)}, keys: :atoms), %{repeating_schedule: %{second: ["can't be blank"]}}],
+        [
+          finalize_form(%{repeating_schedule: cronlist(%{second: nil}, keys: :atoms)}, keys: :atoms),
+          %{repeating_schedule: %{second: ["can't be blank"]}}
+        ],
         [finalize_form(%{}, keys: :atoms), %{}],
         [%{future_schedule: %{date: nil, time: nil}}, %{future_schedule: %{date: ["can't be blank"], time: ["can't be blank"]}}],
-        [%{}, %{future_schedule: ["can't be blank"]}],
+        [%{}, %{future_schedule: ["can't be blank"]}]
       ])
     end
   end

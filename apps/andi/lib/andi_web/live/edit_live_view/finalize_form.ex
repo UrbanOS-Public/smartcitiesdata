@@ -25,16 +25,18 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   end
 
   def update(assigns, socket) do
-    {action, current_data} = case Map.get(assigns, :finalize_form_data) do
-      nil -> {nil, Changeset.apply_changes(assigns.form.source)}
-      dater -> {:update, dater}
-    end
+    {action, current_data} =
+      case Map.get(assigns, :finalize_form_data) do
+        nil -> {nil, Changeset.apply_changes(assigns.form.source)}
+        dater -> {:update, dater}
+      end
 
-    finalize_form_changeset = FinalizeFormSchema.changeset(
-      %FinalizeFormSchema{},
-      current_data
-    )
-    |> Map.put(:action, action)
+    finalize_form_changeset =
+      FinalizeFormSchema.changeset(
+        %FinalizeFormSchema{},
+        current_data
+      )
+      |> Map.put(:action, action)
 
     updated_assigns =
       assigns
@@ -160,7 +162,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
         <div class="finalize-form__quick-schedule">
           <%= radio_button(@fin, :quick_cron, "hourly") %>
           <%= label(@fin, :quick_cron_hourly, "Hourly") %>
-          <%= radio_button(@fin, :quick_scron, "daily") %>
+          <%= radio_button(@fin, :quick_cron, "daily") %>
           <%= label(@fin, :quick_cron_daily, "Daily") %>
           <%= radio_button(@fin, :quick_cron, "weekly") %>
           <%= label(@fin, :quick_cron_weekly, "Weekly") %>
@@ -213,33 +215,47 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     """
   end
 
-  def handle_event("quick_schedule", %{"schedule" => schedule}, socket) do
-    cronstring = @quick_schedules[schedule]
-    cronlist = CronTools.cronstring_to_cronlist!(cronstring)
-
-    send(self(), {:assign_crontab, cronstring})
-
-    {:noreply, socket}
-  end
-
-  def update_form_with_schedule(%{"cadence_type" => cadence_type} = _sd, form_data) when cadence_type in ["once", "never"], do: put_in(form_data, ["technical", "cadence"], cadence_type)
-  def update_form_with_schedule(%{"cadence_type" => "future"} = ff, form_data) do
-    changeset = FinalizeFormSchema.changeset(%FinalizeFormSchema{}, ff)
+  def update_form_with_schedule(%{"cadence_type" => "future"} = ffd, form_data) do
+    changeset = FinalizeFormSchema.changeset(%FinalizeFormSchema{}, ffd)
     future_schedule_change = Map.get(changeset.changes, :future_schedule, %{valid?: false})
 
-    if future_schedule_change.valid? do
-      %{"date" => date, "time" => time} = Map.get(ff, "future_schedule")
-      cronstring = CronTools.date_and_time_to_cronstring!(date, time)
-      put_in(form_data, ["technical", "cadence"], cronstring)
-    else
-      put_in(form_data, ["technical", "cadence"], "")
-    end
-  end
-  def update_form_with_schedule(%{"cadence_type" => "repeating"} = sd, form_data) do
-    cronstring = Map.get(sd, "repeating_schedule", %{})
-    |> CronTools.cronlist_to_cronstring!()
+    form_data =
+      if future_schedule_change.valid? do
+        %{"date" => date, "time" => time} = Map.get(ffd, "future_schedule")
+        cronstring = CronTools.date_and_time_to_cronstring!(date, time)
+        put_in(form_data, ["technical", "cadence"], cronstring)
+      else
+        put_in(form_data, ["technical", "cadence"], "")
+      end
 
-    put_in(form_data, ["technical", "cadence"], cronstring)
+    {ffd, form_data}
   end
-  def update_form_with_schedule(_sd, form_data), do: form_data
+
+  def update_form_with_schedule(%{"cadence_type" => "repeating"} = ffd, form_data) do
+    {cronlist, cronstring} =
+      case Map.get(ffd, "quick_cron", "") do
+        "" ->
+          cronlist = Map.get(ffd, "repeating_schedule", %{})
+          cronstring = CronTools.cronlist_to_cronstring!(cronlist)
+
+          {cronlist, cronstring}
+
+        quickcron ->
+          cronstring = Map.get(@quick_schedules, quickcron)
+          cronlist = CronTools.cronstring_to_cronlist!(cronstring)
+
+          {cronlist, cronstring}
+      end
+
+    form_data = put_in(form_data, ["technical", "cadence"], cronstring)
+    ffd = put_in(ffd, ["repeating_schedule"], cronlist)
+    |> put_in(["quick_cron"], "")
+
+    {ffd, form_data}
+  end
+
+  def update_form_with_schedule(%{"cadence_type" => cadence_type} = ffd, form_data) when cadence_type in ["once", "never"],
+    do: {ffd, put_in(form_data, ["technical", "cadence"], cadence_type)}
+
+  def update_form_with_schedule(ffd, form_data), do: {ffd, form_data}
 end
