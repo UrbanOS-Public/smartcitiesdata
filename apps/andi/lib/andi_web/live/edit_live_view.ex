@@ -108,9 +108,9 @@ defmodule AndiWeb.EditLiveView do
        test_results: nil,
        testing: false,
        dataset_exists: dataset_exists,
-       finalize_form_data: nil
        unsaved_changes: false,
-       show_unsaved_changes_modal: false
+       show_unsaved_changes_modal: false,
+       finalize_form_data: nil
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end
