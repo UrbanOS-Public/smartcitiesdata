@@ -45,11 +45,11 @@ defmodule AndiWeb.EditLiveView do
 
 
         <div class="url-form-component">
-        <%= live_render(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, session: %{"dataset" => @dataset}) %>
+          <%= live_render(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, session: %{"dataset" => @dataset}) %>
         </div>
 
         <div class="finalize-form-component ">
-        <%= live_component(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, dataset_id: dataset_id, form: technical, finalize_form_data: @finalize_form_data, save_success: @save_success, success_message: @success_message, has_validation_errors: @has_validation_errors, page_error: @page_error, visibility: @component_visibility["finalize_form"]) %>
+          <%= live_render(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, session: %{"dataset" => @dataset}) %>
         </div>
 
       </form>
@@ -101,7 +101,6 @@ defmodule AndiWeb.EditLiveView do
        success_message: "",
        test_results: nil,
        testing: false,
-       dataset_exists: dataset_exists,
        finalize_form_data: nil,
        unsaved_changes: false,
        show_unsaved_changes_modal: false

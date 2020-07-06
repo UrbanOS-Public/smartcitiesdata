@@ -10,11 +10,11 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   alias Andi.InputSchemas.DisplayNames
   alias AndiWeb.ErrorHelpers
   alias Andi.InputSchemas.InputConverter
-  alias Andi.InputSchemas.Form.Metadata
+  alias AndiWeb.InputSchemas.MetadataFormSchema
   alias Andi.InputSchemas.FormTools
 
   def mount(_, %{"dataset" => dataset}, socket) do
-    new_metadata_changeset = Metadata.changeset_from_andi_dataset(dataset)
+    new_metadata_changeset = MetadataFormSchema.changeset_from_andi_dataset(dataset)
     dataset_exists =
       case Andi.Services.DatasetStore.get(dataset.id) do
         {:ok, nil} -> false

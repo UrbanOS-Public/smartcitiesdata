@@ -7,10 +7,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   alias AndiWeb.EditLiveView.DataDictionaryTree
   alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
-  alias Andi.InputSchemas.Form.Dictionary
+  alias AndiWeb.InputSchemas.DataDictionaryFormSchema
 
   def mount(_, %{"dataset" => dataset}, socket) do
-    new_changeset = Dictionary.changeset_from_andi_dataset(dataset)
+    new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
     {:ok, assign(socket,
         changeset: new_changeset,
         sourceFormat: dataset.technical.sourceFormat,

@@ -2,7 +2,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   @moduledoc """
   LiveComponent for scheduling dataset ingestion
   """
-  use Phoenix.LiveComponent
+  use Phoenix.LiveView
   import Phoenix.HTML.Form
   alias Ecto.Changeset
 
@@ -21,8 +21,13 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     "yearly" => "0 0 0 1 1 *"
   }
 
-  def mount(socket) do
-    {:ok, socket}
+  def mount(_, %{"dataset" => dataset}, socket) do
+    new_changeset = FinalizeFormSchema.changeset_from_andi_dataset(dataset) |> IO.inspect()
+    {:ok, assign(socket,
+        visibility: "expanded",
+        finalize_form_data: nil,
+        changeset: new_changeset
+      )}
   end
 
   def update(assigns, socket) do
@@ -50,8 +55,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
         "collapsed" -> "EDIT"
         "expanded" -> "MINIMIZE"
       end
-
-    publish_message? = !String.contains?(assigns.success_message, "Saved successfully")
 
     ~L"""
     <div id="finalize_form" class="finalize-form finalize-form--<%= @visibility %>">
@@ -90,10 +93,10 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
                   <%= label(:scheduler, :cadence_type, "Repeating", class: "finalize-form__schedule-option-label") %>
                 </div>
               </div>
-              <%= hidden_input(@form, :cadence) %>
+              <%= hidden_input(fin, :cadence) %>
               <%= future_scheduler_form(%{fin: fin}) %>
-              <%= repeating_scheduler_form(%{fin: fin, myself: @myself}) %>
-              <%= ErrorHelpers.error_tag(@form, :cadence) %>
+              <%= repeating_scheduler_form(%{fin: fin}) %>
+              <%= ErrorHelpers.error_tag(fin, :cadence) %>
             </div>
           </div>
 
@@ -101,18 +104,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
             <div class="edit-button-group__cancel-btn">
               <a href="#url-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-collapse="finalize_form" phx-value-component-expand="url_form">Back</a>
               <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
-            </div>
-
-            <div class="edit-button-group__messages">
-              <%= if @save_success and publish_message? do %>
-                <div class="metadata__success-message"><%= @success_message %></div>
-              <% end %>
-              <%= if @has_validation_errors do %>
-                <div id="validation-error-message" class="metadata__error-message">There were errors with the dataset you tried to submit.</div>
-              <% end %>
-              <%= if @page_error do %>
-                <div id="page-error-message" class="metadata__error-message">A page error occurred</div>
-              <% end %>
             </div>
 
             <div class="edit-button-group__save-btn">
@@ -158,11 +149,11 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
         <h4>Quick Schedule</h4>
 
         <div class="finalize-form__quick-schedule">
-          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="hourly" phx-target="<%= @myself %>">Hourly</button>
-          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="daily" phx-target="<%= @myself %>">Daily</button>
-          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="weekly" phx-target="<%= @myself %>">Weekly</button>
-          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="monthly" phx-target="<%= @myself %>">Monthly</button>
-          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="yearly" phx-target="<%= @myself %>">Yearly</button>
+          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="hourly" >Hourly</button>
+          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="daily" >Daily</button>
+          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="weekly" >Weekly</button>
+          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="monthly">Monthly</button>
+          <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="yearly" >Yearly</button>
         </div>
 
         <div class="finalize-form__help-link">

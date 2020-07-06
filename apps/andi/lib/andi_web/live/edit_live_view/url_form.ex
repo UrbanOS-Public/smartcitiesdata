@@ -8,10 +8,10 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   alias AndiWeb.ErrorHelpers
   alias Andi.InputSchemas.DisplayNames
   alias AndiWeb.EditLiveView.KeyValueEditor
-  alias Andi.InputSchemas.Form.Url
+  alias AndiWeb.InputSchemas.UrlFormSchema
 
   def mount(_, %{"dataset" => dataset}, socket) do
-    new_changeset = Url.changeset_from_andi_dataset(dataset) |> IO.inspect()
+    new_changeset = UrlFormSchema.changeset_from_andi_dataset(dataset)
 
     {:ok,
      assign(socket,
