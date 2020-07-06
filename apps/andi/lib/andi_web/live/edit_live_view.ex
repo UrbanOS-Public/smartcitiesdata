@@ -171,11 +171,11 @@ defmodule AndiWeb.EditLiveView do
     |> InputConverter.form_data_to_ui_changeset()
     |> complete_validation(socket)
   end
+  def handle_event("validate", various_form_data, socket) do
+    initialized_form_data = various_form_data
+    |> Map.put_new("finalize_form_data", %{})
 
-  def handle_event("validate", %{"form_data" => form_data}, socket) do
-    form_data
-    |> InputConverter.form_data_to_ui_changeset()
-    |> complete_validation(socket)
+    handle_event("validate", initialized_form_data, socket)
   end
 
   def handle_event("validate_system_name", _, socket) do
@@ -238,13 +238,13 @@ defmodule AndiWeb.EditLiveView do
         false -> "Saved successfully. You may need to fix errors before publishing."
       end
 
-    # TODO - figure out why this was like this
-    # changeset =
-    #   socket.assigns.changeset
-    #   |> Dataset.validate_unique_system_name()
-    #   |> Map.put(:action, :update)
-
     {:noreply, assign(updated_socket, save_success: true, success_message: success_message)}
+  end
+  def handle_event("save", various_form_data, socket) do
+    initialized_form_data = various_form_data
+    |> Map.put_new("finalize_form_data", %{})
+
+    handle_event("save", initialized_form_data, socket)
   end
 
   def handle_event("toggle-component-visibility", %{"component" => component}, socket) do

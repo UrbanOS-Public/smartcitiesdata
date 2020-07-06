@@ -32,7 +32,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       ["weekly", "0 0 0 * * 0", cronlist(%{"second" => "0", "minute" => "0", "hour" => "0", "week" => "0"}, keys: :atoms)],
       ["monthly", "0 0 0 1 * *", cronlist(%{"second" => "0", "minute" => "0", "hour" => "0", "day" => "1"}, keys: :atoms)],
       ["yearly", "0 0 0 1 1 *", cronlist(%{"second" => "0", "minute" => "0", "hour" => "0", "day" => "1", "month" => "1"}, keys: :atoms)],
-      ["", "0", %{"untouched" => true}],
+      ["", "", %{"untouched" => true}],
     ])
   end
 

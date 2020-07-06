@@ -76,19 +76,19 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
               <div class="finalize-form__schedule-options">
                 <div class="finalize-form__schedule-option">
                   <%= radio_button(fin, :cadence_type, "once")%>
-                  <%= label(fin, :cadence_type, "Immediately", class: "finalize-form__schedule-option-label") %>
+                  <%= label(fin, :cadence_type_once, "Immediately", class: "finalize-form__schedule-option-label") %>
                 </div>
                 <div class="finalize-form__schedule-option">
                   <%= radio_button(fin, :cadence_type, "future") %>
-                  <%= label(fin, :cadence_type, "Future", class: "finalize-form__schedule-option-label") %>
+                  <%= label(fin, :cadence_type_future, "Future", class: "finalize-form__schedule-option-label") %>
                 </div>
                 <div class="finalize-form__schedule-option">
                   <%= radio_button(fin, :cadence_type, "never") %>
-                  <%= label(fin, :cadence_type, "Never", class: "finalize-form__schedule-option-label") %>
+                  <%= label(fin, :cadence_type_never, "Never", class: "finalize-form__schedule-option-label") %>
                 </div>
                 <div class="finalize-form__schedule-option">
                   <%= radio_button(fin, :cadence_type, "repeating") %>
-                  <%= label(:scheduler, :cadence_type, "Repeating", class: "finalize-form__schedule-option-label") %>
+                  <%= label(:scheduler, :cadence_type_repeating, "Repeating", class: "finalize-form__schedule-option-label") %>
                 </div>
               </div>
               <%= hidden_input(@form, :cadence) %>

@@ -11,9 +11,8 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.FormTools
+  alias Andi.InputSchemas.CronTools
   alias Andi.InputSchemas.Datasets
-
-  alias AndiWeb.EditLiveView.FinalizeForm
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -46,12 +45,11 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
     end
 
     test "shows the Immediate ingestion button selected", %{html: html} do
-      refute Enum.empty?(get_attributes(html, "#form_data_technical_cadence_once", "checked"))
+      refute Enum.empty?(get_attributes(html, "#finalize_form_data_cadence_type_once", "checked"))
     end
 
-    test "does not show cron scheduler", %{html: html} do
-      assert Enum.empty?(find_elements(html, ".finalize-form__scheduler--visible"))
-      refute Enum.empty?(find_elements(html, ".finalize-form__scheduler--hidden"))
+    test "shows only hidden inputs for the sub-forms", %{html: html} do
+      assert Enum.empty?(find_elements(html, ~s(.finalize-form__scheduler--visible input[type]:not([type="hidden"])))
     end
   end
 
@@ -75,12 +73,11 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
     end
 
     test "shows the Never ingestion button selected", %{html: html} do
-      refute Enum.empty?(get_attributes(html, "#form_data_technical_cadence_never", "checked"))
+      refute Enum.empty?(get_attributes(html, "#finalize_form_data_cadence_type_never", "checked"))
     end
 
-    test "does not show cron scheduler", %{html: html} do
-      assert Enum.empty?(find_elements(html, ".finalize-form__scheduler--visible"))
-      refute Enum.empty?(find_elements(html, ".finalize-form__scheduler--hidden"))
+    test "shows only hidden input for the sub-forms", %{html: html} do
+      assert Enum.empty?(find_elements(html, ~s(.finalize-form__scheduler--visible input[type]:not([type="hidden"])))
     end
   end
 
@@ -106,17 +103,16 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
     end
 
     test "shows the repeat ingestion button selected", %{html: html} do
-      refute Enum.empty?(get_attributes(html, "#form_data_technical_cadence_0__________", "checked"))
+      refute Enum.empty?(get_attributes(html, "#finalize_form_data_cadence_type_repeating", "checked"))
     end
 
     test "shows cron scheduler", %{html: html} do
-      refute Enum.empty?(find_elements(html, ".finalize-form__scheduler--visible"))
-      assert Enum.empty?(find_elements(html, ".finalize-form__scheduler--hidden"))
+      refute Enum.empty?(find_elements(html, ~s(.finalize-form__scheduler--visible input[id*="finalize_form_data_repeating_schedule"]:not([type="hidden"])))
 
       assert "0 * * * * *" == get_crontab_from_html(html)
     end
 
-    data_test "does not allow schedules more frequent than every 10 seconds", %{conn: conn} do
+    data_test "does not allow schedules more frequent than every 10 seconds for #{second_interval}", %{conn: conn} do
       smrt_dataset =
         TDG.create_dataset(%{
           technical: %{
@@ -131,7 +127,18 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       assert {:ok, view, _} = live(conn, @url_path <> dataset.id)
 
       form_data = FormTools.form_data_from_andi_dataset(dataset)
-      render_change(view, :save, %{"form_data" => form_data})
+      finalize_form_data = %{
+        "cadence_type" => "repeating",
+        "repeating_schedule" => %{
+          "second" => "*/#{second_interval}",
+          "minute" => "*",
+          "hour" => "*",
+          "day" => "*",
+          "month" => "*",
+          "week" => "*"
+        }
+      }
+      render_change(view, :save, %{"form_data" => form_data, "finalize_form_data" => finalize_form_data})
       html = render(view)
 
       refute Enum.empty?(find_elements(html, "#cadence-error-msg"))
@@ -139,7 +146,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       where(second_interval: ["1", "2", "3", "4", "5", "6", "7", "8", "9"])
     end
 
-    data_test "marks #{cronstring} as invalid", %{conn: conn} do
+    data_test "marks \"#{cronstring}\" as invalid", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{technical: %{cadence: cronstring}})
 
       {:ok, dataset} =
@@ -149,7 +156,12 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       form_data = FormTools.form_data_from_andi_dataset(dataset)
-      render_change(view, :save, %{"form_data" => form_data})
+      finalize_form_data = %{
+        "cadence_type" => "repeating",
+        "repeating_schedule" => CronTools.cronstring_to_cronlist!(cronstring)
+      }
+
+      render_change(view, :save, %{"form_data" => form_data, "finalize_form_data" => finalize_form_data})
       html = render(view)
 
       refute Enum.empty?(find_elements(html, "#cadence-error-msg"))
@@ -165,7 +177,8 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   defp get_crontab_from_html(html) do
     html
-    |> get_values(".finalize-form-schedule-input__field")
+    |> get_values(".finalize-form__schedule-input-field input")
     |> Enum.join(" ")
+    |> String.trim_leading()
   end
 end

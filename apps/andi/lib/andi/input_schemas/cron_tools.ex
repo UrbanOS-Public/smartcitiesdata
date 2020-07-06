@@ -12,16 +12,8 @@ defmodule Andi.InputSchemas.CronTools do
 
   def cronstring_to_cronlist!(cronstring) do
     cronlist = String.split(cronstring, " ")
-    default_keys = [:minute, :hour, :day, :month, :week]
 
-    keys =
-      case crontab_length(cronstring) do
-        6 -> [:second | default_keys]
-        7 -> [:second] ++ default_keys ++ [:year]
-        _ -> default_keys
-      end
-
-    keys
+    cron_keys(crontab_length(cronstring))
     |> Enum.zip(cronlist)
     |> Map.new()
   end
@@ -29,8 +21,9 @@ defmodule Andi.InputSchemas.CronTools do
   def cronlist_to_cronstring!(nil), do: ""
   def cronlist_to_cronstring!(""), do: ""
 
-  def cronlist_to_cronstring!(%{"second" => _} = cronlist) do
-    AtomicMap.convert(cronlist, safe: false)
+  def cronlist_to_cronstring!(%{"minute" => _string_keys} = cronlist) do
+    cronlist
+    |> AtomicMap.convert(safe: false)
     |> cronlist_to_cronstring!()
   end
 
@@ -41,7 +34,7 @@ defmodule Andi.InputSchemas.CronTools do
   end
 
   def cronlist_to_cronstring!(%{second: _second} = cronlist) do
-    [:second, :minute, :hour, :day, :month, :week, :year]
+    cron_keys(Enum.count(cronlist))
     |> Enum.reduce("", fn field, acc ->
       acc <> " " <> to_string(Map.get(cronlist, field, ""))
     end)
@@ -123,5 +116,15 @@ defmodule Andi.InputSchemas.CronTools do
     datetime
     |> Timex.to_datetime("UTC")
     |> Timex.to_datetime(Andi.timezone())
+  end
+
+  defp cron_keys(length) do
+    default_keys = [:minute, :hour, :day, :month, :week]
+
+    case length do
+      6 -> [:second | default_keys]
+      large when large >= 7 -> [:second] ++ default_keys ++ [:year]
+      _ -> default_keys
+    end
   end
 end

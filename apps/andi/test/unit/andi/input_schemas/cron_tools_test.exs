@@ -54,8 +54,8 @@ defmodule Andi.InputSchemas.CronToolsTest do
         [:case, :input, :output],
         ["nil input", nil, ""],
         ["empty string input", "", ""],
-        ["partially filled", %{second: "*"}, "*"],
-        ["missing second", %{hour: "*"}, "0  *"],
+        ["partially filled", %{second: "*"}, ""],
+        ["missing second", %{hour: "*"}, "*"],
         [
           "properly filled",
           %{day: "3", hour: "15", minute: "15", month: "3", week: "*", second: "15", year: "2030"},
@@ -63,8 +63,8 @@ defmodule Andi.InputSchemas.CronToolsTest do
         ],
         [
           "handles string keys",
-          %{"day" => "3", "hour" => "15", "minute" => "15", "month" => "3", "week" => "*", "second" => "15", "year" => "2030"},
-          "15 15 15 3 3 * 2030"
+          %{"day" => "3", "hour" => "15", "minute" => "15", "month" => "3", "week" => "*"},
+          "0 15 15 3 3 *"
         ],
         [
           "doesn't blow up if some are empty strings",

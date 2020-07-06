@@ -30,6 +30,7 @@ defmodule AndiWeb.EditLiveViewTest do
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.InputSchemas.CronTools
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
@@ -653,7 +654,12 @@ defmodule AndiWeb.EditLiveViewTest do
     data_test "quick schedule #{schedule}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      render_click([view, "finalize_form"], "quick_schedule", %{"schedule" => schedule})
+      form_data = FormTools.form_data_from_andi_dataset(dataset)
+      finalize_form_data = %{
+        "cadence_type" => "repeating",
+        "quick_cron" => schedule
+      }
+      render_change(view, "save", %{"form_data" => form_data, "finalize_form_data" => finalize_form_data})
       html = render(view)
 
       assert expected_crontab == get_crontab_from_html(html)
@@ -673,7 +679,12 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       form_data = FormTools.form_data_from_andi_dataset(dataset)
-      render_change(view, :save, %{"form_data" => form_data})
+      finalize_form_data = %{
+        "cadence_type" => "repeating",
+        "quick_cron" => "",
+        "repeating_schedule" => CronTools.cronstring_to_cronlist!(dataset.technical.cadence)
+      }
+      render_change(view, "save", %{"form_data" => form_data, "finalize_form_data" => finalize_form_data})
       html = render(view)
 
       assert dataset.technical.cadence == get_crontab_from_html(html)
@@ -687,7 +698,11 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       form_data = FormTools.form_data_from_andi_dataset(andi_dataset)
-      render_change(view, :save, %{"form_data" => form_data})
+      finalize_form_data = %{
+        "cadence_type" => "repeating",
+        "repeating_schedule" => CronTools.cronstring_to_cronlist!(dataset.technical.cadence)
+      }
+      render_change(view, "save", %{"form_data" => form_data, "finalize_form_data" => finalize_form_data})
       html = render(view)
 
       assert dataset.technical.cadence == get_crontab_from_html(html)
@@ -1724,7 +1739,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
   defp get_crontab_from_html(html) do
     html
-    |> get_values(".finalize-form-schedule-input__field")
+    |> get_values(".finalize-form__schedule-input-field input")
     |> Enum.join(" ")
     |> String.trim_leading()
   end
