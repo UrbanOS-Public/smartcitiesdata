@@ -61,7 +61,7 @@ defmodule DiscoveryApi.Application do
     Application.get_env(:discovery_api, DiscoveryApi.Repo)
     |> case do
       nil -> []
-      _ -> Supervisor.Spec.worker(DiscoveryApi.Repo, [])
+      _ -> [{DiscoveryApi.Repo, []}, DiscoveryApi.Data.VisualizationMigrator]
     end
   end
 

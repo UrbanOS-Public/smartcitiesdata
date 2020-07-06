@@ -6,10 +6,20 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
   alias DiscoveryApi.Schemas.{Generators, Users, Visualizations}
   alias DiscoveryApi.Schemas.Visualizations.Visualization
   alias DiscoveryApi.Schemas.Users.User
+  alias DiscoveryApi.Test.Helper
+  alias DiscoveryApi.Test.AuthHelper
+  alias SmartCity.TestDataGenerator, as: TDG
+  alias DiscoveryApi.Data.Model
+
+  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.TestHelper, only: [eventually: 1]
+  import ExUnit.CaptureLog
+
+  @user "me|you"
 
   describe "get/1" do
     test "given an existing visualization, it returns an :ok tuple with it" do
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       {:ok, %{id: saved_id, public_id: saved_public_id}} =
         Visualizations.create_visualization(%{query: "select * from turtles", owner: owner, title: "My first visualization"})
@@ -53,7 +63,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     test "given all required attributes, it creates a visualization" do
       query = "select * from turtles"
       title = "My first visualization"
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
 
@@ -61,16 +71,69 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       assert query == actual.query
     end
 
+    test "given a valid query, it is created with a list of datasets used in it and is flagged valid" do
+      {table, id} = Helper.create_persisted_dataset("123A", "public_dataset_a", "public_org")
+      query = "select * from #{table}"
+      title = "My first visualization"
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+
+      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
+
+      actual = Repo.get(Visualization, saved.id)
+      assert [id] == actual.datasets
+      assert actual.valid_query
+    end
+
+    test "given a valid query using the same dataset twice, the saved list of datasets contains only one entry for it" do
+      {table, id} = Helper.create_persisted_dataset("123AB", "public_dataset_b", "public_org")
+      query = "select * from #{table} union all select * from #{table}"
+      title = "My first visualization"
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+
+      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
+
+      actual = Repo.get(Visualization, saved.id)
+      assert [id] == actual.datasets
+      assert actual.valid_query
+    end
+
+    test "given an invalid query, it is created with an empty list of datasets and is flagged invalid" do
+      {table, _id} = Helper.create_persisted_dataset("123AC", "public_dataset_c", "public_org")
+      query = "select * from INVALID #{table}"
+      title = "My first visualization"
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+
+      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
+
+      actual = Repo.get(Visualization, saved.id)
+      assert [] == actual.datasets
+      refute actual.valid_query
+    end
+
+    test "given a query containing a dataset the user is not authorized to query, it is created with an empty list of datasets and is flagged invalid" do
+      {table, _id} = Helper.create_persisted_dataset("123AD", "private_dataset_d", "private_org", true)
+      query = "select * from #{table}"
+      title = "My first visualization"
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner_with_orgs} = Users.get_user_with_organizations(owner.id)
+
+      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner_with_orgs, title: title})
+
+      actual = Repo.get(Visualization, saved.id)
+      assert [] == actual.datasets
+      refute actual.valid_query
+    end
+
     test "given a missing query, it fails to create a visualization" do
       title = "My first visualization"
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       assert {:error, _} = Visualizations.create_visualization(%{owner: owner, title: title})
     end
 
     test "given a missing title, it fails to create a visualization" do
       query = "select * from turtles"
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       assert {:error, _} = Visualizations.create_visualization(%{query: query, owner: owner})
     end
@@ -96,7 +159,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       query = "blah"
       title = "blah blah"
       chart = Faker.String.base64(20_001)
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       assert {:error, _} = Visualizations.create_visualization(%{query: query, title: title, owner: owner, chart: chart})
     end
@@ -104,7 +167,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     test "given a query larger than twenty thousand bytes, it fails to create a visualization" do
       query = Faker.String.base64(20_001)
       title = "blah blah"
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       assert {:error, _} = Visualizations.create_visualization(%{query: query, title: title, owner: owner})
     end
@@ -113,7 +176,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       query = Faker.String.base64(19_999)
       title = "blah blah"
       chart = Faker.String.base64(19_999)
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, title: title, owner: owner, chart: chart})
     end
@@ -130,10 +193,13 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
   describe "update/2" do
     setup do
-      {:ok, owner} = Users.create_or_update("me|you", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(AuthHelper.valid_jwt_sub(), %{email: "bob@example.com"})
 
       visualization = %{title: "query title", query: "select * FROM table", owner: owner}
       {:ok, created_visualization} = Visualizations.create_visualization(visualization)
+
+      AuthHelper.auth0_setup()
+      |> on_exit()
 
       %{created_visualization: created_visualization, owner: owner}
     end
@@ -184,5 +250,39 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
                  owner
                )
     end
+
+    test "given a valid query through the API, it is updated with a list of datasets used in it", %{
+      created_visualization: created_visualization,
+      owner: owner
+    } do
+      {table, id} = Helper.create_persisted_dataset("123A", "a_table", "a_org")
+
+      %{status_code: 200} =
+        put_with_authentication(
+          "localhost:4000/api/v1/visualization/#{created_visualization.public_id}",
+          ~s({"query": "select * from #{table}", "title": "My favorite title", "chart": {"data": "hello"}}),
+          AuthHelper.valid_jwt()
+        )
+
+      eventually(fn ->
+        {:ok, viz} = Visualizations.get_visualization_by_id(created_visualization.public_id)
+        assert [id] == viz.datasets
+      end)
+    end
+  end
+
+  defp put_with_authentication(url, body, bearer_token) do
+    %{
+      status_code: status_code,
+      body: body_json
+    } =
+      HTTPoison.put!(
+        url,
+        body,
+        Authorization: "Bearer #{bearer_token}",
+        "Content-Type": "application/json"
+      )
+
+    %{status_code: status_code, body: Jason.decode!(body_json, keys: :atoms)}
   end
 end

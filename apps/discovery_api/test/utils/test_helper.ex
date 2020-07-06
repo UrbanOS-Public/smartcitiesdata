@@ -10,6 +10,10 @@ defmodule DiscoveryApi.Test.Helper do
   alias DiscoveryApi.Auth.GuardianConfigurator
   alias SmartCity.TestDataGenerator, as: TDG
 
+  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.TestHelper, only: [eventually: 1]
+  import ExUnit.CaptureLog
+
   @instance DiscoveryApi.instance()
 
   def sample_model(values \\ %{}) do
@@ -197,6 +201,44 @@ defmodule DiscoveryApi.Test.Helper do
       logo_url: smart_city_organization.logoUrl,
       homepage: smart_city_organization.homepage
     }
+  end
+
+  def create_persisted_dataset(id, name, orgName, private \\ false) do
+    organization = create_persisted_organization(%{id: "org#{id}", orgName: orgName})
+
+    dataset =
+      TDG.create_dataset(%{
+        id: id,
+        technical: %{
+          private: private,
+          orgId: organization.id,
+          orgName: organization.orgName,
+          dataName: name,
+          systemName: "#{organization.orgName}__#{name}"
+        }
+      })
+
+    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+
+    eventually(fn ->
+      nil != Model.get(dataset.id)
+    end)
+
+    table = dataset.technical.systemName
+
+    prestige_session =
+      DiscoveryApi.prestige_opts()
+      |> Keyword.merge(receive_timeout: 10_000)
+      |> Prestige.new_session()
+
+    capture_log(fn ->
+      Prestige.query(
+        prestige_session,
+        ~s|create table if not exists "#{table}" (id integer, name varchar)|
+      )
+    end)
+
+    {table, dataset.id}
   end
 
   defp user_associated_with_organization?(user_id, organization_id) do

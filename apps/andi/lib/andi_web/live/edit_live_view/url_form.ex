@@ -5,7 +5,6 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
-  alias Phoenix.HTML.Link
   alias AndiWeb.ErrorHelpers
   alias Andi.InputSchemas.DisplayNames
   alias AndiWeb.EditLiveView.KeyValueEditor
@@ -60,7 +59,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
             <div class="edit-button-group form-grid">
               <div class="edit-button-group__cancel-btn">
                 <a href="#data-dictionary-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-collapse="url_form" phx-value-component-expand="data_dictionary_form">Back</a>
-                <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
+                <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
               </div>
 
               <div class="edit-button-group__save-btn">

@@ -5,7 +5,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
-  alias Phoenix.HTML.Link
   alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.DisplayNames
   alias AndiWeb.ErrorHelpers
@@ -163,7 +162,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
           <div class="edit-button-group form-grid">
             <div class="edit-button-group__cancel-btn">
-              <%= Link.button("Cancel", to: "/", method: "get", class: "btn btn--large") %>
+              <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
             </div>
 
             <div class="edit-button-group__save-btn">

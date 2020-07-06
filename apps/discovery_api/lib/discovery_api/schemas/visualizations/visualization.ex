@@ -12,6 +12,8 @@ defmodule DiscoveryApi.Schemas.Visualizations.Visualization do
     field(:query, :string)
     field(:title, :string)
     field(:chart, :string)
+    field(:datasets, {:array, :string})
+    field(:valid_query, :boolean)
     belongs_to(:owner, User, type: Ecto.UUID, foreign_key: :owner_id)
 
     timestamps()
@@ -34,7 +36,7 @@ defmodule DiscoveryApi.Schemas.Visualizations.Visualization do
   @doc false
   def changeset_update(visualization, changes) do
     visualization
-    |> cast(changes, [:query, :title, :chart])
+    |> cast(changes, [:query, :title, :chart, :datasets, :valid_query])
     |> validate_length(:chart, count: :bytes, max: 20_000)
     |> validate_required([:query, :title])
   end
