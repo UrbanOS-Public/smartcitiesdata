@@ -17,6 +17,7 @@ defmodule Andi.InputSchemas.DisplayNames do
     license: "License",
     modifiedDate: "Last Updated",
     orgTitle: "Organization",
+    orgId: "Organization",
     publishFrequency: "Update Frequency",
     spatial: "Spatial Boundaries",
     temporal: "Temporal Boundaries",

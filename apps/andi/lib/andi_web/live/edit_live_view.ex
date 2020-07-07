@@ -22,7 +22,7 @@ defmodule AndiWeb.EditLiveView do
 
     ~L"""
     <div class="edit-page" id="dataset-edit-page">
-      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data, phx_hook: "Unload", data: [show_unsaved_changes_modal: @show_unsaved_changes_modal]] %>
+      <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data, phx_hook: "Unload", data: [show_unsaved_changes_modal: @show_unsaved_changes_modal]] %>
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>
@@ -97,7 +97,6 @@ defmodule AndiWeb.EditLiveView do
 
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    IO.inspect("we in here?")
     form_data
     |> InputConverter.form_data_to_ui_changeset()
     |> complete_validation(socket)
@@ -206,26 +205,7 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, socket}
   end
 
-  def handle_info({:add_data_dictionary_field_cancelled}, socket) do
-    {:noreply, assign(socket, add_data_dictionary_field_visible: false)}
-  end
-
-  def handle_info({:remove_data_dictionary_field_cancelled}, socket) do
-    {:noreply, assign(socket, remove_data_dictionary_field_visible: false)}
-  end
   # TODO add these back in
-  # def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do
-  #   dataset = Datasets.get(socket.assigns.dataset.id)
-  #   changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
-
-  #   {:noreply,
-  #    assign(socket,
-  #      changeset: changeset,
-  #      selected_field_id: field_id,
-  #      add_data_dictionary_field_visible: false,
-  #      new_field_initial_render: true
-  #    )}
-  # end
 
   # def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index}, socket) do
   #   new_selected_field =

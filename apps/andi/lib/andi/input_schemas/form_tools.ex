@@ -53,7 +53,7 @@ defmodule Andi.InputSchemas.FormTools do
     data_name = form_data["dataName"]
 
     case OrgStore.get(org_id) do
-      {:ok, org} ->
+      {:ok, org} when org != nil ->
         org_name = org.orgName
         org_title = org.orgTitle
         system_name = "#{org_name}__#{data_name}"

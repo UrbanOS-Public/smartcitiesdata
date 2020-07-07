@@ -10,6 +10,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   alias Andi.InputSchemas.DisplayNames
   alias AndiWeb.ErrorHelpers
   alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
   alias AndiWeb.InputSchemas.MetadataFormSchema
   alias Andi.InputSchemas.FormTools
@@ -63,18 +64,27 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
       <div class="form-section">
         <%= f = form_for @changeset, "#", [phx_change: :cam, phx_submit: :camsave, as: :form_data] %>
+          <%= hidden_input(f, :orgName) %>
+          <%= hidden_input(f, :orgTitle) %>
+          <%= hidden_input(f, :orgId) %>
+          <%= hidden_input(f, :orgName) %>
+          <%= hidden_input(f, :dataName) %>
+          <%= hidden_input(f, :systemName) %>
+          <%= hidden_input(f, :sourceType) %>
+          <%= hidden_input(f, :sourceFormat) %>
+
           <div class="component-edit-section--<%= @visibility %>">
             <div class="metadata-form-edit-section form-grid">
               <div class="metadata-form__title">
                 <%= label(f, :dataTitle, DisplayNames.get(:dataTitle), class: "label label--required") %>
                 <%= text_input(f, :dataTitle, class: "input", phx_value_field: "dataTitle", phx_blur: "validate_system_name") %>
-                <%= ErrorHelpers.error_tag(@changeset, :dataTitle) %>
+                <%= ErrorHelpers.error_tag(f, :dataTitle) %>
               </div>
 
               <div class="metadata-form__data-name">
                 <%= label(f, :dataName, DisplayNames.get(:dataName), class: "label label--required") %>
                 <%= text_input(f, :dataName, [class: "input input--text", readonly: true]) %>
-                <%= ErrorHelpers.error_tag(@changeset, :dataName, bind_to_input: false) %>
+                <%= ErrorHelpers.error_tag(f, :dataName, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__description">
@@ -86,37 +96,37 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               <div class="metadata-form__maintainer-name">
                 <%= label(f, :contactName, DisplayNames.get(:contactName), class: "label label--required") %>
                 <%= text_input(f, :contactName, class: "input") %>
-                <%= ErrorHelpers.error_tag(@changeset, :contactName) %>
+                <%= ErrorHelpers.error_tag(f, :contactName) %>
               </div>
 
               <div class="metadata-form__maintainer-email">
                 <%= label(f, :contactEmail, DisplayNames.get(:contactEmail), class: "label label--required") %>
                 <%= text_input(f, :contactEmail, class: "input") %>
-                <%= ErrorHelpers.error_tag(@changeset, :contactEmail) %>
+                <%= ErrorHelpers.error_tag(f, :contactEmail) %>
               </div>
 
               <div class="metadata-form__release-date">
                 <%= label(f, :issuedDate, DisplayNames.get(:issuedDate), class: "label label--required") %>
                 <%= date_input(f, :issuedDate, class: "input", value: safe_calendar_value(input_value(f, :issuedDate))) %>
-                <%= ErrorHelpers.error_tag(@changeset, :issuedDate, bind_to_input: false) %>
+                <%= ErrorHelpers.error_tag(f, :issuedDate, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__license">
                 <%= label(f, :license, DisplayNames.get(:license), class: "label label--required") %>
                 <%= text_input(f, :license, class: "input") %>
-                <%= ErrorHelpers.error_tag(@changeset, :license) %>
+                <%= ErrorHelpers.error_tag(f, :license) %>
               </div>
 
               <div class="metadata-form__top-level-selector">
                 <%= label(f, :topLevelSelector, DisplayNames.get(:topLevelSelector), class: top_level_selector_label_class(input_value(f, :sourceFormat))) %>
                 <%= text_input(f, :topLevelSelector, [class: "input--text input", readonly: input_value(f, :sourceFormat) not in ["xml", "json", "text/xml", "application/json"]]) %>
-                <%= ErrorHelpers.error_tag(@changeset, :topLevelSelector) %>
+                <%= ErrorHelpers.error_tag(f, :topLevelSelector) %>
               </div>
 
               <div class="metadata-form__update-frequency">
                 <%= label(f, :publishFrequency, DisplayNames.get(:publishFrequency), class: "label label--required") %>
                 <%= text_input(f, :publishFrequency, class: "input") %>
-                <%= ErrorHelpers.error_tag(@changeset, :publishFrequency) %>
+                <%= ErrorHelpers.error_tag(f, :publishFrequency) %>
               </div>
 
               <div class="metadata-form__keywords">
@@ -138,13 +148,13 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               <div class="metadata-form__temporal">
                 <%= label(f, :temporal, DisplayNames.get(:temporal), class: "label") %>
                 <%= text_input(f, :temporal, class: "input") %>
-                <%= ErrorHelpers.error_tag(@changeset, :temporal) %>
+                <%= ErrorHelpers.error_tag(f, :temporal) %>
               </div>
 
               <div class="metadata-form__organization">
                 <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
                 <%= select(f, :orgId, get_org_options(), [class: "select", disabled: @dataset_exists, selected: ""]) %>
-                <%= ErrorHelpers.error_tag(@changeset, :orgTitle) %>
+                <%= ErrorHelpers.error_tag(f, :orgId, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__language">
@@ -160,31 +170,31 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               <div class="metadata-form__type">
                 <%= label(f, :sourceType, DisplayNames.get(:sourceType), class: "label label--required") %>
                 <%= select(f, :sourceType, get_source_type_options(), [class: "select", disabled: @dataset_exists]) %>
-                <%= ErrorHelpers.error_tag(@changeset, :sourceType) %>
+                <%= ErrorHelpers.error_tag(f, :sourceType, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__format">
                 <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
                 <%= select(f, :sourceFormat, get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_exists]) %>
-                <%= ErrorHelpers.error_tag(@changeset, :sourceFormat) %>
+                <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__level-of-access">
                 <%= label(f, :private, DisplayNames.get(:private), class: "label label--required") %>
                 <%= select(f, :private, get_level_of_access_options(), class: "select") %>
-                <%= ErrorHelpers.error_tag(@changeset, :private) %>
+                <%= ErrorHelpers.error_tag(f, :private) %>
               </div>
 
               <div class="metadata-form__benefit-rating">
                 <%= label(f, :benefitRating, DisplayNames.get(:benefitRating), class: "label label--required") %>
                 <%= select(f, :benefitRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
-                <%= ErrorHelpers.error_tag(@changeset, :benefitRating, bind_to_input: false) %>
+                <%= ErrorHelpers.error_tag(f, :benefitRating, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__risk-rating">
                 <%= label(f, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
                 <%= select(f, :riskRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
-                <%= ErrorHelpers.error_tag(@changeset, :riskRating, bind_to_input: false) %>
+                <%= ErrorHelpers.error_tag(f, :riskRating, bind_to_input: false) %>
               </div>
             </div>
 

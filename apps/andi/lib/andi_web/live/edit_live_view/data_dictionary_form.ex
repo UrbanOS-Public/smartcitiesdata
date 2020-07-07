@@ -8,6 +8,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   alias AndiWeb.EditLiveView.DataDictionaryTree
   alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
   alias AndiWeb.InputSchemas.DataDictionaryFormSchema
+  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.StructTools
@@ -58,7 +59,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
                 </div>
 
                 <div class="data-dictionary-form__tree-content data-dictionary-form-tree-content">
-                  <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: @changeset, field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
+                  <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: @changeset |> form_for(nil), field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
                 </div>
 
                 <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
@@ -121,14 +122,14 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, assign(socket, visibility: new_visibility)}
   end
 
-  # TODO saving and editing
   def handle_event("add_data_dictionary_field", _, socket) do
-    pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
 
-    {:ok, andi_dataset} = Datasets.update(pending_dataset)
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
+    # TODO - do we want to save here?
+    # pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
+    # {:ok, andi_dataset} = Datasets.update(pending_dataset)
+    # changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
 
-    {:noreply, assign(socket, changeset: changeset, add_data_dictionary_field_visible: true)}
+    {:noreply, assign(socket, add_data_dictionary_field_visible: true)}
   end
 
   def handle_event("remove_data_dictionary_field", _, socket) do
@@ -137,8 +138,26 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
   end
 
+  def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do
+    dataset = Datasets.get(socket.assigns.dataset.id)
+    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
 
+    {:noreply,
+     assign(socket,
+       changeset: changeset,
+       selected_field_id: field_id,
+       add_data_dictionary_field_visible: false,
+       new_field_initial_render: true
+     )}
+  end
 
+  def handle_info({:add_data_dictionary_field_cancelled}, socket) do
+    {:noreply, assign(socket, add_data_dictionary_field_visible: false)}
+  end
+
+  def handle_info({:remove_data_dictionary_field_cancelled}, socket) do
+    {:noreply, assign(socket, remove_data_dictionary_field_visible: false)}
+  end
 
   # def handle_info({:assign_editable_dictionary_field, :no_dictionary, _, _, _}, socket) do
   #   current_data_dictionary_item = DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil)
