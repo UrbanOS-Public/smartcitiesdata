@@ -207,32 +207,6 @@ defmodule AndiWeb.EditLiveView do
 
   # TODO add these back in
 
-  # def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index}, socket) do
-  #   new_selected_field =
-  #     socket.assigns.changeset
-  #     |> get_new_selected_field(deleted_field_parent_id, deleted_field_index)
-
-  #   new_selected_field_id =
-  #     case new_selected_field do
-  #       :no_dictionary ->
-  #         :no_dictionary
-
-  #       new_selected ->
-  #         Changeset.fetch_field!(new_selected, :id)
-  #     end
-
-  #   dataset = Datasets.get(socket.assigns.dataset.id)
-  #   changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
-
-  #   {:noreply,
-  #    assign(socket,
-  #      changeset: changeset,
-  #      selected_field_id: new_selected_field_id,
-  #      new_field_initial_render: true,
-  #      remove_data_dictionary_field_visible: false
-  #    )}
-  # end
-
   def handle_info({:assign_crontab}, socket) do
     socket = reset_save_success(socket)
 
@@ -283,31 +257,6 @@ defmodule AndiWeb.EditLiveView do
 
 
   # TODO add this back ik
-  # defp get_new_selected_field(changeset, parent_id, deleted_field_index) do
-  #   technical_changeset = Changeset.fetch_change!(changeset, :technical)
-  #   technical_id = Changeset.fetch_change!(technical_changeset, :id)
-
-  #   if parent_id == technical_id do
-  #     technical_changeset
-  #     |> Changeset.fetch_change!(:schema)
-  #     |> get_next_sibling(deleted_field_index)
-  #   else
-  #     changeset
-  #     |> find_field_in_changeset(parent_id)
-  #     |> Changeset.get_change(:subSchema, [])
-  #     |> get_next_sibling(deleted_field_index)
-  #   end
-  # end
-
-  # defp get_next_sibling(parent_schema, _) when length(parent_schema) <= 1, do: :no_dictionary
-
-  # defp get_next_sibling(parent_schema, deleted_field_index) when deleted_field_index == 0 do
-  #   Enum.at(parent_schema, deleted_field_index + 1)
-  # end
-
-  # defp get_next_sibling(parent_schema, deleted_field_index) do
-  #   Enum.at(parent_schema, deleted_field_index - 1)
-  # end
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
 end

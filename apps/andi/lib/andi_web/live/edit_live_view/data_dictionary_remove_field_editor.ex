@@ -35,7 +35,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
 
         <div class="button-container">
           <%= reset("CANCEL", phx_click: "cancel", phx_target: "##{id}", class: "btn") %>
-          <%= submit("DELETE", phx_click: "remove_field", phx_value_parent: "#{show_warning_message?}", phx_target: "##{id}", class: "btn submit_button") %>
+          <button class="btn submit_button" type="button" phx-click="remove_field" phx-target="<%= @myself %>" phx-value-parent="<%= show_warning_message? %>">DELETE</button>
 
         </div>
 

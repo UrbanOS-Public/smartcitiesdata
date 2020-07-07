@@ -53,8 +53,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
   end
 
   defp assign_current_dictionary_field(field_id, index, name, id) do
-    #TODO what is going on with the infinite loop
-    # send(self(), {:assign_editable_dictionary_field, field_id, index, name, id})
+    send(self(), {:assign_editable_dictionary_field, field_id, index, name, id})
   end
 
   defp toggle_expansion(field_id, expansion_map) do

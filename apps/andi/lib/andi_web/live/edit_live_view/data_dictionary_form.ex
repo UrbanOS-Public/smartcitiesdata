@@ -12,6 +12,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.StructTools
+  alias Ecto.Changeset
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
@@ -24,6 +25,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         visibility: "expanded",
         new_field_initial_render: false,
         dataset: dataset,
+        technical_id: dataset.technical.id
       )
       |> assign(get_default_dictionary_field(new_changeset))}
   end
@@ -64,7 +66,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
                 <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
                   <div class="data-dictionary-form__add-field-button" phx-click="add_data_dictionary_field"></div>
-                  <div class="data-dictionary-form__remove-field-button" phx-click="remove_data_dictionary_field" phx-target="#dataset-edit-page"></div>
+                  <div class="data-dictionary-form__remove-field-button" phx-click="remove_data_dictionary_field"></div>
                 </div>
               </div>
 
@@ -151,6 +153,32 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
      )}
   end
 
+  def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index}, socket) do
+    new_selected_field =
+      socket.assigns.changeset
+      |> get_new_selected_field(deleted_field_parent_id, deleted_field_index, socket.assigns.technical_id)
+
+    new_selected_field_id =
+      case new_selected_field do
+        :no_dictionary ->
+          :no_dictionary
+
+        new_selected ->
+          Changeset.fetch_field!(new_selected, :id)
+      end
+
+    dataset = Datasets.get(socket.assigns.dataset.id)
+    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
+
+    {:noreply,
+     assign(socket,
+       changeset: changeset,
+       selected_field_id: new_selected_field_id,
+       new_field_initial_render: true,
+       remove_data_dictionary_field_visible: false
+     )}
+  end
+
   def handle_info({:add_data_dictionary_field_cancelled}, socket) do
     {:noreply, assign(socket, add_data_dictionary_field_visible: false)}
   end
@@ -159,18 +187,41 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, assign(socket, remove_data_dictionary_field_visible: false)}
   end
 
-  # def handle_info({:assign_editable_dictionary_field, :no_dictionary, _, _, _}, socket) do
-  #   current_data_dictionary_item = DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil)
+  def handle_info({:assign_editable_dictionary_field, :no_dictionary, _, _, _}, socket) do
+    current_data_dictionary_item = DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil)
 
-  #   {:noreply, assign(socket, current_data_dictionary_item: current_data_dictionary_item, selected_field_id: :no_dictionary)}
-  # end
+    {:noreply, assign(socket, current_data_dictionary_item: current_data_dictionary_item, selected_field_id: :no_dictionary)}
+  end
 
-  # def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
-  #   new_form = find_field_in_changeset(socket.assigns.changeset, field_id) |> form_for(nil)
-  #   field = %{new_form | index: index, name: name, id: id}
+  def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
+    new_form = find_field_in_changeset(socket.assigns.changeset, field_id) |> form_for(nil)
+    field = %{new_form | index: index, name: name, id: id}
 
-  #   {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
-  # end
+    {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
+  end
+
+  defp get_new_selected_field(changeset, parent_id, deleted_field_index, technical_id) do
+    if parent_id == technical_id do
+      changeset
+      |> Changeset.fetch_change!(:schema)
+      |> get_next_sibling(deleted_field_index)
+    else
+      changeset
+      |> find_field_in_changeset(parent_id)
+      |> Changeset.get_change(:subSchema, [])
+      |> get_next_sibling(deleted_field_index)
+    end
+  end
+
+  defp get_next_sibling(parent_schema, _) when length(parent_schema) <= 1, do: :no_dictionary
+
+  defp get_next_sibling(parent_schema, deleted_field_index) when deleted_field_index == 0 do
+    Enum.at(parent_schema, deleted_field_index + 1)
+  end
+
+  defp get_next_sibling(parent_schema, deleted_field_index) do
+    Enum.at(parent_schema, deleted_field_index - 1)
+  end
 
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
@@ -191,7 +242,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   defp find_field_in_changeset(changeset, field_id) do
     changeset
-    |> Changeset.fetch_change!(:technical)
     |> Changeset.get_change(:schema, [])
     |> find_field_changeset_in_schema(field_id)
     |> handle_field_not_found()
