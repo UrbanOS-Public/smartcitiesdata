@@ -7,6 +7,8 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.Datasets.Technical
+  alias Andi.InputSchemas.Datasets.Business
   alias Ecto.Changeset
 
   alias AndiWeb.EditLiveView.FinalizeForm
@@ -54,10 +56,6 @@ defmodule AndiWeb.EditLiveView do
 
       </form>
 
-      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@changeset), visible: @add_data_dictionary_field_visible, dataset_id: dataset_id,  selected_field_id: @selected_field_id ) %>
-
-      <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field: @current_data_dictionary_item, visible: @remove_data_dictionary_field_visible) %>
-
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, show_unsaved_changes_modal: @show_unsaved_changes_modal) %>
 
       <%= if @save_success do %>
@@ -78,25 +76,15 @@ defmodule AndiWeb.EditLiveView do
   def mount(_params, %{"dataset" => dataset}, socket) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
-    component_visibility = %{
-      "metadata_form" => "expanded",
-      "data_dictionary_form" => "collapsed",
-      "url_form" => "collapsed",
-      "finalize_form" => "collapsed"
-    }
-
     Process.flag(:trap_exit, true)
 
     {:ok,
      assign(socket,
-       add_data_dictionary_field_visible: false,
        changeset: new_changeset,
-       component_visibility: component_visibility,
        dataset: dataset,
        has_validation_errors: false,
        new_field_initial_render: false,
        page_error: false,
-       remove_data_dictionary_field_visible: false,
        save_success: false,
        success_message: "",
        test_results: nil,
@@ -104,87 +92,16 @@ defmodule AndiWeb.EditLiveView do
        finalize_form_data: nil,
        unsaved_changes: false,
        show_unsaved_changes_modal: false
-     )
-     |> assign(get_default_dictionary_field(new_changeset))}
+     )}
   end
 
-  def handle_event("test_url", _, socket) do
-    changes = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-    technical = Map.get(changes, :technical)
-    url = Map.get(technical, :sourceUrl) |> Andi.URI.clear_query_params()
-    query_params = key_values_to_keyword_list(technical, :sourceQueryParams)
-    headers = key_values_to_keyword_list(technical, :sourceHeaders)
-
-    Task.async(fn ->
-      {:test_results, Andi.Services.UrlTest.test(url, query_params: query_params, headers: headers)}
-    end)
-
-    {:noreply, assign(socket, testing: true)}
-  end
-
-  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "technical", "sourceUrl"]}, socket) do
-    form_data
-    |> FormTools.adjust_source_query_params_for_url()
-    |> InputConverter.form_data_to_ui_changeset()
-    |> complete_validation(socket)
-    |> mark_changes()
-  end
-
-  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "technical", "sourceQueryParams" | _]}, socket) do
-    form_data
-    |> FormTools.adjust_source_url_for_query_params()
-    |> InputConverter.form_data_to_ui_changeset()
-    |> complete_validation(socket)
-    |> mark_changes()
-  end
-
-  def handle_event(
-        "validate",
-        %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle" | _]},
-        %{assigns: %{dataset_exists: false}} = socket
-      ) do
-    form_data
-    |> FormTools.adjust_data_name()
-    |> InputConverter.form_data_to_ui_changeset()
-    |> complete_validation(socket)
-    |> mark_changes()
-  end
-
-  def handle_event(
-        "validate",
-        %{"form_data" => form_data, "_target" => ["form_data", "technical", "orgId" | _]},
-        %{assigns: %{dataset_exists: false}} = socket
-      ) do
-    form_data
-    |> FormTools.adjust_org_name()
-    |> InputConverter.form_data_to_ui_changeset()
-    |> Dataset.validate_unique_system_name()
-    |> complete_validation(socket)
-    |> mark_changes()
-  end
-
-  def handle_event("validate", %{"form_data" => form_data, "finalize_form_data" => finalize_form_data}, socket) do
-    socket = assign(socket, :finalize_form_data, finalize_form_data)
-
-    finalize_form_data
-    |> FinalizeForm.update_form_with_schedule(form_data)
-    |> InputConverter.form_data_to_ui_changeset()
-    |> complete_validation(socket)
-  end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
+    IO.inspect("we in here?")
     form_data
     |> InputConverter.form_data_to_ui_changeset()
     |> complete_validation(socket)
     |> mark_changes()
-  end
-
-  def handle_event("validate_system_name", _, socket) do
-    changeset =
-      Dataset.validate_unique_system_name(socket.assigns.changeset)
-      |> Map.put(:action, :update)
-
-    {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("publish", _, socket) do
@@ -244,24 +161,6 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(updated_socket, save_success: true, success_message: success_message, unsaved_changes: false, changeset: changeset)}
   end
 
-  def handle_event("toggle-component-visibility", %{"component" => component}, socket) do
-    new_visibility = update_component_visibility([component], socket.assigns.component_visibility)
-    {:noreply, assign(socket, component_visibility: new_visibility)}
-  end
-
-  def handle_event(
-        "toggle-component-visibility",
-        %{"component-expand" => component_expand, "component-collapse" => component_collapse},
-        socket
-      ) do
-    new_visibility =
-      socket.assigns.component_visibility
-      |> Map.put(component_expand, "expanded")
-      |> Map.put(component_collapse, "collapsed")
-
-    {:noreply, assign(socket, component_visibility: new_visibility)}
-  end
-
   def handle_event("unsaved-changes-canceled", _, socket) do
     {:noreply, assign(socket, show_unsaved_changes_modal: false)}
   end
@@ -280,84 +179,31 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, redirect(socket, to: "/")}
   end
 
-  def handle_event("add", %{"field" => "sourceQueryParams"}, socket) do
-    socket = reset_save_success(socket)
+  #TODO clean this up - maybe move to input converter
+  def handle_info({:form_save, form_changes}, socket) do
+    technical_changes = socket.assigns.changeset
+      |> Changeset.get_change(:technical)
+      |> Map.get(:changes)
+      |> Map.merge(form_changes)
 
-    pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
+    business_changes = socket.assigns.changeset
+      |> Changeset.get_change(:business)
+      |> Map.get(:changes)
+      |> Map.merge(form_changes)
 
-    {:ok, andi_dataset} = Datasets.update(pending_dataset)
+    new_changes = %{technical: technical_changes, business: business_changes, id: socket.assigns.dataset.id}
 
-    {:ok, dataset} = Datasets.add_source_query_param(andi_dataset.id)
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
+    new_changeset = Dataset.changeset_for_draft(%Dataset{}, new_changes)
 
-    {:noreply, assign(socket, changeset: changeset, dataset: dataset)}
-  end
+    pending_dataset = Changeset.apply_changes(new_changeset)
+    {:ok, _} = Datasets.update(pending_dataset)
 
-  def handle_event("add", %{"field" => "sourceHeaders"}, socket) do
-    socket = reset_save_success(socket)
+    # new_changeset
+    # |> Dataset.validate_unique_system_name()
+    # |> Map.put(:action, :update)
 
-    pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-
-    {:ok, andi_dataset} = Datasets.update(pending_dataset)
-
-    {:ok, dataset} = Datasets.add_source_header(andi_dataset.id)
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
-
-    {:noreply, assign(socket, changeset: changeset, dataset: dataset)}
-  end
-
-  def handle_event("remove", %{"id" => id, "field" => "sourceQueryParams"}, socket) do
-    socket = reset_save_success(socket)
-
-    pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-
-    {:ok, andi_dataset} = Datasets.update(pending_dataset)
-
-    {:ok, dataset} = Datasets.remove_source_query_param(andi_dataset.id, id)
-
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
-
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
-  def handle_event("remove", %{"id" => id, "field" => "sourceHeaders"}, socket) do
-    socket = reset_save_success(socket)
-
-    pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-
-    {:ok, andi_dataset} = Datasets.update(pending_dataset)
-
-    {:ok, dataset} = Datasets.remove_source_header(andi_dataset.id, id)
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
-
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
-  def handle_event("add_data_dictionary_field", _, socket) do
-    pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-    {:ok, andi_dataset} = Datasets.update(pending_dataset)
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
-
-    {:noreply, assign(socket, changeset: changeset, add_data_dictionary_field_visible: true)}
-  end
-
-  def handle_event("remove_data_dictionary_field", _, socket) do
-    should_show_remove_field_modal = socket.assigns.selected_field_id != :no_dictionary
-
-    {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
-  end
-
-  def handle_info({:assign_editable_dictionary_field, :no_dictionary, _, _, _}, socket) do
-    current_data_dictionary_item = DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil)
-
-    {:noreply, assign(socket, current_data_dictionary_item: current_data_dictionary_item, selected_field_id: :no_dictionary)}
-  end
-
-  def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
-    new_form = find_field_in_changeset(socket.assigns.changeset, field_id) |> form_for(nil)
-    field = %{new_form | index: index, name: name, id: id}
-
-    {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
+    # {:noreply, assign(socket, changeset: new_changeset)}
+    {:noreply, socket}
   end
 
   def handle_info({:add_data_dictionary_field_cancelled}, socket) do
@@ -367,45 +213,45 @@ defmodule AndiWeb.EditLiveView do
   def handle_info({:remove_data_dictionary_field_cancelled}, socket) do
     {:noreply, assign(socket, remove_data_dictionary_field_visible: false)}
   end
+  # TODO add these back in
+  # def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do
+  #   dataset = Datasets.get(socket.assigns.dataset.id)
+  #   changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
-  def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do
-    dataset = Datasets.get(socket.assigns.dataset.id)
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
+  #   {:noreply,
+  #    assign(socket,
+  #      changeset: changeset,
+  #      selected_field_id: field_id,
+  #      add_data_dictionary_field_visible: false,
+  #      new_field_initial_render: true
+  #    )}
+  # end
 
-    {:noreply,
-     assign(socket,
-       changeset: changeset,
-       selected_field_id: field_id,
-       add_data_dictionary_field_visible: false,
-       new_field_initial_render: true
-     )}
-  end
+  # def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index}, socket) do
+  #   new_selected_field =
+  #     socket.assigns.changeset
+  #     |> get_new_selected_field(deleted_field_parent_id, deleted_field_index)
 
-  def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index}, socket) do
-    new_selected_field =
-      socket.assigns.changeset
-      |> get_new_selected_field(deleted_field_parent_id, deleted_field_index)
+  #   new_selected_field_id =
+  #     case new_selected_field do
+  #       :no_dictionary ->
+  #         :no_dictionary
 
-    new_selected_field_id =
-      case new_selected_field do
-        :no_dictionary ->
-          :no_dictionary
+  #       new_selected ->
+  #         Changeset.fetch_field!(new_selected, :id)
+  #     end
 
-        new_selected ->
-          Changeset.fetch_field!(new_selected, :id)
-      end
+  #   dataset = Datasets.get(socket.assigns.dataset.id)
+  #   changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
 
-    dataset = Datasets.get(socket.assigns.dataset.id)
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
-
-    {:noreply,
-     assign(socket,
-       changeset: changeset,
-       selected_field_id: new_selected_field_id,
-       new_field_initial_render: true,
-       remove_data_dictionary_field_visible: false
-     )}
-  end
+  #   {:noreply,
+  #    assign(socket,
+  #      changeset: changeset,
+  #      selected_field_id: new_selected_field_id,
+  #      new_field_initial_render: true,
+  #      remove_data_dictionary_field_visible: false
+  #    )}
+  # end
 
   def handle_info({:assign_crontab}, socket) do
     socket = reset_save_success(socket)
@@ -427,10 +273,6 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
   end
 
-  def handle_info({_, {:test_results, results}}, socket) do
-    {:noreply, assign(socket, test_results: results, testing: false)}
-  end
-
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
@@ -441,114 +283,51 @@ defmodule AndiWeb.EditLiveView do
     new_changeset = Map.put(changeset, :action, :update)
     current_form = socket.assigns.current_data_dictionary_item
 
-    updated_current_field =
-      case current_form do
-        :no_dictionary ->
-          :no_dictionary
+    # updated_current_field =
+    #   case current_form do
+    #     :no_dictionary ->
+    #       :no_dictionary
 
-        _ ->
-          new_form_template = find_field_in_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
-          %{current_form | source: new_form_template.source, params: new_form_template.params}
-      end
+    #     _ ->
+    #       new_form_template = find_field_in_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
+    #       %{current_form | source: new_form_template.source, params: new_form_template.params}
+    #   end
 
-    {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)}
+    # {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)}
+    {:noreply, assign(socket, changeset: new_changeset)}
   end
 
   defp mark_changes({:noreply, socket}) do
     {:noreply, assign(socket, unsaved_changes: true)}
   end
 
-  defp find_field_in_changeset(changeset, field_id) do
-    changeset
-    |> Changeset.fetch_change!(:technical)
-    |> Changeset.get_change(:schema, [])
-    |> find_field_changeset_in_schema(field_id)
-    |> handle_field_not_found()
-  end
 
-  defp find_field_changeset_in_schema(schema, field_id) do
-    Enum.reduce_while(schema, nil, fn field, _ ->
-      if Changeset.get_field(field, :id) == field_id do
-        {:halt, field}
-      else
-        case find_field_changeset_in_schema(Changeset.get_change(field, :subSchema, []), field_id) do
-          nil -> {:cont, nil}
-          value -> {:halt, value}
-        end
-      end
-    end)
-  end
+  # TODO add this back ik
+  # defp get_new_selected_field(changeset, parent_id, deleted_field_index) do
+  #   technical_changeset = Changeset.fetch_change!(changeset, :technical)
+  #   technical_id = Changeset.fetch_change!(technical_changeset, :id)
 
-  defp handle_field_not_found(nil), do: DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
-  defp handle_field_not_found(found_field), do: found_field
+  #   if parent_id == technical_id do
+  #     technical_changeset
+  #     |> Changeset.fetch_change!(:schema)
+  #     |> get_next_sibling(deleted_field_index)
+  #   else
+  #     changeset
+  #     |> find_field_in_changeset(parent_id)
+  #     |> Changeset.get_change(:subSchema, [])
+  #     |> get_next_sibling(deleted_field_index)
+  #   end
+  # end
 
-  defp get_new_selected_field(changeset, parent_id, deleted_field_index) do
-    technical_changeset = Changeset.fetch_change!(changeset, :technical)
-    technical_id = Changeset.fetch_change!(technical_changeset, :id)
+  # defp get_next_sibling(parent_schema, _) when length(parent_schema) <= 1, do: :no_dictionary
 
-    if parent_id == technical_id do
-      technical_changeset
-      |> Changeset.fetch_change!(:schema)
-      |> get_next_sibling(deleted_field_index)
-    else
-      changeset
-      |> find_field_in_changeset(parent_id)
-      |> Changeset.get_change(:subSchema, [])
-      |> get_next_sibling(deleted_field_index)
-    end
-  end
+  # defp get_next_sibling(parent_schema, deleted_field_index) when deleted_field_index == 0 do
+  #   Enum.at(parent_schema, deleted_field_index + 1)
+  # end
 
-  defp get_next_sibling(parent_schema, _) when length(parent_schema) <= 1, do: :no_dictionary
-
-  defp get_next_sibling(parent_schema, deleted_field_index) when deleted_field_index == 0 do
-    Enum.at(parent_schema, deleted_field_index + 1)
-  end
-
-  defp get_next_sibling(parent_schema, deleted_field_index) do
-    Enum.at(parent_schema, deleted_field_index - 1)
-  end
-
-  defp key_values_to_keyword_list(form_data, field) do
-    form_data
-    |> Map.get(field, [])
-    |> Enum.map(fn %{key: key, value: value} -> {key, value} end)
-  end
+  # defp get_next_sibling(parent_schema, deleted_field_index) do
+  #   Enum.at(parent_schema, deleted_field_index - 1)
+  # end
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
-
-
-  defp get_eligible_data_dictionary_parents(changeset) do
-    Ecto.Changeset.apply_changes(changeset)
-    |> DataDictionaryFields.get_parent_ids()
-  end
-
-  defp update_component_visibility(components, component_visibility) do
-    Enum.reduce(components, component_visibility, fn component, acc ->
-      case Map.get(acc, component) do
-        "expanded" -> Map.put(acc, component, "collapsed")
-        "collapsed" -> Map.put(acc, component, "expanded")
-      end
-    end)
-  end
-
-  defp get_default_dictionary_field(%{params: %{schema: schema}} = changeset) when schema != [] do
-    first_data_dictionary_item =
-      form_for(changeset, "#", as: :form_data)
-      |> inputs_for(:schema)
-      |> hd()
-
-    first_selected_field_id = input_value(first_data_dictionary_item, :id)
-
-    [
-      current_data_dictionary_item: first_data_dictionary_item,
-      selected_field_id: first_selected_field_id
-    ]
-  end
-
-  defp get_default_dictionary_field(_changeset) do
-    [
-      current_data_dictionary_item: :no_dictionary,
-      selected_field_id: :no_dictionary
-    ]
-  end
 end

@@ -25,6 +25,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     field(:license, :string)
     field(:modifiedDate, :date)
     field(:orgId, :string)
+    field(:orgName, :string)
     field(:publishFrequency, :string)
     field(:riskRating, :float)
     field(:sourceFormat, :string)
@@ -51,6 +52,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     :license,
     :modifiedDate,
     :orgId,
+    :orgName,
     :publishFrequency,
     :riskRating,
     :sourceFormat,
@@ -71,6 +73,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     :language,
     :license,
     :orgId,
+    :orgName,
     :publishFrequency,
     :riskRating,
     :sourceFormat,
@@ -86,9 +89,14 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     |> validate_source_format()
     |> validate_top_level_selector()
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
+    |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_format(:contactEmail, @email_regex)
     |> validate_inclusion(:benefitRating, @ratings, message: "should be one of #{inspect(@ratings)}")
     |> validate_inclusion(:riskRating, @ratings, message: "should be one of #{inspect(@ratings)}")
+  end
+
+  def changeset_for_draft(metadata, changes) do
+    cast(metadata, changes, @cast_fields)
   end
 
   def changeset_from_andi_dataset(dataset) do
@@ -100,13 +108,11 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     changeset(changes)
   end
 
-
-  # def changeset_for_draft(dataset, changes) do
-  #   dataset
-  #   |> cast(changes, @cast_fields)
-  #   |> cast_assoc(:technical, with: &Technical.changeset_for_draft/2)
-  #   |> cast_assoc(:business, with: &Business.changeset_for_draft/2)
-  # end
+  def changeset_from_form_data(form_data) do
+    form_data
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> changeset()
+  end
 
   defp validate_source_format(%{changes: %{sourceType: source_type, sourceFormat: source_format}} = changeset)
        when source_type in ["ingest", "stream"] do

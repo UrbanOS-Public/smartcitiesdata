@@ -35,12 +35,20 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     changeset(technical_changes)
   end
 
-  # def changeset_for_draft(dataset, changes) do
-  #   dataset
-  #   |> cast(changes, @cast_fields)
-  #   |> cast_assoc(:technical, with: &Technical.changeset_for_draft/2)
-  #   |> cast_assoc(:business, with: &Business.changeset_for_draft/2)
-  # end
+  def changeset_from_form_data(form_data) do
+    form_data
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> changeset()
+  end
+
+  def changeset_for_draft(dictionary, changes) do
+    source_format = Map.get(changes, :sourceFormat, nil)
+    changes_with_id = StructTools.ensure_id(dictionary, changes)
+
+    dictionary
+    |> cast(changes_with_id, [], empty_values: [])
+    |> cast_assoc(:schema, with: &DataDictionary.changeset_for_draft(&1, &2, source_format))
+  end
 
   defp validate_schema(%{changes: %{sourceType: source_type}} = changeset)
   when source_type in ["ingest", "stream"] do

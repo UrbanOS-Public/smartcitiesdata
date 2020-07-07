@@ -282,7 +282,7 @@ defmodule Andi.InputSchemas.InputConverter do
     |> elem(1)
   end
 
-  defp replace(map, key, function) do
+  def replace(map, key, function) do
     case Map.fetch(map, key) do
       {:ok, value} -> Map.put(map, key, function.(value))
       :error -> map

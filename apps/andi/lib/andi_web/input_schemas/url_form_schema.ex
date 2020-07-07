@@ -36,6 +36,16 @@ defmodule AndiWeb.InputSchemas.UrlFormSchema do
     changeset(technical_changes)
   end
 
+  def changeset_from_form_data(form_data) do
+    form_data_as_params =
+      form_data
+      |> AtomicMap.convert(safe: false, underscore: false)
+      |> Map.put_new(:sourceQueryParams, %{})
+      |> Map.put_new(:sourceHeaders, %{})
+
+    changeset(form_data_as_params)
+  end
+
 
   # TODO
   # def changeset_for_draft(dataset, changes) do

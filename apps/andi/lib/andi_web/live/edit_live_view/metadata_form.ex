@@ -10,8 +10,10 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   alias Andi.InputSchemas.DisplayNames
   alias AndiWeb.ErrorHelpers
   alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.Datasets.Dataset
   alias AndiWeb.InputSchemas.MetadataFormSchema
   alias Andi.InputSchemas.FormTools
+  alias Andi.InputSchemas.StructTools
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_metadata_changeset = MetadataFormSchema.changeset_from_andi_dataset(dataset)
@@ -60,143 +62,144 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
       </div>
 
       <div class="form-section">
-      <%= f = form_for @changeset, "#", [phx_change: :cam, as: :form_data] %>
-        <div class="component-edit-section--<%= @visibility %>">
-          <div class="metadata-form-edit-section form-grid">
-            <div class="metadata-form__title">
-              <%= label(f, :dataTitle, DisplayNames.get(:dataTitle), class: "label label--required") %>
-              <%= text_input(f, :dataTitle, class: "input", phx_value_field: "dataTitle", phx_blur: "validate_system_name") %>
-              <%= ErrorHelpers.error_tag(@changeset, :dataTitle) %>
+        <%= f = form_for @changeset, "#", [phx_change: :cam, phx_submit: :camsave, as: :form_data] %>
+          <div class="component-edit-section--<%= @visibility %>">
+            <div class="metadata-form-edit-section form-grid">
+              <div class="metadata-form__title">
+                <%= label(f, :dataTitle, DisplayNames.get(:dataTitle), class: "label label--required") %>
+                <%= text_input(f, :dataTitle, class: "input", phx_value_field: "dataTitle", phx_blur: "validate_system_name") %>
+                <%= ErrorHelpers.error_tag(@changeset, :dataTitle) %>
+              </div>
+
+              <div class="metadata-form__data-name">
+                <%= label(f, :dataName, DisplayNames.get(:dataName), class: "label label--required") %>
+                <%= text_input(f, :dataName, [class: "input input--text", readonly: true]) %>
+                <%= ErrorHelpers.error_tag(@changeset, :dataName, bind_to_input: false) %>
+              </div>
+
+              <div class="metadata-form__description">
+                <%= label(f, :description, DisplayNames.get(:description), class: "label label--required") %>
+                <%= textarea(f, :description, class: "input textarea") %>
+                <%= ErrorHelpers.error_tag(f, :description) %>
+              </div>
+
+              <div class="metadata-form__maintainer-name">
+                <%= label(f, :contactName, DisplayNames.get(:contactName), class: "label label--required") %>
+                <%= text_input(f, :contactName, class: "input") %>
+                <%= ErrorHelpers.error_tag(@changeset, :contactName) %>
+              </div>
+
+              <div class="metadata-form__maintainer-email">
+                <%= label(f, :contactEmail, DisplayNames.get(:contactEmail), class: "label label--required") %>
+                <%= text_input(f, :contactEmail, class: "input") %>
+                <%= ErrorHelpers.error_tag(@changeset, :contactEmail) %>
+              </div>
+
+              <div class="metadata-form__release-date">
+                <%= label(f, :issuedDate, DisplayNames.get(:issuedDate), class: "label label--required") %>
+                <%= date_input(f, :issuedDate, class: "input", value: safe_calendar_value(input_value(f, :issuedDate))) %>
+                <%= ErrorHelpers.error_tag(@changeset, :issuedDate, bind_to_input: false) %>
+              </div>
+
+              <div class="metadata-form__license">
+                <%= label(f, :license, DisplayNames.get(:license), class: "label label--required") %>
+                <%= text_input(f, :license, class: "input") %>
+                <%= ErrorHelpers.error_tag(@changeset, :license) %>
+              </div>
+
+              <div class="metadata-form__top-level-selector">
+                <%= label(f, :topLevelSelector, DisplayNames.get(:topLevelSelector), class: top_level_selector_label_class(input_value(f, :sourceFormat))) %>
+                <%= text_input(f, :topLevelSelector, [class: "input--text input", readonly: input_value(f, :sourceFormat) not in ["xml", "json", "text/xml", "application/json"]]) %>
+                <%= ErrorHelpers.error_tag(@changeset, :topLevelSelector) %>
+              </div>
+
+              <div class="metadata-form__update-frequency">
+                <%= label(f, :publishFrequency, DisplayNames.get(:publishFrequency), class: "label label--required") %>
+                <%= text_input(f, :publishFrequency, class: "input") %>
+                <%= ErrorHelpers.error_tag(@changeset, :publishFrequency) %>
+              </div>
+
+              <div class="metadata-form__keywords">
+                <%= label(f, :keywords, DisplayNames.get(:keywords), class: "label") %>
+                <%= text_input(f, :keywords, value: keywords_to_string(input_value(f, :keywords)), class: "input") %>
+                <div class="label label--inline">Separated by comma</div>
+              </div>
+
+              <div class="metadata-form__last-updated">
+                <%= label(f, :modifiedDate, DisplayNames.get(:modifiedDate), class: "label") %>
+                <%= date_input(f, :modifiedDate, class: "input", value: safe_calendar_value(input_value(f, :modifiedDate))) %>
+              </div>
+
+              <div class="metadata-form__spatial">
+                <%= label(f, :spatial, DisplayNames.get(:spatial), class: "label") %>
+                <%= text_input(f, :spatial, class: "input") %>
+              </div>
+
+              <div class="metadata-form__temporal">
+                <%= label(f, :temporal, DisplayNames.get(:temporal), class: "label") %>
+                <%= text_input(f, :temporal, class: "input") %>
+                <%= ErrorHelpers.error_tag(@changeset, :temporal) %>
+              </div>
+
+              <div class="metadata-form__organization">
+                <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
+                <%= select(f, :orgId, get_org_options(), [class: "select", disabled: @dataset_exists, selected: ""]) %>
+                <%= ErrorHelpers.error_tag(@changeset, :orgTitle) %>
+              </div>
+
+              <div class="metadata-form__language">
+                <%= label(f, :language, DisplayNames.get(:language), class: "label") %>
+                <%= select(f, :language, get_language_options(), value: get_language(input_value(f, :language)), class: "select") %>
+              </div>
+
+              <div class="metadata-form__homepage">
+                <%= label(f, :homepage, DisplayNames.get(:homepage), class: "label") %>
+                <%= text_input(f, :homepage, class: "input") %>
+              </div>
+
+              <div class="metadata-form__type">
+                <%= label(f, :sourceType, DisplayNames.get(:sourceType), class: "label label--required") %>
+                <%= select(f, :sourceType, get_source_type_options(), [class: "select", disabled: @dataset_exists]) %>
+                <%= ErrorHelpers.error_tag(@changeset, :sourceType) %>
+              </div>
+
+              <div class="metadata-form__format">
+                <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
+                <%= select(f, :sourceFormat, get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_exists]) %>
+                <%= ErrorHelpers.error_tag(@changeset, :sourceFormat) %>
+              </div>
+
+              <div class="metadata-form__level-of-access">
+                <%= label(f, :private, DisplayNames.get(:private), class: "label label--required") %>
+                <%= select(f, :private, get_level_of_access_options(), class: "select") %>
+                <%= ErrorHelpers.error_tag(@changeset, :private) %>
+              </div>
+
+              <div class="metadata-form__benefit-rating">
+                <%= label(f, :benefitRating, DisplayNames.get(:benefitRating), class: "label label--required") %>
+                <%= select(f, :benefitRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
+                <%= ErrorHelpers.error_tag(@changeset, :benefitRating, bind_to_input: false) %>
+              </div>
+
+              <div class="metadata-form__risk-rating">
+                <%= label(f, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
+                <%= select(f, :riskRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
+                <%= ErrorHelpers.error_tag(@changeset, :riskRating, bind_to_input: false) %>
+              </div>
             </div>
 
-            <div class="metadata-form__data-name">
-              <%= label(f, :dataName, DisplayNames.get(:dataName), class: "label label--required") %>
-              <%= text_input(f, :dataName, [class: "input input--text", readonly: true]) %>
-              <%= ErrorHelpers.error_tag(@changeset, :dataName, bind_to_input: false) %>
-            </div>
+            <div class="edit-button-group form-grid">
+              <div class="edit-button-group__cancel-btn">
+                <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
+              </div>
 
-            <div class="metadata-form__description">
-              <%= label(f, :description, DisplayNames.get(:description), class: "label label--required") %>
-              <%= textarea(f, :description, class: "input textarea") %>
-              <%= ErrorHelpers.error_tag(@changeset, :description) %>
-            </div>
-
-            <div class="metadata-form__maintainer-name">
-              <%= label(f, :contactName, DisplayNames.get(:contactName), class: "label label--required") %>
-              <%= text_input(f, :contactName, class: "input") %>
-              <%= ErrorHelpers.error_tag(@changeset, :contactName) %>
-            </div>
-
-            <div class="metadata-form__maintainer-email">
-              <%= label(f, :contactEmail, DisplayNames.get(:contactEmail), class: "label label--required") %>
-              <%= text_input(f, :contactEmail, class: "input") %>
-              <%= ErrorHelpers.error_tag(@changeset, :contactEmail) %>
-            </div>
-
-            <div class="metadata-form__release-date">
-              <%= label(f, :issuedDate, DisplayNames.get(:issuedDate), class: "label label--required") %>
-              <%= date_input(f, :issuedDate, class: "input", value: safe_calendar_value(input_value(f, :issuedDate))) %>
-              <%= ErrorHelpers.error_tag(@changeset, :issuedDate, bind_to_input: false) %>
-            </div>
-
-            <div class="metadata-form__license">
-              <%= label(f, :license, DisplayNames.get(:license), class: "label label--required") %>
-              <%= text_input(f, :license, class: "input") %>
-              <%= ErrorHelpers.error_tag(@changeset, :license) %>
-            </div>
-
-            <div class="metadata-form__top-level-selector">
-              <%= label(f, :topLevelSelector, DisplayNames.get(:topLevelSelector), class: top_level_selector_label_class(input_value(f, :sourceFormat))) %>
-              <%= text_input(f, :topLevelSelector, [class: "input--text input", readonly: input_value(f, :sourceFormat) not in ["xml", "json", "text/xml", "application/json"]]) %>
-              <%= ErrorHelpers.error_tag(@changeset, :topLevelSelector) %>
-            </div>
-
-            <div class="metadata-form__update-frequency">
-              <%= label(f, :publishFrequency, DisplayNames.get(:publishFrequency), class: "label label--required") %>
-              <%= text_input(f, :publishFrequency, class: "input") %>
-              <%= ErrorHelpers.error_tag(@changeset, :publishFrequency) %>
-            </div>
-
-            <div class="metadata-form__keywords">
-              <%= label(f, :keywords, DisplayNames.get(:keywords), class: "label") %>
-              <%= text_input(f, :keywords, value: keywords_to_string(input_value(f, :keywords)), class: "input") %>
-              <div class="label label--inline">Separated by comma</div>
-            </div>
-
-            <div class="metadata-form__last-updated">
-              <%= label(f, :modifiedDate, DisplayNames.get(:modifiedDate), class: "label") %>
-              <%= date_input(f, :modifiedDate, class: "input", value: safe_calendar_value(input_value(f, :modifiedDate))) %>
-            </div>
-
-            <div class="metadata-form__spatial">
-              <%= label(f, :spatial, DisplayNames.get(:spatial), class: "label") %>
-              <%= text_input(f, :spatial, class: "input") %>
-            </div>
-
-            <div class="metadata-form__temporal">
-              <%= label(f, :temporal, DisplayNames.get(:temporal), class: "label") %>
-              <%= text_input(f, :temporal, class: "input") %>
-              <%= ErrorHelpers.error_tag(@changeset, :temporal) %>
-            </div>
-
-            <div class="metadata-form__organization">
-              <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
-              <%= select(f, :orgId, get_org_options(), [class: "select", disabled: @dataset_exists, selected: ""]) %>
-              <%= ErrorHelpers.error_tag(@changeset, :orgTitle) %>
-            </div>
-
-            <div class="metadata-form__language">
-              <%= label(f, :language, DisplayNames.get(:language), class: "label") %>
-              <%= select(f, :language, get_language_options(), value: get_language(input_value(f, :language)), class: "select") %>
-            </div>
-
-            <div class="metadata-form__homepage">
-              <%= label(f, :homepage, DisplayNames.get(:homepage), class: "label") %>
-              <%= text_input(f, :homepage, class: "input") %>
-            </div>
-
-            <div class="metadata-form__type">
-              <%= label(f, :sourceType, DisplayNames.get(:sourceType), class: "label label--required") %>
-              <%= select(f, :sourceType, get_source_type_options(), [class: "select", disabled: @dataset_exists]) %>
-              <%= ErrorHelpers.error_tag(@changeset, :sourceType) %>
-            </div>
-
-            <div class="metadata-form__format">
-              <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-              <%= select(f, :sourceFormat, get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_exists]) %>
-              <%= ErrorHelpers.error_tag(@changeset, :sourceFormat) %>
-            </div>
-
-            <div class="metadata-form__level-of-access">
-              <%= label(f, :private, DisplayNames.get(:private), class: "label label--required") %>
-              <%= select(f, :private, get_level_of_access_options(), class: "select") %>
-              <%= ErrorHelpers.error_tag(@changeset, :private) %>
-            </div>
-
-            <div class="metadata-form__benefit-rating">
-              <%= label(f, :benefitRating, DisplayNames.get(:benefitRating), class: "label label--required") %>
-              <%= select(f, :benefitRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
-              <%= ErrorHelpers.error_tag(@changeset, :benefitRating, bind_to_input: false) %>
-            </div>
-
-            <div class="metadata-form__risk-rating">
-              <%= label(f, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
-              <%= select(f, :riskRating, get_rating_options(), class: "select", prompt: rating_selection_prompt()) %>
-              <%= ErrorHelpers.error_tag(@changeset, :riskRating, bind_to_input: false) %>
+              <div class="edit-button-group__save-btn">
+                <a href="#data-dictionary-form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-collapse="metadata_form" phx-value-component-expand="data_dictionary_form">Next</a>
+                <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="camsave">Save Draft</button>
+              </div>
             </div>
           </div>
-
-          <div class="edit-button-group form-grid">
-            <div class="edit-button-group__cancel-btn">
-              <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
-            </div>
-
-            <div class="edit-button-group__save-btn">
-              <a href="#data-dictionary-form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-collapse="metadata_form" phx-value-component-expand="data_dictionary_form">Next</a>
-              <%= submit("Save Draft", id: "save-button", name: "save-button", class: "btn btn--save btn--large", phx_value_action: "draft") %>
-            </div>
-          </div>
-        </div>
+        </form>
       </div>
     </div>
     """
@@ -204,19 +207,87 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
   def handle_event(
     "cam",
-    %{"form_data" => form_data, "_target" => ["form_data", "business", "dataTitle" | _]},
+    %{"form_data" => form_data, "_target" => ["form_data", "dataTitle" | _]},
     %{assigns: %{dataset_exists: false}} = socket
   ) do
     form_data
     |> FormTools.adjust_data_name()
-    |> InputConverter.form_data_to_ui_changeset()
+    |> MetadataFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
+
+  def handle_event(
+    "cam",
+    %{"form_data" => form_data, "_target" => ["form_data", "orgId" | _]},
+    %{assigns: %{dataset_exists: false}} = socket
+  ) do
+    form_data
+    |> FormTools.adjust_org_name()
+    |> MetadataFormSchema.changeset_from_form_data()
+    |> Dataset.validate_unique_system_name()
+    |> complete_validation(socket)
+    |> mark_changes()
+  end
+
+  def handle_event("cam", %{"form_data" => form_data}, socket) do
+    form_data
+    |> MetadataFormSchema.changeset_from_form_data()
+    |> complete_validation(socket)
+    |> mark_changes()
+  end
+
+  def handle_event("validate_system_name", _, socket) do
+    changeset =
+      Dataset.validate_unique_system_name(socket.assigns.changeset)
+      |> Map.put(:action, :update)
+
+    {:noreply, assign(socket, changeset: changeset)}
+  end
+
+  def handle_event("toggle-component-visibility", %{"component" => component}, socket) do
+    new_visibility = case Map.get(socket.assigns, :visibility) do
+      "expanded" -> "collapsed"
+      "collapsed" -> "expanded"
+    end
+
+    {:noreply, assign(socket, visibility: new_visibility)}
+  end
+
+
+  def handle_event("camsave", _, socket) do
+    changeset =
+      socket.assigns.changeset
+      |> Map.put(:action, :update)
+
+    changes = Ecto.Changeset.apply_changes(changeset) |> StructTools.to_map
+
+    send(socket.parent_pid, {:form_save, changes})
+
+    {:noreply, assign(socket, changeset: changeset)}
+  end
+
+  #TODO send messages to other components to toggle their visibility
+  # def handle_event(
+  #   "toggle-component-visibility",
+  #   %{"component-expand" => component_expand, "component-collapse" => component_collapse},
+  #   socket
+  # ) do
+  #   new_visibility =
+  #     socket.assigns.component_visibility
+  #     |> Map.put(component_expand, "expanded")
+  #     |> Map.put(component_collapse, "collapsed")
+
+  #   {:noreply, assign(socket, component_visibility: new_visibility)}
+  # end
 
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
 
     {:noreply, assign(socket, changeset: new_changeset)}
+  end
+
+  defp mark_changes({:noreply, socket}) do
+    {:noreply, assign(socket, unsaved_changes: true)}
   end
 
   defp top_level_selector_label_class(source_format) when source_format in ["text/xml", "xml"], do: "label label--required"
