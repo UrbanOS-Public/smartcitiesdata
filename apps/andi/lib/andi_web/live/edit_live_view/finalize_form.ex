@@ -21,33 +21,22 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   def mount(_, %{"dataset" => dataset}, socket) do
     new_changeset = FinalizeFormSchema.changeset_from_andi_dataset(dataset)
 
-    {:ok, assign(socket,
-        visibility: "expanded",
-        changeset: new_changeset,
-        repeat_ingestion?: false,
-        crontab: "0 * * * * *",
-        crontab_list: nil
-      )}
-  end
-
-  def update(assigns, socket) do
     default_cron =
-      case input_value(assigns.form, :cadence) do
-        cadence when cadence in ["once", "never"] -> "0 * * * * *"
+      case dataset.technical.cadence do
+        cadence when cadence in ["once", "never", nil] -> "0 * * * * *"
         cron -> cron
       end
 
-    crontab = Map.get(assigns, :crontab, default_cron)
-    crontab_list = Map.get(assigns, :crontab_list, parse_crontab(crontab))
-    repeat_ingestion? = input_value(assigns.form, :cadence) not in ["once", "never"]
+    repeat_ingestion? = dataset.technical.cadence not in ["once", "never", nil]
 
-    updated_assigns =
-      assigns
-      |> Map.put_new(:crontab, default_cron)
-      |> Map.put_new(:crontab_list, crontab_list)
-      |> Map.put(:repeat_ingestion?, repeat_ingestion?)
-
-    {:ok, assign(socket, updated_assigns)}
+    {:ok, assign(socket,
+        visibility: "expanded",
+        changeset: new_changeset,
+        repeat_ingestion?: repeat_ingestion?,
+        crontab: default_cron,
+        crontab_list: parse_crontab(default_cron),
+        dataset_id: dataset.id
+      )}
   end
 
   def render(assigns) do
@@ -182,12 +171,20 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
+  def handle_event("toggle-component-visibility", %{"component" => component}, socket) do
+    new_visibility = case socket.assigns.visibility do
+                       "expanded" -> "collapsed"
+                       "collapsed" -> "expanded"
+                     end
+
+    {:noreply, assign(socket, visibility: new_visibility)}
+  end
+
   def handle_event("set_schedule", %{"input-field" => input_field, "value" => value}, socket) do
     new_crontab_list = Map.put(socket.assigns.crontab_list, String.to_existing_atom(input_field), value)
     new_cron = cronlist_to_cronstring(new_crontab_list)
 
     Datasets.update_cadence(socket.assigns.dataset_id, new_cron)
-    send(self(), {:assign_crontab})
 
     {:noreply, assign(socket, crontab_list: new_crontab_list)}
   end
@@ -195,7 +192,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   def handle_event("quick_schedule", %{"schedule" => schedule}, socket) do
     cronstring = @quick_schedules[schedule]
     Datasets.update_cadence(socket.assigns.dataset_id, cronstring)
-    send(self(), {:assign_crontab})
 
     {:noreply, assign(socket, crontab_list: parse_crontab(cronstring))}
   end
@@ -240,8 +236,10 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
+    cadence = Ecto.Changeset.get_field(changeset, :cadence)
+    repeat_ingestion? = cadence not in ["once", "never", nil]
 
-    {:noreply, assign(socket, changeset: new_changeset)}
+    {:noreply, assign(socket, changeset: new_changeset, repeat_ingestion?: repeat_ingestion?)}
   end
 
   defp mark_changes({:noreply, socket}) do

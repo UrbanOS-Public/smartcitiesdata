@@ -123,7 +123,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("toggle-component-visibility", %{"component" => component}, socket) do
-    new_visibility = case Map.get(socket.assigns, :visibility) do
+    new_visibility = case socket.assigns.visibility do
                        "expanded" -> "collapsed"
                        "collapsed" -> "expanded"
                      end

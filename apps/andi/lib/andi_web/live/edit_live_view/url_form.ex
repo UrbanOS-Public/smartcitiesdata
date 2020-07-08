@@ -12,6 +12,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   alias AndiWeb.InputSchemas.UrlFormSchema
   alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.Datasets
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_changeset = UrlFormSchema.changeset_from_andi_dataset(dataset)
@@ -22,6 +23,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
        testing: false,
        test_results: nil,
        visibility: "expanded"
+       dataset_id: dataset.id
      )}
   end
 

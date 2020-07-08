@@ -5,6 +5,7 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets.Technical
@@ -190,7 +191,7 @@ defmodule AndiWeb.EditLiveView do
       |> Map.get(:changes)
       |> Map.merge(form_changes)
 
-    new_changes = %{technical: technical_changes, business: business_changes, id: socket.assigns.dataset.id}
+    new_changes = %{technical: technical_changes, business: business_changes, id: socket.assigns.dataset.id} |> StructTools.to_map
 
     new_changeset = Dataset.changeset_for_draft(%Dataset{}, new_changes)
 
@@ -205,20 +206,6 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, socket}
   end
 
-  # TODO add these back in
-
-  def handle_info({:assign_crontab}, socket) do
-    socket = reset_save_success(socket)
-
-    dataset = Datasets.get(socket.assigns.dataset.id)
-
-    changeset =
-      dataset
-      |> InputConverter.andi_dataset_to_full_ui_changeset()
-      |> Map.put(:action, :update)
-
-    {:noreply, assign(socket, changeset: changeset)}
-  end
 
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
