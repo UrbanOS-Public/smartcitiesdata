@@ -20,6 +20,10 @@ defmodule Valkyrie.DatasetMutationTest do
 
     data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"age" => "21"})
 
+    assert :ok ==
+             data_ingest_start()
+             |> TestHelpers.add_event_count(@dataset_id)
+
     Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
     TestHelpers.wait_for_topic(@endpoints, @input_topic)
     TestHelpers.wait_for_topic(@endpoints, @output_topic)
@@ -66,6 +70,10 @@ defmodule Valkyrie.DatasetMutationTest do
     input_topic = "#{@input_topic_prefix}-#{dataset_id}"
     output_topic = "#{@output_topic_prefix}-#{dataset_id}"
     dataset = TDG.create_dataset(id: dataset_id, technical: %{sourceType: "ingest"})
+
+    assert :ok ==
+             data_ingest_start()
+             |> TestHelpers.add_event_count(dataset_id)
 
     Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
 

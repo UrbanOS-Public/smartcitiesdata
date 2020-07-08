@@ -31,6 +31,9 @@ defmodule Valkyrie.TopicCreationTest do
         payload: %{"name" => %{"first" => "Ben", "last" => "Brewer"}}
       })
 
+    data_ingest_start()
+    |> TestHelpers.add_event_count(dataset_id)
+
     Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
 
     TestHelpers.wait_for_topic(@endpoints, input_topic)

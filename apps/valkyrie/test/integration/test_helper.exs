@@ -85,4 +85,14 @@ defmodule TestHelpers do
       max_tries: 20
     )
   end
+
+  def add_event_count(event_type, dataset_id) do
+    [
+      app: "valkyrie",
+      author: "valkyrie",
+      dataset_id: dataset_id,
+      event_type: event_type
+    ]
+    |> TelemetryEvent.add_event_count()
+  end
 end

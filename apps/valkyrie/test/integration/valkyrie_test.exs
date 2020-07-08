@@ -50,6 +50,9 @@ defmodule ValkyrieTest do
     input_topic = "#{@input_topic_prefix}-#{dataset.id}"
     output_topic = "#{@output_topic_prefix}-#{dataset.id}"
 
+    data_ingest_start()
+    |> TestHelpers.add_event_count(dataset.id)
+
     Brook.Event.send(@instance, data_ingest_start(), :valkyrie, dataset)
     TestHelpers.wait_for_topic(@endpoints, input_topic)
 

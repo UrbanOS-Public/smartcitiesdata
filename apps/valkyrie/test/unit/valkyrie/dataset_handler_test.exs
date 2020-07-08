@@ -11,30 +11,36 @@ defmodule Valkyrie.DatasetHandlerTest do
 
   @instance Valkyrie.Application.instance()
 
+  setup do
+    allow(Valkyrie.DatasetProcessor.start(any()), return: :does_not_matter, meck_options: [:passthrough])
+
+    :ok
+  end
+
+  data_test "Processes datasets with #{source_type} " do
+    dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: source_type})
+
+    Brook.Test.with_event(@instance, fn ->
+      DatasetHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author))
+    end)
+
+    assert called == called?(Valkyrie.DatasetProcessor.start(dataset))
+
+    where([
+      [:source_type, :called],
+      ["ingest", true],
+      ["stream", true],
+      ["host", false],
+      ["remote", false],
+      ["invalid", false]
+    ])
+  end
+
   describe "handle_event/1" do
     setup do
-      allow(Valkyrie.DatasetProcessor.start(any()), return: :does_not_matter, meck_options: [:passthrough])
+      expect(TelemetryEvent.add_event_count(any()), return: :ok)
 
       :ok
-    end
-
-    data_test "Processes datasets with #{source_type} " do
-      dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: source_type})
-
-      Brook.Test.with_event(@instance, fn ->
-        DatasetHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author))
-      end)
-
-      assert called == called?(Valkyrie.DatasetProcessor.start(dataset))
-
-      where([
-        [:source_type, :called],
-        ["ingest", true],
-        ["stream", true],
-        ["host", false],
-        ["remote", false],
-        ["invalid", false]
-      ])
     end
 
     test "Should modify viewstate when handled" do

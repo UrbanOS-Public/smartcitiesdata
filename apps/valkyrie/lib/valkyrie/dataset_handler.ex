@@ -12,6 +12,9 @@ defmodule Valkyrie.DatasetHandler do
         data: %Dataset{technical: %{sourceType: source_type}} = dataset
       })
       when source_type in ["ingest", "stream"] do
+    data_ingest_start()
+    |> add_event_count(dataset.id)
+
     Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{dataset.id}")
     Valkyrie.DatasetProcessor.start(dataset)
     merge(:datasets, dataset.id, dataset)
@@ -21,6 +24,9 @@ defmodule Valkyrie.DatasetHandler do
         type: data_standardization_end(),
         data: %{"dataset_id" => dataset_id}
       }) do
+    data_standardization_end()
+    |> add_event_count(dataset_id)
+
     Valkyrie.DatasetProcessor.stop(dataset_id)
     Logger.debug("#{__MODULE__}: Standardization finished for dataset: #{dataset_id}")
     delete(:datasets, dataset_id)
@@ -30,6 +36,9 @@ defmodule Valkyrie.DatasetHandler do
         type: dataset_delete(),
         data: %Dataset{} = dataset
       }) do
+    dataset_delete()
+    |> add_event_count(dataset.id)
+
     case Valkyrie.DatasetProcessor.delete(dataset.id) do
       :ok ->
         Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{dataset.id}")
@@ -39,5 +48,15 @@ defmodule Valkyrie.DatasetHandler do
     end
 
     delete(:datasets, dataset.id)
+  end
+
+  defp add_event_count(event_type, dataset_id) do
+    [
+      app: "valkyrie",
+      author: "valkyrie",
+      dataset_id: dataset_id,
+      event_type: event_type
+    ]
+    |> TelemetryEvent.add_event_count()
   end
 end
