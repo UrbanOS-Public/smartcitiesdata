@@ -235,28 +235,13 @@ defmodule AndiWeb.EditLiveView do
   defp complete_validation(changeset, socket) do
     socket = reset_save_success(socket)
     new_changeset = Map.put(changeset, :action, :update)
-    current_form = socket.assigns.current_data_dictionary_item
 
-    # updated_current_field =
-    #   case current_form do
-    #     :no_dictionary ->
-    #       :no_dictionary
-
-    #     _ ->
-    #       new_form_template = find_field_in_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
-    #       %{current_form | source: new_form_template.source, params: new_form_template.params}
-    #   end
-
-    # {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)}
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
   defp mark_changes({:noreply, socket}) do
     {:noreply, assign(socket, unsaved_changes: true)}
   end
-
-
-  # TODO add this back ik
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
 end

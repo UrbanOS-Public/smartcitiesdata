@@ -104,6 +104,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     |> mark_changes()
   end
 
+  def handle_event("cam", %{"data_dictionary_form_schema" => form_schema}, socket) do
+    form_schema
+    |> DataDictionaryFormSchema.changeset_from_form_data()
+    |> complete_validation(socket)
+    |> mark_changes()
+  end
+
   def handle_event("camsave", _, socket) do
     changeset =
       socket.assigns.changeset
@@ -263,7 +270,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   defp handle_field_not_found(nil), do: DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
   defp handle_field_not_found(found_field), do: found_field
 
-  defp get_default_dictionary_field(%{params: %{schema: schema}} = changeset) when schema != [] do
+  defp get_default_dictionary_field(%{changes: %{schema: schema}} = changeset) when schema != [] do
     first_data_dictionary_item =
       form_for(changeset, "#", as: :form_data)
       |> inputs_for(:schema)
