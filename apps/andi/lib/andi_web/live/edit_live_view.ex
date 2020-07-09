@@ -59,17 +59,20 @@ defmodule AndiWeb.EditLiveView do
 
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, show_unsaved_changes_modal: @show_unsaved_changes_modal) %>
 
-      <%= if @save_success do %>
-        <div id="snackbar" class="success-message"><%= @success_message %></div>
-      <% end %>
+      <div phx-hook="showSnackbar">
+        <%= if @save_success do %>
+          <div id="snackbar" class="success-message"><%= @success_message %></div>
+        <% end %>
 
-      <%= if @has_validation_errors do %>
-        <div id="snackbar" class="error-message">There were errors with the dataset you tried to submit.</div>
-      <% end %>
+        <%= if @has_validation_errors do %>
+          <div id="snackbar" class="error-message">There were errors with the dataset you tried to submit</div>
+        <% end %>
 
-      <%= if @page_error do %>
-        <div id="snackbar" class="error-message">A page error occurred</div>
-      <% end %>
+        <%= if @page_error do %>
+          <div id="snackbar" class="error-message">A page error occurred</div>
+        <% end %>
+      </div>
+
     </div>
     """
   end
@@ -181,6 +184,8 @@ defmodule AndiWeb.EditLiveView do
 
   #TODO clean this up - maybe move to input converter
   def handle_info({:form_save, form_changes}, socket) do
+    socket = reset_save_success(socket)
+
     technical_changes = socket.assigns.changeset
       |> Changeset.get_change(:technical)
       |> Map.get(:changes)
@@ -193,17 +198,24 @@ defmodule AndiWeb.EditLiveView do
 
     new_changes = %{technical: technical_changes, business: business_changes, id: socket.assigns.dataset.id} |> StructTools.to_map
 
-    new_changeset = Dataset.changeset_for_draft(%Dataset{}, new_changes)
+    draft_changeset = Dataset.changeset_for_draft(%Dataset{}, new_changes)
 
-    pending_dataset = Changeset.apply_changes(new_changeset)
-    {:ok, _} = Datasets.update(pending_dataset)
+    pending_dataset = Changeset.apply_changes(draft_changeset)
+    {:ok, andi_dataset} = Datasets.update(pending_dataset)
 
-    # new_changeset
-    # |> Dataset.validate_unique_system_name()
-    # |> Map.put(:action, :update)
+    changeset =
+      andi_dataset
+      |> InputConverter.andi_dataset_to_full_ui_changeset()
+      |> Dataset.validate_unique_system_name()
+      |> Map.put(:action, :update)
 
-    # {:noreply, assign(socket, changeset: new_changeset)}
-    {:noreply, socket}
+    success_message =
+      case changeset.valid? do
+        true -> "Saved successfully."
+        false -> "Saved successfully. You may need to fix errors before publishing."
+      end
+
+    {:noreply, assign(socket, save_success: true, success_message: success_message, unsaved_changes: false, changeset: changeset)}
   end
 
 
