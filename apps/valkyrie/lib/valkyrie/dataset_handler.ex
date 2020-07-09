@@ -9,12 +9,12 @@ defmodule Valkyrie.DatasetHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Dataset{technical: %{sourceType: source_type}} = dataset
+        data: %Dataset{technical: %{sourceType: source_type}} = dataset,
+        author: author
       })
       when source_type in ["ingest", "stream"] do
     data_ingest_start()
-    |> add_event_count(dataset.id)
-
+    |> add_event_count(author, dataset.id)
     Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{dataset.id}")
     Valkyrie.DatasetProcessor.start(dataset)
     merge(:datasets, dataset.id, dataset)
@@ -22,10 +22,11 @@ defmodule Valkyrie.DatasetHandler do
 
   def handle_event(%Brook.Event{
         type: data_standardization_end(),
-        data: %{"dataset_id" => dataset_id}
+        data: %{"dataset_id" => dataset_id},
+        author: author
       }) do
     data_standardization_end()
-    |> add_event_count(dataset_id)
+    |> add_event_count(author, dataset_id)
 
     Valkyrie.DatasetProcessor.stop(dataset_id)
     Logger.debug("#{__MODULE__}: Standardization finished for dataset: #{dataset_id}")
@@ -34,10 +35,11 @@ defmodule Valkyrie.DatasetHandler do
 
   def handle_event(%Brook.Event{
         type: dataset_delete(),
-        data: %Dataset{} = dataset
+        data: %Dataset{} = dataset,
+        author: author
       }) do
     dataset_delete()
-    |> add_event_count(dataset.id)
+    |> add_event_count(author, dataset.id)
 
     case Valkyrie.DatasetProcessor.delete(dataset.id) do
       :ok ->
@@ -50,10 +52,10 @@ defmodule Valkyrie.DatasetHandler do
     delete(:datasets, dataset.id)
   end
 
-  defp add_event_count(event_type, dataset_id) do
+  defp add_event_count(event_type, author, dataset_id) do
     [
       app: "valkyrie",
-      author: "valkyrie",
+      author: author,
       dataset_id: dataset_id,
       event_type: event_type
     ]

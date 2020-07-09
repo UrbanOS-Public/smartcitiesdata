@@ -35,9 +35,6 @@ defmodule Valkyrie.EndOfDataTest do
 
     eod_message = end_of_data()
 
-    eod_message
-    |> TestHelpers.add_event_count(dataset_id)
-
     message_to_not_consume =
       TestHelpers.create_data(%{dataset_id: dataset.id, payload: %{"name" => %{"first" => "Post", "last" => "Man"}}})
 
