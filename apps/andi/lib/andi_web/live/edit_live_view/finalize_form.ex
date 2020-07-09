@@ -67,7 +67,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       </div>
 
       <div class="form-section">
-        <%= f = form_for @changeset, "#", [phx_change: :cam, as: :form_data] %>
+        <%= f = form_for @changeset, "#", [as: :form_data] %>
           <div class="component-edit-section--<%= @visibility %>">
             <div class="finalize-form-edit-section form-grid">
               <div "finalize-form__schedule">
@@ -153,13 +153,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     """
   end
 
-  def handle_event("cam", %{"form_data" => form_data}, socket) do
-    form_data
-    |> FinalizeFormSchema.changeset_from_form_data()
-    |> complete_validation(socket)
-    |> mark_changes()
-  end
-
   def handle_event("camsave", _, socket) do
     changeset =
       socket.assigns.changeset
@@ -184,16 +177,28 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     new_crontab_list = Map.put(socket.assigns.crontab_list, String.to_existing_atom(input_field), value)
     new_cron = cronlist_to_cronstring(new_crontab_list)
 
-    Datasets.update_cadence(socket.assigns.dataset_id, new_cron)
+    {:ok, andi_dataset} = Datasets.update_cadence(socket.assigns.dataset_id, new_cron)
 
-    {:noreply, assign(socket, crontab_list: new_crontab_list)}
+    {_, updated_socket} =
+      andi_dataset
+      |> FinalizeFormSchema.changeset_from_andi_dataset()
+      |> complete_validation(socket)
+      |> mark_changes()
+
+    {:noreply, assign(updated_socket, crontab: new_cron, crontab_list: new_crontab_list)}
   end
 
   def handle_event("quick_schedule", %{"schedule" => schedule}, socket) do
     cronstring = @quick_schedules[schedule]
-    Datasets.update_cadence(socket.assigns.dataset_id, cronstring)
+    {:ok, andi_dataset} = Datasets.update_cadence(socket.assigns.dataset_id, cronstring)
 
-    {:noreply, assign(socket, crontab_list: parse_crontab(cronstring))}
+    {_, updated_socket} =
+      andi_dataset
+      |> FinalizeFormSchema.changeset_from_andi_dataset()
+      |> complete_validation(socket)
+      |> mark_changes()
+
+    {:noreply, assign(updated_socket, crontab: cronstring, crontab_list: parse_crontab(cronstring))}
   end
 
   defp parse_crontab(nil), do: %{}

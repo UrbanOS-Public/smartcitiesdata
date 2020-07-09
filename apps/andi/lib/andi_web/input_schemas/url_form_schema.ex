@@ -47,15 +47,6 @@ defmodule AndiWeb.InputSchemas.UrlFormSchema do
     changeset(form_data_as_params)
   end
 
-
-  # TODO
-  # def changeset_for_draft(dataset, changes) do
-  #   dataset
-  #   |> cast(changes, @cast_fields)
-  #   |> cast_assoc(:technical, with: &Technical.changeset_for_draft/2)
-  #   |> cast_assoc(:business, with: &Business.changeset_for_draft/2)
-  # end
-
   defp validate_key_value_parameters(changeset) do
     [:sourceQueryParams, :sourceHeaders]
     |> Enum.reduce(changeset, fn field, acc_changeset ->
