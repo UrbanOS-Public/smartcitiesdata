@@ -6,6 +6,7 @@ defmodule Andi.InputSchemas.Datasets do
   alias Andi.Repo
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
+  alias Ecto.Changeset
 
   import Ecto.Query, only: [from: 2]
 
@@ -71,6 +72,28 @@ defmodule Andi.InputSchemas.Datasets do
 
   def save(%Ecto.Changeset{} = changeset) do
     Repo.insert_or_update(changeset)
+  end
+
+  def update_from_form(dataset_id, form_changes) do
+    existing_dataset = get(dataset_id)
+    changeset = InputConverter.andi_dataset_to_full_ui_changeset(existing_dataset)
+
+    technical_changes =
+      changeset
+      |> Changeset.get_change(:technical)
+      |> Map.get(:changes)
+      |> Map.merge(form_changes)
+
+    business_changes =
+      changeset
+      |> Changeset.get_change(:business)
+      |> Map.get(:changes)
+      |> Map.merge(form_changes)
+
+    new_changes = %{technical: technical_changes, business: business_changes, id: dataset_id} |> StructTools.to_map
+
+    Dataset.changeset_for_draft(existing_dataset, new_changes)
+    |> save()
   end
 
   def update_ingested_time(dataset_id, ingested_time) do

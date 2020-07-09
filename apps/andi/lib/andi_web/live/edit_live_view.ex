@@ -182,26 +182,10 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, redirect(socket, to: "/")}
   end
 
-  #TODO clean this up - maybe move to input converter
   def handle_info({:form_save, form_changes}, socket) do
     socket = reset_save_success(socket)
 
-    technical_changes = socket.assigns.changeset
-      |> Changeset.get_change(:technical)
-      |> Map.get(:changes)
-      |> Map.merge(form_changes)
-
-    business_changes = socket.assigns.changeset
-      |> Changeset.get_change(:business)
-      |> Map.get(:changes)
-      |> Map.merge(form_changes)
-
-    new_changes = %{technical: technical_changes, business: business_changes, id: socket.assigns.dataset.id} |> StructTools.to_map
-
-    draft_changeset = Dataset.changeset_for_draft(%Dataset{}, new_changes)
-
-    pending_dataset = Changeset.apply_changes(draft_changeset)
-    {:ok, andi_dataset} = Datasets.update(pending_dataset)
+    {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset.id, form_changes)
 
     changeset =
       andi_dataset

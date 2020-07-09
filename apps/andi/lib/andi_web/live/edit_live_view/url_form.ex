@@ -22,7 +22,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
        changeset: new_changeset,
        testing: false,
        test_results: nil,
-       visibility: "expanded"
+       visibility: "expanded",
        dataset_id: dataset.id
      )}
   end
@@ -118,6 +118,13 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     |> mark_changes()
   end
 
+  def handle_event("cam", %{"form_data" => form_data}, socket) do
+    form_data
+    |> UrlFormSchema.changeset_from_form_data()
+    |> complete_validation(socket)
+    |> mark_changes()
+  end
+
   def handle_event("camsave", _, socket) do
     changeset =
       socket.assigns.changeset
@@ -130,48 +137,58 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
-  def handle_event("add", %{"field" => "sourceQueryParams"}, socket) do
-    pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
+  def handle_event("add", %{"field" => "sourceQueryParams"} = message, socket) do
+    current_changes =
+      socket.assigns.changeset
+      |> Ecto.Changeset.apply_changes
+      |> StructTools.to_map
 
-    # TODO saving stuff
-    {:ok, andi_dataset} = Datasets.update(pending_dataset)
+    Datasets.update_from_form(socket.assigns.dataset_id, current_changes)
 
-    {:ok, dataset} = Datasets.add_source_query_param(andi_dataset.id)
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
+    {:ok, dataset} = Datasets.add_source_query_param(socket.assigns.dataset_id)
+    changeset = UrlFormSchema.changeset_from_andi_dataset(dataset)
 
-    {:noreply, assign(socket, changeset: changeset, dataset: dataset)}
+    {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("add", %{"field" => "sourceHeaders"}, socket) do
-    pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
+    current_changes =
+      socket.assigns.changeset
+      |> Ecto.Changeset.apply_changes
+      |> StructTools.to_map
 
-    {:ok, andi_dataset} = Datasets.update(pending_dataset)
+    Datasets.update_from_form(socket.assigns.dataset_id, current_changes)
 
-    {:ok, dataset} = Datasets.add_source_header(andi_dataset.id)
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
+    {:ok, dataset} = Datasets.add_source_header(socket.assigns.dataset_id)
+    changeset = UrlFormSchema.changeset_from_andi_dataset(dataset)
 
-    {:noreply, assign(socket, changeset: changeset, dataset: dataset)}
+    {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("remove", %{"id" => id, "field" => "sourceQueryParams"}, socket) do
-    pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
+    current_changes =
+      socket.assigns.changeset
+      |> Ecto.Changeset.apply_changes
+      |> StructTools.to_map
 
-    {:ok, andi_dataset} = Datasets.update(pending_dataset)
+    Datasets.update_from_form(socket.assigns.dataset_id, current_changes)
 
-    {:ok, dataset} = Datasets.remove_source_query_param(andi_dataset.id, id)
-
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
+    {:ok, dataset} = Datasets.remove_source_query_param(socket.assigns.dataset_id, id)
+    changeset = UrlFormSchema.changeset_from_andi_dataset(dataset)
 
     {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("remove", %{"id" => id, "field" => "sourceHeaders"}, socket) do
-    pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
+    current_changes =
+      socket.assigns.changeset
+      |> Ecto.Changeset.apply_changes
+      |> StructTools.to_map
 
-    {:ok, andi_dataset} = Datasets.update(pending_dataset)
+    Datasets.update_from_form(socket.assigns.dataset_id, current_changes)
 
-    {:ok, dataset} = Datasets.remove_source_header(andi_dataset.id, id)
-    changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
+    {:ok, dataset} = Datasets.remove_source_header(socket.assigns.dataset_id, id)
+    changeset = UrlFormSchema.changeset_from_andi_dataset(dataset)
 
     {:noreply, assign(socket, changeset: changeset)}
   end
