@@ -15,6 +15,7 @@ defmodule Valkyrie.DatasetHandler do
       when source_type in ["ingest", "stream"] do
     data_ingest_start()
     |> add_event_count(author, dataset.id)
+
     Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{dataset.id}")
     Valkyrie.DatasetProcessor.start(dataset)
     merge(:datasets, dataset.id, dataset)
