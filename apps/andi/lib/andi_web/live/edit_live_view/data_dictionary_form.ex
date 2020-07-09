@@ -132,13 +132,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("add_data_dictionary_field", _, socket) do
+    changes = Ecto.Changeset.apply_changes(socket.assigns.changeset) |> StructTools.to_map
+    {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset.id, changes)
+    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(andi_dataset)
 
-    # TODO - do we want to save here?
-    # pending_dataset = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-    # {:ok, andi_dataset} = Datasets.update(pending_dataset)
-    # changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
-
-    {:noreply, assign(socket, add_data_dictionary_field_visible: true)}
+    {:noreply, assign(socket, changeset: changeset, add_data_dictionary_field_visible: true)}
   end
 
   def handle_event("remove_data_dictionary_field", _, socket) do
