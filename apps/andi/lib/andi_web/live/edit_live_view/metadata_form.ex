@@ -28,6 +28,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
         dataset_exists: dataset_exists,
         dataset_id: dataset.id,
         visibility: "expanded",
+        validation_status: "expanded",
         changeset: new_metadata_changeset
       )}
   end
@@ -39,18 +40,12 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
         "expanded" -> "MINIMIZE"
       end
 
-    valid =
-      case assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
     ~L"""
     <div id="metadata-form" class="form-component">
       <div class="component-header" phx-click="toggle-component-visibility">
         <div class="section-number">
-          <h3 class="component-number component-number--<%= valid %>">1</h3>
-          <div class="component-number-status--<%= valid %>"></div>
+          <h3 class="component-number component-number--<%= @validation_status %> component-number--<%= @visibility %>">1</h3>
+          <div class="component-number-status--<%= @validation_status %>"></div>
         </div>
 
         <div class="component-title full-width">
@@ -264,13 +259,26 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
-    new_visibility = case Map.get(socket.assigns, :visibility) do
+    current_visibility = Map.get(socket.assigns, :visibility)
+
+    new_visibility = case current_visibility do
       "expanded" -> "collapsed"
       "collapsed" -> "expanded"
     end
 
-    {:noreply, assign(socket, visibility: new_visibility)}
+    {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
   end
+
+  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket) when validation_status in ["valid", "invalid"] do
+    new_status = case socket.assigns.changeset.valid? do
+      true -> "valid"
+      false -> "invalid"
+    end
+
+    assign(socket, validation_status: new_status)
+  end
+
+  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 
   def handle_event("camsave", _, socket) do
     changeset =
@@ -279,7 +287,12 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
     send(socket.parent_pid, {:form_save, changeset})
 
-    {:noreply, assign(socket, changeset: changeset)}
+    new_validation_status = case changeset.valid? do
+      true -> "valid"
+      false -> "invalid"
+    end
+
+    {:noreply, assign(socket, changeset: changeset, validation_status: new_validation_status)}
   end
 
   #TODO send messages to other components to toggle their visibility
@@ -299,7 +312,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
 
-    {:noreply, assign(socket, changeset: new_changeset)}
+    {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
 
   defp mark_changes({:noreply, socket}) do

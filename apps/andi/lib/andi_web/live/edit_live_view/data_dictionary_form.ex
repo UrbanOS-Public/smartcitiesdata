@@ -23,6 +23,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         changeset: new_changeset,
         sourceFormat: dataset.technical.sourceFormat,
         visibility: "expanded",
+        validation_status: "expanded",
         new_field_initial_render: false,
         dataset: dataset,
         technical_id: dataset.technical.id
@@ -37,18 +38,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         "expanded" -> "MINIMIZE"
       end
 
-    valid =
-      case assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
     ~L"""
     <div id="data-dictionary-form" class="form-component">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="data_dictionary_form">
         <div class="section-number">
-          <h3 class="component-number component-number--<%= valid %>">2</h3>
-          <div class="component-number-status--<%= valid %>"></div>
+          <h3 class="component-number component-number--<%= @validation_status %>">2</h3>
+          <div class="component-number-status--<%= @validation_status %>"></div>
         </div>
         <div class="component-title full-width">
           <h2 class="component-title-text component-title-text--<%= @visibility %> ">Data Dictionary</h2>
@@ -120,17 +115,35 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
     send(socket.parent_pid, {:form_save, changeset})
 
-    {:noreply, assign(socket, changeset: changeset)}
+    new_validation_status = case changeset.valid? do
+                              true -> "valid"
+                              false -> "invalid"
+                            end
+
+    {:noreply, assign(socket, changeset: changeset, validation_status: new_validation_status)}
   end
 
-  def handle_event("toggle-component-visibility", %{"component" => component}, socket) do
-    new_visibility = case socket.assigns.visibility do
+  def handle_event("toggle-component-visibility", _, socket) do
+    current_visibility = Map.get(socket.assigns, :visibility)
+
+    new_visibility = case current_visibility do
                        "expanded" -> "collapsed"
                        "collapsed" -> "expanded"
                      end
 
-    {:noreply, assign(socket, visibility: new_visibility)}
+    {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
   end
+
+  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket) when validation_status in ["valid", "invalid"] do
+    new_status = case socket.assigns.changeset.valid? do
+                   true -> "valid"
+                   false -> "invalid"
+                 end
+
+    assign(socket, validation_status: new_status)
+  end
+
+  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 
   def handle_event("add_data_dictionary_field", _, socket) do
     changes = Ecto.Changeset.apply_changes(socket.assigns.changeset) |> StructTools.to_map
@@ -243,7 +256,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
           %{current_form | source: new_form_template.source, params: new_form_template.params}
       end
 
-    {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)}
+    {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field) |> update_validation_status()}
   end
 
   defp find_field_in_changeset(changeset, field_id) do

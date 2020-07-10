@@ -23,6 +23,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
        testing: false,
        test_results: nil,
        visibility: "collapsed",
+       validation_status: "collapsed",
        dataset_id: dataset.id
      )}
   end
@@ -34,18 +35,12 @@ defmodule AndiWeb.EditLiveView.UrlForm do
         "expanded" -> "MINIMIZE"
       end
 
-    valid =
-      case assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
     ~L"""
       <div id="url-form" class="form-component">
         <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="url_form">
           <div class="section-number">
-            <h3 class="component-number component-number--<%= valid %>">3</h3>
-            <div class="component-number-status--<%= valid %>"></div>
+            <h3 class="component-number component-number--<%= @validation_status %>">3</h3>
+            <div class="component-number-status--<%= @validation_status %>"></div>
           </div>
           <div class="component-title full-width">
             <h2 class="component-title-text component-title-text--<%= @visibility %> ">Configure Upload</h2>
@@ -141,7 +136,12 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
     send(socket.parent_pid, {:form_save, changeset})
 
-    {:noreply, assign(socket, changeset: changeset)}
+    new_validation_status = case changeset.valid? do
+                              true -> "valid"
+                              false -> "invalid"
+                            end
+
+    {:noreply, assign(socket, changeset: changeset, validation_status: new_validation_status)}
   end
 
   def handle_event("add", %{"field" => "sourceQueryParams"} = message, socket) do
@@ -200,14 +200,27 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
-  def handle_event("toggle-component-visibility", %{"component" => component}, socket) do
-    new_visibility = case Map.get(socket.assigns, :visibility) do
+  def handle_event("toggle-component-visibility", _, socket) do
+    current_visibility = Map.get(socket.assigns, :visibility)
+
+    new_visibility = case current_visibility do
                        "expanded" -> "collapsed"
                        "collapsed" -> "expanded"
                      end
 
-    {:noreply, assign(socket, visibility: new_visibility)}
+    {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
   end
+
+  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket) when validation_status in ["valid", "invalid"] do
+    new_status = case socket.assigns.changeset.valid? do
+                   true -> "valid"
+                   false -> "invalid"
+                 end
+
+    assign(socket, validation_status: new_status)
+  end
+
+  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
@@ -228,7 +241,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
 
-    {:noreply, assign(socket, changeset: new_changeset)}
+    {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
 
   defp mark_changes({:noreply, socket}) do
