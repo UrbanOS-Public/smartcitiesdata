@@ -130,9 +130,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
       socket.assigns.changeset
       |> Map.put(:action, :update)
 
-    changes = Ecto.Changeset.apply_changes(changeset) |> StructTools.to_map
-
-    send(socket.parent_pid, {:form_save, changes})
+    send(socket.parent_pid, {:form_save, changeset})
 
     {:noreply, assign(socket, changeset: changeset)}
   end

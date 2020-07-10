@@ -41,15 +41,6 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     |> changeset()
   end
 
-  def changeset_for_draft(dictionary, changes) do
-    source_format = Map.get(changes, :sourceFormat, nil)
-    changes_with_id = StructTools.ensure_id(dictionary, changes)
-
-    dictionary
-    |> cast(changes_with_id, [], empty_values: [])
-    |> cast_assoc(:schema, with: &DataDictionary.changeset_for_draft(&1, &2, source_format))
-  end
-
   defp validate_schema(%{changes: %{sourceType: source_type}} = changeset)
   when source_type in ["ingest", "stream"] do
     case Ecto.Changeset.get_field(changeset, :schema, nil) do

@@ -97,13 +97,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     """
   end
 
-  def handle_event("cam", %{"form_data" => form_data}, socket) do
-    form_data
-    |> DataDictionaryFormSchema.changeset_from_form_data()
-    |> complete_validation(socket)
-    |> mark_changes()
-  end
-
   def handle_event("cam", %{"data_dictionary_form_schema" => form_schema}, socket) do
     form_schema
     |> DataDictionaryFormSchema.changeset_from_form_data()
@@ -116,8 +109,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       socket.assigns.changeset
       |> Map.put(:action, :update)
 
-    changes = Ecto.Changeset.apply_changes(changeset) |> StructTools.to_map
-    send(socket.parent_pid, {:form_save, changes})
+    send(socket.parent_pid, {:form_save, changeset})
 
     {:noreply, assign(socket, changeset: changeset)}
   end
@@ -276,9 +268,15 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
     first_selected_field_id = input_value(first_data_dictionary_item, :id)
 
+    #TODO ask jake about this
+    # [
+    #   current_data_dictionary_item: first_data_dictionary_item,
+    #   selected_field_id: first_selected_field_id
+    # ]
+
     [
-      current_data_dictionary_item: first_data_dictionary_item,
-      selected_field_id: first_selected_field_id
+      current_data_dictionary_item: :no_dictionary,
+      selected_field_id: :no_dictionary
     ]
   end
 

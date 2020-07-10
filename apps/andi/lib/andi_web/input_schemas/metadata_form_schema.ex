@@ -33,6 +33,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     field(:sourceFormat, :string)
     field(:sourceType, :string)
     field(:spatial, :string)
+    field(:systemName, :string)
     field(:temporal, :string)
     field(:topLevelSelector, :string)
   end
@@ -61,6 +62,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     :riskRating,
     :sourceFormat,
     :sourceType,
+    :systemName,
     :spatial,
     :temporal,
     :topLevelSelector

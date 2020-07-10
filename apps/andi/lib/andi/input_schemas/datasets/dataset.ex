@@ -41,10 +41,11 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   def preload(struct), do: StructTools.preload(struct, [:technical, :business])
 
-  def full_validation_changeset(changes), do: full_validation_changeset(%Andi.InputSchemas.Datasets.Dataset{}, changes)
+  def full_validation_changeset(changes), do: full_validation_changeset(%__MODULE__{}, changes)
 
   def full_validation_changeset(schema, changes) do
-    changeset(schema, changes) |> validate_unique_system_name()
+    changeset(schema, changes)
+    |> validate_unique_system_name()
   end
 
   def validate_unique_system_name(changeset) do

@@ -167,8 +167,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       socket.assigns.changeset
       |> Map.put(:action, :update)
 
-    changes = Ecto.Changeset.apply_changes(changeset) |> StructTools.to_map
-    send(socket.parent_pid, {:form_save, changes})
+    send(socket.parent_pid, {:form_save, changeset})
 
     {:noreply, assign(socket, changeset: changeset)}
   end
@@ -194,7 +193,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
           Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
       end
     else
-      IO.inspect(dataset_changeset, label: "publishing")
       send(socket.parent_pid, {:publish_failed, changeset: %{dataset_changeset | action: :save}})
     end
 

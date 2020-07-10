@@ -22,6 +22,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
         <%= for field <- inputs_for(@form, @field) do %>
         <% if input_value(field, :id) == @selected_field_id and @new_field_initial_render, do: assign_current_dictionary_field(input_value(field, :id), field.index, field.name, field.id) %>
           <%= hidden_inputs(field, @selected_field_id) %>
+          <%= hidden_input(field, :dataset_id) %>
+
           <% {icon_modifier, selected_modifier} = get_action(field, assigns) %>
 
           <div class="data-dictionary-tree-field data-dictionary-tree__field data-dictionary-tree__field--<%= icon_modifier %> data-dictionary-tree__field--<%= selected_modifier %>">

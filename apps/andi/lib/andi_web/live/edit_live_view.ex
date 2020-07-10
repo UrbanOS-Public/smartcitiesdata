@@ -137,26 +137,26 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, redirect(socket, to: "/")}
   end
 
-  def handle_info({:form_save, form_changes}, socket) do
+  def handle_info({:form_save, form_changeset}, socket) do
     socket = reset_save_success(socket)
+    form_changes = form_changes_from_changeset(form_changeset)
 
     {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset.id, form_changes)
 
-    changeset =
+    new_changeset =
       andi_dataset
       |> InputConverter.andi_dataset_to_full_ui_changeset()
       |> Dataset.validate_unique_system_name()
       |> Map.put(:action, :update)
 
     success_message =
-      case changeset.valid? do
+      case new_changeset.valid? do
         true -> "Saved successfully."
         false -> "Saved successfully. You may need to fix errors before publishing."
       end
 
-    {:noreply, assign(socket, save_success: true, success_message: success_message, unsaved_changes: false, changeset: changeset)}
+    {:noreply, assign(socket, save_success: true, success_message: success_message, unsaved_changes: false, changeset: new_changeset)}
   end
-
 
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
@@ -168,6 +168,27 @@ defmodule AndiWeb.EditLiveView do
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
+  end
+
+  defp form_changes_from_changeset(%{changes: %{schema: schema}} = form_changeset) do
+    schema_changes = Enum.map(schema, &form_changes_from_changeset/1)
+
+    %{schema: schema_changes}
+  end
+
+  defp form_changes_from_changeset(form_changeset) do
+    error_fields = Keyword.keys(form_changeset.errors)
+
+    form_changeset
+    |> Ecto.Changeset.apply_changes()
+    |> StructTools.to_map
+    |> add_error_fields_to_changes(error_fields)
+  end
+
+  defp add_error_fields_to_changes(changes, error_fields) do
+    Enum.reduce(error_fields, changes, fn error_field, acc ->
+      Map.put_new(acc, error_field, nil)
+    end)
   end
 
   defp complete_validation(changeset, socket) do
