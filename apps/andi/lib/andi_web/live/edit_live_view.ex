@@ -119,32 +119,6 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, changeset: changeset, has_validation_errors: true)}
   end
 
-  def handle_event("save", %{"form_data" => form_data, "finalize_form_data" => finalize_form_data}, socket) do
-    socket = assign(socket, :finalize_form_data, finalize_form_data)
-
-    changeset = form_data |> InputConverter.form_data_to_changeset_draft()
-    pending_dataset = Ecto.Changeset.apply_changes(changeset)
-    {:ok, _} = Datasets.update(pending_dataset)
-
-    {_, updated_socket} =
-      form_data
-      |> InputConverter.form_data_to_ui_changeset()
-      |> complete_validation(socket)
-
-    success_message =
-      case socket.assigns.changeset.valid? do
-        true -> "Saved successfully."
-        false -> "Saved successfully. You may need to fix errors before publishing."
-      end
-
-    changeset =
-      socket.assigns.changeset
-      |> Dataset.validate_unique_system_name()
-      |> Map.put(:action, :update)
-
-    {:noreply, assign(updated_socket, save_success: true, success_message: success_message, unsaved_changes: false, changeset: changeset)}
-  end
-
   def handle_event("unsaved-changes-canceled", _, socket) do
     {:noreply, assign(socket, show_unsaved_changes_modal: false)}
   end

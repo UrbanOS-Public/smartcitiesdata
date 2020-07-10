@@ -74,6 +74,7 @@ defmodule Andi.InputSchemas.Datasets do
     Repo.insert_or_update(changeset)
   end
 
+  #TODO this is ugly
   def update_from_form(dataset_id, form_changes) do
     existing_dataset = get(dataset_id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(existing_dataset)
@@ -81,13 +82,15 @@ defmodule Andi.InputSchemas.Datasets do
     technical_changes =
       changeset
       |> Changeset.get_change(:technical)
-      |> Map.get(:changes)
+      |> Changeset.apply_changes()
+      |> StructTools.to_map
       |> Map.merge(form_changes)
 
     business_changes =
       changeset
       |> Changeset.get_change(:business)
-      |> Map.get(:changes)
+      |> Changeset.apply_changes()
+      |> StructTools.to_map
       |> Map.merge(form_changes)
 
     new_changes = %{technical: technical_changes, business: business_changes, id: dataset_id} |> StructTools.to_map

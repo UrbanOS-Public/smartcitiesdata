@@ -67,7 +67,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
           <%= hidden_input(f, :orgName) %>
           <%= hidden_input(f, :orgTitle) %>
           <%= hidden_input(f, :orgId) %>
-          <%= hidden_input(f, :orgName) %>
           <%= hidden_input(f, :dataName) %>
           <%= hidden_input(f, :systemName) %>
           <%= hidden_input(f, :sourceType) %>
@@ -90,19 +89,19 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               <div class="metadata-form__description">
                 <%= label(f, :description, DisplayNames.get(:description), class: "label label--required") %>
                 <%= textarea(f, :description, class: "input textarea") %>
-                <%= ErrorHelpers.error_tag(f, :description) %>
+                <%= ErrorHelpers.error_tag(f, :description, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__maintainer-name">
                 <%= label(f, :contactName, DisplayNames.get(:contactName), class: "label label--required") %>
                 <%= text_input(f, :contactName, class: "input") %>
-                <%= ErrorHelpers.error_tag(f, :contactName) %>
+                <%= ErrorHelpers.error_tag(f, :contactName, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__maintainer-email">
                 <%= label(f, :contactEmail, DisplayNames.get(:contactEmail), class: "label label--required") %>
                 <%= text_input(f, :contactEmail, class: "input") %>
-                <%= ErrorHelpers.error_tag(f, :contactEmail) %>
+                <%= ErrorHelpers.error_tag(f, :contactEmail, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__release-date">
@@ -114,7 +113,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               <div class="metadata-form__license">
                 <%= label(f, :license, DisplayNames.get(:license), class: "label label--required") %>
                 <%= text_input(f, :license, class: "input") %>
-                <%= ErrorHelpers.error_tag(f, :license) %>
+                <%= ErrorHelpers.error_tag(f, :license, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__top-level-selector">
@@ -126,7 +125,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               <div class="metadata-form__update-frequency">
                 <%= label(f, :publishFrequency, DisplayNames.get(:publishFrequency), class: "label label--required") %>
                 <%= text_input(f, :publishFrequency, class: "input") %>
-                <%= ErrorHelpers.error_tag(f, :publishFrequency) %>
+                <%= ErrorHelpers.error_tag(f, :publishFrequency, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__keywords">
@@ -181,8 +180,8 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
               <div class="metadata-form__level-of-access">
                 <%= label(f, :private, DisplayNames.get(:private), class: "label label--required") %>
-                <%= select(f, :private, get_level_of_access_options(), class: "select") %>
-                <%= ErrorHelpers.error_tag(f, :private) %>
+                <%= select(f, :private, get_level_of_access_options(), class: "select", selected: "") %>
+                <%= ErrorHelpers.error_tag(f, :private, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__benefit-rating">
@@ -279,7 +278,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
       socket.assigns.changeset
       |> Map.put(:action, :update)
 
-    changes = Ecto.Changeset.apply_changes(changeset) |> StructTools.to_map |> IO.inspect
+    changes = Ecto.Changeset.apply_changes(changeset) |> StructTools.to_map
 
     send(socket.parent_pid, {:form_save, changes})
 

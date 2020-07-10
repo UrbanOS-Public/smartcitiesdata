@@ -25,11 +25,11 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
     default_cron =
       case dataset.technical.cadence do
-        cadence when cadence in ["once", "never", nil] -> "0 * * * * *"
+        cadence when cadence in ["once", "never", "", nil] -> "0 * * * * *"
         cron -> cron
       end
 
-    repeat_ingestion? = dataset.technical.cadence not in ["once", "never", nil]
+    repeat_ingestion? = dataset.technical.cadence not in ["once", "never", "", nil]
 
     {:ok, assign(socket,
         visibility: "collapsed",
@@ -69,7 +69,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       </div>
 
       <div class="form-section">
-        <%= f = form_for @changeset, "#", [as: :form_data] %>
+        <%= f = form_for @changeset, "#", [phx_change: :cam, as: :form_data] %>
           <div class="component-edit-section--<%= @visibility %>">
             <div class="finalize-form-edit-section form-grid">
               <div "finalize-form__schedule">
@@ -155,6 +155,13 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     """
   end
 
+  def handle_event("cam", %{"form_data" => form_data}, socket) do
+    form_data
+    |> FinalizeFormSchema.changeset_from_form_data()
+    |> complete_validation(socket)
+    |> mark_changes()
+  end
+
   def handle_event("camsave", _, socket) do
     changeset =
       socket.assigns.changeset
@@ -187,7 +194,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
           Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
       end
     else
-      IO.inspect(dataset_changeset)
+      IO.inspect(dataset_changeset, label: "publishing")
       send(socket.parent_pid, {:publish_failed, changeset: %{dataset_changeset | action: :save}})
     end
 
