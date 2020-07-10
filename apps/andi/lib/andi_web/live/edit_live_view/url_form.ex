@@ -34,10 +34,19 @@ defmodule AndiWeb.EditLiveView.UrlForm do
         "expanded" -> "MINIMIZE"
       end
 
+    valid =
+      case assigns.changeset.valid? do
+        true -> "valid"
+        false -> "invalid"
+      end
+
     ~L"""
       <div id="url-form" class="form-component">
         <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="url_form">
-          <h3 class="component-number component-number--<%= @visibility %>">3</h3>
+          <div class="section-number">
+            <h3 class="component-number component-number--<%= valid %>">3</h3>
+            <div class="component-number-status--<%= valid %>"></div>
+          </div>
           <div class="component-title full-width">
             <h2 class="component-title-text component-title-text--<%= @visibility %> ">Configure Upload</h2>
             <div class="component-title-action">

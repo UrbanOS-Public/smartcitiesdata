@@ -55,10 +55,19 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
         "expanded" -> "MINIMIZE"
       end
 
+    valid =
+      case assigns.changeset.valid? do
+        true -> "valid"
+        false -> "invalid"
+      end
+
     ~L"""
     <div id="finalize_form" class="finalize-form finalize-form--<%= @visibility %>">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="finalize_form">
-        <h3 class="component-number component-number--<%= @visibility %>">4</h3>
+        <div class="section-number">
+          <h3 class="component-number component-number--<%= valid %>">4</h3>
+          <div class="component-number-status--<%= valid %>"></div>
+        </div>
         <div class="component-title full-width">
           <h2 class="component-title-text component-title-text--<%= @visibility %> ">Finalize</h2>
           <div class="component-title-action">
