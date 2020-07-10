@@ -22,7 +22,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
        changeset: new_changeset,
        testing: false,
        test_results: nil,
-       visibility: "expanded",
+       visibility: "collapsed",
        dataset_id: dataset.id
      )}
   end

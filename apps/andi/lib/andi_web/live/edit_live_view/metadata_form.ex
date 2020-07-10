@@ -47,7 +47,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
     ~L"""
     <div id="metadata-form" class="form-component">
-      <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="metadata_form">
+      <div class="component-header" phx-click="toggle-component-visibility">
         <div class="section-number">
           <h3 class="component-number component-number--<%= valid %>">1</h3>
           <div class="component-number-status--<%= valid %>"></div>
@@ -204,7 +204,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               </div>
 
               <div class="edit-button-group__save-btn">
-                <a href="#data-dictionary-form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-collapse="metadata_form" phx-value-component-expand="data_dictionary_form">Next</a>
+                <button type="button" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-next="data_dictionary_form">Next</button>
                 <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="camsave">Save Draft</button>
               </div>
             </div>
@@ -254,7 +254,17 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
-  def handle_event("toggle-component-visibility", %{"component" => component}, socket) do
+  def handle_event("toggle-component-visibility", %{"component-next" => _}, socket) do
+    #TODO - do any logic for next button/validating header
+    new_visibility = case Map.get(socket.assigns, :visibility) do
+                       "expanded" -> "collapsed"
+                       "collapsed" -> "expanded"
+                     end
+
+    {:noreply, assign(socket, visibility: new_visibility)}
+  end
+
+  def handle_event("toggle-component-visibility", _, socket) do
     new_visibility = case Map.get(socket.assigns, :visibility) do
       "expanded" -> "collapsed"
       "collapsed" -> "expanded"
@@ -269,7 +279,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
       socket.assigns.changeset
       |> Map.put(:action, :update)
 
-    changes = Ecto.Changeset.apply_changes(changeset) |> StructTools.to_map
+    changes = Ecto.Changeset.apply_changes(changeset) |> StructTools.to_map |> IO.inspect
 
     send(socket.parent_pid, {:form_save, changes})
 

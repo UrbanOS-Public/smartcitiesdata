@@ -26,7 +26,9 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     field(:modifiedDate, :date)
     field(:orgId, :string)
     field(:orgName, :string)
+    field(:orgTitle, :string)
     field(:publishFrequency, :string)
+    field(:private, :boolean)
     field(:riskRating, :float)
     field(:sourceFormat, :string)
     field(:sourceType, :string)
@@ -53,6 +55,8 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     :modifiedDate,
     :orgId,
     :orgName,
+    :orgTitle,
+    :private,
     :publishFrequency,
     :riskRating,
     :sourceFormat,
@@ -74,6 +78,8 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     :license,
     :orgId,
     :orgName,
+    :orgTitle,
+    :private,
     :publishFrequency,
     :riskRating,
     :sourceFormat,

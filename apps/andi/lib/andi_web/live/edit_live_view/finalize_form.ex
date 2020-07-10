@@ -4,9 +4,11 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   """
   use Phoenix.LiveView
   import Phoenix.HTML.Form
+  require Logger
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.InputConverter
   alias AndiWeb.InputSchemas.FinalizeFormSchema
   alias AndiWeb.ErrorHelpers
 
@@ -30,7 +32,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     repeat_ingestion? = dataset.technical.cadence not in ["once", "never", nil]
 
     {:ok, assign(socket,
-        visibility: "expanded",
+        visibility: "collapsed",
         changeset: new_changeset,
         repeat_ingestion?: repeat_ingestion?,
         crontab: default_cron,
@@ -160,6 +162,34 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
     changes = Ecto.Changeset.apply_changes(changeset) |> StructTools.to_map
     send(socket.parent_pid, {:form_save, changes})
+
+    {:noreply, assign(socket, changeset: changeset)}
+  end
+
+  def handle_event("publish", _, socket) do
+    changeset =
+      socket.assigns.changeset
+      |> Map.put(:action, :update)
+
+    changes = Ecto.Changeset.apply_changes(changeset) |> StructTools.to_map
+    {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset_id, changes)
+    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
+
+    if dataset_changeset.valid? do
+      {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(andi_dataset)
+
+      # case Brook.Event.send(instance_name(), dataset_update(), :andi, smrt_dataset) do
+      case :ok do
+        :ok ->
+          send(socket.parent_pid, {:publish_succeeded, dataset: andi_dataset, changeset: dataset_changeset})
+
+        error ->
+          Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
+      end
+    else
+      IO.inspect(dataset_changeset)
+      send(socket.parent_pid, {:publish_failed, changeset: %{dataset_changeset | action: :save}})
+    end
 
     {:noreply, assign(socket, changeset: changeset)}
   end
