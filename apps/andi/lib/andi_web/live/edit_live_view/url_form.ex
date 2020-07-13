@@ -112,7 +112,6 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     |> FormTools.adjust_source_query_params_for_url()
     |> UrlFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
-    |> mark_changes()
   end
 
   def handle_event("cam", %{"form_data" => form_data, "_target" => ["form_data", "sourceQueryParams" | _]}, socket) do
@@ -120,14 +119,12 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     |> FormTools.adjust_source_url_for_query_params()
     |> UrlFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
-    |> mark_changes()
   end
 
   def handle_event("cam", %{"form_data" => form_data}, socket) do
     form_data
     |> UrlFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
-    |> mark_changes()
   end
 
   def handle_event("camsave", _, socket) do
@@ -223,6 +220,11 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
   end
 
+  def handle_event("cancel-edit", _, socket) do
+    send(socket.parent_pid, :cancel_edit)
+    {:noreply, socket}
+  end
+
   def handle_info(%{topic: "toggle-visibility", payload: %{expand: "url_form"}}, socket) do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
   end
@@ -260,12 +262,9 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
+    send(socket.parent_pid, :form_update)
 
     {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
-  end
-
-  defp mark_changes({:noreply, socket}) do
-    {:noreply, assign(socket, unsaved_changes: true)}
   end
 
   defp disabled?(true), do: "disabled"

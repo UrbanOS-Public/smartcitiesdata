@@ -106,7 +106,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     form_schema
     |> DataDictionaryFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
-    |> mark_changes()
   end
 
   def handle_event("camsave", _, socket) do
@@ -158,6 +157,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     should_show_remove_field_modal = socket.assigns.selected_field_id != :no_dictionary
 
     {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
+  end
+
+  def handle_event("cancel-edit", _, socket) do
+    send(socket.parent_pid, :cancel_edit)
+    {:noreply, socket}
   end
 
   def handle_info(%{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form"}}, socket) do
@@ -277,6 +281,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
           %{current_form | source: new_form_template.source, params: new_form_template.params}
       end
 
+    send(socket.parent_pid, :form_update)
+
     {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field) |> update_validation_status()}
   end
 
@@ -332,9 +338,5 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   defp get_eligible_data_dictionary_parents(dataset) do
     DataDictionaryFields.get_parent_ids(dataset)
-  end
-
-  defp mark_changes({:noreply, socket}) do
-    {:noreply, assign(socket, unsaved_changes: true)}
   end
 end

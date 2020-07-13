@@ -123,18 +123,19 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, show_unsaved_changes_modal: false)}
   end
 
-  def handle_event("cancel-edit", _, socket) do
-    case socket.assigns.unsaved_changes do
-      true ->
-        {:noreply, assign(socket, show_unsaved_changes_modal: true)}
+  def handle_event("force-cancel-edit", _, socket) do
+    {:noreply, redirect(socket, to: "/")}
+  end
 
-      false ->
-        {:noreply, redirect(socket, to: "/")}
+  def handle_info(:cancel_edit, socket) do
+    case socket.assigns.unsaved_changes do
+      true -> {:noreply, assign(socket, show_unsaved_changes_modal: true)}
+      false -> {:noreply, redirect(socket, to: "/")}
     end
   end
 
-  def handle_event("force-cancel-edit", _, socket) do
-    {:noreply, redirect(socket, to: "/")}
+  def handle_info(:form_update, socket) do
+    {:noreply, assign(socket, unsaved_changes: true)}
   end
 
   def handle_info({:form_save, form_changeset}, socket) do
@@ -155,7 +156,7 @@ defmodule AndiWeb.EditLiveView do
         false -> "Saved successfully. You may need to fix errors before publishing."
       end
 
-    {:noreply, assign(socket, save_success: true, success_message: success_message, unsaved_changes: false, changeset: new_changeset)}
+    {:noreply, assign(socket, save_success: true, success_message: success_message, unsaved_changes: false, changeset: new_changeset, unsaved_changes: false)}
   end
 
   # This handle_info takes care of all exceptions in a generic way.

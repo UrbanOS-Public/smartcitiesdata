@@ -31,7 +31,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
         dataset_id: dataset.id,
         visibility: "expanded",
         validation_status: "expanded",
-        changeset: new_metadata_changeset
+        changeset: new_metadata_changeset,
       )}
   end
 
@@ -232,14 +232,12 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     |> MetadataFormSchema.changeset_from_form_data()
     |> Dataset.validate_unique_system_name()
     |> complete_validation(socket)
-    |> mark_changes()
   end
 
   def handle_event("cam", %{"form_data" => form_data}, socket) do
     form_data
     |> MetadataFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
-    |> mark_changes()
   end
 
   def handle_event("validate_system_name", _, socket) do
@@ -270,6 +268,11 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     end
 
     {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
+  end
+
+  def handle_event("cancel-edit", _, socket) do
+    send(socket.parent_pid, :cancel_edit)
+    {:noreply, socket}
   end
 
   def handle_info(%{topic: "toggle-visibility", payload: %{expand: "metadata_form"}}, socket) do
@@ -308,12 +311,9 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
+    send(socket.parent_pid, :form_update)
 
     {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
-  end
-
-  defp mark_changes({:noreply, socket}) do
-    {:noreply, assign(socket, unsaved_changes: true)}
   end
 
   defp top_level_selector_label_class(source_format) when source_format in ["text/xml", "xml"], do: "label label--required"

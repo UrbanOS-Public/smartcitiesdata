@@ -164,7 +164,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     form_data
     |> FinalizeFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
-    |> mark_changes()
   end
 
   def handle_event("camsave", _, socket) do
@@ -250,7 +249,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       andi_dataset
       |> FinalizeFormSchema.changeset_from_andi_dataset()
       |> complete_validation(socket)
-      |> mark_changes()
 
     {:noreply, assign(updated_socket, crontab: new_cron, crontab_list: new_crontab_list)}
   end
@@ -263,9 +261,13 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       andi_dataset
       |> FinalizeFormSchema.changeset_from_andi_dataset()
       |> complete_validation(socket)
-      |> mark_changes()
 
     {:noreply, assign(updated_socket, crontab: cronstring, crontab_list: parse_crontab(cronstring))}
+  end
+
+  def handle_event("cancel-edit", _, socket) do
+    send(socket.parent_pid, :cancel_edit)
+    {:noreply, socket}
   end
 
   def handle_info(%{topic: "toggle-visibility", payload: %{expand: "finalize_form"}}, socket) do
@@ -318,12 +320,9 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     new_changeset = Map.put(changeset, :action, :update)
     cadence = Ecto.Changeset.get_field(changeset, :cadence)
     repeat_ingestion? = cadence not in ["once", "never", nil]
+    send(socket.parent_pid, :form_update)
 
     {:noreply, assign(socket, changeset: new_changeset, repeat_ingestion?: repeat_ingestion?) |> update_validation_status()}
-  end
-
-  defp mark_changes({:noreply, socket}) do
-    {:noreply, assign(socket, unsaved_changes: true)}
   end
 
   defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
