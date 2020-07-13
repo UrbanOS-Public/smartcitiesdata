@@ -17,6 +17,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   def mount(_, %{"dataset" => dataset}, socket) do
     new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
     AndiWeb.Endpoint.subscribe("toggle-visibility")
+    AndiWeb.Endpoint.subscribe("form-save")
 
     {:ok, assign(socket,
         add_data_dictionary_field_visible: false,
@@ -113,7 +114,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       socket.assigns.changeset
       |> Map.put(:action, :update)
 
-    send(socket.parent_pid, {:form_save, changeset})
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "form-save", %{form_changeset: changeset})
 
     new_validation_status = case changeset.valid? do
                               true -> "valid"
@@ -162,6 +163,15 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   def handle_event("cancel-edit", _, socket) do
     send(socket.parent_pid, :cancel_edit)
     {:noreply, socket}
+  end
+
+  def handle_info(%{topic: "form-save", payload: _}, socket) do
+    new_validation_status = case socket.assigns.changeset.valid? do
+                              true -> "valid"
+                              false -> "invalid"
+                            end
+
+    {:noreply, assign(socket, validation_status: new_validation_status)}
   end
 
   def handle_info(%{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form"}}, socket) do

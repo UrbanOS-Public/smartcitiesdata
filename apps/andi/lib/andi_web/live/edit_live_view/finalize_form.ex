@@ -23,6 +23,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   def mount(_, %{"dataset" => dataset}, socket) do
     new_changeset = FinalizeFormSchema.changeset_from_andi_dataset(dataset)
     AndiWeb.Endpoint.subscribe("toggle-visibility")
+    AndiWeb.Endpoint.subscribe("form-save")
 
     default_cron =
       case dataset.technical.cadence do
@@ -171,7 +172,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       socket.assigns.changeset
       |> Map.put(:action, :update)
 
-    send(socket.parent_pid, {:form_save, changeset})
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "form-save", %{form_changeset: changeset})
 
     new_validation_status = case changeset.valid? do
                               true -> "valid"
@@ -276,6 +277,15 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   def handle_info(%{topic: "toggle-visibility", payload: _}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_info(%{topic: "form-save", payload: _}, socket) do
+    new_validation_status = case socket.assigns.changeset.valid? do
+                              true -> "valid"
+                              false -> "invalid"
+                            end
+
+    {:noreply, assign(socket, validation_status: new_validation_status)}
   end
 
   defp parse_crontab(nil), do: %{}

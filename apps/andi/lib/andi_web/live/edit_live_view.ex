@@ -81,7 +81,7 @@ defmodule AndiWeb.EditLiveView do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
     Process.flag(:trap_exit, true)
 
-    AndiWeb.Endpoint.subscribe("test")
+    AndiWeb.Endpoint.subscribe("form-save")
 
     {:ok,
      assign(socket,
@@ -138,7 +138,7 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, unsaved_changes: true)}
   end
 
-  def handle_info({:form_save, form_changeset}, socket) do
+  def handle_info(%{topic: "form-save", payload: %{form_changeset: form_changeset}}, socket) do
     socket = reset_save_success(socket)
     form_changes = form_changes_from_changeset(form_changeset)
 

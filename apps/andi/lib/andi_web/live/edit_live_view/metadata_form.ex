@@ -25,6 +25,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
       end
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
+    AndiWeb.Endpoint.subscribe("form-save")
 
     {:ok, assign(socket,
         dataset_exists: dataset_exists,
@@ -240,6 +241,22 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     |> complete_validation(socket)
   end
 
+  def handle_event("camsave", _, socket) do
+    changeset =
+      socket.assigns.changeset
+      |> Map.put(:action, :update)
+
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "form-save", %{form_changeset: changeset})
+
+    new_validation_status = case changeset.valid? do
+                              true -> "valid"
+                              false -> "invalid"
+                            end
+
+    {:noreply, assign(socket, changeset: changeset, validation_status: new_validation_status)}
+  end
+
+
   def handle_event("validate_system_name", _, socket) do
     changeset =
       Dataset.validate_unique_system_name(socket.assigns.changeset)
@@ -283,30 +300,13 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     {:noreply, socket}
   end
 
-  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket) when validation_status in ["valid", "invalid"] do
-    new_status = case socket.assigns.changeset.valid? do
-      true -> "valid"
-      false -> "invalid"
-    end
+  def handle_info(%{topic: "form-save", payload: _}, socket) do
+    new_validation_status = case socket.assigns.changeset.valid? do
+                              true -> "valid"
+                              false -> "invalid"
+                            end
 
-    assign(socket, validation_status: new_status)
-  end
-
-  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
-
-  def handle_event("camsave", _, socket) do
-    changeset =
-      socket.assigns.changeset
-      |> Map.put(:action, :update)
-
-    send(socket.parent_pid, {:form_save, changeset})
-
-    new_validation_status = case changeset.valid? do
-      true -> "valid"
-      false -> "invalid"
-    end
-
-    {:noreply, assign(socket, changeset: changeset, validation_status: new_validation_status)}
+    {:noreply, assign(socket, validation_status: new_validation_status)}
   end
 
   defp complete_validation(changeset, socket) do
@@ -315,6 +315,17 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
     {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
+
+  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket) when validation_status in ["valid", "invalid"] do
+    new_status = case socket.assigns.changeset.valid? do
+                   true -> "valid"
+                   false -> "invalid"
+                 end
+
+    assign(socket, validation_status: new_status)
+  end
+
+  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 
   defp top_level_selector_label_class(source_format) when source_format in ["text/xml", "xml"], do: "label label--required"
   defp top_level_selector_label_class(_), do: "label"
