@@ -52,6 +52,7 @@ config :andi, :brook,
   ]
 
 config :andi, AndiWeb.Endpoint,
+  pubsub: [name: AndiWeb.PubSub, adapter: Phoenix.PubSub.PG2],
   code_reloader: true,
   watchers: [
     node: [

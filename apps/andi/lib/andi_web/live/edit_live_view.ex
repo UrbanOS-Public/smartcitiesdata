@@ -79,8 +79,9 @@ defmodule AndiWeb.EditLiveView do
 
   def mount(_params, %{"dataset" => dataset}, socket) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
-
     Process.flag(:trap_exit, true)
+
+    AndiWeb.Endpoint.subscribe("test")
 
     {:ok,
      assign(socket,
@@ -98,7 +99,6 @@ defmodule AndiWeb.EditLiveView do
        show_unsaved_changes_modal: false
      )}
   end
-
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data

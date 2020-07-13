@@ -22,6 +22,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_changeset = FinalizeFormSchema.changeset_from_andi_dataset(dataset)
+    AndiWeb.Endpoint.subscribe("toggle-visibility")
 
     default_cron =
       case dataset.technical.cadence do
@@ -143,7 +144,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
             <div class="edit-button-group form-grid">
               <div class="edit-button-group__cancel-btn">
-                <a href="#url-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-collapse="finalize_form" phx-value-component-expand="url_form">Back</a>
+                <a href="#url-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="url_form">Back</a>
                 <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
               </div>
 
@@ -208,6 +209,17 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
+  def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
+    new_validation_status = case socket.assigns.changeset.valid? do
+                              true -> "valid"
+                              false -> "invalid"
+                            end
+
+    AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{expand: next_component})
+
+    {:noreply, assign(socket, visibility: "collapsed", validation_status: new_validation_status)}
+  end
+
   def handle_event("toggle-component-visibility", _, socket) do
     current_visibility = Map.get(socket.assigns, :visibility)
 
@@ -227,8 +239,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
     assign(socket, validation_status: new_status)
   end
-
-  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 
   def handle_event("set_schedule", %{"input-field" => input_field, "value" => value}, socket) do
     new_crontab_list = Map.put(socket.assigns.crontab_list, String.to_existing_atom(input_field), value)
@@ -256,6 +266,14 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       |> mark_changes()
 
     {:noreply, assign(updated_socket, crontab: cronstring, crontab_list: parse_crontab(cronstring))}
+  end
+
+  def handle_info(%{topic: "toggle-visibility", payload: %{expand: "finalize_form"}}, socket) do
+    {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
+  end
+
+  def handle_info(%{topic: "toggle-visibility", payload: _}, socket) do
+    {:noreply, socket}
   end
 
   defp parse_crontab(nil), do: %{}
@@ -307,4 +325,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   defp mark_changes({:noreply, socket}) do
     {:noreply, assign(socket, unsaved_changes: true)}
   end
+
+  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 end

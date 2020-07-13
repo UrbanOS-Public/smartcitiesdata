@@ -16,6 +16,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_changeset = UrlFormSchema.changeset_from_andi_dataset(dataset)
+    AndiWeb.Endpoint.subscribe("toggle-visibility")
 
     {:ok,
      assign(socket,
@@ -77,12 +78,12 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
               <div class="edit-button-group form-grid">
                 <div class="edit-button-group__cancel-btn">
-                  <a href="#data-dictionary-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-collapse="url_form" phx-value-component-expand="data_dictionary_form">Back</a>
+                  <a href="#data-dictionary-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Back</a>
                   <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
                 </div>
 
                 <div class="edit-button-group__save-btn">
-                  <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-collapse="url_form" phx-value-component-expand="finalize_form">Next</a>
+                  <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="finalize_form">Next</a>
                   <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="camsave">Save Draft</button>
                 </div>
                 </div>
@@ -200,6 +201,17 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
+  def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
+    new_validation_status = case socket.assigns.changeset.valid? do
+                              true -> "valid"
+                              false -> "invalid"
+                            end
+
+    AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{expand: next_component})
+
+    {:noreply, assign(socket, visibility: "collapsed", validation_status: new_validation_status)}
+  end
+
   def handle_event("toggle-component-visibility", _, socket) do
     current_visibility = Map.get(socket.assigns, :visibility)
 
@@ -209,6 +221,14 @@ defmodule AndiWeb.EditLiveView.UrlForm do
                      end
 
     {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
+  end
+
+  def handle_info(%{topic: "toggle-visibility", payload: %{expand: "url_form"}}, socket) do
+    {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
+  end
+
+  def handle_info(%{topic: "toggle-visibility", payload: _}, socket) do
+    {:noreply, socket}
   end
 
   defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket) when validation_status in ["valid", "invalid"] do
