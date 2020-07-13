@@ -243,7 +243,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
 
-  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket) when validation_status in ["valid", "invalid"] do
+  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket) when validation_status in ["valid", "invalid", "expanded"] do
     new_status = case socket.assigns.changeset.valid? do
                    true -> "valid"
                    false -> "invalid"
