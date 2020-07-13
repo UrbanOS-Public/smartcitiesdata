@@ -311,21 +311,15 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   defp get_default_dictionary_field(%{changes: %{schema: schema}} = changeset) when schema != [] do
     first_data_dictionary_item =
-      form_for(changeset, "#", as: :form_data)
+      form_for(changeset, "#")
       |> inputs_for(:schema)
       |> hd()
 
     first_selected_field_id = input_value(first_data_dictionary_item, :id)
 
-    #TODO ask jake about this
-    # [
-    #   current_data_dictionary_item: first_data_dictionary_item,
-    #   selected_field_id: first_selected_field_id
-    # ]
-
     [
-      current_data_dictionary_item: :no_dictionary,
-      selected_field_id: :no_dictionary
+      current_data_dictionary_item: first_data_dictionary_item,
+      selected_field_id: first_selected_field_id
     ]
   end
 
