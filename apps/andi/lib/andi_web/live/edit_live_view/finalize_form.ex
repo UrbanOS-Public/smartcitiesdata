@@ -183,30 +183,9 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   end
 
   def handle_event("publish", _, socket) do
-    changeset =
-      socket.assigns.changeset
-      |> Map.put(:action, :update)
+    send(socket.parent_pid, :publish)
 
-    changes = Ecto.Changeset.apply_changes(changeset) |> StructTools.to_map
-    {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset_id, changes)
-    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
-
-    if dataset_changeset.valid? do
-      {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(andi_dataset)
-
-      # case Brook.Event.send(instance_name(), dataset_update(), :andi, smrt_dataset) do
-      case :ok do
-        :ok ->
-          send(socket.parent_pid, {:publish_succeeded, dataset: andi_dataset, changeset: dataset_changeset})
-
-        error ->
-          Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
-      end
-    else
-      send(socket.parent_pid, {:publish_failed, changeset: %{dataset_changeset | action: :save}})
-    end
-
-    {:noreply, assign(socket, changeset: changeset)}
+    {:noreply, socket}
   end
 
   def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
@@ -279,13 +258,35 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, socket}
   end
 
-  def handle_info(%{topic: "form-save", payload: _}, socket) do
+  def handle_info(%{topic: "form-save", event: "form-save"}, socket) do
     new_validation_status = case socket.assigns.changeset.valid? do
                               true -> "valid"
                               false -> "invalid"
                             end
 
     {:noreply, assign(socket, validation_status: new_validation_status)}
+  end
+
+  def handle_info(%{topic: "form-save", event: "save-all"} = message, socket) do
+    {:ok, andi_dataset} = Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
+
+    new_changeset = FinalizeFormSchema.changeset_from_andi_dataset(andi_dataset)
+
+    new_validation_status = case socket.assigns.changeset.valid? do
+                              true -> "valid"
+                              false -> "invalid"
+                            end
+
+    {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
+  end
+
+  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket) when validation_status in ["valid", "invalid", "expanded"] do
+    new_status = case socket.assigns.changeset.valid? do
+                   true -> "valid"
+                   false -> "invalid"
+                 end
+
+    assign(socket, validation_status: new_status)
   end
 
   defp parse_crontab(nil), do: %{}

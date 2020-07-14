@@ -28,6 +28,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         validation_status: "collapsed",
         new_field_initial_render: false,
         dataset: dataset,
+        dataset_id: dataset.id,
         technical_id: dataset.technical.id
       )
       |> assign(get_default_dictionary_field(new_changeset))}
@@ -165,13 +166,26 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, socket}
   end
 
-  def handle_info(%{topic: "form-save", payload: _}, socket) do
+  def handle_info(%{topic: "form-save", event: "form-save"}, socket) do
     new_validation_status = case socket.assigns.changeset.valid? do
                               true -> "valid"
                               false -> "invalid"
                             end
 
     {:noreply, assign(socket, validation_status: new_validation_status)}
+  end
+
+  def handle_info(%{topic: "form-save", event: "save-all"} = message, socket) do
+    {:ok, andi_dataset} = Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
+
+    new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(andi_dataset)
+
+    new_validation_status = case socket.assigns.changeset.valid? do
+                              true -> "valid"
+                              false -> "invalid"
+                            end
+
+    {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
   end
 
   def handle_info(%{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form"}}, socket) do

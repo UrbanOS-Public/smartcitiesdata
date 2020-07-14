@@ -100,42 +100,29 @@ defmodule AndiWeb.EditLiveView do
      )}
   end
 
-  def handle_event("validate", %{"form_data" => form_data}, socket) do
-    form_data
-    |> InputConverter.form_data_to_ui_changeset()
-    |> complete_validation(socket)
-    |> mark_changes()
-  end
-
-  def handle_info({:publish_succeeded, dataset: andi_dataset, changeset: changeset}, socket) do
+  def handle_info(:publish, socket) do
     socket = reset_save_success(socket)
 
-    {:noreply, assign(socket, dataset: andi_dataset, changeset: changeset, save_success: true, success_message: "Published successfully", page_error: false)}
-  end
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{})
+    Process.sleep(1_000)
 
-  def handle_info({:publish_failed, changeset: changeset}, socket) do
-    socket = reset_save_success(socket)
+    andi_dataset = Datasets.get(socket.assigns.dataset.id)
+    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
 
-    {:noreply, assign(socket, changeset: changeset, has_validation_errors: true)}
-  end
+    if dataset_changeset.valid? do
+      {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(andi_dataset)
 
-  def handle_event("unsaved-changes-canceled", _, socket) do
-    {:noreply, assign(socket, show_unsaved_changes_modal: false)}
-  end
+      # case Brook.Event.send(instance_name(), dataset_update(), :andi, smrt_dataset) do
+      case :ok do
+        :ok ->
+          {:noreply, assign(socket, dataset: andi_dataset, changeset: dataset_changeset, save_success: true, success_message: "Published successfully", page_error: false)}
 
-  def handle_event("force-cancel-edit", _, socket) do
-    {:noreply, redirect(socket, to: "/")}
-  end
-
-  def handle_info(:cancel_edit, socket) do
-    case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, show_unsaved_changes_modal: true)}
-      false -> {:noreply, redirect(socket, to: "/")}
+        error ->
+          Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
+      end
+    else
+      {:noreply, assign(socket, changeset: dataset_changeset, has_validation_errors: true)}
     end
-  end
-
-  def handle_info(:form_update, socket) do
-    {:noreply, assign(socket, unsaved_changes: true)}
   end
 
   def handle_info(%{topic: "form-save", payload: %{form_changeset: form_changeset}}, socket) do
@@ -157,6 +144,29 @@ defmodule AndiWeb.EditLiveView do
       end
 
     {:noreply, assign(socket, save_success: true, success_message: success_message, unsaved_changes: false, changeset: new_changeset, unsaved_changes: false)}
+  end
+
+  def handle_info(%{topic: "form-save", payload: _}, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("unsaved-changes-canceled", _, socket) do
+    {:noreply, assign(socket, show_unsaved_changes_modal: false)}
+  end
+
+  def handle_event("force-cancel-edit", _, socket) do
+    {:noreply, redirect(socket, to: "/")}
+  end
+
+  def handle_info(:cancel_edit, socket) do
+    case socket.assigns.unsaved_changes do
+      true -> {:noreply, assign(socket, show_unsaved_changes_modal: true)}
+      false -> {:noreply, redirect(socket, to: "/")}
+    end
+  end
+
+  def handle_info(:form_update, socket) do
+    {:noreply, assign(socket, unsaved_changes: true)}
   end
 
   # This handle_info takes care of all exceptions in a generic way.

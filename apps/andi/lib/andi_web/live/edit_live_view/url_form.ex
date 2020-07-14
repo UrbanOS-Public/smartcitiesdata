@@ -234,13 +234,26 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     {:noreply, socket}
   end
 
-  def handle_info(%{topic: "form-save", payload: _}, socket) do
+  def handle_info(%{topic: "form-save", event: "form-save"}, socket) do
     new_validation_status = case socket.assigns.changeset.valid? do
                               true -> "valid"
                               false -> "invalid"
                             end
 
     {:noreply, assign(socket, validation_status: new_validation_status)}
+  end
+
+  def handle_info(%{topic: "form-save", event: "save-all"} = message, socket) do
+    {:ok, andi_dataset} = Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
+
+    new_changeset = UrlFormSchema.changeset_from_andi_dataset(andi_dataset)
+
+    new_validation_status = case socket.assigns.changeset.valid? do
+                              true -> "valid"
+                              false -> "invalid"
+                            end
+
+    {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
   end
 
   defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket) when validation_status in ["valid", "invalid", "expanded"] do

@@ -75,7 +75,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               <div class="metadata-form__title">
                 <%= label(f, :dataTitle, DisplayNames.get(:dataTitle), class: "label label--required") %>
                 <%= text_input(f, :dataTitle, class: "input", phx_value_field: "dataTitle", phx_blur: "validate_system_name") %>
-                <%= ErrorHelpers.error_tag(f, :dataTitle) %>
+                <%= ErrorHelpers.error_tag(f, :dataTitle, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__data-name">
@@ -300,7 +300,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     {:noreply, socket}
   end
 
-  def handle_info(%{topic: "form-save", payload: _}, socket) do
+  def handle_info(%{topic: "form-save", event: "form-save"} = message, socket) do
     new_validation_status = case socket.assigns.changeset.valid? do
                               true -> "valid"
                               false -> "invalid"
@@ -308,6 +308,20 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
     {:noreply, assign(socket, validation_status: new_validation_status)}
   end
+
+  def handle_info(%{topic: "form-save", event: "save-all"} = message, socket) do
+    {:ok, andi_dataset} = Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
+
+    new_changeset = MetadataFormSchema.changeset_from_andi_dataset(andi_dataset)
+
+    new_validation_status = case socket.assigns.changeset.valid? do
+                              true -> "valid"
+                              false -> "invalid"
+                            end
+
+    {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
+  end
+
 
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
