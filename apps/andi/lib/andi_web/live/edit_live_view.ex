@@ -23,7 +23,7 @@ defmodule AndiWeb.EditLiveView do
 
     ~L"""
     <div class="edit-page" id="dataset-edit-page">
-      <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data, phx_hook: "Unload", data: [show_unsaved_changes_modal: @show_unsaved_changes_modal]] %>
+      <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>
@@ -134,7 +134,7 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info(%{topic: "form-save", payload: %{form_changeset: form_changeset}}, socket) do
     socket = reset_save_success(socket)
-    form_changes = form_changes_from_changeset(form_changeset)
+    form_changes = InputConverter.form_changes_from_changeset(form_changeset)
 
     {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset.id, form_changes)
 
@@ -193,27 +193,6 @@ defmodule AndiWeb.EditLiveView do
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
-  end
-
-  defp form_changes_from_changeset(%{changes: %{schema: schema}} = form_changeset) do
-    schema_changes = Enum.map(schema, &form_changes_from_changeset/1)
-
-    %{schema: schema_changes}
-  end
-
-  defp form_changes_from_changeset(form_changeset) do
-    error_fields = Keyword.keys(form_changeset.errors)
-
-    form_changeset
-    |> Ecto.Changeset.apply_changes()
-    |> StructTools.to_map()
-    |> add_error_fields_to_changes(error_fields)
-  end
-
-  defp add_error_fields_to_changes(changes, error_fields) do
-    Enum.reduce(error_fields, changes, fn error_field, acc ->
-      Map.put_new(acc, error_field, nil)
-    end)
   end
 
   defp complete_validation(changeset, socket) do

@@ -110,16 +110,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
     end
   end
 
-  # TODO delete me
-  defp is_set?(changeset, field) do
-    case Ecto.Changeset.fetch_field(changeset, field) do
-      :error -> false
-      {:data, []} -> false
-      {:changes, []} -> false
-      _ -> true
-    end
-  end
-
   defp hidden_inputs(form_field, selected_field_id) do
     if input_value(form_field, :id) != selected_field_id do
       form_field.data.__struct__.__schema__(:fields)

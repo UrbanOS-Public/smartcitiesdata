@@ -13,8 +13,6 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
   alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.Datasets
 
-  alias AndiWeb.EditLiveView.FinalizeForm
-
   alias SmartCity.TestDataGenerator, as: TDG
 
   import FlokiHelpers,

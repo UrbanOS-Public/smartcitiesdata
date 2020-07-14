@@ -5,6 +5,7 @@ defmodule Andi.InputSchemas.InputConverter do
 
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.FormTools
 
   def smrt_dataset_to_full_changeset(smrt_dataset) do
     smrt_dataset_to_full_changeset(%Dataset{}, smrt_dataset)
@@ -95,6 +96,29 @@ defmodule Andi.InputSchemas.InputConverter do
     |> SmartCity.Dataset.new()
   end
 
+  #TODO - see if we need this
+  # def form_changes_from_changeset(%{changes: %{schema: schema}} = form_changeset) do
+  #   schema_changes = Enum.map(schema, &form_changes_from_changeset/1)
+
+  #   %{schema: schema_changes}
+  # end
+
+  def form_changes_from_changeset(form_changeset) do
+    error_fields = Keyword.keys(form_changeset.errors)
+
+    form_changeset
+    |> Ecto.Changeset.apply_changes()
+    |> StructTools.to_map()
+    |> add_error_fields_to_changes(error_fields)
+  end
+
+  defp add_error_fields_to_changes(changes, error_fields) do
+    Enum.reduce(error_fields, changes, fn error_field, acc ->
+      Map.put_new(acc, error_field, nil)
+    end)
+  end
+
+
   defp convert_smrt_business(smrt_dataset) do
     smrt_dataset
     |> Map.update(:business, %{}, fn business ->
@@ -129,7 +153,7 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
       |> convert_source_url()
       |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
-      |> replace(:schema, fn schema ->
+      |> FormTools.replace(:schema, fn schema ->
         Enum.map(schema, &add_dataset_id(&1, smrt_dataset.id))
       end)
     end)
@@ -141,7 +165,7 @@ defmodule Andi.InputSchemas.InputConverter do
     schema
     |> Map.put(:dataset_id, dataset_id)
     |> Map.put(:bread_crumb, bread_crumb)
-    |> replace(:subSchema, fn sub_schema ->
+    |> FormTools.replace(:subSchema, fn sub_schema ->
       Enum.map(sub_schema, &add_dataset_id(&1, dataset_id, bread_crumb <> " > "))
     end)
   end
@@ -177,7 +201,7 @@ defmodule Andi.InputSchemas.InputConverter do
       technical
       |> Map.put_new(:sourceQueryParams, %{})
       |> Map.put_new(:sourceHeaders, %{})
-      |> replace(:schema, &convert_form_schema(&1, form_dataset[:id]))
+      |> FormTools.replace(:schema, &convert_form_schema(&1, form_dataset[:id]))
     end)
   end
 
@@ -194,7 +218,7 @@ defmodule Andi.InputSchemas.InputConverter do
     schema
     |> Map.put(:dataset_id, dataset_id)
     |> Map.put(:bread_crumb, bread_crumb)
-    |> replace(:subSchema, &convert_form_schema(&1, dataset_id, bread_crumb <> " > "))
+    |> FormTools.replace(:subSchema, &convert_form_schema(&1, dataset_id, bread_crumb <> " > "))
   end
 
   defp atomize_dataset_map(dataset) when is_map(dataset) do
@@ -253,7 +277,7 @@ defmodule Andi.InputSchemas.InputConverter do
   defp sort_form_data_schema_by_index(form_data) do
     form_data
     |> Map.update("technical", %{}, fn technical ->
-      replace(technical, "schema", &sort_map_by_numerical_keys/1)
+      FormTools.replace(technical, "schema", &sort_map_by_numerical_keys/1)
     end)
   end
 
@@ -280,12 +304,5 @@ defmodule Andi.InputSchemas.InputConverter do
         {current_value, current_value}
     end)
     |> elem(1)
-  end
-
-  def replace(map, key, function) do
-    case Map.fetch(map, key) do
-      {:ok, value} -> Map.put(map, key, function.(value))
-      :error -> map
-    end
   end
 end

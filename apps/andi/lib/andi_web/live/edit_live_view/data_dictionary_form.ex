@@ -59,7 +59,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       </div>
 
       <div class="form-section">
-        <%= f = form_for @changeset, "#", [phx_change: :cam, as: :form_data] %>
+        <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
           <div class="component-edit-section--<%= @visibility %>">
             <div class="data-dictionary-form-edit-section form-grid">
               <div class="data-dictionary-form__tree-section">
@@ -91,7 +91,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
               <div class="edit-button-group__save-btn">
                 <a href="#url-form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="url_form">Next</a>
-                <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="camsave">Save Draft</button>
+                <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
               </div>
             </div>
           </div>
@@ -105,13 +105,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     """
   end
 
-  def handle_event("cam", %{"data_dictionary_form_schema" => form_schema}, socket) do
+  def handle_event("validate", %{"data_dictionary_form_schema" => form_schema}, socket) do
     form_schema
     |> DataDictionaryFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 
-  def handle_event("camsave", _, socket) do
+  def handle_event("save", _, socket) do
     changeset =
       socket.assigns.changeset
       |> Map.put(:action, :update)

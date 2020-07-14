@@ -24,7 +24,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
     <div id=<%= @id %> class="data-dictionary-add-field-editor data-dictionary-add-field-editor--<%= modifier %>">
     <div class="modal-form-container">
         <h2>Add New Field</h2>
-        <%= form = form_for @changeset, "#", [phx_change: :cam, phx_target: "##{id}", as: :field] %>
+        <%= form = form_for @changeset, "#", [phx_change: :validate, phx_target: "##{id}", as: :field] %>
             <div class="form-input-container">
               <div class="data-dictionary-add-field-editor__name form-block">
                 <div class="form-input">
@@ -65,7 +65,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
     {:ok, assign(socket, changeset: changeset, visible: false)}
   end
 
-  def handle_event("cam", %{"field" => field}, socket) do
+  def handle_event("validate", %{"field" => field}, socket) do
     changes = AtomicMap.convert(field, safe: false)
 
     new_changeset = DataDictionary.changeset_for_new_field(%DataDictionary{}, changes)

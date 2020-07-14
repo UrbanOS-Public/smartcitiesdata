@@ -75,11 +75,10 @@ defmodule Andi.InputSchemas.Datasets do
   end
 
   def save_form_changeset(dataset_id, form_changeset) do
-    form_changes = form_changes_from_changeset(form_changeset)
+    form_changes = InputConverter.form_changes_from_changeset(form_changeset)
     update_from_form(dataset_id, form_changes)
   end
 
-  # TODO refactor
   def update_from_form(dataset_id, form_changes) do
     existing_dataset = get(dataset_id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(existing_dataset)
@@ -102,27 +101,6 @@ defmodule Andi.InputSchemas.Datasets do
 
     Dataset.changeset_for_draft(existing_dataset, new_changes)
     |> save()
-  end
-
-  defp form_changes_from_changeset(%{changes: %{schema: schema}} = form_changeset) do
-    schema_changes = Enum.map(schema, &form_changes_from_changeset/1)
-
-    %{schema: schema_changes}
-  end
-
-  defp form_changes_from_changeset(form_changeset) do
-    error_fields = Keyword.keys(form_changeset.errors)
-
-    form_changeset
-    |> Ecto.Changeset.apply_changes()
-    |> StructTools.to_map()
-    |> add_error_fields_to_changes(error_fields)
-  end
-
-  defp add_error_fields_to_changes(changes, error_fields) do
-    Enum.reduce(error_fields, changes, fn error_field, acc ->
-      Map.put_new(acc, error_field, nil)
-    end)
   end
 
   def update_ingested_time(dataset_id, ingested_time) do

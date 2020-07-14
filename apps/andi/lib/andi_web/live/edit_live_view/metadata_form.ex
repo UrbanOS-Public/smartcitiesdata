@@ -63,7 +63,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
       </div>
 
       <div class="form-section">
-        <%= f = form_for @changeset, "#", [phx_change: :cam, phx_submit: :camsave, as: :form_data] %>
+        <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
           <%= hidden_input(f, :orgName) %>
           <%= hidden_input(f, :orgTitle) %>
           <%= hidden_input(f, :orgId) %>
@@ -204,7 +204,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
               <div class="edit-button-group__save-btn">
                 <a href="#data_dictionary_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Next</a>
-                <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="camsave">Save Draft</button>
+                <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
               </div>
             </div>
           </div>
@@ -215,7 +215,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   end
 
   def handle_event(
-        "cam",
+        "validate",
         %{"form_data" => form_data, "_target" => ["form_data", "dataTitle" | _]},
         %{assigns: %{dataset_exists: false}} = socket
       ) do
@@ -226,7 +226,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   end
 
   def handle_event(
-        "cam",
+        "validate",
         %{"form_data" => form_data, "_target" => ["form_data", "orgId" | _]},
         %{assigns: %{dataset_exists: false}} = socket
       ) do
@@ -237,13 +237,13 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     |> complete_validation(socket)
   end
 
-  def handle_event("cam", %{"form_data" => form_data}, socket) do
+  def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
     |> MetadataFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 
-  def handle_event("camsave", _, socket) do
+  def handle_event("save", _, socket) do
     changeset =
       socket.assigns.changeset
       |> Map.put(:action, :update)

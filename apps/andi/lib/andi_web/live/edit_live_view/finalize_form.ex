@@ -76,7 +76,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
       </div>
 
       <div class="form-section">
-        <%= f = form_for @changeset, "#", [phx_change: :cam, as: :form_data] %>
+        <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
           <div class="component-edit-section--<%= @visibility %>">
             <div class="finalize-form-edit-section form-grid">
               <div "finalize-form__schedule">
@@ -152,7 +152,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
               <div class="edit-button-group__save-btn">
                 <button type="button" id="publish-button" class="btn btn--publish btn--action btn--large" phx-click="publish">Publish</button>
-                <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="camsave">Save Draft</button>
+                <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
               </div>
             </div>
           </div>
@@ -162,13 +162,13 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     """
   end
 
-  def handle_event("cam", %{"form_data" => form_data}, socket) do
+  def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
     |> FinalizeFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 
-  def handle_event("camsave", _, socket) do
+  def handle_event("save", _, socket) do
     changeset =
       socket.assigns.changeset
       |> Map.put(:action, :update)

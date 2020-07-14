@@ -54,7 +54,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
         </div>
 
         <div class="form-section">
-          <%= f = form_for @changeset, "#", [phx_change: :cam, as: :form_data] %>
+          <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
             <div class="component-edit-section--<%= @visibility %>">
               <div class="url-form-edit-section form-grid">
                 <div class="url-form__source-url">
@@ -85,7 +85,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
                 <div class="edit-button-group__save-btn">
                   <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="finalize_form">Next</a>
-                  <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="camsave">Save Draft</button>
+                  <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
                 </div>
                 </div>
             </div>
@@ -108,27 +108,27 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     {:noreply, assign(socket, testing: true)}
   end
 
-  def handle_event("cam", %{"form_data" => form_data, "_target" => ["form_data", "sourceUrl"]}, socket) do
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceUrl"]}, socket) do
     form_data
     |> FormTools.adjust_source_query_params_for_url()
     |> UrlFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 
-  def handle_event("cam", %{"form_data" => form_data, "_target" => ["form_data", "sourceQueryParams" | _]}, socket) do
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceQueryParams" | _]}, socket) do
     form_data
     |> FormTools.adjust_source_url_for_query_params()
     |> UrlFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 
-  def handle_event("cam", %{"form_data" => form_data}, socket) do
+  def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
     |> UrlFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 
-  def handle_event("camsave", _, socket) do
+  def handle_event("save", _, socket) do
     changeset =
       socket.assigns.changeset
       |> Map.put(:action, :update)
