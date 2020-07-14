@@ -135,10 +135,11 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "form-save", %{form_changeset: changeset})
 
-    new_validation_status = case changeset.valid? do
-                              true -> "valid"
-                              false -> "invalid"
-                            end
+    new_validation_status =
+      case changeset.valid? do
+        true -> "valid"
+        false -> "invalid"
+      end
 
     {:noreply, assign(socket, changeset: changeset, validation_status: new_validation_status)}
   end
@@ -146,8 +147,8 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   def handle_event("add", %{"field" => "sourceQueryParams"} = message, socket) do
     current_changes =
       socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes
-      |> StructTools.to_map
+      |> Ecto.Changeset.apply_changes()
+      |> StructTools.to_map()
 
     Datasets.update_from_form(socket.assigns.dataset_id, current_changes)
 
@@ -160,8 +161,8 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   def handle_event("add", %{"field" => "sourceHeaders"}, socket) do
     current_changes =
       socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes
-      |> StructTools.to_map
+      |> Ecto.Changeset.apply_changes()
+      |> StructTools.to_map()
 
     Datasets.update_from_form(socket.assigns.dataset_id, current_changes)
 
@@ -174,8 +175,8 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   def handle_event("remove", %{"id" => id, "field" => "sourceQueryParams"}, socket) do
     current_changes =
       socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes
-      |> StructTools.to_map
+      |> Ecto.Changeset.apply_changes()
+      |> StructTools.to_map()
 
     Datasets.update_from_form(socket.assigns.dataset_id, current_changes)
 
@@ -188,8 +189,8 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   def handle_event("remove", %{"id" => id, "field" => "sourceHeaders"}, socket) do
     current_changes =
       socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes
-      |> StructTools.to_map
+      |> Ecto.Changeset.apply_changes()
+      |> StructTools.to_map()
 
     Datasets.update_from_form(socket.assigns.dataset_id, current_changes)
 
@@ -200,10 +201,11 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   end
 
   def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
-    new_validation_status = case socket.assigns.changeset.valid? do
-                              true -> "valid"
-                              false -> "invalid"
-                            end
+    new_validation_status =
+      case socket.assigns.changeset.valid? do
+        true -> "valid"
+        false -> "invalid"
+      end
 
     AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{expand: next_component})
 
@@ -213,10 +215,11 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   def handle_event("toggle-component-visibility", _, socket) do
     current_visibility = Map.get(socket.assigns, :visibility)
 
-    new_visibility = case current_visibility do
-                       "expanded" -> "collapsed"
-                       "collapsed" -> "expanded"
-                     end
+    new_visibility =
+      case current_visibility do
+        "expanded" -> "collapsed"
+        "collapsed" -> "expanded"
+      end
 
     {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
   end
@@ -235,10 +238,11 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   end
 
   def handle_info(%{topic: "form-save", event: "form-save"}, socket) do
-    new_validation_status = case socket.assigns.changeset.valid? do
-                              true -> "valid"
-                              false -> "invalid"
-                            end
+    new_validation_status =
+      case socket.assigns.changeset.valid? do
+        true -> "valid"
+        false -> "invalid"
+      end
 
     {:noreply, assign(socket, validation_status: new_validation_status)}
   end
@@ -248,19 +252,22 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
     new_changeset = UrlFormSchema.changeset_from_andi_dataset(andi_dataset)
 
-    new_validation_status = case socket.assigns.changeset.valid? do
-                              true -> "valid"
-                              false -> "invalid"
-                            end
+    new_validation_status =
+      case socket.assigns.changeset.valid? do
+        true -> "valid"
+        false -> "invalid"
+      end
 
     {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
   end
 
-  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket) when validation_status in ["valid", "invalid", "expanded"] do
-    new_status = case socket.assigns.changeset.valid? do
-                   true -> "valid"
-                   false -> "invalid"
-                 end
+  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket)
+       when validation_status in ["valid", "invalid", "expanded"] do
+    new_status =
+      case socket.assigns.changeset.valid? do
+        true -> "valid"
+        false -> "invalid"
+      end
 
     assign(socket, validation_status: new_status)
   end
@@ -301,5 +308,4 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     |> Map.get(field, [])
     |> Enum.map(fn %{key: key, value: value} -> {key, value} end)
   end
-
 end

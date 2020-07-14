@@ -18,6 +18,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
   def changeset(%__MODULE__{} = current, %{"cadence" => cadence}), do: changeset(current, %{cadence: cadence})
+
   def changeset(%__MODULE__{} = current, changes) do
     current
     |> cast(changes, [:cadence])

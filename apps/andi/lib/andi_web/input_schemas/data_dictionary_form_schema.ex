@@ -42,7 +42,7 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
   end
 
   defp validate_schema(%{changes: %{sourceType: source_type}} = changeset)
-  when source_type in ["ingest", "stream"] do
+       when source_type in ["ingest", "stream"] do
     case Ecto.Changeset.get_field(changeset, :schema, nil) do
       [] -> add_error(changeset, :schema, "cannot be empty")
       nil -> add_error(changeset, :schema, "is required", validation: :required)

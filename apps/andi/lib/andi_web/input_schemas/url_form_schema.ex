@@ -22,6 +22,7 @@ defmodule AndiWeb.InputSchemas.UrlFormSchema do
 
   def changeset(url, changes) do
     changes_with_id = StructTools.ensure_id(url, changes)
+
     url
     |> cast(changes_with_id, [:sourceUrl], empty_values: [])
     |> cast_assoc(:sourceHeaders, with: &Header.changeset/2)

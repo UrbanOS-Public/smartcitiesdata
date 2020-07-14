@@ -115,7 +115,14 @@ defmodule AndiWeb.EditLiveView do
       # case Brook.Event.send(instance_name(), dataset_update(), :andi, smrt_dataset) do
       case :ok do
         :ok ->
-          {:noreply, assign(socket, dataset: andi_dataset, changeset: dataset_changeset, save_success: true, success_message: "Published successfully", page_error: false)}
+          {:noreply,
+           assign(socket,
+             dataset: andi_dataset,
+             changeset: dataset_changeset,
+             save_success: true,
+             success_message: "Published successfully",
+             page_error: false
+           )}
 
         error ->
           Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
@@ -143,7 +150,14 @@ defmodule AndiWeb.EditLiveView do
         false -> "Saved successfully. You may need to fix errors before publishing."
       end
 
-    {:noreply, assign(socket, save_success: true, success_message: success_message, unsaved_changes: false, changeset: new_changeset, unsaved_changes: false)}
+    {:noreply,
+     assign(socket,
+       save_success: true,
+       success_message: success_message,
+       unsaved_changes: false,
+       changeset: new_changeset,
+       unsaved_changes: false
+     )}
   end
 
   def handle_info(%{topic: "form-save", payload: _}, socket) do
@@ -192,7 +206,7 @@ defmodule AndiWeb.EditLiveView do
 
     form_changeset
     |> Ecto.Changeset.apply_changes()
-    |> StructTools.to_map
+    |> StructTools.to_map()
     |> add_error_fields_to_changes(error_fields)
   end
 

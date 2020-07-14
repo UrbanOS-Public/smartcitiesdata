@@ -79,7 +79,7 @@ defmodule Andi.InputSchemas.Datasets do
     update_from_form(dataset_id, form_changes)
   end
 
-  #TODO refactor
+  # TODO refactor
   def update_from_form(dataset_id, form_changes) do
     existing_dataset = get(dataset_id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(existing_dataset)
@@ -88,17 +88,17 @@ defmodule Andi.InputSchemas.Datasets do
       changeset
       |> Changeset.get_change(:technical)
       |> Changeset.apply_changes()
-      |> StructTools.to_map
+      |> StructTools.to_map()
       |> Map.merge(form_changes)
 
     business_changes =
       changeset
       |> Changeset.get_change(:business)
       |> Changeset.apply_changes()
-      |> StructTools.to_map
+      |> StructTools.to_map()
       |> Map.merge(form_changes)
 
-    new_changes = %{technical: technical_changes, business: business_changes, id: dataset_id} |> StructTools.to_map
+    new_changes = %{technical: technical_changes, business: business_changes, id: dataset_id} |> StructTools.to_map()
 
     Dataset.changeset_for_draft(existing_dataset, new_changes)
     |> save()
@@ -115,7 +115,7 @@ defmodule Andi.InputSchemas.Datasets do
 
     form_changeset
     |> Ecto.Changeset.apply_changes()
-    |> StructTools.to_map
+    |> StructTools.to_map()
     |> add_error_fields_to_changes(error_fields)
   end
 

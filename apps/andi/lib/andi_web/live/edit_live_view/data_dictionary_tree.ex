@@ -110,7 +110,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
     end
   end
 
-  #TODO delete me
+  # TODO delete me
   defp is_set?(changeset, field) do
     case Ecto.Changeset.fetch_field(changeset, field) do
       :error -> false
