@@ -3,6 +3,7 @@ defmodule DiscoveryApi.Test.AuthHelper do
   Helper functions and valid values for testing auth things.
   """
   alias DiscoveryApiWeb.Auth.TokenHandler
+  alias DiscoveryApi.Auth.GuardianConfigurator
 
   def valid_jwks() do
     %{
@@ -74,5 +75,31 @@ defmodule DiscoveryApi.Test.AuthHelper do
 
   def guardian_verify_passthrough(claims, _token, _options) do
     {:ok, claims}
+  end
+
+  def auth0_setup do
+    secret_key = Application.get_env(:discovery_api, TokenHandler) |> Keyword.get(:secret_key)
+    GuardianConfigurator.configure(issuer: valid_issuer())
+
+    really_far_in_the_future = 3_000_000_000_000
+    set_allowed_guardian_drift(really_far_in_the_future)
+
+    bypass = Bypass.open()
+
+    Bypass.stub(bypass, "GET", "/jwks", fn conn ->
+      Plug.Conn.resp(conn, :ok, Jason.encode!(valid_jwks()))
+    end)
+
+    Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
+      Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z"}))
+    end)
+
+    Application.put_env(:discovery_api, :jwks_endpoint, "http://localhost:#{bypass.port}/jwks")
+    Application.put_env(:discovery_api, :user_info_endpoint, "http://localhost:#{bypass.port}/userinfo")
+
+    fn ->
+      set_allowed_guardian_drift(0)
+      GuardianConfigurator.configure(secret_key: secret_key)
+    end
   end
 end

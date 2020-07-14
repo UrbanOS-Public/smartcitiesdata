@@ -4,7 +4,7 @@ defmodule Valkyrie.MixProject do
   def project do
     [
       app: :valkyrie,
-      version: "1.2.2",
+      version: "1.3.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -54,6 +54,7 @@ defmodule Valkyrie.MixProject do
       {:retry, "~> 0.13"},
       {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
+      {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"}
     ]
   end
