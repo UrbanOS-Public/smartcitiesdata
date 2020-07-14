@@ -728,12 +728,14 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      schema = andi_dataset.technical.schema |> Enum.map(fn
-        %{name: "my_date"} = field -> Map.put(field, :description, "desc") |> IO.inspect()
-        %{name: "my_int"} = field -> Map.put(field, :sequence, "100000") |> IO.inspect()
-        %{name: "my_string"} = field -> Map.delete(field, :sequence) |> IO.inspect()
-        field -> field
-      end)
+      schema =
+        andi_dataset.technical.schema
+        |> Enum.map(fn
+          %{name: "my_date"} = field -> Map.put(field, :description, "desc")
+          %{name: "my_int"} = field -> Map.put(field, :sequence, "100000")
+          %{name: "my_string"} = field -> Map.delete(field, :sequence)
+          field -> field
+        end)
 
       updated_dataset = put_in(andi_dataset, [:technical, :schema], schema)
       {:ok, manually_updated_dataset} = Datasets.update(updated_dataset)
@@ -749,7 +751,7 @@ defmodule AndiWeb.EditLiveViewTest do
       changed_schema_order = changed_dataset |> get_in([:technical, :schema]) |> Enum.map(fn %{name: name} -> name end) |> Enum.join(",")
 
       assert changed_dataset |> get_in([:business, :dataTitle]) == ""
-      assert "my_string,my_date,my_float,my_boolean,my_int" == changed_schema_order
+      assert changed_schema_order == "my_string,my_date,my_float,my_boolean,my_int"
     end
   end
 
