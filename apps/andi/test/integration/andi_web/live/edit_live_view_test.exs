@@ -710,9 +710,27 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
+      form_data = FormTools.form_data_from_andi_dataset(andi_dataset) |> put_in([:business, :dataTitle], "")
+      form_data_changeset = InputConverter.form_data_to_full_changeset(%Dataset{}, form_data)
+
+      render_change(view, :validate, %{"form_data" => form_data})
+      html = render_change(view, :save, %{"form_data" => form_data})
+
+      refute form_data_changeset.valid?
+      assert Datasets.get(dataset.id) |> get_in([:business, :dataTitle]) == ""
+      assert get_text(html, "#form_data_business_dataTitle") == ""
+      refute Enum.empty?(find_elements(html, "#dataTitle-error-msg"))
+    end
+
+    test "does not reorder schema fields unless the sequence field is specifically set", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, andi_dataset} = Datasets.update(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
       schema = andi_dataset.technical.schema |> Enum.map(fn
         %{name: "my_date"} = field -> Map.put(field, :description, "desc") |> IO.inspect()
-        %{name: "my_float"} = field -> Map.put(field, :sequence, nil) |> IO.inspect()
+        %{name: "my_int"} = field -> Map.put(field, :sequence, "100000") |> IO.inspect()
         %{name: "my_string"} = field -> Map.delete(field, :sequence) |> IO.inspect()
         field -> field
       end)
@@ -725,16 +743,13 @@ defmodule AndiWeb.EditLiveViewTest do
       form_data_changeset = InputConverter.form_data_to_full_changeset(%Dataset{}, form_data)
 
       render_change(view, :validate, %{"form_data" => form_data})
-      html = render_change(view, :save, %{"form_data" => form_data})
+      render_change(view, :save, %{"form_data" => form_data})
 
       changed_dataset = Datasets.get(dataset.id)
       changed_schema_order = changed_dataset |> get_in([:technical, :schema]) |> Enum.map(fn %{name: name} -> name end) |> Enum.join(",")
 
-      refute form_data_changeset.valid?
       assert changed_dataset |> get_in([:business, :dataTitle]) == ""
-      assert original_schema_order == changed_schema_order
-      assert get_text(html, "#form_data_business_dataTitle") == ""
-      refute Enum.empty?(find_elements(html, "#dataTitle-error-msg"))
+      assert "my_string,my_date,my_float,my_boolean,my_int" == changed_schema_order
     end
   end
 
