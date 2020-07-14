@@ -72,7 +72,7 @@ defmodule Andi.InputSchemas.StructTools do
   end
 
   defp sort_if_sequenced([%{sequence: _sequence} | _] = list) do
-    Enum.sort(list, fn %{sequence: sequence1}, %{sequence: sequence2} -> sequence1 < sequence2 end)
+    Enum.sort_by(list, &Map.get(&1, :sequence))
   end
 
   defp sort_if_sequenced(list), do: list
