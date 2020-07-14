@@ -721,6 +721,38 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_text(html, "#form_data_business_dataTitle") == ""
       refute Enum.empty?(find_elements(html, "#dataTitle-error-msg"))
     end
+
+    test "does not reorder schema fields unless the sequence field is specifically set", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, andi_dataset} = Datasets.update(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      schema =
+        andi_dataset.technical.schema
+        |> Enum.map(fn
+          %{name: "my_date"} = field -> Map.put(field, :description, "desc")
+          %{name: "my_int"} = field -> Map.put(field, :sequence, "100000")
+          %{name: "my_string"} = field -> Map.delete(field, :sequence)
+          field -> field
+        end)
+
+      updated_dataset = put_in(andi_dataset, [:technical, :schema], schema)
+      {:ok, manually_updated_dataset} = Datasets.update(updated_dataset)
+      original_schema_order = dataset.technical.schema |> Enum.map(fn %{name: name} -> name end) |> Enum.join(",")
+
+      form_data = FormTools.form_data_from_andi_dataset(updated_dataset) |> put_in([:business, :dataTitle], "")
+      form_data_changeset = InputConverter.form_data_to_full_changeset(%Dataset{}, form_data)
+
+      render_change(view, :validate, %{"form_data" => form_data})
+      render_change(view, :save, %{"form_data" => form_data})
+
+      changed_dataset = Datasets.get(dataset.id)
+      changed_schema_order = changed_dataset |> get_in([:technical, :schema]) |> Enum.map(fn %{name: name} -> name end) |> Enum.join(",")
+
+      assert changed_dataset |> get_in([:business, :dataTitle]) == ""
+      assert changed_schema_order == "my_string,my_date,my_float,my_boolean,my_int"
+    end
   end
 
   describe "create new dataset" do
