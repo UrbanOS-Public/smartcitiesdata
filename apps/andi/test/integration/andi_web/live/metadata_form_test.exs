@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditLiveViewTest do
+defmodule AndiWeb.MetadataFormTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.ConnCase
@@ -672,5 +672,4 @@ defmodule AndiWeb.EditLiveViewTest do
       ])
     end
   end
-
 end
