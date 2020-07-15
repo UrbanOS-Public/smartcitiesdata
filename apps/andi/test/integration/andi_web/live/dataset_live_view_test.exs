@@ -74,13 +74,13 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
     assert {:ok, view, html} = live(conn, edit_page)
 
-    assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_business_dataTitle")
+    assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
 
-    assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
-             get_value(html, "#form_data_technical_dataName")
+    assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" == get_value(html, "#form_data_dataName")
 
-    html = render_change(view, :publish)
+    # TODO - move to metadata form test
+    # html = render_change(view, :publish)
 
-    refute Enum.empty?(find_elements(html, "#orgTitle-error-msg"))
+    # refute Enum.empty?(find_elements(html, "#orgTitle-error-msg"))
   end
 end

@@ -3,7 +3,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     LiveComponent for editing dataset metadata
   """
   use Phoenix.LiveView
-
   import Phoenix.HTML.Form
 
   alias Andi.InputSchemas.Options
@@ -71,6 +70,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
           <%= hidden_input(f, :systemName) %>
           <%= hidden_input(f, :sourceType) %>
           <%= hidden_input(f, :sourceFormat) %>
+          <%= hidden_input(f, :datasetId) %>
 
           <div class="component-edit-section--<%= @visibility %>">
             <div class="metadata-form-edit-section form-grid">
@@ -261,7 +261,8 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
   def handle_event("validate_system_name", _, socket) do
     changeset =
-      Dataset.validate_unique_system_name(socket.assigns.changeset)
+      socket.assigns.changeset
+      |> Dataset.validate_unique_system_name()
       |> Map.put(:action, :update)
 
     {:noreply, assign(socket, changeset: changeset)}

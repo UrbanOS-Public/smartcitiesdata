@@ -233,16 +233,16 @@ defmodule Andi.InputSchemas.InputConverter do
     Map.new(map, fn {key, val} -> {SmartCity.Helpers.safe_string_to_atom(key), val} end)
   end
 
-  defp keywords_to_list(nil), do: []
-  defp keywords_to_list(""), do: []
+  def keywords_to_list(nil), do: []
+  def keywords_to_list(""), do: []
 
-  defp keywords_to_list(keywords) when is_binary(keywords) do
+  def keywords_to_list(keywords) when is_binary(keywords) do
     keywords
     |> String.split(", ")
     |> Enum.map(&String.trim/1)
   end
 
-  defp keywords_to_list(keywords) when is_list(keywords), do: keywords
+  def keywords_to_list(keywords) when is_list(keywords), do: keywords
 
   defp date_to_iso8601_datetime(nil), do: nil
 
@@ -287,7 +287,7 @@ defmodule Andi.InputSchemas.InputConverter do
     end)
   end
 
-  defp fix_modified_date(map) do
+  def fix_modified_date(map) do
     map
     |> Map.get_and_update(:modifiedDate, fn
       %{calendar: "Elixir.Calendar.ISO", day: day, month: month, year: year} ->

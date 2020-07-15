@@ -4,7 +4,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Andi.InputSchemas.CronTools
+  alias Andi.InputSchemas.FormTools
   alias AndiWeb.InputSchemas.FinalizeFormSchema.FutureSchedule
   alias AndiWeb.InputSchemas.FinalizeFormSchema.RepeatingSchedule
   alias Andi.InputSchemas.StructTools

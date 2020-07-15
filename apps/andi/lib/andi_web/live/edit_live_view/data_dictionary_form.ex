@@ -59,7 +59,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       </div>
 
       <div class="form-section">
-        <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
+        <%= form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
           <div class="component-edit-section--<%= @visibility %>">
             <div class="data-dictionary-form-edit-section form-grid">
               <div class="data-dictionary-form__tree-section">
@@ -180,7 +180,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, assign(socket, validation_status: new_validation_status)}
   end
 
-  def handle_info(%{topic: "form-save", event: "save-all"} = message, socket) do
+  def handle_info(%{topic: "form-save", event: "save-all"}, socket) do
     {:ok, andi_dataset} = Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
 
     new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(andi_dataset)

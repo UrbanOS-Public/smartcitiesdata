@@ -6,6 +6,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
 
   alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.InputConverter
 
   @no_dashes_regex ~r/^[^\-]+$/
   @email_regex ~r/^[\w\_\~\!\$\&\'\(\)\*\+\,\;\=\:.-]+@[\w.-]+\.[\w.-]+?$/
@@ -17,6 +18,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     field(:contactName, :string)
     field(:dataName, :string)
     field(:dataTitle, :string)
+    field(:datasetId, :string)
     field(:description, :string)
     field(:homepage, :string)
     field(:issuedDate, :date)
@@ -46,6 +48,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     :contactName,
     :dataName,
     :dataTitle,
+    :datasetId,
     :description,
     :homepage,
     :issuedDate,
@@ -74,6 +77,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     :contactName,
     :dataName,
     :dataTitle,
+    :datasetId,
     :description,
     :issuedDate,
     :language,
@@ -112,6 +116,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     business_changes = dataset.business
     technical_changes = dataset.technical
     changes = Map.merge(business_changes, technical_changes)
+    changes = Map.put(changes, :datasetId, dataset.id)
 
     changeset(changes)
   end
@@ -119,6 +124,8 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
   def changeset_from_form_data(form_data) do
     form_data
     |> AtomicMap.convert(safe: false, underscore: false)
+    |> InputConverter.fix_modified_date()
+    |> Map.update(:keywords, nil, &InputConverter.keywords_to_list/1)
     |> changeset()
   end
 
