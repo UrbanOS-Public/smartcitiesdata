@@ -509,8 +509,6 @@ defmodule AndiWeb.MetadataFormTest do
         [:license, %{"license" => ""}, "Please enter a valid license."],
         [:publishFrequency, %{"publishFrequency" => ""}, "Please enter a valid update frequency."],
         [:orgId, %{"orgId" => ""}, "Please enter a valid organization."],
-        # TODO - move to url form test
-        # [:sourceUrl, %{"sourceUrl" => ""}, "Please enter a valid base url."],
         [:license, %{"license" => ""}, "Please enter a valid license."],
         [:benefitRating, %{"benefitRating" => nil}, "Please enter a valid benefit."],
         [:riskRating, %{"riskRating" => nil}, "Please enter a valid risk."],
@@ -541,25 +539,6 @@ defmodule AndiWeb.MetadataFormTest do
 
       assert Enum.empty?(get_attributes(html, ".metadata-form__format select", "disabled"))
     end
-
-    #TODO - url form
-    # data_test "invalid #{field} displays proper error message", %{conn: conn} do
-    #   smrt_dataset = TDG.create_dataset(%{technical: %{field => %{"foo" => "where's my key"}}})
-
-    #   {:ok, dataset} = Datasets.update(smrt_dataset)
-
-    #   assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-    #   form_data =
-    #     FormTools.form_data_from_andi_dataset(dataset)
-    #     |> put_in([:technical, field], %{"0" => %{"key" => "", "value" => "where's my key"}})
-
-    #   html = render_change(view, :validate, %{"form_data" => form_data})
-
-    #   assert get_text(html, "##{field}-error-msg") == "Please enter valid key(s)."
-
-    #   where(field: [:sourceQueryParams, :sourceHeaders])
-    # end
 
     data_test "displays error when #{field} is unset", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})

@@ -93,7 +93,6 @@ defmodule AndiWeb.EditLiveView do
        save_success: false,
        success_message: "",
        test_results: nil,
-       testing: false,
        finalize_form_data: nil,
        unsaved_changes: false,
        show_unsaved_changes_modal: false
@@ -187,7 +186,7 @@ defmodule AndiWeb.EditLiveView do
   # Expected errors should be handled in specific handlers.
   # Flags should be reset here.
   def handle_info({:EXIT, _pid, {_error, _stacktrace}}, socket) do
-    {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
+    {:noreply, assign(socket, page_error: true, save_success: false)}
   end
 
   def handle_info(message, socket) do

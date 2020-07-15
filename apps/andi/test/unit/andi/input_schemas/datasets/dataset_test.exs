@@ -276,19 +276,6 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       ])
     end
 
-    test "given a url with at least one invalid query param it marks the dataset as invalid" do
-      form_data =
-        FormTools.adjust_source_query_params_for_url(%{"technical" => %{"sourceUrl" => "https://source.url.example.com?=oops&a=b"}})
-
-      changeset = InputConverter.form_data_to_ui_changeset(form_data)
-
-      refute changeset.valid?
-
-      assert {:sourceQueryParams, {"has invalid format", [validation: :format]}} in changeset.changes.technical.errors
-
-      assert %{technical: %{sourceQueryParams: [%{key: nil, value: "oops"}, %{key: "a", value: "b"}]}} =
-               Ecto.Changeset.apply_changes(changeset)
-    end
 
     data_test "given a dataset with a schema that has #{field}, format is defaulted" do
       changes =
