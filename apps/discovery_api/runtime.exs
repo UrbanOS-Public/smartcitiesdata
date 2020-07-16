@@ -39,7 +39,14 @@ config :discovery_api, DiscoveryApi.Repo,
   username: System.get_env("POSTGRES_USER"),
   password: System.get_env("POSTGRES_PASSWORD"),
   hostname: System.get_env("POSTGRES_HOST"),
-  port: System.get_env("POSTGRES_PORT")
+  port: System.get_env("POSTGRES_PORT"),
+  ssl: true,
+  ssl_opts: [
+    verify: :verify_peer,
+    versions: [:"tlsv1.2"],
+    cacertfile: System.get_env("CA_CERTFILE_PATH"),
+    verify_fun: &:ssl_verify_hostname.verify_fun/3
+  ]
 
 required_envars = ["REDIS_HOST", "PRESTO_URL", "ALLOWED_ORIGINS", "PRESIGN_KEY"]
 
