@@ -66,6 +66,7 @@ defmodule Andi.MixProject do
       {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.9", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
+      {:ssl_verify_fun, "~> 1.1"},
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true},
       {:tesla, "~> 1.3"},
