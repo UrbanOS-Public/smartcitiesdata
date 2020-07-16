@@ -111,8 +111,7 @@ defmodule AndiWeb.EditLiveView do
     if dataset_changeset.valid? do
       {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(andi_dataset)
 
-      # case Brook.Event.send(instance_name(), dataset_update(), :andi, smrt_dataset) do
-      case :ok do
+      case Brook.Event.send(instance_name(), dataset_update(), :andi, smrt_dataset) do
         :ok ->
           {:noreply,
            assign(socket,

@@ -39,149 +39,66 @@ defmodule AndiWeb.EditLiveViewTest do
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
 
-  describe "finalize form" do
-    setup do
-      dataset = TDG.create_dataset(%{technical: %{cadence: "1 1 1 * * *"}})
-
-      {:ok, andi_dataset} = Datasets.update(dataset)
-      [dataset: andi_dataset]
-    end
-
-    data_test "quick schedule #{schedule}", %{conn: conn, dataset: dataset} do
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-      render_click([view, "finalize_form"], "quick_schedule", %{"schedule" => schedule})
-      html = render(view)
-
-      assert expected_crontab == get_crontab_from_html(html)
-      assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
-
-      where([
-        [:schedule, :expected_crontab],
-        ["hourly", "0 0 * * * *"],
-        ["daily", "0 0 0 * * *"],
-        ["weekly", "0 0 0 * * 0"],
-        ["monthly", "0 0 0 1 * *"],
-        ["yearly", "0 0 0 1 1 *"]
-      ])
-    end
-
-    test "set schedule manually", %{conn: conn, dataset: dataset} do
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-      render_change(view, :save, %{"form_data" => form_data})
-      html = render(view)
-
-      assert dataset.technical.cadence == get_crontab_from_html(html)
-      assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
-    end
-
-    test "handles five-character cronstrings", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{cadence: "4 2 7 * *"}})
-      {:ok, andi_dataset} = Datasets.update(dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-      form_data = FormTools.form_data_from_andi_dataset(andi_dataset)
-      render_change(view, :save, %{"form_data" => form_data})
-      html = render(view)
-
-      assert dataset.technical.cadence == get_crontab_from_html(html)
-      assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
-    end
-
-    test "handles cadence of never", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{cadence: "never"}})
-      {:ok, _} = Datasets.update(dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
-    end
-  end
-
-  describe "dataset finalizing buttons" do
-    test "allows saving invalid form as draft", %{conn: conn} do
-      dataset = TDG.create_dataset(%{})
-      {:ok, andi_dataset} = Datasets.update(dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-      form_data = FormTools.form_data_from_andi_dataset(andi_dataset) |> put_in([:business, :dataTitle], "")
-      form_data_changeset = InputConverter.form_data_to_full_changeset(%Dataset{}, form_data)
-
-      render_change(view, :validate, %{"form_data" => form_data})
-      html = render_change(view, :save, %{"form_data" => form_data})
-
-      refute form_data_changeset.valid?
-      assert Datasets.get(dataset.id) |> get_in([:business, :dataTitle]) == ""
-      assert get_text(html, "#form_data_business_dataTitle") == ""
-      refute Enum.empty?(find_elements(html, "#dataTitle-error-msg"))
-    end
-  end
 
   describe "save and publish form data" do
     test "valid form data is saved on publish", %{conn: conn} do
-      smrt_dataset =
-        TDG.create_dataset(%{
-          business: %{modifiedDate: "2020-01-04T01:02:03Z"}
-        })
+      smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
 
-      form_data =
-        FormTools.form_data_from_andi_dataset(dataset)
-        |> put_in([:business, :issuedDate], "2020-01-03")
+      form_data = %{"cadence" => "once"}
 
-      render_change(view, :validate, %{"form_data" => form_data})
-      render_change(view, :publish)
-
-      dataset = Datasets.get(dataset.id)
-      {:ok, saved_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset)
+      render_change(finalize_view, :validate, %{"form_data" => form_data})
+      render_change(finalize_view, :publish)
 
       eventually(fn ->
+        dataset = Datasets.get(dataset.id)
+        {:ok, saved_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset)
+
         assert {:ok, ^saved_dataset} = DatasetStore.get(dataset.id)
-      end)
+      end, 10, 1_000)
     end
 
-    test "invalid form data is not saved on publish", %{conn: conn} do
+    test "invalid form data is saved on publish", %{conn: conn} do
       smrt_dataset =
         TDG.create_dataset(%{
           business: %{publishFrequency: "I dunno, whenever, I guess"}
         })
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
+      assert "I dunno, whenever, I guess" == Datasets.get(dataset.id) |> get_in([:business, :publishFrequency])
 
-      form_data =
-        FormTools.form_data_from_andi_dataset(dataset)
-        |> put_in([:business, :publishFrequency], "")
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      render_change(view, :validate, %{"form_data" => form_data})
-      render_change(view, :publish)
+      metadata_view = find_child(view, "metadata_form_editor")
+      finalize_view = find_child(view, "finalize_form_editor")
 
-      eventually(fn ->
-        assert %{business: %{publishFrequency: "I dunno, whenever, I guess"}} = Datasets.get(dataset.id)
-      end)
+      form_data = %{"publishFrequency" => nil}
+
+      render_change(metadata_view, :validate, %{"form_data" => form_data})
+      render_change(finalize_view, :publish)
+
+      Process.sleep(2_000)
+      assert nil == Datasets.get(dataset.id) |> get_in([:business, :publishFrequency])
     end
 
     test "success message is displayed when form data is saved", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{business: %{issuedDate: nil}})
+      smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
         |> Datasets.save()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+
       assert get_text(html, "#snackbar") == ""
 
-      form_data =
-        FormTools.form_data_from_andi_dataset(dataset)
-        |> put_in([:business, :issuedDate], "2020-01-03")
-
-      html = render_change(view, :save, %{"form_data" => form_data})
+      render_change(finalize_view, :save, %{})
+      html = render(view)
 
       refute Enum.empty?(find_elements(html, "#snackbar.success-message"))
       assert get_text(html, "#snackbar") != ""
@@ -196,10 +113,9 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Datasets.save()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      url_view = find_child(view, "url_form_editor")
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
-
-      render_change(view, :save, %{"form_data" => form_data})
+      render_change(url_view, :save, %{})
 
       refute_called Brook.Event.send(any(), any(), any(), any())
     end
@@ -212,10 +128,13 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Datasets.save()
 
       assert {:ok, view, _} = live(conn, @url_path <> dataset.id)
+      metadata_view = find_child(view, "metadata_form_editor")
 
-      form_data = FormTools.form_data_from_andi_dataset(dataset)
+      form_data = %{"dataTitle" => ""}
 
-      html = render_change(view, :save, %{"form_data" => form_data})
+      render_change(metadata_view, :validate, %{"form_data" => form_data})
+      render_change(metadata_view, :save, %{})
+      html = render(view)
 
       assert get_text(html, "#snackbar") == "Saved successfully. You may need to fix errors before publishing."
     end
@@ -226,17 +145,33 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      metadata_view = find_child(view, "metadata_form_editor")
+      finalize_view = find_child(view, "finalize_form_editor")
 
-      form_data =
-        FormTools.form_data_from_andi_dataset(dataset)
-        |> put_in([:business, :modifiedDate], nil)
+      form_data = %{"modifiedDate" => "",
+                    "dataName" => "somethimn",
+                    "orgName" => "something",
+                    "private" =>  false,
+                    "sourceFormat" => "something",
+                    "sourceType" => "something",
+                    "benefitRating" => 1.0,
+                    "contactEmail" => "something@something.com",
+                    "contactName" =>  "something",
+                    "dataTitle" => "something",
+                    "description" => "something",
+                    "issuedDate" => ~D[1899-10-20],
+                    "license" => "something",
+                    "orgTitle" => "something",
+                    "publishFrequency" => "something",
+                    "riskRating" => 1.0
+                   }
 
-      render_change(view, :validate, %{"form_data" => form_data})
-      render_change(view, :publish)
+      render_change(metadata_view, :validate, %{"form_data" => form_data})
+      render_change(finalize_view, :publish)
 
       eventually(fn ->
         assert {:ok, nil} != DatasetStore.get(dataset.id)
-      end)
+      end, 30, 1_000)
     end
 
     test "does not save when dataset org and data name match existing dataset", %{conn: conn} do
@@ -244,15 +179,15 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
       {:ok, other_dataset} = Datasets.update(TDG.create_dataset(%{}))
 
-      form_data =
-        FormTools.form_data_from_andi_dataset(dataset)
-        |> put_in([:technical, :dataName], other_dataset.technical.dataName)
-        |> put_in([:technical, :orgName], other_dataset.technical.orgName)
+      form_data = %{"dataTitle" => other_dataset.technical.dataName, "orgName" => other_dataset.technical.orgName}
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      render_change(view, :validate, %{"form_data" => form_data})
-      render_change(view, :validate_system_name)
-      render_change(view, :publish)
+      metadata_view = find_child(view, "metadata_form_editor")
+      finalize_view = find_child(view, "finalize_form_editor")
+
+      render_change(metadata_view, :validate, %{"form_data" => form_data, "_target" => ["form_data", "dataTitle"]})
+      render_change(metadata_view, :validate_system_name, %{})
+      render_change(finalize_view, :publish)
 
       assert render(view) |> get_text("#snackbar") =~ "errors"
     end
@@ -262,22 +197,22 @@ defmodule AndiWeb.EditLiveViewTest do
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
-      form_data =
-        FormTools.form_data_from_andi_dataset(dataset)
-        |> Map.update!(:technical, &Map.delete(&1, field))
+      form_data = %{"sourceUrl" => "cam.com", field => %{"x" => "y"}}
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      render_change(view, :validate, %{"form_data" => form_data})
-      render_change(view, :publish)
+      url_view = find_child(view, "url_form_editor")
+      finalize_view = find_child(view, "finalize_form_editor")
 
-      dataset = Datasets.get(dataset.id)
-      {:ok, saved_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset)
+      render_change(url_view, :validate, %{"form_data" => form_data})
+      render_change(finalize_view, :publish)
 
       eventually(fn ->
+        dataset = Datasets.get(dataset.id)
+        {:ok, saved_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset)
         assert {:ok, ^saved_dataset} = DatasetStore.get(dataset.id)
-      end)
+      end, 20, 500)
 
-      where(field: [:sourceQueryParams, :sourceHeaders])
+      where(field: ["sourceQueryParams", "sourceHeaders"])
     end
 
     test "alert shows when section changes are unsaved on cancel action", %{conn: conn} do
@@ -285,21 +220,18 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      metadata_view = find_child(view, "metadata_form_editor")
 
-      form_data =
-        dataset
-        |> put_in([:business, :dataTitle], "a new datset title")
-        |> FormTools.form_data_from_andi_dataset()
+      form_data = %{"dataTitle" => "new dataset title"}
 
-      render_change(view, "validate", %{"form_data" => form_data})
+      render_change(metadata_view, "validate", %{"form_data" => form_data})
 
-      refute [] == find_elements(html, ".unsaved-changes-modal--hidden")
+      refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--hidden"))
 
-      render_change(view, "cancel-edit", %{})
-
+      render_change(metadata_view, "cancel-edit", %{})
       html = render(view)
 
-      refute [] == find_elements(html, ".unsaved-changes-modal--visible")
+      refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--visible"))
     end
 
     test "clicking continues takes you back to the datasets page without saved changes", %{conn: conn} do
@@ -308,20 +240,20 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      form_data =
-        dataset
-        |> put_in([:business, :dataTitle], "a new datset title")
-        |> FormTools.form_data_from_andi_dataset()
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      metadata_view = find_child(view, "metadata_form_editor")
 
-      render_change(view, "validate", %{"form_data" => form_data})
+      form_data = %{"dataTitle" => "new dataset title"}
 
-      render_change(view, "cancel-edit", %{})
-
+      render_change(metadata_view, "validate", %{"form_data" => form_data})
+      render_change(metadata_view, "cancel-edit", %{})
       html = render(view)
 
-      refute [] == find_elements(html, ".unsaved-changes-modal--visible")
+      refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--visible"))
 
       render_change(view, "force-cancel-edit", %{})
+
+      assert "new dataset title" != Datasets.get(dataset.id) |> get_in([:business, :dataTitle])
 
       assert_redirect(view, "/")
     end

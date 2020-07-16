@@ -22,6 +22,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
   def changeset(%__MODULE__{} = current, changes) do
     current
     |> cast(changes, [:cadence])
+    |> validate_required(:cadence, message: "is required")
     |> validate_cadence()
   end
 

@@ -181,15 +181,15 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_info(%{topic: "form-save", event: "save-all"}, socket) do
-    {:ok, andi_dataset} = Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
-
-    new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(andi_dataset)
-
     new_validation_status =
       case socket.assigns.changeset.valid? do
         true -> "valid"
         false -> "invalid"
       end
+
+    {:ok, andi_dataset} = Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
+
+    new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(andi_dataset)
 
     {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
   end

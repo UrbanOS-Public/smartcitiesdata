@@ -316,15 +316,15 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   end
 
   def handle_info(%{topic: "form-save", event: "save-all"} = message, socket) do
-    {:ok, andi_dataset} = Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
-
-    new_changeset = MetadataFormSchema.changeset_from_andi_dataset(andi_dataset)
-
     new_validation_status =
       case socket.assigns.changeset.valid? do
         true -> "valid"
         false -> "invalid"
       end
+
+    {:ok, andi_dataset} = Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
+
+    new_changeset = MetadataFormSchema.changeset_from_andi_dataset(andi_dataset)
 
     {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
   end
