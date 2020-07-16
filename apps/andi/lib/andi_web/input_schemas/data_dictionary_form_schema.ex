@@ -4,7 +4,6 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DatasetSchemaValidator

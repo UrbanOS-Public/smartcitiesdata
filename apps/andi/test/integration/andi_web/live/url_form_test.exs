@@ -228,9 +228,10 @@ defmodule AndiWeb.UrlFormTest do
       url_form_view = find_child(view, "url_form_editor")
 
       form_data = %{"sourceQueryParams" => queryParams, "sourceUrl" => initialSourceUrl}
-        FormTools.form_data_from_andi_dataset(dataset)
-        |> put_in([:technical, :sourceUrl], initialSourceUrl)
-        |> put_in([:technical, :sourceQueryParams], queryParams)
+
+      FormTools.form_data_from_andi_dataset(dataset)
+      |> put_in([:technical, :sourceUrl], initialSourceUrl)
+      |> put_in([:technical, :sourceQueryParams], queryParams)
 
       html =
         render_change(url_form_view, :validate, %{
@@ -319,31 +320,6 @@ defmodule AndiWeb.UrlFormTest do
         assert get_text(html, ".test-status__code--good") != "400"
       end)
     end
-
-    @tag capture_log: true
-    #TODO - come back to this
-    # test "status is displayed with an appropriate class when an internal page error occurred", %{conn: conn} do
-    #   smrt_dataset = TDG.create_dataset(%{})
-
-    #   {:ok, dataset} = Datasets.update(smrt_dataset)
-
-    #   allow(UrlTest.test(any(), any()), exec: fn _ -> raise "derp" end)
-
-    #   assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-    #   url_form_view = find_child(view, "url_form_editor")
-
-    #   assert get_text(html, "#snackbar") == ""
-
-    #   form_data = %{"sourceUrl" => dataset.technical.sourceUrl}
-
-    #   render_change(url_form_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceUrl"]})
-    #   render_change(url_form_view, :test_url, %{})
-
-    #   eventually(fn ->
-    #     html = render(view)
-    #     assert get_text(html, "#snackbar") == "A page error occurred"
-    #   end)
-    # end
   end
 
   test "required sourceUrl field displays proper error message", %{conn: conn} do
@@ -362,7 +338,6 @@ defmodule AndiWeb.UrlFormTest do
 
     assert get_text(html, "#sourceUrl-error-msg") == "Please enter a valid base url."
   end
-
 
   data_test "invalid #{field} displays proper error message", %{conn: conn} do
     smrt_dataset = TDG.create_dataset(%{technical: %{field => %{"foo" => "where's my key"}}})
@@ -390,7 +365,6 @@ defmodule AndiWeb.UrlFormTest do
 
     assert {:sourceQueryParams, {"has invalid format", [validation: :format]}} in changeset.errors
 
-    assert %{sourceQueryParams: [%{key: nil, value: "oops"}, %{key: "a", value: "b"}]} =
-      Ecto.Changeset.apply_changes(changeset)
+    assert %{sourceQueryParams: [%{key: nil, value: "oops"}, %{key: "a", value: "b"}]} = Ecto.Changeset.apply_changes(changeset)
   end
 end

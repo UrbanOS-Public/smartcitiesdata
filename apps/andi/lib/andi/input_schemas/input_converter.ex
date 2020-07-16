@@ -96,13 +96,6 @@ defmodule Andi.InputSchemas.InputConverter do
     |> SmartCity.Dataset.new()
   end
 
-  #TODO - see if we need this
-  # def form_changes_from_changeset(%{changes: %{schema: schema}} = form_changeset) do
-  #   schema_changes = Enum.map(schema, &form_changes_from_changeset/1)
-
-  #   %{schema: schema_changes}
-  # end
-
   def form_changes_from_changeset(form_changeset) do
     error_fields = Keyword.keys(form_changeset.errors)
 
@@ -117,7 +110,6 @@ defmodule Andi.InputSchemas.InputConverter do
       Map.put_new(acc, error_field, nil)
     end)
   end
-
 
   defp convert_smrt_business(smrt_dataset) do
     smrt_dataset

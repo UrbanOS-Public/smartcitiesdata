@@ -5,37 +5,23 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
   use Placebo
   import Checkov
 
-  alias Andi.Services.DatasetStore
-  alias Andi.Services.OrgStore
-  alias Andi.Services.UrlTest
-  alias AndiWeb.InputSchemas.FinalizeFormSchema
-
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
-  import Andi, only: [instance_name: 0]
-  import SmartCity.Event, only: [dataset_update: 0, organization_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   import FlokiHelpers,
     only: [
       get_attributes: 3,
-      get_value: 2,
       get_values: 2,
-      get_select: 2,
-      get_all_select_options: 2,
-      get_select_first_option: 2,
-      get_text: 2,
-      get_texts: 2,
       find_elements: 2
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.InputConverter
+  alias AndiWeb.InputSchemas.FinalizeFormSchema
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
@@ -218,7 +204,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
     test "handles five-character cronstrings", %{conn: conn} do
       dataset = TDG.create_dataset(%{technical: %{cadence: "4 2 7 * *"}})
-      {:ok, andi_dataset} = Datasets.update(dataset)
+      {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       finalize_view = find_child(view, "finalize_form_editor")
@@ -243,7 +229,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
   describe "dataset finalizing buttons" do
     test "allows saving invalid form as draft", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      {:ok, andi_dataset} = Datasets.update(dataset)
+      {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       finalize_view = find_child(view, "finalize_form_editor")
@@ -252,13 +238,13 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       form_data_changeset = FinalizeFormSchema.changeset_from_form_data(form_data)
 
       render_change(finalize_view, :validate, %{"form_data" => form_data})
-      html = render_change(finalize_view, :save, %{"form_data" => form_data})
+      render_change(finalize_view, :save, %{"form_data" => form_data})
 
       refute form_data_changeset.valid?
 
       eventually(fn ->
         assert Datasets.get(dataset.id) |> get_in([:technical, :cadence]) == nil
-      end )
+      end)
     end
   end
 

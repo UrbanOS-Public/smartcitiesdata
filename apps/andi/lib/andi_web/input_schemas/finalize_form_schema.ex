@@ -4,9 +4,6 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Andi.InputSchemas.FormTools
-  alias AndiWeb.InputSchemas.FinalizeFormSchema.FutureSchedule
-  alias AndiWeb.InputSchemas.FinalizeFormSchema.RepeatingSchedule
   alias Andi.InputSchemas.StructTools
   alias Crontab.CronExpression
 
@@ -37,22 +34,6 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
     form_data
     |> AtomicMap.convert(safe: false, underscore: false)
     |> changeset()
-  end
-
-  defp convert_form_schema(schema, form_data_id, parent_bread_crumb \\ "") do
-    schema
-    |> Enum.map(fn {_index, schema_field} ->
-      add_dataset_id_to_form(schema_field, form_data_id, parent_bread_crumb)
-    end)
-  end
-
-  defp add_dataset_id_to_form(schema, dataset_id, parent_bread_crumb) do
-    bread_crumb = parent_bread_crumb <> schema.name
-
-    schema
-    |> Map.put(:dataset_id, dataset_id)
-    |> Map.put(:bread_crumb, bread_crumb)
-    |> FormTools.replace(:subSchema, &convert_form_schema(&1, dataset_id, bread_crumb <> " > "))
   end
 
   defp validate_cadence(%{changes: %{cadence: "once"}} = changeset), do: changeset

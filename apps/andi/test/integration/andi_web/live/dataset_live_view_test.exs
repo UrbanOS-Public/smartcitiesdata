@@ -73,14 +73,15 @@ defmodule AndiWeb.DatasetLiveViewTest do
     {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
 
     assert {:ok, view, html} = live(conn, edit_page)
+    metadata_view = find_child(view, "metadata_form_editor")
 
     assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
 
-    assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" == get_value(html, "#form_data_dataName")
+    assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
+             get_value(html, "#form_data_dataName")
 
-    # TODO - move to metadata form test
-    # html = render_change(view, :publish)
+    html = render_change(metadata_view, :save)
 
-    # refute Enum.empty?(find_elements(html, "#orgTitle-error-msg"))
+    refute Enum.empty?(find_elements(html, "#orgId-error-msg"))
   end
 end

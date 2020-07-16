@@ -8,12 +8,10 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.DisplayNames
   alias AndiWeb.ErrorHelpers
-  alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
   alias AndiWeb.InputSchemas.MetadataFormSchema
   alias Andi.InputSchemas.FormTools
-  alias Andi.InputSchemas.StructTools
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_metadata_changeset = MetadataFormSchema.changeset_from_andi_dataset(dataset)
@@ -305,7 +303,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     {:noreply, socket}
   end
 
-  def handle_info(%{topic: "form-save", event: "form-save"} = message, socket) do
+  def handle_info(%{topic: "form-save", event: "form-save"}, socket) do
     new_validation_status =
       case socket.assigns.changeset.valid? do
         true -> "valid"
@@ -315,7 +313,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     {:noreply, assign(socket, validation_status: new_validation_status)}
   end
 
-  def handle_info(%{topic: "form-save", event: "save-all"} = message, socket) do
+  def handle_info(%{topic: "form-save", event: "save-all"}, socket) do
     new_validation_status =
       case socket.assigns.changeset.valid? do
         true -> "valid"

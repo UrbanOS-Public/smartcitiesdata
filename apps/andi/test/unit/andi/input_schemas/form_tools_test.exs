@@ -15,11 +15,11 @@ defmodule Andi.InputSchemas.FormToolsTest do
       updated_form_data = FormTools.adjust_source_query_params_for_url(current_form_data)
 
       assert %{
-                "sourceQueryParams" => %{
-                  "0" => %{"key" => "look", "value" => "at"},
-                  "1" => %{"key" => "me", "value" => "i"},
-                  "2" => %{"key" => "have", "value" => "params"}
-                }
+               "sourceQueryParams" => %{
+                 "0" => %{"key" => "look", "value" => "at"},
+                 "1" => %{"key" => "me", "value" => "i"},
+                 "2" => %{"key" => "have", "value" => "params"}
+               }
              } = updated_form_data
     end
 
@@ -34,11 +34,11 @@ defmodule Andi.InputSchemas.FormToolsTest do
       updated_form_data = FormTools.adjust_source_query_params_for_url(current_form_data)
 
       assert %{
-                "sourceQueryParams" => %{
-                  "0" => %{"key" => "look", "value" => "at"},
-                  "1" => %{"key" => "me", "value" => "i"},
-                  "2" => %{"key" => "have", "value" => "params"}
-                }
+               "sourceQueryParams" => %{
+                 "0" => %{"key" => "look", "value" => "at"},
+                 "1" => %{"key" => "me", "value" => "i"},
+                 "2" => %{"key" => "have", "value" => "params"}
+               }
              } = updated_form_data
     end
 
@@ -53,9 +53,9 @@ defmodule Andi.InputSchemas.FormToolsTest do
       updated_form_data = FormTools.adjust_source_query_params_for_url(current_form_data)
 
       assert %{
-                "sourceQueryParams" => %{
-                  "0" => %{"key" => "still", "value" => "here"}
-                }
+               "sourceQueryParams" => %{
+                 "0" => %{"key" => "still", "value" => "here"}
+               }
              } = updated_form_data
     end
 
@@ -67,10 +67,10 @@ defmodule Andi.InputSchemas.FormToolsTest do
       updated_form_data = FormTools.adjust_source_query_params_for_url(current_form_data)
 
       assert %{
-                "sourceQueryParams" => %{
-                  "0" => %{"key" => "hello world", "value" => "true"},
-                  "1" => %{"key" => "goodbye scott", "value" => "false"}
-                }
+               "sourceQueryParams" => %{
+                 "0" => %{"key" => "hello world", "value" => "true"},
+                 "1" => %{"key" => "goodbye scott", "value" => "false"}
+               }
              } = updated_form_data
     end
   end
@@ -89,12 +89,12 @@ defmodule Andi.InputSchemas.FormToolsTest do
       updated_form_data = FormTools.adjust_source_url_for_query_params(current_form_data)
 
       assert %{
-                "sourceUrl" => "https://source.url.example.com?look=at&me=i&have=params",
-                "sourceQueryParams" => %{
-                  "0" => %{"key" => "look", "value" => "at"},
-                  "1" => %{"key" => "me", "value" => "i"},
-                  "2" => %{"key" => "have", "value" => "params"}
-                }
+               "sourceUrl" => "https://source.url.example.com?look=at&me=i&have=params",
+               "sourceQueryParams" => %{
+                 "0" => %{"key" => "look", "value" => "at"},
+                 "1" => %{"key" => "me", "value" => "i"},
+                 "2" => %{"key" => "have", "value" => "params"}
+               }
              } = updated_form_data
     end
 
@@ -111,12 +111,12 @@ defmodule Andi.InputSchemas.FormToolsTest do
       updated_form_data = FormTools.adjust_source_url_for_query_params(current_form_data)
 
       assert %{
-                "sourceUrl" => "https://source.url.example.com?look=at&me=i&have=params",
-                "sourceQueryParams" => %{
-                  "0" => %{"key" => "look", "value" => "at"},
-                  "1" => %{"key" => "me", "value" => "i"},
-                  "2" => %{"key" => "have", "value" => "params"}
-                }
+               "sourceUrl" => "https://source.url.example.com?look=at&me=i&have=params",
+               "sourceQueryParams" => %{
+                 "0" => %{"key" => "look", "value" => "at"},
+                 "1" => %{"key" => "me", "value" => "i"},
+                 "2" => %{"key" => "have", "value" => "params"}
+               }
              } = updated_form_data
     end
 
@@ -129,8 +129,8 @@ defmodule Andi.InputSchemas.FormToolsTest do
       updated_form_data = FormTools.adjust_source_url_for_query_params(current_form_data)
 
       assert %{
-                "sourceUrl" => "https://source.url.example.com",
-                "sourceQueryParams" => %{}
+               "sourceUrl" => "https://source.url.example.com",
+               "sourceQueryParams" => %{}
              } = updated_form_data
     end
 
@@ -142,7 +142,7 @@ defmodule Andi.InputSchemas.FormToolsTest do
       updated_form_data = FormTools.adjust_source_url_for_query_params(current_form_data)
 
       assert %{
-                "sourceUrl" => "https://source.url.example.com"
+               "sourceUrl" => "https://source.url.example.com"
              } = updated_form_data
     end
   end
@@ -179,10 +179,10 @@ defmodule Andi.InputSchemas.FormToolsTest do
 
       assert %{
                "orgTitle" => "Existing Org Title",
-                "dataName" => "another_data_title",
-                "orgName" => "existing_org_name",
-                "orgId" => "existing_org_id",
-                "systemName" => "existing_org_name__another_data_title"
+               "dataName" => "another_data_title",
+               "orgName" => "existing_org_name",
+               "orgId" => "existing_org_id",
+               "systemName" => "existing_org_name__another_data_title"
              } == new_form_data
     end
   end

@@ -2,25 +2,14 @@ defmodule AndiWeb.EditLiveView do
   use AndiWeb, :live_view
 
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Datasets.DataDictionary
-  alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.InputConverter
-  alias Andi.InputSchemas.StructTools
-  alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.Datasets.Technical
-  alias Andi.InputSchemas.Datasets.Business
-  alias Ecto.Changeset
-
-  alias AndiWeb.EditLiveView.FinalizeForm
 
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
   require Logger
 
   def render(assigns) do
-    dataset_id = assigns.dataset.id
-
     ~L"""
     <div class="edit-page" id="dataset-edit-page">
       <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
@@ -99,6 +88,14 @@ defmodule AndiWeb.EditLiveView do
      )}
   end
 
+  def handle_event("unsaved-changes-canceled", _, socket) do
+    {:noreply, assign(socket, show_unsaved_changes_modal: false)}
+  end
+
+  def handle_event("force-cancel-edit", _, socket) do
+    {:noreply, redirect(socket, to: "/")}
+  end
+
   def handle_info(:publish, socket) do
     socket = reset_save_success(socket)
 
@@ -162,14 +159,6 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, socket}
   end
 
-  def handle_event("unsaved-changes-canceled", _, socket) do
-    {:noreply, assign(socket, show_unsaved_changes_modal: false)}
-  end
-
-  def handle_event("force-cancel-edit", _, socket) do
-    {:noreply, redirect(socket, to: "/")}
-  end
-
   def handle_info(:cancel_edit, socket) do
     case socket.assigns.unsaved_changes do
       true -> {:noreply, assign(socket, show_unsaved_changes_modal: true)}
@@ -179,6 +168,10 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info(:form_update, socket) do
     {:noreply, assign(socket, unsaved_changes: true)}
+  end
+
+  def handle_info(:page_error, socket) do
+    {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
   end
 
   # This handle_info takes care of all exceptions in a generic way.
@@ -191,17 +184,6 @@ defmodule AndiWeb.EditLiveView do
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
-  end
-
-  defp complete_validation(changeset, socket) do
-    socket = reset_save_success(socket)
-    new_changeset = Map.put(changeset, :action, :update)
-
-    {:noreply, assign(socket, changeset: new_changeset)}
-  end
-
-  defp mark_changes({:noreply, socket}) do
-    {:noreply, assign(socket, unsaved_changes: true)}
   end
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)

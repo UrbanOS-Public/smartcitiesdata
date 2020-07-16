@@ -4,8 +4,6 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
   use Placebo
 
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.FormTools
-  alias Andi.InputSchemas.InputConverter
 
   @source_query_param_id Ecto.UUID.generate()
   @source_header_id Ecto.UUID.generate()
@@ -275,7 +273,6 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
         [[:business, :riskRating], 0.000001, "should be one of [0.0, 0.5, 1.0]"]
       ])
     end
-
 
     data_test "given a dataset with a schema that has #{field}, format is defaulted" do
       changes =

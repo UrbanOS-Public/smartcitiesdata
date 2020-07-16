@@ -4,11 +4,9 @@ defmodule AndiWeb.InputSchemas.UrlFormSchema do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Andi.InputSchemas.Options
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets.Header
   alias Andi.InputSchemas.Datasets.QueryParam
-  alias Ecto.Changeset
 
   schema "url" do
     field(:sourceUrl, :string)

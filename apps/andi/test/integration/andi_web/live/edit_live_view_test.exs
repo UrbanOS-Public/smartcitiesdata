@@ -14,7 +14,7 @@ defmodule AndiWeb.EditLiveViewTest do
   import Phoenix.LiveViewTest
   import Andi, only: [instance_name: 0]
   import SmartCity.Event, only: [dataset_update: 0, organization_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.TestHelper, only: [eventually: 3]
 
   import FlokiHelpers,
     only: [
@@ -30,7 +30,6 @@ defmodule AndiWeb.EditLiveViewTest do
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.FormTools
@@ -38,7 +37,6 @@ defmodule AndiWeb.EditLiveViewTest do
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
-
 
   describe "save and publish form data" do
     test "valid form data is saved on publish", %{conn: conn} do
@@ -54,12 +52,16 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(finalize_view, :validate, %{"form_data" => form_data})
       render_change(finalize_view, :publish)
 
-      eventually(fn ->
-        dataset = Datasets.get(dataset.id)
-        {:ok, saved_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset)
+      eventually(
+        fn ->
+          dataset = Datasets.get(dataset.id)
+          {:ok, saved_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset)
 
-        assert {:ok, ^saved_dataset} = DatasetStore.get(dataset.id)
-      end, 10, 1_000)
+          assert {:ok, ^saved_dataset} = DatasetStore.get(dataset.id)
+        end,
+        10,
+        1_000
+      )
     end
 
     test "invalid form data is saved on publish", %{conn: conn} do
@@ -70,7 +72,6 @@ defmodule AndiWeb.EditLiveViewTest do
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       assert "I dunno, whenever, I guess" == Datasets.get(dataset.id) |> get_in([:business, :publishFrequency])
-
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
@@ -148,30 +149,35 @@ defmodule AndiWeb.EditLiveViewTest do
       metadata_view = find_child(view, "metadata_form_editor")
       finalize_view = find_child(view, "finalize_form_editor")
 
-      form_data = %{"modifiedDate" => "",
-                    "dataName" => "somethimn",
-                    "orgName" => "something",
-                    "private" =>  false,
-                    "sourceFormat" => "something",
-                    "sourceType" => "something",
-                    "benefitRating" => 1.0,
-                    "contactEmail" => "something@something.com",
-                    "contactName" =>  "something",
-                    "dataTitle" => "something",
-                    "description" => "something",
-                    "issuedDate" => ~D[1899-10-20],
-                    "license" => "something",
-                    "orgTitle" => "something",
-                    "publishFrequency" => "something",
-                    "riskRating" => 1.0
-                   }
+      form_data = %{
+        "modifiedDate" => "",
+        "dataName" => "somethimn",
+        "orgName" => "something",
+        "private" => false,
+        "sourceFormat" => "something",
+        "sourceType" => "something",
+        "benefitRating" => 1.0,
+        "contactEmail" => "something@something.com",
+        "contactName" => "something",
+        "dataTitle" => "something",
+        "description" => "something",
+        "issuedDate" => ~D[1899-10-20],
+        "license" => "something",
+        "orgTitle" => "something",
+        "publishFrequency" => "something",
+        "riskRating" => 1.0
+      }
 
       render_change(metadata_view, :validate, %{"form_data" => form_data})
       render_change(finalize_view, :publish)
 
-      eventually(fn ->
-        assert {:ok, nil} != DatasetStore.get(dataset.id)
-      end, 30, 1_000)
+      eventually(
+        fn ->
+          assert {:ok, nil} != DatasetStore.get(dataset.id)
+        end,
+        30,
+        1_000
+      )
     end
 
     test "does not save when dataset org and data name match existing dataset", %{conn: conn} do
@@ -206,11 +212,15 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(url_view, :validate, %{"form_data" => form_data})
       render_change(finalize_view, :publish)
 
-      eventually(fn ->
-        dataset = Datasets.get(dataset.id)
-        {:ok, saved_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset)
-        assert {:ok, ^saved_dataset} = DatasetStore.get(dataset.id)
-      end, 20, 500)
+      eventually(
+        fn ->
+          dataset = Datasets.get(dataset.id)
+          {:ok, saved_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset)
+          assert {:ok, ^saved_dataset} = DatasetStore.get(dataset.id)
+        end,
+        20,
+        500
+      )
 
       where(field: ["sourceQueryParams", "sourceHeaders"])
     end

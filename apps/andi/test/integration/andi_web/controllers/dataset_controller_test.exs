@@ -183,7 +183,7 @@ defmodule Andi.CreateDatasetTest do
         )
 
       eventually(fn ->
-        Datasets.get(struct.id) != nil
+        assert Datasets.get(struct.id) != nil
       end)
 
       {:ok, %{status: 400, body: body}} = create(existing_dataset)

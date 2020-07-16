@@ -28,7 +28,6 @@ defmodule AndiWeb.DataDictionaryFormTest do
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
 
-
   describe "data_dictionary_tree_view" do
     test "given a schema with no nesting it displays the three fields in a well-known (BEM) way", %{conn: conn} do
       dataset =
@@ -125,46 +124,45 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert ["string", "map", "integer", "list", "float", "map", "string"] == get_texts(html, ".data-dictionary-tree-field__type")
     end
 
-    #TODO - do we need this
-    # test "generates hidden inputs for fields that are not selected", %{conn: conn} do
-    #   dataset =
-    #     TDG.create_dataset(%{
-    #       technical: %{
-    #         schema: [
-    #           %{
-    #             name: "one",
-    #             type: "list",
-    #             itemType: "map",
-    #             description: "description",
-    #             subSchema: [
-    #               %{
-    #                 name: "one-one",
-    #                 type: "string"
-    #               }
-    #             ]
-    #           },
-    #           %{
-    #             name: "two",
-    #             type: "map",
-    #             description: "this is a map",
-    #             subSchema: [
-    #               %{
-    #                 name: "two-one",
-    #                 type: "integer"
-    #               }
-    #             ]
-    #           }
-    #         ]
-    #       }
-    #     })
+    test "generates hidden inputs for fields that are not selected", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [
+              %{
+                name: "one",
+                type: "list",
+                itemType: "map",
+                description: "description",
+                subSchema: [
+                  %{
+                    name: "one-one",
+                    type: "string"
+                  }
+                ]
+              },
+              %{
+                name: "two",
+                type: "map",
+                description: "this is a map",
+                subSchema: [
+                  %{
+                    name: "two-one",
+                    type: "integer"
+                  }
+                ]
+              }
+            ]
+          }
+        })
 
-    #   {:ok, _} = Datasets.update(dataset)
+      {:ok, _} = Datasets.update(dataset)
 
-    #   assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-    #   assert Enum.empty?(find_elements(html, "input[type='hidden']#form_data_schema_0_description"))
-    #   assert Enum.count(find_elements(html, "input[type='hidden']#form_data_schema_1_description")) > 0
-    # end
+      assert Enum.empty?(find_elements(html, "input[type='hidden']#data_dictionary_form_schema_schema_0_description"))
+      assert Enum.count(find_elements(html, "input[type='hidden']#data_dictionary_form_schema_schema_1_description")) > 0
+    end
 
     test "handles datasets with no schema fields", %{conn: conn} do
       dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}}) |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
@@ -249,7 +247,6 @@ defmodule AndiWeb.DataDictionaryFormTest do
       render(data_dictionary_view)
       render_click([data_dictionary_view, "data_dictionary_add_field_editor"], "add_field", nil)
       html = render(data_dictionary_view)
-
 
       assert "Natty" == get_text(html, "#data_dictionary_tree_one .data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
 

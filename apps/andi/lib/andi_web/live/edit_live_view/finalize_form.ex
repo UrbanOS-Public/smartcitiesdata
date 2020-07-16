@@ -7,8 +7,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
   require Logger
 
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.StructTools
-  alias Andi.InputSchemas.InputConverter
   alias AndiWeb.InputSchemas.FinalizeFormSchema
   alias AndiWeb.ErrorHelpers
 
@@ -190,41 +188,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, socket}
   end
 
-  def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
-    new_validation_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{expand: next_component})
-
-    {:noreply, assign(socket, visibility: "collapsed", validation_status: new_validation_status)}
-  end
-
-  def handle_event("toggle-component-visibility", _, socket) do
-    current_visibility = Map.get(socket.assigns, :visibility)
-
-    new_visibility =
-      case current_visibility do
-        "expanded" -> "collapsed"
-        "collapsed" -> "expanded"
-      end
-
-    {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
-  end
-
-  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket)
-       when validation_status in ["valid", "invalid", "expanded"] do
-    new_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    assign(socket, validation_status: new_status)
-  end
-
   def handle_event("set_schedule", %{"input-field" => input_field, "value" => value}, socket) do
     new_crontab_list = Map.put(socket.assigns.crontab_list, String.to_existing_atom(input_field), value)
     new_cron = cronlist_to_cronstring(new_crontab_list)
@@ -256,6 +219,30 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, socket}
   end
 
+  def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
+    new_validation_status =
+      case socket.assigns.changeset.valid? do
+        true -> "valid"
+        false -> "invalid"
+      end
+
+    AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{expand: next_component})
+
+    {:noreply, assign(socket, visibility: "collapsed", validation_status: new_validation_status)}
+  end
+
+  def handle_event("toggle-component-visibility", _, socket) do
+    current_visibility = Map.get(socket.assigns, :visibility)
+
+    new_visibility =
+      case current_visibility do
+        "expanded" -> "collapsed"
+        "collapsed" -> "expanded"
+      end
+
+    {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
+  end
+
   def handle_info(%{topic: "toggle-visibility", payload: %{expand: "finalize_form"}}, socket) do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
   end
@@ -274,7 +261,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, assign(socket, validation_status: new_validation_status)}
   end
 
-  def handle_info(%{topic: "form-save", event: "save-all"} = message, socket) do
+  def handle_info(%{topic: "form-save", event: "save-all"}, socket) do
     new_validation_status =
       case socket.assigns.changeset.valid? do
         true -> "valid"
@@ -298,6 +285,19 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
     assign(socket, validation_status: new_status)
   end
+
+  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket)
+       when validation_status in ["valid", "invalid", "expanded"] do
+    new_status =
+      case socket.assigns.changeset.valid? do
+        true -> "valid"
+        false -> "invalid"
+      end
+
+    assign(socket, validation_status: new_status)
+  end
+
+  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 
   defp parse_crontab(nil), do: %{}
   defp parse_crontab("never"), do: %{}
@@ -345,6 +345,4 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
     {:noreply, assign(socket, changeset: new_changeset, repeat_ingestion?: repeat_ingestion?) |> update_validation_status()}
   end
-
-  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 end
