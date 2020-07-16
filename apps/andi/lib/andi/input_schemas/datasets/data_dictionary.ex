@@ -21,6 +21,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     field(:rationale, :string)
     field(:bread_crumb, :string)
     field(:format, :string)
+    field(:sequence, :integer, read_after_writes: true)
     has_many(:subSchema, __MODULE__, foreign_key: :parent_id, on_replace: :delete)
 
     belongs_to(:data_dictionary, __MODULE__, type: Ecto.UUID, foreign_key: :parent_id)
@@ -46,7 +47,8 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :technical_id,
     :parent_id,
     :bread_crumb,
-    :format
+    :format,
+    :sequence
   ]
   @required_fields [
     :name,

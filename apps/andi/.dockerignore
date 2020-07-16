@@ -1,2 +1,5 @@
 deps/
 _build/
+Dockerfile
+**/Dockerfile
+.dockerignore
