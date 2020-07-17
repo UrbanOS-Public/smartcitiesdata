@@ -18,6 +18,8 @@ defmodule Andi.InputSchemas.Datasets.QueryParam do
   @cast_fields [:id, :key, :value]
   @required_fields [:key]
 
+  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+
   def changeset(query_param, changes) do
     common_changeset_operations(query_param, changes)
     |> validate_required(@required_fields, message: "is required")

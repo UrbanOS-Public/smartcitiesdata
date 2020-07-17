@@ -5,21 +5,20 @@ defmodule Andi.InputSchemas.FormTools do
   alias Andi.Services.OrgStore
 
   def adjust_source_url_for_query_params(form_data) do
-    source_url = form_data["technical"]["sourceUrl"]
+    source_url = form_data["sourceUrl"]
 
     source_query_params =
       form_data
-      |> Map.get("technical")
       |> Map.get("sourceQueryParams", %{})
       |> Enum.map(fn {_index, v} -> v end)
 
     updated_source_url = Andi.URI.update_url_with_params(source_url, source_query_params)
 
-    put_in(form_data, ["technical", "sourceUrl"], updated_source_url)
+    put_in(form_data, ["sourceUrl"], updated_source_url)
   end
 
   def adjust_source_query_params_for_url(form_data_with_updated_url) do
-    source_url = form_data_with_updated_url["technical"]["sourceUrl"]
+    source_url = form_data_with_updated_url["sourceUrl"]
 
     case Andi.URI.extract_query_params(source_url) do
       {:ok, params} ->
@@ -30,7 +29,7 @@ defmodule Andi.InputSchemas.FormTools do
           |> Enum.reduce(%{}, &convert_param_to_form_data/2)
 
         form_data_with_updated_url
-        |> put_in(["technical", "sourceQueryParams"], form_data_params)
+        |> put_in(["sourceQueryParams"], form_data_params)
 
       _ ->
         form_data_with_updated_url
@@ -38,37 +37,37 @@ defmodule Andi.InputSchemas.FormTools do
   end
 
   def adjust_data_name(form_data) do
-    data_title = form_data |> Map.get("business") |> Map.get("dataTitle")
+    data_title = form_data |> Map.get("dataTitle")
     data_name = Datasets.data_title_to_data_name(data_title)
 
-    org_name = get_in(form_data, ["technical", "orgName"])
+    org_name = get_in(form_data, ["orgName"])
     system_name = "#{org_name}__#{data_name}"
 
     form_data
-    |> put_in(["technical", "dataName"], data_name)
-    |> put_in(["technical", "systemName"], system_name)
+    |> put_in(["dataName"], data_name)
+    |> put_in(["systemName"], system_name)
   end
 
   def adjust_org_name(form_data) do
-    org_id = form_data["technical"]["orgId"]
-    data_name = form_data["technical"]["dataName"]
+    org_id = form_data["orgId"]
+    data_name = form_data["dataName"]
 
     case OrgStore.get(org_id) do
-      {:ok, org} ->
+      {:ok, org} when org != nil ->
         org_name = org.orgName
         org_title = org.orgTitle
         system_name = "#{org_name}__#{data_name}"
 
         form_data
-        |> put_in(["business", "orgTitle"], org_title)
-        |> put_in(["technical", "orgName"], org_name)
-        |> put_in(["technical", "systemName"], system_name)
+        |> put_in(["orgTitle"], org_title)
+        |> put_in(["orgName"], org_name)
+        |> put_in(["systemName"], system_name)
 
       _ ->
         form_data
-        |> put_in(["business", "orgTitle"], "")
-        |> put_in(["technical", "orgName"], "")
-        |> put_in(["technical", "systemName"], "")
+        |> put_in(["orgTitle"], "")
+        |> put_in(["orgName"], "")
+        |> put_in(["systemName"], "")
     end
   end
 
@@ -108,7 +107,7 @@ defmodule Andi.InputSchemas.FormTools do
     end)
   end
 
-  defp replace(map, key, function) do
+  def replace(map, key, function) do
     case Map.fetch(map, key) do
       {:ok, value} -> Map.put(map, key, function.(value))
       :error -> map

@@ -20,6 +20,7 @@ defmodule Andi.InputSchemas.Options do
 
   def level_of_access() do
     %{
+      "" => "Please select level of access",
       "true" => "Private",
       "false" => "Public"
     }

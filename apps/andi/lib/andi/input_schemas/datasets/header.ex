@@ -17,6 +17,8 @@ defmodule Andi.InputSchemas.Datasets.Header do
   @cast_fields [:id, :key, :value]
   @required_fields [:key]
 
+  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+
   def changeset(header, changes) do
     common_changeset_operations(header, changes)
     |> validate_required(@required_fields, message: "is required")

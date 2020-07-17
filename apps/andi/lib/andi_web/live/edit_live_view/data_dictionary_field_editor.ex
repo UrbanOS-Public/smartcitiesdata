@@ -20,6 +20,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
     ~L"""
       <div id="<%= @id %>" class="data-dictionary-field-editor" >
         <%= hidden_input(@form, :id, id: id <> "_id") %>
+        <%= hidden_input(@form, :bread_crumb) %>
+        <%= hidden_input(@form, :dataset_id) %>
+
         <div class="data-dictionary-field-editor__name">
           <%= label(@form, :name, "Name", class: "label label--required") %>
           <%= text_input(@form, :name, id: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000") %>

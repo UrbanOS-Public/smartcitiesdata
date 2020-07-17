@@ -69,6 +69,11 @@ $component-header-height: 7.5rem;
   margin-bottom: 4rem;
 }
 
+.section-number {
+    display: inline-flex;
+    align-items: center;
+}
+
 .component-number {
     margin-right: 2rem;
     height: 2rem;
@@ -91,6 +96,32 @@ $component-header-height: 7.5rem;
     color: white;
     border: 1px solid black;
 }
+.component-number--valid {
+    background-color: #27cb00;
+    color: white;
+    border: 1px solid #27cb00;
+}
+
+.component-number--invalid {
+    background-color: red;
+    color: white;
+    border: 1px solid red;
+}
+
+.component-number-status--valid {
+    background-image: url('/images/green-check.svg');
+    height: 24px;
+    width: 24px;
+    margin-left: -47%;
+}
+
+.component-number-status--invalid {
+    background-image: url('/images/red-x.svg');
+    height: 24px;
+    width: 24px;
+    margin-left: -47%;
+}
+
 
 .component-title {
     display: inline-flex;
@@ -141,7 +172,7 @@ $component-header-height: 7.5rem;
 .unsaved-changes-modal--visible {
     @include modal-wrapper()
 }
-  
+
 .unsaved-changes-modal--hidden {
     display: none;
 }
