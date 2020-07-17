@@ -56,4 +56,3 @@ defmodule TelemetryEvent do
     end
   end
 end
-
