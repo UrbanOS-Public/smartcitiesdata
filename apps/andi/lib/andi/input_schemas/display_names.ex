@@ -17,6 +17,7 @@ defmodule Andi.InputSchemas.DisplayNames do
     license: "License",
     modifiedDate: "Last Updated",
     orgTitle: "Organization",
+    orgId: "Organization",
     publishFrequency: "Update Frequency",
     spatial: "Spatial Boundaries",
     temporal: "Temporal Boundaries",
@@ -33,7 +34,16 @@ defmodule Andi.InputSchemas.DisplayNames do
     sourceUrl: "Base URL",
     topLevelSelector: "Top Level Selector",
     name: "Name",
-    type: "Type"
+    type: "Type",
+    week: "Week",
+    year: "Year",
+    month: "Month",
+    day: "Day",
+    hour: "Hour",
+    minute: "Minute",
+    second: "Second",
+    date: "Date",
+    time: "Time"
   }
 
   def get(field_key) do

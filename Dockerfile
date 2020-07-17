@@ -10,12 +10,19 @@ RUN apk update && \
       make \
       g++ \
       wget \
+      ca-certificates \
       curl \
       inotify-tools \
       nodejs \
       nodejs-npm && \
       npm install npm -g --no-progress && \
     rm -rf /var/cache/**/*
+
+RUN curl -L \
+    -o /usr/local/share/ca-certificates/rds-ca-2019-root.crt \
+    https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem \
+    && update-ca-certificates
+
 RUN mix local.hex --force && \
     mix local.rebar --force && \
     mix deps.get

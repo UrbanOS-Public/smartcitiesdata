@@ -4,8 +4,6 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
   use Placebo
 
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.FormTools
-  alias Andi.InputSchemas.InputConverter
 
   @source_query_param_id Ecto.UUID.generate()
   @source_header_id Ecto.UUID.generate()
@@ -274,20 +272,6 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
         [[:business, :riskRating], 3.14159, "should be one of [0.0, 0.5, 1.0]"],
         [[:business, :riskRating], 0.000001, "should be one of [0.0, 0.5, 1.0]"]
       ])
-    end
-
-    test "given a url with at least one invalid query param it marks the dataset as invalid" do
-      form_data =
-        FormTools.adjust_source_query_params_for_url(%{"technical" => %{"sourceUrl" => "https://source.url.example.com?=oops&a=b"}})
-
-      changeset = InputConverter.form_data_to_ui_changeset(form_data)
-
-      refute changeset.valid?
-
-      assert {:sourceQueryParams, {"has invalid format", [validation: :format]}} in changeset.changes.technical.errors
-
-      assert %{technical: %{sourceQueryParams: [%{key: nil, value: "oops"}, %{key: "a", value: "b"}]}} =
-               Ecto.Changeset.apply_changes(changeset)
     end
 
     data_test "given a dataset with a schema that has #{field}, format is defaulted" do

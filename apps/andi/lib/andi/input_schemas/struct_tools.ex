@@ -30,7 +30,7 @@ defmodule Andi.InputSchemas.StructTools do
   def preload(nil, _fields), do: nil
 
   def preload(list, fields) when is_list(list) do
-    Enum.map(list, &preload(&1, fields))
+    Enum.map(list, &preload(&1, fields)) |> sort_if_sequenced()
   end
 
   def preload(%struct_type{} = struct, fields) do
@@ -70,6 +70,12 @@ defmodule Andi.InputSchemas.StructTools do
 
     struct(struct_type, preloaded)
   end
+
+  defp sort_if_sequenced([%{sequence: _sequence} | _] = list) do
+    Enum.sort_by(list, &Map.get(&1, :sequence))
+  end
+
+  defp sort_if_sequenced(list), do: list
 
   def struct_to_map(struct) do
     waste_fields = [:__meta__]

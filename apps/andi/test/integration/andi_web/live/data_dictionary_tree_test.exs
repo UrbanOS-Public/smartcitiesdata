@@ -51,6 +51,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
       {:ok, andi_dataset} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
 
       [expandable_one_id, expandable_two_id] =
         get_attributes(html, ".data-dictionary-tree-field__action[phx-click='toggle_expanded']", "phx-value-field-id")
@@ -65,7 +66,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
         get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_selected']", "phx-target")
 
       [
-        view: view,
+        view: data_dictionary_view,
         html: html,
         expandable_one: %{id: expandable_one_id, target: expandable_one_target, name: "one"},
         expandable_two: %{id: expandable_two_id, target: expandable_two_target},
