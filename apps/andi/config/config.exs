@@ -30,8 +30,6 @@ config :andi,
 
 config :tesla, adapter: Tesla.Adapter.Hackney
 
-config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
-
 config :andi, ecto_repos: [Andi.Repo]
 
 # Import environment specific config. This must remain at the bottom
