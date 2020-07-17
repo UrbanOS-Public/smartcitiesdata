@@ -6,33 +6,16 @@ defmodule AndiWeb.EditLiveViewTest do
   import Checkov
 
   alias Andi.Services.DatasetStore
-  alias Andi.Services.OrgStore
-  alias Andi.Services.UrlTest
 
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
-  import Andi, only: [instance_name: 0]
-  import SmartCity.Event, only: [dataset_update: 0, organization_update: 0]
   import SmartCity.TestHelper, only: [eventually: 3]
 
-  import FlokiHelpers,
-    only: [
-      get_attributes: 3,
-      get_value: 2,
-      get_values: 2,
-      get_select: 2,
-      get_all_select_options: 2,
-      get_select_first_option: 2,
-      get_text: 2,
-      get_texts: 2,
-      find_elements: 2
-    ]
+  import FlokiHelpers, only: [get_text: 2, find_elements: 2]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.InputConverter
 
   @endpoint AndiWeb.Endpoint
@@ -267,12 +250,5 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert_redirect(view, "/")
     end
-  end
-
-  defp get_crontab_from_html(html) do
-    html
-    |> get_values(".finalize-form-schedule-input__field")
-    |> Enum.join(" ")
-    |> String.trim_leading()
   end
 end

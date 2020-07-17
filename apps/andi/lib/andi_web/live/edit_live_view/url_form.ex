@@ -3,6 +3,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   LiveComponent for editing dataset URL
   """
   use Phoenix.LiveView
+  use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.UrlFormSchema
   import Phoenix.HTML.Form
   require Logger
 
@@ -134,22 +135,6 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     {:noreply, socket}
   end
 
-  def handle_event("save", _, socket) do
-    changeset =
-      socket.assigns.changeset
-      |> Map.put(:action, :update)
-
-    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "form-save", %{form_changeset: changeset})
-
-    new_validation_status =
-      case changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    {:noreply, assign(socket, changeset: changeset, validation_status: new_validation_status)}
-  end
-
   def handle_event("add", %{"field" => "sourceQueryParams"}, socket) do
     current_changes =
       socket.assigns.changeset
@@ -206,65 +191,12 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
-  def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
-    new_validation_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{expand: next_component})
-
-    {:noreply, assign(socket, visibility: "collapsed", validation_status: new_validation_status)}
-  end
-
-  def handle_event("toggle-component-visibility", _, socket) do
-    current_visibility = Map.get(socket.assigns, :visibility)
-
-    new_visibility =
-      case current_visibility do
-        "expanded" -> "collapsed"
-        "collapsed" -> "expanded"
-      end
-
-    {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
-  end
-
-  def handle_event("cancel-edit", _, socket) do
-    send(socket.parent_pid, :cancel_edit)
-    {:noreply, socket}
-  end
-
   def handle_info(%{topic: "toggle-visibility", payload: %{expand: "url_form"}}, socket) do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
   end
 
   def handle_info(%{topic: "toggle-visibility", payload: _}, socket) do
     {:noreply, socket}
-  end
-
-  def handle_info(%{topic: "form-save", event: "form-save"}, socket) do
-    new_validation_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    {:noreply, assign(socket, validation_status: new_validation_status)}
-  end
-
-  def handle_info(%{topic: "form-save", event: "save-all"}, socket) do
-    new_validation_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    {:ok, andi_dataset} = Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
-
-    new_changeset = UrlFormSchema.changeset_from_andi_dataset(andi_dataset)
-
-    {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
   end
 
   def handle_info({_, {:test_results, results}}, socket) do
@@ -276,7 +208,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   # Expected errors should be handled in specific handlers.
   # Flags should be reset here.
   def handle_info({:EXIT, _pid, {_error, _stacktrace}}, socket) do
-    send(socket.parent_pid, :error)
+    send(socket.parent_pid, :page_error)
     {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
   end
 
@@ -291,19 +223,6 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
     {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
-
-  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket)
-       when validation_status in ["valid", "invalid", "expanded"] do
-    new_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    assign(socket, validation_status: new_status)
-  end
-
-  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 
   defp disabled?(true), do: "disabled"
   defp disabled?(_), do: ""

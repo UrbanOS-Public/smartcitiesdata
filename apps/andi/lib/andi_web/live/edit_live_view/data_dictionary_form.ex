@@ -3,6 +3,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   LiveComponent for editing dataset schema
   """
   use Phoenix.LiveView
+  use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.DataDictionaryFormSchema
   import Phoenix.HTML.Form
 
   alias AndiWeb.EditLiveView.DataDictionaryTree
@@ -111,46 +112,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     |> complete_validation(socket)
   end
 
-  def handle_event("save", _, socket) do
-    changeset =
-      socket.assigns.changeset
-      |> Map.put(:action, :update)
-
-    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "form-save", %{form_changeset: changeset})
-
-    new_validation_status =
-      case changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    {:noreply, assign(socket, changeset: changeset, validation_status: new_validation_status)}
-  end
-
-  def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
-    new_validation_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{expand: next_component})
-
-    {:noreply, assign(socket, visibility: "collapsed", validation_status: new_validation_status)}
-  end
-
-  def handle_event("toggle-component-visibility", _, socket) do
-    current_visibility = Map.get(socket.assigns, :visibility)
-
-    new_visibility =
-      case current_visibility do
-        "expanded" -> "collapsed"
-        "collapsed" -> "expanded"
-      end
-
-    {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
-  end
-
   def handle_event("add_data_dictionary_field", _, socket) do
     changes = Ecto.Changeset.apply_changes(socket.assigns.changeset) |> StructTools.to_map()
     {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset.id, changes)
@@ -163,35 +124,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     should_show_remove_field_modal = socket.assigns.selected_field_id != :no_dictionary
 
     {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
-  end
-
-  def handle_event("cancel-edit", _, socket) do
-    send(socket.parent_pid, :cancel_edit)
-    {:noreply, socket}
-  end
-
-  def handle_info(%{topic: "form-save", event: "form-save"}, socket) do
-    new_validation_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    {:noreply, assign(socket, validation_status: new_validation_status)}
-  end
-
-  def handle_info(%{topic: "form-save", event: "save-all"}, socket) do
-    new_validation_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    {:ok, andi_dataset} = Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
-
-    new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(andi_dataset)
-
-    {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
   end
 
   def handle_info(%{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form"}}, socket) do
@@ -261,19 +193,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
     {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
   end
-
-  defp update_validation_status(%{assigns: %{validation_status: validation_status}} = socket)
-       when validation_status in ["valid", "invalid", "expanded"] do
-    new_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    assign(socket, validation_status: new_status)
-  end
-
-  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 
   defp get_new_selected_field(changeset, parent_id, deleted_field_index, technical_id) do
     if parent_id == technical_id do

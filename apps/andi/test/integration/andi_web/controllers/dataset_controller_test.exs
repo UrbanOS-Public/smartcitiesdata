@@ -6,7 +6,7 @@ defmodule Andi.CreateDatasetTest do
 
   @moduletag shared_data_connection: true
 
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.TestHelper, only: [eventually: 1]
   import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0, dataset_update: 0]
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetStore

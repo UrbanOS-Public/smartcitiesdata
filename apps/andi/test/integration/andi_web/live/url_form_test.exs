@@ -5,35 +5,25 @@ defmodule AndiWeb.UrlFormTest do
   use Placebo
   import Checkov
 
-  alias Andi.Services.DatasetStore
-  alias Andi.Services.OrgStore
   alias Andi.Services.UrlTest
   alias AndiWeb.InputSchemas.UrlFormSchema
 
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
-  import Andi, only: [instance_name: 0]
-  import SmartCity.Event, only: [dataset_update: 0, organization_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   import FlokiHelpers,
     only: [
       get_attributes: 3,
       get_value: 2,
       get_values: 2,
-      get_select: 2,
-      get_all_select_options: 2,
-      get_select_first_option: 2,
       get_text: 2,
-      get_texts: 2,
       find_elements: 2
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.FormTools
   alias Andi.InputSchemas.InputConverter
 
