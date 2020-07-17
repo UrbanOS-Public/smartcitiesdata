@@ -36,7 +36,8 @@ defmodule DeadLetter.MixProject do
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:integration]},
       {:assertions, "~> 0.14", only: [:test, :integration]},
-      {:tasks, in_umbrella: true, only: :dev}
+      {:tasks, in_umbrella: true, only: :dev},
+      {:telemetry_event, in_umbrella: true}
     ]
   end
 
