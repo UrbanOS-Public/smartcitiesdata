@@ -95,6 +95,8 @@ defmodule DeadLetterTest do
     end
 
     test "returns formatted DLQ message with a reason" do
+      expect(TelemetryEvent.add_event_count(any(), [:dead_letters_handled]), return: :ok)
+
       actual =
         DeadLetter.Server.format_message("forklift", @dataset_id, @default_original_message,
           reason: "Failed to parse something"
@@ -104,6 +106,8 @@ defmodule DeadLetterTest do
     end
 
     test "returns formatted DLQ message with a reason exception" do
+      allow(TelemetryEvent.add_event_count(any(), [:dead_letters_handled]), return: :ok)
+
       actual =
         DeadLetter.Server.format_message("forklift", @dataset_id, @default_original_message,
           reason: RuntimeError.exception("Failed to parse something")

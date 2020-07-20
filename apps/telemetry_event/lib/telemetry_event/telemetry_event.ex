@@ -3,19 +3,25 @@ defmodule TelemetryEvent do
   alias Telemetry.Metrics
 
   def metrics() do
-    metrics_options = Application.get_env(:telemetry_event, :metrics_options)
-
-    [
-      Metrics.counter(Keyword.fetch!(metrics_options, :metric_name),
-        tags: Keyword.fetch!(metrics_options, :tags)
+    Application.get_env(:telemetry_event, :metrics_options)
+    |> Enum.map(fn metrics_option ->
+      Metrics.counter(Keyword.fetch!(metrics_option, :metric_name),
+        tags: Keyword.fetch!(metrics_option, :tags)
       )
-    ]
+    end)
   end
 
-  def add_event_count(options) do
-    :telemetry.execute([:events_handled], %{}, measurements(options))
+  def add_event_count(event_measurements, event_name) do
+    :telemetry.execute(event_name, %{}, measurements(event_measurements))
   rescue
     error -> {:error, error}
+  end
+
+  def metrics_port() do
+    case Application.get_env(:telemetry_event, :metrics_port) do
+      nil -> create_port_no()
+      port_no -> port_no
+    end
   end
 
   defp measurements(options) do
@@ -29,13 +35,6 @@ defmodule TelemetryEvent do
       true
     else
       raise "Keyword :#{keyword_name} cannot be nil"
-    end
-  end
-
-  def metrics_port() do
-    case Application.get_env(:telemetry_event, :metrics_port) do
-      nil -> create_port_no()
-      port_no -> port_no
     end
   end
 

@@ -82,6 +82,8 @@ defmodule DeadLetter.Server do
     reason = Keyword.get(options, :reason)
     timestamp = Keyword.get(options, :timestamp, DateTime.utc_now())
 
+    add_dead_letter_count(dataset_id, reason)
+
     %{
       dataset_id: dataset_id,
       app: app_name,
@@ -107,5 +109,16 @@ defmodule DeadLetter.Server do
 
   defp get_stacktrace({_, stacktrace}) when is_list(stacktrace) do
     stacktrace
+  end
+
+  defp add_dead_letter_count(dataset_id, reason) do
+    [
+      dataset_id: dataset_id,
+      reason: reason
+    ]
+    |> TelemetryEvent.add_event_count([:dead_letters_handled])
+  rescue
+    error ->
+      Logger.error("Unable to update the metrics: #{error}")
   end
 end
