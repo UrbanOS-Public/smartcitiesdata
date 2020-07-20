@@ -51,6 +51,7 @@ defmodule Estuary.MixProject do
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:quantum, "~>2.3"},
+      {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"}
     ]
   end

@@ -53,6 +53,7 @@ defmodule Forklift.MixProject do
       {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.7"},
       {:streaming_metrics, "~> 2.2"},
+      {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"},
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev},
