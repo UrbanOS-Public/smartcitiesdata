@@ -117,5 +117,8 @@ defmodule DeadLetter.Server do
       reason: reason
     ]
     |> TelemetryEvent.add_event_count([:dead_letters_handled])
+  rescue
+    {:error, reason} ->
+      Logger.error("Unable to update the metrics: #{reason}")
   end
 end
