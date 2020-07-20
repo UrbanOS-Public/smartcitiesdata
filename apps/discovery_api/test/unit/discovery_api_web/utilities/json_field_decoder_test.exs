@@ -85,5 +85,16 @@ defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
 
       assert_raise(Jason.DecodeError, fn -> JsonFieldDecoder.decode_one_datum(schema, input) end)
     end
+
+    test "handles json fields that are nil" do
+      input = %{"id" => 1, "name" => nil}
+
+      schema = [
+        %{name: "id", type: "integer"},
+        %{name: "name", type: "json"}
+      ]
+
+      assert %{"id" => 1, "name" => nil} = JsonFieldDecoder.decode_one_datum(schema, input)
+    end
   end
 end
