@@ -2,13 +2,8 @@ defmodule TelemetryEvent do
   @moduledoc false
   alias Telemetry.Metrics
 
-  def metrics() do
-    Application.get_env(:telemetry_event, :metrics_options)
-    |> Enum.map(fn metrics_option ->
-      Metrics.counter(Keyword.fetch!(metrics_option, :metric_name),
-        tags: Keyword.fetch!(metrics_option, :tags)
-      )
-    end)
+  def metrics_config() do
+    [port: metrics_port(), metrics: metrics()]
   end
 
   def add_event_count(event_measurements, event_name) do
@@ -17,7 +12,16 @@ defmodule TelemetryEvent do
     error -> {:error, error}
   end
 
-  def metrics_port() do
+  defp metrics() do
+    Application.get_env(:telemetry_event, :metrics_options)
+    |> Enum.map(fn metrics_option ->
+      Metrics.counter(Keyword.fetch!(metrics_option, :metric_name),
+        tags: Keyword.fetch!(metrics_option, :tags)
+      )
+    end)
+  end
+
+  defp metrics_port() do
     case Application.get_env(:telemetry_event, :metrics_port) do
       nil -> create_port_no()
       port_no -> port_no

@@ -20,8 +20,7 @@ defmodule TelemetryEvent.MixProject do
 
   def application do
     [
-      extra_applications: [:logger],
-      mod: {TelemetryEvent.Application, []}
+      extra_applications: [:logger]
     ]
   end
 
