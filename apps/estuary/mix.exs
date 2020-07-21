@@ -4,7 +4,7 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.9.3",
+      version: "0.9.2",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -51,7 +51,6 @@ defmodule Estuary.MixProject do
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:quantum, "~>2.3"},
-      {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"}
     ]
   end

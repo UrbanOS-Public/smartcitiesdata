@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "0.13.1",
+      version: "0.13.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -53,7 +53,6 @@ defmodule Forklift.MixProject do
       {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.7"},
       {:streaming_metrics, "~> 2.2"},
-      {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"},
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev},
