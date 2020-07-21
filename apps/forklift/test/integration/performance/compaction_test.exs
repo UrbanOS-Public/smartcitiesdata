@@ -22,12 +22,12 @@ defmodule Forklift.Performance.CompactionTest do
   @tag timeout: :infinity
   test "run compaction test" do
     source = sync_fixtures_to_local_path("compaction-test-fixtures/cota")
-    scale = 1
+    scale = 2
 
     source_dataset = dataset_from_source(source)
     dataset = TDG.create_dataset(%{technical: %{schema: source_dataset.technical.schema}})
 
-    Logger.debug("creating dataset #{dataset.id} as a copy of #{dataset.technical.systemName}")
+    Logger.debug("creating dataset #{dataset.id} as a copy of #{dataset.technical.systemName} * #{to_string(scale)}")
     Logger.debug("creating table for #{dataset.id}")
     assert :ok == create_table(dataset)
 
