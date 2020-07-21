@@ -20,7 +20,8 @@ defmodule Reaper.Application do
         Reaper.Migrations,
         brook(),
         Reaper.Scheduler.Supervisor,
-        Reaper.Init
+        Reaper.Init,
+        {TelemetryMetricsPrometheus, TelemetryEvent.metrics_config()}
       ]
       |> List.flatten()
 

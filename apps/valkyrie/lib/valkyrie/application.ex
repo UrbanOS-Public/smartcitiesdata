@@ -12,7 +12,8 @@ defmodule Valkyrie.Application do
         libcluster(),
         {DynamicSupervisor, strategy: :one_for_one, name: Valkyrie.Dynamic.Supervisor},
         brook(),
-        {Valkyrie.Init, monitor: Valkyrie.Dynamic.Supervisor}
+        {Valkyrie.Init, monitor: Valkyrie.Dynamic.Supervisor},
+        {TelemetryMetricsPrometheus, TelemetryEvent.metrics_config()}
       ]
       |> List.flatten()
 

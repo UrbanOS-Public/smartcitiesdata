@@ -10,7 +10,8 @@ defmodule Andi.Application do
         ecto_repo(),
         {Brook, Application.get_env(:andi, :brook)},
         Andi.DatasetCache,
-        Andi.Migration.Migrations
+        Andi.Migration.Migrations,
+        {TelemetryMetricsPrometheus, TelemetryEvent.metrics_config()}
       ]
       |> List.flatten()
 
