@@ -14,6 +14,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.InputConverter
   alias Ecto.Changeset
   alias SmartCity.SchemaGenerator
 
@@ -162,22 +163,14 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       |> parse_csv()
       |> SchemaGenerator.generate_schema()
       |> Enum.map(fn schema_field ->
-          schema_field
-          |> Map.put("dataset_id", socket.assigns.dataset_id)
-          |> Map.put("bread_crumb", Map.get(schema_field, "name"))
-        end)
+        schema_field
+        |> Map.put("dataset_id", socket.assigns.dataset_id)
+        |> Map.put("bread_crumb", Map.get(schema_field, "name"))
+      end)
 
-      new_changeset = DataDictionaryFormSchema.changeset_from_form_data(%{schema: generated_schema})
-      existing_schema_empty =
-        socket.assigns.changeset
-        |> Changeset.get_change(:schema)
-        |> Enum.empty?()
+    new_changeset = DataDictionaryFormSchema.changeset_from_form_data(%{schema: generated_schema})
 
-      case existing_schema_empty do
-        true -> {:noreply, assign(socket, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
-        false -> {:noreply, assign(socket, pending_changeset: new_changeset, overwrite_schema_visibility: "visible")}
-      end
-
+    assign_new_schema(socket, new_changeset)
   end
 
   def handle_event("file_upload", %{"file" => file, "fileType" => "application/json", "fileSize" => file_size}, socket) do
@@ -195,17 +188,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         |> Map.put("bread_crumb", Map.get(schema_field, "name"))
       end)
 
-      new_changeset = DataDictionaryFormSchema.changeset_from_form_data(%{schema: generated_schema})
+    new_changeset = DataDictionaryFormSchema.changeset_from_form_data(%{schema: generated_schema})
 
-      existing_schema_empty =
-        socket.assigns.changeset
-        |> Changeset.get_change(:schema)
-        |> Enum.empty?()
-
-      case existing_schema_empty do
-        true -> {:noreply, assign(socket, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
-        false -> {:noreply, assign(socket, pending_changeset: new_changeset, overwrite_schema_visibility: "visible")}
-      end
+    assign_new_schema(socket, new_changeset)
   end
 
   def handle_event("file_upload", params, socket) do
@@ -227,7 +212,16 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("overwrite-schema", _, socket) do
-    {:noreply, assign(socket, changeset: socket.assigns.pending_changeset, pending_changeset: nil, overwrite_schema_visibility: "hidden") |> assign(get_default_dictionary_field(socket.assigns.pending_changeset))}
+    form_changes = InputConverter.form_changes_from_changeset(socket.assigns.pending_changeset)
+    {:ok, _} = Datasets.update_from_form(socket.assigns.dataset_id, form_changes)
+
+    {:noreply,
+     assign(socket,
+       changeset: socket.assigns.pending_changeset,
+       pending_changeset: nil,
+       overwrite_schema_visibility: "hidden"
+     )
+     |> assign(get_default_dictionary_field(socket.assigns.pending_changeset))}
   end
 
   def handle_event("overwrite-schema-cancelled", _, socket) do
@@ -331,12 +325,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   defp convert_datum(datum) do
     datum
-    |> Enum.map(fn {k,v} -> {k, convert_value(v)} end)
+    |> Enum.map(fn {k, v} -> {k, convert_value(v)} end)
     |> Map.new()
     |> List.wrap()
   end
 
   defp convert_value(nil), do: nil
+
   defp convert_value(string) do
     case Jason.decode(string) do
       {:ok, value} -> value
@@ -346,6 +341,24 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   defp reset_changeset_errors(changeset) do
     Map.update!(changeset, :errors, fn errors -> Keyword.delete(errors, :schema_sample) end)
+  end
+
+  defp assign_new_schema(socket, new_changeset) do
+    existing_schema_empty =
+      socket.assigns.changeset
+      |> Changeset.get_change(:schema)
+      |> Enum.empty?()
+
+    case existing_schema_empty do
+      true ->
+        form_changes = InputConverter.form_changes_from_changeset(new_changeset)
+        {:ok, _} = Datasets.update_from_form(socket.assigns.dataset_id, form_changes)
+
+        {:noreply, assign(socket, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
+
+      false ->
+        {:noreply, assign(socket, pending_changeset: new_changeset, overwrite_schema_visibility: "visible")}
+    end
   end
 
   defp get_new_selected_field(changeset, parent_id, deleted_field_index, technical_id) do
