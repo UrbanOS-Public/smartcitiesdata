@@ -32,7 +32,8 @@ defmodule TelemetryEvent.MixProject do
 
   defp aliases do
     [
-      verify: ["format --check-formatted", "credo"]
+      verify: ["format --check-formatted", "credo"],
+      test: ["test --no-start"]
     ]
   end
 
