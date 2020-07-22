@@ -29,7 +29,7 @@ defmodule Forklift.Performance.LoadingTest do
   end
 
   setup_all do
-    Logger.configure(level: :warn)
+    Logger.configure(level: :debug)
     Agent.start(fn -> 0 end, name: :counter)
 
     :ok

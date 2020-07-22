@@ -1,6 +1,6 @@
 defmodule Forklift.Performance.CompactionTest do
   use ExUnit.Case
-  # use Divo
+  use Divo, auto_start: false
   use Retry
   require Logger
 
@@ -61,68 +61,6 @@ defmodule Forklift.Performance.CompactionTest do
   end
 
   @tag timeout: :infinity
-  test "large compactions don't wipe data if they are stopped after looading the compaction table", %{
-    medium_source: source
-  } do
-    Logger.configure(level: :info)
-    scale = 1
-
-    source_dataset = dataset_from_source(source)
-    source_table_name = source_dataset.technical.systemName
-    dataset = TDG.create_dataset(%{technical: %{schema: source_dataset.technical.schema}})
-
-    log("creating dataset #{dataset.id} as a copy of #{source_table_name} * #{to_string(scale)}")
-
-    log("creating table for #{dataset.id}")
-    assert :ok == create_table(dataset)
-
-    log("loading source data into table for #{dataset.id}")
-    load_data_from_source(dataset, source, scale)
-
-    log("getting record counts from table for #{dataset.id}")
-    {json_count, orc_count} = get_record_counts(dataset)
-    expected_orc_count = orc_count + json_count
-
-    log("running compaction for #{dataset.id} in background")
-    compaction_task = Task.async(fn -> compact(dataset) end)
-
-    log("waiting for compaction table to appear and have the expected data count of #{expected_orc_count}")
-    compact_table = compact_table_name(dataset)
-
-    eventually(
-      fn ->
-        assert table_exists?(compact_table)
-      end,
-      500,
-      1_000
-    )
-
-    eventually(
-      fn ->
-        assert expected_orc_count == get_record_count_for_table(compact_table)
-      end,
-      500,
-      1_000
-    )
-
-    log("stopping compaction task with no shutdown timeout")
-    Task.shutdown(compaction_task, :brutal_kill)
-
-    log("confirming compaction table record counts from table for #{dataset.id}")
-    assert expected_orc_count == get_record_count_for_table(compact_table)
-
-    log("running a subsequent compaction for #{dataset.id}")
-    load_data_from_source(dataset, source, scale, ["json"])
-    json_table = json_table_name(dataset)
-    assert json_count == get_record_count_for_table(json_table)
-    assert :ok == compact(dataset)
-
-    log("confirming that no data is lost from json and compact tables so it can be recovered")
-    assert json_count == get_record_count_for_table(json_table)
-    assert orc_count == get_record_count_for_table(compact_table)
-  end
-
-  @tag timeout: :infinity
   test "large compactions don't wipe data if they are stopped after dropping orc table", %{large_source: source} do
     Logger.configure(level: :info)
     scale = 1
@@ -171,8 +109,8 @@ defmodule Forklift.Performance.CompactionTest do
     assert :ok == compact(dataset)
 
     log("confirming that no data is lost from json and compact tables so it can be recovered")
-    assert json_count == get_record_count_for_table(json_table)
     assert orc_count == get_record_count_for_table(compact_table)
+    assert json_count == get_record_count_for_table(json_table)
   end
 
   defp dataset_from_source(source) do
@@ -295,7 +233,7 @@ defmodule Forklift.Performance.CompactionTest do
 
     Enum.each(keys, fn key ->
       file_name = String.replace(key, remote_path, "")
-      log("downlading #{local_path}#{file_name} from #{bucket}/#{key}")
+      log("downloading #{local_path}#{file_name} from #{bucket}/#{key}")
 
       ExAws.S3.download_file(bucket, key, local_path <> file_name)
       |> ExAws.request!(remote_config())
@@ -303,7 +241,10 @@ defmodule Forklift.Performance.CompactionTest do
   end
 
   defp remote_config() do
-    aws_profile = System.fetch_env!("AWS_PROFILE")
+    aws_profile = System.get_env("AWS_PROFILE")
+    unless aws_profile do
+      raise "you need to have AWS_PROFILE set to a profile that can access ALM to sync the fixtures to your local environment"
+    end
 
     config =
       Map.merge(
