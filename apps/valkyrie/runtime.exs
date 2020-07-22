@@ -84,6 +84,7 @@ config :valkyrie,
   profiling_enabled: profiling_enabled
 
 config :telemetry_event,
+  app_name: "valkyrie",
   metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
   metrics_options: [
     [

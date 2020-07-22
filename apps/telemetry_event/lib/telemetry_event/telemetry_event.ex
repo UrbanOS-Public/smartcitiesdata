@@ -3,7 +3,11 @@ defmodule TelemetryEvent do
   alias Telemetry.Metrics
 
   def metrics_config() do
-    [port: metrics_port(), metrics: metrics()]
+    [
+      port: metrics_ port(),
+      metrics: metrics(),
+      name: Application.fetch_env!(:telemetry_event, :app_name)
+    ]
   end
 
   def add_event_count(event_measurements, event_name) do
