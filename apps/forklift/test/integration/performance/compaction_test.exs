@@ -30,77 +30,94 @@ defmodule Forklift.Performance.CompactionTest do
     scale = 2
 
     source_dataset = dataset_from_source(source)
+    source_table_name = source_dataset.technical.systemName
     dataset = TDG.create_dataset(%{technical: %{schema: source_dataset.technical.schema}})
 
-    Logger.info("creating dataset #{dataset.id} as a copy of #{source_dataset.technical.systemName} * #{to_string(scale)}")
-    Logger.info("creating table for #{dataset.id}")
+    log("creating dataset #{dataset.id} as a copy of #{source_table_name} * #{to_string(scale)}")
+
+    log("creating table for #{dataset.id}")
     assert :ok == create_table(dataset)
 
-    Logger.info("loading source data into table for #{dataset.id}")
+    log("loading source data into table for #{dataset.id}")
     load_data_from_source(dataset, source, scale)
 
-    Logger.info("getting record counts from table for #{dataset.id}")
+    log("getting record counts from table for #{dataset.id}")
     {json_count, orc_count} = get_record_counts(dataset)
     expected_orc_count = orc_count + json_count
     expected_json_count = 0
-    Logger.info("expect there to be #{expected_orc_count} orc records and #{expected_json_count} json records when compaction completes for #{dataset.id}")
 
-    Logger.info("running compaction for #{dataset.id}")
+    log(
+      "expect there to be #{expected_orc_count} orc records and #{expected_json_count} json records for #{dataset.id}"
+    )
+
+    log("running compaction for #{dataset.id}")
     assert :ok == compact(dataset)
 
-    Logger.info("confirming record counts from table for #{dataset.id}")
+    log("confirming record counts from table for #{dataset.id}")
     assert {^expected_orc_count, ^expected_json_count} = get_record_counts(dataset)
 
-    Logger.info("dropping tables for successful compaction #{dataset.id}")
+    log("dropping tables for successful compaction #{dataset.id}")
     drop_tables(dataset)
   end
 
   @tag timeout: :infinity
-  test "large compactions don't wipe data if they are stopped after looading the compaction table", %{medium_source: source} do
+  test "large compactions don't wipe data if they are stopped after looading the compaction table", %{
+    medium_source: source
+  } do
     Logger.configure(level: :info)
     scale = 1
 
     source_dataset = dataset_from_source(source)
+    source_table_name = source_dataset.technical.systemName
     dataset = TDG.create_dataset(%{technical: %{schema: source_dataset.technical.schema}})
 
-    Logger.info("creating dataset #{dataset.id} as a copy of #{source_dataset.technical.systemName} * #{to_string(scale)}")
-    Logger.info("creating table for #{dataset.id}")
+    log("creating dataset #{dataset.id} as a copy of #{source_table_name} * #{to_string(scale)}")
+
+    log("creating table for #{dataset.id}")
     assert :ok == create_table(dataset)
 
-    Logger.info("loading source data into table for #{dataset.id}")
+    log("loading source data into table for #{dataset.id}")
     load_data_from_source(dataset, source, scale)
 
-    Logger.info("getting record counts from table for #{dataset.id}")
+    log("getting record counts from table for #{dataset.id}")
     {json_count, orc_count} = get_record_counts(dataset)
     expected_orc_count = orc_count + json_count
 
-    Logger.info("running compaction for #{dataset.id} in background")
+    log("running compaction for #{dataset.id} in background")
     compaction_task = Task.async(fn -> compact(dataset) end)
 
-    Logger.info("waiting for compaction table to appear and have the expected data count of #{expected_orc_count}")
+    log("waiting for compaction table to appear and have the expected data count of #{expected_orc_count}")
     compact_table = compact_table_name(dataset)
 
-    eventually(fn ->
-      assert table_exists?(compact_table)
-    end, 500, 1_000)
+    eventually(
+      fn ->
+        assert table_exists?(compact_table)
+      end,
+      500,
+      1_000
+    )
 
-    eventually(fn ->
-      assert expected_orc_count == get_record_count_for_table(compact_table)
-    end, 500, 1_000)
+    eventually(
+      fn ->
+        assert expected_orc_count == get_record_count_for_table(compact_table)
+      end,
+      500,
+      1_000
+    )
 
-    Logger.info("stopping compaction task with no shutdown timeout")
+    log("stopping compaction task with no shutdown timeout")
     Task.shutdown(compaction_task, :brutal_kill)
 
-    Logger.info("confirming compaction table record counts from table for #{dataset.id}")
+    log("confirming compaction table record counts from table for #{dataset.id}")
     assert expected_orc_count == get_record_count_for_table(compact_table)
 
-    Logger.info("running a subsequent compaction for #{dataset.id}")
+    log("running a subsequent compaction for #{dataset.id}")
     load_data_from_source(dataset, source, scale, ["json"])
     json_table = json_table_name(dataset)
     assert json_count == get_record_count_for_table(json_table)
     assert :ok == compact(dataset)
 
-    Logger.info("confirming that no data is lost from json and compact tables so it can be recovered")
+    log("confirming that no data is lost from json and compact tables so it can be recovered")
     assert json_count == get_record_count_for_table(json_table)
     assert orc_count == get_record_count_for_table(compact_table)
   end
@@ -111,50 +128,58 @@ defmodule Forklift.Performance.CompactionTest do
     scale = 1
 
     source_dataset = dataset_from_source(source)
+    source_table_name = source_dataset.technical.systemName
     dataset = TDG.create_dataset(%{technical: %{schema: source_dataset.technical.schema}})
 
-    Logger.info("creating dataset #{dataset.id} as a copy of #{source_dataset.technical.systemName} * #{to_string(scale)}")
-    Logger.info("creating table for #{dataset.id}")
+    log("creating dataset #{dataset.id} as a copy of #{source_table_name} * #{to_string(scale)}")
+
+    log("creating table for #{dataset.id}")
     assert :ok == create_table(dataset)
 
-    Logger.info("loading source data into table for #{dataset.id}")
+    log("loading source data into table for #{dataset.id}")
     load_data_from_source(dataset, source, scale)
 
-    Logger.info("getting record counts from table for #{dataset.id}")
+    log("getting record counts from table for #{dataset.id}")
     {json_count, orc_count} = get_record_counts(dataset)
     expected_orc_count = orc_count + json_count
 
-    Logger.info("running compaction for #{dataset.id} in background")
+    log("running compaction for #{dataset.id} in background")
     compaction_task = Task.async(fn -> compact(dataset) end)
 
-    Logger.info("waiting for orc table to disappear")
+    log("waiting for orc table to disappear")
     orc_table = orc_table_name(dataset)
-    eventually(fn ->
-      assert table_exists?(orc_table) != true
-    end, 500, 3_000)
 
-    Logger.info("stopping compaction task with no shutdown timeout")
+    eventually(
+      fn ->
+        assert table_exists?(orc_table) != true
+      end,
+      500,
+      3_000
+    )
+
+    log("stopping compaction task with no shutdown timeout")
     Task.shutdown(compaction_task, :brutal_kill)
 
-    Logger.info("confirming compaction table record counts from table for #{dataset.id}")
+    log("confirming compaction table record counts from table for #{dataset.id}")
     compact_table = compact_table_name(dataset)
     assert expected_orc_count == get_record_count_for_table(compact_table)
 
-    Logger.info("running a subsequent compaction for #{dataset.id}")
+    log("running a subsequent compaction for #{dataset.id}")
     load_data_from_source(dataset, source, scale, ["json"])
     json_table = json_table_name(dataset)
     assert json_count == get_record_count_for_table(json_table)
     assert :ok == compact(dataset)
 
-    Logger.info("confirming that no data is lost from json and compact tables so it can be recovered")
+    log("confirming that no data is lost from json and compact tables so it can be recovered")
     assert json_count == get_record_count_for_table(json_table)
     assert orc_count == get_record_count_for_table(compact_table)
   end
 
   defp dataset_from_source(source) do
-    {:ok, dataset} = source <> "/dataset.json"
-    |> File.read!()
-    |> SmartCity.Dataset.new()
+    {:ok, dataset} =
+      (source <> "/dataset.json")
+      |> File.read!()
+      |> SmartCity.Dataset.new()
 
     dataset
   end
@@ -196,7 +221,7 @@ defmodule Forklift.Performance.CompactionTest do
     table = dataset.technical.systemName
     schema = dataset.technical.schema
 
-    Forklift.DataWriter.init([table: table, schema: schema, bucket: @bucket])
+    Forklift.DataWriter.init(table: table, schema: schema, bucket: @bucket)
   end
 
   defp drop_tables(dataset) do
@@ -243,11 +268,12 @@ defmodule Forklift.Performance.CompactionTest do
 
     case File.dir?(local_path) do
       true ->
-        Logger.info("fixtures already available locally at #{local_path}")
+        log("fixtures already available locally at #{local_path}")
+
       false ->
         remote_bucket = "scos-source-datasets"
         remote_path = common_path
-        Logger.info("downloading fixtures from #{remote_bucket}/#{remote_path} to #{local_path}")
+        log("downloading fixtures from #{remote_bucket}/#{remote_path} to #{local_path}")
         keys_to_download = list_keys_with_prefix(remote_bucket, remote_path)
         download_keys(keys_to_download, remote_bucket, remote_path, local_path)
     end
@@ -269,7 +295,8 @@ defmodule Forklift.Performance.CompactionTest do
 
     Enum.each(keys, fn key ->
       file_name = String.replace(key, remote_path, "")
-      Logger.info("downlading #{local_path}#{file_name} from #{bucket}/#{key}")
+      log("downlading #{local_path}#{file_name} from #{bucket}/#{key}")
+
       ExAws.S3.download_file(bucket, key, local_path <> file_name)
       |> ExAws.request!(remote_config())
     end)
@@ -277,14 +304,16 @@ defmodule Forklift.Performance.CompactionTest do
 
   defp remote_config() do
     aws_profile = System.fetch_env!("AWS_PROFILE")
-    config = Map.merge(
-      ExAws.Config.Defaults.get(:s3, "us-west-2"),
-      %{
-        access_key_id: [{:awscli, aws_profile, 30}, :instance_role],
-        secret_access_key: [{:awscli, aws_profile, 30}, :instance_role],
-        region: "us-west-2"
-      }
-    )
+
+    config =
+      Map.merge(
+        ExAws.Config.Defaults.get(:s3, "us-west-2"),
+        %{
+          access_key_id: [{:awscli, aws_profile, 30}, :instance_role],
+          secret_access_key: [{:awscli, aws_profile, 30}, :instance_role],
+          region: "us-west-2"
+        }
+      )
 
     ExAws.Config.new(:s3, config)
   end
@@ -306,5 +335,9 @@ defmodule Forklift.Performance.CompactionTest do
       {:ok, _} -> true
       _ -> false
     end
+  end
+
+  defp log(message) do
+    Logger.info("CompactionTest: " <> message)
   end
 end
