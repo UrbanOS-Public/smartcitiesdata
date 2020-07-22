@@ -36,14 +36,15 @@ defmodule DiscoveryStreams.Mixfile do
     [
       {:brook, "~> 0.4.0"},
       {:cachex, "~> 3.0"},
-      {:checkov, "~> 0.4", only: :test},
-      {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
+      {:checkov, "~> 1.0", only: :test},
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:divo_kafka, "~> 0.1.5", only: [:integration]},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
       {:elsa, "~> 0.10.0", override: true},
       {:ex_doc, "~> 0.19", only: [:test, :integration], runtime: false},
       {:httpoison, "~> 1.6"},
+      {:jason, "~> 1.2", override: true},
       {:kaffe, "~> 1.14"},
       {:libcluster, "~> 3.1"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
@@ -55,7 +56,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:prometheus_phoenix, "~> 1.2"},
       {:prometheus_plugs, "~> 1.1"},
       {:plug_cowboy, "~> 2.1"},
-      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:redix, "~> 0.10.2"},
       {:sweet_xml, "~> 0.6"},
       {:smart_city, "~> 3.0"},
@@ -67,6 +68,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:poison, "~> 3.1", override: true},
       {:tasks, in_umbrella: true, only: :dev},
       {:decimal, "~> 1.0"},
+      {:tzdata, "~> 1.0"},
       {:web, in_umbrella: true}
     ]
   end

@@ -6,7 +6,7 @@ defmodule DatasetHelpers do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
 
-  require Placebo
+  import Placebo
 
   def create_dataset(overrides) do
     changes =

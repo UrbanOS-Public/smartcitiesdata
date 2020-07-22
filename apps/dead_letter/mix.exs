@@ -27,12 +27,12 @@ defmodule DeadLetter.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 1.1", only: :dev, runtime: false},
+      {:credo, "~> 1.0", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
-      {:placebo, "~> 1.2", only: [:test, :integration]},
+      {:placebo, "~> 2.0.0-rc2", only: [:test, :integration]},
       {:ex_doc, "~> 0.21", only: :dev},
-      {:jason, "~> 1.1"},
-      {:elsa, "~> 0.10.0"},
+      {:jason, "~> 1.2"},
+      {:elsa, "~> 0.10.0", override: true},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:integration]},
       {:assertions, "~> 0.14", only: [:test, :integration]},

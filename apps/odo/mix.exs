@@ -34,7 +34,7 @@ defmodule Odo.MixProject do
        [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},
       {:geomancer, "~> 0.1.0"},
       {:hackney, "~> 1.15"},
-      {:jason, "~> 1.1"},
+      {:jason, "~> 1.2"},
       {:libvault, "~> 0.2"},
       {:plug_cowboy, "~> 2.1"},
       {:poison, "~> 3.1", override: true},
@@ -47,7 +47,7 @@ defmodule Odo.MixProject do
       {:tasks, in_umbrella: true, only: :dev},
       {:tesla, "~> 1.3"},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
-      {:placebo, "~> 1.2", only: [:test, :integration]},
+      {:placebo, "~> 2.0.0-rc2", only: [:test, :integration]},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]}
     ]
