@@ -1,4 +1,4 @@
-defmodule Forklift.PerformanceTest do
+defmodule Forklift.Performance.LoadingTest do
   use ExUnit.Case
   use Divo
   use Retry
@@ -15,13 +15,6 @@ defmodule Forklift.PerformanceTest do
   @endpoints Application.get_env(:forklift, :elsa_brokers)
   @input_topic_prefix Application.get_env(:forklift, :input_topic_prefix)
   @output_topic Application.get_env(:forklift, :output_topic)
-
-  setup_all do
-    Logger.configure(level: :warn)
-    Agent.start(fn -> 0 end, name: :counter)
-
-    :ok
-  end
 
   defmodule SetupConfig do
     defstruct [
