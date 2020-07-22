@@ -11,9 +11,9 @@ defmodule Andi.Application do
         ecto_repo(),
         {Brook, Application.get_env(:andi, :brook)},
         Andi.DatasetCache,
-        Andi.Migration.Migrations,
-        {TelemetryMetricsPrometheus, metrics()}
+        Andi.Migration.Migrations
       ]
+      |> TelemetryEvent.config_init_server(instance_name())
       |> List.flatten()
 
     opts = [strategy: :one_for_one, name: Andi.Supervisor]
@@ -33,10 +33,5 @@ defmodule Andi.Application do
   def config_change(changed, _new, removed) do
     AndiWeb.Endpoint.config_change(changed, removed)
     :ok
-  end
-
-  defp metrics() do
-    instance_name()
-    |> TelemetryEvent.metrics_config()
   end
 end

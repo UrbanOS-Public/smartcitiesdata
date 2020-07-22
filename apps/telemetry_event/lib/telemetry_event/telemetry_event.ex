@@ -2,18 +2,25 @@ defmodule TelemetryEvent do
   @moduledoc false
   alias Telemetry.Metrics
 
-  def metrics_config(app_name) do
-    [
-      port: metrics_port(),
-      metrics: metrics(),
-      name: app_name
-    ]
+  def config_init_server(child, app_name) do
+    case Application.get_env(:telemetry_event, :init_server) do
+      false -> child
+      _ -> [{TelemetryMetricsPrometheus, metrics_config(app_name)} | child]
+    end
   end
 
   def add_event_count(event_measurements, event_name) do
     :telemetry.execute(event_name, %{}, measurements(event_measurements))
   rescue
     error -> {:error, error}
+  end
+
+  defp metrics_config(app_name) do
+    [
+      port: metrics_port(),
+      metrics: metrics(),
+      name: app_name
+    ]
   end
 
   defp metrics() do

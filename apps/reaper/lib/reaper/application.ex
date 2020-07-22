@@ -20,9 +20,9 @@ defmodule Reaper.Application do
         Reaper.Migrations,
         brook(),
         Reaper.Scheduler.Supervisor,
-        Reaper.Init,
-        {TelemetryMetricsPrometheus, metrics()}
+        Reaper.Init
       ]
+      |> TelemetryEvent.config_init_server(instance())
       |> List.flatten()
 
     fetch_and_set_hosted_file_credentials()
@@ -77,10 +77,5 @@ defmodule Reaper.Application do
           )
       end
     end
-  end
-
-  defp metrics() do
-    instance()
-    |> TelemetryEvent.metrics_config()
   end
 end
