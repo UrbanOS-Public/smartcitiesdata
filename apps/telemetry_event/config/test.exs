@@ -1,7 +1,6 @@
 use Mix.Config
 
 config :telemetry_event,
-  app_name: "any_telemetry_app",
   metrics_options: [
     [
       metric_name: "any_events_handled.count",

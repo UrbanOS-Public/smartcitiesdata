@@ -13,7 +13,7 @@ defmodule Valkyrie.Application do
         {DynamicSupervisor, strategy: :one_for_one, name: Valkyrie.Dynamic.Supervisor},
         brook(),
         {Valkyrie.Init, monitor: Valkyrie.Dynamic.Supervisor},
-        {TelemetryMetricsPrometheus, TelemetryEvent.metrics_config()}
+        {TelemetryMetricsPrometheus, metrics()}
       ]
       |> List.flatten()
 
@@ -31,5 +31,10 @@ defmodule Valkyrie.Application do
       nil -> []
       topology -> {Cluster.Supervisor, [topology, [name: Cluster.ClusterSupervisor]]}
     end
+  end
+
+  defp metrics() do
+    instance()
+    |> TelemetryEvent.metrics_config()
   end
 end

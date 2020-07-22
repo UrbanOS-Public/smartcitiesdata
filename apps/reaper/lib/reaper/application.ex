@@ -21,7 +21,7 @@ defmodule Reaper.Application do
         brook(),
         Reaper.Scheduler.Supervisor,
         Reaper.Init,
-        {TelemetryMetricsPrometheus, TelemetryEvent.metrics_config()}
+        {TelemetryMetricsPrometheus, metrics()}
       ]
       |> List.flatten()
 
@@ -77,5 +77,10 @@ defmodule Reaper.Application do
           )
       end
     end
+  end
+
+  defp metrics() do
+    instance()
+    |> TelemetryEvent.metrics_config()
   end
 end

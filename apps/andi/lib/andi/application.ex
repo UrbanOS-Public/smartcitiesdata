@@ -2,6 +2,7 @@ defmodule Andi.Application do
   @moduledoc false
 
   use Application
+  import Andi
 
   def start(_type, _args) do
     children =
@@ -11,7 +12,7 @@ defmodule Andi.Application do
         {Brook, Application.get_env(:andi, :brook)},
         Andi.DatasetCache,
         Andi.Migration.Migrations,
-        {TelemetryMetricsPrometheus, TelemetryEvent.metrics_config()}
+        {TelemetryMetricsPrometheus, metrics()}
       ]
       |> List.flatten()
 
@@ -32,5 +33,10 @@ defmodule Andi.Application do
   def config_change(changed, _new, removed) do
     AndiWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp metrics() do
+    instance_name()
+    |> TelemetryEvent.metrics_config()
   end
 end

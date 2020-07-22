@@ -107,7 +107,6 @@ config :ex_aws,
   region: System.get_env("AWS_REGION") || "us-west-2"
 
 config :telemetry_event,
-  app_name: "reaper",
   metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
   metrics_options: [
     [
