@@ -31,7 +31,10 @@ defmodule TelemetryEvent.MixProject do
   end
 
   defp aliases do
-    [verify: ["format --check-formatted", "credo"]]
+    [
+      verify: ["format --check-formatted", "credo"],
+      test: "test --no-start"
+    ]
   end
 
   defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/support"]
