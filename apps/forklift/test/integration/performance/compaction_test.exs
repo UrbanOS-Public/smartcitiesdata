@@ -103,14 +103,16 @@ defmodule Forklift.Performance.CompactionTest do
     assert expected_orc_count == get_record_count_for_table(compact_table)
 
     log("running a subsequent compaction for #{dataset.id}")
+    # compaction will not run with 0 records in JSON table
     load_data_from_source(dataset, source, scale, ["json"])
     json_table = json_table_name(dataset)
     assert json_count == get_record_count_for_table(json_table)
     assert :ok == compact(dataset)
 
-    log("confirming that no data is lost from json and compact tables so it can be recovered")
-    assert orc_count == get_record_count_for_table(compact_table)
-    assert json_count == get_record_count_for_table(json_table)
+    log("confirming that no data is lost, assuming we get back to just ORC + JSON tables")
+    assert expected_orc_count + json_count == get_record_count_for_table(orc_table)
+    assert 0 == get_record_count_for_table(json_table)
+    assert table_exists?(orc_table) != true
   end
 
   defp dataset_from_source(source) do
