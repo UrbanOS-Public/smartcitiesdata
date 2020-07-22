@@ -2,7 +2,7 @@ use Mix.Config
 
 local_bucket = "kdp-cloud-storage"
 local_presto = "http://localhost:8080"
-bucket = System.get_env("S3_WRITER_BUCKET") || local_bucket
+presto_bucket = System.get_env("S3_WRITER_BUCKET") || local_bucket
 presto_url = System.get_env("PRESTO_URL") || local_presto
 
 config :forklift,
@@ -10,7 +10,7 @@ config :forklift,
   topic_writer: MockTopic,
   table_writer: Pipeline.Writer.S3Writer,
   collector: MockMetricCollector,
-  s3_writer_bucket: bucket,
+  s3_writer_bucket: presto_bucket,
   retry_count: 100,
   retry_initial_delay: 100,
   retry_max_wait: 1_000 * 60 * 60,
@@ -45,7 +45,7 @@ config :ex_aws,
   debug_requests: false,
   region: System.get_env("AWS_REGION") || "us-west-2"
 
-if bucket == local_bucket do
+if presto_bucket == local_bucket do
   config :forklift,
     divo: "docker-compose.yml",
     divo_wait: [dwell: 1000, max_tries: 120]
