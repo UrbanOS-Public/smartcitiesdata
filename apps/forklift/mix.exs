@@ -63,8 +63,8 @@ defmodule Forklift.MixProject do
 
   defp aliases do
     %{
-      :"test.compaction" => ["test.integration --include compaction:true --no-start"],
-      :"test.performance" => ["test.integration --include performance:true"],
+      :"test.compaction" => ["test.integration --only compaction:true --no-start"],
+      :"test.performance" => ["test.integration --only performance:true"],
       :verify => ["format --check-formatted", "credo"]
     }
   end

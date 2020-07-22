@@ -6,9 +6,9 @@ defmodule Forklift.Performance.CompactionTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias ExAws.S3
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.TestHelper, only: [eventually: 3]
 
-  @moduletag :performance
+  @moduletag :compaction
 
   @bucket Application.get_env(:forklift, :s3_writer_bucket)
 
