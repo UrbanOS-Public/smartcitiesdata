@@ -4,7 +4,7 @@ defmodule TelemetryEvent do
 
   def metrics_config() do
     [
-      port: metrics_ port(),
+      port: metrics_port(),
       metrics: metrics(),
       name: Application.fetch_env!(:telemetry_event, :app_name)
     ]
