@@ -242,6 +242,7 @@ defmodule Forklift.Performance.CompactionTest do
 
   defp remote_config() do
     aws_profile = System.get_env("AWS_PROFILE")
+
     unless aws_profile do
       raise "you need to have AWS_PROFILE set to a profile that can access ALM to sync the fixtures to your local environment"
     end
