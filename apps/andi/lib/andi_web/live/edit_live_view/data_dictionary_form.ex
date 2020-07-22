@@ -6,6 +6,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.DataDictionaryFormSchema
   import Phoenix.HTML.Form
 
+  alias AndiWeb.ErrorHelpers
   alias AndiWeb.EditLiveView.DataDictionaryTree
   alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
   alias AndiWeb.InputSchemas.DataDictionaryFormSchema
@@ -14,11 +15,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.StructTools
   alias Ecto.Changeset
+  alias SmartCity.SchemaGenerator
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
+    AndiWeb.Endpoint.subscribe("source-format")
 
     {:ok,
      assign(socket,
@@ -60,9 +63,20 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       </div>
 
       <div class="form-section">
-        <%= form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
+        <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data, multipart: true] %>
+        <%= f = Map.put(f, :errors, @changeset.errors) %>
+
           <div class="component-edit-section--<%= @visibility %>">
             <div class="data-dictionary-form-edit-section form-grid">
+
+              <%= if @sourceFormat in ["text/csv", "application/json"] do %>
+                <div class="data-dictionary-form__file-upload">
+                  <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
+                  <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
+                  <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
+                </div>
+              <%= end %>
+
               <div class="data-dictionary-form__tree-section">
                 <div class="data-dictionary-form__tree-header data-dictionary-form-tree-header">
                   <div class="label">Enter/Edit Fields</div>
@@ -112,6 +126,77 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     |> complete_validation(socket)
   end
 
+  def handle_event("validate", _, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("file_upload", %{"fileType" => file_type}, socket) when file_type not in ["text/csv", "application/json"] do
+    new_changeset =
+      socket.assigns.changeset
+      |> reset_changeset_errors()
+      |> Ecto.Changeset.add_error(:schema_sample, "File type must be CSV or JSON")
+
+    {:noreply, assign(socket, changeset: new_changeset)}
+  end
+
+  def handle_event("file_upload", %{"fileSize" => file_size}, socket) when file_size > 200_000_000 do
+    new_changeset =
+      socket.assigns.changeset
+      |> reset_changeset_errors()
+      |> Ecto.Changeset.add_error(:schema_sample, "File size must be less than 200MB")
+
+    {:noreply, assign(socket, changeset: new_changeset)}
+  end
+
+  def handle_event("file_upload", %{"file" => file, "fileType" => "text/csv", "fileSize" => file_size}, socket) do
+    changeset =
+      socket.assigns.changeset
+      |> reset_changeset_errors()
+
+    generated_schema =
+      file
+      |> parse_csv()
+      |> SchemaGenerator.generate_schema()
+      |> Enum.map(fn schema_field ->
+          schema_field
+          |> Map.put("dataset_id", socket.assigns.dataset_id)
+          |> Map.put("bread_crumb", Map.get(schema_field, "name"))
+        end)
+
+      new_changeset = DataDictionaryFormSchema.changeset_from_form_data(%{schema: generated_schema})
+
+      {:noreply, assign(socket, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
+  end
+
+  def handle_event("file_upload", %{"file" => file, "fileType" => "application/json", "fileSize" => file_size}, socket) do
+    changeset =
+      socket.assigns.changeset
+      |> reset_changeset_errors()
+
+    generated_schema =
+      file
+      |> Jason.decode!()
+      |> SchemaGenerator.generate_schema()
+      |> Enum.map(fn schema_field ->
+        schema_field
+        |> Map.put("dataset_id", socket.assigns.dataset_id)
+        |> Map.put("bread_crumb", Map.get(schema_field, "name"))
+      end)
+
+      new_changeset = DataDictionaryFormSchema.changeset_from_form_data(%{schema: generated_schema})
+
+      {:noreply, assign(socket, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
+  end
+
+  def handle_event("file_upload", params, socket) do
+    new_changeset =
+      socket.assigns.changeset
+      |> Map.put(:action, :update)
+      |> Changeset.add_error(:schema_sample, "There was a problem interpreting this file")
+
+    {:noreply, assign(socket, changeset: new_changeset)}
+  end
+
   def handle_event("add_data_dictionary_field", _, socket) do
     changes = Ecto.Changeset.apply_changes(socket.assigns.changeset) |> StructTools.to_map()
     {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset.id, changes)
@@ -124,6 +209,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     should_show_remove_field_modal = socket.assigns.selected_field_id != :no_dictionary
 
     {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
+  end
+
+  def handle_info(%{topic: "source-format", payload: %{new_format: new_format}}, socket) do
+    {:noreply, assign(socket, sourceFormat: new_format)}
   end
 
   def handle_info(%{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form"}}, socket) do
@@ -192,6 +281,34 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     field = %{new_form | index: index, name: name, id: id}
 
     {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
+  end
+
+  defp parse_csv(file_string) do
+    file_string
+    |> String.split("\n")
+    |> Enum.take(2)
+    |> Enum.map(fn row -> String.split(row, ",") end)
+    |> Enum.zip()
+    |> convert_datum
+  end
+
+  defp convert_datum(datum) do
+    datum
+    |> Enum.map(fn {k,v} -> {k, convert_value(v)} end)
+    |> Map.new()
+    |> List.wrap()
+  end
+
+  defp convert_value(nil), do: nil
+  defp convert_value(string) do
+    case Jason.decode(string) do
+      {:ok, value} -> value
+      {:error, _} -> string
+    end
+  end
+
+  defp reset_changeset_errors(changeset) do
+    Map.update!(changeset, :errors, fn errors -> Keyword.delete(errors, :schema_sample) end)
   end
 
   defp get_new_selected_field(changeset, parent_id, deleted_field_index, technical_id) do

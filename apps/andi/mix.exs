@@ -63,7 +63,7 @@ defmodule Andi.MixProject do
       {:postgrex, "~> 0.15.1"},
       {:prestige, "~> 1.0"},
       {:simply_validate, ">= 0.2.0"},
-      {:smart_city, "~> 3.0"},
+      {:smart_city, "~> 3.18"},
       {:smart_city_test, "~> 0.9", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:ssl_verify_fun, "~> 1.1"},

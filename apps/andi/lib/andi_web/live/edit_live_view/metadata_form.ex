@@ -25,6 +25,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
+    AndiWeb.Endpoint.subscribe("source-format")
 
     {:ok,
      assign(socket,
@@ -233,6 +234,14 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     |> FormTools.adjust_org_name()
     |> MetadataFormSchema.changeset_from_form_data()
     |> Dataset.validate_unique_system_name()
+    |> complete_validation(socket)
+  end
+
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceFormat"]}, socket) do
+    AndiWeb.Endpoint.broadcast_from(self(), "source-format", "format-update", %{new_format: form_data["sourceFormat"]})
+
+    form_data
+    |> MetadataFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 

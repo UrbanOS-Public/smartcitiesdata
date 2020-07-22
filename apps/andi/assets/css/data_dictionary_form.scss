@@ -7,6 +7,7 @@ $tick-height: 1rem + $field-padding - 0.44;
   grid-template-columns: 40% 60%;
   grid-column-gap: 2rem;
   grid-template-areas:
+    "file-upload ."
     "tree-section edit-section";
 
   .data-dictionary-field-editor {
@@ -242,6 +243,7 @@ $tick-height: 1rem + $field-padding - 0.44;
     }
 }
 
+@include area(data-dictionary-form, file-upload);
 @include area(data-dictionary-form, tree-section);
 @include area(data-dictionary-form, edit-section);
 
