@@ -34,7 +34,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
        new_field_initial_render: false,
        dataset: dataset,
        dataset_id: dataset.id,
-       technical_id: dataset.technical.id
+       technical_id: dataset.technical.id,
+       overwrite_schema_visibility: "hidden",
+       pending_changeset: nil
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end
@@ -116,6 +118,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@dataset), visible: @add_data_dictionary_field_visible, dataset_id: @dataset.id,  selected_field_id: @selected_field_id ) %>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field: @current_data_dictionary_item, visible: @remove_data_dictionary_field_visible) %>
+
+      <%= live_component(@socket, AndiWeb.EditLiveView.OverwriteSchemaModal, id: :overwrite_schema_modal, visibility: @overwrite_schema_visibility) %>
     </div>
     """
   end
@@ -164,8 +168,16 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         end)
 
       new_changeset = DataDictionaryFormSchema.changeset_from_form_data(%{schema: generated_schema})
+      existing_schema_empty =
+        socket.assigns.changeset
+        |> Changeset.get_change(:schema)
+        |> Enum.empty?()
 
-      {:noreply, assign(socket, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
+      case existing_schema_empty do
+        true -> {:noreply, assign(socket, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
+        false -> {:noreply, assign(socket, pending_changeset: new_changeset, overwrite_schema_visibility: "visible")}
+      end
+
   end
 
   def handle_event("file_upload", %{"file" => file, "fileType" => "application/json", "fileSize" => file_size}, socket) do
@@ -185,7 +197,15 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
       new_changeset = DataDictionaryFormSchema.changeset_from_form_data(%{schema: generated_schema})
 
-      {:noreply, assign(socket, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
+      existing_schema_empty =
+        socket.assigns.changeset
+        |> Changeset.get_change(:schema)
+        |> Enum.empty?()
+
+      case existing_schema_empty do
+        true -> {:noreply, assign(socket, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
+        false -> {:noreply, assign(socket, pending_changeset: new_changeset, overwrite_schema_visibility: "visible")}
+      end
   end
 
   def handle_event("file_upload", params, socket) do
@@ -195,6 +215,23 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       |> Changeset.add_error(:schema_sample, "There was a problem interpreting this file")
 
     {:noreply, assign(socket, changeset: new_changeset)}
+  end
+
+  def handle_event("overwrite-schema", _, %{assigns: %{pending_changeset: nil}} = socket) do
+    changeset_with_error =
+      socket.assigns.changeset
+      |> Map.put(:action, :update)
+      |> Changeset.add_error(:schema_sample, "There was a problem interpreting this file")
+
+    {:noreply, assign(socket, changeset: changeset_with_error)}
+  end
+
+  def handle_event("overwrite-schema", _, socket) do
+    {:noreply, assign(socket, changeset: socket.assigns.pending_changeset, pending_changeset: nil, overwrite_schema_visibility: "hidden") |> assign(get_default_dictionary_field(socket.assigns.pending_changeset))}
+  end
+
+  def handle_event("overwrite-schema-cancelled", _, socket) do
+    {:noreply, assign(socket, pending_changeset: nil, overwrite_schema_visibility: "hidden")}
   end
 
   def handle_event("add_data_dictionary_field", _, socket) do
