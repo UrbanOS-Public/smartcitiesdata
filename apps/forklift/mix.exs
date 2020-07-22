@@ -62,7 +62,11 @@ defmodule Forklift.MixProject do
   end
 
   defp aliases do
-    [verify: ["format --check-formatted", "credo"]]
+    %{
+      :"test.compaction" => ["test.integration --only compaction:true --no-start"],
+      :"test.performance" => ["test.integration --only performance:true"],
+      :verify => ["format --check-formatted", "credo"]
+    }
   end
 
   defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/support"]
