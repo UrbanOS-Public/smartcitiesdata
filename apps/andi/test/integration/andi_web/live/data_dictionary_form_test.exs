@@ -181,7 +181,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
   end
 
   describe "schema sample upload" do
-    test "is hidden when sourceFormat is CSV or JSON", %{conn: conn} do
+    test "is shown when sourceFormat is CSV or JSON", %{conn: conn} do
       dataset = TDG.create_dataset(%{technical: %{sourceFormat: "application/json"}})
 
       {:ok, _} = Datasets.update(dataset)

@@ -16,7 +16,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.InputConverter
   alias Ecto.Changeset
-  alias SmartCity.SchemaGenerator
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
@@ -154,12 +153,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("file_upload", %{"file" => file, "fileType" => "text/csv"}, socket) do
-    generated_schema =
+    new_changeset =
       file
       |> parse_csv()
-      |> generate_schema(socket.assigns.dataset_id)
-
-    new_changeset = DataDictionaryFormSchema.changeset_from_form_data(%{schema: generated_schema})
+      |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.dataset_id)
 
     assign_new_schema(socket, new_changeset)
   end
@@ -179,8 +176,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         {:noreply, assign(socket, changeset: new_changeset)}
 
       {:ok, decoded_json} ->
-        generated_schema = generate_schema(decoded_json, socket.assigns.dataset_id)
-        new_changeset = DataDictionaryFormSchema.changeset_from_form_data(%{schema: generated_schema})
+        new_changeset = DataDictionaryFormSchema.changeset_from_file(decoded_json, socket.assigns.dataset_id)
 
         assign_new_schema(socket, new_changeset)
     end
@@ -305,38 +301,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     field = %{new_form | index: index, name: name, id: id}
 
     {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
-  end
-
-  defp generate_schema(decoded_file, dataset_id) do
-    decoded_file
-    |> SchemaGenerator.generate_schema()
-    |> Enum.map(&assign_schema_field_details(&1, dataset_id, nil))
-  end
-
-  defp assign_schema_field_details(schema_field, dataset_id, parent_bread_crumb) do
-    bread_crumb =
-      case parent_bread_crumb do
-        nil -> Map.get(schema_field, "name")
-        parent_bread_crumb -> parent_bread_crumb <> " > " <> Map.get(schema_field, "name")
-      end
-
-    updated_field =
-      schema_field
-      |> Map.put("dataset_id", dataset_id)
-      |> Map.put("bread_crumb", bread_crumb)
-
-    case Map.has_key?(schema_field, "subSchema") do
-      true ->
-        updated_subSchema =
-          Enum.map(Map.get(schema_field, "subSchema"), fn child_field ->
-            assign_schema_field_details(child_field, dataset_id, bread_crumb)
-          end)
-
-        Map.put(updated_field, "subSchema", updated_subSchema)
-
-      false ->
-        updated_field
-    end
   end
 
   defp parse_csv(file_string) do
