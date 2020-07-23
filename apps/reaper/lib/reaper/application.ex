@@ -22,6 +22,7 @@ defmodule Reaper.Application do
         Reaper.Scheduler.Supervisor,
         Reaper.Init
       ]
+      |> TelemetryEvent.config_init_server(instance())
       |> List.flatten()
 
     fetch_and_set_hosted_file_credentials()
