@@ -20,8 +20,7 @@ defmodule TelemetryEvent.MixProject do
 
   def application do
     [
-      extra_applications: [:logger],
-      mod: {TelemetryEvent.Application, []}
+      extra_applications: [:logger]
     ]
   end
 
@@ -32,7 +31,9 @@ defmodule TelemetryEvent.MixProject do
   end
 
   defp aliases do
-    [verify: ["format --check-formatted", "credo"]]
+    [
+      verify: ["format --check-formatted", "credo"]
+    ]
   end
 
   defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/support"]

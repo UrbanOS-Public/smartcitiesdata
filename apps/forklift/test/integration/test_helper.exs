@@ -1,4 +1,4 @@
-ExUnit.start(exclude: [:performance, :skip], timeout: 120_000)
+ExUnit.start(exclude: [:performance, :compaction, :skip], timeout: 120_000)
 Faker.start()
 
 defmodule Helper do
