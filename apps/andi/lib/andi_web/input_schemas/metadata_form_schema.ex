@@ -4,7 +4,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Andi.InputSchemas.Options
+  alias AndiWeb.Views.Options
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.InputConverter
 

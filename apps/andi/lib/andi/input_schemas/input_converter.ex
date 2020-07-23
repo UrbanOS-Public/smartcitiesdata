@@ -5,7 +5,7 @@ defmodule Andi.InputSchemas.InputConverter do
 
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.StructTools
-  alias Andi.InputSchemas.FormTools
+  alias AndiWeb.Helpers.FormTools
 
   def smrt_dataset_to_full_changeset(smrt_dataset) do
     smrt_dataset_to_full_changeset(%Dataset{}, smrt_dataset)

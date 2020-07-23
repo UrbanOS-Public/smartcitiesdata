@@ -75,6 +75,13 @@
   color: $color-error
 }
 
+.test-status__tooltip-wrapper {
+  display: inline-block;
+}
+.test-status__tooltip--hidden {
+  display: none;
+}
+
 @include area(url-form, source-url);
 @include area(url-form, source-query-params);
 @include area(url-form, source-headers);

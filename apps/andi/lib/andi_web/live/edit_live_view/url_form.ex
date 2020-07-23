@@ -4,14 +4,16 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   """
   use Phoenix.LiveView
   use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.UrlFormSchema
+  import Phoenix.HTML
   import Phoenix.HTML.Form
   require Logger
 
   alias AndiWeb.ErrorHelpers
-  alias Andi.InputSchemas.DisplayNames
+  alias AndiWeb.Views.DisplayNames
+  alias AndiWeb.Views.HttpStatusDescriptions
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.InputSchemas.UrlFormSchema
-  alias Andi.InputSchemas.FormTools
+  alias AndiWeb.Helpers.FormTools
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets
 
@@ -72,6 +74,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
                   <%= if @test_results do %>
                     <div class="test-status">
                     Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) %></span>
+                    <%= status_tooltip(@test_results) %>
                     Time: <span class="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
                     </div>
                   <% end %>
@@ -229,6 +232,15 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
   defp status_class(%{status: status}) when status in 200..399, do: "test-status__code--good"
   defp status_class(%{status: _}), do: "test-status__code--bad"
+  defp status_tooltip(%{status: status}) when status in 200..399, do: status_tooltip(%{status: status}, "hidden")
+  defp status_tooltip(%{status: status}, modifier \\ "shown") do
+    assigns = %{
+      description: HttpStatusDescriptions.get(status),
+      modifier: modifier
+    }
+
+    ~E(<span class="test-status__tooltip-wrapper"><i phx-hook="addTooltip" data-tooltip-content="<%= @description %>" class="material-icons test-status__tooltip--<%= @modifier %>">info</i></span>)
+  end
 
   defp key_values_to_keyword_list(form_data, field) do
     form_data

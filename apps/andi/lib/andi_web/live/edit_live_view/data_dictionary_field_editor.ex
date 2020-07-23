@@ -5,7 +5,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
-  alias Andi.InputSchemas.Options
+  alias AndiWeb.Views.Options
   alias AndiWeb.ErrorHelpers
 
   def mount(socket) do
