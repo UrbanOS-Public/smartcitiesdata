@@ -1,7 +1,7 @@
 // We need to import the CSS so that webpack will load it.
 // The MiniCssExtractPlugin is used to separate it out into
 // its own CSS file.
-import material_design_icons from 'material-design-icons/iconfont/material-icons.css'
+// import material_design_icons from 'material-design-icons/iconfont/material-icons.css'
 import 'tippy.js/dist/tippy.css';
 import normalize_css from 'normalize.css'
 import scss from "../css/app.scss"
@@ -40,6 +40,7 @@ Hooks.addTooltip = {
             content: initialContent,
             allowHTML: true,
             interactive: true,
+            maxWidth: "none",
             onShow(instance) {
                 const updatedContent = element.dataset.tooltipContent;
                 instance.setContent(updatedContent);

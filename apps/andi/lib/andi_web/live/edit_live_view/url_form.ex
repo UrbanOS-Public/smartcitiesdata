@@ -239,7 +239,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
       modifier: modifier
     }
 
-    ~E(<span class="test-status__tooltip-wrapper"><i phx-hook="addTooltip" data-tooltip-content="<%= @description %>" class="material-icons test-status__tooltip--<%= @modifier %>">info</i></span>)
+    ~E(<sup class="test-status__tooltip-wrapper"><i phx-hook="addTooltip" data-tooltip-content="<%= @description %>" class="material-icons-outlined test-status__tooltip--<%= @modifier %>">info</i></sup>)
   end
 
   defp key_values_to_keyword_list(form_data, field) do

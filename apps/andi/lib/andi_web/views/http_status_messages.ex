@@ -70,7 +70,7 @@ defmodule AndiWeb.Views.HttpStatusDescriptions do
     code_reason = code_reason(code)
     code_link = code_link(code_url)
 
-    "The #{code_as_string} (#{code_reason}) status code indicates that the #{code_description} #{code_link}"
+    "The #{code_as_string} (#{code_reason}) status code indicates that the #{code_description}. #{code_link}"
   end
 
   defp code_reason(code) do
