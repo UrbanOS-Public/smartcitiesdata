@@ -1,18 +1,21 @@
 defmodule AndiWeb.DataDictionaryFormSchemaTest do
+  @moduledoc false
+
   use ExUnit.Case
 
   alias AndiWeb.InputSchemas.DataDictionaryFormSchema
 
   describe "changeset from file" do
     test "generates schema from parsed JSON" do
-      parsed_file =
-        [
-          %{"top_level" => %{
-               "level_one" => %{
-                 "level_two" => []
-               }
-             }}
-        ]
+      parsed_file = [
+        %{
+          "top_level" => %{
+            "level_one" => %{
+              "level_two" => []
+            }
+          }
+        }
+      ]
 
       changeset = DataDictionaryFormSchema.changeset_from_file(parsed_file, "123")
 
@@ -20,14 +23,14 @@ defmodule AndiWeb.DataDictionaryFormSchemaTest do
     end
 
     test "adds bread crumbs to all fields" do
-      parsed_file =
-        [
-          %{"parent1" => %{
-               "child1" => []
-             },
-            "parent2" => 2
-           }
-        ]
+      parsed_file = [
+        %{
+          "parent1" => %{
+            "child1" => []
+          },
+          "parent2" => 2
+        }
+      ]
 
       generated_schema = DataDictionaryFormSchema.generate_schema(parsed_file, "123")
 
@@ -60,9 +63,10 @@ defmodule AndiWeb.DataDictionaryFormSchemaTest do
   defp drop_fields_from_schema(schema) do
     Enum.map(schema, fn field ->
       sub_schema = drop_fields_from_schema(field["subSchema"])
+
       case is_nil(sub_schema) do
         false -> %{"name" => field["name"], "bread_crumb" => field["bread_crumb"], "type" => field["type"], "subSchema" => sub_schema}
-        true ->  %{"name" => field["name"], "bread_crumb" => field["bread_crumb"], "type" => field["type"]}
+        true -> %{"name" => field["name"], "bread_crumb" => field["bread_crumb"], "type" => field["type"]}
       end
     end)
   end
