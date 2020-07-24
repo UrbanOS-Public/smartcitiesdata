@@ -3,9 +3,10 @@ defmodule AndiWeb.Views.HttpStatusDescriptions do
   View translations from status code to descriptive text and help link.
   """
 
-  import Plug.Conn.Status, only: [
-    reason_phrase: 1
-  ]
+  import Plug.Conn.Status,
+    only: [
+      reason_phrase: 1
+    ]
 
   @url_200 "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#2xx_Success"
   @url_400 "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#4xx_Client_errors"
@@ -44,7 +45,6 @@ defmodule AndiWeb.Views.HttpStatusDescriptions do
     {~r/^429$/, "request has been rate-limited", @url_400},
     {~r/^431$/, "request header(s) is too large for the server", @url_400},
     {~r/^451$/, "resource is inaccessible for legal reasons", @url_400},
-
     {~r/^500$/, "server experienced an unexpected error", @url_500},
     {~r/^501$/, "server does not implement the request method", @url_500},
     {~r/^502$/, "server can't proxy the request", @url_500},
@@ -56,16 +56,16 @@ defmodule AndiWeb.Views.HttpStatusDescriptions do
     {~r/^508$/, "server would encounter an infinite loop during request", @url_500},
     {~r/^510$/, "server requires request to be extended", @url_500},
     {~r/^511$/, "server requires network authentication", @url_500},
-
     {~r/^.*$/, "response contains an unknown status code", @url_other}
   ]
 
   def get(code) do
     code_as_string = to_string(code)
 
-    {_code_regex, code_description, code_url} = Enum.find(@code_descriptions, fn {code_regex, code_description, code_url} ->
-      Regex.match?(code_regex, code_as_string)
-    end)
+    {_code_regex, code_description, code_url} =
+      Enum.find(@code_descriptions, fn {code_regex, code_description, code_url} ->
+        Regex.match?(code_regex, code_as_string)
+      end)
 
     code_reason = code_reason(code)
     code_link = code_link(code_url)

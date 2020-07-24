@@ -233,6 +233,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
   defp status_class(%{status: status}) when status in 200..399, do: "test-status__code--good"
   defp status_class(%{status: _}), do: "test-status__code--bad"
   defp status_tooltip(%{status: status}) when status in 200..399, do: status_tooltip(%{status: status}, "hidden")
+
   defp status_tooltip(%{status: status}, modifier \\ "shown") do
     assigns = %{
       description: HttpStatusDescriptions.get(status),

@@ -80,12 +80,14 @@
   width: 1rem;
 
   i {
-    font-size: 0.75rem;
+    cursor: pointer;
+    font-size: 0.9rem;
   }
 
   .tippy-box {
     padding: 0.5rem;
   }
+
   .tippy-content {
     font-size: 0.75rem;
     white-space: nowrap;
