@@ -36,7 +36,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
        dataset_id: dataset.id,
        technical_id: dataset.technical.id,
        overwrite_schema_visibility: "hidden",
-       pending_changeset: nil
+       pending_changeset: nil,
+       loading_schema: false
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end
@@ -46,6 +47,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       case assigns.visibility do
         "collapsed" -> "EDIT"
         "expanded" -> "MINIMIZE"
+      end
+
+    loader_visibility =
+      case assigns.loading_schema do
+        true -> "visibile"
+        false -> "hidden"
       end
 
     ~L"""
@@ -73,9 +80,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
               <%= if @sourceFormat in ["text/csv", "application/json"] do %>
                 <div class="data-dictionary-form__file-upload">
-                  <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
-                  <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
-                  <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
+                  <div class="file-input-button">
+                    <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
+                    <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
+                    <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
+                  </div>
+
+                  <div class="loader data-dictionary-form__loader data-dictionary-form__loader--<%= loader_visibility %>"></div>
                 </div>
               <% end %>
 
@@ -140,7 +151,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       |> reset_changeset_errors()
       |> Ecto.Changeset.add_error(:schema_sample, "File type must be CSV or JSON")
 
-    {:noreply, assign(socket, changeset: new_changeset)}
+    {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 
   def handle_event("file_upload", %{"fileSize" => file_size}, socket) when file_size > 200_000_000 do
@@ -149,7 +160,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       |> reset_changeset_errors()
       |> Ecto.Changeset.add_error(:schema_sample, "File size must be less than 200MB")
 
-    {:noreply, assign(socket, changeset: new_changeset)}
+    {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 
   def handle_event("file_upload", %{"file" => file, "fileType" => "text/csv"}, socket) do
@@ -173,7 +184,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
           |> Map.put(:action, :update)
           |> Changeset.add_error(:schema_sample, "There was a problem interpreting this file")
 
-        {:noreply, assign(socket, changeset: new_changeset)}
+        {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
 
       {:ok, decoded_json} ->
         new_changeset = DataDictionaryFormSchema.changeset_from_file(decoded_json, socket.assigns.dataset_id)
@@ -188,7 +199,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       |> Map.put(:action, :update)
       |> Changeset.add_error(:schema_sample, "There was a problem interpreting this file")
 
-    {:noreply, assign(socket, changeset: new_changeset)}
+    {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
+  end
+
+  def handle_event("file_upload_started", _, socket) do
+    {:noreply, assign(socket, loading_schema: true)}
   end
 
   def handle_event("overwrite-schema", _, %{assigns: %{pending_changeset: nil}} = socket) do
@@ -344,10 +359,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         form_changes = InputConverter.form_changes_from_changeset(new_changeset)
         {:ok, _} = Datasets.update_from_form(socket.assigns.dataset_id, form_changes)
 
-        {:noreply, assign(socket, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
+        {:noreply, assign(socket, loading_schema: false, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
 
       false ->
-        {:noreply, assign(socket, pending_changeset: new_changeset, overwrite_schema_visibility: "visible")}
+        {:noreply, assign(socket, loading_schema: false, pending_changeset: new_changeset, overwrite_schema_visibility: "visible")}
     end
   end
 

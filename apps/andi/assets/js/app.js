@@ -33,24 +33,27 @@ Hooks.showSnackbar = {
 Hooks.readFile = {
     mounted() {
         this.el.addEventListener("change", e => {
-            var file = this.el.files[0]
+            var file = this.el.files[0];
+            this.pushEvent("file_upload_started");
 
             fileToText(this.el.files[0]).then(fileAsText => {
                 this.pushEvent("file_upload", {
                     file: fileAsText,
                     fileType: file["type"],
                     fileSize: file["size"]
-                })
-            })
+                });
+            });
         })
     }
 }
 
 const fileToText = file => new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.readAsText(file);
+    var fileSliced = file["type"] == "text/csv" ? file.slice(0, 1500) : file
+
+    reader.readAsText(fileSliced);
     reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
+    reader.onerror = error => {console.log(error); reject(error);}
 });
 
 

@@ -170,6 +170,14 @@ $tick-height: 1rem + $field-padding - 0.44;
       }
   }
 
+  .data-dictionary-form__file-upload {
+      display: flex;
+
+      .file-input-button {
+          display: block;
+      }
+  }
+
 }
 
 .overwrite-schema-modal--hidden {
@@ -250,6 +258,25 @@ $tick-height: 1rem + $field-padding - 0.44;
             background-color: #26ADEB;
         }
     }
+}
+
+.data-dictionary-form__loader {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #26ADEB;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+    margin-left: 1rem;
+}
+
+.data-dictionary-form__loader--hidden {
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 @include area(data-dictionary-form, file-upload);
