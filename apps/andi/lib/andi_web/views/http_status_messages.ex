@@ -62,11 +62,7 @@ defmodule AndiWeb.Views.HttpStatusDescriptions do
   def get(code) do
     code_as_string = to_string(code)
 
-    {_code_regex, code_description, code_url} =
-      Enum.find(@code_descriptions, fn {code_regex, code_description, code_url} ->
-        Regex.match?(code_regex, code_as_string)
-      end)
-
+    {_code_regex, code_description, code_url} = code_description(code_as_string)
     code_reason = code_reason(code)
     code_link = code_link(code_url)
 
@@ -77,6 +73,12 @@ defmodule AndiWeb.Views.HttpStatusDescriptions do
     reason_phrase(code)
   rescue
     _ -> "Unknown reason"
+  end
+
+  defp code_description(code_as_string) do
+    Enum.find(@code_descriptions, fn {code_regex, _code_description, _code_url} ->
+      Regex.match?(code_regex, code_as_string)
+    end)
   end
 
   defp code_link(url) do

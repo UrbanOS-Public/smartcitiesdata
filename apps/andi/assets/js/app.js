@@ -35,7 +35,7 @@ Hooks.addTooltip = {
     mounted() {
         const element = this.el;
         const initialContent = element.dataset.tooltipContent;
-        tippy(this.el, {
+        tippy(element, {
             content: initialContent,
             allowHTML: true,
             interactive: true,
