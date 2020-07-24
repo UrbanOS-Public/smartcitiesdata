@@ -5,7 +5,7 @@ defmodule AndiWeb.ErrorHelpers do
 
   use Phoenix.HTML
 
-  alias Andi.InputSchemas.DisplayNames
+  alias AndiWeb.Views.DisplayNames
 
   @doc """
   Generates tag for inlined form input errors.

@@ -10,7 +10,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   alias Andi.InputSchemas.Datasets.Header
   alias Andi.InputSchemas.Datasets.QueryParam
   alias Crontab.CronExpression
-  alias Andi.InputSchemas.Options
+  alias AndiWeb.Views.Options
 
   @no_dashes_regex ~r/^[^\-]+$/
   @invalid_seconds ["*", "*/1", "*/2", "*/3", "*/4", "*/5", "*/6", "*/7", "*/8", "*/9"]

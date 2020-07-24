@@ -63,16 +63,38 @@
   margin-left: 1rem;
 }
 
-.test-status__code {
-  margin-right: 1rem;
-}
-
 .test-status__code--good {
   color: $color-success
 }
 
 .test-status__code--bad {
   color: $color-error
+}
+
+.test-status__tooltip-wrapper {
+  display: inline-block;
+  width: 1rem;
+
+  i {
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+
+  .tippy-box {
+    padding: 0.5rem;
+  }
+
+  .tippy-content {
+    font-size: 0.75rem;
+    white-space: nowrap;
+
+    a {
+      color: #00aeef;
+    }
+  }
+}
+.test-status__tooltip--hidden {
+  display: none;
 }
 
 @include area(url-form, source-url);

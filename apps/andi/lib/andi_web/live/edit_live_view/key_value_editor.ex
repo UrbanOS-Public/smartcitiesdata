@@ -6,7 +6,7 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
   import Phoenix.HTML.Form
   import AndiWeb.ErrorHelpers
 
-  alias Andi.InputSchemas.DisplayNames
+  alias AndiWeb.Views.DisplayNames
 
   def render(assigns) do
     ~L"""
