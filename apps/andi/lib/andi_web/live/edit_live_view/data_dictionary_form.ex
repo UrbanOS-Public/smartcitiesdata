@@ -187,7 +187,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
 
       {:ok, decoded_json} ->
-        new_changeset = DataDictionaryFormSchema.changeset_from_file(decoded_json, socket.assigns.dataset_id)
+        new_changeset =
+          decoded_json
+          |> List.wrap()
+          |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.dataset_id)
 
         assign_new_schema(socket, new_changeset)
     end

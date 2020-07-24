@@ -12,7 +12,7 @@ defmodule AndiWeb.EditLiveView do
   def render(assigns) do
     ~L"""
     <div class="edit-page" id="dataset-edit-page">
-      <%= f = form_for @changeset, "#" %>
+      <%= f = form_for @changeset, "" %>
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>
