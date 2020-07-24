@@ -7,6 +7,7 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DatasetSchemaValidator
+  alias SmartCity.SchemaGenerator
 
   schema "data_dictionary" do
     has_many(:schema, DataDictionary, on_replace: :delete)
@@ -38,6 +39,44 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     form_data
     |> AtomicMap.convert(safe: false, underscore: false)
     |> changeset()
+  end
+
+  def changeset_from_file(parsed_file, dataset_id) do
+    generated_schema = generate_schema(parsed_file, dataset_id)
+
+    changeset_from_form_data(%{schema: generated_schema})
+  end
+
+  def generate_schema(decoded_file, dataset_id) do
+    decoded_file
+    |> SchemaGenerator.generate_schema()
+    |> Enum.map(&assign_schema_field_details(&1, dataset_id, nil))
+  end
+
+  defp assign_schema_field_details(schema_field, dataset_id, parent_bread_crumb) do
+    bread_crumb =
+      case parent_bread_crumb do
+        nil -> Map.get(schema_field, "name")
+        parent_bread_crumb -> parent_bread_crumb <> " > " <> Map.get(schema_field, "name")
+      end
+
+    updated_field =
+      schema_field
+      |> Map.put("dataset_id", dataset_id)
+      |> Map.put("bread_crumb", bread_crumb)
+
+    case Map.has_key?(schema_field, "subSchema") do
+      true ->
+        updated_sub_schema =
+          Enum.map(Map.get(schema_field, "subSchema"), fn child_field ->
+            assign_schema_field_details(child_field, dataset_id, bread_crumb)
+          end)
+
+        Map.put(updated_field, "subSchema", updated_sub_schema)
+
+      false ->
+        updated_field
+    end
   end
 
   defp validate_schema(%{changes: %{sourceType: source_type}} = changeset)

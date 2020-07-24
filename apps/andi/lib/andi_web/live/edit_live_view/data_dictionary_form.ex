@@ -6,6 +6,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.DataDictionaryFormSchema
   import Phoenix.HTML.Form
 
+  alias AndiWeb.ErrorHelpers
   alias AndiWeb.EditLiveView.DataDictionaryTree
   alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
   alias AndiWeb.InputSchemas.DataDictionaryFormSchema
@@ -13,12 +14,14 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.InputConverter
   alias Ecto.Changeset
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
+    AndiWeb.Endpoint.subscribe("source-format")
 
     {:ok,
      assign(socket,
@@ -31,7 +34,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
        new_field_initial_render: false,
        dataset: dataset,
        dataset_id: dataset.id,
-       technical_id: dataset.technical.id
+       technical_id: dataset.technical.id,
+       overwrite_schema_visibility: "hidden",
+       pending_changeset: nil,
+       loading_schema: false
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end
@@ -41,6 +47,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       case assigns.visibility do
         "collapsed" -> "EDIT"
         "expanded" -> "MINIMIZE"
+      end
+
+    loader_visibility =
+      case assigns.loading_schema do
+        true -> "visibile"
+        false -> "hidden"
       end
 
     ~L"""
@@ -60,9 +72,24 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       </div>
 
       <div class="form-section">
-        <%= form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
+        <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data, multipart: true] %>
+        <%= f = Map.put(f, :errors, @changeset.errors) %>
+
           <div class="component-edit-section--<%= @visibility %>">
             <div class="data-dictionary-form-edit-section form-grid">
+
+              <%= if @sourceFormat in ["text/csv", "application/json"] do %>
+                <div class="data-dictionary-form__file-upload">
+                  <div class="file-input-button">
+                    <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
+                    <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
+                    <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
+                  </div>
+
+                  <div class="loader data-dictionary-form__loader data-dictionary-form__loader--<%= loader_visibility %>"></div>
+                </div>
+              <% end %>
+
               <div class="data-dictionary-form__tree-section">
                 <div class="data-dictionary-form__tree-header data-dictionary-form-tree-header">
                   <div class="label">Enter/Edit Fields</div>
@@ -102,6 +129,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryAddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@dataset), visible: @add_data_dictionary_field_visible, dataset_id: @dataset.id,  selected_field_id: @selected_field_id ) %>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field: @current_data_dictionary_item, visible: @remove_data_dictionary_field_visible) %>
+
+      <%= live_component(@socket, AndiWeb.EditLiveView.OverwriteSchemaModal, id: :overwrite_schema_modal, visibility: @overwrite_schema_visibility) %>
     </div>
     """
   end
@@ -220,6 +249,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
   end
 
+  def handle_info(%{topic: "source-format", payload: %{new_format: new_format}}, socket) do
+    {:noreply, assign(socket, sourceFormat: new_format)}
+  end
+
   def handle_info(%{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form"}}, socket) do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
   end
@@ -286,6 +319,54 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     field = %{new_form | index: index, name: name, id: id}
 
     {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
+  end
+
+  defp parse_csv(file_string) do
+    file_string
+    |> String.split("\n")
+    |> Enum.take(2)
+    |> Enum.map(fn row -> String.split(row, ",") end)
+    |> Enum.zip()
+    |> convert_datum
+  end
+
+  defp convert_datum(datum) do
+    datum
+    |> Enum.map(fn {k, v} -> {k, convert_value(v)} end)
+    |> Map.new()
+    |> List.wrap()
+  end
+
+  defp convert_value(nil), do: nil
+
+  defp convert_value(string) do
+    case Jason.decode(string) do
+      {:ok, value} -> value
+      {:error, _} -> string
+    end
+  end
+
+  defp reset_changeset_errors(changeset) do
+    Map.update!(changeset, :errors, fn errors -> Keyword.delete(errors, :schema_sample) end)
+  end
+
+  defp assign_new_schema(socket, new_changeset) do
+    existing_schema_empty =
+      socket.assigns.changeset
+      |> reset_changeset_errors()
+      |> Changeset.get_change(:schema)
+      |> Enum.empty?()
+
+    case existing_schema_empty do
+      true ->
+        form_changes = InputConverter.form_changes_from_changeset(new_changeset)
+        {:ok, _} = Datasets.update_from_form(socket.assigns.dataset_id, form_changes)
+
+        {:noreply, assign(socket, loading_schema: false, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
+
+      false ->
+        {:noreply, assign(socket, loading_schema: false, pending_changeset: new_changeset, overwrite_schema_visibility: "visible")}
+    end
   end
 
   defp get_new_selected_field(changeset, parent_id, deleted_field_index, technical_id) do
