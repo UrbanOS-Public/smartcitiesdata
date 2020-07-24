@@ -112,6 +112,100 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     |> complete_validation(socket)
   end
 
+  def handle_event("validate", _, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("file_upload", %{"fileType" => file_type}, socket) when file_type not in ["text/csv", "application/json"] do
+    new_changeset =
+      socket.assigns.changeset
+      |> reset_changeset_errors()
+      |> Ecto.Changeset.add_error(:schema_sample, "File type must be CSV or JSON")
+
+    {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
+  end
+
+  def handle_event("file_upload", %{"fileSize" => file_size}, socket) when file_size > 200_000_000 do
+    new_changeset =
+      socket.assigns.changeset
+      |> reset_changeset_errors()
+      |> Ecto.Changeset.add_error(:schema_sample, "File size must be less than 200MB")
+
+    {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
+  end
+
+  def handle_event("file_upload", %{"file" => file, "fileType" => "text/csv"}, socket) do
+    new_changeset =
+      file
+      |> parse_csv()
+      |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.dataset_id)
+
+    assign_new_schema(socket, new_changeset)
+  end
+
+  def handle_event("file_upload", %{"file" => file, "fileType" => "application/json"}, socket) do
+    changeset =
+      socket.assigns.changeset
+      |> reset_changeset_errors()
+
+    case Jason.decode(file) do
+      {:error, _} ->
+        new_changeset =
+          changeset
+          |> Map.put(:action, :update)
+          |> Changeset.add_error(:schema_sample, "There was a problem interpreting this file")
+
+        {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
+
+      {:ok, decoded_json} ->
+        new_changeset =
+          decoded_json
+          |> List.wrap()
+          |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.dataset_id)
+
+        assign_new_schema(socket, new_changeset)
+    end
+  end
+
+  def handle_event("file_upload", _, socket) do
+    new_changeset =
+      socket.assigns.changeset
+      |> Map.put(:action, :update)
+      |> Changeset.add_error(:schema_sample, "There was a problem interpreting this file")
+
+    {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
+  end
+
+  def handle_event("file_upload_started", _, socket) do
+    {:noreply, assign(socket, loading_schema: true)}
+  end
+
+  def handle_event("overwrite-schema", _, %{assigns: %{pending_changeset: nil}} = socket) do
+    changeset_with_error =
+      socket.assigns.changeset
+      |> Map.put(:action, :update)
+      |> Changeset.add_error(:schema_sample, "There was a problem interpreting this file")
+
+    {:noreply, assign(socket, changeset: changeset_with_error)}
+  end
+
+  def handle_event("overwrite-schema", _, socket) do
+    form_changes = InputConverter.form_changes_from_changeset(socket.assigns.pending_changeset)
+    {:ok, _} = Datasets.update_from_form(socket.assigns.dataset_id, form_changes)
+
+    {:noreply,
+     assign(socket,
+       changeset: socket.assigns.pending_changeset,
+       pending_changeset: nil,
+       overwrite_schema_visibility: "hidden"
+     )
+     |> assign(get_default_dictionary_field(socket.assigns.pending_changeset))}
+  end
+
+  def handle_event("overwrite-schema-cancelled", _, socket) do
+    {:noreply, assign(socket, pending_changeset: nil, overwrite_schema_visibility: "hidden")}
+  end
+
   def handle_event("add_data_dictionary_field", _, socket) do
     changes = Ecto.Changeset.apply_changes(socket.assigns.changeset) |> StructTools.to_map()
     {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset.id, changes)
