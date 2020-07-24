@@ -1,4 +1,4 @@
-defmodule Andi.InputSchemas.FormTools do
+defmodule AndiWeb.Helpers.FormTools do
   @moduledoc false
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.StructTools

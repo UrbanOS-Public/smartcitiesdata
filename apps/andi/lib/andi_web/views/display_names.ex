@@ -1,4 +1,4 @@
-defmodule Andi.InputSchemas.DisplayNames do
+defmodule AndiWeb.Views.DisplayNames do
   @moduledoc false
 
   @display_names %{

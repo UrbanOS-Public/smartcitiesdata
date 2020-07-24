@@ -1,9 +1,11 @@
 // We need to import the CSS so that webpack will load it.
 // The MiniCssExtractPlugin is used to separate it out into
 // its own CSS file.
-import material_design_icons from 'material-design-icons/iconfont/material-icons.css'
+import 'tippy.js/dist/tippy.css';
 import normalize_css from 'normalize.css'
 import scss from "../css/app.scss"
+
+import tippy from 'tippy.js';
 
 // webpack automatically bundles all modules in your
 // entry points. Those entry points can be configured
@@ -47,6 +49,23 @@ Hooks.readFile = {
     }
 }
 
+Hooks.addTooltip = {
+    mounted() {
+        const element = this.el;
+        const initialContent = element.dataset.tooltipContent;
+        tippy(element, {
+            content: initialContent,
+            allowHTML: true,
+            interactive: true,
+            maxWidth: "none",
+            onShow(instance) {
+                const updatedContent = element.dataset.tooltipContent;
+                instance.setContent(updatedContent);
+            }
+        });
+    }
+}
+
 const fileToText = file => new Promise((resolve, reject) => {
     const reader = new FileReader();
     var fileSliced = file["type"] == "text/csv" ? file.slice(0, 1500) : file
@@ -60,3 +79,4 @@ const fileToText = file => new Promise((resolve, reject) => {
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
 let liveSocket = new LiveSocket('/live', Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
 liveSocket.connect()
+

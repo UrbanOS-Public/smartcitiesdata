@@ -1,7 +1,5 @@
-defmodule Andi.InputSchemas.Options do
+defmodule AndiWeb.Views.Options do
   @moduledoc false
-
-  alias Andi.Services.OrgStore
 
   def ratings() do
     %{
@@ -110,8 +108,8 @@ defmodule Andi.InputSchemas.Options do
     }
   end
 
-  def organizations() do
-    case OrgStore.get_all() do
+  def organizations(stored_organizations) do
+    case stored_organizations do
       {:ok, organizations} ->
         org_options =
           organizations

@@ -6,13 +6,14 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.MetadataFormSchema
   import Phoenix.HTML.Form
 
-  alias Andi.InputSchemas.Options
-  alias Andi.InputSchemas.DisplayNames
+  alias AndiWeb.Views.Options
+  alias AndiWeb.Views.DisplayNames
   alias AndiWeb.ErrorHelpers
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.Services.OrgStore
   alias AndiWeb.InputSchemas.MetadataFormSchema
-  alias Andi.InputSchemas.FormTools
+  alias AndiWeb.Helpers.FormTools
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_metadata_changeset = MetadataFormSchema.changeset_from_andi_dataset(dataset)
@@ -288,7 +289,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   defp get_level_of_access_options, do: map_to_dropdown_options(Options.level_of_access())
   defp get_rating_options(), do: map_to_dropdown_options(Options.ratings())
   defp get_source_type_options(), do: map_to_dropdown_options(Options.source_type())
-  defp get_org_options(), do: Options.organizations()
+  defp get_org_options(), do: Options.organizations(OrgStore.get_all())
 
   defp get_source_format_options(source_type) when source_type in ["remote", "host"] do
     Options.source_format_extended()

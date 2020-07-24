@@ -23,7 +23,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.FormTools
+  alias AndiWeb.Helpers.FormTools
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
