@@ -4,12 +4,13 @@ defmodule Andi.EventHandler do
   require Logger
 
   import SmartCity.Event,
-    only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0, data_ingest_end: 0, dataset_delete: 0]
+    only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0, data_ingest_end: 0, dataset_delete: 0, dataset_harvest_start: 0]
 
   alias SmartCity.{Dataset, Organization}
   alias SmartCity.UserOrganizationAssociate
 
   alias Andi.Services.DatasetStore
+  alias Andi.Harvest.Harvester
 
   alias Andi.InputSchemas.Datasets
 
@@ -39,6 +40,12 @@ defmodule Andi.EventHandler do
 
     merge(:org_to_users, org_id, &add_to_set(&1, user_id))
     merge(:user_to_orgs, user_id, &add_to_set(&1, org_id))
+  end
+
+  def handle_event(%Brook.Event{type: dataset_harvest_start(), data: %Organization{} = data}) do
+    Task.start_link(Harvester, :start_harvesting, [data])
+
+    :discard
   end
 
   def handle_event(%Brook.Event{type: "migration:modified_date:start"}) do

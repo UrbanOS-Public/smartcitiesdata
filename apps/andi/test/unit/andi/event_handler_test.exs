@@ -4,9 +4,10 @@ defmodule EventHandlerTest do
   use ExUnit.Case
 
   alias SmartCity.TestDataGenerator, as: TDG
-  import SmartCity.Event, only: [data_ingest_end: 0, dataset_delete: 0]
+  import SmartCity.Event, only: [data_ingest_end: 0, dataset_delete: 0, dataset_harvest_start: 0]
   import Andi, only: [instance_name: 0]
   alias Andi.InputSchemas.Datasets
+  alias Andi.Harvest.Harvester
 
   use Placebo
 
@@ -29,5 +30,14 @@ defmodule EventHandlerTest do
     |> Andi.EventHandler.handle_event()
 
     assert_called Datasets.delete(dataset.id)
+  end
+
+  test "data_harvest_start event triggers harvesting" do
+    org = TDG.create_organization(%{})
+    allow(Harvester.start_harvesting(any()), return: :ok)
+
+    Brook.Test.send(instance_name(), dataset_harvest_start(), :andi, org)
+
+    assert_called(Harvester.start_harvesting(org))
   end
 end
