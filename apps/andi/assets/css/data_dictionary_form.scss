@@ -7,6 +7,7 @@ $tick-height: 1rem + $field-padding - 0.44;
   grid-template-columns: 40% 60%;
   grid-column-gap: 2rem;
   grid-template-areas:
+    "file-upload ."
     "tree-section edit-section";
 
   .data-dictionary-field-editor {
@@ -168,6 +169,23 @@ $tick-height: 1rem + $field-padding - 0.44;
           height: 24px;
       }
   }
+
+  .data-dictionary-form__file-upload {
+      display: flex;
+
+      .file-input-button {
+          display: block;
+      }
+  }
+
+}
+
+.overwrite-schema-modal--hidden {
+    display: none;
+}
+
+.overwrite-schema-modal--visible {
+    @include modal-wrapper();
 }
 
 .data-dictionary-remove-field-editor--hidden {
@@ -242,6 +260,26 @@ $tick-height: 1rem + $field-padding - 0.44;
     }
 }
 
+.data-dictionary-form__loader {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #26ADEB;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+    margin-left: 1rem;
+}
+
+.data-dictionary-form__loader--hidden {
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@include area(data-dictionary-form, file-upload);
 @include area(data-dictionary-form, tree-section);
 @include area(data-dictionary-form, edit-section);
 

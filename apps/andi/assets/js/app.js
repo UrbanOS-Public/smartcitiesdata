@@ -23,11 +23,29 @@ import { Socket } from 'phoenix'
 import { LiveSocket } from 'phoenix_live_view'
 
 let Hooks = {}
+
 Hooks.showSnackbar = {
     updated() {
         let snackbar = document.getElementById("snackbar");
         snackbar.className += " show";
         setTimeout(function() { snackbar.className = snackbar.className.replace("show", ""); }, 3000);
+    }
+}
+
+Hooks.readFile = {
+    mounted() {
+        this.el.addEventListener("change", e => {
+            var file = this.el.files[0];
+            this.pushEvent("file_upload_started");
+
+            fileToText(this.el.files[0]).then(fileAsText => {
+                this.pushEvent("file_upload", {
+                    file: fileAsText,
+                    fileType: file["type"],
+                    fileSize: file["size"]
+                });
+            });
+        })
     }
 }
 
@@ -47,6 +65,16 @@ Hooks.addTooltip = {
         });
     }
 }
+
+const fileToText = file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    var fileSliced = file["type"] == "text/csv" ? file.slice(0, 1500) : file
+
+    reader.readAsText(fileSliced);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => {console.log(error); reject(error);}
+});
+
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
 let liveSocket = new LiveSocket('/live', Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
