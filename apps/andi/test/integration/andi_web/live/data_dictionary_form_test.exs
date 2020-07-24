@@ -172,11 +172,14 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
 
-    test "handles datasets with empty schema fields", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{sourceType: "remote", schema: []}})
+    test "handles datasets with empty schema fields if they can have them", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceType: "ingest", schema: []}})
 
       {:ok, _} = Datasets.update(dataset)
+
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert "add a new field" =~ get_text(html, ".data-dictionary-tree__getting-started-help")
     end
   end
 

@@ -3,6 +3,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
     LiveComponent for a nested data dictionary tree view
   """
   use Phoenix.LiveComponent
+  import Phoenix.HTML
   import Phoenix.HTML.Form
 
   alias AndiWeb.EditLiveView.DataDictionaryTree
@@ -18,7 +19,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
 
     ~L"""
     <%= if is_set?(@form, @field) do %>
-      <div id="<%= @id %>" class="data-dictionary-tree">
+      <div id="<%= @id %>" class="data-dictionary-tree data-dictionary-tree--<%= tree_modifier(@field) %>">
         <%= for field <- inputs_for(@form, @field) do %>
         <% if input_value(field, :id) == @selected_field_id and @new_field_initial_render, do: assign_current_dictionary_field(input_value(field, :id), field.index, field.name, field.id) %>
           <%= hidden_inputs(field, @selected_field_id) %>
@@ -39,6 +40,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
           </div>
         <% end %>
       </div>
+    <% else %>
+      <%= tree_helper(@field) %>
     <% end %>
     """
   end
@@ -109,6 +112,21 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
       _ -> true
     end
   end
+
+
+  defp tree_modifier(:schema), do: "top-level"
+  defp tree_modifier(_), do: "sub-level"
+
+  defp tree_helper(:schema) do
+    ~E"""
+      <div class="data-dictionary-tree__getting-started-help">
+        <span>Click the&nbsp;</span>
+        <span class="data-dictionary-form__add-field-button" phx-click="add_data_dictionary_field"></span>
+        <span>&nbsp;button below to add a new field or <a phx-click="add_data_dictionary_field">Click here</a></span>
+      </div>
+    """
+  end
+  defp tree_helper(_), do: ""
 
   defp hidden_inputs(form_field, selected_field_id) do
     if input_value(form_field, :id) != selected_field_id do
