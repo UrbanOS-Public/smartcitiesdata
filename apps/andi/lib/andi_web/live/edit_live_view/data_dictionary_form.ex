@@ -97,7 +97,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
                 </div>
 
                 <div class="data-dictionary-form__tree-content data-dictionary-form-tree-content">
-                  <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: @changeset |> form_for(nil), field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
+                  <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: @changeset |> form_for(nil), field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render, add_field_event_name: "add_data_dictionary_field") %>
                 </div>
 
                 <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
