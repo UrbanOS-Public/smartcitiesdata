@@ -45,7 +45,7 @@ Hooks.readFile = {
                     fileSize: file["size"]
                 });
             }, reason => {
-                reason == "cancel" & this.pushEvent("file_upload_cancelled");
+                reason == "aborted" && this.pushEvent("file_upload_cancelled");
             });
         })
     }
@@ -82,7 +82,6 @@ const fileToText = (file) => new Promise((resolve, reject) => {
 
     document.getElementById("reader-cancel").addEventListener("click", () => {
         reader.abort();
-        reject("cancel");
     })
 
     reader.onload = () => {
