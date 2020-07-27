@@ -114,11 +114,15 @@ defmodule DeadLetter.Server do
   defp add_dead_letter_count(dataset_id, reason) do
     [
       dataset_id: dataset_id,
-      reason: reason
+      reason: replace_nil_with_empty_string(reason)
     ]
     |> TelemetryEvent.add_event_count([:dead_letters_handled])
   rescue
     error ->
       Logger.error("Unable to update the metrics: #{error}")
   end
+
+  defp replace_nil_with_empty_string(str) when is_nil(str), do: ""
+
+  defp replace_nil_with_empty_string(str), do: str
 end
