@@ -4,6 +4,8 @@ defmodule Andi.Harvest.Harvester do
   """
   use Tesla
 
+  alias Andi.Harvest.DataJsonToDataset
+
   require Logger
 
   plug Tesla.Middleware.JSON
@@ -25,6 +27,6 @@ defmodule Andi.Harvest.Harvester do
   end
 
   def map_data_json_to_dataset(data_json) do
-    data_json
+    DataJsonToDataset.mapper(data_json)
   end
 end
