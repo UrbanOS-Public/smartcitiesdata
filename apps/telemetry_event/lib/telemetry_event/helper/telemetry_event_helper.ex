@@ -31,9 +31,7 @@ defmodule TelemetryEvent.Helper.TelemetryEventHelper do
     end
   end
 
-  defp replace_nil(value) when is_nil(value), do: "UNKNOWN"
-
-  defp replace_nil(value) when value == "", do: "UNKNOWN"
+  defp replace_nil(value) when is_nil(value) or value == "", do: "UNKNOWN"
 
   defp replace_nil(value), do: value
 
