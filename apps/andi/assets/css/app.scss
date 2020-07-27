@@ -49,6 +49,7 @@ body {
   cursor: pointer;
   background-color: black;
   color: white;
+  border: none;
 
   &:hover {
     background-color: lighten(black, 20%);
