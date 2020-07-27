@@ -23,6 +23,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.InputConverter
   alias AndiWeb.Helpers.FormTools
 
   @endpoint AndiWeb.Endpoint
@@ -172,14 +173,30 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
 
-    test "handles datasets with empty schema fields if they can have them", %{conn: conn} do
+    test "displays help for datasets with empty schema fields", %{conn: conn} do
       dataset = TDG.create_dataset(%{technical: %{sourceType: "ingest", schema: []}})
 
-      {:ok, _} = Datasets.update(dataset)
+      dataset
+      |> InputConverter.smrt_dataset_to_draft_changeset()
+      |> Datasets.save()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert "add a new field" =~ get_text(html, ".data-dictionary-tree__getting-started-help")
+      assert get_text(html, ".data-dictionary-tree__getting-started-help") =~ "add a new field"
+    end
+
+    test "does not display help for datasets with empty subschema fields", %{conn: conn} do
+      field_with_empty_subschema = %{name: "max", type: "map", subSchema: []}
+      dataset = TDG.create_dataset(%{technical: %{sourceType: "ingest", schema: [field_with_empty_subschema]}})
+
+      dataset
+      |> InputConverter.smrt_dataset_to_draft_changeset()
+      |> Datasets.save()
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      refute get_text(html, ".data-dictionary-tree__getting-started-help") =~ "add a new field"
+
     end
   end
 

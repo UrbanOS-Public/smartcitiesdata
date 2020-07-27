@@ -125,12 +125,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
       <div class="data-dictionary-tree__getting-started-help">
         <span>Click the&nbsp;</span>
         <span class="data-dictionary-form__add-field-button" phx-click="<%= @event_name %>"></span>
-        <span>&nbsp;button below to add a new field or <a phx-click="<%= @event_name %>">Click here</a></span>
+        <span>&nbsp;button below to add a new field or <a phx-click="<%= @event_name %>">Click here...</a></span>
       </div>
     """
   end
 
-  defp content_for_empty_schema(_), do: ""
+  defp content_for_empty_schema(_field_name, _event_name), do: ""
 
   defp hidden_inputs(form_field, selected_field_id) do
     if input_value(form_field, :id) != selected_field_id do
