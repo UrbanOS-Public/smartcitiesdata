@@ -69,9 +69,9 @@ Hooks.addTooltip = {
 }
 
 const fileToText = (file) => new Promise((resolve, reject) => {
-    var fileSliced = file["type"] == "text/csv" ? file.slice(0, 1500) : file
+    var fileInput = file["type"] == "text/csv" ? file.slice(0, 1500) : file
     var reader = new FileReader();
-    var totalBytes = file["size"];
+    var totalBytes = fileInput["size"];
     var CHUNK_SIZE = 1024;
     var offset = 0;
     var fileString = "";
@@ -91,12 +91,12 @@ const fileToText = (file) => new Promise((resolve, reject) => {
         if(offset >= totalBytes) {
             resolve(fileString);
         } else {
-            var slice = file.slice(offset, offset + CHUNK_SIZE);
+            var slice = fileInput.slice(offset, offset + CHUNK_SIZE);
             reader.readAsText(slice);
         }
     }
 
-    reader.readAsText(file.slice(0, CHUNK_SIZE));
+    reader.readAsText(fileInput.slice(0, CHUNK_SIZE));
 });
 
 
