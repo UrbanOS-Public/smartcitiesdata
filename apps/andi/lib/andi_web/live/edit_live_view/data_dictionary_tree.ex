@@ -3,6 +3,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
     LiveComponent for a nested data dictionary tree view
   """
   use Phoenix.LiveComponent
+  import Phoenix.HTML
   import Phoenix.HTML.Form
 
   alias AndiWeb.EditLiveView.DataDictionaryTree
@@ -18,7 +19,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
 
     ~L"""
     <%= if is_set?(@form, @field) do %>
-      <div id="<%= @id %>" class="data-dictionary-tree">
+      <div id="<%= @id %>" class="data-dictionary-tree data-dictionary-tree--<%= tree_modifier(@field) %>">
         <%= for field <- inputs_for(@form, @field) do %>
         <% if input_value(field, :id) == @selected_field_id and @new_field_initial_render, do: assign_current_dictionary_field(input_value(field, :id), field.index, field.name, field.id) %>
           <%= hidden_inputs(field, @selected_field_id) %>
@@ -35,10 +36,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
           </div>
 
           <div class="data-dictionary-tree__sub-dictionary data-dictionary-tree__sub-dictionary--<%= icon_modifier %>">
-            <%= live_component(@socket, DataDictionaryTree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, selected_field_id: @selected_field_id, form: field, field: :subSchema, expansion_map: @expansion_map, new_field_initial_render: @new_field_initial_render) %>
+            <%= live_component(@socket, DataDictionaryTree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, selected_field_id: @selected_field_id, form: field, field: :subSchema, expansion_map: @expansion_map, new_field_initial_render: @new_field_initial_render, add_field_event_name: @add_field_event_name) %>
           </div>
         <% end %>
       </div>
+    <% else %>
+      <%= content_for_empty_schema(@field, @add_field_event_name) %>
     <% end %>
     """
   end
@@ -109,6 +112,25 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
       _ -> true
     end
   end
+
+  defp tree_modifier(:schema), do: "top-level"
+  defp tree_modifier(_), do: "sub-level"
+
+  defp content_for_empty_schema(:schema, add_field_event_name) do
+    assigns = %{
+      event_name: add_field_event_name
+    }
+
+    ~E"""
+      <div class="data-dictionary-tree__getting-started-help">
+        <span>Click the&nbsp;</span>
+        <span class="data-dictionary-form__add-field-button" phx-click="<%= @event_name %>"></span>
+        <span>&nbsp;button below to add a new field or <a phx-click="<%= @event_name %>">Click here...</a></span>
+      </div>
+    """
+  end
+
+  defp content_for_empty_schema(_field_name, _event_name), do: ""
 
   defp hidden_inputs(form_field, selected_field_id) do
     if input_value(form_field, :id) != selected_field_id do
