@@ -12,8 +12,7 @@ defmodule TelemetryEvent.Helper.TelemetryEventHelper do
 
   def measurements(options) do
     options
-    |> Enum.filter(fn {k, v} -> reject_nil(k, v) == true end)
-    |> Map.new()
+    |> Map.new(fn {k, v} -> {k, replace_nil(v)} end)
   end
 
   defp metrics() do
@@ -32,13 +31,11 @@ defmodule TelemetryEvent.Helper.TelemetryEventHelper do
     end
   end
 
-  defp reject_nil(keyword_name, value) do
-    if keyword_name == :dataset_id or value != nil do
-      true
-    else
-      raise "Keyword :#{keyword_name} cannot be nil"
-    end
-  end
+  defp replace_nil(value) when is_nil(value), do: "UNKNOWN"
+
+  defp replace_nil(value) when value == "", do: "UNKNOWN"
+
+  defp replace_nil(value), do: value
 
   defp create_port_no() do
     1_000..9_999
