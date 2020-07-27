@@ -279,6 +279,10 @@ $tick-height: 1rem + $field-padding - 0.44;
     }
 }
 
+.file-input-button--loading {
+    display: none;
+}
+
 .data-dictionary-form__loader {
     border: 6px solid #f3f3f3;
     border-top: 6px solid #26ADEB;
@@ -290,6 +294,10 @@ $tick-height: 1rem + $field-padding - 0.44;
 }
 
 .data-dictionary-form__loader--hidden {
+    display: none;
+}
+
+.file-upload-cancel-button--hidden {
     display: none;
 }
 
