@@ -196,7 +196,6 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       refute get_text(html, ".data-dictionary-tree__getting-started-help") =~ "add a new field"
-
     end
   end
 
