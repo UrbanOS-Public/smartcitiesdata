@@ -113,7 +113,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
     end
   end
 
-
   defp tree_modifier(:schema), do: "top-level"
   defp tree_modifier(_), do: "sub-level"
 
@@ -130,6 +129,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
       </div>
     """
   end
+
   defp content_for_empty_schema(_), do: ""
 
   defp hidden_inputs(form_field, selected_field_id) do
