@@ -8,17 +8,23 @@ defmodule Andi.Harvest.Harvester do
 
   plug Tesla.Middleware.JSON
 
- def start_harvesting(arg) do
-    # Grab the data from the data json url
-    IO.inspect(arg, label: "start havesting")
-    Process.sleep(10_000)
-    IO.inspect(label: "I'm done harvesting")
-   :ok
- end
+  def start_harvesting(org) do
+    url = org.dataJsonUrl
+    get_data_json(url)
+    :ok
+  end
 
- def get_data_json(url) do
-  {:ok, response} = get(url)
-  response.body
- end
+  def get_data_json(url) do
+    with {:ok, response} <- get(url),
+         {:ok, body} <- Jason.decode(response.body) do
+      body
+    else
+      error ->
+        Logger.error("Failed to get data json from #{url}: #{inspect(error)}")
+    end
+  end
 
+  def map_data_json_to_dataset(data_json) do
+    data_json
+  end
 end

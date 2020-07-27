@@ -4,7 +4,14 @@ defmodule Andi.EventHandler do
   require Logger
 
   import SmartCity.Event,
-    only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0, data_ingest_end: 0, dataset_delete: 0, dataset_harvest_start: 0]
+    only: [
+      dataset_update: 0,
+      organization_update: 0,
+      user_organization_associate: 0,
+      data_ingest_end: 0,
+      dataset_delete: 0,
+      dataset_harvest_start: 0
+    ]
 
   alias SmartCity.{Dataset, Organization}
   alias SmartCity.UserOrganizationAssociate
