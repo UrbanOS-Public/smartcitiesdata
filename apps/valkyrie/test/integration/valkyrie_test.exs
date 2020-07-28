@@ -83,7 +83,19 @@ defmodule ValkyrieTest do
 
     eventually fn ->
       messages = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
+      metrics = Telemetry.Metrics.summary("dead_letters_handled.count", tags: [:dataset_id, :reason])
 
+      assert :ok =
+               [
+                 dataset_id: "dataset_id",
+                 reason: "reason"
+               ]
+               |> TelemetryEvent.add_event_count([:dead_letters_handled])
+
+      assert [:dead_letters_handled] = metrics.event_name
+      assert [:dead_letters_handled, :count] = metrics.name
+      assert :count = metrics.measurement
+      assert [:dataset_id, :reason] = metrics.tags
       assert [%{app: "Valkyrie", original_message: ^encoded_og_message}] = messages
     end
   end
