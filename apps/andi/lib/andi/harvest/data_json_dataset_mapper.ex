@@ -1,4 +1,5 @@
 defmodule Andi.Harvest.DataJsonToDataset do
+
   def mapper(%{"dataset" => datasets}) do
     Enum.map(datasets, &(dataset_model/1))
   end
@@ -20,6 +21,7 @@ defmodule Andi.Harvest.DataJsonToDataset do
         "language" => data_json_dataset["language"],
         "license" => data_json_dataset["license"],
         "modifiedDate" => data_json_dataset["modified"],
+        "orgTitle" => "somethingrandom", # this will get injected elsewhere
         "parentDataset" => data_json_dataset["isPartOf"],
         "referenceUrls" => data_json_dataset["references"],
         "rights" => data_json_dataset["rights"],
@@ -27,16 +29,16 @@ defmodule Andi.Harvest.DataJsonToDataset do
       },
       "id" => data_json_dataset["identifier"],
       "technical" => %{
+        "dataName" => "Something random", # this is wrong for now
+        "orgName" => "something", # this will get injected elsewhere
+        "sourceFormat" => "text/html", # is this right?
         "private" => access_level(data_json_dataset["accessLevel"]),
         "sourceType" => "remote",
-        "sourceUrl" => source_url(data_json_dataset["distribution"])
+        "sourceUrl" => source_url(data_json_dataset["distribution"]),
+        "systemName" => "somesysname" # this is wrong for now
       }
     }
   end
-
-  defp val_or_optional(""), do: :optional
-  defp val_or_optional(nil), do: :optional
-  defp val_or_optional(val), do: val
 
   defp access_level(access_level) do
     case access_level do
