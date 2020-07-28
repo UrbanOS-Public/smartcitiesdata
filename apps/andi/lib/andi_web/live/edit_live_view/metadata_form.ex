@@ -5,6 +5,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   use Phoenix.LiveView
   use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.MetadataFormSchema
   import Phoenix.HTML.Form
+  import Phoenix.HTML.Link
 
   alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
@@ -113,8 +114,11 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
               <div class="metadata-form__license">
                 <%= label(f, :license, DisplayNames.get(:license), class: "label label--required") %>
-                <%= text_input(f, :license, class: "input") %>
+                <%= text_input(f, :license, class: "input", value: get_license(input_value(f, :license))) %>
                 <%= ErrorHelpers.error_tag(f, :license, bind_to_input: false) %>
+                <div>
+                <%= link("About Licenses", to: "https://creativecommons.org/licenses/", target: "_blank") %>
+                </div>
               </div>
 
               <div class="metadata-form__top-level-selector">
@@ -299,6 +303,9 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang
+
+  defp get_license(nil), do: "https://creativecommons.org/licenses/by/4.0/"
+  defp get_license(license), do: license
 
   defp keywords_to_string(nil), do: ""
   defp keywords_to_string(keywords) when is_binary(keywords), do: keywords
