@@ -12,6 +12,10 @@ defmodule AndiWeb.EditLiveView do
   def render(assigns) do
     ~L"""
     <div class="edit-page" id="dataset-edit-page">
+      <div class="page-header">
+        <button type="button" phx-click="cancel-edit" class="return-home-button btn btn--large"><div class="home-icon"></div>HOME</button>
+      </div>
+
       <%= f = form_for @changeset, "" %>
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
@@ -94,6 +98,13 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("force-cancel-edit", _, socket) do
     {:noreply, redirect(socket, to: "/")}
+  end
+
+  def handle_event("cancel-edit", _, socket) do
+    case socket.assigns.unsaved_changes do
+      true -> {:noreply, assign(socket, show_unsaved_changes_modal: true)}
+      false -> {:noreply, redirect(socket, to: "/")}
+    end
   end
 
   def handle_info(:publish, socket) do
