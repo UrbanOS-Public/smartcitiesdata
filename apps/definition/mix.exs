@@ -27,7 +27,7 @@ defmodule Definition.MixProject do
       {:ok, in_umbrella: true},
       {:norm, "0.10.4"},
       {:jason, "~> 1.1"},
-      {:uuid, "~>1.1"},
+      {:elixir_uuid, "~> 1.1"},
 
       # Def/Test Dependencies
       {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false},
