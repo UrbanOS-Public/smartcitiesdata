@@ -1,10 +1,13 @@
 defmodule Andi.Harvest.DataJsonToDataset do
+  alias Andi.InputSchemas.Datasets
 
-  def mapper(%{"dataset" => datasets}) do
-    Enum.map(datasets, &(dataset_model/1))
+  @scos_data_json_uuid "1719bf64-38f5-40bf-9737-45e84f5c8419"
+
+  def mapper(%{"dataset" => datasets}, org) do
+    Enum.map(datasets, fn data_json_dataset -> dataset_model(data_json_dataset, org) end)
   end
 
-  defp dataset_model(data_json_dataset) do
+  defp dataset_model(data_json_dataset, org) do
     %{
       "business" => %{
         "categories" => data_json_dataset["theme"],
@@ -21,21 +24,21 @@ defmodule Andi.Harvest.DataJsonToDataset do
         "language" => data_json_dataset["language"],
         "license" => data_json_dataset["license"],
         "modifiedDate" => data_json_dataset["modified"],
-        "orgTitle" => "somethingrandom", # this will get injected elsewhere
+        "orgTitle" => org.orgTitle,
         "parentDataset" => data_json_dataset["isPartOf"],
         "referenceUrls" => data_json_dataset["references"],
         "rights" => data_json_dataset["rights"],
         "spatial" => data_json_dataset["spatial"]
       },
-      "id" => data_json_dataset["identifier"],
+      "id" => UUID.uuid5(@scos_data_json_uuid, data_json_dataset["identifier"]),
       "technical" => %{
-        "dataName" => "Something random", # this is wrong for now
-        "orgName" => "something", # this will get injected elsewhere
+        "dataName" => data_name(data_json_dataset["title"]),
+        "orgName" => org.orgName,
         "sourceFormat" => "text/html", # is this right?
         "private" => access_level(data_json_dataset["accessLevel"]),
         "sourceType" => "remote",
         "sourceUrl" => source_url(data_json_dataset["distribution"]),
-        "systemName" => "somesysname" # this is wrong for now
+        "systemName" => system_name(org.orgName, data_name(data_json_dataset["title"]))
       }
     }
   end
@@ -52,4 +55,12 @@ defmodule Andi.Harvest.DataJsonToDataset do
     access_url
   end
   defp source_url(_distribution), do: ""
+
+  defp data_name(data_title) do
+    Datasets.data_title_to_data_name(data_title)
+  end
+
+  defp system_name(orgName, dataName) do
+    "#{orgName}__#{dataName}"
+  end
 end

@@ -26,7 +26,7 @@ defmodule Andi.Harvest.Harvester do
     end
   end
 
-  def map_data_json_to_dataset(data_json) do
-    DataJsonToDataset.mapper(data_json)
+  def map_data_json_to_dataset(data_json, org) do
+    DataJsonToDataset.mapper(data_json, org)
   end
 end
