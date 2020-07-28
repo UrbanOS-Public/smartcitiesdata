@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.20.1",
+      version: "0.21.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -54,7 +54,7 @@ defmodule Reaper.MixProject do
       {:horde, "~> 0.7.0"},
       {:httpoison, "~> 1.6"},
       {:poison, "~> 3.1", override: true},
-      {:jason, "~> 1.1"},
+      {:jason, "~> 1.1", override: true},
       {:jaxon, "~> 1.0"},
       {:libcluster, "~> 3.1"},
       {:libvault, "~> 0.2"},
@@ -77,8 +77,8 @@ defmodule Reaper.MixProject do
       {:benchee, "~> 1.0", only: :integration},
       {:tasks, in_umbrella: true, only: :dev},
       {:bypass, "~> 1.0", only: [:test, :integration]},
-      {:checkov, "~> 0.4", only: [:test, :integration]},
-      {:credo, "~> 1.1", only: [:dev, :test, :integration], runtime: false},
+      {:checkov, "~> 1.0", only: [:test, :integration]},
+      {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:divo, "~> 1.1", only: [:dev, :integration], override: true},
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
@@ -89,7 +89,7 @@ defmodule Reaper.MixProject do
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},
-      {:placebo, "~> 1.2", only: [:test, :integration]},
+      {:placebo, "~> 2.0.0-rc2", only: [:test, :integration]},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]}
     ]
