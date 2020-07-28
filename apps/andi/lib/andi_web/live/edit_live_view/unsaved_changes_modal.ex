@@ -5,14 +5,8 @@ defmodule AndiWeb.EditLiveView.UnsavedChangesModal do
   use Phoenix.LiveComponent
 
   def render(assigns) do
-    modifier =
-      case assigns.show_unsaved_changes_modal do
-        true -> "visible"
-        false -> "hidden"
-      end
-
     ~L"""
-    <div class="unsaved-changes-modal unsaved-changes-modal--<%= modifier %>">
+    <div class="unsaved-changes-modal unsaved-changes-modal--<%= @visibility %>">
       <div class="modal-form-container">
         <h3>Unsaved Changes</h3>
         <p class="unsaved-changes-modal__message">

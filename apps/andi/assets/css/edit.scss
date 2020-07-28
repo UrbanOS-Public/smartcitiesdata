@@ -213,6 +213,23 @@ $component-header-height: 7.5rem;
     display: none;
 }
 
+.publish-success-modal--visible {
+    text-align: center;
+    @include modal-wrapper()
+
+    p {
+        color: green;
+    }
+
+    .submit_button {
+        margin-left: 2rem;
+    }
+}
+
+.publish-success-modal--hidden {
+    display: none;
+}
+
 #snackbar {
     visibility: hidden;
     min-width: 250px;
