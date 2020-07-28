@@ -157,14 +157,14 @@ defmodule Definition.Schema.ValidationTest do
 
   describe "is_port?/1" do
     property "returns true for integers between 0 and 65535" do
-      check all input <- integer(0..65535) do
+      check all input <- integer(0..65_535) do
         assert is_port?(input)
       end
     end
 
     property "returns false for any other input" do
       check all input <- term(),
-                input not in 0..65535 do
+                input not in 0..65_535 do
         refute is_port?(input)
       end
     end

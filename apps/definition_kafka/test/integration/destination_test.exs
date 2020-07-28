@@ -94,7 +94,7 @@ defmodule Kafka.Topic.DestinationTest do
     #     assert Elsa.topic?(@endpoints, topic.name)
     #     {:ok, _, messages} = Elsa.fetch(@endpoints, topic.name)
 
-    #     # TODO keys can only be binary?
+    #     # TOODOO keys can only be binary?
     #     assert [{"1", ~s|{"a":{"b":"1"}}|}, {"2", ~s|{"a":{"b":"2"}}|}] =
     #              Enum.map(messages, &{&1.key, &1.value})
     #   end
