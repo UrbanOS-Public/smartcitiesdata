@@ -35,8 +35,8 @@ Hooks.showSnackbar = {
 Hooks.readFile = {
     mounted() {
         this.el.addEventListener("change", e => {
-            var file = this.el.files[0];
             this.pushEvent("file_upload_started");
+            var file = this.el.files[0];
 
             fileToText(this.el.files[0]).then(fileAsText => {
                 this.pushEvent("file_upload", {
@@ -44,6 +44,8 @@ Hooks.readFile = {
                     fileType: file["type"],
                     fileSize: file["size"]
                 });
+            }, reason => {
+                reason == "aborted" && this.pushEvent("file_upload_cancelled");
             });
         })
     }
@@ -66,13 +68,35 @@ Hooks.addTooltip = {
     }
 }
 
-const fileToText = file => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    var fileSliced = file["type"] == "text/csv" ? file.slice(0, 1500) : file
+const fileToText = (file) => new Promise((resolve, reject) => {
+    var fileInput = file["type"] == "text/csv" ? file.slice(0, 1500) : file
+    var reader = new FileReader();
+    var totalBytes = fileInput["size"];
+    var CHUNK_SIZE = 1024;
+    var offset = 0;
+    var fileString = "";
 
-    reader.readAsText(fileSliced);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => {console.log(error); reject(error);}
+    reader.onabort = () => reject("aborted");
+
+    reader.onerror = error => reject(error);
+
+    document.getElementById("reader-cancel").addEventListener("click", () => {
+        reader.abort();
+    })
+
+    reader.onload = () => {
+        fileString += reader.result;
+        offset += CHUNK_SIZE;
+
+        if(offset >= totalBytes) {
+            resolve(fileString);
+        } else {
+            var slice = fileInput.slice(offset, offset + CHUNK_SIZE);
+            reader.readAsText(slice);
+        }
+    }
+
+    reader.readAsText(fileInput.slice(0, CHUNK_SIZE));
 });
 
 

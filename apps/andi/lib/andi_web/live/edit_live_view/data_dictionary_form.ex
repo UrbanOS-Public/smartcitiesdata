@@ -51,7 +51,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
     loader_visibility =
       case assigns.loading_schema do
-        true -> "visibile"
+        true -> "loading"
         false -> "hidden"
       end
 
@@ -80,12 +80,15 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
               <%= if @sourceFormat in ["text/csv", "application/json"] do %>
                 <div class="data-dictionary-form__file-upload">
-                  <div class="file-input-button">
-                    <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
-                    <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
-                    <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
+                  <div class="file-input-button--<%= loader_visibility %>">
+                    <div class="file-input-button">
+                      <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
+                      <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
+                      <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
+                    </div>
                   </div>
 
+                  <button type="button" id="reader-cancel" class="file-upload-cancel-button file-upload-cancel-button--<%= loader_visibility %> btn">Cancel</button>
                   <div class="loader data-dictionary-form__loader data-dictionary-form__loader--<%= loader_visibility %>"></div>
                 </div>
               <% end %>
@@ -97,7 +100,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
                 </div>
 
                 <div class="data-dictionary-form__tree-content data-dictionary-form-tree-content">
-                  <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: @changeset |> form_for(nil), field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render) %>
+                  <%= live_component(@socket, DataDictionaryTree, id: :data_dictionary_tree, root_id: :data_dictionary_tree, form: @changeset |> form_for(nil), field: :schema, selected_field_id: @selected_field_id, new_field_initial_render: @new_field_initial_render, add_field_event_name: "add_data_dictionary_field") %>
                 </div>
 
                 <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
@@ -207,6 +210,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   def handle_event("file_upload_started", _, socket) do
     {:noreply, assign(socket, loading_schema: true)}
+  end
+
+  def handle_event("file_upload_cancelled", _, socket) do
+    {:noreply, assign(socket, loading_schema: false)}
   end
 
   def handle_event("overwrite-schema", _, %{assigns: %{pending_changeset: nil}} = socket) do

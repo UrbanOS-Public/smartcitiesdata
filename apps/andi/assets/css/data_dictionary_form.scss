@@ -63,7 +63,6 @@ $tick-height: 1rem + $field-padding - 0.44;
   .data-dictionary-form-tree-content {
       border: solid 1px  #C9C7C7;
       border-bottom: none;
-      padding-left: 2rem;
       padding-bottom: 2rem;
       overflow-y: scroll;
       height: 37.5rem;
@@ -138,6 +137,10 @@ $tick-height: 1rem + $field-padding - 0.44;
     }
   }
 
+  .data-dictionary-tree--top-level {
+      padding-left: 2rem;
+  }
+
   .data-dictionary-form-tree-footer {
       border: solid 1px  #C9C7C7;
       border-top: none;
@@ -150,24 +153,6 @@ $tick-height: 1rem + $field-padding - 0.44;
       position: relative;
       box-shadow: 0 -1rem 3rem -1rem #C9C7C7;
 
-      .data-dictionary-form__add-field-button {
-          width: 1.5rem;
-          height: 24px;
-          background-image: url('/images/add_field.svg');
-          cursor: pointer;
-      }
-
-      .data-dictionary-form__remove-field-button {
-          width: 1.5rem;
-          height: 24px;
-          background-image: url('/images/delete_field.svg');
-          cursor: pointer;
-      }
-
-      .data-dictionary-form__remove-field-button {
-          width: 1.5rem;
-          height: 24px;
-      }
   }
 
   .data-dictionary-form__file-upload {
@@ -178,6 +163,40 @@ $tick-height: 1rem + $field-padding - 0.44;
       }
   }
 
+  .data-dictionary-tree__getting-started-help {
+      display: flex;
+      justify-content: left;
+      align-items: center;
+      padding: 1rem;
+
+      color: #7f7676;
+      a {
+          background-color: transparent;
+          color: #00aeef;
+          text-decoration: underline;
+          cursor: pointer;
+      }
+  }
+
+  .data-dictionary-form__add-field-button {
+      display: inline-block;
+      width: 1.5rem;
+      height: 24px;
+      background-image: url('/images/add_field.svg');
+      cursor: pointer;
+  }
+
+  .data-dictionary-form__remove-field-button {
+      width: 1.5rem;
+      height: 24px;
+      background-image: url('/images/delete_field.svg');
+      cursor: pointer;
+  }
+
+  .data-dictionary-form__remove-field-button {
+      width: 1.5rem;
+      height: 24px;
+  }
 }
 
 .overwrite-schema-modal--hidden {
@@ -260,6 +279,10 @@ $tick-height: 1rem + $field-padding - 0.44;
     }
 }
 
+.file-input-button--loading {
+    display: none;
+}
+
 .data-dictionary-form__loader {
     border: 6px solid #f3f3f3;
     border-top: 6px solid #26ADEB;
@@ -271,6 +294,10 @@ $tick-height: 1rem + $field-padding - 0.44;
 }
 
 .data-dictionary-form__loader--hidden {
+    display: none;
+}
+
+.file-upload-cancel-button--hidden {
     display: none;
 }
 
