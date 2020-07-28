@@ -48,8 +48,7 @@ defmodule Kafka.Topic.DestinationTest do
   end
 
   describe "write/2" do
-    
-    #TOODOO: this cannot work until elsa 0.12
+    # TOODOO: this cannot work until elsa 0.12
     # test "produces messages to Kafka" do
     #   topic = Kafka.Topic.new!(endpoints: @endpoints, name: "write-me")
     #   {:ok, pid} = Destination.start_link(topic, context([]))
@@ -105,7 +104,7 @@ defmodule Kafka.Topic.DestinationTest do
   end
 
   describe "stop/1" do
-    #TOODOO: this test cannot work until elsa 0.12
+    # TOODOO: this test cannot work until elsa 0.12
     # test "stops the destination topic process" do
     #   topic = Kafka.Topic.new!(endpoints: @endpoints, name: "stop-me")
     #   {:ok, pid} = Destination.start_link(topic, context([]))

@@ -34,7 +34,7 @@ defmodule Dlq.MixProject do
       {:testing, in_umbrella: true, only: [:test]}
     ]
   end
-  
+
   defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]
 end

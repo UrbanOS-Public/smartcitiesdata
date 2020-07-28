@@ -35,7 +35,10 @@ defmodule Temp.Env do
           |> Enum.each(fn %{app: app, key: key} ->
             Application.delete_env(app, key)
           end)
-          Enum.each(backup, fn {key, values} -> Application.put_env(key, values, persistent: true) end)
+
+          Enum.each(backup, fn {key, values} ->
+            Application.put_env(key, values, persistent: true)
+          end)
         end)
 
         :ok

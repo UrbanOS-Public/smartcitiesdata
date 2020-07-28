@@ -41,15 +41,15 @@ defmodule DiscoveryApiWeb.Plugs.RecordMetricsTest do
     test "when allowed origin is true" do
       dataset_id = 1111
       model = Helper.sample_model(%{id: dataset_id})
-  
+
       conn =
         build_conn(:get, "/organization/:org_name/dataset/#{dataset_id}/download")
         |> assign(:model, model)
         |> assign(:allowed_origin, true)
         |> put_private(:phoenix_action, :fetch_file)
-  
+
       allow(MetricsService.record_api_hit(any(), any()), return: conn)
-      
+
       Process.sleep(1_000)
       refute_called MetricsService.record_api_hit(any(), any())
     end
