@@ -265,10 +265,9 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(finalize_view, :publish)
       html = render(view)
 
-      eventually(
-        fn ->
-          assert !Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-        end)
+      eventually(fn ->
+        assert !Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+      end)
     end
 
     test "continuing to edit after publish reloads the page", %{conn: conn} do
@@ -286,17 +285,14 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(finalize_view, :publish)
       html = render(view)
 
-      eventually(
-        fn ->
-          assert !Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-        end)
-
+      eventually(fn ->
+        assert !Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+      end)
 
       html = render_change(view, "reload-page", %{})
       url = @url_path <> dataset.id
 
       assert_redirect(view, url)
     end
-
   end
 end
