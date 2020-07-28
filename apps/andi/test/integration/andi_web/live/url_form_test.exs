@@ -326,7 +326,7 @@ defmodule AndiWeb.UrlFormTest do
 
     html = render_change(url_form_view, :validate, %{"form_data" => form_data})
 
-    assert get_text(html, "#sourceUrl-error-msg") == "Please enter a valid base url."
+    assert get_text(html, "#sourceUrl-error-msg") == "Please enter a base url."
   end
 
   data_test "invalid #{field} displays proper error message", %{conn: conn} do

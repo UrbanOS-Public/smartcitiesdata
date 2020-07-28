@@ -105,7 +105,7 @@ defmodule Andi.CreateDatasetTest do
           "orgTitle" => "org title",
           "contactName" => "contact name",
           "contactEmail" => "contact@email.com",
-          "license" => "license",
+          "license" => "https://www.test.net",
           "rights" => "rights information",
           "homepage" => "",
           "keywords" => [],

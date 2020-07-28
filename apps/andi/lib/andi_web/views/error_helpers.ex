@@ -60,23 +60,16 @@ defmodule AndiWeb.ErrorHelpers do
     end
   end
 
-  defp interpret_error(error, field) do
-    {message, opts} = error
+  defp interpret_error({message, opts}, field), do: {interpret_error_message(message, field), opts}
 
-    updated_message =
-      case field do
-        field when field in [:sourceHeaders, :sourceQueryParams] -> "Please enter valid key(s)."
-        :cadence -> "Error: #{message}"
-        :selector when message != "is required" -> message
-        :format -> "Error: " <> get_format_error_message(message)
-        :topLevelSelector when message != "is required" -> "Error: #{message}"
-        :dataName when message == "existing dataset has the same orgName and dataName" -> "Error: #{message}"
-        :schema_sample -> message
-        _ -> "Please enter a valid #{get_downcased_display_name(field)}."
-      end
+  defp interpret_error_message(message, :schema_sample), do: message
+  defp interpret_error_message("is required", field), do: default_error_message(field)
+  defp interpret_error_message(message, :format), do: "Error: " <> get_format_error_message(message)
+  defp interpret_error_message(message, field) when field in [:topLevelSelector, :cadence, :dataName], do: "Error: #{message}"
+  defp interpret_error_message(_message, field) when field in [:sourceHeaders, :sourceQueryParams], do: "Please enter valid key(s)."
+  defp interpret_error_message(_message, field), do: default_error_message(field)
 
-    {updated_message, opts}
-  end
+  defp default_error_message(field), do: "Please enter a valid #{get_downcased_display_name(field)}."
 
   def get_downcased_display_name(field_key), do: field_key |> DisplayNames.get() |> String.downcase()
 

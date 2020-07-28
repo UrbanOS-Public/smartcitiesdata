@@ -145,7 +145,7 @@ defmodule AndiWeb.EditLiveViewTest do
         "dataTitle" => "something",
         "description" => "something",
         "issuedDate" => ~D[1899-10-20],
-        "license" => "something",
+        "license" => "https://www.test.net",
         "orgTitle" => "something",
         "publishFrequency" => "something",
         "riskRating" => 1.0
