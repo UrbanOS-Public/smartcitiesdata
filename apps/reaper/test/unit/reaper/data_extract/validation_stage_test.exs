@@ -77,8 +77,8 @@ defmodule Reaper.DataExtract.ValidationStageTest do
     end
 
     test "will yeet any errors marked during cache call" do
-      allow Cache.mark_duplicates(@cache, %{three: 3, four: 4}), return: {:error, "bad stuff"}
       allow Cache.mark_duplicates(@cache, any()), exec: fn _, msg -> {:ok, msg} end
+      allow Cache.mark_duplicates(@cache, %{three: 3, four: 4}), return: {:error, "bad stuff"}
 
       state = %{
         cache: @cache,

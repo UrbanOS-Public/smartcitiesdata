@@ -19,7 +19,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       orgTitle: "orgTitle",
       description: "description",
       issuedDate: "2020-01-01T00:00:00Z",
-      license: "license",
+      license: "https://www.test.net",
       publishFrequency: "publishFrequency"
     },
     technical: %{
