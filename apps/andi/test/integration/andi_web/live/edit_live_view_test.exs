@@ -10,9 +10,9 @@ defmodule AndiWeb.EditLiveViewTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
-  import SmartCity.TestHelper, only: [eventually: 3]
+  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
-  import FlokiHelpers, only: [get_text: 2, find_elements: 2]
+  import FlokiHelpers, only: [get_attributes: 3, get_text: 2, find_elements: 2]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
@@ -227,7 +227,7 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--visible"))
     end
 
-    test "clicking continues takes you back to the datasets page without saved changes", %{conn: conn} do
+    test "clicking cancel takes you back to the datasets page without saved changes", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -250,5 +250,53 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert_redirect(view, "/")
     end
+
+    test "successfully publishing presents modal", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+
+      form_data = %{"cadence" => "once"}
+
+      render_change(finalize_view, :validate, %{"form_data" => form_data})
+      render_change(finalize_view, :publish)
+      html = render(view)
+
+      eventually(
+        fn ->
+          assert !Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+        end)
+    end
+
+    test "continuing to edit after publish reloads the page", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert Enum.empty?(get_attributes(html, "#form_data_sourceFormat", "disabled"))
+
+      finalize_view = find_child(view, "finalize_form_editor")
+      form_data = %{"cadence" => "once"}
+
+      render_change(finalize_view, :validate, %{"form_data" => form_data})
+      render_change(finalize_view, :publish)
+      html = render(view)
+
+      eventually(
+        fn ->
+          assert !Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+        end)
+
+
+      html = render_change(view, "reload-page", %{})
+      url = @url_path <> dataset.id
+
+      assert_redirect(view, url)
+    end
+
   end
 end
