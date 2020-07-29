@@ -15,13 +15,6 @@ body {
   color: $color-text-primary;
 }
 
-.root__main {
-  flex: 1;
-  background: $color-content-background;
-  box-shadow: $box-shadow;
-  margin: 1em;
-}
-
 @mixin area($block, $element) {
   .#{$block}__#{$element} {
     grid-area: $element;
