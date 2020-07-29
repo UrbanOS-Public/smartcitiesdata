@@ -95,8 +95,17 @@ defmodule ValkyrieTest do
 
       response = HTTPoison.get!("http://localhost:#{metrics_port}/metrics")
 
-      assert response.body ==
-               "# HELP dead_letters_handled_count \n# TYPE dead_letters_handled_count counter\ndead_letters_handled_count{dataset_id=\"dataset_id\",reason=\"reason\"} 7\ndead_letters_handled_count{dataset_id=\"pirates\",reason=\"%{\\\"alignment\\\" => :invalid_string}\"} 1\n# HELP events_handled_count \n# TYPE events_handled_count counter\nevents_handled_count{app=\"valkyrie\",author=\"valkyrie\",dataset_id=\"pirates\",event_type=\"data:ingest:start\"} 1\n"
+      assert true ==
+               String.contains?(
+                 response.body,
+                 "dead_letters_handled_count{dataset_id=\"dataset_id\",reason=\"reason\"}"
+               )
+
+      assert true ==
+               String.contains?(
+                 response.body,
+                 "dead_letters_handled_count{dataset_id=\"pirates\",reason=\"%{\\\"alignment\\\" => :invalid_string}\"}"
+               )
 
       assert [%{app: "Valkyrie", original_message: ^encoded_og_message}] = messages
     end
