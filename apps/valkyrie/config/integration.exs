@@ -52,3 +52,6 @@ config :valkyrie, :brook,
       namespace: "valkyrie:view"
     ]
   ]
+
+config :telemetry_event,
+  init_server: true

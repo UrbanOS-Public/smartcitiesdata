@@ -81,9 +81,10 @@ defmodule ValkyrieTest do
   test "valkyrie sends invalid data messages to the dlq", %{invalid_message: invalid_message} do
     encoded_og_message = invalid_message |> Jason.encode!()
 
+    metrics_port = Application.get_env(:telemetry_event, :metrics_port)
+
     eventually fn ->
       messages = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
-      metrics = Telemetry.Metrics.summary("dead_letters_handled.count", tags: [:dataset_id, :reason])
 
       assert :ok =
                [
@@ -92,10 +93,11 @@ defmodule ValkyrieTest do
                ]
                |> TelemetryEvent.add_event_count([:dead_letters_handled])
 
-      assert [:dead_letters_handled] = metrics.event_name
-      assert [:dead_letters_handled, :count] = metrics.name
-      assert :count = metrics.measurement
-      assert [:dataset_id, :reason] = metrics.tags
+      response = HTTPoison.get!("http://localhost:#{metrics_port}/metrics")
+
+      assert response.body ==
+               "# HELP dead_letters_handled_count \n# TYPE dead_letters_handled_count counter\ndead_letters_handled_count{dataset_id=\"dataset_id\",reason=\"reason\"} 7\ndead_letters_handled_count{dataset_id=\"pirates\",reason=\"%{\\\"alignment\\\" => :invalid_string}\"} 1\n# HELP events_handled_count \n# TYPE events_handled_count counter\nevents_handled_count{app=\"valkyrie\",author=\"valkyrie\",dataset_id=\"pirates\",event_type=\"data:ingest:start\"} 1\n"
+
       assert [%{app: "Valkyrie", original_message: ^encoded_og_message}] = messages
     end
   end
