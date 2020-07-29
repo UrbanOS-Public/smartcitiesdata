@@ -21,7 +21,7 @@ defmodule Andi.Harvest.HarvesterTest do
       end)
 
       {:ok, actual} = Jason.decode(data_json)
-      {:ok, resp} = Harvester.get_data_json("http://localhost:#{bypass.port()}/data.json")
+      resp = Harvester.get_data_json("http://localhost:#{bypass.port()}/data.json") |> elem(1) |> Jason.decode!()
 
       assert resp == actual
     end

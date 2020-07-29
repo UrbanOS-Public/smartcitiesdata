@@ -15,10 +15,11 @@ defmodule Andi.Harvest.Harvester do
 
   def start_harvesting(org) do
     url = org.dataJsonUrl
+
     with {:ok, data_json} <- get_data_json(url),
          datasets <- map_data_json_to_dataset(data_json, org),
          :ok <- dataset_update(datasets) do
-           :ok
+      :ok
     else
       error ->
         {:error, error}
@@ -26,11 +27,11 @@ defmodule Andi.Harvest.Harvester do
   end
 
   def get_data_json(url) do
-    with {:ok, response} <- get(url),
-         {:ok, body} <- Jason.decode(response.body) do
-      {:ok, body}
-    else
-      error ->
+    case get(url) do
+      {:ok, response} ->
+        {:ok, response.body}
+
+      {:error, error} ->
         Logger.error("Failed to get data json from #{url}: #{inspect(error)}")
         {:error, error}
     end
