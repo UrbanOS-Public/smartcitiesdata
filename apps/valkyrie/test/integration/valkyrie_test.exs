@@ -25,9 +25,6 @@ defmodule ValkyrieTest do
         }
       })
 
-    Application.put_env(:telemetry_event, :init_server, true)
-    metrics_port = Application.get_env(:telemetry_event, :metrics_port)
-
     invalid_message =
       TestHelpers.create_data(%{
         payload: %{"name" => "Blackbeard", "alignment" => %{"invalid" => "string"}, "age" => "thirty-two"},
@@ -52,13 +49,13 @@ defmodule ValkyrieTest do
 
     input_topic = "#{@input_topic_prefix}-#{dataset.id}"
     output_topic = "#{@output_topic_prefix}-#{dataset.id}"
+
     Brook.Event.send(@instance, data_ingest_start(), :valkyrie, dataset)
     TestHelpers.wait_for_topic(@endpoints, input_topic)
 
     TestHelpers.produce_messages(messages, input_topic, @endpoints)
 
-    {:ok,
-     %{output_topic: output_topic, messages: messages, invalid_message: invalid_message, metrics_port: metrics_port}}
+    {:ok, %{output_topic: output_topic, messages: messages, invalid_message: invalid_message}}
   end
 
   test "valkyrie updates the operational struct", %{output_topic: output_topic} do
@@ -81,11 +78,10 @@ defmodule ValkyrieTest do
     end
   end
 
-  test "valkyrie sends invalid data messages to the dlq", %{
-    invalid_message: invalid_message,
-    metrics_port: metrics_port
-  } do
+  test "valkyrie sends invalid data messages to the dlq", %{invalid_message: invalid_message} do
     encoded_og_message = invalid_message |> Jason.encode!()
+
+    metrics_port = Application.get_env(:telemetry_event, :metrics_port)
 
     eventually fn ->
       messages = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)

@@ -11,3 +11,6 @@ config :prestige, :session_opts,
   catalog: "hive",
   schema: "default",
   user: "foobar"
+
+config :telemetry_event,
+  init_server: false
