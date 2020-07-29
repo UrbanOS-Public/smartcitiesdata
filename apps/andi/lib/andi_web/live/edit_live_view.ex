@@ -12,6 +12,10 @@ defmodule AndiWeb.EditLiveView do
   def render(assigns) do
     ~L"""
     <div class="edit-page" id="dataset-edit-page">
+      <div class="page-header">
+        <button type="button" phx-click="cancel-edit" class="return-home-button btn btn--large"><div class="home-icon"></div>HOME</button>
+      </div>
+
       <%= f = form_for @changeset, "" %>
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
@@ -46,7 +50,9 @@ defmodule AndiWeb.EditLiveView do
 
       </form>
 
-      <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, show_unsaved_changes_modal: @show_unsaved_changes_modal) %>
+      <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
+
+      <%= live_component(@socket, AndiWeb.EditLiveView.PublishSuccessModal, visibility: @publish_success_modal_visibility) %>
 
       <div phx-hook="showSnackbar">
         <%= if @save_success do %>
@@ -84,16 +90,28 @@ defmodule AndiWeb.EditLiveView do
        test_results: nil,
        finalize_form_data: nil,
        unsaved_changes: false,
-       show_unsaved_changes_modal: false
+       unsaved_changes_modal_visibility: "hidden",
+       publish_success_modal_visibility: "hidden"
      )}
   end
 
   def handle_event("unsaved-changes-canceled", _, socket) do
-    {:noreply, assign(socket, show_unsaved_changes_modal: false)}
+    {:noreply, assign(socket, unsaved_changes_modal_visibility: "hidden")}
   end
 
   def handle_event("force-cancel-edit", _, socket) do
     {:noreply, redirect(socket, to: "/")}
+  end
+
+  def handle_event("cancel-edit", _, socket) do
+    case socket.assigns.unsaved_changes do
+      true -> {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible")}
+      false -> {:noreply, redirect(socket, to: "/")}
+    end
+  end
+
+  def handle_event("reload-page", _, socket) do
+    {:noreply, redirect(socket, to: "/datasets/#{socket.assigns.dataset.id}")}
   end
 
   def handle_info(:publish, socket) do
@@ -114,8 +132,7 @@ defmodule AndiWeb.EditLiveView do
            assign(socket,
              dataset: andi_dataset,
              changeset: dataset_changeset,
-             save_success: true,
-             success_message: "Published successfully",
+             publish_success_modal_visibility: "visible",
              page_error: false
            )}
 
@@ -149,7 +166,6 @@ defmodule AndiWeb.EditLiveView do
      assign(socket,
        save_success: true,
        success_message: success_message,
-       unsaved_changes: false,
        changeset: new_changeset,
        unsaved_changes: false
      )}
@@ -161,7 +177,7 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info(:cancel_edit, socket) do
     case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, show_unsaved_changes_modal: true)}
+      true -> {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible")}
       false -> {:noreply, redirect(socket, to: "/")}
     end
   end
