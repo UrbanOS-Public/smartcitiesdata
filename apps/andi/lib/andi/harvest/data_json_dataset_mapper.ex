@@ -5,6 +5,14 @@ defmodule Andi.Harvest.DataJsonToDataset do
 
   def mapper(%{"dataset" => datasets}, org) do
     Enum.map(datasets, fn data_json_dataset -> dataset_model(data_json_dataset, org) end)
+      |> Enum.filter(&is_public?/1)
+      |> Enum.reject(&(Enum.empty?/1))
+      |> Enum.reduce([], fn dataset, acc ->
+        case SmartCity.Dataset.new(dataset) do
+          {:ok, dataset} -> [dataset | acc]
+          _ -> acc
+        end
+      end)
   end
 
   defp dataset_model(data_json_dataset, org) do
@@ -54,6 +62,7 @@ defmodule Andi.Harvest.DataJsonToDataset do
   defp source_url([%{"mediaType" => "text/html", "accessURL" => access_url} | _rest]) do
     access_url
   end
+
   defp source_url(_distribution), do: ""
 
   defp data_name(data_title) do
@@ -62,5 +71,9 @@ defmodule Andi.Harvest.DataJsonToDataset do
 
   defp system_name(orgName, dataName) do
     "#{orgName}__#{dataName}"
+  end
+
+  defp is_public?(dataset) do
+    dataset["technical"]["private"] == false
   end
 end

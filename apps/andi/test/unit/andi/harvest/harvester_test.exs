@@ -3,6 +3,8 @@ defmodule Andi.Harvest.HarvesterTest do
   use Placebo
   alias Andi.Harvest.Harvester
   alias SmartCity.TestDataGenerator, as: TDG
+  import Andi
+  import SmartCity.Event, only: [dataset_update: 0]
 
   describe "data json harvester" do
     setup do
@@ -19,7 +21,7 @@ defmodule Andi.Harvest.HarvesterTest do
       end)
 
       {:ok, actual} = Jason.decode(data_json)
-      resp = Harvester.get_data_json("http://localhost:#{bypass.port()}/data.json")
+      {:ok, resp} = Harvester.get_data_json("http://localhost:#{bypass.port()}/data.json")
 
       assert resp == actual
     end
@@ -28,6 +30,17 @@ defmodule Andi.Harvest.HarvesterTest do
       {:ok, data_json} = Jason.decode(data_json)
       datasets = Harvester.map_data_json_to_dataset(data_json, org)
       assert length(datasets) == 2
+    end
+
+    test "dataset_update/1", %{data_json: data_json, org: org} do
+      allow(Brook.Event.send(instance_name(), dataset_update(), :andi, any()), return: :ok, meck_options: [:passthrough])
+
+      {:ok, data_json} = Jason.decode(data_json)
+      datasets = Harvester.map_data_json_to_dataset(data_json, org)
+
+      Harvester.dataset_update(datasets)
+
+      assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, any()), times(2))
     end
   end
 
