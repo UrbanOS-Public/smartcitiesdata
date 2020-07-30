@@ -3,6 +3,7 @@ defmodule Forklift.Application do
 
   use Application
   require Logger
+  import Forklift
 
   def start(_type, _args) do
     Forklift.MetricsExporter.setup()
@@ -18,6 +19,7 @@ defmodule Forklift.Application do
         migrations(),
         Forklift.InitServer
       ]
+      |> TelemetryEvent.config_init_server(instance_name())
       |> List.flatten()
 
     if Application.get_env(:forklift, :table_writer) == Pipeline.Writer.S3Writer do

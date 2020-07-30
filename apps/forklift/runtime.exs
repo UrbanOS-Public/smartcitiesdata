@@ -129,3 +129,16 @@ if System.get_env("RUN_IN_KUBERNETES") do
       ]
     ]
 end
+
+config :telemetry_event,
+  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
+  metrics_options: [
+    [
+      metric_name: "events_handled.count",
+      tags: [:app, :author, :dataset_id, :event_type]
+    ],
+    [
+      metric_name: "dead_letters_handled.count",
+      tags: [:dataset_id, :reason]
+    ]
+  ]
