@@ -4,6 +4,7 @@ defmodule ValkyrieTest do
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
   import SmartCity.Event, only: [data_ingest_start: 0]
+  alias TelemetryEvent.Helper.TelemetryEventHelper
 
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
   @dlq_topic Application.get_env(:dead_letter, :driver) |> get_in([:init_args, :topic])
@@ -24,6 +25,12 @@ defmodule ValkyrieTest do
           ]
         }
       })
+
+    pid = start_telemetry()
+
+    on_exit(fn ->
+      stop_telemetry(pid)
+    end)
 
     invalid_message =
       TestHelpers.create_data(%{
@@ -108,6 +115,23 @@ defmodule ValkyrieTest do
                )
 
       assert [%{app: "Valkyrie", original_message: ^encoded_og_message}] = messages
+    end
+  end
+
+  defp start_telemetry() do
+    {:ok, pid} =
+      DynamicSupervisor.start_child(
+        Valkyrie.Dynamic.Supervisor,
+        {TelemetryMetricsPrometheus, TelemetryEventHelper.metrics_config(@instance)}
+      )
+
+    pid
+  end
+
+  defp stop_telemetry(pid) do
+    case pid do
+      nil -> :ok
+      pid -> DynamicSupervisor.terminate_child(Valkyrie.Dynamic.Supervisor, pid)
     end
   end
 end
