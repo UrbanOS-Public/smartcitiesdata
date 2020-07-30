@@ -11,13 +11,12 @@ defmodule Andi.Harvest.Harvester do
 
   require Logger
 
-  plug Tesla.Middleware.JSON
-
   def start_harvesting(org) do
     url = org.dataJsonUrl
 
     with {:ok, data_json} <- get_data_json(url),
-         datasets <- map_data_json_to_dataset(data_json, org),
+         {:ok, decoded_data_json} <- Jason.decode(data_json),
+         datasets <- map_data_json_to_dataset(decoded_data_json, org),
          :ok <- dataset_update(datasets) do
       :ok
     else
