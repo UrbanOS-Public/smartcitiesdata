@@ -64,6 +64,7 @@ defmodule Forklift.Integration.EventHandlingTest do
         send(test, Keyword.get(args, :dataset))
         :ok
       end)
+
       expect(TelemetryEvent.add_event_count(any(), [:events_handled]), return: :ok)
 
       dataset = TDG.create_dataset(%{id: "dataset-id"})
@@ -81,6 +82,7 @@ defmodule Forklift.Integration.EventHandlingTest do
         send(test, args[:dataset])
         :ok
       end)
+
       expect(TelemetryEvent.add_event_count(any(), [:events_handled]), return: :ok)
 
       expect Forklift.Datasets.delete("terminate-id"), return: :ok
