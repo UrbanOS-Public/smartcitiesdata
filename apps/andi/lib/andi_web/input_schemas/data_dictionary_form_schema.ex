@@ -47,6 +47,20 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     changeset_from_form_data(%{schema: generated_schema})
   end
 
+  def changeset_from_tuple_list(list, dataset_id) do
+    generated_schema = generate_ordered_schema(list, dataset_id)
+
+    changeset_from_form_data(%{schema: generated_schema})
+  end
+
+  def generate_ordered_schema(data, dataset_id) do
+    data
+    |> Enum.with_index()
+    |> Enum.map(fn {{k, v}, index} -> [%{k => v}] |> SchemaGenerator.generate_schema() |> List.first() |> Map.put("sequence", index) end)
+    |> List.flatten()
+    |> Enum.map(&assign_schema_field_details(&1, dataset_id, nil))
+  end
+
   def generate_schema(decoded_file, dataset_id) do
     decoded_file
     |> SchemaGenerator.generate_schema()
