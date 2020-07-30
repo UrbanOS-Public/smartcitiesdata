@@ -265,7 +265,7 @@ defmodule AndiWeb.UrlFormTest do
 
       eventually(fn ->
         html = render(url_form_view)
-        assert get_text(html, ".test-status__code") == "200"
+        assert get_text(html, ".test-status__code") == "Success"
         assert get_text(html, ".test-status__time") == "1000"
       end)
     end
@@ -286,7 +286,7 @@ defmodule AndiWeb.UrlFormTest do
 
       eventually(fn ->
         html = render(url_form_view)
-        assert get_text(html, ".test-status__code--good") == "200"
+        assert get_text(html, ".test-status__code--good") == "Success"
       end)
     end
 
@@ -306,8 +306,8 @@ defmodule AndiWeb.UrlFormTest do
 
       eventually(fn ->
         html = render(url_form_view)
-        assert get_text(html, ".test-status__code--bad") == "400"
-        assert get_text(html, ".test-status__code--good") != "400"
+        assert get_text(html, ".test-status__code--bad") == "Error"
+        assert get_text(html, ".test-status__code--good") != "Error"
       end)
     end
   end
