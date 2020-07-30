@@ -69,6 +69,9 @@ defmodule AndiWeb.Views.HttpStatusDescriptions do
     "The #{code_as_string} (#{code_reason}) status code indicates that the #{code_description}. #{code_link}"
   end
 
+  def simple(code) when code < 400, do: "Success"
+  def simple(_code), do: "Error"
+
   defp code_reason(code) do
     reason_phrase(code)
   rescue
