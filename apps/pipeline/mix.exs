@@ -27,17 +27,19 @@ defmodule Pipeline.MixProject do
   defp deps do
     [
       {:smart_city, "~> 3.0"},
-      {:elsa, "~> 0.10.0"},
+      {:elsa, "~> 0.10.0", override: true},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0",
        [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},
+      {:configparser_ex, "~> 4.0"},
+      {:ex_aws_sts, "~> 2.0"},
       {:retry, "~> 0.13"},
       {:prestige, "~> 1.0"},
       {:timex, "~> 3.6"},
       {:sweet_xml, "~> 0.6"},
       {:temp, "~> 0.4"},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
-      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]}

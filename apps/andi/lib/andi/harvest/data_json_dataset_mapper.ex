@@ -1,7 +1,10 @@
 defmodule Andi.Harvest.DataJsonToDataset do
+  @moduledoc """
+  maps data json to %SmartCity.Dataset{}
+  """
   alias Andi.InputSchemas.Datasets
 
-  @scos_data_json_uuid "1719bf64-38f5-40bf-9737-45e84f5c8419"
+  @scos_data_json_seed "1719bf64-38f5-40bf-9737-45e84f5c8419"
 
   def mapper(%{"dataset" => datasets}, org) do
     Enum.map(datasets, fn data_json_dataset -> dataset_model(data_json_dataset, org) end)
@@ -38,7 +41,7 @@ defmodule Andi.Harvest.DataJsonToDataset do
         "rights" => data_json_dataset["rights"],
         "spatial" => data_json_dataset["spatial"]
       },
-      "id" => UUID.uuid5(@scos_data_json_uuid, data_json_dataset["identifier"]),
+      "id" => UUID.uuid5(@scos_data_json_seed, data_json_dataset["identifier"]),
       "technical" => %{
         "dataName" => data_name(data_json_dataset["title"]),
         "orgName" => org.orgName,
@@ -70,8 +73,8 @@ defmodule Andi.Harvest.DataJsonToDataset do
     Datasets.data_title_to_data_name(data_title)
   end
 
-  defp system_name(orgName, dataName) do
-    "#{orgName}__#{dataName}"
+  defp system_name(org_name, data_name) do
+    "#{org_name}__#{data_name}"
   end
 
   defp is_public?(dataset) do

@@ -23,7 +23,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.FormTools
+  alias Andi.InputSchemas.InputConverter
+  alias AndiWeb.Helpers.FormTools
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
@@ -172,11 +173,168 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
 
-    test "handles datasets with empty schema fields", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{sourceType: "remote", schema: []}})
+    test "displays help for datasets with empty schema fields", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceType: "ingest", schema: []}})
+
+      dataset
+      |> InputConverter.smrt_dataset_to_draft_changeset()
+      |> Datasets.save()
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert get_text(html, ".data-dictionary-tree__getting-started-help") =~ "add a new field"
+    end
+
+    test "does not display help for datasets with empty subschema fields", %{conn: conn} do
+      field_with_empty_subschema = %{name: "max", type: "map", subSchema: []}
+      dataset = TDG.create_dataset(%{technical: %{sourceType: "ingest", schema: [field_with_empty_subschema]}})
+
+      dataset
+      |> InputConverter.smrt_dataset_to_draft_changeset()
+      |> Datasets.save()
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      refute get_text(html, ".data-dictionary-tree__getting-started-help") =~ "add a new field"
+    end
+  end
+
+  describe "schema sample upload" do
+    test "is shown when sourceFormat is CSV or JSON", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "application/json"}})
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      html = render(data_dictionary_view)
+
+      refute Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
+    end
+
+    test "is hidden when sourceFormat is not CSV nor JSON", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "application/geo+json"}})
+
+      {:ok, _} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      html = render(data_dictionary_view)
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
+    end
+
+    test "does not allow file uploads greater than 200MB", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
+
+      {:ok, _} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 200_000_001})
+
+      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+    end
+
+    test "provides modal when existing schema will be overwritten", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
+
+      {:ok, _} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+
+      csv_sample = "CAM\nrules"
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+
+      refute Enum.empty?(find_elements(html, ".overwrite-schema-modal--visible"))
+    end
+
+    test "does not provide modal with no existing schema", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "text/csv"}})
+        |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
+
+      {:ok, _} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+
+      csv_sample = "CAM\nrules"
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+
+      assert Enum.empty?(find_elements(html, ".overwrite-schema-modal--visible"))
+
+      updated_dataset = Datasets.get(dataset.id)
+      refute Enum.empty?(updated_dataset.technical.schema)
+    end
+
+    test "parses CSVs with various types", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "text/csv"}})
+        |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
+
+      {:ok, _} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+
+      csv_sample = "string,int,float,bool,date\nabc,9,1.5,true,2020-07-22T21:24:40"
+
+      render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+
+      updated_dataset = Datasets.get(dataset.id)
+
+      generated_schema =
+        updated_dataset.technical.schema
+        |> Enum.map(fn item -> %{type: item.type, name: item.name} end)
+
+      expected_schema = [
+        %{name: "bool", type: "boolean"},
+        %{name: "date", type: "date"},
+        %{name: "float", type: "float"},
+        %{name: "int", type: "integer"},
+        %{name: "string", type: "string"}
+      ]
+
+      assert generated_schema == expected_schema
+    end
+
+    test "handles invalid json", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "application/json"}})
+        |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
+
+      {:ok, _} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+
+      json_sample =
+        "header {\n  gtfs_realtime_version: \"2.0\"\n  incrementality: FULL_DATASET\n  timestamp: 1582913296\n}\nentity {\n  id: \"2551\"\n  vehicle {\n    trip {\n      trip_id: \"2290874_MRG_1\"\n      start_date: \"20200228\"\n      route_id: \"661\"\n    }\n"
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
+
+      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+    end
+
+    test "generates eligible parents list", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "application/json"}})
+        |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
+
+      {:ok, _} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+
+      json_sample = [%{list_field: [%{child_list_field: []}]}] |> Jason.encode!()
+
+      render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
+
+      updated_dataset = Datasets.get(dataset.id)
+
+      generated_bread_crumbs =
+        updated_dataset
+        |> DataDictionaryFields.get_parent_ids()
+        |> Enum.map(fn {bread_crumb, _} -> bread_crumb end)
+
+      assert ["Top Level", "list_field", "list_field > child_list_field"] == generated_bread_crumbs
     end
   end
 

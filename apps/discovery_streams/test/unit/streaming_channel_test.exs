@@ -12,12 +12,12 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     allow TopicSubscriber.list_subscribed_topics(),
       return: ["transformed-#{@dataset_1_id}"]
 
-    allow(Brook.get(any(), :streaming_datasets_by_system_name, "shuttle-position"),
-      return: {:ok, @dataset_1_id}
-    )
-
     allow(Brook.get(any(), :streaming_datasets_by_system_name, any()),
       return: {:error, "does_not_exist"}
+    )
+
+    allow(Brook.get(any(), :streaming_datasets_by_system_name, "shuttle-position"),
+      return: {:ok, @dataset_1_id}
     )
 
     :ok

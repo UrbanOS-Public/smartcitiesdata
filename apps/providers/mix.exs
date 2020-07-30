@@ -27,7 +27,7 @@ defmodule Providers.MixProject do
   defp deps do
     [
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
-      {:credo, "~> 1.1", only: [:dev, :test, :integration], runtime: false},
+      {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false},
       {:timex, "~> 3.6"}
     ]
   end

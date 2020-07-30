@@ -20,8 +20,8 @@ defmodule DiscoveryApiWeb.TableauControllerTableInfoTest do
       ]
 
       allow(Model.get_all(), return: mock_dataset_summaries, meck_options: [:passthrough])
-      allow(ModelAccessUtils.has_access?(%{id: "private"}, any()), return: false)
       allow(ModelAccessUtils.has_access?(any(), any()), return: true)
+      allow(ModelAccessUtils.has_access?(%{id: "private"}, any()), return: false)
 
       response = build_conn() |> get("api/v1/tableau/table_info") |> json_response(200)
 

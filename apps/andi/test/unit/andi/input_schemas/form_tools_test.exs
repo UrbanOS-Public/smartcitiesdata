@@ -1,9 +1,9 @@
-defmodule Andi.InputSchemas.FormToolsTest do
+defmodule AndiWeb.Helpers.FormToolsTest do
   use ExUnit.Case
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.InputSchemas.FormTools
+  alias AndiWeb.Helpers.FormTools
   alias Andi.Services.OrgStore
 
   describe "adjust_source_query_params_for_url/1" do

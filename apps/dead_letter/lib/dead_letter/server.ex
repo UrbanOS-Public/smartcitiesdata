@@ -114,7 +114,7 @@ defmodule DeadLetter.Server do
   defp add_dead_letter_count(dataset_id, reason) do
     [
       dataset_id: dataset_id,
-      reason: reason
+      reason: Kernel.inspect(reason)
     ]
     |> TelemetryEvent.add_event_count([:dead_letters_handled])
   rescue

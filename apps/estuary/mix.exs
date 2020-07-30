@@ -4,7 +4,7 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.9.3",
+      version: "0.10.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -29,14 +29,14 @@ defmodule Estuary.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 1.1", only: [:dev], runtime: false},
+      {:credo, "~> 1.0", only: [:dev], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:elsa, "~> 0.10.0"},
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},
-      {:jason, "~> 1.1"},
+      {:jason, "~> 1.2"},
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14.1"},
@@ -44,7 +44,7 @@ defmodule Estuary.MixProject do
       {:phoenix_live_view, "~>0.4"},
       {:phoenix_pubsub, "~> 1.1"},
       {:pipeline, in_umbrella: true},
-      {:placebo, "~> 1.2", only: [:dev, :test, :integration]},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.1"},
       {:plug_heartbeat, "~> 0.2.0"},
       {:prestige, "~> 1.0"},

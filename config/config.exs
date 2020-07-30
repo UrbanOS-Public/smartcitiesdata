@@ -25,5 +25,9 @@ config :mime, :types, %{
   "application/vnd.ogc.wms_xml" => ["wms"]
 }
 
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+config :json_serde, :type_key, "__type__"
+# config :brook, :serializer, JsonSerde
+
 config :phoenix,
   template_engines: [leex: Phoenix.LiveView.Engine]

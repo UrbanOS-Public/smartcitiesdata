@@ -137,8 +137,8 @@ defmodule Reaper.Quantum.StorageTest do
     end
 
     test "does not call delete if no keys are available" do
-      allow Redix.command(any(), ["KEYS" | any()]), return: {:ok, []}
       allow Redix.command(any(), any()), return: {:ok, 4}
+      allow Redix.command(any(), ["KEYS" | any()]), return: {:ok, []}
 
       assert :ok == Storage.purge(Reaper.Scheduler)
 

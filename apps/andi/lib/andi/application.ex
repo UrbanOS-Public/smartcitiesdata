@@ -2,6 +2,7 @@ defmodule Andi.Application do
   @moduledoc false
 
   use Application
+  import Andi
 
   def start(_type, _args) do
     children =
@@ -12,6 +13,7 @@ defmodule Andi.Application do
         Andi.DatasetCache,
         Andi.Migration.Migrations
       ]
+      |> TelemetryEvent.config_init_server(instance_name())
       |> List.flatten()
 
     opts = [strategy: :one_for_one, name: Andi.Supervisor]

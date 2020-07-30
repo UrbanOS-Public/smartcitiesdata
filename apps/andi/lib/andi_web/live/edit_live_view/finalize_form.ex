@@ -199,6 +199,14 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, assign(updated_socket, crontab: cronstring, crontab_list: parse_crontab(cronstring))}
   end
 
+  def handle_info(%{topic: "toggle-visibility", payload: %{expand: "finalize_form"}}, socket) do
+    {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
+  end
+
+  def handle_info(%{topic: "toggle-visibility", payload: _}, socket) do
+    {:noreply, socket}
+  end
+
   defp parse_crontab(nil), do: %{}
   defp parse_crontab("never"), do: %{}
 

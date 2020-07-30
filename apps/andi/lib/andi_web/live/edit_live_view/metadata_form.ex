@@ -5,14 +5,16 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   use Phoenix.LiveView
   use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.MetadataFormSchema
   import Phoenix.HTML.Form
+  import Phoenix.HTML.Link
 
-  alias Andi.InputSchemas.Options
-  alias Andi.InputSchemas.DisplayNames
+  alias AndiWeb.Views.Options
+  alias AndiWeb.Views.DisplayNames
   alias AndiWeb.ErrorHelpers
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.Services.OrgStore
   alias AndiWeb.InputSchemas.MetadataFormSchema
-  alias Andi.InputSchemas.FormTools
+  alias AndiWeb.Helpers.FormTools
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_metadata_changeset = MetadataFormSchema.changeset_from_andi_dataset(dataset)
@@ -25,6 +27,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
+    AndiWeb.Endpoint.subscribe("source-format")
 
     {:ok,
      assign(socket,
@@ -111,8 +114,11 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
               <div class="metadata-form__license">
                 <%= label(f, :license, DisplayNames.get(:license), class: "label label--required") %>
-                <%= text_input(f, :license, class: "input") %>
+                <%= text_input(f, :license, class: "input", value: get_license(input_value(f, :license))) %>
                 <%= ErrorHelpers.error_tag(f, :license, bind_to_input: false) %>
+                <div>
+                <%= link("About Licenses", to: "https://creativecommons.org/licenses/", target: "_blank") %>
+                </div>
               </div>
 
               <div class="metadata-form__top-level-selector">
@@ -236,6 +242,14 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     |> complete_validation(socket)
   end
 
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceFormat"]}, socket) do
+    AndiWeb.Endpoint.broadcast_from(self(), "source-format", "format-update", %{new_format: form_data["sourceFormat"]})
+
+    form_data
+    |> MetadataFormSchema.changeset_from_form_data()
+    |> complete_validation(socket)
+  end
+
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
     |> MetadataFormSchema.changeset_from_form_data()
@@ -279,7 +293,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   defp get_level_of_access_options, do: map_to_dropdown_options(Options.level_of_access())
   defp get_rating_options(), do: map_to_dropdown_options(Options.ratings())
   defp get_source_type_options(), do: map_to_dropdown_options(Options.source_type())
-  defp get_org_options(), do: Options.organizations()
+  defp get_org_options(), do: Options.organizations(OrgStore.get_all())
 
   defp get_source_format_options(source_type) when source_type in ["remote", "host"] do
     Options.source_format_extended()
@@ -289,6 +303,9 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
   defp get_language(nil), do: "english"
   defp get_language(lang), do: lang
+
+  defp get_license(nil), do: "https://creativecommons.org/licenses/by/4.0/"
+  defp get_license(license), do: license
 
   defp keywords_to_string(nil), do: ""
   defp keywords_to_string(keywords) when is_binary(keywords), do: keywords

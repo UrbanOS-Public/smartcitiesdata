@@ -6,7 +6,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
   import Phoenix.HTML.Form
   import AndiWeb.ErrorHelpers
 
-  alias Andi.InputSchemas.Options
+  alias AndiWeb.Views.Options
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
 

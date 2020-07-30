@@ -30,16 +30,16 @@ defmodule DiscoveryStreams.MessageHandlerTest do
       return: {:ok, "central_ohio_transit_authority__cota_stream"}
     )
 
+    allow(Brook.get(any(), :streaming_datasets_by_system_name, any()),
+      return: {:error, "does_not_exist"}
+    )
+
     allow(Brook.get(any(), :streaming_datasets_by_system_name, "ceav__shuttles_on_a_map"),
       return: {:ok, @dataset_1_id}
     )
 
     allow(Brook.get(any(), :streaming_datasets_by_system_name, "central_ohio_transit_authority__cota_stream"),
       return: {:ok, @dataset_2_id}
-    )
-
-    allow(Brook.get(any(), :streaming_datasets_by_system_name, any()),
-      return: {:error, "does_not_exist"}
     )
 
     :ok

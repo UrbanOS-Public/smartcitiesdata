@@ -14,6 +14,7 @@ defmodule Valkyrie.Application do
         brook(),
         {Valkyrie.Init, monitor: Valkyrie.Dynamic.Supervisor}
       ]
+      |> TelemetryEvent.config_init_server(instance())
       |> List.flatten()
 
     opts = [strategy: :one_for_one, name: Valkyrie.Supervisor]

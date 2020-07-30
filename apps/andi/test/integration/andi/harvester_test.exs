@@ -16,7 +16,6 @@ defmodule Andi.Harvest.HarvesterTest do
 
   describe "data json harvesting" do
     setup do
-
       Ecto.Adapters.SQL.Sandbox.checkout(Andi.Repo)
       Ecto.Adapters.SQL.Sandbox.mode(Andi.Repo, {:shared, self()})
 
@@ -45,7 +44,7 @@ defmodule Andi.Harvest.HarvesterTest do
 
       eventually(fn ->
         dataset_ids = DatasetStore.get_all() |> elem(1) |> Enum.map(fn dataset -> dataset.id end)
-        assert  @dataset_id_1 in dataset_ids
+        assert @dataset_id_1 in dataset_ids
         assert @dataset_id_2 in dataset_ids
       end)
     end
@@ -61,7 +60,7 @@ defmodule Andi.Harvest.HarvesterTest do
 
       eventually(fn ->
         dataset_ids = Datasets.get_all() |> Enum.map(fn dataset -> dataset.id end)
-        assert  @dataset_id_1 in dataset_ids
+        assert @dataset_id_1 in dataset_ids
         assert @dataset_id_2 in dataset_ids
       end)
     end

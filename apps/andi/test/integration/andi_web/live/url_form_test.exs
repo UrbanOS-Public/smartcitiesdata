@@ -24,7 +24,7 @@ defmodule AndiWeb.UrlFormTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.FormTools
+  alias AndiWeb.Helpers.FormTools
   alias Andi.InputSchemas.InputConverter
 
   @endpoint AndiWeb.Endpoint

@@ -4,12 +4,13 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Andi.InputSchemas.Options
+  alias AndiWeb.Views.Options
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.InputConverter
 
   @no_dashes_regex ~r/^[^\-]+$/
   @email_regex ~r/^[\w\_\~\!\$\&\'\(\)\*\+\,\;\=\:.-]+@[\w.-]+\.[\w.-]+?$/
+  @url_regex ~r|^https?://[^\s/$.?#].[^\s]*$|
   @ratings Map.keys(Options.ratings())
 
   schema "metadata" do
@@ -103,6 +104,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_format(:contactEmail, @email_regex)
+    |> validate_format(:license, @url_regex, message: "should be a valid url link to the text of the license")
     |> validate_inclusion(:benefitRating, @ratings, message: "should be one of #{inspect(@ratings)}")
     |> validate_inclusion(:riskRating, @ratings, message: "should be one of #{inspect(@ratings)}")
   end

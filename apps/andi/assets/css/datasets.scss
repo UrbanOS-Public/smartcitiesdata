@@ -1,3 +1,11 @@
+.datasets-view {
+    flex: 1;
+    background: $color-content-background;
+    box-shadow: $box-shadow;
+    height: 100vh;
+    margin: 1em;
+}
+
 .datasets-index {
   padding: 1rem 3rem;
 }

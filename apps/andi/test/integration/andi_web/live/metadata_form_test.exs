@@ -642,7 +642,7 @@ defmodule AndiWeb.MetadataFormTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert get_attributes(html, "#form_data_technical_#{name}", "type") == ["hidden"]
+      assert get_attributes(html, "#form_data_#{name}", "type") == ["hidden"]
 
       where([
         [:name],

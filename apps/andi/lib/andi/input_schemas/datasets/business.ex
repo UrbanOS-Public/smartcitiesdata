@@ -2,10 +2,11 @@ defmodule Andi.InputSchemas.Datasets.Business do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Andi.InputSchemas.Options
+  alias AndiWeb.Views.Options
   alias Andi.InputSchemas.StructTools
 
   @email_regex ~r/^[\w\_\~\!\$\&\'\(\)\*\+\,\;\=\:.-]+@[\w.-]+\.[\w.-]+?$/
+  @url_regex ~r|^https?://[^\s/$.?#].[^\s]*$|
   @ratings Map.keys(Options.ratings())
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
@@ -69,10 +70,12 @@ defmodule Andi.InputSchemas.Datasets.Business do
 
   def changeset(business, %_struct{} = changes), do: changeset(business, Map.from_struct(changes))
 
+  # Validations here are mirrored in lib/andi_web/input_schemas/metadata_form_schema.ex
   def changeset(business, changes) do
     common_changeset_operations(business, changes)
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:contactEmail, @email_regex)
+    |> validate_format(:license, @url_regex, message: "should be a valid url link to the text of the license")
     |> validate_inclusion(:benefitRating, @ratings, message: "should be one of #{inspect(@ratings)}")
     |> validate_inclusion(:riskRating, @ratings, message: "should be one of #{inspect(@ratings)}")
   end
