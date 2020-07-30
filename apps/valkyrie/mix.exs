@@ -4,7 +4,7 @@ defmodule Valkyrie.MixProject do
   def project do
     [
       app: :valkyrie,
-      version: "1.4.0",
+      version: "1.4.1",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -46,6 +46,7 @@ defmodule Valkyrie.MixProject do
       {:excoveralls, "~> 0.11.1", only: :test},
       {:tasks, in_umbrella: true, only: :dev},
       {:jason, "~> 1.2", override: true},
+      {:httpoison, "~> 1.6"},
       {:libcluster, "~> 3.1"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:observer_cli, "~> 1.4"},
