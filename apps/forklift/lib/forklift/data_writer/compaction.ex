@@ -21,8 +21,6 @@ defmodule Forklift.DataWriter.Compaction do
   @spec write({Time.t(), Time.t()}, dataset: Dataset.t()) :: :ok | {:error, term()}
   def write({start_time, end_time}, args) do
     config = parse_args(args)
-
-    Time.diff(end_time, start_time, :millisecond)
     add_event_count(config.table)
   end
 
