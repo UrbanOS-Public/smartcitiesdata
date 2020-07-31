@@ -23,7 +23,7 @@ defmodule Forklift.DataWriter.Compaction do
     config = parse_args(args)
 
     Time.diff(end_time, start_time, :millisecond)
-    |> Metric.record(config.table)
+    add_event_count(config.table)
   end
 
   @impl Pipeline.Writer
@@ -62,5 +62,16 @@ defmodule Forklift.DataWriter.Compaction do
   defp parse_args(args) do
     dataset = Keyword.fetch!(args, :dataset)
     %{dataset: dataset, table: dataset.technical.systemName}
+  end
+
+  defp add_event_count(system_name) do
+    [
+      app: "forklift",
+      system_name: system_name
+    ]
+    |> TelemetryEvent.add_event_count([:dataset_compaction_duration_total])
+  rescue
+    error ->
+      Logger.error("Unable to update the metrics for #{system_name}: #{error}")
   end
 end
