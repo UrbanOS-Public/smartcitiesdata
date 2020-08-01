@@ -22,6 +22,7 @@ defmodule DiscoveryApi.EventHandlerTest do
     test "should save organization to ecto" do
       org = TDG.create_organization(%{})
       allow(Organizations.create_or_update(any()), return: :dontcare)
+      expect(TelemetryEvent.add_event_count(any(), [:events_handled]), return: :ok)
 
       EventHandler.handle_event(Brook.Event.new(type: organization_update(), data: org, author: :author))
 
@@ -31,6 +32,7 @@ defmodule DiscoveryApi.EventHandlerTest do
 
   describe "handle_event/1 user_organization_associate" do
     setup do
+      expect(TelemetryEvent.add_event_count(any(), [:events_handled]), return: :ok)
       {:ok, association_event} = SmartCity.UserOrganizationAssociate.new(%{user_id: "user_id", org_id: "org_id"})
 
       %{association_event: association_event}
@@ -66,6 +68,7 @@ defmodule DiscoveryApi.EventHandlerTest do
       allow(DataJsonService.delete_data_json(), return: :ok)
       allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})
       allow(TableInfoCache.invalidate(), return: :ok)
+      expect(TelemetryEvent.add_event_count(any(), [:events_handled]), return: :ok)
 
       dataset = TDG.create_dataset(%{})
 
@@ -83,6 +86,7 @@ defmodule DiscoveryApi.EventHandlerTest do
 
   describe "handle_event/1 #{dataset_delete()}" do
     setup do
+      expect(TelemetryEvent.add_event_count(any(), [:events_handled]), return: :ok)
       %{dataset: TDG.create_dataset(%{id: Faker.UUID.v4()})}
     end
 
