@@ -34,7 +34,7 @@ defmodule Forklift.DataWriter.Compaction do
 
   @impl Pipeline.Writer
   @spec compact(dataset: Dataset.t()) :: :ok | {:error, term()}
-  def compact(args, _ \\ []) do
+  def compact(args) do
     config = parse_args(args)
 
     try do
