@@ -50,7 +50,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
     allow Elsa.create_topic(any(), any()), return: :ok
     allow Elsa.Supervisor.start_link(any()), return: {:ok, :pid}
     allow Elsa.topic?(any(), any()), return: true
-    allow :brod.get_producer(any(), any(), any()), return: {:ok, :pid}
+    allow Elsa.Producer.ready?(any()), return: :does_not_matter
 
     [bypass: bypass, dataset: dataset]
   end

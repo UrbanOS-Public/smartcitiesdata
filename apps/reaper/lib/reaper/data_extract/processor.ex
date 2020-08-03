@@ -112,14 +112,7 @@ defmodule Reaper.DataExtract.Processor do
     {:ok, _pid} =
       Elsa.Supervisor.start_link(connection: connection_name , endpoints: endpoints(), producer: [topic: topic])
 
-      Elsa.Producer.ready?(connection_name)
-    # retry with: constant_backoff(100) |> Stream.take(25) do
-    #   :brod.get_producer(:"#{topic}_producer", topic, 0)
-    # after
-    #   {:ok, _pid} -> true
-    # else
-    #   _ -> raise "Cannot verify kafka producer for topic #{topic}"
-    # end
+    Elsa.Producer.ready?(connection_name)
   end
 
   defp endpoints(), do: Application.get_env(:reaper, :elsa_brokers)
