@@ -50,7 +50,7 @@ defmodule Valkyrie.MixProject do
       {:libcluster, "~> 3.1"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:observer_cli, "~> 1.4"},
-      {:off_broadway_kafka, "~> 0.4.0"},
+      {:off_broadway_kafka, "~> 1.0.1"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:retry, "~> 0.13"},
       {:smart_city, "~> 3.0"},

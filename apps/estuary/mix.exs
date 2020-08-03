@@ -50,7 +50,7 @@ defmodule Estuary.MixProject do
       {:prestige, "~> 1.0"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
-      {:quantum, "~>2.3"},
+      {:quantum, "~>2.4"},
       {:timex, "~> 3.6"}
     ]
   end

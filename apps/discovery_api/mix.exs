@@ -71,7 +71,7 @@ defmodule DiscoveryApi.Mixfile do
       {:prestige, "~> 1.0"},
       {:prometheus_plugs, "~> 1.1"},
       {:prometheus_phoenix, "~>1.3"},
-      {:quantum, "~>2.3"},
+      {:quantum, "~>2.4"},
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.2"},
       {:smart_city, "~> 3.0"},

@@ -45,6 +45,7 @@ defmodule Andi.MixProject do
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1.4", only: [:dev, :integration]},
+      {:ecto, "~> 3.3.4"},
       {:ecto_sql, "~> 3.0"},
       {:elixir_uuid, "~> 1.2"},
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},
