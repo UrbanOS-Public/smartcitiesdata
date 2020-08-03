@@ -18,8 +18,8 @@ defmodule Forklift.DataWriter.Compaction do
   end
 
   @impl Pipeline.Writer
-  @spec write({Time.t(), Time.t()}, dataset: Dataset.t()) :: :ok | {:error, term()}
-  def write({start_time, end_time}, args) do
+  @spec write(dataset: Dataset.t()) :: :ok | {:error, term()}
+  def write(args, _ \\ []) do
     config = parse_args(args)
     add_event_count(config.table)
   end
@@ -34,7 +34,7 @@ defmodule Forklift.DataWriter.Compaction do
 
   @impl Pipeline.Writer
   @spec compact(dataset: Dataset.t()) :: :ok | {:error, term()}
-  def compact(args) do
+  def compact(args, _ \\ []) do
     config = parse_args(args)
 
     try do
