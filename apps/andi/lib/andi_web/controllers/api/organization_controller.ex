@@ -8,7 +8,7 @@ defmodule AndiWeb.API.OrganizationController do
   alias SmartCity.Organization
   alias Andi.Services.OrgStore
   import Andi
-  import SmartCity.Event, only: [organization_update: 0]
+  import SmartCity.Event, only: [organization_update: 0, dataset_harvest_start: 0]
 
   @doc """
   Parse a data message to create a new organization to store in ViewState
@@ -22,7 +22,8 @@ defmodule AndiWeb.API.OrganizationController do
 
     with :ok <- ensure_new_org(message["id"]),
          {:ok, organization} <- Organization.new(message),
-         :ok <- write_organization(organization) do
+         :ok <- write_organization(organization),
+         :ok <- data_harvest_event(organization) do
       conn
       |> put_status(:created)
       |> json(organization)
@@ -69,6 +70,13 @@ defmodule AndiWeb.API.OrganizationController do
 
       error ->
         error
+    end
+  end
+
+  defp data_harvest_event(org) do
+    case org.dataJsonUrl do
+      nil -> :ok
+      _ -> Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org)
     end
   end
 

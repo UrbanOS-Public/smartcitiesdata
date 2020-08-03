@@ -10,6 +10,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.OrgStore
   import Andi
+  import SmartCity.Event, only: [dataset_harvest_start: 0]
 
   setup do
     allow(OrgStore.get(any()), return: {:ok, nil}, meck_options: [:passthrough])
@@ -225,6 +226,43 @@ defmodule AndiWeb.API.OrganizationControllerTest do
         |> json_response(500)
 
       assert actual == "Internal Server Error"
+    end
+  end
+
+  describe "data harvest event is triggered for datasets with data json url" do
+    test "data:harvest:start event is triggered", %{conn: conn} do
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(OrgStore.get(any()), return: {:ok, nil}, meck_options: [:passthrough])
+
+      request = %{
+        "orgName" => "myOrg",
+        "orgTitle" => "My Org Title",
+        "dataJsonUrl" => "https://www.google.com",
+        "id" => "1246faf2-72f7-4b12-8368-dc1e9d91fdd7"
+      }
+
+      org = Organization.new(request) |> elem(1)
+
+      post(conn, @route, request)
+
+      assert_called(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org), once())
+    end
+
+    test "data:harvest:start event isnt called for orgs missing data json url", %{conn: conn} do
+      allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(OrgStore.get(any()), return: {:ok, nil}, meck_options: [:passthrough])
+
+      request = %{
+        "orgName" => "myOrg",
+        "orgTitle" => "My Org Title",
+        "id" => "fdgd434-ff33-66yy-65ty-dc1e9d91fdd7"
+      }
+
+      org = Organization.new(request) |> elem(1)
+
+      post(conn, @route, request)
+
+      refute_called(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org), once())
     end
   end
 

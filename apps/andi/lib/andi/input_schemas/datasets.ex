@@ -48,9 +48,16 @@ defmodule Andi.InputSchemas.Datasets do
   end
 
   def update(%SmartCity.Dataset{} = smrt_dataset) do
-    andi_dataset = get(smrt_dataset.id)
-    changeset = InputConverter.smrt_dataset_to_full_changeset(andi_dataset, smrt_dataset)
-    save(changeset)
+    andi_dataset =
+      case get(smrt_dataset.id) do
+        nil -> %Dataset{}
+        dataset -> dataset
+      end
+
+    changes = InputConverter.prepare_smrt_dataset_for_casting(smrt_dataset)
+
+    Dataset.changeset_for_draft(andi_dataset, changes)
+    |> save()
   end
 
   def update(%Dataset{} = andi_dataset) do

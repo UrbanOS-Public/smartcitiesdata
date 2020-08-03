@@ -1,0 +1,167 @@
+{
+    "@context": "https://project-open-data.cio.gov/v1.1/schema/catalog.jsonld",
+    "@type": "dcat:Catalog",
+    "conformsTo": "https://project-open-data.cio.gov/v1.1/schema",
+    "describedBy": "https://project-open-data.cio.gov/v1.1/schema/catalog.json",
+    "dataset": [
+        {
+            "@type": "dcat:Dataset",
+            "identifier": "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30",
+            "license": "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30/license.json",
+            "landingPage": "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30",
+            "title": "Lead Safe Units",
+            "description": "<p><span style='font-size:10.5pt;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#1F497D;mso-bidi-font-style:italic'>This layer depicts properties that\nhave passed a lead clearance evaluation in the Lead Safe Columbus Program. The\nunits shown were deemed lead-safe based on a lead clearance evaluation in the month\nshown. “Lead-safe” means that there was no deteriorated lead-based paint, no\nlead-contaminated dust, and no exposed lead-contaminated soil identified at the\ntime of the lead evaluation.  This does not mean that the units listed are\nvacant or available at this time.  Please contact the owner of the\nproperty for rental information.  With local and grant funding through the\nU.S. Department of Housing and Urban Development, Office of Healthy Homes and\nLead Hazard Control, the mission of the Lead Safe Columbus Program is to\ngenerate lead-safe and healthy affordable housing and to prevent lead poisoning\nof children and adults in Columbus neighborhoods. This program may provide\nfunding to eligible property owners for lead-based paint hazard control and\naddressing healthy homes hazards in tenant or owner occupied units. More\ninformation can be obtained at <a href='https://www.columbus.gov/development/housing-division/Lead-Safe-Columbus_M/'>https://www.columbus.gov/development/housing-division/Lead-Safe-Columbus_M/</a></span>.<span style='font-size:10.5pt;font-family:&quot;Arial&quot;,sans-serif;color:#1F497D;\nmso-bidi-font-style:italic'></span></p>",
+            "keyword": [
+                "Columbus",
+                "City",
+                "Development",
+                "Ohio"
+            ],
+            "issued": "2019-08-10T13:31:42.000Z",
+            "modified": "2019-08-16T15:11:39.000Z",
+            "publisher": {
+                "source": "City of Columbus Maps & Apps"
+            },
+            "contactPoint": {
+                "@type": "vcard:Contact",
+                "fn": "ColumbusOhioGIS"
+            },
+            "accessLevel": "public",
+            "distribution": [
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "ArcGIS Hub Dataset",
+                    "format": "Web Page",
+                    "mediaType": "text/html",
+                    "accessURL": "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "Esri Rest API",
+                    "format": "Esri REST",
+                    "mediaType": "application/json",
+                    "accessURL": "https://maps2.columbus.gov/arcgis/rest/services/Schemas/Development/MapServer/30"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "GeoJSON",
+                    "format": "GeoJSON",
+                    "mediaType": "application/vnd.geo+json",
+                    "accessURL": "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30.geojson?outSR={\"latestWkid\":3735,\"wkid\":102723}"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "CSV",
+                    "format": "CSV",
+                    "mediaType": "text/csv",
+                    "accessURL": "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30.csv?outSR={\"latestWkid\":3735,\"wkid\":102723}"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "KML",
+                    "format": "KML",
+                    "mediaType": "application/vnd.google-earth.kml+xml",
+                    "accessURL": "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30.kml?outSR={\"latestWkid\":3735,\"wkid\":102723}"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "Shapefile",
+                    "format": "ZIP",
+                    "mediaType": "application/zip",
+                    "accessURL": "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30.zip?outSR={\"latestWkid\":3735,\"wkid\":102723}"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "OGC WMS",
+                    "format": "OGC WMS",
+                    "mediaType": "application/vnd.ogc.wms_xml",
+                    "accessURL": "https://maps2.columbus.gov/arcgis/services/Schemas/Development/MapServer/WMSServer?request=GetCapabilities&service=WMS"
+                }
+            ],
+            "spatial": "-83.0876,39.9083,-82.8827,40.0827",
+            "theme": [
+                "geospatial"
+            ]
+        },
+        {
+            "@type": "dcat:Dataset",
+            "identifier": "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2",
+            "license": "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2/license.json",
+            "landingPage": "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2",
+            "title": "On-Street Loading Zones",
+            "description": "This map layer shows on-street loading zones permitted by the City of Columbus. More information regarding loading zones is available on the <a href='https://www.columbus.gov/publicservice/parking/Loading-Zones-Rules-and-Regulations/' target='_blank'>Department of Public Service website</a>.",
+            "keyword": [
+                "City",
+                "Ohio",
+                "Columbus",
+                "Public Service",
+                "Parking"
+            ],
+            "issued": "2017-08-04T20:08:40.000Z",
+            "modified": "2019-01-25T14:39:07.000Z",
+            "publisher": {
+                "source": "City of Columbus Maps & Apps"
+            },
+            "contactPoint": {
+                "@type": "vcard:Contact",
+                "fn": "ColumbusOhioGIS"
+            },
+            "accessLevel": "public",
+            "distribution": [
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "ArcGIS Hub Dataset",
+                    "format": "Web Page",
+                    "mediaType": "text/html",
+                    "accessURL": "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "Esri Rest API",
+                    "format": "Esri REST",
+                    "mediaType": "application/json",
+                    "accessURL": "https://maps2.columbus.gov/arcgis/rest/services/Schemas/PublicService/MapServer/2"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "GeoJSON",
+                    "format": "GeoJSON",
+                    "mediaType": "application/vnd.geo+json",
+                    "accessURL": "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2.geojson?outSR={\"latestWkid\":3735,\"wkid\":102723}"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "CSV",
+                    "format": "CSV",
+                    "mediaType": "text/csv",
+                    "accessURL": "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2.csv?outSR={\"latestWkid\":3735,\"wkid\":102723}"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "KML",
+                    "format": "KML",
+                    "mediaType": "application/vnd.google-earth.kml+xml",
+                    "accessURL": "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2.kml?outSR={\"latestWkid\":3735,\"wkid\":102723}"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "Shapefile",
+                    "format": "ZIP",
+                    "mediaType": "application/zip",
+                    "accessURL": "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2.zip?outSR={\"latestWkid\":3735,\"wkid\":102723}"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "OGC WMS",
+                    "format": "OGC WMS",
+                    "mediaType": "application/vnd.ogc.wms_xml",
+                    "accessURL": "https://maps2.columbus.gov/arcgis/services/Schemas/PublicService/MapServer/WMSServer?request=GetCapabilities&service=WMS"
+                }
+            ],
+            "spatial": "-83.0839,39.923,-82.8989,40.0539",
+            "theme": [
+                "geospatial"
+            ]
+        }
+    ]
+}
