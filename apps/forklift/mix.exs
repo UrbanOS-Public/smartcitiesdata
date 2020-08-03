@@ -35,7 +35,7 @@ defmodule Forklift.MixProject do
       {:dead_letter, in_umbrella: true},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
-      {:elsa, "~> 0.10.0"},
+      {:elsa, "~> 0.12"},
       {:ex_doc, "~> 0.21"},
       {:jason, "~> 1.2", override: true},
       {:libcluster, "~> 3.1"},

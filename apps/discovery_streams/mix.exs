@@ -41,7 +41,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:divo_kafka, "~> 0.1.5", only: [:integration]},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
-      {:elsa, "~> 0.10.0", override: true},
+      {:elsa, "~> 0.12", override: true},
       {:ex_doc, "~> 0.19", only: [:test, :integration], runtime: false},
       {:httpoison, "~> 1.6"},
       {:jason, "~> 1.2", override: true},
