@@ -73,7 +73,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
                   <button type="button" class="url-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
                   <%= if @test_results do %>
                     <div class="test-status">
-                    Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) %></span>
+                    Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) |> HttpStatusDescriptions.simple() %></span>
                     <%= status_tooltip(@test_results) %>
                     Time: <span class="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
                     </div>
@@ -232,7 +232,7 @@ defmodule AndiWeb.EditLiveView.UrlForm do
 
   defp status_class(%{status: status}) when status in 200..399, do: "test-status__code--good"
   defp status_class(%{status: _}), do: "test-status__code--bad"
-  defp status_tooltip(%{status: status}) when status in 200..399, do: status_tooltip(%{status: status}, "hidden")
+  defp status_tooltip(%{status: status}) when status in 200..399, do: status_tooltip(%{status: status}, "shown")
 
   defp status_tooltip(%{status: status}, modifier \\ "shown") do
     assigns = %{

@@ -170,7 +170,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     new_changeset =
       file
       |> parse_csv()
-      |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.dataset_id)
+      |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.dataset_id)
 
     assign_new_schema(socket, new_changeset)
   end
@@ -334,14 +334,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     |> Enum.take(2)
     |> Enum.map(fn row -> String.split(row, ",") end)
     |> Enum.zip()
-    |> convert_datum
-  end
-
-  defp convert_datum(datum) do
-    datum
     |> Enum.map(fn {k, v} -> {k, convert_value(v)} end)
-    |> Map.new()
-    |> List.wrap()
   end
 
   defp convert_value(nil), do: nil

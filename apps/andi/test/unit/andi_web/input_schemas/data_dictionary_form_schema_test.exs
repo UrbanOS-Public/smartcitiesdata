@@ -58,6 +58,39 @@ defmodule AndiWeb.DataDictionaryFormSchemaTest do
     end
   end
 
+  describe "changeset from list of tuples" do
+    test "converts, generating sequences" do
+      data = [
+        {"bob", 123},
+        {"bob1", 321},
+        {"bob2", 324},
+        {"bob3", 543}
+      ]
+
+      sequenced_names =
+        DataDictionaryFormSchema.generate_ordered_schema(data, "123")
+        |> Enum.map(fn %{"name" => name, "sequence" => sequence} -> {name, sequence} end)
+
+      assert sequenced_names == [
+               {"bob", 0},
+               {"bob1", 1},
+               {"bob2", 2},
+               {"bob3", 3}
+             ]
+    end
+
+    test "produces a valid schema" do
+      data = [
+        {"test_int", 123},
+        {"test_string", "321"}
+      ]
+
+      changeset = DataDictionaryFormSchema.changeset_from_tuple_list(data, "123")
+
+      assert changeset.valid?
+    end
+  end
+
   defp drop_fields_from_schema(nil), do: nil
 
   defp drop_fields_from_schema(schema) do

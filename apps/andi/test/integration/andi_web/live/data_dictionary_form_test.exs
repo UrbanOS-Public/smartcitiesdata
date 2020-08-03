@@ -287,11 +287,11 @@ defmodule AndiWeb.DataDictionaryFormTest do
         |> Enum.map(fn item -> %{type: item.type, name: item.name} end)
 
       expected_schema = [
-        %{name: "bool", type: "boolean"},
-        %{name: "date", type: "date"},
-        %{name: "float", type: "float"},
+        %{name: "string", type: "string"},
         %{name: "int", type: "integer"},
-        %{name: "string", type: "string"}
+        %{name: "float", type: "float"},
+        %{name: "bool", type: "boolean"},
+        %{name: "date", type: "date"}
       ]
 
       assert generated_schema == expected_schema
