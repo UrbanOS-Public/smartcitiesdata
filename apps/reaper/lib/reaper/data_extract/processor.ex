@@ -109,8 +109,9 @@ defmodule Reaper.DataExtract.Processor do
 
   defp start_topic_producer(topic) do
     connection_name = :"#{topic}_producer"
+
     {:ok, _pid} =
-      Elsa.Supervisor.start_link(connection: connection_name , endpoints: endpoints(), producer: [topic: topic])
+      Elsa.Supervisor.start_link(connection: connection_name, endpoints: endpoints(), producer: [topic: topic])
 
     Elsa.Producer.ready?(connection_name)
   end

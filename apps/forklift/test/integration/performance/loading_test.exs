@@ -162,7 +162,7 @@ defmodule Forklift.Performance.LoadingTest do
 
     {:ok, producer_pid} =
       Elsa.Supervisor.start_link(endpoints: @endpoints, producer: [topic: topic], connection: producer_name)
-      
+
     Elsa.Producer.ready?(producer_name)
 
     messages
