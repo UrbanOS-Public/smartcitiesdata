@@ -206,13 +206,15 @@ $component-header-height: 7.5rem;
 }
 
 .help-text-label {
-    display: inline-flex;
-    width: 90%;
-    justify-content: space-between;
+    display: flex;
+    width: 27rem;
+    position: relative;
 
     a {
-        font-size: 14px;
+        position: absolute;
+        right: 0;
         color: $color-text-link;
+        font-size: 14px;
     }
 }
 
