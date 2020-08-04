@@ -113,11 +113,13 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               </div>
 
               <div class="metadata-form__license">
-                <%= label(f, :license, DisplayNames.get(:license), class: "label label--required") %>
+                <div class="help-text-label">
+                  <%= label(f, :license, DisplayNames.get(:license), class: "label label--required") %>
+                  <%= link("About Licenses", to: "https://creativecommons.org/licenses/", target: "_blank") %>
+                </div>
                 <%= text_input(f, :license, class: "input", value: get_license(input_value(f, :license))) %>
                 <%= ErrorHelpers.error_tag(f, :license, bind_to_input: false) %>
                 <div>
-                <%= link("About Licenses", to: "https://creativecommons.org/licenses/", target: "_blank") %>
                 </div>
               </div>
 
@@ -145,12 +147,18 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               </div>
 
               <div class="metadata-form__spatial">
-                <%= label(f, :spatial, DisplayNames.get(:spatial), class: "label") %>
+                <div class="help-text-label">
+                  <%= label(f, :spatial, DisplayNames.get(:spatial), class: "label") %>
+                  <a href="https://resources.data.gov/resources/dcat-us/#spatial" target="_blank">Formatting Help</a>
+                </div>
                 <%= text_input(f, :spatial, class: "input") %>
               </div>
 
               <div class="metadata-form__temporal">
-                <%= label(f, :temporal, DisplayNames.get(:temporal), class: "label") %>
+                <div class="help-text-label">
+                  <%= label(f, :temporal, DisplayNames.get(:temporal), class: "label") %>
+                  <a href="https://resources.data.gov/resources/dcat-us/#temporal" target="_blank">Formatting Help</a>
+                </div>
                 <%= text_input(f, :temporal, class: "input") %>
                 <%= ErrorHelpers.error_tag(f, :temporal) %>
               </div>
