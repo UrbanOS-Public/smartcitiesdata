@@ -33,7 +33,7 @@ defmodule E2ETest do
     technical: %{
       dataName: "strimmin",
       orgName: "usa",
-      cadence: "*/1 * * * * * *",
+      cadence: "*/10 * * * * *",
       sourceType: "stream",
       systemName: "usa__strimmin"
     }
