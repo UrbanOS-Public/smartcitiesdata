@@ -18,9 +18,10 @@ defmodule TelemetryEvent.Helper.TelemetryEventHelper do
   defp metrics() do
     Application.get_env(:telemetry_event, :metrics_options)
     |> Enum.map(fn metrics_option ->
-      metric_type_and_name = Keyword.fetch!(metrics_option, :metric_type_and_name)
-      |> Enum.split(1)
-      
+      metric_type_and_name =
+        Keyword.fetch!(metrics_option, :metric_type_and_name)
+        |> Enum.split(1)
+
       metric_name = metric_type_and_name |> elem(1)
 
       metric_type_and_name
