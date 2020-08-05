@@ -102,6 +102,7 @@ config :telemetry_event,
 
 ## metric_type
 - This indicates the type of metric required.
+- It must be one of the the following options:
 - `COUNTER` Metric - It keeps track of the total number of specific events emitted.
 - `SUM` Metric - It keeps track of the sum of selected measurement's values carried by specific events.
 
