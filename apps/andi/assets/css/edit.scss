@@ -205,6 +205,20 @@ $component-header-height: 7.5rem;
     align-self: center;
 }
 
+.help-text-label {
+    display: flex;
+    width: 27rem;
+    position: relative;
+
+    a {
+        position: absolute;
+        right: 0;
+        color: $color-text-link;
+        font-size: 14px;
+    }
+}
+
+
 .unsaved-changes-modal--visible {
     @include modal-wrapper()
 }
