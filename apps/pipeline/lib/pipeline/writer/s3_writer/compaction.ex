@@ -17,13 +17,18 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
 
     cond do
       !orc_table_exists && !compact_table_exists ->
-        raise RuntimeError, "Critical Error: Compaction for #{orc_table} failed due to missing tables. Data for the associated dataset has been lost. Recommend restoring from backup."
+        raise RuntimeError,
+              "Critical Error: Compaction for #{orc_table} failed due to missing tables. Data for the associated dataset has been lost. Recommend restoring from backup."
 
       compact_table_exists && !orc_table_exists ->
-        Logger.warn("Table #{orc_table} not found during compaction. Restoring the table from the previous run's compacted table.")
+        Logger.warn(
+          "Table #{orc_table} not found during compaction. Restoring the table from the previous run's compacted table."
+        )
+
         rename_and_validate(compact_table, orc_table)
 
-      compact_table_exists -> ensure_table_dropped(compact_table)
+      compact_table_exists ->
+        ensure_table_dropped(compact_table)
 
       true ->
         :ok
@@ -157,6 +162,7 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
 
   defp rename_and_validate(source_table, target_table) do
     source_count = count(source_table)
+
     %{table: source_table, alteration: "rename to #{target_table}"}
     |> Statement.alter()
     |> PrestigeHelper.execute_query()
