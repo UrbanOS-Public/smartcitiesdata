@@ -6,6 +6,7 @@ defmodule EventHandlerTest do
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.Event, only: [data_ingest_end: 0, dataset_delete: 0, dataset_harvest_start: 0]
   import Andi, only: [instance_name: 0]
+  import SmartCity.TestHelper, only: [eventually: 1]
   alias Andi.InputSchemas.Datasets
   alias Andi.Harvest.Harvester
 
@@ -38,6 +39,8 @@ defmodule EventHandlerTest do
 
     Brook.Test.send(instance_name(), dataset_harvest_start(), :andi, org)
 
-    assert_called(Harvester.start_harvesting(org))
+    eventually(fn ->
+      assert_called(Harvester.start_harvesting(org))
+    end)
   end
 end
