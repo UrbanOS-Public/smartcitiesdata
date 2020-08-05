@@ -82,7 +82,7 @@ defmodule TestHelpers do
         Elsa.topic?(endpoints, topic)
       end,
       dwell: 200,
-      max_tries: 20
+      max_tries: 50
     )
   end
 end
