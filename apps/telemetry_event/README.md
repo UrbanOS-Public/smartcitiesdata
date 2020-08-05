@@ -65,46 +65,46 @@ config :telemetry_event,
   init_server: true,
   metrics_options: [
     [
-      metric_name: "events_handled.count",
-      tags: [:app, :author, :dataset_id, :event_type],
-      metric_type: "COUNTER"
+      metric_type_and_name: [:counter, :events_handled, :count],
+      tags: [:app, :author, :dataset_id, :event_type]
     ],
     [
-      metric_name: "dead_letters_handled.count",
-      tags: [:dataset_id, :reason],
-      metric_type: "COUNTER"
+      metric_type_and_name: [:counter, :dead_letters_handled, :count],
+      tags: [:dataset_id, :reason]
     ],
     [
-      metric_name: "dataset_compaction_duration_total.duration",
-      tags: [:app, :system_name],
-      metric_type: "SUM"
+      metric_type_and_name: [:sum, :dataset_compaction_duration_total, :duration],
+      tags: [:app, :system_name]
     ]
   ]
 ```
 
 ## metrics_port
-- The above port no is just an example, its not mandatory to use the same port for each app.
+  - The above port no is just an example, its not mandatory to use the same port for each app.
 
 ## init_server
 - Init Server is optional by default it is `true` and it is not required.
 
 ## metrics_options
-- The above metrics_options can is just an example, any no of metrics can be added to it depending upon the requirement of the app.
+  - The above metrics_options can is just an example, any no of metrics can be added to it depending upon the requirement of the app.
 
-## metric_name
-- This includes the name of the metrics followed by the measurement.
-- Anything before the last `.` is considered as the name of the metrics and anything after the last `.` is the measurement of the metrics.
-- For eg: `events_handled.count` - Here, `events_handled` is the name of the metrics and the `count` is the measurement.
+## metric_type_and_name
+  - This includes the type of the metrics, the name of the metrics followed by the measurement.
+  - It must be in the following format:
+  `[:type_of_metric, :name_of_metric, :measurement]`
+  Note: All these fields and the sequence must be the same as mentioned in the above line.
+
+  - `:type_of_metric` It must be one of the following:
+      `:counter` Metric - It keeps track of the total number of specific events emitted.
+      `:sum` Metric - It keeps track of the sum of selected measurement's values carried by specific events.
+
+  - `:name_of_metric` It can be any name for the metric.
+
+  - `:measurement` It can be any measurement for the metric.
 
 ## tags
-- This includes the list of the atoms to for required keys.
-- For eg: `[:app, :system_name]` - Here, two keys are used, `app` and `system_name`
-
-## metric_type
-- This indicates the type of metric required.
-- It must be one of the the following options:
-- `COUNTER` Metric - It keeps track of the total number of specific events emitted.
-- `SUM` Metric - It keeps track of the sum of selected measurement's values carried by specific events.
+  - This includes the list of the atoms to for required keys.
+  - For eg: `[:app, :system_name]` - Here, two keys are used, `app` and `system_name`
 
 
 ### PORT NO FOR TEST AND INTEGRATION
