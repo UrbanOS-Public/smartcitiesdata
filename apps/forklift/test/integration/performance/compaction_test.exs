@@ -26,7 +26,7 @@ defmodule Forklift.Performance.CompactionTest do
 
   @tag timeout: :infinity
   test "large compactions don't intermittently fail", %{large_source: source} do
-    Logger.configure(level: :debug)
+    Logger.configure(level: :info)
     scale = 2
 
     source_dataset = dataset_from_source(source)
@@ -54,7 +54,7 @@ defmodule Forklift.Performance.CompactionTest do
     assert :ok == compact(dataset)
 
     log("confirming record counts from table for #{dataset.id}")
-    assert {^expected_orc_count, ^expected_json_count} = get_record_counts(dataset)
+    assert {^expected_json_count, ^expected_orc_count} = get_record_counts(dataset)
 
     log("dropping tables for successful compaction #{dataset.id}")
     drop_tables(dataset)
@@ -112,7 +112,7 @@ defmodule Forklift.Performance.CompactionTest do
     log("confirming that no data is lost, assuming we get back to just ORC + JSON tables")
     assert expected_orc_count + json_count == get_record_count_for_table(orc_table)
     assert 0 == get_record_count_for_table(json_table)
-    assert table_exists?(orc_table) != true
+    assert table_exists?(orc_table)
   end
 
   defp dataset_from_source(source) do
