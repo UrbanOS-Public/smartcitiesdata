@@ -54,7 +54,7 @@ defmodule DiscoveryApi.Test.Helper do
       license: "APL2",
       rights: "public",
       homepage: Faker.Internet.url(),
-      spatial: Faker.Lorem.characters(10),
+      spatial: Faker.Lorem.word(),
       temporal: Date.to_string(Faker.Date.date_of_birth()),
       publishFrequency: "10",
       conformsToUri: Faker.Internet.url(),
