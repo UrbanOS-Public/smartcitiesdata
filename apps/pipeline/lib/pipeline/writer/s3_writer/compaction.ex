@@ -3,13 +3,31 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias Pipeline.Writer.TableWriter.Statement
   require Logger
+  use Retry
+
+  @initial_wait 100
+  @max_wait 15_000
+  @retry_count 100
 
   def setup(options) do
     orc_table = options[:orc_table]
+    orc_table_exists = table_exists?(orc_table)
+    compact_table = "#{orc_table}_compact"
+    compact_table_exists = table_exists?(compact_table)
 
-    %{table: "#{orc_table}_compact"}
-    |> Statement.drop()
-    |> PrestigeHelper.execute_query()
+    cond do
+      !orc_table_exists && !compact_table_exists ->
+        raise RuntimeError, "Critical Error: Compaction for #{orc_table} failed due to missing tables. Data for the associated dataset has been lost. Recommend restoring from backup."
+
+      compact_table_exists && !orc_table_exists ->
+        Logger.warn("Table #{orc_table} not found during compaction. Restoring the table from the previous run's compacted table.")
+        rename_and_validate(compact_table, orc_table)
+
+      compact_table_exists -> ensure_table_dropped(compact_table)
+
+      true ->
+        :ok
+    end
 
     options
   end
@@ -59,17 +77,11 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     json_table = options[:json_table]
     compact_table = "#{orc_table}_compact"
 
-    %{table: orc_table}
-    |> Statement.drop()
-    |> PrestigeHelper.execute_query()
+    ensure_table_dropped(orc_table)
 
-    %{table: json_table}
-    |> Statement.truncate()
-    |> PrestigeHelper.execute_query()
+    truncate_and_drain(json_table)
 
-    %{table: compact_table, alteration: "rename to #{orc_table}"}
-    |> Statement.alter()
-    |> PrestigeHelper.execute_query()
+    rename_and_validate(compact_table, orc_table)
 
     :ok
   end
@@ -91,9 +103,31 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     {:error, message}
   end
 
+  def wait_for_record_count(table, target_count) do
+    retry with: exponential_backoff(@initial_wait) |> cap(@max_wait) |> Stream.take(@retry_count) do
+      case count(table) do
+        current_count when current_count == target_count -> :ok
+        _ -> :error
+      end
+    after
+      _ -> :ok
+    else
+      {:error, reason} ->
+        raise RuntimeError,
+              "Aborting compaction. Unable to confirm new record count (#{target_count}) for #{table} due to: #{
+                inspect(reason)
+              }"
+    end
+  end
+
   def count(table) do
-    with {:ok, results} <- PrestigeHelper.execute_query("select count(1) from #{table}") do
-      results.rows
+    case PrestigeHelper.execute_query("select count(1) from #{table}") do
+      {:ok, new_results} ->
+        [[new_row_count]] = new_results.rows
+        new_row_count
+
+      _ ->
+        :error
     end
   end
 
@@ -101,6 +135,53 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     with task <- PrestigeHelper.execute_async_query("select count(1) from #{table}"),
          {:ok, results} <- Task.await(task) do
       results.rows
+    end
+  end
+
+  # This function checks to make sure Hive has finished deleting all source files before continuing.
+  # It does so by attempting to recreate the table and failing until all files have been removed.
+  defp ensure_table_dropped(table) do
+    drop_table(table)
+
+    retry with: exponential_backoff(@initial_wait) |> cap(@max_wait) |> Stream.take(@retry_count) do
+      PrestigeHelper.execute_query("create table #{table} (delete_me int)")
+    after
+      _ ->
+        drop_table(table)
+    else
+      error ->
+        drop_table(table)
+        raise RuntimeError, inspect(error)
+    end
+  end
+
+  defp rename_and_validate(source_table, target_table) do
+    source_count = count(source_table)
+    %{table: source_table, alteration: "rename to #{target_table}"}
+    |> Statement.alter()
+    |> PrestigeHelper.execute_query()
+
+    wait_for_record_count(target_table, source_count)
+  end
+
+  defp truncate_and_drain(target_table) do
+    %{table: target_table}
+    |> Statement.truncate()
+    |> PrestigeHelper.execute_query()
+
+    wait_for_record_count(target_table, 0)
+  end
+
+  defp drop_table(table) do
+    %{table: table}
+    |> Statement.drop()
+    |> PrestigeHelper.execute_query()
+  end
+
+  defp table_exists?(table) do
+    case PrestigeHelper.execute_query("show create table #{table}") do
+      {:ok, _} -> true
+      _ -> false
     end
   end
 end
