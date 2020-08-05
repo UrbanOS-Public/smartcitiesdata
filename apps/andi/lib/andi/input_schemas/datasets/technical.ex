@@ -154,7 +154,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     crontab_list = String.split(crontab, " ")
 
     cond do
-      Enum.count(crontab_list) < 5 ->
+      Enum.count(crontab_list) not in [5, 6] ->
         {:error, "Invalid length"}
 
       Enum.count(crontab_list) == 6 and hd(crontab_list) in @invalid_seconds ->
