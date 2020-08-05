@@ -3,7 +3,6 @@ defmodule Forklift.DataWriter.Compaction do
 
   require Logger
   alias SmartCity.Dataset
-  alias Forklift.DataWriter.Compaction.Metric
 
   @behaviour Pipeline.Writer
   @writer Application.get_env(:forklift, :table_writer)
