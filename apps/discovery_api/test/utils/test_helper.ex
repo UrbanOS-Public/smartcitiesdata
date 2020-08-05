@@ -24,7 +24,7 @@ defmodule DiscoveryApi.Test.Helper do
       organization: Faker.Lorem.word(),
       organizationDetails: %{} |> TDG.create_organization() |> Map.from_struct(),
       modifiedDate: Date.to_string(Faker.Date.backward(20)),
-      fileTypes: [Faker.Lorem.characters(3), Faker.Lorem.characters(4)],
+      fileTypes: Faker.File.file_extension(),
       description: Enum.join(Faker.Lorem.sentences(2..3), " "),
       schema: [
         %{
