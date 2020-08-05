@@ -18,24 +18,19 @@ defmodule TelemetryEvent.Helper.TelemetryEventHelper do
   defp metrics() do
     Application.get_env(:telemetry_event, :metrics_options)
     |> Enum.map(fn metrics_option ->
-      metric_type_and_name =
-        Keyword.fetch!(metrics_option, :metric_type_and_name)
-        |> Enum.split(1)
-
-      metric_name = metric_type_and_name |> elem(1)
-
-      metric_type_and_name
-      |> elem(0)
-      |> metrics_event(metric_name, metrics_option)
+      Keyword.fetch!(metrics_option, :metric_type)
+      |> metrics_event(metrics_option)
     end)
   end
 
-  defp metrics_event([:counter], metric_name, metrics_option) do
-    Metrics.counter(metric_name, tags: Keyword.fetch!(metrics_option, :tags))
+  defp metrics_event(:counter, metrics_option) do
+    Keyword.fetch!(metrics_option, :metric_name)
+    |> Metrics.counter(tags: Keyword.fetch!(metrics_option, :tags))
   end
 
-  defp metrics_event([:sum], metric_name, metrics_option) do
-    Metrics.sum(metric_name, tags: Keyword.fetch!(metrics_option, :tags))
+  defp metrics_event(:sum, metrics_option) do
+    Keyword.fetch!(metrics_option, :metric_name)
+    |> Metrics.sum(tags: Keyword.fetch!(metrics_option, :tags))
   end
 
   defp metrics_port() do

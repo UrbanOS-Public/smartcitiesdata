@@ -87,11 +87,13 @@ config :telemetry_event,
   metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
   metrics_options: [
     [
-      metric_type_and_name: [:counter, :events_handled, :count],
-      tags: [:app, :author, :dataset_id, :event_type]
+      metric_name: "events_handled.count",
+      tags: [:app, :author, :dataset_id, :event_type],
+      metric_type: :counter
     ],
     [
-      metric_type_and_name: [:counter, :dead_letters_handled, :count],
-      tags: [:dataset_id, :reason]
+      metric_name: "dead_letters_handled.count",
+      tags: [:dataset_id, :reason],
+      metric_type: :counter
     ]
   ]
