@@ -19,6 +19,7 @@ defmodule TelemetryEvent.Helper.TelemetryEventHelper do
     Application.get_env(:telemetry_event, :metrics_options)
     |> Enum.map(fn metrics_option ->
       Keyword.fetch!(metrics_option, :metric_type)
+      |> String.upcase()
       |> metrics_event(metrics_option)
     end)
   end

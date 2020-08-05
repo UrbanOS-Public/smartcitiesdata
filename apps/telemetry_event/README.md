@@ -66,18 +66,44 @@ config :telemetry_event,
   metrics_options: [
     [
       metric_name: "events_handled.count",
-      tags: [:app, :author, :dataset_id, :event_type]
+      tags: [:app, :author, :dataset_id, :event_type],
+      metric_type: "COUNTER"
     ],
     [
       metric_name: "dead_letters_handled.count",
-      tags: [:dataset_id, :reason]
+      tags: [:dataset_id, :reason],
+      metric_type: "COUNTER"
+    ],
+    [
+      metric_name: "dataset_compaction_duration_total.duration",
+      tags: [:app, :system_name],
+      metric_type: "SUM"
     ]
   ]
 ```
 
+## metrics_port
 - The above port no is just an example, its not mandatory to use the same port for each app.
+
+## init_server
 - Init Server is optional by default it is `true` and it is not required.
+
+## metrics_options
 - The above metrics_options can is just an example, any no of metrics can be added to it depending upon the requirement of the app.
+
+## metric_name
+- This includes the name of the metrics followed by the measurement.
+- Anything before the last `.` is considered as the name of the metrics and anything after the last `.` is the measurement of the metrics.
+- For eg: `events_handled.count` - Here, `events_handled` is the name of the metrics and the `count` is the measurement.
+
+## tags
+- This includes the list of the atoms to for required keys.
+- For eg: `[:app, :system_name]` - Here, two keys are used, `app` and `system_name`
+
+## metric_type
+- This indicates the type of metric required.
+- `COUNTER` Metric - It keeps track of the total number of specific events emitted.
+- `SUM` Metric - It keeps track of the sum of selected measurement's values carried by specific events.
 
 
 ### PORT NO FOR TEST AND INTEGRATION
