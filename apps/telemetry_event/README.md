@@ -1,6 +1,6 @@
 # TELEMETRY_EVENT
 
-Generates standard messages for Dead Letter Queue
+Generates metrics for the events
 
 ## Installation
 
