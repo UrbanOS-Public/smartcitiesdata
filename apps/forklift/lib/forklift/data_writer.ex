@@ -107,11 +107,13 @@ defmodule Forklift.DataWriter do
   def compact_dataset(dataset) do
     Compaction.init(dataset: dataset)
 
+    start = Time.utc_now()
+
     compaction_result = Compaction.compact(dataset: dataset)
 
     Compaction.terminate(dataset: dataset)
 
-    Compaction.write(dataset: dataset)
+    Compaction.write({start, Time.utc_now()}, dataset: dataset)
 
     compaction_result
   end

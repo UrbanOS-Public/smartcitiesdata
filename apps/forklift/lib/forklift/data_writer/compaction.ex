@@ -18,10 +18,12 @@ defmodule Forklift.DataWriter.Compaction do
   end
 
   @impl Pipeline.Writer
-  @spec write(dataset: Dataset.t()) :: :ok | {:error, term()}
-  def write(args, _ \\ []) do
+  @spec write({Time.t(), Time.t()}, dataset: Dataset.t()) :: :ok | {:error, term()}
+  def write({start_time, end_time}, args) do
     config = parse_args(args)
-    add_event_count(config.table)
+
+    Time.diff(end_time, start_time, :millisecond)
+    |> add_event_sum(config.table)
   end
 
   @impl Pipeline.Writer
@@ -62,12 +64,12 @@ defmodule Forklift.DataWriter.Compaction do
     %{dataset: dataset, table: dataset.technical.systemName}
   end
 
-  defp add_event_count(system_name) do
+  defp add_event_sum(duration, system_name) do
     [
       app: "forklift",
       system_name: system_name
     ]
-    |> TelemetryEvent.add_event_count([:dataset_compaction_duration_total])
+    |> TelemetryEvent.add_event_metrics([:dataset_compaction_duration_total], value: %{duration: duration})
   rescue
     error ->
       Logger.error("Unable to update the metrics for #{system_name}: #{error}")

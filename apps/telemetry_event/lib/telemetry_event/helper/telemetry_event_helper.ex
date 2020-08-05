@@ -10,18 +10,29 @@ defmodule TelemetryEvent.Helper.TelemetryEventHelper do
     ]
   end
 
-  def measurements(options) do
-    options
+  def tags_and_values(event_tags_and_values) do
+    event_tags_and_values
     |> Map.new(fn {k, v} -> {k, replace_nil(v)} end)
   end
 
   defp metrics() do
     Application.get_env(:telemetry_event, :metrics_options)
     |> Enum.map(fn metrics_option ->
-      Metrics.counter(Keyword.fetch!(metrics_option, :metric_name),
-        tags: Keyword.fetch!(metrics_option, :tags)
-      )
+      Keyword.fetch!(metrics_option, :metric_type)
+      |> metrics_event(metrics_option)
     end)
+  end
+
+  defp metrics_event(metric_type, metrics_option) when metric_type === "COUNTER" do
+    Metrics.counter(Keyword.fetch!(metrics_option, :metric_name),
+      tags: Keyword.fetch!(metrics_option, :tags)
+    )
+  end
+
+  defp metrics_event(metric_type, metrics_option) when metric_type === "SUM" do
+    Metrics.sum(Keyword.fetch!(metrics_option, :metric_name),
+      tags: Keyword.fetch!(metrics_option, :tags)
+    )
   end
 
   defp metrics_port() do

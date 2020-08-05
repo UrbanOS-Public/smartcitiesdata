@@ -20,7 +20,7 @@ defmodule Forklift.DataWriterTest do
       ]
 
       allow Forklift.Datasets.get_all!(), return: datasets
-      expect(TelemetryEvent.add_event_count(any(), [:dataset_compaction_duration_total]), return: :ok)
+      expect(TelemetryEvent.add_event_metrics(any(), [:dataset_compaction_duration_total]), return: :ok)
       stub(MockReader, :terminate, fn _ -> :ok end)
       stub(MockReader, :init, fn _ -> :ok end)
 
@@ -50,7 +50,7 @@ defmodule Forklift.DataWriterTest do
       ]
 
       allow Forklift.Datasets.get_all!(), return: datasets
-      expect(TelemetryEvent.add_event_count(any(), [:dataset_compaction_duration_total]), return: :ok)
+      expect(TelemetryEvent.add_event_metrics(any(), [:dataset_compaction_duration_total]), return: :ok)
       stub(MockReader, :terminate, fn _ -> :ok end)
       stub(MockReader, :init, fn _ -> :ok end)
 
@@ -73,7 +73,7 @@ defmodule Forklift.DataWriterTest do
       stub(MockTable, :compact, fn _ -> :ok end)
       stub(MockReader, :terminate, fn _ -> :ok end)
       stub(MockReader, :init, fn _ -> :ok end)
-      expect(TelemetryEvent.add_event_count(any(), [:dataset_compaction_duration_total]), return: :ok)
+      expect(TelemetryEvent.add_event_metrics(any(), [:dataset_compaction_duration_total]), return: :ok)
 
       datasets = [TDG.create_dataset(%{}), TDG.create_dataset(%{})]
       allow Forklift.Datasets.get_all!(), return: datasets
@@ -83,7 +83,7 @@ defmodule Forklift.DataWriterTest do
 
     test "stops/restarts ingestion around each compaction" do
       stub(MockTable, :compact, fn _ -> :ok end)
-      expect(TelemetryEvent.add_event_count(any(), [:dataset_compaction_duration_total]), return: :ok)
+      expect(TelemetryEvent.add_event_metrics(any(), [:dataset_compaction_duration_total]), return: :ok)
       expect(MockReader, :terminate, 4, fn _ -> :ok end)
       expect(MockReader, :init, 4, fn _ -> :ok end)
 

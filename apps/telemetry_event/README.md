@@ -32,7 +32,7 @@ app_name:
 - For passing the event to telemetry metrics:
 
 ```
-TelemetryEvent.add_event_count(event_measurements, event_name)
+TelemetryEvent.add_event_metrics(event_measurements, event_name)
 ```
 
 event_measurements:
