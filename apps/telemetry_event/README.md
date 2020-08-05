@@ -21,11 +21,11 @@ end
 TelemetryEvent.config_init_server(child, app_name)
 ```
 
-# child:
+#### child:
 
   - List of child being passed to Supervisor
 
-# app_name:
+#### app_name:
   - Name of the app
 
 
@@ -35,7 +35,7 @@ TelemetryEvent.config_init_server(child, app_name)
 TelemetryEvent.add_event_metrics(event_measurements, event_name)
 ```
 
-# event_measurements:
+#### event_measurements:
 
 For `events_handeled`:
   - app: Name of the app
@@ -51,7 +51,7 @@ For `dead_letters_handeled`:
   - The above fields are mandatory.
   - If the value of any of the fields are nil or `""` the it will be replaced with `UNKNOWN`
 
-# event_name:
+#### event_name:
   - Name of the event (eg: [:events_handled] or [:dead_letters_handled] .... or any other name being used)
 
 
@@ -82,25 +82,25 @@ config :telemetry_event,
   ]
 ```
 
-# metrics_port:
+#### metrics_port:
   - The above port no is just an example, its not mandatory to use the same port for each app.
 
-# init_server:
+#### init_server:
 - Init Server is optional by default it is `true` and it is not required.
 
-# metrics_options:
+#### metrics_options:
   - The above metrics_options can is just an example, any no of metrics can be added to it depending upon the requirement of the app.
 
-# metric_name:
+#### metric_name:
   - This includes the name of the metrics followed by the measurement.
   - Anything before the last `.` is considered as the name of the metrics and anything after the last `.` is the measurement of the metrics.
   - For eg: `events_handled.count` - Here, `events_handled` is the name of the metrics and the `count` is the measurement.
 
-# tags:
+#### tags:
   - This includes the list of the atoms to for required keys.
   - For eg: `[:app, :system_name]` - Here, two keys are used, `app` and `system_name`
 
-# metric_type:
+#### metric_type:
   - This indicates the type of metric required.
   - It must be one of the the following options:
   - `:counter` Metric - It keeps track of the total number of specific events emitted.
