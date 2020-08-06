@@ -9,7 +9,7 @@ defmodule TelemetryEventTest do
                dataset_id: "any_dataset_id",
                event_type: "any_event_type"
              ]
-             |> TelemetryEvent.add_event_count([:any_event_name])
+             |> TelemetryEvent.add_event_metrics([:any_event_name])
   end
 
   test "should return `:ok` when `dataset_id` is missing" do
@@ -20,7 +20,7 @@ defmodule TelemetryEventTest do
                dataset_id: "",
                event_type: ""
              ]
-             |> TelemetryEvent.add_event_count([:any_event_name])
+             |> TelemetryEvent.add_event_metrics([:any_event_name])
   end
 
   test "should return `:ok` any value is nil" do
@@ -31,6 +31,6 @@ defmodule TelemetryEventTest do
                dataset_id: nil,
                event_type: nil
              ]
-             |> TelemetryEvent.add_event_count([:any_event_name])
+             |> TelemetryEvent.add_event_metrics([:any_event_name])
   end
 end
