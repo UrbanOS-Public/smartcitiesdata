@@ -1,4 +1,3 @@
-alias StreamingMetrics.Hostname
 require Logger
 
 defmodule DiscoveryApi.Services.MetricsService do

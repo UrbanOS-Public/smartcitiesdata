@@ -169,14 +169,17 @@ config :telemetry_event,
   metrics_options: [
     [
       metric_name: "events_handled.count",
-      tags: [:app, :author, :dataset_id, :event_type]
+      tags: [:app, :author, :dataset_id, :event_type],
+      metric_type: :counter
     ],
     [
       metric_name: "downloaded_csvs.count",
-      tags: [:app, :DatasetId, :Table]
+      tags: [:app, :DatasetId, :Table],
+      metric_type: :counter
     ],
     [
       metric_name: "data_queries.count",
-      tags: [:app, :DatasetId, :Table, :ContentType]
+      tags: [:app, :DatasetId, :Table, :ContentType],
+      metric_type: :counter
     ]
   ]
