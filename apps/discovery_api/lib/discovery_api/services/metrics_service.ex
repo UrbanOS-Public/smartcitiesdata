@@ -10,7 +10,7 @@ defmodule DiscoveryApi.Services.MetricsService do
       DatasetId: dataset_id,
       Table: table_name
     ]
-    |> TelemetryEvent.add_event_count([:downloaded_csvs])
+    |> TelemetryEvent.add_event_metrics([:downloaded_csvs])
   end
 
   def record_query_metrics(dataset_id, table_name, return_type) do
@@ -20,7 +20,7 @@ defmodule DiscoveryApi.Services.MetricsService do
       Table: table_name,
       ContentType: return_type
     ]
-    |> TelemetryEvent.add_event_count([:data_queries])
+    |> TelemetryEvent.add_event_metrics([:data_queries])
   end
 
   def record_api_hit(request_type, dataset_id) do
