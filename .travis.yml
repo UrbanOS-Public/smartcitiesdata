@@ -55,6 +55,8 @@ jobs:
       script: bash scripts/travis-test.sh discovery_streams
     - name: odo
       script: bash scripts/travis-test.sh odo
+    - name: definition_kafka
+      script: bash scripts/travis-test.sh definition_kafka
     - stage: publish
       name: publish microservices
       script:

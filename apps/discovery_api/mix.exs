@@ -68,7 +68,7 @@ defmodule DiscoveryApi.Mixfile do
       {:plug_heartbeat, "~> 0.2.0"},
       {:postgrex, "~> 0.15.1"},
       {:prestige, "~> 1.0"},
-      {:quantum, "~>2.3"},
+      {:quantum, "~>2.4"},
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.2"},
       {:smart_city, "~> 3.18"},

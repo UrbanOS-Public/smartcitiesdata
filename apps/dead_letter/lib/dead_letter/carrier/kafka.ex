@@ -42,6 +42,8 @@ defmodule DeadLetter.Carrier.Kafka do
   @impl DeadLetter.Carrier
   def send(message) do
     topic = get_topic(:"#{@name}_supervisor")
+    # TOODOO: I would rather not do this every send but I probably need to pair with someone to refactor this better
+    Elsa.Producer.ready?(@name)
     Elsa.produce(@name, topic, {message.app, Jason.encode!(message)})
   rescue
     e -> Logger.error("Unable to dead-letter message: #{inspect(message)}\n\treason: #{inspect(e)}")

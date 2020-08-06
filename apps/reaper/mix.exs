@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.21.1",
+      version: "0.22.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -50,7 +50,7 @@ defmodule Reaper.MixProject do
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0",
        [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},
-      {:gen_stage, "~> 0.14"},
+      {:gen_stage, "~> 1.0", override: true},
       {:horde, "~> 0.7.0"},
       {:httpoison, "~> 1.6"},
       {:poison, "~> 3.1", override: true},
@@ -63,7 +63,7 @@ defmodule Reaper.MixProject do
       {:observer_cli, "~> 1.5"},
       {:plug_cowboy, "~> 2.1"},
       {:protobuf, "~> 0.6"},
-      {:quantum, "~> 2.3"},
+      {:quantum, "~> 2.4"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
       {:sftp_ex, "~> 0.2"},

@@ -24,7 +24,7 @@ defmodule DiscoveryApi.Test.Helper do
       organization: Faker.Lorem.word(),
       organizationDetails: %{} |> TDG.create_organization() |> Map.from_struct(),
       modifiedDate: Date.to_string(Faker.Date.backward(20)),
-      fileTypes: [Faker.Lorem.characters(3), Faker.Lorem.characters(4)],
+      fileTypes: Faker.File.file_extension(),
       description: Enum.join(Faker.Lorem.sentences(2..3), " "),
       schema: [
         %{
@@ -54,7 +54,7 @@ defmodule DiscoveryApi.Test.Helper do
       license: "APL2",
       rights: "public",
       homepage: Faker.Internet.url(),
-      spatial: Faker.Lorem.characters(10),
+      spatial: Faker.Lorem.word(),
       temporal: Date.to_string(Faker.Date.date_of_birth()),
       publishFrequency: "10",
       conformsToUri: Faker.Internet.url(),

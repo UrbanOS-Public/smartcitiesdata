@@ -163,6 +163,8 @@ defmodule Forklift.Performance.LoadingTest do
     {:ok, producer_pid} =
       Elsa.Supervisor.start_link(endpoints: @endpoints, producer: [topic: topic], connection: producer_name)
 
+    Elsa.Producer.ready?(producer_name)
+
     messages
     |> Stream.map(&prepare_messages(&1, dataset))
     |> Stream.chunk_every(producer_chunk_size)

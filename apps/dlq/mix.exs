@@ -26,7 +26,7 @@ defmodule Dlq.MixProject do
   defp deps do
     [
       {:annotated_retry, in_umbrella: true},
-      {:elsa, "~> 0.10.0"},
+      {:elsa, "~> 0.12"},
       {:jason, "~> 1.2"},
       {:credo, "~> 1.0", only: [:dev]},
       {:placebo, "~> 2.0.0-rc.2", only: [:dev, :test]},
