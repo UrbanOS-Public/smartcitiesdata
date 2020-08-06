@@ -9,8 +9,12 @@ defmodule TelemetryEvent do
     end
   end
 
-  def add_event_count(event_measurements, event_name) do
-    :telemetry.execute(event_name, %{}, TelemetryEventHelper.measurements(event_measurements))
+  def add_event_metrics(event_tags_and_values, event_name, measurement \\ []) do
+    :telemetry.execute(
+      event_name,
+      Keyword.get(measurement, :value, %{}),
+      TelemetryEventHelper.tags_and_values(event_tags_and_values)
+    )
   rescue
     error -> {:error, error}
   end

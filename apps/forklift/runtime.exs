@@ -28,7 +28,6 @@ redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS
 
 topic = System.get_env("DATA_TOPIC_PREFIX")
 output_topic = System.get_env("OUTPUT_TOPIC")
-metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
 s3_writer_bucket = System.get_env("S3_WRITER_BUCKET")
 secrets_endpoint = System.get_env("SECRETS_ENDPOINT")
 
@@ -53,7 +52,6 @@ config :forklift,
   s3_writer_bucket: s3_writer_bucket,
   secrets_endpoint: secrets_endpoint,
   producer_name: :"#{output_topic}-producer",
-  metrics_port: metrics_port,
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,
@@ -129,3 +127,18 @@ if System.get_env("RUN_IN_KUBERNETES") do
       ]
     ]
 end
+
+config :telemetry_event,
+  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
+  metrics_options: [
+    [
+      metric_name: "dead_letters_handled.count",
+      tags: [:dataset_id, :reason],
+      metric_type: :counter
+    ],
+    [
+      metric_name: "dataset_compaction_duration_total.duration",
+      tags: [:app, :system_name],
+      metric_type: :sum
+    ]
+  ]
