@@ -98,7 +98,7 @@ defmodule ValkyrieTest do
                  dataset_id: "dataset_id",
                  reason: "reason"
                ]
-               |> TelemetryEvent.add_event_count([:dead_letters_handled])
+               |> TelemetryEvent.add_event_metrics([:dead_letters_handled])
 
       response = HTTPoison.get!("http://localhost:#{metrics_port}/metrics")
 

@@ -18,15 +18,29 @@ defmodule Forklift.EventHandler do
 
   import Brook.ViewState
 
-  def handle_event(%Brook.Event{type: data_ingest_start(), data: %Dataset{technical: %{sourceType: type}} = dataset})
+  def handle_event(%Brook.Event{
+        type: data_ingest_start(),
+        data: %Dataset{technical: %{sourceType: type}} = dataset,
+        author: author
+      })
       when type in ["stream", "ingest"] do
+    data_ingest_start()
+    |> add_event_count(author, dataset.id)
+
     :ok = Forklift.DataReaderHelper.init(dataset)
 
     Forklift.Datasets.update(dataset)
   end
 
-  def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{technical: %{sourceType: type}} = dataset})
+  def handle_event(%Brook.Event{
+        type: dataset_update(),
+        data: %Dataset{technical: %{sourceType: type}} = dataset,
+        author: author
+      })
       when type in ["stream", "ingest"] do
+    dataset_update()
+    |> add_event_count(author, dataset.id)
+
     [table: dataset.technical.systemName, schema: dataset.technical.schema]
     |> Forklift.DataWriter.init()
 
@@ -37,12 +51,18 @@ defmodule Forklift.EventHandler do
       :discard
   end
 
-  def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{} = dataset}) do
+  def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{} = dataset, author: author}) do
+    data_ingest_end()
+    |> add_event_count(author, dataset.id)
+
     Forklift.DataReaderHelper.terminate(dataset)
     Forklift.Datasets.delete(dataset.id)
   end
 
-  def handle_event(%Brook.Event{type: "migration:last_insert_date:start"}) do
+  def handle_event(%Brook.Event{type: "migration:last_insert_date:start", author: author}) do
+    "migration:last_insert_date:start"
+    |> add_event_count(author, nil)
+
     Logger.info("Starting last insert date migration")
     keys = Redix.command!(:redix, ["KEYS", "forklift:last_insert_date:*"])
 
@@ -65,8 +85,11 @@ defmodule Forklift.EventHandler do
       Logger.error("Failure in last insert date migration" <> error)
   end
 
-  def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = dataset}) do
+  def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = dataset, author: author}) do
     Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset.id}")
+
+    dataset_delete()
+    |> add_event_count(author, dataset.id)
 
     case delete_dataset(dataset) do
       :ok ->
@@ -84,4 +107,14 @@ defmodule Forklift.EventHandler do
   end
 
   defp parse_dataset_id("forklift:last_insert_date:" <> dataset_id), do: dataset_id
+
+  defp add_event_count(event_type, author, dataset_id) do
+    [
+      app: "forklift",
+      author: author,
+      dataset_id: dataset_id,
+      event_type: event_type
+    ]
+    |> TelemetryEvent.add_event_metrics([:events_handled])
+  end
 end

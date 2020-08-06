@@ -43,7 +43,6 @@ defmodule Forklift.MixProject do
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:observer_cli, "~> 1.5"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:plug_cowboy, "~> 2.1"},
       {:poison, "~> 3.1", override: true},
       {:prestige, "~> 1.0"},
       {:prometheus_plugs, "~> 1.1"},
@@ -56,6 +55,7 @@ defmodule Forklift.MixProject do
       {:timex, "~> 3.6"},
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev},
+      {:telemetry_event, in_umbrella: true},
       {:pipeline, in_umbrella: true},
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]}
     ]

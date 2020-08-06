@@ -95,7 +95,7 @@ defmodule DeadLetterTest do
     end
 
     test "returns formatted DLQ message with a reason" do
-      expect(TelemetryEvent.add_event_count(any(), [:dead_letters_handled]), return: :ok)
+      expect(TelemetryEvent.add_event_metrics(any(), [:dead_letters_handled]), return: :ok)
 
       actual =
         DeadLetter.Server.format_message("forklift", @dataset_id, @default_original_message,
@@ -106,7 +106,7 @@ defmodule DeadLetterTest do
     end
 
     test "returns formatted DLQ message with a reason exception" do
-      allow(TelemetryEvent.add_event_count(any(), [:dead_letters_handled]), return: :ok)
+      allow(TelemetryEvent.add_event_metrics(any(), [:dead_letters_handled]), return: :ok)
 
       actual =
         DeadLetter.Server.format_message("forklift", @dataset_id, @default_original_message,
