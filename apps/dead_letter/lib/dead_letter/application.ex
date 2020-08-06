@@ -12,7 +12,7 @@ defmodule DeadLetter.Application do
         {DeadLetter.Server, config}
       ]
       |> List.flatten()
-      
+
     Supervisor.start_link(children, strategy: :one_for_one, name: DeadLetter.Supervisor)
   end
 end
