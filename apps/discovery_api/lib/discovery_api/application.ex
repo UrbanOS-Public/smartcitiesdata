@@ -5,14 +5,12 @@ defmodule DiscoveryApi.Application do
   use Application
 
   alias DiscoveryApi.Auth.GuardianConfigurator
+  import DiscoveryApi
 
   def start(_type, _args) do
     import Supervisor.Spec
 
     GuardianConfigurator.configure()
-
-    DiscoveryApi.MetricsExporter.setup()
-    DiscoveryApiWeb.Endpoint.Instrumenter.setup()
 
     get_s3_credentials()
 
@@ -22,7 +20,6 @@ defmodule DiscoveryApi.Application do
         DiscoveryApi.Search.Storage,
         DiscoveryApiWeb.Plugs.ResponseCache,
         redis(),
-        metrics(),
         ecto_repo(),
         guardian_db_sweeper(),
         {Brook, Application.get_env(:discovery_api, :brook)},
@@ -31,6 +28,7 @@ defmodule DiscoveryApi.Application do
         DiscoveryApi.Quantum.Scheduler,
         DiscoveryApi.Data.TableInfoCache
       ]
+      |> TelemetryEvent.config_init_server(instance())
       |> List.flatten()
 
     opts = [strategy: :one_for_one, name: DiscoveryApi.Supervisor]
@@ -78,20 +76,6 @@ defmodule DiscoveryApi.Application do
     |> case do
       nil -> []
       _ -> DiscoveryApi.Data.CachePopulator
-    end
-  end
-
-  defp metrics() do
-    case Application.get_env(:discovery_api, :metrics_port) do
-      nil ->
-        []
-
-      metrics_port ->
-        Plug.Cowboy.child_spec(
-          scheme: :http,
-          plug: DiscoveryApi.MetricsExporter,
-          options: [port: metrics_port]
-        )
     end
   end
 end

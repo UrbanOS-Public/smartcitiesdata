@@ -18,12 +18,20 @@ defmodule DiscoveryApi.EventHandler do
   alias DiscoveryApi.Services.DataJsonService
   alias DiscoveryApi.Search.Elasticsearch
 
-  def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data}) do
+  def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do
+    organization_update()
+    |> add_event_count(author, data.id)
+
     Organizations.create_or_update(data)
     :discard
   end
 
-  def handle_event(%Brook.Event{type: user_organization_associate(), data: %UserOrganizationAssociate{} = association} = event) do
+  def handle_event(
+        %Brook.Event{type: user_organization_associate(), data: %UserOrganizationAssociate{} = association, author: author} = event
+      ) do
+    user_organization_associate()
+    |> add_event_count(author, nil)
+
     case Users.associate_with_organization(association.user_id, association.org_id) do
       {:error, _} = error -> Logger.error("Unable to handle event: #{inspect(event)},\nerror: #{inspect(error)}")
       result -> result
@@ -35,8 +43,15 @@ defmodule DiscoveryApi.EventHandler do
     :discard
   end
 
-  def handle_event(%Brook.Event{type: data_write_complete(), data: %SmartCity.DataWriteComplete{id: id, timestamp: timestamp}}) do
+  def handle_event(%Brook.Event{
+        type: data_write_complete(),
+        data: %SmartCity.DataWriteComplete{id: id, timestamp: timestamp},
+        author: author
+      }) do
     Logger.debug(fn -> "Handling write complete for #{inspect(id)}" end)
+
+    data_write_complete()
+    |> add_event_count(author, nil)
 
     case Brook.get(DiscoveryApi.instance(), :models, id) do
       {:ok, nil} ->
@@ -59,6 +74,9 @@ defmodule DiscoveryApi.EventHandler do
   def handle_event(%Brook.Event{type: dataset_update(), author: author, data: %Dataset{} = dataset}) do
     Logger.debug(fn -> "Handling dataset: `#{dataset.technical.systemName}`" end)
 
+    dataset_update()
+    |> add_event_count(author, dataset.id)
+
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
          {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
          model <- Mapper.to_data_model(dataset, organization) do
@@ -77,7 +95,10 @@ defmodule DiscoveryApi.EventHandler do
     end
   end
 
-  def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{} = dataset}) do
+  def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{} = dataset, author: author}) do
+    dataset_delete()
+    |> add_event_count(author, dataset.id)
+
     RecommendationEngine.delete(dataset.id)
     SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName)
     Storage.delete(dataset)
@@ -105,4 +126,14 @@ defmodule DiscoveryApi.EventHandler do
   end
 
   defp save_dataset_to_recommendation_engine(_dataset), do: :ok
+
+  defp add_event_count(event_type, author, dataset_id) do
+    [
+      app: "discovery_api",
+      author: author,
+      dataset_id: dataset_id,
+      event_type: event_type
+    ]
+    |> TelemetryEvent.add_event_metrics([:events_handled])
+  end
 end
