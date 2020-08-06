@@ -1,6 +1,7 @@
 defmodule TelemetryEvent.Helper.TelemetryEventHelper do
   @moduledoc false
   alias Telemetry.Metrics
+  alias TelemetryEvent.Helper.AddMetrics
 
   def metrics_config(app_name) do
     [
@@ -17,6 +18,8 @@ defmodule TelemetryEvent.Helper.TelemetryEventHelper do
 
   defp metrics() do
     Application.get_env(:telemetry_event, :metrics_options)
+    |> List.wrap()
+    |> AddMetrics.add_metrics_options()
     |> Enum.map(fn metrics_option ->
       Keyword.fetch!(metrics_option, :metric_type)
       |> metrics_event(metrics_option)
