@@ -35,7 +35,7 @@ defmodule Flair.MixProject do
   defp deps do
     [
       {:elsa, "~> 0.12"},
-      {:flow, "~> 0.14"},
+      {:flow, "~> 1.0"},
       {:gen_stage, "~> 1.0", override: true},
       {:jason, "~> 1.2"},
       {:prestige, "~> 1.0"},
