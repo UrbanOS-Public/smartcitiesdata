@@ -81,6 +81,9 @@ config :telemetry_event,
     ]
   ]
 ```
+- NOTE:
+  - By default `events_handeled` metric will be added in metrics_options with the above tags, hence there is no need to add it separately.
+
 
 #### metrics_port:
   - The above port no is just an example, its not mandatory to use the same port for each app.
