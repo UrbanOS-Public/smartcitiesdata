@@ -1,6 +1,8 @@
 defmodule AndiWeb.DatasetLiveView do
   use Phoenix.LiveView
 
+  import Phoenix.HTML.Form
+
   alias AndiWeb.Router.Helpers, as: Routes
   alias AndiWeb.DatasetLiveView.Table
   alias Andi.InputSchemas.Datasets
@@ -16,24 +18,32 @@ defmodule AndiWeb.DatasetLiveView do
           <button type="button" class="btn btn--add-dataset btn--action" phx-click="add-dataset">ADD DATASET</button>
         </div>
 
-        <div class="datasets-index__search">
-          <form phx-change="search" phx-submit="search">
-            <div class="datasets-index__search-input-container">
-              <label for="datasets-index__search-input">
-                <i class="material-icons datasets-index__search-icon">search</i>
-              </label>
-              <input
-                name="search-value"
-                phx-debounce="250"
-                id="datasets-index__search-input"
-                class="datasets-index__search-input"
-                type="text"
-                value="<%= @search_text %>"
-                placeholder="Search datasets"
-              >
-            </div>
-          </form>
+        <div class="input-container">
+          <div class="datasets-index__search">
+            <form phx-change="search" phx-submit="search">
+              <div class="datasets-index__search-input-container">
+                <label for="datasets-index__search-input">
+                  <i class="material-icons datasets-index__search-icon">search</i>
+                </label>
+                <input
+                  name="search-value"
+                  phx-debounce="250"
+                  id="datasets-index__search-input"
+                  class="datasets-index__search-input"
+                  type="text"
+                  value="<%= @search_text %>"
+                  placeholder="Search datasets"
+                >
+              </div>
+            </form>
+          </div>
+
+          <label class="checkbox">
+            <input type="checkbox" checked/>
+            <span>Exclude Remote Datasets</span>
+          </label>
         </div>
+
         <%= live_component(@socket, Table, id: :datasets_table, datasets: @datasets, order: @order) %>
       </div>
     </div>
@@ -42,7 +52,13 @@ defmodule AndiWeb.DatasetLiveView do
 
   def mount(_params, _session, socket) do
     AndiWeb.Endpoint.subscribe(@ingested_time_topic)
-    {:ok, assign(socket, datasets: nil, search_text: nil, order: {"data_title", "asc"}, params: %{})}
+    {:ok, assign(socket,
+        datasets: nil,
+        search_text: nil,
+        order: {"data_title", "asc"},
+        params: %{}
+      )
+    }
   end
 
   def handle_info(%{topic: @ingested_time_topic}, socket) do
