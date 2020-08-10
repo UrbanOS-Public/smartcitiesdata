@@ -8,6 +8,7 @@ defmodule Andi.Harvest.Harvester do
   import SmartCity.Event, only: [dataset_update: 0]
 
   alias Andi.Harvest.DataJsonToDataset
+  alias Andi.InputSchemas.Datasets
 
   require Logger
 
@@ -41,6 +42,9 @@ defmodule Andi.Harvest.Harvester do
   end
 
   def dataset_update(datasets) do
-    Enum.each(datasets, &Brook.Event.send(instance_name(), dataset_update(), :andi, &1))
+    Enum.each(datasets, fn dataset ->
+      Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
+      Datasets.update_harvested_dataset(dataset.id)
+    end)
   end
 end
