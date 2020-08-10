@@ -228,6 +228,22 @@ defmodule Andi.InputSchemas.DatasetsTest do
     end
   end
 
+  describe "update_harvested_dataset/1" do
+    test "given an existing harvested dataset it adds the harvested flag to it" do
+      dataset = TDG.create_dataset(%{})
+
+      {:ok, _andi_dataset} = Datasets.update(dataset)
+
+      assert {:ok, %{harvestedDataset: true} = andi_dataset} = Datasets.update_harvested_dataset(dataset.id)
+    end
+
+    test "given a non-existing harvested dataset it adds the harvested flag to it" do
+      dataset = TDG.create_dataset(%{})
+
+      assert {:ok, %{harvestedDataset: true} = andi_dataset} = Datasets.update_harvested_dataset(dataset.id)
+    end
+  end
+
   describe "update/1" do
     test "given a newly seen smart city dataset, turns it into an Andi dataset" do
       dataset = TDG.create_dataset(%{})

@@ -16,12 +16,13 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     has_one(:technical, Technical, on_replace: :update)
     has_one(:business, Business, on_replace: :update)
     field(:ingestedTime, :utc_datetime, default: nil)
+    field(:harvestedDataset, :boolean, default: false)
     has_many(:data_dictionaries, DataDictionary)
   end
 
   use Accessible
 
-  @cast_fields [:id, :ingestedTime]
+  @cast_fields [:id, :ingestedTime, :harvestedDataset]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 

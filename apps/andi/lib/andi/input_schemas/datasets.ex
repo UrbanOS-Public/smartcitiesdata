@@ -117,6 +117,11 @@ defmodule Andi.InputSchemas.Datasets do
     update(from_dataset, %{ingestedTime: ingested_time_as_datetime})
   end
 
+  def update_harvested_dataset(dataset_id) do
+    from_dataset = get(dataset_id) || %Dataset{id: dataset_id}
+    update(from_dataset, %{harvestedDataset: true})
+  end
+
   def update_cadence(dataset_id, cadence) do
     from_dataset = get(dataset_id) || %Dataset{id: dataset_id}
 
