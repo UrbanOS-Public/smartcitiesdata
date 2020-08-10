@@ -50,14 +50,15 @@ defmodule AndiWeb.DatasetLiveView do
 
   def mount(_params, _session, socket) do
     AndiWeb.Endpoint.subscribe(@ingested_time_topic)
-    {:ok, assign(socket,
-        datasets: nil,
-        search_text: nil,
-        include_remotes: false,
-        order: {"data_title", "asc"},
-        params: %{}
-      )
-    }
+
+    {:ok,
+     assign(socket,
+       datasets: nil,
+       search_text: nil,
+       include_remotes: false,
+       order: {"data_title", "asc"},
+       params: %{}
+     )}
   end
 
   def handle_info(%{topic: @ingested_time_topic}, socket) do
@@ -83,7 +84,14 @@ defmodule AndiWeb.DatasetLiveView do
       filter_on_search_change(search_text, include_remotes, socket)
       |> sort_by_dir(order_by, order_dir)
 
-    {:noreply, assign(socket, search_text: search_text, datasets: view_models, order: %{order_by => order_dir}, params: params, include_remotes: include_remotes)}
+    {:noreply,
+     assign(socket,
+       search_text: search_text,
+       datasets: view_models,
+       order: %{order_by => order_dir},
+       params: params,
+       include_remotes: include_remotes
+     )}
   end
 
   def handle_event("add-dataset", _, socket) do
@@ -142,6 +150,7 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   defp filter_remotes(datasets, true), do: datasets
+
   defp filter_remotes(datasets, false) do
     Enum.reject(datasets, fn dataset -> dataset.technical[:sourceType] == "remote" end)
   end
