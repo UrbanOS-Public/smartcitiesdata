@@ -289,7 +289,7 @@ defmodule AndiWeb.EditLiveViewTest do
         assert !Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
       end)
 
-      html = render_change(view, "reload-page", %{})
+      render_change(view, "reload-page", %{})
       url = @url_path <> dataset.id
 
       assert_redirect(view, url)
