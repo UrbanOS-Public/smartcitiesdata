@@ -51,7 +51,7 @@ defmodule Valkyrie.BroadwayTest do
     data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => "21"})
     kafka_message = %{value: Jason.encode!(data)}
 
-    Broadway.test_messages(broadway, [kafka_message])
+    Broadway.test_batch(broadway, [kafka_message])
 
     assert_receive {:ack, _ref, messages, _}, 5_000
 
@@ -69,7 +69,7 @@ defmodule Valkyrie.BroadwayTest do
     data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
     kafka_message = %{value: Jason.encode!(data)}
 
-    Broadway.test_messages(broadway, [kafka_message])
+    Broadway.test_batch(broadway, [kafka_message])
 
     assert_receive {:ack, _ref, messages, _}, 5_000
 
@@ -95,7 +95,7 @@ defmodule Valkyrie.BroadwayTest do
     data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
     kafka_message = %{value: Jason.encode!(data)}
 
-    Broadway.test_messages(broadway, [kafka_message])
+    Broadway.test_batch(broadway, [kafka_message])
 
     assert_receive {:ack, _ref, messages, _}, 5_000
 
@@ -114,7 +114,7 @@ defmodule Valkyrie.BroadwayTest do
 
     kafka_message = %{value: :message}
 
-    Broadway.test_messages(broadway, [kafka_message])
+    Broadway.test_batch(broadway, [kafka_message])
 
     assert_receive {:ack, _ref, _, [message]}, 5_000
     assert {:failed, :something_went_badly} == message.status
@@ -133,7 +133,7 @@ defmodule Valkyrie.BroadwayTest do
     data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => "twenty-one"})
     kafka_message = %{value: Jason.encode!(data)}
 
-    Broadway.test_messages(broadway, [kafka_message])
+    Broadway.test_batch(broadway, [kafka_message])
 
     assert_receive {:ack, _ref, _, failed_messages}, 5_000
     assert 1 == length(failed_messages)
@@ -155,7 +155,7 @@ defmodule Valkyrie.BroadwayTest do
     data2 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "carl", "age" => 33})
     kafka_messages = [%{value: Jason.encode!(data1)}, %{value: Jason.encode!(data2)}]
 
-    Broadway.test_messages(broadway, kafka_messages)
+    Broadway.test_batch(broadway, kafka_messages)
 
     assert_receive {:ack, _ref, messages, _}, 5_000
     assert 2 == length(messages)
@@ -173,7 +173,7 @@ defmodule Valkyrie.BroadwayTest do
 
     kafka_messages = [%{value: Jason.encode!(data1)}, %{value: end_of_data()}]
 
-    Broadway.test_messages(broadway, kafka_messages)
+    Broadway.test_batch(broadway, kafka_messages)
     assert_receive {:ack, _ref, messages, _}, 5_000
 
     captured_messages = capture(Elsa.produce(:"#{@dataset_id}_producer", :output_topic, any(), partition: 0), 3)

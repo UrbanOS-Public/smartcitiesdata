@@ -24,20 +24,18 @@ defmodule Valkyrie.Broadway do
 
     [
       name: :"#{dataset.id}_broadway",
-      producers: [
-        default: [
+      producer: [
           module: {@producer_module, input},
-          stages: 1
-        ]
+          concurrency: 1
       ],
       processors: [
         default: [
-          stages: processor_stages()
+          concurrency: processor_stages()
         ]
       ],
       batchers: [
         default: [
-          stages: batch_stages(),
+          concurrency: batch_stages(),
           batch_size: batch_size(),
           batch_timeout: batch_timeout()
         ]
