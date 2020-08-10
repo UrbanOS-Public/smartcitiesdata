@@ -20,7 +20,11 @@ defmodule Forklift.DataWriterTest do
       ]
 
       allow Forklift.Datasets.get_all!(), return: datasets
-      allow DataWriter.Compaction.Metric.record(any(), any()), return: :ok
+
+      expect(TelemetryEvent.add_event_metrics(any(), [:dataset_compaction_duration_total], value: %{duration: any()}),
+        return: :ok
+      )
+
       stub(MockReader, :terminate, fn _ -> :ok end)
       stub(MockReader, :init, fn _ -> :ok end)
 
@@ -50,7 +54,11 @@ defmodule Forklift.DataWriterTest do
       ]
 
       allow Forklift.Datasets.get_all!(), return: datasets
-      allow DataWriter.Compaction.Metric.record(any(), any()), return: :ok
+
+      expect(TelemetryEvent.add_event_metrics(any(), [:dataset_compaction_duration_total], value: %{duration: any()}),
+        return: :ok
+      )
+
       stub(MockReader, :terminate, fn _ -> :ok end)
       stub(MockReader, :init, fn _ -> :ok end)
 
@@ -74,10 +82,9 @@ defmodule Forklift.DataWriterTest do
       stub(MockReader, :terminate, fn _ -> :ok end)
       stub(MockReader, :init, fn _ -> :ok end)
 
-      MockMetricCollector
-      |> expect(:count_metric, 2, fn dur, "dataset_compaction_duration_total", _, _ when is_integer(dur) -> [100] end)
-
-      expect(MockMetricCollector, :record_metrics, 2, fn [100], "forklift" -> {:ok, :ok} end)
+      expect(TelemetryEvent.add_event_metrics(any(), [:dataset_compaction_duration_total], value: %{duration: any()}),
+        return: :ok
+      )
 
       datasets = [TDG.create_dataset(%{}), TDG.create_dataset(%{})]
       allow Forklift.Datasets.get_all!(), return: datasets
@@ -86,9 +93,11 @@ defmodule Forklift.DataWriterTest do
     end
 
     test "stops/restarts ingestion around each compaction" do
-      stub(MockMetricCollector, :count_metric, fn _, _, _, _ -> [42] end)
-      stub(MockMetricCollector, :record_metrics, fn [42], "forklift" -> {:ok, :ok} end)
       stub(MockTable, :compact, fn _ -> :ok end)
+
+      expect(TelemetryEvent.add_event_metrics(any(), [:dataset_compaction_duration_total], value: %{duration: any()}),
+        return: :ok
+      )
 
       expect(MockReader, :terminate, 4, fn _ -> :ok end)
       expect(MockReader, :init, 4, fn _ -> :ok end)

@@ -116,7 +116,7 @@ defmodule DeadLetter.Server do
       dataset_id: dataset_id,
       reason: Kernel.inspect(reason)
     ]
-    |> TelemetryEvent.add_event_count([:dead_letters_handled])
+    |> TelemetryEvent.add_event_metrics([:dead_letters_handled])
   rescue
     error ->
       Logger.error("Unable to update the metrics: #{error}")

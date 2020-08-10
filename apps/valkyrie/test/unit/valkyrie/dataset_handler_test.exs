@@ -38,7 +38,7 @@ defmodule Valkyrie.DatasetHandlerTest do
 
   describe "handle_event/1" do
     setup do
-      expect(TelemetryEvent.add_event_count(any(), [:events_handled]), return: :ok)
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
       :ok
     end

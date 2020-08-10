@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "0.14.0",
+      version: "0.15.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -35,7 +35,7 @@ defmodule Forklift.MixProject do
       {:dead_letter, in_umbrella: true},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
-      {:elsa, "~> 0.10.0"},
+      {:elsa, "~> 0.12"},
       {:ex_doc, "~> 0.21"},
       {:jason, "~> 1.2", override: true},
       {:libcluster, "~> 3.1"},
@@ -43,11 +43,10 @@ defmodule Forklift.MixProject do
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:observer_cli, "~> 1.5"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:plug_cowboy, "~> 2.1"},
       {:poison, "~> 3.1", override: true},
       {:prestige, "~> 1.0"},
       {:prometheus_plugs, "~> 1.1"},
-      {:quantum, "~>2.3"},
+      {:quantum, "~>2.4"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
       {:smart_city, "~> 3.0"},
@@ -56,6 +55,7 @@ defmodule Forklift.MixProject do
       {:timex, "~> 3.6"},
       {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev},
+      {:telemetry_event, in_umbrella: true},
       {:pipeline, in_umbrella: true},
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]}
     ]

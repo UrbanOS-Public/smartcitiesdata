@@ -4,7 +4,7 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.10.0",
+      version: "0.11.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -34,7 +34,7 @@ defmodule Estuary.MixProject do
       {:distillery, "~> 2.1"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
-      {:elsa, "~> 0.10.0"},
+      {:elsa, "~> 0.12"},
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},
       {:jason, "~> 1.2"},
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
@@ -50,7 +50,7 @@ defmodule Estuary.MixProject do
       {:prestige, "~> 1.0"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
-      {:quantum, "~>2.3"},
+      {:quantum, "~>2.4"},
       {:timex, "~> 3.6"}
     ]
   end

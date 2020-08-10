@@ -4,7 +4,7 @@ defmodule Flair.MixProject do
   def project do
     [
       app: :flair,
-      version: "0.4.0",
+      version: "0.5.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -34,9 +34,9 @@ defmodule Flair.MixProject do
 
   defp deps do
     [
-      {:elsa, "~> 0.10.0"},
-      {:flow, "~> 0.14"},
-      {:gen_stage, "~> 0.14"},
+      {:elsa, "~> 0.12"},
+      {:flow, "~> 1.0"},
+      {:gen_stage, "~> 1.0", override: true},
       {:jason, "~> 1.2"},
       {:prestige, "~> 1.0"},
       {:retry, "~> 0.13.0"},

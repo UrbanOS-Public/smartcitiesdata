@@ -1,6 +1,5 @@
 defmodule DiscoveryApiWeb.Endpoint.Instrumenter do
   @moduledoc false
-  use Prometheus.PhoenixInstrumenter
 end
 
 defmodule DiscoveryApiWeb.Endpoint do

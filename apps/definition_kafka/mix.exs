@@ -27,7 +27,7 @@ defmodule DefinitionKafka.MixProject do
     [
       {:annotated_retry, in_umbrella: true},
       {:dlq, in_umbrella: true},
-      {:elsa, "~> 0.10.0", override: true},
+      {:elsa, "~> 0.12", override: true},
       {:jason, "~> 1.2"},
       {:ok, in_umbrella: true},
       {:protocol_destination, in_umbrella: true},

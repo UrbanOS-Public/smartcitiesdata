@@ -10,7 +10,6 @@ get_redix_args = fn host, password ->
 end
 
 redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
-metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 
@@ -31,8 +30,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
 config :discovery_api,
   hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
   hosted_region: System.get_env("HOSTED_FILE_REGION"),
-  presign_key: System.get_env("PRESIGN_KEY"),
-  metrics_port: metrics_port
+  presign_key: System.get_env("PRESIGN_KEY")
 
 config :discovery_api, DiscoveryApi.Repo,
   database: System.get_env("POSTGRES_DBNAME"),
@@ -165,3 +163,18 @@ config :discovery_api, :elasticsearch,
       }
     }
   }
+
+config :telemetry_event,
+  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
+  metrics_options: [
+    [
+      metric_name: "downloaded_csvs.count",
+      tags: [:app, :DatasetId, :Table],
+      metric_type: :counter
+    ],
+    [
+      metric_name: "data_queries.count",
+      tags: [:app, :DatasetId, :Table, :ContentType],
+      metric_type: :counter
+    ]
+  ]

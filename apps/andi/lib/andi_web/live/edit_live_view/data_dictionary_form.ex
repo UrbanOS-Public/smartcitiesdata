@@ -332,6 +332,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     file_string
     |> String.split("\n")
     |> Enum.take(2)
+    |> List.update_at(0, &String.replace(&1, ~r/[^[:alnum:] _,]/, "", global: true))
     |> Enum.map(fn row -> String.split(row, ",") end)
     |> Enum.zip()
     |> Enum.map(fn {k, v} -> {k, convert_value(v)} end)
