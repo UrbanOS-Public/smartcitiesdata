@@ -2,6 +2,7 @@ defmodule Andi.Harvest.HarvesterTest do
   use ExUnit.Case
   use Placebo
   alias Andi.Harvest.Harvester
+  alias Andi.InputSchemas.Datasets
   alias SmartCity.TestDataGenerator, as: TDG
   import Andi
   import SmartCity.Event, only: [dataset_update: 0]
@@ -34,6 +35,7 @@ defmodule Andi.Harvest.HarvesterTest do
 
     test "dataset_update/1", %{data_json: data_json, org: org} do
       allow(Brook.Event.send(instance_name(), dataset_update(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(Datasets.update_harvested_dataset(any()), return: :ok, meck_options: [:passthrough])
 
       {:ok, data_json} = Jason.decode(data_json)
       datasets = Harvester.map_data_json_to_dataset(data_json, org)
