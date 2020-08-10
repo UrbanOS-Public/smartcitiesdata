@@ -25,8 +25,8 @@ defmodule Valkyrie.Broadway do
     [
       name: :"#{dataset.id}_broadway",
       producer: [
-          module: {@producer_module, input},
-          concurrency: 1
+        module: {@producer_module, input},
+        concurrency: 1
       ],
       processors: [
         default: [
