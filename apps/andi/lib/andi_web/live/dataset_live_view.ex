@@ -1,8 +1,6 @@
 defmodule AndiWeb.DatasetLiveView do
   use Phoenix.LiveView
 
-  import Phoenix.HTML.Form
-
   alias AndiWeb.Router.Helpers, as: Routes
   alias AndiWeb.DatasetLiveView.Table
   alias Andi.InputSchemas.Datasets
@@ -39,7 +37,7 @@ defmodule AndiWeb.DatasetLiveView do
           </div>
 
           <label class="checkbox">
-            <input type="checkbox" checked/>
+            <input type="checkbox" phx-click="toggle_remotes" <%= if !@include_remotes, do: "checked" %>/>
             <span>Exclude Remote Datasets</span>
           </label>
         </div>
@@ -55,6 +53,7 @@ defmodule AndiWeb.DatasetLiveView do
     {:ok, assign(socket,
         datasets: nil,
         search_text: nil,
+        include_remotes: false,
         order: {"data_title", "asc"},
         params: %{}
       )
@@ -66,7 +65,7 @@ defmodule AndiWeb.DatasetLiveView do
     {order_by, order_dir} = coerce_order_into_tuple(order)
 
     updated_datasets =
-      refresh_datasets(search_text)
+      refresh_datasets(search_text, socket.assigns.include_remotes)
       |> sort_by_dir(order_by, order_dir)
 
     updated_state = assign(socket, :datasets, updated_datasets)
@@ -74,23 +73,17 @@ defmodule AndiWeb.DatasetLiveView do
     {:noreply, updated_state}
   end
 
-  defp coerce_order_into_tuple(order) when is_tuple(order), do: order
-
-  defp coerce_order_into_tuple(order) when is_map(order) do
-    [{order_by, order_dir}] = Map.to_list(order)
-    {order_by, order_dir}
-  end
-
   def handle_params(params, _uri, socket) do
     order_by = Map.get(params, "order-by", "data_title")
     order_dir = Map.get(params, "order-dir", "asc")
     search_text = Map.get(params, "search", "")
+    include_remotes = Map.get(params, "include-remotes", "false") |> string_to_bool()
 
     view_models =
-      filter_on_search_change(search_text, socket)
+      filter_on_search_change(search_text, include_remotes, socket)
       |> sort_by_dir(order_by, order_dir)
 
-    {:noreply, assign(socket, search_text: search_text, datasets: view_models, order: %{order_by => order_dir}, params: params)}
+    {:noreply, assign(socket, search_text: search_text, datasets: view_models, order: %{order_by => order_dir}, params: params, include_remotes: include_remotes)}
   end
 
   def handle_event("add-dataset", _, socket) do
@@ -115,18 +108,42 @@ defmodule AndiWeb.DatasetLiveView do
     {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, params))}
   end
 
-  defp filter_on_search_change(search_value, socket) do
-    case search_value == socket.assigns.search_text do
-      false -> refresh_datasets(search_value)
+  def handle_event("toggle_remotes", _, socket) do
+    current_include_remotes =
+      socket.assigns.params
+      |> Map.get("include-remotes", "false")
+      |> string_to_bool()
+
+    search_params = Map.merge(socket.assigns.params, %{"include-remotes" => !current_include_remotes})
+
+    {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
+  end
+
+  defp coerce_order_into_tuple(order) when is_tuple(order), do: order
+
+  defp coerce_order_into_tuple(order) when is_map(order) do
+    [{order_by, order_dir}] = Map.to_list(order)
+    {order_by, order_dir}
+  end
+
+  defp filter_on_search_change(search_value, include_remotes, socket) do
+    case search_value == socket.assigns.search_text and include_remotes == socket.assigns.include_remotes do
+      false -> refresh_datasets(search_value, include_remotes)
       _ -> socket.assigns.datasets
     end
   end
 
-  defp refresh_datasets(search_value) do
+  defp refresh_datasets(search_value, include_remotes) do
     Datasets.get_all()
+    |> filter_remotes(include_remotes)
     |> reject_partial_datasets()
     |> filter_datasets(search_value)
     |> Enum.map(&to_view_model/1)
+  end
+
+  defp filter_remotes(datasets, true), do: datasets
+  defp filter_remotes(datasets, false) do
+    Enum.reject(datasets, fn dataset -> dataset.technical[:sourceType] == "remote" end)
   end
 
   defp reject_partial_datasets(datasets) do
@@ -167,4 +184,7 @@ defmodule AndiWeb.DatasetLiveView do
       "ingested_time" => dataset.ingestedTime
     }
   end
+
+  def string_to_bool("true"), do: true
+  def string_to_bool("false"), do: false
 end
