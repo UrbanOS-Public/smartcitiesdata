@@ -234,4 +234,32 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
   end
+
+  describe "Toggle remote datasets checkbox" do
+    test "excludes remotes by default", %{conn: conn} do
+      dataset_a = DatasetHelpers.create_dataset(technical: %{sourceType: "ingest"})
+      dataset_b = DatasetHelpers.create_dataset(technical: %{sourceType: "remote"})
+
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
+
+      {:ok, _view, html} = live(conn, @url_path)
+
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
+      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
+    end
+
+    test "toggles inclusion of remotes when button is clicked", %{conn: conn} do
+      dataset_a = DatasetHelpers.create_dataset(technical: %{sourceType: "ingest"})
+      dataset_b = DatasetHelpers.create_dataset(technical: %{sourceType: "remote"})
+
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
+
+      {:ok, view, _html} = live(conn, @url_path)
+
+      html = render_click(view, :toggle_remotes)
+
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
+    end
+  end
 end

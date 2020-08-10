@@ -77,9 +77,9 @@ defmodule Andi.CreateDatasetTest do
       request = %{
         "id" => uuid,
         "technical" => %{
-          "dataName" => Faker.Name.first_name(),
+          "dataName" => Faker.Person.first_name(),
           "orgId" => "org-123-456",
-          "orgName" => Faker.Name.first_name(),
+          "orgName" => Faker.Person.first_name(),
           "stream" => false,
           "sourceUrl" => "https://example.com",
           "sourceType" => "stream",
@@ -369,7 +369,7 @@ defmodule Andi.CreateDatasetTest do
         |> put_in([:technical, :cadence], "0 * * * * * *")
         |> struct_to_map_with_string_keys()
 
-      {:ok, %{status: 400, body: body}} = create(new_dataset)
+      {:ok, %{status: 400, body: _body}} = create(new_dataset)
     end
   end
 
