@@ -20,13 +20,14 @@
 }
 
 .input-container {
-    // display: flex;
+    display: flex;
     width: 100%;
 }
 
 .checkbox {
     cursor: pointer;
     position: relative;
+    align-self: center;
 
     span {
         font-size: 1rem;
@@ -38,13 +39,17 @@
         vertical-align: middle;
         height: 1rem;
         width: 1rem;
-        // appearance: none;
     }
+}
+
+.datasets-index__search {
+    width: 50%;
+    margin-right: 2rem;
 }
 
 .datasets-index__search-input-container {
   display: flex;
-  width: 50%;
+  width: 100%;
   margin: 0.5rem;
   border: 1px solid $search-unfocused;
 }
