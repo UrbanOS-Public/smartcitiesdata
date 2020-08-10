@@ -29,6 +29,7 @@ defmodule DiscoveryStreams.Application do
         DiscoveryStreamsWeb.Presence,
         DiscoveryStreamsWeb.Presence.Server
       ]
+      |> TelemetryEvent.config_init_server(:discovery_streams)
       |> List.flatten()
 
     Supervisor.start_link(children, opts)
