@@ -297,6 +297,36 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert generated_schema == expected_schema
     end
 
+    test "parses CSV with valid column names", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "text/csv"}})
+        |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
+
+      {:ok, _} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+
+      csv_sample = "string\r,i&^%$nt,fl\toat,bool---,date as multi word column\nabc,9,1.5,true,2020-07-22T21:24:40"
+
+      render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+
+      updated_dataset = Datasets.get(dataset.id)
+
+      generated_schema =
+        updated_dataset.technical.schema
+        |> Enum.map(fn item -> %{type: item.type, name: item.name} end)
+
+      expected_schema = [
+        %{name: "string", type: "string"},
+        %{name: "int", type: "integer"},
+        %{name: "float", type: "float"},
+        %{name: "bool", type: "boolean"},
+        %{name: "date as multi word column", type: "date"}
+      ]
+
+      assert generated_schema == expected_schema
+    end
+
     test "handles invalid json", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "application/json"}})

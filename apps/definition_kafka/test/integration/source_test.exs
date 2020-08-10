@@ -61,9 +61,7 @@ defmodule Kafka.Topic.SourceTest do
       assert Elsa.topic?(@endpoints, "create-test")
     end
 
-    ## TOOODOO: this contract changes in elsa 0.12
-    topics = Elsa.list_topics(@endpoints)
-    # {:ok, topics} = Elsa.list_topics(@endpoints)
+    {:ok, topics} = Elsa.list_topics(@endpoints)
     assert Enum.any?(topics, fn x -> x == {"create-test", 2} end)
 
     assert_down(source, pid)

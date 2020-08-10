@@ -27,7 +27,7 @@ defmodule Pipeline.MixProject do
   defp deps do
     [
       {:smart_city, "~> 3.0"},
-      {:elsa, "~> 0.10.0", override: true},
+      {:elsa, "~> 0.12", override: true},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0",
        [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},

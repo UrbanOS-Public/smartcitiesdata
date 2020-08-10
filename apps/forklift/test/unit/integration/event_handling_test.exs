@@ -22,6 +22,7 @@ defmodule Forklift.Integration.EventHandlingTest do
     test "ensures table exists for ingestible dataset" do
       test = self()
       expect(MockTable, :init, fn args -> send(test, args) end)
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
       dataset = TDG.create_dataset(%{})
       table_name = dataset.technical.systemName
@@ -39,6 +40,7 @@ defmodule Forklift.Integration.EventHandlingTest do
 
     test "sends error event for raised errors while performing dataset update" do
       stub(MockTable, :init, fn _ -> raise "bad stuff" end)
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
       dataset = TDG.create_dataset(%{})
 
@@ -63,6 +65,8 @@ defmodule Forklift.Integration.EventHandlingTest do
         :ok
       end)
 
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+
       dataset = TDG.create_dataset(%{id: "dataset-id"})
       Brook.Test.send(instance_name(), data_ingest_start(), :author, dataset)
 
@@ -79,6 +83,8 @@ defmodule Forklift.Integration.EventHandlingTest do
         :ok
       end)
 
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+
       expect Forklift.Datasets.delete("terminate-id"), return: :ok
 
       dataset = TDG.create_dataset(%{id: "terminate-id"})
@@ -94,6 +100,7 @@ defmodule Forklift.Integration.EventHandlingTest do
     expect(MockTopic, :delete, fn _ -> :ok end)
     expect(MockTable, :delete, fn _ -> :ok end)
     expect(Forklift.Datasets.delete(dataset.id), return: :ok)
+    expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
     Brook.Test.with_event(instance_name(), fn ->
       Forklift.EventHandler.handle_event(

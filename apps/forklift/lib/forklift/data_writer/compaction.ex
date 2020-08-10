@@ -3,7 +3,6 @@ defmodule Forklift.DataWriter.Compaction do
 
   require Logger
   alias SmartCity.Dataset
-  alias Forklift.DataWriter.Compaction.Metric
 
   @behaviour Pipeline.Writer
   @writer Application.get_env(:forklift, :table_writer)
@@ -23,7 +22,7 @@ defmodule Forklift.DataWriter.Compaction do
     config = parse_args(args)
 
     Time.diff(end_time, start_time, :millisecond)
-    |> Metric.record(config.table)
+    |> add_event_sum(config.table)
   end
 
   @impl Pipeline.Writer
@@ -62,5 +61,16 @@ defmodule Forklift.DataWriter.Compaction do
   defp parse_args(args) do
     dataset = Keyword.fetch!(args, :dataset)
     %{dataset: dataset, table: dataset.technical.systemName}
+  end
+
+  defp add_event_sum(duration, system_name) do
+    [
+      app: "forklift",
+      system_name: system_name
+    ]
+    |> TelemetryEvent.add_event_metrics([:dataset_compaction_duration_total], value: %{duration: duration})
+  rescue
+    error ->
+      Logger.error("Unable to update the metrics for #{system_name}: #{error}")
   end
 end
