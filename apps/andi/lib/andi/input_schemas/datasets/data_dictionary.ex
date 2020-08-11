@@ -98,6 +98,10 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
 
   def preload(struct), do: StructTools.preload(struct, [:subSchema])
 
+  defp validate_item_type(%{changes: %{type: "list", itemType: "list"}} = changeset) do
+    Ecto.Changeset.add_error(changeset, :itemType, "List of lists type not supported")
+  end
+
   defp validate_item_type(%{changes: %{type: "list"}} = changeset) do
     validate_required(changeset, [:itemType], message: "is required")
   end

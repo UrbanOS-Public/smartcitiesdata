@@ -15,6 +15,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
       get_value: 2,
       get_select: 2,
       get_select_first_option: 2,
+      get_all_select_options: 2,
       get_attributes: 3
     ]
 
@@ -40,6 +41,18 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     {:ok, _, html} = live(conn, @url_path <> dataset.id)
 
     refute Enum.empty?(find_elements(html, ".data-dictionary-field-editor__item-type"))
+  end
+
+  test "item type selector does not allow list of lists", %{conn: conn} do
+    field_id = UUID.uuid4()
+    smrt_dataset = TDG.create_dataset(%{technical: %{schema: [%{id: field_id, name: "one", itemType: "list", type: "list"}]}})
+
+    {:ok, dataset} = Datasets.update(smrt_dataset)
+
+    {:ok, _, html} = live(conn, @url_path <> dataset.id)
+
+    refute Enum.empty?(find_elements(html, "#itemType-error-msg"))
+    assert {"List", "list"} not in get_all_select_options(html, ".data-dictionary-field-editor__item-type")
   end
 
   data_test "format input is shown when field type is #{field}", %{conn: conn} do
