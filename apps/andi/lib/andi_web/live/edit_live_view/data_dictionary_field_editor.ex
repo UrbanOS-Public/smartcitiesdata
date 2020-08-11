@@ -97,7 +97,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
 
   defp map_to_dropdown_options(field, options) do
     case input_value(field, :type) do
-      "list" -> Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
+      "list" ->
+        options
+        |> Enum.map(fn {actual_value, description} -> [key: description, value: actual_value] end)
+        |> Enum.reject(fn [key: _key, value: value] -> value == "list" end)
+
       _ -> []
     end
   end
