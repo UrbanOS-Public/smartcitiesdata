@@ -8,11 +8,7 @@ defmodule Odo.Unit.EventHandlerTest do
 
   setup do
     allow(DateTime.utc_now(), return: @time, meck_options: [:passthrough])
-
-    allow(StreamingMetrics.PrometheusMetricCollector.record_metrics(any(), any()),
-      return: :irrelevant,
-      meck_options: [:passthrough]
-    )
+    expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
     :ok
   end

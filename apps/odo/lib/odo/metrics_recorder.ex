@@ -4,8 +4,6 @@ defmodule Odo.MetricsRecorder do
   """
   require Logger
 
-  @metric_collector Application.get_env(:odo, :collector)
-
   def record_file_conversion_metrics(dataset_id, file_key, success, start_date_time \\ DateTime.utc_now()) do
     success_value = if success, do: 1, else: 0
     duration = Time.diff(DateTime.utc_now(), start_date_time, :millisecond)
