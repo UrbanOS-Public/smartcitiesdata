@@ -5,7 +5,7 @@ defmodule Andi.Harvest.Harvester do
   use Tesla
 
   import Andi
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [dataset_harvest_end: 0]
 
   alias Andi.Harvest.DataJsonToDataset
   alias Andi.InputSchemas.Datasets
@@ -43,8 +43,7 @@ defmodule Andi.Harvest.Harvester do
 
   def dataset_update(datasets) do
     Enum.each(datasets, fn dataset ->
-      Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
-      Datasets.update_harvested_dataset(dataset.id)
+      Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, dataset)
     end)
   end
 end

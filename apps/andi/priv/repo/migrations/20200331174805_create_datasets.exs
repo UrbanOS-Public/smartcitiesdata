@@ -7,6 +7,16 @@ defmodule Andi.Repo.Migrations.CreateDatasets do
       add :ingestedTime, :utc_datetime
     end
 
+    create table(:harvested_datasets, primary_key: false) do
+      add :id, :uuid, null: false, primary_key: true
+      add :orgId, :string
+      add :sourceId, :string
+      add :systemId, :string
+      add :source, :string
+      add :modifiedDate, :utc_datetime
+      add :include, :boolean
+    end
+
     create table(:technical, primary_key: false) do
       add :id, :uuid, null: false, primary_key: true
       add :dataName, :string

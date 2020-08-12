@@ -10,7 +10,8 @@ defmodule Andi.EventHandler do
       user_organization_associate: 0,
       data_ingest_end: 0,
       dataset_delete: 0,
-      dataset_harvest_start: 0
+      dataset_harvest_start: 0,
+      dataset_harvest_end: 0
     ]
 
   alias SmartCity.{Dataset, Organization}
@@ -50,9 +51,21 @@ defmodule Andi.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_harvest_start(), data: %Organization{} = data}) do
+    dataset_harvest_start()
+    |> add_event_count(data.id)
+
     Task.start_link(Harvester, :start_harvesting, [data])
 
     :discard
+  end
+
+  def handle_event(%Brook.Event{type: dataset_harvest_end(), data: %Dataset{} = data}) do
+    dataset_harvest_end()
+    |> add_event_count(data.id)
+
+    Datasets.update(data)
+    Datasets.update_harvested_dataset(data.id)
+    DatasetStore.update(data)
   end
 
   def handle_event(%Brook.Event{type: "migration:modified_date:start"}) do
