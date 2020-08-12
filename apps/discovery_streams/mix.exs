@@ -55,7 +55,6 @@ defmodule DiscoveryStreams.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:prometheus_phoenix, "~> 1.2"},
       {:prometheus_plugs, "~> 1.1"},
-      {:plug_cowboy, "~> 2.1"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:redix, "~> 0.10.2"},
       {:sweet_xml, "~> 0.6"},

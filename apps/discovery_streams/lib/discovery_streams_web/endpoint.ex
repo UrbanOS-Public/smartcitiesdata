@@ -2,7 +2,6 @@ defmodule DiscoveryStreamsWeb.Endpoint.Instrumenter do
   @moduledoc """
   Module for prometheus instrumentation
   """
-  use Prometheus.PhoenixInstrumenter
 end
 
 defmodule DiscoveryStreamsWeb.Endpoint do

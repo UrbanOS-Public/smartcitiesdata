@@ -9,8 +9,6 @@ defmodule DiscoveryStreams.MessageHandler do
   require GenServer
   alias StreamingMetrics.Hostname
 
-  @metric_collector Application.get_env(:streaming_metrics, :collector)
-
   def handle_messages(messages) do
     json_messages =
       messages
@@ -34,13 +32,11 @@ defmodule DiscoveryStreams.MessageHandler do
       topic
       |> String.replace("-", "_")
 
-    count
-    |> @metric_collector.count_metric("records", [{"PodHostname", "#{get_hostname()}"}, {"type", "outbound"}])
-    |> List.wrap()
-    |> @metric_collector.record_metrics(converted_topic)
+    get_hostname()
+    |> add_records(converted_topic, "outbound", count)
     |> case do
-      {:ok, _} -> {}
-      {:error, reason} -> Logger.warn("Unable to write application metrics: #{inspect(reason)}")
+      :ok -> {}
+      error -> Logger.warn("Unable to write application metrics: #{inspect(error)}")
     end
   end
 
@@ -81,4 +77,14 @@ defmodule DiscoveryStreams.MessageHandler do
   end
 
   defp get_hostname(), do: Hostname.get()
+
+  defp add_records(pod_host_name, topic_name, type, count) do
+    [
+      app: "discovery_stream",
+      topic_name: topic_name,
+      PodHostname: pod_host_name,
+      type: type
+    ]
+    |> TelemetryEvent.add_event_metrics([:records], value: %{count: count})
+  end
 end

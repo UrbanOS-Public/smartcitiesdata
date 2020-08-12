@@ -5,7 +5,6 @@ defmodule DiscoveryStreams.MessageHandlerTest do
   import Checkov
   import ExUnit.CaptureLog
 
-  alias StreamingMetrics.ConsoleMetricCollector, as: MetricCollector
   alias DiscoveryStreams.{CachexSupervisor, MessageHandler, TopicSubscriber}
   alias SmartCity.TestDataGenerator, as: TDG
 
