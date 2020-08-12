@@ -22,6 +22,50 @@ defmodule AndiWeb.EditLiveViewTest do
   @url_path "/datasets/"
 
   describe "save and publish form data" do
+    test "save button in one section saves all sections", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{technical: %{cadence: "never"}})
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+      url_view = find_child(view, "url_form_editor")
+
+      form_data = %{"cadence" => "once"}
+
+      render_change(finalize_view, :validate, %{"form_data" => form_data})
+      render_change(url_view, :save)
+
+      eventually(fn ->
+        dataset = Datasets.get(dataset.id)
+
+        assert "once" == dataset.technical.cadence
+      end)
+    end
+
+    test "publish button saves all sections", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+      metadata_view = find_child(view, "metadata_form_editor")
+
+      finalize_form_data = %{"cadence" => "once"}
+      metadata_form_data = %{"description" => "cambapo"}
+
+      render_change(finalize_view, :validate, %{"form_data" => finalize_form_data})
+      render_change(metadata_view, :validate, %{"form_data" => metadata_form_data})
+
+      render_change(finalize_view, :publish)
+
+      eventually(fn ->
+        dataset = Datasets.get(dataset.id)
+
+        assert "once" == dataset.technical.cadence
+        assert "cambapo" == dataset.business.description
+      end)
+    end
+
     test "valid form data is saved on publish", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
 
