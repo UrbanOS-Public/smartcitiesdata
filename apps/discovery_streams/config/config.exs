@@ -27,7 +27,4 @@ config :discovery_streams,
 config :ex_aws,
   region: "us-east-2"
 
-config :streaming_metrics,
-  collector: StreamingMetrics.ConsoleMetricCollector
-
 import_config "#{Mix.env()}.exs"
