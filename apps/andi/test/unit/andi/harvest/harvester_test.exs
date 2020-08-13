@@ -2,7 +2,6 @@ defmodule Andi.Harvest.HarvesterTest do
   use ExUnit.Case
   use Placebo
   alias Andi.Harvest.Harvester
-  alias Andi.InputSchemas.Datasets
   alias SmartCity.TestDataGenerator, as: TDG
   import Andi
   import SmartCity.Event, only: [dataset_update: 0, dataset_harvest_end: 0]
