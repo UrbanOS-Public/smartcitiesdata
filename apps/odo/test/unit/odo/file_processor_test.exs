@@ -13,11 +13,6 @@ defmodule Odo.Unit.FileProcessorTest do
     allow(File.rm!(any()), return: :ok, meck_options: [:passthrough])
     allow(DateTime.utc_now(), return: @time, meck_options: [:passthrough])
 
-    allow(StreamingMetrics.PrometheusMetricCollector.record_metrics(any(), any()),
-      return: :irrelevant,
-      meck_options: [:passthrough]
-    )
-
     conversion_map = %Odo.ConversionMap{
       bucket: "hosted-files",
       original_key: "my-org/my-dataset.shapefile",
