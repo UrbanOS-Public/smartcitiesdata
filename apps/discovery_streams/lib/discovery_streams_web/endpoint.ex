@@ -1,10 +1,6 @@
-defmodule DiscoveryStreamsWeb.Endpoint.Instrumenter do
-  @moduledoc """
-  Module for prometheus instrumentation
-  """
-end
-
 defmodule DiscoveryStreamsWeb.Endpoint do
+  @moduledoc false
+
   use Phoenix.Endpoint, otp_app: :discovery_streams
 
   socket("/socket", DiscoveryStreamsWeb.UserSocket)

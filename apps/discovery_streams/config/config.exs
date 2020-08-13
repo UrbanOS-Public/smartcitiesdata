@@ -4,14 +4,7 @@ config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   http: [port: 4001, stream_handlers: [Web.StreamHandlers.StripServerHeader, :cowboy_stream_h]],
   secret_key_base: "This is a test key",
   render_errors: [view: DiscoveryStreamsWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: DiscoveryStreams.PubSub, adapter: Phoenix.PubSub.PG2],
-  instrumenters: [DiscoveryStreamsWeb.Endpoint.Instrumenter]
-
-# https://github.com/deadtrickster/prometheus-phoenix/issues/11
-config :prometheus, DiscoveryStreamsWeb.Endpoint.Instrumenter,
-  controller_call_labels: [:controller, :action],
-  channel_join_labels: [:channel, :topic, :transport],
-  channel_receive_labels: [:channel, :topic, :transport]
+  pubsub: [name: DiscoveryStreams.PubSub, adapter: Phoenix.PubSub.PG2]
 
 config :logger,
   backends: [:console],

@@ -22,7 +22,7 @@ defmodule DiscoveryStreams.Mixfile do
   def application do
     [
       mod: {DiscoveryStreams.Application, []},
-      extra_applications: [:prometheus_plugs, :prometheus_phoenix, :logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
@@ -53,8 +53,6 @@ defmodule DiscoveryStreams.Mixfile do
       {:phoenix_pubsub, "~> 1.0"},
       {:phoenix_html, "~> 2.14.1"},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
-      {:prometheus_phoenix, "~> 1.2"},
-      {:prometheus_plugs, "~> 1.1"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:redix, "~> 0.10.2"},
       {:sweet_xml, "~> 0.6"},
