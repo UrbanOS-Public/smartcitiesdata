@@ -66,31 +66,6 @@ defmodule Odo.Unit.FileProcessorTest do
       assert_called(File.rm!(conversion_map.download_path), once())
       assert_called(File.rm!(conversion_map.converted_path), once())
     end
-
-    test "records correct metrics", %{conversion_map: conversion_map} do
-      expected_dimensions = [
-        dataset_id: conversion_map.dataset_id,
-        file: conversion_map.original_key,
-        start: DateTime.to_unix(@time)
-      ]
-
-      expected_metrics = [
-        %{
-          name: "file_conversion_success",
-          value: 1,
-          dimensions: expected_dimensions,
-          type: :gauge
-        },
-        %{
-          name: "file_conversion_duration",
-          value: 0,
-          dimensions: expected_dimensions,
-          type: :gauge
-        }
-      ]
-
-      assert_called(StreamingMetrics.PrometheusMetricCollector.record_metrics(expected_metrics, "odo"))
-    end
   end
 
   describe "unsuccessful conversion" do
@@ -111,33 +86,6 @@ defmodule Odo.Unit.FileProcessorTest do
                            conversion_map.bucket
                          }/#{conversion_map.original_key}: econnrefused"}
              end) =~ "econnrefused"
-    end
-
-    test "records correct metrics", %{conversion_map: conversion_map} do
-      Odo.FileProcessor.process(conversion_map)
-
-      expected_dimensions = [
-        dataset_id: conversion_map.dataset_id,
-        file: conversion_map.original_key,
-        start: DateTime.to_unix(@time)
-      ]
-
-      expected_metrics = [
-        %{
-          name: "file_conversion_success",
-          value: 0,
-          dimensions: expected_dimensions,
-          type: :gauge
-        },
-        %{
-          name: "file_conversion_duration",
-          value: 0,
-          dimensions: expected_dimensions,
-          type: :gauge
-        }
-      ]
-
-      assert_called(StreamingMetrics.PrometheusMetricCollector.record_metrics(expected_metrics, "odo"))
     end
   end
 end
