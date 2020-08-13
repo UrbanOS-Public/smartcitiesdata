@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "0.15.0",
+      version: "0.15.1",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -45,7 +45,6 @@ defmodule Forklift.MixProject do
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:poison, "~> 3.1", override: true},
       {:prestige, "~> 1.0"},
-      {:prometheus_plugs, "~> 1.1"},
       {:quantum, "~>2.4"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
