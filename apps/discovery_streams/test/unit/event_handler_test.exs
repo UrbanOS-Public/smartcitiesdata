@@ -13,6 +13,8 @@ defmodule DiscoveryStreams.EventHandlerTest do
     end
 
     test "should store dataset.id by dataset.technical.systemName and vice versa" do
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+
       dataset =
         TDG.create_dataset(
           id: Faker.UUID.v4(),
@@ -84,6 +86,7 @@ defmodule DiscoveryStreams.EventHandlerTest do
     end
 
     test "should delete dataset when dataset:delete event fires" do
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
       system_name = Faker.UUID.v4()
       dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{systemName: system_name})
       allow(DiscoveryStreams.TopicHelper.delete_input_topic(any()), return: :ok)

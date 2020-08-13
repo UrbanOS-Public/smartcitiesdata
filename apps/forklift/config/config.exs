@@ -12,8 +12,7 @@ config :forklift,
   cache_processing_batch_size: 1_000,
   message_processing_cadence: 10_000,
   number_of_empty_reads_to_delete: 50,
-  input_topic_prefix: input_topic_prefix,
-  collector: StreamingMetrics.PrometheusMetricCollector
+  input_topic_prefix: input_topic_prefix
 
 config :logger,
   backends: [:console],
