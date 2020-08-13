@@ -1,8 +1,3 @@
-defmodule DiscoveryStreams.MetricsExporter do
-  @moduledoc false
-  use Prometheus.PlugExporter
-end
-
 defmodule DiscoveryStreams.Application do
   @moduledoc false
   use Application
@@ -12,9 +7,6 @@ defmodule DiscoveryStreams.Application do
   def start(_type, _args) do
     import Supervisor.Spec
 
-    DiscoveryStreams.MetricsExporter.setup()
-    DiscoveryStreamsWeb.Endpoint.Instrumenter.setup()
-
     opts = [strategy: :one_for_one, name: DiscoveryStreams.Supervisor]
 
     children =
@@ -22,13 +14,13 @@ defmodule DiscoveryStreams.Application do
         DiscoveryStreams.CachexSupervisor,
         supervisor(DiscoveryStreamsWeb.Endpoint, []),
         libcluster(),
-        metrics(),
         DiscoveryStreams.CacheGenserver,
         {Brook, Application.get_env(:discovery_streams, :brook)},
         kaffe(),
         DiscoveryStreamsWeb.Presence,
         DiscoveryStreamsWeb.Presence.Server
       ]
+      |> TelemetryEvent.config_init_server(:discovery_streams)
       |> List.flatten()
 
     Supervisor.start_link(children, opts)
@@ -51,20 +43,6 @@ defmodule DiscoveryStreams.Application do
           Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, []),
           DiscoveryStreams.TopicSubscriber
         ]
-    end
-  end
-
-  defp metrics() do
-    case Application.get_env(:discovery_streams, :metrics_port) do
-      nil ->
-        []
-
-      metrics_port ->
-        Plug.Cowboy.child_spec(
-          scheme: :http,
-          plug: DiscoveryStreams.MetricsExporter,
-          options: [port: metrics_port]
-        )
     end
   end
 end

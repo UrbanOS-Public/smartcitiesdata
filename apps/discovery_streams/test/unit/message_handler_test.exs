@@ -5,11 +5,9 @@ defmodule DiscoveryStreams.MessageHandlerTest do
   import Checkov
   import ExUnit.CaptureLog
 
-  alias StreamingMetrics.ConsoleMetricCollector, as: MetricCollector
   alias DiscoveryStreams.{CachexSupervisor, MessageHandler, TopicSubscriber}
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @outbound_records "records"
   @dataset_1_id "d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
   @dataset_2_id "555ea731-d85e-4bd8-b2e4-4017366c24b0"
 
@@ -46,7 +44,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
   end
 
   data_test "broadcasts data from a kafka topic (#{topic}) to a websocket channel #{channel}" do
-    allow MetricCollector.record_metrics(any(), any()), return: {:ok, %{}}, meck_options: [:passthrough]
+    expect(TelemetryEvent.add_event_metrics(any(), [:records], value: %{count: any()}), return: :ok)
 
     {:ok, _, socket} =
       socket(DiscoveryStreamsWeb.UserSocket)
@@ -67,7 +65,7 @@ defmodule DiscoveryStreams.MessageHandlerTest do
   end
 
   test "unparsable messages are logged to the console without disruption" do
-    allow MetricCollector.record_metrics(any(), any()), return: {:ok, %{}}, meck_options: [:passthrough]
+    expect(TelemetryEvent.add_event_metrics(any(), [:records], value: %{count: any()}), return: :ok)
 
     {:ok, _, socket} =
       socket(DiscoveryStreamsWeb.UserSocket)
@@ -97,56 +95,8 @@ defmodule DiscoveryStreams.MessageHandlerTest do
     leave(socket)
   end
 
-  test "metrics are sent for a count of the uncached entities" do
-    allow MetricCollector.record_metrics(any(), any()), return: {:ok, %{}}, meck_options: [:passthrough]
-
-    {:ok, _, socket} =
-      socket(DiscoveryStreamsWeb.UserSocket)
-      |> subscribe_and_join(
-        DiscoveryStreamsWeb.StreamingChannel,
-        "streaming:central_ohio_transit_authority__cota_stream"
-      )
-
-    MessageHandler.handle_messages([
-      create_message(%{"vehicle" => %{"vehicle" => %{"id" => "11603"}}},
-        topic: "transformed-555ea731-d85e-4bd8-b2e4-4017366c24b0"
-      ),
-      create_message(%{"vehicle_id" => "34095", "description" => "Some Description"},
-        topic: "transformed-d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
-      )
-    ])
-
-    assert_called MetricCollector.record_metrics(any(), "transformed_555ea731_d85e_4bd8_b2e4_4017366c24b0"), once()
-    assert_called MetricCollector.record_metrics(any(), "transformed_d21d5af6_346c_43e5_891f_8c2c7f28e4ab"), once()
-
-    leave(socket)
-  end
-
-  test "metrics fail to send" do
-    allow MetricCollector.record_metrics(any(), any()),
-      return: {:error, {:http_error, "reason"}},
-      meck_options: [:passthrough]
-
-    {:ok, _, socket} =
-      socket(DiscoveryStreamsWeb.UserSocket)
-      |> subscribe_and_join(
-        DiscoveryStreamsWeb.StreamingChannel,
-        "streaming:central_ohio_transit_authority__cota_stream"
-      )
-
-    assert capture_log([level: :warn], fn ->
-             MessageHandler.handle_messages([
-               create_message(%{"vehicle" => %{"vehicle" => %{"id" => "11603"}}},
-                 topic: "transformed-555ea731-d85e-4bd8-b2e4-4017366c24b0"
-               )
-             ])
-           end) =~ "Unable to write application metrics: {:http_error, \"reason\"}"
-
-    leave(socket)
-  end
-
   test "caches data from a kafka topic with one item per key" do
-    allow MetricCollector.record_metrics(any(), any()), return: {:ok, %{}}, meck_options: [:passthrough]
+    expect(TelemetryEvent.add_event_metrics(any(), [:records], value: %{count: any()}), return: :ok)
 
     {:ok, _, socket} =
       socket(DiscoveryStreamsWeb.UserSocket)
@@ -187,41 +137,6 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
     leave(socket)
   end
-
-  test "returns :ok after processing" do
-    allow MetricCollector.record_metrics(any(), any()), return: {:ok, %{}}, meck_options: [:passthrough]
-    assert MessageHandler.handle_messages([]) == :ok
-  end
-
-  describe("integration") do
-    setup do
-      previous_level = Logger.level()
-      Logger.configure(level: :info)
-
-      on_exit(fn -> Logger.configure(level: previous_level) end)
-    end
-
-    test "Consumer properly logs messages" do
-      actual =
-        capture_log(fn ->
-          MessageHandler.handle_messages([
-            create_message(%{"vehicle" => %{"vehicle" => %{"id" => "11605"}}}),
-            create_message(%{"vehicle" => %{"vehicle" => %{"id" => "11608"}}})
-          ])
-        end)
-
-      expected_outputs = [
-        "metric_name: \"#{@outbound_records}\"",
-        "value: 2",
-        "unit: \"Count\"",
-        ~r/dimensions: \[{\"PodHostname\", \"*\"/
-      ]
-
-      Enum.each(expected_outputs, fn x -> assert actual =~ x end)
-    end
-  end
-
-  defp create_message(data, opts \\ [])
 
   defp create_message(%{} = data, opts) do
     create_message(TDG.create_data(payload: data) |> Jason.encode!(), opts)
