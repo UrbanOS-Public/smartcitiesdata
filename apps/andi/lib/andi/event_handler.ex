@@ -21,6 +21,7 @@ defmodule Andi.EventHandler do
   alias Andi.Harvest.Harvester
 
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Organizations
 
   @ingested_time_topic "ingested_time_topic"
 
@@ -59,13 +60,9 @@ defmodule Andi.EventHandler do
     :discard
   end
 
-  def handle_event(%Brook.Event{type: dataset_harvest_end(), data: %Dataset{} = data}) do
-    dataset_harvest_end()
-    |> add_event_count(data.id)
-
-    Datasets.update(data)
-    Datasets.update_harvested_dataset(data.id)
-    DatasetStore.update(data)
+  def handle_event(%Brook.Event{type: dataset_harvest_end(), data: data}) do
+    Organizations.update_harvested_dataset(data)
+    :discard
   end
 
   def handle_event(%Brook.Event{type: "migration:modified_date:start"}) do

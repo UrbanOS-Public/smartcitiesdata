@@ -35,7 +35,6 @@ defmodule Andi.InputSchemas.Datasets.HarvestedDatasets do
 
       harvested_dataset
       |> cast(changes_with_id, @cast_fields, empty_values: [])
-      |> foreign_key_constraint(:technical_id)
     end
 
     def preload(struct), do: struct

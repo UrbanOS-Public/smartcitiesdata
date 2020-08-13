@@ -5,10 +5,11 @@ defmodule Andi.Harvest.Harvester do
   use Tesla
 
   import Andi
-  import SmartCity.Event, only: [dataset_harvest_end: 0]
+  import SmartCity.Event, only: [dataset_harvest_end: 0, dataset_update: 0]
 
   alias Andi.Harvest.DataJsonToDataset
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.HarvestedDatasets
 
   require Logger
 
@@ -18,6 +19,8 @@ defmodule Andi.Harvest.Harvester do
     with {:ok, data_json} <- get_data_json(url),
          {:ok, decoded_data_json} <- Jason.decode(data_json),
          datasets <- map_data_json_to_dataset(decoded_data_json, org),
+         harvested_datasets <- map_data_json_to_harvested_dataset(decoded_data_json, org),
+         :ok <- harvested_dataset_update(harvested_datasets),
          :ok <- dataset_update(datasets) do
       :ok
     else
@@ -38,12 +41,22 @@ defmodule Andi.Harvest.Harvester do
   end
 
   def map_data_json_to_dataset(data_json, org) do
-    DataJsonToDataset.mapper(data_json, org)
+    DataJsonToDataset.dataset_mapper(data_json, org)
+  end
+
+  def map_data_json_to_harvested_dataset(data_json, org) do
+    DataJsonToDataset.harvested_dataset_mapper(data_json, org)
   end
 
   def dataset_update(datasets) do
     Enum.each(datasets, fn dataset ->
-      Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, dataset)
+      Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
+    end)
+  end
+
+  def harvested_dataset_update(harvested_datasets) do
+    Enum.each(harvested_datasets, fn harvested_dataset ->
+      Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, harvested_dataset)
     end)
   end
 end

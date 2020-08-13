@@ -5,7 +5,7 @@ defmodule Andi.Harvest.HarvesterTest do
   alias Andi.InputSchemas.Datasets
   alias SmartCity.TestDataGenerator, as: TDG
   import Andi
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [dataset_update: 0, dataset_harvest_end: 0]
 
   describe "data json harvester" do
     setup do
@@ -27,15 +27,20 @@ defmodule Andi.Harvest.HarvesterTest do
       assert resp == actual
     end
 
-    test "map_data_json_to_dataset/1", %{data_json: data_json, org: org} do
+    test "map_data_json_to_dataset/2", %{data_json: data_json, org: org} do
       {:ok, data_json} = Jason.decode(data_json)
       datasets = Harvester.map_data_json_to_dataset(data_json, org)
       assert length(datasets) == 2
     end
 
+    test "map_data_json_to_harvested_dataset/2", %{data_json: data_json, org: org} do
+      {:ok, data_json} = Jason.decode(data_json)
+      harvested_datasets = Harvester.map_data_json_to_harvested_dataset(data_json, org)
+      assert length(harvested_datasets) == 2
+    end
+
     test "dataset_update/1", %{data_json: data_json, org: org} do
       allow(Brook.Event.send(instance_name(), dataset_update(), :andi, any()), return: :ok, meck_options: [:passthrough])
-      allow(Datasets.update_harvested_dataset(any()), return: :ok, meck_options: [:passthrough])
 
       {:ok, data_json} = Jason.decode(data_json)
       datasets = Harvester.map_data_json_to_dataset(data_json, org)
@@ -43,6 +48,17 @@ defmodule Andi.Harvest.HarvesterTest do
       Harvester.dataset_update(datasets)
 
       assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, any()), times(2))
+    end
+
+    test "harvested_dataset_update/1", %{data_json: data_json, org: org} do
+      allow(Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, any()), return: :ok, meck_options: [:passthrough])
+
+      {:ok, data_json} = Jason.decode(data_json)
+      harvested_datasets = Harvester.map_data_json_to_harvested_dataset(data_json, org)
+
+      Harvester.harvested_dataset_update(harvested_datasets)
+
+      assert_called(Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, any()), times(2))
     end
   end
 

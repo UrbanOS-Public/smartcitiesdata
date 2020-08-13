@@ -6,7 +6,7 @@ defmodule Andi.Harvest.DataJsonToDataset do
 
   @scos_data_json_seed "1719bf64-38f5-40bf-9737-45e84f5c8419"
 
-  def mapper(%{"dataset" => datasets}, org) do
+  def dataset_mapper(%{"dataset" => datasets}, org) do
     Enum.map(datasets, fn data_json_dataset -> dataset_model(data_json_dataset, org) end)
     |> Enum.filter(&is_public?/1)
     |> Enum.reject(&Enum.empty?/1)
@@ -18,13 +18,28 @@ defmodule Andi.Harvest.DataJsonToDataset do
     end)
   end
 
+  def harvested_dataset_mapper(%{"dataset" => datasets}, org) do
+    Enum.map(datasets, fn data_json_dataset -> harvested_dataset_model(data_json_dataset, org) end)
+  end
+
+  defp harvested_dataset_model(data_json_dataset, org) do
+    %{
+      "orgId" => org.id,
+      "sourceId" => data_json_dataset["identifier"],
+      "systemId" => system_name(org.orgName, data_name(data_json_dataset["title"])),
+      "source" => Map.get(data_json_dataset["publisher"], "source"),
+      "modifiedDate" => data_json_dataset["modified"],
+      "include" => true
+    }
+  end
+
   defp dataset_model(data_json_dataset, org) do
     %{
       "business" => %{
         "categories" => data_json_dataset["theme"],
         "conformsToUri" => "https://project-open-data.cio.gov/v1.1/schema/",
-        "contactEmail" => Map.get(data_json_dataset["contactPoint"], :hasEmail),
-        "contactName" => Map.get(data_json_dataset["contactPoint"], :fn),
+        "contactEmail" => Map.get(data_json_dataset["contactPoint"], "hasEmail"),
+        "contactName" => Map.get(data_json_dataset["contactPoint"], "fn"),
         "dataTitle" => data_json_dataset["title"],
         "describedByMimeType" => data_json_dataset["describedByType"],
         "describedByUrl" => data_json_dataset["describedBy"],
