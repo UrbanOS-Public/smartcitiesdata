@@ -49,3 +49,18 @@ config :odo, :brook,
     module: Brook.Storage.Redis,
     init_arg: [redix_args: [host: redis_host], namespace: "odo:view"]
   }
+
+  config :telemetry_event,
+  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
+  metrics_options: [
+    [
+      metric_name: "file_conversion_success.gauge",
+      tags: [:app, :dataset_id, :file, :start],
+      metric_type: :last_value
+    ],
+    [
+      metric_name: "file_conversion_duration.gauge",
+      tags: [:app, :dataset_id, :file, :start],
+      metric_type: :last_value
+    ]
+  ]

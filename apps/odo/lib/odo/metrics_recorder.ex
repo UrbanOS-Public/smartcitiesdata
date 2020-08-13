@@ -14,16 +14,21 @@ defmodule Odo.MetricsRecorder do
       start: DateTime.to_unix(start_date_time)
     ]
 
-    @metric_collector.record_metrics(
-      [
-        @metric_collector.gauge_metric(success_value, "file_conversion_success", labels),
-        @metric_collector.gauge_metric(duration, "file_conversion_duration", labels)
-      ],
-      "odo"
-    )
-    |> case do
-      {:error, err} -> Logger.warn("Unable to record file conversion metrics : #{inspect(err)}")
-      _ -> :ok
+    with :ok <- add_file_conversion([:file_conversion_success], labels, success_value),
+         :ok <- add_file_conversion([:file_conversion_duration], labels, duration) do
+      :ok
+    else
+      error -> Logger.warn("Unable to record file conversion metrics : #{inspect(error)}")
     end
+  end
+
+  defp add_file_conversion(metrics_name, dimensions, gauge) do
+    [
+      app: "odo",
+      dataset_id: Keyword.fetch!(dimensions, :dataset_id),
+      file: Keyword.fetch!(dimensions, :file),
+      start: Keyword.fetch!(dimensions, :start)
+    ]
+    |> TelemetryEvent.add_event_metrics(metrics_name, value: %{gauge: gauge})
   end
 end

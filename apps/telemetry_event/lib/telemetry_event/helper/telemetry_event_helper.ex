@@ -1,12 +1,11 @@
 defmodule TelemetryEvent.Helper.TelemetryEventHelper do
   @moduledoc false
-  alias Telemetry.Metrics
-  alias TelemetryEvent.Helper.AddMetrics
+  alias TelemetryEvent.Helper.MetricsEvent
 
   def metrics_config(app_name) do
     [
       port: metrics_port(),
-      metrics: metrics(),
+      metrics: MetricsEvent.metrics(),
       name: app_name
     ]
   end
@@ -14,26 +13,6 @@ defmodule TelemetryEvent.Helper.TelemetryEventHelper do
   def tags_and_values(event_tags_and_values) do
     event_tags_and_values
     |> Map.new(fn {k, v} -> {k, replace_nil(v)} end)
-  end
-
-  defp metrics() do
-    Application.get_env(:telemetry_event, :metrics_options)
-    |> List.wrap()
-    |> AddMetrics.add_metrics_options()
-    |> Enum.map(fn metrics_option ->
-      Keyword.fetch!(metrics_option, :metric_type)
-      |> metrics_event(metrics_option)
-    end)
-  end
-
-  defp metrics_event(:counter, metrics_option) do
-    Keyword.fetch!(metrics_option, :metric_name)
-    |> Metrics.counter(tags: Keyword.fetch!(metrics_option, :tags))
-  end
-
-  defp metrics_event(:sum, metrics_option) do
-    Keyword.fetch!(metrics_option, :metric_name)
-    |> Metrics.sum(tags: Keyword.fetch!(metrics_option, :tags))
   end
 
   defp metrics_port() do

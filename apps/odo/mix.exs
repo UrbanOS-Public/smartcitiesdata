@@ -37,7 +37,6 @@ defmodule Odo.MixProject do
       {:jason, "~> 1.2"},
       {:libvault, "~> 0.2"},
       {:poison, "~> 3.1", override: true},
-      # {:prometheus_plugs, "~> 1.1"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13.0"},
       {:smart_city, "~> 3.5"},
