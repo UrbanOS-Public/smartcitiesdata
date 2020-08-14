@@ -16,8 +16,8 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
 
   def join(channel, params, socket) do
     topic = determine_topic(channel)
-    # TODO: make sure to reimplement this
-    # case topic in TopicSubscriber.list_subscribed_topics() do
+    IO.inspect(channel, label: "channel is")
+    # case topic in
     #   false ->
     #     {:error, %{reason: "Channel #{channel} does not exist"}}
 
@@ -27,23 +27,18 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     # end
   end
 
-  def handle_info(:after_join, %{assigns: %{filter: filter}} = socket) do
-    # TODO: turn back on caching
-    push_cache_to_socket(socket, fn msg -> message_matches?(msg, filter) end)
+  def handle_info(:after_join, %{assigns: %{filter: _filter}} = socket) do
     {:ok, _} = Presence.track(socket, unique_id(), %{})
     {:noreply, socket}
   end
 
   def handle_in(@filter_event, message, socket) do
     filter_rules = create_filter_rules(message)
-    push_cache_to_socket(socket, fn msg -> message_matches?(msg, filter_rules) end)
 
     {:noreply, assign(socket, :filter, filter_rules)}
   end
 
   def handle_out(@update_event, message, %{assigns: %{filter: filter}} = socket) do
-    IO.inspect("Handle out update event with filter")
-
     if message_matches?(message, filter) do
       push(socket, @update_event, message)
     end
@@ -52,7 +47,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   end
 
   def handle_out(@update_event, message, socket) do
-    IO.inspect("handle out update event without filter")
     push(socket, @update_event, message)
     {:noreply, socket}
   end
@@ -70,19 +64,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   end
 
   # sobelow_skip ["DOS.StringToAtom"]
-  defp push_cache_to_socket(%{topic: channel} = socket, filter) do
-    query = Cachex.Query.create(true, :value)
-
-    channel
-    |> determine_system_name()
-    |> get_dataset_id()
-    |> IO.inspect(label: "Getting cache")
-    |> String.to_atom()
-    |> Cachex.stream!(query)
-    |> Stream.filter(filter)
-    |> Enum.each(fn msg -> push(socket, @update_event, msg) end)
-  end
-
   defp determine_system_name("streaming:" <> system_name), do: system_name
 
   defp determine_topic("streaming:" <> system_name) do

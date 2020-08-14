@@ -12,11 +12,10 @@ defmodule DiscoveryStreams.EventHandler do
         data: %Dataset{id: id, technical: %{sourceType: "stream", private: false, systemName: system_name}} = dataset,
         author: author
       }) do
-    data_ingest_start()
-    |> add_event_count(author, id)
+    add_event_count(data_ingest_start(), author, id)
 
-    save_dataset_to_viewstate(id, system_name)
     DiscoveryStreams.StreamSubscriber.subscribe_to_dataset(dataset)
+    save_dataset_to_viewstate(id, system_name)
     :ok
   end
 
@@ -25,9 +24,9 @@ defmodule DiscoveryStreams.EventHandler do
         data: %Dataset{technical: %{private: true}} = dataset,
         author: author
       }) do
-    dataset_update()
-    |> add_event_count(author, dataset.id)
+    add_event_count(dataset_update(), author, dataset.id)
 
+    # TODO: need to turn off source
     delete_from_viewstate(dataset.id, dataset.technical.systemName)
 
     :ok
@@ -39,9 +38,9 @@ defmodule DiscoveryStreams.EventHandler do
         author: author
       })
       when source_type != "stream" do
-    dataset_update()
-    |> add_event_count(author, id)
+    add_event_count(dataset_update, author, id)
 
+    # TODO: need to turn off source
     delete_from_viewstate(id, system_name)
 
     :ok
@@ -52,8 +51,7 @@ defmodule DiscoveryStreams.EventHandler do
         data: %Dataset{id: id, technical: %{systemName: system_name}},
         author: author
       }) do
-    dataset_delete()
-    |> add_event_count(author, id)
+    add_event_count(dataset_delete, author, id)
 
     DiscoveryStreams.TopicHelper.delete_input_topic(id)
     delete_from_viewstate(id, system_name)

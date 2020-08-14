@@ -11,10 +11,8 @@ defmodule DiscoveryStreams.Application do
 
     children =
       [
-        DiscoveryStreams.CachexSupervisor,
         supervisor(DiscoveryStreamsWeb.Endpoint, []),
         libcluster(),
-        DiscoveryStreams.CacheGenserver,
         {Brook, Application.get_env(:discovery_streams, :brook)},
         # {DiscoveryStreams.Init},
         DiscoveryStreamsWeb.Presence,

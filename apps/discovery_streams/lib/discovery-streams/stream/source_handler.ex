@@ -13,38 +13,67 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
   getter(:dlq, default: Dlq)
 
   def handle_message(message, context) do
-    # load = context.assigns.load
+    dataset = context.assigns.dataset
 
-    Logger.debug(fn ->
-      "#{__MODULE__}: Broadcasting to broadcast: TODO"
-    end)
+    Logger.debug(fn -> "#{__MODULE__} handle_message - #{inspect(context)} - #{inspect(message)}" end)
 
-    IO.inspect(context, label: "context")
-    IO.inspect(message, label: "message")
+    log_message(message)
 
-    case Brook.get(:discovery_streams, :streaming_datasets_by_id, context.assigns.dataset.id) do
+    case Brook.get(:discovery_streams, :streaming_datasets_by_id, dataset.id) do
       {:ok, system_name} ->
         Endpoint.broadcast!("streaming:#{system_name}", "update", message)
-
       _ ->
         nil
     end
-
     Ok.ok(message)
   end
 
   def handle_batch(batch, context) do
     Logger.debug(fn -> "#{__MODULE__} handle_batch - #{inspect(context)} - #{inspect(batch)}" end)
-
-    # unless context.assigns.load.destination.cache == 0 do
-    #   Broadcast.Cache.add(context.assigns.cache, batch)
-    # end
-
+    record_outbound_count_metrics(batch)
     :ok
+  end
+
+  defp log_message(message) do
+    Logger.log(:info, "#{inspect(message)}")
+    message
   end
 
   def send_to_dlq(dead_letters, _context) do
     dlq().write(dead_letters)
     :ok
+  end
+
+  defp record_outbound_count_metrics(messages) do
+
+    ### TODO: This will not match on the topic anymore
+    messages
+    |> Enum.reduce(%{}, fn %{topic: topic}, acc -> Map.update(acc, topic, 1, &(&1 + 1)) end)
+    |> Enum.each(&record_metric/1)
+  end
+
+  defp record_metric({topic, count}) do
+    converted_topic =
+      topic
+      |> String.replace("-", "_")
+
+    get_hostname()
+    |> add_records(converted_topic, "outbound", count)
+    |> case do
+      :ok -> {}
+      error -> Logger.warn("Unable to write application metrics: #{inspect(error)}")
+    end
+  end
+
+  defp get_hostname(), do: Hostname.get()
+
+  defp add_records(pod_host_name, topic_name, type, count) do
+    [
+      app: "discovery_stream",
+      topic_name: topic_name,
+      PodHostname: pod_host_name,
+      type: type
+    ]
+    |> TelemetryEvent.add_event_metrics([:records], value: %{count: count})
   end
 end
