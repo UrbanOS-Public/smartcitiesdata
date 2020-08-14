@@ -9,12 +9,12 @@ defmodule Andi.InputSchemas.Organization do
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "organizations" do
-    field :description, :string
-    field :orgName, :string
-    field :orgTitle, :string
-    field :homepage, :string
-    field :logoUrl, :string
-    field :dataJSONUrl, :string
+    field(:description, :string)
+    field(:orgName, :string)
+    field(:orgTitle, :string)
+    field(:homepage, :string)
+    field(:logoUrl, :string)
+    field(:dataJSONUrl, :string)
   end
 
   use Accessible

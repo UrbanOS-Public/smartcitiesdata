@@ -10,7 +10,7 @@ defmodule AndiWeb.OrganizationLiveView do
     <div class="organizations-view">
       <div class="page-header">
         <h2>Dataset Ingestion Interface</h2>
-      </div>
+        </div>
 
       <div class="organizations-index">
         <div class="organizations-index__header">
@@ -65,7 +65,7 @@ defmodule AndiWeb.OrganizationLiveView do
        search_text: search_text,
        organizations: view_models,
        order: %{order_by => order_dir},
-       params: params,
+       params: params
      )}
   end
 
@@ -123,5 +123,4 @@ defmodule AndiWeb.OrganizationLiveView do
       "org_title" => org.orgTitle
     }
   end
-
 end
