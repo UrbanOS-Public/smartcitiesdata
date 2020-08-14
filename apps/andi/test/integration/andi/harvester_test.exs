@@ -6,6 +6,7 @@ defmodule Andi.Harvest.HarvesterTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetStore
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Organizations
 
   import SmartCity.Event, only: [dataset_harvest_start: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
@@ -62,6 +63,21 @@ defmodule Andi.Harvest.HarvesterTest do
         dataset_ids = Datasets.get_all() |> Enum.map(fn dataset -> dataset.id end)
         assert @dataset_id_1 in dataset_ids
         assert @dataset_id_2 in dataset_ids
+      end)
+    end
+
+    test "harvested datasets from data_json are added to ecto", %{data_json: data_json, org: org, bypass: bypass} do
+      Ecto.Adapters.SQL.Sandbox.allow(Andi.Repo, self(), Andi.Harvest.Harvester)
+
+      Bypass.stub(bypass, "GET", "/data.json", fn conn ->
+        Plug.Conn.resp(conn, 200, data_json)
+      end)
+
+      Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+
+      eventually(fn ->
+        harvested_datasets = Organizations.get_all()
+        assert length(harvested_datasets) == 2
       end)
     end
   end
