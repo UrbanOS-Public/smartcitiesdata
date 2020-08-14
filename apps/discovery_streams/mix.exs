@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.Mixfile do
   def project do
     [
       app: :discovery_streams,
-      version: "2.6.0",
+      version: "2.7.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -22,7 +22,7 @@ defmodule DiscoveryStreams.Mixfile do
   def application do
     [
       mod: {DiscoveryStreams.Application, []},
-      extra_applications: [:prometheus_plugs, :prometheus_phoenix, :logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
@@ -53,15 +53,13 @@ defmodule DiscoveryStreams.Mixfile do
       {:phoenix_pubsub, "~> 1.0"},
       {:phoenix_html, "~> 2.14.1"},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
-      {:prometheus_phoenix, "~> 1.2"},
-      {:prometheus_plugs, "~> 1.1"},
-      {:plug_cowboy, "~> 2.1"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:redix, "~> 0.10.2"},
       {:sweet_xml, "~> 0.6"},
       {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:streaming_metrics, "~>2.1"},
+      {:telemetry_event, in_umbrella: true},
       {:temporary_env, "~> 2.0", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev, runtime: false},
       {:distillery, "~> 2.1"},

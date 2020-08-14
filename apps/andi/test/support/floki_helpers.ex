@@ -50,8 +50,9 @@ defmodule FlokiHelpers do
     |> Floki.parse_fragment!()
     |> Floki.find(selector)
     |> Floki.find("select option")
-    |> Enum.map(fn {_option, [{_value, value} | _], [text]} ->
-      {text, value}
+    |> Enum.map(fn
+      {_option, [{_value, value} | _], [text]} -> {text, value}
+      {_option, [{_value, value} | _], []} -> {"", value}
     end)
   end
 

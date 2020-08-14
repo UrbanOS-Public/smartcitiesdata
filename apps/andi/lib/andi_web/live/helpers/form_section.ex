@@ -15,6 +15,7 @@ defmodule AndiWeb.FormSection do
           socket.assigns.changeset
           |> Map.put(:action, :update)
 
+        AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{})
         AndiWeb.Endpoint.broadcast_from(self(), "form-save", "form-save", %{form_changeset: changeset})
 
         new_validation_status = get_new_validation_status(changeset)

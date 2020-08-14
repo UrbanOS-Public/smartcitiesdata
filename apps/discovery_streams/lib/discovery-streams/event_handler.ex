@@ -9,13 +9,24 @@ defmodule DiscoveryStreams.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Dataset{id: id, technical: %{sourceType: "stream", private: false, systemName: system_name}}
+        data: %Dataset{id: id, technical: %{sourceType: "stream", private: false, systemName: system_name}},
+        author: author
       }) do
+    data_ingest_start()
+    |> add_event_count(author, id)
+
     save_dataset_to_viewstate(id, system_name)
     :ok
   end
 
-  def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{technical: %{private: true}} = dataset}) do
+  def handle_event(%Brook.Event{
+        type: dataset_update(),
+        data: %Dataset{technical: %{private: true}} = dataset,
+        author: author
+      }) do
+    dataset_update()
+    |> add_event_count(author, dataset.id)
+
     delete_from_viewstate(dataset.id, dataset.technical.systemName)
 
     :ok
@@ -23,9 +34,13 @@ defmodule DiscoveryStreams.EventHandler do
 
   def handle_event(%Brook.Event{
         type: dataset_update(),
-        data: %Dataset{id: id, technical: %{sourceType: source_type, systemName: system_name}}
+        data: %Dataset{id: id, technical: %{sourceType: source_type, systemName: system_name}},
+        author: author
       })
       when source_type != "stream" do
+    dataset_update()
+    |> add_event_count(author, id)
+
     delete_from_viewstate(id, system_name)
 
     :ok
@@ -33,8 +48,12 @@ defmodule DiscoveryStreams.EventHandler do
 
   def handle_event(%Brook.Event{
         type: dataset_delete(),
-        data: %Dataset{id: id, technical: %{systemName: system_name}}
+        data: %Dataset{id: id, technical: %{systemName: system_name}},
+        author: author
       }) do
+    dataset_delete()
+    |> add_event_count(author, id)
+
     DiscoveryStreams.TopicHelper.delete_input_topic(id)
     delete_from_viewstate(id, system_name)
   end
@@ -50,5 +69,15 @@ defmodule DiscoveryStreams.EventHandler do
     Logger.debug("#{__MODULE__}: Deleting Datatset: #{id} with system_name: #{system_name}")
     delete(:streaming_datasets_by_id, id)
     delete(:streaming_datasets_by_system_name, system_name)
+  end
+
+  defp add_event_count(event_type, author, dataset_id) do
+    [
+      app: "discovery_streams",
+      author: author,
+      dataset_id: dataset_id,
+      event_type: event_type
+    ]
+    |> TelemetryEvent.add_event_metrics([:events_handled])
   end
 end

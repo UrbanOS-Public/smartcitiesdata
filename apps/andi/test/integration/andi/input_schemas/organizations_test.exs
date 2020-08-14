@@ -10,6 +10,7 @@ defmodule Andi.InputSchemas.OrganizationsTest do
       harvested_dataset_one = %{
         "orgId" => "95254592-d611-4bcb-9478-7fa248f4118d"
       }
+
       harvested_dataset_two = %{
         "orgId" => "95254592-d611-4bcb-9478-7fa248f4118d"
       }
@@ -29,8 +30,7 @@ defmodule Andi.InputSchemas.OrganizationsTest do
 
       {:ok, harvested_dataset} = Organizations.update_harvested_dataset(harvested_dataset_one)
 
-      assert %{orgId: "95254592-d611-4bcb-9478-7fa248f4118d"} =
-          Organizations.get(harvested_dataset.id)
+      assert %{orgId: "95254592-d611-4bcb-9478-7fa248f4118d"} = Organizations.get(harvested_dataset.id)
     end
   end
 end

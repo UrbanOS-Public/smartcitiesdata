@@ -1,4 +1,4 @@
-defmodule Andi.Harvest.DataJsonToDataset do
+defmodule Andi.Harvest.DataJsonDatasetMapper do
   @moduledoc """
   maps data json to %SmartCity.Dataset{}
   """

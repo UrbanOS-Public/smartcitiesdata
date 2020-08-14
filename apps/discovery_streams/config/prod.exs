@@ -12,8 +12,5 @@ config :discovery_streams, DiscoveryStreamsWeb.Endpoint, check_origin: false
 config :logger,
   level: :info
 
-config :streaming_metrics,
-  collector: StreamingMetrics.PrometheusMetricCollector
-
 config :ex_aws,
   debug_requests: false

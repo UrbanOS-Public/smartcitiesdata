@@ -117,7 +117,7 @@ defmodule AndiWeb.EditLiveView do
   def handle_info(:publish, socket) do
     socket = reset_save_success(socket)
 
-    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{})
+    AndiWeb.Endpoint.broadcast("form-save", "save-all", %{})
     Process.sleep(1_000)
 
     andi_dataset = Datasets.get(socket.assigns.dataset.id)

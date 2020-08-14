@@ -7,7 +7,7 @@ defmodule Andi.Harvest.Harvester do
   import Andi
   import SmartCity.Event, only: [dataset_harvest_end: 0, dataset_update: 0]
 
-  alias Andi.Harvest.DataJsonToDataset
+  alias Andi.Harvest.DataJsonDatasetMapper
 
   require Logger
 
@@ -39,11 +39,11 @@ defmodule Andi.Harvest.Harvester do
   end
 
   def map_data_json_to_dataset(data_json, org) do
-    DataJsonToDataset.dataset_mapper(data_json, org)
+    DataJsonDatasetMapper.dataset_mapper(data_json, org)
   end
 
   def map_data_json_to_harvested_dataset(data_json, org) do
-    DataJsonToDataset.harvested_dataset_mapper(data_json, org)
+    DataJsonDatasetMapper.harvested_dataset_mapper(data_json, org)
   end
 
   def dataset_update(datasets) do

@@ -2,10 +2,6 @@ use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
-metrics_port = System.get_env("METRICS_PORT") |> String.to_integer()
-
-config :discovery_streams,
-  metrics_port: metrics_port
 
 if kafka_brokers do
   endpoints =
@@ -62,3 +58,13 @@ if System.get_env("RUN_IN_KUBERNETES") do
       ]
     ]
 end
+
+config :telemetry_event,
+  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
+    metrics_options: [
+      [
+        metric_name: "records.count",
+        tags: [:app, :topic_name, :PodHostname, :type],
+        metric_type: :sum
+      ]
+    ]
