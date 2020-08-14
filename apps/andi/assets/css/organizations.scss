@@ -1,0 +1,101 @@
+.organizations-view {
+    flex: 1;
+    background: $color-content-background;
+    box-shadow: $box-shadow;
+    height: 100%;
+    margin: 1em;
+}
+
+.organizations-index {
+  padding: 1rem 3rem;
+}
+
+.organizations-index__title {
+  font-size: 1.5rem;
+}
+
+.organizations-index__header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.organizations-index__search {
+    width: 50%;
+}
+
+.organizations-index__search-input-container {
+  display: flex;
+  width: 100%;
+  margin: 0.5rem;
+  border: 1px solid $search-unfocused;
+}
+
+.organizations-index__search-input-container:focus-within {
+  border: 1px solid $search-focused;
+}
+
+.organizations-index__search-icon {
+  padding: 0.1rem;
+  color: $search-unfocused;
+  text-align: center;
+}
+
+.organizations-index__search-input {
+  width: 100%;
+  padding: 0.1rem;
+  outline: none;
+  border: none;
+}
+
+.organizations-index__search-input::placeholder,
+.organizations-index__search-input::-webkit-input-placeholder,
+.organizations-index__search-input::-ms-input-placeholder {
+  color: $search-unfocused;
+}
+
+.organizations-table {
+  width: 100%;
+  border: $table-border;
+  border-collapse: collapse;
+}
+
+.organizations-table__tr:nth-child(odd) {
+  background-color: $color-table-stripe;
+}
+
+.organizations-table__th {
+  padding: $table-padding;
+  border-right: $table-border;
+  text-align: left;
+  background: $color-table-header;
+}
+
+.organizations-table__cell {
+  padding: $table-padding;
+  border-right: $table-border;
+  height: $table-height;
+  max-width: 30rem;
+}
+
+.organizations-table__ingested-cell {
+  text-align: center;
+  color: green;
+}
+
+.organizations-table__cell--break {
+  word-break: break-word;
+}
+
+.organizations-table__th--asc {
+  -webkit-box-shadow: inset 0 0.2rem 0 0 $header-shadow;
+  box-shadow: inset 0 0.2rem 0 0 $header-shadow;
+}
+
+.organizations-table__th--desc {
+  -webkit-box-shadow: inset 0 -0.2rem 0 0 $header-shadow;
+  box-shadow: inset 0 -0.2rem 0 0 $header-shadow;
+}
+
+.organizations-table__th--sortable {
+  cursor: pointer;
+}
