@@ -34,6 +34,13 @@ defmodule Andi.InputSchemas.Organization do
     :orgTitle
   ]
 
+  def changeset(%SmartCity.Organization{} = changes) do
+    changes_as_map = StructTools.to_map(changes)
+    changeset(%__MODULE__{}, changes_as_map)
+  end
+
+  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+
   def changeset(organization, changes) do
     changes_with_id = StructTools.ensure_id(organization, changes)
 

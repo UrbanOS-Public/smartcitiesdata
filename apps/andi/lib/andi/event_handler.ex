@@ -37,6 +37,10 @@ defmodule Andi.EventHandler do
     organization_update()
     |> add_event_count(data.id)
 
+    data
+    |> Andi.InputSchemas.Organization.changeset()
+    |> Andi.Repo.insert_or_update()
+
     {:merge, :org, data.id, data}
   end
 
