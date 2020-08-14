@@ -1,3 +1,2 @@
-defmodule DiscoveryStreams.Init  do
-
+defmodule DiscoveryStreams.Init do
 end

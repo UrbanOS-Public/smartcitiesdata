@@ -21,13 +21,14 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
 
     IO.inspect(context, label: "context")
     IO.inspect(message, label: "message")
-    # case Brook.get(:discovery_streams, :streaming_datasets_by_id, channel) do
-    #   {:ok, system_name} ->
-    Endpoint.broadcast!("streaming:#{context.assigns.dataset.technical.systemName}", "update", message)
 
-    #   _ ->
-    #     nil
-    # end
+    case Brook.get(:discovery_streams, :streaming_datasets_by_id, context.assigns.dataset.id) do
+      {:ok, system_name} ->
+        Endpoint.broadcast!("streaming:#{system_name}", "update", message)
+
+      _ ->
+        nil
+    end
 
     Ok.ok(message)
   end
