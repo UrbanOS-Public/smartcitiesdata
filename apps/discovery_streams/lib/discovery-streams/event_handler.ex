@@ -9,13 +9,14 @@ defmodule DiscoveryStreams.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Dataset{id: id, technical: %{sourceType: "stream", private: false, systemName: system_name}},
+        data: %Dataset{id: id, technical: %{sourceType: "stream", private: false, systemName: system_name}} = dataset,
         author: author
       }) do
     data_ingest_start()
     |> add_event_count(author, id)
 
     save_dataset_to_viewstate(id, system_name)
+    DiscoveryStreams.StreamSubscriber.subscribe_to_dataset(dataset)
     :ok
   end
 

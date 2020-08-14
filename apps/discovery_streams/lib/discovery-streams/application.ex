@@ -16,7 +16,8 @@ defmodule DiscoveryStreams.Application do
         libcluster(),
         DiscoveryStreams.CacheGenserver,
         {Brook, Application.get_env(:discovery_streams, :brook)},
-        kaffe(),
+        # {DiscoveryStreams.Init},
+        # kaffe(),
         DiscoveryStreamsWeb.Presence,
         DiscoveryStreamsWeb.Presence.Server
       ]
@@ -33,16 +34,23 @@ defmodule DiscoveryStreams.Application do
     end
   end
 
-  defp kaffe do
-    case Application.get_env(:kaffe, :consumer)[:endpoints] do
-      nil ->
-        []
+  # defp init do
+  #   case Application.get_env(:discovery_streams, :todo) do
+  #     nil -> []
+  #     _ -> DiscoveryStreams.SourceSupervisor
+  #   end
+  # end
+  # defp kaffe do
+  #   case Application.get_env(:kaffe, :consumer)[:endpoints] do
+  #     nil ->
+  #       []
 
-      _ ->
-        [
-          Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, []),
-          DiscoveryStreams.TopicSubscriber
-        ]
-    end
-  end
+  #     _ ->
+  #       [
+  #         Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, []),
+  #         DiscoveryStreams.TopicSubscriber
+  #       ]
+  #   end
+  # end
+
 end

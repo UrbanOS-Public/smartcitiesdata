@@ -1,5 +1,7 @@
 defmodule DiscoveryStreams.TopicSubscriberTest do
   use ExUnit.Case
+  use DiscoveryStreamsWeb.ChannelCase
+
   use Divo
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
@@ -9,25 +11,47 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
   @endpoints Application.get_env(:kaffe, :consumer)[:endpoints]
   @input_topic_prefix Application.get_env(:discovery_streams, :topic_prefix, "transformed-")
 
-  test "subscribes to any non internal use topic" do
-    private_dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: true})
-    Brook.Event.send(@instance, data_ingest_start(), :author, private_dataset)
-    dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
+  test "broadcasts data to end users" do
+    # private_dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: true})
+    # Brook.Event.send(@instance, data_ingest_start(), :author, private_dataset)
+    dataset1 =
+      TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
+      |> IO.inspect(label: "our dataset:")
+
     Brook.Event.send(@instance, data_ingest_start(), :author, dataset1)
 
-    expected = ["transformed-#{dataset1.id}"]
-    expected_cache = [dataset1.id]
-    validate_subscribed_topics(expected)
-    validate_caches_exist(expected_cache)
+    {:ok, _, socket} =
+      DiscoveryStreamsWeb.UserSocket
+      |> socket()
+      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset1.technical.systemName}")
 
-    dataset2 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
-    Brook.Event.send(@instance, data_ingest_start(), :author, dataset2)
+    Elsa.create_topic([localhost: 9092], "transformed-#{dataset1.id}")
+    Elsa.Producer.produce([localhost: 9092], "transformed-#{dataset1.id}", [~s|{"foo": "bar"}|], parition: 0)
 
-    expected = ["transformed-#{dataset1.id}", "transformed-#{dataset2.id}"]
-    expected_cache = [dataset1.id, dataset2.id]
-    validate_subscribed_topics(expected)
-    validate_caches_exist(expected_cache)
+    Process.sleep(10_000)
+
+    assert_push("update", %{"foo" => "bar"})
   end
+
+  # test "subscribes to any non internal use topic" do
+  #   private_dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: true})
+  #   Brook.Event.send(@instance, data_ingest_start(), :author, private_dataset)
+  #   dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
+  #   Brook.Event.send(@instance, data_ingest_start(), :author, dataset1)
+
+  #   expected = ["transformed-#{dataset1.id}"]
+  #   expected_cache = [dataset1.id]
+  #   validate_subscribed_topics(expected)
+  #   validate_caches_exist(expected_cache)
+
+  #   dataset2 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
+  #   Brook.Event.send(@instance, data_ingest_start(), :author, dataset2)
+
+  #   expected = ["transformed-#{dataset1.id}", "transformed-#{dataset2.id}"]
+  #   expected_cache = [dataset1.id, dataset2.id]
+  #   validate_subscribed_topics(expected)
+  #   validate_caches_exist(expected_cache)
+  # end
 
   test "should delete all view state for the dataset and the input topic when dataset:delete is called" do
     dataset_id = Faker.UUID.v4()

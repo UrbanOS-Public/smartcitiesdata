@@ -29,7 +29,7 @@ defmodule DefinitionDictionary.MixProject do
       {:jason, "~> 1.1"},
       {:json_serde, "~> 1.0"},
       {:timex, "~> 3.6"},
-      {:checkov, "~> 1.0", only: [:dev, :test]},
+      {:checkov, "~> 1.0", only: [:test]},
       {:credo, "~> 1.0", only: [:dev]}
     ]
   end

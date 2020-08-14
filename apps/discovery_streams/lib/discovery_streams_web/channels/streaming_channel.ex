@@ -16,18 +16,19 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
 
   def join(channel, params, socket) do
     topic = determine_topic(channel)
+    # TODO: make sure to reimplement this
+    # case topic in TopicSubscriber.list_subscribed_topics() do
+    #   false ->
+    #     {:error, %{reason: "Channel #{channel} does not exist"}}
 
-    case topic in TopicSubscriber.list_subscribed_topics() do
-      false ->
-        {:error, %{reason: "Channel #{channel} does not exist"}}
-
-      true ->
-        send(self(), :after_join)
-        {:ok, assign(socket, :filter, create_filter_rules(params))}
-    end
+    # true ->
+    send(self(), :after_join)
+    {:ok, assign(socket, :filter, create_filter_rules(params))}
+    # end
   end
 
   def handle_info(:after_join, %{assigns: %{filter: filter}} = socket) do
+    # TODO: turn back on caching
     push_cache_to_socket(socket, fn msg -> message_matches?(msg, filter) end)
     {:ok, _} = Presence.track(socket, unique_id(), %{})
     {:noreply, socket}
@@ -41,6 +42,8 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   end
 
   def handle_out(@update_event, message, %{assigns: %{filter: filter}} = socket) do
+    IO.inspect("Handle out update event with filter")
+
     if message_matches?(message, filter) do
       push(socket, @update_event, message)
     end
@@ -49,6 +52,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   end
 
   def handle_out(@update_event, message, socket) do
+    IO.inspect("handle out update event without filter")
     push(socket, @update_event, message)
     {:noreply, socket}
   end
@@ -72,6 +76,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     channel
     |> determine_system_name()
     |> get_dataset_id()
+    |> IO.inspect(label: "Getting cache")
     |> String.to_atom()
     |> Cachex.stream!(query)
     |> Stream.filter(filter)

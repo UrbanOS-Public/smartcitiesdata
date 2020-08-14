@@ -34,11 +34,14 @@ defmodule DiscoveryStreams.Mixfile do
 
   defp deps do
     [
+      {:annotated_retry, in_umbrella: true},
       {:brook, "~> 0.4.0"},
       {:cachex, "~> 3.0"},
       {:checkov, "~> 1.0", only: :test},
+      {:cowlib, "~> 2.8.0", override: true},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:divo_kafka, "~> 0.1.5", only: [:integration]},
+      {:definition_kafka, in_umbrella: true},
+      {:divo_kafka, "~> 0.1.6", only: [:integration]},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
       {:elsa, "~> 0.12", override: true},
@@ -53,6 +56,8 @@ defmodule DiscoveryStreams.Mixfile do
       {:phoenix_pubsub, "~> 1.0"},
       {:phoenix_html, "~> 2.14.1"},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
+      {:properties, in_umbrella: true},
+      {:plug_cowboy, "~> 2.1"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:redix, "~> 0.10.2"},
       {:sweet_xml, "~> 0.6"},

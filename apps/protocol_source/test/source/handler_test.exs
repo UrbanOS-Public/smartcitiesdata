@@ -33,7 +33,6 @@ defmodule Source.HandlerTest do
       handler: TestHandler,
       app_name: "testing",
       dataset_id: "ds1",
-      subset_id: "sb1",
       assigns: %{test: self()}
     }
 
@@ -85,19 +84,16 @@ defmodule Source.HandlerTest do
 
     assert dead_letter2.app_name == context.app_name
     assert dead_letter2.dataset_id == context.dataset_id
-    assert dead_letter2.subset_id == context.subset_id
     assert dead_letter2.reason == Exception.format(:error, reason)
     assert dead_letter2.original_message == message2
 
     assert dead_letter4.app_name == context.app_name
     assert dead_letter4.dataset_id == context.dataset_id
-    assert dead_letter4.subset_id == context.subset_id
     assert dead_letter4.reason == ~s|** (ErlangError) Erlang error: "returned error"|
     assert dead_letter4.original_message == Jason.encode!(message4)
 
     assert dead_letter6.app_name == context.app_name
     assert dead_letter6.dataset_id == context.dataset_id
-    assert dead_letter6.subset_id == context.subset_id
     assert dead_letter6.reason == ~s|** (RuntimeError) raised error|
     assert dead_letter6.original_message == Jason.encode!(message6)
   end
