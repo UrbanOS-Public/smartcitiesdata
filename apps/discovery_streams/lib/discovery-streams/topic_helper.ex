@@ -2,7 +2,9 @@ defmodule DiscoveryStreams.TopicHelper do
   @moduledoc false
 
   require Logger
+  use Properties, otp_app: :discovery_streams
 
+  getter(:endpoints)
   def topic_name(dataset_id) do
     "#{topic_prefix()}#{dataset_id}"
   end
@@ -13,15 +15,14 @@ defmodule DiscoveryStreams.TopicHelper do
   end
 
   def get_endpoints() do
-    Application.get_env(:kaffe, :consumer)[:endpoints]
-    |> Enum.map(fn {host, port} -> {to_charlist(host), port} end)
+    endpoints()
   end
 
   def delete_input_topic(dataset_id) do
     input_topic = input_topic(dataset_id)
     Logger.debug("#{__MODULE__}: Deleting Topic: #{input_topic}")
 
-    case Elsa.delete_topic(get_endpoints(), input_topic) do
+    case Elsa.delete_topic(endpoints(), input_topic) do
       :ok ->
         Logger.debug("#{__MODULE__}: Deleted topic: #{input_topic}")
 
