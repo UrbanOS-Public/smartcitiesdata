@@ -50,6 +50,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:jason, "~> 1.2", override: true},
       {:kaffe, "~> 1.14"},
       {:libcluster, "~> 3.1"},
+      {:management, in_umbrella: true},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:patiently, "~> 0.2", only: [:test, :integration], override: true},
       {:phoenix, "~> 1.4"},
