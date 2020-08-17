@@ -5,7 +5,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     and then begins sending new data as it arrives.
   """
   use DiscoveryStreamsWeb, :channel
-  alias DiscoveryStreamsWeb.Presence
   alias DiscoveryStreams.TopicSubscriber
   alias DiscoveryStreams.TopicHelper
 
@@ -29,7 +28,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
 
   def handle_info(:after_join, %{assigns: %{filter: filter}} = socket) do
     push_cache_to_socket(socket, fn msg -> message_matches?(msg, filter) end)
-    {:ok, _} = Presence.track(socket, unique_id(), %{})
     {:noreply, socket}
   end
 
@@ -51,12 +49,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   def handle_out(@update_event, message, socket) do
     push(socket, @update_event, message)
     {:noreply, socket}
-  end
-
-  defp unique_id do
-    10
-    |> :crypto.strong_rand_bytes()
-    |> Base.encode32()
   end
 
   defp create_filter_rules(message) do
