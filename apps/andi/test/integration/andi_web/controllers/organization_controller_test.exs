@@ -2,6 +2,7 @@ defmodule Andi.OrganizationControllerTest do
   use ExUnit.Case
   use Placebo
   use Tesla
+  use Andi.DataCase
 
   @moduletag shared_data_connection: true
 

@@ -80,7 +80,6 @@ defmodule AndiWeb.API.OrganizationControllerTest do
       allow(Organizations.update(any(), any()), return: :ok)
       allow(OrgStore.update(any()), return: :ok)
 
-
       req_with_id = %{
         "id" => "123",
         "orgName" => "yourOrg",
