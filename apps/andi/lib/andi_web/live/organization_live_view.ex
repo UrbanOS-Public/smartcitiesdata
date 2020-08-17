@@ -1,5 +1,6 @@
 defmodule AndiWeb.OrganizationLiveView do
   use Phoenix.LiveView
+  import Ecto.Query, only: [from: 2]
 
   alias AndiWeb.Router.Helpers, as: Routes
   alias AndiWeb.OrganizationLiveView.Table
@@ -93,21 +94,16 @@ defmodule AndiWeb.OrganizationLiveView do
   end
 
   defp refresh_orgs(search_value) do
-    Andi.Repo.all(Organization)
-    |> filter_orgs(search_value)
+    search_string = "%#{search_value}%"
+
+    query =
+      from(org in Organization,
+        where: ilike(org.orgTitle, type(^search_string, :string)),
+        select: org
+      )
+
+    Andi.Repo.all(query)
     |> Enum.map(&to_view_model/1)
-  end
-
-  defp filter_orgs(orgs, ""), do: orgs
-
-  defp filter_orgs(orgs, value) do
-    Enum.filter(orgs, fn org -> search_contains?(org.orgTitle, value) end)
-  end
-
-  defp search_contains?(nil, _search_str), do: false
-
-  defp search_contains?(str, search_str) do
-    String.downcase(str) =~ String.downcase(search_str)
   end
 
   defp sort_by_dir(models, order_by, order_dir) do

@@ -5,6 +5,7 @@ defmodule Andi.InputSchemas.Organizations do
   alias Ecto.Changeset
   alias Andi.InputSchemas.Datasets.HarvestedDatasets
   alias Andi.InputSchemas.Organization
+  alias Andi.InputSchemas.StructTools
 
   import Ecto.Query, only: [from: 2]
 
@@ -19,13 +20,42 @@ defmodule Andi.InputSchemas.Organizations do
     |> HarvestedDatasets.preload()
   end
 
-  def get_all_harvested_datasets() do
+  def get_all_harvested_datasets(org_id) do
     query =
       from(harvested_dataset in HarvestedDatasets,
+        where: harvested_dataset.orgId == ^org_id,
         select: harvested_dataset
       )
 
     Repo.all(query)
+  end
+
+  def update(%SmartCity.Organization{} = smrt_org) do
+    andi_org =
+      case get(smrt_org.id) do
+        nil -> %Organization{}
+        organization -> organization
+      end
+
+    Organization.changeset(smrt_org)
+    |> save()
+  end
+
+  def update(%Organization{} = org) do
+    original_org =
+      case get(org.id) do
+        nil -> %Organization{}
+        organization -> organization
+      end
+
+    update(original_org, org)
+  end
+
+  def update(%Organization{} = from_org, changes) do
+    changes_as_map = StructTools.to_map(changes)
+
+    Organization.changeset(from_org, changes_as_map)
+    |> save()
   end
 
   def save(%Changeset{} = changeset) do

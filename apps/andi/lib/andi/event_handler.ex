@@ -18,6 +18,7 @@ defmodule Andi.EventHandler do
   alias SmartCity.UserOrganizationAssociate
 
   alias Andi.Services.DatasetStore
+  alias Andi.Services.OrgStore
   alias Andi.Harvest.Harvester
 
   alias Andi.InputSchemas.Datasets
@@ -37,11 +38,8 @@ defmodule Andi.EventHandler do
     organization_update()
     |> add_event_count(data.id)
 
-    data
-    |> Andi.InputSchemas.Organization.changeset()
-    |> Organizations.save()
-
-    {:merge, :org, data.id, data}
+    Organizations.update(data)
+    OrgStore.update(data)
   end
 
   def handle_event(%Brook.Event{

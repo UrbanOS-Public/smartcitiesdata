@@ -38,20 +38,31 @@ defmodule Andi.InputSchemas.OrganizationsTest do
     end
   end
 
-  describe "get_all_harvested_datasets/0" do
-    test "gets all harvested datasets in the system" do
+  describe "get_all_harvested_datasets/1" do
+    test "gets all harvested datasets in the system for a given org id" do
+      org_id = "95254592-d611-4bcb-9478-7fa248f4118d"
+
       harvested_dataset_one = %{
-        "orgId" => "95254592-d611-4bcb-9478-7fa248f4118d"
+        "orgId" => org_id
       }
 
       harvested_dataset_two = %{
-        "orgId" => "95254592-d611-4bcb-9478-7fa248f4118d"
+        "orgId" => org_id
       }
 
-      assert {:ok, _} = Organizations.update_harvested_dataset(harvested_dataset_one)
-      assert {:ok, _} = Organizations.update_harvested_dataset(harvested_dataset_two)
+      harvested_dataset_three = %{
+        "orgId" => "blah"
+      }
 
-      assert [%{orgId: "95254592-d611-4bcb-9478-7fa248f4118d"} | _] = Organizations.get_all_harvested_datasets()
+      assert {:ok, harvested_dataset1} = Organizations.update_harvested_dataset(harvested_dataset_one)
+      assert {:ok, harvested_dataset2} = Organizations.update_harvested_dataset(harvested_dataset_two)
+      assert {:ok, harvested_dataset3} = Organizations.update_harvested_dataset(harvested_dataset_three)
+
+      datasets_for_org = Organizations.get_all_harvested_datasets(org_id)
+
+      assert harvested_dataset1 in datasets_for_org
+      assert harvested_dataset2 in datasets_for_org
+      refute harvested_dataset3 in datasets_for_org
     end
   end
 
