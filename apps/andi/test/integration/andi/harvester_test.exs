@@ -80,6 +80,14 @@ defmodule Andi.Harvest.HarvesterTest do
         assert length(harvested_datasets) == 2
       end)
     end
+
+    test "only consume harvested datasets whose include value is true", %{data_json: data_json, org: org, bypass: bypass} do
+      Bypass.stub(bypass, "GET", "/data.json", fn conn ->
+        Plug.Conn.resp(conn, 200, data_json)
+      end)
+
+      Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+    end
   end
 
   defp get_schema_from_path(path) do
