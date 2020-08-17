@@ -1,4 +1,4 @@
-defmodule Andi.CreateDatasetTest do
+defmodule Andi.DatasetControllerTest do
   use ExUnit.Case
 
   use Andi.DataCase

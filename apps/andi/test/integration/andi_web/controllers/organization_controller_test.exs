@@ -1,7 +1,9 @@
-defmodule Andi.CreateOrgTest do
+defmodule Andi.OrganizationControllerTest do
   use ExUnit.Case
   use Placebo
   use Tesla
+
+  @moduletag shared_data_connection: true
 
   alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG

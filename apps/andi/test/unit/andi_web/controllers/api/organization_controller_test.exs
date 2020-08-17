@@ -9,6 +9,8 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.OrgStore
+  alias Andi.InputSchemas.Organizations
+
   import Andi
   import SmartCity.Event, only: [dataset_harvest_start: 0]
 
@@ -73,6 +75,12 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   describe "post /api/ with valid data and imported id" do
     setup %{conn: conn} do
+      allow(Organizations.get(any()), return: nil)
+      allow(Organizations.update(any()), return: :ok)
+      allow(Organizations.update(any(), any()), return: :ok)
+      allow(OrgStore.update(any()), return: :ok)
+
+
       req_with_id = %{
         "id" => "123",
         "orgName" => "yourOrg",
@@ -104,7 +112,10 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   @tag capture_log: true
   test "post /api/ with blank id should create org with generated id", %{conn: conn} do
-    allow(Andi.Repo.insert_or_update(any()), return: :ok)
+    allow(Organizations.get(any()), return: nil)
+    allow(Organizations.update(any()), return: :ok)
+    allow(OrgStore.update(any()), return: :ok)
+
     conn = post(conn, @route, %{"id" => "", "orgName" => "blankIDOrg", "orgTitle" => "Blank ID Org Title"})
 
     response = json_response(conn, 201)
