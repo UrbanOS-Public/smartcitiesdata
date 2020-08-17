@@ -7,4 +7,6 @@ defmodule Odo do
     Application.get_env(:odo, :brook)
     |> Keyword.fetch!(:instance)
   end
+
+  def instance(), do: :odo
 end

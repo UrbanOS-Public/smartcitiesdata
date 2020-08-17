@@ -26,8 +26,7 @@ config :odo,
   secrets_endpoint: System.get_env("SECRETS_ENDPOINT"),
   hosted_file_bucket: System.get_env("HOSTED_FILE_BUCKET") || "hosted-dataset-files",
   retry_delay: 1_000,
-  retry_backoff: 5,
-  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer()
+  retry_backoff: 5
 
 config :ex_aws,
   region: System.get_env("AWS_REGION") || "us-west-2"
@@ -50,3 +49,18 @@ config :odo, :brook,
     module: Brook.Storage.Redis,
     init_arg: [redix_args: [host: redis_host], namespace: "odo:view"]
   }
+
+  config :telemetry_event,
+  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
+  metrics_options: [
+    [
+      metric_name: "file_conversion_success.gauge",
+      tags: [:app, :dataset_id, :file, :start],
+      metric_type: :last_value
+    ],
+    [
+      metric_name: "file_conversion_duration.gauge",
+      tags: [:app, :dataset_id, :file, :start],
+      metric_type: :last_value
+    ]
+  ]
