@@ -27,6 +27,7 @@ defmodule DiscoveryStreams.EventHandler do
     add_event_count(dataset_update(), author, dataset.id)
 
     # TODO: need to turn off source
+    # DiscoveryStreams.StreamSubscriber.delete()
     delete_from_viewstate(dataset.id, dataset.technical.systemName)
 
     :ok

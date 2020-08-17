@@ -17,7 +17,6 @@ defmodule DiscoveryStreams.StreamSubscriber do
         dataset_id: dataset.id,
         assigns: %{
           dataset: dataset,
-          # TODO: cache: Broadcast.Cache.Registry.via(load.destination.name),
           kafka: %{
             offset_reset_policy: :reset_to_latest
           }
