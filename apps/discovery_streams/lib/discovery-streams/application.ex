@@ -16,9 +16,7 @@ defmodule DiscoveryStreams.Application do
         libcluster(),
         DiscoveryStreams.CacheGenserver,
         {Brook, Application.get_env(:discovery_streams, :brook)},
-        kaffe(),
-        DiscoveryStreamsWeb.Presence,
-        DiscoveryStreamsWeb.Presence.Server
+        kaffe()
       ]
       |> TelemetryEvent.config_init_server(:discovery_streams)
       |> List.flatten()

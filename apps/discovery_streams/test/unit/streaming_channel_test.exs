@@ -23,19 +23,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     :ok
   end
 
-  test "presence is tracked per channel" do
-    {:ok, _, socket} =
-      subscribe_and_join(
-        socket(DiscoveryStreamsWeb.UserSocket),
-        DiscoveryStreamsWeb.StreamingChannel,
-        "streaming:shuttle-position"
-      )
-
-    assert 1 == DiscoveryStreamsWeb.Presence.connections("streaming:shuttle-position")
-
-    leave(socket)
-  end
-
   test "sends the user the entire cache in of a topic stream" do
     Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "12345", %{"shuttleid" => "12345"})
     Cachex.put(:"d21d5af6-346c-43e5-891f-8c2c7f28e4ab", "98765", %{"shuttleid" => "98765"})
