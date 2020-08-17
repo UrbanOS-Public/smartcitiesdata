@@ -108,6 +108,7 @@ config :telemetry_event,
   - It must be one of the the following options:
   - `:counter` Metric - It keeps track of the total number of specific events emitted.
   - `:sum` Metric - It keeps track of the sum of selected measurement's values carried by specific events.
+  - `:last_value` Metric - It keeps track of the selected measurement found in the most recent event.
 
 
 ### PORT NO FOR TEST AND INTEGRATION
