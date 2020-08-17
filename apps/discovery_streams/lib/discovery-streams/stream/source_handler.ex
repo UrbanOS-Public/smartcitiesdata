@@ -22,9 +22,11 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
     case Brook.get(:discovery_streams, :streaming_datasets_by_id, dataset.id) do
       {:ok, system_name} ->
         Endpoint.broadcast!("streaming:#{system_name}", "update", message)
+
       _ ->
         nil
     end
+
     Ok.ok(message)
   end
 
@@ -45,7 +47,6 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
   end
 
   defp record_outbound_count_metrics(messages) do
-
     ### TODO: This will not match on the topic anymore
     messages
     |> Enum.reduce(%{}, fn %{topic: topic}, acc -> Map.update(acc, topic, 1, &(&1 + 1)) end)

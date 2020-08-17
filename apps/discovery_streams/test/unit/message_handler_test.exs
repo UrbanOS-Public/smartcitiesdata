@@ -5,21 +5,13 @@ defmodule DiscoveryStreams.MessageHandlerTest do
   import Checkov
   import ExUnit.CaptureLog
 
-  alias DiscoveryStreams.{CachexSupervisor, MessageHandler, TopicSubscriber}
+  alias DiscoveryStreams.{CachexSupervisor, MessageHandler}
   alias SmartCity.TestDataGenerator, as: TDG
 
   @dataset_1_id "d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
   @dataset_2_id "555ea731-d85e-4bd8-b2e4-4017366c24b0"
 
   setup do
-    CachexSupervisor.create_cache(:"#{@dataset_1_id}")
-    CachexSupervisor.create_cache(:"#{@dataset_2_id}")
-    Cachex.clear(:"#{@dataset_1_id}")
-    Cachex.clear(:"#{@dataset_2_id}")
-
-    allow TopicSubscriber.list_subscribed_topics(),
-      return: ["transformed-#{@dataset_1_id}", "transformed-#{@dataset_2_id}"]
-
     allow(Brook.get(any(), :streaming_datasets_by_id, @dataset_1_id),
       return: {:ok, "ceav__shuttles_on_a_map"}
     )
@@ -91,49 +83,6 @@ defmodule DiscoveryStreams.MessageHandlerTest do
 
     assert_broadcast("update", %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}})
     assert_broadcast("update", %{"vehicle" => %{"vehicle" => %{"id" => "11605"}}})
-
-    leave(socket)
-  end
-
-  test "caches data from a kafka topic with one item per key" do
-    expect(TelemetryEvent.add_event_metrics(any(), [:records], value: %{count: any()}), return: :ok)
-
-    {:ok, _, socket} =
-      socket(DiscoveryStreamsWeb.UserSocket)
-      |> subscribe_and_join(
-        DiscoveryStreamsWeb.StreamingChannel,
-        "streaming:central_ohio_transit_authority__cota_stream"
-      )
-
-    msgs = %{
-      a: %{"vehicle" => %{"vehicle" => %{"id" => "10000"}}},
-      b: %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}},
-      c: %{"vehicle" => %{"vehicle" => %{"id" => "99999"}}}
-    }
-
-    MessageHandler.handle_messages([
-      create_message(msgs.a, key: "11604"),
-      create_message(msgs.c, key: "11603")
-    ])
-
-    MessageHandler.handle_messages([
-      create_message(msgs.b, key: "11604")
-    ])
-
-    cache_record_created = fn ->
-      stream =
-        Cachex.stream!(:"555ea731-d85e-4bd8-b2e4-4017366c24b0")
-        |> Enum.to_list()
-        |> Enum.map(fn {:entry, _key, _create_ts, _ttl, vehicle} -> vehicle end)
-
-      Enum.all?([msgs.b, msgs.c], &Enum.member?(stream, &1))
-    end
-
-    Patiently.wait_for!(
-      cache_record_created,
-      dwell: 10,
-      max_tries: 200
-    )
 
     leave(socket)
   end

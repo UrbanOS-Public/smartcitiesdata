@@ -14,7 +14,7 @@ defmodule DiscoveryStreams.EventHandler do
       }) do
     add_event_count(data_ingest_start(), author, id)
 
-    DiscoveryStreams.StreamSubscriber.subscribe_to_dataset(dataset)
+    DiscoveryStreams.Stream.Supervisor.start_child(dataset)
     save_dataset_to_viewstate(id, system_name)
     :ok
   end
@@ -27,7 +27,7 @@ defmodule DiscoveryStreams.EventHandler do
     add_event_count(dataset_update(), author, dataset.id)
 
     # TODO: need to turn off source
-    # DiscoveryStreams.StreamSubscriber.delete()
+    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset)
     delete_from_viewstate(dataset.id, dataset.technical.systemName)
 
     :ok
@@ -35,13 +35,13 @@ defmodule DiscoveryStreams.EventHandler do
 
   def handle_event(%Brook.Event{
         type: dataset_update(),
-        data: %Dataset{id: id, technical: %{sourceType: source_type, systemName: system_name}},
+        data: %Dataset{id: id, technical: %{sourceType: source_type, systemName: system_name}} = dataset,
         author: author
       })
       when source_type != "stream" do
-    add_event_count(dataset_update, author, id)
+    add_event_count(dataset_update(), author, id)
 
-    # TODO: need to turn off source
+    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset)
     delete_from_viewstate(id, system_name)
 
     :ok
@@ -49,11 +49,12 @@ defmodule DiscoveryStreams.EventHandler do
 
   def handle_event(%Brook.Event{
         type: dataset_delete(),
-        data: %Dataset{id: id, technical: %{systemName: system_name}},
+        data: %Dataset{id: id, technical: %{systemName: system_name}} = dataset,
         author: author
       }) do
-    add_event_count(dataset_delete, author, id)
+    add_event_count(dataset_delete(), author, id)
 
+    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset)
     DiscoveryStreams.TopicHelper.delete_input_topic(id)
     delete_from_viewstate(id, system_name)
   end

@@ -14,9 +14,9 @@ defmodule DiscoveryStreams.Application do
         supervisor(DiscoveryStreamsWeb.Endpoint, []),
         libcluster(),
         {Brook, Application.get_env(:discovery_streams, :brook)},
+        DiscoveryStreams.Stream.Registry,
+        DiscoveryStreams.Stream.Supervisor
         # {DiscoveryStreams.Init},
-        DiscoveryStreamsWeb.Presence,
-        DiscoveryStreamsWeb.Presence.Server
       ]
       |> TelemetryEvent.config_init_server(:discovery_streams)
       |> List.flatten()

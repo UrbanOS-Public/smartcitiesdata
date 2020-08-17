@@ -8,7 +8,7 @@ defmodule DiscoveryStreams.Stream do
   use Annotated.Retry
   use Properties, otp_app: :discovery_streams
   require Logger
-  import Definition, only: [identifier: 1]
+  # import Definition, only: [identifier: 1]
 
   @max_retries get_config_value(:max_retries, default: 50)
 
@@ -27,7 +27,7 @@ defmodule DiscoveryStreams.Stream do
     Logger.debug(fn -> "#{__MODULE__}: init with #{inspect(init_opts)}" end)
 
     state = %{
-      load: Keyword.fetch!(init_opts, :load)
+      dataset: Keyword.fetch!(init_opts, :dataset)
     }
 
     {:ok, state, {:continue, :init}}
@@ -35,7 +35,7 @@ defmodule DiscoveryStreams.Stream do
 
   @impl GenServer
   def handle_continue(:init, state) do
-    with {:ok, source_pid} <- start_source(state.load) do
+    with {:ok, source_pid} <- start_source(state.dataset) do
       new_state =
         state
         |> Map.put(:source_pid, source_pid)
@@ -48,27 +48,28 @@ defmodule DiscoveryStreams.Stream do
   end
 
   @retry with: exponential_backoff(100) |> take(@max_retries)
-  defp start_source(load) do
+  defp start_source(dataset) do
     context =
       Source.Context.new!(
-        handler: Broadcast.Stream.SourceHandler,
+        handler: DiscoveryStreams.Stream.SourceHandler,
         app_name: :discovery_streams,
-        dataset_id: load.dataset_id,
+        dataset_id: dataset.id,
         assigns: %{
-          load: load,
-          cache: Broadcast.Cache.Registry.via(load.destination.name),
+          dataset: dataset,
           kafka: %{
             offset_reset_policy: :reset_to_latest
           }
         }
       )
 
-    Source.start_link(load.source, context)
+    # TODO: stop hardcoding the endpoints
+    Source.start_link(Kafka.Topic.new!(endpoints: [localhost: 9092], name: "transformed-#{dataset.id}"), context)
   end
 
   @impl GenServer
   def terminate(reason, state) do
     IO.inspect(state, label: "State i")
+
     if Map.has_key?(state, :source) do
       pid = Map.get(state, :source_pid)
       Source.stop(state.load.source, pid)

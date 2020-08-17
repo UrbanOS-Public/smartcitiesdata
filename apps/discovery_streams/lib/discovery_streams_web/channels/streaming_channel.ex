@@ -5,7 +5,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     and then begins sending new data as it arrives.
   """
   use DiscoveryStreamsWeb, :channel
-  alias DiscoveryStreams.TopicSubscriber
   alias DiscoveryStreams.TopicHelper
 
   @update_event "update"
@@ -14,16 +13,16 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   intercept([@update_event])
 
   def join(channel, params, socket) do
-    topic = determine_topic(channel)
-    IO.inspect(channel, label: "channel is")
-    # case topic in
-    #   false ->
-    #     {:error, %{reason: "Channel #{channel} does not exist"}}
+    system_name = determine_system_name(channel) |> IO.inspect()
 
-    # true ->
-    send(self(), :after_join)
-    {:ok, assign(socket, :filter, create_filter_rules(params))}
-    # end
+    case Brook.get(:discovery_streams, :streaming_datasets_by_system_name, system_name) do
+      {:ok, _} ->
+        send(self(), :after_join)
+        {:ok, assign(socket, :filter, create_filter_rules(params))}
+
+      _ ->
+        {:error, %{reason: "Channel #{channel} does not exist"}}
+    end
   end
 
   def handle_info(:after_join, %{assigns: %{filter: _filter}} = socket) do
