@@ -76,7 +76,7 @@ defmodule Andi.Harvest.HarvesterTest do
       Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
 
       eventually(fn ->
-        harvested_datasets = Organizations.get_all()
+        harvested_datasets = Organizations.get_all_harvested_datasets()
         assert length(harvested_datasets) == 2
       end)
     end

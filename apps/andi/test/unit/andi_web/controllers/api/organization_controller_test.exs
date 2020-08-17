@@ -104,6 +104,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   @tag capture_log: true
   test "post /api/ with blank id should create org with generated id", %{conn: conn} do
+    allow(Andi.Repo.insert_or_update(any()), return: :ok)
     conn = post(conn, @route, %{"id" => "", "orgName" => "blankIDOrg", "orgTitle" => "Blank ID Org Title"})
 
     response = json_response(conn, 201)

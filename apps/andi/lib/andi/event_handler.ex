@@ -39,7 +39,7 @@ defmodule Andi.EventHandler do
 
     data
     |> Andi.InputSchemas.Organization.changeset()
-    |> Andi.Repo.insert_or_update()
+    |> Organizations.save()
 
     {:merge, :org, data.id, data}
   end

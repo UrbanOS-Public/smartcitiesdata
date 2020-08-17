@@ -1,20 +1,25 @@
 defmodule Andi.InputSchemas.Organizations do
   @moduledoc false
-  alias Andi.InputSchemas.Datasets.HarvestedDatasets
+
   alias Andi.Repo
-  alias Andi.InputSchemas.StructTools
   alias Ecto.Changeset
+  alias Andi.InputSchemas.Datasets.HarvestedDatasets
+  alias Andi.InputSchemas.Organization
 
   import Ecto.Query, only: [from: 2]
 
   require Logger
 
-  def get(id) do
+  def get(id), do: Repo.get(Organization, id)
+
+  def get_all(), do: Repo.all(Organization)
+
+  def get_harvested_dataset(id) do
     Repo.get(HarvestedDatasets, id)
     |> HarvestedDatasets.preload()
   end
 
-  def get_all() do
+  def get_all_harvested_datasets() do
     query =
       from(harvested_dataset in HarvestedDatasets,
         select: harvested_dataset
