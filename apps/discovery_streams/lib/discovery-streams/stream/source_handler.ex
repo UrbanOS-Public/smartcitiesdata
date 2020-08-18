@@ -43,7 +43,8 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
   end
 
   def send_to_dlq(dead_letters, _context) do
-    dlq().write(dead_letters)
+    # Just throw these on the ground for now.
+    # dlq().write(dead_letters)
     :ok
   end
 
