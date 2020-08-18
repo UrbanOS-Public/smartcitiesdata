@@ -47,6 +47,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:elsa, "~> 0.12", override: true},
       {:ex_doc, "~> 0.19", only: [:test, :integration], runtime: false},
       {:httpoison, "~> 1.6"},
+      {:initializer, in_umbrella: true},
       {:jason, "~> 1.2", override: true},
       {:kaffe, "~> 1.14"},
       {:libcluster, "~> 3.1"},

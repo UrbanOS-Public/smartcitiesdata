@@ -7,13 +7,12 @@ defmodule DiscoveryStreams.Stream.Supervisor do
   use Management.Supervisor, name: __MODULE__
 
   @impl true
-  def say_my_name(%SmartCity.Dataset{} = dataset) do
-    dataset.id
-    |> DiscoveryStreams.Stream.Registry.via()
+  def say_my_name(dataset_id) do
+    DiscoveryStreams.Stream.Registry.via(dataset_id)
   end
 
   @impl true
-  def on_start_child(dataset, name) do
-    {DiscoveryStreams.Stream, dataset: dataset, name: name}
+  def on_start_child(dataset_id, name) do
+    {DiscoveryStreams.Stream, dataset_id: dataset_id, name: name}
   end
 end

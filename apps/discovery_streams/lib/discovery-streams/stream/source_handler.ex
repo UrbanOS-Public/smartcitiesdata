@@ -14,13 +14,13 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
   getter(:dlq, default: Dlq)
 
   def handle_message(message, context) do
-    dataset = context.assigns.dataset
+    dataset_id = context.dataset_id
 
     Logger.debug(fn -> "#{__MODULE__} handle_message - #{inspect(context)} - #{inspect(message)}" end)
 
     log_message(message)
 
-    case Brook.get(:discovery_streams, :streaming_datasets_by_id, dataset.id) do
+    case Brook.get(:discovery_streams, :streaming_datasets_by_id, dataset_id) do
       {:ok, system_name} ->
         Endpoint.broadcast!("streaming:#{system_name}", "update", message)
 
@@ -33,7 +33,7 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
 
   def handle_batch(batch, context) do
     Logger.debug(fn -> "#{__MODULE__} handle_batch - #{inspect(context)} - #{inspect(batch)}" end)
-    record_outbound_count_metrics(batch, context.assigns.dataset)
+    record_outbound_count_metrics(batch, context.dataset_id)
     :ok
   end
 
@@ -47,9 +47,9 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
     :ok
   end
 
-  defp record_outbound_count_metrics(messages, dataset) do
+  defp record_outbound_count_metrics(messages, dataset_id) do
     messages
-    |> Enum.reduce(%{}, fn _, acc -> Map.update(acc, dataset.id, 1, &(&1 + 1)) end)
+    |> Enum.reduce(%{}, fn _, acc -> Map.update(acc, dataset_id, 1, &(&1 + 1)) end)
     |> Enum.each(&record_metric/1)
   end
 
