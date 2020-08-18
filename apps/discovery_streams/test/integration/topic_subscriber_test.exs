@@ -6,9 +6,10 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_delete: 0]
+  use Properties, otp_app: :discovery_streams
 
   @instance :discovery_streams
-  @endpoints Application.get_env(:kaffe, :consumer)[:endpoints]
+  getter(:endpoints)
   @input_topic_prefix Application.get_env(:discovery_streams, :topic_prefix, "transformed-")
 
   test "broadcasts data to end users" do
@@ -16,7 +17,6 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
     # Brook.Event.send(@instance, data_ingest_start(), :author, private_dataset)
     dataset1 =
       TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
-      |> IO.inspect(label: "our dataset:")
 
     Brook.Event.send(@instance, data_ingest_start(), :author, dataset1)
 
@@ -76,7 +76,7 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
       fn ->
         assert {:ok, nil} == Brook.ViewState.get(@instance, :streaming_datasets_by_id, dataset_id)
         assert {:ok, nil} == Brook.ViewState.get(@instance, :streaming_datasets_by_system_name, system_name)
-        assert false == Elsa.Topic.exists?(@endpoints, input_topic)
+        assert false == Elsa.Topic.exists?([localhost: 9092], input_topic) |> IO.inspect
       end,
       2_000,
       10

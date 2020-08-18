@@ -5,7 +5,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     and then begins sending new data as it arrives.
   """
   use DiscoveryStreamsWeb, :channel
-  alias DiscoveryStreams.TopicHelper
 
   @update_event "update"
   @filter_event "filter"
@@ -13,7 +12,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   intercept([@update_event])
 
   def join(channel, params, socket) do
-    system_name = determine_system_name(channel) |> IO.inspect()
+    system_name = determine_system_name(channel)
 
     case Brook.get(:discovery_streams, :streaming_datasets_by_system_name, system_name) do
       {:ok, _} ->
@@ -56,24 +55,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
 
   # sobelow_skip ["DOS.StringToAtom"]
   defp determine_system_name("streaming:" <> system_name), do: system_name
-
-  defp determine_topic("streaming:" <> system_name) do
-    get_dataset_id(system_name)
-    |> TopicHelper.topic_name()
-  end
-
-  defp determine_topic(channel) do
-    determine_system_name(channel)
-    |> get_dataset_id()
-    |> TopicHelper.topic_name()
-  end
-
-  defp get_dataset_id(system_name) do
-    case Brook.get(:discovery_streams, :streaming_datasets_by_system_name, system_name) do
-      {:ok, dataset_id} -> dataset_id
-      _ -> nil
-    end
-  end
 
   defp message_matches?(message, filter) do
     Enum.all?(filter, fn {field, value} -> field_matches?(message, field, value) end)

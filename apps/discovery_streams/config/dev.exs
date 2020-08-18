@@ -5,7 +5,7 @@ config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   check_origin: false,
   watchers: []
 
-config :discovery_streams, endpoints: [localhost:9092, kafka: 9093]
+config :discovery_streams, endpoints: [localhost: 9092, kafka: 9093]
 
 config :logger, :console, format: "[$level] $message\n"
 
