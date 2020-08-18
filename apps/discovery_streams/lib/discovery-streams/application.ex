@@ -15,8 +15,8 @@ defmodule DiscoveryStreams.Application do
         libcluster(),
         {Brook, Application.get_env(:discovery_streams, :brook)},
         DiscoveryStreams.Stream.Registry,
-        DiscoveryStreams.Stream.Supervisor
-        # {DiscoveryStreams.Init},
+        DiscoveryStreams.Stream.Supervisor,
+        DiscoveryStreams.Init
       ]
       |> TelemetryEvent.config_init_server(:discovery_streams)
       |> List.flatten()
@@ -30,11 +30,4 @@ defmodule DiscoveryStreams.Application do
       topologies -> {Cluster.Supervisor, [topologies, [name: StreamingConsumer.ClusterSupervisor]]}
     end
   end
-
-  # defp init do
-  #   case Application.get_env(:discovery_streams, :todo) do
-  #     nil -> []
-  #     _ -> DiscoveryStreams.SourceSupervisor
-  #   end
-  # end
 end
