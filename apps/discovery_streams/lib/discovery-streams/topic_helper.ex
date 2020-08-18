@@ -2,9 +2,7 @@ defmodule DiscoveryStreams.TopicHelper do
   @moduledoc false
 
   require Logger
-  use Properties, otp_app: :discovery_streams
 
-  getter(:endpoints)
   def topic_name(dataset_id) do
     "#{topic_prefix()}#{dataset_id}"
   end
@@ -15,8 +13,7 @@ defmodule DiscoveryStreams.TopicHelper do
   end
 
   def get_endpoints() do
-    [localhost: 9092]
-    # endpoints()
+    Application.get_env(:discovery_streams, :endpoints)
   end
 
   def delete_input_topic(dataset_id) do

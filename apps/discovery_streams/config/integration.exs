@@ -10,7 +10,9 @@ config :discovery_streams,
   ],
   divo_wait: [dwell: 700, max_tries: 50]
 
-config :discovery_streams, endpoints: endpoints
+# config :discovery_streams, endpoints: endpoints
+config :discovery_streams, endpoints: [localhost: 9092, kafka: 9093]
+
 config :discovery_streams, topic_subscriber_interval: 1_000
 
 config :discovery_streams, :brook,

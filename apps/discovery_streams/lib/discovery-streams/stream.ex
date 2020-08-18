@@ -8,8 +8,6 @@ defmodule DiscoveryStreams.Stream do
   use Annotated.Retry
   use Properties, otp_app: :discovery_streams
   require Logger
-  # import Definition, only: [identifier: 1]
-  getter(:endpoints)
 
   @max_retries get_config_value(:max_retries, default: 50)
 
