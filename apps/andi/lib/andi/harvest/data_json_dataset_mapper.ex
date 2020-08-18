@@ -25,7 +25,7 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
   defp harvested_dataset_model(data_json_dataset, org) do
     %{
       "orgId" => org.id,
-      "sourceId" => to_string(data_json_dataset["identifier"]),
+      "sourceId" => data_json_dataset["identifier"],
       "systemId" => system_name(org.orgName, data_name(data_json_dataset["title"])),
       "source" => Map.get(data_json_dataset["publisher"], "source"),
       "modifiedDate" => data_json_dataset["modified"],
