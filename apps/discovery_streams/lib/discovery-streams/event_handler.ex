@@ -27,7 +27,7 @@ defmodule DiscoveryStreams.EventHandler do
     add_event_count(dataset_update(), author, dataset.id)
 
     # TODO: need to turn off source
-    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset)
+    # DiscoveryStreams.Stream.Supervisor.terminate_child(dataset)
     delete_from_viewstate(dataset.id, dataset.technical.systemName)
 
     :ok
@@ -41,7 +41,7 @@ defmodule DiscoveryStreams.EventHandler do
       when source_type != "stream" do
     add_event_count(dataset_update(), author, id)
 
-    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset)
+    # DiscoveryStreams.Stream.Supervisor.terminate_child(dataset)
     delete_from_viewstate(id, system_name)
 
     :ok

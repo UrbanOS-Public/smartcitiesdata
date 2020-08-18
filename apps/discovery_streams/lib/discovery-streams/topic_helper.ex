@@ -15,14 +15,15 @@ defmodule DiscoveryStreams.TopicHelper do
   end
 
   def get_endpoints() do
-    endpoints()
+    [localhost: 9092]
+    # endpoints()
   end
 
   def delete_input_topic(dataset_id) do
     input_topic = input_topic(dataset_id)
     Logger.debug("#{__MODULE__}: Deleting Topic: #{input_topic}")
 
-    case Elsa.delete_topic(endpoints(), input_topic) do
+    case Elsa.delete_topic(get_endpoints(), input_topic) do
       :ok ->
         Logger.debug("#{__MODULE__}: Deleted topic: #{input_topic}")
 
