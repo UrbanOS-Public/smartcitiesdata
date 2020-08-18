@@ -4,6 +4,8 @@ defmodule DiscoveryStreams.Stream do
   This `GenServer` links processes for reading messages from a `Source.t()` impl
   """
 
+  alias DiscoveryStreams.TopicHelper
+
   use GenServer, shutdown: 30_000
   use Annotated.Retry
   use Properties, otp_app: :discovery_streams
@@ -11,9 +13,9 @@ defmodule DiscoveryStreams.Stream do
 
   @max_retries get_config_value(:max_retries, default: 50)
 
-  # @type init_opts :: [
-  #         load: Load.t()
-  #       ]
+  @type init_opts :: [
+          dataset: SmartCity.Dataset.t()
+        ]
 
   def start_link(init_opts) do
     server_opts = Keyword.take(init_opts, [:name])
@@ -62,7 +64,7 @@ defmodule DiscoveryStreams.Stream do
       )
 
     # TODO: stop hardcoding the endpoints
-    Source.start_link(Kafka.Topic.new!(endpoints: [localhost: 9092], name: "transformed-#{dataset.id}"), context)
+    Source.start_link(Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: "transformed-#{dataset.id}"), context)
   end
 
   @impl GenServer
@@ -75,16 +77,5 @@ defmodule DiscoveryStreams.Stream do
     end
 
     reason
-  end
-
-  defp kill(pid, reason) do
-    Process.exit(pid, reason)
-
-    receive do
-      {:EXIT, ^pid, _} ->
-        :ok
-    after
-      20_000 -> :ok
-    end
   end
 end
