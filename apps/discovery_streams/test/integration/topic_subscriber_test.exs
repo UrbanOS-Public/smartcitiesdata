@@ -15,8 +15,7 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
   test "broadcasts data to end users" do
     # private_dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: true})
     # Brook.Event.send(@instance, data_ingest_start(), :author, private_dataset)
-    dataset1 =
-      TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
+    dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
 
     Brook.Event.send(@instance, data_ingest_start(), :author, dataset1)
 
@@ -76,7 +75,7 @@ defmodule DiscoveryStreams.TopicSubscriberTest do
       fn ->
         assert {:ok, nil} == Brook.ViewState.get(@instance, :streaming_datasets_by_id, dataset_id)
         assert {:ok, nil} == Brook.ViewState.get(@instance, :streaming_datasets_by_system_name, system_name)
-        assert false == Elsa.Topic.exists?([localhost: 9092], input_topic) |> IO.inspect
+        assert false == Elsa.Topic.exists?([localhost: 9092], input_topic) |> IO.inspect()
       end,
       2_000,
       10

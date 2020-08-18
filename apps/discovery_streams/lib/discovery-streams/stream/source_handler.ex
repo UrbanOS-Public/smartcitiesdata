@@ -7,6 +7,7 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
   use Source.Handler
   use Properties, otp_app: :discovery_streams
   require Logger
+  alias StreamingMetrics.Hostname
 
   alias DiscoveryStreamsWeb.Endpoint
 
@@ -32,7 +33,7 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
 
   def handle_batch(batch, context) do
     Logger.debug(fn -> "#{__MODULE__} handle_batch - #{inspect(context)} - #{inspect(batch)}" end)
-    record_outbound_count_metrics(batch)
+    record_outbound_count_metrics(batch, context.assigns.dataset)
     :ok
   end
 
@@ -46,20 +47,19 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
     :ok
   end
 
-  defp record_outbound_count_metrics(messages) do
-    ### TODO: This will not match on the topic anymore
+  defp record_outbound_count_metrics(messages, dataset) do
     messages
-    |> Enum.reduce(%{}, fn %{topic: topic}, acc -> Map.update(acc, topic, 1, &(&1 + 1)) end)
+    |> Enum.reduce(%{}, fn _, acc -> Map.update(acc, dataset.id, 1, &(&1 + 1)) end)
     |> Enum.each(&record_metric/1)
   end
 
-  defp record_metric({topic, count}) do
-    converted_topic =
-      topic
+  defp record_metric({dataset_id, count}) do
+    pretty_dataset_id =
+      dataset_id
       |> String.replace("-", "_")
 
     get_hostname()
-    |> add_records(converted_topic, "outbound", count)
+    |> add_records(pretty_dataset_id, "outbound", count)
     |> case do
       :ok -> {}
       error -> Logger.warn("Unable to write application metrics: #{inspect(error)}")

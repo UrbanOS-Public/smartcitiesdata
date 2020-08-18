@@ -63,14 +63,14 @@ defmodule DiscoveryStreams.Stream do
         }
       )
 
-    # TODO: stop hardcoding the endpoints
-    Source.start_link(Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: "transformed-#{dataset.id}"), context)
+    Source.start_link(
+      Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: "transformed-#{dataset.id}"),
+      context
+    )
   end
 
   @impl GenServer
   def terminate(reason, state) do
-    IO.inspect(state, label: "State i")
-
     if Map.has_key?(state, :source) do
       pid = Map.get(state, :source_pid)
       Source.stop(state.load.source, pid)
