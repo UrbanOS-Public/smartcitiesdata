@@ -4,6 +4,7 @@ defmodule Andi.Harvest.HarvesterTest do
   use Placebo
 
   import Andi
+  @moduletag shared_data_connection: true
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetStore
@@ -81,7 +82,7 @@ defmodule Andi.Harvest.HarvesterTest do
       Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
 
       eventually(fn ->
-        harvested_datasets = Organizations.get_all()
+        harvested_datasets = Organizations.get_all_harvested_datasets(org.id)
         assert length(harvested_datasets) == 2
       end)
     end
