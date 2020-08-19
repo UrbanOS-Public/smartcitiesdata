@@ -51,7 +51,7 @@ defmodule Kafka.Topic.Source do
             prefetch_bytes: 2_097_152
           ]
         ]
-      )
+      ) |> IO.inspect(label: "starting elsa listener on")
 
     {:noreply, Map.put(state, :elsa_pid, elsa_pid)}
   end
