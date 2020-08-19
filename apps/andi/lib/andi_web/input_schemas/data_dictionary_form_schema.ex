@@ -58,6 +58,7 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     |> Enum.with_index()
     |> Enum.map(&generate_sequenced_field/1)
     |> List.flatten()
+    |> Enum.map(&ensure_field_name/1)
     |> Enum.map(&assign_schema_field_details(&1, dataset_id, nil))
   end
 
@@ -98,6 +99,15 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
         updated_field
     end
   end
+
+  defp ensure_field_name(%{"name" => ""} = field) do
+    default_field_name = Map.get(field, "sequence", UUID.uuid4())
+
+    field
+    |> Map.put("name", "field_#{default_field_name}")
+  end
+
+  defp ensure_field_name(field), do: field
 
   defp validate_schema(%{changes: %{sourceType: source_type}} = changeset)
        when source_type in ["ingest", "stream"] do
