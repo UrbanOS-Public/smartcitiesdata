@@ -18,6 +18,8 @@ defmodule Andi.Harvest.HarvesterTest do
   @scos_data_json_uuid "1719bf64-38f5-40bf-9737-45e84f5c8419"
   @dataset_id_1 UUID.uuid5(@scos_data_json_uuid, "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30")
   @dataset_id_2 UUID.uuid5(@scos_data_json_uuid, "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2")
+  @source_id_1 "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30"
+  @source_id_2 "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2"
 
   describe "data json harvesting" do
     setup do
@@ -171,7 +173,43 @@ defmodule Andi.Harvest.HarvesterTest do
         Plug.Conn.resp(conn, 200, data_json)
       end)
 
+      {:ok, data_json} = Jason.decode(data_json)
+      datasets = Harvester.map_data_json_to_dataset(data_json, org)
+
       Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+
+      Organizations.update_harvested_dataset_include(@source_id_1, false)
+
+      updated_datasets =
+        data_json["dataset"]
+        |> List.update_at(0, fn dataset -> Map.put(dataset, "modified", "2020-08-10T13:31:42.000Z") end)
+
+      data_json =
+        data_json
+        |> Map.put("dataset", updated_datasets)
+
+
+      new_bypass = Bypass.open()
+
+      org =
+        TDG.create_organization(%{
+          orgTitle: "Awesome Title",
+          orgName: "awesome_title",
+          id: "95254592-d611-4bcb-9478-7fa248f4118d",
+          dataJsonUrl: "http://localhost:#{new_bypass.port()}/data.json"
+        })
+
+
+      Bypass.stub(new_bypass, "GET", "/data.json", fn conn ->
+        Plug.Conn.resp(conn, 200, data_json)
+      end)
+
+      Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+
+      eventually(fn ->
+        Organizations.get_harvested_dataset(@source_id_1) |> IO.inspect(label: "Should be false")
+      end)
+
     end
   end
 

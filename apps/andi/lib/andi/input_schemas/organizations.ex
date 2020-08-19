@@ -94,6 +94,13 @@ defmodule Andi.InputSchemas.Organizations do
     end
   end
 
+  def update_harvested_dataset_include(source_id, val) when is_boolean(val) do
+    case get_harvested_dataset(source_id) do
+      nil -> Logger.error("Harvested dataset #{source_id} doesn't exist")
+      dataset -> update_harvested_dataset(dataset, %{include: val})
+    end
+  end
+
   def is_unique?(id, org_name) do
     from(org in Andi.InputSchemas.Organization,
       where: org.orgName == ^org_name and org.id != ^id
