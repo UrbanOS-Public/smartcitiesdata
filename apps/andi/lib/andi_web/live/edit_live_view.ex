@@ -14,6 +14,10 @@ defmodule AndiWeb.EditLiveView do
     <div class="edit-page" id="dataset-edit-page">
       <div class="page-header">
         <button type="button" phx-click="cancel-edit" class="return-home-button btn btn--large"><div class="home-icon"></div>HOME</button>
+        <div class="organization-link" phx-click="show-organizations">
+          <div class="organization-link__icon"></div>
+          <div class="organization-link__text">ORGANIZATIONS</div>
+        </div>
       </div>
 
       <%= f = form_for @changeset, "" %>
@@ -90,6 +94,7 @@ defmodule AndiWeb.EditLiveView do
        test_results: nil,
        finalize_form_data: nil,
        unsaved_changes: false,
+       unsaved_changes_link: "/",
        unsaved_changes_modal_visibility: "hidden",
        publish_success_modal_visibility: "hidden"
      )}
@@ -100,12 +105,19 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("force-cancel-edit", _, socket) do
-    {:noreply, redirect(socket, to: "/")}
+    {:noreply, redirect(socket, to: socket.assigns.unsaved_changes_link)}
+  end
+
+  def handle_event("show-organizations", _, socket) do
+    case socket.assigns.unsaved_changes do
+      true -> {:noreply, assign(socket, unsaved_changes_link: "/organizations", unsaved_changes_modal_visibility: "visible")}
+      false -> {:noreply, redirect(socket, to: "/organizations")}
+    end
   end
 
   def handle_event("cancel-edit", _, socket) do
     case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible")}
+      true -> {:noreply, assign(socket, unsaved_changes_link: "/", unsaved_changes_modal_visibility: "visible")}
       false -> {:noreply, redirect(socket, to: "/")}
     end
   end
@@ -177,7 +189,7 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info(:cancel_edit, socket) do
     case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible")}
+      true -> {:noreply, assign(socket, unsaved_changes_link: "/", unsaved_changes_modal_visibility: "visible")}
       false -> {:noreply, redirect(socket, to: "/")}
     end
   end

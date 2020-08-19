@@ -5,6 +5,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper
 
+  @moduletag shared_data_connection: true
+
   alias Andi.InputSchemas.Datasets
   alias SmartCity.TestDataGenerator, as: TDG
 

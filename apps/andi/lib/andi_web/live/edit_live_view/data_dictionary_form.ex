@@ -73,7 +73,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
       <div class="form-section">
         <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data, multipart: true] %>
-        <%= f = Map.put(f, :errors, @changeset.errors) %>
+        <% f = Map.put(f, :errors, @changeset.errors) %>
 
           <div class="component-edit-section--<%= @visibility %>">
             <div class="data-dictionary-form-edit-section form-grid">

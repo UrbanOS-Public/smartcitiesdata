@@ -14,4 +14,12 @@ defmodule Andi.Services.OrgStore do
   def get_all() do
     Brook.get_all_values(instance_name(), @collection)
   end
+
+  def update(%SmartCity.Organization{} = org) do
+    Brook.ViewState.merge(@collection, org.id, org)
+  end
+
+  def delete(id) do
+    Brook.ViewState.delete(@collection, id)
+  end
 end

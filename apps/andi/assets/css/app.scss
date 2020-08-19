@@ -170,9 +170,62 @@ body {
     color: $disabled-background;
 }
 
+.page-header {
+    background-color: white;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5rem;
+    margin-bottom: 2rem;
+    box-shadow: $box-shadow;
+
+    display: flex;
+    justify-content: space-between;
+
+    a {
+        margin-left: 2rem;
+        align-self: center;
+        font-size: 1.6rem;
+        text-decoration: none;
+    }
+
+    a:link {
+        color: black;
+    }
+
+    a:visited {
+        color: black;
+    }
+}
+
+.organization-link {
+    margin-right: 2rem;
+    display: flex;
+
+    .organization-link__icon {
+        background-image: url('/images/cog.svg');
+        height: 24px;
+        width: 24px;
+        margin-right: 0.25rem;
+        align-self: center;
+    }
+
+    .organization-link__text {
+        font-weight: bold;
+        font-size: 1.1rem;
+        align-self: center;
+    }
+}
+
+.organization-link:hover {
+    cursor: pointer;
+}
+
 @import "./datasets.scss";
 @import "./edit.scss";
 @import "./data_dictionary_form.scss";
 @import "./metadata_form.scss";
 @import "./url_form.scss";
 @import "./finalize_form.scss";
+@import "./organizations.scss";

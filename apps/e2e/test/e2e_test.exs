@@ -92,7 +92,8 @@ defmodule E2ETest do
 
   describe "creating an organization" do
     test "via RESTful POST" do
-      org = TDG.create_organization(%{orgName: "end_to", id: "org-id"})
+      org =
+        TDG.create_organization(%{orgName: "end_to", id: "451d5608-b4dc-406c-a7ce-8df24768a237"})
 
       resp =
         HTTPoison.post!("http://localhost:4000/api/v1/organization", Jason.encode!(org), [
@@ -109,7 +110,7 @@ defmodule E2ETest do
         with resp <- HTTPoison.get!("http://localhost:4000/api/v1/organizations"),
              [org] <- Jason.decode!(resp.body) do
           assert org["dn"] == "cn=end_to,ou=integration,#{base}"
-          assert org["id"] == "org-id"
+          assert org["id"] == "451d5608-b4dc-406c-a7ce-8df24768a237"
           assert org["orgName"] == "end_to"
         end
       end)
