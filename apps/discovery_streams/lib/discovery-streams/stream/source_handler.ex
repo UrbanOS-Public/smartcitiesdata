@@ -20,9 +20,11 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
 
     log_message(message)
 
+
     case Brook.get(:discovery_streams, :streaming_datasets_by_id, dataset_id) do
       {:ok, system_name} ->
-        Endpoint.broadcast!("streaming:#{system_name}", "update", message)
+        payload = get_payload(message)
+        Endpoint.broadcast!("streaming:#{system_name}", "update", payload)
 
       _ ->
         nil
@@ -36,18 +38,19 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
     record_outbound_count_metrics(batch, context.dataset_id)
     :ok
   end
-
-  defp log_message(message) do
-    Logger.log(:info, "#{inspect(message)}")
-    message
-  end
-
   def send_to_dlq(dead_letters, _context) do
     # Just throw these on the ground for now.
     # dlq().write(dead_letters)
     :ok
   end
 
+  defp get_payload(message) do
+    message["payload"]
+  end
+  defp log_message(message) do
+    Logger.log(:info, "#{inspect(message)}")
+    message
+  end
   defp record_outbound_count_metrics(messages, dataset_id) do
     messages
     |> Enum.reduce(%{}, fn _, acc -> Map.update(acc, dataset_id, 1, &(&1 + 1)) end)
@@ -55,12 +58,8 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
   end
 
   defp record_metric({dataset_id, count}) do
-    pretty_dataset_id =
-      dataset_id
-      |> String.replace("-", "_")
-
     get_hostname()
-    |> add_records(pretty_dataset_id, "outbound", count)
+    |> add_records(dataset_id, "outbound", count)
     |> case do
       :ok -> {}
       error -> Logger.warn("Unable to write application metrics: #{inspect(error)}")
@@ -69,10 +68,10 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
 
   defp get_hostname(), do: Hostname.get()
 
-  defp add_records(pod_host_name, topic_name, type, count) do
+  defp add_records(pod_host_name, dataset_id, type, count) do
     [
       app: "discovery_stream",
-      topic_name: topic_name,
+      dataset_id: dataset_id,
       PodHostname: pod_host_name,
       type: type
     ]

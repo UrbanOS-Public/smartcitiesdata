@@ -24,10 +24,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     end
   end
 
-  def handle_info(:after_join, %{assigns: %{filter: _filter}} = socket) do
-    {:noreply, socket}
-  end
-
   def handle_in(@filter_event, message, socket) do
     filter_rules = create_filter_rules(message)
 

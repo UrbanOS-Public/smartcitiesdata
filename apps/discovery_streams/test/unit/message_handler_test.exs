@@ -40,7 +40,7 @@ defmodule DiscoveryStreams.SourceHandlerTest do
       socket(DiscoveryStreamsWeb.UserSocket)
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, channel)
 
-    %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}
+    %{"payload" => %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}}
     |> SourceHandler.handle_message(%{dataset_id: dataset_id})
 
     assert_broadcast("update", %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}})
@@ -55,7 +55,7 @@ defmodule DiscoveryStreams.SourceHandlerTest do
 
   test "Telemetry events are published with each handled batch" do
     expect(TelemetryEvent.add_event_metrics(any(), [:records], value: %{count: any()}), return: :ok)
-    [%{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}]
+    [%{"payload" => %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}}]
     |> SourceHandler.handle_batch(%{dataset_id: "any_id"})
   end
 end

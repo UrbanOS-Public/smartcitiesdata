@@ -63,7 +63,7 @@ defmodule DiscoveryStreams.Stream do
       )
 
     Source.start_link(
-      Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: "transformed-#{dataset_id}"),
+      Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: TopicHelper.topic_name(dataset_id)),
       context
     )
   end

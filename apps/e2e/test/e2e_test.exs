@@ -306,10 +306,6 @@ defmodule E2ETest do
     end
 
     test "is available through socket connection", %{streaming_dataset: ds} do
-      eventually(fn ->
-        assert "#{Application.get_env(:discovery_streams, :topic_prefix)}#{ds.id}" in DiscoveryStreams.TopicSubscriber.list_subscribed_topics()
-      end)
-
       {:ok, _, _} =
         socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
         |> subscribe_and_join(
