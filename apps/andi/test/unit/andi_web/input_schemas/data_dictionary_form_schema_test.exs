@@ -56,6 +56,24 @@ defmodule AndiWeb.DataDictionaryFormSchemaTest do
 
       assert expected_schema == drop_fields_from_schema(generated_schema)
     end
+
+    test "adds field name to empty CSV column names" do
+      data = [
+        {"bob", 123},
+        {"bob1", 321},
+        {"", 324},
+        {"", 543}
+      ]
+
+      generated_schema_names =
+        data
+        |> DataDictionaryFormSchema.generate_ordered_schema("cam")
+        |> Enum.map(&Map.get(&1, "name"))
+
+      expected_schema_names = ["bob", "bob1", "field_2", "field_3"]
+
+      assert expected_schema_names == generated_schema_names
+    end
   end
 
   describe "changeset from list of tuples" do
