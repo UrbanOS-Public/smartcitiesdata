@@ -2,6 +2,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
   use ExUnit.Case
   use Andi.DataCase
 
+  @moduletag shared_data_connection: true
+
   alias SmartCity.TestDataGenerator, as: TDG
 
   alias Andi.InputSchemas.Datasets

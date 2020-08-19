@@ -5,6 +5,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
   import Phoenix.LiveViewTest
   import Checkov
 
+  @moduletag shared_data_connection: true
+
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Datasets
   alias SmartCity.TestDataGenerator, as: TDG

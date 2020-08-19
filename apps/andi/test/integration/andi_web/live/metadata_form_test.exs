@@ -3,6 +3,7 @@ defmodule AndiWeb.MetadataFormTest do
   use Andi.DataCase
   use AndiWeb.ConnCase
   use Placebo
+
   import Checkov
 
   alias Andi.Services.DatasetStore
@@ -124,8 +125,8 @@ defmodule AndiWeb.MetadataFormTest do
     test "organization dropdown is populated with all organizations in the system", %{conn: conn, blank_dataset: blank_dataset} do
       {:ok, dataset} = Datasets.update(blank_dataset)
 
-      org1 = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title", id: "95254592-d611-4bcb-9478-7fa248f4118d"})
-      org2 = TDG.create_organization(%{orgTitle: "Very Readable", orgName: "very_readable", id: "95254592-4444-4bcb-9478-7fa248f4118d"})
+      org1 = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})
+      org2 = TDG.create_organization(%{orgTitle: "Very Readable", orgName: "very_readable"})
 
       Brook.Event.send(instance_name(), organization_update(), __MODULE__, org1)
       Brook.Event.send(instance_name(), organization_update(), __MODULE__, org2)
@@ -140,12 +141,12 @@ defmodule AndiWeb.MetadataFormTest do
 
       assert {"", ["Please select an organization"]} == get_select_first_option(html, "#form_data_orgId")
 
-      form_data = %{"dataName" => "data_title", "orgId" => "95254592-4444-4bcb-9478-7fa248f4118d"}
+      form_data = %{"dataName" => "data_title", "orgId" => org2.id}
 
       html = render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "orgId"]})
 
       assert "very_readable__data_title" == get_value(html, "#form_data_systemName")
-      assert {"95254592-4444-4bcb-9478-7fa248f4118d", "Very Readable"} == get_select(html, "#form_data_orgId")
+      assert {org2.id, "Very Readable"} == get_select(html, "#form_data_orgId")
     end
 
     test "updating data title allows common data name across different orgs", %{conn: conn} do
@@ -195,7 +196,7 @@ defmodule AndiWeb.MetadataFormTest do
       new_dataset = TDG.create_dataset(%{technical: %{orgName: "benjino", dataName: "camino", systemName: "benjino__camino"}})
       {:ok, _} = Datasets.update(new_dataset)
 
-      org = TDG.create_organization(%{id: "1", orgTitle: "kevin org", orgName: "kevino"})
+      org = TDG.create_organization(%{orgTitle: "kevin org", orgName: "kevino"})
       Brook.Event.send(:andi, organization_update(), __MODULE__, org)
       eventually(fn -> OrgStore.get(org.id) != {:ok, nil} end)
 
@@ -428,7 +429,7 @@ defmodule AndiWeb.MetadataFormTest do
     end
 
     test "displays all other fields", %{conn: conn} do
-      org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title", id: "95254592-d611-4bcb-9478-7fa248f4118d"})
+      org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})
       Brook.Event.send(instance_name(), organization_update(), __MODULE__, org)
       eventually(fn -> OrgStore.get(org.id) != {:ok, nil} end)
 
@@ -459,7 +460,7 @@ defmodule AndiWeb.MetadataFormTest do
       assert get_value(html, ".metadata-form__spatial input") == dataset.business.spatial
       assert get_value(html, ".metadata-form__temporal input") == dataset.business.temporal
 
-      assert {"95254592-d611-4bcb-9478-7fa248f4118d", "Awesome Title"} == get_select(html, ".metadata-form__organization select")
+      assert {org.id, "Awesome Title"} == get_select(html, ".metadata-form__organization select")
 
       assert {"english", "English"} == get_select(html, ".metadata-form__language")
       assert get_value(html, ".metadata-form__homepage input") == dataset.business.homepage
@@ -626,7 +627,7 @@ defmodule AndiWeb.MetadataFormTest do
       Brook.Event.send(instance_name(), dataset_update(), __MODULE__, smrt_dataset)
       eventually(fn -> DatasetStore.get(smrt_dataset.id) != {:ok, nil} end)
 
-      org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title", id: "95254592-d611-4bcb-9478-7fa248f4118d"})
+      org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})
       Brook.Event.send(instance_name(), organization_update(), __MODULE__, org)
       eventually(fn -> OrgStore.get(org.id) != {:ok, nil} end)
 
