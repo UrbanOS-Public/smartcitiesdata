@@ -14,7 +14,7 @@ defmodule DiscoveryStreams.EventHandler do
       }) do
     add_event_count(data_ingest_start(), author, id)
 
-    save_dataset_to_viewstate(id, system_name)  |> IO.inspect(label: "saving dataset #{system_name}#{id}")
+    save_dataset_to_viewstate(id, system_name)
     DiscoveryStreams.Stream.Supervisor.start_child(dataset.id)
     :ok
   end

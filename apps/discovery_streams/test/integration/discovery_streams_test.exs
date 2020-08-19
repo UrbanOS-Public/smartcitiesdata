@@ -5,7 +5,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
 
   use Divo
   alias SmartCity.TestDataGenerator, as: TDG
-  alias  DiscoveryStreams.TopicHelper
+  alias DiscoveryStreams.TopicHelper
   import SmartCity.TestHelper
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_delete: 0]
 
@@ -22,7 +22,13 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset1.technical.systemName}")
 
     Elsa.create_topic(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id))
-    Elsa.Producer.produce(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id), [create_message(%{foo: "bar"}, [topic: dataset1.id])], parition: 0)
+
+    Elsa.Producer.produce(
+      TopicHelper.get_endpoints(),
+      TopicHelper.topic_name(dataset1.id),
+      [create_message(%{foo: "bar"}, topic: dataset1.id)],
+      parition: 0
+    )
 
     assert_push("update", %{"foo" => "bar"}, 10_000)
   end
@@ -37,32 +43,42 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
 
     eventually(
       fn ->
-        assert called? DiscoveryStreams.EventHandler.handle_event(any())
+        assert called?(DiscoveryStreams.EventHandler.handle_event(any()))
       end,
       500,
       10
     )
 
     assert {:error, _} =
-      DiscoveryStreamsWeb.UserSocket
-      |> socket()
-      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{private_dataset.technical.systemName}")
+             DiscoveryStreamsWeb.UserSocket
+             |> socket()
+             |> subscribe_and_join(
+               DiscoveryStreamsWeb.StreamingChannel,
+               "streaming:#{private_dataset.technical.systemName}"
+             )
   end
 
-  # test "stops broadcasting after a delete event" do
-  #   dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
-  #   Brook.Event.send(@instance, data_ingest_start(), :author, dataset1)
+  test "stops broadcasting after a delete event" do
+    dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
+    Brook.Event.send(@instance, data_ingest_start(), :author, dataset1)
+    wait_for_event()
 
-  #   {:ok, _, socket} =
-  #     DiscoveryStreamsWeb.UserSocket
-  #     |> socket()
-  #     |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset1.technical.systemName}")
+    {:ok, _, socket} =
+      DiscoveryStreamsWeb.UserSocket
+      |> socket()
+      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset1.technical.systemName}")
 
-  #   Elsa.create_topic(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id))
-  #   Elsa.Producer.produce(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id), [create_message(%{foo: "bar"}, [topic: dataset1.id])], parition: 0)
+    Elsa.create_topic(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id))
+    Elsa.Producer.produce(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id), [create_message(%{foo: "bar"}, [topic: dataset1.id])], parition: 0)
 
-  #   assert_push("update", %{"foo" => "bar"})
-  # end
+    assert_push("update", %{"foo" => "bar"}, 10_000)
+
+    Brook.Event.send(@instance, dataset_delete(), :author, dataset1)
+    wait_for_event()
+    Elsa.Producer.produce(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id), [create_message(%{dont: "sendme"}, [topic: dataset1.id])], parition: 0)
+
+    refute_push("update", %{"dont" => "sendme"}, 10_000)
+  end
 
   test "should delete all view state for the dataset and the input topic when dataset:delete is called" do
     dataset_id = Faker.UUID.v4()
@@ -107,12 +123,13 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
 
     eventually(
       fn ->
-        assert called? DiscoveryStreams.EventHandler.handle_event(any())
+        assert called?(DiscoveryStreams.EventHandler.handle_event(any()))
       end,
       500,
       10
     )
   end
+
   defp create_message(%{} = data, opts) do
     create_message(TDG.create_data(payload: data) |> Jason.encode!(), opts)
   end

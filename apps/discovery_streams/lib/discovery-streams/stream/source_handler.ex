@@ -20,7 +20,6 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
 
     log_message(message)
 
-
     case Brook.get(:discovery_streams, :streaming_datasets_by_id, dataset_id) do
       {:ok, system_name} ->
         payload = get_payload(message)
@@ -38,6 +37,7 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
     record_outbound_count_metrics(batch, context.dataset_id)
     :ok
   end
+
   def send_to_dlq(dead_letters, _context) do
     # Just throw these on the ground for now.
     # dlq().write(dead_letters)
@@ -47,10 +47,12 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
   defp get_payload(message) do
     message["payload"]
   end
+
   defp log_message(message) do
     Logger.log(:info, "#{inspect(message)}")
     message
   end
+
   defp record_outbound_count_metrics(messages, dataset_id) do
     messages
     |> Enum.reduce(%{}, fn _, acc -> Map.update(acc, dataset_id, 1, &(&1 + 1)) end)

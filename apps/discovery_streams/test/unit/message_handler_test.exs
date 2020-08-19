@@ -55,6 +55,7 @@ defmodule DiscoveryStreams.SourceHandlerTest do
 
   test "Telemetry events are published with each handled batch" do
     expect(TelemetryEvent.add_event_metrics(any(), [:records], value: %{count: any()}), return: :ok)
+
     [%{"payload" => %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}}]
     |> SourceHandler.handle_batch(%{dataset_id: "any_id"})
   end
