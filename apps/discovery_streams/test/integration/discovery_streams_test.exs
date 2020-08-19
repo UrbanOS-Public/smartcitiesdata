@@ -13,8 +13,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
 
   test "broadcasts data to end users" do
     dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
-    Brook.Event.send(@instance, data_ingest_start(), :author, dataset1)
-    wait_for_event()
+    Brook.Test.send(@instance, data_ingest_start(), :author, dataset1)
 
     {:ok, _, socket} =
       DiscoveryStreamsWeb.UserSocket
@@ -36,18 +35,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   test "doesnt broadcast private datasets" do
     private_dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: true})
 
-    Brook.Event.send(@instance, data_ingest_start(), :author, private_dataset)
-    wait_for_event()
-
-    allow(DiscoveryStreams.EventHandler.handle_event(:spy_only), return: :spy_only)
-
-    eventually(
-      fn ->
-        assert called?(DiscoveryStreams.EventHandler.handle_event(any()))
-      end,
-      500,
-      10
-    )
+    Brook.Test.send(@instance, data_ingest_start(), :author, private_dataset)
 
     assert {:error, _} =
              DiscoveryStreamsWeb.UserSocket
@@ -60,8 +48,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
 
   test "stops broadcasting after a delete event" do
     dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
-    Brook.Event.send(@instance, data_ingest_start(), :author, dataset1)
-    wait_for_event()
+    Brook.Test.send(@instance, data_ingest_start(), :author, dataset1)
 
     {:ok, _, socket} =
       DiscoveryStreamsWeb.UserSocket
@@ -69,13 +56,30 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset1.technical.systemName}")
 
     Elsa.create_topic(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id))
-    Elsa.Producer.produce(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id), [create_message(%{foo: "bar"}, [topic: dataset1.id])], parition: 0)
+
+    Elsa.Producer.produce(
+      TopicHelper.get_endpoints(),
+      TopicHelper.topic_name(dataset1.id),
+      [create_message(%{foo: "bar"}, topic: dataset1.id)],
+      parition: 0
+    )
 
     assert_push("update", %{"foo" => "bar"}, 10_000)
 
-    Brook.Event.send(@instance, dataset_delete(), :author, dataset1)
-    wait_for_event()
-    Elsa.Producer.produce(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id), [create_message(%{dont: "sendme"}, [topic: dataset1.id])], parition: 0)
+    Brook.Test.send(@instance, dataset_delete(), :author, dataset1)
+
+    # Nothing else was consistent here.  Checking for elsa.topic? will return that its dead before kafka is happy to recreate
+    # We probably dont need this actual integration test
+    Process.sleep(15_000)
+
+    Elsa.create_topic(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id))
+
+    Elsa.Producer.produce(
+      TopicHelper.get_endpoints(),
+      TopicHelper.topic_name(dataset1.id),
+      [create_message(%{dont: "sendme"}, topic: dataset1.id)],
+      parition: 0
+    )
 
     refute_push("update", %{"dont" => "sendme"}, 10_000)
   end
@@ -85,7 +89,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
     system_name = Faker.UUID.v4()
     dataset = TDG.create_dataset(id: dataset_id, technical: %{sourceType: "stream", systemName: system_name})
 
-    Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
+    Brook.Test.send(@instance, data_ingest_start(), :author, dataset)
 
     eventually(
       fn ->
@@ -97,7 +101,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       10
     )
 
-    Brook.Event.send(@instance, dataset_delete(), :author, dataset)
+    Brook.Test.send(@instance, dataset_delete(), :author, dataset)
 
     eventually(
       fn ->
@@ -116,18 +120,6 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       |> HTTPoison.get!()
 
     refute headers |> Map.new() |> Map.has_key?("server")
-  end
-
-  defp wait_for_event() do
-    allow(DiscoveryStreams.EventHandler.handle_event(:spy_only), return: :spy_only)
-
-    eventually(
-      fn ->
-        assert called?(DiscoveryStreams.EventHandler.handle_event(any()))
-      end,
-      500,
-      10
-    )
   end
 
   defp create_message(%{} = data, opts) do

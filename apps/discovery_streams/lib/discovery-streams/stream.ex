@@ -36,13 +36,14 @@ defmodule DiscoveryStreams.Stream do
 
   @impl GenServer
   def handle_continue(:init, state) do
-    with {:ok, source_pid} <- start_source(state.dataset_id) do
-      new_state =
-        state
-        |> Map.put(:source_pid, source_pid)
+    case start_source(state.dataset_id) do
+      {:ok, source_pid} ->
+        new_state =
+          state
+          |> Map.put(:source_pid, source_pid)
 
-      {:noreply, new_state}
-    else
+        {:noreply, new_state}
+
       {:error, reason} ->
         {:stop, reason, state}
     end
