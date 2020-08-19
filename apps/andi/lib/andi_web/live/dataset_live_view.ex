@@ -11,7 +11,7 @@ defmodule AndiWeb.DatasetLiveView do
     ~L"""
     <div class="datasets-view">
       <div class="page-header">
-        <h2>Dataset Ingestion Interface</h2>
+        <a href="/datasets">Dataset Ingestion Interface</a>
         <div class="organization-link" phx-click="show-organizations">
           <div class="organization-link__icon"></div>
         <div class="organization-link__text">ORGANIZATIONS</div>
