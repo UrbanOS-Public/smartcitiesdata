@@ -14,8 +14,8 @@ defmodule DiscoveryStreams.EventHandler do
       }) do
     add_event_count(data_ingest_start(), author, id)
 
+    save_dataset_to_viewstate(id, system_name)  |> IO.inspect(label: "saving dataset #{system_name}#{id}")
     DiscoveryStreams.Stream.Supervisor.start_child(dataset.id)
-    save_dataset_to_viewstate(id, system_name)
     :ok
   end
 
@@ -26,8 +26,8 @@ defmodule DiscoveryStreams.EventHandler do
       }) do
     add_event_count(dataset_update(), author, dataset.id)
 
-    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
     delete_from_viewstate(dataset.id, dataset.technical.systemName)
+    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
 
     :ok
   end
@@ -40,8 +40,8 @@ defmodule DiscoveryStreams.EventHandler do
       when source_type != "stream" do
     add_event_count(dataset_update(), author, id)
 
-    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
     delete_from_viewstate(id, system_name)
+    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
 
     :ok
   end
@@ -53,9 +53,9 @@ defmodule DiscoveryStreams.EventHandler do
       }) do
     add_event_count(dataset_delete(), author, id)
 
+    delete_from_viewstate(id, system_name)
     DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
     DiscoveryStreams.TopicHelper.delete_input_topic(id)
-    delete_from_viewstate(id, system_name)
   end
 
   def save_dataset_to_viewstate(id, system_name) do

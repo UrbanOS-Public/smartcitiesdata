@@ -14,15 +14,26 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   def join(channel, params, socket) do
     system_name = determine_system_name(channel)
 
+    IO.inspect(Brook.get(:discovery_streams, :streaming_datasets_by_system_name, system_name), label: "what did we get back from brook")
+    IO.inspect(Brook.get_all!(:discovery_streams, :streaming_datasets_by_system_name))
+
     case Brook.get(:discovery_streams, :streaming_datasets_by_system_name, system_name) do
-      {:ok, _} ->
-        send(self(), :after_join)
+      {:ok, nil} ->
+        {:error, %{reason: "Channel #{channel} does not exist"}}
+
+      {:ok, system_name} ->
+        # send(self(), :after_join)
+        IO.inspect("subscribing properly")
         {:ok, assign(socket, :filter, create_filter_rules(params))}
 
       _ ->
         {:error, %{reason: "Channel #{channel} does not exist"}}
     end
   end
+
+  # def handle_info(:after_join, socket) do
+  #   {:noreply, socket}
+  # end
 
   def handle_in(@filter_event, message, socket) do
     filter_rules = create_filter_rules(message)

@@ -70,9 +70,10 @@ defmodule DiscoveryStreams.Stream do
 
   @impl GenServer
   def terminate(reason, state) do
+    IO.inspect("jessie was here")
     if Map.has_key?(state, :source) do
       pid = Map.get(state, :source_pid)
-      Source.stop(state.load.source, pid)
+      Source.stop(state.load.source, pid) |> IO.inspect(label: "JALSON i was called correctly")
     end
 
     reason
