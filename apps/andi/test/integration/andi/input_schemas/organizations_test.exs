@@ -76,4 +76,19 @@ defmodule Andi.InputSchemas.OrganizationsTest do
       assert nil == Organizations.get_harvested_dataset("notthere")
     end
   end
+
+  describe "update_harvested_dataset_include/2" do
+    test "harvested datasets include field is updated" do
+      harvested_dataset_one = %{
+        "orgId" => "ddd2c387-2d78-4f1b-ac7c-18de679b5fa6",
+        "sourceId" => "12345"
+      }
+
+      Organizations.update_harvested_dataset(harvested_dataset_one)
+
+      Organizations.update_harvested_dataset_include("12345", false)
+
+      assert %{sourceId: "12345", include: false} = Organizations.get_harvested_dataset("12345")
+    end
+  end
 end
