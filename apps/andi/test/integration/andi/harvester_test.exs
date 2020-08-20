@@ -106,6 +106,7 @@ defmodule Andi.Harvest.HarvesterTest do
       data_json =
         data_json
         |> Map.put("dataset", updated_datasets)
+        |> Jason.encode!()
 
 
       new_bypass = Bypass.open()
@@ -125,8 +126,10 @@ defmodule Andi.Harvest.HarvesterTest do
 
       Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
 
+      {:ok, date, _} = "2020-08-10T13:31:42.000Z" |> DateTime.from_iso8601()
+
       eventually(fn ->
-        Organizations.get_harvested_dataset(@source_id_1) |> IO.inspect(label: "Should be false")
+        assert %{sourceId: @source_id_1, include: false, modifiedDate: date} = Organizations.get_harvested_dataset(@source_id_1)
       end)
 
     end
