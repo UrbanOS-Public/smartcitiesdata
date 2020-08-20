@@ -15,11 +15,6 @@ defmodule Andi.InputSchemas.Organizations do
 
   def get_all(), do: Repo.all(Organization)
 
-  def get_harvested_dataset(id) do
-    Repo.get(HarvestedDatasets, id)
-    |> HarvestedDatasets.preload()
-  end
-
   def get_harvested_dataset(sourceId) do
     Repo.get_by(HarvestedDatasets, sourceId: sourceId)
     |> HarvestedDatasets.preload()

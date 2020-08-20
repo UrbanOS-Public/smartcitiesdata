@@ -68,18 +68,6 @@ defmodule Andi.InputSchemas.OrganizationsTest do
     end
   end
 
-  describe "get_harvested_dataset/1" do
-    test "given an existing harvested dataset, it returns it" do
-      harvested_dataset_one = %{
-        "orgId" => "95254592-d611-4bcb-9478-7fa248f4118d"
-      }
-
-      {:ok, harvested_dataset} = Organizations.update_harvested_dataset(harvested_dataset_one)
-
-      assert %{orgId: "95254592-d611-4bcb-9478-7fa248f4118d"} = Organizations.get_harvested_dataset(harvested_dataset.id)
-    end
-  end
-
   describe "update_harvested_dataset/1" do
     test "Only datasets with unique sourceId are added to the system" do
       harvested_dataset_one = %{
@@ -95,7 +83,7 @@ defmodule Andi.InputSchemas.OrganizationsTest do
       assert {:ok, _} = Organizations.update_harvested_dataset(harvested_dataset_one)
       assert {:error, _} = Organizations.update_harvested_dataset(harvested_dataset_two)
 
-      assert [%{orgId: "9525d4592-d61d1-4dbcb-94f78-7fa2f48f4118d"}] = Organizations.get_all()
+      assert [%{orgId: "9525d4592-d61d1-4dbcb-94f78-7fa2f48f4118d"}] = Organizations.get_all_harvested_datasets("9525d4592-d61d1-4dbcb-94f78-7fa2f48f4118d")
     end
   end
 
