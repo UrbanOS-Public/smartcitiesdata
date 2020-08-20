@@ -13,8 +13,7 @@ defmodule DiscoveryStreams.TopicHelper do
   end
 
   def get_endpoints() do
-    Application.get_env(:kaffe, :consumer)[:endpoints]
-    |> Enum.map(fn {host, port} -> {to_charlist(host), port} end)
+    Application.get_env(:discovery_streams, :endpoints)
   end
 
   def delete_input_topic(dataset_id) do

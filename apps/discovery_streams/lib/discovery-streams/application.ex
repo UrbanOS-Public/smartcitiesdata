@@ -11,12 +11,12 @@ defmodule DiscoveryStreams.Application do
 
     children =
       [
-        DiscoveryStreams.CachexSupervisor,
         supervisor(DiscoveryStreamsWeb.Endpoint, []),
         libcluster(),
-        DiscoveryStreams.CacheGenserver,
         {Brook, Application.get_env(:discovery_streams, :brook)},
-        kaffe()
+        DiscoveryStreams.Stream.Registry,
+        DiscoveryStreams.Stream.Supervisor,
+        DiscoveryStreams.Init
       ]
       |> TelemetryEvent.config_init_server(:discovery_streams)
       |> List.flatten()
@@ -28,19 +28,6 @@ defmodule DiscoveryStreams.Application do
     case Application.get_env(:libcluster, :topologies) do
       nil -> []
       topologies -> {Cluster.Supervisor, [topologies, [name: StreamingConsumer.ClusterSupervisor]]}
-    end
-  end
-
-  defp kaffe do
-    case Application.get_env(:kaffe, :consumer)[:endpoints] do
-      nil ->
-        []
-
-      _ ->
-        [
-          Supervisor.Spec.supervisor(Kaffe.GroupMemberSupervisor, []),
-          DiscoveryStreams.TopicSubscriber
-        ]
     end
   end
 end
