@@ -26,9 +26,10 @@ defmodule AndiWeb.Router do
 
     get "/", Redirect, to: "/datasets"
     live "/datasets", DatasetLiveView, layout: {AndiWeb.LayoutView, :root}
-    get "/datasets/:id", EditController, :show
+    get "/datasets/:id", EditController, :show_dataset
 
     live "/organizations", OrganizationLiveView, layout: {AndiWeb.LayoutView, :root}
+    get "/organizations/:id", EditController, :show_organization
   end
 
   scope "/api", AndiWeb.API do
