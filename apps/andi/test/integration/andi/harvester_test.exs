@@ -18,8 +18,6 @@ defmodule Andi.Harvest.HarvesterTest do
   @scos_data_json_uuid "1719bf64-38f5-40bf-9737-45e84f5c8419"
   @dataset_id_1 UUID.uuid5(@scos_data_json_uuid, "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30")
   @dataset_id_2 UUID.uuid5(@scos_data_json_uuid, "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2")
-  @source_id_1 "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30"
-  @source_id_2 "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2"
 
   describe "data json harvesting" do
     setup do
@@ -178,7 +176,7 @@ defmodule Andi.Harvest.HarvesterTest do
 
       Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
 
-      Organizations.update_harvested_dataset_include(@source_id_1, false)
+      Organizations.update_harvested_dataset_include(@dataset_id_1, false)
 
       updated_datasets =
         data_json["dataset"]
@@ -207,10 +205,11 @@ defmodule Andi.Harvest.HarvesterTest do
 
       Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
 
-      {:ok, date, _} = "2020-08-10T13:31:42.000Z" |> DateTime.from_iso8601()
+      {:ok, date, _} = "2019-08-16T15:11:39.000Z" |> DateTime.from_iso8601()
 
       eventually(fn ->
-        assert %{sourceId: @source_id_1, include: false, modifiedDate: date} = Organizations.get_harvested_dataset(@source_id_1)
+        assert %{sourceId: @dataset_id_1, include: false, modifiedDate: date} = Organizations.get_harvested_dataset(@dataset_id_1)
+        assert %{business: %{modifiedDate: date}} = Datasets.get(@dataset_id_1)
       end)
 
     end
