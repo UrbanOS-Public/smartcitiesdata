@@ -15,8 +15,8 @@ defmodule Andi.InputSchemas.Organizations do
 
   def get_all(), do: Repo.all(Organization)
 
-  def get_harvested_dataset(sourceId) do
-    Repo.get_by(HarvestedDatasets, sourceId: sourceId)
+  def get_harvested_dataset(dataset_id) do
+    Repo.get_by(HarvestedDatasets, datasetId: dataset_id)
     |> HarvestedDatasets.preload()
   end
 
@@ -76,9 +76,9 @@ defmodule Andi.InputSchemas.Organizations do
     |> save()
   end
 
-  def update_harvested_dataset_include(source_id, val) when is_boolean(val) do
-    case get_harvested_dataset(source_id) do
-      nil -> Logger.error("Harvested dataset #{source_id} doesn't exist")
+  def update_harvested_dataset_include(dataset_id, val) when is_boolean(val) do
+    case get_harvested_dataset(dataset_id) do
+      nil -> Logger.error("Harvested dataset #{dataset_id} doesn't exist")
       dataset -> update_harvested_dataset(dataset, %{include: val})
     end
   end

@@ -69,15 +69,17 @@ defmodule Andi.InputSchemas.OrganizationsTest do
   end
 
   describe "update_harvested_dataset/1" do
-    test "Only datasets with unique sourceId are added to the system" do
+    test "Only datasets with unique dataset_ids are added to the system" do
       harvested_dataset_one = %{
         "orgId" => "9525d4592-d61d1-4dbcb-94f78-7fa2f48f4118d",
-        "sourceId" => "12345"
+        "sourceId" => "12345",
+        "datasetId" => "5dc855b6-a832-42c9-821f-7e232cd55a5f"
       }
 
       harvested_dataset_two = %{
         "orgId" => "9525d4592-d61d1-4dbcb-94f78-7fa2f48f4118d",
-        "sourceId" => "12345"
+        "sourceId" => "12345",
+        "datasetId" => "5dc855b6-a832-42c9-821f-7e232cd55a5f"
       }
 
       assert {:ok, _} = Organizations.update_harvested_dataset(harvested_dataset_one)
@@ -91,18 +93,20 @@ defmodule Andi.InputSchemas.OrganizationsTest do
     test "harvested dataset is returned when getting by sourceId" do
       harvested_dataset_one = %{
         "orgId" => "9525d4592-d61d1-4dbcb-94f78-7fa2f48f4118d",
-        "sourceId" => "12345"
+        "sourceId" => "12345",
+        "datasetId" => "423d1941-5b9b-468d-bcad-649f0056e898"
       }
 
       assert {:ok, _} = Organizations.update_harvested_dataset(harvested_dataset_one)
 
-      assert %{sourceId: "12345"} = Organizations.get_harvested_dataset("12345")
+      assert %{sourceId: "12345"} = Organizations.get_harvested_dataset("423d1941-5b9b-468d-bcad-649f0056e898")
     end
 
     test "no datasets are returned that havent been harvested" do
       harvested_dataset_one = %{
         "orgId" => "9525d4592-d61d1-4dbcb-94f78-7fa2f48f4118d",
-        "sourceId" => "12345"
+        "sourceId" => "12345",
+        "datasetId" => "423d1941-5b9b-468d-bcad-649f0056e898"
       }
 
       assert {:ok, _} = Organizations.update_harvested_dataset(harvested_dataset_one)
@@ -115,14 +119,15 @@ defmodule Andi.InputSchemas.OrganizationsTest do
     test "harvested datasets include field is updated" do
       harvested_dataset_one = %{
         "orgId" => "ddd2c387-2d78-4f1b-ac7c-18de679b5fa6",
-        "sourceId" => "12345"
+        "sourceId" => "12345",
+        "datasetId" => "423d1941-5b9b-468d-bcad-649f0056e898"
       }
 
       Organizations.update_harvested_dataset(harvested_dataset_one)
 
-      Organizations.update_harvested_dataset_include("12345", false)
+      Organizations.update_harvested_dataset_include("423d1941-5b9b-468d-bcad-649f0056e898", false)
 
-      assert %{sourceId: "12345", include: false} = Organizations.get_harvested_dataset("12345")
+      assert %{sourceId: "12345", include: false} = Organizations.get_harvested_dataset("423d1941-5b9b-468d-bcad-649f0056e898")
     end
   end
 end
