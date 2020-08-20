@@ -29,6 +29,7 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
       "systemId" => system_name(org.orgName, data_name(data_json_dataset["title"])),
       "source" => Map.get(data_json_dataset["publisher"], "source"),
       "modifiedDate" => data_json_dataset["modified"],
+      "datasetId" => generate_scos_dataset_id(data_json_dataset["identifier"]),
       "include" => true
     }
   end
@@ -56,7 +57,7 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
         "rights" => data_json_dataset["rights"],
         "spatial" => data_json_dataset["spatial"]
       },
-      "id" => UUID.uuid5(@scos_data_json_seed, data_json_dataset["identifier"]),
+      "id" => generate_scos_dataset_id(data_json_dataset["identifier"]),
       "technical" => %{
         "dataName" => data_name(data_json_dataset["title"]),
         "orgName" => org.orgName,
@@ -94,5 +95,10 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
 
   defp is_public?(dataset) do
     dataset["technical"]["private"] == false
+  end
+
+  defp generate_scos_dataset_id(identifier) do
+    identifier = to_string(identifier)
+    UUID.uuid5(@scos_data_json_seed, identifier)
   end
 end

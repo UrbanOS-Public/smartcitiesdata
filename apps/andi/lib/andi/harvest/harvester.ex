@@ -8,6 +8,7 @@ defmodule Andi.Harvest.Harvester do
   import SmartCity.Event, only: [dataset_harvest_end: 0, dataset_update: 0]
 
   alias Andi.Harvest.DataJsonDatasetMapper
+  alias Andi.InputSchemas.Organizations
 
   require Logger
 
