@@ -20,7 +20,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
         <h2 class="component-title-text">Edit Organization </h2>
       </div>
 
-      <%= f = form_for @changeset, "#", [] %>
+      <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
         <div class="organization-form-edit-section form-grid">
           <div class="organization-form__name">
             <%= label(f, :orgTitle, "Organization Name", class: "label label--required") %>
@@ -71,5 +71,15 @@ defmodule AndiWeb.EditOrganizationLiveView do
     changeset = Organization.changeset(org, %{})
 
     {:ok, assign(socket, org: org, changeset: changeset)}
+  end
+
+  def handle_event("validate", %{"form_data" => form_data}, socket) do
+    new_changeset =
+      form_data
+      |> AtomicMap.convert(safe: false, underscore: false)
+      |> Organization.changeset()
+      |> IO.inspect
+
+    {:noreply, assign(socket, changeset: new_changeset)}
   end
 end

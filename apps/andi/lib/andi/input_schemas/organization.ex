@@ -21,6 +21,7 @@ defmodule Andi.InputSchemas.Organization do
 
   @cast_fields [
     :id,
+    :description,
     :orgName,
     :orgTitle,
     :homepage,
