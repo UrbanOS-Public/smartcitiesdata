@@ -58,6 +58,7 @@ defmodule DiscoveryStreams.Stream do
         dataset_id: dataset_id,
         assigns: %{
           kafka: %{
+            begin_offset: :latest,
             offset_reset_policy: :reset_to_latest
           }
         }
