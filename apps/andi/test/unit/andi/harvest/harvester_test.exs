@@ -2,20 +2,55 @@ defmodule Andi.Harvest.HarvesterTest do
   use ExUnit.Case
   use Placebo
   alias Andi.Harvest.Harvester
+  alias Andi.InputSchemas.Organizations
+  alias Andi.Services.OrgStore
   alias SmartCity.TestDataGenerator, as: TDG
   import Andi
-  import SmartCity.Event, only: [dataset_update: 0, dataset_harvest_end: 0]
+  import SmartCity.Event, only: [dataset_update: 0, dataset_harvest_end: 0, dataset_harvest_start: 0]
 
   describe "data json harvester" do
     setup do
       data_json = get_schema_from_path("./test/integration/schemas/data_json.json")
       org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title", id: "95254592-d611-4bcb-9478-7fa248f4118d"})
-      %{data_json: data_json, org: org}
+      bypass = Bypass.open()
+      %{data_json: data_json, org: org, bypass: bypass}
     end
 
-    test "get_data_json/1", %{data_json: data_json} do
-      bypass = Bypass.open()
+    test "start_harvesting/0 when orgs with dataJsonUrls are in the system", %{data_json: data_json, bypass: bypass} do
+      org_1 =
+        TDG.create_organization(%{
+          orgTitle: "Awesome Title",
+          orgName: "awesome_title",
+          id: "95254592-d611-4bcb-9478-7fa248f4118d",
+          dataJsonUrl: "http://www.google.com"
+        })
 
+      allow(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(OrgStore.get_all(), return: [org_1], meck_options: [:passthrough])
+
+      Harvester.start_harvesting()
+
+      assert_called(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, any()), times(1))
+    end
+
+    test "start_harvesting/0 when orgs without dataJsonUrls are in the system", %{data_json: data_json, bypass: bypass} do
+      org_1 =
+        TDG.create_organization(%{
+          orgTitle: "Awesome Title",
+          orgName: "awesome_title",
+          id: "95254592-d611-4bcb-9478-7fa248f4118d",
+          dataJsonUrl: nil
+        })
+
+      allow(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(OrgStore.get_all(), return: [org_1], meck_options: [:passthrough])
+
+      Harvester.start_harvesting()
+
+      refute_called(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, any()), times(1))
+    end
+
+    test "get_data_json/1", %{data_json: data_json, bypass: bypass} do
       Bypass.stub(bypass, "GET", "/data.json", fn conn ->
         Plug.Conn.resp(conn, 200, data_json)
       end)

@@ -63,6 +63,7 @@ defmodule Andi.MixProject do
       {:plug_cowboy, "~> 2.1"},
       {:postgrex, "~> 0.15.1"},
       {:prestige, "~> 1.0"},
+      {:quantum, "~> 2.4"},
       {:simply_validate, ">= 0.2.0"},
       {:smart_city, "~> 3.19"},
       {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},

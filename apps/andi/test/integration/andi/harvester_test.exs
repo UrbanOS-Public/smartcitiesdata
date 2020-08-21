@@ -95,7 +95,10 @@ defmodule Andi.Harvest.HarvesterTest do
 
       Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
 
-      Organizations.update_harvested_dataset_include(@dataset_id_1, false)
+      eventually(fn ->
+        Organizations.update_harvested_dataset_include(@dataset_id_1, false)
+        assert %{datasetId: @dataset_id_1, include: false} = Organizations.get_harvested_dataset(@dataset_id_1)
+      end)
 
       updated_datasets =
         data_json["dataset"]
@@ -105,7 +108,6 @@ defmodule Andi.Harvest.HarvesterTest do
         data_json
         |> Map.put("dataset", updated_datasets)
         |> Jason.encode!()
-
 
       new_bypass = Bypass.open()
 
@@ -117,7 +119,6 @@ defmodule Andi.Harvest.HarvesterTest do
           dataJsonUrl: "http://localhost:#{new_bypass.port()}/data.json"
         })
 
-
       Bypass.stub(new_bypass, "GET", "/data.json", fn conn ->
         Plug.Conn.resp(conn, 200, data_json)
       end)
@@ -127,10 +128,9 @@ defmodule Andi.Harvest.HarvesterTest do
       {:ok, date, _} = "2019-08-16T15:11:39.000Z" |> DateTime.from_iso8601()
 
       eventually(fn ->
-        assert %{sourceId: @dataset_id_1, include: false, modifiedDate: date} = Organizations.get_harvested_dataset(@dataset_id_1)
+        assert %{datasetId: @dataset_id_1, include: false, modifiedDate: date} = Organizations.get_harvested_dataset(@dataset_id_1)
         assert %{business: %{modifiedDate: date}} = Datasets.get(@dataset_id_1)
       end)
-
     end
   end
 

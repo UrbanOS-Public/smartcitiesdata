@@ -5,10 +5,11 @@ defmodule Andi.Harvest.Harvester do
   use Tesla
 
   import Andi
-  import SmartCity.Event, only: [dataset_harvest_end: 0, dataset_update: 0]
+  import SmartCity.Event, only: [dataset_harvest_end: 0, dataset_harvest_start: 0, dataset_update: 0]
 
   alias Andi.Harvest.DataJsonDatasetMapper
   alias Andi.InputSchemas.Organizations
+  alias Andi.Services.OrgStore
 
   require Logger
 
@@ -26,6 +27,12 @@ defmodule Andi.Harvest.Harvester do
       error ->
         {:error, error}
     end
+  end
+
+  def start_harvesting() do
+    OrgStore.get_all()
+    |> Enum.filter(fn org -> org.dataJsonUrl != nil end)
+    |> Enum.each(fn org -> Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org) end)
   end
 
   def get_data_json(url) do
@@ -49,13 +56,19 @@ defmodule Andi.Harvest.Harvester do
 
   def dataset_update(datasets) do
     Enum.each(datasets, fn dataset ->
-      Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
+      case Organizations.get_harvested_dataset(dataset.id) do
+        %{include: false} -> Logger.info("Skipping dataset update for harvested dataset #{dataset.id}")
+        _ -> Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
+      end
     end)
   end
 
   def harvested_dataset_update(harvested_datasets) do
     Enum.each(harvested_datasets, fn harvested_dataset ->
-      Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, harvested_dataset)
+      case Organizations.get_harvested_dataset(harvested_dataset["datasetId"]) do
+        %{include: false} -> Logger.info("Skipping dataset update for harvested dataset #{harvested_dataset["datasetId"]}")
+        _ -> Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, harvested_dataset)
+      end
     end)
   end
 end
