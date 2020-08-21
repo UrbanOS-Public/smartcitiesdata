@@ -20,7 +20,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       |> socket()
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset1.technical.systemName}")
 
-    Elsa.create_topic(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id))
+    Process.sleep(10_000)
 
     Elsa.Producer.produce(
       TopicHelper.get_endpoints(),
@@ -29,7 +29,30 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       parition: 0
     )
 
-    assert_push("update", %{"foo" => "bar"}, 10_000)
+    assert_push("update", %{"foo" => "bar"}, 15_000)
+  end
+
+  test "broadcasts starting at latest offset" do
+    dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
+    Elsa.create_topic(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id))
+
+    Process.sleep(10_000)
+
+    Elsa.Producer.produce(
+      TopicHelper.get_endpoints(),
+      TopicHelper.topic_name(dataset1.id),
+      [create_message(%{dont: "readme"}, topic: dataset1.id)],
+      parition: 0
+    )
+
+    Brook.Test.send(@instance, data_ingest_start(), :author, dataset1)
+
+    {:ok, _, socket} =
+      DiscoveryStreamsWeb.UserSocket
+      |> socket()
+      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset1.technical.systemName}")
+
+    refute_push("update", %{"dont" => "readme"}, 15_000)
   end
 
   test "doesnt broadcast private datasets" do
@@ -55,7 +78,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       |> socket()
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset1.technical.systemName}")
 
-    Elsa.create_topic(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id))
+    Process.sleep(10_000)
 
     Elsa.Producer.produce(
       TopicHelper.get_endpoints(),
@@ -64,7 +87,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       parition: 0
     )
 
-    assert_push("update", %{"foo" => "bar"}, 10_000)
+    assert_push("update", %{"foo" => "bar"}, 15_000)
 
     Brook.Test.send(@instance, dataset_delete(), :author, dataset1)
 
