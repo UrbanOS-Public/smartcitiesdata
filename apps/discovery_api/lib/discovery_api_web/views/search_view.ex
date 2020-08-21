@@ -1,4 +1,4 @@
-defmodule DiscoveryApiWeb.MultipleMetadataView do
+defmodule DiscoveryApiWeb.SearchView do
   use DiscoveryApiWeb, :view
   alias DiscoveryApi.Data.Model
 
@@ -6,7 +6,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataView do
     ["json"]
   end
 
-  def render("advanced_search_dataset_summaries.json", %{
+  def render("search_view.json", %{
         models: models,
         facets: facets,
         offset: offset,

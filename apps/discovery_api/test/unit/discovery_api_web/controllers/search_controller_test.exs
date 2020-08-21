@@ -1,4 +1,4 @@
-defmodule DiscoveryApiWeb.MultipleMetadataController.SearchTest do
+defmodule DiscoveryApiWeb.SearchControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
   alias DiscoveryApi.Data.Model

@@ -1,11 +1,11 @@
 require Logger
 
-defmodule DiscoveryApiWeb.MultipleMetadataController do
+defmodule DiscoveryApiWeb.SearchController do
   use DiscoveryApiWeb, :controller
-  alias DiscoveryApiWeb.MultipleMetadataView
+  alias DiscoveryApiWeb.SearchView
   alias DiscoveryApi.Search.Elasticsearch.Search
 
-  plug(:accepts, MultipleMetadataView.accepted_formats())
+  plug(:accepts, SearchView.accepted_formats())
 
   def advanced_search(conn, params) do
     sort = Map.get(params, "sort", "name_asc")
@@ -17,7 +17,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataController do
          {:ok, models, facets, total} <- Search.search(search_opts) do
       render(
         conn,
-        :advanced_search_dataset_summaries,
+        :search_view,
         models: models,
         facets: facets,
         offset: offset,

@@ -5,8 +5,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
   import ExUnit.CaptureLog
   import SmartCity.TestHelper, only: [eventually: 3]
 
-  alias DiscoveryApi.Auth.GuardianConfigurator
-  alias DiscoveryApiWeb.Auth.TokenHandler
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users

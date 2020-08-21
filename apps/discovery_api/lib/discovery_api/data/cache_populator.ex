@@ -3,7 +3,6 @@ defmodule DiscoveryApi.Data.CachePopulator do
   Module to prepopulate the SystemNameCache with values from the Brook view state.
   """
   alias DiscoveryApi.Data.SystemNameCache
-  alias DiscoveryApi.Search.Elasticsearch
 
   use GenServer, restart: :transient
 
@@ -17,8 +16,6 @@ defmodule DiscoveryApi.Data.CachePopulator do
     Enum.each(models, fn model ->
       SystemNameCache.put(model.id, model.organizationDetails.orgName, model.name)
     end)
-
-    Elasticsearch.Document.replace_all(models)
 
     {:ok, nil, {:continue, :stop}}
   end

@@ -38,7 +38,7 @@ defmodule DiscoveryApiWeb.Router do
 
   scope "/api/v2", DiscoveryApiWeb do
     pipe_through([:reject_cookies_from_ajax, :verify_token, :add_user_details, :global_headers])
-    get("/dataset/search", MultipleMetadataController, :advanced_search)
+    get("/dataset/search", SearchController, :advanced_search)
   end
 
   scope "/api/v1", DiscoveryApiWeb do
