@@ -20,7 +20,6 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       clear_saved_models()
       allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})
       allow(ResponseCache.invalidate(), return: :ok)
-      allow(DiscoveryApi.Search.Storage.index(any()), return: :ok)
       allow(DiscoveryApi.RecommendationEngine.save(any()), return: :ok)
 
       allow(Redix.command!(any(), any()), return: ["not_in_redis"])
@@ -68,13 +67,13 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       assert SystemNameCache.get(organization.name, dataset.technical.dataName) == "123"
     end
 
-    test "indexes model for search", %{dataset: dataset, organization: organization} do
-      expected_model = DiscoveryApi.Data.Mapper.to_data_model(dataset, organization)
+    # test "indexes model for search", %{dataset: dataset, organization: organization} do
+    #   expected_model = DiscoveryApi.Data.Mapper.to_data_model(dataset, organization)
 
-      Brook.Test.send(DiscoveryApi.instance(), dataset_update(), "unit", dataset)
+    #   Brook.Test.send(DiscoveryApi.instance(), dataset_update(), "unit", dataset)
 
-      assert_called(DiscoveryApi.Search.Storage.index(expected_model))
-    end
+    #   assert_called(DiscoveryApi.Search.Storage.index(expected_model))
+    # end
 
     test "the model should be accessible via the view state", %{dataset: %{id: id, business: %{dataTitle: title}} = dataset} do
       Brook.Test.send(@instance, dataset_update(), "unit", dataset)

@@ -34,7 +34,6 @@ defmodule DiscoveryApi.Data.CachePopulatorTest do
 
       SmartCity.TestHelper.eventually(fn ->
         assert SystemNameCache.get(organization.orgName, model.name) == model.id
-        assert {"bob", model.id} in :ets.lookup(DiscoveryApi.Search.Storage, "bob")
       end)
 
       assert_called Elasticsearch.Document.replace_all([model])
