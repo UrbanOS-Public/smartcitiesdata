@@ -85,7 +85,8 @@ defmodule Andi.InputSchemas.OrganizationsTest do
       assert {:ok, _} = Organizations.update_harvested_dataset(harvested_dataset_one)
       assert {:error, _} = Organizations.update_harvested_dataset(harvested_dataset_two)
 
-      assert [%{orgId: "9525d4592-d61d1-4dbcb-94f78-7fa2f48f4118d"}] = Organizations.get_all_harvested_datasets("9525d4592-d61d1-4dbcb-94f78-7fa2f48f4118d")
+      assert [%{orgId: "9525d4592-d61d1-4dbcb-94f78-7fa2f48f4118d"}] =
+               Organizations.get_all_harvested_datasets("9525d4592-d61d1-4dbcb-94f78-7fa2f48f4118d")
     end
   end
 
