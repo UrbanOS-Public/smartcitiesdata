@@ -233,6 +233,7 @@ defmodule Pipeline.Writer.TableWriterTest do
 
     test "fails without altering state if it was going to change data", %{session: session} do
       allow Compaction.measure(any(), any()), return: {6, 10}, meck_options: [:passthrough]
+      expect(TelemetryEvent.add_event_metrics(any(), [:dataset_record_total], value: %{count: any()}), return: :ok)
 
       schema = [%{name: "abc", type: "string"}]
       dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "xyz"}})

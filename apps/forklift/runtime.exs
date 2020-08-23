@@ -143,7 +143,7 @@ config :telemetry_event,
     ],
     [
       metric_name: "dataset_record_total.count",
-      tags: [:app, :dataset_id],
-      metric_type: :gauge
+      tags: [:table_name, :old_row_count],
+      metric_type: :last_value
     ]
   ]

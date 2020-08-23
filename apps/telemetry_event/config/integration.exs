@@ -22,5 +22,10 @@ config :telemetry_event,
       metric_name: "file_conversion_duration.gauge",
       tags: [:app, :dataset_id, :file, :start],
       metric_type: :last_value
+    ],
+    [
+      metric_name: "dataset_record_total.count",
+      tags: [:table_name, :old_row_count],
+      metric_type: :last_value
     ]
   ]

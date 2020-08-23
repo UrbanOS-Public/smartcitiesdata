@@ -42,7 +42,8 @@ defmodule Pipeline.MixProject do
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:divo, "~> 1.1", only: [:dev, :integration]},
-      {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]}
+      {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
+      {:telemetry_event, in_umbrella: true}
     ]
   end
 

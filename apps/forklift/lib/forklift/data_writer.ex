@@ -144,8 +144,6 @@ defmodule Forklift.DataWriter do
   end
 
   defp write_to_table(data, %{technical: metadata}) do
-    add_dataset_record_event_gauge(data)
-
     with write_start <- Data.Timing.current_time(),
          :ok <-
            @table_writer.write(data, table: metadata.systemName, schema: metadata.schema, bucket: s3_writer_bucket()),
@@ -202,24 +200,5 @@ defmodule Forklift.DataWriter do
 
   defp s3_writer_bucket() do
     Application.get_env(:forklift, :s3_writer_bucket)
-  end
-
-  defp add_dataset_record_event_gauge(dataset) do
-    [
-      app: "forklift",
-      dataset_id: fetch_dataset_id(dataset)
-    ]
-    |> TelemetryEvent.add_event_metrics([:dataset_record_total], value: %{gauge: fetch_gauge(dataset)})
-  end
-
-  defp fetch_dataset_id(dataset) do
-    dataset
-    |> List.first()
-    |> Map.get(:dataset_id)
-  end
-
-  defp fetch_gauge(dataset) do
-    dataset
-    |> Enum.count(&Map.has_key?(&1, :payload))
   end
 end
