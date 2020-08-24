@@ -69,7 +69,7 @@ defmodule AndiWeb.DatasetLiveView do
      )}
   end
 
-  def handle_info(%{topic: @ingested_time_topic}, socket) do
+  def handle_info(%{topic: @ingested_time_topic, payload: _}, socket) do
     %{search_text: search_text, order: order} = socket.assigns
     {order_by, order_dir} = coerce_order_into_tuple(order)
 
