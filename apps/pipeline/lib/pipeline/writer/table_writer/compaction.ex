@@ -33,7 +33,6 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
 
   def complete({new, old}, table) when new == old do
     compact_table = "#{table}_compact"
-    TelemetryEventHelper.add_dataset_record_event_count(table, new)
 
     %{table: table}
     |> Statement.drop()
@@ -42,6 +41,8 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
     %{table: compact_table, alteration: "rename to #{table}"}
     |> Statement.alter()
     |> PrestigeHelper.execute_query()
+
+    TelemetryEventHelper.add_dataset_record_event_count(table, new)
 
     :ok
   end
