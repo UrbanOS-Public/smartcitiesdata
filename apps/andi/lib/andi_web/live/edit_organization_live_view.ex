@@ -1,7 +1,13 @@
 defmodule AndiWeb.EditOrganizationLiveView do
-  use Phoenix.LiveView
-  import Phoenix.HTML.Form
+  use AndiWeb, :live_view
 
+  import Andi
+  import Phoenix.HTML.Form
+  import SmartCity.Event, only: [organization_update: 0]
+  require Logger
+
+  alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Organization
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.DisplayNames
@@ -24,6 +30,8 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
       <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
       <% f = Map.put(f, :errors, @changeset.errors) %>
+        <%= hidden_input(f, :id) %>
+
         <div class="organization-form-edit-section form-grid">
           <div class="organization-form__title">
             <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
@@ -85,7 +93,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
         _ -> true
       end
 
-    {:ok, assign(socket, org: org, org_exists: org_exists, changeset: changeset)}
+    {:ok, assign(socket, org: org, org_exists: org_exists, changeset: changeset, has_validation_errors: false)}
   end
 
   def handle_event(
@@ -118,5 +126,28 @@ defmodule AndiWeb.EditOrganizationLiveView do
       |> Map.put(:action, :update)
 
     {:noreply, assign(socket, changeset: new_changeset)}
+  end
+
+  def handle_event("cancel-edit", _, socket) do
+    {:noreply, redirect(socket, to: "/organizations")}
+  end
+
+  def handle_event("save", _, socket) do
+    if socket.assigns.changeset.valid? do
+      {:ok, smrt_org} =
+        socket.assigns.changeset
+        |> Ecto.Changeset.apply_changes()
+        |> InputConverter.andi_org_to_smrt_org
+
+      case Brook.Event.send(instance_name(), organization_update(), :andi, smrt_org) do
+        :ok ->
+          {:noreply, assign(socket, org: Organizations.get(socket.assigns.org.id), org_exists: true)}
+
+        error ->
+          Logger.warn("Unable to create new SmartCity.Organization: #{inspect(error)}")
+      end
+    else
+      {:noreply, assign(socket, has_validation_errors: true)}
+    end
   end
 end
