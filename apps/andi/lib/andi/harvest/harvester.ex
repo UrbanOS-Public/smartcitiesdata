@@ -13,7 +13,13 @@ defmodule Andi.Harvest.Harvester do
 
   require Logger
 
-  def start_harvesting(org) do
+  def start_harvesting(arg) when is_list(arg) do
+    OrgStore.get_all()
+    |> Enum.filter(fn org -> org.dataJsonUrl != nil end)
+    |> Enum.each(fn org -> Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org) end)
+  end
+
+  def start_harvesting(%Organization{} = org) do
     url = org.dataJsonUrl
 
     with {:ok, data_json} <- get_data_json(url),
@@ -27,12 +33,6 @@ defmodule Andi.Harvest.Harvester do
       error ->
         {:error, error}
     end
-  end
-
-  def start_harvesting() do
-    OrgStore.get_all()
-    |> Enum.filter(fn org -> org.dataJsonUrl != nil end)
-    |> Enum.each(fn org -> Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org) end)
   end
 
   def get_data_json(url) do
