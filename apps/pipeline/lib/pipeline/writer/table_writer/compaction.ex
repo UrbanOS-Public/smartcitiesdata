@@ -69,7 +69,7 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
   end
 
   def add_dataset_record_event_count(table_name, old_row_count, new_row_count) do
-    if(!String.ends_with?(table_name, "__json")) do
+    if !String.ends_with?(table_name, "__json") do
       [
         table_name: table_name,
         old_row_count: old_row_count
