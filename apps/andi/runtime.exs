@@ -61,3 +61,12 @@ config :andi, Andi.Repo,
 
 config :telemetry_event,
   metrics_port: System.get_env("METRICS_PORT") |> String.to_integer()
+
+config :andi, Andi.Scheduler,
+  jobs: [
+    compactor: [
+      schedule: ~e["0 0 1 * *"],
+      task: {Andi.Harvest.Harvester, :start_harvesting, []},
+      timezone: "America/New_York"
+    ]
+  ]
