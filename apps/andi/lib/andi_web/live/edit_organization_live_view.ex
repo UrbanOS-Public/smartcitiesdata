@@ -150,4 +150,8 @@ defmodule AndiWeb.EditOrganizationLiveView do
       {:noreply, assign(socket, has_validation_errors: true)}
     end
   end
+
+  def handle_event("show-organizations", _, socket) do
+    {:noreply, redirect(socket, to: "/organizations")}
+  end
 end
