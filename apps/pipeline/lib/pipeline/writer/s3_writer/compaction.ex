@@ -74,7 +74,6 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
          {:ok, new_results} <- PrestigeHelper.execute_query("select count(1) from #{orc_table}_compact") do
       [[new_row_count]] = new_results.rows
       [[old_row_count]] = orig_results.rows
-      TelemetryEventHelper.add_dataset_record_event_count(orc_table, new_row_count)
       {new_row_count, old_row_count}
     end
   end
@@ -83,6 +82,7 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     orc_table = options[:orc_table]
     json_table = options[:json_table]
     compact_table = "#{orc_table}_compact"
+    TelemetryEventHelper.add_dataset_record_event_count(orc_table, new_count)
 
     ensure_table_dropped(orc_table)
 

@@ -27,13 +27,13 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
          {:ok, new_results} <- PrestigeHelper.execute_query("select count(1) from #{table}_compact") do
       [[new_row_count]] = new_results.rows
       [[old_row_count]] = orig_results.rows
-      TelemetryEventHelper.add_dataset_record_event_count(table, new_row_count)
       {new_row_count, old_row_count}
     end
   end
 
   def complete({new, old}, table) when new == old do
     compact_table = "#{table}_compact"
+    TelemetryEventHelper.add_dataset_record_event_count(table, new)
 
     %{table: table}
     |> Statement.drop()
