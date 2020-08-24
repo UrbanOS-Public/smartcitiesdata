@@ -65,7 +65,7 @@ defmodule AndiWeb.ErrorHelpers do
   defp interpret_error_message(message, :schema_sample), do: message
   defp interpret_error_message("is required", field), do: default_error_message(field)
   defp interpret_error_message(message, :format), do: "Error: " <> get_format_error_message(message)
-  defp interpret_error_message(message, field) when field in [:topLevelSelector, :cadence, :dataName, :license], do: "Error: #{message}"
+  defp interpret_error_message(message, field) when field in [:topLevelSelector, :cadence, :dataName, :license, :orgName], do: "Error: #{message}"
   defp interpret_error_message(_message, field) when field in [:sourceHeaders, :sourceQueryParams], do: "Please enter valid key(s)."
   defp interpret_error_message(_message, field), do: default_error_message(field)
 

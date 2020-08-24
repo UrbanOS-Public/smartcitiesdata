@@ -4,6 +4,8 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
   alias Andi.InputSchemas.Organization
   alias AndiWeb.ErrorHelpers
+  alias AndiWeb.Views.DisplayNames
+  alias AndiWeb.Helpers.FormTools
 
   def render(assigns) do
     ~L"""
@@ -21,33 +23,40 @@ defmodule AndiWeb.EditOrganizationLiveView do
       </div>
 
       <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
+      <% f = Map.put(f, :errors, @changeset.errors) %>
         <div class="organization-form-edit-section form-grid">
-          <div class="organization-form__name">
-            <%= label(f, :orgTitle, "Organization Name", class: "label label--required") %>
-            <%= text_input(f, :orgTitle, class: "input") %>
+          <div class="organization-form__title">
+            <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
+            <%= text_input(f, :orgTitle, class: "input", phx_blur: "validate_unique_org_name") %>
             <%= ErrorHelpers.error_tag(f, :orgTitle, bind_to_input: false) %>
           </div>
 
+          <div class="organization-form__name">
+            <%= label(f, :orgName, DisplayNames.get(:orgName), class: "label label--required") %>
+            <%= text_input(f, :orgName, [class: "input input--text", readonly: true]) %>
+            <%= ErrorHelpers.error_tag(f, :orgName, bind_to_input: false) %>
+          </div>
+
           <div class="organization-form__description">
-            <%= label(f, :description, "Description", class: "label label--required") %>
+            <%= label(f, :description, DisplayNames.get(:description), class: "label label--required") %>
             <%= textarea(f, :description, class: "input textarea") %>
             <%= ErrorHelpers.error_tag(f, :description, bind_to_input: false) %>
           </div>
 
           <div class="organization-form__homepage">
-            <%= label(f, :homepage, "Homepage", class: "label label--required") %>
+            <%= label(f, :homepage, "Homepage", class: "label") %>
             <%= text_input(f, :homepage, class: "input") %>
             <%= ErrorHelpers.error_tag(f, :homepage, bind_to_input: false) %>
           </div>
 
           <div class="organization-form__data-json-url">
-            <%= label(f, :dataJSONUrl, "Data JSON URL", class: "label") %>
+            <%= label(f, :dataJSONUrl, DisplayNames.get(:dataJSONUrl), class: "label") %>
             <%= text_input(f, :dataJSONUrl, class: "input") %>
             <%= ErrorHelpers.error_tag(f, :dataJSONUrl, bind_to_input: false) %>
           </div>
 
           <div class="organization-form__logo-url">
-            <%= label(f, :logoUrl, "Logo URL", class: "label") %>
+            <%= label(f, :logoUrl, DisplayNames.get(:logoUrl), class: "label") %>
             <%= text_input(f, :logoUrl, class: "input") %>
             <%= ErrorHelpers.error_tag(f, :logoUrl, bind_to_input: false) %>
           </div>
@@ -67,10 +76,30 @@ defmodule AndiWeb.EditOrganizationLiveView do
     """
   end
 
-  def mount(params, %{"organization" => org} = session, socket) do
-    changeset = Organization.changeset(org, %{})
+  def mount(_params, %{"organization" => org}, socket) do
+    changeset = Organization.changeset(org, %{}) |> Map.put(:errors, [])
 
-    {:ok, assign(socket, org: org, changeset: changeset)}
+    org_exists =
+      case Andi.Services.OrgStore.get(org.id) do
+        {:ok, nil} -> false
+        _ -> true
+      end
+
+    {:ok, assign(socket, org: org, org_exists: org_exists, changeset: changeset)}
+  end
+
+  def handle_event(
+    "validate",
+    %{"form_data" => form_data, "_target" => ["form_data", "orgTitle" | _]},
+    %{assigns: %{org_exists: false}} = socket
+  ) do
+    new_changeset =
+      form_data
+      |> FormTools.adjust_org_name_from_org_title()
+      |> AtomicMap.convert(safe: false, underscore: false)
+      |> Organization.changeset()
+
+    {:noreply, assign(socket, changeset: new_changeset)}
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
@@ -78,7 +107,15 @@ defmodule AndiWeb.EditOrganizationLiveView do
       form_data
       |> AtomicMap.convert(safe: false, underscore: false)
       |> Organization.changeset()
-      |> IO.inspect
+
+    {:noreply, assign(socket, changeset: new_changeset)}
+  end
+
+  def handle_event("validate_unique_org_name", _, socket) do
+    new_changeset =
+      socket.assigns.changeset
+      |> Organization.validate_unique_org_name()
+      |> Map.put(:action, :update)
 
     {:noreply, assign(socket, changeset: new_changeset)}
   end
