@@ -2,6 +2,7 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
   @moduledoc false
   alias Pipeline.Writer.TableWriter.Statement
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+  alias Pipeline.Writer.TableWriter.Helper.TelemetryEventHelper
   require Logger
 
   def setup(table) do
@@ -26,7 +27,7 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
          {:ok, new_results} <- PrestigeHelper.execute_query("select count(1) from #{table}_compact") do
       [[new_row_count]] = new_results.rows
       [[old_row_count]] = orig_results.rows
-      add_dataset_record_event_count(table, old_row_count, new_row_count)
+      TelemetryEventHelper.add_dataset_record_event_count(table, new_row_count)
       {new_row_count, old_row_count}
     end
   end
@@ -66,18 +67,5 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
          {:ok, results} <- Task.await(task) do
       results.rows
     end
-  end
-
-  def add_dataset_record_event_count(table_name, old_row_count, new_row_count) do
-    if !String.ends_with?(table_name, "__json") do
-      [
-        table_name: table_name,
-        old_row_count: old_row_count
-      ]
-      |> TelemetryEvent.add_event_metrics([:dataset_record_total], value: %{count: new_row_count})
-    end
-  rescue
-    error ->
-      Logger.error("Unable to update the metrics: #{error}")
   end
 end

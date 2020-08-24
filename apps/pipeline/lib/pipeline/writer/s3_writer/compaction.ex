@@ -1,6 +1,7 @@
 defmodule Pipeline.Writer.S3Writer.Compaction do
   @moduledoc false
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+  alias Pipeline.Writer.TableWriter.Helper.TelemetryEventHelper
   alias Pipeline.Writer.TableWriter.Statement
   require Logger
   use Retry
@@ -73,6 +74,7 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
          {:ok, new_results} <- PrestigeHelper.execute_query("select count(1) from #{orc_table}_compact") do
       [[new_row_count]] = new_results.rows
       [[old_row_count]] = orig_results.rows
+      TelemetryEventHelper.add_dataset_record_event_count(orc_table, new_row_count)
       {new_row_count, old_row_count}
     end
   end
