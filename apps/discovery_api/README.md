@@ -10,12 +10,12 @@ Discovery API serves as middleware between our data storage and our Discovery UI
 
   ## Add Organizations and Datasets by executing the following in the iex session:
   ```elixir
-  // Create Elasticearch Index
+  # Create Elasticearch Index
   DiscoveryApi.Search.Elasticsearch.DatasetIndex.create()
-  // Create an Organization
+  # Create an Organization
   organization = SmartCity.TestDataGenerator.create_organization(%{})
   Brook.Event.send(DiscoveryApi.instance(), "organization:update", :testing, organization)
-  //Create a Dataset
+  # Create a Dataset
   dataset = SmartCity.TestDataGenerator.create_dataset(%{technical: %{orgId: organization.id}})
   Brook.Event.send(DiscoveryApi.instance(), "dataset:update", :testing, dataset)
   ```
