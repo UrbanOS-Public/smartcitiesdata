@@ -6,18 +6,13 @@ defmodule Andi.Harvest.Harvester do
 
   import Andi
   import SmartCity.Event, only: [dataset_harvest_end: 0, dataset_harvest_start: 0, dataset_update: 0]
+  alias SmartCity.Organization
 
   alias Andi.Harvest.DataJsonDatasetMapper
   alias Andi.InputSchemas.Organizations
   alias Andi.Services.OrgStore
 
   require Logger
-
-  def start_harvesting(arg) when is_list(arg) do
-    OrgStore.get_all()
-    |> Enum.filter(fn org -> org.dataJsonUrl != nil end)
-    |> Enum.each(fn org -> Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org) end)
-  end
 
   def start_harvesting(%Organization{} = org) do
     url = org.dataJsonUrl
@@ -32,6 +27,18 @@ defmodule Andi.Harvest.Harvester do
     else
       error ->
         {:error, error}
+    end
+  end
+
+  def start_harvesting() do
+    case OrgStore.get_all() do
+      {:ok, orgs} ->
+        orgs
+        |> Enum.filter(fn org -> org.dataJsonUrl != nil end)
+        |> Enum.each(fn org -> Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org) end)
+
+      _ ->
+        Logger.info("No Orgs with data JSON to harvest")
     end
   end
 

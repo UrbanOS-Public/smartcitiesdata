@@ -64,9 +64,5 @@ config :telemetry_event,
 
 config :andi, Andi.Scheduler,
   jobs: [
-    compactor: [
-      schedule: ~e["0 0 1 * *"],
-      task: {Andi.Harvest.Harvester, :start_harvesting, []},
-      timezone: "America/New_York"
-    ]
+    {"0 0 1 * *", {Andi.Harvest.Harvester, :start_harvesting, []}}
   ]

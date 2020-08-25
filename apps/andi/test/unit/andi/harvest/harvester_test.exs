@@ -26,7 +26,7 @@ defmodule Andi.Harvest.HarvesterTest do
         })
 
       allow(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, any()), return: :ok, meck_options: [:passthrough])
-      allow(OrgStore.get_all(), return: [org_1], meck_options: [:passthrough])
+      allow(OrgStore.get_all(), return: {:ok, [org_1]}, meck_options: [:passthrough])
 
       Harvester.start_harvesting()
 
