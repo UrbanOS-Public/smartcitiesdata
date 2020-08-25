@@ -89,9 +89,9 @@ defmodule Pipeline.Writer.S3Writer do
     ]
 
     if Compaction.skip?(compaction_options) do
-      options[:orc_table]
+      compaction_options[:orc_table]
       |> Compaction.count()
-      |> TelemetryEventHelper.add_dataset_record_event_count(options[:orc_table])
+      |> TelemetryEventHelper.add_dataset_record_event_count(compaction_options[:orc_table])
 
       :skipped
     else
