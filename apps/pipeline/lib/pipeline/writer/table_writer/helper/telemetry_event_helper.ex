@@ -12,4 +12,6 @@ defmodule Pipeline.Writer.TableWriter.Helper.TelemetryEventHelper do
     error ->
       Logger.error("Unable to update the metrics: #{error}")
   end
+
+  def add_dataset_record_event_count(_, _), do: :ok
 end
