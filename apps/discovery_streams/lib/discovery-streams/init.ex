@@ -9,7 +9,7 @@ defmodule DiscoveryStreams.Init do
 
   def on_start(state) do
     with {:ok, view_state} <- Brook.get_all(:discovery_streams, :streaming_datasets_by_system_name) do
-      Enum.each(view_state, &DiscoveryStreams.Stream.Supervisor.start_child/1)
+      Enum.each(view_state, fn {_, dataset_id} -> DiscoveryStreams.Stream.Supervisor.start_child(dataset_id) end)
 
       Ok.ok(state)
     end

@@ -15,7 +15,7 @@ defmodule Andi.InputSchemas.Organization do
     field(:orgTitle, :string)
     field(:homepage, :string)
     field(:logoUrl, :string)
-    field(:dataJSONUrl, :string)
+    field(:dataJsonUrl, :string)
   end
 
   use Accessible
@@ -27,7 +27,7 @@ defmodule Andi.InputSchemas.Organization do
     :orgTitle,
     :homepage,
     :logoUrl,
-    :dataJSONUrl
+    :dataJsonUrl
   ]
 
   @required_fields [

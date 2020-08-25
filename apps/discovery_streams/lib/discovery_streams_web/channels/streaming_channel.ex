@@ -18,7 +18,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
       {:ok, nil} ->
         {:error, %{reason: "Channel #{channel} does not exist"}}
 
-      {:ok, system_name} ->
+      {:ok, _system_name} ->
         {:ok, assign(socket, :filter, create_filter_rules(params))}
 
       _ ->

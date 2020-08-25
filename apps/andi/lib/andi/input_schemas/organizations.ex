@@ -37,10 +37,7 @@ defmodule Andi.InputSchemas.Organizations do
         organization -> organization
       end
 
-    changes = StructTools.to_map(smrt_org)
-
-    Organization.changeset(andi_org, changes)
-    |> save()
+    update(andi_org, smrt_org)
   end
 
   def update(%Organization{} = org) do

@@ -37,6 +37,7 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
 
   def changeset_from_form_data(form_data) do
     form_data
+    |> ensure_schema_order()
     |> AtomicMap.convert(safe: false, underscore: false)
     |> changeset()
   end
@@ -44,13 +45,17 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
   def changeset_from_file(parsed_file, dataset_id) do
     generated_schema = generate_schema(parsed_file, dataset_id)
 
-    changeset_from_form_data(%{schema: generated_schema})
+    %{schema: generated_schema}
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> changeset()
   end
 
   def changeset_from_tuple_list(list, dataset_id) do
     generated_schema = generate_ordered_schema(list, dataset_id)
 
-    changeset_from_form_data(%{schema: generated_schema})
+    %{schema: generated_schema}
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> changeset()
   end
 
   def generate_ordered_schema(data, dataset_id) do
@@ -98,6 +103,17 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
       false ->
         updated_field
     end
+  end
+
+  defp ensure_schema_order(form_data) do
+    form_data
+    |> Map.update("schema", [], fn
+      schema_from_form_data ->
+        schema_from_form_data
+        |> Enum.map(fn {k, v} -> {String.to_integer(k), v} end)
+        |> Enum.sort()
+        |> Enum.map(fn {_, v} -> v end)
+    end)
   end
 
   defp ensure_field_name(%{"name" => ""} = field) do

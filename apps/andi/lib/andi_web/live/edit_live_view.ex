@@ -86,6 +86,7 @@ defmodule AndiWeb.EditLiveView do
      assign(socket,
        changeset: new_changeset,
        dataset: dataset,
+       dataset_id: dataset.id,
        has_validation_errors: false,
        new_field_initial_render: false,
        page_error: false,
@@ -129,7 +130,7 @@ defmodule AndiWeb.EditLiveView do
   def handle_info(:publish, socket) do
     socket = reset_save_success(socket)
 
-    AndiWeb.Endpoint.broadcast("form-save", "save-all", %{})
+    AndiWeb.Endpoint.broadcast("form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
     Process.sleep(1_000)
 
     andi_dataset = Datasets.get(socket.assigns.dataset.id)
@@ -156,7 +157,10 @@ defmodule AndiWeb.EditLiveView do
     end
   end
 
-  def handle_info(%{topic: "form-save", payload: %{form_changeset: form_changeset}}, socket) do
+  def handle_info(
+        %{topic: "form-save", payload: %{form_changeset: form_changeset, dataset_id: dataset_id}},
+        %{assigns: %{dataset_id: dataset_id}} = socket
+      ) do
     socket = reset_save_success(socket)
     form_changes = InputConverter.form_changes_from_changeset(form_changeset)
 
@@ -183,7 +187,7 @@ defmodule AndiWeb.EditLiveView do
      )}
   end
 
-  def handle_info(%{topic: "form-save", payload: _}, socket) do
+  def handle_info(%{topic: "form-save", payload: %{dataset_id: dataset_id}}, %{assigns: %{dataset_id: dataset_id}} = socket) do
     {:noreply, socket}
   end
 

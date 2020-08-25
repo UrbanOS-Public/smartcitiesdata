@@ -15,8 +15,12 @@ defmodule AndiWeb.FormSection do
           socket.assigns.changeset
           |> Map.put(:action, :update)
 
-        AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{})
-        AndiWeb.Endpoint.broadcast_from(self(), "form-save", "form-save", %{form_changeset: changeset})
+        AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
+
+        AndiWeb.Endpoint.broadcast_from(self(), "form-save", "form-save", %{
+          form_changeset: changeset,
+          dataset_id: socket.assigns.dataset_id
+        })
 
         new_validation_status = get_new_validation_status(changeset)
 
@@ -26,7 +30,10 @@ defmodule AndiWeb.FormSection do
       def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
         new_validation_status = get_new_validation_status(socket.assigns.changeset)
 
-        AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{expand: next_component})
+        AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{
+          expand: next_component,
+          dataset_id: socket.assigns.dataset_id
+        })
 
         {:noreply, assign(socket, visibility: "collapsed", validation_status: new_validation_status)}
       end
@@ -43,7 +50,10 @@ defmodule AndiWeb.FormSection do
         {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
       end
 
-      def handle_info(%{topic: "form-save", event: "form-save"}, socket) do
+      def handle_info(
+            %{topic: "form-save", event: "form-save", payload: %{dataset_id: dataset_id}},
+            %{assigns: %{dataset_id: dataset_id}} = socket
+          ) do
         new_validation_status =
           case socket.assigns.changeset.valid? do
             true -> "valid"
@@ -53,7 +63,10 @@ defmodule AndiWeb.FormSection do
         {:noreply, assign(socket, validation_status: new_validation_status)}
       end
 
-      def handle_info(%{topic: "form-save", event: "save-all"}, socket) do
+      def handle_info(
+            %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
+            %{assigns: %{dataset_id: dataset_id}} = socket
+          ) do
         new_validation_status =
           case socket.assigns.changeset.valid? do
             true -> "valid"
@@ -65,6 +78,14 @@ defmodule AndiWeb.FormSection do
         new_changeset = apply(unquote(schema_module), :changeset_from_andi_dataset, [andi_dataset])
 
         {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
+      end
+
+      def handle_info(%{topic: "form-save"}, socket) do
+        {:noreply, socket}
+      end
+
+      def handle_info(%{topic: "toggle-component-visibility"}, socket) do
+        {:noreply, socket}
       end
 
       def update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)

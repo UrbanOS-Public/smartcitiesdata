@@ -251,7 +251,10 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceFormat"]}, socket) do
-    AndiWeb.Endpoint.broadcast_from(self(), "source-format", "format-update", %{new_format: form_data["sourceFormat"]})
+    AndiWeb.Endpoint.broadcast_from(self(), "source-format", "format-update", %{
+      new_format: form_data["sourceFormat"],
+      dataset_id: socket.assigns.dataset_id
+    })
 
     form_data
     |> MetadataFormSchema.changeset_from_form_data()
@@ -273,11 +276,14 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
-  def handle_info(%{topic: "toggle-visibility", payload: %{expand: "metadata_form"}}, socket) do
+  def handle_info(
+        %{topic: "toggle-visibility", payload: %{expand: "metadata_form", dataset_id: dataset_id}},
+        %{assigns: %{dataset_id: dataset_id}} = socket
+      ) do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
   end
 
-  def handle_info(%{topic: "toggle-visibility", payload: _}, socket) do
+  def handle_info(%{topic: "toggle-visibility", payload: %{dataset_id: dataset_id}}, %{assigns: %{dataset_id: dataset_id}} = socket) do
     {:noreply, socket}
   end
 
