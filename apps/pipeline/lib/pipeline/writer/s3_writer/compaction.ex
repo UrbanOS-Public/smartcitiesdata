@@ -56,17 +56,9 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     json_table = options[:json_table]
 
     case PrestigeHelper.execute_query("select count(1) from #{json_table}") do
-      {:ok, %{rows: [[0]]}} ->
-        options[:orc_table]
-        |> TelemetryEventHelper.add_dataset_record_event_count(0)
-
-        true
-
-      {:error, _} ->
-        true
-
-      _ ->
-        false
+      {:ok, %{rows: [[0]]}} -> true
+      {:error, _} -> true
+      _ -> false
     end
   end
 
@@ -97,7 +89,7 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
 
     rename_and_validate(compact_table, orc_table)
 
-    TelemetryEventHelper.add_dataset_record_event_count(orc_table, new_count)
+    TelemetryEventHelper.add_dataset_record_event_count(new_count, orc_table)
 
     :ok
   end

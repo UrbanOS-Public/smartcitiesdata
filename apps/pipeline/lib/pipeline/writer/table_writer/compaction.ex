@@ -42,7 +42,7 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
     |> Statement.alter()
     |> PrestigeHelper.execute_query()
 
-    TelemetryEventHelper.add_dataset_record_event_count(table, new)
+    TelemetryEventHelper.add_dataset_record_event_count(new, table)
 
     :ok
   end
