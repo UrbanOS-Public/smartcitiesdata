@@ -77,7 +77,6 @@ defmodule Source.Handler do
     DeadLetter.new(
       app_name: to_string(context.app_name),
       dataset_id: context.dataset_id,
-      subset_id: context.subset_id,
       original_message: msg.original,
       reason: msg.error,
       stacktrace: msg.stacktrace

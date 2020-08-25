@@ -9,13 +9,13 @@ defmodule DiscoveryStreams.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Dataset{id: id, technical: %{sourceType: "stream", private: false, systemName: system_name}},
+        data: %Dataset{id: id, technical: %{sourceType: "stream", private: false, systemName: system_name}} = dataset,
         author: author
       }) do
-    data_ingest_start()
-    |> add_event_count(author, id)
+    add_event_count(data_ingest_start(), author, id)
 
     save_dataset_to_viewstate(id, system_name)
+    DiscoveryStreams.Stream.Supervisor.start_child(dataset.id)
     :ok
   end
 
@@ -24,38 +24,38 @@ defmodule DiscoveryStreams.EventHandler do
         data: %Dataset{technical: %{private: true}} = dataset,
         author: author
       }) do
-    dataset_update()
-    |> add_event_count(author, dataset.id)
+    add_event_count(dataset_update(), author, dataset.id)
 
     delete_from_viewstate(dataset.id, dataset.technical.systemName)
+    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
 
     :ok
   end
 
   def handle_event(%Brook.Event{
         type: dataset_update(),
-        data: %Dataset{id: id, technical: %{sourceType: source_type, systemName: system_name}},
+        data: %Dataset{id: id, technical: %{sourceType: source_type, systemName: system_name}} = dataset,
         author: author
       })
       when source_type != "stream" do
-    dataset_update()
-    |> add_event_count(author, id)
+    add_event_count(dataset_update(), author, id)
 
     delete_from_viewstate(id, system_name)
+    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
 
     :ok
   end
 
   def handle_event(%Brook.Event{
         type: dataset_delete(),
-        data: %Dataset{id: id, technical: %{systemName: system_name}},
+        data: %Dataset{id: id, technical: %{systemName: system_name}} = dataset,
         author: author
       }) do
-    dataset_delete()
-    |> add_event_count(author, id)
+    add_event_count(dataset_delete(), author, id)
 
-    DiscoveryStreams.TopicHelper.delete_input_topic(id)
     delete_from_viewstate(id, system_name)
+    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
+    DiscoveryStreams.TopicHelper.delete_input_topic(id)
   end
 
   def save_dataset_to_viewstate(id, system_name) do

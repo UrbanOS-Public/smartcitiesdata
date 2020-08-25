@@ -10,7 +10,7 @@ defmodule AndiWeb.OrganizationLiveView do
     ~L"""
     <div class="organizations-view">
       <div class="page-header">
-        <h2>Dataset Ingestion Interface</h2>
+        <a href="/datasets">Dataset Ingestion Interface</a>
         </div>
 
       <div class="organizations-index">

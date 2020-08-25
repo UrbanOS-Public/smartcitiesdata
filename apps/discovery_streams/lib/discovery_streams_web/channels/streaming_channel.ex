@@ -5,8 +5,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     and then begins sending new data as it arrives.
   """
   use DiscoveryStreamsWeb, :channel
-  alias DiscoveryStreams.TopicSubscriber
-  alias DiscoveryStreams.TopicHelper
 
   @update_event "update"
   @filter_event "filter"
@@ -14,26 +12,22 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   intercept([@update_event])
 
   def join(channel, params, socket) do
-    topic = determine_topic(channel)
+    system_name = determine_system_name(channel)
 
-    case topic in TopicSubscriber.list_subscribed_topics() do
-      false ->
+    case Brook.get(:discovery_streams, :streaming_datasets_by_system_name, system_name) do
+      {:ok, nil} ->
         {:error, %{reason: "Channel #{channel} does not exist"}}
 
-      true ->
-        send(self(), :after_join)
+      {:ok, _system_name} ->
         {:ok, assign(socket, :filter, create_filter_rules(params))}
-    end
-  end
 
-  def handle_info(:after_join, %{assigns: %{filter: filter}} = socket) do
-    push_cache_to_socket(socket, fn msg -> message_matches?(msg, filter) end)
-    {:noreply, socket}
+      _ ->
+        {:error, %{reason: "Channel #{channel} does not exist"}}
+    end
   end
 
   def handle_in(@filter_event, message, socket) do
     filter_rules = create_filter_rules(message)
-    push_cache_to_socket(socket, fn msg -> message_matches?(msg, filter_rules) end)
 
     {:noreply, assign(socket, :filter, filter_rules)}
   end
@@ -58,37 +52,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   end
 
   # sobelow_skip ["DOS.StringToAtom"]
-  defp push_cache_to_socket(%{topic: channel} = socket, filter) do
-    query = Cachex.Query.create(true, :value)
-
-    channel
-    |> determine_system_name()
-    |> get_dataset_id()
-    |> String.to_atom()
-    |> Cachex.stream!(query)
-    |> Stream.filter(filter)
-    |> Enum.each(fn msg -> push(socket, @update_event, msg) end)
-  end
-
   defp determine_system_name("streaming:" <> system_name), do: system_name
-
-  defp determine_topic("streaming:" <> system_name) do
-    get_dataset_id(system_name)
-    |> TopicHelper.topic_name()
-  end
-
-  defp determine_topic(channel) do
-    determine_system_name(channel)
-    |> get_dataset_id()
-    |> TopicHelper.topic_name()
-  end
-
-  defp get_dataset_id(system_name) do
-    case Brook.get(:discovery_streams, :streaming_datasets_by_system_name, system_name) do
-      {:ok, dataset_id} -> dataset_id
-      _ -> nil
-    end
-  end
 
   defp message_matches?(message, filter) do
     Enum.all?(filter, fn {field, value} -> field_matches?(message, field, value) end)

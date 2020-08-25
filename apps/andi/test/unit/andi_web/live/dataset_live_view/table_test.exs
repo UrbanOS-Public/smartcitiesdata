@@ -144,7 +144,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
     {:ok, _view, html} = live(conn, @url_path)
 
-    assert get_attributes(html, "a", "href") == ["#{@url_path}/#{dataset.id}"]
+    assert get_attributes(html, ".btn", "href") == ["#{@url_path}/#{dataset.id}"]
   end
 
   defp get_rendered_table_cells(html) do

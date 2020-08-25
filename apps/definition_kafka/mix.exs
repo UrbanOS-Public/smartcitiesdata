@@ -36,7 +36,7 @@ defmodule DefinitionKafka.MixProject do
       {:json_serde, "~> 1.0"},
       {:credo, "~> 1.0", only: [:dev]},
       {:divo, "~> 1.1", only: [:dev, :integration]},
-      {:divo_kafka, "~> 0.1.6", only: [:dev, :integration]},
+      {:divo_kafka, "~> 0.1.6", only: [:integration]},
       {:mox, "~> 0.5.1", only: [:test]},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test]},
       {:testing, in_umbrella: true, only: [:test, :integration]}
