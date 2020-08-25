@@ -67,7 +67,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   describe "create/2" do
     test "given an index name with no options, it creates it" do
       name =
-        Faker.Name.first_name()
+        Faker.Person.first_name()
         |> String.downcase()
 
       on_exit(fn ->
@@ -79,7 +79,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
     test "given an invalid index name (must be lowercase) it returns an error" do
       name =
-        Faker.Name.first_name()
+        Faker.Person.first_name()
         |> String.upcase()
 
       assert {:error, _} = Elasticsearch.DatasetIndex.create(name)
@@ -87,7 +87,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
     test "given an index name with some options (mapping) it creates it" do
       name =
-        Faker.Name.first_name()
+        Faker.Person.first_name()
         |> String.downcase()
 
       name_as_atom = String.to_atom(name)
@@ -117,7 +117,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   describe "index delete/1" do
     test "given an index that does not exist, it does not error" do
       name =
-        Faker.Name.first_name()
+        Faker.Person.first_name()
         |> String.downcase()
 
       assert {:ok, _} = Elasticsearch.DatasetIndex.delete(name)
@@ -125,7 +125,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
     test "given an index that does exist, it does delete the index" do
       name =
-        Faker.Name.first_name()
+        Faker.Person.first_name()
         |> String.downcase()
 
       assert {:ok, _} = Elasticsearch.DatasetIndex.create(name)
@@ -141,7 +141,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       reconfigure_es_url("http://localhost:#{bypass.port}")
 
       name =
-        Faker.Name.first_name()
+        Faker.Person.first_name()
         |> String.downcase()
 
       Bypass.stub(bypass, "DELETE", "/#{name}", fn conn ->
@@ -155,7 +155,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   describe "reset/1" do
     test "given an index that does not exist, it builds it" do
       name =
-        Faker.Name.first_name()
+        Faker.Person.first_name()
         |> String.downcase()
 
       name_as_atom = String.to_atom(name)
@@ -182,7 +182,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
     test "given an index that exists, it replaces it" do
       name =
-        Faker.Name.first_name()
+        Faker.Person.first_name()
         |> String.downcase()
 
       name_as_atom = String.to_atom(name)
@@ -227,7 +227,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       reconfigure_es_url("http://localhost:#{bypass.port}")
 
       name =
-        Faker.Name.first_name()
+        Faker.Person.first_name()
         |> String.downcase()
 
       Bypass.stub(bypass, "DELETE", "/#{name}", fn conn ->
@@ -242,7 +242,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       reconfigure_es_url("http://localhost:#{bypass.port}")
 
       name =
-        Faker.Name.first_name()
+        Faker.Person.first_name()
         |> String.downcase()
 
       Bypass.stub(bypass, "DELETE", "/#{name}", fn conn ->

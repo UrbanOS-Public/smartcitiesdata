@@ -49,7 +49,7 @@ defmodule DiscoveryApi.Test.Helper do
       sourceType: "remote",
       sourceUrl: Faker.Internet.url(),
       private: false,
-      contactName: Faker.Name.first_name(),
+      contactName: Faker.Person.first_name(),
       contactEmail: Faker.Internet.email(),
       license: "APL2",
       rights: "public",

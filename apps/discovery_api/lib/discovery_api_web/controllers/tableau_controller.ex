@@ -3,7 +3,7 @@ require Logger
 defmodule DiscoveryApiWeb.TableauController do
   use DiscoveryApiWeb, :controller
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
-  alias DiscoveryApiWeb.MultipleMetadataView
+  alias DiscoveryApiWeb.SearchView
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Data.TableInfoCache
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
@@ -15,7 +15,7 @@ defmodule DiscoveryApiWeb.TableauController do
     %{"limit" => "10", "offset" => "0", "apiAccessible" => "false"}
   ]
 
-  plug(:accepts, MultipleMetadataView.accepted_formats())
+  plug(:accepts, SearchView.accepted_formats())
   plug(DiscoveryApiWeb.Plugs.ResponseCache, %{for_params: @matched_params} when action in [:search])
 
   def fetch_table_info(conn, _params) do

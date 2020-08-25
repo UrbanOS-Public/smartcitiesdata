@@ -13,7 +13,6 @@ defmodule DiscoveryApi.EventHandler do
   alias DiscoveryApi.Schemas.{Organizations, Users}
   alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
   alias DiscoveryApi.Stats.StatsCalculator
-  alias DiscoveryApi.Search.Storage
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
   alias DiscoveryApi.Search.Elasticsearch
@@ -81,7 +80,6 @@ defmodule DiscoveryApi.EventHandler do
          {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
          model <- Mapper.to_data_model(dataset, organization) do
       Elasticsearch.Document.update(model)
-      DiscoveryApi.Search.Storage.index(model)
       save_dataset_to_recommendation_engine(dataset)
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
       merge(:models, model.id, model)
@@ -101,7 +99,6 @@ defmodule DiscoveryApi.EventHandler do
 
     RecommendationEngine.delete(dataset.id)
     SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName)
-    Storage.delete(dataset)
     Elasticsearch.Document.delete(dataset.id)
     StatsCalculator.delete_completeness(dataset.id)
     Model.delete(dataset.id)
