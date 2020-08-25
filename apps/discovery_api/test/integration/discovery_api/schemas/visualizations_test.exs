@@ -8,12 +8,8 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
   alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Test.AuthHelper
-  alias SmartCity.TestDataGenerator, as: TDG
-  alias DiscoveryApi.Data.Model
 
-  import SmartCity.Event, only: [dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
-  import ExUnit.CaptureLog
 
   @user "me|you"
 
@@ -253,7 +249,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
     test "given a valid query through the API, it is updated with a list of datasets used in it", %{
       created_visualization: created_visualization,
-      owner: owner
+      owner: _owner
     } do
       {table, id} = Helper.create_persisted_dataset("123A", "a_table", "a_org")
 

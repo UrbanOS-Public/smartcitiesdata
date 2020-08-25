@@ -1,4 +1,4 @@
-defmodule DiscoveryApiWeb.MultipleMetadataView do
+defmodule DiscoveryApiWeb.SearchView do
   use DiscoveryApiWeb, :view
   alias DiscoveryApi.Data.Model
 
@@ -6,32 +6,7 @@ defmodule DiscoveryApiWeb.MultipleMetadataView do
     ["json"]
   end
 
-  def render("search_dataset_summaries.json", %{
-        models: models,
-        facets: facets,
-        sort: sort_by,
-        offset: offset,
-        limit: limit
-      }) do
-    datasets =
-      models
-      |> DiscoveryApiWeb.Utilities.ModelSorter.sort_models(sort_by)
-      |> Enum.map(&translate_to_dataset/1)
-
-    paginated_datasets = paginate(datasets, offset, limit)
-
-    %{
-      "metadata" => %{
-        "totalDatasets" => Enum.count(datasets),
-        "facets" => facets,
-        "limit" => limit,
-        "offset" => offset
-      },
-      "results" => paginated_datasets
-    }
-  end
-
-  def render("advanced_search_dataset_summaries.json", %{
+  def render("search_view.json", %{
         models: models,
         facets: facets,
         offset: offset,
@@ -70,9 +45,5 @@ defmodule DiscoveryApiWeb.MultipleMetadataView do
       sourceUrl: model.sourceUrl,
       lastUpdatedDate: model.lastUpdatedDate
     }
-  end
-
-  defp paginate(models, offset, limit) do
-    Enum.slice(models, offset, limit)
   end
 end
