@@ -7,7 +7,7 @@ defmodule Andi.InputSchemas.Organization do
 
   alias Andi.InputSchemas.StructTools
 
-  @primary_key {:id, :uuid, autogenerate: false}
+  @primary_key {:id, :string, autogenerate: false}
   schema "organizations" do
     field(:description, :string)
     field(:orgName, :string)

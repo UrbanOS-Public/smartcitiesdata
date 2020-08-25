@@ -162,6 +162,85 @@
             "theme": [
                 "geospatial"
             ]
+        },
+        {
+            "@type": "dcat:Dataset",
+            "identifier": "http://opendata.columbus.gov/datasets/411516ef8ebc4f6e9aa5eec519ab6f1c_2",
+            "license": "http://opendata.columbus.gov/datasets/411516ef8ebc4f6e9aa5eec519ab6f1c_2/license.json",
+            "landingPage": "http://opendata.columbus.gov/datasets/411516ef8ebc4f6e9aa5eec519ab6f1c_2",
+            "title": "Council Zoning Variances",
+            "description": "<div style='text-align:Left;'><div><div><p><span>This map layers shows zoning code variances approved by the Columbus City Council, and may include use variances and/or variances for yard, height, or parking requirements of any district. Once effective, council variances are added to the map by legal description of property. The variances date from approximately 2005 to current. Data is created and maintained by the GIS Analyst at the Department of Building and Zoning Services.</span></p></div></div></div>",
+            "keyword": [
+                "Ohio",
+                "City",
+                "Columbus",
+                "Building and Zoning",
+                "Planning and Development"
+            ],
+            "issued": "2017-07-03T15:18:09.000Z",
+            "publisher": {
+                "source": "City of Columbus, Department of Technology"
+            },
+            "contactPoint": {
+                "@type": "vcard:Contact",
+                "fn": "ColumbusOhioGIS"
+            },
+            "accessLevel": "public",
+            "distribution": [
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "ArcGIS Hub Dataset",
+                    "format": "Web Page",
+                    "mediaType": "text/html",
+                    "accessURL": "http://opendata.columbus.gov/datasets/411516ef8ebc4f6e9aa5eec519ab6f1c_2"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "Esri Rest API",
+                    "format": "Esri REST",
+                    "mediaType": "application/json",
+                    "accessURL": "https://maps2.columbus.gov/arcgis/rest/services/Schemas/BuildingZoning/MapServer/2"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "GeoJSON",
+                    "format": "GeoJSON",
+                    "mediaType": "application/vnd.geo+json",
+                    "accessURL": "http://opendata.columbus.gov/datasets/411516ef8ebc4f6e9aa5eec519ab6f1c_2.geojson"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "CSV",
+                    "format": "CSV",
+                    "mediaType": "text/csv",
+                    "accessURL": "http://opendata.columbus.gov/datasets/411516ef8ebc4f6e9aa5eec519ab6f1c_2.csv"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "KML",
+                    "format": "KML",
+                    "mediaType": "application/vnd.google-earth.kml+xml",
+                    "accessURL": "http://opendata.columbus.gov/datasets/411516ef8ebc4f6e9aa5eec519ab6f1c_2.kml"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "Shapefile",
+                    "format": "ZIP",
+                    "mediaType": "application/zip",
+                    "accessURL": "http://opendata.columbus.gov/datasets/411516ef8ebc4f6e9aa5eec519ab6f1c_2.zip"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "title": "OGC WMS",
+                    "format": "OGC WMS",
+                    "mediaType": "application/vnd.ogc.wms_xml",
+                    "accessURL": "https://maps2.columbus.gov/arcgis/services/Schemas/BuildingZoning/MapServer/WMSServer?request=GetCapabilities&service=WMS"
+                }
+            ],
+            "spatial": "-83.1716,39.8126,-82.7823,40.1544",
+            "theme": [
+                "geospatial"
+            ]
         }
     ]
 }

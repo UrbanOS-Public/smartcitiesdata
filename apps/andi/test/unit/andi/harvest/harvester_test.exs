@@ -64,13 +64,13 @@ defmodule Andi.Harvest.HarvesterTest do
     test "map_data_json_to_dataset/2", %{data_json: data_json, org: org} do
       {:ok, data_json} = Jason.decode(data_json)
       datasets = Harvester.map_data_json_to_dataset(data_json, org)
-      assert length(datasets) == 2
+      assert length(datasets) == 3
     end
 
     test "map_data_json_to_harvested_dataset/2", %{data_json: data_json, org: org} do
       {:ok, data_json} = Jason.decode(data_json)
       harvested_datasets = Harvester.map_data_json_to_harvested_dataset(data_json, org)
-      assert length(harvested_datasets) == 2
+      assert length(harvested_datasets) == 3
     end
 
     test "dataset_update/1", %{data_json: data_json, org: org} do
@@ -93,6 +93,18 @@ defmodule Andi.Harvest.HarvesterTest do
       Harvester.harvested_dataset_update(harvested_datasets)
 
       assert_called(Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, any()), times(2))
+    end
+
+    test "datasets without a modified date should be set to todays date", %{data_json: data_json, org: org} do
+      {:ok, data_json} = Jason.decode(data_json)
+      datasets = Harvester.map_data_json_to_dataset(data_json, org)
+
+      [unmodified_dataset] = datasets |> Enum.filter(fn dataset -> dataset.id == "e13fc009-7ccd-511f-8895-a7c0c50b5b86" end)
+
+      {:ok, date, _} = unmodified_dataset.business.modifiedDate |> DateTime.from_iso8601
+      current_date = DateTime.utc_now()
+
+      assert date.day == current_date.day
     end
   end
 

@@ -28,7 +28,7 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
       "sourceId" => data_json_dataset["identifier"],
       "systemId" => system_name(org.orgName, data_name(data_json_dataset["title"])),
       "source" => Map.get(data_json_dataset["publisher"], "source"),
-      "modifiedDate" => data_json_dataset["modified"],
+      "modifiedDate" => modified_date(data_json_dataset["modified"]),
       "datasetId" => generate_scos_dataset_id(data_json_dataset["identifier"]),
       "include" => true
     }
@@ -50,7 +50,7 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
         "keywords" => data_json_dataset["keyword"],
         "language" => data_json_dataset["language"],
         "license" => data_json_dataset["license"],
-        "modifiedDate" => data_json_dataset["modified"],
+        "modifiedDate" => modified_date(data_json_dataset["modified"]),
         "orgTitle" => org.orgTitle,
         "parentDataset" => data_json_dataset["isPartOf"],
         "referenceUrls" => data_json_dataset["references"],
@@ -95,6 +95,14 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
 
   defp is_public?(dataset) do
     dataset["technical"]["private"] == false
+  end
+
+  defp modified_date(date) when is_nil(date) do
+    DateTime.utc_now() |> DateTime.to_iso8601()
+  end
+
+  defp modified_date(date) do
+    date
   end
 
   defp generate_scos_dataset_id(identifier) do
