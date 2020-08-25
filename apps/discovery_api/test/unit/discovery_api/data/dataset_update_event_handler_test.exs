@@ -67,14 +67,6 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       assert SystemNameCache.get(organization.name, dataset.technical.dataName) == "123"
     end
 
-    # test "indexes model for search", %{dataset: dataset, organization: organization} do
-    #   expected_model = DiscoveryApi.Data.Mapper.to_data_model(dataset, organization)
-
-    #   Brook.Test.send(DiscoveryApi.instance(), dataset_update(), "unit", dataset)
-
-    #   assert_called(DiscoveryApi.Search.Storage.index(expected_model))
-    # end
-
     test "the model should be accessible via the view state", %{dataset: %{id: id, business: %{dataTitle: title}} = dataset} do
       Brook.Test.send(@instance, dataset_update(), "unit", dataset)
 
