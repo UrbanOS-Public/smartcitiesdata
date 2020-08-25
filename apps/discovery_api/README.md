@@ -1,13 +1,24 @@
 # DiscoveryApi
 
-Discovery API serves as middleware between our metadata store and our Data Discovery UI.
+Discovery API serves as middleware between our data storage and our Discovery UI.
 
-### To start your Phoenix server(from the root directory):
+### To run locally:
+  * `mix deps.get`
   * `MIX_ENV=integration mix docker.start`
-  * Install dependencies with `mix deps.get`
-  * Start Phoenix endpoint with `MIX_ENV=integration iex -S mix start`
+  * `MIX_ENV=integration iex -S mix start --config config/auth0.exs`
   * `MIX_ENV=integration mix docker.stop`
-  * Optionally, run the app with Auth0 as an auth provider: `MIX_ENV=integration iex -S mix start --config config/auth0.exs`
+
+  ## Add Organizations and Datasets by executing the following in the iex session:
+  ```elixir
+  // Create Elasticearch Index
+  DiscoveryApi.Search.Elasticsearch.DatasetIndex.create()
+  // Create an Organization
+  organization = SmartCity.TestDataGenerator.create_organization(%{})
+  Brook.Event.send(DiscoveryApi.instance(), "organization:update", :testing, organization)
+  //Create a Dataset
+  dataset = SmartCity.TestDataGenerator.create_dataset(%{technical: %{orgId: organization.id}})
+  Brook.Event.send(DiscoveryApi.instance(), "dataset:update", :testing, dataset)
+  ```
 
 ### To run the tests
 
@@ -38,17 +49,4 @@ For a single dataset:
 `SmartCity.Dataset.get!(dataset_id) |> DiscoveryApi.Stats.StatsCalculator.calculate_and_save_completeness()`
 
 Datasets will be calculated and persisted to Redis with a key of `discovery-api:stats:{{dataset_id}}`
-
-
-### Creating Datasets Locally
-  * Start the app and use `iex` to run the following commands:
-```
-org = SmartCity.TestDataGenerator.create_organization([])
-datasets = Enum.map(1..3, fn _ -> SmartCity.TestDataGenerator.create_dataset(%{technical: %{orgId: org.id, sourceFormat: "CSV", private: false}}) end)
-Brook.Event.send(DiscoveryApi.instance(), "organization:update", :andi, org)
-Enum.each(datasets, &(Brook.Event.send(DiscoveryApi.instance(), "dataset:update", :andi, &1)))
-
-session = DiscoveryApi.prestige_opts() |> Prestige.new_session()
-Enum.each(datasets, fn %{technical: %{orgName: orgName, dataName: dataName}} -> Prestige.query!(session, "create table if not exists #{orgName}__#{dataName} (key varchar, value varchar)") end)
-```
 
