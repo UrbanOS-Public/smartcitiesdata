@@ -38,6 +38,12 @@ Discovery API serves as middleware between our data storage and our Discovery UI
 ### Tableau Web Data Connector
 This application hosts a Tableau Web Data Connector that uses this API for interfacing with Tableau. More information can be found in its [README](./priv/static/tableau/README.md)
 
+### To reindex the entire Elasticsearch index
+```elixir
+Brook.get_all_values!(DiscoveryApi.instance(), :models)
+|> Elasticsearch.Document.replace_all()
+```
+
 ### Calculating Completeness scores manually
 
 For all datasets:
