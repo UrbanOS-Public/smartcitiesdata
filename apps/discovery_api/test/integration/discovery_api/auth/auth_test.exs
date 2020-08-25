@@ -5,8 +5,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
   import ExUnit.CaptureLog
   import SmartCity.TestHelper, only: [eventually: 3]
 
-  alias DiscoveryApi.Auth.GuardianConfigurator
-  alias DiscoveryApiWeb.Auth.TokenHandler
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users
@@ -88,40 +86,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
       assert status_code == 401
       assert body.message == "Unauthorized"
-    end
-  end
-
-  describe "/api/v1/search with auth0 auth provider" do
-    setup %{private_model_that_belongs_to_org_1: model} do
-      AuthHelper.auth0_setup()
-      |> on_exit()
-
-      user = Helper.create_persisted_user(AuthHelper.valid_jwt_sub())
-      Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
-    end
-
-    test "filters all private datasets when no auth token provided", setup_map do
-      %{body: body} = HTTPoison.get!("http://localhost:4000/api/v1/dataset/search/")
-
-      %{results: results} = Jason.decode!(body, keys: :atoms)
-      result_ids = Enum.map(results, fn result -> result[:id] end)
-
-      assert setup_map[:public_model_that_belongs_to_org_1].id in result_ids
-      assert setup_map[:private_model_that_belongs_to_org_1].id not in result_ids
-      assert setup_map[:private_model_that_belongs_to_org_2].id not in result_ids
-    end
-
-    test "allows access to private datasets when auth token provided and is permitted", setup_map do
-      %{body: %{results: results}} =
-        get_with_authentication(
-          "http://localhost:4000/api/v1/dataset/search/",
-          AuthHelper.valid_jwt()
-        )
-
-      result_ids = Enum.map(results, fn result -> result[:id] end)
-      assert setup_map[:private_model_that_belongs_to_org_1].id in result_ids
-      assert setup_map[:public_model_that_belongs_to_org_1].id in result_ids
-      assert setup_map[:private_model_that_belongs_to_org_2].id not in result_ids
     end
   end
 

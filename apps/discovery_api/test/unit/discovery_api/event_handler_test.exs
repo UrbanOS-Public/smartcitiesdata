@@ -13,7 +13,6 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Data.{Model, SystemNameCache, TableInfoCache}
   alias DiscoveryApi.Stats.StatsCalculator
-  alias DiscoveryApi.Search.Storage
   alias DiscoveryApi.Search.Elasticsearch
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
@@ -93,7 +92,6 @@ defmodule DiscoveryApi.EventHandlerTest do
     test "should delete the dataset and return ok when dataset:delete is called", %{dataset: dataset} do
       expect(RecommendationEngine.delete(dataset.id), return: :ok)
       expect(StatsCalculator.delete_completeness(dataset.id), return: :ok)
-      expect(Storage.delete(dataset), return: :ok)
       expect(ResponseCache.invalidate(), return: {:ok, true})
       expect(TableInfoCache.invalidate(), return: {:ok, true})
       expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})

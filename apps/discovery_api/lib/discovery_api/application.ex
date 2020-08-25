@@ -17,7 +17,6 @@ defmodule DiscoveryApi.Application do
     children =
       [
         DiscoveryApi.Data.SystemNameCache,
-        DiscoveryApi.Search.Storage,
         DiscoveryApiWeb.Plugs.ResponseCache,
         redis(),
         ecto_repo(),
