@@ -131,4 +131,19 @@ defmodule Andi.InputSchemas.OrganizationsTest do
       assert %{sourceId: "12345", include: false} = Organizations.get_harvested_dataset("423d1941-5b9b-468d-bcad-649f0056e898")
     end
   end
+
+  describe "delete_harvested_dataset/1" do
+    test "given an existing dataset it deletes it from the harvested table" do
+      harvested_dataset_one = %{
+        "orgId" => "bfaa506d-ef97-4d01-8d48-a79da988bead",
+        "sourceId" => "45678",
+        "datasetId" => "3142a038-e77b-49c9-b800-bd706a7152ef"
+      }
+
+      Organizations.update_harvested_dataset(harvested_dataset_one)
+
+      assert {:ok, _} = Organizations.delete_harvested_dataset(harvested_dataset_one["datasetId"])
+      assert nil == Organizations.get_harvested_dataset(harvested_dataset_one["datasetId"])
+    end
+  end
 end
