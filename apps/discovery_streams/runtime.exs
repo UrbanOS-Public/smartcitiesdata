@@ -58,7 +58,7 @@ config :telemetry_event,
   metrics_options: [
     [
       metric_name: "records.count",
-      tags: [:app, :topic_name, :PodHostname, :type],
+      tags: [:app, :dataset_id, :PodHostname, :type],
       metric_type: :sum
     ]
   ]
