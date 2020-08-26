@@ -5,12 +5,14 @@ defmodule Andi.Harvest.Harvester do
   use Tesla
 
   import Andi
-  import SmartCity.Event, only: [dataset_harvest_end: 0, dataset_harvest_start: 0, dataset_update: 0]
+  import SmartCity.Event, only: [dataset_harvest_end: 0, dataset_harvest_start: 0, dataset_update: 0, dataset_delete: 0]
   alias SmartCity.Organization
 
   alias Andi.Harvest.DataJsonDatasetMapper
   alias Andi.InputSchemas.Organizations
   alias Andi.Services.OrgStore
+  alias Andi.InputSchemas.Datasets
+  alias Andi.Services.DatasetStore
 
   require Logger
 
@@ -21,6 +23,7 @@ defmodule Andi.Harvest.Harvester do
          {:ok, decoded_data_json} <- Jason.decode(data_json),
          datasets <- map_data_json_to_dataset(decoded_data_json, org),
          harvested_datasets <- map_data_json_to_harvested_dataset(decoded_data_json, org),
+         :ok <- remove_old_harvested_datasets(harvested_datasets, org.id),
          :ok <- harvested_dataset_update(harvested_datasets),
          :ok <- dataset_update(datasets) do
       :ok
@@ -77,5 +80,29 @@ defmodule Andi.Harvest.Harvester do
         _ -> Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, harvested_dataset)
       end
     end)
+  end
+
+  defp remove_old_harvested_datasets(new_datasets, org_id) do
+    current_datasets = Organizations.get_all_harvested_datasets(org_id)
+
+    Enum.each(current_datasets, fn existing_dataset ->
+      Enum.find(new_datasets, fn new_dataset ->
+        new_dataset["datasetId"] == existing_dataset.datasetId
+      end)
+      |> case do
+        nil -> dataset_delete_event(existing_dataset.datasetId)
+        _ -> :noop
+      end
+    end)
+  end
+
+  defp dataset_delete_event(id) do
+    case DatasetStore.get(id) do
+      {:ok, dataset} ->
+        Brook.Event.send(instance_name(), dataset_delete(), :andi, dataset)
+
+      _ ->
+        Logger.info("dataset not in system: #{id}")
+    end
   end
 end

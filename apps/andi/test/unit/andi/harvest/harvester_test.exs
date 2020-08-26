@@ -101,7 +101,7 @@ defmodule Andi.Harvest.HarvesterTest do
 
       [unmodified_dataset] = datasets |> Enum.filter(fn dataset -> dataset.id == "e13fc009-7ccd-511f-8895-a7c0c50b5b86" end)
 
-      {:ok, date, _} = unmodified_dataset.business.modifiedDate |> DateTime.from_iso8601
+      {:ok, date, _} = unmodified_dataset.business.modifiedDate |> DateTime.from_iso8601()
       current_date = DateTime.utc_now()
 
       assert date.day == current_date.day
