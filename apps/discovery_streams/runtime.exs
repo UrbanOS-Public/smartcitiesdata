@@ -11,14 +11,8 @@ if kafka_brokers do
     |> Enum.map(fn entry -> String.split(entry, ":") end)
     |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
-  config :kaffe,
-    consumer: [
-      endpoints: endpoints,
-      topics: [],
-      consumer_group: "discovery-streams",
-      message_handler: DiscoveryStreams.MessageHandler,
-      offset_reset_policy: :reset_to_latest
-    ]
+
+  config :discovery_streams, endpoints: endpoints
 
   config :discovery_streams, :brook,
     instance: :discovery_streams,
@@ -64,7 +58,7 @@ config :telemetry_event,
   metrics_options: [
     [
       metric_name: "records.count",
-      tags: [:app, :topic_name, :PodHostname, :type],
+      tags: [:app, :dataset_id, :PodHostname, :type],
       metric_type: :sum
     ]
   ]

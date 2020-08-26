@@ -8,6 +8,7 @@ defmodule Pipeline.Writer.S3Writer do
   alias Pipeline.Writer.S3Writer.{Compaction, S3SafeJson}
   alias Pipeline.Writer.TableWriter.{Statement}
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+  alias Pipeline.Writer.TableWriter.Helper.TelemetryEventHelper
   alias Pipeline.Writer.TableWriter.Statement.StatementUtils
   alias ExAws.S3
 
@@ -88,6 +89,10 @@ defmodule Pipeline.Writer.S3Writer do
     ]
 
     if Compaction.skip?(compaction_options) do
+      compaction_options[:orc_table]
+      |> Compaction.count()
+      |> TelemetryEventHelper.add_dataset_record_event_count(compaction_options[:orc_table])
+
       :skipped
     else
       Compaction.setup(compaction_options)

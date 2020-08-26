@@ -44,8 +44,7 @@ defmodule Andi.InputSchemas.Organizations do
         organization -> organization
       end
 
-    Organization.changeset(smrt_org)
-    |> save()
+    update(andi_org, smrt_org)
   end
 
   def update(%Organization{} = org) do

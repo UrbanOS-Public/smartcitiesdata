@@ -1,6 +1,7 @@
 defmodule Pipeline.Writer.S3Writer.Compaction do
   @moduledoc false
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+  alias Pipeline.Writer.TableWriter.Helper.TelemetryEventHelper
   alias Pipeline.Writer.TableWriter.Statement
   require Logger
   use Retry
@@ -87,6 +88,8 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     truncate_and_drain(json_table)
 
     rename_and_validate(compact_table, orc_table)
+
+    TelemetryEventHelper.add_dataset_record_event_count(new_count, orc_table)
 
     :ok
   end

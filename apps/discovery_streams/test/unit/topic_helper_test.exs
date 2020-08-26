@@ -2,8 +2,6 @@ defmodule DiscoveryStreams.TopicHelperTest do
   use ExUnit.Case
   use Placebo
   alias DiscoveryStreams.TopicHelper
-
-  @endpoints Application.get_env(:kaffe, :endpoints)
   @input_topic_prefix Application.get_env(:discovery_streams, :topic_prefix, "transformed-")
 
   describe "topic_name/1" do
@@ -23,7 +21,6 @@ defmodule DiscoveryStreams.TopicHelperTest do
 
   test "should delete input topic when the topic names are provided" do
     dataset_id = Faker.UUID.v4()
-    Application.put_env(:kaffe, :consumer, endpoints: @endpoints)
     allow(Elsa.delete_topic(any(), any()), return: :ok)
     TopicHelper.delete_input_topic(dataset_id)
     assert_called(Elsa.delete_topic(TopicHelper.get_endpoints(), "#{@input_topic_prefix}#{dataset_id}"))

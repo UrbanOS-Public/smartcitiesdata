@@ -56,6 +56,24 @@ defmodule AndiWeb.DataDictionaryFormSchemaTest do
 
       assert expected_schema == drop_fields_from_schema(generated_schema)
     end
+
+    test "adds field name to empty CSV column names" do
+      data = [
+        {"bob", 123},
+        {"bob1", 321},
+        {"", 324},
+        {"", 543}
+      ]
+
+      generated_schema_names =
+        data
+        |> DataDictionaryFormSchema.generate_ordered_schema("cam")
+        |> Enum.map(&Map.get(&1, "name"))
+
+      expected_schema_names = ["bob", "bob1", "field_2", "field_3"]
+
+      assert expected_schema_names == generated_schema_names
+    end
   end
 
   describe "changeset from list of tuples" do
@@ -88,6 +106,29 @@ defmodule AndiWeb.DataDictionaryFormSchemaTest do
       changeset = DataDictionaryFormSchema.changeset_from_tuple_list(data, "123")
 
       assert changeset.valid?
+    end
+  end
+
+  describe "changeset from form data" do
+    test "maintains order of schema" do
+      form_data = %{
+        "schema" => %{
+          "4" => %{"name" => "cam"},
+          "2" => %{"name" => "joe"},
+          "1" => %{"name" => "mike"},
+          "3" => %{"name" => "dude"}
+        }
+      }
+
+      schema_names_from_form_data_changeset =
+        form_data
+        |> DataDictionaryFormSchema.changeset_from_form_data()
+        |> Ecto.Changeset.get_field(:schema)
+        |> Enum.map(fn struct -> struct.name end)
+
+      expected_schema_names = ["mike", "joe", "dude", "cam"]
+
+      assert expected_schema_names == schema_names_from_form_data_changeset
     end
   end
 

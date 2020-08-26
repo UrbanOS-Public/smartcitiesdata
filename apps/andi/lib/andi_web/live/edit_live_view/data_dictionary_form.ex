@@ -73,7 +73,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
       <div class="form-section">
         <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data, multipart: true] %>
-        <%= f = Map.put(f, :errors, @changeset.errors) %>
+        <% f = Map.put(f, :errors, @changeset.errors) %>
 
           <div class="component-edit-section--<%= @visibility %>">
             <div class="data-dictionary-form-edit-section form-grid">
@@ -256,15 +256,21 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
   end
 
-  def handle_info(%{topic: "source-format", payload: %{new_format: new_format}}, socket) do
+  def handle_info(
+        %{topic: "source-format", payload: %{new_format: new_format, dataset_id: dataset_id}},
+        %{assigns: %{dataset_id: dataset_id}} = socket
+      ) do
     {:noreply, assign(socket, sourceFormat: new_format)}
   end
 
-  def handle_info(%{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form"}}, socket) do
+  def handle_info(
+        %{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form", dataset_id: dataset_id}},
+        %{assigns: %{dataset_id: dataset_id}} = socket
+      ) do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
   end
 
-  def handle_info(%{topic: "toggle-visibility", payload: _}, socket) do
+  def handle_info(%{topic: "toggle-visibility", payload: %{dataset_id: dataset_id}}, %{assigns: %{dataset_id: dataset_id}} = socket) do
     {:noreply, socket}
   end
 
