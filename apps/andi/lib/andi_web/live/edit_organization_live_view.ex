@@ -31,6 +31,9 @@ defmodule AndiWeb.EditOrganizationLiveView do
       <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
       <% f = Map.put(f, :errors, @changeset.errors) %>
         <%= hidden_input(f, :id) %>
+        <%= hidden_input(f, :orgName) %>
+        <%= hidden_input(f, :orgTitle) %>
+        <%= hidden_input(f, :description) %>
 
         <div class="organization-form-edit-section form-grid">
           <div class="organization-form__title">
@@ -58,9 +61,9 @@ defmodule AndiWeb.EditOrganizationLiveView do
           </div>
 
           <div class="organization-form__data-json-url">
-            <%= label(f, :dataJSONUrl, DisplayNames.get(:dataJSONUrl), class: "label") %>
-            <%= text_input(f, :dataJSONUrl, class: "input") %>
-            <%= ErrorHelpers.error_tag(f, :dataJSONUrl, bind_to_input: false) %>
+            <%= label(f, :dataJsonUrl, DisplayNames.get(:dataJsonUrl), class: "label") %>
+            <%= text_input(f, :dataJsonUrl, class: "input") %>
+            <%= ErrorHelpers.error_tag(f, :dataJsonUrl, bind_to_input: false) %>
           </div>
 
           <div class="organization-form__logo-url">
@@ -139,7 +142,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
         |> Ecto.Changeset.apply_changes()
         |> InputConverter.andi_org_to_smrt_org
 
-      case Brook.Event.send(instance_name(), organization_update(), :andi, smrt_org) do
+      case Brook.Event.send(instance_name(), organization_update(), __MODULE__, smrt_org) do
         :ok ->
           {:noreply, assign(socket, org: Organizations.get(socket.assigns.org.id), org_exists: true)}
 

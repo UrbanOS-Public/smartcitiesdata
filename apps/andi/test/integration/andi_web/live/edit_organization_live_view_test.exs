@@ -1,4 +1,4 @@
-defmodule AndiWeb.MetadataFormTest do
+defmodule AndiWeb.EditOrganizationLiveViewTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.ConnCase
@@ -65,7 +65,7 @@ defmodule AndiWeb.MetadataFormTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> smrt_organization.id)
 
-      form_data = %{"orgTitle" => "some new org title"}
+      form_data = %{"orgTitle" => "some new org title", "orgName" => "original_org_name"}
 
       html = render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "orgTitle"]})
 
@@ -108,22 +108,45 @@ defmodule AndiWeb.MetadataFormTest do
 
       where(title: ["", "!@#$%"])
     end
+  end
 
-    test "updating org title adds error when generated org name already exists", %{conn: conn} do
-      existing_organization = TDG.create_organization(%{orgName: "existing_org"})
-      {:ok, _} = Organizations.update(existing_organization)
+  describe "edit organization form data" do
+    data_test "required #{field} field displays proper error message", %{conn: conn} do
+      smrt_org = TDG.create_organization(%{})
 
-      new_organization = TDG.create_organization(%{orgName: "new_org"})
-      {:ok, new_andi_organization} = Organizations.update(new_organization)
+      {:ok, _} = Organizations.update(smrt_org)
 
-      assert {:ok, view, _} = live(conn, @url_path <> new_organization.id)
+      assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
 
-      form_data = %{"orgTitle" => "Existing Org"}
+      html = render_change(view, :validate, %{"form_data" => form_data})
 
-      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "orgTitle"]})
-      html = render_change(view, "validate_unique_org_name", %{})
+      assert get_text(html, "##{field}-error-msg") == expected_error_message
 
-      refute Enum.empty?(find_elements(html, "#orgName-error-msg"))
+      where([
+        [:field, :form_data, :expected_error_message],
+        [:orgTitle, %{"orgTitle" => ""}, "Please enter a valid organization title."],
+        [:description, %{"description" => ""}, "Please enter a valid description."],
+        [:orgName, %{"orgName" => ""}, "Please enter a valid organization name."]
+      ])
+    end
+
+    test "error message is cleared when form is updated", %{conn: conn} do
+      smrt_org = TDG.create_organization(%{})
+      {:ok, _} = Organizations.update(smrt_org)
+
+      assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
+
+      form_data = %{"description" => ""}
+
+      html = render_change(view, :validate, %{"form_data" => form_data})
+
+      assert get_text(html, "#description-error-msg") == "Please enter a valid description."
+
+      updated_form_data = %{"description" => "this is the description"}
+
+      html = render_change(view, :validate, %{"form_data" => updated_form_data})
+
+      assert get_text(html, "#description-error-msg") == ""
     end
   end
 end

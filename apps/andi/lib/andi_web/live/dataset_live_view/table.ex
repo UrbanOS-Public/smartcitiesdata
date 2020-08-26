@@ -23,10 +23,10 @@ defmodule AndiWeb.DatasetLiveView.Table do
         <% else %>
           <%= for dataset <- @datasets do %>
           <tr class="datasets-table__tr">
-            <td class="datasets-table__cell datasets-table__cell--break datasets-table__ingested-cell"><%= ingest_status(dataset) %></td>
+            <td class="datasets-table__cell datasets-table__cell--break datasets-table__ingested-cell" style="width: 10%;"><%= ingest_status(dataset) %></td>
             <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["data_title"] %></td>
             <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["org_title"] %></td>
-            <td class="datasets-table__cell datasets-table__cell--break"><%= Link.link("Edit", to: "/datasets/#{dataset["id"]}", class: "btn") %></td>
+            <td class="datasets-table__cell datasets-table__cell--break" style="width: 10%;"><%= Link.link("Edit", to: "/datasets/#{dataset["id"]}", class: "btn") %></td>
           </tr>
           <% end %>
         <% end %>
