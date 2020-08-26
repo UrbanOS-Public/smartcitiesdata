@@ -30,6 +30,13 @@ defmodule Andi.InputSchemas.Organizations do
     Repo.all(query)
   end
 
+  def delete_harvested_dataset(dataset_id) do
+    case get_harvested_dataset(dataset_id) do
+      %{id: id} -> Repo.delete(%HarvestedDatasets{id: id})
+      _ -> Logger.info("Unable to delete dataset: #{dataset_id} from harvested datasets")
+    end
+  end
+
   def update(%SmartCity.Organization{} = smrt_org) do
     andi_org =
       case get(smrt_org.id) do
