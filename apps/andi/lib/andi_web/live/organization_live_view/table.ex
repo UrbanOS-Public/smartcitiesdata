@@ -4,7 +4,6 @@ defmodule AndiWeb.OrganizationLiveView.Table do
   """
 
   use Phoenix.LiveComponent
-  import Phoenix.HTML
   alias Phoenix.HTML.Link
 
   def render(assigns) do

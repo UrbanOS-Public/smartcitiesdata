@@ -70,7 +70,8 @@ defmodule Andi.InputSchemas.Organizations do
 
   def is_unique?(id, org_name) do
     from(org in Andi.InputSchemas.Organization,
-      where: org.orgName == ^org_name and org.id != ^id)
+      where: org.orgName == ^org_name and org.id != ^id
+    )
     |> Repo.all()
     |> Enum.empty?()
   end

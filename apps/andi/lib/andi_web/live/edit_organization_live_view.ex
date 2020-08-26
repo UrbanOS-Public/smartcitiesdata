@@ -100,10 +100,10 @@ defmodule AndiWeb.EditOrganizationLiveView do
   end
 
   def handle_event(
-    "validate",
-    %{"form_data" => form_data, "_target" => ["form_data", "orgTitle" | _]},
-    %{assigns: %{org_exists: false}} = socket
-  ) do
+        "validate",
+        %{"form_data" => form_data, "_target" => ["form_data", "orgTitle" | _]},
+        %{assigns: %{org_exists: false}} = socket
+      ) do
     new_changeset =
       form_data
       |> FormTools.adjust_org_name_from_org_title()
@@ -140,7 +140,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
       {:ok, smrt_org} =
         socket.assigns.changeset
         |> Ecto.Changeset.apply_changes()
-        |> InputConverter.andi_org_to_smrt_org
+        |> InputConverter.andi_org_to_smrt_org()
 
       case Brook.Event.send(instance_name(), organization_update(), __MODULE__, smrt_org) do
         :ok ->

@@ -81,7 +81,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       form_data = %{"orgTitle" => title}
 
-      html =  render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "orgTitle"]})
+      html = render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "orgTitle"]})
 
       assert get_value(html, "#form_data_orgName") == org_name
 
