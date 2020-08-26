@@ -7,6 +7,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   import Phoenix.LiveViewTest
   import Andi, only: [instance_name: 0]
   import SmartCity.Event, only: [organization_update: 0]
+  import SmartCity.TestHelper, only: [eventually: 3]
 
   import FlokiHelpers,
     only: [
@@ -17,6 +18,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Organizations
+  alias Andi.Services.OrgStore
 
   @url_path "/organizations/"
 
@@ -41,21 +43,6 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       value = get_value(html, "#form_data_orgName")
 
       assert value == "cam_org"
-    end
-
-    test "validation is only triggered for new organizations", %{conn: conn} do
-      smrt_organization = TDG.create_organization(%{orgName: "original_org_name"})
-      Brook.Event.send(instance_name(), organization_update(), __MODULE__, smrt_organization)
-
-      assert {:ok, view, html} = live(conn, @url_path <> smrt_organization.id)
-
-      form_data = %{"orgTitle" => "some new org title", "orgName" => "original_org_name"}
-
-      html = render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "orgTitle"]})
-
-      value = get_value(html, "#form_data_orgName")
-
-      assert value == "original_org_name"
     end
 
     data_test "org title #{title} generates org name #{org_name}", %{conn: conn, smrt_org: smrt_org} do
