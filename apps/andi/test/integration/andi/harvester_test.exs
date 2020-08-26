@@ -81,7 +81,7 @@ defmodule Andi.Harvest.HarvesterTest do
 
       eventually(fn ->
         harvested_datasets = Organizations.get_all_harvested_datasets(org.id)
-        assert length(harvested_datasets) == 2
+        assert length(harvested_datasets) == 3
       end)
     end
 
@@ -130,6 +130,39 @@ defmodule Andi.Harvest.HarvesterTest do
       eventually(fn ->
         assert %{datasetId: @dataset_id_1, include: false, modifiedDate: date} = Organizations.get_harvested_dataset(@dataset_id_1)
         assert %{business: %{modifiedDate: date}} = Datasets.get(@dataset_id_1)
+      end)
+    end
+
+    test "datasets that previously existed but no longer do are removed from the system", %{data_json: data_json, org: org, bypass: bypass} do
+      Ecto.Adapters.SQL.Sandbox.allow(Andi.Repo, self(), Andi.Harvest.Harvester)
+
+      Bypass.stub(bypass, "GET", "/data.json", fn conn ->
+        Plug.Conn.resp(conn, 200, data_json)
+      end)
+
+      Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+
+      eventually(fn ->
+        assert 3 == length(Organizations.get_all_harvested_datasets("95254592-d611-4bcb-9478-7fa248f4118d"))
+      end)
+
+      # create a new dataset
+      harvested_dataset_one = %{
+        "orgId" => "95254592-d611-4bcb-9478-7fa248f4118d",
+        "sourceId" => "45678",
+        "datasetId" => "3142a038-e77b-49c9-b800-bd706a7152ef"
+      }
+
+      dataset_one = TDG.create_dataset(%{id: "3142a038-e77b-49c9-b800-bd706a7152ef"})
+
+      Organizations.update_harvested_dataset(harvested_dataset_one)
+
+      Brook.Event.send(:andi, dataset_update(), :andi, dataset_one)
+      Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+
+      eventually(fn ->
+        assert 3 == length(Organizations.get_all_harvested_datasets("95254592-d611-4bcb-9478-7fa248f4118d"))
+        assert nil == Organizations.get_harvested_dataset("95254592-d611-4bcb-9478-7fa248f4118d")
       end)
     end
   end

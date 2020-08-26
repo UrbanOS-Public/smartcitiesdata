@@ -99,6 +99,7 @@ defmodule Andi.EventHandler do
 
     Datasets.delete(dataset.id)
     DatasetStore.delete(dataset.id)
+    Organizations.delete_harvested_dataset(dataset.id)
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])
