@@ -50,6 +50,7 @@ defmodule Andi.InputSchemas.Organization do
     organization
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> validate_required(@required_fields, message: "is required")
+    |> validate_id()
   end
 
   def validate_unique_org_name(changeset) do
@@ -62,6 +63,15 @@ defmodule Andi.InputSchemas.Organization do
 
       _ ->
         changeset
+    end
+  end
+
+  defp validate_id(changeset) do
+    id = Ecto.Changeset.get_field(changeset, :id)
+
+    case Ecto.UUID.cast(id) do
+      :error -> add_error(changeset, :id, "must be a valid UUID")
+      _ -> changeset
     end
   end
 
