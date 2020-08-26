@@ -101,9 +101,7 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
     DateTime.utc_now() |> DateTime.to_iso8601()
   end
 
-  defp modified_date(date) do
-    date
-  end
+  defp modified_date(date), do: date
 
   defp generate_scos_dataset_id(identifier) do
     identifier = to_string(identifier)
