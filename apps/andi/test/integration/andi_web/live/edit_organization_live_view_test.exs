@@ -9,7 +9,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   import Phoenix.LiveViewTest
   import Andi, only: [instance_name: 0]
   import SmartCity.Event, only: [organization_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.TestHelper, only: [eventually: 3]
 
   import FlokiHelpers,
     only: [
@@ -147,17 +147,19 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   end
 
   describe "save and cancel buttons" do
-    test "save button sends brook event", %{conn: conn} do
+    test "save button sends brook event and presents user with save success modal", %{conn: conn} do
       smrt_org = TDG.create_organization(%{})
       {:ok, _} = Organizations.update(smrt_org)
 
       assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
 
-      render_click(view, "save", nil)
+      html = render_click(view, "save", nil)
 
       eventually(fn ->
         assert {:ok, nil} != OrgStore.get(smrt_org.id)
-      end)
+      end, 1000, 30)
+
+      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
     end
 
     test "cancel button returns user to organizations list page", %{conn: conn} do

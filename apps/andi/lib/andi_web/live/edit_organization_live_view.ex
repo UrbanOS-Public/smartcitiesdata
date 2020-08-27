@@ -85,6 +85,9 @@ defmodule AndiWeb.EditOrganizationLiveView do
       </form>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, id: "edit-org-unsaved-changes-modal", visibility: @unsaved_changes_modal_visibility) %>
+
+      <%= live_component(@socket, AndiWeb.EditLiveView.PublishSuccessModal, visibility: @publish_success_modal_visibility) %>
+
     </div>
     """
   end
@@ -105,8 +108,9 @@ defmodule AndiWeb.EditOrganizationLiveView do
        changeset: changeset,
        has_validation_errors: false,
        unsaved_changes: false,
+       unsaved_changes_link: nil,
        unsaved_changes_modal_visibility: "hidden",
-       unsaved_changes_link: nil
+       publish_success_modal_visibility: "hidden"
      )}
   end
 
@@ -168,7 +172,12 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
       case Brook.Event.send(instance_name(), organization_update(), __MODULE__, smrt_org) do
         :ok ->
-          {:noreply, assign(socket, org: Organizations.get(socket.assigns.org.id), org_exists: true)}
+          {:noreply, assign(socket,
+              org: Organizations.get(socket.assigns.org.id),
+              org_exists: true,
+              unsaved_changes: false,
+              publish_success_modal_visibility: "visible"
+            )}
 
         error ->
           Logger.warn("Unable to create new SmartCity.Organization: #{inspect(error)}")
@@ -188,5 +197,9 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
   def handle_event("show-datasets", _, socket) do
     {:noreply, redirect(socket, to: "/organizations")}
+  end
+
+  def handle_event("reload-page", _, socket) do
+    {:noreply, redirect(socket, to: "/organizations/#{socket.assigns.org.id}")}
   end
 end

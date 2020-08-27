@@ -310,7 +310,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render(view)
 
       eventually(fn ->
-        assert !Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+        refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
       end)
     end
 
