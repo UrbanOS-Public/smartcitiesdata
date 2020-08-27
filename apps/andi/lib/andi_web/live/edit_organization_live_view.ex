@@ -17,7 +17,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
     ~L"""
     <div id="edit-organization-live-view" class="organization-edit-page edit-page">
       <div class="page-header">
-        <a href="/datasets">Dataset Ingestion Interface</a>
+        <a phx-click="show-datasets">Dataset Ingestion Interface</a>
         <div class="organization-link" phx-click="show-organizations">
           <div class="organization-link__icon"></div>
           <div class="organization-link__text">ORGANIZATIONS</div>
@@ -83,6 +83,8 @@ defmodule AndiWeb.EditOrganizationLiveView do
           </div>
         </div>
       </form>
+
+      <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, id: "edit-org-unsaved-changes-modal", visibility: @unsaved_changes_modal_visibility) %>
     </div>
     """
   end
@@ -96,7 +98,16 @@ defmodule AndiWeb.EditOrganizationLiveView do
         _ -> true
       end
 
-    {:ok, assign(socket, org: org, org_exists: org_exists, changeset: changeset, has_validation_errors: false)}
+    {:ok,
+     assign(socket,
+       org: org,
+       org_exists: org_exists,
+       changeset: changeset,
+       has_validation_errors: false,
+       unsaved_changes: false,
+       unsaved_changes_modal_visibility: "hidden",
+       unsaved_changes_link: nil
+     )}
   end
 
   def handle_event(
@@ -110,7 +121,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
       |> AtomicMap.convert(safe: false, underscore: false)
       |> Organization.changeset()
 
-    {:noreply, assign(socket, changeset: new_changeset)}
+    {:noreply, assign(socket, changeset: new_changeset, unsaved_changes: true)}
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
@@ -119,7 +130,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
       |> AtomicMap.convert(safe: false, underscore: false)
       |> Organization.changeset()
 
-    {:noreply, assign(socket, changeset: new_changeset)}
+    {:noreply, assign(socket, changeset: new_changeset, unsaved_changes: true)}
   end
 
   def handle_event("validate_unique_org_name", _, socket) do
@@ -131,8 +142,21 @@ defmodule AndiWeb.EditOrganizationLiveView do
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
+  def handle_event(redirect_event, _, %{assigns: %{unsaved_changes: true}} = socket)
+      when redirect_event in ["cancel-edit", "show-organizations"] do
+    {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible", unsaved_changes_link: "/organizations")}
+  end
+
   def handle_event("cancel-edit", _, socket) do
     {:noreply, redirect(socket, to: "/organizations")}
+  end
+
+  def handle_event("force-cancel-edit", _, socket) do
+    {:noreply, redirect(socket, to: socket.assigns.unsaved_changes_link)}
+  end
+
+  def handle_event("unsaved-changes-canceled", _, socket) do
+    {:noreply, assign(socket, unsaved_changes_modal_visibility: "hidden")}
   end
 
   def handle_event("save", _, socket) do
@@ -155,6 +179,14 @@ defmodule AndiWeb.EditOrganizationLiveView do
   end
 
   def handle_event("show-organizations", _, socket) do
+    {:noreply, redirect(socket, to: "/organizations")}
+  end
+
+  def handle_event("show-datasets", _, %{assigns: %{unsaved_changes: true}} = socket) do
+    {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible", unsaved_changes_link: "/datasets")}
+  end
+
+  def handle_event("show-datasets", _, socket) do
     {:noreply, redirect(socket, to: "/organizations")}
   end
 end

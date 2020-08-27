@@ -198,6 +198,10 @@ body {
     a:visited {
         color: black;
     }
+
+    a:hover {
+        cursor: pointer;
+    }
 }
 
 .organization-link {

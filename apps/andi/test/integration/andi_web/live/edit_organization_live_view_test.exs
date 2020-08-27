@@ -146,27 +146,46 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
     end
   end
 
-  test "save button sends brook event", %{conn: conn} do
-    smrt_org = TDG.create_organization(%{})
-    {:ok, _} = Organizations.update(smrt_org)
+  describe "save and cancel buttons" do
+    test "save button sends brook event", %{conn: conn} do
+      smrt_org = TDG.create_organization(%{})
+      {:ok, _} = Organizations.update(smrt_org)
 
-    assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
+      assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
 
-    render_click(view, "save", nil)
+      render_click(view, "save", nil)
 
-    eventually(fn ->
-      assert {:ok, nil} != OrgStore.get(smrt_org.id)
-    end)
-  end
+      eventually(fn ->
+        assert {:ok, nil} != OrgStore.get(smrt_org.id)
+      end)
+    end
 
-  test "cancel button returns user to organizations list page", %{conn: conn} do
-    smrt_org = TDG.create_organization(%{})
-    {:ok, _} = Organizations.update(smrt_org)
+    test "cancel button returns user to organizations list page", %{conn: conn} do
+      smrt_org = TDG.create_organization(%{})
+      {:ok, _} = Organizations.update(smrt_org)
 
-    assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
+      assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
 
-    render_click(view, "cancel-edit", nil)
+      render_click(view, "cancel-edit", nil)
 
-    assert_redirect(view, "/organizations")
+      assert_redirect(view, "/organizations")
+    end
+
+    data_test "#{event} event shows unsaved changes modal before redirect when changes have been made", %{conn: conn} do
+      smrt_org = TDG.create_organization(%{})
+      {:ok, _} = Organizations.update(smrt_org)
+
+      assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
+      form_data = %{"description" => "updated description"}
+      render_change(view, "validate", %{"form_data" => form_data})
+
+      refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--hidden"))
+
+      html = render_click(view, event, nil)
+
+      refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--visible"))
+
+      where(event: ["cancel-edit", "show-organizations", "show-datasets"])
+    end
   end
 end
