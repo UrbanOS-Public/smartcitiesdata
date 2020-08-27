@@ -71,6 +71,32 @@ defmodule Reaper.DataExtract.ProcessorTest do
       allow Persistence.get_last_processed_index(@dataset_id), return: -1
       allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
 
+      extract_step = %{
+        stepType: "http",
+        context: %{
+          url: dataset.technical.sourceUrl,
+          assigns: %{}
+        }
+      }
+
+      # {
+      #   "stepType": "http",  // variable | http | secret
+      #   "context": {
+      #     "url": "http://mydata.com/##dateVar1##",
+      #     "verb": "get",
+      #     "protocol": "http2",
+      #     "requestFormat": "application/json",
+      #     "headers": {
+      #       "Authorization": "##AuthToken##"
+      #     },
+      #     "queryParams": [],
+      #     "assigns": {    //set by other steps
+      #       "datasetId": "dead-beef-bad-dad",
+      #       "dateVar1": "2019/20/19",
+      #       "secretVar1": "hunter2"
+      #     }
+      #   }
+      # }
       Processor.process(dataset)
 
       messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
@@ -138,6 +164,38 @@ defmodule Reaper.DataExtract.ProcessorTest do
       )
 
     Processor.process(dataset)
+  end
+
+  describe "process/2 happy path with extract steps" do
+    setup %{bypass: bypass} do
+      allow Elsa.produce(any(), any(), any(), any()), return: :ok
+      allow Persistence.remove_last_processed_index(@dataset_id), return: :ok
+
+      Bypass.expect(bypass, "GET", "/api/csv", fn conn ->
+        Plug.Conn.resp(conn, 200, @csv)
+      end)
+
+      :ok
+    end
+
+    test "parse csvs with this one simple (extract) step.  Developers HATE him!", %{dataset: dataset} do
+      allow Persistence.get_last_processed_index(@dataset_id), return: -1
+      allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
+
+      extract_step = Processor.process(dataset)
+
+      messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
+
+      expected = [
+        %{"a" => "one", "b" => "two", "c" => "three"},
+        %{"a" => "four", "b" => "five", "c" => "six"}
+      ]
+
+      assert expected == get_payloads(messages)
+
+      assert_called Persistence.record_last_processed_index(any(), any()), once()
+      assert_called Persistence.remove_last_processed_index(@dataset_id), once()
+    end
   end
 
   describe "process/2" do

@@ -58,6 +58,12 @@ defmodule Reaper.DataExtract.Processor do
     |> File.rm()
   end
 
+  defp create_producer_stage(%SmartCity.Dataset{technical: %{extractSteps: steps}} = dataset) do
+    IO.inspect("kablooey")
+
+    process_extract_step(List.first(steps))
+  end
+
   defp create_producer_stage(dataset) do
     dataset
     |> UrlBuilder.build()
@@ -65,6 +71,9 @@ defmodule Reaper.DataExtract.Processor do
     |> Decoder.decode(dataset)
     |> Stream.with_index()
     |> GenStage.from_enumerable()
+  end
+
+  defp process_extract_step(step) do
   end
 
   defp validate_destination(dataset) do

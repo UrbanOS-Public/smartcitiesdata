@@ -71,7 +71,7 @@ defmodule DiscoveryApi.Mixfile do
       {:quantum, "~>2.4"},
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.2"},
-      {:smart_city, "~> 3.18"},
+      {:smart_city, git: "https://github.com/smartcitiesdata/smart_city", ref: "af9ec5c868ab37f74905c91eb900b50f3f9b8e37", override: true},
       {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},

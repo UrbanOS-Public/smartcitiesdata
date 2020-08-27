@@ -9,11 +9,15 @@ defmodule Reaper.UrlBuilder do
   Returns a string containing the URL with all query string parameters based on the `Reaper.ReaperConfig`
   """
   @spec build(SmartCity.Dataset.t()) :: String.t()
-  def build(%SmartCity.Dataset{technical: %{sourceUrl: url, sourceQueryParams: query_params}} = _dataset)
+  def build(
+        %SmartCity.Dataset{technical: %{extractSteps: nil, sourceUrl: url, sourceQueryParams: query_params}} = _dataset
+      )
       when query_params == %{},
       do: build_url_path(url)
 
-  def build(%SmartCity.Dataset{technical: %{sourceUrl: url, sourceQueryParams: query_params}} = dataset) do
+  def build(
+        %SmartCity.Dataset{technical: %{extractSteps: nil, sourceUrl: url, sourceQueryParams: query_params}} = dataset
+      ) do
     last_success_time = extract_last_success_time(dataset.id)
 
     string_params =
@@ -24,7 +28,31 @@ defmodule Reaper.UrlBuilder do
     "#{build_url_path(url)}?#{string_params}"
   end
 
+  # TODO add @spec
+  def decode_http_extract_step(%{context: %{url: url, queryParams: query_params, assigns: assigns}} = step)
+      when query_params == %{} do
+    build_safe_url_path(url, assigns)
+  end
+
+  def decode_http_extract_step(%{context: %{url: url, queryParams: query_params, assigns: assigns}} = step) do
+    string_params =
+      query_params
+      |> safe_evaluate_parameters(assigns)
+      |> URI.encode_query()
+
+    "#{build_safe_url_path(url, assigns)}?#{string_params}"
+  end
+
+  defp build_safe_url_path(url, bindings) do
+    regex = ~r"{{(.+?)}}"
+
+    Regex.replace(regex, url, fn _match, var_name ->
+      bindings[String.to_atom(var_name)]
+    end)
+  end
+
   defp build_url_path(url) do
+    # TODO: Can we stop evaling here
     EEx.eval_string(url)
   end
 
@@ -33,6 +61,27 @@ defmodule Reaper.UrlBuilder do
       nil -> false
       time -> time
     end
+  end
+
+  defp safe_evaluate_parameters(parameters, bindings) do
+    Enum.map(
+      parameters,
+      &safe_evaluate_parameter(&1, bindings)
+    )
+  end
+
+  defp safe_evaluate_parameter({key, value}, bindings) do
+    IO.inspect(key)
+    IO.inspect(value)
+    IO.inspect(bindings)
+    regex = ~r"{{(.+?)}}"
+
+    value = Regex.replace(regex, value, fn _match, var_name ->
+      IO.inspect(var_name)
+      bindings[String.to_atom(var_name)]
+    end)
+
+    {key, value}
   end
 
   defp evaluate_parameters(parameters, bindings) do

@@ -34,7 +34,7 @@ defmodule E2E.MixProject do
       {:flair, in_umbrella: true},
       {:discovery_streams, in_umbrella: true},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
-      {:smart_city, "~> 3.0"},
+      {:smart_city, git: "https://github.com/smartcitiesdata/smart_city", ref: "af9ec5c868ab37f74905c91eb900b50f3f9b8e37", override: true},
       {:jason, "~> 1.2", override: true}
     ]
   end

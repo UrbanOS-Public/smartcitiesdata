@@ -53,7 +53,7 @@ defmodule Valkyrie.MixProject do
       {:off_broadway_kafka, "~> 1.0.1"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:retry, "~> 0.13"},
-      {:smart_city, "~> 3.0"},
+      {:smart_city, git: "https://github.com/smartcitiesdata/smart_city", ref: "af9ec5c868ab37f74905c91eb900b50f3f9b8e37", override: true},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"}
