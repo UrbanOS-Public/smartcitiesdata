@@ -27,4 +27,9 @@ defmodule TelemetryEvent.Helper.MetricsEvent do
     Keyword.fetch!(metrics_option, :metric_name)
     |> Metrics.last_value(tags: Keyword.fetch!(metrics_option, :tags))
   end
+
+  defp metrics_event(:distribution, metrics_option) do
+    Keyword.fetch!(metrics_option, :metric_name)
+    |> Metrics.distribution(tags: Keyword.fetch!(metrics_option, :tags))
+  end
 end

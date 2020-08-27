@@ -166,6 +166,7 @@ config :discovery_api, :elasticsearch,
 
 config :telemetry_event,
   metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
+  add_poller: true,
   metrics_options: [
     [
       metric_name: "downloaded_csvs.count",
