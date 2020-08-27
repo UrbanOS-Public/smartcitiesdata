@@ -4,6 +4,7 @@ defmodule Andi.InputSchemas.InputConverter do
   """
 
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.Organization
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Helpers.FormTools
 
@@ -94,6 +95,12 @@ defmodule Andi.InputSchemas.InputConverter do
     |> convert_andi_business()
     |> convert_andi_technical()
     |> SmartCity.Dataset.new()
+  end
+
+  def andi_org_to_smrt_org(%Organization{} = org) do
+    org
+    |> StructTools.to_map()
+    |> SmartCity.Organization.new()
   end
 
   def form_changes_from_changeset(form_changeset) do

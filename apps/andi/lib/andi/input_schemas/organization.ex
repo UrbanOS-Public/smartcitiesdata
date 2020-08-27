@@ -6,6 +6,7 @@ defmodule Andi.InputSchemas.Organization do
   import Ecto.Changeset
 
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.Organizations
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "organizations" do
@@ -21,6 +22,7 @@ defmodule Andi.InputSchemas.Organization do
 
   @cast_fields [
     :id,
+    :description,
     :orgName,
     :orgTitle,
     :homepage,
@@ -31,7 +33,8 @@ defmodule Andi.InputSchemas.Organization do
   @required_fields [
     :id,
     :orgName,
-    :orgTitle
+    :orgTitle,
+    :description
   ]
 
   def changeset(%SmartCity.Organization{} = changes) do
@@ -47,5 +50,40 @@ defmodule Andi.InputSchemas.Organization do
     organization
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> validate_required(@required_fields, message: "is required")
+    |> validate_id()
+  end
+
+  def validate_unique_org_name(changeset) do
+    id = Ecto.Changeset.get_field(changeset, :id)
+    org_name = Ecto.Changeset.get_field(changeset, :orgName)
+
+    case Organizations.is_unique?(id, org_name) do
+      false ->
+        add_org_name_error(changeset)
+
+      _ ->
+        changeset
+    end
+  end
+
+  defp validate_id(changeset) do
+    id = Ecto.Changeset.get_field(changeset, :id)
+
+    case Ecto.UUID.cast(id) do
+      :error -> add_error(changeset, :id, "must be a valid UUID")
+      _ -> changeset
+    end
+  end
+
+  defp add_org_name_error(changeset) do
+    changeset
+    |> clear_org_name_errors()
+    |> add_error(:orgName, "organization name already exists")
+  end
+
+  defp clear_org_name_errors(changeset) do
+    cleared_errors = Keyword.drop(changeset.errors, [:orgName])
+
+    Map.put(changeset, :errors, cleared_errors)
   end
 end
