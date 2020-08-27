@@ -4,23 +4,24 @@ defmodule AndiWeb.OrganizationLiveView.Table do
   """
 
   use Phoenix.LiveComponent
+  alias Phoenix.HTML.Link
 
   def render(assigns) do
     ~L"""
-    <div id="<%= @id %>" class="datasets-index__table">
-      <table class="datasets-table">
+    <div id="<%= @id %>" class="organizations-index__table">
+      <table class="organizations-table">
       <thead>
-        <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "org_title", "unsorted") %>" phx-click="order-by" phx-value-field="org_title">Organization</th>
-        <th class="datasets-table__th datasets-table__cell">Actions</th>
+        <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--<%= Map.get(@order, "org_title", "unsorted") %>" phx-click="order-by" phx-value-field="org_title">Organization</th>
+        <th class="organizations-table__th organizations-table__cell">Actions</th>
         </thead>
 
         <%= if @organizations == [] do %>
-          <tr><td class="datasets-table__cell" colspan="100%">No Organizations Found!</td></tr>
+          <tr><td class="organizations-table__cell" colspan="100%">No Organizations Found!</td></tr>
         <% else %>
           <%= for org <- @organizations do %>
-          <tr class="datasets-table__tr">
-            <td class="datasets-table__cell datasets-table__cell--break"><%= org["org_title"] %></td>
-            <td class="datasets-table__cell datasets-table__cell--break"></td>
+          <tr class="organizations-table__tr">
+            <td class="organizations-table__cell organizations-table__cell--break" style="width: 80%;"><%= org["org_title"] %></td>
+            <td class="organizations-table__cell organizations-table__cell--break"><%= Link.link("Edit", to: "/organizations/#{org["id"]}", class: "btn") %></td>
           </tr>
           <% end %>
         <% end %>

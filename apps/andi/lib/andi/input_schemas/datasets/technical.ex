@@ -17,19 +17,26 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "technical" do
+    field(:allow_duplicates, :boolean)
+    field(:authBody, :map)
+    field(:authBodyEncodeMethod, :string)
+    field(:authHeaders, :map)
+    field(:authUrl, :string)
+    field(:cadence, :string)
+    field(:credentials, :boolean)
     field(:dataName, :string)
+    field(:orgId, :string)
     field(:orgName, :string)
     field(:private, :boolean)
-    has_many(:schema, DataDictionary, on_replace: :delete)
+    field(:protocol, {:array, :string})
     field(:sourceFormat, :string)
+    field(:sourceType, :string)
+    field(:sourceUrl, :string)
+    field(:systemName, :string)
+    field(:topLevelSelector, :string)
+    has_many(:schema, DataDictionary, on_replace: :delete)
     has_many(:sourceHeaders, Header, on_replace: :delete)
     has_many(:sourceQueryParams, QueryParam, on_replace: :delete)
-    field(:sourceType, :string)
-    field(:systemName, :string)
-    field(:sourceUrl, :string)
-    field(:topLevelSelector, :string)
-    field(:cadence, :string)
-    field(:orgId, :string)
 
     belongs_to(:dataset, Dataset, type: :string, foreign_key: :dataset_id)
   end
@@ -37,17 +44,24 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   use Accessible
 
   @cast_fields [
-    :id,
+    :allow_duplicates,
+    :authBody,
+    :authBodyEncodeMethod,
+    :authHeaders,
+    :authUrl,
+    :cadence,
+    :credentials,
     :dataName,
+    :id,
+    :orgId,
     :orgName,
     :private,
+    :protocol,
     :sourceFormat,
     :sourceType,
     :sourceUrl,
-    :topLevelSelector,
     :systemName,
-    :orgId,
-    :cadence
+    :topLevelSelector
   ]
   @required_fields [
     :dataName,

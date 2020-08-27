@@ -48,6 +48,13 @@ defmodule AndiWeb.Helpers.FormTools do
     |> put_in(["systemName"], system_name)
   end
 
+  def adjust_org_name_from_org_title(form_data) do
+    org_title = form_data |> Map.get("orgTitle")
+    org_name = Datasets.data_title_to_data_name(org_title)
+
+    put_in(form_data, ["orgName"], org_name)
+  end
+
   def adjust_org_name(form_data) do
     org_id = form_data["orgId"]
     data_name = form_data["dataName"]

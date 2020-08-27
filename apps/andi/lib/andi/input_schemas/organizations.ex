@@ -88,4 +88,12 @@ defmodule Andi.InputSchemas.Organizations do
       dataset -> update_harvested_dataset(dataset, %{include: val})
     end
   end
+
+  def is_unique?(id, org_name) do
+    from(org in Andi.InputSchemas.Organization,
+      where: org.orgName == ^org_name and org.id != ^id
+    )
+    |> Repo.all()
+    |> Enum.empty?()
+  end
 end
