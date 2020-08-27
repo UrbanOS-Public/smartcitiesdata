@@ -162,6 +162,21 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
     end
 
+    test "save button shows snackbar when user saves invalid changes", %{conn: conn} do
+      smrt_org = TDG.create_organization(%{})
+      {:ok, _} = Organizations.update(smrt_org)
+
+      assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
+
+      invalid_form_data = %{"description" => ""}
+      html = render_click(view, "validate", %{"form_data" => invalid_form_data})
+      refute Enum.empty?(find_elements(html, "#description-error-msg"))
+
+      html = render_click(view, "save", nil)
+
+      refute Enum.empty?(find_elements(html, "#snackbar"))
+    end
+
     test "cancel button returns user to organizations list page", %{conn: conn} do
       smrt_org = TDG.create_organization(%{})
       {:ok, _} = Organizations.update(smrt_org)

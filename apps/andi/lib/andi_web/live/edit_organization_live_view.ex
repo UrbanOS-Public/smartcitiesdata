@@ -88,6 +88,13 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
       <%= live_component(@socket, AndiWeb.EditLiveView.PublishSuccessModal, visibility: @publish_success_modal_visibility) %>
 
+      <div phx-hook="showSnackbar">
+        <%= if @has_validation_errors do %>
+          <div id="snackbar" class="error-message">There were errors with the dataset you tried to submit</div>
+        <% end %>
+
+      </div>
+
     </div>
     """
   end
@@ -125,7 +132,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
       |> AtomicMap.convert(safe: false, underscore: false)
       |> Organization.changeset()
 
-    {:noreply, assign(socket, changeset: new_changeset, unsaved_changes: true)}
+    {:noreply, assign(socket, changeset: new_changeset, unsaved_changes: true, has_validation_errors: false)}
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
@@ -134,7 +141,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
       |> AtomicMap.convert(safe: false, underscore: false)
       |> Organization.changeset()
 
-    {:noreply, assign(socket, changeset: new_changeset, unsaved_changes: true)}
+    {:noreply, assign(socket, changeset: new_changeset, unsaved_changes: true, has_validation_errors: false)}
   end
 
   def handle_event("validate_unique_org_name", _, socket) do
