@@ -16,6 +16,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     has_one(:technical, Technical, on_replace: :update)
     has_one(:business, Business, on_replace: :update)
     field(:ingestedTime, :utc_datetime, default: nil)
+    field(:version, :string)
     has_many(:data_dictionaries, DataDictionary)
   end
 
