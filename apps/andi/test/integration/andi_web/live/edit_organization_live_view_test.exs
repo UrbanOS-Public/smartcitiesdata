@@ -3,11 +3,13 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   use Andi.DataCase
   use AndiWeb.ConnCase
 
+  @moduletag shared_data_connection: true
+
   import Checkov
   import Phoenix.LiveViewTest
   import Andi, only: [instance_name: 0]
   import SmartCity.Event, only: [organization_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 3]
+  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   import FlokiHelpers,
     only: [
@@ -43,6 +45,29 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       value = get_value(html, "#form_data_orgName")
 
       assert value == "cam_org"
+    end
+
+    test "validation is only triggered for new organizations", %{conn: conn} do
+      smrt_organization = TDG.create_organization(%{orgName: "original_org_name"})
+      Brook.Event.send(instance_name(), organization_update(), __MODULE__, smrt_organization)
+
+      eventually(
+        fn ->
+          assert {:ok, nil} != OrgStore.get(smrt_organization.id)
+        end,
+        1_000,
+        30
+      )
+
+      assert {:ok, view, html} = live(conn, @url_path <> smrt_organization.id)
+
+      form_data = %{"orgTitle" => "some new org title", "orgName" => "original_org_name"}
+
+      html = render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "orgTitle"]})
+
+      value = get_value(html, "#form_data_orgName")
+
+      assert value == "original_org_name"
     end
 
     data_test "org title #{title} generates org name #{org_name}", %{conn: conn, smrt_org: smrt_org} do
@@ -119,5 +144,29 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       assert get_text(html, "#description-error-msg") == ""
     end
+  end
+
+  test "save button sends brook event", %{conn: conn} do
+    smrt_org = TDG.create_organization(%{})
+    {:ok, _} = Organizations.update(smrt_org)
+
+    assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
+
+    render_click(view, "save", nil)
+
+    eventually(fn ->
+      assert {:ok, nil} != OrgStore.get(smrt_org.id)
+    end)
+  end
+
+  test "cancel button returns user to organizations list page", %{conn: conn} do
+    smrt_org = TDG.create_organization(%{})
+    {:ok, _} = Organizations.update(smrt_org)
+
+    assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
+
+    render_click(view, "cancel-edit", nil)
+
+    assert_redirect(view, "/organizations")
   end
 end
