@@ -35,9 +35,7 @@ defmodule AndiWeb.EditLiveView do
         <%= hidden_input(business, :parentDataset) %>
         <%= hidden_input(business, :referenceUrls) %>
         <%= hidden_input(technical, :allow_duplicates) %>
-        <%= hidden_input(technical, :authBody) %>
         <%= hidden_input(technical, :authBodyEncodeMethod) %>
-        <%= hidden_input(technical, :authHeaders) %>
         <%= hidden_input(technical, :authUrl) %>
         <%= hidden_input(technical, :credentials) %>
         <%= hidden_input(technical, :dataName) %>
