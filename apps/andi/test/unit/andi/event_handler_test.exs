@@ -9,6 +9,7 @@ defmodule EventHandlerTest do
   import SmartCity.TestHelper, only: [eventually: 1]
   alias Andi.InputSchemas.Datasets
   alias Andi.Harvest.Harvester
+  alias Andi.InputSchemas.Organizations
 
   use Placebo
 
@@ -25,6 +26,7 @@ defmodule EventHandlerTest do
     dataset = TDG.create_dataset(%{id: Faker.UUID.v4()})
     allow(Brook.ViewState.delete(any(), any()), return: :ok)
     allow(Datasets.delete(any()), return: {:ok, "good"})
+    allow(Organizations.delete_harvested_dataset(any()), return: any())
     expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
     Brook.Event.new(type: dataset_delete(), data: dataset, author: :author)
