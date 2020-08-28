@@ -4,8 +4,9 @@ defmodule TelemetryEvent do
   alias TelemetryEvent.Helper.AddInitServer
 
   def config_init_server(child, app_name) do
-    AddInitServer.add_metrics_prometheus(child, app_name)
-    AddInitServer.add_poller(child)
+    child
+    |> AddInitServer.add_metrics_prometheus(app_name)
+    |> AddInitServer.add_poller()
   end
 
   def add_event_metrics(event_tags_and_values, event_name, measurement \\ []) do
