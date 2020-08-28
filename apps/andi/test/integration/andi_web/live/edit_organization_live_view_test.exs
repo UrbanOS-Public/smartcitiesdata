@@ -20,6 +20,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Organizations
+  alias Andi.InputSchemas.Datasets
   alias Andi.Services.OrgStore
 
   @url_path "/organizations/"
@@ -207,6 +208,25 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   end
 
   describe "harvested datasets table" do
+    setup do
+      {:ok, dataset1} = TDG.create_dataset(%{}) |> Datasets.update()
+      {:ok, dataset2} = TDG.create_dataset(%{}) |> Datasets.update()
+      {:ok, dataset3} = TDG.create_dataset(%{}) |> Datasets.update()
+      {:ok, org} = TDG.create_organization(%{}) |> Organizations.update()
 
+      %{datasetId: dataset1.id, orgId: org.id} |> Organizations.update_harvested_dataset()
+      %{datasetId: dataset2.id, orgId: org.id} |> Organizations.update_harvested_dataset()
+      %{datasetId: dataset3.id, orgId: UUID.uuid4()} |> Organizations.update_harvested_dataset()
+
+      [org: org, dataset1: dataset1, dataset2: dataset2, dataset3: dataset3]
+    end
+
+    test "shows all harvested datasets associated with a given organization", %{conn: conn, org: org, dataset1: dataset1, dataset2: dataset2, dataset3: dataset3} do
+      assert {:ok, view, html} = live(conn, @url_path <> org.id)
+
+      assert get_text(html, ".organizations-index__table") =~ dataset1.business.dataTitle
+      assert get_text(html, ".organizations-index__table") =~ dataset2.business.dataTitle
+      refute get_text(html, ".organizations-index__table") =~ dataset3.business.dataTitle
+    end
   end
 end
