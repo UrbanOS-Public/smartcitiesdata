@@ -12,6 +12,8 @@ defmodule Andi.InputSchemas.Datasets do
 
   require Logger
 
+  def get(nil), do: nil
+
   def get(id) do
     Repo.get(Dataset, id)
     |> Dataset.preload()

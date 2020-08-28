@@ -114,7 +114,10 @@ defmodule AndiWeb.EditOrganizationLiveView do
         _ -> true
       end
 
-    harvested_datasets = Organizations.get_all_harvested_datasets(org.id)
+    harvested_datasets =
+      org.id
+      |> Organizations.get_all_harvested_datasets()
+      |> sort_harvested_datasets()
 
     {:ok,
      assign(socket,
@@ -126,7 +129,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
        unsaved_changes_link: nil,
        unsaved_changes_modal_visibility: "hidden",
        publish_success_modal_visibility: "hidden",
-       order: %{"data_title" => "asc"},
+       order: "asc",
        params: %{},
        harvested_datasets: harvested_datasets
      )}
@@ -221,23 +224,22 @@ defmodule AndiWeb.EditOrganizationLiveView do
     {:noreply, redirect(socket, to: "/organizations/#{socket.assigns.org.id}")}
   end
 
-  def handle_event("order-by", %{"field" => field}, socket) do
+  def handle_event("order-by", _, socket) do
     order_dir =
       case socket.assigns.order do
-        %{^field => "asc"} -> "desc"
+        "asc" -> "desc"
         _ -> "asc"
       end
 
-    sorted_datasets = socket.assigns.harvested_datasets |> sort_by_dir(field, order_dir)
-
-    {:noreply, assign(socket, harvested_datasets: sorted_datasets)}
+    sorted_datasets = socket.assigns.harvested_datasets |> Enum.reverse()
+    {:noreply, assign(socket, harvested_datasets: sorted_datasets, order: order_dir)}
   end
 
-  defp sort_by_dir(models, order_by, order_dir) do
-    case order_dir do
-      "asc" -> Enum.sort_by(models, fn model -> Map.get(model, order_by) end)
-        "desc" -> Enum.sort_by(models, fn model -> Map.get(model, order_by) end, &>=/2)
-      _ -> models
-    end
+  def sort_harvested_datasets(harvested_datasets) do
+    Enum.sort_by(harvested_datasets, fn harvested_ds ->
+        harvested_ds.datasetId
+        |> Andi.InputSchemas.Datasets.get()
+        |> get_in([:business, :dataTitle])
+    end)
   end
 end
