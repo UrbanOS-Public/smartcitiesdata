@@ -82,6 +82,12 @@ defmodule AndiWeb.EditOrganizationLiveView do
             <button id="save-button" name="save-button" class="btn btn--action btn--large" type="button" phx-click="save">Save</button>
           </div>
         </div>
+
+        <div class="harvested-datasets-table">
+          <h3>Remote Datasets Attached To This Organization</h3>
+
+          <%= live_component(@socket, AndiWeb.OrganizationLiveView.HarvestedDatsetsTable, datasets: @harvested_datasets, order: @order) %>
+        </div>
       </form>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, id: "edit-org-unsaved-changes-modal", visibility: @unsaved_changes_modal_visibility) %>
@@ -108,6 +114,8 @@ defmodule AndiWeb.EditOrganizationLiveView do
         _ -> true
       end
 
+    harvested_datasets = Organizations.get_all_harvested_datasets(org.id)
+
     {:ok,
      assign(socket,
        org: org,
@@ -117,7 +125,10 @@ defmodule AndiWeb.EditOrganizationLiveView do
        unsaved_changes: false,
        unsaved_changes_link: nil,
        unsaved_changes_modal_visibility: "hidden",
-       publish_success_modal_visibility: "hidden"
+       publish_success_modal_visibility: "hidden",
+       order: %{"data_title" => "asc"},
+       params: %{},
+       harvested_datasets: harvested_datasets
      )}
   end
 
@@ -208,5 +219,25 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
   def handle_event("reload-page", _, socket) do
     {:noreply, redirect(socket, to: "/organizations/#{socket.assigns.org.id}")}
+  end
+
+  def handle_event("order-by", %{"field" => field}, socket) do
+    order_dir =
+      case socket.assigns.order do
+        %{^field => "asc"} -> "desc"
+        _ -> "asc"
+      end
+
+    sorted_datasets = socket.assigns.harvested_datasets |> sort_by_dir(field, order_dir)
+
+    {:noreply, assign(socket, harvested_datasets: sorted_datasets)}
+  end
+
+  defp sort_by_dir(models, order_by, order_dir) do
+    case order_dir do
+      "asc" -> Enum.sort_by(models, fn model -> Map.get(model, order_by) end)
+        "desc" -> Enum.sort_by(models, fn model -> Map.get(model, order_by) end, &>=/2)
+      _ -> models
+    end
   end
 end
