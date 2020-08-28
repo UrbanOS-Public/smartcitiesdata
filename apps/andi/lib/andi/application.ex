@@ -11,7 +11,8 @@ defmodule Andi.Application do
         ecto_repo(),
         {Brook, Application.get_env(:andi, :brook)},
         Andi.DatasetCache,
-        Andi.Migration.Migrations
+        Andi.Migration.Migrations,
+        Andi.Scheduler
       ]
       |> TelemetryEvent.config_init_server(instance_name())
       |> List.flatten()
