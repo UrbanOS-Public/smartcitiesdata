@@ -193,12 +193,13 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
       case Brook.Event.send(instance_name(), organization_update(), __MODULE__, smrt_org) do
         :ok ->
-          {:noreply, assign(socket,
-              org: Organizations.get(socket.assigns.org.id),
-              org_exists: true,
-              unsaved_changes: false,
-              publish_success_modal_visibility: "visible"
-            )}
+          {:noreply,
+           assign(socket,
+             org: Organizations.get(socket.assigns.org.id),
+             org_exists: true,
+             unsaved_changes: false,
+             publish_success_modal_visibility: "visible"
+           )}
 
         error ->
           Logger.warn("Unable to create new SmartCity.Organization: #{inspect(error)}")
@@ -237,9 +238,9 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
   def sort_harvested_datasets(harvested_datasets) do
     Enum.sort_by(harvested_datasets, fn harvested_ds ->
-        harvested_ds.datasetId
-        |> Andi.InputSchemas.Datasets.get()
-        |> get_in([:business, :dataTitle])
+      harvested_ds.datasetId
+      |> Andi.InputSchemas.Datasets.get()
+      |> get_in([:business, :dataTitle])
     end)
   end
 end

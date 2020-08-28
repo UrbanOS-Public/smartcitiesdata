@@ -156,9 +156,13 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       html = render_click(view, "save", nil)
 
-      eventually(fn ->
-        assert {:ok, nil} != OrgStore.get(smrt_org.id)
-      end, 1000, 30)
+      eventually(
+        fn ->
+          assert {:ok, nil} != OrgStore.get(smrt_org.id)
+        end,
+        1000,
+        30
+      )
 
       refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
     end
@@ -221,7 +225,13 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       [org: org, dataset1: dataset1, dataset2: dataset2, dataset3: dataset3]
     end
 
-    test "shows all harvested datasets associated with a given organization", %{conn: conn, org: org, dataset1: dataset1, dataset2: dataset2, dataset3: dataset3} do
+    test "shows all harvested datasets associated with a given organization", %{
+      conn: conn,
+      org: org,
+      dataset1: dataset1,
+      dataset2: dataset2,
+      dataset3: dataset3
+    } do
       assert {:ok, view, html} = live(conn, @url_path <> org.id)
 
       assert get_text(html, ".organizations-index__table") =~ dataset1.business.dataTitle
