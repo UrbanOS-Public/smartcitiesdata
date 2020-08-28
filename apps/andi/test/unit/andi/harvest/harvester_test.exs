@@ -16,7 +16,7 @@ defmodule Andi.Harvest.HarvesterTest do
       %{data_json: data_json, org: org, bypass: bypass}
     end
 
-    test "start_harvesting/0 when orgs with dataJsonUrls are in the system", %{data_json: data_json, bypass: bypass} do
+    test "start_harvesting/0 when orgs with dataJsonUrls are in the system" do
       org_1 =
         TDG.create_organization(%{
           orgTitle: "Awesome Title",
@@ -25,15 +25,16 @@ defmodule Andi.Harvest.HarvesterTest do
           dataJsonUrl: "http://www.google.com"
         })
 
-      allow(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, any()), return: :ok, meck_options: [:passthrough])
-      allow(OrgStore.get_all(), return: {:ok, [org_1]}, meck_options: [:passthrough])
+      allow(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, any()), return: :ok)
+      allow(OrgStore.get_all(), return: {:ok, [org_1]})
+      allow(Organizations.get_harvested_dataset(any()), return: %{include: true})
 
       Harvester.start_harvesting()
 
       assert_called(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, any()), times(1))
     end
 
-    test "start_harvesting/0 when orgs without dataJsonUrls are in the system", %{data_json: data_json, bypass: bypass} do
+    test "start_harvesting/0 when orgs without dataJsonUrls are in the system" do
       org_1 =
         TDG.create_organization(%{
           orgTitle: "Awesome Title",
@@ -75,24 +76,26 @@ defmodule Andi.Harvest.HarvesterTest do
 
     test "dataset_update/1", %{data_json: data_json, org: org} do
       allow(Brook.Event.send(instance_name(), dataset_update(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(Organizations.get_harvested_dataset(any()), return: %{include: true})
 
       {:ok, data_json} = Jason.decode(data_json)
       datasets = Harvester.map_data_json_to_dataset(data_json, org)
 
       Harvester.dataset_update(datasets)
 
-      assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, any()), times(2))
+      assert_called(Brook.Event.send(instance_name(), dataset_update(), :andi, any()), times(3))
     end
 
     test "harvested_dataset_update/1", %{data_json: data_json, org: org} do
       allow(Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(Organizations.get_harvested_dataset(any()), return: %{include: true})
 
       {:ok, data_json} = Jason.decode(data_json)
       harvested_datasets = Harvester.map_data_json_to_harvested_dataset(data_json, org)
 
       Harvester.harvested_dataset_update(harvested_datasets)
 
-      assert_called(Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, any()), times(2))
+      assert_called(Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, any()), times(3))
     end
 
     test "datasets without a modified date should be set to todays date", %{data_json: data_json, org: org} do
