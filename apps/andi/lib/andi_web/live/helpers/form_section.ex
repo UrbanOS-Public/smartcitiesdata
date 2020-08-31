@@ -88,10 +88,6 @@ defmodule AndiWeb.FormSection do
         {:noreply, socket}
       end
 
-      def handle_info(%{topic: "toggle-visibility"}, socket) do
-        {:noreply, socket}
-      end
-
       def update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
           when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
         assign(socket, validation_status: get_new_validation_status(socket.assigns.changeset))

@@ -8,7 +8,7 @@ defmodule AndiWeb.API.OrganizationController do
   alias SmartCity.Organization
   alias Andi.Services.OrgStore
   import Andi
-  import SmartCity.Event, only: [organization_update: 0, dataset_harvest_start: 0]
+  import SmartCity.Event, only: [organization_update: 0]
 
   @doc """
   Parse a data message to create a new organization to store in ViewState

@@ -96,7 +96,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
       <div phx-hook="showSnackbar">
         <%= if @has_validation_errors do %>
-          <div id="snackbar" class="error-message">There were errors with the dataset you tried to submit</div>
+          <div id="snackbar" class="error-message">There were errors with the organization you tried to submit</div>
         <% end %>
 
       </div>
