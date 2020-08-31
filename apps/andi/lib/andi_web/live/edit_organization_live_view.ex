@@ -117,7 +117,9 @@ defmodule AndiWeb.EditOrganizationLiveView do
     harvested_datasets =
       org.id
       |> Organizations.get_all_harvested_datasets()
-      |> sort_harvested_datasets()
+      |> Enum.map(&to_view_model/1)
+      |> sort_by_dir("data_title", "asc")
+
 
     {:ok,
      assign(socket,
@@ -129,7 +131,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
        unsaved_changes_link: nil,
        unsaved_changes_modal_visibility: "hidden",
        publish_success_modal_visibility: "hidden",
-       order: "asc",
+       order: %{"data_title" => "asc"},
        params: %{},
        harvested_datasets: harvested_datasets
      )}
@@ -225,22 +227,33 @@ defmodule AndiWeb.EditOrganizationLiveView do
     {:noreply, redirect(socket, to: "/organizations/#{socket.assigns.org.id}")}
   end
 
-  def handle_event("order-by", _, socket) do
+  def handle_event("order-by", %{"field" => field}, socket) do
     order_dir =
       case socket.assigns.order do
-        "asc" -> "desc"
+        %{^field => "asc"} -> "desc"
         _ -> "asc"
       end
 
-    sorted_datasets = socket.assigns.harvested_datasets |> Enum.reverse()
-    {:noreply, assign(socket, harvested_datasets: sorted_datasets, order: order_dir)}
+    sorted_datasets = sort_by_dir(socket.assigns.harvested_datasets, field, order_dir)
+    {:noreply, assign(socket, harvested_datasets: sorted_datasets, order: %{field => order_dir})}
   end
 
-  def sort_harvested_datasets(harvested_datasets) do
-    Enum.sort_by(harvested_datasets, fn harvested_ds ->
-      harvested_ds.datasetId
-      |> Andi.InputSchemas.Datasets.get()
-      |> get_in([:business, :dataTitle])
-    end)
+  defp sort_by_dir(models, order_by, order_dir) do
+    case order_dir do
+      "asc" -> Enum.sort_by(models, fn model -> Map.get(model, order_by) end)
+      "desc" -> Enum.sort_by(models, fn model -> Map.get(model, order_by) end, &>=/2)
+      _ -> models
+    end
+  end
+
+  defp to_view_model(dataset) do
+    andi_dataset = Andi.InputSchemas.Datasets.get(dataset[:datasetId])
+
+    %{
+      "dataset_id" => andi_dataset.id,
+      "data_title" => andi_dataset.business.dataTitle,
+      "source" => dataset.source,
+      "modified_date" => to_string(dataset.modifiedDate)
+    }
   end
 end
