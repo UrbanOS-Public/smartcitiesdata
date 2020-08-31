@@ -309,9 +309,7 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(finalize_view, :publish)
       html = render(view)
 
-      eventually(fn ->
-        refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-      end)
+      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
     end
 
     test "continuing to edit after publish reloads the page", %{conn: conn} do
