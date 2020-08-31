@@ -29,12 +29,12 @@ defmodule Reaper.UrlBuilder do
   end
 
   # TODO add @spec
-  def decode_http_extract_step(%{context: %{url: url, queryParams: query_params, assigns: assigns}} = step)
+  def decode_http_extract_step(%{context: %{url: url, queryParams: query_params}, assigns: assigns} = step)
       when query_params == %{} do
     build_safe_url_path(url, assigns)
   end
 
-  def decode_http_extract_step(%{context: %{url: url, queryParams: query_params, assigns: assigns}} = step) do
+  def decode_http_extract_step(%{context: %{url: url, queryParams: query_params}, assigns: assigns} = step) do
     string_params =
       query_params
       |> safe_evaluate_parameters(assigns)
@@ -76,10 +76,11 @@ defmodule Reaper.UrlBuilder do
     IO.inspect(bindings)
     regex = ~r"{{(.+?)}}"
 
-    value = Regex.replace(regex, value, fn _match, var_name ->
-      IO.inspect(var_name)
-      bindings[String.to_atom(var_name)]
-    end)
+    value =
+      Regex.replace(regex, value, fn _match, var_name ->
+        IO.inspect(var_name)
+        bindings[String.to_atom(var_name)]
+      end)
 
     {key, value}
   end

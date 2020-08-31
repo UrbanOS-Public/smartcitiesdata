@@ -96,9 +96,9 @@ defmodule Reaper.UrlBuilderTest do
           type: "http",
           context: %{
             url: "https://extract_steps.com",
-            queryParams: %{},
-            assigns: %{}
-          }
+            queryParams: %{}
+          },
+          assigns: %{}
         },
         "https://extract_steps.com"
       ],
@@ -108,39 +108,39 @@ defmodule Reaper.UrlBuilderTest do
           type: "http",
           context: %{
             url: "https://my-url.com",
-            queryParams: %{start_date: "19700101", end_date: "19700102"},
-            assigns: %{}
-          }
+            queryParams: %{start_date: "19700101", end_date: "19700102"}
+          },
+          assigns: %{}
         },
         "https://my-url.com?end_date=19700102&start_date=19700101"
       ],
       [
-        #Url with path parameters from assigns block
+        # Url with path parameters from assigns block
         %{
           type: "http",
           context: %{
             url: "https://my-url.com/{{date}}/key/{{key}}",
-            queryParams: %{},
-            assigns: %{
-              date: "19700101",
-              key: "SECRET"
-            }
+            queryParams: %{}
+          },
+          assigns: %{
+            date: "19700101",
+            key: "SECRET"
           }
         },
         "https://my-url.com/19700101/key/SECRET"
       ],
       [
-        #Url with query parameters from assigns block
+        # Url with query parameters from assigns block
         %{
           type: "http",
           context: %{
             url: "https://my-url.com",
             queryParams: %{
               token: "{{key}}"
-            },
-            assigns: %{
-              key: "SECRET"
             }
+          },
+          assigns: %{
+            key: "SECRET"
           }
         },
         "https://my-url.com?token=SECRET"

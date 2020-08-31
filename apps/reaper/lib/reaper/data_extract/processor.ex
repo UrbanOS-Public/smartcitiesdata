@@ -58,10 +58,20 @@ defmodule Reaper.DataExtract.Processor do
     |> File.rm()
   end
 
-  defp create_producer_stage(%SmartCity.Dataset{technical: %{extractSteps: steps}} = dataset) do
-    IO.inspect("kablooey")
+  defp create_producer_stage(%SmartCity.Dataset{technical: %{extractSteps: nil}} = dataset) do
+    dataset
+    |> UrlBuilder.build()
+    |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
+    |> Decoder.decode(dataset)
+    |> Stream.with_index()
+    |> GenStage.from_enumerable()
+  end
 
-    process_extract_step(List.first(steps))
+  defp create_producer_stage(%SmartCity.Dataset{technical: %{extractSteps: steps}} = dataset) do
+    Enum.reduce(steps, %{}, fn step, acc ->
+      step = Map.put(step, :assigns, Map.merge(step.assigns, acc))
+      process_extract_step(dataset, step)
+    end)
   end
 
   defp create_producer_stage(dataset) do
@@ -73,7 +83,20 @@ defmodule Reaper.DataExtract.Processor do
     |> GenStage.from_enumerable()
   end
 
-  defp process_extract_step(step) do
+  def process_extract_step(dataset, %{type: "http"} = step) do
+    IO.inspect(step, label: "this is the step")
+    UrlBuilder.decode_http_extract_step(step)
+    |> IO.inspect(label: "the earl")
+    |> DataSlurper.slurp(dataset.id, [], nil)
+    |> Decoder.decode(dataset)
+    |> Stream.with_index()
+    |> GenStage.from_enumerable()
+  end
+
+  def process_extract_step(dataset, %{type: "date"} = step) do
+    date = Timex.now() |> Timex.format!(step.context.format)
+
+    Map.put(step.assigns, step.context.destination |> String.to_atom(), date)
   end
 
   defp validate_destination(dataset) do
