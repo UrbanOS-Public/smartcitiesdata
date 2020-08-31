@@ -1,17 +1,18 @@
 defmodule EventHandlerTest do
   @moduledoc false
-
   use ExUnit.Case
+  use AndiWeb.ConnCase
+  use Placebo
 
-  alias SmartCity.TestDataGenerator, as: TDG
-  import SmartCity.Event, only: [data_ingest_end: 0, dataset_delete: 0, dataset_harvest_start: 0]
+  import SmartCity.Event, only: [data_ingest_end: 0, dataset_delete: 0, dataset_harvest_start: 0, organization_update: 0]
   import Andi, only: [instance_name: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
+
+  alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
   alias Andi.Harvest.Harvester
   alias Andi.InputSchemas.Organizations
-
-  use Placebo
+  alias Andi.Services.OrgStore
 
   test "Andi records completed ingestions" do
     dataset = TDG.create_dataset(%{})
@@ -44,5 +45,29 @@ defmodule EventHandlerTest do
     eventually(fn ->
       assert_called(Harvester.start_harvesting(org))
     end)
+  end
+
+  describe "data harvest event is triggered when organization is updated" do
+    test "data:harvest:start event is triggered" do
+      allow(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(OrgStore.update(any()), return: :ok)
+      allow(Organizations.update(any()), return: :ok)
+
+      org = TDG.create_organization(%{dataJsonUrl: "www.google.com"})
+      Brook.Event.send(instance_name(), organization_update(), :andi, org)
+
+      assert_called(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org), once())
+    end
+
+    test "data:harvest:start event isnt called for orgs missing data json url" do
+      allow(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(OrgStore.update(any()), return: :ok)
+      allow(Organizations.update(any()), return: :ok)
+
+      org = TDG.create_organization(%{dataJsonUrl: nil})
+      Brook.Event.send(instance_name(), organization_update(), :andi, org)
+
+      refute_called(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org), once())
+    end
   end
 end

@@ -120,7 +120,6 @@ defmodule AndiWeb.EditOrganizationLiveView do
       |> Enum.map(&to_view_model/1)
       |> sort_by_dir("data_title", "asc")
 
-
     {:ok,
      assign(socket,
        org: org,

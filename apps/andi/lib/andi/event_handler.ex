@@ -4,6 +4,7 @@ defmodule Andi.EventHandler do
   require Logger
 
   import Andi
+
   import SmartCity.Event,
     only: [
       dataset_update: 0,
@@ -124,5 +125,4 @@ defmodule Andi.EventHandler do
       _ -> Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org)
     end
   end
-
 end
