@@ -201,6 +201,10 @@ defmodule AndiWeb.EditLiveView.UrlForm do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
   end
 
+  def handle_info(%{topic: "toggle-visibility"}, socket) do
+    {:noreply, socket}
+  end
+
   def handle_info({_, {:test_results, results}}, socket) do
     send(socket.parent_pid, {:test_results, results})
     {:noreply, assign(socket, test_results: results, testing: false)}
