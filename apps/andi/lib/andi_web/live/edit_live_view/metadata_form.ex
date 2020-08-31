@@ -283,10 +283,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
   end
 
-  def handle_info(%{topic: "toggle-visibility", payload: %{dataset_id: dataset_id}}, %{assigns: %{dataset_id: dataset_id}} = socket) do
-    {:noreply, socket}
-  end
-
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
     send(socket.parent_pid, :form_update)
