@@ -11,7 +11,6 @@ defmodule Andi.Harvest.Harvester do
   alias Andi.Harvest.DataJsonDatasetMapper
   alias Andi.InputSchemas.Organizations
   alias Andi.Services.OrgStore
-  alias Andi.InputSchemas.Datasets
   alias Andi.Services.DatasetStore
 
   require Logger

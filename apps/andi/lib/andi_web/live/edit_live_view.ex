@@ -47,7 +47,6 @@ defmodule AndiWeb.EditLiveView do
         <%= hidden_input(technical, :sourceType) %>
         <%= hidden_input(technical, :systemName) %>
 
-
         <div class="metadata-form-component">
           <%= live_render(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, session: %{"dataset" => @dataset}) %>
         </div>
@@ -200,7 +199,7 @@ defmodule AndiWeb.EditLiveView do
      )}
   end
 
-  def handle_info(%{topic: "form-save", payload: %{dataset_id: dataset_id}}, %{assigns: %{dataset_id: dataset_id}} = socket) do
+  def handle_info(%{topic: "form-save"}, socket) do
     {:noreply, socket}
   end
 

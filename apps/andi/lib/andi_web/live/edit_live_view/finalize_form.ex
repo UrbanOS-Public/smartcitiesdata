@@ -206,10 +206,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
   end
 
-  def handle_info(%{topic: "toggle-visibility", payload: %{dataset_id: dataset_id}}, %{assigns: %{dataset_id: dataset_id}} = socket) do
-    {:noreply, socket}
-  end
-
   defp parse_crontab(nil), do: %{}
   defp parse_crontab("never"), do: %{}
 
