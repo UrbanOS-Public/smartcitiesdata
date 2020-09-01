@@ -21,6 +21,10 @@ defmodule AndiWeb.Router do
     plug Plug.Logger
   end
 
+  pipeline :telemetry do
+    plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
+  end
+
   scope "/", AndiWeb do
     pipe_through :browser
 
@@ -34,6 +38,7 @@ defmodule AndiWeb.Router do
 
   scope "/api", AndiWeb.API do
     pipe_through :api
+    pipe_through :telemetry
 
     get "/v1/datasets", DatasetController, :get_all
     get "/v1/dataset/:dataset_id", DatasetController, :get
