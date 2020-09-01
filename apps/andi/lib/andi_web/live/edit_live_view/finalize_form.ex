@@ -206,7 +206,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
   end
 
-  def handle_info(%{topic: "toggle-visibility", payload: %{dataset_id: dataset_id}}, %{assigns: %{dataset_id: dataset_id}} = socket) do
+  def handle_info(%{topic: "toggle-visibility"}, socket) do
     {:noreply, socket}
   end
 

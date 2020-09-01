@@ -200,7 +200,7 @@ defmodule AndiWeb.EditLiveView do
      )}
   end
 
-  def handle_info(%{topic: "form-save", payload: %{dataset_id: dataset_id}}, %{assigns: %{dataset_id: dataset_id}} = socket) do
+  def handle_info(%{topic: "form-save"}, socket) do
     {:noreply, socket}
   end
 

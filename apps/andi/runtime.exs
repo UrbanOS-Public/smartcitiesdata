@@ -62,3 +62,8 @@ config :andi, Andi.Repo,
 config :telemetry_event,
   metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
   add_poller: true
+
+config :andi, Andi.Scheduler,
+  jobs: [
+    {"0 0 1 * *", {Andi.Harvest.Harvester, :start_harvesting, []}}
+  ]

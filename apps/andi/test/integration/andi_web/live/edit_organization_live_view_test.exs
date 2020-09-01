@@ -9,7 +9,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   import Phoenix.LiveViewTest
   import Andi, only: [instance_name: 0]
   import SmartCity.Event, only: [organization_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.TestHelper, only: [eventually: 3]
 
   import FlokiHelpers,
     only: [
@@ -20,6 +20,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Organizations
+  alias Andi.InputSchemas.Datasets
   alias Andi.Services.OrgStore
 
   @url_path "/organizations/"
@@ -146,27 +147,96 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
     end
   end
 
-  test "save button sends brook event", %{conn: conn} do
-    smrt_org = TDG.create_organization(%{})
-    {:ok, _} = Organizations.update(smrt_org)
+  describe "save and cancel buttons" do
+    test "save button sends brook event and presents user with save success modal", %{conn: conn} do
+      smrt_org = TDG.create_organization(%{})
+      {:ok, _} = Organizations.update(smrt_org)
 
-    assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
+      assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
 
-    render_click(view, "save", nil)
+      html = render_click(view, "save", nil)
 
-    eventually(fn ->
-      assert {:ok, nil} != OrgStore.get(smrt_org.id)
-    end)
+      eventually(
+        fn ->
+          assert {:ok, nil} != OrgStore.get(smrt_org.id)
+        end,
+        1000,
+        30
+      )
+
+      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+    end
+
+    test "save button shows snackbar when user saves invalid changes", %{conn: conn} do
+      smrt_org = TDG.create_organization(%{})
+      {:ok, _} = Organizations.update(smrt_org)
+
+      assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
+
+      invalid_form_data = %{"description" => ""}
+      html = render_click(view, "validate", %{"form_data" => invalid_form_data})
+      refute Enum.empty?(find_elements(html, "#description-error-msg"))
+
+      html = render_click(view, "save", nil)
+
+      refute Enum.empty?(find_elements(html, "#snackbar"))
+    end
+
+    test "cancel button returns user to organizations list page", %{conn: conn} do
+      smrt_org = TDG.create_organization(%{})
+      {:ok, _} = Organizations.update(smrt_org)
+
+      assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
+
+      render_click(view, "cancel-edit", nil)
+
+      assert_redirect(view, "/organizations")
+    end
+
+    data_test "#{event} event shows unsaved changes modal before redirect when changes have been made", %{conn: conn} do
+      smrt_org = TDG.create_organization(%{})
+      {:ok, _} = Organizations.update(smrt_org)
+
+      assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
+      form_data = %{"description" => "updated description"}
+      render_change(view, "validate", %{"form_data" => form_data})
+
+      refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--hidden"))
+
+      html = render_click(view, event, nil)
+
+      refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--visible"))
+
+      where(event: ["cancel-edit", "show-organizations", "show-datasets"])
+    end
   end
 
-  test "cancel button returns user to organizations list page", %{conn: conn} do
-    smrt_org = TDG.create_organization(%{})
-    {:ok, _} = Organizations.update(smrt_org)
+  describe "harvested datasets table" do
+    setup do
+      {:ok, dataset1} = TDG.create_dataset(%{}) |> Datasets.update()
+      {:ok, dataset2} = TDG.create_dataset(%{}) |> Datasets.update()
+      {:ok, dataset3} = TDG.create_dataset(%{}) |> Datasets.update()
+      {:ok, org} = TDG.create_organization(%{}) |> Organizations.update()
 
-    assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
+      %{datasetId: dataset1.id, orgId: org.id} |> Organizations.update_harvested_dataset()
+      %{datasetId: dataset2.id, orgId: org.id} |> Organizations.update_harvested_dataset()
+      %{datasetId: dataset3.id, orgId: UUID.uuid4()} |> Organizations.update_harvested_dataset()
 
-    render_click(view, "cancel-edit", nil)
+      [org: org, dataset1: dataset1, dataset2: dataset2, dataset3: dataset3]
+    end
 
-    assert_redirect(view, "/organizations")
+    test "shows all harvested datasets associated with a given organization", %{
+      conn: conn,
+      org: org,
+      dataset1: dataset1,
+      dataset2: dataset2,
+      dataset3: dataset3
+    } do
+      assert {:ok, view, html} = live(conn, @url_path <> org.id)
+
+      assert get_text(html, ".organizations-index__table") =~ dataset1.business.dataTitle
+      assert get_text(html, ".organizations-index__table") =~ dataset2.business.dataTitle
+      refute get_text(html, ".organizations-index__table") =~ dataset3.business.dataTitle
+    end
   end
 end
