@@ -154,6 +154,21 @@ defmodule Reaper.DataExtract.ProcessorTest do
         Plug.Conn.resp(conn, 200, @csv)
       end)
 
+      Bypass.stub(bypass, "GET", "/api/csv/2020", fn conn ->
+        token =
+        conn
+        |> Plug.Conn.fetch_query_params()
+        |> Map.get(:query_params)
+        |> Map.get("token")
+
+        if(token == "mah_secret") do
+          Plug.Conn.resp(conn, 200, @csv)
+        else
+          Plug.Conn.resp(conn, 401, "Unauthorized")
+        end
+
+      end)
+
       :ok
     end
 
@@ -260,6 +275,66 @@ defmodule Reaper.DataExtract.ProcessorTest do
           context: %{
             url: "#{dataset.technical.sourceUrl}/{{currentYear}}-{{currentMonth}}",
             queryParams: %{}
+          },
+          assigns: %{}
+        }
+      ]
+
+      put_in(dataset, [:technical, :extractSteps], extract_steps)
+      |> Processor.process()
+
+      messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
+
+      expected = [
+        %{"a" => "one", "b" => "two", "c" => "three"},
+        %{"a" => "four", "b" => "five", "c" => "six"}
+      ]
+
+      assert expected == get_payloads(messages)
+
+      assert_called Persistence.record_last_processed_index(any(), any()), once()
+      assert_called Persistence.remove_last_processed_index(@dataset_id), once()
+    end
+    test "Lookup secret and date single extract step for http get", %{dataset: dataset} do
+      allow Persistence.get_last_processed_index(@dataset_id), return: -1
+      allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
+
+      allow Reaper.SecretRetriever.retrieve_dataset_credentials("the_key"),
+        return:
+          {:ok,
+           %{
+             "client_id" => "mah_client",
+             "client_secret" => "mah_secret"
+           }}
+
+      extract_steps = [
+        %{
+          type: "date",
+          context: %{
+            destination: "currentYear",
+            deltaTimeUnit: nil,
+            deltaTimeValue: nil,
+            timeZone: nil,
+            format: "{YYYY}"
+          },
+          assigns: %{}
+        },
+        %{
+          type: "secret",
+          context: %{
+            destination: "token",
+            key: "the_key",
+            sub_key: "client_secret"
+          },
+          assigns: %{}
+        },
+        %{
+          type: "http",
+          context: %{
+            url: "#{dataset.technical.sourceUrl}/{{currentYear}}",
+            queryParams: %{
+              token: "{{token}}"
+            }
           },
           assigns: %{}
         }

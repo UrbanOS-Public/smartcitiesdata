@@ -88,6 +88,7 @@ defmodule Reaper.DataExtract.Processor do
 
     UrlBuilder.decode_http_extract_step(step)
     |> IO.inspect(label: "the earl")
+    ## TODO: Dataslurper seems to not fail on 401s, you can reproduce by updating the teest that gets a secret and makes bypass 401
     |> DataSlurper.slurp(dataset.id, [], nil)
     |> Decoder.decode(dataset)
     |> Stream.with_index()
