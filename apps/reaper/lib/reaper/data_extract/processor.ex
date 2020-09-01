@@ -85,6 +85,7 @@ defmodule Reaper.DataExtract.Processor do
 
   def process_extract_step(dataset, %{type: "http"} = step) do
     IO.inspect(step, label: "this is the step")
+
     UrlBuilder.decode_http_extract_step(step)
     |> IO.inspect(label: "the earl")
     |> DataSlurper.slurp(dataset.id, [], nil)
@@ -97,6 +98,13 @@ defmodule Reaper.DataExtract.Processor do
     date = Timex.now() |> Timex.format!(step.context.format)
 
     Map.put(step.assigns, step.context.destination |> String.to_atom(), date)
+  end
+
+  def process_extract_step(dataset, %{type: "secret"} = step) do
+    {:ok, cred} = Reaper.SecretRetriever.retrieve_dataset_credentials(step.context.key)
+    secret = Map.get(cred, step.context.sub_key)
+
+    Map.put(step.assigns, step.context.destination |> String.to_atom(), secret)
   end
 
   defp validate_destination(dataset) do
