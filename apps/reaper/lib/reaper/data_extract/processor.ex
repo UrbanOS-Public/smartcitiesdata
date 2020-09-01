@@ -96,9 +96,18 @@ defmodule Reaper.DataExtract.Processor do
   end
 
   def process_extract_step(dataset, %{type: "date"} = step) do
-    date = Timex.now() |> Timex.format!(step.context.format)
+    date =
+      case step.context.deltaTimeUnit do
+        nil ->
+          Timex.now()
 
-    Map.put(step.assigns, step.context.destination |> String.to_atom(), date)
+        _ ->
+          unit = String.to_atom(step.context.deltaTimeUnit)
+          Timex.shift(Timex.now, [{unit, step.context.deltaTimeValue}])
+      end
+
+    formatted_date = Timex.format!(date, step.context.format)
+    Map.put(step.assigns, step.context.destination |> String.to_atom(), formatted_date)
   end
 
   def process_extract_step(dataset, %{type: "secret"} = step) do

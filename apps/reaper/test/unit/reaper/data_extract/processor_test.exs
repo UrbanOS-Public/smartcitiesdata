@@ -156,17 +156,16 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       Bypass.stub(bypass, "GET", "/api/csv/2020", fn conn ->
         token =
-        conn
-        |> Plug.Conn.fetch_query_params()
-        |> Map.get(:query_params)
-        |> Map.get("token")
+          conn
+          |> Plug.Conn.fetch_query_params()
+          |> Map.get(:query_params)
+          |> Map.get("token")
 
         if(token == "mah_secret") do
           Plug.Conn.resp(conn, 200, @csv)
         else
           Plug.Conn.resp(conn, 401, "Unauthorized")
         end
-
       end)
 
       :ok
@@ -295,6 +294,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       assert_called Persistence.record_last_processed_index(any(), any()), once()
       assert_called Persistence.remove_last_processed_index(@dataset_id), once()
     end
+
     test "Lookup secret and date single extract step for http get", %{dataset: dataset} do
       allow Persistence.get_last_processed_index(@dataset_id), return: -1
       allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
@@ -376,6 +376,27 @@ defmodule Reaper.DataExtract.ProcessorTest do
       assert Processor.process_extract_step(dataset, step) ==
                %{
                  currentDate: "2020-08"
+               }
+    end
+
+    test "puts current date can do time delta", %{dataset: dataset} do
+      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
+
+      step = %{
+        type: "date",
+        context: %{
+          destination: "currentDate",
+          deltaTimeUnit: "years",
+          deltaTimeValue: -33,
+          timeZone: nil,
+          format: "{YYYY}-{0M}"
+        },
+        assigns: %{}
+      }
+
+      assert Processor.process_extract_step(dataset, step) ==
+               %{
+                 currentDate: "1987-08"
                }
     end
   end
