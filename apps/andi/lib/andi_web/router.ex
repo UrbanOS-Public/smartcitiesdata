@@ -22,7 +22,8 @@ defmodule AndiWeb.Router do
   end
 
   pipeline :telemetry do
-    plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
+    # plug Plug.Telemetry, event_prefix: [:prometheus_metrics, :plug]
+    plug AndiWeb.Plugs.Telemetry, event_prefix: [:phoenix, :endpoint]
   end
 
   scope "/", AndiWeb do
