@@ -24,7 +24,7 @@ defmodule TelemetryEvent.Helper.AddMetrics do
         [
           [
             metric_name: "phoenix.endpoint.stop.duration",
-            tags: [:controller, :action],
+            tags: [:options],
             metric_type: :distribution,
             unit: {:native, :millisecond},
             reporter_options: [buckets: [0.01, 0.025, 0.05, 0.1, 0.2, 0.5, 1]]

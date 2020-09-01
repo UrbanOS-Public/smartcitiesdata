@@ -14,16 +14,13 @@ defmodule AndiWeb.Router do
     plug :fetch_live_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers, %{"content-security-policy" => @csp}
+    plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
   end
 
   pipeline :api do
     plug :accepts, ["json"]
     plug Plug.Logger
-  end
-
-  pipeline :telemetry do
-    # plug Plug.Telemetry, event_prefix: [:prometheus_metrics, :plug]
-    plug AndiWeb.Plugs.Telemetry, event_prefix: [:phoenix, :endpoint]
+    plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
   end
 
   scope "/", AndiWeb do
@@ -39,7 +36,6 @@ defmodule AndiWeb.Router do
 
   scope "/api", AndiWeb.API do
     pipe_through :api
-    pipe_through :telemetry
 
     get "/v1/datasets", DatasetController, :get_all
     get "/v1/dataset/:dataset_id", DatasetController, :get
