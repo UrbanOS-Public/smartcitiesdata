@@ -3,6 +3,8 @@ defmodule Andi.EventHandler do
   use Brook.Event.Handler
   require Logger
 
+  import Andi
+
   import SmartCity.Event,
     only: [
       dataset_update: 0,
@@ -37,6 +39,8 @@ defmodule Andi.EventHandler do
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data}) do
     organization_update()
     |> add_event_count(data.id)
+
+    data_harvest_event(data)
 
     Organizations.update(data)
     OrgStore.update(data)
@@ -99,7 +103,7 @@ defmodule Andi.EventHandler do
 
     Datasets.delete(dataset.id)
     DatasetStore.delete(dataset.id)
-    Organizations.delete_harvested_dataset(dataset.id)
+    Organizations.delete_harvested_dataset(dataset.id) # TODO remove this
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])
@@ -113,5 +117,12 @@ defmodule Andi.EventHandler do
       event_type: event_type
     ]
     |> TelemetryEvent.add_event_metrics([:events_handled])
+  end
+
+  defp data_harvest_event(org) do
+    case org.dataJsonUrl do
+      nil -> :ok
+      _ -> Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org)
+    end
   end
 end

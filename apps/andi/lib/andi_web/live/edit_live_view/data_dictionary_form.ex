@@ -263,7 +263,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, assign(socket, sourceFormat: new_format)}
   end
 
-  def handle_info(%{topic: "source-format"} = socket) do
+  def handle_info(%{topic: "source-format"}, socket) do
     {:noreply, socket}
   end
 
@@ -272,6 +272,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         %{assigns: %{dataset_id: dataset_id}} = socket
       ) do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
+  end
+
+  def handle_info(%{topic: "toggle-visibility"}, socket) do
+    {:noreply, socket}
   end
 
   def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do

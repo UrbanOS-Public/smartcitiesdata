@@ -10,26 +10,28 @@ defmodule AndiWeb.OrganizationLiveView.HarvestedDatsetsTable do
     ~L"""
     <div id="<%= @id %>" class="organizations-index__table">
       <table class="organizations-table">
-      <thead>
-        <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--<%= @order %>" phx-click="order-by" style="width: 80%">Dataset Name</th>
-        <th class="organizations-table__th organizations-table__cell">Actions</th>
-        <th class="organizations-table__th organizations-table__cell">Include</th>
+        <thead>
+          <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--<%= Map.get(@order, "data_title", "unsorted") %>" phx-click="order-by" phx-value-field="data_title">Dataset Name</th>
+          <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--<%= Map.get(@order, "source", "unsorted") %>" phx-click="order-by" phx-value-field="source">Source</th>
+          <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--<%= Map.get(@order, "modified_date", "unsorted") %>" phx-click="order-by" phx-value-field="modified_date">Modified Date</th>
+          <th class="organizations-table__th organizations-table__cell" style="width: 10%">Actions</th>
+          <th class="organizations-table__th organizations-table__cell">Include</th>
         </thead>
 
         <%= if @datasets == [] do %>
           <tr><td class="organizations-table__cell" colspan="100%">No Datasets Found!</td></tr>
         <% else %>
           <%= for dataset <- @datasets do %>
-            <% andi_dataset = Andi.InputSchemas.Datasets.get(dataset[:datasetId]) %>
-
-              <tr class="organizations-table__tr">
-              <td class="organizations-table__cell organizations-table__cell--break" style="width: 80%;"><%= get_in(andi_dataset, [:business, :dataTitle]) %></td>
-              <td class="organizations-table__cell organizations-table__cell--break"><%= Link.link("Edit", to: "/datasets/#{andi_dataset[:id]}", class: "btn") %></td>
+            <tr class="organizations-table__tr">
+              <td class="organizations-table__cell organizations-table__cell--break"><%= dataset["data_title"] %></td>
+              <td class="organizations-table__cell organizations-table__cell--break"><%= dataset["source"] %></td>
+              <td class="organizations-table__cell organizations-table__cell--break"><%= dataset["modified_date"] %></td>
+              <td class="organizations-table__cell organizations-table__cell--break" style="width: 10%;"><%= Link.link("Edit", to: "/datasets/#{dataset["dataset_id"]}", class: "btn") %></td>
               <td>
-                <label class="organizations-table__checkbox">
-                  <input type="checkbox">
-                </label>
-              </td>
+              <label class="organizations-table__checkbox">
+                <input type="checkbox">
+              </label>
+            </td>
             </tr>
           <% end %>
         <% end %>

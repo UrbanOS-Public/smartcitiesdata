@@ -89,7 +89,7 @@ defmodule Andi.Harvest.Harvester do
         new_dataset["datasetId"] == existing_dataset.datasetId
       end)
       |> case do
-        nil -> dataset_delete_event(existing_dataset.datasetId)
+        nil -> dataset_delete_event(existing_dataset.datasetId) #TODO remove from harvested_table
         _ -> :noop
       end
     end)
