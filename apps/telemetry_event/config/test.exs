@@ -2,6 +2,7 @@ use Mix.Config
 
 config :telemetry_event,
   init_server: false,
+  add_poller: false,
   metrics_options: [
     [
       metric_name: "any_events_handled.count",
