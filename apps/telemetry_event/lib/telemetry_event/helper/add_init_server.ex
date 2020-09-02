@@ -11,14 +11,8 @@ defmodule TelemetryEvent.Helper.AddInitServer do
 
   def add_poller(child) do
     case Application.get_env(:telemetry_event, :add_poller) do
-      true -> [{:telemetry_poller, measurements: periodic_measurements(), period: :timer.seconds(5)} | child]
+      true -> [{:telemetry_poller, measurements: [], period: :timer.seconds(5)} | child]
       _ -> child
     end
-  end
-
-  defp periodic_measurements do
-    [
-      # {:phoenix, :endpoint, []}
-    ]
   end
 end
