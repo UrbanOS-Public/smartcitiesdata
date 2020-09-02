@@ -31,7 +31,9 @@ defmodule TelemetryEvent.Helper.MetricsEvent do
   defp metrics_event(:distribution, metrics_option) do
     Keyword.fetch!(metrics_option, :metric_name)
     |> distribution(
+      event_name: [:phoenix, :endpoint, :stop],
       tags: Keyword.fetch!(metrics_option, :tags),
+      tag_values: Keyword.fetch!(metrics_option, :tag_values),
       unit: Keyword.fetch!(metrics_option, :unit),
       reporter_options: Keyword.fetch!(metrics_option, :reporter_options)
     )
