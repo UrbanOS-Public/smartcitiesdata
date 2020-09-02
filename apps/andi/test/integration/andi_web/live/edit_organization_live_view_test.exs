@@ -238,5 +238,11 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       assert get_text(html, ".organizations-index__table") =~ dataset2.business.dataTitle
       refute get_text(html, ".organizations-index__table") =~ dataset3.business.dataTitle
     end
+
+    test "include checkbox is present for all datasets", %{conn: conn, org: org, dataset1: dataset1, dataset2: dataset2} do
+      assert {:ok, view, html} = live(conn, @url_path <> org.id)
+
+      assert get_value(html, ".checkbox") == true
+    end
   end
 end
