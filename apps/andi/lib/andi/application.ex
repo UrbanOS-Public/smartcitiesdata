@@ -12,7 +12,8 @@ defmodule Andi.Application do
         {Brook, Application.get_env(:andi, :brook)},
         Andi.DatasetCache,
         Andi.Migration.Migrations,
-        Andi.Scheduler
+        Andi.Scheduler,
+        {Elsa.Supervisor, Application.get_env(:andi, :elsa)}
       ]
       |> TelemetryEvent.config_init_server(instance_name())
       |> List.flatten()

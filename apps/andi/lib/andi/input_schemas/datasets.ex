@@ -130,6 +130,12 @@ defmodule Andi.InputSchemas.Datasets do
     update(from_dataset, updated)
   end
 
+  def update_latest_dlq_message(dataset_id, message) do
+    from_dataset = get(dataset_id) || %Dataset{id: dataset_id}
+
+    update(from_dataset, %{dlq_message: message})
+  end
+
   def delete(dataset_id) do
     Repo.delete(%Dataset{id: dataset_id})
   rescue
