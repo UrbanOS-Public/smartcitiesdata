@@ -41,6 +41,7 @@ defmodule AndiWeb.DatasetLiveView.Table do
   end
 
   defp get_html_from_ingest_status(""), do: ""
+
   defp get_html_from_ingest_status("Failure") do
     ~E(
       <div class="ingestion-status">
