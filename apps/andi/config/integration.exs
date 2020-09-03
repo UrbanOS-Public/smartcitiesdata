@@ -29,7 +29,23 @@ config :andi, Andi.Repo,
 config :andi, AndiWeb.Endpoint,
   http: [port: 4000],
   server: true,
-  check_origin: false
+  check_origin: false,
+  https: [
+    port: 4443,
+    otp_app: :andi,
+    keyfile: "priv/key.pem",
+    certfile: "priv/cert.pem"
+  ]
+
+config :ueberauth, Ueberauth,
+  providers: [
+      auth0: { Ueberauth.Strategy.Auth0, [] },
+    ]
+
+config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
+   domain: "smartcolumbusos-demo.auth0.com",
+   client_id: "KrA99qgUDwRWvbI07YOknIZSS1jzdXUr",
+   client_secret: System.get_env("AUTH0_CLIENT_SECRET")
 
 config :andi, :brook,
   instance: :andi,

@@ -74,7 +74,8 @@ defmodule Andi.MixProject do
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
       {:tzdata, "~> 1.0"},
-      {:web, in_umbrella: true}
+      {:web, in_umbrella: true},
+      {:ueberauth_auth0, "~> 0.8.1"}
     ]
   end
 

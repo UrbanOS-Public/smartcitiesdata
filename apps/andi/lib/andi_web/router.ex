@@ -50,4 +50,10 @@ defmodule AndiWeb.Router do
   scope "/", AndiWeb do
     get("/healthcheck", HealthCheckController, :index)
   end
+
+  scope "/auth", AndiWeb do
+    get("/auth0", AuthController, :request)
+    get("/auth0/callback", AuthController, :callback)
+    post("/auth0/callback", AuthController, :callback)
+  end
 end
