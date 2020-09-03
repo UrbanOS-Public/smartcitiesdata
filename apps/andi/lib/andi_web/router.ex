@@ -14,11 +14,13 @@ defmodule AndiWeb.Router do
     plug :fetch_live_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers, %{"content-security-policy" => @csp}
+    plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
   end
 
   pipeline :api do
     plug :accepts, ["json"]
     plug Plug.Logger
+    plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
   end
 
   scope "/", AndiWeb do

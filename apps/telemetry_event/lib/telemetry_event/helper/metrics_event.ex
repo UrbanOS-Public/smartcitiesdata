@@ -1,6 +1,6 @@
 defmodule TelemetryEvent.Helper.MetricsEvent do
   @moduledoc false
-  alias Telemetry.Metrics
+  import Telemetry.Metrics
   alias TelemetryEvent.Helper.AddMetrics
 
   def metrics() do
@@ -15,16 +15,27 @@ defmodule TelemetryEvent.Helper.MetricsEvent do
 
   defp metrics_event(:counter, metrics_option) do
     Keyword.fetch!(metrics_option, :metric_name)
-    |> Metrics.counter(tags: Keyword.fetch!(metrics_option, :tags))
+    |> counter(tags: Keyword.fetch!(metrics_option, :tags))
   end
 
   defp metrics_event(:sum, metrics_option) do
     Keyword.fetch!(metrics_option, :metric_name)
-    |> Metrics.sum(tags: Keyword.fetch!(metrics_option, :tags))
+    |> sum(tags: Keyword.fetch!(metrics_option, :tags))
   end
 
   defp metrics_event(:last_value, metrics_option) do
     Keyword.fetch!(metrics_option, :metric_name)
-    |> Metrics.last_value(tags: Keyword.fetch!(metrics_option, :tags))
+    |> last_value(tags: Keyword.fetch!(metrics_option, :tags))
+  end
+
+  defp metrics_event(:distribution, metrics_option) do
+    Keyword.fetch!(metrics_option, :metric_name)
+    |> distribution(
+      event_name: [:phoenix, :endpoint, :stop],
+      tags: Keyword.fetch!(metrics_option, :tags),
+      tag_values: Keyword.fetch!(metrics_option, :tag_values),
+      unit: Keyword.fetch!(metrics_option, :unit),
+      reporter_options: Keyword.fetch!(metrics_option, :reporter_options)
+    )
   end
 end
