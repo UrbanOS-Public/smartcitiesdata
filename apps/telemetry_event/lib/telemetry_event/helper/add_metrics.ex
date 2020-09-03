@@ -24,9 +24,9 @@ defmodule TelemetryEvent.Helper.AddMetrics do
         [
           [
             metric_name: "phoenix.endpoint.stop.duration",
-            tags: [:path_info, :method],
+            tags: [:end_point, :method],
             tag_values: fn %{conn: conn} ->
-              %{path_info: Map.get(conn, :path_info) |> Enum.join("/"), method: Map.get(conn, :method)}
+              %{end_point: end_point(conn), method: Map.get(conn, :method)}
             end,
             metric_type: :distribution,
             unit: {:native, :millisecond},
@@ -38,5 +38,14 @@ defmodule TelemetryEvent.Helper.AddMetrics do
       _ ->
         metrics_options
     end
+  end
+
+  defp end_point(conn) do
+    request_path = Map.get(conn, :request_path)
+
+    Map.get(conn, :path_params)
+    |> Enum.reduce(request_path, fn {key, value}, new_request_path ->
+      String.replace(new_request_path, "#{value}", ":#{key}")
+    end)
   end
 end
