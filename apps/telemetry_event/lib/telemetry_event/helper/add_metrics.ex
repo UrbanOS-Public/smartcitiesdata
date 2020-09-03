@@ -44,6 +44,8 @@ defmodule TelemetryEvent.Helper.AddMetrics do
     request_path = Map.get(conn, :request_path)
 
     Map.get(conn, :path_params)
-    |> Enum.reduce(request_path, fn {key, value}, new_request_path -> String.replace(new_request_path, "#{value}", ":#{key}") end)
+    |> Enum.reduce(request_path, fn {key, value}, new_request_path ->
+      String.replace(new_request_path, "#{value}", ":#{key}")
+    end)
   end
 end
