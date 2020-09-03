@@ -32,6 +32,9 @@ defmodule Andi.EventHandler do
     dataset_update()
     |> add_event_count(data.id)
 
+    current_time = DateTime.utc_now() |> DateTime.to_unix()
+    Datasets.update_ingested_time(data.id, current_time)
+
     Datasets.update(data)
     DatasetStore.update(data)
   end

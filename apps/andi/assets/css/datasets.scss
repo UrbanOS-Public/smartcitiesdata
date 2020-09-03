@@ -102,9 +102,14 @@
   max-width: 30rem;
 }
 
-.datasets-table__ingested-cell {
+.datasets-table__ingested-cell--success {
   text-align: center;
   color: green;
+}
+
+.datasets-table__ingested-cell--failure {
+    text-align: center;
+    color: red;
 }
 
 .datasets-table__cell--break {

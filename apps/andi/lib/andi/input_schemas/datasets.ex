@@ -130,10 +130,13 @@ defmodule Andi.InputSchemas.Datasets do
     update(from_dataset, updated)
   end
 
-  def update_latest_dlq_message(dataset_id, message) do
-    from_dataset = get(dataset_id) || %Dataset{id: dataset_id}
+  def update_latest_dlq_message(%{"dataset_id" => dataset_id} = message) do
+    from_dataset = get(dataset_id)
 
-    update(from_dataset, %{dlq_message: message})
+    case from_dataset do
+      nil -> Logger.info("Message does not pertain to any andi dataset: #{message}")
+      dataset -> update(dataset, %{dlq_message: message})
+    end
   end
 
   def delete(dataset_id) do

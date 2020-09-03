@@ -6,13 +6,14 @@ defmodule AndiWeb.DatasetLiveView.Table do
   use Phoenix.LiveComponent
   import Phoenix.HTML
   alias Phoenix.HTML.Link
+  alias Andi.InputSchemas.Datasets
 
   def render(assigns) do
     ~L"""
     <div id="<%= @id %>" class="datasets-index__table">
       <table class="datasets-table">
       <thead>
-        <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "ingested_time", "unsorted") %>" phx-click="order-by" phx-value-field="ingested_time">Ingested </th>
+        <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "ingested_time", "unsorted") %>" phx-click="order-by" phx-value-field="ingested_time">Status</th>
         <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "data_title", "unsorted") %>" phx-click="order-by" phx-value-field="data_title">Dataset Name </th>
         <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "org_title", "unsorted") %>" phx-click="order-by" phx-value-field="org_title">Organization </th>
         <th class="datasets-table__th datasets-table__cell">Actions</th>
@@ -22,12 +23,15 @@ defmodule AndiWeb.DatasetLiveView.Table do
           <tr><td class="datasets-table__cell" colspan="100%">No Datasets Found!</td></tr>
         <% else %>
           <%= for dataset <- @datasets do %>
-          <tr class="datasets-table__tr">
-            <td class="datasets-table__cell datasets-table__cell--break datasets-table__ingested-cell" style="width: 10%;"><%= ingest_status(dataset) %></td>
-            <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["data_title"] %></td>
-            <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["org_title"] %></td>
-            <td class="datasets-table__cell datasets-table__cell--break" style="width: 10%;"><%= Link.link("Edit", to: "/datasets/#{dataset["id"]}", class: "btn") %></td>
-          </tr>
+            <% ingest_status = ingest_status(dataset) %>
+            <% ingest_cell_class = get_ingest_cell_class(ingest_status) %>
+
+            <tr class="datasets-table__tr">
+              <td class="datasets-table__cell datasets-table__cell--break datasets-table__ingested-cell--<%= ingest_cell_class %>" style="width: 10%;"><%= ingest_status %></td>
+              <td class="datasets-table__cell datasets-table__cell--break datasets-table__data-title-cell"><%= dataset["data_title"] %></td>
+              <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["org_title"] %></td>
+              <td class="datasets-table__cell datasets-table__cell--break" style="width: 10%;"><%= Link.link("Edit", to: "/datasets/#{dataset["id"]}", class: "btn") %></td>
+            </tr>
           <% end %>
         <% end %>
       </table>
@@ -35,10 +39,26 @@ defmodule AndiWeb.DatasetLiveView.Table do
     """
   end
 
-  defp ingest_status(dataset) do
-    case dataset["ingested_time"] do
-      nil -> ""
-      _ -> ~E(<i class="material-icons">check</i>)
+  defp get_ingest_cell_class(""), do: "unset"
+  defp get_ingest_cell_class(ingest_status), do: String.downcase(ingest_status)
+
+  defp ingest_status(%{"ingested_time" => dataset_ingested_time} = dataset) when dataset_ingested_time != nil do
+    dlq_message = Datasets.get(dataset["id"]) |> Map.get(:dlq_message)
+    dlq_message_age_in_days = dlq_message_age(dataset_ingested_time, dlq_message)
+
+    case dlq_message == nil or dlq_message_age_in_days > 7 do
+      true -> "Success"
+      _ -> "Failure"
     end
+  end
+
+  defp ingest_status(dataset), do: ""
+
+  defp dlq_message_age(_, nil), do: -1
+
+  defp dlq_message_age(ingested_time, dlq_message) do
+    {:ok, dlq_message_timestamp, _} = dlq_message |> Map.get("timestamp") |> DateTime.from_iso8601()
+
+    Timex.diff(ingested_time, dlq_message_timestamp, :days)
   end
 end

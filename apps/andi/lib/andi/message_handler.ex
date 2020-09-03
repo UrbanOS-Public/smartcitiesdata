@@ -16,11 +16,31 @@ defmodule Andi.MessageHandler do
     {:ack, state}
   end
 
-  def handle_message(%Elsa.Message{value: value}, state) do
-    dlq_message = Jason.decode!(value)
-    dataset_id = Map.get(dlq_message, "dataset_id")
+  def handle_message(%Elsa.Message{timestamp: timestamp, value: value}, state) do
+    iso_timestamp =
+      timestamp
+      |> DateTime.from_unix!()
+      |> DateTime.to_iso8601()
 
-    Datasets.update_latest_dlq_message(dataset_id, dlq_message)
+    dlq_message =
+      value
+      |> Jason.decode!(value)
+      |> Map.put("timestamp", iso_timestamp)
+
+    Datasets.update_latest_dlq_message(dlq_message)
+
+    {:ack, state}
+  end
+
+  def handle_message(%Elsa.Message{value: value}, state) do
+    current_time = DateTime.utc_now() |> DateTime.to_iso8601()
+
+    dlq_message =
+      value
+      |> Jason.decode!(value)
+      |> Map.put("timestamp", current_time)
+
+    Datasets.update_latest_dlq_message(dlq_message)
 
     {:ack, state}
   end
