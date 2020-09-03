@@ -64,7 +64,7 @@ defmodule AndiWeb.DatasetLiveView.Table do
 
   defp ingest_status(%{"ingested_time" => dataset_ingested_time} = dataset) when dataset_ingested_time != nil do
     dlq_message = Datasets.get(dataset["id"]) |> Map.get(:dlq_message)
-    dlq_message_age_in_days = dlq_message_age(dataset_ingested_time, dlq_message)
+    dlq_message_age_in_days = dlq_message_age(dlq_message)
 
     case dlq_message == nil or dlq_message_age_in_days > 7 do
       true -> "Success"
@@ -74,11 +74,11 @@ defmodule AndiWeb.DatasetLiveView.Table do
 
   defp ingest_status(dataset), do: ""
 
-  defp dlq_message_age(_, nil), do: -1
+  defp dlq_message_age(nil), do: -1
 
-  defp dlq_message_age(ingested_time, dlq_message) do
+  defp dlq_message_age(dlq_message) do
     {:ok, dlq_message_timestamp, _} = dlq_message |> Map.get("timestamp") |> DateTime.from_iso8601()
 
-    Timex.diff(ingested_time, dlq_message_timestamp, :days)
+    Timex.diff(DateTime.utc_now(), dlq_message_timestamp, :days)
   end
 end

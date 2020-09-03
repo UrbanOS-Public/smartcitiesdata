@@ -17,15 +17,15 @@ defmodule Andi.MessageHandler do
   end
 
   def handle_message(%Elsa.Message{timestamp: timestamp, value: value}, state) do
-    iso_timestamp =
+    {ok, timestamp_datetime} =
       timestamp
       |> DateTime.from_unix!()
-      |> DateTime.to_iso8601()
+      |> DateTime.shift_zone("Etc/UTC")
 
     dlq_message =
       value
       |> Jason.decode!(value)
-      |> Map.put("timestamp", iso_timestamp)
+      |> Map.put("timestamp", DateTime.to_iso8601(timestamp_datetime))
 
     Datasets.update_latest_dlq_message(dlq_message)
 

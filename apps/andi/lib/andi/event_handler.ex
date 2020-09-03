@@ -26,14 +26,11 @@ defmodule Andi.EventHandler do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
 
-  @ingested_time_topic "ingested_time_topic"
-
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data}) do
     dataset_update()
     |> add_event_count(data.id)
 
-    current_time = DateTime.utc_now() |> DateTime.to_unix()
-    Datasets.update_ingested_time(data.id, current_time)
+    Datasets.update_ingested_time(data.id, DateTime.utc_now())
 
     Datasets.update(data)
     DatasetStore.update(data)
@@ -87,12 +84,8 @@ defmodule Andi.EventHandler do
     |> add_event_count(id)
 
     # Brook converts all maps to string keys when it retrieves a value from its state, even if they're inserted as atom keys. For that reason, make sure to insert as string keys so that we're consistent.
-    Datasets.update_ingested_time(id, create_ts)
-
-    AndiWeb.Endpoint.broadcast!(@ingested_time_topic, "ingested_time_update", %{
-      "id" => id,
-      "ingested_time" => create_ts
-    })
+    timestamp = create_ts |> DateTime.from_unix!()
+    Datasets.update_ingested_time(id, timestamp)
 
     {:create, :ingested_time, id, %{"id" => id, "ingested_time" => create_ts}}
   end

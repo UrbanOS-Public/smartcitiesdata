@@ -114,9 +114,9 @@ defmodule Andi.InputSchemas.Datasets do
 
   def update_ingested_time(dataset_id, ingested_time) do
     from_dataset = get(dataset_id) || %Dataset{id: dataset_id}
-    ingested_time_as_datetime = DateTime.from_unix!(ingested_time, :microsecond)
+    iso_ingested_time = DateTime.to_iso8601(ingested_time)
 
-    update(from_dataset, %{ingestedTime: ingested_time_as_datetime})
+    update(from_dataset, %{ingestedTime: iso_ingested_time})
   end
 
   def update_cadence(dataset_id, cadence) do

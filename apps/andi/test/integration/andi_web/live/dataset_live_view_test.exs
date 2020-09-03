@@ -86,7 +86,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     test "shows success when there is no dlq message stored for a dataset", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       {:ok, andi_dataset} = Datasets.update(dataset)
-      current_time = DateTime.utc_now() |> DateTime.to_unix()
+      current_time = DateTime.utc_now()
       Datasets.update_ingested_time(dataset.id, current_time)
 
       assert {:ok, view, html} = live(conn, @url_path)
@@ -99,8 +99,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
     test "shows failure when there is a dlq message stored for a dataset", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      {:ok, andi_dataset} = Datasets.update(dataset)
-      current_time = DateTime.utc_now() |> DateTime.to_unix()
+      {:ok, _} = Datasets.update(dataset)
+      current_time = DateTime.utc_now()
       Datasets.update_ingested_time(dataset.id, current_time)
 
       dlq_time = DateTime.utc_now() |> Timex.shift(days: -3) |> DateTime.to_iso8601()
@@ -116,10 +116,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
     test "shows success when the latest dlq meessage is older than seven days", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       {:ok, _} = Datasets.update(dataset)
-      current_time = DateTime.utc_now() |> DateTime.to_unix()
+      current_time = DateTime.utc_now()
       Datasets.update_ingested_time(dataset.id, current_time)
 
-      old_time = DateTime.utc_now() |> Timex.shift(days: -8) |> DateTime.to_iso8601()
+      old_time = current_time |> Timex.shift(days: -8) |> DateTime.to_iso8601()
       dlq_message = %{"dataset_id" => dataset.id, "timestamp" => old_time}
       Datasets.update_latest_dlq_message(dlq_message)
 
@@ -130,7 +130,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path)
       table_row = get_dataset_table_row(html, dataset)
 
-      refute Enum.empty?(Floki.find(table_row, ".datasets-table__ingested-cell--failure"))
+      refute Enum.empty?(Floki.find(table_row, ".datasets-table__ingested-cell--success"))
     end
   end
 
@@ -156,7 +156,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     html
     |> Floki.parse_fragment!()
     |> Floki.find(".datasets-table__tr")
-    |> Enum.reduce_while([], fn row, acc ->
+    |> Enum.reduce_while([], fn row, _acc ->
       {_, _, children} = row
 
       [{_, _, [row_title]}] =
