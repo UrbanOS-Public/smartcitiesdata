@@ -13,16 +13,17 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   @primary_key {:id, :string, autogenerate: false}
   schema "datasets" do
-    has_one(:technical, Technical, on_replace: :update)
-    has_one(:business, Business, on_replace: :update)
+    field(:dlq_message, :map)
     field(:ingestedTime, :utc_datetime, default: nil)
     field(:version, :string)
     has_many(:data_dictionaries, DataDictionary)
+    has_one(:business, Business, on_replace: :update)
+    has_one(:technical, Technical, on_replace: :update)
   end
 
   use Accessible
 
-  @cast_fields [:id, :ingestedTime]
+  @cast_fields [:id, :ingestedTime, :version, :dlq_message]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
