@@ -13,14 +13,6 @@ defmodule Andi.MessageHandlerTest do
   @endpoints [localhost: 9092]
 
   test "reading from topic triggers event handler" do
-    Patiently.wait_for!(
-      fn ->
-        :ok = Elsa.create_topic(@endpoints, "dead-letters")
-      end,
-      dwell: 1_000,
-      max_tries: 30
-    )
-
     {:ok, pid} =
       Elsa.Supervisor.start_link(
         connection: :andi_test_reader,
