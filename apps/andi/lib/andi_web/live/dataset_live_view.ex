@@ -122,13 +122,6 @@ defmodule AndiWeb.DatasetLiveView do
     {:noreply, redirect(socket, to: "/organizations")}
   end
 
-  defp coerce_order_into_tuple(order) when is_tuple(order), do: order
-
-  defp coerce_order_into_tuple(order) when is_map(order) do
-    [{order_by, order_dir}] = Map.to_list(order)
-    {order_by, order_dir}
-  end
-
   defp filter_on_search_change(search_value, include_remotes, socket) do
     case search_value == socket.assigns.search_text and include_remotes == socket.assigns.include_remotes do
       false -> refresh_datasets(search_value, include_remotes)

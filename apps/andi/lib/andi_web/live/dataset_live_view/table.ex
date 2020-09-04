@@ -73,7 +73,7 @@ defmodule AndiWeb.DatasetLiveView.Table do
     end
   end
 
-  defp ingest_status(dataset), do: ""
+  defp ingest_status(_), do: ""
 
   defp dlq_message_age(nil), do: -1
 
