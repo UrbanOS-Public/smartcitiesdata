@@ -1,13 +1,17 @@
 defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   use AndiWeb.ConnCase
   use Phoenix.ConnTest
-  import Phoenix.LiveViewTest
   use Placebo
+
+  import Phoenix.LiveViewTest
 
   import FlokiHelpers,
     only: [
       get_attributes: 3
     ]
+
+  alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.Dataset
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
@@ -17,6 +21,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   describe "order by click" do
     setup %{conn: conn} do
+      allow(Datasets.get(any()), return: %Dataset{})
+
       dataset_a =
         DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
         |> Map.put(:ingestedTime, @ingested_time_a)
@@ -31,8 +37,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
         get(conn, @url_path)
         |> live()
 
-      row_a = ["check", dataset_a.business.dataTitle, dataset_a.business.orgTitle, "Edit"]
-      row_b = ["check", dataset_b.business.dataTitle, dataset_b.business.orgTitle, "Edit"]
+      row_a = ["Success", dataset_a.business.dataTitle, dataset_a.business.orgTitle, "Edit"]
+      row_b = ["Success", dataset_b.business.dataTitle, dataset_b.business.orgTitle, "Edit"]
 
       {:ok, %{view: view, row_a: row_a, row_b: row_b}}
     end
@@ -77,6 +83,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   describe "order by url params" do
     setup %{conn: conn} do
+      allow(Datasets.get(any()), return: %Dataset{})
+
       dataset_a =
         DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
         |> Map.put(:ingestedTime, @ingested_time_a)
@@ -89,8 +97,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
       conn = get(conn, @url_path)
 
-      row_a = ["check", dataset_a.business.dataTitle, dataset_a.business.orgTitle, "Edit"]
-      row_b = ["check", dataset_b.business.dataTitle, dataset_b.business.orgTitle, "Edit"]
+      row_a = ["Success", dataset_a.business.dataTitle, dataset_a.business.orgTitle, "Edit"]
+      row_b = ["Success", dataset_b.business.dataTitle, dataset_b.business.orgTitle, "Edit"]
 
       {:ok, %{conn: conn, row_a: row_a, row_b: row_b}}
     end

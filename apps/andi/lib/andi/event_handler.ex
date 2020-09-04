@@ -83,10 +83,6 @@ defmodule Andi.EventHandler do
     data_ingest_end()
     |> add_event_count(id)
 
-    # Brook converts all maps to string keys when it retrieves a value from its state, even if they're inserted as atom keys. For that reason, make sure to insert as string keys so that we're consistent.
-    timestamp = create_ts |> DateTime.from_unix!()
-    Datasets.update_ingested_time(id, timestamp)
-
     {:create, :ingested_time, id, %{"id" => id, "ingested_time" => create_ts}}
   end
 
