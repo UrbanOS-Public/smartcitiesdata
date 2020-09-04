@@ -29,6 +29,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   def changeset(dataset, changes) do
     dataset
+    |> Andi.Repo.preload([:business, :technical])
     |> cast(changes, @cast_fields)
     |> cast_assoc(:technical, with: &Technical.changeset/2)
     |> cast_assoc(:business, with: &Business.changeset/2)
@@ -36,6 +37,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   def changeset_for_draft(dataset, changes) do
     dataset
+    |> Andi.Repo.preload([:business, :technical])
     |> cast(changes, @cast_fields)
     |> cast_assoc(:technical, with: &Technical.changeset_for_draft/2)
     |> cast_assoc(:business, with: &Business.changeset_for_draft/2)

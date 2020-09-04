@@ -3,6 +3,7 @@ defmodule Andi.MessageHandlerTest do
   use Andi.DataCase
 
   import SmartCity.TestHelper, only: [eventually: 1]
+
   @moduletag shared_data_connection: true
 
   alias SmartCity.TestDataGenerator, as: TDG
