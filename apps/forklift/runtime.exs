@@ -130,20 +130,11 @@ end
 
 config :telemetry_event,
   metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
+  add_metrics: [:dead_letters_handled_count],
   metrics_options: [
-    [
-      metric_name: "dead_letters_handled.count",
-      tags: [:dataset_id, :reason],
-      metric_type: :counter
-    ],
     [
       metric_name: "dataset_compaction_duration_total.duration",
       tags: [:app, :system_name],
       metric_type: :sum
-    ],
-    [
-      metric_name: "dataset_record_total.count",
-      tags: [:table_name],
-      metric_type: :last_value
     ]
   ]
