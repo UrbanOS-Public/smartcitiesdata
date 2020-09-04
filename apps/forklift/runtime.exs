@@ -136,5 +136,10 @@ config :telemetry_event,
       metric_name: "dataset_compaction_duration_total.duration",
       tags: [:app, :system_name],
       metric_type: :sum
+    ],
+    [
+      metric_name: "dataset_record_total.count",
+      tags: [:table_name],
+      metric_type: :last_value
     ]
   ]
