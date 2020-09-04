@@ -102,10 +102,35 @@
   max-width: 30rem;
 }
 
-.datasets-table__ingested-cell {
-  text-align: center;
-  color: green;
+.ingestion-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .ingestion-success-icon {
+        background-image: url('/images/check.svg');
+        height: 30px;
+        width: 30px;
+    }
+
+    .ingestion-failure-icon {
+        background-image: url('/images/X.svg');
+        height: 16px;
+        width: 16px;
+        margin-right: 0.5rem;
+    }
+
+    .ingestion-success-text {
+        align-self: center;
+        color: green;
+    }
+
+    .ingestion-failure-text {
+        align-self: center;
+        color: red;
+    }
 }
+
 
 .datasets-table__cell--break {
   word-break: break-word;
