@@ -119,9 +119,9 @@ config :telemetry_event,
 
 #### add_metrics:
   - Add Metrics is optional and can be added if any of the following metrics are required:
-  - `:dead_letters_handled_count`
-  - `:phoenix_endpoint_stop_duration`
-  - `:dataset_total_count`
+    - `:dead_letters_handled_count`
+    - `:phoenix_endpoint_stop_duration`
+    - `:dataset_total_count`
   - The above metrics configuration can be added just by adding the keys shown above.
   - All the above metrics are optional and can be added depending upon the requirement.
 
@@ -141,10 +141,10 @@ config :telemetry_event,
 #### metric_type:
   - This indicates the type of metric required.
   - It must be one of the the following options:
-  - `:counter` Metric - It keeps track of the total number of specific events emitted.
-  - `:sum` Metric - It keeps track of the sum of selected measurement's values carried by specific events.
-  - `:last_value` Metric - It keeps track of the selected measurement found in the most recent event.
-  - `:distribution` Metric - It builds a histogram of selected measurement's values. It is up to the reporter to decide how the boundaries of the distribution buckets are configured - via :reporter_options, configuration of the aggregating system, or other means.
+    - `:counter` Metric - It keeps track of the total number of specific events emitted.
+    - `:sum` Metric - It keeps track of the sum of selected measurement's values carried by specific events.
+    - `:last_value` Metric - It keeps track of the selected measurement found in the most recent event.
+    - `:distribution` Metric - It builds a histogram of selected measurement's values. It is up to the reporter to decide how the boundaries of the distribution buckets are configured - via :reporter_options, configuration of the aggregating system, or other means.
 
 ### PORT NO FOR TEST AND INTEGRATION
   - Upon starting any application for test and integration, it will assign the metrics port dynamically which can be fetched using Application.get_env, for example:
