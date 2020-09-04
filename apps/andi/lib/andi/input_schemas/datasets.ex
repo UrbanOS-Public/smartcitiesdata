@@ -58,7 +58,9 @@ defmodule Andi.InputSchemas.Datasets do
 
     changes = InputConverter.prepare_smrt_dataset_for_casting(smrt_dataset)
 
-    Dataset.changeset_for_draft(andi_dataset, changes)
+    andi_dataset
+    |> Andi.Repo.preload([:business, :technical])
+    |> Dataset.changeset_for_draft(changes)
     |> save()
   end
 
@@ -75,7 +77,9 @@ defmodule Andi.InputSchemas.Datasets do
   def update(%Dataset{} = from_dataset, changes) do
     changes_as_map = StructTools.to_map(changes)
 
-    Dataset.changeset_for_draft(from_dataset, changes_as_map)
+    from_dataset
+    |> Andi.Repo.preload([:business, :technical])
+    |> Dataset.changeset_for_draft(changes_as_map)
     |> save()
   end
 
@@ -108,7 +112,9 @@ defmodule Andi.InputSchemas.Datasets do
 
     new_changes = %{technical: technical_changes, business: business_changes, id: dataset_id} |> StructTools.to_map()
 
-    Dataset.changeset_for_draft(existing_dataset, new_changes)
+    existing_dataset
+    |> Andi.Repo.preload([:business, :technical])
+    |> Dataset.changeset_for_draft(new_changes)
     |> save()
   end
 
