@@ -16,7 +16,8 @@ config :andi,
     {Andi.DivoPostgres, []}
   ],
   divo_wait: [dwell: 700, max_tries: 50],
-  kafka_broker: endpoint
+  kafka_broker: endpoint,
+  dead_letter_topic: "dead-letters"
 
 config :andi, Andi.Repo,
   database: "andi",
@@ -76,6 +77,24 @@ config :andi, AndiWeb.Endpoint,
   ],
   live_view: [
     signing_salt: "SUPER VERY TOP SECRET!!!"
+  ]
+
+config :andi, :elsa,
+  endpoints: endpoint,
+  name: :andi_elsa,
+  connection: :andi_reader,
+  group_consumer: [
+    name: "andi_reader",
+    group: "andi_reader_group",
+    topics: ["dead-letters"],
+    handler: Andi.MessageHandler,
+    handler_init_args: [],
+    config: [
+      begin_offset: 0,
+      offset_reset_policy: :latest,
+      prefetch_count: 0,
+      prefetch_bytes: 2_097_152
+    ]
   ]
 
 defmodule Andi.DivoPostgres do

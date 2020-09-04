@@ -6,6 +6,8 @@ defmodule Andi.MessageHandler do
 
   alias Andi.InputSchemas.Datasets
 
+  @dead_letter_topic Application.get_env(:andi, :dead_letter_topic)
+
   def init(_) do
     {:ok, %{}}
   end
@@ -16,7 +18,7 @@ defmodule Andi.MessageHandler do
     {:ack, state}
   end
 
-  def handle_message(%Elsa.Message{timestamp: nil, value: value}, state) do
+  def handle_message(%Elsa.Message{topic: @dead_letter_topic, timestamp: nil, value: value}, state) do
     value
     |> Jason.decode!()
     |> add_current_time_to_message()
@@ -25,7 +27,7 @@ defmodule Andi.MessageHandler do
     {:ack, state}
   end
 
-  def handle_message(%Elsa.Message{timestamp: timestamp, value: value}, state) do
+  def handle_message(%Elsa.Message{topic: @dead_letter_topic, timestamp: timestamp, value: value}, state) do
     {:ok, timestamp_datetime} =
       timestamp
       |> DateTime.from_unix!(:millisecond)
@@ -41,7 +43,7 @@ defmodule Andi.MessageHandler do
     {:ack, state}
   end
 
-  def handle_message(%Elsa.Message{value: value}, state) do
+  def handle_message(%Elsa.Message{topic: @dead_letter_topic, value: value}, state) do
     value
     |> Jason.decode!()
     |> add_current_time_to_message()
@@ -51,7 +53,12 @@ defmodule Andi.MessageHandler do
   end
 
   def handle_message(message, state) do
-    Logger.warn("Could not process DLQ message #{message}")
+    message_as_json =
+      message
+      |> Map.from_struct()
+      |> Jason.encode!()
+
+    Logger.warn("Could not process message #{message_as_json}")
 
     {:ack, state}
   end

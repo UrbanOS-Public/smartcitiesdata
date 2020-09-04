@@ -26,25 +26,8 @@ config :phoenix, :json_library, Jason
 
 config :andi,
   topic: "dataset-registry",
-  organization_topic: "organization-raw"
-
-config :andi, :elsa,
-  endpoints: [localhost: 9092],
-  name: :andi_elsa,
-  connection: :andi_reader,
-  group_consumer: [
-    name: "andi_reader",
-    group: "andi_reader_group",
-    topics: ["streaming-dead-letters"],
-    handler: Andi.MessageHandler,
-    handler_init_args: [],
-    config: [
-      begin_offset: 0,
-      offset_reset_policy: :reset_to_earliest,
-      prefetch_count: 0,
-      prefetch_bytes: 2_097_152
-    ]
-  ]
+  organization_topic: "organization-raw",
+  dead_letter_topic: "streaming-dead-letters"
 
 config :tesla, adapter: Tesla.Adapter.Hackney
 

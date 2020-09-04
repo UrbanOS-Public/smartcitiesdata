@@ -64,6 +64,15 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dlq_message = %{"dataset_id" => dataset.id, "timestamp" => dlq_time}
       Datasets.update_latest_dlq_message(dlq_message)
 
+      eventually(fn ->
+        dlq_message =
+          dataset.id
+          |> Datasets.get()
+          |> Map.get(:dlq_message)
+
+        assert dlq_message != nil
+      end)
+
       assert {:ok, view, html} = live(conn, @url_path)
       table_row = get_dataset_table_row(html, dataset)
 

@@ -64,10 +64,7 @@ defmodule AndiWeb.DatasetLiveView.Table do
   defp get_ingest_cell_class(ingest_status), do: String.downcase(ingest_status)
 
   defp ingest_status(%{"ingested_time" => dataset_ingested_time} = dataset) when dataset_ingested_time != nil do
-    dlq_message = Datasets.get(dataset["id"]) |> Map.get(:dlq_message)
-    dlq_message_age_in_days = dlq_message_age(dlq_message)
-
-    case dlq_message == nil or dlq_message_age_in_days > 7 do
+    case dataset_ingest_successful?(dataset["id"]) do
       true -> "Success"
       _ -> "Failure"
     end
@@ -75,11 +72,29 @@ defmodule AndiWeb.DatasetLiveView.Table do
 
   defp ingest_status(_), do: ""
 
-  defp dlq_message_age(nil), do: -1
+  defp dataset_ingest_successful?(dataset_id) do
+    dlq_message =
+      dataset_id
+      |> Datasets.get()
+      |> Map.get(:dlq_message)
 
-  defp dlq_message_age(dlq_message) do
-    {:ok, dlq_message_timestamp, _} = dlq_message |> Map.get("timestamp") |> DateTime.from_iso8601()
+    case has_recent_dlq_message?(dlq_message) do
+      true -> false
+      _ -> true
+    end
+  end
 
-    Timex.diff(DateTime.utc_now(), dlq_message_timestamp, :days)
+  defp has_recent_dlq_message?(nil), do: false
+
+  defp has_recent_dlq_message?(message) do
+    message_timestamp = message["timestamp"]
+    message_received_within?(message_timestamp, 7, :days)
+  end
+
+  defp message_received_within?(message_timestamp, length_of_time, interval) do
+    {:ok, message_datetime, _} = DateTime.from_iso8601(message_timestamp)
+    message_age = Timex.diff(DateTime.utc_now(), message_datetime, interval)
+
+    message_age <= length_of_time
   end
 end

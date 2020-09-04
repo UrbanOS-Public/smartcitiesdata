@@ -59,7 +59,10 @@ defmodule Andi.MessageHandlerTest do
       |> DateTime.to_iso8601()
 
     dlq_message = %{"dataset_id" => dataset.id, "timestamp" => current_timestamp_iso}
-    elsa_messages = [%Elsa.Message{value: Jason.encode!(dlq_message), timestamp: DateTime.to_unix(current_timestamp, :millisecond)}]
+
+    elsa_messages = [
+      %Elsa.Message{topic: "dead-letters", value: Jason.encode!(dlq_message), timestamp: DateTime.to_unix(current_timestamp, :millisecond)}
+    ]
 
     MessageHandler.handle_messages(elsa_messages, %{})
 
