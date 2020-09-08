@@ -15,6 +15,7 @@ defmodule AndiWeb.AuthController do
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, params) do
     token = auth.credentials.token
 
+    # this session token can be later verified via Guardian.Plug.VerifySession
     conn
     |> Plug.Conn.fetch_session()
     |> AndiWeb.Auth.TokenHandler.Plug.put_session_token(token)

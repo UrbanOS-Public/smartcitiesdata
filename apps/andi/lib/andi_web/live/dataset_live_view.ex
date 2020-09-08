@@ -56,8 +56,12 @@ defmodule AndiWeb.DatasetLiveView do
     """
   end
 
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     AndiWeb.Endpoint.subscribe(@ingested_time_topic)
+    token = Map.get(session, "guardian_default_token")
+    # Verify token with Guardian.Plug.VerifySession
+    # Optionally attach token to socket and verify it on every event and info
+    # at this point, the actual stuff attached to the socket does not go to the client and come back so this would only ensure that a long lived web socket can't eventually be hijacked without verification
 
     {:ok,
      assign(socket,
@@ -65,7 +69,8 @@ defmodule AndiWeb.DatasetLiveView do
        search_text: nil,
        include_remotes: false,
        order: {"data_title", "asc"},
-       params: %{}
+       params: %{},
+       guardian_default_token: token
      )}
   end
 
