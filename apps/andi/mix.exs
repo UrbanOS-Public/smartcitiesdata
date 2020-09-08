@@ -75,7 +75,9 @@ defmodule Andi.MixProject do
       {:timex, "~> 3.6"},
       {:tzdata, "~> 1.0"},
       {:web, in_umbrella: true},
-      {:ueberauth_auth0, "~> 0.8.1"}
+      {:ueberauth_auth0, "~> 0.8.1"},
+      {:guardian, "~> 2.0"},
+      {:httpoison, "~> 1.5"},
     ]
   end
 

@@ -39,7 +39,7 @@ config :andi, AndiWeb.Endpoint,
 
 config :ueberauth, Ueberauth,
   providers: [
-      auth0: { Ueberauth.Strategy.Auth0, [] },
+    auth0: { Ueberauth.Strategy.Auth0, [default_audience: "discovery_api"] },
     ]
 
 config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,

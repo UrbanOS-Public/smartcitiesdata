@@ -12,16 +12,12 @@ defmodule AndiWeb.AuthController do
     |> redirect(to: "/")
   end
 
-  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
-    case UserFromAuth.find_or_create(auth) do
-      {:ok, user} ->
-        IO.inspect(user, label: "user")
-        conn
-        |> redirect(to: "/")
-      {:error, reason} ->
-        IO.inspect(reason, label: "reason")
-        conn
-        |> redirect(to: "/")
-    end
+  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, params) do
+    token = auth.credentials.token
+
+    conn
+    |> Plug.Conn.fetch_session()
+    |> AndiWeb.Auth.TokenHandler.Plug.put_session_token(token)
+    |> redirect(to: "/")
   end
 end
