@@ -1,43 +1,57 @@
 defmodule TelemetryEvent.Helper.AddMetrics do
   @moduledoc false
 
-  def add_metrics_options(metrics_options) do
-    metrics_options
-    |> events_handled()
-    |> phoenix_endpoint()
+  def add_metrics_options() do
+    metrics_options =
+      Application.get_env(:telemetry_event, :metrics_options)
+      |> List.wrap()
+
+    add_metrics =
+      [
+        :events_handled_count
+        | Application.get_env(:telemetry_event, :add_metrics)
+          |> List.wrap()
+      ]
+      |> Enum.map(fn metrics -> add_metrics(metrics) end)
+
+    add_metrics ++ metrics_options
   end
 
-  defp events_handled(metrics_options) do
+  defp add_metrics(:events_handled_count) do
     [
-      [
-        metric_name: "events_handled.count",
-        tags: [:app, :author, :dataset_id, :event_type],
-        metric_type: :counter
-      ]
-      | metrics_options
+      metric_name: "events_handled.count",
+      tags: [:app, :author, :dataset_id, :event_type],
+      metric_type: :counter
     ]
   end
 
-  defp phoenix_endpoint(metrics_options) do
-    case Application.get_env(:telemetry_event, :add_poller) do
-      true ->
-        [
-          [
-            metric_name: "phoenix.endpoint.stop.duration",
-            tags: [:end_point, :method],
-            tag_values: fn %{conn: conn} ->
-              %{end_point: end_point(conn), method: Map.get(conn, :method)}
-            end,
-            metric_type: :distribution,
-            unit: {:native, :millisecond},
-            reporter_options: [buckets: [0.01, 0.025, 0.05, 0.1, 0.2, 0.5, 1]]
-          ]
-          | metrics_options
-        ]
+  defp add_metrics(:dead_letters_handled_count) do
+    [
+      metric_name: "dead_letters_handled.count",
+      tags: [:dataset_id, :reason],
+      metric_type: :counter
+    ]
+  end
 
-      _ ->
-        metrics_options
-    end
+  defp add_metrics(:phoenix_endpoint_stop_duration) do
+    [
+      metric_name: "phoenix.endpoint.stop.duration",
+      tags: [:end_point, :method],
+      tag_values: fn %{conn: conn} ->
+        %{end_point: end_point(conn), method: Map.get(conn, :method)}
+      end,
+      metric_type: :distribution,
+      unit: {:native, :millisecond},
+      reporter_options: [buckets: [10, 50, 100, 250, 500, 1000, 2000]]
+    ]
+  end
+
+  defp add_metrics(:dataset_total_count) do
+    [
+      metric_name: "dataset_total.count",
+      tags: [:app],
+      metric_type: :last_value
+    ]
   end
 
   defp end_point(conn) do

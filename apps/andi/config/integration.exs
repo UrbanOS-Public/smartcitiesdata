@@ -79,6 +79,24 @@ config :andi, AndiWeb.Endpoint,
     signing_salt: "SUPER VERY TOP SECRET!!!"
   ]
 
+config :andi, :elsa,
+  endpoints: endpoint,
+  name: :andi_elsa,
+  connection: :andi_reader,
+  group_consumer: [
+    name: "andi_reader",
+    group: "andi_reader_group",
+    topics: ["dead-letters"],
+    handler: Andi.MessageHandler,
+    handler_init_args: [],
+    config: [
+      begin_offset: 0,
+      offset_reset_policy: :latest,
+      prefetch_count: 0,
+      prefetch_bytes: 2_097_152
+    ]
+  ]
+
 defmodule Andi.DivoPostgres do
   @moduledoc """
   Defines a postgres stack compatible with divo

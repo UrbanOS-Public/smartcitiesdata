@@ -26,19 +26,23 @@ defmodule Andi.EventHandler do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
 
-  def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data}) do
+  def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data, author: author}) do
     dataset_update()
-    |> add_event_count(data.id)
+    |> add_event_count(author, data.id)
+
+    Datasets.update_ingested_time(data.id, DateTime.utc_now())
 
     Datasets.update_ingested_time(data.id, DateTime.utc_now())
 
     Datasets.update(data)
     DatasetStore.update(data)
+
+    add_dataset_count()
   end
 
-  def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data}) do
+  def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do
     organization_update()
-    |> add_event_count(data.id)
+    |> add_event_count(author, data.id)
 
     data_harvest_event(data)
 
@@ -48,18 +52,19 @@ defmodule Andi.EventHandler do
 
   def handle_event(%Brook.Event{
         type: user_organization_associate(),
-        data: %UserOrganizationAssociate{user_id: user_id, org_id: org_id}
+        data: %UserOrganizationAssociate{user_id: user_id, org_id: org_id},
+        author: author
       }) do
     user_organization_associate()
-    |> add_event_count(nil)
+    |> add_event_count(author, nil)
 
     merge(:org_to_users, org_id, &add_to_set(&1, user_id))
     merge(:user_to_orgs, user_id, &add_to_set(&1, org_id))
   end
 
-  def handle_event(%Brook.Event{type: dataset_harvest_start(), data: %Organization{} = data}) do
+  def handle_event(%Brook.Event{type: dataset_harvest_start(), data: %Organization{} = data, author: author}) do
     dataset_harvest_start()
-    |> add_event_count(data.id)
+    |> add_event_count(author, data.id)
 
     Task.start_link(Harvester, :start_harvesting, [data])
 
@@ -71,44 +76,57 @@ defmodule Andi.EventHandler do
     :discard
   end
 
-  def handle_event(%Brook.Event{type: "migration:modified_date:start"}) do
+  def handle_event(%Brook.Event{type: "migration:modified_date:start", author: author}) do
     "migration:modified_date:start"
-    |> add_event_count(nil)
+    |> add_event_count(author, nil)
 
     Andi.Migration.ModifiedDateMigration.do_migration()
     {:create, :migration, "modified_date_migration_completed", true}
   end
 
-  def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{id: id}, create_ts: create_ts}) do
+  def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{id: id}, create_ts: create_ts, author: author}) do
     data_ingest_end()
-    |> add_event_count(id)
+    |> add_event_count(author, id)
 
     {:create, :ingested_time, id, %{"id" => id, "ingested_time" => create_ts}}
   end
 
   def handle_event(%Brook.Event{
         type: dataset_delete(),
-        data: %Dataset{} = dataset
+        data: %Dataset{} = dataset,
+        author: author
       }) do
     dataset_delete()
-    |> add_event_count(dataset.id)
+    |> add_event_count(author, dataset.id)
 
     Datasets.delete(dataset.id)
     DatasetStore.delete(dataset.id)
     Organizations.delete_harvested_dataset(dataset.id)
+    add_dataset_count()
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])
   defp add_to_set(set, id), do: MapSet.put(set, id)
 
-  defp add_event_count(event_type, dataset_id) do
+  defp add_event_count(event_type, author, dataset_id) do
     [
       app: "andi",
-      author: "andi",
+      author: author,
       dataset_id: dataset_id,
       event_type: event_type
     ]
     |> TelemetryEvent.add_event_metrics([:events_handled])
+  end
+
+  defp add_dataset_count() do
+    count =
+      DatasetStore.get_all!()
+      |> Enum.count()
+
+    [
+      app: "andi"
+    ]
+    |> TelemetryEvent.add_event_metrics([:dataset_total], value: %{count: count})
   end
 
   defp data_harvest_event(org) do
