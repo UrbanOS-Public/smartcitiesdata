@@ -103,6 +103,7 @@ defmodule DiscoveryApi.EventHandler do
     Elasticsearch.Document.delete(dataset.id)
     StatsCalculator.delete_completeness(dataset.id)
     Model.delete(dataset.id)
+    add_dataset_count()
     clear_caches()
     Logger.debug("#{__MODULE__}: Deleted dataset: #{dataset.id}")
 
