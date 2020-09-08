@@ -35,6 +35,7 @@ defmodule AndiWeb.Endpoint do
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
   plug Plug.Session, @session_options
+  # ^ One option we'd likely need to look into here is the redis session store for persisting and timing out sessions
 
   plug AndiWeb.Router
 end
