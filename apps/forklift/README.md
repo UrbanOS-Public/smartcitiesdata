@@ -1,6 +1,6 @@
 # Forklift
 
-An application for reading data off kafka topics, batching it up and sending it to Presto in a SQL insert query for long-term storage based on the schema supplied with the data's initial dataset definition.
+An application for reading data off kafka topics, batching it up and sending it to Presto. To improve both write and read performance data is written to a temporary table as raw JSON and then migrated to the main table in ORC format.  The process of [compaction](#compaction) is done on a configurable cadence.
 
 
 ## To run the tests
@@ -21,6 +21,18 @@ You can use [Divo](https://hexdocs.pm/divo/) to stand up the external dependenci
 MIX_ENV=integration mix docker.start
 MIX_ENV=integration iex -S mix
 ```
+
+## Jobs
+### Compaction
+Compaction is a process that runs that consolidates the data that is being stored in Presto.  This process greatly improves read performance.
+```elixir
+# Deactive Compaction
+Forklift.Quantum.Scheduler.deactivate_job(:compaction)
+
+# Active Compaction
+Forklift.Quantum.Scheduler.activate_job(:compaction)
+```
+
 
 ## License
 
