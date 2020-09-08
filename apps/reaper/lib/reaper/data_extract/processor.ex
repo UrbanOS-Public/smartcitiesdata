@@ -85,17 +85,19 @@ defmodule Reaper.DataExtract.Processor do
 
   def process_extract_step(dataset, %{type: "http"} = step) do
     IO.inspect(step, label: "this is the step")
+    headers = UrlBuilder.decode_headers(step.context.headers, step.assigns)
+    |> IO.inspect(label: "This is zee headers")
 
     UrlBuilder.decode_http_extract_step(step)
     |> IO.inspect(label: "the earl")
     ## TODO: Dataslurper seems to not fail on 401s, you can reproduce by updating the teest that gets a secret and makes bypass 401
-    |> DataSlurper.slurp(dataset.id, [], nil)
+    |> DataSlurper.slurp(dataset.id, headers, nil)
     |> Decoder.decode(dataset)
     |> Stream.with_index()
     |> GenStage.from_enumerable()
   end
 
-  def process_extract_step(dataset, %{type: "date"} = step) do
+  def process_extract_step(_dataset, %{type: "date"} = step) do
     date =
       case step.context.deltaTimeUnit do
         nil ->
@@ -103,14 +105,14 @@ defmodule Reaper.DataExtract.Processor do
 
         _ ->
           unit = String.to_atom(step.context.deltaTimeUnit)
-          Timex.shift(Timex.now, [{unit, step.context.deltaTimeValue}])
+          Timex.shift(Timex.now(), [{unit, step.context.deltaTimeValue}])
       end
 
     formatted_date = Timex.format!(date, step.context.format)
     Map.put(step.assigns, step.context.destination |> String.to_atom(), formatted_date)
   end
 
-  def process_extract_step(dataset, %{type: "secret"} = step) do
+  def process_extract_step(_dataset, %{type: "secret"} = step) do
     {:ok, cred} = Reaper.SecretRetriever.retrieve_dataset_credentials(step.context.key)
     secret = Map.get(cred, step.context.sub_key)
 

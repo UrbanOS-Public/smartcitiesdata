@@ -168,6 +168,14 @@ defmodule Reaper.DataExtract.ProcessorTest do
         end
       end)
 
+      Bypass.stub(bypass, "GET", "/api/csv/headers", fn conn ->
+        IO.inspect(conn.req_headers, label: "mah headers")
+        if(Enum.any?(conn.req_headers, fn header -> header == {"Authorization", "mah_secret"} end)) do
+          Plug.Conn.resp(conn, 200, @csv)
+        else
+          Plug.Conn.resp(conn, 401, "Unauthorized")
+        end
+      end)
       :ok
     end
 
@@ -355,6 +363,56 @@ defmodule Reaper.DataExtract.ProcessorTest do
       assert_called Persistence.record_last_processed_index(any(), any()), once()
       assert_called Persistence.remove_last_processed_index(@dataset_id), once()
     end
+    test "Will put a secret into a header", %{dataset: dataset} do
+      allow Persistence.get_last_processed_index(@dataset_id), return: -1
+      allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
+
+      allow Reaper.SecretRetriever.retrieve_dataset_credentials("the_key"),
+        return:
+          {:ok,
+           %{
+             "client_id" => "mah_client",
+             "client_secret" => "mah_secret"
+           }}
+
+      extract_steps = [
+        %{
+          type: "secret",
+          context: %{
+            destination: "token",
+            key: "the_key",
+            sub_key: "client_secret"
+          },
+          assigns: %{}
+        },
+        %{
+          type: "http",
+          context: %{
+            url: "#{dataset.technical.sourceUrl}/headers",
+            queryParams: %{},
+            headers: %{
+              Bearer: "{{token}}"
+            }
+          },
+          assigns: %{}
+        }
+      ]
+
+      put_in(dataset, [:technical, :extractSteps], extract_steps)
+      |> Processor.process()
+
+      messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
+
+      expected = [
+        %{"a" => "one", "b" => "two", "c" => "three"},
+        %{"a" => "four", "b" => "five", "c" => "six"}
+      ]
+
+      assert expected == get_payloads(messages)
+
+      assert_called Persistence.record_last_processed_index(any(), any()), once()
+      assert_called Persistence.remove_last_processed_index(@dataset_id), once()
+    end
   end
 
   describe "date step" do
@@ -380,7 +438,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
     end
 
     test "puts current date can do time delta", %{dataset: dataset} do
-      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
+      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:30:00.000], "Etc/UTC")
 
       step = %{
         type: "date",
@@ -397,6 +455,23 @@ defmodule Reaper.DataExtract.ProcessorTest do
       assert Processor.process_extract_step(dataset, step) ==
                %{
                  currentDate: "1987-08"
+               }
+
+      step = %{
+        type: "date",
+        context: %{
+          destination: "currentDate",
+          deltaTimeUnit: "minutes",
+          deltaTimeValue: 33,
+          timeZone: nil,
+          format: "{YYYY}-{0M}-{0D} {h12}:{m}"
+        },
+        assigns: %{}
+      }
+
+      assert Processor.process_extract_step(dataset, step) ==
+               %{
+                 currentDate: "2020-08-31 2:03"
                }
     end
   end
