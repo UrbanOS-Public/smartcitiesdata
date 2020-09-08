@@ -85,8 +85,10 @@ defmodule Reaper.DataExtract.Processor do
 
   def process_extract_step(dataset, %{type: "http"} = step) do
     IO.inspect(step, label: "this is the step")
-    headers = UrlBuilder.decode_headers(step.context.headers, step.assigns)
-    |> IO.inspect(label: "This is zee headers")
+
+    headers =
+      UrlBuilder.decode_headers(step.context.headers, step.assigns)
+      |> IO.inspect(label: "This is zee headers")
 
     UrlBuilder.decode_http_extract_step(step)
     |> IO.inspect(label: "the earl")
@@ -95,7 +97,7 @@ defmodule Reaper.DataExtract.Processor do
     |> Decoder.decode(dataset)
     |> Stream.with_index()
     |> GenStage.from_enumerable()
-  end
+  end ## Making a sandwich, back in 5
 
   def process_extract_step(_dataset, %{type: "date"} = step) do
     date =

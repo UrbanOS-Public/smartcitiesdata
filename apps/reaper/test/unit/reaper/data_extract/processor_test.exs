@@ -146,6 +146,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       allow Persistence.remove_last_processed_index(@dataset_id), return: :ok
       allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
 
+      # TODO: Change to @csv 1,2,3
       Bypass.stub(bypass, "GET", "/api/csv", fn conn ->
         Plug.Conn.resp(conn, 200, @csv)
       end)
@@ -170,12 +171,14 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       Bypass.stub(bypass, "GET", "/api/csv/headers", fn conn ->
         IO.inspect(conn.req_headers, label: "mah headers")
-        if(Enum.any?(conn.req_headers, fn header -> header == {"Authorization", "mah_secret"} end)) do
+
+        if(Enum.any?(conn.req_headers, fn header -> header == {"bearer", "mah_secret"} end)) do
           Plug.Conn.resp(conn, 200, @csv)
         else
           Plug.Conn.resp(conn, 401, "Unauthorized")
         end
       end)
+
       :ok
     end
 
@@ -187,7 +190,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
         type: "http",
         context: %{
           url: dataset.technical.sourceUrl,
-          queryParams: %{}
+          queryParams: %{},
+          headers: %{}
         },
         assigns: %{}
       }
@@ -228,7 +232,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
           type: "http",
           context: %{
             url: "#{dataset.technical.sourceUrl}/{{currentDate}}",
-            queryParams: %{}
+            queryParams: %{},
+            headers: %{}
           },
           assigns: %{}
         }
@@ -281,7 +286,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
           type: "http",
           context: %{
             url: "#{dataset.technical.sourceUrl}/{{currentYear}}-{{currentMonth}}",
-            queryParams: %{}
+            queryParams: %{},
+            headers: %{}
           },
           assigns: %{}
         }
@@ -342,7 +348,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
             url: "#{dataset.technical.sourceUrl}/{{currentYear}}",
             queryParams: %{
               token: "{{token}}"
-            }
+            },
+            headers: %{}
           },
           assigns: %{}
         }
@@ -363,6 +370,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       assert_called Persistence.record_last_processed_index(any(), any()), once()
       assert_called Persistence.remove_last_processed_index(@dataset_id), once()
     end
+
     test "Will put a secret into a header", %{dataset: dataset} do
       allow Persistence.get_last_processed_index(@dataset_id), return: -1
       allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
@@ -412,6 +420,98 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       assert_called Persistence.record_last_processed_index(any(), any()), once()
       assert_called Persistence.remove_last_processed_index(@dataset_id), once()
+    end
+
+    test "extract steps uses auth retrieval", %{dataset: dataset} do
+      steps = [
+        %{
+          type: "auth",
+          context: %{
+            path: ["sub", "path"],
+            destination: "token",
+            url: "authorize.example",
+            encodeMethod: "json",
+            body: %{Key: "AuthToken"},
+            queryParams: %{},
+            headers: %{}
+          },
+          assigns: %{}
+        },
+        %{
+          type: "http",
+          context: %{
+            url: "#{dataset.technical.sourceUrl}/auth",
+            queryParams: %{},
+            headers: %{
+              Bearer: "{{token}}"
+            }
+          },
+          assigns: %{}
+        }
+      ]
+    end
+  end
+
+  describe "process_extract_step for auth" do
+    test "Calls the auth retriever and adds response token to assigns", %{bypass: bypass, dataset: dataset} do
+      Bypass.stub(bypass, "POST", "authorize.example", fn conn ->
+        IO.inspect(conn, label: "this is the conn")
+      end)
+
+      step =
+        %{
+          type: "auth",
+          context: %{
+            action: "POST",
+            path: ["sub", "path"],
+            destination: "token",
+            url: "authorize.example",
+            encodeMethod: "json",
+            body: %{Key: "AuthToken"},
+            queryParams: %{},
+            headers: %{}
+          },
+          assigns: %{}
+        }
+
+      assigns = Processor.process_extract_step(dataset, step)
+
+      assert assigns == %{token: "auth_token"}
+    end
+  end
+
+  describe "extract steps error paths" do
+    test "Set variable then single extract step for http get", %{dataset: dataset} do
+      allow Persistence.get_last_processed_index(@dataset_id), return: -1
+      allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
+
+      extract_steps = [
+        %{
+          type: "date",
+          context: %{
+            destination: "currentDate",
+            deltaTimeUnit: nil,
+            deltaTimeValue: nil,
+            timeZone: nil,
+            format: "{WILLFAIL}-{0M}"
+          },
+          assigns: %{}
+        },
+        %{
+          type: "http",
+          context: %{
+            url: "#{dataset.technical.sourceUrl}/{{currentDate}}",
+            queryParams: %{},
+            headers: %{}
+          },
+          assigns: %{}
+        }
+      ]
+
+      assert_raise Timex.Format.FormatError, fn ->
+        put_in(dataset, [:technical, :extractSteps], extract_steps)
+        |> Processor.process()
+      end
     end
   end
 
