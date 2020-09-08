@@ -138,6 +138,11 @@ config :telemetry_event,
   - This includes the list of the atoms to for required keys.
   - For eg: `[:app, :system_name]` - Here, two keys are used, `app` and `system_name`
 
+#### tag_values:
+  - This is optional function that receives the metadata and returns a map with the tags as keys and their respective values.
+  - By defaults it returns the metadata itself.
+  - For eg: In the above metrics `phoenix.endpoint.stop.duration`, `tag_values` is used to fetch `end_point` and `method` from tne `conn`.
+
 #### metric_type:
   - This indicates the type of metric required.
   - It must be one of the the following options:
@@ -145,6 +150,16 @@ config :telemetry_event,
     - `:sum` Metric - It keeps track of the sum of selected measurement's values carried by specific events.
     - `:last_value` Metric - It keeps track of the selected measurement found in the most recent event.
     - `:distribution` Metric - It builds a histogram of selected measurement's values. It is up to the reporter to decide how the boundaries of the distribution buckets are configured - via :reporter_options, configuration of the aggregating system, or other means.
+
+#### unit:
+  - This is optional, includes an atom describing the unit of selected measurement.
+  - Currently, only time and byte unit conversions are supported.
+
+#### reporter_options:
+  - This includes a keyword list of reporter-specific options for the metric.
+
+#### buckets:
+  - It is up to the reporter to decide how the boundaries of the distribution buckets are configured - via :reporter_options, configuration of the aggregating system, or other means.
 
 ### PORT NO FOR TEST AND INTEGRATION
   - Upon starting any application for test and integration, it will assign the metrics port dynamically which can be fetched using Application.get_env, for example:
