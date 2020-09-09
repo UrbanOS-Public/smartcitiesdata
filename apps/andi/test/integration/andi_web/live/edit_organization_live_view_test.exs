@@ -245,5 +245,31 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       assert length(Floki.attribute(html, ".organizations-table__checkbox--input", "checked")) == 2
     end
+    
+    test "unselecting include for a dataset sends a dataset delete event and updates the include field in the havested table", %{conn: conn, org: org, dataset1: dataset1} do
+      assert {:ok, view, html} = live(conn, @url_path <> org.id)
+
+      Organizations.update_harvested_dataset_include(dataset1.id, true)
+
+      assert %{include: true} = Organizations.get_harvested_dataset(dataset1.id)
+
+      render_change(view, "toggle_include", %{"id" => dataset1.id})
+
+      assert %{include: false} = Organizations.get_harvested_dataset(dataset1.id)
+    
+      assert true = Datasets.get(dataset1.id)
+    end
+
+    test "selecting include for a datasets updates the include field in the harvested table", %{conn: conn, org: org, dataset1: dataset1} do
+      assert {:ok, view, html} = live(conn, @url_path <> org.id)
+
+      Organizations.update_harvested_dataset_include(dataset1.id, false)
+
+      assert %{include: false} = Organizations.get_harvested_dataset(dataset1.id)
+
+      render_change(view, "toggle_include", %{"id" => dataset1.id})
+
+      assert %{include: true} = Organizations.get_harvested_dataset(dataset1.id)    
+    end
   end
 end
