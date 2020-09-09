@@ -32,6 +32,8 @@ defmodule Andi.EventHandler do
 
     Datasets.update_ingested_time(data.id, DateTime.utc_now())
 
+    Datasets.update_ingested_time(data.id, DateTime.utc_now())
+
     Datasets.update(data)
     DatasetStore.update(data)
 

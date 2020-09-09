@@ -45,6 +45,10 @@ config :andi, AndiWeb.Endpoint,
     signing_salt: live_view_salt
   ]
 
+config :andi,
+  dead_letter_topic: "streaming-dead-letters",
+  kafka_endpoints: endpoint
+
 config :andi, Andi.Repo,
   database: System.get_env("POSTGRES_DBNAME"),
   username: System.get_env("POSTGRES_USER"),

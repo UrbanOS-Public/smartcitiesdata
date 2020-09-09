@@ -42,33 +42,8 @@ config :andi, AndiWeb.Endpoint,
   ]
 
 config :andi,
-  dead_letter_topic: "streaming-dead-letters"
-
-host =
-  case System.get_env("HOST_IP") do
-    nil -> "localhost"
-    defined -> defined
-  end
-
-endpoints = [{host, 9092}]
-
-config :andi, :elsa,
-  endpoints: endpoints,
-  name: :andi_elsa,
-  connection: :andi_reader,
-  group_consumer: [
-    name: "andi_reader",
-    group: "andi_reader_group",
-    topics: ["streaming-dead-letters"],
-    handler: Andi.MessageHandler,
-    handler_init_args: [],
-    config: [
-      begin_offset: 0,
-      offset_reset_policy: :latest,
-      prefetch_count: 0,
-      prefetch_bytes: 2_097_152
-    ]
-  ]
+  dead_letter_topic: "streaming-dead-letters",
+  kafka_endpoints: [{host, 9092}]
 
 # Watch static and templates for browser reloading.
 # Do not include metadata nor timestamps in development logs
