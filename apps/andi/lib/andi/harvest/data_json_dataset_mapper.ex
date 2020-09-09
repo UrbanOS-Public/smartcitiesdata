@@ -30,7 +30,8 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
       "source" => Map.get(data_json_dataset["publisher"], "source"),
       "modifiedDate" => modified_date(data_json_dataset["modified"]),
       "datasetId" => generate_scos_dataset_id(data_json_dataset["identifier"]),
-      "include" => true
+      "include" => true,
+      "dataTitle" => data_json_dataset["title"]
     }
   end
 

@@ -212,10 +212,9 @@ defmodule AndiWeb.EditOrganizationLiveView do
   end
 
   def handle_event("toggle_include", %{"id" => id}, socket) do
-    IO.inspect(id, label: "id: ")
     case Organizations.get_harvested_dataset(id) do
       %{include: true} -> 
-        # dataset_delete_event(id)
+        dataset_delete_event(id)
         Organizations.update_harvested_dataset_include(id, false)
         {:noreply, socket}
       %{include: false} ->
@@ -260,11 +259,9 @@ defmodule AndiWeb.EditOrganizationLiveView do
   end
 
   defp to_view_model(dataset) do
-    andi_dataset = Andi.InputSchemas.Datasets.get(dataset[:datasetId])
-
     %{
-      "dataset_id" => andi_dataset.id,
-      "data_title" => andi_dataset.business.dataTitle,
+      "dataset_id" => dataset.datasetId,
+      "data_title" => dataset.dataTitle,
       "source" => dataset.source,
       "modified_date" => to_string(dataset.modifiedDate),
       "include" => dataset.include
