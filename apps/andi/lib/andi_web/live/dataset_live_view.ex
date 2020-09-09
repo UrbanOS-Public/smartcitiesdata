@@ -1,9 +1,11 @@
 defmodule AndiWeb.DatasetLiveView do
   use Phoenix.LiveView
+  import Ecto.Query, only: [from: 2]
 
   alias AndiWeb.Router.Helpers, as: Routes
   alias AndiWeb.DatasetLiveView.Table
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.Dataset
 
   def render(assigns) do
     ~L"""
@@ -130,40 +132,31 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   defp refresh_datasets(search_value, include_remotes) do
-    Datasets.get_all()
+    search_string = "%#{search_value}%"
+
+    query =
+      from(dataset in Dataset,
+        join: technical in assoc(dataset, :technical),
+        join: business in assoc(dataset, :business),
+        preload: [business: business, technical: technical],
+        where: not is_nil(technical.id),
+        where: not is_nil(business.id),
+        where: ilike(business.dataTitle, type(^search_string, :string)),
+        or_where: ilike(business.orgTitle, type(^search_string, :string)),
+        select: dataset
+      )
+
+    query
+    |> Andi.Repo.all()
     |> filter_remotes(include_remotes)
-    |> reject_partial_datasets()
-    |> filter_datasets(search_value)
     |> Enum.map(&to_view_model/1)
   end
 
-  defp filter_remotes(datasets, true), do: datasets
-
   defp filter_remotes(datasets, false) do
-    Enum.reject(datasets, fn dataset -> dataset.technical[:sourceType] == "remote" end)
+    Enum.reject(datasets, fn dataset -> dataset.technical.sourceType == "remote" end)
   end
 
-  defp reject_partial_datasets(datasets) do
-    Enum.reject(datasets, fn
-      %{business: %{id: _bid}, technical: %{id: _tid}} -> false
-      _ -> true
-    end)
-  end
-
-  defp filter_datasets(datasets, ""), do: datasets
-
-  defp filter_datasets(datasets, value) do
-    Enum.filter(datasets, fn dataset ->
-      search_contains?(dataset.business.orgTitle, value) ||
-        search_contains?(dataset.business.dataTitle, value)
-    end)
-  end
-
-  defp search_contains?(nil, _search_str), do: false
-
-  defp search_contains?(str, search_str) do
-    String.downcase(str) =~ String.downcase(search_str)
-  end
+  defp filter_remotes(datasets, true), do: datasets
 
   defp sort_by_dir(models, order_by, order_dir) do
     case order_dir do
@@ -178,7 +171,8 @@ defmodule AndiWeb.DatasetLiveView do
       "id" => dataset.id,
       "org_title" => dataset.business.orgTitle,
       "data_title" => dataset.business.dataTitle,
-      "ingested_time" => dataset.ingestedTime
+      "ingested_time" => dataset.ingestedTime,
+      "dlq_message" => dataset.dlq_message
     }
   end
 
