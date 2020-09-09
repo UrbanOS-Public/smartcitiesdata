@@ -8,8 +8,8 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   import Checkov
   import Phoenix.LiveViewTest
   import Andi, only: [instance_name: 0]
-  import SmartCity.Event, only: [organization_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 3]
+  import SmartCity.Event, only: [organization_update: 0, dataset_update: 0]
+  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   import FlokiHelpers,
     only: [
@@ -23,6 +23,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Datasets
   alias Andi.Services.OrgStore
+  alias Andi.Services.DatasetStore
 
   @url_path "/organizations/"
 
@@ -214,16 +215,24 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
   describe "harvested datasets table" do
     setup do
+
+
       {:ok, dataset1} = TDG.create_dataset(%{}) |> Datasets.update()
       {:ok, dataset2} = TDG.create_dataset(%{}) |> Datasets.update()
       {:ok, dataset3} = TDG.create_dataset(%{}) |> Datasets.update()
+
+      dataset4 = TDG.create_dataset(%{})
+
+      Brook.Event.send(instance_name(), dataset_update(), :andi, dataset4)
+
       {:ok, org} = TDG.create_organization(%{}) |> Organizations.update()
 
       %{datasetId: dataset1.id, orgId: org.id} |> Organizations.update_harvested_dataset()
       %{datasetId: dataset2.id, orgId: org.id} |> Organizations.update_harvested_dataset()
       %{datasetId: dataset3.id, orgId: UUID.uuid4()} |> Organizations.update_harvested_dataset()
+      %{datasetId: dataset4.id, orgId: org.id} |> Organizations.update_harvested_dataset()
 
-      [org: org, dataset1: dataset1, dataset2: dataset2, dataset3: dataset3]
+      [org: org, dataset1: dataset1, dataset2: dataset2, dataset3: dataset3, dataset4: dataset4]
     end
 
     test "shows all harvested datasets associated with a given organization", %{
@@ -240,24 +249,26 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       refute get_text(html, ".organizations-index__table") =~ dataset3.business.dataTitle
     end
 
-    test "include checkbox is present for all datasets", %{conn: conn, org: org, dataset1: dataset1, dataset2: dataset2} do
+    test "include checkbox is present for all datasets", %{conn: conn, org: org} do
       assert {:ok, view, html} = live(conn, @url_path <> org.id)
 
-      assert length(Floki.attribute(html, ".organizations-table__checkbox--input", "checked")) == 2
+      assert length(Floki.attribute(html, ".organizations-table__checkbox--input", "checked")) == 3
     end
     
-    test "unselecting include for a dataset sends a dataset delete event and updates the include field in the havested table", %{conn: conn, org: org, dataset1: dataset1} do
+    test "unselecting include for a dataset sends a dataset delete event and updates the include field in the havested table", %{conn: conn, org: org, dataset4: dataset4} do
       assert {:ok, view, html} = live(conn, @url_path <> org.id)
 
-      Organizations.update_harvested_dataset_include(dataset1.id, true)
+      Organizations.update_harvested_dataset_include(dataset4.id, true)
 
-      assert %{include: true} = Organizations.get_harvested_dataset(dataset1.id)
+      assert %{include: true} = Organizations.get_harvested_dataset(dataset4.id)
 
-      render_change(view, "toggle_include", %{"id" => dataset1.id})
+      render_change(view, "toggle_include", %{"id" => dataset4.id})
 
-      assert %{include: false} = Organizations.get_harvested_dataset(dataset1.id)
-    
-      assert true = Datasets.get(dataset1.id)
+      assert %{include: false} = Organizations.get_harvested_dataset(dataset4.id)
+
+      eventually(fn -> 
+        assert nil == Datasets.get(dataset4.id)
+      end)
     end
 
     test "selecting include for a datasets updates the include field in the harvested table", %{conn: conn, org: org, dataset1: dataset1} do
