@@ -157,6 +157,7 @@ defmodule AndiWeb.EditLiveView do
            assign(socket,
              dataset: andi_dataset,
              changeset: dataset_changeset,
+             unsaved_changes: false,
              publish_success_modal_visibility: "visible",
              page_error: false
            )}
