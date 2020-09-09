@@ -15,7 +15,8 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
     only: [
       get_value: 2,
       get_text: 2,
-      find_elements: 2
+      find_elements: 2,
+      get_attributes: 3
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
@@ -242,7 +243,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
     test "include checkbox is present for all datasets", %{conn: conn, org: org, dataset1: dataset1, dataset2: dataset2} do
       assert {:ok, view, html} = live(conn, @url_path <> org.id)
 
-      assert get_value(html, ".checkbox") == true
+      assert length(Floki.attribute(html, ".organizations-table__checkbox--input", "checked")) == 2
     end
   end
 end

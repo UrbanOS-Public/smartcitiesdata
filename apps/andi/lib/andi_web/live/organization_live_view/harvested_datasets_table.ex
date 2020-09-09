@@ -29,7 +29,7 @@ defmodule AndiWeb.OrganizationLiveView.HarvestedDatsetsTable do
               <td class="organizations-table__cell organizations-table__cell--break" style="width: 10%;"><%= Link.link("Edit", to: "/datasets/#{dataset["dataset_id"]}", class: "btn") %></td>
               <td>
               <label class="organizations-table__checkbox">
-                <input type="checkbox">
+                <input class="organizations-table__checkbox--input" type="checkbox" phx-click="toggle_include" <%= if dataset["include"], do: "checked" %>/>
               </label>
             </td>
             </tr>

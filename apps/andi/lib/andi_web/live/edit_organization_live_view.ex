@@ -210,6 +210,11 @@ defmodule AndiWeb.EditOrganizationLiveView do
     end
   end
 
+  def handle_event("toggle_include", data, socket) do
+    IO.inspect(data, label: "toggle include:")
+    {:noreply, socket}
+  end
+
   def handle_event("show-organizations", _, socket) do
     {:noreply, redirect(socket, to: "/organizations")}
   end
@@ -227,6 +232,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
   end
 
   def handle_event("order-by", %{"field" => field}, socket) do
+    IO.inspect(label: "order by")
     order_dir =
       case socket.assigns.order do
         %{^field => "asc"} -> "desc"
@@ -252,7 +258,8 @@ defmodule AndiWeb.EditOrganizationLiveView do
       "dataset_id" => andi_dataset.id,
       "data_title" => andi_dataset.business.dataTitle,
       "source" => dataset.source,
-      "modified_date" => to_string(dataset.modifiedDate)
+      "modified_date" => to_string(dataset.modifiedDate),
+      "include" => dataset.include
     }
   end
 end
