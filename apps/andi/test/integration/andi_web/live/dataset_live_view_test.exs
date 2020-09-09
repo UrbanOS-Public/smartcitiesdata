@@ -24,47 +24,80 @@ defmodule AndiWeb.DatasetLiveViewTest do
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
 
-  test "data_ingest_end events updates ingested time", %{conn: conn} do
-    dataset = TDG.create_dataset(%{})
+  describe "dataset status" do
+    test "is empty if the dataset has not been ingested", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, andi_dataset} = Datasets.update(dataset)
 
-    {:ok, _andi_dataset} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path)
 
-    assert {:ok, view, _html} = live(conn, @url_path)
+      assert andi_dataset.dlq_message == nil
+      table_row = get_dataset_table_row(html, dataset)
+      {_, _, row_children} = table_row
 
-    table_text = get_text(render(view), ".datasets-index__table")
-    assert not (table_text =~ "check")
+      {_, _, status} = row_children |> List.first()
 
-    Brook.Test.send(instance_name(), data_ingest_end(), :andi, dataset)
+      assert Enum.empty?(status)
+    end
 
-    eventually(fn ->
-      table_text = get_text(render(view), ".datasets-index__table")
-      assert table_text =~ "check"
-    end)
-  end
+    test "shows success when there is no dlq message stored for a dataset", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, andi_dataset} = Datasets.update(dataset)
+      current_time = DateTime.utc_now()
+      Datasets.update_ingested_time(dataset.id, current_time)
 
-  test "data_ingest_end events does not change dataset order", %{conn: conn} do
-    datasets =
-      Enum.map(1..3, fn _x ->
-        dataset = TDG.create_dataset(%{})
+      assert {:ok, view, html} = live(conn, @url_path)
 
-        {:ok, _andi_dataset} = Datasets.update(dataset)
+      assert andi_dataset.dlq_message == nil
+      table_row = get_dataset_table_row(html, dataset)
 
-        dataset
+      refute Enum.empty?(Floki.find(table_row, ".datasets-table__ingested-cell--success"))
+    end
+
+    test "shows failure when there is a dlq message stored for a dataset", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, _} = Datasets.update(dataset)
+      current_time = DateTime.utc_now()
+      Datasets.update_ingested_time(dataset.id, current_time)
+
+      dlq_time = DateTime.utc_now() |> Timex.shift(days: -3) |> DateTime.to_iso8601()
+      dlq_message = %{"dataset_id" => dataset.id, "timestamp" => dlq_time}
+      Datasets.update_latest_dlq_message(dlq_message)
+
+      eventually(fn ->
+        dlq_message =
+          dataset.id
+          |> Datasets.get()
+          |> Map.get(:dlq_message)
+
+        assert dlq_message != nil
       end)
 
-    dataset = Enum.at(datasets, 1)
+      assert {:ok, view, html} = live(conn, @url_path)
+      table_row = get_dataset_table_row(html, dataset)
 
-    assert {:ok, view, _html} = live(conn, @url_path)
-    initial_table_text = get_text(render(view), ".datasets-index__table")
+      refute Enum.empty?(Floki.find(table_row, ".datasets-table__ingested-cell--failure"))
+    end
 
-    Brook.Test.send(instance_name(), data_ingest_end(), :andi, dataset)
+    test "shows success when the latest dlq meessage is older than seven days", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, _} = Datasets.update(dataset)
+      current_time = DateTime.utc_now()
+      Datasets.update_ingested_time(dataset.id, current_time)
 
-    eventually(fn ->
-      table_text = get_text(render(view), ".datasets-index__table")
-      assert table_text =~ "check"
-      # If we remove the check that was added, is everything else the same?
-      assert initial_table_text == String.replace(table_text, "check", "")
-    end)
+      old_time = current_time |> Timex.shift(days: -8) |> DateTime.to_iso8601()
+      dlq_message = %{"dataset_id" => dataset.id, "timestamp" => old_time}
+      Datasets.update_latest_dlq_message(dlq_message)
+
+      eventually(fn ->
+        assert %{"dataset_id" => dataset.id, "timestamp" => old_time} == Datasets.get(dataset.id) |> Map.get(:dlq_message)
+      end)
+
+      assert {:ok, view, html} = live(conn, @url_path)
+      table_row = get_dataset_table_row(html, dataset)
+
+      refute Enum.empty?(Floki.find(table_row, ".datasets-table__ingested-cell--success"))
+    end
   end
 
   test "add dataset button creates a dataset with a default dataTitle and dataName", %{conn: conn} do
@@ -83,5 +116,23 @@ defmodule AndiWeb.DatasetLiveViewTest do
     html = render_change(metadata_view, :save)
 
     refute Enum.empty?(find_elements(html, "#orgId-error-msg"))
+  end
+
+  defp get_dataset_table_row(html, dataset) do
+    html
+    |> Floki.parse_fragment!()
+    |> Floki.find(".datasets-table__tr")
+    |> Enum.reduce_while([], fn row, _acc ->
+      {_, _, children} = row
+
+      [{_, _, [row_title]}] =
+        children
+        |> Floki.find(".datasets-table__data-title-cell")
+
+      case dataset.business.dataTitle == row_title do
+        true -> {:halt, row}
+        false -> {:cont, []}
+      end
+    end)
   end
 end

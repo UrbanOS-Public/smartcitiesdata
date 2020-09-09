@@ -5,8 +5,6 @@ defmodule AndiWeb.DatasetLiveView do
   alias AndiWeb.DatasetLiveView.Table
   alias Andi.InputSchemas.Datasets
 
-  @ingested_time_topic "ingested_time_topic"
-
   def render(assigns) do
     ~L"""
     <div class="datasets-view">
@@ -57,8 +55,6 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   def mount(_params, _session, socket) do
-    AndiWeb.Endpoint.subscribe(@ingested_time_topic)
-
     {:ok,
      assign(socket,
        datasets: nil,
@@ -67,19 +63,6 @@ defmodule AndiWeb.DatasetLiveView do
        order: {"data_title", "asc"},
        params: %{}
      )}
-  end
-
-  def handle_info(%{topic: @ingested_time_topic}, socket) do
-    %{search_text: search_text, order: order} = socket.assigns
-    {order_by, order_dir} = coerce_order_into_tuple(order)
-
-    updated_datasets =
-      refresh_datasets(search_text, socket.assigns.include_remotes)
-      |> sort_by_dir(order_by, order_dir)
-
-    updated_state = assign(socket, :datasets, updated_datasets)
-
-    {:noreply, updated_state}
   end
 
   def handle_params(params, _uri, socket) do
@@ -137,13 +120,6 @@ defmodule AndiWeb.DatasetLiveView do
 
   def handle_event("show-organizations", _, socket) do
     {:noreply, redirect(socket, to: "/organizations")}
-  end
-
-  defp coerce_order_into_tuple(order) when is_tuple(order), do: order
-
-  defp coerce_order_into_tuple(order) when is_map(order) do
-    [{order_by, order_dir}] = Map.to_list(order)
-    {order_by, order_dir}
   end
 
   defp filter_on_search_change(search_value, include_remotes, socket) do

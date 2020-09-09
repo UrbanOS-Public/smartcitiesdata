@@ -60,7 +60,9 @@ config :andi, Andi.Repo,
   ]
 
 config :telemetry_event,
-  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer()
+  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
+  add_poller: true,
+  add_metrics: [:phoenix_endpoint_stop_duration, :dataset_total_count]
 
 config :andi, Andi.Scheduler,
   jobs: [

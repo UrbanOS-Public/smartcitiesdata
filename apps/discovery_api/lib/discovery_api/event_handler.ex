@@ -83,6 +83,7 @@ defmodule DiscoveryApi.EventHandler do
       save_dataset_to_recommendation_engine(dataset)
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
       merge(:models, model.id, model)
+      add_dataset_count()
       clear_caches()
 
       :discard
@@ -102,6 +103,7 @@ defmodule DiscoveryApi.EventHandler do
     Elasticsearch.Document.delete(dataset.id)
     StatsCalculator.delete_completeness(dataset.id)
     Model.delete(dataset.id)
+    add_dataset_count()
     clear_caches()
     Logger.debug("#{__MODULE__}: Deleted dataset: #{dataset.id}")
 
@@ -132,5 +134,16 @@ defmodule DiscoveryApi.EventHandler do
       event_type: event_type
     ]
     |> TelemetryEvent.add_event_metrics([:events_handled])
+  end
+
+  defp add_dataset_count() do
+    count =
+      Brook.get_all_values!(DiscoveryApi.instance(), :models)
+      |> Enum.count()
+
+    [
+      app: "discovery_api"
+    ]
+    |> TelemetryEvent.add_event_metrics([:dataset_total], value: %{count: count})
   end
 end

@@ -2,12 +2,9 @@ use Mix.Config
 
 config :telemetry_event,
   init_server: false,
+  add_poller: false,
+  add_metrics: [:dead_letters_handled_count, :phoenix_endpoint_stop_duration, :dataset_total_count],
   metrics_options: [
-    [
-      metric_name: "dead_letters_handled.count",
-      tags: [:dataset_id, :reason],
-      metric_type: :counter
-    ],
     [
       metric_name: "dataset_compaction_duration_total.duration",
       tags: [:app, :system_name],

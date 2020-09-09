@@ -26,7 +26,8 @@ config :phoenix, :json_library, Jason
 
 config :andi,
   topic: "dataset-registry",
-  organization_topic: "organization-raw"
+  organization_topic: "organization-raw",
+  dead_letter_topic: "streaming-dead-letters"
 
 config :tesla, adapter: Tesla.Adapter.Hackney
 
