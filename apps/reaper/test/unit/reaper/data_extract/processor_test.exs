@@ -6,7 +6,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
   alias Reaper.{Cache, Persistence}
   alias Reaper.DataExtract.Processor
-
+  alias Reaper.Cache.AuthCache
   alias SmartCity.TestDataGenerator, as: TDG
 
   @dataset_id "12345-6789"
@@ -454,18 +454,26 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
   describe "process_extract_step for auth" do
     test "Calls the auth retriever and adds response token to assigns", %{bypass: bypass, dataset: dataset} do
-      Bypass.stub(bypass, "POST", "authorize.example", fn conn ->
-        IO.inspect(conn, label: "this is the conn")
+      Cachex.start(AuthCache.cache_name())
+      Cachex.clear(AuthCache.cache_name())
+
+      Bypass.stub(bypass, "POST", "/", fn conn ->
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+        parsed = Jason.decode!(body)
+        case parsed do
+          %{"Key" => "AuthToken"} -> Plug.Conn.resp(conn, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!)
+          _ -> Plug.Conn.resp(conn, 403, "No dice")
+        end
       end)
 
       step =
         %{
           type: "auth",
           context: %{
-            action: "POST",
+            # action: "POST",  # TODO: do we need this
             path: ["sub", "path"],
             destination: "token",
-            url: "authorize.example",
+            url: "http://localhost:#{bypass.port}",
             encodeMethod: "json",
             body: %{Key: "AuthToken"},
             queryParams: %{},
@@ -477,6 +485,34 @@ defmodule Reaper.DataExtract.ProcessorTest do
       assigns = Processor.process_extract_step(dataset, step)
 
       assert assigns == %{token: "auth_token"}
+    end
+    test "fails with a reasonable error message", %{bypass: bypass, dataset: dataset} do
+      Cachex.start(AuthCache.cache_name())
+      Cachex.clear(AuthCache.cache_name())
+
+      Bypass.stub(bypass, "POST", "/", fn conn ->
+           Plug.Conn.resp(conn, 403, "No dice")
+      end)
+
+      step =
+        %{
+          type: "auth",
+          context: %{
+            # action: "POST",  # TODO: do we need this
+            path: ["sub", "path"],
+            destination: "token",
+            url: "http://localhost:#{bypass.port}",
+            encodeMethod: "json",
+            body: %{Key: "AuthToken"},
+            queryParams: %{},
+            headers: %{}
+          },
+          assigns: %{}
+        }
+
+      assert_raise RuntimeError, "Unable to parse auth request for dataset: #{dataset.id}. Unable to retrieve auth credentials for dataset 12345-6789 with status 403", fn ->
+        Processor.process_extract_step(dataset, step)
+      end
     end
   end
 

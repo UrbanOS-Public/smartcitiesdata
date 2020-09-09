@@ -69,9 +69,13 @@ defmodule Reaper.DataExtract.Processor do
 
   defp create_producer_stage(%SmartCity.Dataset{technical: %{extractSteps: steps}} = dataset) do
     Enum.reduce(steps, %{}, fn step, acc ->
-      step = Map.put(step, :assigns, Map.merge(step.assigns, acc))
-      process_extract_step(dataset, step)
+      execute_extract_step(dataset, step, acc)
     end)
+  end
+
+  defp execute_extract_step(dataset, step, assigns_accumulator) do
+    step = Map.put(step, :assigns, Map.merge(step.assigns, assigns_accumulator))
+    process_extract_step(dataset, step)
   end
 
   defp create_producer_stage(dataset) do
@@ -119,6 +123,17 @@ defmodule Reaper.DataExtract.Processor do
     secret = Map.get(cred, step.context.sub_key)
 
     Map.put(step.assigns, step.context.destination |> String.to_atom(), secret)
+  end
+
+  def process_extract_step(dataset, %{type: "auth"} = step) do
+    response =
+      Reaper.AuthRetriever.retrieve_step(dataset.id, step)
+      |> Jason.decode!
+      |> get_in(step.context.path)
+
+    Map.put(step.assigns, step.context.destination |> String.to_atom(), response)
+    rescue
+      error -> raise "Unable to parse auth request for dataset: #{dataset.id}. #{error.message}"
   end
 
   defp validate_destination(dataset) do
