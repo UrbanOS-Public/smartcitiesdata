@@ -5,21 +5,6 @@ defmodule Andi.Application do
   import Andi
 
   def start(_type, _args) do
-    kafka_brokers = System.get_env("KAFKA_BROKERS")
-
-    endpoints =
-      case kafka_brokers == nil do
-        true ->
-          [{"localhost", 9092}]
-
-        false ->
-          kafka_brokers
-          |> String.split(",")
-          |> Enum.map(&String.trim/1)
-          |> Enum.map(fn entry -> String.split(entry, ":") end)
-          |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
-      end
-
     children =
       [
         AndiWeb.Endpoint,
@@ -29,7 +14,7 @@ defmodule Andi.Application do
         Andi.Migration.Migrations,
         Andi.Scheduler,
         {Elsa.Supervisor,
-         endpoints: endpoints,
+         endpoints: Application.get_env(:andi, :kafka_endpoints),
          name: :andi_elsa,
          connection: :andi_reader,
          group_consumer: [
