@@ -73,35 +73,31 @@ defmodule Reaper.DataExtract.Processor do
     end)
   end
 
+  # # TODO: Do i need this when ive updated smart_city?
+  # defp create_producer_stage(dataset) do
+  #   dataset
+  #   |> UrlBuilder.build()
+  #   |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
+  #   |> Decoder.decode(dataset)
+  #   |> Stream.with_index()
+  #   |> GenStage.from_enumerable()
+  # end
+
   defp execute_extract_step(dataset, step, assigns_accumulator) do
     step = Map.put(step, :assigns, Map.merge(step.assigns, assigns_accumulator))
     process_extract_step(dataset, step)
   end
-
-  defp create_producer_stage(dataset) do
-    dataset
-    |> UrlBuilder.build()
-    |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
-    |> Decoder.decode(dataset)
-    |> Stream.with_index()
-    |> GenStage.from_enumerable()
-  end
-
   def process_extract_step(dataset, %{type: "http"} = step) do
-    IO.inspect(step, label: "this is the step")
-
     headers =
-      UrlBuilder.decode_headers(step.context.headers, step.assigns)
-      |> IO.inspect(label: "This is zee headers")
+      UrlBuilder.safe_evaluate_parameters(step.context.headers, step.assigns)
 
     UrlBuilder.decode_http_extract_step(step)
-    |> IO.inspect(label: "the earl")
     ## TODO: Dataslurper seems to not fail on 401s, you can reproduce by updating the teest that gets a secret and makes bypass 401
     |> DataSlurper.slurp(dataset.id, headers, nil)
     |> Decoder.decode(dataset)
     |> Stream.with_index()
     |> GenStage.from_enumerable()
-  end ## Making a sandwich, back in 5
+  end
 
   def process_extract_step(_dataset, %{type: "date"} = step) do
     date =

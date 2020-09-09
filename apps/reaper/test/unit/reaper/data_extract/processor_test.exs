@@ -477,7 +477,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
             encodeMethod: "json",
             body: %{Key: "AuthToken"},
             queryParams: %{},
-            headers: %{}
+            headers: %{},
+            cacheTtl: nil
           },
           assigns: %{}
         }
@@ -505,7 +506,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
             encodeMethod: "json",
             body: %{Key: "AuthToken"},
             queryParams: %{},
-            headers: %{}
+            headers: %{},
+            cacheTtl: nil
           },
           assigns: %{}
         }
@@ -513,6 +515,42 @@ defmodule Reaper.DataExtract.ProcessorTest do
       assert_raise RuntimeError, "Unable to parse auth request for dataset: #{dataset.id}. Unable to retrieve auth credentials for dataset 12345-6789 with status 403", fn ->
         Processor.process_extract_step(dataset, step)
       end
+    end
+    test "Can use assigns block for body", %{bypass: bypass, dataset: dataset} do
+      Cachex.start(AuthCache.cache_name())
+      Cachex.clear(AuthCache.cache_name())
+
+      Bypass.stub(bypass, "POST", "/", fn conn ->
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+        parsed = Jason.decode!(body)
+        case parsed do
+          %{"Key" => "super secret"} -> Plug.Conn.resp(conn, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!)
+          _ -> Plug.Conn.resp(conn, 403, "No dice")
+        end
+      end)
+
+      step =
+        %{
+          type: "auth",
+          context: %{
+            # action: "POST",  # TODO: do we need this
+            path: ["sub", "path"],
+            destination: "token",
+            url: "http://localhost:#{bypass.port}",
+            encodeMethod: "json",
+            body: %{Key: "{{key}}"},
+            queryParams: %{},
+            headers: %{},
+            # cacheTtl: nil
+          },
+          assigns: %{
+            key: "super secret"
+          }
+        }
+
+      assigns = Processor.process_extract_step(dataset, step)
+
+      assert assigns == %{key: "super secret", token: "auth_token"}
     end
   end
 
