@@ -15,11 +15,9 @@ defmodule AndiWeb.DatasetLiveViewTest do
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
-  import Andi, only: [instance_name: 0]
-  import SmartCity.Event, only: [data_ingest_end: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
-
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.Dataset
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
@@ -116,6 +114,78 @@ defmodule AndiWeb.DatasetLiveViewTest do
     html = render_change(metadata_view, :save)
 
     refute Enum.empty?(find_elements(html, "#orgId-error-msg"))
+  end
+
+  test "does not load datasets that only contain a timestamp", %{conn: conn} do
+    dataset_with_only_timestamp = %Dataset{
+      id: UUID.uuid4(),
+      ingestedTime: DateTime.utc_now(),
+      business: %{dataTitle: "baaaaad dataset"},
+      technical: %{}
+    }
+
+    Datasets.update(dataset_with_only_timestamp)
+
+    assert {:ok, _view, html} = live(conn, @url_path)
+    table_text = get_text(html, ".datasets-index__table")
+
+    refute dataset_with_only_timestamp.business.dataTitle =~ table_text
+  end
+
+  describe "When form submit executes search" do
+    test "filters on orgTitle", %{conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+      {:ok, dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
+
+      {:ok, view, _html} = live(conn, @url_path)
+
+      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.orgTitle
+      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.orgTitle
+    end
+
+    test "filters on dataTitle", %{conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{dataTitle: "data_a"}) |> Datasets.update()
+      {:ok, dataset_b} = TDG.create_dataset(business: %{dataTitle: "data_b"}) |> Datasets.update()
+
+      {:ok, view, _html} = live(conn, @url_path)
+
+      html = render_submit(view, :search, %{"search-value" => dataset_a.business.dataTitle})
+
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
+      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
+    end
+
+    test "shows No Datasets if no results returned", %{conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{dataTitle: "data_a"}) |> Datasets.update()
+      {:ok, dataset_b} = TDG.create_dataset(business: %{dataTitle: "data_b"}) |> Datasets.update()
+
+      {:ok, view, _html} = live(conn, @url_path)
+
+      html = render_change(view, :search, %{"search-value" => "__NOT_RESULTS_SHOULD RETURN__"})
+
+      assert get_text(html, ".datasets-index__table") =~ "No Datasets"
+    end
+
+    test "Search Submit succeeds even with missing fields", %{conn: conn} do
+      {:ok, dataset_a} =
+        TDG.create_dataset(business: %{orgTitle: "org_a"})
+        |> put_in([:business, :dataTitle], nil)
+        |> Datasets.update()
+
+      {:ok, dataset_b} =
+        TDG.create_dataset(business: %{dataTitle: "data_b"})
+        |> put_in([:business, :orgTitle], nil)
+        |> Datasets.update()
+
+      {:ok, view, _html} = live(conn, @url_path)
+
+      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.orgTitle
+      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
+    end
   end
 
   defp get_dataset_table_row(html, dataset) do

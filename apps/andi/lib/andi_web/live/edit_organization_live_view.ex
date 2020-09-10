@@ -213,10 +213,11 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
   def handle_event("toggle_include", %{"id" => id}, socket) do
     case Organizations.get_harvested_dataset(id) do
-      %{include: true} -> 
+      %{include: true} ->
         dataset_delete_event(id)
         Organizations.update_harvested_dataset_include(id, false)
         {:noreply, socket}
+
       %{include: false} ->
         Organizations.update_harvested_dataset_include(id, true)
         {:noreply, socket}
