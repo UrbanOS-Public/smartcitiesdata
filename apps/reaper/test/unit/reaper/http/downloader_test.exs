@@ -32,6 +32,56 @@ defmodule Reaper.Http.DownloaderTest do
     assert response.url == "http://localhost:#{bypass.port}/file/to/download"
   end
 
+  test "downloads the file correctly, POST", %{bypass: bypass} do
+    Bypass.stub(bypass, "POST", "/file/to/download", fn conn ->
+      conn = Conn.send_chunked(conn, 200)
+
+      Enum.reduce_while(~w|each chunk as a word|, conn, fn chunk, acc ->
+        case Conn.chunk(acc, chunk) do
+          {:ok, conn} -> {:cont, conn}
+          {:error, :closed} -> {:halt, conn}
+        end
+      end)
+    end)
+
+    {:ok, response} =
+      Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output", action: "POST")
+
+    assert "eachchunkasaword" == File.read!("test.output")
+    assert response.status == 200
+    assert response.destination == "test.output"
+    assert response.done == true
+    assert response.url == "http://localhost:#{bypass.port}/file/to/download"
+  end
+
+  test "downloads the file correctly, POST with body", %{bypass: bypass} do
+    post_response = %{"The" => "Response"} |> Jason.encode!()
+
+    Bypass.stub(bypass, "POST", "/file/to/download", fn conn ->
+      {:ok, body, conn} = Plug.Conn.read_body(conn)
+      parsed = Jason.decode!(body)
+
+      case parsed do
+        %{"The" => "Body"} ->
+          Plug.Conn.resp(conn, 200, post_response)
+
+        _ ->
+          Plug.Conn.resp(conn, 403, "No dice")
+      end
+    end)
+
+    {:ok, response} =
+      Downloader.download("http://localhost:#{bypass.port}/file/to/download",
+        to: "test.output",
+        action: "POST",
+        body: %{"The" => "Body"} |> Jason.encode!()
+      )
+
+    assert post_response == File.read!("test.output")
+    assert response.status == 200
+    assert response.destination == "test.output"
+  end
+
   test "raises an error when unable to connect", %{bypass: bypass} do
     on_exit(fn -> File.rm("fake.file") end)
     Bypass.down(bypass)

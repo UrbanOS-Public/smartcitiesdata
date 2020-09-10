@@ -51,8 +51,11 @@ defmodule Reaper.Http.Downloader do
     uri = URI.parse(url)
     evaluated_headers = evaluate_headers(headers)
 
+    action = Keyword.get(opts, :action, "GET") |> String.upcase()
+    body = Keyword.get(opts, :body, "")
+
     with {:ok, conn} <- connect(uri, opts),
-         {:ok, conn, request_ref} <- request(conn, "GET", uri, evaluated_headers),
+         {:ok, conn, request_ref} <- request(conn, action, uri, evaluated_headers, body),
          {:ok, response} <- create_initial_response(conn, request_ref, url, opts),
          {:ok, file} <- File.open(response.destination, [:write, :delayed_write]),
          {:ok, response} <- stream_responses({response, file}, opts),

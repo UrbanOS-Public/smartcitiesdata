@@ -43,13 +43,6 @@ defmodule Reaper.UrlBuilder do
     "#{build_safe_url_path(url, assigns)}?#{string_params}"
   end
 
-  # def decode_headers(headers, bindings) do
-  #   Enum.map(
-  #     headers,
-  #     &safe_evaluate_parameter(&1, bindings)
-  #   )
-  # end
-
   def build_safe_url_path(url, bindings) do
     regex = ~r"{{(.+?)}}"
 
@@ -59,7 +52,6 @@ defmodule Reaper.UrlBuilder do
   end
 
   defp build_url_path(url) do
-    # TODO: Can we stop evaling here
     EEx.eval_string(url)
   end
 

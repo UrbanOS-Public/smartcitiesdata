@@ -302,28 +302,30 @@ defmodule Reaper.DataExtract.ExtractStepTest do
 
   describe "execute_extract_steps/2 http" do
     test "simple http get", %{bypass: bypass, dataset: dataset} do
-
       Bypass.stub(bypass, "GET", "/api/csv", fn conn ->
         Plug.Conn.resp(conn, 200, @csv)
       end)
 
-      steps = [%{
-        type: "http",
-        context: %{
-          url: dataset.technical.sourceUrl,
-          queryParams: %{},
-          headers: %{}
-        },
-        assigns: %{}
-      }]
+      steps = [
+        %{
+          type: "http",
+          context: %{
+            url: dataset.technical.sourceUrl,
+            queryParams: %{},
+            headers: %{}
+          },
+          assigns: %{}
+        }
+      ]
 
       expected = ExtractStep.execute_extract_steps(dataset, steps) |> Enum.to_list()
 
       assert expected == [
-        {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
-        {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
-      ]
+               {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
+               {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
+             ]
     end
+
     test "can use assigns block for query params", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "GET", "/api/csv/query", fn conn ->
         token =
@@ -353,13 +355,16 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected = ExtractStep.execute_extract_steps(dataset, steps)
-      |> Enum.to_list
+      expected =
+        ExtractStep.execute_extract_steps(dataset, steps)
+        |> Enum.to_list()
+
       assert expected == [
-        {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
-        {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
-      ]
+               {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
+               {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
+             ]
     end
+
     test "can use assigns block for headers", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "GET", "/api/csv/headers", fn conn ->
         if(Enum.any?(conn.req_headers, fn header -> header == {"bearer", "bear token"} end)) do
@@ -381,16 +386,19 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected = ExtractStep.execute_extract_steps(dataset, steps)
-      |> Enum.to_list
+      expected =
+        ExtractStep.execute_extract_steps(dataset, steps)
+        |> Enum.to_list()
+
       assert expected == [
-        {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
-        {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
-      ]
+               {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
+               {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
+             ]
     end
+
     test "can use assigns block for url", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "GET", "/api/csv/fancyurl", fn conn ->
-          Plug.Conn.resp(conn, 200, @csv)
+        Plug.Conn.resp(conn, 200, @csv)
       end)
 
       steps = [
@@ -405,12 +413,14 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected = ExtractStep.execute_extract_steps(dataset, steps)
-      |> Enum.to_list
+      expected =
+        ExtractStep.execute_extract_steps(dataset, steps)
+        |> Enum.to_list()
+
       assert expected == [
-        {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
-        {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
-      ]
+               {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
+               {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
+             ]
     end
   end
 
