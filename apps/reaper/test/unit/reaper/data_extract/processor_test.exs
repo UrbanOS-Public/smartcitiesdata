@@ -432,7 +432,6 @@ defmodule Reaper.DataExtract.ProcessorTest do
             url: "authorize.example",
             encodeMethod: "json",
             body: %{Key: "AuthToken"},
-            queryParams: %{},
             headers: %{}
           },
           assigns: %{}
@@ -476,7 +475,6 @@ defmodule Reaper.DataExtract.ProcessorTest do
             url: "http://localhost:#{bypass.port}",
             encodeMethod: "json",
             body: %{Key: "AuthToken"},
-            queryParams: %{},
             headers: %{},
             cacheTtl: nil
           },
@@ -505,7 +503,6 @@ defmodule Reaper.DataExtract.ProcessorTest do
             url: "http://localhost:#{bypass.port}",
             encodeMethod: "json",
             body: %{Key: "AuthToken"},
-            queryParams: %{},
             headers: %{},
             cacheTtl: nil
           },
@@ -540,7 +537,6 @@ defmodule Reaper.DataExtract.ProcessorTest do
             url: "http://localhost:#{bypass.port}",
             encodeMethod: "json",
             body: %{Key: "{{key}}"},
-            queryParams: %{},
             headers: %{},
             cacheTtl: nil
           },
@@ -552,6 +548,70 @@ defmodule Reaper.DataExtract.ProcessorTest do
       assigns = Processor.process_extract_step(dataset, step)
 
       assert assigns == %{key: "super secret", token: "auth_token"}
+    end
+    test "Can use assigns block for headers", %{bypass: bypass, dataset: dataset} do
+      Cachex.start(AuthCache.cache_name())
+      Cachex.clear(AuthCache.cache_name())
+
+      Bypass.stub(bypass, "POST", "/headers", fn conn ->
+        if(Enum.any?(conn.req_headers, fn header -> header == {"header", "super secret"} end)) do
+          Plug.Conn.resp(conn, 200,  %{sub: %{path: "auth_token"}} |> Jason.encode!)
+        else
+          Plug.Conn.resp(conn, 401, "Unauthorized")
+        end
+      end)
+
+      step =
+        %{
+          type: "auth",
+          context: %{
+            # action: "POST",  # TODO: do we need this
+            path: ["sub", "path"],
+            destination: "token",
+            url: "http://localhost:#{bypass.port}/headers",
+            encodeMethod: "json",
+            body: %{},
+            headers: %{Header: "{{header}}"},
+            cacheTtl: nil
+          },
+          assigns: %{
+            header: "super secret"
+          }
+        }
+
+      assigns = Processor.process_extract_step(dataset, step)
+
+      assert assigns == %{header: "super secret", token: "auth_token"}
+    end
+    test "Can use assigns block for url", %{bypass: bypass, dataset: dataset} do
+      Cachex.start(AuthCache.cache_name())
+      Cachex.clear(AuthCache.cache_name())
+
+      Bypass.stub(bypass, "POST", "/fancyurl", fn conn ->
+          Plug.Conn.resp(conn, 200,  %{sub: %{path: "auth_token"}} |> Jason.encode!)
+      end)
+
+      step =
+        %{
+          type: "auth",
+          context: %{
+            # action: "POST",  # TODO: do we need this
+            path: ["sub", "path"],
+            destination: "token",
+            url: "http://localhost:#{bypass.port}/{{path}}",
+            encodeMethod: "json",
+            body: %{},
+            headers: %{},
+            cacheTtl: nil
+          },
+          assigns: %{
+            path: "fancyurl"
+          }
+        }
+
+      assigns = Processor.process_extract_step(dataset, step)
+
+      assert assigns == %{path: "fancyurl", token: "auth_token"}
     end
   end
 

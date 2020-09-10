@@ -131,10 +131,15 @@ defmodule Reaper.DataExtract.Processor do
       step.context.body
       |> UrlBuilder.safe_evaluate_parameters(step.assigns)
       |> Enum.into(%{})
-      |> IO.inspect(label: "body")
+
+    headers = step.context.headers
+    |> UrlBuilder.safe_evaluate_parameters(step.assigns)
+    |> Enum.into(%{})
+
+    url = UrlBuilder.build_safe_url_path(step.context.url, step.assigns)
 
     response =
-      Reaper.AuthRetriever.authorize(dataset.id, step.context.url, body, step.context.encodeMethod, step.context.headers, step.context.cacheTtl)
+      Reaper.AuthRetriever.authorize(dataset.id, url, body, step.context.encodeMethod, headers, step.context.cacheTtl)
       |> Jason.decode!
       |> get_in(step.context.path)
 

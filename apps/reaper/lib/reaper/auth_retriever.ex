@@ -6,7 +6,9 @@ defmodule Reaper.AuthRetriever do
   alias Reaper.Cache.AuthCache
   alias Reaper.UrlBuilder
 
-  def authorize(dataset_id, url, body, encode_method, headers, cache_ttl \\ 10_000) do
+  def authorize(dataset_id, url, body, encode_method, headers, cache_ttl) do
+    cache_ttl = cache_ttl || 10_000
+
     encoded_body = encode_body(body, encode_method)
     complete_headers = headers |> add_content_type(body, encode_method)
 

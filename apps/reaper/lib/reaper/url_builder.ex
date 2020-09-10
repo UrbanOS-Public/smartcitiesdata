@@ -50,7 +50,7 @@ defmodule Reaper.UrlBuilder do
   #   )
   # end
 
-  defp build_safe_url_path(url, bindings) do
+  def build_safe_url_path(url, bindings) do
     regex = ~r"{{(.+?)}}"
 
     Regex.replace(regex, url, fn _match, var_name ->
