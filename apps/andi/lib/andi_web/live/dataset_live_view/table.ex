@@ -6,7 +6,6 @@ defmodule AndiWeb.DatasetLiveView.Table do
   use Phoenix.LiveComponent
   import Phoenix.HTML
   alias Phoenix.HTML.Link
-  alias Andi.InputSchemas.Datasets
 
   def render(assigns) do
     ~L"""
@@ -64,25 +63,13 @@ defmodule AndiWeb.DatasetLiveView.Table do
   defp get_ingest_cell_class(ingest_status), do: String.downcase(ingest_status)
 
   defp ingest_status(%{"ingested_time" => dataset_ingested_time} = dataset) when dataset_ingested_time != nil do
-    case dataset_ingest_successful?(dataset["id"]) do
-      true -> "Success"
-      _ -> "Failure"
+    case has_recent_dlq_message?(dataset["dlq_message"]) do
+      true -> "Failure"
+      _ -> "Success"
     end
   end
 
   defp ingest_status(_), do: ""
-
-  defp dataset_ingest_successful?(dataset_id) do
-    dlq_message =
-      dataset_id
-      |> Datasets.get()
-      |> Map.get(:dlq_message)
-
-    case has_recent_dlq_message?(dlq_message) do
-      true -> false
-      _ -> true
-    end
-  end
 
   defp has_recent_dlq_message?(nil), do: false
 
