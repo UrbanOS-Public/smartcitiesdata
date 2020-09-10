@@ -215,22 +215,17 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
   describe "harvested datasets table" do
     setup do
-
-
-      {:ok, dataset1} = TDG.create_dataset(%{}) |> Datasets.update()
-      {:ok, dataset2} = TDG.create_dataset(%{}) |> Datasets.update()
-      {:ok, dataset3} = TDG.create_dataset(%{}) |> Datasets.update()
-
+      dataset1 = TDG.create_dataset(%{})
+      dataset2 = TDG.create_dataset(%{})
+      dataset3 = TDG.create_dataset(%{})
       dataset4 = TDG.create_dataset(%{})
-
-      Brook.Event.send(instance_name(), dataset_update(), :andi, dataset4)
 
       {:ok, org} = TDG.create_organization(%{}) |> Organizations.update()
 
-      %{datasetId: dataset1.id, orgId: org.id} |> Organizations.update_harvested_dataset()
-      %{datasetId: dataset2.id, orgId: org.id} |> Organizations.update_harvested_dataset()
-      %{datasetId: dataset3.id, orgId: UUID.uuid4()} |> Organizations.update_harvested_dataset()
-      %{datasetId: dataset4.id, orgId: org.id} |> Organizations.update_harvested_dataset()
+      %{dataTitle: dataset1.business.dataTitle, datasetId: dataset1.id, orgId: org.id} |> Organizations.update_harvested_dataset()
+      %{dataTitle: dataset2.business.dataTitle, datasetId: dataset2.id, orgId: org.id} |> Organizations.update_harvested_dataset()
+      %{dataTitle: dataset3.business.dataTitle, datasetId: dataset3.id, orgId: UUID.uuid4()} |> Organizations.update_harvested_dataset()
+      %{dataTitle: dataset4.business.dataTitle, datasetId: dataset4.id, orgId: org.id} |> Organizations.update_harvested_dataset()
 
       [org: org, dataset1: dataset1, dataset2: dataset2, dataset3: dataset3, dataset4: dataset4]
     end
@@ -244,9 +239,11 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
     } do
       assert {:ok, view, html} = live(conn, @url_path <> org.id)
 
-      assert get_text(html, ".organizations-index__table") =~ dataset1.business.dataTitle
-      assert get_text(html, ".organizations-index__table") =~ dataset2.business.dataTitle
-      refute get_text(html, ".organizations-index__table") =~ dataset3.business.dataTitle
+      get_text(html, ".organizations-table__tr") |> IO.inspect(label: "html")
+
+      assert get_text(html, ".organizations-table__tr") =~ dataset1.business.dataTitle
+      assert get_text(html, ".organizations-table__tr") =~ dataset2.business.dataTitle
+      refute get_text(html, ".organizations-table__tr") =~ dataset3.business.dataTitle
     end
 
     test "include checkbox is present for all datasets", %{conn: conn, org: org} do

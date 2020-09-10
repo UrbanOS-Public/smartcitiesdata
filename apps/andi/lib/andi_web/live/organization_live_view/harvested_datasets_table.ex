@@ -27,7 +27,7 @@ defmodule AndiWeb.OrganizationLiveView.HarvestedDatsetsTable do
               <td class="organizations-table__cell organizations-table__cell--break"><%= dataset["source"] %></td>
               <td class="organizations-table__cell organizations-table__cell--break"><%= dataset["modified_date"] %></td>
               <td class="organizations-table__cell organizations-table__cell--break" style="width: 10%;"><%= Link.link("Edit", to: "/datasets/#{dataset["dataset_id"]}", class: "btn") %></td>
-              <td>
+              <td class="organizations-table__cell organizations-table__cell--break" style="width: 1rem;">
               <label class="organizations-table__checkbox">
                 <input class="organizations-table__checkbox--input" type="checkbox" phx-click="toggle_include" phx-value-id=<%= dataset["dataset_id"] %> <%= if dataset["include"], do: "checked" %>/>
               </label>
