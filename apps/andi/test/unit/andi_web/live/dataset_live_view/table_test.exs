@@ -10,9 +10,6 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
       get_attributes: 3
     ]
 
-  alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Datasets.Dataset
-
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
 
@@ -21,8 +18,6 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   describe "order by click" do
     setup %{conn: conn} do
-      allow(Datasets.get(any()), return: %Dataset{})
-
       dataset_a =
         DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
         |> Map.put(:ingestedTime, @ingested_time_a)
@@ -32,6 +27,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
         |> Map.put(:ingestedTime, @ingested_time_b)
 
       DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
+
+      allow(Andi.Repo.all(any()), return: [dataset_a, dataset_b])
 
       {:ok, view, _} =
         get(conn, @url_path)
@@ -83,8 +80,6 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   describe "order by url params" do
     setup %{conn: conn} do
-      allow(Datasets.get(any()), return: %Dataset{})
-
       dataset_a =
         DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
         |> Map.put(:ingestedTime, @ingested_time_a)
@@ -92,6 +87,8 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
       dataset_b =
         DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
         |> Map.put(:ingestedTime, @ingested_time_b)
+
+      allow(Andi.Repo.all(any()), return: [dataset_a, dataset_b])
 
       DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
@@ -126,6 +123,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     dataset_a = DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_b"})
     dataset_b = DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_a"})
 
+    allow(Andi.Repo.all(any()), return: [dataset_a, dataset_b])
     DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
     conn = get(conn, @url_path)
@@ -138,6 +136,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   test "ingested_time is optional", %{conn: conn} do
     dataset = DatasetHelpers.create_dataset(%{})
 
+    allow(Andi.Repo.all(any()), return: [dataset])
     DatasetHelpers.replace_all_datasets_in_repo([dataset])
 
     {:ok, _view, html} = live(conn, @url_path)
@@ -148,6 +147,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   test "edit buttons link to dataset edit", %{conn: conn} do
     dataset = DatasetHelpers.create_dataset(%{})
 
+    allow(Andi.Repo.all(any()), return: [dataset])
     DatasetHelpers.replace_all_datasets_in_repo([dataset])
 
     {:ok, _view, html} = live(conn, @url_path)

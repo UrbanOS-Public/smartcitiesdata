@@ -6,7 +6,6 @@ defmodule AndiWeb.DatasetLiveView.Table do
   use Phoenix.LiveComponent
   import Phoenix.HTML
   alias Phoenix.HTML.Link
-  alias Andi.InputSchemas.Datasets
 
   def render(assigns) do
     ~L"""
