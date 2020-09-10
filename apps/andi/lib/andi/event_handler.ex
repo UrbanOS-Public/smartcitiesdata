@@ -101,7 +101,6 @@ defmodule Andi.EventHandler do
 
     Datasets.delete(dataset.id)
     DatasetStore.delete(dataset.id)
-    Organizations.delete_harvested_dataset(dataset.id)
     add_dataset_count()
   end
 

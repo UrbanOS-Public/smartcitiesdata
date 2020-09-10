@@ -3,7 +3,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
   import Andi
   import Phoenix.HTML.Form
-  import SmartCity.Event, only: [organization_update: 0]
+  import SmartCity.Event, only: [organization_update: 0, dataset_delete: 0]
   require Logger
 
   alias Andi.InputSchemas.InputConverter
@@ -12,6 +12,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.Helpers.FormTools
+  alias Andi.Services.DatasetStore
 
   def render(assigns) do
     ~L"""
@@ -82,13 +83,13 @@ defmodule AndiWeb.EditOrganizationLiveView do
             <button id="save-button" name="save-button" class="btn btn--action btn--large" type="button" phx-click="save">Save</button>
           </div>
         </div>
-
-        <div class="harvested-datasets-table">
-          <h3>Remote Datasets Attached To This Organization</h3>
-
-          <%= live_component(@socket, AndiWeb.OrganizationLiveView.HarvestedDatsetsTable, datasets: @harvested_datasets, order: @order) %>
-        </div>
       </form>
+
+      <div class="harvested-datasets-table">
+        <h3>Remote Datasets Attached To This Organization</h3>
+
+        <%= live_component(@socket, AndiWeb.OrganizationLiveView.HarvestedDatsetsTable, datasets: @harvested_datasets, order: @order) %>
+      </div>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, id: "edit-org-unsaved-changes-modal", visibility: @unsaved_changes_modal_visibility) %>
 
@@ -210,6 +211,19 @@ defmodule AndiWeb.EditOrganizationLiveView do
     end
   end
 
+  def handle_event("toggle_include", %{"id" => id}, socket) do
+    case Organizations.get_harvested_dataset(id) do
+      %{include: true} ->
+        dataset_delete_event(id)
+        Organizations.update_harvested_dataset_include(id, false)
+        {:noreply, socket}
+
+      %{include: false} ->
+        Organizations.update_harvested_dataset_include(id, true)
+        {:noreply, socket}
+    end
+  end
+
   def handle_event("show-organizations", _, socket) do
     {:noreply, redirect(socket, to: "/organizations")}
   end
@@ -246,13 +260,22 @@ defmodule AndiWeb.EditOrganizationLiveView do
   end
 
   defp to_view_model(dataset) do
-    andi_dataset = Andi.InputSchemas.Datasets.get(dataset[:datasetId])
-
     %{
-      "dataset_id" => andi_dataset.id,
-      "data_title" => andi_dataset.business.dataTitle,
+      "dataset_id" => dataset.datasetId,
+      "data_title" => dataset.dataTitle,
       "source" => dataset.source,
-      "modified_date" => to_string(dataset.modifiedDate)
+      "modified_date" => to_string(dataset.modifiedDate),
+      "include" => dataset.include
     }
+  end
+
+  defp dataset_delete_event(id) do
+    case DatasetStore.get(id) do
+      {:ok, dataset} ->
+        Brook.Event.send(instance_name(), dataset_delete(), :andi, dataset)
+
+      _ ->
+        Logger.info("dataset not in system: #{id}")
+    end
   end
 end

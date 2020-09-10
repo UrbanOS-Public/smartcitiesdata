@@ -113,6 +113,19 @@
   max-width: 30rem;
 }
 
+.organizations-table__checkbox {
+  padding-left: 1rem;
+  cursor: pointer;
+
+  input {
+    box-sizing: border-box;
+    padding: 0;
+    cursor: pointer;
+    height: 1.3rem;
+    width: 1.3rem;
+  }
+}
+
 .organizations-table__ingested-cell {
   text-align: center;
   color: green;
