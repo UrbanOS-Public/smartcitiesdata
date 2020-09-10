@@ -6,33 +6,6 @@ defmodule Reaper.AuthRetriever do
   alias Reaper.Cache.AuthCache
   alias Reaper.UrlBuilder
 
-  def retrieve_step(dataset_id, step) do
-    cache_ttl = get_in(step, [:context, :cacheTtl]) || 10_000
-    encode_method = step.context.encodeMethod
-
-    body = step.context.body
-    |> IO.inspect(label: "didnt fail yet")
-    |> UrlBuilder.safe_evaluate_parameters(step.assigns)
-    # TODO: I dont like this
-    |> Enum.into(%{})
-    |> IO.inspect(label: "mah body")
-    |> encode_body(encode_method)
-
-    headers = step.context.headers |> add_content_type(body, encode_method)
-
-    cache_id = hash_config(%{url: step.context.url, body: body, headers: headers})
-
-    case AuthCache.get(cache_id) do
-      nil ->
-        auth = make_auth_request(dataset_id, step.context.url, body, headers)
-        AuthCache.put(cache_id, auth, ttl: cache_ttl)
-        auth
-
-      auth ->
-        auth
-    end
-  end
-
   def authorize(dataset_id, url, body, encode_method, headers, cache_ttl \\ 10_000) do
     encoded_body = encode_body(body, encode_method)
     complete_headers = headers |> add_content_type(body, encode_method)

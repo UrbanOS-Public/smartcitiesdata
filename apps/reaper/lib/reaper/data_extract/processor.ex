@@ -83,9 +83,14 @@ defmodule Reaper.DataExtract.Processor do
   #   |> GenStage.from_enumerable()
   # end
 
-  defp execute_extract_step(dataset, step, assigns_accumulator) do
+  #TODO: Should this stay public
+  def execute_extract_step(dataset, step, assigns_accumulator) do
     step = Map.put(step, :assigns, Map.merge(step.assigns, assigns_accumulator))
     process_extract_step(dataset, step)
+  rescue
+    error ->
+      Logger.error(Exception.format(:error, error, __STACKTRACE__))
+      raise "Unable to process #{step.type} step for dataset #{dataset.id}."
   end
   def process_extract_step(dataset, %{type: "http"} = step) do
     headers =
@@ -122,14 +127,18 @@ defmodule Reaper.DataExtract.Processor do
   end
 
   def process_extract_step(dataset, %{type: "auth"} = step) do
+    body =
+      step.context.body
+      |> UrlBuilder.safe_evaluate_parameters(step.assigns)
+      |> Enum.into(%{})
+      |> IO.inspect(label: "body")
+
     response =
-      Reaper.AuthRetriever.retrieve_step(dataset.id, step)
+      Reaper.AuthRetriever.authorize(dataset.id, step.context.url, body, step.context.encodeMethod, step.context.headers, step.context.cacheTtl)
       |> Jason.decode!
       |> get_in(step.context.path)
 
     Map.put(step.assigns, step.context.destination |> String.to_atom(), response)
-    rescue
-      error -> raise "Unable to parse auth request for dataset: #{dataset.id}. #{error.message}"
   end
 
   defp validate_destination(dataset) do

@@ -512,8 +512,9 @@ defmodule Reaper.DataExtract.ProcessorTest do
           assigns: %{}
         }
 
-      assert_raise RuntimeError, "Unable to parse auth request for dataset: #{dataset.id}. Unable to retrieve auth credentials for dataset 12345-6789 with status 403", fn ->
-        Processor.process_extract_step(dataset, step)
+
+      assert_raise RuntimeError, "Unable to process auth step for dataset 12345-6789.", fn ->
+        Processor.execute_extract_step(dataset, step, %{})
       end
     end
     test "Can use assigns block for body", %{bypass: bypass, dataset: dataset} do
@@ -541,7 +542,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
             body: %{Key: "{{key}}"},
             queryParams: %{},
             headers: %{},
-            # cacheTtl: nil
+            cacheTtl: nil
           },
           assigns: %{
             key: "super secret"
@@ -582,7 +583,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
         }
       ]
 
-      assert_raise Timex.Format.FormatError, fn ->
+      assert_raise RuntimeError, "Unable to process date step for dataset 12345-6789.", fn ->
         put_in(dataset, [:technical, :extractSteps], extract_steps)
         |> Processor.process()
       end
