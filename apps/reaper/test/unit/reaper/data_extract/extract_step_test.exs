@@ -4,6 +4,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Reaper.DataExtract.ExtractStep
   alias Reaper.Cache.AuthCache
+  use Placebo
 
   @dataset_id "12345-6789"
 
@@ -33,6 +34,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
       )
       [bypass: bypass, dataset: dataset]
   end
+
   describe "process_extract_step for auth" do
     test "Calls the auth retriever and adds response token to assigns", %{bypass: bypass, dataset: dataset} do
       Cachex.start(AuthCache.cache_name())
@@ -195,6 +197,127 @@ defmodule Reaper.DataExtract.ExtractStepTest do
       assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
       assert assigns == %{path: "fancyurl", token: "auth_token"}
+    end
+  end
+
+  describe "extract steps error paths" do
+    test "Set variable then single extract step for http get", %{dataset: dataset} do
+      steps = [
+        %{
+          type: "date",
+          context: %{
+            destination: "currentDate",
+            deltaTimeUnit: nil,
+            deltaTimeValue: nil,
+            timeZone: nil,
+            format: "{WILLFAIL}-{0M}"
+          },
+          assigns: %{}
+        },
+        %{
+          type: "http",
+          context: %{
+            url: "#{dataset.technical.sourceUrl}/{{currentDate}}",
+            queryParams: %{},
+            headers: %{}
+          },
+          assigns: %{}
+        }
+      ]
+
+      assert_raise RuntimeError, "Unable to process date step for dataset 12345-6789.", fn ->
+        ExtractStep.execute_extract_steps(dataset, steps)
+      end
+    end
+  end
+
+  describe "date step" do
+    test "puts current date with format into assigns block", %{dataset: dataset} do
+      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
+
+      steps = [%{
+        type: "date",
+        context: %{
+          destination: "currentDate",
+          deltaTimeUnit: nil,
+          deltaTimeValue: nil,
+          timeZone: nil,
+          format: "{YYYY}-{0M}"
+        },
+        assigns: %{}
+      }]
+
+      assert ExtractStep.execute_extract_steps(dataset, steps) ==
+               %{
+                 currentDate: "2020-08"
+               }
+    end
+
+    test "puts current date can do time delta", %{dataset: dataset} do
+      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:30:00.000], "Etc/UTC")
+
+      steps = [%{
+        type: "date",
+        context: %{
+          destination: "currentDate",
+          deltaTimeUnit: "years",
+          deltaTimeValue: -33,
+          timeZone: nil,
+          format: "{YYYY}-{0M}"
+        },
+        assigns: %{}
+      }]
+
+      assert ExtractStep.execute_extract_steps(dataset, steps) ==
+               %{
+                 currentDate: "1987-08"
+               }
+
+      steps = [%{
+        type: "date",
+        context: %{
+          destination: "currentDate",
+          deltaTimeUnit: "minutes",
+          deltaTimeValue: 33,
+          timeZone: nil,
+          format: "{YYYY}-{0M}-{0D} {h12}:{m}"
+        },
+        assigns: %{}
+      }]
+
+      assert ExtractStep.execute_extract_steps(dataset, steps) ==
+               %{
+                 currentDate: "2020-08-31 2:03"
+               }
+    end
+  end
+
+  describe "secret step" do
+    test "puts a secret into assigns block", %{dataset: dataset} do
+      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
+
+      allow Reaper.SecretRetriever.retrieve_dataset_credentials("the_key"),
+        return:
+          {:ok,
+           %{
+             "client_id" => "mah_client",
+             "client_secret" => "mah_secret"
+           }}
+
+      steps = [%{
+        type: "secret",
+        context: %{
+          destination: "token",
+          key: "the_key",
+          sub_key: "client_secret"
+        },
+        assigns: %{}
+      }]
+
+      assert ExtractStep.execute_extract_steps(dataset, steps) ==
+               %{
+                 token: "mah_secret"
+               }
     end
   end
 end
