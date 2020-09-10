@@ -32,25 +32,31 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           allow_duplicates: false
         }
       )
-      [bypass: bypass, dataset: dataset]
+
+    [bypass: bypass, dataset: dataset]
   end
 
-  describe "process_extract_step for auth" do
-    test "Calls the auth retriever and adds response token to assigns", %{bypass: bypass, dataset: dataset} do
+  describe "execute_extract_steps/2 auth" do
+    setup do
       Cachex.start(AuthCache.cache_name())
       Cachex.clear(AuthCache.cache_name())
 
+      :ok
+    end
+
+    test "Calls the auth retriever and adds response token to assigns", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "POST", "/", fn conn ->
         {:ok, body, conn} = Plug.Conn.read_body(conn)
         parsed = Jason.decode!(body)
+
         case parsed do
-          %{"Key" => "AuthToken"} -> Plug.Conn.resp(conn, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!)
+          %{"Key" => "AuthToken"} -> Plug.Conn.resp(conn, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!())
           _ -> Plug.Conn.resp(conn, 403, "No dice")
         end
       end)
 
-      steps =
-        [%{
+      steps = [
+        %{
           type: "auth",
           context: %{
             # action: "POST",  # TODO: do we need this
@@ -63,57 +69,27 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             cacheTtl: nil
           },
           assigns: %{}
-        }]
+        }
+      ]
 
       assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
       assert assigns == %{token: "auth_token"}
     end
 
-    test "fails with a reasonable error message", %{bypass: bypass, dataset: dataset} do
-      Cachex.start(AuthCache.cache_name())
-      Cachex.clear(AuthCache.cache_name())
-
-      Bypass.stub(bypass, "POST", "/", fn conn ->
-           Plug.Conn.resp(conn, 403, "No dice")
-      end)
-
-      steps =
-        [%{
-          type: "auth",
-          context: %{
-            # action: "POST",  # TODO: do we need this
-            path: ["sub", "path"],
-            destination: "token",
-            url: "http://localhost:#{bypass.port}",
-            encodeMethod: "json",
-            body: %{Key: "AuthToken"},
-            headers: %{},
-            cacheTtl: nil
-          },
-          assigns: %{}
-        }]
-
-
-      assert_raise RuntimeError, "Unable to process auth step for dataset 12345-6789.", fn ->
-        ExtractStep.execute_extract_steps(dataset, steps)
-      end
-    end
     test "Can use assigns block for body", %{bypass: bypass, dataset: dataset} do
-      Cachex.start(AuthCache.cache_name())
-      Cachex.clear(AuthCache.cache_name())
-
       Bypass.stub(bypass, "POST", "/", fn conn ->
         {:ok, body, conn} = Plug.Conn.read_body(conn)
         parsed = Jason.decode!(body)
+
         case parsed do
-          %{"Key" => "super secret"} -> Plug.Conn.resp(conn, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!)
+          %{"Key" => "super secret"} -> Plug.Conn.resp(conn, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!())
           _ -> Plug.Conn.resp(conn, 403, "No dice")
         end
       end)
 
-      steps =
-        [%{
+      steps = [
+        %{
           type: "auth",
           context: %{
             # action: "POST",  # TODO: do we need this
@@ -128,26 +104,25 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           assigns: %{
             key: "super secret"
           }
-        }]
+        }
+      ]
 
       assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
       assert assigns == %{key: "super secret", token: "auth_token"}
     end
-    test "Can use assigns block for headers", %{bypass: bypass, dataset: dataset} do
-      Cachex.start(AuthCache.cache_name())
-      Cachex.clear(AuthCache.cache_name())
 
+    test "Can use assigns block for headers", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "POST", "/headers", fn conn ->
         if(Enum.any?(conn.req_headers, fn header -> header == {"header", "super secret"} end)) do
-          Plug.Conn.resp(conn, 200,  %{sub: %{path: "auth_token"}} |> Jason.encode!)
+          Plug.Conn.resp(conn, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!())
         else
           Plug.Conn.resp(conn, 401, "Unauthorized")
         end
       end)
 
-      steps =
-        [%{
+      steps = [
+        %{
           type: "auth",
           context: %{
             # action: "POST",  # TODO: do we need this
@@ -162,22 +137,21 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           assigns: %{
             header: "super secret"
           }
-        }]
+        }
+      ]
 
       assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
       assert assigns == %{header: "super secret", token: "auth_token"}
     end
-    test "Can use assigns block for url", %{bypass: bypass, dataset: dataset} do
-      Cachex.start(AuthCache.cache_name())
-      Cachex.clear(AuthCache.cache_name())
 
+    test "Can use assigns block for url", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "POST", "/fancyurl", fn conn ->
-          Plug.Conn.resp(conn, 200,  %{sub: %{path: "auth_token"}} |> Jason.encode!)
+        Plug.Conn.resp(conn, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!())
       end)
 
-      steps =
-        [%{
+      steps = [
+        %{
           type: "auth",
           context: %{
             # action: "POST",  # TODO: do we need this
@@ -192,11 +166,251 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           assigns: %{
             path: "fancyurl"
           }
-        }]
+        }
+      ]
 
       assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
       assert assigns == %{path: "fancyurl", token: "auth_token"}
+    end
+
+    test "fails with a reasonable error message", %{bypass: bypass, dataset: dataset} do
+      Bypass.stub(bypass, "POST", "/", fn conn ->
+        Plug.Conn.resp(conn, 403, "No dice")
+      end)
+
+      steps = [
+        %{
+          type: "auth",
+          context: %{
+            # action: "POST",  # TODO: do we need this
+            path: ["sub", "path"],
+            destination: "token",
+            url: "http://localhost:#{bypass.port}",
+            encodeMethod: "json",
+            body: %{Key: "AuthToken"},
+            headers: %{},
+            cacheTtl: nil
+          },
+          assigns: %{}
+        }
+      ]
+
+      assert_raise RuntimeError, "Unable to process auth step for dataset 12345-6789.", fn ->
+        ExtractStep.execute_extract_steps(dataset, steps)
+      end
+    end
+  end
+
+  describe "execute_extract_steps/2 date" do
+    test "puts current date with format into assigns block", %{dataset: dataset} do
+      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
+
+      steps = [
+        %{
+          type: "date",
+          context: %{
+            destination: "currentDate",
+            deltaTimeUnit: nil,
+            deltaTimeValue: nil,
+            timeZone: nil,
+            format: "{YYYY}-{0M}"
+          },
+          assigns: %{}
+        }
+      ]
+
+      assert ExtractStep.execute_extract_steps(dataset, steps) ==
+               %{
+                 currentDate: "2020-08"
+               }
+    end
+
+    test "puts current date can do time delta", %{dataset: dataset} do
+      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:30:00.000], "Etc/UTC")
+
+      steps = [
+        %{
+          type: "date",
+          context: %{
+            destination: "currentDate",
+            deltaTimeUnit: "years",
+            deltaTimeValue: -33,
+            timeZone: nil,
+            format: "{YYYY}-{0M}"
+          },
+          assigns: %{}
+        }
+      ]
+
+      assert ExtractStep.execute_extract_steps(dataset, steps) ==
+               %{
+                 currentDate: "1987-08"
+               }
+
+      steps = [
+        %{
+          type: "date",
+          context: %{
+            destination: "currentDate",
+            deltaTimeUnit: "minutes",
+            deltaTimeValue: 33,
+            timeZone: nil,
+            format: "{YYYY}-{0M}-{0D} {h12}:{m}"
+          },
+          assigns: %{}
+        }
+      ]
+
+      assert ExtractStep.execute_extract_steps(dataset, steps) ==
+               %{
+                 currentDate: "2020-08-31 2:03"
+               }
+    end
+  end
+
+  describe "execute_extract_steps/2 secret" do
+    test "puts a secret into assigns block", %{dataset: dataset} do
+      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
+
+      allow Reaper.SecretRetriever.retrieve_dataset_credentials("the_key"),
+        return:
+          {:ok,
+           %{
+             "client_id" => "mah_client",
+             "client_secret" => "mah_secret"
+           }}
+
+      steps = [
+        %{
+          type: "secret",
+          context: %{
+            destination: "token",
+            key: "the_key",
+            sub_key: "client_secret"
+          },
+          assigns: %{}
+        }
+      ]
+
+      assert ExtractStep.execute_extract_steps(dataset, steps) ==
+               %{
+                 token: "mah_secret"
+               }
+    end
+  end
+
+  describe "execute_extract_steps/2 http" do
+    test "simple http get", %{bypass: bypass, dataset: dataset} do
+
+      Bypass.stub(bypass, "GET", "/api/csv", fn conn ->
+        Plug.Conn.resp(conn, 200, @csv)
+      end)
+
+      steps = [%{
+        type: "http",
+        context: %{
+          url: dataset.technical.sourceUrl,
+          queryParams: %{},
+          headers: %{}
+        },
+        assigns: %{}
+      }]
+
+      expected = ExtractStep.execute_extract_steps(dataset, steps) |> Enum.to_list()
+
+      assert expected == [
+        {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
+        {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
+      ]
+    end
+    test "can use assigns block for query params", %{bypass: bypass, dataset: dataset} do
+      Bypass.stub(bypass, "GET", "/api/csv/query", fn conn ->
+        token =
+          conn
+          |> Plug.Conn.fetch_query_params()
+          |> Map.get(:query_params)
+          |> Map.get("token")
+
+        if(token == "secret tunnel") do
+          Plug.Conn.resp(conn, 200, @csv)
+        else
+          Plug.Conn.resp(conn, 401, "Unauthorized")
+        end
+      end)
+
+      steps = [
+        %{
+          type: "http",
+          context: %{
+            url: "#{dataset.technical.sourceUrl}/query",
+            queryParams: %{
+              token: "{{token}}"
+            },
+            headers: %{}
+          },
+          assigns: %{token: "secret tunnel"}
+        }
+      ]
+
+      expected = ExtractStep.execute_extract_steps(dataset, steps)
+      |> Enum.to_list
+      assert expected == [
+        {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
+        {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
+      ]
+    end
+    test "can use assigns block for headers", %{bypass: bypass, dataset: dataset} do
+      Bypass.stub(bypass, "GET", "/api/csv/headers", fn conn ->
+        if(Enum.any?(conn.req_headers, fn header -> header == {"bearer", "bear token"} end)) do
+          Plug.Conn.resp(conn, 200, @csv)
+        else
+          Plug.Conn.resp(conn, 401, "Unauthorized")
+        end
+      end)
+
+      steps = [
+        %{
+          type: "http",
+          context: %{
+            url: "#{dataset.technical.sourceUrl}/headers",
+            queryParams: %{},
+            headers: %{Bearer: "{{token}}"}
+          },
+          assigns: %{token: "bear token"}
+        }
+      ]
+
+      expected = ExtractStep.execute_extract_steps(dataset, steps)
+      |> Enum.to_list
+      assert expected == [
+        {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
+        {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
+      ]
+    end
+    test "can use assigns block for url", %{bypass: bypass, dataset: dataset} do
+      Bypass.stub(bypass, "GET", "/api/csv/fancyurl", fn conn ->
+          Plug.Conn.resp(conn, 200, @csv)
+      end)
+
+      steps = [
+        %{
+          type: "http",
+          context: %{
+            url: "#{dataset.technical.sourceUrl}/{{path}}",
+            queryParams: %{},
+            headers: %{}
+          },
+          assigns: %{path: "fancyurl"}
+        }
+      ]
+
+      expected = ExtractStep.execute_extract_steps(dataset, steps)
+      |> Enum.to_list
+      assert expected == [
+        {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
+        {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
+      ]
     end
   end
 
@@ -228,96 +442,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
       assert_raise RuntimeError, "Unable to process date step for dataset 12345-6789.", fn ->
         ExtractStep.execute_extract_steps(dataset, steps)
       end
-    end
-  end
-
-  describe "date step" do
-    test "puts current date with format into assigns block", %{dataset: dataset} do
-      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
-
-      steps = [%{
-        type: "date",
-        context: %{
-          destination: "currentDate",
-          deltaTimeUnit: nil,
-          deltaTimeValue: nil,
-          timeZone: nil,
-          format: "{YYYY}-{0M}"
-        },
-        assigns: %{}
-      }]
-
-      assert ExtractStep.execute_extract_steps(dataset, steps) ==
-               %{
-                 currentDate: "2020-08"
-               }
-    end
-
-    test "puts current date can do time delta", %{dataset: dataset} do
-      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:30:00.000], "Etc/UTC")
-
-      steps = [%{
-        type: "date",
-        context: %{
-          destination: "currentDate",
-          deltaTimeUnit: "years",
-          deltaTimeValue: -33,
-          timeZone: nil,
-          format: "{YYYY}-{0M}"
-        },
-        assigns: %{}
-      }]
-
-      assert ExtractStep.execute_extract_steps(dataset, steps) ==
-               %{
-                 currentDate: "1987-08"
-               }
-
-      steps = [%{
-        type: "date",
-        context: %{
-          destination: "currentDate",
-          deltaTimeUnit: "minutes",
-          deltaTimeValue: 33,
-          timeZone: nil,
-          format: "{YYYY}-{0M}-{0D} {h12}:{m}"
-        },
-        assigns: %{}
-      }]
-
-      assert ExtractStep.execute_extract_steps(dataset, steps) ==
-               %{
-                 currentDate: "2020-08-31 2:03"
-               }
-    end
-  end
-
-  describe "secret step" do
-    test "puts a secret into assigns block", %{dataset: dataset} do
-      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
-
-      allow Reaper.SecretRetriever.retrieve_dataset_credentials("the_key"),
-        return:
-          {:ok,
-           %{
-             "client_id" => "mah_client",
-             "client_secret" => "mah_secret"
-           }}
-
-      steps = [%{
-        type: "secret",
-        context: %{
-          destination: "token",
-          key: "the_key",
-          sub_key: "client_secret"
-        },
-        assigns: %{}
-      }]
-
-      assert ExtractStep.execute_extract_steps(dataset, steps) ==
-               %{
-                 token: "mah_secret"
-               }
     end
   end
 end

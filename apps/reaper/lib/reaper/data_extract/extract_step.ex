@@ -9,6 +9,7 @@ defmodule Reaper.DataExtract.ExtractStep do
       execute_extract_step(dataset, step, acc)
     end)
   end
+
   defp execute_extract_step(dataset, step, assigns_accumulator) do
     step = Map.put(step, :assigns, Map.merge(step.assigns, assigns_accumulator))
     process_extract_step(dataset, step)
@@ -19,15 +20,13 @@ defmodule Reaper.DataExtract.ExtractStep do
   end
 
   defp process_extract_step(dataset, %{type: "http"} = step) do
-    headers =
-      UrlBuilder.safe_evaluate_parameters(step.context.headers, step.assigns)
+    headers = UrlBuilder.safe_evaluate_parameters(step.context.headers, step.assigns)
 
     UrlBuilder.decode_http_extract_step(step)
     ## TODO: Dataslurper seems to not fail on 401s, you can reproduce by updating the teest that gets a secret and makes bypass 401
     |> DataSlurper.slurp(dataset.id, headers, nil)
     |> Decoder.decode(dataset)
     |> Stream.with_index()
-    |> GenStage.from_enumerable()
   end
 
   defp process_extract_step(_dataset, %{type: "date"} = step) do
@@ -58,15 +57,16 @@ defmodule Reaper.DataExtract.ExtractStep do
       |> UrlBuilder.safe_evaluate_parameters(step.assigns)
       |> Enum.into(%{})
 
-    headers = step.context.headers
-    |> UrlBuilder.safe_evaluate_parameters(step.assigns)
-    |> Enum.into(%{})
+    headers =
+      step.context.headers
+      |> UrlBuilder.safe_evaluate_parameters(step.assigns)
+      |> Enum.into(%{})
 
     url = UrlBuilder.build_safe_url_path(step.context.url, step.assigns)
 
     response =
       Reaper.AuthRetriever.authorize(dataset.id, url, body, step.context.encodeMethod, headers, step.context.cacheTtl)
-      |> Jason.decode!
+      |> Jason.decode!()
       |> get_in(step.context.path)
 
     Map.put(step.assigns, step.context.destination |> String.to_atom(), response)

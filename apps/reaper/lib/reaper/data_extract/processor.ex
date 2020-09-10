@@ -69,6 +69,7 @@ defmodule Reaper.DataExtract.Processor do
 
   defp create_producer_stage(%SmartCity.Dataset{technical: %{extractSteps: steps}} = dataset) do
     ExtractStep.execute_extract_steps(dataset, steps)
+    |> GenStage.from_enumerable()
   end
 
   defp validate_destination(dataset) do
