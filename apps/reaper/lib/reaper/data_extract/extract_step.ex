@@ -2,6 +2,7 @@ defmodule Reaper.DataExtract.ExtractStep do
   require Logger
   alias Reaper.DataSlurper
   alias Reaper.UrlBuilder
+  alias Reaper.Decoder
 
   def execute_extract_steps(dataset, steps) do
     Enum.reduce(steps, %{}, fn step, acc ->
