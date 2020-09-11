@@ -306,6 +306,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           type: "http",
           context: %{
             action: "GET",
+            protocol: nil,
             body: %{},
             url: dataset.technical.sourceUrl,
             queryParams: %{},
@@ -343,6 +344,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           type: "http",
           context: %{
             action: "GET",
+            protocol: nil,
             body: %{},
             url: "#{dataset.technical.sourceUrl}/query",
             queryParams: %{
@@ -378,6 +380,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           type: "http",
           context: %{
             action: "GET",
+            protocol: nil,
             body: %{},
             url: "#{dataset.technical.sourceUrl}/headers",
             queryParams: %{},
@@ -407,6 +410,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           type: "http",
           context: %{
             action: "GET",
+            protocol:  nil,
             body: %{},
             url: "#{dataset.technical.sourceUrl}/{{path}}",
             queryParams: %{},
@@ -441,6 +445,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           type: "http",
           context: %{
             action: "POST",
+            protocol: nil,
             body: %{
               soap_request: %{
                 date: "{{date}}"
@@ -462,6 +467,36 @@ defmodule Reaper.DataExtract.ExtractStepTest do
                {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
                {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
              ]
+    end
+    test "sends through protocols", %{bypass: bypass, dataset: dataset} do
+      Bypass.stub(bypass, "GET", "/api/csv", fn conn ->
+        Plug.Conn.resp(conn, 200, @csv)
+      end)
+      allow Mint.HTTP.connect(:spy, :spy, :spy, :spy), return: :spy, meck_options: [:passthrough]
+      steps = [
+        %{
+          type: "http",
+          context: %{
+            action: "GET",
+            protocol: ["http1"],
+            body: %{ },
+            url: "#{dataset.technical.sourceUrl}",
+            queryParams: %{},
+            headers: %{}
+          },
+          assigns: %{}
+        }
+      ]
+
+      expected =
+        ExtractStep.execute_extract_steps(dataset, steps)
+        |> Enum.to_list()
+
+      assert expected == [
+               {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
+               {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
+             ]
+      assert_called Mint.HTTP.connect(:http, "localhost", any(), [transport_opts: [timeout: 30000], protocols: [:http1]])
     end
   end
 

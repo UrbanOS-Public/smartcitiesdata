@@ -28,13 +28,14 @@ defmodule Reaper.UrlBuilder do
     "#{build_url_path(url)}?#{string_params}"
   end
 
-  # TODO add @spec
-  def decode_http_extract_step(%{context: %{url: url, queryParams: query_params}, assigns: assigns} = step)
+  @spec decode_http_extract_step(%{assigns: any, context: %{queryParams: any, url: binary}}) ::
+          binary
+  def decode_http_extract_step(%{context: %{url: url, queryParams: query_params}, assigns: assigns})
       when query_params == %{} do
     build_safe_url_path(url, assigns)
   end
 
-  def decode_http_extract_step(%{context: %{url: url, queryParams: query_params}, assigns: assigns} = step) do
+  def decode_http_extract_step(%{context: %{url: url, queryParams: query_params}, assigns: assigns}) do
     string_params =
       query_params
       |> safe_evaluate_parameters(assigns)

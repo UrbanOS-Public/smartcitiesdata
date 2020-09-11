@@ -195,7 +195,6 @@ defmodule Reaper.Http.Downloader do
   end
 
   defp evaluate_header({key, value}) do
-    ## TODO: Can i remove/overload you
     {to_string(key), EEx.eval_string(value, [])}
   end
 end

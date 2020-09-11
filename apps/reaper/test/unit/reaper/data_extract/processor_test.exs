@@ -146,7 +146,6 @@ defmodule Reaper.DataExtract.ProcessorTest do
       allow Persistence.remove_last_processed_index(@dataset_id), return: :ok
       allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
 
-      # TODO: Change to @csv 1,2,3
       Bypass.stub(bypass, "GET", "/api/csv", fn conn ->
         Plug.Conn.resp(conn, 200, @csv)
       end)
@@ -166,6 +165,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
         type: "http",
         context: %{
           action: "GET",
+          protocol: nil,
           body: %{},
           url: dataset.technical.sourceUrl,
           queryParams: %{},
@@ -221,6 +221,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
           type: "http",
           context: %{
             action: "GET",
+            protocol: nil,
             body: %{},
             url: "#{dataset.technical.sourceUrl}/{{currentYear}}-{{currentMonth}}",
             queryParams: %{},
