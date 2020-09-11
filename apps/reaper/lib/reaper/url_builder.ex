@@ -69,6 +69,16 @@ defmodule Reaper.UrlBuilder do
     )
   end
 
+  defp safe_evaluate_parameter({key, %{} = param_map}, bindings) do
+    evaluated_map =
+    Enum.map(param_map, fn param ->
+      safe_evaluate_parameter(param, bindings)
+    end)
+    |> Enum.into(%{})
+
+    {key, evaluated_map}
+  end
+
   defp safe_evaluate_parameter({key, value}, bindings) do
     regex = ~r"{{(.+?)}}"
 
@@ -79,12 +89,6 @@ defmodule Reaper.UrlBuilder do
       end)
 
     {key, value}
-  end
-
-  defp safe_evaluate_parameter(%{} = param_map, bindings) do
-    Enum.map(param_map, fn param ->
-      safe_evaluate_parameters(param, bindings)
-    end)
   end
 
   defp evaluate_parameters(parameters, bindings) do
