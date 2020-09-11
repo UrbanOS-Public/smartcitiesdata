@@ -93,9 +93,9 @@ config :telemetry_event,
     ],
     [
       metric_name: "phoenix.endpoint.stop.duration",
-      tags: [:end_point, :method],
+      tags: [:app, :end_point, :method],
       tag_values: fn %{conn: conn} ->
-        %{end_point: end_point(conn), method: Map.get(conn, :method)}
+        %{app: app(conn), end_point: end_point(conn), method: Map.get(conn, :method)}
       end,
       metric_type: :distribution,
       unit: {:native, :millisecond},
@@ -141,7 +141,7 @@ config :telemetry_event,
 #### tag_values:
   - This is optional function that receives the metadata and returns a map with the tags as keys and their respective values.
   - By defaults it returns the metadata itself.
-  - For eg: In the above metrics `phoenix.endpoint.stop.duration`, `tag_values` is used to fetch `end_point` and `method` from tne `conn`.
+  - For eg: In the above metrics `phoenix.endpoint.stop.duration`, `tag_values` is used to fetch `app`(Name of the app), `end_point`(Endpoint called) and `method`(Method used: GET, POST, PUT, DELETE) from tne `conn`.
 
 #### metric_type:
   - This indicates the type of metric required.
