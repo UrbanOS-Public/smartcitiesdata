@@ -335,13 +335,15 @@ defmodule Reaper.FullTest do
         60
       )
     end
+
     @tag timeout: 120_000
     test "cadence of once is only processed once, extract steps", %{bypass: bypass} do
       Bypass.stub(bypass, "GET", "/2017-01", fn conn ->
         Plug.Conn.resp(
           conn,
           200,
-          File.read!("test/support/#{@csv_file_name}"))
+          File.read!("test/support/#{@csv_file_name}")
+        )
       end)
 
       allow Timex.now(), return: DateTime.from_naive!(~N[2018-01-01 13:26:08.003], "Etc/UTC")

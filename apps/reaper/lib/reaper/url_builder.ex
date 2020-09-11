@@ -9,15 +9,11 @@ defmodule Reaper.UrlBuilder do
   Returns a string containing the URL with all query string parameters based on the `Reaper.ReaperConfig`
   """
   @spec build(SmartCity.Dataset.t()) :: String.t()
-  def build(
-        %SmartCity.Dataset{technical: %{extractSteps: nil, sourceUrl: url, sourceQueryParams: query_params}} = _dataset
-      )
+  def build(%SmartCity.Dataset{technical: %{sourceUrl: url, sourceQueryParams: query_params}} = _dataset)
       when query_params == %{},
       do: build_url_path(url)
 
-  def build(
-        %SmartCity.Dataset{technical: %{extractSteps: nil, sourceUrl: url, sourceQueryParams: query_params}} = dataset
-      ) do
+  def build(%SmartCity.Dataset{technical: %{sourceUrl: url, sourceQueryParams: query_params}} = dataset) do
     last_success_time = extract_last_success_time(dataset.id)
 
     string_params =

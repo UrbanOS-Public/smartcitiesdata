@@ -58,7 +58,8 @@ defmodule Reaper.DataExtract.Processor do
     |> File.rm()
   end
 
-  defp create_producer_stage(%SmartCity.Dataset{technical: %{extractSteps: nil}} = dataset) do
+  defp create_producer_stage(%SmartCity.Dataset{technical: %{extractSteps: extract_steps}} = dataset)
+       when is_nil(extract_steps) or extract_steps == [] do
     dataset
     |> UrlBuilder.build()
     |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
