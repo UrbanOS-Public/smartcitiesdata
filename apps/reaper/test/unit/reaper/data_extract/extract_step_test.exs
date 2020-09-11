@@ -112,7 +112,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
 
     test "Can use assigns block for headers", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "POST", "/headers", fn conn ->
-        if(Enum.any?(conn.req_headers, fn header -> header == {"header", "super secret"} end)) do
+        if Enum.any?(conn.req_headers, fn header -> header == {"header", "super secret"} end) do
           Plug.Conn.resp(conn, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!())
         else
           Plug.Conn.resp(conn, 401, "Unauthorized")
@@ -368,7 +368,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
 
     test "can use assigns block for headers", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "GET", "/api/csv/headers", fn conn ->
-        if(Enum.any?(conn.req_headers, fn header -> header == {"bearer", "bear token"} end)) do
+        if Enum.any?(conn.req_headers, fn header -> header == {"bearer", "bear token"} end) do
           Plug.Conn.resp(conn, 200, @csv)
         else
           Plug.Conn.resp(conn, 401, "Unauthorized")
