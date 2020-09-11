@@ -59,7 +59,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         %{
           type: "auth",
           context: %{
-            # action: "POST",  # TODO: do we need this
             path: ["sub", "path"],
             destination: "token",
             url: "http://localhost:#{bypass.port}",
@@ -92,7 +91,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         %{
           type: "auth",
           context: %{
-            # action: "POST",  # TODO: do we need this
             path: ["sub", "path"],
             destination: "token",
             url: "http://localhost:#{bypass.port}",
@@ -125,7 +123,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         %{
           type: "auth",
           context: %{
-            # action: "POST",  # TODO: do we need this
             path: ["sub", "path"],
             destination: "token",
             url: "http://localhost:#{bypass.port}/headers",
@@ -154,7 +151,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         %{
           type: "auth",
           context: %{
-            # action: "POST",  # TODO: do we need this
             path: ["sub", "path"],
             destination: "token",
             url: "http://localhost:#{bypass.port}/{{path}}",
@@ -183,7 +179,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         %{
           type: "auth",
           context: %{
-            # action: "POST",  # TODO: do we need this
             path: ["sub", "path"],
             destination: "token",
             url: "http://localhost:#{bypass.port}",
@@ -310,6 +305,8 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         %{
           type: "http",
           context: %{
+            action: "GET",
+            body: %{},
             url: dataset.technical.sourceUrl,
             queryParams: %{},
             headers: %{}
@@ -345,6 +342,8 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         %{
           type: "http",
           context: %{
+            action: "GET",
+            body: %{},
             url: "#{dataset.technical.sourceUrl}/query",
             queryParams: %{
               token: "{{token}}"
@@ -378,6 +377,8 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         %{
           type: "http",
           context: %{
+            action: "GET",
+            body: %{},
             url: "#{dataset.technical.sourceUrl}/headers",
             queryParams: %{},
             headers: %{Bearer: "{{token}}"}
@@ -405,11 +406,51 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         %{
           type: "http",
           context: %{
+            action: "GET",
+            body: %{},
             url: "#{dataset.technical.sourceUrl}/{{path}}",
             queryParams: %{},
             headers: %{}
           },
           assigns: %{path: "fancyurl"}
+        }
+      ]
+
+      expected =
+        ExtractStep.execute_extract_steps(dataset, steps)
+        |> Enum.to_list()
+
+      assert expected == [
+               {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
+               {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
+             ]
+    end
+    test "can post with an encoded post body", %{bypass: bypass, dataset: dataset} do
+      Bypass.stub(bypass, "POST", "/api/csv/post", fn conn ->
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+        parsed = Jason.decode!(body)
+
+        case parsed do
+          %{"soap_request" => %{"date" => "2018-01-01"}} -> Plug.Conn.resp(conn, 200, @csv)
+          _ -> Plug.Conn.resp(conn, 403, "No dice")
+        end
+      end)
+
+      steps = [
+        %{
+          type: "http",
+          context: %{
+            action: "POST",
+            body: %{
+              soap_request: %{
+                date: "{{date}}"
+              }
+            },
+            url: "#{dataset.technical.sourceUrl}/post",
+            queryParams: %{},
+            headers: %{}
+          },
+          assigns: %{date: "2018-01-01"}
         }
       ]
 

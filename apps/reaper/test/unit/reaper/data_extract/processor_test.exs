@@ -165,6 +165,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
       extract_step = %{
         type: "http",
         context: %{
+          action: "GET",
+          body: %{},
           url: dataset.technical.sourceUrl,
           queryParams: %{},
           headers: %{}
@@ -218,6 +220,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
         %{
           type: "http",
           context: %{
+            action: "GET",
+            body: %{},
             url: "#{dataset.technical.sourceUrl}/{{currentYear}}-{{currentMonth}}",
             queryParams: %{},
             headers: %{}

@@ -81,6 +81,12 @@ defmodule Reaper.UrlBuilder do
     {key, value}
   end
 
+  defp safe_evaluate_parameter(%{} = param_map, bindings) do
+    Enum.map(param_map, fn param ->
+      safe_evaluate_parameters(param, bindings)
+    end)
+  end
+
   defp evaluate_parameters(parameters, bindings) do
     Enum.map(
       parameters,

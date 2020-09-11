@@ -18,10 +18,10 @@ defmodule Reaper.DataSlurper do
     Reaper.DataSlurper.S3
   ]
 
-  def slurp(url, dataset_id, headers \\ %{}, protocol \\ nil) do
+  def slurp(url, dataset_id, headers \\ %{}, protocol \\ nil, action \\ "GET", body \\ "") do
     @implementations
     |> Enum.find(&handle?(&1, url))
-    |> apply(:slurp, [url, dataset_id, headers, protocol])
+    |> apply(:slurp, [url, dataset_id, headers, protocol, action, body])
   end
 
   def determine_filename(dataset_id) do
