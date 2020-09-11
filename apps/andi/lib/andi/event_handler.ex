@@ -108,7 +108,6 @@ defmodule Andi.EventHandler do
     count =
       DatasetStore.get_all!()
       |> Enum.count()
-      |> IO.inspect(label: "Counttt")
 
     [
       app: "andi"
