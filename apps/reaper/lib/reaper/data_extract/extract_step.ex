@@ -1,4 +1,9 @@
 defmodule Reaper.DataExtract.ExtractStep do
+  @moduledoc """
+  This module processes extract steps as defined in a dataset definition.  After
+  iterating through the steps, accumilating any destination values in the assigns block
+  it is assumed the final step will be http (at this time) which returns a data stream
+  """
   require Logger
   alias Reaper.DataSlurper
   alias Reaper.UrlBuilder
@@ -16,15 +21,16 @@ defmodule Reaper.DataExtract.ExtractStep do
   rescue
     error ->
       Logger.error(Exception.format(:error, error, __STACKTRACE__))
-      raise "Unable to process #{step.type} step for dataset #{dataset.id}."
+      reraise "Unable to process #{step.type} step for dataset #{dataset.id}.", __STACKTRACE__
   end
 
   defp process_extract_step(dataset, %{type: "http"} = step) do
     headers = UrlBuilder.safe_evaluate_parameters(step.context.headers, step.assigns)
+
     body =
       UrlBuilder.safe_evaluate_parameters(step.context.body, step.assigns)
       |> Enum.into(%{})
-      |> Jason.encode!
+      |> Jason.encode!()
 
     UrlBuilder.decode_http_extract_step(step)
     |> DataSlurper.slurp(dataset.id, headers, step.context.protocol, step.context.action, body)

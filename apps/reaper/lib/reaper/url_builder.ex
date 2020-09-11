@@ -72,10 +72,10 @@ defmodule Reaper.UrlBuilder do
 
   defp safe_evaluate_parameter({key, %{} = param_map}, bindings) do
     evaluated_map =
-    Enum.map(param_map, fn param ->
-      safe_evaluate_parameter(param, bindings)
-    end)
-    |> Enum.into(%{})
+      Enum.map(param_map, fn param ->
+        safe_evaluate_parameter(param, bindings)
+      end)
+      |> Enum.into(%{})
 
     {key, evaluated_map}
   end
@@ -85,7 +85,6 @@ defmodule Reaper.UrlBuilder do
 
     value =
       Regex.replace(regex, value, fn _match, var_name ->
-        IO.inspect(var_name)
         bindings[String.to_atom(var_name)]
       end)
 

@@ -332,7 +332,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           |> Map.get(:query_params)
           |> Map.get("token")
 
-        if(token == "secret tunnel") do
+        if token == "secret tunnel" do
           Plug.Conn.resp(conn, 200, @csv)
         else
           Plug.Conn.resp(conn, 401, "Unauthorized")
@@ -410,7 +410,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           type: "http",
           context: %{
             action: "GET",
-            protocol:  nil,
+            protocol: nil,
             body: %{},
             url: "#{dataset.technical.sourceUrl}/{{path}}",
             queryParams: %{},
@@ -429,6 +429,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
                {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
              ]
     end
+
     test "can post with an encoded post body", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "POST", "/api/csv/post", fn conn ->
         {:ok, body, conn} = Plug.Conn.read_body(conn)
@@ -468,18 +469,21 @@ defmodule Reaper.DataExtract.ExtractStepTest do
                {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
              ]
     end
+
     test "sends through protocols", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "GET", "/api/csv", fn conn ->
         Plug.Conn.resp(conn, 200, @csv)
       end)
+
       allow Mint.HTTP.connect(:spy, :spy, :spy, :spy), return: :spy, meck_options: [:passthrough]
+
       steps = [
         %{
           type: "http",
           context: %{
             action: "GET",
             protocol: ["http1"],
-            body: %{ },
+            body: %{},
             url: "#{dataset.technical.sourceUrl}",
             queryParams: %{},
             headers: %{}
@@ -496,7 +500,8 @@ defmodule Reaper.DataExtract.ExtractStepTest do
                {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
                {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
              ]
-      assert_called Mint.HTTP.connect(:http, "localhost", any(), [transport_opts: [timeout: 30000], protocols: [:http1]])
+
+      assert_called Mint.HTTP.connect(:http, "localhost", any(), transport_opts: [timeout: 30_000], protocols: [:http1])
     end
   end
 
