@@ -117,12 +117,11 @@ defmodule Andi.EventHandler do
   end
 
   defp add_dataset_count() do
-    Process.sleep(20000)
+    Process.sleep(20_000)
 
     count =
       DatasetStore.get_all!()
       |> Enum.count()
-      |> IO.inspect(label: "Counttt")
 
     [
       app: "andi"

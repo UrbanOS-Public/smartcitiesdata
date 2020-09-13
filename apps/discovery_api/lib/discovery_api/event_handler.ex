@@ -138,7 +138,7 @@ defmodule DiscoveryApi.EventHandler do
   end
 
   defp add_dataset_count() do
-    Process.sleep(20000)
+    Process.sleep(20_000)
 
     count =
       Brook.get_all_values!(DiscoveryApi.instance(), :models)
