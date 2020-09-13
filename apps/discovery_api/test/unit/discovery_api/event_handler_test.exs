@@ -68,7 +68,6 @@ defmodule DiscoveryApi.EventHandlerTest do
       allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})
       allow(TableInfoCache.invalidate(), return: :ok)
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-      expect(Brook.Event.send(DiscoveryApi.instance(), "add_dataset_count", :discovery_api, %{}), return: :ok)
 
       dataset = TDG.create_dataset(%{})
 
@@ -99,7 +98,6 @@ defmodule DiscoveryApi.EventHandlerTest do
       expect(Model.delete(dataset.id), return: :ok)
       expect(DataJsonService.delete_data_json(), return: :ok)
       expect(Elasticsearch.Document.delete(dataset.id), return: :ok)
-      expect(Brook.Event.send(DiscoveryApi.instance(), "add_dataset_count", :discovery_api, %{}), return: :ok)
 
       Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
     end

@@ -30,14 +30,13 @@ defmodule Andi.EventHandler do
     dataset_update()
     |> add_event_count(author, data.id)
 
+    Task.async(fn -> add_dataset_count() end)
     Datasets.update_ingested_time(data.id, DateTime.utc_now())
 
     Datasets.update_ingested_time(data.id, DateTime.utc_now())
 
     Datasets.update(data)
     DatasetStore.update(data)
-
-    Brook.Event.send(instance_name(), "add_dataset_count", :andi, %{})
   end
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do
@@ -99,20 +98,9 @@ defmodule Andi.EventHandler do
     dataset_delete()
     |> add_event_count(author, dataset.id)
 
+    Task.async(fn -> add_dataset_count() end)
     Datasets.delete(dataset.id)
     DatasetStore.delete(dataset.id)
-    Brook.Event.send(instance_name(), "add_dataset_count", :andi, %{})
-  end
-
-  def handle_event(%Brook.Event{type: "add_dataset_count"}) do
-    count =
-      DatasetStore.get_all!()
-      |> Enum.count()
-
-    [
-      app: "andi"
-    ]
-    |> TelemetryEvent.add_event_metrics([:dataset_total], value: %{count: count})
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])
@@ -126,6 +114,20 @@ defmodule Andi.EventHandler do
       event_type: event_type
     ]
     |> TelemetryEvent.add_event_metrics([:events_handled])
+  end
+
+  defp add_dataset_count() do
+    Process.sleep(20000)
+
+    count =
+      DatasetStore.get_all!()
+      |> Enum.count()
+      |> IO.inspect(label: "Counttt")
+
+    [
+      app: "andi"
+    ]
+    |> TelemetryEvent.add_event_metrics([:dataset_total], value: %{count: count})
   end
 
   defp data_harvest_event(org) do

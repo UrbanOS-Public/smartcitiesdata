@@ -76,6 +76,8 @@ defmodule DiscoveryApi.EventHandler do
     dataset_update()
     |> add_event_count(author, dataset.id)
 
+    Task.async(fn -> add_dataset_count() end)
+
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
          {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
          model <- Mapper.to_data_model(dataset, organization) do
@@ -84,7 +86,7 @@ defmodule DiscoveryApi.EventHandler do
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
       merge(:models, model.id, model)
       clear_caches()
-      Brook.Event.send(DiscoveryApi.instance(), "add_dataset_count", :discovery_api, %{})
+
       :discard
     else
       {:error, reason} ->
@@ -97,6 +99,7 @@ defmodule DiscoveryApi.EventHandler do
     dataset_delete()
     |> add_event_count(author, dataset.id)
 
+    Task.async(fn -> add_dataset_count() end)
     RecommendationEngine.delete(dataset.id)
     SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName)
     Elasticsearch.Document.delete(dataset.id)
@@ -104,23 +107,12 @@ defmodule DiscoveryApi.EventHandler do
     Model.delete(dataset.id)
     clear_caches()
     Logger.debug("#{__MODULE__}: Deleted dataset: #{dataset.id}")
-    Brook.Event.send(DiscoveryApi.instance(), "add_dataset_count", :discovery_api, %{})
+
     :discard
   rescue
     error ->
       Logger.error("#{__MODULE__}: Failed to delete dataset: #{dataset.id}, Reason: #{inspect(error)}")
       :discard
-  end
-
-  def handle_event(%Brook.Event{type: "add_dataset_count"}) do
-    count =
-      Brook.get_all_values!(DiscoveryApi.instance(), :models)
-      |> Enum.count()
-
-    [
-      app: "discovery_api"
-    ]
-    |> TelemetryEvent.add_event_metrics([:dataset_total], value: %{count: count})
   end
 
   defp clear_caches() do
@@ -143,5 +135,18 @@ defmodule DiscoveryApi.EventHandler do
       event_type: event_type
     ]
     |> TelemetryEvent.add_event_metrics([:events_handled])
+  end
+
+  defp add_dataset_count() do
+    Process.sleep(20000)
+
+    count =
+      Brook.get_all_values!(DiscoveryApi.instance(), :models)
+      |> Enum.count()
+
+    [
+      app: "discovery_api"
+    ]
+    |> TelemetryEvent.add_event_metrics([:dataset_total], value: %{count: count})
   end
 end

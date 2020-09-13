@@ -20,7 +20,6 @@ defmodule EventHandlerTest do
     allow(Datasets.delete(any()), return: {:ok, "good"})
     allow(Organizations.delete_harvested_dataset(any()), return: any())
     expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-    expect(Brook.Event.send(instance_name(), "add_dataset_count", :andi, %{}), return: :ok)
 
     Brook.Event.new(type: dataset_delete(), data: dataset, author: :author)
     |> Andi.EventHandler.handle_event()
