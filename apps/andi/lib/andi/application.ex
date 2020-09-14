@@ -12,7 +12,21 @@ defmodule Andi.Application do
         {Brook, Application.get_env(:andi, :brook)},
         Andi.DatasetCache,
         Andi.Migration.Migrations,
-        Andi.Scheduler
+        Andi.Scheduler,
+        {Elsa.Supervisor,
+         endpoints: Application.get_env(:andi, :kafka_endpoints),
+         name: :andi_elsa,
+         connection: :andi_reader,
+         group_consumer: [
+           name: "andi_reader",
+           group: "andi_reader_group",
+           topics: [Application.get_env(:andi, :dead_letter_topic)],
+           handler: Andi.MessageHandler,
+           handler_init_args: [],
+           config: [
+             begin_offset: :latest
+           ]
+         ]}
       ]
       |> TelemetryEvent.config_init_server(instance_name())
       |> List.flatten()

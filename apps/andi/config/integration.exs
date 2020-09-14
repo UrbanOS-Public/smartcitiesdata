@@ -16,7 +16,9 @@ config :andi,
     {Andi.DivoPostgres, []}
   ],
   divo_wait: [dwell: 700, max_tries: 50],
-  kafka_broker: endpoint
+  kafka_broker: endpoint,
+  dead_letter_topic: "dead-letters",
+  kafka_endpoints: endpoint
 
 config :andi, Andi.Repo,
   database: "andi",

@@ -41,6 +41,10 @@ config :andi, AndiWeb.Endpoint,
     ]
   ]
 
+config :andi,
+  dead_letter_topic: "streaming-dead-letters",
+  kafka_endpoints: [{host, 9092}]
+
 # Watch static and templates for browser reloading.
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

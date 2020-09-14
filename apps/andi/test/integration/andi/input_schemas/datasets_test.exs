@@ -211,9 +211,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
       {:ok, _andi_dataset} = Datasets.update(dataset)
 
       now = DateTime.utc_now()
-      ingested_time = DateTime.to_unix(now, :microsecond)
 
-      assert {:ok, %{ingestedTime: ingested_time_from_db} = andi_dataset} = Datasets.update_ingested_time(dataset.id, ingested_time)
+      assert {:ok, %{ingestedTime: ingested_time_from_db} = andi_dataset} = Datasets.update_ingested_time(dataset.id, now)
 
       assert DateTime.diff(ingested_time_from_db, now) == 0
     end
@@ -222,9 +221,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
       dataset = TDG.create_dataset(%{})
 
       now = DateTime.utc_now()
-      ingested_time = DateTime.to_unix(now, :microsecond)
 
-      assert {:ok, %{ingestedTime: ingested_time_from_db} = andi_dataset} = Datasets.update_ingested_time(dataset.id, ingested_time)
+      assert {:ok, %{ingestedTime: ingested_time_from_db} = andi_dataset} = Datasets.update_ingested_time(dataset.id, now)
 
       assert DateTime.diff(ingested_time_from_db, now) == 0
     end

@@ -4,15 +4,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   use Placebo
 
   import Phoenix.LiveViewTest
-
-  import FlokiHelpers,
-    only: [
-      get_text: 2,
-      get_values: 2,
-      find_elements: 2
-    ]
-
-  alias Andi.InputSchemas.Datasets.Dataset
+  import FlokiHelpers, only: [get_text: 2, get_values: 2]
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
@@ -27,6 +19,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
           end
         )
 
+      allow(Andi.Repo.all(any()), return: datasets)
       DatasetHelpers.replace_all_datasets_in_repo(datasets)
 
       assert {:ok, _view, html} = live(conn, @url_path)
@@ -39,6 +32,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "shows No Datasets when there are no rows to show", %{conn: conn} do
+      allow(Andi.Repo.all(any()), return: [])
       DatasetHelpers.replace_all_datasets_in_repo([])
 
       assert {:ok, view, html} = live(conn, @url_path)
@@ -46,37 +40,14 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert get_text(html, ".datasets-index__title") =~ "All Datasets"
       assert get_text(html, ".datasets-index__table") =~ "No Datasets"
     end
-
-    test "does not load datasets that only contain a timestamp", %{conn: conn} do
-      dataset_with_only_timestamp = %Dataset{
-        id: UUID.uuid4(),
-        ingestedTime: DateTime.utc_now(),
-        business: %{},
-        technical: %{}
-      }
-
-      datasets =
-        Enum.map(
-          1..3,
-          fn _x ->
-            DatasetHelpers.create_dataset(%{})
-          end
-        )
-
-      DatasetHelpers.replace_all_datasets_in_repo(datasets ++ [dataset_with_only_timestamp])
-
-      assert {:ok, _view, html} = live(conn, @url_path)
-      table_text = get_text(html, ".datasets-index__table")
-
-      assert 3 == find_elements(html, ".datasets-index__table tr") |> Enum.count()
-
-      Enum.each(datasets, fn dataset ->
-        assert table_text =~ dataset.business.dataTitle
-      end)
-    end
   end
 
   describe "Live connection with search params in URL" do
+    setup do
+      allow(Andi.Repo.all(any()), return: [])
+      :ok
+    end
+
     test "populates search box", %{conn: conn} do
       DatasetHelpers.replace_all_datasets_in_repo([])
 
@@ -84,23 +55,6 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> "?search=" <> search_text)
       assert [search_text] = get_values(html, "input.datasets-index__search-input")
-    end
-
-    test "filters results based on search", %{conn: conn} do
-      dataset_a = DatasetHelpers.create_dataset(business: %{dataTitle: "data_a"})
-      dataset_b = DatasetHelpers.create_dataset(business: %{dataTitle: "data_b"})
-
-      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
-
-      # For most of our tests, we can let live/2 handle both the static connection
-      # and the live update. That wasn't working correctly for this one so doing the
-      # steps separately fixes the issue.
-      conn = get(conn, @url_path)
-
-      assert {:ok, view, html} = live(conn, @url_path <> "?search=" <> dataset_a.business.dataTitle)
-
-      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
-      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
 
     test "updating search field does not override other params", %{conn: conn} do
@@ -114,48 +68,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   describe "When form change executes search" do
-    test "search filters datasets on orgTitle", %{conn: conn} do
-      dataset_a = DatasetHelpers.create_dataset(business: %{orgTitle: "org_a"})
-      dataset_b = DatasetHelpers.create_dataset(business: %{orgTitle: "org_b"})
-
-      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
-
-      {:ok, view, _html} = live(conn, @url_path)
-
-      html = render_change(view, :search, %{"search-value" => dataset_a.business.orgTitle})
-
-      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.orgTitle
-      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.orgTitle
-    end
-
-    test "search filters datasets on dataTitle", %{conn: conn} do
-      dataset_a = DatasetHelpers.create_dataset(business: %{dataTitle: "data_a"})
-      dataset_b = DatasetHelpers.create_dataset(business: %{dataTitle: "data_b"})
-
-      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
-
-      {:ok, view, _html} = live(conn, @url_path)
-
-      html = render_change(view, :search, %{"search-value" => dataset_a.business.dataTitle})
-
-      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
-      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
-    end
-
-    test "shows No Datasets if no results returned", %{conn: conn} do
-      dataset_a = DatasetHelpers.create_dataset(business: %{dataTitle: "data_a"})
-      dataset_b = DatasetHelpers.create_dataset(business: %{dataTitle: "data_b"})
-
-      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
-
-      {:ok, view, _html} = live(conn, @url_path)
-
-      html = render_change(view, :search, %{"search-value" => "__NOT_RESULTS_SHOULD RETURN__"})
-
-      assert get_text(html, ".datasets-index__table") =~ "No Datasets"
-    end
-
     test "Search Change event triggers redirect and updates search box value", %{conn: conn} do
+      allow(Andi.Repo.all(any()), return: [])
       DatasetHelpers.replace_all_datasets_in_repo([])
 
       {:ok, view, _html} = live(conn, @url_path)
@@ -172,35 +86,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   describe "When form submit executes search" do
-    test "filters on orgTitle", %{conn: conn} do
-      dataset_a = DatasetHelpers.create_dataset(business: %{orgTitle: "org_a"})
-      dataset_b = DatasetHelpers.create_dataset(business: %{orgTitle: "org_b"})
-
-      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
-
-      {:ok, view, _html} = live(conn, @url_path)
-
-      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
-
-      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.orgTitle
-      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.orgTitle
-    end
-
-    test "filters on dataTitle", %{conn: conn} do
-      dataset_a = DatasetHelpers.create_dataset(business: %{dataTitle: "data_a"})
-      dataset_b = DatasetHelpers.create_dataset(business: %{dataTitle: "data_b"})
-
-      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
-
-      {:ok, view, _html} = live(conn, @url_path)
-
-      html = render_submit(view, :search, %{"search-value" => dataset_a.business.dataTitle})
-
-      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
-      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
-    end
-
     test "Search Submit event triggers redirect and updates search box value", %{conn: conn} do
+      allow(Andi.Repo.all(any()), return: [])
       DatasetHelpers.replace_all_datasets_in_repo([])
 
       {:ok, view, _html} = live(conn, @url_path)
@@ -214,25 +101,6 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       assert_redirect(view, @url_path <> "?search=" <> search_text)
     end
-
-    test "Search Submit succeeds even with missing fields", %{conn: conn} do
-      dataset_a =
-        DatasetHelpers.create_dataset(business: %{orgTitle: "org_a"})
-        |> put_in([:business, :dataTitle], nil)
-
-      dataset_b =
-        DatasetHelpers.create_dataset(business: %{dataTitle: "data_b"})
-        |> put_in([:business, :orgTitle], nil)
-
-      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
-
-      {:ok, view, _html} = live(conn, @url_path)
-
-      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
-
-      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.orgTitle
-      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
-    end
   end
 
   describe "Toggle remote datasets checkbox" do
@@ -240,6 +108,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset_a = DatasetHelpers.create_dataset(technical: %{sourceType: "ingest"})
       dataset_b = DatasetHelpers.create_dataset(technical: %{sourceType: "remote"})
 
+      allow(Andi.Repo.all(any()), return: [dataset_a, dataset_b])
       DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
       {:ok, _view, html} = live(conn, @url_path)
@@ -252,6 +121,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset_a = DatasetHelpers.create_dataset(technical: %{sourceType: "ingest"})
       dataset_b = DatasetHelpers.create_dataset(technical: %{sourceType: "remote"})
 
+      allow(Andi.Repo.all(any()), return: [dataset_a, dataset_b])
       DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
       {:ok, view, _html} = live(conn, @url_path)
