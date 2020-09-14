@@ -24,16 +24,28 @@ defmodule AndiWeb.EditLiveView do
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>
+        <%= hidden_input(business, :authorEmail) %>
+        <%= hidden_input(business, :authorName) %>
+        <%= hidden_input(business, :categories) %>
+        <%= hidden_input(business, :conformsToUri) %>
+        <%= hidden_input(business, :describedByMimeType) %>
+        <%= hidden_input(business, :describedByUrl) %>
         <%= hidden_input(business, :id) %>
         <%= hidden_input(business, :orgTitle) %>
+        <%= hidden_input(business, :parentDataset) %>
+        <%= hidden_input(business, :referenceUrls) %>
+        <%= hidden_input(technical, :allow_duplicates) %>
+        <%= hidden_input(technical, :authBodyEncodeMethod) %>
+        <%= hidden_input(technical, :authUrl) %>
+        <%= hidden_input(technical, :credentials) %>
+        <%= hidden_input(technical, :dataName) %>
         <%= hidden_input(technical, :id) %>
         <%= hidden_input(technical, :orgId) %>
         <%= hidden_input(technical, :orgName) %>
-        <%= hidden_input(technical, :dataName) %>
-        <%= hidden_input(technical, :systemName) %>
-        <%= hidden_input(technical, :sourceType) %>
+        <%= hidden_input(technical, :protocol) %>
         <%= hidden_input(technical, :sourceFormat) %>
-
+        <%= hidden_input(technical, :sourceType) %>
+        <%= hidden_input(technical, :systemName) %>
 
         <div class="metadata-form-component">
           <%= live_render(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, session: %{"dataset" => @dataset}) %>
@@ -145,6 +157,7 @@ defmodule AndiWeb.EditLiveView do
            assign(socket,
              dataset: andi_dataset,
              changeset: dataset_changeset,
+             unsaved_changes: false,
              publish_success_modal_visibility: "visible",
              page_error: false
            )}
@@ -187,7 +200,7 @@ defmodule AndiWeb.EditLiveView do
      )}
   end
 
-  def handle_info(%{topic: "form-save", payload: %{dataset_id: dataset_id}}, %{assigns: %{dataset_id: dataset_id}} = socket) do
+  def handle_info(%{topic: "form-save"}, socket) do
     {:noreply, socket}
   end
 

@@ -27,3 +27,13 @@ config :andi, AndiWeb.Endpoint,
   live_view: [
     signing_salt: "CHANGE BEFORE PROD"
   ]
+
+host =
+  case System.get_env("HOST_IP") do
+    nil -> "localhost"
+    defined -> defined
+  end
+
+config :andi,
+  dead_letter_topic: "streaming-dead-letters",
+  kafka_endpoints: [{host, 9092}]

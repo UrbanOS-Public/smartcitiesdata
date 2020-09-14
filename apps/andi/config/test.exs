@@ -23,3 +23,6 @@ config :andi, :brook,
     module: Brook.Storage.Ets,
     init_arg: []
   ]
+
+config :andi,
+  dead_letter_topic: "dead-letters"

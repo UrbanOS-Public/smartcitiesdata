@@ -116,7 +116,8 @@ defmodule AndiWeb.OrganizationLiveView do
 
   defp to_view_model(org) do
     %{
-      "org_title" => org.orgTitle
+      "org_title" => org.orgTitle,
+      "id" => org.id
     }
   end
 end

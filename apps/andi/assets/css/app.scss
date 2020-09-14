@@ -63,6 +63,7 @@ body {
   padding: 0.6rem 1.7rem;
   font-size: 1.5rem;
   min-width: 10rem;
+  border: 2px solid black;
 }
 
 .btn--action {
@@ -196,6 +197,10 @@ body {
 
     a:visited {
         color: black;
+    }
+
+    a:hover {
+        cursor: pointer;
     }
 }
 

@@ -14,11 +14,13 @@ defmodule AndiWeb.Router do
     plug :fetch_live_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers, %{"content-security-policy" => @csp}
+    plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
   end
 
   pipeline :api do
     plug :accepts, ["json"]
     plug Plug.Logger
+    plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
   end
 
   scope "/", AndiWeb do
@@ -26,9 +28,10 @@ defmodule AndiWeb.Router do
 
     get "/", Redirect, to: "/datasets"
     live "/datasets", DatasetLiveView, layout: {AndiWeb.LayoutView, :root}
-    get "/datasets/:id", EditController, :show
+    get "/datasets/:id", EditController, :show_dataset
 
     live "/organizations", OrganizationLiveView, layout: {AndiWeb.LayoutView, :root}
+    get "/organizations/:id", EditController, :show_organization
   end
 
   scope "/api", AndiWeb.API do

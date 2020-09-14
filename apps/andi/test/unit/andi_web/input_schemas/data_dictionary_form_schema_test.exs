@@ -109,6 +109,29 @@ defmodule AndiWeb.DataDictionaryFormSchemaTest do
     end
   end
 
+  describe "changeset from form data" do
+    test "maintains order of schema" do
+      form_data = %{
+        "schema" => %{
+          "4" => %{"name" => "cam"},
+          "2" => %{"name" => "joe"},
+          "1" => %{"name" => "mike"},
+          "3" => %{"name" => "dude"}
+        }
+      }
+
+      schema_names_from_form_data_changeset =
+        form_data
+        |> DataDictionaryFormSchema.changeset_from_form_data()
+        |> Ecto.Changeset.get_field(:schema)
+        |> Enum.map(fn struct -> struct.name end)
+
+      expected_schema_names = ["mike", "joe", "dude", "cam"]
+
+      assert expected_schema_names == schema_names_from_form_data_changeset
+    end
+  end
+
   defp drop_fields_from_schema(nil), do: nil
 
   defp drop_fields_from_schema(schema) do

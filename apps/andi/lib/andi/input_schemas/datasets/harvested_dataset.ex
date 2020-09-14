@@ -11,12 +11,14 @@ defmodule Andi.InputSchemas.Datasets.HarvestedDatasets do
     field(:systemId, :string)
     field(:source, :string)
     field(:modifiedDate, :utc_datetime, default: nil)
+    field(:datasetId, :string)
     field(:include, :boolean, default: true)
+    field(:dataTitle, :string)
   end
 
   use Accessible
 
-  @cast_fields [:id, :orgId, :sourceId, :systemId, :source, :modifiedDate, :include]
+  @cast_fields [:id, :orgId, :sourceId, :systemId, :source, :modifiedDate, :datasetId, :include, :dataTitle]
   @required_fields []
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
@@ -35,6 +37,7 @@ defmodule Andi.InputSchemas.Datasets.HarvestedDatasets do
 
     harvested_dataset
     |> cast(changes_with_id, @cast_fields, empty_values: [])
+    |> unique_constraint(:datasetId)
   end
 
   def preload(struct), do: struct

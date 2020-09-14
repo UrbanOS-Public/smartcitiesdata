@@ -1,3 +1,38 @@
+.organization-edit-page {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.organization-form-edit-section {
+    margin: -2rem 1rem 2rem 1rem;
+
+    grid-template-areas:
+        "title logo-url"
+        "name ."
+        "description ."
+        "homepage ."
+        "data-json-url .";
+}
+
+.edit-organization-title {
+    display: inline-flex;
+    height: 3.5rem;
+    border-bottom: 1px solid $color-form-border;
+    margin-left: 1rem;
+    margin-right: 2rem;
+}
+
+.edit-button-group {
+    margin: 1rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.harvested-datasets-table {
+    margin-top: 3rem;
+    width: 100%;
+}
+
 .organizations-view {
     flex: 1;
     background: $color-content-background;
@@ -78,6 +113,19 @@
   max-width: 30rem;
 }
 
+.organizations-table__checkbox {
+  padding-left: 1rem;
+  cursor: pointer;
+
+  input {
+    box-sizing: border-box;
+    padding: 0;
+    cursor: pointer;
+    height: 1.3rem;
+    width: 1.3rem;
+  }
+}
+
 .organizations-table__ingested-cell {
   text-align: center;
   color: green;
@@ -100,3 +148,10 @@
 .organizations-table__th--sortable {
   cursor: pointer;
 }
+
+@include area(organization-form, title);
+@include area(organization-form, name);
+@include area(organization-form, description);
+@include area(organization-form, logo-url);
+@include area(organization-form, homepage);
+@include area(organization-form, data-json-url);

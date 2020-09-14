@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.39.3",
+      version: "0.44.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -63,6 +63,7 @@ defmodule Andi.MixProject do
       {:plug_cowboy, "~> 2.1"},
       {:postgrex, "~> 0.15.1"},
       {:prestige, "~> 1.0"},
+      {:quantum, "~> 2.4"},
       {:simply_validate, ">= 0.2.0"},
       {:smart_city, git: "https://github.com/smartcitiesdata/smart_city", ref: "af9ec5c868ab37f74905c91eb900b50f3f9b8e37", override: true},
       {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},

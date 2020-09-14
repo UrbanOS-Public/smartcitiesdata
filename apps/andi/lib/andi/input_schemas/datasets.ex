@@ -12,6 +12,8 @@ defmodule Andi.InputSchemas.Datasets do
 
   require Logger
 
+  def get(nil), do: nil
+
   def get(id) do
     Repo.get(Dataset, id)
     |> Dataset.preload()
@@ -56,7 +58,9 @@ defmodule Andi.InputSchemas.Datasets do
 
     changes = InputConverter.prepare_smrt_dataset_for_casting(smrt_dataset)
 
-    Dataset.changeset_for_draft(andi_dataset, changes)
+    andi_dataset
+    |> Andi.Repo.preload([:business, :technical])
+    |> Dataset.changeset_for_draft(changes)
     |> save()
   end
 
@@ -73,7 +77,9 @@ defmodule Andi.InputSchemas.Datasets do
   def update(%Dataset{} = from_dataset, changes) do
     changes_as_map = StructTools.to_map(changes)
 
-    Dataset.changeset_for_draft(from_dataset, changes_as_map)
+    from_dataset
+    |> Andi.Repo.preload([:business, :technical])
+    |> Dataset.changeset_for_draft(changes_as_map)
     |> save()
   end
 
@@ -106,15 +112,17 @@ defmodule Andi.InputSchemas.Datasets do
 
     new_changes = %{technical: technical_changes, business: business_changes, id: dataset_id} |> StructTools.to_map()
 
-    Dataset.changeset_for_draft(existing_dataset, new_changes)
+    existing_dataset
+    |> Andi.Repo.preload([:business, :technical])
+    |> Dataset.changeset_for_draft(new_changes)
     |> save()
   end
 
   def update_ingested_time(dataset_id, ingested_time) do
     from_dataset = get(dataset_id) || %Dataset{id: dataset_id}
-    ingested_time_as_datetime = DateTime.from_unix!(ingested_time, :microsecond)
+    iso_ingested_time = DateTime.to_iso8601(ingested_time)
 
-    update(from_dataset, %{ingestedTime: ingested_time_as_datetime})
+    update(from_dataset, %{ingestedTime: iso_ingested_time})
   end
 
   def update_cadence(dataset_id, cadence) do
@@ -126,6 +134,13 @@ defmodule Andi.InputSchemas.Datasets do
       end)
 
     update(from_dataset, updated)
+  end
+
+  def update_latest_dlq_message(%{"dataset_id" => dataset_id} = message) do
+    case get(dataset_id) do
+      nil -> Logger.info("Message does not pertain to any andi dataset: #{message}")
+      dataset -> update(dataset, %{dlq_message: message})
+    end
   end
 
   def delete(dataset_id) do

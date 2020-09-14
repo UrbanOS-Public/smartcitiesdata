@@ -2,6 +2,7 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
   @moduledoc false
   alias Pipeline.Writer.TableWriter.Statement
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+  alias Pipeline.Writer.TableWriter.Helper.TelemetryEventHelper
   require Logger
 
   def setup(table) do
@@ -40,6 +41,8 @@ defmodule Pipeline.Writer.TableWriter.Compaction do
     %{table: compact_table, alteration: "rename to #{table}"}
     |> Statement.alter()
     |> PrestigeHelper.execute_query()
+
+    TelemetryEventHelper.add_dataset_record_event_count(new, table)
 
     :ok
   end

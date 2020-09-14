@@ -8,7 +8,7 @@ defmodule AndiWeb.EditLiveView.PublishSuccessModal do
     ~L"""
     <div class="publish-success-modal publish-success-modal--<%= @visibility %>">
       <div class="modal-form-container">
-        <p>Dataset published successfully</p>
+        <p>Published successfully</p>
         <br>
         <div class="button-container">
           <button type="button" class="btn" phx-click="cancel-edit">RETURN HOME</button>

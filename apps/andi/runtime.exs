@@ -45,6 +45,10 @@ config :andi, AndiWeb.Endpoint,
     signing_salt: live_view_salt
   ]
 
+config :andi,
+  dead_letter_topic: "streaming-dead-letters",
+  kafka_endpoints: endpoint
+
 config :andi, Andi.Repo,
   database: System.get_env("POSTGRES_DBNAME"),
   username: System.get_env("POSTGRES_USER"),
@@ -60,4 +64,11 @@ config :andi, Andi.Repo,
   ]
 
 config :telemetry_event,
-  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer()
+  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
+  add_poller: true,
+  add_metrics: [:phoenix_endpoint_stop_duration, :dataset_total_count]
+
+config :andi, Andi.Scheduler,
+  jobs: [
+    {"0 0 1 * *", {Andi.Harvest.Harvester, :start_harvesting, []}}
+  ]

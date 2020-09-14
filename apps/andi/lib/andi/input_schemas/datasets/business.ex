@@ -11,10 +11,16 @@ defmodule Andi.InputSchemas.Datasets.Business do
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "business" do
+    field(:authorEmail, :string)
+    field(:authorName, :string)
     field(:benefitRating, :float)
+    field(:categories, {:array, :string})
+    field(:conformsToUri, :string)
     field(:contactEmail, :string)
     field(:contactName, :string)
     field(:dataTitle, :string)
+    field(:describedByMimeType, :string)
+    field(:describedByUrl, :string)
     field(:description, :string)
     field(:homepage, :string)
     field(:issuedDate, :date)
@@ -23,11 +29,13 @@ defmodule Andi.InputSchemas.Datasets.Business do
     field(:license, :string)
     field(:modifiedDate, :date)
     field(:orgTitle, :string)
+    field(:parentDataset, :string)
     field(:publishFrequency, :string)
+    field(:referenceUrls, {:array, :string})
+    field(:rights, :string)
     field(:riskRating, :float)
     field(:spatial, :string)
     field(:temporal, :string)
-    field(:rights, :string)
 
     belongs_to(:dataset, Andi.InputSchemas.Datasets.Dataset, type: :string, foreign_key: :dataset_id)
   end
@@ -35,24 +43,32 @@ defmodule Andi.InputSchemas.Datasets.Business do
   use Accessible
 
   @cast_fields [
-    :id,
+    :authorEmail,
+    :authorName,
     :benefitRating,
+    :categories,
+    :conformsToUri,
     :contactEmail,
     :contactName,
     :dataTitle,
+    :describedByMimeType,
+    :describedByUrl,
     :description,
     :homepage,
+    :id,
     :issuedDate,
     :keywords,
     :language,
     :license,
     :modifiedDate,
     :orgTitle,
+    :parentDataset,
     :publishFrequency,
+    :referenceUrls,
+    :rights,
     :riskRating,
     :spatial,
-    :temporal,
-    :rights
+    :temporal
   ]
 
   @required_fields [

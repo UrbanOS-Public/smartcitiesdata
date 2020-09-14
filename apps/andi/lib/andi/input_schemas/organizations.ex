@@ -15,8 +15,8 @@ defmodule Andi.InputSchemas.Organizations do
 
   def get_all(), do: Repo.all(Organization)
 
-  def get_harvested_dataset(id) do
-    Repo.get(HarvestedDatasets, id)
+  def get_harvested_dataset(dataset_id) do
+    Repo.get_by(HarvestedDatasets, datasetId: dataset_id)
     |> HarvestedDatasets.preload()
   end
 
@@ -30,6 +30,13 @@ defmodule Andi.InputSchemas.Organizations do
     Repo.all(query)
   end
 
+  def delete_harvested_dataset(dataset_id) do
+    case get_harvested_dataset(dataset_id) do
+      %{id: id} -> Repo.delete(%HarvestedDatasets{id: id})
+      _ -> Logger.info("Unable to delete dataset: #{dataset_id} from harvested datasets")
+    end
+  end
+
   def update(%SmartCity.Organization{} = smrt_org) do
     andi_org =
       case get(smrt_org.id) do
@@ -37,8 +44,7 @@ defmodule Andi.InputSchemas.Organizations do
         organization -> organization
       end
 
-    Organization.changeset(smrt_org)
-    |> save()
+    update(andi_org, smrt_org)
   end
 
   def update(%Organization{} = org) do
@@ -62,10 +68,32 @@ defmodule Andi.InputSchemas.Organizations do
     Repo.insert_or_update(changeset)
   end
 
+  def update_harvested_dataset(harvested_dataset, changes) do
+    changes = changes |> AtomicMap.convert(safe: false, underscore: false)
+
+    HarvestedDatasets.changeset(harvested_dataset, changes)
+    |> save()
+  end
+
   def update_harvested_dataset(harvested_dataset) do
     changes = harvested_dataset |> AtomicMap.convert(safe: false, underscore: false)
 
     HarvestedDatasets.changeset(changes)
     |> save()
+  end
+
+  def update_harvested_dataset_include(dataset_id, val) when is_boolean(val) do
+    case get_harvested_dataset(dataset_id) do
+      nil -> Logger.error("Harvested dataset #{dataset_id} doesn't exist")
+      dataset -> update_harvested_dataset(dataset, %{include: val})
+    end
+  end
+
+  def is_unique?(id, org_name) do
+    from(org in Andi.InputSchemas.Organization,
+      where: org.orgName == ^org_name and org.id != ^id
+    )
+    |> Repo.all()
+    |> Enum.empty?()
   end
 end
