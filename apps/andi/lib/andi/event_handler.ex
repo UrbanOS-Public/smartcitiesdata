@@ -117,7 +117,8 @@ defmodule Andi.EventHandler do
   end
 
   defp add_dataset_count() do
-    Process.sleep(20_000)
+    # This will sleep for 5 seconds, before getting most recently updated dataset count by the Brook Event
+    Process.sleep(5_000)
 
     count =
       DatasetStore.get_all!()
