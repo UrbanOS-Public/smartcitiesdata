@@ -27,10 +27,10 @@ MIX_ENV=integration iex -S mix
 Compaction is a process that runs that consolidates the data that is being stored in Presto.  This process greatly improves read performance.
 ```elixir
 # Deactive Compaction
-Forklift.Quantum.Scheduler.deactivate_job(:compaction)
+Forklift.Quantum.Scheduler.deactivate_job(:compactor)
 
 # Active Compaction
-Forklift.Quantum.Scheduler.activate_job(:compaction)
+Forklift.Quantum.Scheduler.activate_job(:compactor)
 ```
 
 
