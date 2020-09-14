@@ -34,7 +34,15 @@ defmodule Reaper.Decoder.Csv do
   defp header?(row, keys) do
     keys
     |> Enum.zip(row)
-    |> Enum.all?(fn {key, val} -> key == String.trim(val) end)
+    |> Enum.all?(&header_equals?(&1))
+  end
+
+  defp header_equals?({key, val}) do
+    key |> cleanse() == val |> cleanse()
+  end
+
+  defp cleanse(text) do
+    text |> String.trim() |> String.downcase()
   end
 
   @impl Reaper.Decoder
