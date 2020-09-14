@@ -76,6 +76,8 @@ defmodule DiscoveryApi.EventHandler do
     dataset_update()
     |> add_event_count(author, dataset.id)
 
+    Task.async(fn -> add_dataset_count() end)
+
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
          {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
          model <- Mapper.to_data_model(dataset, organization) do
@@ -83,7 +85,6 @@ defmodule DiscoveryApi.EventHandler do
       save_dataset_to_recommendation_engine(dataset)
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
       merge(:models, model.id, model)
-      add_dataset_count()
       clear_caches()
 
       :discard
@@ -98,12 +99,12 @@ defmodule DiscoveryApi.EventHandler do
     dataset_delete()
     |> add_event_count(author, dataset.id)
 
+    Task.async(fn -> add_dataset_count() end)
     RecommendationEngine.delete(dataset.id)
     SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName)
     Elasticsearch.Document.delete(dataset.id)
     StatsCalculator.delete_completeness(dataset.id)
     Model.delete(dataset.id)
-    add_dataset_count()
     clear_caches()
     Logger.debug("#{__MODULE__}: Deleted dataset: #{dataset.id}")
 
@@ -137,6 +138,9 @@ defmodule DiscoveryApi.EventHandler do
   end
 
   defp add_dataset_count() do
+    # This will sleep for 5 seconds, before getting most recently updated dataset count by the Brook Event
+    Process.sleep(5_000)
+
     count =
       Brook.get_all_values!(DiscoveryApi.instance(), :models)
       |> Enum.count()
