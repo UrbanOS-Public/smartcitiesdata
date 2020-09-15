@@ -76,7 +76,7 @@ defmodule DiscoveryApi.EventHandler do
     dataset_update()
     |> add_event_count(author, dataset.id)
 
-    Task.async(fn -> add_dataset_count() end)
+    Task.start(fn -> add_dataset_count() end)
 
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
          {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
@@ -99,7 +99,7 @@ defmodule DiscoveryApi.EventHandler do
     dataset_delete()
     |> add_event_count(author, dataset.id)
 
-    Task.async(fn -> add_dataset_count() end)
+    Task.start(fn -> add_dataset_count() end)
     RecommendationEngine.delete(dataset.id)
     SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName)
     Elasticsearch.Document.delete(dataset.id)
