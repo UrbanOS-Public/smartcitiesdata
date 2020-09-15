@@ -24,4 +24,4 @@ import_config "#{Mix.env()}.exs"
 config :prestige, :session_opts,
   catalog: "hive",
   schema: "default",
-  user: "carpenter"
+  user: "forklift"
