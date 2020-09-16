@@ -80,7 +80,7 @@ defmodule Reaper.UrlBuilder do
     regex = ~r"{{(.+?)}}"
 
     value =
-      Regex.replace(regex, value, fn _match, var_name ->
+      Regex.replace(regex, to_string(value), fn _match, var_name ->
         bindings[String.to_atom(var_name)]
       end)
 

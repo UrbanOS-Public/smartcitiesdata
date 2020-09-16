@@ -49,7 +49,11 @@ defmodule Reaper.Http.Downloader do
           {:ok, %Response{}} | {:error, reason()} | no_return()
   def download(url, headers \\ [], opts) do
     uri = URI.parse(url)
-    evaluated_headers = evaluate_headers(headers)
+    body = Keyword.get(opts, :body, "")
+
+    evaluated_headers =
+      evaluate_headers(headers)
+      |> add_content_type(body)
 
     action = Keyword.get(opts, :action, "GET") |> String.upcase()
     body = Keyword.get(opts, :body, "")
@@ -197,4 +201,7 @@ defmodule Reaper.Http.Downloader do
   defp evaluate_header({key, value}) do
     {to_string(key), EEx.eval_string(value, [])}
   end
+  #TODO: theorehetically test me
+  defp add_content_type(headers, ""), do: headers
+  defp add_content_type(headers, _body), do: [{"Content-Type", "application/json"} | headers]
 end
