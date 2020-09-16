@@ -10,7 +10,7 @@ defmodule Reaper.SecretRetrieverTest do
 
       %{
         dataset_id: 1,
-        role: "reaper-role",
+        role: "andi-role",
         jwt: "asjdhfsa",
         credentials: credentials,
         vault: %Vault{engine: :secrets_engine, host: "http://vault:8200", auth: :auth_backend}
@@ -43,6 +43,9 @@ defmodule Reaper.SecretRetrieverTest do
 
       allow Vault.auth(values.vault, %{role: values.role, jwt: values.jwt}),
         return: {:error, ["Something bad happened"]}
+
+      allow Vault.read(values.vault, "secrets/smart_city/auth0/andi"),
+        return: {:ok, values.credentials}
 
       assert capture_log(fn ->
                assert SecretRetriever.retrieve_auth0_credentials() ==

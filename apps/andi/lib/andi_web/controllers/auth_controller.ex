@@ -6,8 +6,6 @@ defmodule AndiWeb.AuthController do
   require Logger
   plug Ueberauth
 
-  alias Ueberauth.Strategy.Helpers
-
   def callback(%{assigns: %{ueberauth_failure: fails}} = conn, params) do
     Logger.error("Failed to retrieve auth credentials: #{inspect(fails)} with params #{inspect(params)}")
 
@@ -15,9 +13,7 @@ defmodule AndiWeb.AuthController do
     |> redirect(to: "/")
   end
 
-  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, params) do
-    token = auth.credentials.token
-
+  def callback(%{assigns: %{ueberauth_auth: _auth}} = conn, _params) do
     conn
     |> redirect(to: "/")
   end
