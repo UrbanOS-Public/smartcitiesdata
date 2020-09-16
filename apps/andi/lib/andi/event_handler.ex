@@ -30,7 +30,7 @@ defmodule Andi.EventHandler do
     dataset_update()
     |> add_event_count(author, data.id)
 
-    Task.async(fn -> add_dataset_count() end)
+    Task.start(fn -> add_dataset_count() end)
     Datasets.update_ingested_time(data.id, DateTime.utc_now())
 
     Datasets.update_ingested_time(data.id, DateTime.utc_now())
@@ -98,7 +98,7 @@ defmodule Andi.EventHandler do
     dataset_delete()
     |> add_event_count(author, dataset.id)
 
-    Task.async(fn -> add_dataset_count() end)
+    Task.start(fn -> add_dataset_count() end)
     Datasets.delete(dataset.id)
     DatasetStore.delete(dataset.id)
   end

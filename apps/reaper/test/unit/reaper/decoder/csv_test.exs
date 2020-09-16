@@ -15,20 +15,20 @@ defmodule Reaper.Decoder.CsvTest do
   end
 
   describe "decode/2" do
-    test "discards CSV headers" do
+    test "discards CSV headers and is case insensitive" do
       dataset =
         TDG.create_dataset(%{
           id: "with-headers",
-          technical: %{sourceFormat: "csv", schema: [%{name: "id"}, %{name: "name"}]}
+          technical: %{sourceFormat: "csv", schema: [%{name: "iD"}, %{name: "name"}]}
         })
 
       expected = [
-        %{"id" => "id", "name" => " something different"},
-        %{"id" => "1", "name" => " Woody"},
-        %{"id" => "2", "name" => " Buzz"}
+        %{"iD" => "id", "name" => " something different"},
+        %{"iD" => "1", "name" => " Woody"},
+        %{"iD" => "2", "name" => " Buzz"}
       ]
 
-      File.write!(@filename, ~s|id, name\nid, something different\n1, Woody\n2, Buzz\n|)
+      File.write!(@filename, ~s| ID , nAme\nid, something different\n1, Woody\n2, Buzz\n|)
 
       {:ok, actual} =
         {:file, @filename}
