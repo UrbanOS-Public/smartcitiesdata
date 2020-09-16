@@ -36,9 +36,9 @@ defmodule TelemetryEvent.Helper.AddMetrics do
   defp add_metrics(:phoenix_endpoint_stop_duration) do
     [
       metric_name: "phoenix.endpoint.stop.duration",
-      tags: [:end_point, :method],
+      tags: [:app, :end_point, :method],
       tag_values: fn %{conn: conn} ->
-        %{end_point: end_point(conn), method: Map.get(conn, :method)}
+        %{app: app(conn), end_point: end_point(conn), method: Map.get(conn, :method)}
       end,
       metric_type: :distribution,
       unit: {:native, :millisecond},
@@ -52,6 +52,19 @@ defmodule TelemetryEvent.Helper.AddMetrics do
       tags: [:app],
       metric_type: :last_value
     ]
+  end
+
+  defp app(conn) do
+    phoenix_endpoint =
+      "#{
+        Map.get(conn, :private)
+        |> Map.get(:phoenix_endpoint)
+      }"
+
+    Regex.replace(~r/[A-Z]/, phoenix_endpoint, fn elixir_app_name -> "_#{elixir_app_name}" end)
+    |> String.replace_leading("_Elixir._", "")
+    |> String.replace_trailing("_Web._Endpoint", "")
+    |> String.downcase()
   end
 
   defp end_point(conn) do

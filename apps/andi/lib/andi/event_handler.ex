@@ -30,14 +30,13 @@ defmodule Andi.EventHandler do
     dataset_update()
     |> add_event_count(author, data.id)
 
+    Task.start(fn -> add_dataset_count() end)
     Datasets.update_ingested_time(data.id, DateTime.utc_now())
 
     Datasets.update_ingested_time(data.id, DateTime.utc_now())
 
     Datasets.update(data)
     DatasetStore.update(data)
-
-    add_dataset_count()
   end
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do
@@ -99,9 +98,9 @@ defmodule Andi.EventHandler do
     dataset_delete()
     |> add_event_count(author, dataset.id)
 
+    Task.start(fn -> add_dataset_count() end)
     Datasets.delete(dataset.id)
     DatasetStore.delete(dataset.id)
-    add_dataset_count()
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])
@@ -118,6 +117,9 @@ defmodule Andi.EventHandler do
   end
 
   defp add_dataset_count() do
+    # This will sleep for 5 seconds, before getting most recently updated dataset count by the Brook Event
+    Process.sleep(5_000)
+
     count =
       DatasetStore.get_all!()
       |> Enum.count()
