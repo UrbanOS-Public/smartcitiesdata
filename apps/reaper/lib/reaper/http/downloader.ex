@@ -200,7 +200,9 @@ defmodule Reaper.Http.Downloader do
   defp evaluate_header({key, value}) do
     {to_string(key), EEx.eval_string(value, [])}
   end
-  #TODO: theorehetically test me
+
+  # Right now we assume any body sent in a request will be json encoded.  We may change this in the future but
+  # at this time we dont have any use cases to do otherwise
   defp add_content_type(headers, ""), do: headers
   defp add_content_type(headers, _body), do: [{"Content-Type", "application/json"} | headers]
 end

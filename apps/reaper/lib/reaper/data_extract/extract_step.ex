@@ -1,7 +1,7 @@
 defmodule Reaper.DataExtract.ExtractStep do
   @moduledoc """
   This module processes extract steps as defined in a dataset definition.  After
-  iterating through the steps, accumilating any destination values in the assigns block
+  iterating through the steps, accumulating any destination values in the assigns block
   it is assumed the final step will be http (at this time) which returns a data stream
   """
   require Logger

@@ -60,7 +60,6 @@ defmodule Reaper.UrlBuilder do
   end
 
   def safe_evaluate_parameters(parameters, bindings) do
-    IO.inspect(parameters)
     Enum.map(
       parameters,
       &safe_evaluate_parameter(&1, bindings)
