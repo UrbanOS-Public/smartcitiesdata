@@ -1,5 +1,6 @@
 defmodule AndiWeb.Router do
   use AndiWeb, :router
+  require Ueberauth
 
   @csp "default-src 'self';" <>
          "style-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com;" <>
@@ -45,6 +46,12 @@ defmodule AndiWeb.Router do
     get "/v1/organizations", OrganizationController, :get_all
     post "/v1/organization/:org_id/users/add", OrganizationController, :add_users_to_organization
     post "/v1/organization", OrganizationController, :create
+  end
+
+  scope "/auth", AndiWeb do
+    get("/auth0", AuthController, :request)
+    get("/auth0/callback", AuthController, :callback)
+    post("/auth0/callback", AuthController, :callback)
   end
 
   scope "/", AndiWeb do
