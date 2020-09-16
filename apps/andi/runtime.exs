@@ -66,7 +66,14 @@ config :andi, Andi.Repo,
 config :telemetry_event,
   metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
   add_poller: true,
-  add_metrics: [:phoenix_endpoint_stop_duration, :dataset_total_count]
+  add_metrics: [:phoenix_endpoint_stop_duration, :dataset_total_count],
+  metrics_options: [
+    [
+      metric_name: "dataset_info.gauge",
+      tags: [:dataset_id, :dataset_title, :system_name, :source_type, :org_name],
+      metric_type: :last_value
+    ]
+  ]
 
 config :andi, Andi.Scheduler,
   jobs: [

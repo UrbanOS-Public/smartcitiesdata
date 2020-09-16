@@ -15,6 +15,8 @@ defmodule Andi.DatasetCache do
   end
 
   def put(%SmartCity.Dataset{} = dataset) do
+    add_dataset_info(dataset)
+
     updated =
       dataset.id
       |> get()
@@ -68,5 +70,16 @@ defmodule Andi.DatasetCache do
     {:ok, pid} = init([])
 
     {:reply, :ok, pid}
+  end
+
+  defp add_dataset_info(dataset) do
+    [
+      dataset_id: dataset[:id],
+      dataset_title: dataset[:business][:dataTitle],
+      system_name: "#{dataset[:id]}#{dataset[:data_name]}#{dataset[:org_name]}",
+      source_type: dataset[:technical][:sourceType],
+      org_name: dataset[:technical][:orgName]
+    ]
+    |> TelemetryEvent.add_event_metrics([:dataset_info], value: %{gauge: 1})
   end
 end
