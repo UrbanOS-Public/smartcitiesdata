@@ -39,7 +39,7 @@ defmodule Odo.MixProject do
       {:poison, "~> 3.1", override: true},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13.0"},
-      {:smart_city, git: "https://github.com/smartcitiesdata/smart_city", ref: "af9ec5c868ab37f74905c91eb900b50f3f9b8e37", override: true},
+      {:smart_city, "~> 3.0"},
       {:streaming_metrics, "~> 2.2.0"},
       {:sweet_xml, "~> 0.6"},
       {:tasks, in_umbrella: true, only: :dev},

@@ -56,7 +56,6 @@ defmodule Reaper.Http.Downloader do
       |> add_content_type(body)
 
     action = Keyword.get(opts, :action, "GET") |> String.upcase()
-    body = Keyword.get(opts, :body, "")
 
     with {:ok, conn} <- connect(uri, opts),
          {:ok, conn, request_ref} <- request(conn, action, uri, evaluated_headers, body),
