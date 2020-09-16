@@ -72,7 +72,7 @@ defmodule Andi.DatasetCache do
     {:reply, :ok, pid}
   end
 
-  defp add_dataset_info(dataset) do
+  def add_dataset_info(dataset) do
     [
       dataset_id: dataset[:id],
       dataset_title: dataset[:business][:dataTitle],
