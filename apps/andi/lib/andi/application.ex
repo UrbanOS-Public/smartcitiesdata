@@ -32,20 +32,20 @@ defmodule Andi.Application do
         []
 
       _ ->
-      {Elsa.Supervisor,
-       endpoints: Application.get_env(:andi, :kafka_endpoints),
-       name: :andi_elsa,
-       connection: :andi_reader,
-       group_consumer: [
-         name: "andi_reader",
-         group: "andi_reader_group",
-         topics: [Application.get_env(:andi, :dead_letter_topic)],
-         handler: Andi.MessageHandler,
-         handler_init_args: [],
-         config: [
-           begin_offset: :latest
-         ]
-       ]}
+        {Elsa.Supervisor,
+         endpoints: Application.get_env(:andi, :kafka_endpoints),
+         name: :andi_elsa,
+         connection: :andi_reader,
+         group_consumer: [
+           name: "andi_reader",
+           group: "andi_reader_group",
+           topics: [Application.get_env(:andi, :dead_letter_topic)],
+           handler: Andi.MessageHandler,
+           handler_init_args: [],
+           config: [
+             begin_offset: :latest
+           ]
+         ]}
     end
   end
 
