@@ -1,11 +1,12 @@
-defmodule Forklift.Jobs.JsonToOrcTest do
+defmodule Forklift.Jobs.PartitionedCompactionTest do
   use ExUnit.Case
-
-  alias Forklift.Jobs.JsonToOrc
   alias SmartCity.TestDataGenerator, as: TDG
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+  alias Forklift.Jobs.PartitionedCompaction
   import SmartCity.TestHelper
   import Helper
+
+  @instance Forklift.instance_name()
 
   use Divo
 
@@ -14,8 +15,6 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     dataset_update: 0,
     data_ingest_start: 0
   ]
-
-  @instance Forklift.instance_name()
 
   setup do
     datasets =
@@ -27,7 +26,6 @@ defmodule Forklift.Jobs.JsonToOrcTest do
       dataset
     end)
 
-    # Wait for tables to be created
     eventually(fn ->
       assert Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end)
     end,
@@ -50,25 +48,30 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     [datasets: datasets]
   end
 
-  test "should insert partitioned data for each provided dataset id", %{datasets: datasets} do
-    expected_records = 10
-    Enum.each(datasets, fn dataset -> write_records(dataset, expected_records) end)
+  test "partitioned compaction runs without loss or error", %{datasets: datasets} do
 
-    # Run Job
+    ["2020_08", "2020_08", "2020_09", "2020_09"]
+
+    datasets
+    |> Enum.map(fn dataset ->
+      partition = Timex.format!(DateTime.utc_now(), "{YYYY}_{0M}")
+      write_partitioned_records(dataset.technical.systemName, 5, partition)
+    end)
+
+    # given orc table with data (in multiple partitions?)
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    JsonToOrc.run(dataset_ids)
+    PartitionedCompaction.run(dataset_ids)
 
-    # Validate data is in orc table with os_partition
-    assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_records end)
+    # The expected number of records are present
+    assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == 1 end)
+    refute Enum.any?(datasets, fn dataset -> table_exists?(dataset.technical.systemName <> "__compact") end)
 
-    table = List.first(datasets) |> Map.get(:technical) |> Map.get(:systemName)
-    {:ok, response} = PrestigeHelper.execute_query("select * from #{table}")
-    actual_partition = response |> Prestige.Result.as_maps() |> List.first() |> Map.get("os_partition")
-    assert {:ok, _} = Timex.parse(actual_partition, "{YYYY}_{0M}")
+    # assert
 
-    # Validate data is no longer in json table
-    assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName <> "__json") == 0 end)
+    # No errors have occurred
   end
 
-  # ensure ingestion is turned off while running
+  defp count_files(table) do
+    "select count(distinct \"$path\") from #{table}"  |> PrestigeHelper.execute_query() |> IO.inspect(label: "partitioned_compaction_test.exs:76")
+  end
 end

@@ -9,7 +9,6 @@ defmodule Forklift.Jobs.JsonToOrc do
   end
 
   defp insert_data(%{technical: %{systemName: system_name}} = dataset) do
-    ## TODO: Test this?
     Forklift.DataReaderHelper.terminate(dataset)
 
     query = "insert into #{system_name} select *, date_format(now(), '%Y_%m') as os_partition from #{system_name}__json"

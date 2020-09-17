@@ -103,11 +103,18 @@ config :ex_aws,
   region: System.get_env("AWS_REGION") || "us-west-2"
 
 if System.get_env("COMPACTION_SCHEDULE") do
+  special_compaction_datasets_string = System.get_env("SPECIAL_COMPACTION_DATASETS") || ""
+  special_compaction_datasets = String.split(special_compactiton_datasets_string, ",")
   config :forklift, Forklift.Quantum.Scheduler,
     jobs: [
       compactor: [
         schedule: System.get_env("COMPACTION_SCHEDULE"),
         task: {Forklift.DataWriter, :compact_datasets, []},
+        timezone: "America/New_York"
+      ],
+      insertor: [
+        schedule: System.get_env("COMPACTION_SCHEDULE"),
+        task: {Forklift.Jobs.JsonToOrc, :run, special_compaction_datasets},
         timezone: "America/New_York"
       ]
     ]
