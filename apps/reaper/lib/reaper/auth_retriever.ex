@@ -6,17 +6,20 @@ defmodule Reaper.AuthRetriever do
   alias Reaper.Cache.AuthCache
   alias Reaper.UrlBuilder
 
+  def authorize(dataset_id, url, body, encode_method, headers, cache_ttl) when is_list(headers) do
+    authorize(dataset_id, url, body, encode_method, Enum.into(headers, %{}), cache_ttl)
+  end
+
   def authorize(dataset_id, url, body, encode_method, headers, cache_ttl) do
     cache_ttl = cache_ttl || 10_000
 
-    encoded_body = encode_body(body, encode_method)
     complete_headers = headers |> add_content_type(body, encode_method)
 
-    cache_id = hash_config(%{url: url, body: encoded_body, headers: complete_headers})
+    cache_id = hash_config(%{url: url, body: body, headers: complete_headers})
 
     case AuthCache.get(cache_id) do
       nil ->
-        auth = make_auth_request(dataset_id, url, encoded_body, complete_headers)
+        auth = make_auth_request(dataset_id, url, body, complete_headers)
         AuthCache.put(cache_id, auth, ttl: cache_ttl)
         auth
 
@@ -57,7 +60,6 @@ defmodule Reaper.AuthRetriever do
     json = Jason.encode!(auth_params_map)
     :crypto.hash(:md5, json)
   end
-
   defp make_auth_request(dataset_id, url, body, headers) do
     case HTTPoison.post(url, body, headers) do
       {:ok, %{status_code: code, body: body}} when code < 400 ->

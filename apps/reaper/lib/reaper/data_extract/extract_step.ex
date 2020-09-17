@@ -25,12 +25,7 @@ defmodule Reaper.DataExtract.ExtractStep do
   end
 
   defp process_extract_step(dataset, %{type: "http"} = step) do
-    headers = UrlBuilder.safe_evaluate_parameters(step.context.headers, step.assigns)
-
-    body =
-      UrlBuilder.safe_evaluate_parameters(step.context.body, step.assigns)
-      |> Enum.into(%{})
-      |> Jason.encode!()
+    {body, headers} = evaluate_body_and_headers(step)
 
     UrlBuilder.decode_http_extract_step(step)
     |> DataSlurper.slurp(dataset.id, headers, step.context.protocol, step.context.action, body)
@@ -61,15 +56,7 @@ defmodule Reaper.DataExtract.ExtractStep do
   end
 
   defp process_extract_step(dataset, %{type: "auth"} = step) do
-    body =
-      step.context.body
-      |> UrlBuilder.safe_evaluate_parameters(step.assigns)
-      |> Enum.into(%{})
-
-    headers =
-      step.context.headers
-      |> UrlBuilder.safe_evaluate_parameters(step.assigns)
-      |> Enum.into(%{})
+    {body, headers} = evaluate_body_and_headers(step)
 
     url = UrlBuilder.build_safe_url_path(step.context.url, step.assigns)
 
@@ -79,5 +66,17 @@ defmodule Reaper.DataExtract.ExtractStep do
       |> get_in(step.context.path)
 
     Map.put(step.assigns, step.context.destination |> String.to_atom(), response)
+  end
+
+  defp evaluate_body_and_headers(step) do
+    body =
+      step.context.body
+      |> UrlBuilder.safe_evaluate_parameters(step.assigns)
+      |> Enum.into(%{})
+      |> Jason.encode!()
+
+    headers = UrlBuilder.safe_evaluate_parameters(step.context.headers, step.assigns)
+
+    {body, headers}
   end
 end
