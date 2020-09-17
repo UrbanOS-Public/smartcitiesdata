@@ -46,6 +46,7 @@ config :andi, AndiWeb.Endpoint,
   ]
 
 config :andi,
+  secrets_endpoint: System.get_env("SECRETS_ENDPOINT"),
   dead_letter_topic: "streaming-dead-letters",
   kafka_endpoints: endpoint
 

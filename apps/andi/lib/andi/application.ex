@@ -4,6 +4,8 @@ defmodule Andi.Application do
   use Application
   import Andi
 
+  require Logger
+
   def start(_type, _args) do
     children =
       [
@@ -13,6 +15,23 @@ defmodule Andi.Application do
         Andi.DatasetCache,
         Andi.Migration.Migrations,
         Andi.Scheduler,
+        elsa()
+      ]
+      |> TelemetryEvent.config_init_server(instance_name())
+      |> List.flatten()
+
+    set_auth0_credentials()
+
+    opts = [strategy: :one_for_one, name: Andi.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
+
+  defp elsa() do
+    case Application.get_env(:andi, :kafka_endpoints) do
+      nil ->
+        []
+
+      _ ->
         {Elsa.Supervisor,
          endpoints: Application.get_env(:andi, :kafka_endpoints),
          name: :andi_elsa,
@@ -27,12 +46,7 @@ defmodule Andi.Application do
              begin_offset: :latest
            ]
          ]}
-      ]
-      |> TelemetryEvent.config_init_server(instance_name())
-      |> List.flatten()
-
-    opts = [strategy: :one_for_one, name: Andi.Supervisor]
-    Supervisor.start_link(children, opts)
+    end
   end
 
   defp ecto_repo do
@@ -48,5 +62,30 @@ defmodule Andi.Application do
   def config_change(changed, _new, removed) do
     AndiWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  def set_auth0_credentials() do
+    endpoint = Application.get_env(:andi, :secrets_endpoint)
+
+    if is_nil(endpoint) || String.length(endpoint) == 0 do
+      Logger.warn("No secrets endpoint. ANDI will not be able to authenticate users")
+      []
+    else
+      case Andi.SecretRetriever.retrieve_auth0_credentials() do
+        {:ok, credentials} ->
+          Application.put_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth,
+            domain: System.get_env("AUTH0_DOMAIN"),
+            client_id: System.get_env("AUTH0_CLIENT_ID"),
+            client_secret: Map.get(credentials, "auth0_client_secret")
+          )
+
+        {:error, error} ->
+          raise RuntimeError, message: "Could not start application, encountered error while retrieving Auth0 keys: #{error}"
+
+        nil ->
+          raise RuntimeError,
+            message: "Could not start application, failed to retrieve Auth0 keys from Vault."
+      end
+    end
   end
 end
