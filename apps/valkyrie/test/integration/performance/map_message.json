@@ -1,0 +1,2018 @@
+{
+    "dataParameters": null,
+    "intersections": [
+    {
+        "id": {
+        "id": 3237
+        },
+        "laneSet": [
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 19,
+                "maneuver": [
+                    "maneuverRightAllowed",
+                    "maneuverRightTurnOnRedAllowed"
+                ]
+                },
+                "signalGroup": 2
+            },
+            {
+                "connectingLane": {
+                "lane": 121,
+                "maneuver": [
+                    "maneuverStraightAllowed"
+                ]
+                },
+                "signalGroup": 2
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 49,
+            "maneuvers": [
+            "maneuverStraightAllowed",
+            "maneuverRightAllowed",
+            "maneuverRightTurnOnRedAllowed"
+            ],
+            "name": [
+            87,
+            66,
+            32,
+            84,
+            82,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 2342,
+                    "y": 1459
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": 14592,
+                    "y": -903
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": 12836,
+                    "y": -742
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 120,
+                "maneuver": [
+                    "maneuverStraightAllowed"
+                ]
+                },
+                "signalGroup": 2
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 50,
+            "maneuvers": [
+            "maneuverStraightAllowed"
+            ],
+            "name": [
+            69,
+            66,
+            32,
+            84,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 2320,
+                    "y": 1087
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": 14600,
+                    "y": -885
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": 12851,
+                    "y": -789
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 119,
+                "maneuver": [
+                    "maneuverStraightAllowed"
+                ]
+                },
+                "signalGroup": 2
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 51,
+            "maneuvers": [
+            "maneuverStraightAllowed"
+            ],
+            "name": [
+            69,
+            66,
+            32,
+            84,
+            50
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 2317,
+                    "y": 721
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": 14590,
+                    "y": -907
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": 12842,
+                    "y": -752
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 87,
+                "maneuver": [
+                    "maneuverLeftAllowed"
+                ]
+                },
+                "signalGroup": 5
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 52,
+            "maneuvers": [
+            "maneuverLeftAllowed"
+            ],
+            "name": [
+            87,
+            66,
+            32,
+            76,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 2298,
+                    "y": 348
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY5",
+                    {
+                    "x": 7750,
+                    "y": -481
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 2417,
+                    "y": -147
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY3",
+                    {
+                    "x": 1094,
+                    "y": -46
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 86,
+                "maneuver": [
+                    "maneuverLeftAllowed"
+                ]
+                },
+                "signalGroup": 5
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 53,
+            "maneuvers": [
+            "maneuverLeftAllowed"
+            ],
+            "name": [
+            87,
+            66,
+            32,
+            76,
+            50
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 2293,
+                    "y": -16
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY5",
+                    {
+                    "x": 5805,
+                    "y": -349
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY2",
+                    {
+                    "x": 540,
+                    "y": 8
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "egressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "egressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 55,
+            "name": [
+            69,
+            66,
+            32,
+            84,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 2088,
+                    "y": -596
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY2",
+                    {
+                    "x": 880,
+                    "y": -46
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "egressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "egressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 56,
+            "name": [
+            69,
+            66,
+            32,
+            84,
+            50
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 2075,
+                    "y": -968
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY2",
+                    {
+                    "x": 849,
+                    "y": -51
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "egressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "egressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 57,
+            "name": [
+            69,
+            66,
+            32,
+            84,
+            51
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 2058,
+                    "y": -1372
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY2",
+                    {
+                    "x": 868,
+                    "y": -34
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "egressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "egressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 87,
+            "name": [
+            83,
+            66,
+            32,
+            84,
+            50
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -1116,
+                    "y": -2766
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY2",
+                    {
+                    "x": -55,
+                    "y": -801
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "egressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "egressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 86,
+            "name": [
+            83,
+            66,
+            32,
+            84,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -704,
+                    "y": -2744
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY2",
+                    {
+                    "x": -75,
+                    "y": -855
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 55,
+                "maneuver": [
+                    "maneuverRightAllowed",
+                    "maneuverRightTurnOnRedAllowed"
+                ]
+                },
+                "signalGroup": 185
+            },
+            {
+                "connectingLane": {
+                "lane": 56,
+                "maneuver": [
+                    "maneuverRightAllowed",
+                    "maneuverRightTurnOnRedAllowed"
+                ]
+                },
+                "signalGroup": 185
+            },
+            {
+                "connectingLane": {
+                "lane": 57,
+                "maneuver": [
+                    "maneuverRightAllowed",
+                    "maneuverRightTurnOnRedAllowed"
+                ]
+                },
+                "signalGroup": 185
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 81,
+            "maneuvers": [
+            "maneuverRightAllowed",
+            "maneuverRightTurnOnRedAllowed"
+            ],
+            "name": [
+            78,
+            66,
+            32,
+            82,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 776,
+                    "y": -2959
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -659,
+                    "y": -11107
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY5",
+                    {
+                    "x": -302,
+                    "y": -5087
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY5",
+                    {
+                    "x": -326,
+                    "y": -5106
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 19,
+                "maneuver": [
+                    "maneuverStraightAllowed"
+                ]
+                },
+                "signalGroup": 8
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 82,
+            "maneuvers": [
+            "maneuverStraightAllowed"
+            ],
+            "name": [
+            78,
+            66,
+            32,
+            84,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 452,
+                    "y": -2931
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -690,
+                    "y": -11118
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY5",
+                    {
+                    "x": -284,
+                    "y": -5080
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY5",
+                    {
+                    "x": -352,
+                    "y": -5106
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 121,
+                "maneuver": [
+                    "maneuverLeftAllowed"
+                ]
+                },
+                "signalGroup": 3
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 83,
+            "maneuvers": [
+            "maneuverLeftAllowed"
+            ],
+            "name": [
+            78,
+            66,
+            32,
+            76,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 103,
+                    "y": -2908
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -679,
+                    "y": -11124
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -154,
+                    "y": -2617
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY3",
+                    {
+                    "x": 48,
+                    "y": -1148
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 120,
+                "maneuver": [
+                    "maneuverLeftAllowed"
+                ]
+                },
+                "signalGroup": 3
+            },
+            {
+                "connectingLane": {
+                "lane": 119,
+                "maneuver": [
+                    "maneuverLeftAllowed"
+                ]
+                },
+                "signalGroup": 3
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 84,
+            "maneuvers": [
+            "maneuverLeftAllowed"
+            ],
+            "name": [
+            78,
+            66,
+            32,
+            76,
+            50
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -226,
+                    "y": -2885
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -682,
+                    "y": -11118
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY2",
+                    {
+                    "x": -59,
+                    "y": -602
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "egressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "egressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 121,
+            "name": [
+            87,
+            66,
+            32,
+            84,
+            51
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY3",
+                    {
+                    "x": -1868,
+                    "y": 1685
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -2101,
+                    "y": 140
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "egressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "egressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 120,
+            "name": [
+            87,
+            66,
+            32,
+            84,
+            50
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY3",
+                    {
+                    "x": -1888,
+                    "y": 1342
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -2102,
+                    "y": 106
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "egressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "egressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 119,
+            "name": [
+            87,
+            66,
+            32,
+            84,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY3",
+                    {
+                    "x": -1906,
+                    "y": 974
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -2089,
+                    "y": 87
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 86,
+                "maneuver": [
+                    "maneuverRightAllowed",
+                    "maneuverRightTurnOnRedAllowed"
+                ]
+                },
+                "signalGroup": 163
+            },
+            {
+                "connectingLane": {
+                "lane": 87,
+                "maneuver": [
+                    "maneuverRightAllowed",
+                    "maneuverRightTurnOnRedAllowed"
+                ]
+                },
+                "signalGroup": 163
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 113,
+            "maneuvers": [
+            "maneuverRightAllowed",
+            "maneuverRightTurnOnRedAllowed"
+            ],
+            "name": [
+            69,
+            66,
+            32,
+            82,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -2435,
+                    "y": -1412
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -10184,
+                    "y": 602
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -9909,
+                    "y": 408
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 57,
+                "maneuver": [
+                    "maneuverStraightAllowed"
+                ]
+                },
+                "signalGroup": 6
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 114,
+            "maneuvers": [
+            "maneuverStraightAllowed"
+            ],
+            "name": [
+            69,
+            66,
+            32,
+            84,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -2428,
+                    "y": -1050
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -10157,
+                    "y": 578
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -12722,
+                    "y": 552
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -9294,
+                    "y": 358
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 56,
+                "maneuver": [
+                    "maneuverStraightAllowed"
+                ]
+                },
+                "signalGroup": 6
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 115,
+            "maneuvers": [
+            "maneuverStraightAllowed"
+            ],
+            "name": [
+            69,
+            66,
+            32,
+            84,
+            50
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -2395,
+                    "y": -688
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -10185,
+                    "y": 603
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -12746,
+                    "y": 475
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -9241,
+                    "y": 402
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 55,
+                "maneuver": [
+                    "maneuverStraightAllowed"
+                ]
+                },
+                "signalGroup": 6
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 116,
+            "maneuvers": [
+            "maneuverStraightAllowed"
+            ],
+            "name": [
+            69,
+            66,
+            32,
+            84,
+            51
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -2393,
+                    "y": -323
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -10164,
+                    "y": 619
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -12777,
+                    "y": 487
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": -9229,
+                    "y": 390
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 19,
+                "maneuver": [
+                    "maneuverLeftAllowed"
+                ]
+                },
+                "signalGroup": 1
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 117,
+            "maneuvers": [
+            "maneuverLeftAllowed"
+            ],
+            "name": [
+            69,
+            66,
+            32,
+            76,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -2365,
+                    "y": 378
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -2289,
+                    "y": 163
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -2708,
+                    "y": -148
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY3",
+                    {
+                    "x": -1167,
+                    "y": 38
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 121,
+                "maneuver": [
+                    "maneuverRightAllowed",
+                    "maneuverRightTurnOnRedAllowed"
+                ]
+                },
+                "signalGroup": 4
+            },
+            {
+                "connectingLane": {
+                "lane": 120,
+                "maneuver": [
+                    "maneuverRightAllowed",
+                    "maneuverRightTurnOnRedAllowed"
+                ]
+                },
+                "signalGroup": 4
+            },
+            {
+                "connectingLane": {
+                "lane": 119,
+                "maneuver": [
+                    "maneuverRightAllowed",
+                    "maneuverRightTurnOnRedAllowed"
+                ]
+                },
+                "signalGroup": 4
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 16,
+            "maneuvers": [
+            "maneuverRightAllowed",
+            "maneuverRightTurnOnRedAllowed"
+            ],
+            "name": [
+            83,
+            66,
+            32,
+            82,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -571,
+                    "y": 3041
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY5",
+                    {
+                    "x": 497,
+                    "y": 5180
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 86,
+                "maneuver": [
+                    "maneuverStraightAllowed"
+                ]
+                },
+                "signalGroup": 4
+            },
+            {
+                "connectingLane": {
+                "lane": 87,
+                "maneuver": [
+                    "maneuverStraightAllowed"
+                ]
+                },
+                "signalGroup": 4
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 17,
+            "maneuvers": [
+            "maneuverStraightAllowed"
+            ],
+            "name": [
+            83,
+            66,
+            32,
+            84,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -186,
+                    "y": 2992
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY6",
+                    {
+                    "x": 895,
+                    "y": 10593
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "connectsTo": [
+            {
+                "connectingLane": {
+                "lane": 55,
+                "maneuver": [
+                    "maneuverLeftAllowed"
+                ]
+                },
+                "signalGroup": 147
+            },
+            {
+                "connectingLane": {
+                "lane": 56,
+                "maneuver": [
+                    "maneuverLeftAllowed"
+                ]
+                },
+                "signalGroup": 147
+            },
+            {
+                "connectingLane": {
+                "lane": 57,
+                "maneuver": [
+                    "maneuverLeftAllowed"
+                ]
+                },
+                "signalGroup": 147
+            }
+            ],
+            "ingressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "ingressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 18,
+            "maneuvers": [
+            "maneuverLeftAllowed"
+            ],
+            "name": [
+            83,
+            66,
+            32,
+            76,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 154,
+                    "y": 2972
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY5",
+                    {
+                    "x": 473,
+                    "y": 5209
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "egressApproach": 0,
+            "laneAttributes": {
+            "directionalUse": [
+                "egressPath"
+            ],
+            "laneType": [
+                "vehicle",
+                []
+            ],
+            "sharedWith": [
+                "otherNonMotorizedTrafficTypes",
+                "individualMotorizedVehicleTraffic",
+                "busVehicleTraffic",
+                "pedestriansTraffic"
+            ]
+            },
+            "laneID": 19,
+            "name": [
+            78,
+            66,
+            32,
+            84,
+            49
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "attributes": {
+                    "dWidth": 366
+                },
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 695,
+                    "y": 2791
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 219,
+                    "y": 2496
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "laneAttributes": {
+            "directionalUse": [],
+            "laneType": [
+                "crosswalk",
+                []
+            ],
+            "sharedWith": []
+            },
+            "laneID": 20,
+            "name": [
+            78,
+            32,
+            88,
+            87
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "attributes": {
+                    "dWidth": 366
+                },
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -1085,
+                    "y": 2539
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 2513,
+                    "y": -206
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "laneAttributes": {
+            "directionalUse": [],
+            "laneType": [
+                "crosswalk",
+                []
+            ],
+            "sharedWith": []
+            },
+            "laneID": 59,
+            "name": [
+            69,
+            32,
+            88,
+            87
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "attributes": {
+                    "dWidth": -61
+                },
+                "delta": [
+                    "node-XY3",
+                    {
+                    "x": 2023,
+                    "y": 1830
+                    }
+                ]
+                },
+                {
+                "attributes": {
+                    "dWidth": 122
+                },
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -214,
+                    "y": -3731
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "laneAttributes": {
+            "directionalUse": [],
+            "laneType": [
+                "crosswalk",
+                []
+            ],
+            "sharedWith": []
+            },
+            "laneID": 89,
+            "name": [
+            83,
+            32,
+            88,
+            87
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": 1261,
+                    "y": -2388
+                    }
+                ]
+                },
+                {
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -2751,
+                    "y": -220
+                    }
+                ]
+                }
+            ]
+            ]
+        },
+        {
+            "laneAttributes": {
+            "directionalUse": [],
+            "laneType": [
+                "crosswalk",
+                []
+            ],
+            "sharedWith": []
+            },
+            "laneID": 123,
+            "name": [
+            87,
+            32,
+            88,
+            87
+            ],
+            "nodeList": [
+            "nodes",
+            [
+                {
+                "attributes": {
+                    "dWidth": 244
+                },
+                "delta": [
+                    "node-XY4",
+                    {
+                    "x": -1798,
+                    "y": -2196
+                    }
+                ]
+                },
+                {
+                "attributes": {
+                    "dWidth": -244
+                },
+                "delta": [
+                    "node-XY5",
+                    {
+                    "x": 174,
+                    "y": 4394
+                    }
+                ]
+                }
+            ]
+            ]
+        }
+        ],
+        "laneWidth": 366,
+        "refPoint": {
+        "lat": 400579264,
+        "long": -829182239
+        },
+        "revision": 0
+    }
+    ],
+    "layerID": 0,
+    "layerType": "intersectionData",
+    "msgIssueRevision": 0,
+    "regional": null,
+    "restrictionList": null,
+    "roadSegments": null,
+    "timeStamp": null
+}
