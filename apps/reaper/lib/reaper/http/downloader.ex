@@ -49,10 +49,16 @@ defmodule Reaper.Http.Downloader do
           {:ok, %Response{}} | {:error, reason()} | no_return()
   def download(url, headers \\ [], opts) do
     uri = URI.parse(url)
-    evaluated_headers = evaluate_headers(headers)
+    body = Keyword.get(opts, :body, "")
+
+    evaluated_headers =
+      evaluate_headers(headers)
+      |> add_content_type(body)
+
+    action = Keyword.get(opts, :action, "GET") |> String.upcase()
 
     with {:ok, conn} <- connect(uri, opts),
-         {:ok, conn, request_ref} <- request(conn, "GET", uri, evaluated_headers),
+         {:ok, conn, request_ref} <- request(conn, action, uri, evaluated_headers, body),
          {:ok, response} <- create_initial_response(conn, request_ref, url, opts),
          {:ok, file} <- File.open(response.destination, [:write, :delayed_write]),
          {:ok, response} <- stream_responses({response, file}, opts),
@@ -194,4 +200,9 @@ defmodule Reaper.Http.Downloader do
   defp evaluate_header({key, value}) do
     {to_string(key), EEx.eval_string(value, [])}
   end
+
+  # Right now we assume any body sent in a request will be json encoded.  We may change this in the future but
+  # at this time we dont have any use cases to do otherwise
+  defp add_content_type(headers, ""), do: headers
+  defp add_content_type(headers, _body), do: [{"Content-Type", "application/json"} | headers]
 end

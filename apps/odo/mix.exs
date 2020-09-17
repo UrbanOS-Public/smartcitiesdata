@@ -4,7 +4,7 @@ defmodule Odo.MixProject do
   def project do
     [
       app: :odo,
-      version: "0.6.1",
+      version: "0.7.0",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -39,7 +39,7 @@ defmodule Odo.MixProject do
       {:poison, "~> 3.1", override: true},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13.0"},
-      {:smart_city, "~> 3.5"},
+      {:smart_city, "~> 3.0"},
       {:streaming_metrics, "~> 2.2.0"},
       {:sweet_xml, "~> 0.6"},
       {:tasks, in_umbrella: true, only: :dev},

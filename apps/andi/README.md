@@ -11,6 +11,7 @@ Interactions with Redis are abstracted with `smartcitiesdata.smart_city*` functi
 - Install dependencies with `mix deps.get`
 - `cd assets` and `npm i`
 - `MIX_ENV=integration mix docker.start`
+- `MIX_ENV=integration mix ecto.create && MIX_ENV=integration mix ecto.migrate`
 - Start Phoenix endpoint locally with `MIX_ENV=integration mix start`
 
 ###

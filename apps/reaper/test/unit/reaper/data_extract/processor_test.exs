@@ -6,7 +6,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
   alias Reaper.{Cache, Persistence}
   alias Reaper.DataExtract.Processor
-
+  alias Reaper.Cache.AuthCache
   alias SmartCity.TestDataGenerator, as: TDG
 
   @dataset_id "12345-6789"
@@ -138,6 +138,114 @@ defmodule Reaper.DataExtract.ProcessorTest do
       )
 
     Processor.process(dataset)
+  end
+
+  describe "process/2 happy path with extract steps" do
+    setup %{bypass: bypass} do
+      allow Elsa.produce(any(), any(), any(), any()), return: :ok
+      allow Persistence.remove_last_processed_index(@dataset_id), return: :ok
+      allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
+
+      Bypass.stub(bypass, "GET", "/api/csv", fn conn ->
+        Plug.Conn.resp(conn, 200, @csv)
+      end)
+
+      Bypass.stub(bypass, "GET", "/api/csv/2020-08", fn conn ->
+        Plug.Conn.resp(conn, 200, @csv)
+      end)
+
+      :ok
+    end
+
+    test "Single extract step for http get", %{dataset: dataset} do
+      allow Persistence.get_last_processed_index(@dataset_id), return: -1
+      allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
+
+      extract_step = %{
+        type: "http",
+        context: %{
+          action: "GET",
+          protocol: nil,
+          body: %{},
+          url: dataset.technical.sourceUrl,
+          queryParams: %{},
+          headers: %{}
+        },
+        assigns: %{}
+      }
+
+      put_in(dataset, [:technical, :extractSteps], [extract_step])
+      |> Processor.process()
+
+      messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
+
+      expected = [
+        %{"a" => "one", "b" => "two", "c" => "three"},
+        %{"a" => "four", "b" => "five", "c" => "six"}
+      ]
+
+      assert expected == get_payloads(messages)
+
+      assert_called Persistence.record_last_processed_index(any(), any()), once()
+      assert_called Persistence.remove_last_processed_index(@dataset_id), once()
+    end
+
+    test "Set two variables then single extract step for http get", %{dataset: dataset} do
+      allow Persistence.get_last_processed_index(@dataset_id), return: -1
+      allow Persistence.record_last_processed_index(@dataset_id, any()), return: "OK"
+
+      extract_steps = [
+        %{
+          type: "date",
+          context: %{
+            destination: "currentMonth",
+            deltaTimeUnit: nil,
+            deltaTimeValue: nil,
+            timeZone: nil,
+            format: "{0M}"
+          },
+          assigns: %{}
+        },
+        %{
+          type: "date",
+          context: %{
+            destination: "currentYear",
+            deltaTimeUnit: nil,
+            deltaTimeValue: nil,
+            timeZone: nil,
+            format: "{YYYY}"
+          },
+          assigns: %{}
+        },
+        %{
+          type: "http",
+          context: %{
+            action: "GET",
+            protocol: nil,
+            body: %{},
+            url: "#{dataset.technical.sourceUrl}/{{currentYear}}-{{currentMonth}}",
+            queryParams: %{},
+            headers: %{}
+          },
+          assigns: %{}
+        }
+      ]
+
+      put_in(dataset, [:technical, :extractSteps], extract_steps)
+      |> Processor.process()
+
+      messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
+
+      expected = [
+        %{"a" => "one", "b" => "two", "c" => "three"},
+        %{"a" => "four", "b" => "five", "c" => "six"}
+      ]
+
+      assert expected == get_payloads(messages)
+
+      assert_called Persistence.record_last_processed_index(any(), any()), once()
+      assert_called Persistence.remove_last_processed_index(@dataset_id), once()
+    end
   end
 
   describe "process/2" do

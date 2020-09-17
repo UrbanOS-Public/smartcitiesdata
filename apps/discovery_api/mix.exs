@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
-      version: "0.49.8",
+      version: "0.50.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -71,7 +71,7 @@ defmodule DiscoveryApi.Mixfile do
       {:quantum, "~>2.4"},
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.2"},
-      {:smart_city, "~> 3.18"},
+      {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},

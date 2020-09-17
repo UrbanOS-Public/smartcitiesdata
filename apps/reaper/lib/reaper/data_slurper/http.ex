@@ -17,9 +17,9 @@ defmodule Reaper.DataSlurper.Http do
   end
 
   @impl DataSlurper
-  def slurp(url, dataset_id, headers \\ %{}, protocol \\ nil) do
+  def slurp(url, dataset_id, headers \\ %{}, protocol \\ nil, action \\ "GET", body \\ "") do
     filename = DataSlurper.determine_filename(dataset_id)
-    download(dataset_id, url, filename, headers, protocol)
+    download(dataset_id, url, filename, headers, protocol, action, body)
     {:file, filename}
   rescue
     error ->
@@ -30,8 +30,8 @@ defmodule Reaper.DataSlurper.Http do
       reraise error, __STACKTRACE__
   end
 
-  defp download(dataset_id, url, filename, headers, protocol) do
-    Task.async(fn -> Downloader.download(url, headers, to: filename, protocol: protocol) end)
+  defp download(dataset_id, url, filename, headers, protocol, action, body) do
+    Task.async(fn -> Downloader.download(url, headers, to: filename, protocol: protocol, action: action, body: body) end)
     |> Task.await(download_timeout())
   catch
     :exit, {:timeout, _} ->

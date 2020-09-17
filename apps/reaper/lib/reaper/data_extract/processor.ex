@@ -11,7 +11,7 @@ defmodule Reaper.DataExtract.Processor do
     Persistence
   }
 
-  alias Reaper.DataExtract.{ValidationStage, SchemaStage, LoadStage}
+  alias Reaper.DataExtract.{ValidationStage, SchemaStage, LoadStage, ExtractStep}
 
   use Retry
 
@@ -58,12 +58,18 @@ defmodule Reaper.DataExtract.Processor do
     |> File.rm()
   end
 
-  defp create_producer_stage(dataset) do
+  defp create_producer_stage(%SmartCity.Dataset{technical: %{extractSteps: extract_steps}} = dataset)
+       when is_nil(extract_steps) or extract_steps == [] do
     dataset
     |> UrlBuilder.build()
     |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
     |> Decoder.decode(dataset)
     |> Stream.with_index()
+    |> GenStage.from_enumerable()
+  end
+
+  defp create_producer_stage(%SmartCity.Dataset{technical: %{extractSteps: steps}} = dataset) do
+    ExtractStep.execute_extract_steps(dataset, steps)
     |> GenStage.from_enumerable()
   end
 

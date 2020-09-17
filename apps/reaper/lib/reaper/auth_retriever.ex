@@ -4,6 +4,29 @@ defmodule Reaper.AuthRetriever do
   """
   alias Reaper.Collections.Extractions
   alias Reaper.Cache.AuthCache
+  alias Reaper.UrlBuilder
+
+  def authorize(dataset_id, url, body, encode_method, headers, cache_ttl) when is_list(headers) do
+    authorize(dataset_id, url, body, encode_method, Enum.into(headers, %{}), cache_ttl)
+  end
+
+  def authorize(dataset_id, url, body, encode_method, headers, cache_ttl) do
+    cache_ttl = cache_ttl || 10_000
+
+    complete_headers = headers |> add_content_type(body, encode_method)
+
+    cache_id = hash_config(%{url: url, body: body, headers: complete_headers})
+
+    case AuthCache.get(cache_id) do
+      nil ->
+        auth = make_auth_request(dataset_id, url, body, complete_headers)
+        AuthCache.put(cache_id, auth, ttl: cache_ttl)
+        auth
+
+      auth ->
+        auth
+    end
+  end
 
   def retrieve(dataset_id, cache_ttl \\ 10_000) do
     dataset = Extractions.get_dataset!(dataset_id)
@@ -24,7 +47,7 @@ defmodule Reaper.AuthRetriever do
 
     case AuthCache.get(cache_id) do
       nil ->
-        auth = make_auth_request(dataset, body, headers)
+        auth = make_auth_request(dataset_id, dataset.technical.authUrl, body, headers)
         AuthCache.put(cache_id, auth, ttl: cache_ttl)
         auth
 
@@ -38,16 +61,16 @@ defmodule Reaper.AuthRetriever do
     :crypto.hash(:md5, json)
   end
 
-  defp make_auth_request(dataset, body, headers) do
-    case HTTPoison.post(dataset.technical.authUrl, body, headers) do
+  defp make_auth_request(dataset_id, url, body, headers) do
+    case HTTPoison.post(url, body, headers) do
       {:ok, %{status_code: code, body: body}} when code < 400 ->
         body
 
       {:ok, %{status_code: code}} ->
-        raise "Unable to retrieve auth credentials for dataset #{dataset.id} with status #{code}"
+        raise "Unable to retrieve auth credentials for dataset #{dataset_id} with status #{code}"
 
       error ->
-        raise "Unable to retrieve auth credentials for dataset #{dataset.id} with error #{inspect(error)}"
+        raise "Unable to retrieve auth credentials for dataset #{dataset_id} with error #{inspect(error)}"
     end
   end
 
