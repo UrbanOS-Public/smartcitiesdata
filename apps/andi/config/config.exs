@@ -25,6 +25,7 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 config :andi,
+  hsts_enabled: true,
   topic: "dataset-registry",
   organization_topic: "organization-raw",
   dead_letter_topic: "streaming-dead-letters"

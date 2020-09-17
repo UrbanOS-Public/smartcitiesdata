@@ -19,7 +19,7 @@ defmodule Smartcitiesdata.MixProject do
       test: "cmd mix test --color",
       "test.e2e": "cmd --app e2e mix test.integration --color --include e2e",
       sobelow_andi:
-        "cmd --app andi mix sobelow -i Config.HTTPS,Config.CSWH,Config.Secrets --skip --compact --exit low",
+        "cmd --app andi mix sobelow -i Config.HTTPS,Config.CSWH,Config.Secrets,Config.HSTS --skip --compact --exit low",
       sobelow_discovery_api:
         "cmd --app discovery_api mix sobelow -i Config.HTTPS,Config.Secrets --skip --compact --exit low"
     ]

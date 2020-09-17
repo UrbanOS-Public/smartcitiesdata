@@ -18,7 +18,8 @@ config :andi,
   divo_wait: [dwell: 700, max_tries: 50],
   kafka_broker: endpoint,
   dead_letter_topic: "dead-letters",
-  kafka_endpoints: endpoint
+  kafka_endpoints: endpoint,
+  hsts_enabled: false
 
 config :andi, Andi.Repo,
   database: "andi",
@@ -32,12 +33,13 @@ config :andi, AndiWeb.Endpoint,
   http: [port: 4000],
   server: true,
   check_origin: false,
-  https: [
-    port: 4443,
-    otp_app: :andi,
-    keyfile: "priv/key.pem",
-    certfile: "priv/cert.pem"
-  ]
+  # for auth0 login use
+  # https: [
+  #   port: 4443,
+  #   otp_app: :andi,
+  #   keyfile: "priv/key.pem",
+  #   certfile: "priv/cert.pem"
+  # ]
 
 config :andi, :brook,
   instance: :andi,
