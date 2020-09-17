@@ -51,7 +51,6 @@ defmodule AndiWeb.Router do
   scope "/auth", AndiWeb do
     get("/auth0", AuthController, :request)
     get("/auth0/callback", AuthController, :callback)
-    post("/auth0/callback", AuthController, :callback)
   end
 
   scope "/", AndiWeb do
