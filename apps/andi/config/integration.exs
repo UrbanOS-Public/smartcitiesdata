@@ -32,7 +32,7 @@ config :andi, Andi.Repo,
 config :andi, AndiWeb.Endpoint,
   http: [port: 4000],
   server: true,
-  check_origin: false,
+  check_origin: false
   # for auth0 login use
   # https: [
   #   port: 4443,
