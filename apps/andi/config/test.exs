@@ -25,4 +25,5 @@ config :andi, :brook,
   ]
 
 config :andi,
-  dead_letter_topic: "dead-letters"
+  dead_letter_topic: "dead-letters",
+  hsts_enabled: false

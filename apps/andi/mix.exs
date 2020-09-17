@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.44.3",
+      version: "0.45.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -50,8 +50,11 @@ defmodule Andi.MixProject do
       {:elixir_uuid, "~> 1.2"},
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},
       {:gettext, "~> 0.17"},
+      {:guardian, "~> 2.0"},
+      {:httpoison, "~> 1.5"},
       {:jason, "~> 1.2"},
       {:jaxon, "~> 1.0"},
+      {:libvault, "~> 0.2"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:phoenix, "~> 1.4"},
       {:phoenix_ecto, "~> 4.0"},
@@ -74,6 +77,7 @@ defmodule Andi.MixProject do
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
       {:tzdata, "~> 1.0"},
+      {:ueberauth_auth0, "~> 0.8.1"},
       {:web, in_umbrella: true}
     ]
   end
