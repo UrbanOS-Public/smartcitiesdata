@@ -60,6 +60,7 @@ defmodule Reaper.AuthRetriever do
     json = Jason.encode!(auth_params_map)
     :crypto.hash(:md5, json)
   end
+
   defp make_auth_request(dataset_id, url, body, headers) do
     case HTTPoison.post(url, body, headers) do
       {:ok, %{status_code: code, body: body}} when code < 400 ->

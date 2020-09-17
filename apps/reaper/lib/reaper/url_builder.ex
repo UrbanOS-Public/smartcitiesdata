@@ -28,7 +28,6 @@ defmodule Reaper.UrlBuilder do
           binary
   def decode_http_extract_step(%{context: %{url: url, queryParams: query_params}, assigns: assigns})
       when query_params == %{} do
-
     build_safe_url_path(url, assigns)
   end
 
