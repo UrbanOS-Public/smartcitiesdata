@@ -8,7 +8,10 @@ defmodule Forklift.Jobs.JsonToOrc do
     |> Enum.map(&insert_data/1)
   end
 
-  defp insert_data(%{technical: %{systemName: system_name}}) do
+  defp insert_data(%{technical: %{systemName: system_name}} = dataset) do
+    ## TODO: Test this?
+    Forklift.DataReaderHelper.terminate(dataset)
+
     query = "insert into #{system_name} select *, date_format(now(), '%Y_%m') as os_partition from #{system_name}__json"
 
     case PrestigeHelper.execute_query(query) do
@@ -18,6 +21,8 @@ defmodule Forklift.Jobs.JsonToOrc do
       _ ->
         :error
     end
+  after
+    Forklift.DataReaderHelper.init(dataset)
   end
 
   defp truncate_json_table(system_name) do

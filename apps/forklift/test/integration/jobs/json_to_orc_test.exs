@@ -54,21 +54,20 @@ defmodule Forklift.Jobs.JsonToOrcTest do
   end
 
   test "should do a thing for each provided dataset id", %{datasets: datasets} do
-    # put data in JSON table
-      # insert directly
-      # table: @table_name, schema: @table_schema
-    datasets
-    |> Enum.each(fn dataset ->
-      datum = TDG.create_data(%{payload: payload()})
-      S3Writer.write([datum], [bucket: @bucket, table: dataset.technical.systemName, schema: dataset.technical.schema])
-    end)
+    expected_records = 10
+    Enum.each(datasets, fn dataset -> write_records(dataset, expected_records) end)
 
     # Run Job
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
     JsonToOrc.run(dataset_ids)
 
     # Validate data is in orc table with os_partition
-    assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == 1 end)
+    assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_records end)
+
+    table = List.first(datasets) |> Map.get(:technical) |> Map.get(:systemName)
+    {:ok, response} = PrestigeHelper.execute_query("select * from #{table}")
+    actual_partition = response |> Prestige.Result.as_maps() |> List.first() |> Map.get("os_partition")
+    assert {:ok, _} = Timex.parse(actual_partition, "{YYYY}_{0M}")
 
     # Validate data is no longer in json table
     assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName <> "__json") == 0 end)
@@ -92,6 +91,11 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     # "create table jalson_test with (partitioned_by = ARRAY['os_partition'], format = 'ORC') as (select *, date_format(from_iso8601_timestamp(timestamp), '%Y_%m') as os_partition from us33_smart_corridor__marysville_bsm limit 100);"
     "create table #{table} with (partitioned_by = ARRAY['os_partition'], format = 'ORC') as (select *, cast('2020-09' as varchar) as os_partition from #{table}__json) limit 0"
     |> PrestigeHelper.execute_query()
+  end
+
+  defp write_records(dataset, count) do
+    data = 1..count |> Enum.map(fn _ -> TDG.create_data(%{payload: payload()}) end)
+    S3Writer.write(data, [bucket: @bucket, table: dataset.technical.systemName, schema: dataset.technical.schema])
   end
 
   defp payload() do
