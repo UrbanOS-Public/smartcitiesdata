@@ -47,7 +47,7 @@ defmodule Helper do
   end
 
   defp insert_record(table, partition) do
-    "insert into #{table} values (1, 'Bob', cast(now() as date), 1.5, true, '#{partition}')" |> PrestigeHelper.execute_query() |> IO.inspect(label: "partitioned_compaction_test.exs:68")
+    "insert into #{table} values (1, 'Bob', cast(now() as date), 1.5, true, '#{partition}')" |> PrestigeHelper.execute_query()
   end
 
   def payload() do
