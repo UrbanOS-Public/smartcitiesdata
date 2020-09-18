@@ -22,11 +22,11 @@ defmodule Valkyrie.Performance.CveTest do
   }
 
   defmodule SetupConfig do
-    defstruct [:messages, prefetch_count: 0, prefetch_bytes: 1_000_000, max_bytes: 1_000_000, max_wait_time: 10_000]
+    defstruct [:messages, prefetch_count: 0, prefetch_bytes: 1_000_000, max_bytes: 1_000_000, max_wait_time: 10_000, min_bytes: 0]
   end
 
   setup_all do
-    Logger.configure(level: :info)
+    Logger.configure(level: :warn)
     Agent.start(fn -> 0 end, name: :counter)
 
     :ok
@@ -104,6 +104,7 @@ defmodule Valkyrie.Performance.CveTest do
                             messages: messages,
                             prefetch_count: prefetch_count,
                             prefetch_bytes: prefetch_bytes,
+                            min_bytes: min_bytes,
                             max_bytes: max_bytes,
                             max_wait_time: max_wait_time
                           } = _parameters_from_inputs ->
@@ -114,11 +115,15 @@ defmodule Valkyrie.Performance.CveTest do
             existing_topic_config,
             prefetch_count: prefetch_count,
             prefetch_bytes: prefetch_bytes,
+            min_bytes: min_bytes,
             max_bytes: max_bytes,
             max_wait_time: max_wait_time
           )
 
         Application.put_env(:valkyrie, :topic_subscriber_config, updated_topic_config)
+        Application.get_env(:valkyrie, :topic_subscriber_config, updated_topic_config)
+        |> inspect(label: "topic setup for scenario")
+        |> Logger.warn()
 
         messages
       end,
