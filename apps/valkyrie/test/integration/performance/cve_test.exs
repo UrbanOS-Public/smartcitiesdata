@@ -26,7 +26,7 @@ defmodule Valkyrie.Performance.CveTest do
   end
 
   setup_all do
-    Logger.configure(level: :warn)
+    Logger.configure(level: :info)
     Agent.start(fn -> 0 end, name: :counter)
 
     :ok
@@ -34,9 +34,50 @@ defmodule Valkyrie.Performance.CveTest do
 
   @tag timeout: :infinity
   test "run performance test" do
-    map_messages = generate_messages(1_000, :map)
-    spat_messages = generate_messages(10_000, :spat)
-    bsm_messages = generate_messages(10_000, :bsm)
+    map_messages = generate_messages(10_000, :map)
+    # spat_messages = generate_messages(10_000, :spat)
+    # bsm_messages = generate_messages(10_000, :bsm)
+
+    low_max_bytes = {"l", 1_000_000}
+    mid_max_bytes = {"m", 10_000_000}
+    high_max_bytes = {"h", 100_000_000}
+
+    low_max_wait_time = {"l", 1_000}
+    mid_max_wait_time = {"m", 10_000}
+    high_max_wait_time = {"h", 60_000}
+
+    low_min_bytes = {"l", 0}
+    mid_min_bytes = {"m", 1_000}
+    high_min_bytes = {"h", 1_000_000}
+
+    low_prefetch_count = {"l", 0}
+    mid_prefetch_count = {"m", 100_000}
+    high_prefetch_count = {"h", 1_000_000}
+
+    low_prefetch_bytes = {"l", 1_000_000}
+    mid_prefetch_bytes = {"m", 10_000_000}
+    high_prefetch_bytes = {"h", 100_000_000}
+
+    combos = Combinatorics.product([
+      [{"msg", map_messages}],
+      [low_max_bytes, mid_max_bytes, high_max_bytes],
+      [low_max_wait_time, mid_max_wait_time, high_max_wait_time],
+      [low_min_bytes, mid_min_bytes, high_min_bytes],
+      [low_prefetch_count, mid_prefetch_count, high_prefetch_count],
+      [low_prefetch_bytes, mid_prefetch_bytes, high_prefetch_bytes],
+    ])
+
+    scenarios = Enum.map(combos, fn l ->
+      {names, values} = Enum.unzip(l)
+
+      label = Enum.join(names, ".")
+      options = Enum.zip([:messages, :max_bytes, :max_wait_time, :min_bytes, :prefetch_count, :prefetch_bytes], values)
+      |> Keyword.new()
+
+      {label, struct(SetupConfig, options)}
+    end)
+    |> Map.new()
+
 
     Benchee.run(
       %{
@@ -47,6 +88,8 @@ defmodule Valkyrie.Performance.CveTest do
             fn ->
               current_total = get_total_messages(output_topic)
 
+              # Logger.debug(fn -> "output is #{current_total} of #{expected_count}" end)
+
               assert current_total >= expected_count
             end,
             100,
@@ -56,11 +99,7 @@ defmodule Valkyrie.Performance.CveTest do
           {dataset, input_topic, output_topic}
         end
       },
-      inputs: %{
-        "map" => %SetupConfig{messages: map_messages},
-        "spat" => %SetupConfig{messages: spat_messages},
-        "bsm" => %SetupConfig{messages: bsm_messages}
-      },
+      inputs: scenarios,
       before_scenario: fn %SetupConfig{
                             messages: messages,
                             prefetch_count: prefetch_count,
