@@ -16,7 +16,6 @@ defmodule Andi.DatasetCache do
 
   def put(%SmartCity.Dataset{} = dataset) do
     add_dataset_info(dataset)
-    add_dataset_info_total(dataset)
 
     updated =
       dataset.id
@@ -74,7 +73,6 @@ defmodule Andi.DatasetCache do
   end
 
   def add_dataset_info(dataset) do
-    system_name = add_dataset_info_total
     [
       dataset_id: dataset[:id],
       dataset_title: dataset[:business][:dataTitle],
@@ -84,48 +82,3 @@ defmodule Andi.DatasetCache do
     ]
     |> TelemetryEvent.add_event_metrics([:dataset_info], value: %{gauge: 1})
   end
-
-  def add_dataset_info_total(dataset) do
-    dataset_info = temp_data()[:data][:result] |> List.first()
-    count = dataset_info[:value] |> List.last() |> String.to_integer()
-    [
-      dataset_id: dataset_info[:metric][:dataset_id],
-      dataset_title: dataset_info[:metric][:dataset_title],
-      system_name: dataset_info[:metric][:system_name],
-      source_type: dataset_info[:metric][:source_type],
-      org_name: dataset_info[:metric][:org_name]
-    ]
-    |> TelemetryEvent.add_event_metrics([:dataset_info_total], value: %{count: count})
-  end
-
-  def temp_data() do
-    # HTTPoison.get!("http://prometheus.dev.internal.smartcolumbusos.com/api/v1/query?query=dataset_record_total_count{system_name=#{system_name}} * on (system_name) group_left(dataset_id, dataset_title, source_type, org_name) dataset_info_gauge{system_name=#{system_name}}")
-    %{
-      "status": "success",
-      "data": %{
-          "resultType": "vector",
-          "result": [
-              %{
-                  "metric": %{
-                      "app_kubernetes_io_name": "forklift",
-                      "dataset_id": "db1b0434-a6a7-41f3-87c6-6839e213a13e",
-                      "dataset_title": "City of Columbus Parking Meter Transactions - 2018",
-                      "instance": "10.100.92.58:9002",
-                      "job": "kubernetes-service-endpoints",
-                      "kubernetes_name": "forklift",
-                      "kubernetes_namespace": "streaming-services",
-                      "org_name": "ips_group",
-                      "source_type": "ingest",
-                      "system_name": "ips_group__parking_meter_transactions_2018"
-                  },
-                  "value": [
-                      1600567531.912,
-                      "6095888"
-                  ]
-              }
-          ]
-      }
-  }
-  end
-
-end
