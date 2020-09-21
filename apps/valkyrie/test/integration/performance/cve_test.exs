@@ -34,9 +34,9 @@ defmodule Valkyrie.Performance.CveTest do
 
   @tag timeout: :infinity
   test "run performance test" do
-    map_messages = generate_messages(10_000, :map)
-    # spat_messages = generate_messages(10_000, :spat)
-    # bsm_messages = generate_messages(10_000, :bsm)
+    map_messages = generate_messages(1_000, :map)
+    spat_messages = generate_messages(1_000, :spat)
+    bsm_messages = generate_messages(1_000, :bsm)
 
     low_max_bytes = {"l", 1_000_000}
     mid_max_bytes = {"m", 10_000_000}
@@ -99,7 +99,10 @@ defmodule Valkyrie.Performance.CveTest do
           {dataset, input_topic, output_topic}
         end
       },
-      inputs: scenarios,
+      inputs: %{
+        "map.m.m.l.l.h" => Map.get(scenarios, "msg.m.m.l.l.h"),
+        "map.l.m.l.l.l" => Map.get(scenarios, "msg.l.m.l.l.l")
+      },
       before_scenario: fn %SetupConfig{
                             messages: messages,
                             prefetch_count: prefetch_count,
