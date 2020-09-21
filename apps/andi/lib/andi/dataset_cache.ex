@@ -16,7 +16,7 @@ defmodule Andi.DatasetCache do
 
   def put(%SmartCity.Dataset{} = dataset) do
     add_dataset_info(dataset)
-    add_dataset_info_total(datadatasetset)
+    add_dataset_info_total(dataset)
 
     updated =
       dataset.id
