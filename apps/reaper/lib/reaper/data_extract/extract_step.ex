@@ -33,6 +33,15 @@ defmodule Reaper.DataExtract.ExtractStep do
     |> Stream.with_index()
   end
 
+  defp process_extract_step(dataset, %{type: "s3"} = step) do
+    headers = UrlBuilder.safe_evaluate_parameters(step.context.headers, step.assigns)
+
+    url = UrlBuilder.build_safe_url_path(step.context.url, step.assigns)
+    |> DataSlurper.slurp(dataset.id, headers)
+    |> Decoder.decode(dataset)
+    |> Stream.with_index()
+  end
+
   defp process_extract_step(_dataset, %{type: "date"} = step) do
     date =
       case step.context.deltaTimeUnit do

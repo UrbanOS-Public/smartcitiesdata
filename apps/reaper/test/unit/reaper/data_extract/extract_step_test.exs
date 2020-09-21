@@ -505,6 +505,33 @@ defmodule Reaper.DataExtract.ExtractStepTest do
     end
   end
 
+  describe "execute_extract_steps/2 s3" do
+    test "successfully constructs the S3 request", %{dataset: dataset} do
+      allow ExAws.S3.download_file(any(), any(), any()), return: :ok
+      allow ExAws.request(any()), return: {:ok, any()}
+
+      filename = "#{dataset.id}"
+
+      steps = [
+        %{
+          type: "s3",
+          context: %{
+            url: "s3://some-bucket/subdir/blaster.exe",
+            queryParams: %{},
+            headers: %{}
+          },
+          assigns: %{}
+        }
+      ]
+
+      expected =
+        ExtractStep.execute_extract_steps(dataset, steps)
+        |> Enum.to_list()
+
+      assert_called ExAws.S3.download_file("some-bucket", "subdir/blaster.exe", filename)
+    end
+  end
+
   describe "extract steps error paths" do
     test "Set variable then single extract step for http get", %{dataset: dataset} do
       steps = [
