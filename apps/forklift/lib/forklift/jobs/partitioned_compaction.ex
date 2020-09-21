@@ -1,6 +1,7 @@
 defmodule Forklift.Jobs.PartitionedCompaction do
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias Pipeline.Writer.TableWriter.Statement
+  require Logger
 
   def run(dataset_ids) do
     dataset_ids
@@ -11,28 +12,35 @@ defmodule Forklift.Jobs.PartitionedCompaction do
   def partitioned_compact(%{technical: %{systemName: system_name}}) do
     partition = current_partition()
     # halt json_to_orc job
+    # Forklift.Quantum.Scheduler.deactivate_job(:insertor)
+    # TODO: These are undefined in the test/integration environments. Mock them?
 
+    compact_table = compact_table_name(system_name)
     initial_count = PrestigeHelper.count(system_name)
 
-    # create new table as select entire partition
-    create_compact_table(system_name, partition)
+    partition_count =
+      PrestigeHelper.count_query("select count(1) from #{system_name} where os_partition = '#{partition}'")
 
-    # drop partition from original table
-    drop_partition(system_name, partition)
+    with {:ok, _} <- create_compact_table(system_name, partition),
+         :ok <- verify_count(compact_table, partition_count),
+         {:ok, _} <- drop_partition(system_name, partition),
+         :ok <- verify_count(system_name, initial_count - partition_count),
+         {:ok, _} <- reinsert_compacted_data(system_name),
+         :ok <- verify_count(system_name, initial_count) do
+      # drop compacted table
+      PrestigeHelper.drop_table(compact_table_name(system_name))
+      :ok
+    else
+      {:error, error} ->
+        Logger.error("Error compacting table #{system_name}: " <> inspect(error))
+        :error
 
-    # reinsert entire partition
-    reinsert_compacted_data(system_name)
-
-    # validate count remains the same
-    new_count = PrestigeHelper.count(system_name)
-    if new_count != initial_count do
-      "Panic" |> IO.inspect(label: "partitioned_compaction.ex:29")
+      :error ->
+        :error
     end
 
-    # drop compacted table
-    PrestigeHelper.drop_table(system_name <> "__compact")
-
     # resume halted bits
+    # Forklift.Quantum.Scheduler.reactivate_job(:insertor)
   end
 
   defp current_partition() do
@@ -41,7 +49,7 @@ defmodule Forklift.Jobs.PartitionedCompaction do
 
   defp create_compact_table(table, partition) do
     %{
-      table: table <> "__compact",
+      table: compact_table_name(table),
       as: "select * from #{table} where os_partition = '#{partition}'"
     }
     |> Statement.create()
@@ -55,7 +63,18 @@ defmodule Forklift.Jobs.PartitionedCompaction do
   end
 
   defp reinsert_compacted_data(table) do
-    "insert into #{table} select * from #{table}__compact"
+    "insert into #{table} select * from #{compact_table_name(table)}"
     |> PrestigeHelper.execute_query()
+  end
+
+  defp compact_table_name(table_name) do
+    table_name <> "__compact"
+  end
+
+  defp verify_count(table, count) do
+    case PrestigeHelper.count(table) == count do
+      true -> :ok
+      false -> {:error, "Table #{table} did not match expected record count of #{count}"}
+    end
   end
 end
