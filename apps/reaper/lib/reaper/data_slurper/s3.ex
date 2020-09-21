@@ -11,7 +11,7 @@ defmodule Reaper.DataSlurper.S3 do
   def handle?(url), do: String.starts_with?(url, "s3")
 
   @impl DataSlurper
-  def slurp("s3://" <> location = _url, dataset_id, headers \\ [], _protocol \\ nil) do
+  def slurp("s3://" <> location = _url, dataset_id, headers \\ [], _protocol \\ nil, _action \\ nil, _body \\ "") do
     filename = DataSlurper.determine_filename(dataset_id)
     [bucket, key] = String.split(location, "/", parts: 2)
 

@@ -76,7 +76,7 @@ defmodule Andi.DatasetCache do
     [
       dataset_id: dataset[:id],
       dataset_title: dataset[:business][:dataTitle],
-      system_name: "#{dataset[:id]}#{dataset[:data_name]}#{dataset[:org_name]}",
+      system_name: dataset[:technical][:systemName],
       source_type: dataset[:technical][:sourceType],
       org_name: dataset[:technical][:orgName]
     ]
