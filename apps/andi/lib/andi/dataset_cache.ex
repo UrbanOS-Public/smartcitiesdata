@@ -76,9 +76,10 @@ defmodule Andi.DatasetCache do
     [
       dataset_id: dataset[:id],
       dataset_title: dataset[:business][:dataTitle],
-      system_name: "#{dataset[:technical][:orgName]}__#{dataset[:technical][:dataName]}",
+      system_name: dataset[:technical][:systemName],
       source_type: dataset[:technical][:sourceType],
       org_name: dataset[:technical][:orgName]
     ]
     |> TelemetryEvent.add_event_metrics([:dataset_info], value: %{gauge: 1})
   end
+end
