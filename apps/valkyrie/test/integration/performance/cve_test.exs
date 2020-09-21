@@ -22,7 +22,14 @@ defmodule Valkyrie.Performance.CveTest do
   }
 
   defmodule SetupConfig do
-    defstruct [:messages, prefetch_count: 0, prefetch_bytes: 1_000_000, max_bytes: 1_000_000, max_wait_time: 10_000, min_bytes: 0]
+    defstruct [
+      :messages,
+      prefetch_count: 0,
+      prefetch_bytes: 1_000_000,
+      max_bytes: 1_000_000,
+      max_wait_time: 10_000,
+      min_bytes: 0
+    ]
   end
 
   setup_all do
@@ -58,26 +65,29 @@ defmodule Valkyrie.Performance.CveTest do
     mid_prefetch_bytes = {"m", 10_000_000}
     high_prefetch_bytes = {"h", 100_000_000}
 
-    combos = Combinatorics.product([
-      [{"msg", map_messages}],
-      [low_max_bytes, mid_max_bytes, high_max_bytes],
-      [low_max_wait_time, mid_max_wait_time, high_max_wait_time],
-      [low_min_bytes, mid_min_bytes, high_min_bytes],
-      [low_prefetch_count, mid_prefetch_count, high_prefetch_count],
-      [low_prefetch_bytes, mid_prefetch_bytes, high_prefetch_bytes],
-    ])
+    combos =
+      Combinatorics.product([
+        [{"msg", map_messages}],
+        [low_max_bytes, mid_max_bytes, high_max_bytes],
+        [low_max_wait_time, mid_max_wait_time, high_max_wait_time],
+        [low_min_bytes, mid_min_bytes, high_min_bytes],
+        [low_prefetch_count, mid_prefetch_count, high_prefetch_count],
+        [low_prefetch_bytes, mid_prefetch_bytes, high_prefetch_bytes]
+      ])
 
-    scenarios = Enum.map(combos, fn l ->
-      {names, values} = Enum.unzip(l)
+    scenarios =
+      Enum.map(combos, fn l ->
+        {names, values} = Enum.unzip(l)
 
-      label = Enum.join(names, ".")
-      options = Enum.zip([:messages, :max_bytes, :max_wait_time, :min_bytes, :prefetch_count, :prefetch_bytes], values)
-      |> Keyword.new()
+        label = Enum.join(names, ".")
 
-      {label, struct(SetupConfig, options)}
-    end)
-    |> Map.new()
+        options =
+          Enum.zip([:messages, :max_bytes, :max_wait_time, :min_bytes, :prefetch_count, :prefetch_bytes], values)
+          |> Keyword.new()
 
+        {label, struct(SetupConfig, options)}
+      end)
+      |> Map.new()
 
     Benchee.run(
       %{
@@ -124,6 +134,7 @@ defmodule Valkyrie.Performance.CveTest do
           )
 
         Application.put_env(:valkyrie, :topic_subscriber_config, updated_topic_config)
+
         Application.get_env(:valkyrie, :topic_subscriber_config, updated_topic_config)
         |> inspect(label: "topic setup for scenario")
         |> Logger.warn()
