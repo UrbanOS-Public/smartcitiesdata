@@ -33,7 +33,7 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelper do
   end
 
   def count(table) do
-    execute_query("select count(1) from #{table}" |> IO.inspect(label: "prestige_helper.ex:36"))
+    execute_query("select count(1) from #{table}")
     |> extract_count()
   end
 
@@ -48,4 +48,11 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelper do
   end
 
   defp extract_count(_), do: :error
+
+  def table_exists?(table) do
+    case execute_query("show create table #{table}") do
+      {:ok, _} -> true
+      _ -> false
+    end
+  end
 end
