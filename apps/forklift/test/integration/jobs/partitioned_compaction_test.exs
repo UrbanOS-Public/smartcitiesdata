@@ -17,6 +17,7 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
       data_ingest_start: 0
     ]
 
+  # TODO: Make these tests faster
   setup do
     datasets =
       [1, 2]
@@ -86,7 +87,7 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
     compaction_results = PartitionedCompaction.run(dataset_ids)
 
-    assert compaction_results == [:abort, :ok]
+    assert compaction_results == [:error, :ok]
     assert table_exists?(error_dataset_compact_table)
     assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_record_count end)
   end
@@ -104,7 +105,7 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
     compaction_results = PartitionedCompaction.run(dataset_ids)
 
-    assert compaction_results == [:abort, :ok]
+    assert compaction_results == [:error, :ok]
     refute table_exists?(error_dataset_compact_table)
   end
 
@@ -152,6 +153,15 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     assert count_test(error_dataset.technical.systemName) == batch_size
     assert table_exists?(error_dataset_compact_table)
     assert count_test(error_dataset_compact_table) == batch_size
+  end
+
+  test "abort compaction if no data for the current partition is found", %{datasets: datasets} do
+    write_test_data(datasets, ["2018_01"], 6)
+
+    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
+    compaction_results = PartitionedCompaction.run(dataset_ids)
+
+    assert compaction_results == [:abort, :abort]
   end
 
   defp write_test_data(datasets, partitions, batch_count) do

@@ -6,7 +6,6 @@ defmodule Helper do
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias Pipeline.Writer.TableWriter.Statement
   alias Pipeline.Writer.S3Writer
-  alias SmartCity.TestDataGenerator.Payload
 
   @bucket Application.get_env(:forklift, :s3_writer_bucket)
 
