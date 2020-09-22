@@ -47,6 +47,7 @@ defmodule DiscoveryStreams.Stream do
       {:error, reason} ->
         {:stop, reason, state}
     end
+    
   end
 
   @retry with: exponential_backoff(100) |> take(@max_retries)

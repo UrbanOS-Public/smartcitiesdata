@@ -40,29 +40,29 @@ defmodule DiscoveryStreams.Performance.CveTest do
 
   @tag timeout: :infinity
   test "run performance test" do
-    map_messages = generate_messages(1_000, :map)
-    spat_messages = generate_messages(1_000, :spat)
-    bsm_messages = generate_messages(1_000, :bsm)
+    map_messages = generate_messages(10_000, :map)
+    spat_messages = generate_messages(10_000, :spat)
+    bsm_messages = generate_messages(10_000, :bsm)
 
     low_max_bytes = {"l", 1_000_000}
-    mid_max_bytes = {"m", 10_000_000}
-    high_max_bytes = {"h", 100_000_000}
+    # mid_max_bytes = {"m", 10_000_000}
+    # high_max_bytes = {"h", 100_000_000}
 
     low_max_wait_time = {"l", 1_000}
-    mid_max_wait_time = {"m", 10_000}
-    high_max_wait_time = {"h", 60_000}
+    # mid_max_wait_time = {"m", 10_000}
+    # high_max_wait_time = {"h", 60_000}
 
     low_min_bytes = {"l", 0}
-    mid_min_bytes = {"m", 1_000}
-    high_min_bytes = {"h", 1_000_000}
+    # mid_min_bytes = {"m", 1_000}
+    # high_min_bytes = {"h", 1_000_000}
 
     low_prefetch_count = {"l", 0}
-    mid_prefetch_count = {"m", 100_000}
-    high_prefetch_count = {"h", 1_000_000}
+    # mid_prefetch_count = {"m", 100_000}
+    # high_prefetch_count = {"h", 1_000_000}
 
     low_prefetch_bytes = {"l", 1_000_000}
-    mid_prefetch_bytes = {"m", 10_000_000}
-    high_prefetch_bytes = {"h", 100_000_000}
+    # mid_prefetch_bytes = {"m", 10_000_000}
+    # high_prefetch_bytes = {"h", 100_000_000}
 
     combos =
       Combinatorics.product([
@@ -90,13 +90,17 @@ defmodule DiscoveryStreams.Performance.CveTest do
 
     Benchee.run(
       %{
-        "kafka" => fn {dataset, expected_count, input_topic} = _output_from_before_each ->
-          current_total = get_message_count(dataset.technical.systemName, 1_000)
-          IO.inspect("output is #{current_total} of #{expected_count}")
+        "kafka" => fn {dataset, expected_count, input_topic, socket} = _output_from_before_each ->
 
-          # assert current_total >= expected_count
+          eventually(fn ->
+            current_total = AccumulatorTransportSocket.get_message_count(socket.transport_pid)
 
-          {dataset, input_topic}
+            # IO.inspect("output is #{current_total} of #{expected_count}")
+
+            assert current_total >= expected_count
+          end, 100, 5000)
+
+          {dataset, input_topic, socket}
         end
       },
       inputs: scenarios,
@@ -142,26 +146,33 @@ defmodule DiscoveryStreams.Performance.CveTest do
             DiscoveryStreamsWeb.UserSocket
             |> socket()
             |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset.technical.systemName}")
+
+          Process.unlink(socket.channel_pid)
+          :ok = close(socket)
         end,
           100,
           5000
         )
 
-        {:ok, _, _socket} = DiscoveryStreamsWeb.UserSocket
-        |> socket()
-        |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset.technical.systemName}")
-        |> IO.inspect(label: "welcome to hell")
+        {:ok, tpid} = GenServer.start_link(AccumulatorTransportSocket, 0)
 
-        # Process.sleep(30_000)
+        {:ok, _, socket} = DiscoveryStreamsWeb.UserSocket
+        |> socket()
+        |> Map.put(:transport_pid, tpid)
+        |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset.technical.systemName}")
 
         load_messages(dataset, input_topic, messages, count, 10_000)
 
-        {dataset, count, input_topic}
+        {dataset, count, input_topic, socket}
       end,
-      after_each: fn {dataset, input_topic} = _output_from_run ->
-        DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
+      after_each: fn
+        {dataset, input_topic, socket} = _output_from_run ->
+          DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
 
-        Elsa.delete_topic(@endpoints, input_topic)
+          Process.unlink(socket.channel_pid)
+          :ok = close(socket)
+
+          Elsa.delete_topic(@endpoints, input_topic)
       end,
       time: 30,
       memory_time: 1,
@@ -220,7 +231,6 @@ defmodule DiscoveryStreams.Performance.CveTest do
     Process.exit(producer_pid, :normal)
 
     Logger.debug("Done loading #{expected_count} messages")
-    IO.inspect(label: "done with load to topic")
   end
 
   defp prepare_messages({key, message}, dataset) do
@@ -288,11 +298,40 @@ defmodule DiscoveryStreams.Performance.CveTest do
     Stream.cycle([1])
     |> Enum.reduce_while(0, fn _c, acc ->
       receive do
-        %Phoenix.Socket.Message{topic: ^full_topic} = msg->
+        %Phoenix.Socket.Message{topic: ^full_topic} = msg ->
           {:cont, acc + 1}
+        _ -> {:cont, acc}
       after
         timeout -> {:halt, acc}
       end
     end)
+  end
+end
+
+defmodule AccumulatorTransportSocket do
+  use GenServer
+
+  def init(initial_count) do
+    {:ok, initial_count}
+  end
+
+  def get_message_count(pid) do
+    GenServer.call(pid, {:get_message_count})
+  end
+
+  def handle_info(%Phoenix.Socket.Message{}, state) do
+    {:noreply, state + 1}
+  end
+
+  def handle_info(_, state) do
+    {:noreply, state}
+  end
+
+  def handle_call({:get_message_count}, _, state) do
+    {:reply, state, state}
+  end
+
+  def terminate(_reason, _state) do
+    :ok
   end
 end
