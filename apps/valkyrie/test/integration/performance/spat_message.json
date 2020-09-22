@@ -1,0 +1,196 @@
+{
+  "intersections": [
+    {
+      "id": {
+        "id": 3237
+      },
+      "revision": 111,
+      "states": [
+        {
+          "maneuverAssistList": [
+            {
+              "connectionID": 0,
+              "pedBicycleDetect": false
+            }
+          ],
+          "signalGroup": 1,
+          "state-time-speed": [
+            {
+              "eventState": "stop-And-Remain",
+              "timing": {
+                "maxEndTime": 1098,
+                "minEndTime": 1098
+              }
+            }
+          ]
+        },
+        {
+          "maneuverAssistList": [
+            {
+              "connectionID": 0,
+              "pedBicycleDetect": true
+            }
+          ],
+          "signalGroup": 2,
+          "state-time-speed": [
+            {
+              "eventState": "stop-And-Remain",
+              "timing": {
+                "maxEndTime": 1258,
+                "minEndTime": 1258
+              }
+            }
+          ]
+        },
+        {
+          "maneuverAssistList": [
+            {
+              "connectionID": 0,
+              "pedBicycleDetect": false
+            }
+          ],
+          "signalGroup": 3,
+          "state-time-speed": [
+            {
+              "eventState": "stop-And-Remain",
+              "timing": {
+                "maxEndTime": 2062,
+                "minEndTime": 2062
+              }
+            }
+          ]
+        },
+        {
+          "maneuverAssistList": [
+            {
+              "connectionID": 0,
+              "pedBicycleDetect": false
+            }
+          ],
+          "signalGroup": 4,
+          "state-time-speed": [
+            {
+              "eventState": "protected-clearance",
+              "timing": {
+                "maxEndTime": 1068,
+                "minEndTime": 1068
+              }
+            }
+          ]
+        },
+        {
+          "maneuverAssistList": [
+            {
+              "connectionID": 0,
+              "pedBicycleDetect": false
+            }
+          ],
+          "signalGroup": 5,
+          "state-time-speed": [
+            {
+              "eventState": "stop-And-Remain",
+              "timing": {
+                "maxEndTime": 1098,
+                "minEndTime": 1098
+              }
+            }
+          ]
+        },
+        {
+          "maneuverAssistList": [
+            {
+              "connectionID": 0,
+              "pedBicycleDetect": true
+            }
+          ],
+          "signalGroup": 6,
+          "state-time-speed": [
+            {
+              "eventState": "stop-And-Remain",
+              "timing": {
+                "maxEndTime": 1258,
+                "minEndTime": 1258
+              }
+            }
+          ]
+        },
+        {
+          "maneuverAssistList": [
+            {
+              "connectionID": 0,
+              "pedBicycleDetect": false
+            }
+          ],
+          "signalGroup": 8,
+          "state-time-speed": [
+            {
+              "eventState": "protected-clearance",
+              "timing": {
+                "maxEndTime": 1068,
+                "minEndTime": 1068
+              }
+            }
+          ]
+        },
+        {
+          "maneuverAssistList": [
+            {
+              "connectionID": 0,
+              "pedBicycleDetect": false
+            }
+          ],
+          "signalGroup": 147,
+          "state-time-speed": [
+            {
+              "eventState": "permissive-clearance",
+              "timing": {
+                "maxEndTime": 1068,
+                "minEndTime": 1068
+              }
+            }
+          ]
+        },
+        {
+          "maneuverAssistList": [
+            {
+              "connectionID": 0,
+              "pedBicycleDetect": false
+            }
+          ],
+          "signalGroup": 163,
+          "state-time-speed": [
+            {
+              "eventState": "stop-And-Remain",
+              "timing": {
+                "maxEndTime": 2062,
+                "minEndTime": 2062
+              }
+            }
+          ]
+        },
+        {
+          "maneuverAssistList": [
+            {
+              "connectionID": 0,
+              "pedBicycleDetect": false
+            }
+          ],
+          "signalGroup": 185,
+          "state-time-speed": [
+            {
+              "eventState": "protected-clearance",
+              "timing": {
+                "maxEndTime": 1068,
+                "minEndTime": 1068
+              }
+            }
+          ]
+        }
+      ],
+      "status": []
+    }
+  ],
+  "name": null,
+  "regional": null,
+  "timeStamp": 375601
+}
