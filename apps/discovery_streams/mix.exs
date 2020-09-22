@@ -74,7 +74,9 @@ defmodule DiscoveryStreams.Mixfile do
       {:tasks, in_umbrella: true, only: :dev},
       {:decimal, "~> 1.0"},
       {:tzdata, "~> 1.0"},
-      {:web, in_umbrella: true}
+      {:web, in_umbrella: true},
+      {:combinatorics, "~> 0.1.0"},
+      {:benchee, "~> 1.0", only: [:integration]}
     ]
   end
 
