@@ -32,7 +32,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
   end
 
   setup_all do
-    Logger.configure(level: :debug)
+    Logger.configure(level: :warn)
     Agent.start(fn -> 0 end, name: :counter)
 
     :ok
@@ -91,30 +91,10 @@ defmodule DiscoveryStreams.Performance.CveTest do
     Benchee.run(
       %{
         "kafka" => fn {dataset, expected_count, input_topic} = _output_from_before_each ->
-          Brook.Event.send(:discovery_streams, data_ingest_start(), :author, dataset)
+          current_total = get_message_count(dataset.technical.systemName, 1_000)
+          IO.inspect("output is #{current_total} of #{expected_count}")
 
-          eventually(fn ->
-            assert {:ok, _, socket} =
-              DiscoveryStreamsWeb.UserSocket
-              |> socket()
-              |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset.technical.systemName}")
-            end,
-            100,
-            5000
-          )
-
-          eventually(
-            fn ->
-              {:ok, messages} = Process.info(self(), :messages)
-              current_total = length(messages)
-
-              Logger.debug(fn -> "output is #{current_total} of #{expected_count}" end)
-
-              assert current_total >= expected_count
-            end,
-            100,
-            5000
-          )
+          # assert current_total >= expected_count
 
           {dataset, input_topic}
         end
@@ -155,6 +135,25 @@ defmodule DiscoveryStreams.Performance.CveTest do
         Logger.debug("Iteration #{iteration} for dataset #{dataset.id}")
 
         {input_topic} = setup_topics(dataset)
+
+        Brook.Event.send(:discovery_streams, data_ingest_start(), :author, dataset)
+        eventually(fn ->
+          assert {:ok, _, socket} =
+            DiscoveryStreamsWeb.UserSocket
+            |> socket()
+            |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset.technical.systemName}")
+        end,
+          100,
+          5000
+        )
+
+        {:ok, _, _socket} = DiscoveryStreamsWeb.UserSocket
+        |> socket()
+        |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset.technical.systemName}")
+        |> IO.inspect(label: "welcome to hell")
+
+        # Process.sleep(30_000)
+
         load_messages(dataset, input_topic, messages, count, 10_000)
 
         {dataset, count, input_topic}
@@ -165,7 +164,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
         Elsa.delete_topic(@endpoints, input_topic)
       end,
       time: 30,
-      memory_time: 0.5,
+      memory_time: 1,
       warmup: 0
     )
   end
@@ -221,6 +220,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
     Process.exit(producer_pid, :normal)
 
     Logger.debug("Done loading #{expected_count} messages")
+    IO.inspect(label: "done with load to topic")
   end
 
   defp prepare_messages({key, message}, dataset) do
@@ -280,5 +280,19 @@ defmodule DiscoveryStreams.Performance.CveTest do
     else
       _ -> raise "Timed out waiting for #{topic} to be available"
     end
+  end
+
+  def get_message_count(topic, timeout) do
+    full_topic = "streaming:#{topic}"
+
+    Stream.cycle([1])
+    |> Enum.reduce_while(0, fn _c, acc ->
+      receive do
+        %Phoenix.Socket.Message{topic: ^full_topic} = msg->
+          {:cont, acc + 1}
+      after
+        timeout -> {:halt, acc}
+      end
+    end)
   end
 end

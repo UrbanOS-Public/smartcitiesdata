@@ -33,6 +33,7 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
   end
 
   def handle_batch(batch, context) do
+    IO.inspect(length(batch), label: "did a batch!")
     Logger.debug(fn -> "#{__MODULE__} handle_batch - #{inspect(context)} - #{inspect(batch)}" end)
     record_outbound_count_metrics(batch, context.dataset_id)
     :ok
