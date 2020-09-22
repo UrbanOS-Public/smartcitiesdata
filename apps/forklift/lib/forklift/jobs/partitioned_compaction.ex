@@ -16,8 +16,10 @@ defmodule Forklift.Jobs.PartitionedCompaction do
     # TODO: These are undefined in the test/integration environments. Mock them?
     # TODO: If main table and compact table (for partition) exist, abort and put a metric on prometheus
     # TODO: Add protections for known compaction issues
+    # TODO: Abort if no data exists for the partition
+    # TODO: Handle edge cases where two partitions might need compacted (always compact current + previous?)
 
-    compact_table = compact_table_name(system_name)
+    compact_table = compact_table_name(system_name, partition)
     initial_count = PrestigeHelper.count(system_name)
 
     partition_count =
@@ -34,9 +36,9 @@ defmodule Forklift.Jobs.PartitionedCompaction do
              initial_count - partition_count,
              "main table no longer contains records for the partition"
            ),
-         {:ok, _} <- reinsert_compacted_data(system_name),
+         {:ok, _} <- reinsert_compacted_data(system_name, compact_table),
          {:ok, _} <- verify_count(system_name, initial_count, "main table once again contains all records") do
-      PrestigeHelper.drop_table(compact_table_name(system_name))
+      PrestigeHelper.drop_table(compact_table)
       :ok
     else
       {:error, error} ->
@@ -58,7 +60,7 @@ defmodule Forklift.Jobs.PartitionedCompaction do
 
   defp create_compact_table(table, partition) do
     %{
-      table: compact_table_name(table),
+      table: compact_table_name(table, partition),
       as: "select * from #{table} where os_partition = '#{partition}'"
     }
     |> Statement.create()
@@ -71,13 +73,13 @@ defmodule Forklift.Jobs.PartitionedCompaction do
     |> PrestigeHelper.execute_query()
   end
 
-  defp reinsert_compacted_data(table) do
-    "insert into #{table} select * from #{compact_table_name(table)}"
+  defp reinsert_compacted_data(table, compact_table) do
+    "insert into #{table} select * from #{compact_table}"
     |> PrestigeHelper.execute_query()
   end
 
-  defp compact_table_name(table_name) do
-    table_name <> "__compact" # TODO: Add partition to this
+  def compact_table_name(table_name, partition) do
+    "#{table_name}__#{partition}__compact" # TODO: Add partition to this
   end
 
   defp verify_count(table, count, message) do
