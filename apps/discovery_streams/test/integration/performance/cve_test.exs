@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
     otp_app: :discovery_streams,
     endpoints: Application.get_env(:discovery_streams, :endpoints),
     topic_prefixes: ["transformed"],
-    log_level: :info
+    log_level: :warn
 
   use DiscoveryStreamsWeb.ChannelCase
 
@@ -24,7 +24,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
     benchee_opts = [
       inputs: scenarios,
       before_scenario: fn input ->
-        tune_kafka_parameters(input)
+        tune_consumer_parameters(input)
 
         input.messages
       end,

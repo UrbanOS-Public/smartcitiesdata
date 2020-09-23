@@ -47,8 +47,8 @@ defmodule Performance.BencheeCase do
         )
       end
 
-      defp tune_kafka_parameters(params) do
-        Kafka.tune_kafka_parameters(@otp_app, params)
+      defp tune_consumer_parameters(params) do
+        Kafka.tune_consumer_parameters(@otp_app, params)
       end
 
       defp reset_iteration(inputs) do
@@ -72,6 +72,10 @@ defmodule Performance.BencheeCase do
 
       defp load_messages(dataset, topic, messages, chunk_size \\ 10_000) do
         Kafka.load_messages(@endpoints, dataset, topic, messages, length(messages), 10_000)
+      end
+
+      defp get_message_count(topic, num_partitions \\ 1) do
+        Kafka.get_message_count(@endpoints, topic, num_partitions)
       end
 
       defp delete_kafka_topics(dataset) do

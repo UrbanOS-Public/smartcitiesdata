@@ -9,7 +9,7 @@ defmodule Performance.Kafka do
   alias Performance.SetupConfig
   require Logger
 
-  def tune_kafka_parameters(otp_app, %SetupConfig{} = params) do
+  def tune_consumer_parameters(otp_app, %SetupConfig{} = params) do
     {_messages, kafka_parameters} = Map.split(params, [:messages])
 
     existing_topic_config = Application.get_env(otp_app, :topic_subscriber_config, Keyword.new())
@@ -25,6 +25,13 @@ defmodule Performance.Kafka do
     Application.get_env(otp_app, :topic_subscriber_config)
     |> inspect()
     |> Logger.info()
+  end
+
+  def get_message_count(endpoints, topic, num_partitions) do
+    0..(num_partitions - 1)
+    |> Enum.map(fn partition -> :brod.resolve_offset(endpoints, topic, partition) end)
+    |> Enum.map(fn {:ok, value} -> value end)
+    |> Enum.sum()
   end
 
   def load_messages(endpoints, dataset, topic, messages, expected_count, producer_chunk_size) do
