@@ -70,5 +70,4 @@ defmodule Valkyrie.Performance.CveTest do
 
     benchee_run(benchee_opts)
   end
-
 end

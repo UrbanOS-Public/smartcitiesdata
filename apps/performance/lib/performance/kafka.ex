@@ -93,7 +93,7 @@ defmodule Performance.Kafka do
     high_max_wait_time = {"hmw", 60_000}
 
     low_min_bytes = {"lmib", 0}
-    mid_min_bytes = {"mmib", 1_000}
+    mid_min_bytes = {"mmib", 5_000}
     high_min_bytes = {"hmib", 1_000_000}
 
     low_prefetch_count = {"lpc", 0}

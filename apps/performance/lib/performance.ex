@@ -17,7 +17,16 @@ defmodule Performance do
     messages
   end
 
-  defp create_dataset(opts) do
+  def get_message_width(messages) do
+    messages
+    |> List.first()
+    |> elem(1)
+    |> Map.get(:payload)
+    |> Map.keys()
+    |> length()
+  end
+
+  def create_dataset(opts) do
     num_fields = Keyword.get(opts, :num_fields)
     schema = Enum.map(1..num_fields, fn i -> %{name: "name-#{i}", type: "string"} end)
 
