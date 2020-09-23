@@ -14,9 +14,9 @@ defmodule Forklift.Jobs.JsonToOrc do
     Forklift.DataReaderHelper.terminate(dataset)
     json_table = json_table_name(system_name)
 
-    original_count = PrestigeHelper.count(system_name)
-    json_count = PrestigeHelper.count(json_table)
-    with {:ok, _} <- check_for_data_to_migrate(json_count),
+    with {:ok, original_count} <- PrestigeHelper.count(system_name),
+         {:ok, json_count} <- PrestigeHelper.count(json_table),
+         {:ok, _} <- check_for_data_to_migrate(json_count),
          {:ok, _} <- insert_partitioned_data(json_table, system_name),
          {:ok, _} <-
            verify_count(system_name, original_count + json_count, "main table contains all records from the json table"),

@@ -128,7 +128,7 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
       PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
 
     allow(PrestigeHelper.count("#{error_dataset_compact_table}"),
-      return: 0,
+      return: {:ok, 0},
       meck_options: [:passthrough]
     )
 
@@ -169,9 +169,9 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
 
     assert compaction_results == [:error, :ok]
 
-    assert count_test(error_dataset.technical.systemName) == batch_size
+    assert PrestigeHelper.count!(error_dataset.technical.systemName) == batch_size
     assert table_exists?(error_dataset_compact_table)
-    assert count_test(error_dataset_compact_table) == batch_size
+    assert PrestigeHelper.count!(error_dataset_compact_table) == batch_size
   end
 
   test "abort compaction if no data for the current partition is found", %{datasets: datasets} do
@@ -192,10 +192,6 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     end)
 
     Enum.count(partitions) * batch_count
-  end
-
-  defp count_test(table) do
-    PrestigeHelper.count_query("select count(1) from #{table} /* test */")
   end
 
   defp count_files(table) do

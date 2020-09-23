@@ -16,17 +16,12 @@ defmodule Forklift.Jobs.PartitionedCompaction do
 
   def partitioned_compact(%{id: id, technical: %{systemName: system_name}}) do
     partition = current_partition()
-
-    # TODO: Migrate datasets that don't have os_partition?
-
     compact_table = compact_table_name(system_name, partition)
-    # TODO: Make count safe
-    initial_count = PrestigeHelper.count(system_name)
 
-    partition_count =
-      PrestigeHelper.count_query("select count(1) from #{system_name} where os_partition = '#{partition}'")
-
-    with {:ok, _} <- pre_check(system_name, compact_table),
+    with {:ok, initial_count} <- PrestigeHelper.count(system_name),
+         {:ok, partition_count} <-
+           PrestigeHelper.count_query("select count(1) from #{system_name} where os_partition = '#{partition}'"),
+         {:ok, _} <- pre_check(system_name, compact_table),
          {:ok, _} <- check_for_data_to_compact(partition, partition_count),
          {:ok, _} <- create_compact_table(system_name, partition),
          {:ok, _} <-

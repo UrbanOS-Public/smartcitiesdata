@@ -33,13 +33,25 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelper do
   end
 
   def count(table) do
-    execute_query("select count(1) from #{table}")
-    |> extract_count()
+    count_query("select count(1) from #{table}")
+  end
+
+  def count!(table) do
+    count_query!("select count(1) from #{table}")
   end
 
   def count_query(query) do
-    execute_query(query)
-    |> extract_count()
+    case execute_query(query) do
+      {:ok, response} -> {:ok, extract_count({:ok, response})}
+      error -> error
+    end
+  end
+
+  def count_query!(query) do
+    case execute_query(query) do
+      {:error, error} -> raise "Failed to get count for #{query}: #{inspect(error)}"
+      {:ok, response} -> extract_count({:ok, response})
+    end
   end
 
   defp extract_count({:ok, results}) do

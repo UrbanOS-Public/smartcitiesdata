@@ -6,18 +6,27 @@ defmodule Forklift.Jobs.JobUtils do
   @backoff Application.get_env(:forklift, :compaction_backoff, 10)
 
   @retry with: constant_backoff(@backoff) |> Stream.take(@retries)
-  def verify_count(table, count, message) do
-    actual_count = PrestigeHelper.count(table)
+  def verify_count(table, target_count, message) do
+    with {:ok, actual_count} <- PrestigeHelper.count(table),
+         {:ok, _} <- check_count(actual_count, target_count, message) do
+      {:ok, actual_count}
+    else
+      {:error, actual_count} when is_number(actual_count) ->
+        {:error, "Table #{table} with count #{actual_count} did not match expected record count of #{target_count} while trying to verify that #{
+          message
+        }"}
+      {:error, error} ->
+        {:error, "Could not verify record count of table #{table} while trying to verify that #{message}: #{inspect(error)}"}
+    end
+  end
 
-    case actual_count == count do
+  defp check_count(actual_count, target_count, message) do
+    case actual_count == target_count do
       true ->
         {:ok, actual_count}
 
       false ->
-        {:error,
-         "Table #{table} with count #{actual_count} did not match expected record count of #{count} while trying to verify that #{
-           message
-         }"}
+        {:error, actual_count}
     end
   end
 end
