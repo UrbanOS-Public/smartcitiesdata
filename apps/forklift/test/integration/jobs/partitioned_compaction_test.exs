@@ -50,7 +50,11 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
       100,
       1_000
     )
-      current_partition = Timex.format!(DateTime.utc_now(), "{YYYY}_{0M}")
+
+    allow(Forklift.Quantum.Scheduler.deactivate_job(:insertor), return: :ok)
+    allow(Forklift.Quantum.Scheduler.activate_job(:insertor), return: :ok)
+
+    current_partition = Timex.format!(DateTime.utc_now(), "{YYYY}_{0M}")
     [datasets: datasets, current_partition: current_partition]
   end
 
@@ -60,26 +64,29 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
 
     expected_record_count = write_test_data(datasets, partitions, batch_count)
 
-    # given orc table with data (in multiple partitions?)
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
     PartitionedCompaction.run(dataset_ids)
 
-    # The expected number of records are present
     assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_record_count end)
-    refute Enum.any?(datasets, fn dataset -> table_exists?(PartitionedCompaction.compact_table_name(dataset.technical.systemName, current_partition)) end)
 
-    # The expected # of partitioned files are present
+    refute Enum.any?(datasets, fn dataset ->
+             table_exists?(PartitionedCompaction.compact_table_name(dataset.technical.systemName, current_partition))
+           end)
+
     assert Enum.all?(datasets, fn dataset -> count_files(dataset.technical.systemName) == Enum.count(partitions) end)
-
-    # No errors have occurred
   end
 
-  test "abort compaction without loss if the compacted table for the partition exists at the start", %{datasets: datasets, current_partition: current_partition} do
+  test "abort compaction without loss if the compacted table for the partition exists at the start", %{
+    datasets: datasets,
+    current_partition: current_partition
+  } do
     partitions = ["2018_01", current_partition]
     expected_record_count = write_test_data(datasets, partitions, 6)
 
     error_dataset = List.first(datasets)
-    error_dataset_compact_table = PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
+
+    error_dataset_compact_table =
+      PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
 
     "create table #{error_dataset_compact_table} as select 1 as number_col"
     |> PrestigeHelper.execute_query()
@@ -97,7 +104,9 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     write_test_data(datasets, partitions, 6)
 
     error_dataset = List.first(datasets)
-    error_dataset_compact_table = PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
+
+    error_dataset_compact_table =
+      PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
 
     "drop table #{error_dataset.technical.systemName}"
     |> PrestigeHelper.execute_query()
@@ -109,9 +118,14 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     refute table_exists?(error_dataset_compact_table)
   end
 
-  test "fail compaction without loss if the compacted table does not have the appropriate count", %{datasets: datasets, current_partition: current_partition} do
+  test "fail compaction without loss if the compacted table does not have the appropriate count", %{
+    datasets: datasets,
+    current_partition: current_partition
+  } do
     error_dataset = List.first(datasets)
-    error_dataset_compact_table = PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
+
+    error_dataset_compact_table =
+      PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
 
     allow(PrestigeHelper.count("#{error_dataset_compact_table}"),
       return: 0,
@@ -128,14 +142,19 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_record_count end)
   end
 
-  test "fail compaction, preserving the compacted table, if the final table does not have the appropriate count", %{datasets: datasets, current_partition: current_partition} do
+  test "fail compaction, preserving the compacted table, if the final table does not have the appropriate count", %{
+    datasets: datasets,
+    current_partition: current_partition
+  } do
     partitions = ["2018_01", current_partition]
     batch_size = 6
 
     write_test_data(datasets, partitions, batch_size)
 
     error_dataset = List.first(datasets)
-    error_dataset_compact_table = PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
+
+    error_dataset_compact_table =
+      PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
 
     allow(
       PrestigeHelper.execute_query(

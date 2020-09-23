@@ -38,7 +38,7 @@ defmodule Odo.MixProject do
       {:libvault, "~> 0.2"},
       {:poison, "~> 3.1", override: true},
       {:redix, "~> 0.10"},
-      {:retry, "~> 0.13.0"},
+      {:retry, "~> 0.14.0"},
       {:smart_city, "~> 3.5"},
       {:streaming_metrics, "~> 2.2.0"},
       {:sweet_xml, "~> 0.6"},

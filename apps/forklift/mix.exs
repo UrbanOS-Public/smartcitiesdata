@@ -56,6 +56,7 @@ defmodule Forklift.MixProject do
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true},
       {:pipeline, in_umbrella: true},
+      {:httpoison, "~> 1.5"},
       {:mox, "~> 0.5.1", only: [:dev, :test, :integration]}
     ]
   end

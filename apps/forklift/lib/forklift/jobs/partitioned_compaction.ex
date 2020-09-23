@@ -4,18 +4,25 @@ defmodule Forklift.Jobs.PartitionedCompaction do
   require Logger
   use Retry.Annotation
 
+  @retries Application.get_env(:forklift, :compaction_retries, 10)
+  @backoff Application.get_env(:forklift, :compaction_backoff, 10)
+
   def run(dataset_ids) do
+    Forklift.Quantum.Scheduler.deactivate_job(:insertor)
+
     dataset_ids
     |> Enum.map(&Forklift.Datasets.get!/1)
     |> Enum.map(&partitioned_compact/1)
+  after
+    Forklift.Quantum.Scheduler.activate_job(:insertor)
   end
 
   def partitioned_compact(%{id: id, technical: %{systemName: system_name}}) do
     partition = current_partition()
     # halt json_to_orc job
-    # Forklift.Quantum.Scheduler.deactivate_job(:insertor)
-    # TODO: ^ These are undefined in the test/integration environments. Mock them?
+
     # TODO: Metrics for errors
+    # TODO: Migrate datasets that don't have os_partition?
 
     compact_table = compact_table_name(system_name, partition)
     initial_count = PrestigeHelper.count(system_name)
@@ -38,19 +45,18 @@ defmodule Forklift.Jobs.PartitionedCompaction do
          {:ok, _} <- reinsert_compacted_data(system_name, compact_table),
          {:ok, _} <- verify_count(system_name, initial_count, "main table once again contains all records") do
       PrestigeHelper.drop_table(compact_table)
+      update_compaction_status(id, :ok)
       :ok
     else
       {:error, error} ->
         Logger.error("Error compacting dataset #{id}: " <> inspect(error))
+        update_compaction_status(id, :error)
         :error
 
       {:abort, reason} ->
         Logger.warn("Aborted compaction of dataset #{id}: " <> reason)
         :abort
     end
-  after
-    # resume halted bits
-    # Forklift.Quantum.Scheduler.reactivate_job(:insertor)
   end
 
   defp current_partition() do
@@ -81,7 +87,7 @@ defmodule Forklift.Jobs.PartitionedCompaction do
     "#{table_name}__#{partition}__compact"
   end
 
-  @retry with: constant_backoff(10) |> Stream.take(10)
+  @retry with: constant_backoff(@backoff) |> Stream.take(@retries)
   defp verify_count(table, count, message) do
     actual_count = PrestigeHelper.count(table)
 
@@ -101,8 +107,10 @@ defmodule Forklift.Jobs.PartitionedCompaction do
     cond do
       PrestigeHelper.table_exists?(table) == false ->
         {:error, "Main table #{table} did not exist"}
+
       PrestigeHelper.table_exists?(compact_table) ->
         {:error, "Compacted table #{table} still exists"}
+
       true ->
         {:ok, :passed_pre_check}
     end
@@ -110,4 +118,12 @@ defmodule Forklift.Jobs.PartitionedCompaction do
 
   defp check_for_data_to_compact(partition, 0), do: {:abort, "No data found to compact for partition #{partition}"}
   defp check_for_data_to_compact(_partition, _count), do: {:ok, :data_found}
+
+  defp update_compaction_status(dataset_id, :error) do
+    TelemetryEvent.add_event_metrics([dataset_id: dataset_id], [:compaction_failure], value: %{status: 1})
+  end
+
+  defp update_compaction_status(dataset_id, :ok) do
+    TelemetryEvent.add_event_metrics([dataset_id: dataset_id], [:compaction_failure], value: %{status: 0})
+  end
 end

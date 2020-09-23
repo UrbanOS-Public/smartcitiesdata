@@ -17,6 +17,7 @@ defmodule Forklift.Jobs.JsonToOrc do
       {:ok, _} ->
         truncate_json_table(system_name)
         :ok
+
       _ ->
         :error
     end

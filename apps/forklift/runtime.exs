@@ -114,7 +114,7 @@ if System.get_env("COMPACTION_SCHEDULE") do
       ],
       insertor: [
         schedule: System.get_env("COMPACTION_SCHEDULE"),
-        task: {Forklift.Jobs.JsonToOrc, :run, special_compaction_datasets},
+        task: {Forklift.Jobs.JsonToOrc, :run, [special_compaction_datasets]},
         timezone: "America/New_York"
       ]
     ]
@@ -147,6 +147,11 @@ config :telemetry_event,
     [
       metric_name: "dataset_record_total.count",
       tags: [:table_name],
+      metric_type: :last_value
+    ],
+    [
+      metric_name: "compaction_failure.status",
+      tags: [:dataset_id],
       metric_type: :last_value
     ]
   ]

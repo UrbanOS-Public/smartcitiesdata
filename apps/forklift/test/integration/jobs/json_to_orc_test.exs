@@ -10,29 +10,31 @@ defmodule Forklift.Jobs.JsonToOrcTest do
   use Divo
 
   import SmartCity.Event,
-  only: [
-    dataset_update: 0,
-    data_ingest_start: 0
-  ]
+    only: [
+      dataset_update: 0,
+      data_ingest_start: 0
+    ]
 
   @instance Forklift.instance_name()
 
   setup do
     datasets =
       [1, 2]
-    |> Enum.map(fn _ -> TDG.create_dataset(%{technical: %{cadence: "once"}}) end)
-    |> Enum.map(fn dataset ->
-      Brook.Event.send(@instance, dataset_update(), :forklift, dataset)
-      Brook.Event.send(@instance, data_ingest_start(), :forklift, dataset)
-      dataset
-    end)
+      |> Enum.map(fn _ -> TDG.create_dataset(%{technical: %{cadence: "once"}}) end)
+      |> Enum.map(fn dataset ->
+        Brook.Event.send(@instance, dataset_update(), :forklift, dataset)
+        Brook.Event.send(@instance, data_ingest_start(), :forklift, dataset)
+        dataset
+      end)
 
     # Wait for tables to be created
-    eventually(fn ->
-      assert Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end)
-    end,
-    100,
-    1_000)
+    eventually(
+      fn ->
+        assert Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end)
+      end,
+      100,
+      1_000
+    )
 
     # Delete original tables
     Enum.each(datasets, fn dataset -> drop_table(dataset.technical.systemName) end)
@@ -41,11 +43,13 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     Enum.each(datasets, fn dataset -> create_partitioned_table(dataset.technical.systemName) end)
 
     # Wait for tables to be created
-    eventually(fn ->
-      assert Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end)
-    end,
-    100,
-    1_000)
+    eventually(
+      fn ->
+        assert Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end)
+      end,
+      100,
+      1_000
+    )
 
     [datasets: datasets]
   end
