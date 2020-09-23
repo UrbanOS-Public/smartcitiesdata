@@ -2,10 +2,7 @@ defmodule Forklift.Jobs.PartitionedCompaction do
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias Pipeline.Writer.TableWriter.Statement
   require Logger
-  use Retry.Annotation
-
-  @retries Application.get_env(:forklift, :compaction_retries, 10)
-  @backoff Application.get_env(:forklift, :compaction_backoff, 10)
+  import Forklift.Jobs.JobUtils
 
   def run(dataset_ids) do
     Forklift.Quantum.Scheduler.deactivate_job(:insertor)
@@ -19,12 +16,11 @@ defmodule Forklift.Jobs.PartitionedCompaction do
 
   def partitioned_compact(%{id: id, technical: %{systemName: system_name}}) do
     partition = current_partition()
-    # halt json_to_orc job
 
-    # TODO: Metrics for errors
     # TODO: Migrate datasets that don't have os_partition?
 
     compact_table = compact_table_name(system_name, partition)
+    # TODO: Make count safe
     initial_count = PrestigeHelper.count(system_name)
 
     partition_count =
@@ -54,7 +50,7 @@ defmodule Forklift.Jobs.PartitionedCompaction do
         :error
 
       {:abort, reason} ->
-        Logger.warn("Aborted compaction of dataset #{id}: " <> reason)
+        Logger.info("Aborted compaction of dataset #{id}: " <> reason)
         :abort
     end
   end
@@ -87,22 +83,6 @@ defmodule Forklift.Jobs.PartitionedCompaction do
     "#{table_name}__#{partition}__compact"
   end
 
-  @retry with: constant_backoff(@backoff) |> Stream.take(@retries)
-  defp verify_count(table, count, message) do
-    actual_count = PrestigeHelper.count(table)
-
-    case actual_count == count do
-      true ->
-        {:ok, actual_count}
-
-      false ->
-        {:error,
-         "Table #{table} with count #{actual_count} did not match expected record count of #{count} while trying to verify that #{
-           message
-         }"}
-    end
-  end
-
   defp pre_check(table, compact_table) do
     cond do
       PrestigeHelper.table_exists?(table) == false ->
@@ -120,10 +100,10 @@ defmodule Forklift.Jobs.PartitionedCompaction do
   defp check_for_data_to_compact(_partition, _count), do: {:ok, :data_found}
 
   defp update_compaction_status(dataset_id, :error) do
-    TelemetryEvent.add_event_metrics([dataset_id: dataset_id], [:compaction_failure], value: %{status: 1})
+    TelemetryEvent.add_event_metrics([dataset_id: dataset_id], [:forklift_compaction_failure], value: %{status: 1})
   end
 
   defp update_compaction_status(dataset_id, :ok) do
-    TelemetryEvent.add_event_metrics([dataset_id: dataset_id], [:compaction_failure], value: %{status: 0})
+    TelemetryEvent.add_event_metrics([dataset_id: dataset_id], [:forklift_compaction_failure], value: %{status: 0})
   end
 end

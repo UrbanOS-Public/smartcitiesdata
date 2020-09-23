@@ -7,6 +7,7 @@ defmodule Forklift.Jobs.JsonToOrcTest do
   import SmartCity.TestHelper
   import Helper
 
+  use Placebo
   use Divo
 
   import SmartCity.Event,
@@ -58,11 +59,9 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     expected_records = 10
     Enum.each(datasets, fn dataset -> write_records(dataset, expected_records) end)
 
-    # Run Job
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
     JsonToOrc.run(dataset_ids)
 
-    # Validate data is in orc table with os_partition
     assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_records end)
 
     table = List.first(datasets) |> Map.get(:technical) |> Map.get(:systemName)
@@ -70,8 +69,76 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     actual_partition = response |> Prestige.Result.as_maps() |> List.first() |> Map.get("os_partition")
     assert {:ok, _} = Timex.parse(actual_partition, "{YYYY}_{0M}")
 
-    # Validate data is no longer in json table
     assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName <> "__json") == 0 end)
+  end
+
+  test "should error if the json data does not make it into the main table", %{datasets: datasets} do
+    expected_records = 10
+    Enum.each(datasets, fn dataset -> write_records(dataset, expected_records) end)
+
+    error_dataset = List.first(datasets)
+
+    allow(
+      PrestigeHelper.execute_query(
+        "insert into #{error_dataset.technical.systemName} select *, date_format(now(), '%Y_%m') as os_partition from #{
+          error_dataset.technical.systemName
+        }__json"
+      ),
+      return: {:ok, :false_positive},
+      meck_options: [:passthrough]
+    )
+
+    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
+    assert [:error, :ok] == JsonToOrc.run(dataset_ids)
+  end
+
+  test "should error if the json table's data is not deleted", %{datasets: datasets} do
+    expected_records = 10
+    Enum.each(datasets, fn dataset -> write_records(dataset, expected_records) end)
+
+    error_dataset = List.first(datasets)
+
+    allow(
+      PrestigeHelper.execute_query(
+        "delete from #{error_dataset.technical.systemName}__json"
+      ),
+      return: {:ok, :false_positive},
+      meck_options: [:passthrough]
+    )
+
+    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
+    assert [:error, :ok] == JsonToOrc.run(dataset_ids)
+  end
+
+  test "should error if the main table is missing", %{datasets: datasets} do
+    expected_records = 10
+    Enum.each(datasets, fn dataset -> write_records(dataset, expected_records) end)
+
+    error_dataset = List.first(datasets)
+
+    "drop table #{error_dataset.technical.systemName}"
+    |> PrestigeHelper.execute_query()
+
+    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
+    assert [:error, :ok] == JsonToOrc.run(dataset_ids)
+  end
+
+  test "should error if the json table is missing", %{datasets: datasets} do
+    expected_records = 10
+    Enum.each(datasets, fn dataset -> write_records(dataset, expected_records) end)
+
+    error_dataset = List.first(datasets)
+
+    "drop table #{error_dataset.technical.systemName}__json"
+    |> PrestigeHelper.execute_query()
+
+    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
+    assert [:error, :ok] == JsonToOrc.run(dataset_ids)
+  end
+
+  test "should abort no data was found to migrate", %{datasets: datasets} do
+    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
+    assert [:abort, :abort] == JsonToOrc.run(dataset_ids)
   end
 
   # ensure ingestion is turned off while running
