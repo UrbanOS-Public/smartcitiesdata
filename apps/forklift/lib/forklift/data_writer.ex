@@ -95,10 +95,11 @@ defmodule Forklift.DataWriter do
   Compaction time is recorded by `:collector` from Forklift's application
   environment.
   """
-  def compact_datasets do
+  def compact_datasets(excluded_datasets \\ []) do
     Logger.info("Beginning dataset compaction")
 
     Forklift.Datasets.get_all!()
+    |> Enum.reject(fn %{id: id} -> id in excluded_datasets end)
     |> Enum.each(&compact_dataset/1)
 
     Logger.info("Completed dataset compaction")

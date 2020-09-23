@@ -1,4 +1,6 @@
-ExUnit.start(exclude: [:performance, :compaction, :skip], timeout: 120_000)
+Divo.Suite.start()
+Process.sleep(5_000) # Wait for Brook to be ready
+ExUnit.start(exclude: [:performance, :compaction, :skip, :migrations], timeout: 120_000)
 Faker.start()
 
 defmodule Helper do

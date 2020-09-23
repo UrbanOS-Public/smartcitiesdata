@@ -109,12 +109,17 @@ if System.get_env("COMPACTION_SCHEDULE") do
     jobs: [
       compactor: [
         schedule: System.get_env("COMPACTION_SCHEDULE"),
-        task: {Forklift.DataWriter, :compact_datasets, []},
+        task: {Forklift.DataWriter, :compact_datasets, [special_compaction_datasets]},
         timezone: "America/New_York"
       ],
-      insertor: [
+      migrator: [
         schedule: System.get_env("COMPACTION_SCHEDULE"),
         task: {Forklift.Jobs.JsonToOrc, :run, [special_compaction_datasets]},
+        timezone: "America/New_York"
+      ],
+      partitioned_compactor: [
+        schedule: "0 0 * * *",
+        task: {Forklift.Jobs.PartitionedCompaction, :run, [special_compaction_datasets]},
         timezone: "America/New_York"
       ]
     ]

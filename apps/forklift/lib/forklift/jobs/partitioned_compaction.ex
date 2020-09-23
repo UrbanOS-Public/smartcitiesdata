@@ -5,13 +5,13 @@ defmodule Forklift.Jobs.PartitionedCompaction do
   import Forklift.Jobs.JobUtils
 
   def run(dataset_ids) do
-    Forklift.Quantum.Scheduler.deactivate_job(:insertor)
+    Forklift.Quantum.Scheduler.deactivate_job(:migrator)
 
     dataset_ids
     |> Enum.map(&Forklift.Datasets.get!/1)
     |> Enum.map(&partitioned_compact/1)
   after
-    Forklift.Quantum.Scheduler.activate_job(:insertor)
+    Forklift.Quantum.Scheduler.activate_job(:migrator)
   end
 
   def partitioned_compact(%{id: id, technical: %{systemName: system_name}}) do

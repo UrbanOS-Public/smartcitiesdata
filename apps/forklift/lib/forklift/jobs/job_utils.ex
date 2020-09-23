@@ -8,7 +8,7 @@ defmodule Forklift.Jobs.JobUtils do
   @retry with: constant_backoff(@backoff) |> Stream.take(@retries)
   def verify_count(table, target_count, message) do
     with {:ok, actual_count} <- PrestigeHelper.count(table),
-         {:ok, _} <- check_count(actual_count, target_count, message) do
+         {:ok, _} <- check_count(actual_count, target_count) do
       {:ok, actual_count}
     else
       {:error, actual_count} when is_number(actual_count) ->
@@ -20,7 +20,7 @@ defmodule Forklift.Jobs.JobUtils do
     end
   end
 
-  defp check_count(actual_count, target_count, message) do
+  defp check_count(actual_count, target_count) do
     case actual_count == target_count do
       true ->
         {:ok, actual_count}
