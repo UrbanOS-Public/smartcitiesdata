@@ -1,0 +1,39 @@
+defmodule Performance do
+  @moduledoc """
+  Common performance test utilities
+  """
+  alias SmartCity.TestDataGenerator, as: TDG
+  require Logger
+
+  def generate_messages(width, count) do
+    temporary_dataset = create_dataset(num_fields: width)
+
+    messages =
+      1..count
+      |> Enum.map(fn _ -> create_data_message(temporary_dataset) end)
+
+    Logger.info("Generated #{length(messages)} flat messages of width #{inspect(width)}")
+
+    {messages, width, count}
+  end
+
+  defp create_dataset(opts) do
+    num_fields = Keyword.get(opts, :num_fields)
+    schema = Enum.map(1..num_fields, fn i -> %{name: "name-#{i}", type: "string"} end)
+
+    dataset = TDG.create_dataset(technical: %{schema: schema})
+    dataset
+  end
+
+  defp create_data_message(sample_dataset) do
+    schema = sample_dataset.technical.schema
+
+    payload =
+      Enum.reduce(schema, %{}, fn field, acc ->
+        Map.put(acc, field.name, "some value")
+      end)
+
+    data = TDG.create_data(dataset_id: sample_dataset.id, payload: payload)
+    {"", data}
+  end
+end
