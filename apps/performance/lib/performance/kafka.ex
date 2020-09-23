@@ -9,11 +9,25 @@ defmodule Performance.Kafka do
   alias Performance.SetupConfig
   require Logger
 
+  def tune_kafka_parameters(otp_app, %SetupConfig{} = params) do
+    {_messages, kafka_parameters} = Map.split(params, [:messages])
+
+    existing_topic_config = Application.get_env(otp_app, :topic_subscriber_config, Keyword.new())
+
+    updated_topic_config =
+      Keyword.merge(
+        existing_topic_config,
+        Keyword.new(Map.from_struct(kafka_parameters))
+      )
+
+    Application.put_env(otp_app, :topic_subscriber_config, updated_topic_config)
+  end
+
   def load_messages(endpoints, dataset, topic, messages, expected_count, producer_chunk_size) do
     num_producers = max(div(expected_count, producer_chunk_size), 1)
     producer_name = :"#{topic}_producer"
 
-    Logger.info("Loading #{expected_count} messages into kafka with #{num_producers} producers")
+    Logger.info("Loading #{expected_count} messages into kafka with #{num_producers} producers for topic #{topic}")
 
     {:ok, producer_pid} =
       Elsa.Supervisor.start_link(endpoints: endpoints, producer: [topic: topic], connection: producer_name)
@@ -38,7 +52,7 @@ defmodule Performance.Kafka do
 
     Process.exit(producer_pid, :normal)
 
-    Logger.info("Done loading #{expected_count} messages")
+    Logger.info("Done loading #{expected_count} messages into #{topic}")
   end
 
   def get_total_messages(endpoints, topic, num_partitions \\ 1) do
@@ -113,11 +127,27 @@ defmodule Performance.Kafka do
 
   def setup_topics(prefixes, dataset, endpoints) do
     Enum.map(prefixes, fn prefix ->
-      input_topic = "#{prefix}-#{dataset.id}"
-      Logger.info("Setting up #{input_topic} for #{dataset.id}")
-      input_topic
+      topic = "#{prefix}-#{dataset.id}"
+      Logger.info("Setting up #{topic} for #{dataset.id}")
+      topic
     end)
     |> setup_topics(endpoints)
+  end
+
+  def delete_topics(names, endpoints) do
+    Enum.map(names, fn name ->
+      Elsa.delete_topic(endpoints, name)
+    end)
+    |> List.to_tuple()
+  end
+
+  def delete_topics(prefixes, dataset, endpoints) do
+    Enum.map(prefixes, fn prefix ->
+      topic = "#{prefix}-#{dataset.id}"
+      Logger.info("Deleting topic #{topic} for #{dataset.id}")
+      topic
+    end)
+    |> delete_topics(endpoints)
   end
 
   defp prepare_messages({key, message}, dataset) do

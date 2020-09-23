@@ -1,16 +1,18 @@
 defmodule DiscoveryStreams.Performance.CveTest do
   use ExUnit.Case
-  use Performance.BencheeCase
+  use Performance.BencheeCase,
+    otp_app: :discovery_streams,
+    endpoints: Application.get_env(:discovery_streams, :endpoints),
+    topic_prefixes: ["transformed"],
+    log_level: :warn
+
   use DiscoveryStreamsWeb.ChannelCase
 
   import SmartCity.Event, only: [data_ingest_start: 0]
   import SmartCity.TestHelper
 
-  @endpoints Application.get_env(:discovery_streams, :endpoints)
-  @input_topic_prefix "transformed"
-
   @tag timeout: :infinity
-  test "run performance test", %{benchee_run: benchee_run} do
+  test "run performance test" do
     _map_messages = Cve.generate_messages(1_000, :map)
     spat_messages = Cve.generate_messages(1_000, :spat)
     bsm_messages = Cve.generate_messages(1_000, :bsm)
@@ -21,43 +23,44 @@ defmodule DiscoveryStreams.Performance.CveTest do
 
     benchee_opts = [
       inputs: scenarios,
-      before_scenario: fn %SetupConfig{} = parameters_from_inputs ->
-        {messages, kafka_parameters} = Map.split(parameters_from_inputs, [:messages])
-
-        messages.messages
-      end,
-      before_each: fn {messages, count} = _output_from_before_scenario ->
+      before_scenario: &tune_kafka_parameters/1,
+      before_each: fn messages ->
         dataset = Cve.create_dataset()
-        {input_topic} = Kafka.setup_topics([@input_topic_prefix], dataset, @endpoints)
+        count = length(messages)
+
+        {input_topic} = create_kafka_topics(dataset)
 
         Brook.Event.send(:discovery_streams, data_ingest_start(), :author, dataset)
         socket = join_stream(dataset)
-        Kafka.load_messages(@endpoints, dataset, input_topic, messages, count, 10_000)
 
-        {dataset, count, input_topic, socket}
+        load_messages(dataset, input_topic, messages)
+
+        {dataset, count, socket}
       end,
-      under_test: fn {dataset, expected_count, input_topic, socket} ->
+      under_test: fn {dataset, expected_count, socket} ->
         eventually(fn ->
-          current_total = AccumulatorTransportSocket.get_message_count(socket.transport_pid)
+          current_count = AccumulatorTransportSocket.get_message_count(socket.transport_pid)
 
-          assert current_total >= expected_count
+          Logger.info(fn -> "Measured record counts #{current_count} v. #{expected_count}" end)
+
+          assert current_count >= expected_count
         end, 100, 5000)
 
-        {dataset, input_topic, socket}
+        {dataset, socket}
       end,
-      after_each: fn {dataset, input_topic, socket} = _output_from_run ->
+      after_each: fn {dataset, socket} = _output_from_run ->
         DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
 
         leave_stream(socket)
 
-        Elsa.delete_topic(@endpoints, input_topic)
+        delete_kafka_topics(dataset)
       end,
       time: 30,
       memory_time: 1,
       warmup: 0
     ]
 
-    benchee_run.(benchee_opts)
+    benchee_run(benchee_opts)
   end
 
   defp join_stream(dataset) do

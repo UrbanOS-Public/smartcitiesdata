@@ -19,7 +19,7 @@ defmodule Performance.Cve do
       |> Enum.map(fn _ -> create_data_message(temporary_dataset, type) end)
 
     Logger.info("Generated #{length(messages)} #{inspect(type)} messages")
-    {messages, count}
+    messages
   end
 
   def create_dataset() do

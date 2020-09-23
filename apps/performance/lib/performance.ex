@@ -14,7 +14,7 @@ defmodule Performance do
 
     Logger.info("Generated #{length(messages)} flat messages of width #{inspect(width)}")
 
-    {messages, width, count}
+    messages
   end
 
   defp create_dataset(opts) do
