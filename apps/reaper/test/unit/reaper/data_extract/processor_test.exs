@@ -201,7 +201,6 @@ defmodule Reaper.DataExtract.ProcessorTest do
             destination: "currentMonth",
             deltaTimeUnit: nil,
             deltaTimeValue: nil,
-            timeZone: nil,
             format: "{0M}"
           },
           assigns: %{}
@@ -212,7 +211,6 @@ defmodule Reaper.DataExtract.ProcessorTest do
             destination: "currentYear",
             deltaTimeUnit: nil,
             deltaTimeValue: nil,
-            timeZone: nil,
             format: "{YYYY}"
           },
           assigns: %{}

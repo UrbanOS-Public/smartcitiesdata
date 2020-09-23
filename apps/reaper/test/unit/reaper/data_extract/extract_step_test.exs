@@ -13,6 +13,21 @@ defmodule Reaper.DataExtract.ExtractStepTest do
   four,five,six
   """
 
+  @csvquery """
+  this,is,another
+  csv,with,columns
+  """
+
+  @csvheaders """
+  hello,it's,me
+  your,csv,friend
+  """
+
+  @csvbody """
+  this,csv,is only
+  attainable,with a,post body
+  """
+
   setup do
     bypass = Bypass.open()
 
@@ -208,7 +223,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             destination: "currentDate",
             deltaTimeUnit: nil,
             deltaTimeValue: nil,
-            timeZone: nil,
             format: "{YYYY}-{0M}"
           },
           assigns: %{}
@@ -231,7 +245,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             destination: "currentDate",
             deltaTimeUnit: "years",
             deltaTimeValue: -33,
-            timeZone: nil,
             format: "{YYYY}-{0M}"
           },
           assigns: %{}
@@ -250,7 +263,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             destination: "currentDate",
             deltaTimeUnit: "minutes",
             deltaTimeValue: 33,
-            timeZone: nil,
             format: "{YYYY}-{0M}-{0D} {h12}:{m}"
           },
           assigns: %{}
@@ -316,12 +328,10 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected = ExtractStep.execute_extract_steps(dataset, steps) |> Enum.to_list()
+      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps) |> Enum.to_list()
 
-      assert expected == [
-               {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
-               {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
-             ]
+      assert expected_assigns == [{:output_file, {:file, "12345-6789"}}]
+      assert File.read!("12345-6789") == "one,two,three\nfour,five,six\n"
     end
 
     test "can use assigns block for query params", %{bypass: bypass, dataset: dataset} do
@@ -333,7 +343,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           |> Map.get("token")
 
         if token == "secret tunnel" do
-          Plug.Conn.resp(conn, 200, @csv)
+          Plug.Conn.resp(conn, 200, @csvquery)
         else
           Plug.Conn.resp(conn, 401, "Unauthorized")
         end
@@ -356,20 +366,18 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected =
+      expected_assigns =
         ExtractStep.execute_extract_steps(dataset, steps)
         |> Enum.to_list()
 
-      assert expected == [
-               {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
-               {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
-             ]
+      assert expected_assigns == [{:output_file, {:file, "12345-6789"}}, {:token, "secret tunnel"}]
+      assert File.read!("12345-6789") == "this,is,another\ncsv,with,columns\n"
     end
 
     test "can use assigns block for headers", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "GET", "/api/csv/headers", fn conn ->
         if Enum.any?(conn.req_headers, fn header -> header == {"bearer", "bear token"} end) do
-          Plug.Conn.resp(conn, 200, @csv)
+          Plug.Conn.resp(conn, 200, @csvheaders)
         else
           Plug.Conn.resp(conn, 401, "Unauthorized")
         end
@@ -390,14 +398,12 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected =
+      expected_assigns =
         ExtractStep.execute_extract_steps(dataset, steps)
         |> Enum.to_list()
 
-      assert expected == [
-               {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
-               {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
-             ]
+      assert expected_assigns == [{:output_file, {:file, "12345-6789"}}, {:token, "bear token"}]
+      assert File.read!("12345-6789") == "hello,it's,me\nyour,csv,friend\n"
     end
 
     test "can use assigns block for url", %{bypass: bypass, dataset: dataset} do
@@ -420,14 +426,12 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected =
+      assigns =
         ExtractStep.execute_extract_steps(dataset, steps)
         |> Enum.to_list()
 
-      assert expected == [
-               {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
-               {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
-             ]
+      assert assigns = [{:output_file, {:file, "12345-6789"}}, {:path, "fancyurl"}]
+      assert File.read!("12345-6789") == "one,two,three\nfour,five,six\n"
     end
 
     test "can post with an encoded post body", %{bypass: bypass, dataset: dataset} do
@@ -436,7 +440,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         parsed = Jason.decode!(body)
 
         case parsed do
-          %{"soap_request" => %{"date" => "2018-01-01"}} -> Plug.Conn.resp(conn, 200, @csv)
+          %{"soap_request" => %{"date" => "2018-01-01"}} -> Plug.Conn.resp(conn, 200, @csvbody)
           _ -> Plug.Conn.resp(conn, 403, "No dice")
         end
       end)
@@ -460,14 +464,12 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected =
+      expected_assigns =
         ExtractStep.execute_extract_steps(dataset, steps)
         |> Enum.to_list()
 
-      assert expected == [
-               {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
-               {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
-             ]
+      assert expected_assigns == [{:date, "2018-01-01"}, {:output_file, {:file, "12345-6789"}}]
+      assert File.read!("12345-6789") == "this,csv,is only\nattainable,with a,post body\n"
     end
 
     test "sends through protocols", %{bypass: bypass, dataset: dataset} do
@@ -492,16 +494,41 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected =
+      expected_assigns =
         ExtractStep.execute_extract_steps(dataset, steps)
         |> Enum.to_list()
 
-      assert expected == [
-               {%{"a" => "one", "b" => "two", "c" => "three"}, 0},
-               {%{"a" => "four", "b" => "five", "c" => "six"}, 1}
-             ]
-
+      assert expected_assigns == [{:output_file, {:file, "12345-6789"}}]
       assert_called Mint.HTTP.connect(:http, "localhost", any(), transport_opts: [timeout: 30_000], protocols: [:http1])
+    end
+  end
+
+  describe "execute_extract_steps/2 s3" do
+    test "successfully constructs the S3 request", %{dataset: dataset} do
+      File.write!("somefile2", "1,2,3\n4,5,6")
+
+      allow Reaper.DataSlurper.S3.slurp("s3://some-bucket/subdir/blaster.exe", dataset.id, any(), any(), any(), any()),
+        return: {:file, "somefile2"}
+
+      filename = "#{dataset.id}"
+
+      steps = [
+        %{
+          type: "s3",
+          context: %{
+            url: "s3://some-bucket/subdir/blaster.exe",
+            queryParams: %{},
+            headers: %{}
+          },
+          assigns: %{}
+        }
+      ]
+
+      expected_assigns =
+        ExtractStep.execute_extract_steps(dataset, steps)
+        |> Enum.to_list()
+
+      assert expected_assigns == [{:output_file, {:file, "somefile2"}}]
     end
   end
 
@@ -514,7 +541,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             destination: "currentDate",
             deltaTimeUnit: nil,
             deltaTimeValue: nil,
-            timeZone: nil,
             format: "{WILLFAIL}-{0M}"
           },
           assigns: %{}

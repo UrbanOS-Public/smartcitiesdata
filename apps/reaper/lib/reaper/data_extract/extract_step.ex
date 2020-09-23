@@ -27,10 +27,21 @@ defmodule Reaper.DataExtract.ExtractStep do
   defp process_extract_step(dataset, %{type: "http"} = step) do
     {body, headers} = evaluate_body_and_headers(step)
 
-    UrlBuilder.decode_http_extract_step(step)
-    |> DataSlurper.slurp(dataset.id, headers, step.context.protocol, step.context.action, body)
-    |> Decoder.decode(dataset)
-    |> Stream.with_index()
+    output_file =
+      UrlBuilder.decode_http_extract_step(step)
+      |> DataSlurper.slurp(dataset.id, headers, step.context.protocol, step.context.action, body)
+
+    Map.put(step.assigns, :output_file, output_file)
+  end
+
+  defp process_extract_step(dataset, %{type: "s3"} = step) do
+    headers = UrlBuilder.safe_evaluate_parameters(step.context.headers, step.assigns)
+
+    output_file =
+      UrlBuilder.build_safe_url_path(step.context.url, step.assigns)
+      |> DataSlurper.slurp(dataset.id, headers)
+
+    Map.put(step.assigns, :output_file, output_file)
   end
 
   defp process_extract_step(_dataset, %{type: "date"} = step) do
