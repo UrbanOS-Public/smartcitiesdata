@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
     otp_app: :discovery_streams,
     endpoints: Application.get_env(:discovery_streams, :endpoints),
     topic_prefixes: ["transformed"],
-    log_level: :warn
+    log_level: :info
 
   use DiscoveryStreamsWeb.ChannelCase
 
@@ -13,9 +13,9 @@ defmodule DiscoveryStreams.Performance.CveTest do
 
   @tag timeout: :infinity
   test "run performance test" do
-    _map_messages = Cve.generate_messages(1_000, :map)
-    spat_messages = Cve.generate_messages(1_000, :spat)
-    bsm_messages = Cve.generate_messages(1_000, :bsm)
+    # map_messages = Cve.generate_messages(10_000, :map)
+    spat_messages = Cve.generate_messages(10_000, :spat)
+    bsm_messages = Cve.generate_messages(10_000, :bsm)
 
     {scenarios, _} = [{"spat", spat_messages}, {"bsm", bsm_messages}]
     |> Kafka.generate_consumer_scenarios()
@@ -23,7 +23,11 @@ defmodule DiscoveryStreams.Performance.CveTest do
 
     benchee_opts = [
       inputs: scenarios,
-      before_scenario: &tune_kafka_parameters/1,
+      before_scenario: fn input ->
+        tune_kafka_parameters(input)
+
+        input.messages
+      end,
       before_each: fn messages ->
         dataset = Cve.create_dataset()
         count = length(messages)

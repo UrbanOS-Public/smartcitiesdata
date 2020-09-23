@@ -21,6 +21,10 @@ defmodule Performance.Kafka do
       )
 
     Application.put_env(otp_app, :topic_subscriber_config, updated_topic_config)
+    Logger.info("Tuned kafka config:")
+    Application.get_env(otp_app, :topic_subscriber_config)
+    |> inspect()
+    |> Logger.info()
   end
 
   def load_messages(endpoints, dataset, topic, messages, expected_count, producer_chunk_size) do

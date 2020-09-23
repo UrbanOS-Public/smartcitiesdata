@@ -49,8 +49,6 @@ defmodule Performance.BencheeCase do
 
       defp tune_kafka_parameters(params) do
         Kafka.tune_kafka_parameters(@otp_app, params)
-
-        params.messages
       end
 
       defp reset_iteration(inputs) do
