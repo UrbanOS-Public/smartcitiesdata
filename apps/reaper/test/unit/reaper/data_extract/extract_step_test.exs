@@ -507,8 +507,15 @@ defmodule Reaper.DataExtract.ExtractStepTest do
     test "successfully constructs the S3 request", %{dataset: dataset} do
       File.write!("somefile2", "1,2,3\n4,5,6")
 
-      allow Reaper.DataSlurper.S3.slurp("s3://some-bucket/subdir/blaster.exe", dataset.id, any(), any(), any(), any()),
-        return: {:file, "somefile2"}
+      allow Reaper.DataSlurper.S3.slurp(
+              "s3://some-bucket/subdir/blaster.exe",
+              dataset.id,
+              %{"x-scos-amzn-s3-region": "us-east-2"},
+              any(),
+              any(),
+              any()
+            ),
+            return: {:file, "somefile2"}
 
       filename = "#{dataset.id}"
 
@@ -518,7 +525,9 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           context: %{
             url: "s3://some-bucket/subdir/blaster.exe",
             queryParams: %{},
-            headers: %{}
+            headers: %{
+              "x-scos-amzn-s3-region": "us-east-2"
+            }
           },
           assigns: %{}
         }

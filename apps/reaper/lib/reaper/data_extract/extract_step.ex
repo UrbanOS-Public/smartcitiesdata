@@ -35,7 +35,9 @@ defmodule Reaper.DataExtract.ExtractStep do
   end
 
   defp process_extract_step(dataset, %{type: "s3"} = step) do
-    headers = UrlBuilder.safe_evaluate_parameters(step.context.headers, step.assigns)
+    headers =
+      UrlBuilder.safe_evaluate_parameters(step.context.headers, step.assigns)
+      |> Enum.into(%{})
 
     output_file =
       UrlBuilder.build_safe_url_path(step.context.url, step.assigns)
