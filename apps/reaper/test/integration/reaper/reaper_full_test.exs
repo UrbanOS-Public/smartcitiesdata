@@ -407,8 +407,6 @@ defmodule Reaper.FullTest do
 
       bucket = Application.get_env(:reaper, :hosted_file_bucket)
 
-      File.read!("./somefile") |> IO.puts()
-
       "./test/support/random_stuff.csv"
       |> ExAws.S3.Upload.stream_file()
       |> ExAws.S3.upload(bucket, "fake_data")
