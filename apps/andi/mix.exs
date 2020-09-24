@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.45.0",
+      version: "0.46.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -68,7 +68,7 @@ defmodule Andi.MixProject do
       {:prestige, "~> 1.0"},
       {:quantum, "~> 2.4"},
       {:simply_validate, ">= 0.2.0"},
-      {:smart_city, "~> 3.19"},
+      {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:ssl_verify_fun, "~> 1.1"},
