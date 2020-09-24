@@ -5,10 +5,12 @@ ExUnit.start(exclude: [:performance, :compaction, :skip], timeout: 120_000)
 Faker.start()
 
 defmodule Helper do
+  import SmartCity.TestHelper
   alias SmartCity.TestDataGenerator, as: TDG
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias Pipeline.Writer.TableWriter.Statement
   alias Pipeline.Writer.S3Writer
+  require ExUnit.Assertions
 
   @bucket Application.get_env(:forklift, :s3_writer_bucket)
 
@@ -73,5 +75,23 @@ defmodule Helper do
       _ ->
         :error
     end
+  end
+
+  def wait_for_tables_to_be_created(datasets) do
+    eventually(
+      fn ->
+        ExUnit.Assertions.assert Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end)
+      end,
+      100,
+      1_000
+    )
+  end
+
+  def delete_tables(datasets) do
+    Enum.each(datasets, fn dataset -> drop_table(dataset.technical.systemName) end)
+  end
+
+  def recreate_tables_with_partitions(datasets) do
+    Enum.each(datasets, fn dataset -> create_partitioned_table(dataset.technical.systemName) end)
   end
 end

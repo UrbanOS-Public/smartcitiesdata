@@ -1,7 +1,7 @@
-defmodule Forklift.Jobs.JsonToOrcTest do
+defmodule Forklift.Jobs.DataMigrationTest do
   use ExUnit.Case
 
-  alias Forklift.Jobs.JsonToOrc
+  alias Forklift.Jobs.DataMigration
   alias SmartCity.TestDataGenerator, as: TDG
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   import SmartCity.TestHelper
@@ -27,29 +27,10 @@ defmodule Forklift.Jobs.JsonToOrcTest do
         dataset
       end)
 
-    # Wait for tables to be created
-    eventually(
-      fn ->
-        assert Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end)
-      end,
-      100,
-      1_000
-    )
-
-    # Delete original tables
-    Enum.each(datasets, fn dataset -> drop_table(dataset.technical.systemName) end)
-
-    # Recreate orc tables from partitioned tables
-    Enum.each(datasets, fn dataset -> create_partitioned_table(dataset.technical.systemName) end)
-
-    # Wait for tables to be created
-    eventually(
-      fn ->
-        assert Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end)
-      end,
-      100,
-      1_000
-    )
+    wait_for_tables_to_be_created(datasets)
+    delete_tables(datasets)
+    recreate_tables_with_partitions(datasets)
+    wait_for_tables_to_be_created(datasets)
 
     [datasets: datasets]
   end
@@ -59,7 +40,7 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     Enum.each(datasets, fn dataset -> write_records(dataset, expected_records) end)
 
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    results = JsonToOrc.run(["invalid-id"] ++ dataset_ids)
+    results = DataMigration.run(["invalid-id"] ++ dataset_ids)
 
     assert results == [:abort, :ok, :ok]
 
@@ -86,7 +67,7 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     expected_records = 10
     write_records(dataset, expected_records)
 
-    JsonToOrc.run([dataset.id])
+    DataMigration.run([dataset.id])
 
     assert count(dataset.technical.systemName) == expected_records + 1
 
@@ -116,7 +97,7 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     )
 
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    assert [:error, :ok] == JsonToOrc.run(dataset_ids)
+    assert [:error, :ok] == DataMigration.run(dataset_ids)
   end
 
   test "should error if the json table's data is not deleted", %{datasets: datasets} do
@@ -132,7 +113,7 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     )
 
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    assert [:error, :ok] == JsonToOrc.run(dataset_ids)
+    assert [:error, :ok] == DataMigration.run(dataset_ids)
   end
 
   test "should error if the main table is missing", %{datasets: datasets} do
@@ -145,7 +126,7 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     |> PrestigeHelper.execute_query()
 
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    assert [:error, :ok] == JsonToOrc.run(dataset_ids)
+    assert [:error, :ok] == DataMigration.run(dataset_ids)
   end
 
   test "should error if the json table is missing", %{datasets: datasets} do
@@ -158,13 +139,12 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     |> PrestigeHelper.execute_query()
 
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    assert [:error, :ok] == JsonToOrc.run(dataset_ids)
+    assert [:error, :ok] == DataMigration.run(dataset_ids)
   end
 
   test "should abort no data was found to migrate", %{datasets: datasets} do
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    assert [:abort, :abort] == JsonToOrc.run(dataset_ids)
+    assert [:abort, :abort] == DataMigration.run(dataset_ids)
   end
 
-  # ensure ingestion is turned off while running
 end

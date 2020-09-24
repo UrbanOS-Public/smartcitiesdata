@@ -1,4 +1,4 @@
-defmodule Forklift.Jobs.JsonToOrc do
+defmodule Forklift.Jobs.DataMigration do
   @moduledoc """
   This job handles the insertion of data from the staging json table to the main orc-formatted table.
 

@@ -26,31 +26,13 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
         dataset
       end)
 
-    eventually(
-      fn ->
-        assert Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end)
-      end,
-      100,
-      1_000
-    )
+    wait_for_tables_to_be_created(datasets)
+    delete_tables(datasets)
+    recreate_tables_with_partitions(datasets)
+    wait_for_tables_to_be_created(datasets)
 
-    # Delete original tables
-    Enum.each(datasets, fn dataset -> drop_table(dataset.technical.systemName) end)
-
-    # Recreate orc tables from partitioned tables
-    Enum.each(datasets, fn dataset -> create_partitioned_table(dataset.technical.systemName) end)
-
-    # Wait for tables to be created
-    eventually(
-      fn ->
-        assert Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end)
-      end,
-      100,
-      1_000
-    )
-
-    allow(Forklift.Quantum.Scheduler.deactivate_job(:migrator), return: :ok)
-    allow(Forklift.Quantum.Scheduler.activate_job(:migrator), return: :ok)
+    allow(Forklift.Quantum.Scheduler.deactivate_job(:data_migrator), return: :ok)
+    allow(Forklift.Quantum.Scheduler.activate_job(:data_migrator), return: :ok)
 
     current_partition = Timex.format!(DateTime.utc_now(), "{YYYY}_{0M}")
     [datasets: datasets, current_partition: current_partition]
