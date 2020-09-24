@@ -1,6 +1,7 @@
 Divo.Suite.start()
-Process.sleep(5_000) # Wait for Brook to be ready
-ExUnit.start(exclude: [:performance, :compaction, :skip, :migrations], timeout: 120_000)
+# Wait for Brook to be ready
+Process.sleep(5_000)
+ExUnit.start(exclude: [:performance, :compaction, :skip], timeout: 120_000)
 Faker.start()
 
 defmodule Helper do
@@ -33,7 +34,6 @@ defmodule Helper do
   end
 
   def create_partitioned_table(table) do
-    # "create table jalson_test with (partitioned_by = ARRAY['os_partition'], format = 'ORC') as (select *, date_format(from_iso8601_timestamp(timestamp), '%Y_%m') as os_partition from us33_smart_corridor__marysville_bsm limit 100);"
     "create table #{table} with (partitioned_by = ARRAY['os_partition'], format = 'ORC') as (select *, cast('2020-09' as varchar) as os_partition from #{
       table
     }__json) limit 0"

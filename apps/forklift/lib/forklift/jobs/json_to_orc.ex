@@ -1,4 +1,10 @@
 defmodule Forklift.Jobs.JsonToOrc do
+  @moduledoc """
+  This job handles the insertion of data from the staging json table to the main orc-formatted table.
+
+  No work will be performed if no data is present in the json table.
+  This process assumes that a forklift-managed `os_partition` field is present on the table.
+  """
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias Pipeline.Writer.TableWriter.Statement
   require Logger

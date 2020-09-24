@@ -1,4 +1,11 @@
 defmodule Forklift.Jobs.PartitionedCompaction do
+  @moduledoc """
+  This job handles compacting files together for long term storage. Running at a long period,
+  it takes data out of the main table and then reinserts it to reduce the total number of files in Hive.
+
+  No compaction will be performed if no data is present for the current partition.
+  This process assumes that a forklift-managed `os_partition` field is present on the table.
+  """
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias Pipeline.Writer.TableWriter.Statement
   require Logger

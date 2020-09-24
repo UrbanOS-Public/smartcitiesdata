@@ -1,4 +1,5 @@
 defmodule Forklift.Jobs.JobUtils do
+  @moduledoc false
   use Retry.Annotation
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
 
@@ -12,11 +13,14 @@ defmodule Forklift.Jobs.JobUtils do
       {:ok, actual_count}
     else
       {:error, actual_count} when is_number(actual_count) ->
-        {:error, "Table #{table} with count #{actual_count} did not match expected record count of #{target_count} while trying to verify that #{
-          message
-        }"}
+        {:error,
+         "Table #{table} with count #{actual_count} did not match expected record count of #{target_count} while trying to verify that #{
+           message
+         }"}
+
       {:error, error} ->
-        {:error, "Could not verify record count of table #{table} while trying to verify that #{message}: #{inspect(error)}"}
+        {:error,
+         "Could not verify record count of table #{table} while trying to verify that #{message}: #{inspect(error)}"}
     end
   end
 
