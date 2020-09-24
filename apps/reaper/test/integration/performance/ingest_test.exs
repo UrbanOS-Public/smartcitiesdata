@@ -4,7 +4,7 @@ defmodule Reaper.PerformanceTest do
     otp_app: :reaper,
     endpoints: Application.get_env(:reaper, :elsa_brokers),
     topic_prefixes: ["raw"],
-    log_level: :info
+    log_level: :warn
 
   import Reaper.Application
   import SmartCity.Event, only: [dataset_update: 0]
