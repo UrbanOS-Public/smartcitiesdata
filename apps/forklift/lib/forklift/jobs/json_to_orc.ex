@@ -12,6 +12,7 @@ defmodule Forklift.Jobs.JsonToOrc do
 
   def run(dataset_ids) do
     dataset_ids
+    |> IO.inspect(label: "json_to_orc.ex:15")
     |> Enum.map(&Forklift.Datasets.get!/1)
     |> Enum.map(&insert_data/1)
   end
@@ -22,6 +23,7 @@ defmodule Forklift.Jobs.JsonToOrc do
 
     with {:ok, original_count} <- PrestigeHelper.count(system_name),
          {:ok, json_count} <- PrestigeHelper.count(json_table),
+         {:ok, _} <- refit_to_partitioned(system_name, original_count),
          {:ok, _} <- check_for_data_to_migrate(json_count),
          {:ok, _} <- insert_partitioned_data(json_table, system_name),
          {:ok, _} <-
@@ -42,6 +44,41 @@ defmodule Forklift.Jobs.JsonToOrc do
     end
   after
     Forklift.DataReaderHelper.init(dataset)
+  end
+
+  defp refit_to_partitioned(table, original_count) do
+    with false <- has_partition_field(table),
+         {:ok, _} <- create_partitioned_table(table),
+         {:ok, _} <- PrestigeHelper.drop_table(table),
+         {:ok, _} <- rename_partitioned_table(table),
+         {:ok, _} <- verify_count(table, original_count, "refit table retains all records") do
+      Logger.info("Table #{table} refit to be partitioned")
+      {:ok, :refit}
+    else
+      true -> {:ok, :no_refit}
+      error -> error
+    end
+  end
+
+  defp has_partition_field(table) do
+    case PrestigeHelper.execute_query("show create table #{table}") do
+      {:ok, response} ->
+        Prestige.Result.as_maps(response) |> List.first() |> Map.get("Create Table") |> String.contains?("os_partition")
+      error -> error
+    end
+  end
+
+  defp create_partitioned_table(table) do
+    "create table #{table}__partitioned with (partitioned_by = ARRAY['os_partition'], format = 'ORC') as (select *, cast('pre_partitioned' as varchar) as os_partition from #{
+      table
+    })"
+    |> PrestigeHelper.execute_query()
+  end
+
+  defp rename_partitioned_table(table) do
+    %{table: table <> "__partitioned", alteration: "rename to #{table}"}
+    |> Statement.alter()
+    |> PrestigeHelper.execute_query()
   end
 
   defp insert_partitioned_data(source, target) do

@@ -104,7 +104,7 @@ config :ex_aws,
 
 if System.get_env("COMPACTION_SCHEDULE") do
   special_compaction_datasets_string = System.get_env("SPECIAL_COMPACTION_DATASETS") || ""
-  special_compaction_datasets = String.split(special_compactiton_datasets_string, ",")
+  special_compaction_datasets = String.split(special_compaction_datasets_string, ",")
   config :forklift, Forklift.Quantum.Scheduler,
     jobs: [
       compactor: [
