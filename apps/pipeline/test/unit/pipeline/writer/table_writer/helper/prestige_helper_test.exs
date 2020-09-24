@@ -51,4 +51,72 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelperTest do
     allow(Prestige.new_session(any()), return: expected_session)
     assert expected_session == PrestigeHelper.create_session()
   end
+
+  describe "count!/1" do
+    test "throws an exception if an error occurs" do
+      allow(Prestige.new_session(any()), return: :connection)
+      allow(Prestige.execute(:connection, any()), return: {:error, "some error"})
+
+      assert_raise RuntimeError, fn ->
+        PrestigeHelper.count!("some_table")
+      end
+    end
+
+    test "returns the count" do
+      allow(Prestige.new_session(any()), return: :connection)
+      allow(Prestige.execute(:connection, any()), return: {:ok, %{rows: [[10]]}})
+
+      assert PrestigeHelper.count!("some_table") == 10
+    end
+  end
+
+  describe "count/1" do
+    test "returns an error tuple if an error occurs" do
+      allow(Prestige.new_session(any()), return: :connection)
+      allow(Prestige.execute(:connection, any()), return: {:error, "some error"})
+
+      assert PrestigeHelper.count("some_table") == {:error, "some error"}
+    end
+
+    test "returns the count in an ok tuple" do
+      allow(Prestige.new_session(any()), return: :connection)
+      allow(Prestige.execute(:connection, any()), return: {:ok, %{rows: [[10]]}})
+
+      assert PrestigeHelper.count("some_table") == {:ok, 10}
+    end
+  end
+
+  describe "count_query!/1" do
+    test "throws an exception if an error occurs" do
+      allow(Prestige.new_session(any()), return: :connection)
+      allow(Prestige.execute(:connection, any()), return: {:error, "some error"})
+
+      assert_raise RuntimeError, fn ->
+        PrestigeHelper.count!("select count(1) from some_table")
+      end
+    end
+
+    test "returns the count" do
+      allow(Prestige.new_session(any()), return: :connection)
+      allow(Prestige.execute(:connection, any()), return: {:ok, %{rows: [[10]]}})
+
+      assert PrestigeHelper.count!("select count(1) from some_table") == 10
+    end
+  end
+
+  describe "count_query/1" do
+    test "returns an error tuple if an error occurs" do
+      allow(Prestige.new_session(any()), return: :connection)
+      allow(Prestige.execute(:connection, any()), return: {:error, "some error"})
+
+      assert PrestigeHelper.count("select count(1) from some_table") == {:error, "some error"}
+    end
+
+    test "returns the count in an ok tuple" do
+      allow(Prestige.new_session(any()), return: :connection)
+      allow(Prestige.execute(:connection, any()), return: {:ok, %{rows: [[10]]}})
+
+      assert PrestigeHelper.count("select count(1) from some_table") == {:ok, 10}
+    end
+  end
 end

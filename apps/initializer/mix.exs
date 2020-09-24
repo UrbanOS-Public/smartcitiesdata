@@ -23,7 +23,7 @@ defmodule Initializer.MixProject do
 
   defp deps do
     [
-      {:retry, "~> 0.13.0"},
+      {:retry, "~> 0.14.0"},
       {:credo, "~> 1.3", only: [:dev]}
     ]
   end
