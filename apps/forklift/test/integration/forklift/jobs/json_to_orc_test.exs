@@ -88,7 +88,9 @@ defmodule Forklift.Jobs.JsonToOrcTest do
 
     assert count(dataset.technical.systemName) == expected_records + 1
 
-    {:ok, response} = PrestigeHelper.execute_query("select * from #{dataset.technical.systemName} order by os_partition asc")
+    {:ok, response} =
+      PrestigeHelper.execute_query("select * from #{dataset.technical.systemName} order by os_partition asc")
+
     actual_partition = response |> Prestige.Result.as_maps() |> List.first() |> Map.get("os_partition")
     assert {:ok, _} = Timex.parse(actual_partition, "{YYYY}_{0M}")
 

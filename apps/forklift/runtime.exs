@@ -155,7 +155,12 @@ config :telemetry_event,
       metric_type: :last_value
     ],
     [
-      metric_name: "compaction_failure.status",
+      metric_name: "forklift_compaction_failure.status",
+      tags: [:dataset_id],
+      metric_type: :last_value
+    ],
+    [
+      metric_name: "forklift_migration_failure.status",
       tags: [:dataset_id],
       metric_type: :last_value
     ]

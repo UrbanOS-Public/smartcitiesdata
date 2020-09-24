@@ -23,6 +23,7 @@ defmodule Forklift.Jobs.PartitionedCompaction do
 
   def partitioned_compact(%{id: id, technical: %{systemName: system_name}}) do
     partition = current_partition()
+    Logger.info("Beginning partitioned compaction for partition #{partition} in dataset #{id}")
     compact_table = compact_table_name(system_name, partition)
 
     with {:ok, initial_count} <- PrestigeHelper.count(system_name),
@@ -41,8 +42,9 @@ defmodule Forklift.Jobs.PartitionedCompaction do
              "main table no longer contains records for the partition"
            ),
          {:ok, _} <- reinsert_compacted_data(system_name, compact_table),
-         {:ok, _} <- verify_count(system_name, initial_count, "main table once again contains all records") do
-      PrestigeHelper.drop_table(compact_table)
+         {:ok, _} <- verify_count(system_name, initial_count, "main table once again contains all records"),
+         {:ok, _} <- PrestigeHelper.drop_table(compact_table) do
+      Logger.info("Successfully compacted partition #{partition} in dataset #{id}")
       update_compaction_status(id, :ok)
       :ok
     else

@@ -12,13 +12,13 @@ defmodule Forklift.Jobs.JsonToOrc do
 
   def run(dataset_ids) do
     dataset_ids
-    |> IO.inspect(label: "json_to_orc.ex:15")
     |> Enum.map(&Forklift.Datasets.get!/1)
     |> Enum.map(&insert_data/1)
   end
 
   defp insert_data(%{id: id, technical: %{systemName: system_name}} = dataset) do
     Forklift.DataReaderHelper.terminate(dataset)
+    Logger.info("Beginning data migration for dataset #{id} (#{system_name})")
     json_table = json_table_name(system_name)
 
     with {:ok, original_count} <- PrestigeHelper.count(system_name),
@@ -30,6 +30,7 @@ defmodule Forklift.Jobs.JsonToOrc do
            verify_count(system_name, original_count + json_count, "main table contains all records from the json table"),
          {:ok, _} <- truncate_table(json_table),
          {:ok, _} <- verify_count(json_table, 0, "json table is empty") do
+      Logger.info("Successful data migration for dataset #{id}")
       update_migration_status(id, :ok)
       :ok
     else
@@ -52,7 +53,7 @@ defmodule Forklift.Jobs.JsonToOrc do
          {:ok, _} <- PrestigeHelper.drop_table(table),
          {:ok, _} <- rename_partitioned_table(table),
          {:ok, _} <- verify_count(table, original_count, "refit table retains all records") do
-      Logger.info("Table #{table} refit to be partitioned")
+      Logger.info("Table #{table} successfully refit to be partitioned")
       {:ok, :refit}
     else
       true -> {:ok, :no_refit}
@@ -64,11 +65,15 @@ defmodule Forklift.Jobs.JsonToOrc do
     case PrestigeHelper.execute_query("show create table #{table}") do
       {:ok, response} ->
         Prestige.Result.as_maps(response) |> List.first() |> Map.get("Create Table") |> String.contains?("os_partition")
-      error -> error
+
+      error ->
+        error
     end
   end
 
   defp create_partitioned_table(table) do
+    Logger.info("Table #{table} needs to be partitioned")
+
     "create table #{table}__partitioned with (partitioned_by = ARRAY['os_partition'], format = 'ORC') as (select *, cast('pre_partitioned' as varchar) as os_partition from #{
       table
     })"
