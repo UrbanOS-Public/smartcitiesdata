@@ -27,10 +27,12 @@ defmodule Performance do
   end
 
   def create_dataset(opts) do
+    overrides = Keyword.get(opts, :overrides, %{})
     num_fields = Keyword.get(opts, :num_fields)
     schema = Enum.map(1..num_fields, fn i -> %{name: "name-#{i}", type: "string"} end)
 
-    dataset = TDG.create_dataset(technical: %{schema: schema})
+    overrides = put_in(overrides, [:technical, :schema], schema)
+    dataset = TDG.create_dataset(overrides)
     dataset
   end
 

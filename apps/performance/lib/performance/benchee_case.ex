@@ -4,6 +4,7 @@ defmodule Performance.BencheeCase do
   """
 
   use ExUnit.CaseTemplate
+
   require Logger
 
   using opts do
