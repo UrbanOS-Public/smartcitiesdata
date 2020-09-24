@@ -80,7 +80,7 @@ defmodule Helper do
   def wait_for_tables_to_be_created(datasets) do
     eventually(
       fn ->
-        ExUnit.Assertions.assert Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end)
+        ExUnit.Assertions.assert(Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end))
       end,
       100,
       1_000

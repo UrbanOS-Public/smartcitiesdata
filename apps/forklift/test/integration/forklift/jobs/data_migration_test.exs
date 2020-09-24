@@ -146,5 +146,4 @@ defmodule Forklift.Jobs.DataMigrationTest do
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
     assert [:abort, :abort] == DataMigration.run(dataset_ids)
   end
-
 end
