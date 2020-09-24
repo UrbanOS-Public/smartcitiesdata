@@ -56,14 +56,18 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     [datasets: datasets, current_partition: current_partition]
   end
 
-  test "partitioned compaction runs without loss or error", %{datasets: datasets, current_partition: current_partition} do
+  test "partitioned compaction runs without loss or error, ignoring invalid ids", %{
+    datasets: datasets,
+    current_partition: current_partition
+  } do
     partitions = [current_partition]
 
     expected_record_count = write_test_data(datasets, partitions, @batch_size)
 
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    PartitionedCompaction.run(dataset_ids)
+    results = PartitionedCompaction.run(["invalid-id"] ++ dataset_ids)
 
+    assert results == [:abort, :ok, :ok]
     assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_record_count end)
 
     refute Enum.any?(datasets, fn dataset ->

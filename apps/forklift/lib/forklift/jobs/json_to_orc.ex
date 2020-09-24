@@ -16,6 +16,11 @@ defmodule Forklift.Jobs.JsonToOrc do
     |> Enum.map(&insert_data/1)
   end
 
+  defp insert_data(nil) do
+    Logger.warn("Dataset not found in view-state, skipping migration")
+    :abort
+  end
+
   defp insert_data(%{id: id, technical: %{systemName: system_name}} = dataset) do
     Forklift.DataReaderHelper.terminate(dataset)
     Logger.info("Beginning data migration for dataset #{id} (#{system_name})")

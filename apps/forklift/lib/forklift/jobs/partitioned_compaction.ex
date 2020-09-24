@@ -21,7 +21,12 @@ defmodule Forklift.Jobs.PartitionedCompaction do
     Forklift.Quantum.Scheduler.activate_job(:migrator)
   end
 
-  def partitioned_compact(%{id: id, technical: %{systemName: system_name}}) do
+  defp partitioned_compact(nil) do
+    Logger.warn("Dataset not found in view-state, skipping compaction")
+    :abort
+  end
+
+  defp partitioned_compact(%{id: id, technical: %{systemName: system_name}}) do
     partition = current_partition()
     Logger.info("Beginning partitioned compaction for partition #{partition} in dataset #{id}")
     compact_table = compact_table_name(system_name, partition)

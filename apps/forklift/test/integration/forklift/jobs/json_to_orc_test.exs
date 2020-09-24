@@ -54,12 +54,14 @@ defmodule Forklift.Jobs.JsonToOrcTest do
     [datasets: datasets]
   end
 
-  test "should insert partitioned data for each provided dataset id", %{datasets: datasets} do
+  test "should insert partitioned data for each valid provided dataset id", %{datasets: datasets} do
     expected_records = 10
     Enum.each(datasets, fn dataset -> write_records(dataset, expected_records) end)
 
     dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    JsonToOrc.run(dataset_ids)
+    results = JsonToOrc.run(["invalid-id"] ++ dataset_ids)
+
+    assert results == [:abort, :ok, :ok]
 
     assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_records end)
 
