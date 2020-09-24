@@ -75,8 +75,8 @@ defmodule DiscoveryStreams.Performance.CveTest do
 
   test "run message handler performance test" do
     # map_messages = Cve.generate_messages(10_000, :map)
-    spat_messages = Cve.generate_data_messages(1_000, :spat, keys: :string)
-    bsm_messages = Cve.generate_data_messages(1_000, :bsm, keys: :string)
+    spat_messages = Cve.generate_data_messages(100_000, :spat, keys: :string)
+    bsm_messages = Cve.generate_data_messages(100_000, :bsm, keys: :string)
 
     benchee_opts = [
       inputs: %{
@@ -91,7 +91,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
         {dataset, messages}
       end,
       under_test: fn {dataset, messages} ->
-        context = %{dataset_id: dataset.id}
+        context = %{dataset_id: dataset.id, dataset_system_name: dataset.technical.systemName}
         assert [] == Enum.reject(messages, fn message ->
           {:ok, message} == DiscoveryStreams.Stream.SourceHandler.handle_message(
             message,
@@ -116,10 +116,10 @@ defmodule DiscoveryStreams.Performance.CveTest do
   end
 
   test "profile message handler" do
-    messages = Cve.generate_data_messages(1_000, :spat, keys: :string)
+    messages = Cve.generate_data_messages(10_000, :spat, keys: :string)
     dataset = Cve.create_dataset()
     Brook.Event.send(:discovery_streams, data_ingest_start(), :author, dataset)
-    context = %{dataset_id: dataset.id}
+    context = %{dataset_id: dataset.id, dataset_system_name: dataset.technical.systemName}
 
     on_exit(fn ->
       DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)

@@ -14,20 +14,12 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
   getter(:dlq, default: Dlq)
 
   def handle_message(message, context) do
-    dataset_id = context.dataset_id
+    system_name = context.dataset_system_name
 
     Logger.debug(fn -> "#{__MODULE__} handle_message - #{inspect(context)} - #{inspect(message)}" end)
 
-    log_message(message)
-
-    case Brook.get(:discovery_streams, :streaming_datasets_by_id, dataset_id) do
-      {:ok, system_name} ->
-        payload = get_payload(message)
-        Endpoint.broadcast!("streaming:#{system_name}", "update", payload)
-
-      _ ->
-        nil
-    end
+    payload = get_payload(message)
+    Endpoint.broadcast!("streaming:#{system_name}", "update", payload)
 
     Ok.ok(message)
   end
@@ -46,11 +38,6 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
 
   defp get_payload(message) do
     message["payload"]
-  end
-
-  defp log_message(message) do
-    Logger.log(:info, "#{inspect(message)}")
-    message
   end
 
   defp record_outbound_count_metrics(messages, dataset_id) do
