@@ -6,6 +6,11 @@ defmodule Performance do
   require Logger
 
   def generate_messages(width, count) do
+    generate_data_messages(width, count)
+    |> Enum.map(&wrap_in_kafka_key/1)
+  end
+
+  def generate_data_messages(width, count) do
     temporary_dataset = create_dataset(num_fields: width)
 
     messages =
@@ -44,7 +49,10 @@ defmodule Performance do
         Map.put(acc, field.name, "some value")
       end)
 
-    data = TDG.create_data(dataset_id: sample_dataset.id, payload: payload)
-    {"", data}
+    TDG.create_data(dataset_id: sample_dataset.id, payload: payload)
+  end
+
+  defp wrap_in_kafka_key(message) do
+    {"", message}
   end
 end

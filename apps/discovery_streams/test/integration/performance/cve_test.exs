@@ -11,15 +11,21 @@ defmodule DiscoveryStreams.Performance.CveTest do
   import SmartCity.Event, only: [data_ingest_start: 0]
   import SmartCity.TestHelper
 
-  @tag timeout: :infinity
-  test "run performance test" do
+  test "run kafka performance test" do
     # map_messages = Cve.generate_messages(10_000, :map)
     spat_messages = Cve.generate_messages(10_000, :spat)
     bsm_messages = Cve.generate_messages(10_000, :bsm)
 
     {scenarios, _} = [{"spat", spat_messages}, {"bsm", bsm_messages}]
     |> Kafka.generate_consumer_scenarios()
-    |> Map.split(["spat.lmb.lmw.lmib.lpc.lpb", "bsm.lmb.lmw.lmib.lpc.lpb"])
+    |> Map.split([
+      # "spat.lmb.lmw.lmib.lpc.lpb",
+      "spat.mmb.mmw.lmib.lpc.hpb",
+      "spat.mmb.mmw.lmib.hpc.lpb",
+      # "bsm.lmb.lmw.lmib.lpc.lpb",
+      "bsm.mmb.mmw.lmib.lpc.hpb",
+      "bsm.mmb.mmw.lmib.hpc.lpb",
+    ])
 
     benchee_opts = [
       inputs: scenarios,
@@ -65,6 +71,70 @@ defmodule DiscoveryStreams.Performance.CveTest do
     ]
 
     benchee_run(benchee_opts)
+  end
+
+  test "run message handler performance test" do
+    # map_messages = Cve.generate_messages(10_000, :map)
+    spat_messages = Cve.generate_data_messages(1_000, :spat, keys: :string)
+    bsm_messages = Cve.generate_data_messages(1_000, :bsm, keys: :string)
+
+    benchee_opts = [
+      inputs: %{
+        "spat" => spat_messages,
+        "bsm" => bsm_messages
+      },
+      before_each: fn messages ->
+        dataset = Cve.create_dataset()
+
+        Brook.Event.send(:discovery_streams, data_ingest_start(), :author, dataset)
+
+        {dataset, messages}
+      end,
+      under_test: fn {dataset, messages} ->
+        context = %{dataset_id: dataset.id}
+        assert [] == Enum.reject(messages, fn message ->
+          {:ok, message} == DiscoveryStreams.Stream.SourceHandler.handle_message(
+            message,
+            context
+          )
+        end)
+
+        dataset
+      end,
+      after_each: fn dataset ->
+        DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
+
+        delete_kafka_topics(dataset)
+      end,
+      time: 70,
+      memory_time: 1,
+      warmup: 10,
+    ]
+
+    benchee_run(benchee_opts)
+
+  end
+
+  test "profile message handler" do
+    messages = Cve.generate_data_messages(1_000, :spat, keys: :string)
+    dataset = Cve.create_dataset()
+    Brook.Event.send(:discovery_streams, data_ingest_start(), :author, dataset)
+    context = %{dataset_id: dataset.id}
+
+    on_exit(fn ->
+      DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
+
+      delete_kafka_topics(dataset)
+    end)
+
+    profile do
+      assert [] == Enum.reject(messages, fn message ->
+        {:ok, message} == DiscoveryStreams.Stream.SourceHandler.handle_message(
+        message,
+        context
+      )
+      end)
+    end
   end
 
   defp join_stream(dataset) do

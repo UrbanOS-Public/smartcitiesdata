@@ -47,7 +47,6 @@ defmodule DiscoveryStreams.Stream do
       {:error, reason} ->
         {:stop, reason, state}
     end
-    
   end
 
   @retry with: exponential_backoff(100) |> take(@max_retries)
@@ -58,10 +57,7 @@ defmodule DiscoveryStreams.Stream do
         app_name: :discovery_streams,
         dataset_id: dataset_id,
         assigns: %{
-          kafka: %{
-            begin_offset: :latest,
-            offset_reset_policy: :reset_to_latest
-          }
+          kafka: Application.get_env(:discovery_streams, :topic_subscriber_config)
         }
       )
 

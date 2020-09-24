@@ -33,13 +33,12 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
   end
 
   def handle_batch(batch, context) do
-    
     Logger.debug(fn -> "#{__MODULE__} handle_batch - #{inspect(context)} - #{inspect(batch)}" end)
     record_outbound_count_metrics(batch, context.dataset_id)
     :ok
   end
 
-  def send_to_dlq(dead_letters, _context) do
+  def send_to_dlq(_dead_letters, _context) do
     # Just throw these on the ground for now.
     # dlq().write(dead_letters)
     :ok

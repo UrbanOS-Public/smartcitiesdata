@@ -27,7 +27,6 @@ defmodule Forklift.MixProject do
 
   defp deps do
     [
-      {:benchee, "~> 1.0", only: [:integration]},
       {:brod, "~> 3.8", override: true},
       {:brook, "~> 0.4.0"},
       {:checkov, "~> 1.0"},

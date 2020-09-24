@@ -11,14 +11,31 @@ defmodule Performance.Cve do
     bsm: File.read!(File.cwd!() <> "/lib/performance/cve/bsm_message.json") |> Jason.decode!()
   }
 
-  def generate_messages(count, type) do
+  def generate_messages(count, type, opts \\ []) do
+    generate_data_messages(count, type, opts)
+    |> Enum.map(&wrap_in_kafka_key/1)
+  end
+
+  def generate_data_messages(count, type, opts \\ []) do
+    keys = Keyword.get(opts, :keys, :atoms)
     temporary_dataset = create_dataset()
 
     messages =
       1..count
       |> Enum.map(fn _ -> create_data_message(temporary_dataset, type) end)
+      |> Enum.map(fn message ->
+        case keys do
+          :string ->
+            message
+            |> Jason.encode!()
+            |> Jason.decode!()
+
+          _ -> message
+        end
+      end)
 
     Logger.info("Generated #{length(messages)} #{inspect(type)} messages")
+
     messages
   end
 
@@ -41,7 +58,10 @@ defmodule Performance.Cve do
       sourceDevice: "yidontknow"
     }
 
-    data = TDG.create_data(dataset_id: dataset.id, payload: payload)
-    {"", data}
+    TDG.create_data(dataset_id: dataset.id, payload: payload)
+  end
+
+  defp wrap_in_kafka_key(message) do
+    {"", message}
   end
 end

@@ -74,7 +74,6 @@ defmodule Reaper.MixProject do
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
       # Test/Dev Dependencies
-      {:benchee, "~> 1.0", only: :integration},
       {:tasks, in_umbrella: true, only: :dev},
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:checkov, "~> 1.0", only: [:test, :integration]},

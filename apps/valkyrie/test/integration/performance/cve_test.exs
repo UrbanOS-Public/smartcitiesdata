@@ -12,15 +12,15 @@ defmodule Valkyrie.Performance.CveTest do
 
   @tag timeout: :infinity
   test "run performance test" do
-    map_messages = Cve.generate_messages(1_000, :map)
-    spat_messages = Cve.generate_messages(1_000, :spat)
-    bsm_messages = Cve.generate_messages(1_000, :bsm)
+    # map_messages = Cve.generate_messages(1_000, :map)
+    spat_messages = Cve.generate_messages(10_000, :spat)
+    bsm_messages = Cve.generate_messages(10_000, :bsm)
 
-    {scenarios, _} = [{"map", map_messages}, {"spat", spat_messages}, {"bsm", bsm_messages}]
+    {scenarios, _} = [{"spat", spat_messages}, {"bsm", bsm_messages}]
     |> Kafka.generate_consumer_scenarios()
     |> Map.split([
-      "map.lmb.lmw.lmib.lpc.lpb",
-      "map.mmb.mmw.lmib.lpc.hpb",
+      # "map.lmb.lmw.lmib.lpc.lpb",
+      # "map.mmb.mmw.lmib.lpc.hpb",
       "spat.lmb.lmw.lmib.lpc.lpb",
       "spat.mmb.mmw.lmib.lpc.hpb",
       "bsm.lmb.lmw.lmib.lpc.lpb",

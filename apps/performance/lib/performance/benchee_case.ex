@@ -18,6 +18,7 @@ defmodule Performance.BencheeCase do
     quote do
       use Divo
       require Logger
+      import ExProf.Macro
 
       alias Performance.Cve
       alias Performance.Kafka
@@ -25,6 +26,7 @@ defmodule Performance.BencheeCase do
 
       @moduletag :performance
       @moduletag log_level: unquote(log_level)
+      @moduletag timeout: :infinity
 
       @otp_app unquote(otp_app)
       @endpoints unquote(endpoints)
