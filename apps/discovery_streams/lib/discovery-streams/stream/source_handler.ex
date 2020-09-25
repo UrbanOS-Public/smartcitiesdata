@@ -14,11 +14,10 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
   getter(:dlq, default: Dlq)
 
   def handle_message(message, context) do
-    system_name = context.dataset_system_name
-
-    Logger.debug(fn -> "#{__MODULE__} handle_message - #{inspect(context)} - #{inspect(message)}" end)
-
+    system_name = context.assigns.system_name
+    log_message(message, context)
     payload = get_payload(message)
+
     Endpoint.broadcast!("streaming:#{system_name}", "update", payload)
 
     Ok.ok(message)
@@ -28,6 +27,10 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
     Logger.debug(fn -> "#{__MODULE__} handle_batch - #{inspect(context)} - #{inspect(batch)}" end)
     record_outbound_count_metrics(batch, context.dataset_id)
     :ok
+  end
+
+  defp log_message(message, context) do
+    Logger.debug(fn -> "#{__MODULE__} handle_message - #{inspect(context)} - #{inspect(message)}" end)
   end
 
   def send_to_dlq(_dead_letters, _context) do

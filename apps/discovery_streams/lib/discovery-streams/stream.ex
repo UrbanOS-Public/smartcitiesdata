@@ -14,7 +14,8 @@ defmodule DiscoveryStreams.Stream do
   @max_retries get_config_value(:max_retries, default: 50)
 
   @type init_opts :: [
-          dataset_id: String.t()
+          dataset_id: String.t(),
+          system_name: String.t(),
         ]
 
   def start_link(init_opts) do
@@ -28,7 +29,8 @@ defmodule DiscoveryStreams.Stream do
     Logger.debug(fn -> "#{__MODULE__}: init with #{inspect(init_opts)}" end)
 
     state = %{
-      dataset_id: Keyword.fetch!(init_opts, :dataset_id)
+      dataset_id: Keyword.fetch!(init_opts, :dataset_id),
+      system_name: Keyword.fetch!(init_opts, :system_name)
     }
 
     {:ok, state, {:continue, :init}}
@@ -36,7 +38,7 @@ defmodule DiscoveryStreams.Stream do
 
   @impl GenServer
   def handle_continue(:init, state) do
-    case start_source(state.dataset_id) do
+    case start_source(state) do
       {:ok, source_pid} ->
         new_state =
           state
@@ -50,19 +52,20 @@ defmodule DiscoveryStreams.Stream do
   end
 
   @retry with: exponential_backoff(100) |> take(@max_retries)
-  defp start_source(dataset_id) do
+  defp start_source(state) do
     context =
       Source.Context.new!(
         handler: DiscoveryStreams.Stream.SourceHandler,
         app_name: :discovery_streams,
-        dataset_id: dataset_id,
+        dataset_id: state.dataset_id,
         assigns: %{
-          kafka: Application.get_env(:discovery_streams, :topic_subscriber_config)
+          kafka: Application.get_env(:discovery_streams, :topic_subscriber_config),
+          system_name: state.system_name
         }
       )
 
     Source.start_link(
-      Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: TopicHelper.topic_name(dataset_id)),
+      Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: TopicHelper.topic_name(state.dataset_id)),
       context
     )
   end

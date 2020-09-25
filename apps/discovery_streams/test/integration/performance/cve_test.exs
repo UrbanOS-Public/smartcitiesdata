@@ -11,6 +11,12 @@ defmodule DiscoveryStreams.Performance.CveTest do
   import SmartCity.Event, only: [data_ingest_start: 0]
   import SmartCity.TestHelper
 
+  # TODO - re-run "e2e" perf test and verify improvement
+  # TODO - verify that
+  ## dataset:update => private - stops data on the socket
+  ## dataset:delete => stop data on socket
+  # TODO - fix integration tests
+
   test "run kafka performance test" do
     # map_messages = Cve.generate_messages(10_000, :map)
     spat_messages = Cve.generate_messages(10_000, :spat)
@@ -19,12 +25,12 @@ defmodule DiscoveryStreams.Performance.CveTest do
     {scenarios, _} = [{"spat", spat_messages}, {"bsm", bsm_messages}]
     |> Kafka.generate_consumer_scenarios()
     |> Map.split([
-      # "spat.lmb.lmw.lmib.lpc.lpb",
+      "spat.lmb.lmw.lmib.lpc.lpb",
       "spat.mmb.mmw.lmib.lpc.hpb",
-      "spat.mmb.mmw.lmib.hpc.lpb",
-      # "bsm.lmb.lmw.lmib.lpc.lpb",
+      "spat.lmb.lmw.lmib.lpc.hpb",
+      "bsm.lmb.lmw.lmib.lpc.lpb",
       "bsm.mmb.mmw.lmib.lpc.hpb",
-      "bsm.mmb.mmw.lmib.hpc.lpb",
+      "bsm.lmb.lmw.lmib.lpc.hpb",
     ])
 
     benchee_opts = [
@@ -91,7 +97,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
         {dataset, messages}
       end,
       under_test: fn {dataset, messages} ->
-        context = %{dataset_id: dataset.id, dataset_system_name: dataset.technical.systemName}
+        context = %{dataset_id: dataset.id, assigns: %{system_name: dataset.technical.systemName}}
         assert [] == Enum.reject(messages, fn message ->
           {:ok, message} == DiscoveryStreams.Stream.SourceHandler.handle_message(
             message,
@@ -119,7 +125,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
     messages = Cve.generate_data_messages(10_000, :spat, keys: :string)
     dataset = Cve.create_dataset()
     Brook.Event.send(:discovery_streams, data_ingest_start(), :author, dataset)
-    context = %{dataset_id: dataset.id, dataset_system_name: dataset.technical.systemName}
+    context = %{dataset_id: dataset.id, assigns: %{system_name: dataset.technical.systemName}}
 
     on_exit(fn ->
       DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
