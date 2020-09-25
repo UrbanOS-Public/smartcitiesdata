@@ -33,7 +33,6 @@ defmodule Valkyrie.MixProject do
 
   defp deps do
     [
-      {:benchee, "~> 1.0", only: [:integration]},
       {:brook, "~> 0.4"},
       {:cachex, "~> 3.1"},
       {:checkov, "~> 1.0", only: [:test]},
@@ -57,7 +56,7 @@ defmodule Valkyrie.MixProject do
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"},
-      {:combinatorics, "~> 0.1.0"}
+      {:performance, in_umbrella: true, only: :integration}
     ]
   end
 

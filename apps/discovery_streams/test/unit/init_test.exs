@@ -2,9 +2,6 @@ defmodule DiscoveryStreams.InitTest do
   use DiscoveryStreamsWeb.ChannelCase
   use Placebo
 
-  alias DiscoveryStreams.Stream.SourceHandler
-  alias SmartCity.TestDataGenerator, as: TDG
-
   setup do
     allow(Brook.get_all(any(), :streaming_datasets_by_system_name),
       return:

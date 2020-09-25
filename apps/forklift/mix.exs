@@ -27,7 +27,6 @@ defmodule Forklift.MixProject do
 
   defp deps do
     [
-      {:benchee, "~> 1.0", only: [:integration]},
       {:brod, "~> 3.8", override: true},
       {:brook, "~> 0.4.0"},
       {:checkov, "~> 1.0"},
@@ -57,7 +56,8 @@ defmodule Forklift.MixProject do
       {:telemetry_event, in_umbrella: true},
       {:pipeline, in_umbrella: true},
       {:httpoison, "~> 1.5"},
-      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]}
+      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:performance, in_umbrella: true, only: :integration}
     ]
   end
 

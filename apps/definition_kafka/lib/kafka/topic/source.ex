@@ -33,8 +33,18 @@ defmodule Kafka.Topic.Source do
   def handle_continue(:init, state) do
     ensure_topic(state.topic)
 
-    offset_reset_policy = get_in(state.context.assigns, [:kafka, :offset_reset_policy])
-    begin_offset = get_in(state.context.assigns, [:kafka, :begin_offset])
+    kafka_config_default = [
+      begin_offset: :earliest,
+      offset_reset_policy: :reset_to_earliest
+    ]
+
+    kafka_config_provided = Map.get(state.context.assigns, :kafka, [])
+
+    kafka_config =
+      Keyword.merge(
+        kafka_config_default,
+        kafka_config_provided
+      )
 
     {:ok, elsa_pid} =
       Elsa.Supervisor.start_link(
@@ -45,12 +55,7 @@ defmodule Kafka.Topic.Source do
           topics: [state.topic.name],
           handler: Kafka.Topic.Source.Handler,
           handler_init_args: state.context,
-          config: [
-            begin_offset: begin_offset || :earliest,
-            offset_reset_policy: offset_reset_policy || :reset_to_earliest,
-            prefetch_count: 0,
-            prefetch_bytes: 2_097_152
-          ]
+          config: kafka_config
         ]
       )
 

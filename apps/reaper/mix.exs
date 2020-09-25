@@ -74,7 +74,6 @@ defmodule Reaper.MixProject do
       {:tesla, "~> 1.3"},
       {:timex, "~> 3.6"},
       # Test/Dev Dependencies
-      {:benchee, "~> 1.0", only: :integration},
       {:tasks, in_umbrella: true, only: :dev},
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:checkov, "~> 1.0", only: [:test, :integration]},
@@ -91,7 +90,8 @@ defmodule Reaper.MixProject do
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 2.0.0-rc2", only: [:test, :integration]},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
-      {:temp, "~> 0.4", only: [:test, :integration]}
+      {:temp, "~> 0.4", only: [:test, :integration]},
+      {:performance, in_umbrella: true, only: :integration}
     ]
   end
 
