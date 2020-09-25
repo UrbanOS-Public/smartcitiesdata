@@ -114,7 +114,7 @@ if System.get_env("COMPACTION_SCHEDULE") do
       ],
       data_migrator: [
         schedule: System.get_env("COMPACTION_SCHEDULE"),
-        task: {Forklift.Jobs.JsonToOrc, :run, [special_compaction_datasets]},
+        task: {Forklift.Jobs.DataMigration, :run, [special_compaction_datasets]},
         timezone: "America/New_York"
       ],
       partitioned_compactor: [
