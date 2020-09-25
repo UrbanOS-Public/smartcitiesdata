@@ -11,20 +11,22 @@ defmodule DiscoveryStreams.Performance.CveTest do
   import SmartCity.Event, only: [data_ingest_start: 0]
   import SmartCity.TestHelper
 
-  # TODO - re-run "e2e" perf test and verify improvement
   # TODO - verify that
   ## dataset:update => private - stops data on the socket
   ## dataset:delete => stop data on socket
   # TODO - fix integration tests
 
   test "run kafka performance test" do
-    # map_messages = Cve.generate_messages(10_000, :map)
+    map_messages = Cve.generate_messages(10_000, :map)
     spat_messages = Cve.generate_messages(10_000, :spat)
     bsm_messages = Cve.generate_messages(10_000, :bsm)
 
-    {scenarios, _} = [{"spat", spat_messages}, {"bsm", bsm_messages}]
+    {scenarios, _} = [{"map", map_messages}, {"spat", spat_messages}, {"bsm", bsm_messages}]
     |> Kafka.generate_consumer_scenarios()
     |> Map.split([
+      "map.lmb.lmw.lmib.lpc.lpb",
+      "map.mmb.mmw.lmib.lpc.hpb",
+      "map.lmb.lmw.lmib.lpc.hpb",
       "spat.lmb.lmw.lmib.lpc.lpb",
       "spat.mmb.mmw.lmib.lpc.hpb",
       "spat.lmb.lmw.lmib.lpc.hpb",
@@ -71,7 +73,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
 
         delete_kafka_topics(dataset)
       end,
-      time: 30,
+      time: 60,
       memory_time: 1,
       warmup: 0
     ]
