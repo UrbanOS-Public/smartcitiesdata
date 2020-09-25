@@ -23,7 +23,7 @@ defmodule AnnotatedRetry.MixProject do
 
   defp deps do
     [
-      {:retry, "~> 0.13.0"},
+      {:retry, "~> 0.14.0"},
       {:credo, "~> 1.0", only: [:dev]}
     ]
   end
