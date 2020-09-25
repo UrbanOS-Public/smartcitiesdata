@@ -1,5 +1,6 @@
 defmodule Forklift.Performance.LoadingTest do
   use ExUnit.Case
+
   use Performance.BencheeCase,
     otp_app: :forklift,
     endpoints: Application.get_env(:forklift, :elsa_brokers),
@@ -16,12 +17,13 @@ defmodule Forklift.Performance.LoadingTest do
     small_messages = Performance.generate_messages(10, 1_000)
     huge_messages = Performance.generate_messages(10, 1_000_000)
 
-    {scenarios, _} = [{"huge", huge_messages}, {"small", small_messages}]
-    |> Kafka.generate_consumer_scenarios()
-    |> Map.split([
-      "huge.mmb.hmw.mmib.lpc.lpb",
-      "small.mmb.hmw.mmib.lpc.lpb",
-    ])
+    {scenarios, _} =
+      [{"huge", huge_messages}, {"small", small_messages}]
+      |> Kafka.generate_consumer_scenarios()
+      |> Map.split([
+        "huge.mmb.hmw.mmib.lpc.lpb",
+        "small.mmb.hmw.mmib.lpc.lpb"
+      ])
 
     benchee_opts = [
       inputs: scenarios,
@@ -54,7 +56,10 @@ defmodule Forklift.Performance.LoadingTest do
             Logger.info(fn -> "Measured record counts #{current_count} v. #{expected_count}" end)
 
             assert current_count >= expected_count
-          end, 100, 5000)
+          end,
+          100,
+          5000
+        )
 
         dataset
       end,
@@ -67,6 +72,7 @@ defmodule Forklift.Performance.LoadingTest do
       memory_time: 0.5,
       warmup: 0
     ]
+
     benchee_run(benchee_opts)
   end
 

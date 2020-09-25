@@ -56,7 +56,7 @@ defmodule Valkyrie.MixProject do
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"},
-      {:performance, in_umbrella: true, only: :integration},
+      {:performance, in_umbrella: true, only: :integration}
     ]
   end
 

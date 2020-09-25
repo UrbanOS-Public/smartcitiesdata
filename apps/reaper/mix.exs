@@ -91,7 +91,7 @@ defmodule Reaper.MixProject do
       {:placebo, "~> 2.0.0-rc2", only: [:test, :integration]},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]},
-      {:performance, in_umbrella: true, only: :integration},
+      {:performance, in_umbrella: true, only: :integration}
     ]
   end
 

@@ -1,5 +1,6 @@
 defmodule Valkyrie.Performance.CveTest do
   use ExUnit.Case
+
   use Performance.BencheeCase,
     otp_app: :valkyrie,
     endpoints: Application.get_env(:valkyrie, :elsa_brokers),
@@ -16,16 +17,17 @@ defmodule Valkyrie.Performance.CveTest do
     spat_messages = Cve.generate_messages(10_000, :spat)
     bsm_messages = Cve.generate_messages(10_000, :bsm)
 
-    {scenarios, _} = [{"spat", spat_messages}, {"bsm", bsm_messages}]
-    |> Kafka.generate_consumer_scenarios()
-    |> Map.split([
-      # "map.lmb.lmw.lmib.lpc.lpb",
-      # "map.mmb.mmw.lmib.lpc.hpb",
-      "spat.lmb.lmw.lmib.lpc.lpb",
-      "spat.mmb.mmw.lmib.lpc.hpb",
-      "bsm.lmb.lmw.lmib.lpc.lpb",
-      "bsm.mmb.mmw.lmib.lpc.hpb",
-    ])
+    {scenarios, _} =
+      [{"spat", spat_messages}, {"bsm", bsm_messages}]
+      |> Kafka.generate_consumer_scenarios()
+      |> Map.split([
+        # "map.lmb.lmw.lmib.lpc.lpb",
+        # "map.mmb.mmw.lmib.lpc.hpb",
+        "spat.lmb.lmw.lmib.lpc.lpb",
+        "spat.mmb.mmw.lmib.lpc.hpb",
+        "bsm.lmb.lmw.lmib.lpc.lpb",
+        "bsm.mmb.mmw.lmib.lpc.hpb"
+      ])
 
     benchee_opts = [
       inputs: scenarios,
@@ -54,7 +56,10 @@ defmodule Valkyrie.Performance.CveTest do
             Logger.info(fn -> "Measured record counts #{current_count} v. #{expected_count}" end)
 
             assert current_count >= expected_count
-          end, 100, 5000)
+          end,
+          100,
+          5000
+        )
 
         dataset
       end,

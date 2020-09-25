@@ -37,11 +37,14 @@ defmodule Kafka.Topic.Source do
       begin_offset: :earliest,
       offset_reset_policy: :reset_to_earliest
     ]
+
     kafka_config_provided = Map.get(state.context.assigns, :kafka, [])
-    kafka_config = Keyword.merge(
-      kafka_config_default,
-      kafka_config_provided
-    )
+
+    kafka_config =
+      Keyword.merge(
+        kafka_config_default,
+        kafka_config_provided
+      )
 
     {:ok, elsa_pid} =
       Elsa.Supervisor.start_link(

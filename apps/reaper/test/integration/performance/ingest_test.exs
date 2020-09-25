@@ -1,5 +1,6 @@
 defmodule Reaper.PerformanceTest do
   use ExUnit.Case
+
   use Performance.BencheeCase,
     otp_app: :reaper,
     endpoints: Application.get_env(:reaper, :elsa_brokers),
@@ -12,12 +13,12 @@ defmodule Reaper.PerformanceTest do
 
   @tag timeout: :infinity
   test "run performance test" do
-    big_data_file_details = host_data_file(100_000, 500)
+    # big_data_file_details = host_data_file(100_000, 500)
     small_data_file_details = host_data_file(1_000, 10)
 
     benchee_opts = [
       inputs: %{
-        "big_file" => big_data_file_details,
+        # "big_file" => big_data_file_details,
         "small_file" => small_data_file_details
       },
       before_each: fn {_bypass, url, count, width} ->
@@ -31,10 +32,11 @@ defmodule Reaper.PerformanceTest do
           }
         }
 
-        dataset = Performance.create_dataset(
-          overrides: csv_overrides,
-          num_fields: width
-        )
+        dataset =
+          Performance.create_dataset(
+            overrides: csv_overrides,
+            num_fields: width
+          )
 
         topics = create_kafka_topics(dataset)
 
@@ -52,7 +54,10 @@ defmodule Reaper.PerformanceTest do
             Logger.info(fn -> "Measured record counts #{current_count} v. #{expected_count}" end)
 
             assert current_count >= expected_count
-          end, 100, 5000)
+          end,
+          100,
+          5000
+        )
 
         dataset
       end,
@@ -99,18 +104,20 @@ defmodule Reaper.PerformanceTest do
 
       path
       |> File.stream!()
-      |> Enum.reduce_while(conn, fn chunk, conn ->
-        case Plug.Conn.chunk(conn, chunk) do
-          {:ok, conn} -> {:cont, conn}
-          {:error, :closed} -> {:halt, conn}
-        end
-      end)
+      |> Enum.reduce_while(conn, &chunky_data/2)
     end)
 
     url = "http://localhost:#{bypass.port}/data.txt"
     Logger.info("Hosting CSV file #{path} at #{url}")
 
     {bypass, url, count, width}
+  end
+
+  defp chunky_data(chunk, conn) do
+    case Plug.Conn.chunk(conn, chunk) do
+      {:ok, conn} -> {:cont, conn}
+      {:error, :closed} -> {:halt, conn}
+    end
   end
 
   defp generate_record(width) do
