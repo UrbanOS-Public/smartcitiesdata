@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "0.16.1",
+      version: "0.17.1",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -46,7 +46,7 @@ defmodule Forklift.MixProject do
       {:prestige, "~> 1.0"},
       {:quantum, "~>2.4"},
       {:redix, "~> 0.10"},
-      {:retry, "~> 0.13"},
+      {:retry, "~> 0.14"},
       {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.7"},
       {:streaming_metrics, "~> 2.2"},
@@ -55,7 +55,8 @@ defmodule Forklift.MixProject do
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true},
       {:pipeline, in_umbrella: true},
-      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:httpoison, "~> 1.5"},
+      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]}
       {:performance, in_umbrella: true, only: :integration},
     ]
   end

@@ -103,11 +103,23 @@ config :ex_aws,
   region: System.get_env("AWS_REGION") || "us-west-2"
 
 if System.get_env("COMPACTION_SCHEDULE") do
+  special_compaction_datasets_string = System.get_env("SPECIAL_COMPACTION_DATASETS") || ""
+  special_compaction_datasets = String.split(special_compaction_datasets_string, ",")
   config :forklift, Forklift.Quantum.Scheduler,
     jobs: [
       compactor: [
         schedule: System.get_env("COMPACTION_SCHEDULE"),
-        task: {Forklift.DataWriter, :compact_datasets, []},
+        task: {Forklift.DataWriter, :compact_datasets, [special_compaction_datasets]},
+        timezone: "America/New_York"
+      ],
+      data_migrator: [
+        schedule: System.get_env("COMPACTION_SCHEDULE"),
+        task: {Forklift.Jobs.DataMigration, :run, [special_compaction_datasets]},
+        timezone: "America/New_York"
+      ],
+      partitioned_compactor: [
+        schedule: "0 0 * * *",
+        task: {Forklift.Jobs.PartitionedCompaction, :run, [special_compaction_datasets]},
         timezone: "America/New_York"
       ]
     ]
@@ -140,6 +152,16 @@ config :telemetry_event,
     [
       metric_name: "dataset_record_total.count",
       tags: [:system_name],
+      metric_type: :last_value
+    ],
+    [
+      metric_name: "forklift_compaction_failure.status",
+      tags: [:dataset_id],
+      metric_type: :last_value
+    ],
+    [
+      metric_name: "forklift_migration_failure.status",
+      tags: [:dataset_id],
       metric_type: :last_value
     ]
   ]

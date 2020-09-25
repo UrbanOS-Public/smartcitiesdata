@@ -364,7 +364,6 @@ defmodule Reaper.FullTest do
                   destination: "currentDate",
                   deltaTimeUnit: "years",
                   deltaTimeValue: -1,
-                  timeZone: nil,
                   format: "{YYYY}-{0M}"
                 },
                 assigns: %{}
@@ -395,6 +394,53 @@ defmodule Reaper.FullTest do
           results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
           assert [%{payload: %{"name" => "Austin"}} | _] = results
+        end,
+        1_000,
+        60
+      )
+    end
+
+    @tag timeout: 120_000
+    test "cadence of once is only processed once, extract steps s3", %{bypass: bypass} do
+      dataset_id = "only-once-extract-steps-s3"
+      topic = "#{@output_topic_prefix}-#{dataset_id}"
+
+      bucket = Application.get_env(:reaper, :hosted_file_bucket)
+
+      "./test/support/random_stuff.csv"
+      |> ExAws.S3.Upload.stream_file()
+      |> ExAws.S3.upload(bucket, "fake_data")
+      |> ExAws.request!()
+
+      csv_dataset =
+        TDG.create_dataset(%{
+          id: dataset_id,
+          technical: %{
+            cadence: "once",
+            sourceUrl: "",
+            extractSteps: [
+              %{
+                type: "s3",
+                context: %{
+                  url: "s3://#{bucket}/fake_data",
+                  headers: %{}
+                },
+                assigns: %{}
+              }
+            ],
+            sourceFormat: "csv",
+            sourceType: "ingest",
+            schema: [%{name: "col1"}, %{name: "col2"}, %{name: "col3"}]
+          }
+        })
+
+      Brook.Event.send(@instance, dataset_update(), :reaper, csv_dataset)
+
+      eventually(
+        fn ->
+          results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+
+          assert [%{payload: %{"col1" => "1", "col2" => "Austin", "col3" => "Spot"}} | _] = results
         end,
         1_000,
         60
