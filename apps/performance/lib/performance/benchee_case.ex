@@ -35,14 +35,18 @@ defmodule Performance.BencheeCase do
 
       def benchee_run(opts) do
         {jobs, rest} = Keyword.split(opts, [:under_test])
+
         defaults = [
           before_scenario: [&reset_iteration/1],
           before_each: [&log_iteration/1],
           after_each: [],
           after_scenario: []
         ]
+
         {hooks, options} = Keyword.split(rest, Keyword.keys(defaults))
-        wrapped_hooks = Performance.BencheeCase.__merge_hooks__(hooks, defaults, unquote(override_defaults))
+
+        wrapped_hooks =
+          Performance.BencheeCase.__merge_hooks__(hooks, defaults, unquote(override_defaults))
 
         Benchee.run(
           %{"under_test" => jobs[:under_test]},
@@ -99,6 +103,12 @@ defmodule Performance.BencheeCase do
   end
 
   def __merge_hooks__(hooks, defaults, override \\ false) do
+    merge_hooks(hooks, defaults, override)
+    |> chain_hooks()
+    |> Keyword.new()
+  end
+
+  defp merge_hooks(hooks, defaults, override) do
     Keyword.merge(defaults, hooks, fn _key, def_v, hook_v ->
       wrapped_hook_v = List.wrap(hook_v)
 
@@ -107,14 +117,19 @@ defmodule Performance.BencheeCase do
         true -> wrapped_hook_v
       end
     end)
-    |> Enum.map(fn {k, v} ->
-      hook = fn inputs ->
-        Enum.reduce(v, inputs, fn i, a ->
-          i.(a)
-        end)
+  end
+
+  defp chain_hooks(hooks) do
+    Enum.map(hooks, fn {hook_name, hook_functions} ->
+      chained_hook = fn inputs ->
+        Enum.reduce(hook_functions, inputs, &call_hook/2)
       end
-      {k, hook}
+
+      {hook_name, chained_hook}
     end)
-    |> Keyword.new()
+  end
+
+  defp call_hook(hook, input) do
+    hook.(input)
   end
 end

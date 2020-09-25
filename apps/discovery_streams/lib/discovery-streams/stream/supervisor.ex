@@ -14,8 +14,11 @@ defmodule DiscoveryStreams.Stream.Supervisor do
   @impl true
   def on_start_child(dataset_id, name) do
     case Brook.get(:discovery_streams, :streaming_datasets_by_id, dataset_id) do
-      {:ok, system_name} when not is_nil(system_name) -> {DiscoveryStreams.Stream, system_name: system_name, dataset_id: dataset_id, name: name}
-      _ -> {:error, :dataset_not_in_view_state}
+      {:ok, system_name} when not is_nil(system_name) ->
+        {DiscoveryStreams.Stream, system_name: system_name, dataset_id: dataset_id, name: name}
+
+      _ ->
+        {:error, :dataset_not_in_view_state}
     end
   end
 end

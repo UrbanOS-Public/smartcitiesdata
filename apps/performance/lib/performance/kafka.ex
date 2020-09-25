@@ -22,6 +22,7 @@ defmodule Performance.Kafka do
 
     Application.put_env(otp_app, :topic_subscriber_config, updated_topic_config)
     Logger.info("Tuned kafka config:")
+
     Application.get_env(otp_app, :topic_subscriber_config)
     |> inspect()
     |> Logger.info()
@@ -38,10 +39,18 @@ defmodule Performance.Kafka do
     num_producers = max(div(expected_count, producer_chunk_size), 1)
     producer_name = :"#{topic}_producer"
 
-    Logger.info("Loading #{expected_count} messages into kafka with #{num_producers} producers for topic #{topic}")
+    Logger.info(
+      "Loading #{expected_count} messages into kafka with #{num_producers} producers for topic #{
+        topic
+      }"
+    )
 
     {:ok, producer_pid} =
-      Elsa.Supervisor.start_link(endpoints: endpoints, producer: [topic: topic], connection: producer_name)
+      Elsa.Supervisor.start_link(
+        endpoints: endpoints,
+        producer: [topic: topic],
+        connection: producer_name
+      )
 
     Elsa.Producer.ready?(producer_name)
 
@@ -120,7 +129,10 @@ defmodule Performance.Kafka do
       label = Enum.join(names, ".")
 
       options =
-        Enum.zip([:messages, :max_bytes, :max_wait_time, :min_bytes, :prefetch_count, :prefetch_bytes], values)
+        Enum.zip(
+          [:messages, :max_bytes, :max_wait_time, :min_bytes, :prefetch_count, :prefetch_bytes],
+          values
+        )
         |> Keyword.new()
 
       {label, struct(SetupConfig, options)}

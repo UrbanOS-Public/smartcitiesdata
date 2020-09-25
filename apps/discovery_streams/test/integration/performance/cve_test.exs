@@ -1,5 +1,6 @@
 defmodule DiscoveryStreams.Performance.CveTest do
   use ExUnit.Case
+
   use Performance.BencheeCase,
     otp_app: :discovery_streams,
     endpoints: Application.get_env(:discovery_streams, :endpoints),
@@ -11,29 +12,25 @@ defmodule DiscoveryStreams.Performance.CveTest do
   import SmartCity.Event, only: [data_ingest_start: 0]
   import SmartCity.TestHelper
 
-  # TODO - verify that
-  ## dataset:update => private - stops data on the socket
-  ## dataset:delete => stop data on socket
-  # TODO - fix integration tests
-
   test "run kafka performance test" do
     map_messages = Cve.generate_messages(10_000, :map)
     spat_messages = Cve.generate_messages(10_000, :spat)
     bsm_messages = Cve.generate_messages(10_000, :bsm)
 
-    {scenarios, _} = [{"map", map_messages}, {"spat", spat_messages}, {"bsm", bsm_messages}]
-    |> Kafka.generate_consumer_scenarios()
-    |> Map.split([
-      "map.lmb.lmw.lmib.lpc.lpb",
-      "map.mmb.mmw.lmib.lpc.hpb",
-      "map.lmb.lmw.lmib.lpc.hpb",
-      "spat.lmb.lmw.lmib.lpc.lpb",
-      "spat.mmb.mmw.lmib.lpc.hpb",
-      "spat.lmb.lmw.lmib.lpc.hpb",
-      "bsm.lmb.lmw.lmib.lpc.lpb",
-      "bsm.mmb.mmw.lmib.lpc.hpb",
-      "bsm.lmb.lmw.lmib.lpc.hpb",
-    ])
+    {scenarios, _} =
+      [{"map", map_messages}, {"spat", spat_messages}, {"bsm", bsm_messages}]
+      |> Kafka.generate_consumer_scenarios()
+      |> Map.split([
+        "map.lmb.lmw.lmib.lpc.lpb",
+        "map.mmb.mmw.lmib.lpc.hpb",
+        "map.lmb.lmw.lmib.lpc.hpb",
+        "spat.lmb.lmw.lmib.lpc.lpb",
+        "spat.mmb.mmw.lmib.lpc.hpb",
+        "spat.lmb.lmw.lmib.lpc.hpb",
+        "bsm.lmb.lmw.lmib.lpc.lpb",
+        "bsm.mmb.mmw.lmib.lpc.hpb",
+        "bsm.lmb.lmw.lmib.lpc.hpb"
+      ])
 
     benchee_opts = [
       inputs: scenarios,
@@ -56,13 +53,17 @@ defmodule DiscoveryStreams.Performance.CveTest do
         {dataset, count, socket}
       end,
       under_test: fn {dataset, expected_count, socket} ->
-        eventually(fn ->
-          current_count = AccumulatorTransportSocket.get_message_count(socket.transport_pid)
+        eventually(
+          fn ->
+            current_count = AccumulatorTransportSocket.get_message_count(socket.transport_pid)
 
-          Logger.info(fn -> "Measured record counts #{current_count} v. #{expected_count}" end)
+            Logger.info(fn -> "Measured record counts #{current_count} v. #{expected_count}" end)
 
-          assert current_count >= expected_count
-        end, 100, 5000)
+            assert current_count >= expected_count
+          end,
+          100,
+          5000
+        )
 
         {dataset, socket}
       end,
@@ -100,12 +101,15 @@ defmodule DiscoveryStreams.Performance.CveTest do
       end,
       under_test: fn {dataset, messages} ->
         context = %{dataset_id: dataset.id, assigns: %{system_name: dataset.technical.systemName}}
-        assert [] == Enum.reject(messages, fn message ->
-          {:ok, message} == DiscoveryStreams.Stream.SourceHandler.handle_message(
-            message,
-            context
-          )
-        end)
+
+        assert [] ==
+                 Enum.reject(messages, fn message ->
+                   {:ok, message} ==
+                     DiscoveryStreams.Stream.SourceHandler.handle_message(
+                       message,
+                       context
+                     )
+                 end)
 
         dataset
       end,
@@ -116,11 +120,10 @@ defmodule DiscoveryStreams.Performance.CveTest do
       end,
       time: 70,
       memory_time: 1,
-      warmup: 10,
+      warmup: 10
     ]
 
     benchee_run(benchee_opts)
-
   end
 
   test "profile message handler" do
@@ -136,12 +139,14 @@ defmodule DiscoveryStreams.Performance.CveTest do
     end)
 
     profile do
-      assert [] == Enum.reject(messages, fn message ->
-        {:ok, message} == DiscoveryStreams.Stream.SourceHandler.handle_message(
-        message,
-        context
-      )
-      end)
+      assert [] ==
+               Enum.reject(messages, fn message ->
+                 {:ok, message} ==
+                   DiscoveryStreams.Stream.SourceHandler.handle_message(
+                     message,
+                     context
+                   )
+               end)
     end
   end
 
@@ -156,11 +161,12 @@ defmodule DiscoveryStreams.Performance.CveTest do
   end
 
   defp wait_until_stream_is_joinable(dataset) do
-    eventually(fn ->
-      {:ok, _, socket} = do_join(dataset)
+    eventually(
+      fn ->
+        {:ok, _, socket} = do_join(dataset)
 
-      leave_stream(socket)
-    end,
+        leave_stream(socket)
+      end,
       100,
       5000
     )

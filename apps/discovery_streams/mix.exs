@@ -37,7 +37,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:annotated_retry, in_umbrella: true},
       {:brook, "~> 0.4.0"},
       {:cachex, "~> 3.0"},
-      {:checkov, "~> 1.0", only: :test},
+      {:checkov, "~> 1.0", only: [:test, :integration]},
       {:cowlib, "~> 2.8.0", override: true},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:definition_kafka, in_umbrella: true},
@@ -75,7 +75,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:decimal, "~> 1.0"},
       {:tzdata, "~> 1.0"},
       {:web, in_umbrella: true},
-      {:performance, in_umbrella: true, only: :integration},
+      {:performance, in_umbrella: true, only: :integration}
     ]
   end
 

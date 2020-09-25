@@ -15,7 +15,7 @@ defmodule DiscoveryStreams.Stream do
 
   @type init_opts :: [
           dataset_id: String.t(),
-          system_name: String.t(),
+          system_name: String.t()
         ]
 
   def start_link(init_opts) do

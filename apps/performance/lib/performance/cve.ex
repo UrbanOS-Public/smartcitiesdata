@@ -30,7 +30,8 @@ defmodule Performance.Cve do
             |> Jason.encode!()
             |> Jason.decode!()
 
-          _ -> message
+          _ ->
+            message
         end
       end)
 

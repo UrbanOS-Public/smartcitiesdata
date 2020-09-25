@@ -2,12 +2,13 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   use ExUnit.Case
   use DiscoveryStreamsWeb.ChannelCase
   use Placebo
+  import Checkov
 
   use Divo
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryStreams.TopicHelper
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [data_ingest_start: 0, dataset_delete: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, dataset_delete: 0]
 
   @instance :discovery_streams
 
@@ -15,7 +16,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
     dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
     Brook.Test.send(@instance, data_ingest_start(), :author, dataset1)
 
-    {:ok, _, socket} =
+    {:ok, _, _socket} =
       DiscoveryStreamsWeb.UserSocket
       |> socket()
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset1.technical.systemName}")
@@ -47,7 +48,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
 
     Brook.Test.send(@instance, data_ingest_start(), :author, dataset1)
 
-    {:ok, _, socket} =
+    {:ok, _, _socket} =
       DiscoveryStreamsWeb.UserSocket
       |> socket()
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset1.technical.systemName}")
@@ -69,42 +70,55 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
              )
   end
 
-  test "stops broadcasting after a delete event" do
-    dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
-    Brook.Test.send(@instance, data_ingest_start(), :author, dataset1)
+  data_test "stops broadcasting after #{scenario}" do
+    dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
+    Brook.Test.send(@instance, data_ingest_start(), :author, dataset)
 
-    {:ok, _, socket} =
+    {:ok, _, _socket} =
       DiscoveryStreamsWeb.UserSocket
       |> socket()
-      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset1.technical.systemName}")
+      |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, "streaming:#{dataset.technical.systemName}")
 
     Process.sleep(10_000)
 
     Elsa.Producer.produce(
       TopicHelper.get_endpoints(),
-      TopicHelper.topic_name(dataset1.id),
-      [create_message(%{foo: "bar"}, topic: dataset1.id)],
+      TopicHelper.topic_name(dataset.id),
+      [create_message(%{foo: "bar"}, topic: dataset.id)],
       parition: 0
     )
 
     assert_push("update", %{"foo" => "bar"}, 15_000)
 
-    Brook.Test.send(@instance, dataset_delete(), :author, dataset1)
+    dataset =
+      if update_path do
+        put_in(dataset, update_path, update_value)
+      else
+        dataset
+      end
+
+    Brook.Test.send(@instance, event, :author, dataset)
 
     # Nothing else was consistent here.  Checking for elsa.topic? will return that its dead before kafka is happy to recreate
     # We probably dont need this actual integration test
     Process.sleep(15_000)
 
-    Elsa.create_topic(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id))
+    Elsa.create_topic(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset.id))
 
     Elsa.Producer.produce(
       TopicHelper.get_endpoints(),
-      TopicHelper.topic_name(dataset1.id),
-      [create_message(%{dont: "sendme"}, topic: dataset1.id)],
+      TopicHelper.topic_name(dataset.id),
+      [create_message(%{dont: "sendme"}, topic: dataset.id)],
       parition: 0
     )
 
     refute_push("update", %{"dont" => "sendme"}, 10_000)
+
+    where([
+      [:scenario, :event, :update_path, :update_value],
+      ["dataset deleted", dataset_delete(), nil, nil],
+      ["made private by update", dataset_update(), [:technical, :private], true]
+    ])
   end
 
   test "should delete all view state for the dataset and the input topic when dataset:delete is called" do
