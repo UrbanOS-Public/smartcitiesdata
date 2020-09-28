@@ -107,6 +107,13 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       where(title: ["", "!@#$%"])
     end
+
+    test "user has the ability to add an organization on the organizations page", %{conn: conn} do
+      assert {:ok, view, html} = live(conn, @url_path)
+
+      assert true == find_elements(html, ".btn--add-organization")
+    end
+
   end
 
   describe "edit organization form data" do

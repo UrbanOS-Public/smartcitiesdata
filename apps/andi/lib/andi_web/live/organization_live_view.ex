@@ -4,6 +4,7 @@ defmodule AndiWeb.OrganizationLiveView do
 
   alias AndiWeb.Router.Helpers, as: Routes
   alias AndiWeb.OrganizationLiveView.Table
+  alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Organization
 
   def render(assigns) do
@@ -16,6 +17,7 @@ defmodule AndiWeb.OrganizationLiveView do
       <div class="organizations-index">
         <div class="organizations-index__header">
           <h1 class="organizations-index__title">All Organizations</h1>
+          <button type="button" class="btn btn--add-organization btn--action" phx-click="add-organization">ADD ORGANIZATION</button>
         </div>
 
         <div class="organizations-index__search">
@@ -84,6 +86,12 @@ defmodule AndiWeb.OrganizationLiveView do
 
     params = Map.merge(socket.assigns.params, %{"order-by" => field, "order-dir" => order_dir})
     {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, params))}
+  end
+
+  def handle_event("add-organization", _, socket) do
+    # new_org = Organizations.create()
+
+    # {:noreply, push_redirect(socket, to: "/organizations/#{new_org.id}")}
   end
 
   defp filter_on_search_change(search_value, socket) do

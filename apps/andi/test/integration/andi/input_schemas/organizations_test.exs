@@ -68,6 +68,14 @@ defmodule Andi.InputSchemas.OrganizationsTest do
     end
   end
 
+  describe "create/0" do
+    test "a new organization is created with an id, orgName, orgTitle, and description" do
+      new_org = Organizations.create()
+
+      assert new_org == %{}
+    end
+  end
+
   describe "update_harvested_dataset/1" do
     test "Only datasets with unique dataset_ids are added to the system" do
       harvested_dataset_one = %{

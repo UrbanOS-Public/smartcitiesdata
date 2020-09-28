@@ -30,6 +30,19 @@ defmodule Andi.InputSchemas.Organizations do
     Repo.all(query)
   end
 
+  def create() do
+    org_title = "New Organization - #{Date.utc_today()}"
+
+    changeset = Organization.changeset(%{
+      id: UUID.uuid4(),
+      orgTitle: org_title,
+      orgName: org_title_to_org_name(org_title),
+      description: "New Organization description"
+    })
+
+    changeset
+  end
+
   def delete_harvested_dataset(dataset_id) do
     case get_harvested_dataset(dataset_id) do
       %{id: id} -> Repo.delete(%HarvestedDatasets{id: id})
@@ -95,5 +108,13 @@ defmodule Andi.InputSchemas.Organizations do
     )
     |> Repo.all()
     |> Enum.empty?()
+  end
+
+  def org_title_to_org_name(org_title) do
+    org_title
+    |> String.replace(" ", "_", global: true)
+    |> String.replace(~r/[^[:alnum:]_]/, "", global: true)
+    |> String.replace(~r/_+/, "_", global: true)
+    |> String.downcase()
   end
 end
