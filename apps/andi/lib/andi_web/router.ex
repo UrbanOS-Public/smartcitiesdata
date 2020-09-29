@@ -16,6 +16,8 @@ defmodule AndiWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers, %{"content-security-policy" => @csp}
     plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
+
+
   end
 
   pipeline :api do
@@ -49,11 +51,13 @@ defmodule AndiWeb.Router do
   end
 
   scope "/auth", AndiWeb do
-    get("/auth0", AuthController, :request)
-    get("/auth0/callback", AuthController, :callback)
+    pipe_through :browser
+
+    get "/auth0", AuthController, :request
+    get "/auth0/callback", AuthController, :callback
   end
 
   scope "/", AndiWeb do
-    get("/healthcheck", HealthCheckController, :index)
+    get "/healthcheck", HealthCheckController, :index
   end
 end
