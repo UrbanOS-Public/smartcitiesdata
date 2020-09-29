@@ -40,7 +40,8 @@ defmodule Andi.InputSchemas.Organizations do
       description: "New Organization description"
     })
 
-    changeset
+    {:ok, new_changeset} = save(changeset)
+    new_changeset
   end
 
   def delete_harvested_dataset(dataset_id) do
