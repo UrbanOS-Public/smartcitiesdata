@@ -118,7 +118,7 @@ if System.get_env("COMPACTION_SCHEDULE") do
         timezone: "America/New_York"
       ],
       partitioned_compactor: [
-        schedule: "0 0 * * *",
+        schedule: "45 5 * * *",
         task: {Forklift.Jobs.PartitionedCompaction, :run, [special_compaction_datasets]},
         timezone: "America/New_York"
       ]
