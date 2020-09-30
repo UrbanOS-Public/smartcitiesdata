@@ -12,6 +12,6 @@ defmodule AndiWeb.Auth.TokenHandler do
   end
 
   def resource_from_claims(claims) do
-    claims["sub"]
+    {:ok, claims["sub"]}
   end
 end

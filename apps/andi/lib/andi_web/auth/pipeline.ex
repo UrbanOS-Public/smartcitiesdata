@@ -5,6 +5,6 @@ defmodule Andi.Auth.Pipeline do
 
   plug Guardian.Plug.VerifySession
   plug Guardian.Plug.VerifyHeader
-  plug Guardian.Plug.EnsureAuthenticated
+  plug Guardian.Plug.EnsureAuthenticated, claims: %{"https://andi.smartcolumbusos.com/roles" => ["Curator"]}
   plug Guardian.Plug.LoadResource, allow_blank: false
 end

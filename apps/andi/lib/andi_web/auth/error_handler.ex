@@ -12,6 +12,6 @@ defmodule AndiWeb.Auth.ErrorHandler do
       "Unauthorized"
       |> Jason.encode!()
 
-    Plug.Conn.resp(conn, 401, error_message)
+    Phoenix.Controller.redirect(conn, to: "/auth/auth0?prompt=login&error_message=Unauthorized")
   end
 end
