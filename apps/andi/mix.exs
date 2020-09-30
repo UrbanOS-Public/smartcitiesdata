@@ -36,6 +36,7 @@ defmodule Andi.MixProject do
     [
       {:accessible, "~> 0.2.1"},
       {:atomic_map, "~> 0.9"},
+      {:auth, in_umbrella: true},
       {:brook, "~> 0.4.0"},
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:checkov, "~> 1.0", only: [:test, :integration]},

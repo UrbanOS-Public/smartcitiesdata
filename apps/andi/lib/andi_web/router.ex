@@ -16,8 +16,10 @@ defmodule AndiWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers, %{"content-security-policy" => @csp}
     plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
+  end
 
-
+  pipeline :auth do
+    plug Andi.Auth.Pipeline
   end
 
   pipeline :api do
@@ -27,7 +29,7 @@ defmodule AndiWeb.Router do
   end
 
   scope "/", AndiWeb do
-    pipe_through :browser
+    pipe_through [:browser, :auth]
 
     get "/", Redirect, to: "/datasets"
     live "/datasets", DatasetLiveView, layout: {AndiWeb.LayoutView, :root}
