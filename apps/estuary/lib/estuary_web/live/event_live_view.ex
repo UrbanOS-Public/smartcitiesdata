@@ -33,13 +33,13 @@ defmodule EstuaryWeb.EventLiveView do
   end
 
   def mount(_params, _session, socket) do
-    {:ok, events} = EventRetrievalService.get_all()
-
     {:ok,
-     assign(socket, events: events, no_events: "No Events Found!", search_text: nil, params: %{})}
+     assign(socket, events: [], no_events: "No Events Found!", search_text: nil, params: %{})}
   end
 
   def handle_params(params, _uri, socket) do
+    if connected?(socket), do: :timer.send_interval(60000, self(), %{search: params["search"]})
+
     filtered_events =
       all_events(socket.assigns.events, params["search"])
       |> LiveViewHelper.filter_events(params["search"])
@@ -56,6 +56,19 @@ defmodule EstuaryWeb.EventLiveView do
     search_params = Map.merge(socket.assigns.params, %{"search" => value})
 
     {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
+  end
+
+  def handle_info(%{search: params}, socket) do
+    events =
+      all_events(socket.assigns.events, params["search"])
+      |> LiveViewHelper.filter_events(params["search"])
+
+    {:noreply,
+     assign(socket,
+       search_text: params["search"],
+       events: events,
+       params: params
+     )}
   end
 
   defp all_events(socket_events, filter_param) do
