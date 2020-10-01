@@ -9,6 +9,7 @@ defmodule Andi.OrganizationControllerTest do
   alias SmartCity.Organization
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.OrgStore
+  alias Andi.InputSchemas.Organizations
   import SmartCity.TestHelper, only: [eventually: 1]
   import Andi
 
@@ -28,6 +29,27 @@ defmodule Andi.OrganizationControllerTest do
 
     test "responds with a 500", %{response: response} do
       assert response.status == 500
+    end
+  end
+
+  describe "create new organization" do
+
+    test "A new organization is successfully created" do
+      org = organization(%{orgName: "test_org"})
+      {:ok, response} = create(org)
+
+      assert %Tesla.Env{status: 201} = response
+    end
+
+    test "A new org with a non unique system name is rejected" do
+      org = TDG.create_organization(%{orgName: "non_unique_name"})
+      Organizations.update(org)
+
+      new_org = organization(%{orgName: "non_unique_name"})
+
+      {:ok, response} = create(new_org)
+
+      assert %Tesla.Env{status: 500} = response
     end
   end
 

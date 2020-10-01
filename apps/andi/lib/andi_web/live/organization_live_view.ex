@@ -89,9 +89,9 @@ defmodule AndiWeb.OrganizationLiveView do
   end
 
   def handle_event("add-organization", _, socket) do
-    # new_org = Organizations.create()
+    new_org = Organizations.create()
 
-    # {:noreply, push_redirect(socket, to: "/organizations/#{new_org.id}")}
+    {:noreply, push_redirect(socket, to: "/organizations/#{new_org.id}")}
   end
 
   defp filter_on_search_change(search_value, socket) do
