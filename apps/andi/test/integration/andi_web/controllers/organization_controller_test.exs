@@ -33,12 +33,22 @@ defmodule Andi.OrganizationControllerTest do
   end
 
   describe "create new organization" do
-
     test "A new organization is successfully created" do
       org = organization(%{orgName: "test_org"})
       {:ok, response} = create(org)
 
       assert %Tesla.Env{status: 201} = response
+    end
+
+    test "A new org with a non unique id is rejected" do
+      org = TDG.create_organization(%{orgName: "non_unique_name"})
+      Organizations.update(org)
+
+      new_org = organization(%{orgName: "come_on_man", id: org.id})
+
+      {:ok, response} = create(new_org)
+
+      assert %Tesla.Env{status: 500} = response
     end
 
     test "A new org with a non unique system name is rejected" do
