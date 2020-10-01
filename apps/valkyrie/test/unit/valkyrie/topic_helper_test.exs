@@ -9,14 +9,14 @@ defmodule Valkyrie.TopicHelperTest do
 describe "input_topic_name/1" do
     test "should return given dataset_id prefixed with the input topic prefix" do
       dataset_id = Faker.UUID.v4()
-      assert "#{@input_topic_prefix}-#{dataset_id}" == TopicHelper.input_topic_name(dataset_id)
+      assert "#{@input_topic_prefix}#{dataset_id}" == TopicHelper.input_topic_name(dataset_id)
     end
   end
 
   describe "output_topic_name/1" do
     test "should return given dataset_id prefixed with the output topic prefix" do
       dataset_id = Faker.UUID.v4()
-      assert "#{@output_topic_prefix}-#{dataset_id}" == TopicHelper.output_topic_name(dataset_id)
+      assert "#{@output_topic_prefix}#{dataset_id}" == TopicHelper.output_topic_name(dataset_id)
     end
   end
 
