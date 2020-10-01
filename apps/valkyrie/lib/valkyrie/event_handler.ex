@@ -7,7 +7,7 @@ defmodule Valkyrie.EventHandler do
   import SmartCity.Event, only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0]
   require Logger
 
-  def handle_event(%Brook.Event{type: data_ingest_start(), data: %Dataset{id: id, technical: %{sourceType: source_type, schema: schema} = dataset, author: author})
+  def handle_event(%Brook.Event{type: data_ingest_start(), data: %Dataset{id: id, technical: %{sourceType: source_type, schema: schema}}, author: author})
     when source_type in ["ingest", "stream"] do
     add_event_count(data_ingest_start(), author, id)
 
@@ -17,19 +17,23 @@ defmodule Valkyrie.EventHandler do
     :ok
   end
 
-  def handle_event(%Brook.Event{type: data_standardization_end(), data: %{"dataset_id" => dataset_id}, author: author
+  def handle_event(%Brook.Event{type: data_standardization_end(), data: %{"dataset_id" => id}, author: author
 }) do
     add_event_count(data_standardization_end(), author, id)
 
     delete_from_viewstate(id)
     end_dataset(id)
+
+    :ok
   end
 
-  def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{id: id} = dataset, author: author}) do
+  def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{id: id}, author: author}) do
     add_event_count(dataset_delete(), author, id)
 
     delete_from_viewstate(id)
     end_dataset(id)
+
+    :ok
   end
 
   defp begin_dataset(id) do

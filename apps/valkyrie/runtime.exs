@@ -44,6 +44,7 @@ if kafka_brokers do
     |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
   config :valkyrie, :brook,
+  instance: :valkyrie,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [
@@ -55,7 +56,7 @@ if kafka_brokers do
       ]
     ]
   ],
-  handlers: [Valkyrie.DatasetHandler],
+  handlers: [Valkyrie.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [

@@ -5,8 +5,6 @@ defmodule Valkyrie.Application do
   require Cachex.Spec
 
   def start(_type, _args) do
-    import Supervisor.Spec
-
     opts = [strategy: :one_for_one, name: Valkyrie.Supervisor]
 
     children =
@@ -17,7 +15,7 @@ defmodule Valkyrie.Application do
         Valkyrie.Stream.Supervisor,
         Valkyrie.Init
       ]
-      |> TelemetryEvent.config_init_server(instance())
+      |> TelemetryEvent.config_init_server(:valkryie)
       |> List.flatten()
 
     Supervisor.start_link(children, opts)

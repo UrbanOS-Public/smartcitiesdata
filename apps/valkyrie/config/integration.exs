@@ -14,9 +14,7 @@ config :logger,
   level: :info
 
 config :valkyrie,
-  elsa_brokers: endpoints,
-  input_topic_prefix: "raw",
-  output_topic_prefix: "transformed",
+  endpoints: endpoints,
   profiling_enabled: true,
   divo: [
     {DivoKafka,
@@ -33,6 +31,7 @@ config :valkyrie,
   retry_initial_delay: 1500
 
 config :valkyrie, :brook,
+  instance: :valkyrie,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [
@@ -44,7 +43,7 @@ config :valkyrie, :brook,
       ]
     ]
   ],
-  handlers: [Valkyrie.DatasetHandler],
+  handlers: [Valkyrie.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [

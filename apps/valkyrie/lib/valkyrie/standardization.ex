@@ -4,8 +4,6 @@ defmodule Valkyrie.Standardization do
   Validating and transforming the payload to conform to the provided dataset schema
   """
 
-  alias SmartCity.Dataset
-
   def standardize_data(schema, payload) do
     %{data: data, errors: errors} = standardize_schema(schema, payload)
 
