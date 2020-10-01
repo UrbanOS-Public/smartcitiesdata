@@ -40,7 +40,10 @@ defmodule Valkyrie.Stream.SourceHandler do
   end
 
   def handle_batch(batch, context) do
+    Logger.debug(fn -> "Successfully processed #{length(batch)} messages for #{inspect(context)}" end)
+    # TODO - wire this to the Destination.write
     record_outbound_count_metrics(batch, context.dataset_id)
+
     :ok
   end
 

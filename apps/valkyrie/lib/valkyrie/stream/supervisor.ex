@@ -15,7 +15,7 @@ defmodule Valkyrie.Stream.Supervisor do
   def on_start_child(dataset_id, name) do
     case Brook.get(:valkyrie, :datasets_by_id, dataset_id) do
       {:ok, schema} when not is_nil(schema) ->
-        {Valkyrie.Stream, dataset_id: dataset_id, schema: schema, name: name}
+        {Valkyrie.Stream, dataset_id: dataset_id, schema: schema, profiling_enabled: Application.get_env(:valkyrie, :profiling_enabled), name: name}
 
       _ ->
         {:error, :dataset_not_in_view_state}

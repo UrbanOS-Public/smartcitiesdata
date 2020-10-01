@@ -15,7 +15,8 @@ defmodule Valkyrie.Stream do
 
   @type init_opts :: [
           dataset_id: String.t(),
-          schema: String.t()
+          schema: String.t(),
+          profiling_enabled: boolean()
         ]
 
   def start_link(init_opts) do
@@ -30,7 +31,8 @@ defmodule Valkyrie.Stream do
 
     state = %{
       dataset_id: Keyword.fetch!(init_opts, :dataset_id),
-      schema: Keyword.fetch!(init_opts, :schema)
+      schema: Keyword.fetch!(init_opts, :schema),
+      profiling_enabled: Keyword.get(init_opts, :profiling_enabled, false),
     }
 
     {:ok, state, {:continue, :init}}
@@ -67,7 +69,8 @@ defmodule Valkyrie.Stream do
         dataset_id: state.dataset_id,
         assigns: %{
           kafka: Application.get_env(:valkyrie, :topic_subscriber_config),
-          schema: state.schema
+          schema: state.schema,
+          profiling_enabled: state.profiling_enabled
         }
       )
 

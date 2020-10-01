@@ -1,21 +1,17 @@
-defmodule ValkyrieTest do
+defmodule Valkyrie.FullTest do
   use ExUnit.Case
-  use Divo
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
   import SmartCity.Event, only: [data_ingest_start: 0]
-  alias TelemetryEvent.Helper.TelemetryEventHelper
 
-  @endpoints Application.get_env(:valkyrie, :elsa_brokers)
-  @dlq_topic Application.get_env(:dead_letter, :driver) |> get_in([:init_args, :topic])
-  @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
-  @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
-  @instance Valkyrie.Application.instance()
+  alias Valkyrie.TopicHelper
+
+  @endpoints Application.get_env(:valkyrie, :endpoints)
 
   setup_all do
+    Logger.configure(level: :debug)
     dataset =
       TDG.create_dataset(%{
-        id: "pirates",
         technical: %{
           sourceType: "ingest",
           schema: [
@@ -26,112 +22,59 @@ defmodule ValkyrieTest do
         }
       })
 
-    pid = start_telemetry()
-
-    on_exit(fn ->
-      stop_telemetry(pid)
-    end)
-
     invalid_message =
-      TestHelpers.create_data(%{
+      TDG.create_data(%{
         payload: %{"name" => "Blackbeard", "alignment" => %{"invalid" => "string"}, "age" => "thirty-two"},
         dataset_id: dataset.id
       })
 
     messages = [
-      TestHelpers.create_data(%{
+      TDG.create_data(%{
         payload: %{"name" => "Jack Sparrow", "alignment" => "chaotic", "age" => "32"},
         dataset_id: dataset.id
       }),
       invalid_message,
-      TestHelpers.create_data(%{
+      TDG.create_data(%{
         payload: %{"name" => "Will Turner", "alignment" => "good", "age" => "25"},
         dataset_id: dataset.id
       }),
-      TestHelpers.create_data(%{
+      TDG.create_data(%{
         payload: %{"name" => "Barbosa", "alignment" => "evil", "age" => "100"},
         dataset_id: dataset.id
       })
     ]
 
-    input_topic = "#{@input_topic_prefix}-#{dataset.id}"
-    output_topic = "#{@output_topic_prefix}-#{dataset.id}"
+    input_topic = TopicHelper.input_topic_name(dataset.id)
+    output_topic = TopicHelper.output_topic_name(dataset.id)
 
-    Brook.Event.send(@instance, data_ingest_start(), :valkyrie, dataset)
-    TestHelpers.wait_for_topic(@endpoints, input_topic)
-
-    TestHelpers.produce_messages(messages, input_topic, @endpoints)
+    Brook.Event.send(:valkyrie, data_ingest_start(), :valkyrie, dataset)
+    Testing.Kafka.wait_for_topic(@endpoints, input_topic)
+    Testing.Kafka.produce_messages(messages, input_topic, @endpoints)
 
     {:ok, %{output_topic: output_topic, messages: messages, invalid_message: invalid_message}}
   end
 
-  test "valkyrie updates the operational struct", %{output_topic: output_topic} do
-    eventually fn ->
-      messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, @endpoints)
+  # TODO - find a home for this
+  # test "valkyrie updates the operational struct", %{output_topic: output_topic} do
+  #   Application.put_env(:valkyrie, :profiling_enabled, true)
+  #   eventually fn ->
+  #     messages = Testing.Kafka.fetch_messages(output_topic, @endpoints)
 
-      assert [%{operational: %{timing: [%{app: "valkyrie"} | _]}} | _] = messages
-    end
-  end
+  #     assert [%{operational: %{timing: [%{app: "valkyrie"} | _]}} | _] = messages
+  #   end
+  # end
 
-  test "valkyrie rejects unparseable messages and passes the rest through", %{
+  test "valkyrie processes messages, discarding those that cannot be standardized", %{
     output_topic: output_topic,
     messages: messages,
     invalid_message: invalid_message
   } do
+    Application.put_env(:valkyrie, :profiling_enabled, false)
     eventually fn ->
-      output_messages = TestHelpers.get_data_messages_from_kafka(output_topic, @endpoints)
+      output_messages = Testing.Kafka.fetch_messages(output_topic, @endpoints)
+      |> Enum.map(&SmartCity.Data.new/1)
 
       assert messages -- [invalid_message] == output_messages
-    end
-  end
-
-  test "valkyrie sends invalid data messages to the dlq", %{invalid_message: invalid_message} do
-    encoded_og_message = invalid_message |> Jason.encode!()
-
-    metrics_port = Application.get_env(:telemetry_event, :metrics_port)
-
-    eventually fn ->
-      messages = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
-
-      assert :ok =
-               [
-                 dataset_id: "dataset_id",
-                 reason: "reason"
-               ]
-               |> TelemetryEvent.add_event_metrics([:dead_letters_handled])
-
-      response = HTTPoison.get!("http://localhost:#{metrics_port}/metrics")
-
-      assert true ==
-               String.contains?(
-                 response.body,
-                 "dead_letters_handled_count{dataset_id=\"dataset_id\",reason=\"reason\"}"
-               )
-
-      assert true ==
-               String.contains?(
-                 response.body,
-                 "dead_letters_handled_count{dataset_id=\"pirates\",reason=\"%{\\\"alignment\\\" => :invalid_string}\"}"
-               )
-
-      assert [%{app: "Valkyrie", original_message: ^encoded_og_message}] = messages
-    end
-  end
-
-  defp start_telemetry() do
-    {:ok, pid} =
-      DynamicSupervisor.start_child(
-        Valkyrie.Dynamic.Supervisor,
-        {TelemetryMetricsPrometheus, TelemetryEventHelper.metrics_config(@instance)}
-      )
-
-    pid
-  end
-
-  defp stop_telemetry(pid) do
-    case pid do
-      nil -> :ok
-      pid -> DynamicSupervisor.terminate_child(Valkyrie.Dynamic.Supervisor, pid)
     end
   end
 end

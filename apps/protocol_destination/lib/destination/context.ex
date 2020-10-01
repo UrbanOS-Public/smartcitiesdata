@@ -4,21 +4,19 @@ defmodule Destination.Context do
 
   ## Metadata
 
-  `dictionary` - Dictionary for data being written to `Destination.t()`.
   `app_name` - Name of service writing to `Destination.t()`.
   `dataset_id` - Dataset identifier.
-  `subset_id` - Dataset's subset identifier.
+  `assigns` - Map used as a key/value bucket for very impl-specific metadata.
   """
   use Definition, schema: Destination.Context.V1
 
   @type t :: %__MODULE__{
-          dictionary: Dictionary.t(),
           app_name: String.t() | atom,
           dataset_id: String.t(),
-          subset_id: String.t()
+          assigns: term
         }
 
-  defstruct [:dictionary, :app_name, :dataset_id, :subset_id]
+  defstruct [:app_name, :dataset_id, :assigns]
 end
 
 defmodule Destination.Context.V1 do
@@ -27,10 +25,8 @@ defmodule Destination.Context.V1 do
 
   def s do
     schema(%Destination.Context{
-      dictionary: of_struct(Dictionary.Impl),
       app_name: spec(is_atom() or is_binary()),
-      dataset_id: required_string(),
-      subset_id: required_string()
+      dataset_id: required_string()
     })
   end
 end
