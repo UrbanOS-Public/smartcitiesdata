@@ -1,46 +1,41 @@
-defmodule Valkyrie.TopicManager do
-  @moduledoc """
-  Create Topics in kafka using the Elsa library.
-  """
-  use Retry
+defmodule Valkyrie.TopicHelper do
+  @moduledoc false
 
-  @initial_delay Application.get_env(:valkyrie, :retry_initial_delay)
-  @retries Application.get_env(:valkyrie, :retry_count)
+  require Logger
 
-  @spec setup_topics(%SmartCity.Dataset{}) :: %{input_topic: String.t(), output_topic: String.t()}
-  def setup_topics(dataset) do
-    input_topic = input_topic(dataset.id)
-    output_topic = output_topic(dataset.id)
-
-    Elsa.create_topic(endpoints(), input_topic)
-    Elsa.create_topic(endpoints(), output_topic)
-    wait_for_topic(input_topic)
-    wait_for_topic(output_topic)
-
-    %{input_topic: input_topic, output_topic: output_topic}
+  def get_endpoints() do
+    Application.get_env(:valkyrie, :endpoints)
   end
 
   def delete_topics(dataset_id) do
-    input_topic = input_topic(dataset_id)
-    output_topic = output_topic(dataset_id)
-    Elsa.delete_topic(endpoints(), input_topic)
-    Elsa.delete_topic(endpoints(), output_topic)
+    input_topic_name(dataset_id)
+    |> delete_topic()
+
+    output_topic_name(dataset_id)
+    |> delete_topic()
   end
 
-  def wait_for_topic(topic) do
-    retry with: @initial_delay |> exponential_backoff() |> Stream.take(@retries), atoms: [false] do
-      Elsa.topic?(endpoints(), topic)
-    after
-      true ->
-        nil
-    else
-      _ -> raise "Timed out waiting for #{topic} to be available"
+  defp delete_topic(topic) do
+    Logger.debug("#{__MODULE__}: Deleting Topic: #{topic}")
+
+    case Elsa.delete_topic(get_endpoints(), topic) do
+      :ok ->
+        Logger.debug("#{__MODULE__}: Deleted topic: #{topic}")
+
+      {:error, error} ->
+        Logger.error("#{__MODULE__}: Failed to delete topic: #{topic}, Reason: #{inspect(error)}")
     end
   end
 
-  defp endpoints(), do: Application.get_env(:valkyrie, :elsa_brokers)
-  defp output_topic_prefix(), do: Application.get_env(:valkyrie, :output_topic_prefix)
-  defp output_topic(dataset_id), do: "#{output_topic_prefix()}-#{dataset_id}"
-  defp input_topic_prefix(), do: Application.get_env(:valkyrie, :input_topic_prefix)
-  defp input_topic(dataset_id), do: "#{input_topic_prefix()}-#{dataset_id}"
+  def input_topic_name(dataset_id), do: "#{input_topic_prefix()}#{dataset_id}"
+
+  defp input_topic_prefix() do
+    Application.get_env(:valkyrie, :input_topic_prefix, "raw-")
+  end
+
+  def output_topic_name(dataset_id), do: "#{output_topic_prefix()}#{dataset_id}"
+
+  defp output_topic_prefix() do
+    Application.get_env(:valkyrie, :output_topic_prefix, "transformed-")
+  end
 end

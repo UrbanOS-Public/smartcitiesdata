@@ -1,11 +1,17 @@
 defmodule Valkyrie.Init do
-  @moduledoc false
-  use Application.Initializer
+  @moduledoc """
+  Implementation of `Initializer` behaviour to reconnect to
+  pre-existing event state.
+  """
+  use Initializer,
+    name: __MODULE__,
+    supervisor: Valkyrie.Stream.Supervisor
 
-  @instance Valkyrie.Application.instance()
+  def on_start(state) do
+    with {:ok, view_state} <- Brook.get_all(:valkyrie, :datasets_by_id) do
+      Enum.each(view_state, fn {dataset_id, _schema} -> Valkyrie.Stream.Supervisor.start_child(dataset_id) end)
 
-  def do_init(_opts) do
-    Brook.get_all_values!(@instance, :datasets)
-    |> Enum.each(&Valkyrie.DatasetProcessor.start/1)
+      Ok.ok(state)
+    end
   end
 end
