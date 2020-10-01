@@ -22,10 +22,9 @@ defmodule Valkyrie.SourceHandlerTest do
     end
 
     test "applies valkyrie message timing" do
-      Application.put_env(:valkyrie, :profiling_enabled, true)
       {data, schema} = create_data_message()
 
-      assert {:ok, handled} = Valkyrie.Stream.SourceHandler.handle_message(data, %{assigns: %{schema: schema}})
+      assert {:ok, handled} = Valkyrie.Stream.SourceHandler.handle_message(data, %{assigns: %{schema: schema, profiling_enabled: true}})
       timing = Enum.find(handled.operational.timing, fn timing -> timing.app == "valkyrie" end)
 
       assert timing == %SmartCity.Data.Timing{
@@ -36,8 +35,7 @@ defmodule Valkyrie.SourceHandlerTest do
               }
     end
 
-    test "should return empty timing when profiling status is not true" do
-      Application.put_env(:valkyrie, :profiling_enabled, false)
+    test "should return empty timing when profiling status is not true (default)" do
       {data, schema} = create_data_message()
 
       assert {:ok, handled} = Valkyrie.Stream.SourceHandler.handle_message(data, %{assigns: %{schema: schema}})

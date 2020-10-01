@@ -26,11 +26,12 @@ defmodule Valkyrie.Stream.SourceHandler do
   def handle_message(message, context) do
     start_time = Data.Timing.current_time()
     schema = context.assigns.schema
+    profiling_enabled = context.assigns[:profiling_enabled]
 
     with {:ok, smart_city_data} <- SmartCity.Data.new(message),
          {:ok, standardized_payload} <- Standardization.standardize_data(schema, smart_city_data.payload) do
       smart_city_data = %{smart_city_data | payload: standardized_payload}
-      |> add_timing(start_time)
+      |> add_timing(start_time, profiling_enabled)
 
       Ok.ok(smart_city_data)
     else
@@ -49,12 +50,10 @@ defmodule Valkyrie.Stream.SourceHandler do
     :ok
   end
 
-  defp add_timing(smart_city_data, start_time) do
-    case Application.get_env(:valkyrie, :profiling_enabled) do
-      true -> Data.add_timing(smart_city_data, create_timing(start_time))
-      _ -> smart_city_data
-    end
+  defp add_timing(smart_city_data, start_time, true = _enabled) do
+    Data.add_timing(smart_city_data, create_timing(start_time))
   end
+  defp add_timing(smart_city_data, _start_time, _), do: smart_city_data
 
   defp create_timing(start_time) do
     Data.Timing.new("valkyrie", "timing", start_time, Data.Timing.current_time())
