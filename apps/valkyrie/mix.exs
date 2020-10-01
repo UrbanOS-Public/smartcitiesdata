@@ -36,6 +36,7 @@ defmodule Valkyrie.MixProject do
       {:brook, "~> 0.4"},
       {:cachex, "~> 3.1"},
       {:checkov, "~> 1.0", only: [:test]},
+      {:cowlib, "~> 2.8.0", override: true},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
@@ -43,7 +44,6 @@ defmodule Valkyrie.MixProject do
       {:divo_kafka, "~> 0.1", only: [:integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
       {:excoveralls, "~> 0.11.1", only: :test},
-      {:tasks, in_umbrella: true, only: :dev},
       {:jason, "~> 1.2", override: true},
       {:httpoison, "~> 1.6"},
       {:libcluster, "~> 3.1"},
@@ -54,8 +54,14 @@ defmodule Valkyrie.MixProject do
       {:retry, "~> 0.13"},
       {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
-      {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"},
+      {:annotated_retry, in_umbrella: true},
+      {:definition_kafka, in_umbrella: true},
+      {:initializer, in_umbrella: true},
+      {:management, in_umbrella: true},
+      {:properties, in_umbrella: true},
+      {:tasks, in_umbrella: true, only: :dev},
+      {:telemetry_event, in_umbrella: true},
       {:performance, in_umbrella: true, only: :integration}
     ]
   end

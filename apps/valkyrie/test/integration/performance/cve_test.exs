@@ -8,14 +8,14 @@ defmodule Valkyrie.Performance.CveTest do
     log_level: :warn
 
   import Valkyrie.Application
-  import SmartCity.Event, only: [data_ingest_start: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, dataset_delete: 0]
   import SmartCity.TestHelper
 
   @tag timeout: :infinity
   test "run performance test" do
     # map_messages = Cve.generate_messages(1_000, :map)
-    spat_messages = Cve.generate_messages(10_000, :spat)
-    bsm_messages = Cve.generate_messages(10_000, :bsm)
+    spat_messages = Cve.generate_messages(1_000, :spat)
+    bsm_messages = Cve.generate_messages(1_000, :bsm)
 
     {scenarios, _} =
       [{"spat", spat_messages}, {"bsm", bsm_messages}]
@@ -64,7 +64,7 @@ defmodule Valkyrie.Performance.CveTest do
         dataset
       end,
       after_each: fn dataset ->
-        Valkyrie.DatasetProcessor.stop(dataset.id)
+        Brook.Event.send(instance(), dataset_delete(), :author, dataset)
 
         delete_kafka_topics(dataset)
       end,
