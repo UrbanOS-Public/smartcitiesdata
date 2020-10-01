@@ -33,13 +33,13 @@ defmodule EstuaryWeb.EventLiveView do
   end
 
   def mount(_params, _session, socket) do
+    if connected?(socket), do: Process.send_after(self(), :update, 120_000)
+
     {:ok,
      assign(socket, events: [], no_events: "No Events Found!", search_text: nil, params: %{})}
   end
 
   def handle_params(params, _uri, socket) do
-    if connected?(socket), do: :timer.send_interval(60_000, self(), %{search: params["search"]})
-
     filtered_events =
       all_events(socket.assigns.events, params["search"])
       |> LiveViewHelper.filter_events(params["search"])
@@ -58,21 +58,23 @@ defmodule EstuaryWeb.EventLiveView do
     {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
   end
 
-  def handle_info(%{search: params}, socket) do
+  def handle_info(:update, socket) do
+    Process.send_after(self(), :update, 120_000)
+
     events =
-      all_events(socket.assigns.events, params["search"])
-      |> LiveViewHelper.filter_events(params["search"])
+      all_events(socket.assigns.events, nil)
+      |> LiveViewHelper.filter_events(nil)
 
     {:noreply,
      assign(socket,
-       search_text: params["search"],
+       search_text: "",
        events: events,
-       params: params
+       params: %{}
      )}
   end
 
   defp all_events(socket_events, filter_param) do
-    if filter_param == nil or filter_param == "" do
+    if Enum.empty?(socket_events) or filter_param == nil or filter_param == "" do
       {:ok, events} = EventRetrievalService.get_all()
       events
     else
