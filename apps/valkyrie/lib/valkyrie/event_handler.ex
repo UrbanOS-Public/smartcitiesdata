@@ -17,17 +17,7 @@ defmodule Valkyrie.EventHandler do
     :ok
   end
 
-  def handle_event(%Brook.Event{type: data_standardization_end(), data: %{"dataset_id" => id}, author: author
-}) do
-    add_event_count(data_standardization_end(), author, id)
-
-    delete_from_viewstate(id)
-    end_dataset(id)
-
-    :ok
-  end
-
-  def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{id: id}, author: author}) do
+  def handle_event(%Brook.Event{type: type, data: %Dataset{id: id}, author: author}) when type in [dataset_delete(), data_standardization_end()] do
     add_event_count(dataset_delete(), author, id)
 
     delete_from_viewstate(id)

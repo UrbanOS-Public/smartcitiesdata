@@ -7,11 +7,21 @@ defmodule Valkyrie.Stream.SourceHandler do
   use Source.Handler
   use Properties, otp_app: :valkyrie
   require Logger
+
+  import SmartCity.Data, only: [end_of_data: 0]
+  import SmartCity.Event, only: [data_standardization_end: 0]
+
   alias StreamingMetrics.Hostname
   alias SmartCity.Data
   alias Valkyrie.Standardization
 
   getter(:dlq, default: Dlq)
+
+  def handle_message(end_of_data() = message, context) do
+    Brook.Event.send(:valkyrie, data_standardization_end(), __MODULE__, %{"dataset_id" => context.dataset_id})
+
+    Ok.ok(message)
+  end
 
   def handle_message(message, context) do
     start_time = Data.Timing.current_time()
