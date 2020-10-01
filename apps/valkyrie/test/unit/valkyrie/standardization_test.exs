@@ -1,24 +1,18 @@
-defmodule ValkyrieTest do
+defmodule Valkyrie.StandardizationTest do
   use ExUnit.Case
   import Checkov
 
-  alias SmartCity.TestDataGenerator, as: TDG
+  alias Valkyrie.Standardization
 
   describe "standardize_data/1" do
     data_test "validates that #{value} is a valid #{type}" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: field_name, type: type}
-            ]
-          }
-        )
+      schema = [
+        %{name: field_name, type: type}
+      ]
 
       payload = %{field_name => value}
 
-      assert {:ok, payload} == Valkyrie.standardize_data(dataset, payload)
+      assert {:ok, payload} == Standardization.standardize_data(schema, payload)
 
       where([
         [:field_name, :type, :value],
@@ -33,17 +27,11 @@ defmodule ValkyrieTest do
     end
 
     data_test "transforms #{value} to a valid #{type}" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: field_name, type: type}
-            ]
-          }
-        )
+      schema = [
+        %{name: field_name, type: type}
+      ]
 
-      assert {:ok, %{field_name => transformed_value}} === Valkyrie.standardize_data(dataset, %{field_name => value})
+      assert {:ok, %{field_name => transformed_value}} === Standardization.standardize_data(schema, %{field_name => value})
 
       where([
         [:field_name, :type, :value, :transformed_value],
@@ -66,20 +54,14 @@ defmodule ValkyrieTest do
     end
 
     data_test "transforms #{value} to a valid #{type} with format #{format}" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "birthdate", format: format, type: type}
-            ]
-          }
-        )
+      schema = [
+        %{name: "birthdate", format: format, type: type}
+      ]
 
       payload = %{"birthdate" => value}
 
       expected = %{"birthdate" => Timex.parse!(value, format)}
-      assert {:ok, expected} == Valkyrie.standardize_data(dataset, payload)
+      assert {:ok, expected} == Standardization.standardize_data(schema, payload)
 
       where([
         [:type, :format, :value],
@@ -89,17 +71,11 @@ defmodule ValkyrieTest do
     end
 
     data_test "validates that #{value} with format #{format} is not a valid #{type}" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "birthdate", format: format, type: type}
-            ]
-          }
-        )
+      schema = [
+        %{name: "birthdate", format: format, type: type}
+      ]
 
-      assert {:error, reason} == Valkyrie.standardize_data(dataset, %{"birthdate" => value})
+      assert {:error, reason} == Standardization.standardize_data(schema, %{"birthdate" => value})
 
       where([
         [:type, :format, :value, :reason],
@@ -119,18 +95,12 @@ defmodule ValkyrieTest do
     end
 
     data_test "validates that #{value} is a not a valid #{type}" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: field_name, type: type}
-            ]
-          }
-        )
+      schema = [
+        %{name: field_name, type: type}
+      ]
 
       expected = {:error, %{field_name => reason}}
-      assert expected == Valkyrie.standardize_data(dataset, %{field_name => value})
+      assert expected == Standardization.standardize_data(schema, %{field_name => value})
 
       where([
         [:field_name, :type, :value, :reason],
@@ -146,18 +116,12 @@ defmodule ValkyrieTest do
     end
 
     data_test "validates that nil is a valid #{type}" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: field_name, type: type}
-            ]
-          }
-        )
+      schema = [
+        %{name: field_name, type: type}
+      ]
 
       payload = %{field_name => nil}
-      assert {:ok, payload} == Valkyrie.standardize_data(dataset, payload)
+      assert {:ok, payload} == Standardization.standardize_data(schema, payload)
 
       where([
         [:field_name, :type],
@@ -167,17 +131,11 @@ defmodule ValkyrieTest do
     end
 
     data_test "validates that an empty string is a valid #{type}" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: field_name, type: type}
-            ]
-          }
-        )
+      schema = [
+        %{name: field_name, type: type}
+      ]
 
-      assert {:ok, %{field_name => nil}} == Valkyrie.standardize_data(dataset, %{field_name => ""})
+      assert {:ok, %{field_name => nil}} == Standardization.standardize_data(schema, %{field_name => ""})
 
       where([
         [:field_name, :type],
@@ -191,17 +149,11 @@ defmodule ValkyrieTest do
     end
 
     test "an empty string of type string should not be converted to nil" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "empty_string", type: "string"}
-            ]
-          }
-        )
+      schema = [
+        %{name: "empty_string", type: "string"}
+      ]
 
-      assert {:ok, %{"empty_string" => ""}} == Valkyrie.standardize_data(dataset, %{"empty_string" => ""})
+      assert {:ok, %{"empty_string" => ""}} == Standardization.standardize_data(schema, %{"empty_string" => ""})
     end
 
     test "transforms valid values in a map" do
@@ -213,16 +165,10 @@ defmodule ValkyrieTest do
         %{name: "luckyNumbers", type: "list", itemType: "integer"}
       ]
 
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "name", type: "string"},
-              %{name: "spouse", type: "map", subSchema: sub_schema}
-            ]
-          }
-        )
+      schema = [
+        %{name: "name", type: "string"},
+        %{name: "spouse", type: "map", subSchema: sub_schema}
+      ]
 
       payload = %{
         "name" => "Pete",
@@ -248,7 +194,7 @@ defmodule ValkyrieTest do
            }
          }}
 
-      assert expected == Valkyrie.standardize_data(dataset, payload)
+      assert expected == Standardization.standardize_data(schema, payload)
     end
 
     test "validates that specified map is a map" do
@@ -256,21 +202,15 @@ defmodule ValkyrieTest do
         %{name: "name", type: "string"}
       ]
 
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "name", type: "string"},
-              %{name: "spouse", type: "map", subSchema: sub_schema}
-            ]
-          }
-        )
+      schema = [
+        %{name: "name", type: "string"},
+        %{name: "spouse", type: "map", subSchema: sub_schema}
+      ]
 
       payload = %{"name" => "Pete", "spouse" => "Shirley"}
 
       expected = {:error, %{"spouse" => :invalid_map}}
-      assert expected == Valkyrie.standardize_data(dataset, payload)
+      assert expected == Standardization.standardize_data(schema, payload)
     end
 
     test "returns error that identifies nested field that fails" do
@@ -279,21 +219,15 @@ defmodule ValkyrieTest do
         %{name: "age", type: "integer"}
       ]
 
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "name", type: "string"},
-              %{name: "spouse", type: "map", subSchema: sub_schema}
-            ]
-          }
-        )
+      schema = [
+        %{name: "name", type: "string"},
+        %{name: "spouse", type: "map", subSchema: sub_schema}
+      ]
 
       payload = %{"name" => "Pete", "spouse" => %{"name" => "Shirley", "age" => "27.8"}}
 
       expected = {:error, %{"spouse" => %{"age" => :invalid_integer}}}
-      assert expected == Valkyrie.standardize_data(dataset, payload)
+      assert expected == Standardization.standardize_data(schema, payload)
     end
 
     test "returns error that identifies deeply nested field that fails" do
@@ -306,21 +240,15 @@ defmodule ValkyrieTest do
         %{name: "child", type: "map", subSchema: sub_sub_schema}
       ]
 
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "name", type: "string"},
-              %{name: "spouse", type: "map", subSchema: sub_schema}
-            ]
-          }
-        )
+      schema = [
+        %{name: "name", type: "string"},
+        %{name: "spouse", type: "map", subSchema: sub_schema}
+      ]
 
       payload = %{"name" => "Pete", "spouse" => %{"name" => "Shirley", "child" => %{"name" => %{"stuff" => "13"}}}}
 
       expected = {:error, %{"spouse" => %{"child" => %{"name" => :invalid_string}}}}
-      assert expected == Valkyrie.standardize_data(dataset, payload)
+      assert expected == Standardization.standardize_data(schema, payload)
     end
 
     test "transforms valid values in lists" do
@@ -329,17 +257,11 @@ defmodule ValkyrieTest do
         %{name: "age", type: "integer"}
       ]
 
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "name", type: "string"},
-              %{name: "luckyNumbers", type: "list", itemType: "integer"},
-              %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema}
-            ]
-          }
-        )
+      schema = [
+        %{name: "name", type: "string"},
+        %{name: "luckyNumbers", type: "list", itemType: "integer"},
+        %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema}
+      ]
 
       payload = %{
         "name" => "Pete",
@@ -361,42 +283,30 @@ defmodule ValkyrieTest do
            ]
          }}
 
-      assert expected == Valkyrie.standardize_data(dataset, payload)
+      assert expected == Standardization.standardize_data(schema, payload)
     end
 
     test "validates the provided list is a list" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "luckyNumbers", type: "list", itemType: "integer"}
-            ]
-          }
-        )
+      schema = [
+        %{name: "luckyNumbers", type: "list", itemType: "integer"}
+      ]
 
       payload = %{"luckyNumbers" => "uh-huh"}
 
       expected = {:error, %{"luckyNumbers" => :invalid_list}}
-      assert expected == Valkyrie.standardize_data(dataset, payload)
+      assert expected == Standardization.standardize_data(schema, payload)
     end
 
     test "returns error that identifies wrong type in list" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "name", type: "string"},
-              %{name: "luckyNumbers", type: "list", itemType: "integer"}
-            ]
-          }
-        )
+      schema = [
+        %{name: "name", type: "string"},
+        %{name: "luckyNumbers", type: "list", itemType: "integer"}
+      ]
 
       payload = %{"name" => "Pete", "luckyNumbers" => [2, "three", 4]}
 
       expected = {:error, %{"luckyNumbers" => {:invalid_list, ":invalid_integer at index 1"}}}
-      assert expected == Valkyrie.standardize_data(dataset, payload)
+      assert expected == Standardization.standardize_data(schema, payload)
     end
 
     test "returns error that identifies invalid map in list" do
@@ -405,16 +315,10 @@ defmodule ValkyrieTest do
         %{name: "age", type: "integer"}
       ]
 
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "name", type: "string"},
-              %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema}
-            ]
-          }
-        )
+      schema = [
+        %{name: "name", type: "string"},
+        %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema}
+      ]
 
       payload = %{
         "name" => "Pete",
@@ -425,60 +329,42 @@ defmodule ValkyrieTest do
       }
 
       expected = {:error, %{"spouses" => {:invalid_list, "#{inspect(%{"age" => :invalid_integer})} at index 1"}}}
-      assert expected == Valkyrie.standardize_data(dataset, payload)
+      assert expected == Standardization.standardize_data(schema, payload)
     end
 
     test "returns error that identifies unknown schema type" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "geometry", type: "unknown"}
-            ]
-          }
-        )
+      schema = [
+        %{name: "geometry", type: "unknown"}
+      ]
 
       payload = %{"geometry" => %{name: "some value"}}
 
-      assert {:error, %{"geometry" => :invalid_type}} == Valkyrie.standardize_data(dataset, payload)
+      assert {:error, %{"geometry" => :invalid_type}} == Standardization.standardize_data(schema, payload)
     end
   end
 
   describe "json is converted" do
     test "json is encoded to a string" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "geometry", type: "json"}
-            ]
-          }
-        )
+      schema = [
+        %{name: "geometry", type: "json"}
+      ]
 
       payload = %{"geometry" => %{name: "different value"}}
       expected = %{"geometry" => "{\"name\":\"different value\"}"}
 
-      assert {:ok, expected} == Valkyrie.standardize_data(dataset, payload)
+      assert {:ok, expected} == Standardization.standardize_data(schema, payload)
     end
 
     test "invalid json" do
-      dataset =
-        TDG.create_dataset(
-          id: "ds1",
-          technical: %{
-            schema: [
-              %{name: "geometry", type: "json"}
-            ]
-          }
-        )
+      schema = [
+        %{name: "geometry", type: "json"}
+      ]
 
       invalid_json_bitstring = <<0::1>>
 
       payload = %{"geometry" => invalid_json_bitstring}
 
-      assert {:error, %{"geometry" => :invalid_json}} == Valkyrie.standardize_data(dataset, payload)
+      assert {:error, %{"geometry" => :invalid_json}} == Standardization.standardize_data(schema, payload)
     end
   end
 end
