@@ -38,7 +38,7 @@ defmodule EstuaryWeb.EventLiveView do
   end
 
   def handle_params(params, _uri, socket) do
-    if connected?(socket), do: :timer.send_interval(60000, self(), %{search: params["search"]})
+    if connected?(socket), do: :timer.send_interval(60_000, self(), %{search: params["search"]})
 
     filtered_events =
       all_events(socket.assigns.events, params["search"])
