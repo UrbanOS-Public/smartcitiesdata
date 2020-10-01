@@ -38,22 +38,28 @@ defmodule Valkyrie.Stream do
 
   @impl GenServer
   def handle_continue(:init, state) do
-    # TODO - start destination
-    case start_source(state) do
-      {:ok, source_pid} ->
+    input_topic = Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: TopicHelper.input_topic_name(state.dataset_id))
+    output_topic = Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: TopicHelper.output_topic_name(state.dataset_id))
+
+    with {:ok, source_pid} <- start_source(input_topic, state),
+      {:ok, destination_pid} <- start_destination(output_topic, state) do
         new_state =
           state
           |> Map.put(:source_pid, source_pid)
+          |> Map.put(:source, input_topic)
+          |> Map.put(:destination_pid, destination_pid)
+          |> Map.put(:destination, output_topic)
 
         {:noreply, new_state}
 
+    else
       {:error, reason} ->
         {:stop, reason, state}
     end
   end
 
   @retry with: exponential_backoff(100) |> take(@max_retries)
-  defp start_source(state) do
+  defp start_source(input_topic, state) do
     context =
       Source.Context.new!(
         handler: Valkyrie.Stream.SourceHandler,
@@ -65,17 +71,30 @@ defmodule Valkyrie.Stream do
         }
       )
 
-    Source.start_link(
-      Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: TopicHelper.input_topic_name(state.dataset_id)),
-      context
-    )
+    Source.start_link(input_topic, context)
+  end
+
+  @retry with: exponential_backoff(100) |> take(@max_retries)
+  defp start_destination(output_topic, state) do
+    context =
+      Destination.Context.new!(
+        app_name: :valkyrie,
+        dataset_id: state.dataset_id
+      )
+
+    Destination.start_link(output_topic, context)
   end
 
   @impl GenServer
   def terminate(reason, state) do
     if Map.has_key?(state, :source) do
       pid = Map.get(state, :source_pid)
-      Source.stop(state.load.source, pid)
+      Source.stop(state.source, pid)
+    end
+
+    if Map.has_key?(state, :destination) do
+      pid = Map.get(state, :destination_pid)
+      Destination.stop(state.destination, pid)
     end
 
     reason
