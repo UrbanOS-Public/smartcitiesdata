@@ -1,65 +1,62 @@
 defmodule Valkyrie.EndOfDataTest do
   use ExUnit.Case
-  use Divo
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
+
   import SmartCity.Event, only: [data_ingest_start: 0, data_standardization_end: 0]
   import SmartCity.Data, only: [end_of_data: 0]
 
-  @endpoints Application.get_env(:valkyrie, :elsa_brokers)
-  @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
-  @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
-  @instance Valkyrie.Application.instance()
+  alias Valkyrie.TopicHelper
 
-  test "Data is not processed after END_OF_DATA message" do
-    dataset_id = Faker.UUID.v4()
+  @endpoints Application.get_env(:valkyrie, :endpoints)
 
-    input_topic = "#{@input_topic_prefix}-#{dataset_id}"
-    output_topic = "#{@output_topic_prefix}-#{dataset_id}"
 
+  setup_all do
+    Logger.configure(level: :debug)
+    :ok
+  end
+  test "data is not processed after #{end_of_data()} message" do
     dataset =
       TDG.create_dataset(
-        id: dataset_id,
         technical: %{
           schema: [
             %{name: "name", type: "map", subSchema: [%{name: "first", type: "string"}, %{name: "last", type: "string"}]}
           ]
         }
       )
+    input_topic = TopicHelper.input_topic_name(dataset.id)
+    output_topic = TopicHelper.output_topic_name(dataset.id)
 
     data_message =
-      TestHelpers.create_data(%{
+      TDG.create_data(%{
         dataset_id: dataset.id,
         payload: %{"name" => %{"first" => "Ben", "last" => "Brewer"}}
       })
 
-    eod_message = end_of_data()
-
     message_to_not_consume =
-      TestHelpers.create_data(%{dataset_id: dataset.id, payload: %{"name" => %{"first" => "Post", "last" => "Man"}}})
+      TDG.create_data(%{dataset_id: dataset.id, payload: %{"name" => %{"first" => "Post", "last" => "Man"}}})
 
-    Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
+    Brook.Event.send(:valkyrie, data_ingest_start(), :author, dataset)
 
-    TestHelpers.wait_for_topic(@endpoints, input_topic)
+    Testing.Kafka.wait_for_topic(@endpoints, input_topic)
 
-    TestHelpers.produce_message(data_message, input_topic, @endpoints)
-    Elsa.Producer.produce(@endpoints, input_topic, {"jerks", eod_message}, parition: 0)
+    Testing.Kafka.produce_messages([data_message, end_of_data()], input_topic, @endpoints)
 
-    Patiently.wait_for!(
+    eventually(
       fn ->
-        data_standarization_end_event_fired("event-stream", @endpoints) &&
-          dataset_supervisor_killed(dataset_id)
+        assert data_standarization_end_event_fired("event-stream", @endpoints)
+        assert not is_dataset_supervisor_alive?(dataset.id)
       end,
-      dwell: 1000,
-      max_tries: 20
+      1000,
+      30
     )
 
-    TestHelpers.produce_message(message_to_not_consume, input_topic, @endpoints)
+    Testing.Kafka.produce_messages([message_to_not_consume], input_topic, @endpoints)
 
     eventually fn ->
-      messages = TestHelpers.get_data_messages_from_kafka(output_topic, @endpoints)
+      messages = Testing.Kafka.fetch_messages(output_topic, @endpoints, SmartCity.Data)
 
-      assert messages == [data_message, eod_message]
+      assert messages == [data_message, end_of_data()]
     end
   end
 
@@ -74,11 +71,10 @@ defmodule Valkyrie.EndOfDataTest do
     end
   end
 
-  def dataset_supervisor_killed(dataset_id) do
-    name = Valkyrie.DatasetSupervisor.name(dataset_id)
-
-    case Process.whereis(name) do
-      nil -> true
+  defp is_dataset_supervisor_alive?(dataset_id) do
+    case Valkyrie.Stream.Registry.whereis(dataset_id) do
+      nil -> false
+      :undefined -> false
       pid -> Process.alive?(pid)
     end
   end

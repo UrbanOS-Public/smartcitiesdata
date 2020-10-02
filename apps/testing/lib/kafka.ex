@@ -24,7 +24,7 @@ defmodule Testing.Kafka do
       {:ok, {_offset, messages}} ->
         messages
         |> Enum.map(&Elsa.Message.kafka_message(&1, :value))
-        |> Enum.map(&Jason.decode!/1)
+        |> Enum.map(&safe_decode/1)
 
       {:error, reason} ->
         Logger.debug("Failed to extract messages for #{topic} from #{inspect(endpoints)}: #{inspect(reason)}")
@@ -32,11 +32,20 @@ defmodule Testing.Kafka do
     end
   end
 
+  defp safe_decode(value) do
+    case Jason.decode(value) do
+      {:ok, decoded} -> decoded
+      _ -> value
+    end
+  end
+
   def fetch_messages(topic, endpoints, module) do
     fetch_messages(topic, endpoints)
     |> Enum.map(fn message ->
-      {:ok, data} = apply(module, :new, [message])
-      data
+      case apply(module, :new, [message]) do
+        {:ok, data} -> data
+        _ -> message
+      end
     end)
   end
 

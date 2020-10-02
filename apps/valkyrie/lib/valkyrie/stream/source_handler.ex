@@ -18,9 +18,10 @@ defmodule Valkyrie.Stream.SourceHandler do
   getter(:dlq, default: Dlq)
 
   def handle_message(end_of_data() = message, context) do
+    Logger.debug(fn -> "Processing #{message} for #{context.dataset_id}" end)
     Brook.Event.send(:valkyrie, data_standardization_end(), __MODULE__, %{"dataset_id" => context.dataset_id})
 
-    Ok.error(message)
+    Ok.ok(message)
   end
 
   def handle_message(message, context) do

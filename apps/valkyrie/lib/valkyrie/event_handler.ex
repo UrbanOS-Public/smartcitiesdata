@@ -11,16 +11,25 @@ defmodule Valkyrie.EventHandler do
     when source_type in ["ingest", "stream"] do
     add_event_count(data_ingest_start(), author, id)
 
-    save_dataset_to_viewstate(id, schema)
-
     end_dataset(id)
+    save_dataset_to_viewstate(id, schema)
     begin_dataset(id)
 
     :ok
   end
 
-  def handle_event(%Brook.Event{type: type, data: %Dataset{id: id}, author: author}) when type in [dataset_delete(), data_standardization_end()] do
+  def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{id: id}, author: author}) do
     add_event_count(dataset_delete(), author, id)
+
+    delete_from_viewstate(id)
+    end_dataset(id)
+    delete_topics(id)
+
+    :ok
+  end
+
+  def handle_event(%Brook.Event{type: data_standardization_end(), data: %{"dataset_id" => id}, author: author}) do
+    add_event_count(data_standardization_end(), author, id)
 
     delete_from_viewstate(id)
     end_dataset(id)
@@ -28,20 +37,29 @@ defmodule Valkyrie.EventHandler do
     :ok
   end
 
+  def handle_event(event) do
+    IO.inspect(event, label: "BAD HANDLE")
+
+    :ok
+  end
+
   defp begin_dataset(id) do
     Logger.debug("#{__MODULE__}: Beginning Ingestion for Dataset: #{id}")
     Valkyrie.Stream.Supervisor.start_child(id)
-    |> IO.inspect(label: "already started?")
   end
 
   defp end_dataset(id) do
     Logger.debug("#{__MODULE__}: Ending Ingestion for Dataset: #{id}")
     Valkyrie.Stream.Supervisor.terminate_child(id)
+  end
+
+  defp delete_topics(id) do
+    Logger.debug("#{__MODULE__}: Deleting Topics for Dataset: #{id}")
     Valkyrie.TopicHelper.delete_topics(id)
   end
 
   def save_dataset_to_viewstate(id, schema) do
-    Logger.debug("#{__MODULE__}: Handling Datatset: #{id} with schema #{inspect(schema)}")
+    Logger.debug("#{__MODULE__}: Handling Dataset: #{id} with schema #{inspect(schema)}")
     create(:datasets_by_id, id, schema)
   end
 
