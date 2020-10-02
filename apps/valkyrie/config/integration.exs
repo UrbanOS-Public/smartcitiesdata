@@ -32,6 +32,7 @@ config :valkyrie,
 
 config :valkyrie, :brook,
   instance: :valkyrie,
+  event_processing_timeout: 10_000,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [

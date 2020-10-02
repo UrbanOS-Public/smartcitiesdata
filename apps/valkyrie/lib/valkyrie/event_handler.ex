@@ -12,6 +12,8 @@ defmodule Valkyrie.EventHandler do
     add_event_count(data_ingest_start(), author, id)
 
     save_dataset_to_viewstate(id, schema)
+
+    end_dataset(id)
     begin_dataset(id)
 
     :ok
@@ -29,6 +31,7 @@ defmodule Valkyrie.EventHandler do
   defp begin_dataset(id) do
     Logger.debug("#{__MODULE__}: Beginning Ingestion for Dataset: #{id}")
     Valkyrie.Stream.Supervisor.start_child(id)
+    |> IO.inspect(label: "already started?")
   end
 
   defp end_dataset(id) do
