@@ -57,6 +57,8 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   describe "post /api/ with valid data" do
     setup %{conn: conn, request: request} do
       allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(Organizations.get(any()), return: nil)
+      allow(Organizations.is_unique?(any(), any()), return: true)
       [conn: post(conn, @route, request)]
     end
 
@@ -78,6 +80,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
       allow(Organizations.update(any()), return: :ok)
       allow(Organizations.update(any(), any()), return: :ok)
       allow(OrgStore.update(any()), return: :ok)
+      allow(Organizations.is_unique?(any(), any()), return: true)
 
       req_with_id = %{
         "id" => "123",
@@ -98,12 +101,18 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   @tag capture_log: true
   test "post /api/ without data returns 500", %{conn: conn} do
+    allow(Organizations.get(any()), return: nil)
+    allow(Organizations.is_unique?(any(), any()), return: true)
+
     conn = post(conn, @route)
     assert json_response(conn, 500) =~ "Unable to process your request"
   end
 
   @tag capture_log: true
   test "post /api/ with improperly shaped data returns 500", %{conn: conn} do
+    allow(Organizations.get(any()), return: nil)
+    allow(Organizations.is_unique?(any(), any()), return: true)
+
     conn = post(conn, @route, %{"invalidData" => 2})
     assert json_response(conn, 500) =~ "Unable to process your request"
   end
@@ -112,6 +121,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   test "post /api/ with blank id should create org with generated id", %{conn: conn} do
     allow(Organizations.get(any()), return: nil)
     allow(Organizations.update(any()), return: :ok)
+    allow(Organizations.is_unique?(any(), any()), return: true)
     allow(OrgStore.update(any()), return: :ok)
 
     conn = post(conn, @route, %{"id" => "", "orgName" => "blankIDOrg", "orgTitle" => "Blank ID Org Title"})
@@ -126,6 +136,8 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     setup do
       allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
       allow(OrgStore.get(any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
+      allow(Organizations.get(any()), return: %{})
+      allow(Organizations.is_unique?(any(), any()), return: true)
       :ok
     end
 

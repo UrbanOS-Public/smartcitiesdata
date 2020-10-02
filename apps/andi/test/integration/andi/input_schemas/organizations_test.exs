@@ -8,6 +8,8 @@ defmodule Andi.InputSchemas.OrganizationsTest do
   alias Andi.InputSchemas.Organizations
   alias SmartCity.TestDataGenerator, as: TDG
 
+  import SmartCity.TestHelper, only: [eventually: 1]
+
   describe "get/1" do
     test "returns a saved dataset by id" do
       org = TDG.create_organization([])
@@ -65,6 +67,17 @@ defmodule Andi.InputSchemas.OrganizationsTest do
       assert harvested_dataset1 in datasets_for_org
       assert harvested_dataset2 in datasets_for_org
       refute harvested_dataset3 in datasets_for_org
+    end
+  end
+
+  describe "create/0" do
+    test "a new organization is created with an id, orgName, orgTitle, and description" do
+      new_org = Organizations.create()
+      id = new_org.id
+
+      eventually(fn ->
+        assert %{id: id} = Organizations.get(id)
+      end)
     end
   end
 
