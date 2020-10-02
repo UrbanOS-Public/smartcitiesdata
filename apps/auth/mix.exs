@@ -33,7 +33,7 @@ defmodule Auth.MixProject do
       {:guardian, "~> 2.0"},
       {:httpoison, "~> 1.5"},
       {:memoize, "~> 1.2"},
-      {:placebo, "~> 2.0.0-rc2", only: [:test, :integration]},
+      {:placebo, "~> 2.0.0-rc2", only: [:test]},
     ]
   end
 end

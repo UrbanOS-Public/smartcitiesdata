@@ -12,7 +12,7 @@ defmodule DiscoveryApi.Services.AuthService do
 
   def get_jwks() do
     case HTTPoison.get(jwks_endpoint()) do
-      {:ok, %{body: body}} -> jason.decode(body)
+      {:ok, %{body: body}} -> Jason.decode(body)
       error -> error
     end
   end

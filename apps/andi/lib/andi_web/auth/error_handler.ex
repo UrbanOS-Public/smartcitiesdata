@@ -5,13 +5,15 @@ defmodule AndiWeb.Auth.ErrorHandler do
   require Logger
 
   @impl Guardian.Plug.ErrorHandler
+  def auth_error(conn, {:unauthenticated, "https://andi.smartcolumbusos.com/roles"}, _opts) do
+    Logger.error("Auth failed: user does not have authorized role")
+
+    Phoenix.Controller.redirect(conn, to: "/auth/auth0?prompt=login&error_message=Unauthorized")
+  end
+
   def auth_error(conn, error, _opts) do
     Logger.error("Auth failed: #{inspect(error)}")
 
-    error_message =
-      "Unauthorized"
-      |> Jason.encode!()
-
-    Phoenix.Controller.redirect(conn, to: "/auth/auth0?prompt=login&error_message=Unauthorized")
+    Phoenix.Controller.redirect(conn, to: "/auth/auth0?prompt=login")
   end
 end
