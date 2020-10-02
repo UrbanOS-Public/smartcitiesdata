@@ -6,6 +6,7 @@ defmodule AndiWeb.API.OrganizationController do
 
   require Logger
   alias SmartCity.Organization
+  alias Andi.InputSchemas.Organizations
   alias Andi.Services.OrgStore
   import Andi
   import SmartCity.Event, only: [organization_update: 0]
@@ -20,7 +21,8 @@ defmodule AndiWeb.API.OrganizationController do
       |> remove_blank_keys()
       |> add_uuid()
 
-    with :ok <- ensure_new_org(message["id"]),
+    with :ok <- ensure_new_org_name(message["id"], message["orgName"]),
+         :ok <- ensure_new_org_id(message["id"]),
          {:ok, organization} <- Organization.new(message),
          :ok <- write_organization(organization) do
       conn
@@ -36,17 +38,25 @@ defmodule AndiWeb.API.OrganizationController do
     end
   end
 
-  defp ensure_new_org(id) do
-    case OrgStore.get(id) do
-      {:ok, %Organization{}} ->
-        Logger.error("ID #{id} already exists")
-        %RuntimeError{message: "ID #{id} already exists"}
-
-      {:ok, nil} ->
+  defp ensure_new_org_id(id) do
+    case Organizations.get(id) do
+      nil ->
         :ok
 
       _ ->
-        %RuntimeError{message: "Unknown error for #{id}"}
+        Logger.error("id #{id} already exists.")
+        %RuntimeError{message: "id #{id} already exists."}
+    end
+  end
+
+  defp ensure_new_org_name(id, org_name) do
+    case Organizations.is_unique?(id, org_name) do
+      false ->
+        Logger.error("orgName #{org_name} already exists.")
+        %RuntimeError{message: "orgName #{org_name} already exists."}
+
+      _ ->
+        :ok
     end
   end
 
