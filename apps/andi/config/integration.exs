@@ -91,19 +91,21 @@ config :andi, AndiWeb.Endpoint,
 
 config :ueberauth, Ueberauth,
   providers: [
-    auth0: {Ueberauth.Strategy.Auth0, [
-               default_audience: "andi",
-               allowed_request_params: [
-                 :scope,
-                 :state,
-                 :audience,
-                 :connection,
-                 :prompt,
-                 :screen_hint,
-                 :login_hint,
-                 :error_message
-               ]
-             ]}
+    auth0:
+      {Ueberauth.Strategy.Auth0,
+       [
+         default_audience: "andi",
+         allowed_request_params: [
+           :scope,
+           :state,
+           :audience,
+           :connection,
+           :prompt,
+           :screen_hint,
+           :login_hint,
+           :error_message
+         ]
+       ]}
   ]
 
 config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,

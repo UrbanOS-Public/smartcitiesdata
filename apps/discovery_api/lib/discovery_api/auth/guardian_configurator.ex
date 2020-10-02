@@ -17,7 +17,7 @@ defmodule DiscoveryApi.Auth.GuardianConfigurator do
     [
       allowed_algos: ["RS256"],
       issuer: current_config[:issuer],
-      secret_fetcher: DiscoveryApi.Auth.Auth0.SecretFetcher,
+      secret_fetcher: Auth.Auth0.SecretFetcher,
       verify_issuer: true
     ]
   end

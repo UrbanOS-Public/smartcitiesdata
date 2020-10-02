@@ -36,7 +36,21 @@ config :andi, ecto_repos: [Andi.Repo]
 
 config :ueberauth, Ueberauth,
   providers: [
-    auth0: {Ueberauth.Strategy.Auth0, [default_audience: "andi"]}
+    auth0:
+    {Ueberauth.Strategy.Auth0,
+     [
+       default_audience: "andi",
+       allowed_request_params: [
+         :scope,
+         :state,
+         :audience,
+         :connection,
+         :prompt,
+         :screen_hint,
+         :login_hint,
+         :error_message
+       ]
+     ]}
   ]
 
 # Import environment specific config. This must remain at the bottom

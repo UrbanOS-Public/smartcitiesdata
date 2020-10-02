@@ -80,3 +80,8 @@ config :andi, Andi.Scheduler,
   jobs: [
     {"0 0 1 * *", {Andi.Harvest.Harvester, :start_harvesting, []}}
   ]
+
+config :andi, AndiWeb.Auth.TokenHandler,
+  issuer: System.get_env("AUTH_JWT_ISSUER"),
+  allowed_algos: ["RS256"],
+  verify_issuer: true

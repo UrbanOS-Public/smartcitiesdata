@@ -14,6 +14,7 @@ defmodule AndiWeb.AuthTest do
     signing_opts = Plug.Session.init(Keyword.put(default_opts, :encrypt, false))
 
     really_far_in_the_future = 3_000_000_000_000
+
     config = [
       allowed_algos: ["RS256"],
       issuer: "https://smartcolumbusos-demo.auth0.com/",
@@ -21,6 +22,7 @@ defmodule AndiWeb.AuthTest do
       verify_issuer: true,
       allowed_drift: really_far_in_the_future
     ]
+
     Application.put_env(:andi, AndiWeb.Auth.TokenHandler, config)
 
     conn =
