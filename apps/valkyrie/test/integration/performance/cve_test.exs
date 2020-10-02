@@ -3,7 +3,7 @@ defmodule Valkyrie.Performance.CveTest do
 
   use Performance.BencheeCase,
     otp_app: :valkyrie,
-    endpoints: Application.get_env(:valkyrie, :elsa_brokers),
+    endpoints: Application.get_env(:valkyrie, :endpoints),
     topic_prefixes: ["raw", "transformed"],
     log_level: :warn
 
@@ -13,8 +13,8 @@ defmodule Valkyrie.Performance.CveTest do
   @tag timeout: :infinity
   test "run performance test" do
     # map_messages = Cve.generate_messages(1_000, :map)
-    spat_messages = Cve.generate_messages(1_000, :spat)
-    bsm_messages = Cve.generate_messages(1_000, :bsm)
+    spat_messages = Cve.generate_messages(10_000, :spat)
+    bsm_messages = Cve.generate_messages(10_000, :bsm)
 
     {scenarios, _} =
       [{"spat", spat_messages}, {"bsm", bsm_messages}]
@@ -22,9 +22,9 @@ defmodule Valkyrie.Performance.CveTest do
       |> Map.split([
         # "map.lmb.lmw.lmib.lpc.lpb",
         # "map.mmb.mmw.lmib.lpc.hpb",
-        "spat.lmb.lmw.lmib.lpc.lpb",
+        "spat.lmb.lmw.lmib.lpc.hpb",
         "spat.mmb.mmw.lmib.lpc.hpb",
-        "bsm.lmb.lmw.lmib.lpc.lpb",
+        "bsm.lmb.lmw.lmib.lpc.hpb",
         "bsm.mmb.mmw.lmib.lpc.hpb"
       ])
 
@@ -64,8 +64,6 @@ defmodule Valkyrie.Performance.CveTest do
       end,
       after_each: fn dataset ->
         Brook.Event.send(:valkyrie, dataset_delete(), :author, dataset)
-
-        delete_kafka_topics(dataset)
       end,
       time: 30,
       memory_time: 0.5,
@@ -73,5 +71,29 @@ defmodule Valkyrie.Performance.CveTest do
     ]
 
     benchee_run(benchee_opts)
+  end
+
+  test "profile message handler" do
+    messages = Cve.generate_data_messages(10_000, :spat, keys: :string)
+    dataset = Cve.create_dataset()
+    Brook.Event.send(:valkyrie, data_ingest_start(), :author, dataset)
+    context = %{dataset_id: dataset.id, assigns: %{schema: dataset.technical.schema}}
+
+    on_exit(fn ->
+      Valkyrie.Stream.Supervisor.terminate_child(dataset.id)
+
+      delete_kafka_topics(dataset)
+    end)
+
+    profile do
+      assert [] ==
+        Enum.reject(messages, fn message ->
+          {:ok, _} =
+            Valkyrie.Stream.SourceHandler.handle_message(
+              message,
+              context
+            )
+        end)
+    end
   end
 end
