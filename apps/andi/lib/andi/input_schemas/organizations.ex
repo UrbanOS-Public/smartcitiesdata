@@ -33,12 +33,13 @@ defmodule Andi.InputSchemas.Organizations do
   def create() do
     org_title = "New Organization - #{Date.utc_today()}"
 
-    changeset = Organization.changeset(%{
-      id: UUID.uuid4(),
-      orgTitle: org_title,
-      orgName: org_title_to_org_name(org_title),
-      description: "New Organization description"
-    })
+    changeset =
+      Organization.changeset(%{
+        id: UUID.uuid4(),
+        orgTitle: org_title,
+        orgName: org_title_to_org_name(org_title),
+        description: "New Organization description"
+      })
 
     {:ok, new_changeset} = save(changeset)
     new_changeset
@@ -105,7 +106,7 @@ defmodule Andi.InputSchemas.Organizations do
 
   def is_unique?(id, org_name) do
     from(org in Andi.InputSchemas.Organization,
-      where: org.orgName == ^org_name or org.id == ^id
+      where: org.orgName == ^org_name and org.id != ^id
     )
     |> Repo.all()
     |> Enum.empty?()

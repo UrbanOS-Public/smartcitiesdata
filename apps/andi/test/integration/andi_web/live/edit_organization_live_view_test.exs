@@ -113,7 +113,6 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       assert true == find_elements(html, ".btn--add-organization")
     end
-
   end
 
   describe "edit organization form data" do

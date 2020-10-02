@@ -75,7 +75,7 @@ defmodule Andi.InputSchemas.OrganizationsTest do
       new_org = Organizations.create()
       id = new_org.id
 
-      eventually(fn -> 
+      eventually(fn ->
         assert %{id: id} = Organizations.get(id)
       end)
     end

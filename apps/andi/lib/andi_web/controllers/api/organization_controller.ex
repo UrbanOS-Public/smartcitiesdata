@@ -21,7 +21,8 @@ defmodule AndiWeb.API.OrganizationController do
       |> remove_blank_keys()
       |> add_uuid()
 
-    with :ok <- ensure_new_org(message["id"], message["orgName"]),
+    with :ok <- ensure_new_org_name(message["id"], message["orgName"]),
+         :ok <- ensure_new_org_id(message["id"]),
          {:ok, organization} <- Organization.new(message),
          :ok <- write_organization(organization) do
       conn
@@ -37,11 +38,22 @@ defmodule AndiWeb.API.OrganizationController do
     end
   end
 
-  defp ensure_new_org(id, org_name) do
+  defp ensure_new_org_id(id) do
+    case Organizations.get(id) do
+      nil ->
+        :ok
+
+      _ ->
+        Logger.error("id #{id} already exists.")
+        %RuntimeError{message: "id #{id} already exists."}
+    end
+  end
+
+  defp ensure_new_org_name(id, org_name) do
     case Organizations.is_unique?(id, org_name) do
       false ->
-        Logger.error("Org #{id} already exists or does not have a unique system name")
-        %RuntimeError{message: "Org #{id} already exists or does not have a unique system name"}
+        Logger.error("orgName #{org_name} already exists.")
+        %RuntimeError{message: "orgName #{org_name} already exists."}
 
       _ ->
         :ok
