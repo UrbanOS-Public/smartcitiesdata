@@ -15,7 +15,7 @@ config :logger,
 
 config :valkyrie,
   endpoints: endpoints,
-  profiling_enabled: false,
+  profiling_enabled: true,
   divo: [
     {DivoKafka,
      [

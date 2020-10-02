@@ -7,7 +7,6 @@ defmodule Valkyrie.Performance.CveTest do
     topic_prefixes: ["raw", "transformed"],
     log_level: :warn
 
-  import Valkyrie.Application
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_delete: 0]
   import SmartCity.TestHelper
 
@@ -46,7 +45,7 @@ defmodule Valkyrie.Performance.CveTest do
         {dataset, count, topics}
       end,
       under_test: fn {dataset, expected_count, topics} ->
-        Brook.Event.send(instance(), data_ingest_start(), :author, dataset)
+        Brook.Event.send(:valkyrie, data_ingest_start(), :author, dataset)
         {_input_topic, output_topic} = topics
 
         eventually(
@@ -64,7 +63,7 @@ defmodule Valkyrie.Performance.CveTest do
         dataset
       end,
       after_each: fn dataset ->
-        Brook.Event.send(instance(), dataset_delete(), :author, dataset)
+        Brook.Event.send(:valkyrie, dataset_delete(), :author, dataset)
 
         delete_kafka_topics(dataset)
       end,

@@ -165,7 +165,7 @@ defmodule E2ETest do
     end
 
     test "is standardized by valkyrie", %{dataset: ds} do
-      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ds.id}"
+      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}#{ds.id}"
 
       eventually(fn ->
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
@@ -267,7 +267,7 @@ defmodule E2ETest do
     end
 
     test "is standardized by valkyrie", %{streaming_dataset: ds} do
-      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ds.id}"
+      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}#{ds.id}"
 
       eventually(fn ->
         {:ok, _, [message | _]} = Elsa.fetch(@brokers, topic)

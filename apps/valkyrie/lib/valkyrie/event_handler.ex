@@ -37,12 +37,6 @@ defmodule Valkyrie.EventHandler do
     :ok
   end
 
-  def handle_event(event) do
-    IO.inspect(event, label: "BAD HANDLE")
-
-    :ok
-  end
-
   defp begin_dataset(id) do
     Logger.debug("#{__MODULE__}: Beginning Ingestion for Dataset: #{id}")
     Valkyrie.Stream.Supervisor.start_child(id)

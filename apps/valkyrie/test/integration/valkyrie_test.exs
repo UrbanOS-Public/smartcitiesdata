@@ -9,7 +9,8 @@ defmodule Valkyrie.FullTest do
   @endpoints Application.get_env(:valkyrie, :endpoints)
 
   setup_all do
-    Logger.configure(level: :debug)
+    Application.put_env(:valkyrie, :profiling_enabled, false)
+
     dataset =
       TDG.create_dataset(%{
         technical: %{

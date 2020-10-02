@@ -10,11 +10,11 @@ defmodule Valkyrie.EndOfDataTest do
 
   @endpoints Application.get_env(:valkyrie, :endpoints)
 
-
   setup_all do
-    Logger.configure(level: :debug)
+    Application.put_env(:valkyrie, :profiling_enabled, false)
     :ok
   end
+
   test "data is not processed after #{end_of_data()} message" do
     dataset =
       TDG.create_dataset(

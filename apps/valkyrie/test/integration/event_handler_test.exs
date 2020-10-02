@@ -8,6 +8,11 @@ defmodule Valkyrie.EventHandlerTest do
 
   @endpoints Application.get_env(:valkyrie, :endpoints)
 
+  setup_all do
+    Application.put_env(:valkyrie, :profiling_enabled, false)
+    :ok
+  end
+
   @tag timeout: 120_000
   test "a dataset with an updated schema properly parses new messages" do
     schema = [%{name: "age", type: "string"}]
@@ -47,7 +52,7 @@ defmodule Valkyrie.EventHandlerTest do
         payloads = Testing.Kafka.fetch_messages(output_topic, @endpoints, SmartCity.Data)
         |> Enum.map(&Map.get(&1, :payload))
 
-        assert payloads == [%{"age" => 22}]
+        assert %{"age" => 22} in payloads
       end,
       2_000,
       10
