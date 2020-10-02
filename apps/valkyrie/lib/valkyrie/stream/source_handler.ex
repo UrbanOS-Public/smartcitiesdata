@@ -40,16 +40,17 @@ defmodule Valkyrie.Stream.SourceHandler do
   end
 
   def handle_batch(batch, context) do
-    Logger.debug(fn -> "Successfully processed #{length(batch)} messages for #{inspect(context)}" end)
-    # TODO - wire this to the Destination.write
+    output_topic = context.assigns.destination
+    destination_pid = context.assigns.destination_pid
+    Logger.debug(fn -> "Successfully processed #{length(batch)} messages for #{inspect(context)}, sending to #{inspect(output_topic)}" end)
+    Destination.write(output_topic, destination_pid, batch)
     record_outbound_count_metrics(batch, context.dataset_id)
 
     :ok
   end
 
-  def send_to_dlq(_dead_letters, _context) do
-    # dl = DeadLetter.new(dataset_id: context.dataset_id, original_message: message, app_name: :valkyrie, reason: reason)
-    # dlq().write([dl])
+  def send_to_dlq(dead_letters, _context) do
+    # dlq().write(dead_letters)
     :ok
   end
 

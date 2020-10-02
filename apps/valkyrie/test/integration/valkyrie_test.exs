@@ -71,8 +71,7 @@ defmodule Valkyrie.FullTest do
   } do
     Application.put_env(:valkyrie, :profiling_enabled, false)
     eventually fn ->
-      output_messages = Testing.Kafka.fetch_messages(output_topic, @endpoints)
-      |> Enum.map(&SmartCity.Data.new/1)
+      output_messages = Testing.SmartCity.Data.fetch_data_messages(output_topic, @endpoints)
 
       assert messages -- [invalid_message] == output_messages
     end

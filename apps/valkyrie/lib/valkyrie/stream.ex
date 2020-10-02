@@ -43,8 +43,8 @@ defmodule Valkyrie.Stream do
     input_topic = Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: TopicHelper.input_topic_name(state.dataset_id))
     output_topic = Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: TopicHelper.output_topic_name(state.dataset_id))
 
-    with {:ok, source_pid} <- start_source(input_topic, state),
-      {:ok, destination_pid} <- start_destination(output_topic, state) do
+    with {:ok, destination_pid} <- start_destination(output_topic, state),
+        {:ok, source_pid} <- start_source(input_topic, output_topic, destination_pid, state) do
         new_state =
           state
           |> Map.put(:source_pid, source_pid)
@@ -61,7 +61,7 @@ defmodule Valkyrie.Stream do
   end
 
   @retry with: exponential_backoff(100) |> take(@max_retries)
-  defp start_source(input_topic, state) do
+  defp start_source(input_topic, destination, destination_pid, state) do
     context =
       Source.Context.new!(
         handler: Valkyrie.Stream.SourceHandler,
@@ -70,7 +70,9 @@ defmodule Valkyrie.Stream do
         assigns: %{
           kafka: Application.get_env(:valkyrie, :topic_subscriber_config),
           schema: state.schema,
-          profiling_enabled: state.profiling_enabled
+          profiling_enabled: state.profiling_enabled,
+          destination: destination,
+          destination_pid: destination_pid
         }
       )
 

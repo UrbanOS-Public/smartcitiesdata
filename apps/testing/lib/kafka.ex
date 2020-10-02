@@ -24,7 +24,7 @@ defmodule Testing.Kafka do
       {:ok, {_offset, messages}} ->
         messages
         |> Enum.map(&Elsa.Message.kafka_message(&1, :value))
-        |> Enum.map(&Jason.decode!(&1, keys: :atoms))
+        |> Enum.map(&Jason.decode!/1)
 
       {:error, reason} ->
         Logger.debug("Failed to extract messages: #{inspect(reason)}")
