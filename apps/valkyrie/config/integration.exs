@@ -19,7 +19,7 @@ config :valkyrie,
   divo: [
     {DivoKafka,
      [
-       create_topics: "raw:1:1,validated:1:1,dead-letters:1:1, event-stream:1:1",
+       create_topics: "streaming-dead-letters:1:1,event-stream:1:1",
        outside_host: host,
        auto_topic: false,
        kafka_image_version: "2.12-2.1.1"
@@ -51,3 +51,10 @@ config :valkyrie, :brook,
       namespace: "valkyrie:view"
     ]
   ]
+
+config :dlq, Dlq.Application,
+  init?: true
+
+config :dlq, Dlq.Server,
+  topic: "streaming-dead-letters",
+  endpoints: endpoints

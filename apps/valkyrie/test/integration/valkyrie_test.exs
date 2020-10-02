@@ -51,7 +51,12 @@ defmodule Valkyrie.FullTest do
     Testing.Kafka.wait_for_topic(@endpoints, input_topic)
     Testing.Kafka.produce_messages(messages, input_topic, @endpoints)
 
-    {:ok, %{output_topic: output_topic, messages: messages, invalid_message: invalid_message}}
+    [
+      dlq_topic: "streaming-dead-letters",
+      output_topic: output_topic,
+      messages: messages,
+      invalid_message: invalid_message
+    ]
   end
 
   # TODO - find a home for this
@@ -71,9 +76,28 @@ defmodule Valkyrie.FullTest do
   } do
     Application.put_env(:valkyrie, :profiling_enabled, false)
     eventually fn ->
-      output_messages = Testing.SmartCity.Data.fetch_data_messages(output_topic, @endpoints)
+      output_messages = Testing.Kafka.fetch_messages(output_topic, @endpoints, SmartCity.Data)
 
       assert messages -- [invalid_message] == output_messages
     end
+  end
+
+  test "valkyrie sends discarded messages to the DLQ", %{
+    dlq_topic: dlq_topic,
+    invalid_message: invalid_message
+  } do
+    Application.put_env(:valkyrie, :profiling_enabled, false)
+    eventually fn ->
+      assert Testing.Kafka.fetch_messages(dlq_topic, @endpoints)
+      |> Enum.map(&Map.get(&1, "original_message"))
+      |> Enum.find(fn message ->
+        String.contains?(message, double_encode(invalid_message))
+      end)
+    end
+  end
+
+  defp double_encode(message) do
+    Jason.encode!(message)
+    |> Jason.encode!()
   end
 end

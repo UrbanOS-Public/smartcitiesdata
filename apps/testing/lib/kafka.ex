@@ -27,9 +27,17 @@ defmodule Testing.Kafka do
         |> Enum.map(&Jason.decode!/1)
 
       {:error, reason} ->
-        Logger.debug("Failed to extract messages: #{inspect(reason)}")
+        Logger.debug("Failed to extract messages for #{topic} from #{inspect(endpoints)}: #{inspect(reason)}")
         []
     end
+  end
+
+  def fetch_messages(topic, endpoints, module) do
+    fetch_messages(topic, endpoints)
+    |> Enum.map(fn message ->
+      {:ok, data} = apply(module, :new, [message])
+      data
+    end)
   end
 
   def wait_for_topic(endpoints, topic) do

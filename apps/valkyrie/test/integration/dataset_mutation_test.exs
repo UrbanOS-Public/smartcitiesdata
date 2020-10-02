@@ -1,34 +1,31 @@
 defmodule Valkyrie.DatasetMutationTest do
   use ExUnit.Case
-  use Divo
   import SmartCity.TestHelper
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_delete: 0]
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @dataset_id "ds1"
-  @input_topic "#{Application.get_env(:valkyrie, :input_topic_prefix)}-#{@dataset_id}"
-  @output_topic "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{@dataset_id}"
-  @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
-  @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
+  alias Valkyrie.TopicHelper
+
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
-  @instance Valkyrie.Application.instance()
 
   @tag timeout: 120_000
   test "a dataset with an updated schema properly parses new messages" do
     schema = [%{name: "age", type: "string"}]
-    dataset = TDG.create_dataset(id: @dataset_id, technical: %{schema: schema})
+    dataset = TDG.create_dataset(technical: %{schema: schema})
+    input_topic = TopicHelper.input_topic_name(dataset.id)
+    output_topic = TopicHelper.output_topic_name(dataset.id)
 
-    data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"age" => "21"})
+    data = TDG.create_data(dataset_id: dataset.id, payload: %{"age" => "21"})
 
     Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
-    TestHelpers.wait_for_topic(@endpoints, @input_topic)
-    TestHelpers.wait_for_topic(@endpoints, @output_topic)
+    Testing.Kafka.wait_for_topic(@endpoints, input_topic)
+    Testing.Kafka.wait_for_topic(@endpoints, output_topic)
 
-    Elsa.produce(@endpoints, @input_topic, Jason.encode!(data1), partition: 0)
+    Testing.Kafka.produce_messages([data], input_topic, @endpoints)
 
     eventually(
       fn ->
-        messages = Elsa.Fetch.fetch_stream(@endpoints, @output_topic) |> Enum.into([])
+        messages = Testing.SmartCity.Data.fetch_data_messages(@endpoints, output_topic)
 
         payloads =
           Enum.map(messages, fn message -> SmartCity.Data.new(message.value) |> elem(1) |> Map.get(:payload) end)

@@ -9,3 +9,5 @@ config :libcluster,
       ]
     ]
   ]
+
+config :dlq, Dlq.Application, init?: false

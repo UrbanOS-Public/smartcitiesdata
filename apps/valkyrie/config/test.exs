@@ -13,3 +13,5 @@ config :valkyrie, :brook,
     init_arg: []
   ],
   hosted_file_bucket: "hosted-dataset-files"
+
+config :dlq, Dlq.Application, init?: false

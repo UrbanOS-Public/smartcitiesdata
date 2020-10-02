@@ -57,6 +57,7 @@ defmodule Valkyrie.MixProject do
       {:timex, "~> 3.6"},
       {:annotated_retry, in_umbrella: true},
       {:definition_kafka, in_umbrella: true},
+      {:dlq, in_umbrella: true},
       {:initializer, in_umbrella: true},
       {:management, in_umbrella: true},
       {:properties, in_umbrella: true},

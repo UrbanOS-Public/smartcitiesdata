@@ -20,7 +20,7 @@ defmodule Valkyrie.Stream.SourceHandler do
   def handle_message(end_of_data() = message, context) do
     Brook.Event.send(:valkyrie, data_standardization_end(), __MODULE__, %{"dataset_id" => context.dataset_id})
 
-    Ok.ok(message)
+    Ok.error(message)
   end
 
   def handle_message(message, context) do
@@ -42,15 +42,19 @@ defmodule Valkyrie.Stream.SourceHandler do
   def handle_batch(batch, context) do
     output_topic = context.assigns.destination
     destination_pid = context.assigns.destination_pid
+
     Logger.debug(fn -> "Successfully processed #{length(batch)} messages for #{inspect(context)}, sending to #{inspect(output_topic)}" end)
+
     Destination.write(output_topic, destination_pid, batch)
+
     record_outbound_count_metrics(batch, context.dataset_id)
 
     :ok
   end
 
   def send_to_dlq(dead_letters, _context) do
-    # dlq().write(dead_letters)
+    Logger.debug(fn -> "Sending #{length(dead_letters)} messages to the DLQ" end)
+    dlq().write(dead_letters)
     :ok
   end
 

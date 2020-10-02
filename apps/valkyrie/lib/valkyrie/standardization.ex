@@ -9,7 +9,7 @@ defmodule Valkyrie.Standardization do
 
     case Enum.empty?(errors) do
       true -> {:ok, data}
-      false -> {:error, errors}
+      false -> {:error, errors} |> IO.inspect(label: "errors")
     end
   end
 
