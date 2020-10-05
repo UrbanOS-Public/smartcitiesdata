@@ -75,12 +75,12 @@ config :telemetry_event,
       metric_type: :last_value
     ],
     [
-      metric_name: "login_success",
+      metric_name: "andi_login_success",
       tags: [:app],
       metric_type: :counter
     ],
     [
-      metric_name: "login_failure",
+      metric_name: "andi_login_failure",
       tags: [:app],
       metric_type: :counter
     ]
