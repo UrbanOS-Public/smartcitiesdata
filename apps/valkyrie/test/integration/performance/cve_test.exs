@@ -22,9 +22,7 @@ defmodule Valkyrie.Performance.CveTest do
       |> Map.split([
         # "map.lmb.lmw.lmib.lpc.lpb",
         # "map.mmb.mmw.lmib.lpc.hpb",
-        "spat.lmb.lmw.lmib.lpc.hpb",
         "spat.mmb.mmw.lmib.lpc.hpb",
-        "bsm.lmb.lmw.lmib.lpc.hpb",
         "bsm.mmb.mmw.lmib.lpc.hpb"
       ])
 

@@ -89,6 +89,7 @@ defmodule Valkyrie.EventHandlerTest do
   end
 
   describe "end events" do
+    # TODO - fix this
     data_test "should stop a dataset with #{event_type}" do
       dataset =
         TDG.create_dataset(

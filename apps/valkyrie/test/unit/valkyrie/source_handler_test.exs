@@ -18,14 +18,14 @@ defmodule Valkyrie.SourceHandlerTest do
       {data, schema} = create_data_message()
       assert {:ok, handled} = Valkyrie.Stream.SourceHandler.handle_message(data, %{assigns: %{schema: schema}})
 
-      assert handled.payload == %{"name" => "johnny", "age" => 21}
+      assert handled["payload"] == %{"name" => "johnny", "age" => 21}
     end
 
     test "applies valkyrie message timing" do
       {data, schema} = create_data_message()
 
       assert {:ok, handled} = Valkyrie.Stream.SourceHandler.handle_message(data, %{assigns: %{schema: schema, profiling_enabled: true}})
-      timing = Enum.find(handled.operational.timing, fn timing -> timing.app == "valkyrie" end)
+      timing = Enum.find(handled["operational"]["timing"], fn timing -> timing.app == "valkyrie" end)
 
       assert timing == %SmartCity.Data.Timing{
                 app: "valkyrie",
@@ -39,7 +39,7 @@ defmodule Valkyrie.SourceHandlerTest do
       {data, schema} = create_data_message()
 
       assert {:ok, handled} = Valkyrie.Stream.SourceHandler.handle_message(data, %{assigns: %{schema: schema}})
-      refute Enum.find(handled.operational.timing, fn timing -> timing.app == "valkyrie" end)
+      refute Enum.find(handled["operational"]["timing"], fn timing -> timing.app == "valkyrie" end)
     end
 
     test "should emit a data standarization end event when END_OF_DATA message is recieved" do
@@ -97,6 +97,9 @@ defmodule Valkyrie.SourceHandlerTest do
 
   defp create_data_message() do
     data = TDG.create_data(dataset_id: Faker.UUID.v4(), payload: %{"name" => "johnny", "age" => "21"}, operational: %{timing: []})
+    |> Jason.encode!()
+    |> Jason.decode!()
+
     schema = [
       %{
         name: "name",
