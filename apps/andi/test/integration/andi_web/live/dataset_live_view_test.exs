@@ -22,7 +22,15 @@ defmodule AndiWeb.DatasetLiveViewTest do
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
 
+  setup do
+    [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+  end
+
   describe "dataset status" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    end
+
     test "is empty if the dataset has not been ingested", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       {:ok, andi_dataset} = Datasets.update(dataset)

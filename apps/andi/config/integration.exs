@@ -91,13 +91,32 @@ config :andi, AndiWeb.Endpoint,
 
 config :ueberauth, Ueberauth,
   providers: [
-    auth0: {Ueberauth.Strategy.Auth0, [default_audience: "andi"]}
+    auth0:
+      {Ueberauth.Strategy.Auth0,
+       [
+         default_audience: "andi",
+         allowed_request_params: [
+           :scope,
+           :state,
+           :audience,
+           :connection,
+           :prompt,
+           :screen_hint,
+           :login_hint,
+           :error_message
+         ]
+       ]}
   ]
 
 config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
   domain: "smartcolumbusos-demo.auth0.com",
   client_id: "KrA99qgUDwRWvbI07YOknIZSS1jzdXUr",
   client_secret: System.get_env("AUTH0_CLIENT_SECRET")
+
+config :andi, AndiWeb.Auth.TokenHandler,
+  issuer: "https://smartcolumbusos-demo.auth0.com/",
+  allowed_algos: ["RS256"],
+  verify_issuer: true
 
 defmodule Andi.DivoPostgres do
   @moduledoc """

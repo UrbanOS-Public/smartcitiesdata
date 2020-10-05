@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
-      version: "0.50.0",
+      version: "0.50.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -30,6 +30,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       {:atomic_map, "~> 0.9"},
       {:assertions, "~> 0.14.1", only: [:test, :integration], runtime: false},
+      {:auth, in_umbrella: true},
       {:ex_aws, "~> 2.1"},
       # This commit allows us to stream files off of S3 through memory. Release pending.
       {
