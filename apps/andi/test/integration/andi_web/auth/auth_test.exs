@@ -6,6 +6,9 @@ defmodule AndiWeb.AuthTest do
   alias Andi.Test.AuthHelper
 
   setup_all do
+    Ecto.Adapters.SQL.Sandbox.checkout(Andi.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(Andi.Repo, {:shared, self()})
+
     default_opts = [
       store: :cookie,
       key: "secretkey",

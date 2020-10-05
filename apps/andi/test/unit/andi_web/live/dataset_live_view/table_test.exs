@@ -16,6 +16,10 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   @ingested_time_a "123123213"
   @ingested_time_b "454699234"
 
+  setup do
+    [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+  end
+
   describe "order by click" do
     setup %{conn: conn} do
       dataset_a =
