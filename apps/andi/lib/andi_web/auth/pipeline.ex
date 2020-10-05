@@ -1,4 +1,6 @@
 defmodule Andi.Auth.Pipeline do
+  @moduledoc false
+
   use Guardian.Plug.Pipeline,
     otp_app: :andi,
     module: AndiWeb.Auth.TokenHandler,

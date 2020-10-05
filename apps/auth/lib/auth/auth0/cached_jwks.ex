@@ -1,6 +1,6 @@
 defmodule Auth.Auth0.CachedJWKS do
-  @moduledoc """
-  """
+  @moduledoc false
+
   use Memoize
 
   defmemo get_key(issuer, key_id) do
@@ -13,9 +13,9 @@ defmodule Auth.Auth0.CachedJWKS do
     key_from_jwks(keystore, key_id)
   end
 
-  defp key_from_jwks({:error, _reason} = error, _key_id), do: error
+  def key_from_jwks({:error, _reason} = error, _key_id), do: error
 
-  defp key_from_jwks({:ok, jwks}, key_id) do
+  def key_from_jwks({:ok, jwks}, key_id) do
     key =
       jwks
       |> Map.get("keys")

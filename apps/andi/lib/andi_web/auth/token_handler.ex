@@ -1,6 +1,6 @@
 defmodule AndiWeb.Auth.TokenHandler do
-  @moduledoc """
-  """
+  @moduledoc false
+
   use Guardian, otp_app: :andi, secret_fetcher: Auth.Auth0.SecretFetcher
 
   def put_session_token(conn, token) do

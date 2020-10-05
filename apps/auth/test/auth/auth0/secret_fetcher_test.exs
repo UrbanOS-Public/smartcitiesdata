@@ -31,6 +31,12 @@ defmodule Auth.Auth0.SecretFetcherTest do
 
       bypass = Bypass.open()
 
+      allow(SecretFetcher.fetch_verifying_secret(any(), any(), any()),
+        exec: fn _, %{"kid" => kid}, _ ->
+          Auth.Auth0.CachedJWKS.get_key("http://localhost:#{bypass.port}/", kid)
+        end
+      )
+
       Bypass.expect_once(bypass, "GET", "/.well-known/jwks.json", fn conn ->
         Plug.Conn.resp(conn, 200, @jwks_response)
       end)
@@ -41,7 +47,7 @@ defmodule Auth.Auth0.SecretFetcherTest do
     test "gives requested key", %{issuer: issuer} do
       secret =
         SecretFetcher.fetch_verifying_secret(
-          nil,
+          __MODULE__,
           %{"kid" => "RDVCQjg5MDhENzQ1RTIyMDk1OUI1NEYxODU5MTgwQkVGNDREODlDOQ"},
           issuer: issuer
         )
@@ -54,7 +60,9 @@ defmodule Auth.Auth0.SecretFetcherTest do
 
     test "returns error message if no key is found in the store", %{issuer: issuer} do
       error_message =
-        SecretFetcher.fetch_verifying_secret(nil, %{"kid" => "does_not_exist"}, issuer: issuer)
+        SecretFetcher.fetch_verifying_secret(__MODULE__, %{"kid" => "does_not_exist"},
+          issuer: issuer
+        )
 
       assert {:error, "no key for kid: does_not_exist"} = error_message
     end
@@ -62,16 +70,25 @@ defmodule Auth.Auth0.SecretFetcherTest do
 
   test "caches key fetching for subsequent calls" do
     Auth.Auth0.CachedJWKS.clear()
-    allow(HTTPoison.get(any()), return: {:ok, %{body: "cat"}})
+    fake_jwks = %{"keys" => [%{"kid" => "cat"}]} |> Jason.encode!()
+    allow(HTTPoison.get(any()), return: {:ok, %{body: fake_jwks}})
+
+    allow(SecretFetcher.fetch_verifying_secret(any(), any(), any()),
+      exec: fn _, %{"kid" => kid}, _ ->
+        Auth.Auth0.CachedJWKS.get_key("http://localhost:doesntmatter/", kid)
+      end
+    )
+
+    allow(Auth.Auth0.CachedJWKS.key_from_jwks(any(), any()), return: {:ok, "blah"})
 
     SecretFetcher.fetch_verifying_secret(
-      nil,
+      __MODULE__,
       %{"kid" => "RDVCQjg5MDhENzQ1RTIyMDk1OUI1NEYxODU5MTgwQkVGNDREODlDOQ"},
       issuer: "localhost:doesntmatter"
     )
 
     SecretFetcher.fetch_verifying_secret(
-      nil,
+      __MODULE__,
       %{"kid" => "RDVCQjg5MDhENzQ1RTIyMDk1OUI1NEYxODU5MTgwQkVGNDREODlDOQ"},
       issuer: "localhost:doesntmatter"
     )
@@ -87,9 +104,15 @@ defmodule Auth.Auth0.SecretFetcherTest do
         Plug.Conn.resp(conn, 404, "Not found")
       end)
 
+      allow(SecretFetcher.fetch_verifying_secret(any(), any(), any()),
+        exec: fn _, %{"kid" => kid}, _ ->
+          Auth.Auth0.CachedJWKS.get_key("http://localhost:#{bypass.port}/", kid)
+        end
+      )
+
       error_message =
         SecretFetcher.fetch_verifying_secret(
-          nil,
+          __MODULE__,
           %{"kid" => "RDVCQjg5MDhENzQ1RTIyMDk1OUI1NEYxODU5MTgwQkVGNDREODlDOQ"},
           issuer: "localhost:#{bypass.port}"
         )
