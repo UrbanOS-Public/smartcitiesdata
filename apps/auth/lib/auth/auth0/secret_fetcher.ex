@@ -5,7 +5,7 @@ defmodule Auth.Auth0.SecretFetcher do
 
   alias Auth.Auth0.CachedJWKS
 
-  def fetch_verifying_secret(module, token_headers, opts) do
+  def fetch_verifying_secret(module, token_headers, _opts) do
     %{"kid" => key_id} = token_headers
     issuer = apply(module, :config, [:issuer])
 
