@@ -14,6 +14,8 @@ defmodule Andi.Harvest.HarvesterTest do
   import SmartCity.Event, only: [dataset_harvest_start: 0, dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
+  @instance_name Andi.instance_name()
+
   @scos_data_json_uuid "1719bf64-38f5-40bf-9737-45e84f5c8419"
   @dataset_id_1 UUID.uuid5(@scos_data_json_uuid, "http://opendata.columbus.gov/datasets/88d9dd727f3c453793a8871000593bec_30")
   @dataset_id_2 UUID.uuid5(@scos_data_json_uuid, "http://opendata.columbus.gov/datasets/caa012bef21a49c3b3ecea09dca9f96d_2")
@@ -44,7 +46,7 @@ defmodule Andi.Harvest.HarvesterTest do
         Plug.Conn.resp(conn, 200, data_json)
       end)
 
-      Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+      Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org)
 
       eventually(fn ->
         dataset_ids = DatasetStore.get_all() |> elem(1) |> Enum.map(fn dataset -> dataset.id end)
@@ -60,7 +62,7 @@ defmodule Andi.Harvest.HarvesterTest do
         Plug.Conn.resp(conn, 200, data_json)
       end)
 
-      Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+      Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org)
 
       eventually(fn ->
         dataset_ids = Datasets.get_all() |> Enum.map(fn dataset -> dataset.id end)
@@ -76,7 +78,7 @@ defmodule Andi.Harvest.HarvesterTest do
         Plug.Conn.resp(conn, 200, data_json)
       end)
 
-      Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+      Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org)
 
       eventually(fn ->
         harvested_datasets = Organizations.get_all_harvested_datasets(org.id)
@@ -92,7 +94,7 @@ defmodule Andi.Harvest.HarvesterTest do
       {:ok, data_json} = Jason.decode(data_json)
       datasets = Harvester.map_data_json_to_dataset(data_json, org)
 
-      Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+      Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org)
 
       eventually(fn ->
         Organizations.update_harvested_dataset_include(@dataset_id_1, false)
@@ -122,7 +124,7 @@ defmodule Andi.Harvest.HarvesterTest do
         Plug.Conn.resp(conn, 200, data_json)
       end)
 
-      Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+      Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org)
 
       {:ok, date, _} = "2019-08-16T15:11:39.000Z" |> DateTime.from_iso8601()
 
@@ -139,7 +141,7 @@ defmodule Andi.Harvest.HarvesterTest do
         Plug.Conn.resp(conn, 200, data_json)
       end)
 
-      Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+      Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org)
 
       eventually(fn ->
         assert 3 == length(Organizations.get_all_harvested_datasets("95254592-d611-4bcb-9478-7fa248f4118d"))
@@ -156,8 +158,8 @@ defmodule Andi.Harvest.HarvesterTest do
 
       Organizations.update_harvested_dataset(harvested_dataset_one)
 
-      Brook.Event.send(:andi, dataset_update(), :andi, dataset_one)
-      Brook.Event.send(:andi, dataset_harvest_start(), :andi, org)
+      Brook.Event.send(@instance_name, dataset_update(), :andi, dataset_one)
+      Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org)
 
       eventually(fn ->
         assert 3 == length(Organizations.get_all_harvested_datasets("95254592-d611-4bcb-9478-7fa248f4118d"))

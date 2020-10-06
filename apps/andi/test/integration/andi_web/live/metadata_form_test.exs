@@ -198,7 +198,7 @@ defmodule AndiWeb.MetadataFormTest do
       {:ok, _} = Datasets.update(new_dataset)
 
       org = TDG.create_organization(%{orgTitle: "kevin org", orgName: "kevino"})
-      Brook.Event.send(:andi, organization_update(), __MODULE__, org)
+      Brook.Event.send(@instance_name, organization_update(), __MODULE__, org)
       eventually(fn -> OrgStore.get(org.id) != {:ok, nil} end)
 
       assert {:ok, view, _} = live(conn, @url_path <> new_dataset.id)
