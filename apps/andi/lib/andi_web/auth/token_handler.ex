@@ -4,7 +4,7 @@ defmodule AndiWeb.Auth.TokenHandler do
   use Guardian, otp_app: :andi, secret_fetcher: Auth.Auth0.SecretFetcher
 
   def put_session_token(conn, token) do
-    TelemetryEvent.add_event_metrics([app: "andi"], [:login_success])
+    TelemetryEvent.add_event_metrics([app: "andi"], [:andi_login_success])
     Guardian.Plug.put_session_token(conn, token)
   end
 
