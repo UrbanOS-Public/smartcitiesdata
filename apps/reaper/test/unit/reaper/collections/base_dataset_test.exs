@@ -9,7 +9,7 @@ defmodule Reaper.Collections.BaseDatasetTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   setup do
-    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance))
+    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance_name))
 
     Brook.Test.register(@instance_name)
 
