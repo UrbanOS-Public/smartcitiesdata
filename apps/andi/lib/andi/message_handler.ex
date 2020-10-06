@@ -13,7 +13,9 @@ defmodule Andi.MessageHandler do
   end
 
   def handle_messages(messages, state) do
+    IO.puts("started batch on DLQ of length #{length(messages)}")
     Enum.each(messages, &handle_message(&1, state))
+    IO.puts("finished batch on DLQ")
 
     {:ack, state}
   end

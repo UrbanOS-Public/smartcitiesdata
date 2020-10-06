@@ -69,7 +69,7 @@ defmodule Valkyrie.EventHandlerTest do
     eventually(
       fn ->
         assert is_dataset_supervisor_alive?(dataset.id)
-        assert {:ok, _} = Brook.ViewState.get(:valkyrie, :datasets_by_id, dataset.id)
+        assert {:ok, _} = Brook.ViewState.get(:valkyrie, :datasets, dataset.id)
         assert Elsa.Topic.exists?(@endpoints, input_topic)
         assert Elsa.Topic.exists?(@endpoints, output_topic)
       end,
@@ -82,7 +82,7 @@ defmodule Valkyrie.EventHandlerTest do
     eventually(
       fn ->
         assert not is_dataset_supervisor_alive?(dataset.id)
-        assert {:ok, nil} == Brook.ViewState.get(:valkyrie, :datasets_by_id, dataset.id)
+        assert {:ok, nil} == Brook.ViewState.get(:valkyrie, :datasets, dataset.id)
         assert not Elsa.Topic.exists?(@endpoints, input_topic)
         assert not Elsa.Topic.exists?(@endpoints, output_topic)
       end,

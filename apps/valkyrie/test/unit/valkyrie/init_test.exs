@@ -2,13 +2,15 @@ defmodule Valkyrie.InitTest do
   use ExUnit.Case
   use Placebo
 
+  alias SmartCity.TestDataGenerator, as: TDG
+
   setup do
-    allow(Brook.get_all(any(), :datasets_by_id),
+    allow(Brook.get_all(any(), :datasets),
       return:
       {:ok,
        %{
-         "2f3e26b3-89a9-4837-a780-5364587ecbc1" => [%{"type" => "string", "name" => "first"}],
-         "884bd4be-4d0b-47d2-ac88-069e04f3a0fc" => [%{"type" => "string", "name" => "first"}]
+         "2f3e26b3-89a9-4837-a780-5364587ecbc1" => TDG.create_dataset(%{technical: %{schema: [%{"type" => "string", "name" => "first"}]}}),
+         "884bd4be-4d0b-47d2-ac88-069e04f3a0fc" => TDG.create_dataset(%{technical: %{schema: [%{"type" => "string", "name" => "first"}]}})
        }}
     )
 

@@ -31,8 +31,6 @@ defmodule Dlq.Server do
   end
 
   def handle_cast({:write, dead_letters}, state) do
-    {state.topic, state.endpoints}
-
     messages = Enum.map(dead_letters, &Jason.encode!/1)
 
     Elsa.produce(state.connection, state.topic, messages)
