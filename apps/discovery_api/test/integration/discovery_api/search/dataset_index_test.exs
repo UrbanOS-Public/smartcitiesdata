@@ -14,6 +14,8 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Schemas.Organizations
 
+  @instance_name DiscoveryApi.instance_name()
+
   @organization_id_1 "11119ccf-de9f-4229-842f-e3733972d111"
 
   describe "create/0" do
@@ -863,7 +865,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       params = %{sort: "last_mod"}
 
       {:ok, event} = SmartCity.DataWriteComplete.new(%{id: "C", timestamp: DateTime.utc_now() |> DateTime.to_iso8601()})
-      Brook.Test.send(DiscoveryApi.instance_name(), data_write_complete(), __MODULE__, event)
+      Brook.Test.send(@instance_name, data_write_complete(), __MODULE__, event)
 
       local_eventually(fn ->
         response_map = call_search_endpoint_with_params(params)
@@ -918,7 +920,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       |> put_in([:technical, :orgId], @organization_id_1)
       |> TDG.create_dataset()
 
-    Brook.Event.send(DiscoveryApi.instance_name(), "dataset:update", __MODULE__, dataset)
+    Brook.Event.send(@instance_name, "dataset:update", __MODULE__, dataset)
 
     eventually(fn ->
       assert nil != Model.get(dataset.id)
@@ -929,7 +931,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
   defp create_organization(id) do
     organization = TDG.create_organization(%{id: id})
-    Brook.Event.send(DiscoveryApi.instance_name(), "organization:update", __MODULE__, organization)
+    Brook.Event.send(@instance_name, "organization:update", __MODULE__, organization)
 
     eventually(fn ->
       assert {:ok, _} = Organizations.get_organization(organization.id)

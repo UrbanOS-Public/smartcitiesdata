@@ -10,6 +10,8 @@ defmodule DiscoveryApi.Schemas.Visualizations do
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
 
+  @instance_name DiscoveryApi.instance_name()
+
   def list_visualizations do
     Repo.all(Visualization)
   end
@@ -82,7 +84,7 @@ defmodule DiscoveryApi.Schemas.Visualizations do
   end
 
   defp get_dataset_ids(system_names) do
-    Brook.get_all_values!(DiscoveryApi.instance_name(), :models)
+    Brook.get_all_values!(@instance_name, :models)
     |> Enum.filter(fn %{systemName: system_name} -> system_name in system_names end)
     |> Enum.map(fn %{id: id} -> id end)
   end

@@ -12,6 +12,8 @@ defmodule DiscoveryApi.Data.QueryTest do
   import SmartCity.Event, only: [dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
 
+  @instance_name DiscoveryApi.instance_name()
+
   @public_dataset_id "123-456-789"
   @private_dataset_id "111-222-333"
   @organization_name "org1"
@@ -68,9 +70,9 @@ defmodule DiscoveryApi.Data.QueryTest do
         }
       })
 
-    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, public_dataset)
-    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, private_dataset)
-    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, geojson_dataset)
+    Brook.Event.send(@instance_name, dataset_update(), __MODULE__, public_dataset)
+    Brook.Event.send(@instance_name, dataset_update(), __MODULE__, private_dataset)
+    Brook.Event.send(@instance_name, dataset_update(), __MODULE__, geojson_dataset)
 
     eventually(fn ->
       assert nil != Model.get(public_dataset.id)

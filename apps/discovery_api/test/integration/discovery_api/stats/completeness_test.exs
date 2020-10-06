@@ -10,6 +10,8 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
   import SmartCity.Event, only: [dataset_update: 0]
 
+  @instance_name DiscoveryApi.instance_name()
+
   setup do
     Redix.command!(:redix, ["FLUSHALL"])
     :ok
@@ -44,8 +46,8 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
           }
         })
 
-      Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset1)
-      Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset2)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset1)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset2)
 
       dataset1
       |> PrestoTestHelper.create_test_table()

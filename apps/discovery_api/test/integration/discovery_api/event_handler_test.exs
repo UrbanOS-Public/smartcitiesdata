@@ -12,6 +12,8 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Search.Elasticsearch
 
+  @instance_name DiscoveryApi.instance_name()
+
   describe "#{dataset_update()}" do
     test "updates the dataset in the search index" do
       organization = Helper.create_persisted_organization()
@@ -19,14 +21,14 @@ defmodule DiscoveryApi.EventHandlerTest do
       dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
       dataset_id = dataset.id
 
-      Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
       eventually(fn ->
         assert {:ok, %Model{id: ^dataset_id}} = Elasticsearch.Document.get(dataset_id)
       end)
 
       updated_dataset = put_in(dataset, [:business, :dataTitle], "updated title")
-      Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, updated_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, updated_dataset)
 
       eventually(fn ->
         assert {:ok, %Model{id: ^dataset_id, title: "updated title"}} = Elasticsearch.Document.get(dataset_id)
@@ -54,7 +56,7 @@ defmodule DiscoveryApi.EventHandlerTest do
       expected_organization = Helper.create_persisted_organization()
       expected_registry_dataset = TDG.create_dataset(%{technical: %{orgId: expected_organization.id}})
 
-      Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, expected_registry_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, expected_registry_dataset)
 
       eventually(
         fn ->

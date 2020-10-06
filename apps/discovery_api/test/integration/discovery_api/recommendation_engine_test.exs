@@ -8,6 +8,8 @@ defmodule DiscoveryApi.RecommendationEngineTest do
 
   import SmartCity.Event, only: [dataset_update: 0]
 
+  @instance_name DiscoveryApi.instance_name()
+
   test "dataset recommendations" do
     dataset_to_get_recommendations_for =
       TDG.create_dataset(%{
@@ -67,7 +69,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
     RecommendationEngine.save(dataset_that_should_match)
     RecommendationEngine.save(dataset_that_doesnt_meet_column_count_threshold)
 
-    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset_to_get_recommendations_for)
+    Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset_to_get_recommendations_for)
 
     Patiently.wait_for!(
       fn -> DiscoveryApi.Data.Model.get(dataset_to_get_recommendations_for.id) != nil end,

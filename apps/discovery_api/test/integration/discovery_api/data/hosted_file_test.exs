@@ -8,6 +8,8 @@ defmodule DiscoveryApi.Data.HostedFileTest do
 
   require Logger
 
+  @instance_name DiscoveryApi.instance_name()
+
   @expected_checksum :crypto.hash(:md5, File.read!("test/integration/test-file.test")) |> Base.encode16()
 
   @dataset_id "123-123"
@@ -46,7 +48,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->
@@ -75,7 +77,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->
@@ -104,7 +106,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->
@@ -133,7 +135,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->

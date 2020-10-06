@@ -157,7 +157,7 @@ defmodule DiscoveryApi.Test.Helper do
 
   def create_persisted_organization(map \\ %{}) do
     organization = TDG.create_organization(map)
-    Brook.Event.send(DiscoveryApi.instance_name(), "organization:update", :test, organization)
+    Brook.Event.send(@instance_name, "organization:update", :test, organization)
 
     Patiently.wait_for(
       fn ->
@@ -177,7 +177,7 @@ defmodule DiscoveryApi.Test.Helper do
   def associate_user_with_organization(user_id, organization_id) do
     {:ok, event} = SmartCity.UserOrganizationAssociate.new(%{user_id: user_id, org_id: organization_id})
 
-    Brook.Event.send(DiscoveryApi.instance_name(), "user:organization:associate", :test, event)
+    Brook.Event.send(@instance_name, "user:organization:associate", :test, event)
 
     Patiently.wait_for(
       fn -> user_associated_with_organization?(user_id, organization_id) end,
@@ -218,7 +218,7 @@ defmodule DiscoveryApi.Test.Helper do
         }
       })
 
-    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
     eventually(fn ->
       nil != Model.get(dataset.id)
