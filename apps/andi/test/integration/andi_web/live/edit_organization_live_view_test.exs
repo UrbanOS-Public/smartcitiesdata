@@ -31,7 +31,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   describe "create new organization" do
     setup do
       smrt_org = TDG.create_organization([])
-      [smrt_org: smrt_org]
+      [smrt_org: smrt_org, conn: Andi.Test.AuthHelper.build_authorized_conn()]
     end
 
     test "generate orgName from org title", %{conn: conn, smrt_org: smrt_org} do
@@ -128,6 +128,10 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   end
 
   describe "edit organization form data" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    end
+
     data_test "required #{field} field displays proper error message", %{conn: conn} do
       smrt_org = TDG.create_organization(%{})
 
@@ -168,6 +172,10 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   end
 
   describe "save and cancel buttons" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    end
+
     test "save button sends brook event and presents user with save success modal", %{conn: conn} do
       smrt_org = TDG.create_organization(%{})
       {:ok, _} = Organizations.update(smrt_org)
@@ -245,7 +253,14 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       %{dataTitle: dataset3.business.dataTitle, datasetId: dataset3.id, orgId: UUID.uuid4()} |> Organizations.update_harvested_dataset()
       %{dataTitle: dataset4.business.dataTitle, datasetId: dataset4.id, orgId: org.id} |> Organizations.update_harvested_dataset()
 
-      [org: org, dataset1: dataset1, dataset2: dataset2, dataset3: dataset3, dataset4: dataset4]
+      [
+        org: org,
+        dataset1: dataset1,
+        dataset2: dataset2,
+        dataset3: dataset3,
+        dataset4: dataset4,
+        conn: Andi.Test.AuthHelper.build_authorized_conn()
+      ]
     end
 
     test "shows all harvested datasets associated with a given organization", %{

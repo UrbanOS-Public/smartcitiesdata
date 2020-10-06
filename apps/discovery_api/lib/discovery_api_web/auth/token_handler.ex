@@ -9,7 +9,7 @@ defmodule DiscoveryApiWeb.Auth.TokenHandler do
   - verification in this case checks if the token has been revoked, not that it exists in the DB
   """
 
-  use Guardian, otp_app: :discovery_api
+  use Guardian, otp_app: :discovery_api, secret_fetcher: Auth.Auth0.SecretFetcher
 
   alias DiscoveryApi.Schemas.Users
   require Logger

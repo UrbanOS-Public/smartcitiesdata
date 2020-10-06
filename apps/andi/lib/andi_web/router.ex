@@ -18,6 +18,10 @@ defmodule AndiWeb.Router do
     plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
   end
 
+  pipeline :auth do
+    plug Andi.Auth.Pipeline
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
     plug Plug.Logger
@@ -25,7 +29,7 @@ defmodule AndiWeb.Router do
   end
 
   scope "/", AndiWeb do
-    pipe_through :browser
+    pipe_through [:browser, :auth]
 
     get "/", Redirect, to: "/datasets"
     live "/datasets", DatasetLiveView, layout: {AndiWeb.LayoutView, :root}
@@ -49,11 +53,13 @@ defmodule AndiWeb.Router do
   end
 
   scope "/auth", AndiWeb do
-    get("/auth0", AuthController, :request)
-    get("/auth0/callback", AuthController, :callback)
+    pipe_through :browser
+
+    get "/auth0", AuthController, :request
+    get "/auth0/callback", AuthController, :callback
   end
 
   scope "/", AndiWeb do
-    get("/healthcheck", HealthCheckController, :index)
+    get "/healthcheck", HealthCheckController, :index
   end
 end

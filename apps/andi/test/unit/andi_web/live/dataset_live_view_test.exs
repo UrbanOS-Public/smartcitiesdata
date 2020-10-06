@@ -10,6 +10,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
   @url_path "/datasets"
 
   describe "Basic live page load" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    end
+
     test "loads all datasets", %{conn: conn} do
       datasets =
         Enum.map(
@@ -45,7 +49,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
   describe "Live connection with search params in URL" do
     setup do
       allow(Andi.Repo.all(any()), return: [])
-      :ok
+
+      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
     end
 
     test "populates search box", %{conn: conn} do
@@ -68,6 +73,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   describe "When form change executes search" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    end
+
     test "Search Change event triggers redirect and updates search box value", %{conn: conn} do
       allow(Andi.Repo.all(any()), return: [])
       DatasetHelpers.replace_all_datasets_in_repo([])
@@ -86,6 +95,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   describe "When form submit executes search" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    end
+
     test "Search Submit event triggers redirect and updates search box value", %{conn: conn} do
       allow(Andi.Repo.all(any()), return: [])
       DatasetHelpers.replace_all_datasets_in_repo([])
@@ -104,6 +117,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   describe "Toggle remote datasets checkbox" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    end
+
     test "excludes remotes by default", %{conn: conn} do
       dataset_a = DatasetHelpers.create_dataset(technical: %{sourceType: "ingest"})
       dataset_b = DatasetHelpers.create_dataset(technical: %{sourceType: "remote"})

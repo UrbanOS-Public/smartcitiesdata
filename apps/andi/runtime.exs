@@ -73,6 +73,16 @@ config :telemetry_event,
       metric_name: "dataset_info.gauge",
       tags: [:dataset_id, :dataset_title, :system_name, :source_type, :org_name],
       metric_type: :last_value
+    ],
+    [
+      metric_name: "andi_login_success",
+      tags: [:app],
+      metric_type: :counter
+    ],
+    [
+      metric_name: "andi_login_failure",
+      tags: [:app],
+      metric_type: :counter
     ]
   ]
 
@@ -80,3 +90,8 @@ config :andi, Andi.Scheduler,
   jobs: [
     {"0 0 1 * *", {Andi.Harvest.Harvester, :start_harvesting, []}}
   ]
+
+config :andi, AndiWeb.Auth.TokenHandler,
+  issuer: System.get_env("AUTH_JWT_ISSUER"),
+  allowed_algos: ["RS256"],
+  verify_issuer: true

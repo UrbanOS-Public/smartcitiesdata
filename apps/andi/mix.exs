@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.47.1",
+      version: "0.48.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -36,6 +36,7 @@ defmodule Andi.MixProject do
     [
       {:accessible, "~> 0.2.1"},
       {:atomic_map, "~> 0.9"},
+      {:auth, in_umbrella: true},
       {:brook, "~> 0.4.0"},
       {:bypass, "~> 1.0", only: [:test, :integration]},
       {:checkov, "~> 1.0", only: [:test, :integration]},

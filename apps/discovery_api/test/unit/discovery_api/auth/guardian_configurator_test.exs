@@ -27,7 +27,7 @@ defmodule DiscoveryApi.Auth.GuardianConfiguratorTest do
     end
 
     test "sets the correct secret fetcher" do
-      assert DiscoveryApi.Auth.Auth0.SecretFetcher ==
+      assert Auth.Auth0.SecretFetcher ==
                Application.get_env(:discovery_api, TokenHandler)
                |> Keyword.get(:secret_fetcher)
     end

@@ -6,12 +6,15 @@ defmodule AndiWeb.EditControllerTest do
   @moduletag shared_data_connection: true
 
   alias Andi.InputSchemas.Datasets
-
   alias SmartCity.TestDataGenerator, as: TDG
 
   @url_path "/datasets"
 
   describe "EditController" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    end
+
     test "gives 404 if dataset is not found", %{conn: conn} do
       conn = get(conn, "#{@url_path}/#{UUID.uuid4()}")
 

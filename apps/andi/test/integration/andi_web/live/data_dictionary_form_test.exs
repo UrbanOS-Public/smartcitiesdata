@@ -30,6 +30,10 @@ defmodule AndiWeb.DataDictionaryFormTest do
   @url_path "/datasets/"
 
   describe "data_dictionary_tree_view" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    end
+
     test "given a schema with no nesting it displays the three fields in a well-known (BEM) way", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
@@ -200,6 +204,10 @@ defmodule AndiWeb.DataDictionaryFormTest do
   end
 
   describe "schema sample upload" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    end
+
     test "is shown when sourceFormat is CSV or JSON", %{conn: conn} do
       dataset = TDG.create_dataset(%{technical: %{sourceFormat: "application/json"}})
 
@@ -402,7 +410,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
         })
 
       {:ok, andi_dataset} = Datasets.update(dataset)
-      [dataset: andi_dataset]
+      [dataset: andi_dataset, conn: Andi.Test.AuthHelper.build_authorized_conn()]
     end
 
     test "adds field as a sub schema", %{conn: conn, dataset: dataset} do
@@ -567,7 +575,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
         })
 
       {:ok, andi_dataset} = Datasets.update(dataset)
-      [dataset: andi_dataset]
+      [dataset: andi_dataset, conn: Andi.Test.AuthHelper.build_authorized_conn()]
     end
 
     test "removes non parent field from subschema", %{conn: conn, dataset: dataset} do
