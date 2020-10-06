@@ -11,6 +11,8 @@ defmodule DiscoveryStreams.Stream do
   use Properties, otp_app: :discovery_streams
   require Logger
 
+  @instance_name DiscoveryStreams.instance_name()
+
   @max_retries get_config_value(:max_retries, default: 50)
 
   @type init_opts :: [
@@ -56,7 +58,7 @@ defmodule DiscoveryStreams.Stream do
     context =
       Source.Context.new!(
         handler: DiscoveryStreams.Stream.SourceHandler,
-        app_name: :discovery_streams,
+        app_name: @instance_name,
         dataset_id: state.dataset_id,
         assigns: %{
           kafka: Application.get_env(:discovery_streams, :topic_subscriber_config),

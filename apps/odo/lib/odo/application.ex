@@ -24,10 +24,9 @@ defmodule Odo.Application do
 
   defp brook() do
     Application.get_env(:odo, :brook)
-    |> Keyword.put(:instance, @instance_name)
     |> case do
       nil -> []
-      config -> {Brook, config}
+      config -> {Brook, Keyword.put(config, :instance, @instance_name)}
     end
   end
 
