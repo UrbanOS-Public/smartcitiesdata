@@ -12,6 +12,8 @@ defmodule DiscoveryStreams.Performance.CveTest do
   import SmartCity.Event, only: [data_ingest_start: 0]
   import SmartCity.TestHelper
 
+  @instance_name DiscoveryStreams.instance_name()
+
   test "run kafka performance test" do
     map_messages = Cve.generate_messages(10_000, :map)
     spat_messages = Cve.generate_messages(10_000, :spat)
@@ -45,7 +47,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
 
         {input_topic} = create_kafka_topics(dataset)
 
-        Brook.Event.send(:discovery_streams, data_ingest_start(), :author, dataset)
+        Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
         socket = join_stream(dataset)
 
         load_messages(dataset, input_topic, messages)
@@ -95,7 +97,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
       before_each: fn messages ->
         dataset = Cve.create_dataset()
 
-        Brook.Event.send(:discovery_streams, data_ingest_start(), :author, dataset)
+        Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
 
         {dataset, messages}
       end,
@@ -129,7 +131,7 @@ defmodule DiscoveryStreams.Performance.CveTest do
   test "profile message handler" do
     messages = Cve.generate_data_messages(10_000, :spat, keys: :string)
     dataset = Cve.create_dataset()
-    Brook.Event.send(:discovery_streams, data_ingest_start(), :author, dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
     context = %{dataset_id: dataset.id, assigns: %{system_name: dataset.technical.systemName}}
 
     on_exit(fn ->

@@ -3,9 +3,9 @@ defmodule DiscoveryApi.Data.Model do
   utilities to persist and load discovery data models
   """
 
-  import DiscoveryApi
-
   alias DiscoveryApi.Data.Persistence
+
+  @instance_name DiscoveryApi.instance_name()
 
   @collection :models
   @downloads_key "smart_registry:downloads:count"
@@ -86,7 +86,7 @@ defmodule DiscoveryApi.Data.Model do
 
   @spec get(any) :: any
   def get(id) do
-    {:ok, model} = Brook.ViewState.get(instance(), @collection, id)
+    {:ok, model} = Brook.ViewState.get(@instance_name, @collection, id)
 
     model
     |> ensure_struct()
@@ -94,7 +94,7 @@ defmodule DiscoveryApi.Data.Model do
   end
 
   def get_all() do
-    {:ok, models} = Brook.ViewState.get_all(instance(), @collection)
+    {:ok, models} = Brook.ViewState.get_all(@instance_name, @collection)
 
     models
     |> Map.values()
@@ -102,7 +102,7 @@ defmodule DiscoveryApi.Data.Model do
   end
 
   def get_all(ids) do
-    {:ok, models} = Brook.ViewState.get_all(instance(), @collection)
+    {:ok, models} = Brook.ViewState.get_all(@instance_name, @collection)
 
     models
     |> Enum.filter(fn {k, _v} -> k in ids end)

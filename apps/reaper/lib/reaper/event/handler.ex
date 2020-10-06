@@ -17,7 +17,7 @@ defmodule Reaper.Event.Handler do
 
   alias Reaper.Collections.{Extractions, FileIngestions}
 
-  @instance Reaper.Application.instance()
+  @instance_name Reaper.instance_name()
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %SmartCity.Dataset{} = dataset}) do
     dataset_update()
@@ -28,7 +28,7 @@ defmodule Reaper.Event.Handler do
     Reaper.Event.Handlers.DatasetUpdate.handle(dataset)
   rescue
     reason ->
-      Brook.Event.send(@instance, error_dataset_update(), :reaper, %{"reason" => reason, "dataset" => dataset})
+      Brook.Event.send(@instance_name, error_dataset_update(), :reaper, %{"reason" => reason, "dataset" => dataset})
       :discard
   end
 
@@ -40,7 +40,7 @@ defmodule Reaper.Event.Handler do
       Reaper.Horde.Supervisor.start_data_extract(dataset)
 
       if Extractions.should_send_data_ingest_start?(dataset) do
-        Brook.Event.send(@instance, data_ingest_start(), :reaper, dataset)
+        Brook.Event.send(@instance_name, data_ingest_start(), :reaper, dataset)
       end
 
       Extractions.update_started_timestamp(dataset.id)
@@ -94,7 +94,7 @@ defmodule Reaper.Event.Handler do
         }
     }
 
-    Brook.Event.send(@instance, data_extract_start(), :reaper, geojson_dataset)
+    Brook.Event.send(@instance_name, data_extract_start(), :reaper, geojson_dataset)
   end
 
   def handle_event(%Brook.Event{type: dataset_disable(), data: %SmartCity.Dataset{} = dataset}) do

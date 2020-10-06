@@ -4,7 +4,7 @@ defmodule Valkyrie.Application do
   use Application
   require Cachex.Spec
 
-  def instance(), do: :valkyrie_brook
+  @instance_name Valkyrie.instance_name()
 
   def start(_type, _args) do
     children =
@@ -14,7 +14,7 @@ defmodule Valkyrie.Application do
         brook(),
         {Valkyrie.Init, monitor: Valkyrie.Dynamic.Supervisor}
       ]
-      |> TelemetryEvent.config_init_server(instance())
+      |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
 
     opts = [strategy: :one_for_one, name: Valkyrie.Supervisor]
@@ -22,7 +22,7 @@ defmodule Valkyrie.Application do
   end
 
   defp brook() do
-    config = Application.get_env(:valkyrie, :brook) |> Keyword.put(:instance, instance())
+    config = Application.get_env(:valkyrie, :brook) |> Keyword.put(:instance, @instance_name)
     {Brook, config}
   end
 

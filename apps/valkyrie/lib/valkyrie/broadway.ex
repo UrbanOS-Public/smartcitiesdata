@@ -10,8 +10,9 @@ defmodule Valkyrie.Broadway do
 
   alias Broadway.Message
   alias SmartCity.Data
+
+  @instance_name Valkyrie.instance_name()
   @app_name "Valkyrie"
-  @instance Valkyrie.Application.instance()
 
   def start_link(opts) do
     Broadway.start_link(__MODULE__, broadway_config(opts))
@@ -49,7 +50,7 @@ defmodule Valkyrie.Broadway do
   end
 
   def handle_message(_processor, %Message{data: %{value: end_of_data()}} = message, %{dataset: dataset}) do
-    Brook.Event.send(@instance, data_standardization_end(), :valkyrie, %{"dataset_id" => dataset.id})
+    Brook.Event.send(@instance_name, data_standardization_end(), :valkyrie, %{"dataset_id" => dataset.id})
     message
   end
 

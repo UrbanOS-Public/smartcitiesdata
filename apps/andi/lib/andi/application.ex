@@ -2,9 +2,10 @@ defmodule Andi.Application do
   @moduledoc false
 
   use Application
-  import Andi
 
   require Logger
+
+  @instance_name Andi.instance_name()
 
   def start(_type, _args) do
     children =
@@ -17,7 +18,7 @@ defmodule Andi.Application do
         Andi.Scheduler,
         elsa()
       ]
-      |> TelemetryEvent.config_init_server(instance_name())
+      |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
 
     set_auth0_credentials()

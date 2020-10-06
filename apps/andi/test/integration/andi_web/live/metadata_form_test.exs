@@ -12,7 +12,6 @@ defmodule AndiWeb.MetadataFormTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
-  import Andi, only: [instance_name: 0]
   import SmartCity.Event, only: [dataset_update: 0, organization_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
@@ -31,6 +30,8 @@ defmodule AndiWeb.MetadataFormTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.InputConverter
+
+  @instance_name Andi.instance_name()
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
@@ -61,7 +62,7 @@ defmodule AndiWeb.MetadataFormTest do
 
     test "validation is only triggered for new datasets", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{technical: %{dataName: "original name"}})
-      Brook.Event.send(instance_name(), dataset_update(), __MODULE__, smrt_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
 
       eventually(
         fn ->
@@ -128,8 +129,8 @@ defmodule AndiWeb.MetadataFormTest do
       org1 = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})
       org2 = TDG.create_organization(%{orgTitle: "Very Readable", orgName: "very_readable"})
 
-      Brook.Event.send(instance_name(), organization_update(), __MODULE__, org1)
-      Brook.Event.send(instance_name(), organization_update(), __MODULE__, org2)
+      Brook.Event.send(@instance_name, organization_update(), __MODULE__, org1)
+      Brook.Event.send(@instance_name, organization_update(), __MODULE__, org2)
 
       eventually(fn ->
         assert OrgStore.get(org1.id) != {:ok, nil}
@@ -430,7 +431,7 @@ defmodule AndiWeb.MetadataFormTest do
 
     test "displays all other fields", %{conn: conn} do
       org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})
-      Brook.Event.send(instance_name(), organization_update(), __MODULE__, org)
+      Brook.Event.send(@instance_name, organization_update(), __MODULE__, org)
       eventually(fn -> OrgStore.get(org.id) != {:ok, nil} end)
 
       smrt_dataset =
@@ -614,7 +615,7 @@ defmodule AndiWeb.MetadataFormTest do
   describe "can not edit" do
     test "source format", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
-      Brook.Event.send(instance_name(), dataset_update(), __MODULE__, smrt_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
       eventually(fn -> DatasetStore.get(smrt_dataset.id) != {:ok, nil} end, 300, 100)
 
       assert {:ok, view, html} = live(conn, @url_path <> smrt_dataset.id)
@@ -624,11 +625,11 @@ defmodule AndiWeb.MetadataFormTest do
 
     test "organization title", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
-      Brook.Event.send(instance_name(), dataset_update(), __MODULE__, smrt_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
       eventually(fn -> DatasetStore.get(smrt_dataset.id) != {:ok, nil} end)
 
       org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})
-      Brook.Event.send(instance_name(), organization_update(), __MODULE__, org)
+      Brook.Event.send(@instance_name, organization_update(), __MODULE__, org)
       eventually(fn -> OrgStore.get(org.id) != {:ok, nil} end)
 
       assert {:ok, view, html} = live(conn, @url_path <> smrt_dataset.id)

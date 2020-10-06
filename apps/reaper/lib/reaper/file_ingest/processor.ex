@@ -13,7 +13,7 @@ defmodule Reaper.FileIngest.Processor do
     DataSlurper
   }
 
-  @instance Reaper.Application.instance()
+  @instance_name Reaper.instance_name()
 
   @doc """
   Process a hosted dataset
@@ -56,7 +56,7 @@ defmodule Reaper.FileIngest.Processor do
       })
 
     Logger.debug(fn -> "#{__MODULE__} : Sending event to event stream : #{inspect(file_upload)}" end)
-    Brook.Event.send(@instance, file_ingest_end(), :reaper, file_upload)
+    Brook.Event.send(@instance_name, file_ingest_end(), :reaper, file_upload)
   end
 
   defp bucket_name, do: Application.get_env(:reaper, :hosted_file_bucket)

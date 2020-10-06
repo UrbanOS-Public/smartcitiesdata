@@ -46,7 +46,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->
@@ -75,7 +75,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->
@@ -104,7 +104,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->
@@ -133,7 +133,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
         technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
       })
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->

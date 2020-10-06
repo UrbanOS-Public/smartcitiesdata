@@ -3,7 +3,8 @@ defmodule Odo.Application do
 
   require Logger
   use Application
-  import Odo
+
+  @instance_name Odo.instance_name()
 
   def start(_type, _args) do
     children =
@@ -12,7 +13,7 @@ defmodule Odo.Application do
         brook(),
         Odo.Init
       ]
-      |> TelemetryEvent.config_init_server(instance())
+      |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
 
     fetch_and_set_hosted_file_credentials()

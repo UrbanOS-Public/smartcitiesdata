@@ -11,13 +11,14 @@ defmodule Andi.OrganizationControllerTest do
   alias Andi.Services.OrgStore
   alias Andi.InputSchemas.Organizations
   import SmartCity.TestHelper, only: [eventually: 1]
-  import Andi
+
+  @instance_name Andi.instance_name()
 
   plug Tesla.Middleware.BaseUrl, "http://localhost:4000"
 
   describe "failure to send new organization to event stream" do
     setup do
-      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
+      allow(Brook.Event.send(@instance_name, any(), :andi, any()),
         return: {:error, :reason},
         meck_options: [:passthrough]
       )
@@ -106,6 +107,6 @@ defmodule Andi.OrganizationControllerTest do
   end
 
   defp get_brook(id, collection) do
-    Brook.get(instance_name(), collection, id)
+    Brook.get(@instance_name, collection, id)
   end
 end

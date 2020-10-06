@@ -6,7 +6,7 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
   alias SmartCity.TestDataGenerator, as: TDG
   require Andi
 
-  @instance Andi.instance_name()
+  @instance_name Andi.instance_name()
 
   test "Sends dataset update event when dataset has been migrated" do
     dataset =
@@ -27,14 +27,14 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
       |> Map.put(:business, updated_business)
       |> SmartCity.Dataset.new()
 
-    allow(Brook.get_all_values!(@instance, :dataset), return: [dataset])
+    allow(Brook.get_all_values!(@instance_name, :dataset), return: [dataset])
     allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
     allow(Brook.ViewState.merge(:dataset, any(), any()), return: :ok)
 
     Andi.Migration.ModifiedDateMigration.do_migration()
 
     assert_called Brook.ViewState.merge(:dataset, updated_dataset.id, updated_dataset)
-    assert_called Brook.Event.send(@instance, dataset_update(), :andi, updated_dataset)
+    assert_called Brook.Event.send(@instance_name, dataset_update(), :andi, updated_dataset)
   end
 
   test "does not send dataset update event if there was no change" do
@@ -44,13 +44,13 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
         business: %{modifiedDate: "2017-08-08T13:03:48.000Z"}
       )
 
-    allow(Brook.get_all_values!(@instance, :dataset), return: [dataset])
+    allow(Brook.get_all_values!(@instance_name, :dataset), return: [dataset])
     allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
     allow(Brook.ViewState.merge(:dataset, any(), any()), return: :ok)
 
     Andi.Migration.ModifiedDateMigration.do_migration()
 
-    refute_called Brook.Event.send(@instance, dataset_update(), :andi, dataset)
+    refute_called Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
     refute_called Brook.ViewState.merge(:dataset, dataset.id, any())
   end
 
@@ -62,7 +62,7 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
         business: %{modifiedDate: "not an actual date"}
       )
 
-    allow(Brook.get_all_values!(@instance, :dataset), return: [dataset])
+    allow(Brook.get_all_values!(@instance_name, :dataset), return: [dataset])
     allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
     allow(Brook.ViewState.merge(:dataset, any(), any()), return: :ok)
 

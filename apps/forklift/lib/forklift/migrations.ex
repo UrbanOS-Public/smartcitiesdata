@@ -5,9 +5,7 @@ defmodule Forklift.Migrations do
   require Logger
   use GenServer, restart: :transient
 
-  import Forklift, only: [instance_name: 0]
-
-  @instance instance_name()
+  @instance_name Forklift.instance_name()
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
@@ -28,11 +26,11 @@ defmodule Forklift.Migrations do
       Logger.info("Migration already completed for " <> event_name)
     else
       Logger.info("Running migration for " <> event_name)
-      Brook.Event.send(@instance, event_name, :forklift, %{})
+      Brook.Event.send(@instance_name, event_name, :forklift, %{})
     end
   end
 
   defp complete?(completed_flag_name) do
-    Brook.get!(@instance, :migration, completed_flag_name)
+    Brook.get!(@instance_name, :migration, completed_flag_name)
   end
 end

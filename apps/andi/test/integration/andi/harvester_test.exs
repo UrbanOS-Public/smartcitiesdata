@@ -3,7 +3,6 @@ defmodule Andi.Harvest.HarvesterTest do
   use Andi.DataCase
   use Placebo
 
-  import Andi
   @moduletag shared_data_connection: true
 
   alias SmartCity.TestDataGenerator, as: TDG

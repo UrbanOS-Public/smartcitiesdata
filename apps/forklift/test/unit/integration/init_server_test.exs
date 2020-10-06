@@ -3,8 +3,9 @@ defmodule Forklift.Integration.InitServerTest do
   use Placebo
 
   import Mox
-  import Forklift
   alias SmartCity.TestDataGenerator, as: TDG
+
+  @instance_name Forklift.instance_name()
 
   setup :set_mox_global
   setup :verify_on_exit!
@@ -19,7 +20,7 @@ defmodule Forklift.Integration.InitServerTest do
     dataset1 = TDG.create_dataset(%{id: "view-state-1"})
     dataset2 = TDG.create_dataset(%{id: "view-state-2"})
 
-    allow Brook.get_all_values!(instance_name(), :datasets), return: [dataset1, dataset2]
+    allow Brook.get_all_values!(@instance_name, :datasets), return: [dataset1, dataset2]
     stub(MockTopic, :init, fn _ -> :ok end)
     stub(MockReader, :init, fn args -> send(test, args[:dataset]) && :ok end)
 
@@ -32,7 +33,7 @@ defmodule Forklift.Integration.InitServerTest do
   test "initializes output_topic TopicWriter" do
     test = self()
 
-    allow Brook.get_all_values!(instance_name(), :datasets), return: []
+    allow Brook.get_all_values!(@instance_name, :datasets), return: []
     stub(MockReader, :init, fn _ -> :ok end)
     stub(MockTopic, :init, fn args -> send(test, args[:topic]) && :ok end)
 
@@ -45,7 +46,7 @@ defmodule Forklift.Integration.InitServerTest do
     dataset1 = TDG.create_dataset(%{id: "restart-1"})
     dataset2 = TDG.create_dataset(%{id: "restart-2"})
 
-    allow Brook.get_all_values!(instance_name(), :datasets), return: [dataset1, dataset2]
+    allow Brook.get_all_values!(@instance_name, :datasets), return: [dataset1, dataset2]
     stub(MockTopic, :init, fn _ -> :ok end)
 
     expect(MockReader, :init, 2, fn _ -> :ok end)

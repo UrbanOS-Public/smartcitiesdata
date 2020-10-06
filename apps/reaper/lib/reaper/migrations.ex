@@ -6,7 +6,7 @@ defmodule Reaper.Migrations do
 
   require Logger
 
-  @instance Reaper.Application.instance()
+  @instance_name Reaper.instance_name()
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
@@ -31,7 +31,7 @@ defmodule Reaper.Migrations do
   defp start_brook() do
     brook_config =
       Application.get_env(:reaper, :brook)
-      |> Keyword.put(:instance, @instance)
+      |> Keyword.put(:instance, @instance_name)
       |> Keyword.delete(:driver)
 
     Brook.start_link(brook_config)
@@ -57,7 +57,7 @@ defmodule Reaper.Migrations do
   end
 
   defp migrate_enabled_flag() do
-    Brook.get_all_values!(@instance, :extractions)
+    Brook.get_all_values!(@instance_name, :extractions)
     |> Enum.each(&migrate_extractions/1)
   end
 
@@ -69,7 +69,7 @@ defmodule Reaper.Migrations do
     Logger.info("Migrating : #{dataset_id}")
 
     Brook.Test.with_event(
-      @instance,
+      @instance_name,
       Brook.Event.new(type: "reaper_config:migration", author: "migration", data: dataset_id),
       fn ->
         Brook.ViewState.merge(:extractions, dataset_id, %{"enabled" => true})
@@ -105,7 +105,7 @@ defmodule Reaper.Migrations do
   defp migrate_brook_args(_), do: :ok
 
   defp update_task(%{task: {Brook.Event, :send, args}} = job) do
-    new_args = [@instance | args]
+    new_args = [@instance_name | args]
     %{job | task: {Brook.Event, :send, new_args}}
   end
 end

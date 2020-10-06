@@ -32,7 +32,7 @@ defmodule DiscoveryApi.Data.DictionaryTest do
           technical: %{orgId: organization.id, schema: schema}
         })
 
-      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+      Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, dataset)
 
       eventually(fn ->
         %{status_code: status_code, body: body} =

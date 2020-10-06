@@ -3,10 +3,5 @@ defmodule Odo do
   Convenience functions for the Odo application.
   """
 
-  def event_stream_instance() do
-    Application.get_env(:odo, :brook)
-    |> Keyword.fetch!(:instance)
-  end
-
-  def instance(), do: :odo
+  def instance_name(), do: :odo_brook
 end

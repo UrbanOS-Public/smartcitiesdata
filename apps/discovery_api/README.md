@@ -14,10 +14,10 @@ Discovery API serves as middleware between our data storage and our Discovery UI
   DiscoveryApi.Search.Elasticsearch.DatasetIndex.create()
   # Create an Organization
   organization = SmartCity.TestDataGenerator.create_organization(%{})
-  Brook.Event.send(DiscoveryApi.instance(), "organization:update", :testing, organization)
+  Brook.Event.send(DiscoveryApi.instance_name(), "organization:update", :testing, organization)
   # Create a Dataset
   dataset = SmartCity.TestDataGenerator.create_dataset(%{technical: %{orgId: organization.id}})
-  Brook.Event.send(DiscoveryApi.instance(), "dataset:update", :testing, dataset)
+  Brook.Event.send(DiscoveryApi.instance_name(), "dataset:update", :testing, dataset)
   ```
 
 ### To run the tests
@@ -40,7 +40,7 @@ This application hosts a Tableau Web Data Connector that uses this API for inter
 
 ### To reindex the entire Elasticsearch index
 ```elixir
-Brook.get_all_values!(DiscoveryApi.instance(), :models)
+Brook.get_all_values!(DiscoveryApi.instance_name(), :models)
 |> Elasticsearch.Document.replace_all()
 ```
 

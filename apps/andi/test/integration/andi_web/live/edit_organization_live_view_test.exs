@@ -7,7 +7,6 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
   import Checkov
   import Phoenix.LiveViewTest
-  import Andi, only: [instance_name: 0]
   import SmartCity.Event, only: [organization_update: 0, dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
@@ -24,6 +23,8 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.Services.OrgStore
   alias Andi.Services.DatasetStore
+
+  @instance_name Andi.instance_name()
 
   @url_path "/organizations/"
 
@@ -52,7 +53,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
     test "validation is only triggered for new organizations", %{conn: conn} do
       smrt_organization = TDG.create_organization(%{orgName: "original_org_name"})
-      Brook.Event.send(instance_name(), organization_update(), __MODULE__, smrt_organization)
+      Brook.Event.send(@instance_name, organization_update(), __MODULE__, smrt_organization)
 
       eventually(
         fn ->

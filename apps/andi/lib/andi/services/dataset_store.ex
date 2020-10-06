@@ -3,7 +3,7 @@ defmodule Andi.Services.DatasetStore do
   An Abstraction that handle the specifics of the Brook View state for andi dataset.
   """
 
-  import Andi
+  @instance_name Andi.instance_name()
 
   @collection :dataset
   @collection_ingested_time :ingested_time
@@ -15,15 +15,15 @@ defmodule Andi.Services.DatasetStore do
   end
 
   def get(id) do
-    Brook.get(instance_name(), @collection, id)
+    Brook.get(@instance_name, @collection, id)
   end
 
   def get_all() do
-    Brook.get_all_values(instance_name(), @collection)
+    Brook.get_all_values(@instance_name, @collection)
   end
 
   def get_all!() do
-    Brook.get_all_values!(instance_name(), @collection)
+    Brook.get_all_values!(@instance_name, @collection)
   end
 
   def delete(id) do
@@ -33,11 +33,11 @@ defmodule Andi.Services.DatasetStore do
   # Brook View State for collection ingested time
 
   def get_ingested_time!(id) do
-    Brook.get!(instance_name(), @collection_ingested_time, id)
+    Brook.get!(@instance_name, @collection_ingested_time, id)
   end
 
   def get_all_ingested_time!() do
-    Brook.get_all_values!(instance_name(), @collection_ingested_time)
+    Brook.get_all_values!(@instance_name, @collection_ingested_time)
   end
 
   def delete_ingested_time(id) do

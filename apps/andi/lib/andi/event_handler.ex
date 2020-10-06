@@ -3,8 +3,6 @@ defmodule Andi.EventHandler do
   use Brook.Event.Handler
   require Logger
 
-  import Andi
-
   import SmartCity.Event,
     only: [
       dataset_update: 0,
@@ -25,6 +23,8 @@ defmodule Andi.EventHandler do
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
+
+  @instance_name Andi.instance_name()
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data, author: author}) do
     dataset_update()
@@ -135,7 +135,7 @@ defmodule Andi.EventHandler do
   defp data_harvest_event(org) do
     case org.dataJsonUrl do
       nil -> :ok
-      _ -> Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org)
+      _ -> Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org)
     end
   end
 end

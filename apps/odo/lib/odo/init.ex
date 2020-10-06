@@ -7,13 +7,15 @@ defmodule Odo.Init do
   require Logger
   use Task, restart: :transient
 
+  @instance_name Odo.instance_name()
+
   def start_link(_arg) do
     Task.start_link(__MODULE__, :run, [])
   end
 
   def run() do
     pending_conversions =
-      Brook.get_all_values!(Odo.event_stream_instance(), :file_conversions)
+      Brook.get_all_values!(@instance_name, :file_conversions)
       |> Enum.map(&Odo.ConversionMap.generate/1)
       |> Enum.map(&unwrap_ok/1)
 

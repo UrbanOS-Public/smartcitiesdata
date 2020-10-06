@@ -10,6 +10,8 @@ defmodule Odo.FileProcessor do
   alias ExAws.S3
   alias SmartCity.{Helpers, HostedFile}
 
+  @instance_name Odo.instance_name()
+
   def process(%Odo.ConversionMap{
         bucket: bucket,
         original_key: original_key,
@@ -40,7 +42,7 @@ defmodule Odo.FileProcessor do
           Odo.MetricsRecorder.record_file_conversion_metrics(dataset_id, original_key, false, start_time)
           explanation = "File upload failed for dataset #{dataset_id}: #{reason}"
 
-          Brook.Event.send(Odo.event_stream_instance(), error_file_ingest(), :odo, %{
+          Brook.Event.send(@instance_name, error_file_ingest(), :odo, %{
             dataset_id: dataset_id,
             bucket: bucket,
             key: original_key
@@ -98,7 +100,7 @@ defmodule Odo.FileProcessor do
 
     {:ok, event} = HostedFile.new(%{dataset_id: dataset_id, bucket: bucket, key: key, mime_type: new_mime})
 
-    Brook.Event.send(Odo.event_stream_instance(), event_type, :odo, event)
+    Brook.Event.send(@instance_name, event_type, :odo, event)
   end
 
   defp cleanup_files(files) do

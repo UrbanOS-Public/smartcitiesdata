@@ -11,6 +11,8 @@ defmodule Reaper.PerformanceTest do
   import SmartCity.Event, only: [dataset_update: 0]
   import SmartCity.TestHelper
 
+  @instance_name Reaper.instance_name()
+
   @tag timeout: :infinity
   test "run performance test" do
     # big_data_file_details = host_data_file(100_000, 500)
@@ -43,7 +45,7 @@ defmodule Reaper.PerformanceTest do
         {dataset, count, topics}
       end,
       under_test: fn {dataset, expected_count, topics} ->
-        Brook.Event.send(instance(), dataset_update(), :author, dataset)
+        Brook.Event.send(@instance_name, dataset_update(), :author, dataset)
 
         {output_topic} = topics
 

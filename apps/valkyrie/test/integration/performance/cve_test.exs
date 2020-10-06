@@ -11,6 +11,8 @@ defmodule Valkyrie.Performance.CveTest do
   import SmartCity.Event, only: [data_ingest_start: 0]
   import SmartCity.TestHelper
 
+  @instance_name Valkyrie.instance_name()
+
   @tag timeout: :infinity
   test "run performance test" do
     # map_messages = Cve.generate_messages(1_000, :map)
@@ -46,7 +48,7 @@ defmodule Valkyrie.Performance.CveTest do
         {dataset, count, topics}
       end,
       under_test: fn {dataset, expected_count, topics} ->
-        Brook.Event.send(instance(), data_ingest_start(), :author, dataset)
+        Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
         {_input_topic, output_topic} = topics
 
         eventually(

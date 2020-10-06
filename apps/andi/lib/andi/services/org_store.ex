@@ -3,16 +3,16 @@ defmodule Andi.Services.OrgStore do
   An Abstraction that handle the specifics of the Brook View state for andi org.
   """
 
-  import Andi
+  @instance_name Andi.instance_name()
 
   @collection :org
 
   def get(id) do
-    Brook.get(instance_name(), @collection, id)
+    Brook.get(@instance_name, @collection, id)
   end
 
   def get_all() do
-    Brook.get_all_values(instance_name(), @collection)
+    Brook.get_all_values(@instance_name, @collection)
   end
 
   def update(%SmartCity.Organization{} = org) do

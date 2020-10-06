@@ -9,7 +9,7 @@ defmodule Valkyrie.EndOfDataTest do
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
   @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
   @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
-  @instance Valkyrie.Application.instance()
+  @instance_name Valkyrie.instance_name()
 
   test "Data is not processed after END_OF_DATA message" do
     dataset_id = Faker.UUID.v4()
@@ -38,7 +38,7 @@ defmodule Valkyrie.EndOfDataTest do
     message_to_not_consume =
       TestHelpers.create_data(%{dataset_id: dataset.id, payload: %{"name" => %{"first" => "Post", "last" => "Man"}}})
 
-    Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
 
     TestHelpers.wait_for_topic(@endpoints, input_topic)
 

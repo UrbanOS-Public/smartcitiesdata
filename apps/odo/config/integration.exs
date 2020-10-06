@@ -37,7 +37,6 @@ config :ex_aws, :s3,
   port: 9000
 
 config :odo, :brook,
-  instance: :odo_brook,
   driver: %{
     module: Brook.Driver.Kafka,
     init_arg: [

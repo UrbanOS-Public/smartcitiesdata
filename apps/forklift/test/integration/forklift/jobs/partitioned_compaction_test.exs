@@ -7,7 +7,7 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
   import Helper
   use Placebo
 
-  @instance Forklift.instance_name()
+  @instance_name Forklift.instance_name()
   @batch_size 2
 
   import SmartCity.Event,
@@ -21,8 +21,8 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
       [1, 2]
       |> Enum.map(fn _ -> TDG.create_dataset(%{technical: %{cadence: "once"}}) end)
       |> Enum.map(fn dataset ->
-        Brook.Event.send(@instance, dataset_update(), :forklift, dataset)
-        Brook.Event.send(@instance, data_ingest_start(), :forklift, dataset)
+        Brook.Event.send(@instance_name, dataset_update(), :forklift, dataset)
+        Brook.Event.send(@instance_name, data_ingest_start(), :forklift, dataset)
         dataset
       end)
 

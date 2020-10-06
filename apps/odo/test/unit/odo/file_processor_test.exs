@@ -5,6 +5,8 @@ defmodule Odo.Unit.FileProcessorTest do
   use Placebo
   alias SmartCity.HostedFile
 
+  @instance_name Odo.instance_name()
+
   @time DateTime.utc_now()
 
   setup do
@@ -30,7 +32,7 @@ defmodule Odo.Unit.FileProcessorTest do
     setup %{conversion_map: conversion_map} do
       allow(ExAws.request(any()), return: {:ok, :done})
 
-      allow(Brook.Event.send(Odo.event_stream_instance(), any(), any(), any()),
+      allow(Brook.Event.send(@instance_name, any(), any(), any()),
         return: :ok,
         meck_options: [:passthrough]
       )
@@ -53,8 +55,8 @@ defmodule Odo.Unit.FileProcessorTest do
           key: conversion_map.converted_key
         })
 
-      assert_called(Brook.Event.send(Odo.event_stream_instance(), file_ingest_start(), :odo, expected_event), once())
-      assert_called(Brook.Event.send(Odo.event_stream_instance(), file_ingest_end(), :odo, expected_event), once())
+      assert_called(Brook.Event.send(@instance_name, file_ingest_start(), :odo, expected_event), once())
+      assert_called(Brook.Event.send(@instance_name, file_ingest_end(), :odo, expected_event), once())
     end
 
     test "removes temporary files", %{conversion_map: conversion_map} do

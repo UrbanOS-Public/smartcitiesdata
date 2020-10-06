@@ -3,7 +3,8 @@ defmodule Forklift.Application do
 
   use Application
   require Logger
-  import Forklift
+
+  @instance_name Forklift.instance_name()
 
   def start(_type, _args) do
     children =
@@ -16,7 +17,7 @@ defmodule Forklift.Application do
         migrations(),
         Forklift.InitServer
       ]
-      |> TelemetryEvent.config_init_server(instance_name())
+      |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
 
     if Application.get_env(:forklift, :table_writer) == Pipeline.Writer.S3Writer do

@@ -13,7 +13,7 @@ defmodule Valkyrie.BroadwayTest do
   @topic "raw-ds1"
   @producer :ds1_producer
   @current_time "2019-07-17T14:45:06.123456Z"
-  @instance Valkyrie.Application.instance()
+  @instance_name Valkyrie.instance_name()
 
   setup do
     allow Elsa.produce(any(), any(), any(), any()), return: :ok
@@ -181,7 +181,9 @@ defmodule Valkyrie.BroadwayTest do
     assert 2 = length(captured_messages)
     assert end_of_data() in captured_messages
 
-    assert_called(Brook.Event.send(@instance, data_standardization_end(), :valkyrie, %{"dataset_id" => @dataset_id}))
+    assert_called(
+      Brook.Event.send(@instance_name, data_standardization_end(), :valkyrie, %{"dataset_id" => @dataset_id})
+    )
   end
 end
 

@@ -13,7 +13,7 @@ defmodule DiscoveryApi.UserOrganizationAssociationTest do
 
     {:ok, association_event} = SmartCity.UserOrganizationAssociate.new(%{user_id: user.id, org_id: organization.id})
 
-    Brook.Event.send(DiscoveryApi.instance(), user_organization_associate(), __MODULE__, association_event)
+    Brook.Event.send(DiscoveryApi.instance_name(), user_organization_associate(), __MODULE__, association_event)
 
     eventually(
       fn ->

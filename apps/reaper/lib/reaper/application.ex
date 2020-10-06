@@ -4,8 +4,9 @@ defmodule Reaper.Application do
   use Application
   require Logger
 
+  @instance_name Reaper.instance_name()
+
   def redis_client(), do: :reaper_redix
-  def instance(), do: :reaper_brook
 
   def start(_type, _args) do
     children =
@@ -22,7 +23,7 @@ defmodule Reaper.Application do
         Reaper.Scheduler.Supervisor,
         Reaper.Init
       ]
-      |> TelemetryEvent.config_init_server(instance())
+      |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
 
     fetch_and_set_hosted_file_credentials()
@@ -47,7 +48,7 @@ defmodule Reaper.Application do
   end
 
   defp brook() do
-    config = Application.get_env(:reaper, :brook) |> Keyword.put(:instance, instance())
+    config = Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance_name)
     {Brook, config}
   end
 

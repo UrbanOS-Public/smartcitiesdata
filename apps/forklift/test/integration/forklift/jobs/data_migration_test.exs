@@ -15,15 +15,15 @@ defmodule Forklift.Jobs.DataMigrationTest do
       data_ingest_start: 0
     ]
 
-  @instance Forklift.instance_name()
+  @instance_name Forklift.instance_name()
 
   setup do
     datasets =
       [1, 2]
       |> Enum.map(fn _ -> TDG.create_dataset(%{technical: %{cadence: "once"}}) end)
       |> Enum.map(fn dataset ->
-        Brook.Event.send(@instance, dataset_update(), :forklift, dataset)
-        Brook.Event.send(@instance, data_ingest_start(), :forklift, dataset)
+        Brook.Event.send(@instance_name, dataset_update(), :forklift, dataset)
+        Brook.Event.send(@instance_name, data_ingest_start(), :forklift, dataset)
         dataset
       end)
 
@@ -56,8 +56,8 @@ defmodule Forklift.Jobs.DataMigrationTest do
 
   test "Should refit tables before migration if they do not have an os_partition field" do
     dataset = TDG.create_dataset(%{technical: %{cadence: "once"}})
-    Brook.Event.send(@instance, dataset_update(), :forklift, dataset)
-    Brook.Event.send(@instance, data_ingest_start(), :forklift, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :forklift, dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :forklift, dataset)
     eventually(fn -> assert table_exists?(dataset.technical.systemName) end, 100, 1_000)
     eventually(fn -> assert table_exists?(dataset.technical.systemName <> "__json") end, 100, 1_000)
 

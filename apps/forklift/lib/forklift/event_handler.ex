@@ -3,7 +3,6 @@ defmodule Forklift.EventHandler do
   use Brook.Event.Handler
 
   alias SmartCity.Dataset
-  import Forklift
   require Logger
 
   import SmartCity.Event,
@@ -17,6 +16,8 @@ defmodule Forklift.EventHandler do
     ]
 
   import Brook.ViewState
+
+  @instance_name Forklift.instance_name()
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
@@ -47,7 +48,7 @@ defmodule Forklift.EventHandler do
     :discard
   rescue
     reason ->
-      Brook.Event.send(instance_name(), error_dataset_update(), :forklift, %{"reason" => reason, "dataset" => dataset})
+      Brook.Event.send(@instance_name, error_dataset_update(), :forklift, %{"reason" => reason, "dataset" => dataset})
       :discard
   end
 
@@ -71,7 +72,7 @@ defmodule Forklift.EventHandler do
     |> Enum.map(fn {key, timestamp} -> {parse_dataset_id(key), timestamp} end)
     |> Enum.each(fn {dataset_id, timestamp} ->
       {:ok, event} = SmartCity.DataWriteComplete.new(%{id: dataset_id, timestamp: timestamp})
-      Brook.Event.send(instance_name(), data_write_complete(), :forklift, event)
+      Brook.Event.send(@instance_name, data_write_complete(), :forklift, event)
     end)
 
     thirty_days = 2_592_000

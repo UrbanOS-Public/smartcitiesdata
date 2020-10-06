@@ -5,7 +5,6 @@ defmodule EventHandlerTest do
   use Placebo
 
   import SmartCity.Event, only: [dataset_delete: 0, dataset_harvest_start: 0, organization_update: 0]
-  import Andi, only: [instance_name: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
 
   alias SmartCity.TestDataGenerator, as: TDG
@@ -13,6 +12,8 @@ defmodule EventHandlerTest do
   alias Andi.Harvest.Harvester
   alias Andi.InputSchemas.Organizations
   alias Andi.Services.OrgStore
+
+  @instance_name Andi.instance_name()
 
   test "should delete the view state when dataset delete event is called" do
     dataset = TDG.create_dataset(%{id: Faker.UUID.v4()})
@@ -31,7 +32,7 @@ defmodule EventHandlerTest do
     org = TDG.create_organization(%{})
     allow(Harvester.start_harvesting(any()), return: :ok)
 
-    Brook.Test.send(instance_name(), dataset_harvest_start(), :andi, org)
+    Brook.Test.send(@instance_name, dataset_harvest_start(), :andi, org)
 
     eventually(fn ->
       assert_called(Harvester.start_harvesting(org))
@@ -40,25 +41,25 @@ defmodule EventHandlerTest do
 
   describe "data harvest event is triggered when organization is updated" do
     test "data:harvest:start event is triggered" do
-      allow(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, any()), return: :ok, meck_options: [:passthrough])
       allow(OrgStore.update(any()), return: :ok)
       allow(Organizations.update(any()), return: :ok)
 
       org = TDG.create_organization(%{dataJsonUrl: "www.google.com"})
-      Brook.Event.send(instance_name(), organization_update(), :andi, org)
+      Brook.Event.send(@instance_name, organization_update(), :andi, org)
 
-      assert_called(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org), once())
+      assert_called(Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org), once())
     end
 
     test "data:harvest:start event isnt called for orgs missing data json url" do
-      allow(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, any()), return: :ok, meck_options: [:passthrough])
       allow(OrgStore.update(any()), return: :ok)
       allow(Organizations.update(any()), return: :ok)
 
       org = TDG.create_organization(%{dataJsonUrl: nil})
-      Brook.Event.send(instance_name(), organization_update(), :andi, org)
+      Brook.Event.send(@instance_name, organization_update(), :andi, org)
 
-      refute_called(Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org), once())
+      refute_called(Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org), once())
     end
   end
 end

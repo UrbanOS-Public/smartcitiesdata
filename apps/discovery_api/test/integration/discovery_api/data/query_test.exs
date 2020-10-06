@@ -68,9 +68,9 @@ defmodule DiscoveryApi.Data.QueryTest do
         }
       })
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, public_dataset)
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, private_dataset)
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, geojson_dataset)
+    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, public_dataset)
+    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, private_dataset)
+    Brook.Event.send(DiscoveryApi.instance_name(), dataset_update(), __MODULE__, geojson_dataset)
 
     eventually(fn ->
       assert nil != Model.get(public_dataset.id)

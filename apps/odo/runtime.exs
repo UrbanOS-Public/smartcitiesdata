@@ -32,7 +32,6 @@ config :ex_aws,
   region: System.get_env("AWS_REGION") || "us-west-2"
 
 config :odo, :brook,
-  instance: :odo_brook,
   driver: %{
     module: Brook.Driver.Kafka,
     init_arg: [

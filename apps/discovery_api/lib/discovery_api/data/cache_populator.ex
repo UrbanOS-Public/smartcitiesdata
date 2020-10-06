@@ -24,5 +24,5 @@ defmodule DiscoveryApi.Data.CachePopulator do
     {:stop, :normal, nil}
   end
 
-  defp get_all_models(), do: Brook.get_all_values!(DiscoveryApi.instance(), :models)
+  defp get_all_models(), do: Brook.get_all_values!(DiscoveryApi.instance_name(), :models)
 end

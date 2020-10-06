@@ -82,7 +82,7 @@ defmodule DiscoveryApi.Schemas.Visualizations do
   end
 
   defp get_dataset_ids(system_names) do
-    Brook.get_all_values!(DiscoveryApi.instance(), :models)
+    Brook.get_all_values!(DiscoveryApi.instance_name(), :models)
     |> Enum.filter(fn %{systemName: system_name} -> system_name in system_names end)
     |> Enum.map(fn %{id: id} -> id end)
   end
