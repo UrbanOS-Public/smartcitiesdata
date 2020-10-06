@@ -8,22 +8,20 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   import Checkov
   import Phoenix.LiveViewTest
   import Andi, only: [instance_name: 0]
-  import SmartCity.Event, only: [organization_update: 0, dataset_update: 0]
+  import SmartCity.Event, only: [organization_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   import FlokiHelpers,
     only: [
       get_value: 2,
       get_text: 2,
-      find_elements: 2,
-      get_attributes: 3
+      find_elements: 2
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Datasets
   alias Andi.Services.OrgStore
-  alias Andi.Services.DatasetStore
 
   @url_path "/organizations/"
 
