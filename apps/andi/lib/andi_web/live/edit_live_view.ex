@@ -59,7 +59,7 @@ defmodule AndiWeb.EditLiveView do
         </div>
 
         <div class="extract-steps-form-component">
-          <%= live_render(@sockey, AndiWeb.EditLiveView.ExtractStepForm, id: :extract_step_form_editor) %>
+          <%= live_render(@sockey, AndiWeb.EditLiveView.ExtractStepForm, id: :extract_step_form_editor) session: %{"dataset" => @dataset %>
         </div>
 
         <div class="url-form-component">

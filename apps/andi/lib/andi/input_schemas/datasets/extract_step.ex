@@ -1,11 +1,15 @@
-defmodule Andi.InputSchemas.Datasets.ExtractStep do
+defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "extract_step" do
     field(:type, :string)
-    field(:context, :map)
+    field(:method, :string)
+    field(:url, :string)
+    field(:body, :string)
+    has_many(:headers, Header, on_replace: :delete)
+    has_many(:queryParams, QueryParam, on_replace: :delete)
     field(:assigns, :map)
 
     belongs_to(:technical, Technical, type: Ecto.UUID, foreign_key: :technical_id)
@@ -13,8 +17,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
 
   use Accessible
 
-  @cast_fields [:type, :context, :assigns]
-  @required_fields [:type, :context, :assigns]
+  @cast_fields [:type, :method, :url, :body, :headers, :queryParams, :assigns]
+  @required_fields [:type, :method, :url, :assigns]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
