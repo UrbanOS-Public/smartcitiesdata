@@ -10,7 +10,7 @@ Interactions with Redis are abstracted with `smartcitiesdata.smart_city*` functi
 
 #### Prerequisites for auth0 setup: 
 - In `config/integration.exs`, you must enable HTTPS in order to securely access the Auth0 login page. There is a comment block with the necessary config under the `Endpoint` configuration that can be uncommented.
-- You must create self-signed SSL certificates in order for this configuration to take hold. Generate `key.pem` and a `cert.pem` file in the `priv` folder. Instructions for how to generate these keys can be found here: https://devcenter.heroku.com/articles/ssl-certificate-self
+- You must create self-signed SSL certificates in order for this configuration to take hold. Generate `key.pem` and a `cert.pem` file in the `priv` folder. You can do this by running `./generate-certs.sh` in the `priv` folder. Or by running the following line: `openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out cert.pem`
 - Andi also requires an Auth0 client secret to be set as a system environment variable. You can get this value from auth0.com in the corresponding tenant configuration for the ANDI application. You will need this value to start andi (specified below in the <auth_client_secret> variable)
 - Lastly, you need an authorized account to login when the application starts
 
