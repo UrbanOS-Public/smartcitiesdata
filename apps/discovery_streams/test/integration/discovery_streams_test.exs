@@ -10,11 +10,11 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   import SmartCity.TestHelper
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, dataset_delete: 0]
 
-  @instance :discovery_streams
+  @instance_name DiscoveryStreams.instance_name()
 
   test "broadcasts data to end users" do
     dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
-    Brook.Test.send(@instance, data_ingest_start(), :author, dataset1)
+    Brook.Test.send(@instance_name, data_ingest_start(), :author, dataset1)
 
     {:ok, _, _socket} =
       DiscoveryStreamsWeb.UserSocket
@@ -46,7 +46,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       parition: 0
     )
 
-    Brook.Test.send(@instance, data_ingest_start(), :author, dataset1)
+    Brook.Test.send(@instance_name, data_ingest_start(), :author, dataset1)
 
     {:ok, _, _socket} =
       DiscoveryStreamsWeb.UserSocket
@@ -59,7 +59,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   test "doesnt broadcast private datasets" do
     private_dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: true})
 
-    Brook.Test.send(@instance, data_ingest_start(), :author, private_dataset)
+    Brook.Test.send(@instance_name, data_ingest_start(), :author, private_dataset)
 
     assert {:error, _} =
              DiscoveryStreamsWeb.UserSocket
@@ -72,7 +72,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
 
   data_test "stops broadcasting after #{scenario}" do
     dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
-    Brook.Test.send(@instance, data_ingest_start(), :author, dataset)
+    Brook.Test.send(@instance_name, data_ingest_start(), :author, dataset)
 
     {:ok, _, _socket} =
       DiscoveryStreamsWeb.UserSocket
@@ -97,7 +97,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
         dataset
       end
 
-    Brook.Test.send(@instance, event, :author, dataset)
+    Brook.Test.send(@instance_name, event, :author, dataset)
 
     # Nothing else was consistent here.  Checking for elsa.topic? will return that its dead before kafka is happy to recreate
     # We probably dont need this actual integration test
@@ -126,24 +126,24 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
     system_name = Faker.UUID.v4()
     dataset = TDG.create_dataset(id: dataset_id, technical: %{sourceType: "stream", systemName: system_name})
 
-    Brook.Test.send(@instance, data_ingest_start(), :author, dataset)
+    Brook.Test.send(@instance_name, data_ingest_start(), :author, dataset)
 
     eventually(
       fn ->
-        assert {:ok, system_name} == Brook.ViewState.get(@instance, :streaming_datasets_by_id, dataset_id)
-        assert {:ok, dataset_id} == Brook.ViewState.get(@instance, :streaming_datasets_by_system_name, system_name)
+        assert {:ok, system_name} == Brook.ViewState.get(@instance_name, :streaming_datasets_by_id, dataset_id)
+        assert {:ok, dataset_id} == Brook.ViewState.get(@instance_name, :streaming_datasets_by_system_name, system_name)
         assert true == Elsa.Topic.exists?(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset_id))
       end,
       2_000,
       10
     )
 
-    Brook.Test.send(@instance, dataset_delete(), :author, dataset)
+    Brook.Test.send(@instance_name, dataset_delete(), :author, dataset)
 
     eventually(
       fn ->
-        assert {:ok, nil} == Brook.ViewState.get(@instance, :streaming_datasets_by_id, dataset_id)
-        assert {:ok, nil} == Brook.ViewState.get(@instance, :streaming_datasets_by_system_name, system_name)
+        assert {:ok, nil} == Brook.ViewState.get(@instance_name, :streaming_datasets_by_id, dataset_id)
+        assert {:ok, nil} == Brook.ViewState.get(@instance_name, :streaming_datasets_by_system_name, system_name)
         assert false == Elsa.Topic.exists?(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset_id))
       end,
       2_000,

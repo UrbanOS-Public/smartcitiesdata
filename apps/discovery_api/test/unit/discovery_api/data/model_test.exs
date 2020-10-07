@@ -5,10 +5,10 @@ defmodule DiscoveryApi.Data.ModelTest do
   alias DiscoveryApi.Data.{Model, Persistence}
   alias DiscoveryApi.Test.Helper
 
-  @instance DiscoveryApi.instance()
+  @instance_name DiscoveryApi.instance_name()
 
   setup do
-    Brook.Test.clear_view_state(@instance, :models)
+    Brook.Test.clear_view_state(@instance_name, :models)
   end
 
   test "get_count_maps/1" do
@@ -24,7 +24,7 @@ defmodule DiscoveryApi.Data.ModelTest do
   test "get/1" do
     cam_as_expected = generate_test_data("cam")
 
-    Brook.Test.with_event(@instance, fn ->
+    Brook.Test.with_event(@instance_name, fn ->
       Brook.ViewState.merge(:models, cam_as_expected.id, cam_as_expected)
     end)
 
@@ -37,7 +37,7 @@ defmodule DiscoveryApi.Data.ModelTest do
     cam_as_expected = generate_test_data("cam")
     paul_as_expected = generate_test_data("paul")
 
-    Brook.Test.with_event(@instance, fn ->
+    Brook.Test.with_event(@instance_name, fn ->
       Brook.ViewState.merge(:models, cam_as_expected.id, cam_as_expected)
       Brook.ViewState.merge(:models, paul_as_expected.id, paul_as_expected)
     end)
@@ -54,7 +54,7 @@ defmodule DiscoveryApi.Data.ModelTest do
     paul_as_expected = generate_test_data("paul")
     nate_as_expected = generate_test_data("nate")
 
-    Brook.Test.with_event(@instance, fn ->
+    Brook.Test.with_event(@instance_name, fn ->
       Brook.ViewState.merge(:models, cam_as_expected.id, cam_as_expected)
       Brook.ViewState.merge(:models, paul_as_expected.id, paul_as_expected)
       Brook.ViewState.merge(:models, nate_as_expected.id, nate_as_expected)
@@ -70,7 +70,7 @@ defmodule DiscoveryApi.Data.ModelTest do
   test "get_all/1 does not throw error when model does not exist" do
     paul_as_expected = generate_test_data("paul")
 
-    Brook.Test.with_event(@instance, fn ->
+    Brook.Test.with_event(@instance_name, fn ->
       Brook.ViewState.merge(:models, paul_as_expected.id, paul_as_expected)
     end)
 
@@ -85,7 +85,7 @@ defmodule DiscoveryApi.Data.ModelTest do
     cam_as_expected = generate_test_data("cam")
     paul_as_expected = generate_test_data("paul")
 
-    Brook.Test.with_event(@instance, fn ->
+    Brook.Test.with_event(@instance_name, fn ->
       Brook.ViewState.merge(:models, cam_as_expected.id, cam_as_expected)
       Brook.ViewState.merge(:models, paul_as_expected.id, paul_as_expected)
     end)

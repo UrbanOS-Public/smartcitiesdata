@@ -4,7 +4,6 @@ defmodule Andi.Harvest.Harvester do
   """
   use Tesla
 
-  import Andi
   import SmartCity.Event, only: [dataset_harvest_end: 0, dataset_harvest_start: 0, dataset_update: 0, dataset_delete: 0]
   alias SmartCity.Organization
 
@@ -14,6 +13,8 @@ defmodule Andi.Harvest.Harvester do
   alias Andi.Services.DatasetStore
 
   require Logger
+
+  @instance_name Andi.instance_name()
 
   def start_harvesting(%Organization{} = org) do
     url = org.dataJsonUrl
@@ -37,7 +38,7 @@ defmodule Andi.Harvest.Harvester do
       {:ok, orgs} ->
         orgs
         |> Enum.filter(fn org -> org.dataJsonUrl != nil end)
-        |> Enum.each(fn org -> Brook.Event.send(instance_name(), dataset_harvest_start(), :andi, org) end)
+        |> Enum.each(fn org -> Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org) end)
 
       _ ->
         Logger.info("No Orgs with data JSON to harvest")
@@ -67,7 +68,7 @@ defmodule Andi.Harvest.Harvester do
     Enum.each(datasets, fn dataset ->
       case Organizations.get_harvested_dataset(dataset.id) do
         %{include: false} -> Logger.info("Skipping dataset update for harvested dataset #{dataset.id}")
-        _ -> Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
+        _ -> Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       end
     end)
   end
@@ -76,7 +77,7 @@ defmodule Andi.Harvest.Harvester do
     Enum.each(harvested_datasets, fn harvested_dataset ->
       case Organizations.get_harvested_dataset(harvested_dataset["datasetId"]) do
         %{include: false} -> Logger.info("Skipping dataset update for harvested dataset #{harvested_dataset["datasetId"]}")
-        _ -> Brook.Event.send(instance_name(), dataset_harvest_end(), :andi, harvested_dataset)
+        _ -> Brook.Event.send(@instance_name, dataset_harvest_end(), :andi, harvested_dataset)
       end
     end)
   end
@@ -102,7 +103,7 @@ defmodule Andi.Harvest.Harvester do
   defp dataset_delete_event(id) do
     case DatasetStore.get(id) do
       {:ok, dataset} ->
-        Brook.Event.send(instance_name(), dataset_delete(), :andi, dataset)
+        Brook.Event.send(@instance_name, dataset_delete(), :andi, dataset)
 
       _ ->
         Logger.info("dataset not in system: #{id}")

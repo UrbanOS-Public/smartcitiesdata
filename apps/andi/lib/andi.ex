@@ -7,5 +7,5 @@ defmodule Andi do
   if it comes from the database, an external API or others.
   """
 
-  defmacro instance_name, do: :andi
+  def instance_name(), do: :andi
 end

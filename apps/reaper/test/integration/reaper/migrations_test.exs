@@ -5,7 +5,7 @@ defmodule Reaper.MigrationsTest do
   import SmartCity.TestHelper
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @instance Reaper.Application.instance()
+  @instance_name Reaper.instance_name()
 
   describe "quantum job migration" do
     @tag :capture_log
@@ -29,7 +29,7 @@ defmodule Reaper.MigrationsTest do
 
       eventually(fn ->
         job = Reaper.Scheduler.find_job(dataset_id)
-        assert job.task == {Brook.Event, :send, [@instance, "migration:test", :reaper, dataset_id]}
+        assert job.task == {Brook.Event, :send, [@instance_name, "migration:test", :reaper, dataset_id]}
       end)
 
       Application.stop(:reaper)
@@ -57,7 +57,7 @@ defmodule Reaper.MigrationsTest do
         Brook.start_link(
           Application.get_env(:reaper, :brook)
           |> Keyword.delete(:driver)
-          |> Keyword.put(:instance, @instance)
+          |> Keyword.put(:instance, @instance_name)
         )
 
       Process.unlink(brook)
@@ -68,7 +68,7 @@ defmodule Reaper.MigrationsTest do
       invalid_extraction_id = 4
 
       Brook.Test.with_event(
-        @instance,
+        @instance_name,
         Brook.Event.new(type: "reaper_config:migration", author: "migration", data: %{}),
         fn ->
           Brook.ViewState.merge(:extractions, extraction_without_enabled_flag_id, %{
@@ -97,9 +97,9 @@ defmodule Reaper.MigrationsTest do
       Process.sleep(10_000)
 
       eventually(fn ->
-        assert true == Brook.get!(@instance, :extractions, extraction_without_enabled_flag_id)["enabled"]
-        assert true == Brook.get!(@instance, :extractions, extraction_with_enabled_true_id)["enabled"]
-        assert false == Brook.get!(@instance, :extractions, extraction_with_enabled_false_id)["enabled"]
+        assert true == Brook.get!(@instance_name, :extractions, extraction_without_enabled_flag_id)["enabled"]
+        assert true == Brook.get!(@instance_name, :extractions, extraction_with_enabled_true_id)["enabled"]
+        assert false == Brook.get!(@instance_name, :extractions, extraction_with_enabled_false_id)["enabled"]
       end)
 
       Application.stop(:reaper)

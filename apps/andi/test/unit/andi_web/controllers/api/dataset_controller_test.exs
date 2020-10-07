@@ -7,8 +7,9 @@ defmodule AndiWeb.API.DatasetControllerTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetStore
 
-  import Andi
   import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0]
+
+  @instance_name Andi.instance_name()
 
   setup do
     example_dataset_1 = TDG.create_dataset(%{})
@@ -30,7 +31,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       meck_options: [:passthrough]
     )
 
-    allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
+    allow(Brook.Event.send(@instance_name, any(), :andi, any()), return: :ok, meck_options: [:passthrough])
 
     uuid = Faker.UUID.v4()
 
@@ -96,12 +97,12 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     test "should send dataset:disable event", %{conn: conn, dataset: dataset} do
       allow(DatasetStore.get(any()), return: {:ok, dataset})
-      allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
+      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/disable", %{id: dataset.id})
       |> json_response(200)
 
-      assert_called(Brook.Event.send(instance_name(), dataset_disable(), :andi, dataset))
+      assert_called(Brook.Event.send(@instance_name, dataset_disable(), :andi, dataset))
     end
 
     @tag capture_log: true
@@ -110,18 +111,18 @@ defmodule AndiWeb.API.DatasetControllerTest do
       dataset: dataset
     } do
       allow(DatasetStore.get(any()), return: {:ok, nil})
-      allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
+      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/disable", %{id: dataset.id})
       |> json_response(404)
 
-      refute_called(Brook.Event.send(instance_name(), dataset_disable(), :andi, dataset))
+      refute_called(Brook.Event.send(@instance_name, dataset_disable(), :andi, dataset))
     end
 
     @tag capture_log: true
     test "handles error", %{conn: conn, dataset: dataset} do
       allow(DatasetStore.get(any()), return: {:ok, dataset})
-      allow(Brook.Event.send(instance_name(), any(), any(), any()), return: {:error, "Mistakes were made"})
+      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: {:error, "Mistakes were made"})
 
       post(conn, "#{@route}/disable", %{id: dataset.id})
       |> json_response(500)
@@ -136,12 +137,12 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     test "should send dataset:delete event", %{conn: conn, dataset: dataset} do
       allow(DatasetStore.get(any()), return: {:ok, dataset})
-      allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
+      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/delete", %{id: dataset.id})
       |> json_response(200)
 
-      assert_called(Brook.Event.send(instance_name(), dataset_delete(), :andi, dataset))
+      assert_called(Brook.Event.send(@instance_name, dataset_delete(), :andi, dataset))
     end
 
     @tag capture_log: true
@@ -150,18 +151,18 @@ defmodule AndiWeb.API.DatasetControllerTest do
       dataset: dataset
     } do
       allow(DatasetStore.get(any()), return: {:ok, nil})
-      allow(Brook.Event.send(instance_name(), any(), any(), any()), return: :ok)
+      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
 
       post(conn, "#{@route}/delete", %{id: dataset.id})
       |> json_response(404)
 
-      refute_called(Brook.Event.send(instance_name(), dataset_delete(), :andi, dataset))
+      refute_called(Brook.Event.send(@instance_name, dataset_delete(), :andi, dataset))
     end
 
     @tag capture_log: true
     test "handles error", %{conn: conn, dataset: dataset} do
       allow(DatasetStore.get(any()), return: {:ok, dataset})
-      allow(Brook.Event.send(instance_name(), any(), any(), any()), return: {:error, "Mistakes were made"})
+      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: {:error, "Mistakes were made"})
 
       post(conn, "#{@route}/delete", %{id: dataset.id})
       |> json_response(500)

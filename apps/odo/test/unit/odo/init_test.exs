@@ -5,6 +5,8 @@ defmodule Odo.InitTest do
   alias Odo.FileProcessor
   alias SmartCity.HostedFile
 
+  @instance_name Odo.instance_name()
+
   test "loads all queued files and passes them for conversion" do
     file_1 = %HostedFile{
       bucket: "bucket1",
@@ -20,7 +22,7 @@ defmodule Odo.InitTest do
       dataset_id: "dataset2"
     }
 
-    allow(Brook.get_all_values!(Odo.event_stream_instance(), :file_conversions),
+    allow(Brook.get_all_values!(@instance_name, :file_conversions),
       return: [file_1, file_2]
     )
 
@@ -29,7 +31,7 @@ defmodule Odo.InitTest do
     {:ok, pid} = Odo.Init.start_link([])
 
     eventually(fn ->
-      assert_called(Brook.get_all_values!(Odo.event_stream_instance(), :file_conversions))
+      assert_called(Brook.get_all_values!(@instance_name, :file_conversions))
       assert_called(FileProcessor.process(any()), times(2))
       assert false == Process.alive?(pid)
     end)

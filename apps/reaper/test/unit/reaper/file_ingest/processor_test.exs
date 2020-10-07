@@ -11,7 +11,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
 
   @dataset_id "12345"
   @bucket Application.get_env(:reaper, :hosted_file_bucket)
-  @instance Reaper.Application.instance()
+  @instance_name Reaper.instance_name()
 
   @download_dir System.get_env("TMPDIR") || "/tmp/reaper/"
   @source_url "http://localhost/api/hosted"
@@ -64,7 +64,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
         key: "#{dataset.technical.orgName}/#{dataset.technical.dataName}.txt"
       }
 
-      assert_called(Brook.Event.send(@instance, file_ingest_end(), :reaper, expected_file_upload))
+      assert_called(Brook.Event.send(@instance_name, file_ingest_end(), :reaper, expected_file_upload))
     end
 
     test "downloads file with a provisioned url and uploads to s3" do
@@ -108,7 +108,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
         key: "#{dataset.technical.orgName}/#{dataset.technical.dataName}.txt"
       }
 
-      assert_called(Brook.Event.send(@instance, file_ingest_end(), :reaper, expected_file_upload))
+      assert_called(Brook.Event.send(@instance_name, file_ingest_end(), :reaper, expected_file_upload))
     end
   end
 end

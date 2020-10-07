@@ -8,7 +8,7 @@ defmodule Valkyrie.TopicCreationTest do
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
   @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
   @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
-  @instance Valkyrie.Application.instance()
+  @instance_name Valkyrie.instance_name()
 
   test "Input and Output topics should be created when a dataset:update event is consumed" do
     dataset_id = Faker.UUID.v4()
@@ -31,7 +31,7 @@ defmodule Valkyrie.TopicCreationTest do
         payload: %{"name" => %{"first" => "Ben", "last" => "Brewer"}}
       })
 
-    Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
 
     TestHelpers.wait_for_topic(@endpoints, input_topic)
     TestHelpers.produce_message(data_message, input_topic, @endpoints)

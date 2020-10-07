@@ -11,7 +11,7 @@ defmodule Valkyrie.DatasetMutationTest do
   @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
   @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
   @endpoints Application.get_env(:valkyrie, :elsa_brokers)
-  @instance Valkyrie.Application.instance()
+  @instance_name Valkyrie.instance_name()
 
   @tag timeout: 120_000
   test "a dataset with an updated schema properly parses new messages" do
@@ -20,7 +20,7 @@ defmodule Valkyrie.DatasetMutationTest do
 
     data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"age" => "21"})
 
-    Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
     TestHelpers.wait_for_topic(@endpoints, @input_topic)
     TestHelpers.wait_for_topic(@endpoints, @output_topic)
 
@@ -40,7 +40,7 @@ defmodule Valkyrie.DatasetMutationTest do
     )
 
     updated_dataset = %{dataset | technical: %{dataset.technical | schema: [%{name: "age", type: "integer"}]}}
-    Brook.Event.send(@instance, data_ingest_start(), :author, updated_dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :author, updated_dataset)
 
     Process.sleep(2_000)
 
@@ -67,12 +67,12 @@ defmodule Valkyrie.DatasetMutationTest do
     output_topic = "#{@output_topic_prefix}-#{dataset_id}"
     dataset = TDG.create_dataset(id: dataset_id, technical: %{sourceType: "ingest"})
 
-    Brook.Event.send(@instance, data_ingest_start(), :author, dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
 
     eventually(
       fn ->
         assert true == is_dataset_supervisor_alive(dataset_id)
-        assert {:ok, dataset} == Brook.ViewState.get(@instance, :datasets, dataset_id)
+        assert {:ok, dataset} == Brook.ViewState.get(@instance_name, :datasets, dataset_id)
         assert true == Elsa.Topic.exists?(@endpoints, input_topic)
         assert true == Elsa.Topic.exists?(@endpoints, output_topic)
       end,
@@ -80,12 +80,12 @@ defmodule Valkyrie.DatasetMutationTest do
       10
     )
 
-    Brook.Event.send(@instance, dataset_delete(), :author, dataset)
+    Brook.Event.send(@instance_name, dataset_delete(), :author, dataset)
 
     eventually(
       fn ->
         assert false == is_dataset_supervisor_alive(dataset_id)
-        assert {:ok, nil} == Brook.ViewState.get(@instance, :datasets, dataset_id)
+        assert {:ok, nil} == Brook.ViewState.get(@instance_name, :datasets, dataset_id)
         assert false == Elsa.Topic.exists?(@endpoints, input_topic)
         assert false == Elsa.Topic.exists?(@endpoints, output_topic)
       end,

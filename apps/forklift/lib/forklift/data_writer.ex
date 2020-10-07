@@ -10,9 +10,10 @@ defmodule Forklift.DataWriter do
   alias Forklift.DataWriter.Compaction
 
   require Logger
-  import Forklift
   import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event, only: [data_ingest_end: 0]
+
+  @instance_name Forklift.instance_name()
 
   @topic_writer Application.get_env(:forklift, :topic_writer)
   @table_writer Application.get_env(:forklift, :table_writer)
@@ -50,7 +51,7 @@ defmodule Forklift.DataWriter do
           Enum.reverse(batch_data)
           |> do_write(dataset)
 
-        Brook.Event.send(instance_name(), data_ingest_end(), :forklift, dataset)
+        Brook.Event.send(@instance_name, data_ingest_end(), :forklift, dataset)
 
         results
     end
@@ -149,14 +150,14 @@ defmodule Forklift.DataWriter do
          :ok <-
            @table_writer.write(data, table: metadata.systemName, schema: metadata.schema, bucket: s3_writer_bucket()),
          write_end <- Data.Timing.current_time(),
-         write_timing <- Data.Timing.new(instance_name(), "presto_insert_time", write_start, write_end) do
+         write_timing <- Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
       {:ok, write_timing}
     end
   end
 
   def write_to_topic(data) do
     max_bytes = Application.get_env(:forklift, :max_outgoing_bytes, 900_000)
-    writer_args = [instance: instance_name(), producer_name: Application.get_env(:forklift, :producer_name)]
+    writer_args = [instance: @instance_name, producer_name: Application.get_env(:forklift, :producer_name)]
 
     data
     |> Enum.map(fn datum -> {datum._metadata.kafka_key, Forklift.Util.remove_from_metadata(datum, :kafka_key)} end)
@@ -190,7 +191,7 @@ defmodule Forklift.DataWriter do
 
   defp bootstrap_args(topic) do
     [
-      instance: instance_name(),
+      instance: @instance_name,
       endpoints: Application.get_env(:forklift, :elsa_brokers),
       topic: topic,
       producer_name: Application.get_env(:forklift, :producer_name),

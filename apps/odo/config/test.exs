@@ -6,7 +6,6 @@ config :odo,
   retry_backoff: 2
 
 config :odo, :brook,
-  instance: :odo_brook,
   handlers: [Odo.EventHandler, Odo.TestEventHandler],
   storage: [
     module: Brook.Storage.Ets,

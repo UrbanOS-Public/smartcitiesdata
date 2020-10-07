@@ -1,4 +1,7 @@
 defmodule Reaper.Collections.FileIngestions do
   @moduledoc false
-  use Reaper.Collections.BaseDataset, instance: Reaper.Application.instance(), collection: :file_ingestions
+
+  @instance_name Reaper.instance_name()
+
+  use Reaper.Collections.BaseDataset, instance: @instance_name, collection: :file_ingestions
 end

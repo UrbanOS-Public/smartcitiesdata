@@ -1,7 +1,6 @@
 defmodule AndiWeb.EditOrganizationLiveView do
   use AndiWeb, :live_view
 
-  import Andi
   import Phoenix.HTML.Form
   import SmartCity.Event, only: [organization_update: 0, dataset_delete: 0]
   require Logger
@@ -13,6 +12,8 @@ defmodule AndiWeb.EditOrganizationLiveView do
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.Helpers.FormTools
   alias Andi.Services.DatasetStore
+
+  @instance_name Andi.instance_name()
 
   def render(assigns) do
     ~L"""
@@ -193,7 +194,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
         |> Ecto.Changeset.apply_changes()
         |> InputConverter.andi_org_to_smrt_org()
 
-      case Brook.Event.send(instance_name(), organization_update(), __MODULE__, smrt_org) do
+      case Brook.Event.send(@instance_name, organization_update(), __MODULE__, smrt_org) do
         :ok ->
           {:noreply,
            assign(socket,
@@ -272,7 +273,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
   defp dataset_delete_event(id) do
     case DatasetStore.get(id) do
       {:ok, dataset} ->
-        Brook.Event.send(instance_name(), dataset_delete(), :andi, dataset)
+        Brook.Event.send(@instance_name, dataset_delete(), :andi, dataset)
 
       _ ->
         Logger.info("dataset not in system: #{id}")

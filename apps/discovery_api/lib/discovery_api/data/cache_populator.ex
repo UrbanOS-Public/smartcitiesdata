@@ -6,6 +6,8 @@ defmodule DiscoveryApi.Data.CachePopulator do
 
   use GenServer, restart: :transient
 
+  @instance_name DiscoveryApi.instance_name()
+
   def start_link(_) do
     GenServer.start_link(__MODULE__, nil)
   end
@@ -24,5 +26,5 @@ defmodule DiscoveryApi.Data.CachePopulator do
     {:stop, :normal, nil}
   end
 
-  defp get_all_models(), do: Brook.get_all_values!(DiscoveryApi.instance(), :models)
+  defp get_all_models(), do: Brook.get_all_values!(@instance_name, :models)
 end

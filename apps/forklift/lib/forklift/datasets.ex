@@ -3,7 +3,7 @@ defmodule Forklift.Datasets do
   An Abstraction that handle the specifics of the Brook View state for forklift datasets.
   """
 
-  import Forklift
+  @instance_name Forklift.instance_name()
 
   @collection :datasets
 
@@ -12,15 +12,15 @@ defmodule Forklift.Datasets do
   end
 
   def get!(id) do
-    Brook.get!(instance_name(), @collection, id)
+    Brook.get!(@instance_name, @collection, id)
   end
 
   def get_all!() do
-    Brook.get_all_values!(instance_name(), @collection)
+    Brook.get_all_values!(@instance_name, @collection)
   end
 
   def get_events!(id) do
-    Brook.get_events!(instance_name(), @collection, id)
+    Brook.get_events!(@instance_name, @collection, id)
   end
 
   def delete(id) do

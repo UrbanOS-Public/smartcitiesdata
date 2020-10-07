@@ -9,8 +9,9 @@ defmodule Forklift.MessageHandler do
   import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event, only: [data_write_complete: 0]
   alias SmartCity.DataWriteComplete
-  import Forklift
   alias Forklift.Util
+
+  @instance_name Forklift.instance_name()
 
   def init(args \\ []) do
     dataset = Keyword.fetch!(args, :dataset)
@@ -39,7 +40,7 @@ defmodule Forklift.MessageHandler do
     end)
 
     {:ok, event} = DataWriteComplete.new(%{id: dataset.id, timestamp: DateTime.utc_now()})
-    Brook.Event.send(instance_name(), data_write_complete(), :forklift, event)
+    Brook.Event.send(@instance_name, data_write_complete(), :forklift, event)
 
     {:ack, %{dataset: dataset}}
   end

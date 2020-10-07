@@ -4,6 +4,8 @@ defmodule DiscoveryStreams.Application do
 
   require Cachex.Spec
 
+  @instance_name DiscoveryStreams.instance_name()
+
   def start(_type, _args) do
     import Supervisor.Spec
 
@@ -18,7 +20,7 @@ defmodule DiscoveryStreams.Application do
         DiscoveryStreams.Stream.Supervisor,
         DiscoveryStreams.Init
       ]
-      |> TelemetryEvent.config_init_server(:discovery_streams)
+      |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
 
     Supervisor.start_link(children, opts)

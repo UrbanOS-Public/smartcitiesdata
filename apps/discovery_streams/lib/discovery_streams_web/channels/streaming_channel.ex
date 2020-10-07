@@ -6,6 +6,8 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   """
   use DiscoveryStreamsWeb, :channel
 
+  @instance_name DiscoveryStreams.instance_name()
+
   @update_event "update"
   @filter_event "filter"
 
@@ -14,7 +16,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   def join(channel, params, socket) do
     system_name = determine_system_name(channel)
 
-    case Brook.get(:discovery_streams, :streaming_datasets_by_system_name, system_name) do
+    case Brook.get(@instance_name, :streaming_datasets_by_system_name, system_name) do
       {:ok, nil} ->
         {:error, %{reason: "Channel #{channel} does not exist"}}
 

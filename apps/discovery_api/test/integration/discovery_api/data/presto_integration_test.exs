@@ -7,6 +7,8 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
   import SmartCity.Event, only: [dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 3]
 
+  @instance_name DiscoveryApi.instance_name()
+
   setup do
     Redix.command!(:redix, ["FLUSHALL"])
     :ok
@@ -24,7 +26,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     |> Prestige.new_session()
     |> Prestige.query!("create table if not exists #{system_name} (id integer, name varchar)")
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
     eventually(
       fn ->
@@ -52,7 +54,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     |> Prestige.new_session()
     |> Prestige.query!(~s|insert into "#{system_name}" values (1, 'bob'), (2, 'mike')|)
 
-    Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
     expected = [%{"id" => 1, "name" => "bob"}, %{"id" => 2, "name" => "mike"}]
 

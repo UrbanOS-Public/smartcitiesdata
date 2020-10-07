@@ -17,6 +17,8 @@ defmodule DiscoveryApi.EventHandler do
   alias DiscoveryApi.Services.DataJsonService
   alias DiscoveryApi.Search.Elasticsearch
 
+  @instance_name DiscoveryApi.instance_name()
+
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do
     organization_update()
     |> add_event_count(author, data.id)
@@ -52,7 +54,7 @@ defmodule DiscoveryApi.EventHandler do
     data_write_complete()
     |> add_event_count(author, nil)
 
-    case Brook.get(DiscoveryApi.instance(), :models, id) do
+    case Brook.get(@instance_name, :models, id) do
       {:ok, nil} ->
         Logger.debug(fn -> "Discarded write complete for non-existent dataset #{inspect(id)}" end)
         :discard
@@ -142,7 +144,7 @@ defmodule DiscoveryApi.EventHandler do
     Process.sleep(5_000)
 
     count =
-      Brook.get_all_values!(DiscoveryApi.instance(), :models)
+      Brook.get_all_values!(@instance_name, :models)
       |> Enum.count()
 
     [

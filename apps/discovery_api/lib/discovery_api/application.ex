@@ -5,7 +5,8 @@ defmodule DiscoveryApi.Application do
   use Application
 
   alias DiscoveryApi.Auth.GuardianConfigurator
-  import DiscoveryApi
+
+  @instance_name DiscoveryApi.instance_name()
 
   def start(_type, _args) do
     import Supervisor.Spec
@@ -27,7 +28,7 @@ defmodule DiscoveryApi.Application do
         DiscoveryApi.Quantum.Scheduler,
         DiscoveryApi.Data.TableInfoCache
       ]
-      |> TelemetryEvent.config_init_server(instance())
+      |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
 
     opts = [strategy: :one_for_one, name: DiscoveryApi.Supervisor]

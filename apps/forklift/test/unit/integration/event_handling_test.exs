@@ -3,18 +3,19 @@ defmodule Forklift.Integration.EventHandlingTest do
   use Placebo
 
   import Mox
-  import Forklift
 
   import SmartCity.Event,
     only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0, dataset_delete: 0]
 
   alias SmartCity.TestDataGenerator, as: TDG
 
+  @instance_name Forklift.instance_name()
+
   setup :set_mox_global
   setup :verify_on_exit!
 
   setup do
-    Brook.Test.register(instance_name())
+    Brook.Test.register(@instance_name)
     :ok
   end
 
@@ -28,14 +29,14 @@ defmodule Forklift.Integration.EventHandlingTest do
       table_name = dataset.technical.systemName
       schema = dataset.technical.schema
 
-      Brook.Test.send(instance_name(), dataset_update(), :author, dataset)
+      Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
       assert_receive table: ^table_name, schema: ^schema
     end
 
     test "does not create table for non-ingestible dataset" do
       expect(MockTable, :init, 0, fn _ -> :ok end)
       dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
-      Brook.Test.send(instance_name(), dataset_update(), :author, dataset)
+      Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
     end
 
     test "sends error event for raised errors while performing dataset update" do
@@ -44,7 +45,7 @@ defmodule Forklift.Integration.EventHandlingTest do
 
       dataset = TDG.create_dataset(%{})
 
-      Brook.Test.send(instance_name(), dataset_update(), :author, dataset)
+      Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
 
       assert_receive {:brook_event,
                       %Brook.Event{
@@ -68,7 +69,7 @@ defmodule Forklift.Integration.EventHandlingTest do
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
       dataset = TDG.create_dataset(%{id: "dataset-id"})
-      Brook.Test.send(instance_name(), data_ingest_start(), :author, dataset)
+      Brook.Test.send(@instance_name, data_ingest_start(), :author, dataset)
 
       assert_receive %SmartCity.Dataset{id: "dataset-id"}
     end
@@ -88,7 +89,7 @@ defmodule Forklift.Integration.EventHandlingTest do
       expect Forklift.Datasets.delete("terminate-id"), return: :ok
 
       dataset = TDG.create_dataset(%{id: "terminate-id"})
-      Brook.Test.send(instance_name(), data_ingest_end(), :author, dataset)
+      Brook.Test.send(@instance_name, data_ingest_end(), :author, dataset)
 
       assert_receive %SmartCity.Dataset{id: "terminate-id"}
     end
@@ -102,7 +103,7 @@ defmodule Forklift.Integration.EventHandlingTest do
     expect(Forklift.Datasets.delete(dataset.id), return: :ok)
     expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
-    Brook.Test.with_event(instance_name(), fn ->
+    Brook.Test.with_event(@instance_name, fn ->
       Forklift.EventHandler.handle_event(
         Brook.Event.new(
           type: dataset_delete(),

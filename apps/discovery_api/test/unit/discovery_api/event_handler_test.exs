@@ -17,6 +17,8 @@ defmodule DiscoveryApi.EventHandlerTest do
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
 
+  @instance_name DiscoveryApi.instance_name()
+
   describe "handle_event/1 organization_update" do
     test "should save organization to ecto" do
       org = TDG.create_organization(%{})
@@ -71,7 +73,7 @@ defmodule DiscoveryApi.EventHandlerTest do
 
       dataset = TDG.create_dataset(%{})
 
-      Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_update(), data: dataset, author: :author))
+      Brook.Event.process(@instance_name, Brook.Event.new(type: dataset_update(), data: dataset, author: :author))
     end
 
     test "tells the data json plug to delete its current data json cache" do
@@ -99,7 +101,7 @@ defmodule DiscoveryApi.EventHandlerTest do
       expect(DataJsonService.delete_data_json(), return: :ok)
       expect(Elasticsearch.Document.delete(dataset.id), return: :ok)
 
-      Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
+      Brook.Event.process(@instance_name, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
     end
 
     test "should return ok if it throws error when dataset:delete is called", %{dataset: dataset} do
@@ -110,7 +112,7 @@ defmodule DiscoveryApi.EventHandlerTest do
       )
 
       assert capture_log(fn ->
-               Brook.Event.process(:discovery_api, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
+               Brook.Event.process(@instance_name, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
              end) =~ ~r/Failed to delete dataset: #{dataset.id}.*#{inspect(error)}/
     end
   end

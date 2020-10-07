@@ -5,6 +5,8 @@ defmodule Odo.AngryCaseTest do
   import SmartCity.Event, only: [file_ingest_end: 0]
   alias SmartCity.HostedFile
 
+  @instance_name Odo.instance_name()
+
   test "Individual task failures do not stop others" do
     start_supervised!(Odo.TestEventHandler)
 
@@ -62,8 +64,8 @@ defmodule Odo.AngryCaseTest do
       File.cp!("test/support/my-data.shapefile", "#{dir_path}/123.shapefile")
       Application.put_env(:odo, :working_dir, dir_path)
 
-      Brook.Event.send(Odo.event_stream_instance(), file_ingest_end(), :odo, bad_event)
-      Brook.Event.send(Odo.event_stream_instance(), file_ingest_end(), :odo, good_event)
+      Brook.Event.send(@instance_name, file_ingest_end(), :odo, bad_event)
+      Brook.Event.send(@instance_name, file_ingest_end(), :odo, good_event)
 
       SmartCity.TestHelper.eventually(fn ->
         events = Odo.TestEventHandler.get_events()

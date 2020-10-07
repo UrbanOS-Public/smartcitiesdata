@@ -25,7 +25,7 @@ defmodule Reaper.FullTest do
   @endpoints Application.get_env(:reaper, :elsa_brokers)
   @brod_endpoints Enum.map(@endpoints, fn {host, port} -> {to_charlist(host), port} end)
   @output_topic_prefix Application.get_env(:reaper, :output_topic_prefix)
-  @instance Reaper.Application.instance()
+  @instance_name Reaper.instance_name()
   @redix Reaper.Application.redis_client()
 
   @pre_existing_dataset_id "00000-0000"
@@ -85,7 +85,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, pre_existing_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, pre_existing_dataset)
       :ok
     end
 
@@ -151,7 +151,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, pre_existing_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, pre_existing_dataset)
       :ok
     end
 
@@ -185,7 +185,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, gtfs_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, gtfs_dataset)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
@@ -208,7 +208,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, json_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, json_dataset)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
@@ -232,7 +232,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, json_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, json_dataset)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
@@ -257,7 +257,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, csv_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, csv_dataset)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
@@ -281,7 +281,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, hosted_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, hosted_dataset)
 
       eventually(fn ->
         expected = File.read!("test/support/#{@csv_file_name}")
@@ -323,7 +323,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, csv_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, csv_dataset)
 
       eventually(
         fn ->
@@ -387,7 +387,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, csv_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, csv_dataset)
 
       eventually(
         fn ->
@@ -434,7 +434,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, csv_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, csv_dataset)
 
       eventually(
         fn ->
@@ -477,7 +477,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, json_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, json_dataset)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
@@ -518,7 +518,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, pre_existing_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, pre_existing_dataset)
       :ok
     end
 
@@ -555,14 +555,14 @@ defmodule Reaper.FullTest do
           }
         })
 
-      Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
 
       eventually(fn ->
         assert %{state: :active} = Reaper.Scheduler.find_job(String.to_atom(dataset.id))
         assert Reaper.Collections.Extractions.is_enabled?(dataset.id) == true
       end)
 
-      Brook.Event.send(@instance, dataset_disable(), :reaper, dataset)
+      Brook.Event.send(@instance_name, dataset_disable(), :reaper, dataset)
 
       eventually(fn ->
         assert %{state: :inactive} = Reaper.Scheduler.find_job(String.to_atom(dataset.id))
@@ -573,7 +573,7 @@ defmodule Reaper.FullTest do
     end
 
     test "sending an update for the disabled dataset does NOT re-enable it", %{dataset: dataset} do
-      Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
 
       Process.sleep(5_000)
 
@@ -596,7 +596,7 @@ defmodule Reaper.FullTest do
         }
       })
 
-    Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
 
     eventually(fn ->
       assert Reaper.Collections.Extractions.get_dataset!(dataset.id) == dataset
@@ -615,20 +615,20 @@ defmodule Reaper.FullTest do
         }
       })
 
-    Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
 
     eventually(fn ->
       assert view_state_module.is_enabled?(dataset.id) == true
     end)
 
-    Brook.Event.send(@instance, start_event_type, :reaper, dataset)
+    Brook.Event.send(@instance_name, start_event_type, :reaper, dataset)
 
     eventually(fn ->
       assert nil != view_state_module.get_started_timestamp!(dataset.id)
     end)
 
     now = DateTime.utc_now()
-    Brook.Event.send(@instance, start_event_type, :reaper, dataset)
+    Brook.Event.send(@instance_name, start_event_type, :reaper, dataset)
 
     eventually(fn ->
       assert DateTime.compare(view_state_module.get_started_timestamp!(dataset.id), now) == :gt
@@ -653,20 +653,20 @@ defmodule Reaper.FullTest do
         }
       })
 
-    Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
 
     eventually(fn ->
       assert view_state_module.is_enabled?(dataset.id) == true
     end)
 
-    Brook.Event.send(@instance, dataset_disable(), :reaper, dataset)
+    Brook.Event.send(@instance_name, dataset_disable(), :reaper, dataset)
 
     eventually(fn ->
       assert view_state_module.is_enabled?(dataset.id) == false
     end)
 
     marked_dataset = TDG.create_dataset(Map.merge(dataset, %{business: %{dataTitle: "this-should-not-extract"}}))
-    Brook.Event.send(@instance, start_event_type, :reaper, marked_dataset)
+    Brook.Event.send(@instance_name, start_event_type, :reaper, marked_dataset)
 
     Process.sleep(5_000)
 
@@ -694,19 +694,19 @@ defmodule Reaper.FullTest do
         }
       })
 
-    Brook.Event.send(@instance, dataset_update(), :reaper, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
 
     eventually(fn ->
       assert view_state_module.is_enabled?(dataset.id) == true
     end)
 
-    Brook.Event.send(@instance, dataset_delete(), :reaper, dataset)
+    Brook.Event.send(@instance_name, dataset_delete(), :reaper, dataset)
 
     eventually(fn ->
       assert view_state_module.is_enabled?(dataset.id) == false
     end)
 
-    Brook.Event.send(@instance, end_event_type, :reaper, dataset)
+    Brook.Event.send(@instance_name, end_event_type, :reaper, dataset)
 
     Process.sleep(5_000)
 
@@ -740,7 +740,7 @@ defmodule Reaper.FullTest do
         technical: %{allow_duplicates: false, cadence: "*/5 * * * * * *"}
       )
 
-    Brook.Event.send(@instance, dataset_update(), :author, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :author, dataset)
 
     eventually(
       fn ->
@@ -754,7 +754,7 @@ defmodule Reaper.FullTest do
       10
     )
 
-    Brook.Event.send(@instance, dataset_delete(), :author, dataset)
+    Brook.Event.send(@instance_name, dataset_delete(), :author, dataset)
 
     eventually(
       fn ->

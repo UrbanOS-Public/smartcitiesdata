@@ -7,7 +7,7 @@ defmodule Reaper.Horde.Supervisor do
 
   import SmartCity.Event, only: [data_extract_end: 0, file_ingest_end: 0]
 
-  @instance Reaper.Application.instance()
+  @instance_name Reaper.instance_name()
 
   def start_link(init_args \\ []) do
     Horde.DynamicSupervisor.start_link(__MODULE__, init_args, name: __MODULE__)
@@ -37,7 +37,7 @@ defmodule Reaper.Horde.Supervisor do
     Logger.debug(fn -> "#{__MODULE__} Start data extract process for dataset #{dataset.id}" end)
 
     send_extract_complete_event = fn ->
-      Brook.Event.send(@instance, data_extract_end(), :reaper, dataset)
+      Brook.Event.send(@instance_name, data_extract_end(), :reaper, dataset)
     end
 
     start_child(
@@ -50,7 +50,7 @@ defmodule Reaper.Horde.Supervisor do
 
   def start_file_ingest(%SmartCity.Dataset{} = dataset) do
     send_file_ingest_end_event = fn ->
-      Brook.Event.send(@instance, file_ingest_end(), :reaper, dataset)
+      Brook.Event.send(@instance_name, file_ingest_end(), :reaper, dataset)
     end
 
     start_child(

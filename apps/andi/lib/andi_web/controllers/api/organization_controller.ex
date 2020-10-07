@@ -8,8 +8,9 @@ defmodule AndiWeb.API.OrganizationController do
   alias SmartCity.Organization
   alias Andi.InputSchemas.Organizations
   alias Andi.Services.OrgStore
-  import Andi
   import SmartCity.Event, only: [organization_update: 0]
+
+  @instance_name Andi.instance_name()
 
   @doc """
   Parse a data message to create a new organization to store in ViewState
@@ -73,7 +74,7 @@ defmodule AndiWeb.API.OrganizationController do
   end
 
   defp write_organization(org) do
-    case Brook.Event.send(instance_name(), organization_update(), :andi, org) do
+    case Brook.Event.send(@instance_name, organization_update(), :andi, org) do
       :ok ->
         :ok
 

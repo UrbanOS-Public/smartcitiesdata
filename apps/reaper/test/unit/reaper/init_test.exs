@@ -6,12 +6,12 @@ defmodule Reaper.InitTest do
   alias Reaper.Collections.{Extractions, FileIngestions}
   import SmartCity.TestHelper
 
-  @instance Reaper.Application.instance()
+  @instance_name Reaper.instance_name()
 
   setup do
     {:ok, horde_supervisor} = Horde.DynamicSupervisor.start_link(name: Reaper.Horde.Supervisor, strategy: :one_for_one)
     {:ok, reaper_horde_registry} = Reaper.Horde.Registry.start_link(name: Reaper.Horde.Registry, keys: :unique)
-    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance))
+    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance_name))
 
     on_exit(fn ->
       kill(brook)
@@ -19,7 +19,7 @@ defmodule Reaper.InitTest do
       kill(horde_supervisor)
     end)
 
-    Brook.Test.register(@instance)
+    Brook.Test.register(@instance_name)
 
     :ok
   end
@@ -30,7 +30,7 @@ defmodule Reaper.InitTest do
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         Extractions.update_dataset(dataset)
         Extractions.update_started_timestamp(dataset.id)
         Extractions.update_last_fetched_timestamp(dataset.id, nil)
@@ -51,7 +51,7 @@ defmodule Reaper.InitTest do
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         Extractions.update_dataset(dataset)
         Extractions.update_started_timestamp(dataset.id, start_time)
         Extractions.update_last_fetched_timestamp(dataset.id, end_time)
@@ -69,7 +69,7 @@ defmodule Reaper.InitTest do
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         Extractions.update_dataset(dataset)
         Extractions.update_started_timestamp(dataset.id, start_time)
         Extractions.disable_dataset(dataset.id)
@@ -88,7 +88,7 @@ defmodule Reaper.InitTest do
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         Extractions.update_dataset(dataset)
         Extractions.update_started_timestamp(dataset.id, start_time)
         Extractions.update_last_fetched_timestamp(dataset.id, end_time)
@@ -105,7 +105,7 @@ defmodule Reaper.InitTest do
       allow Reaper.DataExtract.Processor.process(any()), return: :ok
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         Extractions.update_last_fetched_timestamp(dataset.id, DateTime.utc_now())
       end)
 
@@ -121,7 +121,7 @@ defmodule Reaper.InitTest do
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         FileIngestions.update_dataset(dataset)
         FileIngestions.update_started_timestamp(dataset.id)
       end)
@@ -141,7 +141,7 @@ defmodule Reaper.InitTest do
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         FileIngestions.update_dataset(dataset)
         FileIngestions.update_started_timestamp(dataset.id, start_time)
         FileIngestions.update_last_fetched_timestamp(dataset.id, end_time)
@@ -160,7 +160,7 @@ defmodule Reaper.InitTest do
 
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         FileIngestions.update_dataset(dataset)
         FileIngestions.update_started_timestamp(dataset.id, start_time)
         FileIngestions.update_last_fetched_timestamp(dataset.id, end_time)

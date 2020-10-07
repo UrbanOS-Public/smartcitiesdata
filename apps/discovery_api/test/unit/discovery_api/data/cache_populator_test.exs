@@ -9,7 +9,7 @@ defmodule DiscoveryApi.Data.CachePopulatorTest do
   alias DiscoveryApi.Data.CachePopulator
   alias DiscoveryApi.Data.SystemNameCache
 
-  @instance DiscoveryApi.instance()
+  @instance_name DiscoveryApi.instance_name()
 
   describe "init/1" do
     test "Populates the cache with existing view state models" do
@@ -23,7 +23,7 @@ defmodule DiscoveryApi.Data.CachePopulatorTest do
           organizationDetails: organization |> Map.from_struct()
         })
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         Brook.ViewState.merge(:models, model.id, model)
       end)
 

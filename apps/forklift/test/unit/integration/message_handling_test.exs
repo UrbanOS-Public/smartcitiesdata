@@ -3,16 +3,17 @@ defmodule Forklift.Integration.MessageHandlingTest do
   use Placebo
 
   import Mox
-  import Forklift
   import SmartCity.Event, only: [data_ingest_end: 0, data_write_complete: 0]
   import SmartCity.Data, only: [end_of_data: 0]
   alias SmartCity.TestDataGenerator, as: TDG
+
+  @instance_name Forklift.instance_name()
 
   setup :set_mox_global
   setup :verify_on_exit!
 
   setup do
-    Brook.Test.register(instance_name())
+    Brook.Test.register(@instance_name)
     :ok
   end
 
@@ -91,14 +92,14 @@ defmodule Forklift.Integration.MessageHandlingTest do
           event_data.timestamp > DateTime.to_iso8601(now)
       end
 
-      expect Brook.Event.send(instance_name(), data_write_complete(), :forklift, is(greater_than_now)), return: :ok
+      expect Brook.Event.send(@instance_name, data_write_complete(), :forklift, is(greater_than_now)), return: :ok
       Forklift.MessageHandler.handle_messages([message1, message2], %{dataset: dataset})
 
       wait_for_mox()
     end
 
     test "handles errors gracefully" do
-      allow(Brook.Event.send(instance_name(), data_write_complete(), any(), any()), return: :whatever)
+      allow(Brook.Event.send(@instance_name, data_write_complete(), any(), any()), return: :whatever)
 
       stub(MockTable, :write, fn _, _ -> {:error, :raisins} end)
       stub(MockTopic, :write, fn _, _ -> :ok end)
@@ -120,7 +121,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
     @tag :capture_log
     test "handles topic writer errors gracefully" do
-      allow(Brook.Event.send(instance_name(), data_write_complete(), any(), any()), return: :whatever)
+      allow(Brook.Event.send(@instance_name, data_write_complete(), any(), any()), return: :whatever)
 
       stub(MockTable, :write, fn _, _ -> :ok end)
       stub(MockTopic, :write, fn _, _ -> raise "something bad happened, but we don't care" end)
@@ -171,8 +172,8 @@ defmodule Forklift.Integration.MessageHandlingTest do
       message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
       message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}
 
-      allow(Brook.Event.send(instance_name(), data_write_complete(), any(), any()), return: :whatever)
-      expect Brook.Event.send(instance_name(), data_ingest_end(), :forklift, dataset), return: :ok
+      allow(Brook.Event.send(@instance_name, data_write_complete(), any(), any()), return: :whatever)
+      expect Brook.Event.send(@instance_name, data_ingest_end(), :forklift, dataset), return: :ok
       Forklift.MessageHandler.handle_messages([message1, message2, end_of_data()], %{dataset: dataset})
       wait_for_mox()
     end

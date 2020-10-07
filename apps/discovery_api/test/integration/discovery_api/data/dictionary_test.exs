@@ -6,6 +6,8 @@ defmodule DiscoveryApi.Data.DictionaryTest do
   import SmartCity.TestHelper
   import SmartCity.Event, only: [dataset_update: 0]
 
+  @instance_name DiscoveryApi.instance_name()
+
   setup do
     Redix.command!(:redix, ["FLUSHALL"])
     :ok
@@ -32,7 +34,7 @@ defmodule DiscoveryApi.Data.DictionaryTest do
           technical: %{orgId: organization.id, schema: schema}
         })
 
-      Brook.Event.send(DiscoveryApi.instance(), dataset_update(), __MODULE__, dataset)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
       eventually(fn ->
         %{status_code: status_code, body: body} =

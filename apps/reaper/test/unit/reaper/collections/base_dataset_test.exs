@@ -3,15 +3,15 @@ defmodule Reaper.Collections.BaseDatasetTest do
   use Placebo
   require Logger
 
-  @instance Reaper.Application.instance()
+  @instance_name Reaper.instance_name()
 
   alias Reaper.Collections.Extractions
   alias SmartCity.TestDataGenerator, as: TDG
 
   setup do
-    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance))
+    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance_name))
 
-    Brook.Test.register(@instance)
+    Brook.Test.register(@instance_name)
 
     on_exit(fn ->
       kill(brook)
@@ -28,7 +28,7 @@ defmodule Reaper.Collections.BaseDatasetTest do
     test "a dataset that has no definition in the view state is not enabled" do
       id = "almost-there"
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         Extractions.update_started_timestamp(id)
       end)
 
@@ -38,7 +38,7 @@ defmodule Reaper.Collections.BaseDatasetTest do
     test "a dataset that has no definition in the view state, but has its enabled flag explicitly set, reflects it" do
       id = "explicitly-there"
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         Brook.ViewState.merge(:extractions, id, %{"enabled" => true})
       end)
 
@@ -48,7 +48,7 @@ defmodule Reaper.Collections.BaseDatasetTest do
     test "a dataset that has a definition in the view state (via update), but has no enabled flag explicitly set IS enabled" do
       dataset = TDG.create_dataset(%{})
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         Extractions.update_dataset(dataset)
       end)
 
@@ -58,7 +58,7 @@ defmodule Reaper.Collections.BaseDatasetTest do
     test "a dataset that has a definition in the view state (via update), but has its enabled flag explicitly set, reflects that" do
       dataset = TDG.create_dataset(%{})
 
-      Brook.Test.with_event(@instance, fn ->
+      Brook.Test.with_event(@instance_name, fn ->
         Extractions.update_dataset(dataset)
         Extractions.disable_dataset(dataset.id)
       end)

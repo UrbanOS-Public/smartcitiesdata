@@ -3,8 +3,6 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   use Placebo
   use AndiWeb.ConnCase
 
-  import Andi
-
   @route "/api/v1/organization"
   @get_orgs_route "/api/v1/organizations"
   alias SmartCity.Organization
@@ -12,6 +10,8 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.OrgStore
   alias Andi.InputSchemas.Organizations
+
+  @instance_name Andi.instance_name()
 
   setup do
     allow(OrgStore.get(any()), return: {:ok, nil}, meck_options: [:passthrough])
@@ -56,7 +56,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   describe "post /api/ with valid data" do
     setup %{conn: conn, request: request} do
-      allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(Brook.Event.send(@instance_name, any(), :andi, any()), return: :ok, meck_options: [:passthrough])
       allow(Organizations.get(any()), return: nil)
       allow(Organizations.is_unique?(any(), any()), return: true)
       [conn: post(conn, @route, request)]
@@ -70,7 +70,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
 
     test "writes organization to event stream", %{message: _message} do
-      assert_called(Brook.Event.send(instance_name(), any(), :andi, any()), once())
+      assert_called(Brook.Event.send(@instance_name, any(), :andi, any()), once())
     end
   end
 
@@ -134,7 +134,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   describe "id already exists" do
     setup do
-      allow(Brook.Event.send(instance_name(), any(), :andi, any()), return: :ok, meck_options: [:passthrough])
+      allow(Brook.Event.send(@instance_name, any(), :andi, any()), return: :ok, meck_options: [:passthrough])
       allow(OrgStore.get(any()), return: {:ok, %Organization{}}, meck_options: [:passthrough])
       allow(Organizations.get(any()), return: %{})
       allow(Organizations.is_unique?(any(), any()), return: true)
@@ -144,7 +144,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     @tag capture_log: true
     test "post /api/v1/organization fails with explanation", %{conn: conn, request: req} do
       post(conn, @route, req)
-      refute_called(Brook.Event.send(instance_name(), any(), :andi, any()), once())
+      refute_called(Brook.Event.send(@instance_name, any(), :andi, any()), once())
     end
   end
 
@@ -171,7 +171,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
         meck_options: [:passthrough]
       )
 
-      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
+      allow(Brook.Event.send(@instance_name, any(), :andi, any()),
         return: :ok,
         meck_options: [:passthrough]
       )
@@ -204,7 +204,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
         |> json_response(400)
 
       assert actual == "The organization #{org_id} does not exist"
-      refute_called(Brook.Event.send(instance_name(), any(), :andi, any()))
+      refute_called(Brook.Event.send(@instance_name, any(), :andi, any()))
     end
 
     test "sends a user:organization:associate event", %{conn: conn, org: org, users: users} do
@@ -215,8 +215,8 @@ defmodule AndiWeb.API.OrganizationControllerTest do
       {:ok, expected_1} = UserOrganizationAssociate.new(%{user_id: 1, org_id: org.id})
       {:ok, expected_2} = UserOrganizationAssociate.new(%{user_id: 2, org_id: org.id})
 
-      assert_called(Brook.Event.send(instance_name(), any(), :andi, expected_1), once())
-      assert_called(Brook.Event.send(instance_name(), any(), :andi, expected_2), once())
+      assert_called(Brook.Event.send(@instance_name, any(), :andi, expected_1), once())
+      assert_called(Brook.Event.send(@instance_name, any(), :andi, expected_2), once())
     end
 
     @tag capture_log: true
@@ -232,12 +232,12 @@ defmodule AndiWeb.API.OrganizationControllerTest do
         |> json_response(500)
 
       assert actual == "Internal Server Error"
-      refute_called(Brook.Event.send(instance_name(), any(), :andi, any()))
+      refute_called(Brook.Event.send(@instance_name, any(), :andi, any()))
     end
 
     @tag capture_log: true
     test "returns a 500 if unable to send events", %{conn: conn, org: org} do
-      allow(Brook.Event.send(instance_name(), any(), :andi, any()),
+      allow(Brook.Event.send(@instance_name, any(), :andi, any()),
         return: {:error, "unable to send event"},
         meck_options: [:passthrough]
       )

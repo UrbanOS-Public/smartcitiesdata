@@ -4,7 +4,7 @@ defmodule Andi.Migration.MigrationsTest do
 
   require Andi
 
-  @instance Andi.instance_name()
+  @instance_name Andi.instance_name()
 
   @modified_date_completed_flag "modified_date_migration_completed"
   @modified_date_event "migration:modified_date:start"
@@ -12,21 +12,21 @@ defmodule Andi.Migration.MigrationsTest do
   alias Andi.Migration.Migrations
 
   test "send the modified date migration event if it has not succeeded yet" do
-    allow(Brook.get!(@instance, :migration, "modified_date_migration_completed"), return: nil)
+    allow(Brook.get!(@instance_name, :migration, "modified_date_migration_completed"), return: nil)
     allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
     Migrations.migrate_once(@modified_date_completed_flag, @modified_date_event)
 
-    assert_called Brook.Event.send(@instance, @modified_date_event, :andi, %{})
+    assert_called Brook.Event.send(@instance_name, @modified_date_event, :andi, %{})
   end
 
   test "Do not send the modified date migration event if it already succeeded" do
-    allow(Brook.get!(@instance, any(), any()), return: true)
+    allow(Brook.get!(@instance_name, any(), any()), return: true)
     allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
     Migrations.migrate_once(@modified_date_completed_flag, @modified_date_event)
 
-    refute_called Brook.get_all_values!(@instance, :dataset)
-    refute_called Brook.Event.send(@instance, any(), any(), any())
+    refute_called Brook.get_all_values!(@instance_name, :dataset)
+    refute_called Brook.Event.send(@instance_name, any(), any(), any())
   end
 end

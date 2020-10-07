@@ -8,9 +8,10 @@ defmodule AndiWeb.API.DatasetController do
   require Logger
   alias SmartCity.Dataset
   alias Andi.Services.DatasetStore
-  import Andi
   import SmartCity.Event, only: [dataset_update: 0]
   alias Andi.InputSchemas.InputConverter
+
+  @instance_name Andi.instance_name()
 
   @doc """
   Parse a data message and post the created dataset to redis
@@ -75,7 +76,7 @@ defmodule AndiWeb.API.DatasetController do
     end
   end
 
-  defp write_dataset(dataset), do: Brook.Event.send(instance_name(), dataset_update(), :andi, dataset)
+  defp write_dataset(dataset), do: Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
 
   @doc """
   Disable a dataset

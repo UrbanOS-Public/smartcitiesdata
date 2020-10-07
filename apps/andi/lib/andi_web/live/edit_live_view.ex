@@ -5,9 +5,10 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Datasets.Dataset
 
-  import Andi
   import SmartCity.Event, only: [dataset_update: 0]
   require Logger
+
+  @instance_name Andi.instance_name()
 
   def render(assigns) do
     ~L"""
@@ -151,7 +152,7 @@ defmodule AndiWeb.EditLiveView do
     if dataset_changeset.valid? do
       {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(andi_dataset)
 
-      case Brook.Event.send(instance_name(), dataset_update(), :andi, smrt_dataset) do
+      case Brook.Event.send(@instance_name, dataset_update(), :andi, smrt_dataset) do
         :ok ->
           {:noreply,
            assign(socket,

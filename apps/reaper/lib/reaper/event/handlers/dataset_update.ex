@@ -7,7 +7,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   alias Quantum.Job
   alias Reaper.Collections.Extractions
 
-  @instance Reaper.Application.instance()
+  @instance_name Reaper.instance_name()
 
   @cron_conversions %{
     86_400_000 => "0 6 * * *",
@@ -30,7 +30,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
     case Extractions.get_last_fetched_timestamp!(dataset.id) do
       nil ->
         delete_job(dataset)
-        Brook.Event.send(@instance, determine_event(dataset), :reaper, dataset)
+        Brook.Event.send(@instance_name, determine_event(dataset), :reaper, dataset)
 
       _ ->
         :ok
@@ -100,7 +100,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
   def protected_event_send(dataset_json) do
     {:ok, safe_dataset} = Brook.Deserializer.deserialize(dataset_json)
 
-    Brook.Event.send(@instance, determine_event(safe_dataset), :reaper, safe_dataset)
+    Brook.Event.send(@instance_name, determine_event(safe_dataset), :reaper, safe_dataset)
   end
 
   defp determine_event(%SmartCity.Dataset{technical: %{sourceType: "host"}}) do

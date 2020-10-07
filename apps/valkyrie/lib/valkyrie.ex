@@ -6,6 +6,8 @@ defmodule Valkyrie do
 
   alias SmartCity.Dataset
 
+  def instance_name(), do: :valkyrie_brook
+
   @type reason :: %{String.t() => term()}
 
   @spec standardize_data(Dataset.t(), map()) :: {:ok, map()} | {:error, reason()}
