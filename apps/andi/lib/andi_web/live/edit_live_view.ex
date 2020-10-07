@@ -58,6 +58,9 @@ defmodule AndiWeb.EditLiveView do
           <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset}) %>
         </div>
 
+        <div class="extract-steps-form-component">
+          <%= live_render(@sockey, AndiWeb.EditLiveView.ExtractStepForm, id: :extract_step_form_editor) %>
+        </div>
 
         <div class="url-form-component">
           <%= live_render(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, session: %{"dataset" => @dataset}) %>
