@@ -9,9 +9,17 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   require Logger
 
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
+  alias AndiWeb.EditLiveView.KeyValueEditor
+  alias AndiWeb.ErrorHelpers
+  alias AndiWeb.Views.Options
+  alias AndiWeb.Views.DisplayNames
 
   def mount(_, %{"dataset" => dataset}, socket) do
-    new_changeset = ExtractHttpStep.changeset(dataset)
+    new_changeset =
+      dataset
+      |> Andi.InputSchemas.StructTools.to_map()
+      |> ExtractHttpStep.changeset()
+
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
@@ -55,11 +63,13 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
               <div class="extract-step-form-edit-section form-grid">
                 <div class="extract-step-form__type">
                   <%= label(f, :type, DisplayNames.get(:type), class: "label label--required") %>
-                  <%= select(@form, :type, get_http_methods(), id: "step_type", class: "extract-step-form__type select") %>                  <%= ErrorHelpers.error_tag(f, :url) %>
+                  <%= select(f, :type, get_http_methods(), id: "step_type", class: "extract-step-form__type select") %>
+                  <%= ErrorHelpers.error_tag(f, :type) %>
                 </div>
                 <div class="extract-step-form__url">
                   <%= label(f, :url, DisplayNames.get(:url), class: "label label--required") %>
                   <%= text_input(f, :url, class: "input", phx_blur: "validate_url") %>
+                  <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
                 </div>
 
                 <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_queryParams, css_label: "source-query-params", form: f, field: :queryParams ) %>

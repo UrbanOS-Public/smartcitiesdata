@@ -33,7 +33,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractHeader do
 
     header
     |> cast(changes_with_id, @cast_fields, empty_values: [])
-    |> foreign_key_constraint(:technical_id)
+    |> foreign_key_constraint(:extract_http_step_id)
   end
 
   def preload(struct), do: struct

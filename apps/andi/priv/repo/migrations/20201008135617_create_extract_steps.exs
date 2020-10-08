@@ -11,6 +11,7 @@ defmodule Andi.Repo.Migrations.CreateExtractSteps do
       add(:assigns, :map)
       add :technical_id, references(:technical, type: :uuid, on_delete: :delete_all), null: false
     end
+
     create table(:extract_http_headers, primary_key: false) do
       add :id, :uuid, null: false, primary_key: true
       add :key, :string
