@@ -8,8 +8,10 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   import Phoenix.HTML.Form
   require Logger
 
+  alias Andi.InputSchemas.Datasets.ExtractHttpStep
+
   def mount(_, %{"dataset" => dataset}, socket) do
-    new_changeset = ExtractStep.changeset_from_andi_dataset(dataset)
+    new_changeset = ExtractHttpStep.changeset(dataset)
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
@@ -53,7 +55,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
               <div class="extract-step-form-edit-section form-grid">
                 <div class="extract-step-form__type">
                   <%= label(f, :type, DisplayNames.get(:type), class: "label label--required") %>
-                  <%= select(@form, :type, get_http_methods(), id: id <> "_type", class: "extract-step-form__type select") %>                  <%= ErrorHelpers.error_tag(f, :url) %>
+                  <%= select(@form, :type, get_http_methods(), id: "step_type", class: "extract-step-form__type select") %>                  <%= ErrorHelpers.error_tag(f, :url) %>
                 </div>
                 <div class="extract-step-form__url">
                   <%= label(f, :url, DisplayNames.get(:url), class: "label label--required") %>

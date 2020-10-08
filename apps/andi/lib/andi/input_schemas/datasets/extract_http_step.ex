@@ -2,16 +2,19 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+  alias Andi.InputSchemas.Datasets.ExtractQueryParam
+  alias Andi.InputSchemas.Datasets.ExtractHeader
+  alias Andi.InputSchemas.Datasets.Technical
 
+  @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "extract_step" do
     field(:type, :string)
     field(:method, :string)
     field(:url, :string)
     field(:body, :string)
-    has_many(:headers, Header, on_replace: :delete)
-    has_many(:queryParams, QueryParam, on_replace: :delete)
+    has_many(:headers, ExtractHeader, on_replace: :delete)
+    has_many(:queryParams, ExtractQueryParam, on_replace: :delete)
     field(:assigns, :map)
-
     belongs_to(:technical, Technical, type: Ecto.UUID, foreign_key: :technical_id)
   end
 

@@ -1,4 +1,4 @@
-defmodule Andi.InputSchemas.Datasets.ExtractQueryParam do
+defmodule Andi.InputSchemas.Datasets.QueryParam do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
@@ -7,10 +7,10 @@ defmodule Andi.InputSchemas.Datasets.ExtractQueryParam do
   alias Andi.InputSchemas.StructTools
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
-  schema "extract_http_step_queryParams" do
+  schema "source_query_params" do
     field(:key, :string)
     field(:value, :string)
-    belongs_to(:technical, Technical, type: Ecto.UUID, foreign_key: :technical_id)
+    belongs_to(:technical, ExtractHttpStep, type: Ecto.UUID, foreign_key: :extract_http_step_id)
   end
 
   use Accessible

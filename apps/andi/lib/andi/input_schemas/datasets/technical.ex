@@ -25,7 +25,6 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     field(:cadence, :string)
     field(:credentials, :boolean)
     field(:dataName, :string)
-    field(:extract_steps, {:array, :map})
     field(:orgId, :string)
     field(:orgName, :string)
     field(:private, :boolean)
@@ -38,7 +37,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     has_many(:schema, DataDictionary, on_replace: :delete)
     has_many(:sourceHeaders, Header, on_replace: :delete)
     has_many(:sourceQueryParams, QueryParam, on_replace: :delete)
-    has_many(:extractSteps, ExtractStep, on_replace: :delete)
+    has_many(:extractSteps, ExtractHttpStep, on_replace: :delete)
 
     belongs_to(:dataset, Dataset, type: :string, foreign_key: :dataset_id)
   end
