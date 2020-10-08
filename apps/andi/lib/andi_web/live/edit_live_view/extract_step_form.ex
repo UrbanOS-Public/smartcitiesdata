@@ -51,16 +51,20 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
           <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
             <div class="component-edit-section--<%= @visibility %>">
               <div class="extract-step-form-edit-section form-grid">
-                <div class="extract-step-form__source-url">
+                <div class="extract-step-form__type">
                   <%= label(f, :type, DisplayNames.get(:type), class: "label label--required") %>
-                  <%= select(@form, :type, get_http_methods(), id: id <> "_type", class: "extract-step-form__type select") %>                  <%= ErrorHelpers.error_tag(f, :sourceUrl) %>
+                  <%= select(@form, :type, get_http_methods(), id: id <> "_type", class: "extract-step-form__type select") %>                  <%= ErrorHelpers.error_tag(f, :url) %>
+                </div>
+                <div class="extract-step-form__url">
+                  <%= label(f, :url, DisplayNames.get(:url), class: "label label--required") %>
+                  <%= text_input(f, :url, class: "input", phx_blur: "validate_url") %>
                 </div>
 
-                <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_query_params, css_label: "source-query-params", form: f, field: :sourceQueryParams ) %>
-                <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_source_headers, css_label: "source-headers", form: f, field: :sourceHeaders ) %>
+                <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_queryParams, css_label: "source-query-params", form: f, field: :queryParams ) %>
+                <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_headers, css_label: "source-headers", form: f, field: :headers ) %>
 
-                <div class="url-form__test-section">
-                  <button type="button" class="url-form__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
+                <div class="extract_step__test-section">
+                  <button type="button" class="extract_step__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
                   <%= if @test_results do %>
                     <div class="test-status">
                     Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) |> HttpStatusDescriptions.simple() %></span>
@@ -91,9 +95,9 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
   def handle_event("test_url", _, socket) do
     changes = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-    url = Map.get(changes, :sourceUrl) |> Andi.URI.clear_query_params()
-    query_params = key_values_to_keyword_list(changes, :sourceQueryParams)
-    headers = key_values_to_keyword_list(changes, :sourceHeaders)
+    url = Map.get(changes, :url) |> Andi.URI.clear_query_params()
+    query_params = key_values_to_keyword_list(changes, :queryParams)
+    headers = key_values_to_keyword_list(changes, :headers)
 
     Task.async(fn ->
       {:test_results, Andi.Services.UrlTest.test(url, query_params: query_params, headers: headers)}
@@ -102,16 +106,18 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, assign(socket, testing: true)}
   end
 
-  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceUrl"]}, socket) do
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "url"]}, socket) do
     form_data
     |> FormTools.adjust_source_query_params_for_url()
+    # TODO maybe refactor
     |> UrlFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 
-  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceQueryParams" | _]}, socket) do
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "queryParams" | _]}, socket) do
     form_data
     |> FormTools.adjust_source_url_for_query_params()
+    # TODO maybe refactor
     |> UrlFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
@@ -128,7 +134,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, socket}
   end
 
-  def handle_event("add", %{"field" => "sourceQueryParams"}, socket) do
+  def handle_event("add", %{"field" => "queryParams"}, socket) do
     current_changes =
       socket.assigns.changeset
       |> Ecto.Changeset.apply_changes()
@@ -142,7 +148,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
-  def handle_event("add", %{"field" => "sourceHeaders"}, socket) do
+  def handle_event("add", %{"field" => "headers"}, socket) do
     current_changes =
       socket.assigns.changeset
       |> Ecto.Changeset.apply_changes()
@@ -156,7 +162,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
-  def handle_event("remove", %{"id" => id, "field" => "sourceQueryParams"}, socket) do
+  def handle_event("remove", %{"id" => id, "field" => "queryParams"}, socket) do
     current_changes =
       socket.assigns.changeset
       |> Ecto.Changeset.apply_changes()
@@ -170,7 +176,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
-  def handle_event("remove", %{"id" => id, "field" => "sourceHeaders"}, socket) do
+  def handle_event("remove", %{"id" => id, "field" => "headers"}, socket) do
     current_changes =
       socket.assigns.changeset
       |> Ecto.Changeset.apply_changes()
@@ -185,7 +191,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   end
 
   def handle_info(
-        %{topic: "toggle-visibility", payload: %{expand: "url_form", dataset_id: dataset_id}},
+        %{topic: "toggle-visibility", payload: %{expand: "extract_step_form", dataset_id: dataset_id}},
         %{assigns: %{dataset_id: dataset_id}} = socket
       ) do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
