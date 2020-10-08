@@ -4,11 +4,12 @@ defmodule Odo.AngryCaseTest do
 
   import SmartCity.Event, only: [file_ingest_end: 0]
   alias SmartCity.HostedFile
+  alias Odo.Support.TestEventHandler
 
   @instance_name Odo.instance_name()
 
   test "Individual task failures do not stop others" do
-    start_supervised!(Odo.TestEventHandler)
+    start_supervised!(TestEventHandler)
 
     id = 123
     data_name = "my-data"
@@ -68,7 +69,7 @@ defmodule Odo.AngryCaseTest do
       Brook.Event.send(@instance_name, file_ingest_end(), :odo, good_event)
 
       SmartCity.TestHelper.eventually(fn ->
-        events = Odo.TestEventHandler.get_events()
+        events = TestEventHandler.get_events()
 
         assert Enum.member?(events, expected_good_event)
         assert Enum.member?(events, expected_bad_event)

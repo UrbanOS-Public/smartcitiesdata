@@ -21,7 +21,7 @@ config :forklift, :brook,
     module: Brook.Driver.Test,
     init_arg: []
   ],
-  handlers: [Forklift.EventHandler],
+  handlers: [Forklift.Event.EventHandler],
   storage: [
     module: Brook.Storage.Ets,
     init_arg: [

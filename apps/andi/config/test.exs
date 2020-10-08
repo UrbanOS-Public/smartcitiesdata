@@ -18,7 +18,7 @@ config :andi, :brook,
     module: Brook.Driver.Default,
     init_arg: []
   ],
-  handlers: [Andi.EventHandler],
+  handlers: [Andi.Event.EventHandler],
   storage: [
     module: Brook.Storage.Ets,
     init_arg: []

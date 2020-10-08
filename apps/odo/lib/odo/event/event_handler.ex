@@ -1,4 +1,4 @@
-defmodule Odo.EventHandler do
+defmodule Odo.Event.EventHandler do
   @moduledoc """
   This module will process events that are passed into odo, initiating the transformation and upload
   """

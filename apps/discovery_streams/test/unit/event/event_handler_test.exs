@@ -1,5 +1,7 @@
-defmodule DiscoveryStreams.EventHandlerTest do
+defmodule DiscoveryStreams.Event.EventHandlerTest do
   use ExUnit.Case
+
+  alias DiscoveryStreams.Event.EventHandler
   alias SmartCity.TestDataGenerator, as: TDG
   import Checkov
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, dataset_delete: 0]
@@ -28,7 +30,7 @@ defmodule DiscoveryStreams.EventHandlerTest do
 
       event = Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author)
 
-      response = DiscoveryStreams.EventHandler.handle_event(event)
+      response = EventHandler.handle_event(event)
 
       assert_called Brook.ViewState.create(:streaming_datasets_by_id, dataset.id, dataset.technical.systemName), once()
 
@@ -50,7 +52,7 @@ defmodule DiscoveryStreams.EventHandlerTest do
         )
 
       event = Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author)
-      response = DiscoveryStreams.EventHandler.handle_event(event)
+      response = EventHandler.handle_event(event)
 
       assert_called DiscoveryStreams.Stream.Supervisor.start_child(dataset.id), once()
       assert :ok == response
@@ -65,7 +67,7 @@ defmodule DiscoveryStreams.EventHandlerTest do
 
       event = Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author)
 
-      response = DiscoveryStreams.EventHandler.handle_event(event)
+      response = EventHandler.handle_event(event)
 
       refute_called Brook.ViewState.create(any(), any(), any())
       refute_called DiscoveryStreams.Stream.Supervisor.start_child(any())
@@ -92,7 +94,7 @@ defmodule DiscoveryStreams.EventHandlerTest do
 
       event = Brook.Event.new(type: dataset_update(), data: dataset, author: :author)
 
-      DiscoveryStreams.EventHandler.handle_event(event)
+      EventHandler.handle_event(event)
 
       assert delete_called == called?(Brook.ViewState.delete(:streaming_datasets_by_id, dataset.id))
       assert delete_called == called?(Brook.ViewState.delete(:streaming_datasets_by_system_name, system_name))
@@ -114,7 +116,7 @@ defmodule DiscoveryStreams.EventHandlerTest do
       allow(DiscoveryStreams.TopicHelper.delete_input_topic(any()), return: :ok)
 
       event = Brook.Event.new(type: dataset_delete(), data: dataset, author: :author)
-      DiscoveryStreams.EventHandler.handle_event(event)
+      EventHandler.handle_event(event)
 
       assert_called(Brook.ViewState.delete(:streaming_datasets_by_id, dataset.id))
       assert_called(Brook.ViewState.delete(:streaming_datasets_by_system_name, system_name))

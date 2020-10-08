@@ -1,4 +1,4 @@
-defmodule Valkyrie.DatasetHandler do
+defmodule Valkyrie.Event.EventHandler do
   @moduledoc """
   MessageHandler to receive updated datasets and add to the cache
   """

@@ -18,7 +18,7 @@ config :reaper, :brook,
     module: Brook.Driver.Test,
     init_arg: []
   ],
-  handlers: [Reaper.Event.Handler],
+  handlers: [Reaper.Event.EventHandler],
   storage: [
     module: Brook.Storage.Ets,
     init_arg: []

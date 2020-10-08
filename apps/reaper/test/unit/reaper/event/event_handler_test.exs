@@ -1,4 +1,4 @@
-defmodule Reaper.Event.HandlerTest do
+defmodule Reaper.Event.EventHandlerTest do
   use ExUnit.Case
   use Placebo
   require Logger
