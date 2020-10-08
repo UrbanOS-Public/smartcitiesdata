@@ -9,7 +9,7 @@ config :valkyrie,
   broadway_producer_module: Fake.Producer
 
 config :valkyrie, :brook,
-  handlers: [Valkyrie.DatasetHandler],
+  handlers: [Valkyrie.Event.EventHandler],
   storage: [
     module: Brook.Storage.Ets,
     init_arg: []

@@ -1,4 +1,4 @@
-defmodule Andi.EventHandler do
+defmodule Andi.Event.EventHandler do
   @moduledoc "Event Handler for event stream"
   use Brook.Event.Handler
   require Logger

@@ -11,7 +11,7 @@ config :discovery_streams, endpoints: [localhost: 9092]
 
 config :discovery_streams, :brook,
   instance: :discovery_streams,
-  handlers: [DiscoveryStreams.EventHandler],
+  handlers: [DiscoveryStreams.Event.EventHandler],
   storage: [
     module: Brook.Storage.Ets,
     init_arg: []

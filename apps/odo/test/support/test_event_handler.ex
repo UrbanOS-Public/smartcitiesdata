@@ -1,4 +1,4 @@
-defmodule Odo.TestEventHandler do
+defmodule Odo.Support.TestEventHandler do
   @moduledoc false
   use Brook.Event.Handler
 

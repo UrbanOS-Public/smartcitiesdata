@@ -1,4 +1,4 @@
-defmodule Reaper.SecretRetrieverTest do
+defmodule Andi.SecretRetrieverTest do
   use ExUnit.Case
   use Placebo
   alias Andi.SecretRetriever

@@ -1,4 +1,4 @@
-defmodule EventHandlerTest do
+defmodule Andi.Event.EventHandlerTest do
   @moduledoc false
   use ExUnit.Case
   use AndiWeb.ConnCase
@@ -7,6 +7,7 @@ defmodule EventHandlerTest do
   import SmartCity.Event, only: [dataset_delete: 0, dataset_harvest_start: 0, organization_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
 
+  alias Andi.Event.EventHandler
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
   alias Andi.Harvest.Harvester
@@ -23,7 +24,7 @@ defmodule EventHandlerTest do
     expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
     Brook.Event.new(type: dataset_delete(), data: dataset, author: :author)
-    |> Andi.EventHandler.handle_event()
+    |> EventHandler.handle_event()
 
     assert_called Datasets.delete(dataset.id)
   end

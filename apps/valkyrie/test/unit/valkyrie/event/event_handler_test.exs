@@ -1,4 +1,4 @@
-defmodule Valkyrie.DatasetHandlerTest do
+defmodule Valkyrie.Event.EventHandlerTest do
   use ExUnit.Case
   use Placebo
   use Brook.Event.Handler
@@ -6,7 +6,7 @@ defmodule Valkyrie.DatasetHandlerTest do
   import SmartCity.Event, only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0]
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Valkyrie.DatasetHandler
+  alias Valkyrie.Event.EventHandler
   alias Valkyrie.DatasetProcessor
 
   @instance_name Valkyrie.instance_name()
@@ -21,7 +21,7 @@ defmodule Valkyrie.DatasetHandlerTest do
     dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: source_type})
 
     Brook.Test.with_event(@instance_name, fn ->
-      DatasetHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author))
+      EventHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author))
     end)
 
     assert called == called?(Valkyrie.DatasetProcessor.start(dataset))
@@ -47,7 +47,7 @@ defmodule Valkyrie.DatasetHandlerTest do
       dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: "ingest"})
 
       Brook.Test.with_event(@instance_name, fn ->
-        DatasetHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author))
+        EventHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author))
       end)
 
       assert Brook.get!(@instance_name, :datasets, dataset.id) == dataset
@@ -55,7 +55,7 @@ defmodule Valkyrie.DatasetHandlerTest do
 
     test "Deletes dataset from viewstate when data:standarization:end event fires" do
       Brook.Test.with_event(@instance_name, fn ->
-        DatasetHandler.handle_event(
+        EventHandler.handle_event(
           Brook.Event.new(
             type: data_standardization_end(),
             data: %{"dataset_id" => "ds1"},
@@ -71,7 +71,7 @@ defmodule Valkyrie.DatasetHandlerTest do
       allow(DatasetProcessor.stop("ds1"), return: :does_not_matter)
 
       Brook.Test.with_event(@instance_name, fn ->
-        DatasetHandler.handle_event(
+        EventHandler.handle_event(
           Brook.Event.new(
             type: data_standardization_end(),
             data: %{"dataset_id" => "ds1"},
@@ -88,7 +88,7 @@ defmodule Valkyrie.DatasetHandlerTest do
       allow(DatasetProcessor.delete(any()), return: :ok)
 
       Brook.Test.with_event(@instance_name, fn ->
-        DatasetHandler.handle_event(
+        EventHandler.handle_event(
           Brook.Event.new(
             type: dataset_delete(),
             data: dataset,

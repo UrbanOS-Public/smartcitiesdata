@@ -1,4 +1,4 @@
-defmodule DiscoveryStreams.EventHandler do
+defmodule DiscoveryStreams.Event.EventHandler do
   @moduledoc """
     Event Stream Event Handler
   """

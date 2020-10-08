@@ -44,7 +44,7 @@ config :valkyrie, :brook,
       ]
     ]
   ],
-  handlers: [Valkyrie.DatasetHandler],
+  handlers: [Valkyrie.Event.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [

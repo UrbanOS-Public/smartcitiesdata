@@ -28,7 +28,7 @@ if kafka_brokers do
         ]
       ]
     ],
-    handlers: [DiscoveryStreams.EventHandler],
+    handlers: [DiscoveryStreams.Event.EventHandler],
     storage: [
       module: Brook.Storage.Redis,
       init_arg: [

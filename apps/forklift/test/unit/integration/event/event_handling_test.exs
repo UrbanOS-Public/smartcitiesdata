@@ -1,4 +1,4 @@
-defmodule Forklift.Integration.EventHandlingTest do
+defmodule Forklift.Event.EventHandlingTest do
   use ExUnit.Case
   use Placebo
 
@@ -7,6 +7,7 @@ defmodule Forklift.Integration.EventHandlingTest do
   import SmartCity.Event,
     only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0, dataset_delete: 0]
 
+  alias Forklift.Event.EventHandler
   alias SmartCity.TestDataGenerator, as: TDG
 
   @instance_name Forklift.instance_name()
@@ -104,7 +105,7 @@ defmodule Forklift.Integration.EventHandlingTest do
     expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
     Brook.Test.with_event(@instance_name, fn ->
-      Forklift.EventHandler.handle_event(
+      EventHandler.handle_event(
         Brook.Event.new(
           type: dataset_delete(),
           data: dataset,

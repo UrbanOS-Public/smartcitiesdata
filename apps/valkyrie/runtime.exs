@@ -55,7 +55,7 @@ if kafka_brokers do
       ]
     ]
   ],
-  handlers: [Valkyrie.DatasetHandler],
+  handlers: [Valkyrie.Event.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [

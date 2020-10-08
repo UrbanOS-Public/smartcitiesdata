@@ -48,7 +48,7 @@ config :odo, :brook,
       ]
     ]
   },
-  handlers: [Odo.EventHandler],
+  handlers: [Odo.Event.EventHandler],
   storage: %{
     module: Brook.Storage.Redis,
     init_arg: [redix_args: [host: host], namespace: "odo:view"]

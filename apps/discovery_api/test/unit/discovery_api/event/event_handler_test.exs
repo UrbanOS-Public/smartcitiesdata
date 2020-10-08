@@ -1,4 +1,4 @@
-defmodule DiscoveryApi.EventHandlerTest do
+defmodule DiscoveryApi.Event.EventHandlerTest do
   use ExUnit.Case
   use Placebo
 
@@ -6,7 +6,7 @@ defmodule DiscoveryApi.EventHandlerTest do
   import ExUnit.CaptureLog
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias DiscoveryApi.EventHandler
+  alias DiscoveryApi.Event.EventHandler
   alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Schemas.Organizations
   alias DiscoveryApi.Schemas.Users
