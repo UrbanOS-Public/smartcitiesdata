@@ -232,6 +232,43 @@ $component-header-height: 7.5rem;
     display: none;
 }
 
+
+.dataset-delete-modal--visible {
+    @include modal-wrapper();
+
+    .delete_button {
+        margin-left: 2rem;
+        background-color: $color-error;
+    }
+}
+
+.dataset-delete-modal--hidden {
+    display: none;
+}
+
+.edit-page__delete-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    button {
+        background-color: $color-error;
+        border: none;
+        position: relative;
+        min-width: 17rem;
+
+        &:before {
+            background-image: url(/images/delete_field_white.svg);
+            width: 1.5rem;
+            height: 24px;
+            position: absolute;
+            content: " ";
+            left: 10px;
+            color: white;
+        }
+    }
+}
+
 #snackbar {
     visibility: hidden;
     min-width: 250px;
