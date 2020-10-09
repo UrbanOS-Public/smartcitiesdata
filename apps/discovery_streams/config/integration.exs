@@ -27,7 +27,7 @@ config :discovery_streams, :brook,
       ]
     ]
   ],
-  handlers: [DiscoveryStreams.EventHandler],
+  handlers: [DiscoveryStreams.Event.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [

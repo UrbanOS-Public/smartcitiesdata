@@ -1,4 +1,4 @@
-defmodule Reaper.Event.Handler do
+defmodule Reaper.Event.EventHandler do
   @moduledoc "This modules processes all events for Reaper"
   use Brook.Event.Handler
 

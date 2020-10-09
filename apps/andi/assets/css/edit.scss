@@ -234,7 +234,6 @@ $component-header-height: 7.5rem;
 
 
 .dataset-delete-modal--visible {
-    // text-align: center;
     @include modal-wrapper();
 
     .delete_button {

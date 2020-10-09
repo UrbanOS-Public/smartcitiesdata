@@ -121,7 +121,7 @@ config :discovery_api, :brook,
       ]
     ]
   ],
-  handlers: [DiscoveryApi.EventHandler],
+  handlers: [DiscoveryApi.Event.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [redix_args: redix_args, namespace: "discovery-api:view"]

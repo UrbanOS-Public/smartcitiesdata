@@ -26,7 +26,7 @@ config :discovery_api, :brook,
     module: Brook.Driver.Test,
     init_arg: []
   ],
-  handlers: [DiscoveryApi.EventHandler],
+  handlers: [DiscoveryApi.Event.EventHandler],
   storage: [
     module: Brook.Storage.Ets,
     init_arg: []

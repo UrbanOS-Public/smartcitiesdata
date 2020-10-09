@@ -1,4 +1,4 @@
-defmodule DiscoveryApi.EventHandlerTest do
+defmodule DiscoveryApi.Event.EventHandlerTest do
   use ExUnit.Case
 
   use DiscoveryApi.DataCase

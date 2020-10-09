@@ -68,7 +68,7 @@ config :reaper, :brook,
       ]
     ]
   },
-  handlers: [Reaper.Event.Handler],
+  handlers: [Reaper.Event.EventHandler],
   storage: %{
     module: Brook.Storage.Redis,
     init_arg: [

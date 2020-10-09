@@ -34,7 +34,7 @@ config :andi, :brook,
       ]
     ]
   ],
-  handlers: [Andi.EventHandler],
+  handlers: [Andi.Event.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [redix_args: redix_args, namespace: "andi:view"]
