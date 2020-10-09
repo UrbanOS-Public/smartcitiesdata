@@ -4,8 +4,9 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.Services.DatasetStore
 
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [dataset_update: 0, dataset_delete: 0]
   require Logger
 
   @instance_name Andi.instance_name()
@@ -64,12 +65,17 @@ defmodule AndiWeb.EditLiveView do
         <div class="finalize-form-component ">
           <%= live_render(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, session: %{"dataset" => @dataset}) %>
         </div>
-
       </form>
+
+      <div class="edit-page__delete-btn">
+        <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--delete btn--large" phx-click="dataset-delete" type="button">DELETE DATASET</button>
+      </div>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.PublishSuccessModal, visibility: @publish_success_modal_visibility) %>
+
+      <%= live_component(@socket, AndiWeb.EditLiveView.DeleteDatasetModal, visibility: @delete_dataset_modal_visibility, id: @dataset_id) %>
 
       <div phx-hook="showSnackbar">
         <%= if @save_success do %>
@@ -110,7 +116,8 @@ defmodule AndiWeb.EditLiveView do
        unsaved_changes: false,
        unsaved_changes_link: "/",
        unsaved_changes_modal_visibility: "hidden",
-       publish_success_modal_visibility: "hidden"
+       publish_success_modal_visibility: "hidden",
+       delete_dataset_modal_visibility: "hidden"
      )}
   end
 
@@ -133,6 +140,25 @@ defmodule AndiWeb.EditLiveView do
     case socket.assigns.unsaved_changes do
       true -> {:noreply, assign(socket, unsaved_changes_link: "/", unsaved_changes_modal_visibility: "visible")}
       false -> {:noreply, redirect(socket, to: "/")}
+    end
+  end
+
+  def handle_event("dataset-delete", _, socket) do
+    {:noreply, assign(socket, delete_dataset_modal_visibility: "visible")}
+  end
+
+  def handle_event("cancel-delete", _, socket) do
+    {:noreply, assign(socket, delete_dataset_modal_visibility: "hidden")}
+  end
+
+  def handle_event("confirm-delete", %{"id" => id}, socket) do
+    with dataset <- Datasets.get(id),
+         {:ok, smrt_dataset} <- InputConverter.andi_dataset_to_smrt_dataset(dataset),
+         :ok <- Brook.Event.send(@instance_name, dataset_delete(), :andi, smrt_dataset) do
+      {:noreply, redirect(socket, to: "/")}
+    else
+      error ->
+        Logger.info("dataset not in system: #{id}")
     end
   end
 

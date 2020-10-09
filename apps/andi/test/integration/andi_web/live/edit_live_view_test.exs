@@ -341,4 +341,24 @@ defmodule AndiWeb.EditLiveViewTest do
       assert_redirect(view, url)
     end
   end
+
+  describe "delete dataset" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    end
+
+    test "dataset is deleted after confirmation", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      render_change(view, "confirm-delete", %{"id" => dataset.id})
+
+      eventually(fn ->
+        assert nil == Datasets.get(dataset.id)
+      end)
+    end
+  end
 end
