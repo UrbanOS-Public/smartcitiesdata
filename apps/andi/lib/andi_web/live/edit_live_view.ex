@@ -26,6 +26,7 @@ defmodule AndiWeb.EditLiveView do
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>
+        <%= hidden_input(f, :owner_id) %>
         <%= hidden_input(business, :authorEmail) %>
         <%= hidden_input(business, :authorName) %>
         <%= hidden_input(business, :categories) %>

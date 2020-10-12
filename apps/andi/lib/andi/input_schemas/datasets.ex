@@ -30,7 +30,7 @@ defmodule Andi.InputSchemas.Datasets do
     Repo.all(query)
   end
 
-  def create() do
+  def create(owner \\ nil) do
     new_dataset_id = UUID.uuid4()
     new_dataset_title = "New Dataset - #{Date.utc_today()}"
     new_dataset_name = data_title_to_data_name(new_dataset_title)
@@ -41,9 +41,10 @@ defmodule Andi.InputSchemas.Datasets do
         %{
           id: new_dataset_id,
           business: %{dataTitle: new_dataset_title},
-          technical: %{dataName: new_dataset_name}
+          technical: %{dataName: new_dataset_name},
+          owner: owner |> IO.inspect(label: "datasets.ex:45")
         }
-      )
+      ) |> IO.inspect(label: "datasets.ex:47")
 
     {:ok, new_dataset} = save(new_changeset)
     new_dataset

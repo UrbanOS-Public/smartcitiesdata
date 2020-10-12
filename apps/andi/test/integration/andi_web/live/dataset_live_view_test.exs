@@ -124,6 +124,20 @@ defmodule AndiWeb.DatasetLiveViewTest do
     refute Enum.empty?(find_elements(html, "#orgId-error-msg"))
   end
 
+  test "add dataset button creates a dataset with the owner as the currently logged in user", %{conn: conn} do
+    {:ok, user} = Andi.Schemas.User.create_or_update("test-auth-id", %{email: "bob@example.com"})
+    conn = Plug.Conn.put_session(conn, :user_id, user.id)
+    assert {:ok, view, _html} = live(conn, @url_path)
+
+    {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+
+    assert {:ok, view, html} = live(conn, edit_page)
+
+    onwed_datasets = Andi.Repo.all(Dataset)
+    |> Enum.filter(fn datatset -> dataset.owner_id == user.id end)
+    |> IO.inspect(label: "dataset_live_view_test.exs:138")
+  end
+
   test "does not load datasets that only contain a timestamp", %{conn: conn} do
     dataset_with_only_timestamp = %Dataset{
       id: UUID.uuid4(),

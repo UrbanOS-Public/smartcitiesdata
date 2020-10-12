@@ -34,6 +34,7 @@ defmodule Andi.Test.AuthHelper do
       |> Plug.Session.call(signing_opts)
       |> Plug.Conn.fetch_session()
       |> TokenHandler.put_session_token(jwt)
+      |> Plug.Conn.put_session(:user_id, "TEST")
       |> Guardian.Plug.VerifySession.call(module: TokenHandler, error_handler: AndiWeb.Auth.ErrorHandler, claims: %{})
 
     conn
