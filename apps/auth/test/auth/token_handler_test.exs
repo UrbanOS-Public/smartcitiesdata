@@ -1,7 +1,15 @@
+defmodule Auth.Test.TokenHandlerExample do
+  @moduledoc """
+  An example for using the TokenHandler helper
+  """
+
+  use Auth.TokenHandler
+end
 defmodule Auth.TokenHandlerTest do
   use ExUnit.Case
+  use Testing.DataCase, repo_module: Auth.Repo
 
-  alias Auth.TokenHandler
+  alias Auth.Test.TokenHandlerExample
 
   describe "on_verify/3" do
     test "given an unrevoked token, it succeeds" do
@@ -10,7 +18,7 @@ defmodule Auth.TokenHandlerTest do
       options = []
 
       assert {:ok, ^new_claims} =
-               TokenHandler.on_verify(
+               TokenHandlerExample.on_verify(
                  new_claims,
                  token,
                  options
@@ -26,7 +34,7 @@ defmodule Auth.TokenHandlerTest do
       options = []
 
       assert {:ok, _} =
-               TokenHandler.on_verify(
+               TokenHandlerExample.on_verify(
                  new_claims_without_aud,
                  token,
                  options
@@ -39,14 +47,14 @@ defmodule Auth.TokenHandlerTest do
       options = []
 
       {:ok, _} =
-        TokenHandler.on_revoke(
+        TokenHandlerExample.on_revoke(
           claims,
           token,
           []
         )
 
       assert {:error, _} =
-               TokenHandler.on_verify(
+               TokenHandlerExample.on_verify(
                  claims,
                  token,
                  options
@@ -61,13 +69,13 @@ defmodule Auth.TokenHandlerTest do
       options = []
 
       assert {:ok, ^claims} =
-               TokenHandler.on_revoke(
+               TokenHandlerExample.on_revoke(
                  claims,
                  token,
                  options
                )
 
-      revoked_primary_key = TokenHandler.to_revoked_claims(claims)
+      revoked_primary_key = TokenHandlerExample.to_revoked_claims(claims)
 
       assert nil != Guardian.DB.Token.find_by_claims(revoked_primary_key)
     end
@@ -81,7 +89,7 @@ defmodule Auth.TokenHandlerTest do
       options = []
 
       assert {:error, _} =
-               TokenHandler.on_revoke(
+               TokenHandlerExample.on_revoke(
                  claims_without_aud,
                  token,
                  options
