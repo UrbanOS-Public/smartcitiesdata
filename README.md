@@ -1,15 +1,15 @@
-[![Master](https://travis-ci.com/smartcitiesdata/smartcitiesdata.svg?branch=master)](https://travis-ci.com/smartcitiesdata/smartcitiesdata)
+[![Master](https://travis-ci.org/Datastillery/smartcitiesdata.svg?branch=master)](https://travis-ci.org/Datastillery/smartcitiesdata)
 
 # Smart Cities Data Platform
 
 Where to go to get started:
-* [What is the project and how it works](https://github.com/smartcitiesdata/smartcitiesdata/wiki/The-What)
-* [What all those application names mean](https://github.com/smartcitiesdata/smartcitiesdata/wiki/Names)
-* [How to run and use the code](https://github.com/smartcitiesdata/smartcitiesdata/wiki/Run)
-* [How to contribute](https://github.com/smartcitiesdata/smartcitiesdata/wiki/Contribute)
-* [How to contact the team for help](https://github.com/smartcitiesdata/smartcitiesdata/wiki/Contact)
-* [Additional learning resources](https://github.com/smartcitiesdata/smartcitiesdata/wiki/Resources)
-* [A glossary of terms and technologies](https://github.com/smartcitiesdata/smartcitiesdata/wiki/Glossary)
+* [What is the project and how it works](https://github.com/Datastillery/smartcitiesdata/wiki/The-What)
+* [What all those application names mean](https://github.com/Datastillery/smartcitiesdata/wiki/Names)
+* [How to run and use the code](https://github.com/Datastillery/smartcitiesdata/wiki/Run)
+* [How to contribute](https://github.com/Datastillery/smartcitiesdata/wiki/Contribute)
+* [How to contact the team for help](https://github.com/Datastillery/smartcitiesdata/wiki/Contact)
+* [Additional learning resources](https://github.com/Datastillery/smartcitiesdata/wiki/Resources)
+* [A glossary of terms and technologies](https://github.com/Datastillery/smartcitiesdata/wiki/Glossary)
 
 We look forward to growing a robust community around this project and doing some truly challenging and disruptive things in the space of Smart and Connected cities, industries, and organizations, IoT processing, and data analytics. Please join us and if you have any questions, feel free to reach out and ask!
 
@@ -31,7 +31,7 @@ a RESTful API, or a web socket API for streaming data feeds.
 ### starting the entire stack in minikube or Docker Desktop embedded Kubernetes cluster
 The current best approach to locally running the stack is in a local instance of Kubernetes, either in the minikube virtual machine or in the Kubernetes instance that can be run natively from Docker Desktop for Mac or Docker Desktop for Windows. Both options are viable, although in recent versions of the Docker version, exposing services via a `LoadBalancer` type allow the service to be reachable from the host machine without additional network manipulation.
 
-Once you have a Kubernetes cluster running, check out the `smartcitiesdata/charts` repo and the `platform` chart for standing up the complete platform or any ad hoc components you'd like to enable.
+Once you have a Kubernetes cluster running, check out the `Datastillery/charts` repo and the `platform` chart for standing up the complete platform or any ad hoc components you'd like to enable.
 
 
 ### port mappings
