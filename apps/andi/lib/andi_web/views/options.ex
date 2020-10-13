@@ -116,6 +116,12 @@ defmodule AndiWeb.Views.Options do
     }
   end
 
+  def extract_step_type() do
+    %{
+      "HTTP" => "HTTP"
+    }
+  end
+
   def organizations(stored_organizations) do
     case stored_organizations do
       {:ok, organizations} ->

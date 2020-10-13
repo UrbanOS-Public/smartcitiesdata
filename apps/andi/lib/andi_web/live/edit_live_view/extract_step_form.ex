@@ -82,21 +82,36 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
             <div class="component-edit-section--<%= @visibility %>">
               <div class="extract-step-form-edit-section form-grid">
+                <div class="extract-step-form__type">
+                  <%= label(f, :type, DisplayNames.get(:type), class: "label") %>
+                  <%= select(f, :type, get_extract_step_types(), id: "step_type", class: "extract-step-form__type select") %>
+                </div>
+
                 <div class="extract-step-form__method">
                   <%= label(f, :method, DisplayNames.get(:method), class: "label label--required") %>
-                  <%= select(f, :method, get_http_methods(), id: "step_type", class: "extract-step-form__type select") %>
+                  <%= select(f, :method, get_http_methods(), id: "http_method", class: "extract-step-form__method select") %>
                   <%= ErrorHelpers.error_tag(f, :type) %>
                 </div>
+
                 <div class="extract-step-form__url">
                   <%= label(f, :url, DisplayNames.get(:url), class: "label label--required") %>
-                  <%= text_input(f, :url, class: "input") %>
-                  <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
+                  <%= text_input(f, :url, class: "input full-width", disabled: @testing) %>
+                  <%= ErrorHelpers.error_tag(f, :url) %>
                 </div>
 
-                <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_queryParams, css_label: "source-query-params", form: f, field: :queryParams ) %>
-                <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_headers, css_label: "source-headers", form: f, field: :headers ) %>
+                <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_queryParams, css_label: "source-query-params", form: f, field: :sourceQueryParams ) %>
 
-                <div class="extract_step__test-section">
+                <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_headers, css_label: "source-headers", form: f, field: :sourceHeaders ) %>
+
+                <%= if input_value(f, :method) == "POST" do %>
+                  <div class="extract-step-form__body">
+                    <%= label(f, :body, DisplayNames.get(:body), class: "label") %>
+                    <%= textarea(f, :body, class: "input full-width", disabled: @testing) %>
+                    <%= ErrorHelpers.error_tag(f, :body) %>
+                  </div>
+                <% end %>
+
+                <div class="extract-step-form__test-section">
                   <button type="button" class="extract_step__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
                   <%= if @test_results do %>
                     <div class="test-status">
@@ -283,6 +298,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     |> Enum.map(fn %{key: key, value: value} -> {key, value} end)
   end
 
+  defp get_extract_step_types(), do: map_to_dropdown_options(Options.extract_step_type())
   defp get_http_methods(), do: map_to_dropdown_options(Options.http_method())
 
   defp map_to_dropdown_options(options) do

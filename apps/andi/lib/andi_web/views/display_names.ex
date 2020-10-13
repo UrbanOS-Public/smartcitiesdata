@@ -3,6 +3,7 @@ defmodule AndiWeb.Views.DisplayNames do
 
   @display_names %{
     benefitRating: "Benefit",
+    body: "Body",
     cadence: "Cadence",
     contactEmail: "Maintainer Email",
     contactName: "Maintainer Name",
