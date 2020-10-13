@@ -14,7 +14,25 @@ defmodule Auth.Guardian.TokenHandler do
 
     quote do
       @token_type "JWT"
-      use Guardian, otp_app: unquote(otp_app), secret_fetcher: Auth.Auth0.SecretFetcher
+      use Guardian,
+        otp_app: unquote(otp_app),
+        secret_fetcher: Auth.Auth0.SecretFetcher
+
+      @doc """
+      Overridable implementation for determining a resource's subject
+      """
+      def subject_for_token(resource, _claims) do
+        {:ok, resource}
+      end
+
+      @doc """
+      Overridable implementation for filling out the details of a resource
+      """
+      def resource_from_claims(claims) do
+        {:ok, claims["sub"]}
+      end
+
+      defoverridable subject_for_token: 2, resource_from_claims: 1
 
       @doc """
       Called after a token has been created by guardian
