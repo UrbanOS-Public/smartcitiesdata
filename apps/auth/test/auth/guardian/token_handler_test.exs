@@ -3,9 +3,10 @@ defmodule Auth.Test.TokenHandlerExample do
   An example for using the TokenHandler helper
   """
 
-  use Auth.TokenHandler
+  use Auth.Guardian.TokenHandler, otp_app: :auth
 end
-defmodule Auth.TokenHandlerTest do
+
+defmodule Auth.Guardian.TokenHandlerTest do
   use ExUnit.Case
   use Testing.DataCase, repo_module: Auth.Repo
 

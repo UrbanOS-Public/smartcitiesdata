@@ -1,11 +1,20 @@
-defmodule Auth.TokenHandler do
+defmodule Auth.Guardian.TokenHandler do
   @moduledoc """
-  Common module for handling all token verification and revocation hooks for a Guardian module
+  A module that hooks into Guardian's token lifecycle in order to provide extra verifications.
+  Primarily, this module introduces Guardian.DB for token revocation purposes.
+
+  Major differences with usual Guardian.DB implementation:
+  - we don't generate the token in the API
+  - we only track revoked tokes, not ALL tokens
+  - verification in this case checks if the token has been revoked, not that it exists in the DB
   """
 
-  defmacro __using__(_opts) do
+  defmacro __using__(opts) do
+    otp_app = Keyword.fetch!(opts, :otp_app)
+
     quote do
       @token_type "JWT"
+      use Guardian, otp_app: unquote(otp_app), secret_fetcher: Auth.Auth0.SecretFetcher
 
       @doc """
       Called after a token has been created by guardian
