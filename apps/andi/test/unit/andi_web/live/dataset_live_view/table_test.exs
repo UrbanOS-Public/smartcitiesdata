@@ -12,12 +12,13 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
+  @user UserHelpers.create_user()
 
   @ingested_time_a "123123213"
   @ingested_time_b "454699234"
 
   setup do
-    allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: UserHelpers.create_user())
+    allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: @user)
     [conn: Andi.Test.AuthHelper.build_authorized_conn()]
   end
 

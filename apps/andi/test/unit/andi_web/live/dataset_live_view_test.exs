@@ -8,9 +8,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
+  @user UserHelpers.create_user()
 
   setup do
-    allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: UserHelpers.create_user())
+    allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: @user)
     []
   end
 
