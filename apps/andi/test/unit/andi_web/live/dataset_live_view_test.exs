@@ -9,6 +9,11 @@ defmodule AndiWeb.DatasetLiveViewTest do
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
 
+  setup do
+    allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: UserHelpers.create_user())
+    []
+  end
+
   describe "Basic live page load" do
     setup do
       [conn: Andi.Test.AuthHelper.build_authorized_conn()]

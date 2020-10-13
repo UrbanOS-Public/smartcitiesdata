@@ -17,6 +17,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   @ingested_time_b "454699234"
 
   setup do
+    allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: UserHelpers.create_user())
     [conn: Andi.Test.AuthHelper.build_authorized_conn()]
   end
 

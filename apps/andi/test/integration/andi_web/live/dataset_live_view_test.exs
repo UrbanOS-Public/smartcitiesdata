@@ -18,6 +18,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   import SmartCity.TestHelper, only: [eventually: 1]
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.Test.AuthHelper
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
@@ -107,8 +108,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   test "add dataset button creates a dataset with a default dataTitle and dataName", %{conn: conn} do
-    {:ok, user} = Andi.Schemas.User.create_or_update("test-alt", %{email: "bob@example.com"})
-    conn = Plug.Conn.put_session(conn, :user_id, user.id)
+    {:ok, user} = Andi.Schemas.User.create_or_update(AuthHelper.valid_subject_id(), %{email: "bob@example.com"})
     assert {:ok, view, _html} = live(conn, @url_path)
 
     {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
@@ -127,8 +127,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   test "add dataset button creates a dataset with the owner as the currently logged in user", %{conn: conn} do
-    {:ok, user} = Andi.Schemas.User.create_or_update("test-owner", %{email: "bob@example.com"})
-    conn = Plug.Conn.put_session(conn, :user_id, user.id)
+    {:ok, user} = Andi.Schemas.User.create_or_update(AuthHelper.valid_subject_id(), %{email: "bob@example.com"})
     assert {:ok, view, _html} = live(conn, @url_path)
 
     {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")

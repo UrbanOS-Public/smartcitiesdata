@@ -13,6 +13,12 @@ defmodule AndiWeb.Auth.TokenHandler do
   end
 
   def resource_from_claims(claims) do
-    {:ok, %{"resource" => claims["sub"]}}
+    user_id =
+      case Andi.Schemas.User.get_by_subject_id(claims["sub"]) do
+        nil -> nil
+        user -> user.id
+      end
+
+    {:ok, %{"user_id" => user_id}}
   end
 end

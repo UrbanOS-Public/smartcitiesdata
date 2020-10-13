@@ -67,7 +67,6 @@ defmodule AndiWeb.AuthTest do
       |> Plug.Session.call(signing_opts)
       |> Plug.Conn.fetch_session()
       |> AndiWeb.Auth.TokenHandler.put_session_token(jwt)
-      |> Plug.Conn.put_session(:user_id, "TEST")
       |> Guardian.Plug.VerifySession.call(module: AndiWeb.Auth.TokenHandler, error_handler: AndiWeb.Auth.ErrorHandler, claims: %{})
       |> get("/datasets")
 
