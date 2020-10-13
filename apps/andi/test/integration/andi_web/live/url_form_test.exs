@@ -1,7 +1,7 @@
 defmodule AndiWeb.UrlFormTest do
   use ExUnit.Case
   use Andi.DataCase
-  use AndiWeb.ConnCase
+  use AndiWeb.AuthConnCase
   use Placebo
   import Checkov
 
@@ -30,10 +30,6 @@ defmodule AndiWeb.UrlFormTest do
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
 
-  setup do
-    [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-  end
-
   describe "updating source params" do
     setup do
       dataset =
@@ -46,7 +42,7 @@ defmodule AndiWeb.UrlFormTest do
 
       {:ok, andi_dataset} = Datasets.update(dataset)
 
-      [dataset: andi_dataset, conn: Andi.Test.AuthHelper.build_authorized_conn()]
+      [dataset: andi_dataset]
     end
 
     data_test "new key/value inputs are added when add button is pressed for #{field}", %{conn: conn, dataset: dataset} do
@@ -162,10 +158,6 @@ defmodule AndiWeb.UrlFormTest do
   end
 
   describe "sourceUrl testing" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     @tag capture_log: true
     test "uses provided query params and headers", %{conn: conn} do
       smrt_dataset =

@@ -1,7 +1,7 @@
 defmodule AndiWeb.EditControllerTest do
   use ExUnit.Case
   use Andi.DataCase
-  use AndiWeb.ConnCase
+  use AndiWeb.AuthConnCase
 
   @moduletag shared_data_connection: true
 
@@ -11,10 +11,6 @@ defmodule AndiWeb.EditControllerTest do
   @url_path "/datasets"
 
   describe "EditController" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     test "gives 404 if dataset is not found", %{conn: conn} do
       conn = get(conn, "#{@url_path}/#{UUID.uuid4()}")
 

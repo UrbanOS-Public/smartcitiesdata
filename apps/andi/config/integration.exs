@@ -127,7 +127,7 @@ config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
 config :andi, AndiWeb.Auth.TokenHandler,
   issuer: "https://smartcolumbusos-demo.auth0.com/",
   allowed_algos: ["RS256"],
-  verify_issuer: true
+  verify_issuer: false,
+  allowed_drift: 3_000_000_000_000
 
 config :guardian, Guardian.DB, repo: Andi.Repo
-IO.puts("in andi integration")

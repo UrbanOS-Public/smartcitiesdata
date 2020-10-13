@@ -1,7 +1,7 @@
 defmodule AndiWeb.EditLiveViewTest do
   use ExUnit.Case
   use Andi.DataCase
-  use AndiWeb.ConnCase
+  use AndiWeb.AuthConnCase
   use Placebo
   import Checkov
 
@@ -22,10 +22,6 @@ defmodule AndiWeb.EditLiveViewTest do
   @url_path "/datasets/"
 
   describe "save and publish form data" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     test "save button in one section saves all sections", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{technical: %{cadence: "never"}})
       {:ok, dataset} = Datasets.update(smrt_dataset)
@@ -343,10 +339,6 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   describe "delete dataset" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     test "dataset is deleted after confirmation", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
 

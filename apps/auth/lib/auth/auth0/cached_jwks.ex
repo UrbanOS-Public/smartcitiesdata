@@ -3,7 +3,7 @@ defmodule Auth.Auth0.CachedJWKS do
 
   use Memoize
 
-  defmemo get_key(issuer, key_id) do
+  def get_key(issuer, key_id) do
     keystore =
       case HTTPoison.get(issuer <> ".well-known/jwks.json") do
         {:ok, %{body: body}} -> Jason.decode(body)

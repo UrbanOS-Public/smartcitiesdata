@@ -1,7 +1,7 @@
 defmodule AndiWeb.MetadataFormTest do
   use ExUnit.Case
   use Andi.DataCase
-  use AndiWeb.ConnCase
+  use AndiWeb.AuthConnCase
   use Placebo
 
   import Checkov
@@ -39,7 +39,7 @@ defmodule AndiWeb.MetadataFormTest do
   describe "create new dataset" do
     setup do
       blank_dataset = %Dataset{id: UUID.uuid4(), technical: %{}, business: %{}}
-      [blank_dataset: blank_dataset, conn: Andi.Test.AuthHelper.build_authorized_conn()]
+      [blank_dataset: blank_dataset]
     end
 
     test "generate dataName from data title", %{conn: conn, blank_dataset: blank_dataset} do
@@ -223,10 +223,6 @@ defmodule AndiWeb.MetadataFormTest do
   end
 
   describe "enter form data" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     test "display Level of Access as public when private is false", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{technical: %{private: false}})
 
@@ -475,10 +471,6 @@ defmodule AndiWeb.MetadataFormTest do
   end
 
   describe "edit form data" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     test "accessibility level must be public or private", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{technical: %{private: true}})
 
@@ -621,10 +613,6 @@ defmodule AndiWeb.MetadataFormTest do
   end
 
   describe "can not edit" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     test "source format", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
@@ -651,10 +639,6 @@ defmodule AndiWeb.MetadataFormTest do
   end
 
   describe "hidden so form_data has all the validated fields in it" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     data_test "#{name} is hidden", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
       {:ok, dataset} = Datasets.update(smrt_dataset)

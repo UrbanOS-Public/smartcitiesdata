@@ -1,7 +1,7 @@
 defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
   use ExUnit.Case
   use Andi.DataCase
-  use AndiWeb.ConnCase
+  use AndiWeb.AuthConnCase
   import Phoenix.LiveViewTest
   import Checkov
 
@@ -22,10 +22,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     ]
 
   @url_path "/datasets/"
-
-  setup do
-    [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-  end
 
   test "type-info input is not displayed when type is neither list, date, nor timestamp", %{conn: conn} do
     smrt_dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "one", type: "string"}]}})
