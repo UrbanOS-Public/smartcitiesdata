@@ -1,4 +1,4 @@
-[![Master](https://travis-ci.org/smartcitiesdata/reaper.svg?branch=master)](https://travis-ci.org/smartcitiesdata/reaper)
+[![Master](https://travis-ci.com/smartcitiesdata/reaper.svg?branch=master)](https://travis-ci.com/smartcitiesdata/reaper)
 
 # Reaper
 
