@@ -255,7 +255,8 @@ $component-header-height: 7.5rem;
         background-color: $color-error;
         border: none;
         position: relative;
-        min-width: 17rem;
+        min-width: 14rem;
+        padding-left: 2.8rem;
 
         &:before {
             background-image: url(/images/delete_field_white.svg);
@@ -263,7 +264,7 @@ $component-header-height: 7.5rem;
             height: 24px;
             position: absolute;
             content: " ";
-            left: 10px;
+            left: 1.3rem;
             color: white;
         }
     }

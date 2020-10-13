@@ -153,13 +153,14 @@ defmodule AndiWeb.EditLiveView do
   end
 
   def handle_event("confirm-delete", %{"id" => id}, socket) do
-    with dataset <- Datasets.get(id),
-         {:ok, smrt_dataset} <- InputConverter.andi_dataset_to_smrt_dataset(dataset),
-         :ok <- Brook.Event.send(@instance_name, dataset_delete(), :andi, smrt_dataset) do
-      {:noreply, redirect(socket, to: "/")}
-    else
-      error ->
-        Logger.info("dataset not in system: #{id}")
+    case DatasetStore.get(id) do
+      {:ok, nil} ->
+        Datasets.delete(id)
+        {:noreply, redirect(socket, to: "/")}
+
+      {:ok, smrt_dataset} ->
+        Brook.Event.send(@instance_name, dataset_delete(), :andi, smrt_dataset)
+        {:noreply, redirect(socket, to: "/")}
     end
   end
 
