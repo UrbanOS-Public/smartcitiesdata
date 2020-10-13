@@ -8,7 +8,8 @@ end
 
 defmodule Auth.Guardian.TokenHandlerTest do
   use ExUnit.Case
-  use Testing.DataCase, repo_module: Auth.Repo
+  use Testing.DataCase,
+    repo_module: Auth.Repo
 
   alias Auth.Test.TokenHandlerExample
 

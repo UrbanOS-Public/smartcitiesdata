@@ -45,6 +45,7 @@ defmodule Andi.MixProject do
       {:distillery, "~> 2.1"},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
+      {:divo_postgres, "~> 0.2", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1.4", only: [:dev, :integration]},
       {:ecto, "~> 3.3.4"},
       {:ecto_sql, "~> 3.0"},

@@ -12,14 +12,8 @@ defmodule Auth.MixProject do
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
-      deps: deps(),
-      aliases: aliases()
-    ]
-  end
-
-  def aliases() do
-    [
-      test: "test --no-start"
+      test_paths: test_paths(Mix.env()),
+      deps: deps()
     ]
   end
 
@@ -34,20 +28,25 @@ defmodule Auth.MixProject do
       {:guardian, "~> 2.0"},
       {:httpoison, "~> 1.5"},
       {:memoize, "~> 1.2"},
-      {:divo, "~> 1.1", only: [:dev, :test]},
+      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo_postgres, "~> 0.2", only: [:dev, :integration]},
       {:guardian_db, "~> 2.0.3"},
       {:ecto, "~> 3.3.4"},
       {:ecto_sql, "~> 3.0"},
       {:postgrex, "~> 0.15.1"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test]},
-      {:testing, in_umbrella: true, only: [:test]},
+      {:testing, in_umbrella: true, only: [:test, :integration]},
     ]
   end
 
-  defp elixirc_paths(:test), do: ["test/support", "lib"]
+  defp elixirc_paths(env) when env in [:test, :integration], do: ["test/support", "lib"]
   defp elixirc_paths(_), do: ["lib"]
 
-  defp maybe_application(:test) do
+  defp test_paths(:integration), do: ["test/integration"]
+  defp test_paths(_), do: ["test/unit"]
+
+
+  defp maybe_application(:integration) do
     [
       mod: {Auth.Application, []},
       extra_applications: [:logger]
