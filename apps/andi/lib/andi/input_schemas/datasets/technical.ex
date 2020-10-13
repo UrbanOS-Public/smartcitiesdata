@@ -83,6 +83,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> cast_assoc(:sourceHeaders, with: &Header.changeset/2)
     |> cast_assoc(:sourceQueryParams, with: &QueryParam.changeset/2)
+    |> cast_assoc(:extractSteps, with: &ExtractHttpStep.changeset/2)
     |> foreign_key_constraint(:dataset_id)
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
@@ -102,10 +103,11 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> cast_assoc(:schema, with: &DataDictionary.changeset_for_draft/2)
     |> cast_assoc(:sourceHeaders, with: &Header.changeset_for_draft/2)
     |> cast_assoc(:sourceQueryParams, with: &QueryParam.changeset_for_draft/2)
+    |> cast_assoc(:extractSteps, with: &ExtractHttpStep.changeset_for_draft/2)
     |> foreign_key_constraint(:dataset_id)
   end
 
-  def preload(struct), do: StructTools.preload(struct, [:schema, :sourceQueryParams, :sourceHeaders])
+  def preload(struct), do: StructTools.preload(struct, [:schema, :sourceQueryParams, :sourceHeaders, :extractSteps])
 
   defp validate_source_format(%{changes: %{sourceType: source_type, sourceFormat: source_format}} = changeset)
        when source_type in ["ingest", "stream"] do

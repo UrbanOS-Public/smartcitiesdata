@@ -19,7 +19,7 @@ defmodule Andi.Repo.Migrations.CreateExtractSteps do
       add :extract_http_step_id, references(:extract_http_step, type: :uuid, on_delete: :delete_all), null: false
     end
 
-    create table(:extract_http_step_queryParams, primary_key: false) do
+    create table(:extract_http_queryParams, primary_key: false) do
       add :id, :uuid, null: false, primary_key: true
       add :key, :string
       add :value, :string

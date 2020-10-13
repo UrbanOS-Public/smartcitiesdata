@@ -6,7 +6,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractQueryParam do
   alias Andi.InputSchemas.StructTools
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
-  schema "extract_http_step_queryParams" do
+  schema "extract_http_queryParams" do
     field(:key, :string)
     field(:value, :string)
     belongs_to(:extract_http_step, ExtractHttpStep, type: Ecto.UUID, foreign_key: :extract_http_step_id)

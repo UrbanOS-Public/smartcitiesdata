@@ -50,18 +50,18 @@ defmodule AndiWeb.FormSection do
         {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
       end
 
-      def handle_info(
-            %{topic: "form-save", event: "form-save", payload: %{dataset_id: dataset_id}},
-            %{assigns: %{dataset_id: dataset_id}} = socket
-          ) do
-        new_validation_status =
-          case socket.assigns.changeset.valid? do
-            true -> "valid"
-            false -> "invalid"
-          end
+      # def handle_info(
+      #       %{topic: "form-save", event: "form-save", payload: %{dataset_id: dataset_id}},
+      #       %{assigns: %{dataset_id: dataset_id}} = socket
+      #     ) do
+      #   new_validation_status =
+      #     case socket.assigns.changeset.valid? do
+      #       true -> "valid"
+      #       false -> "invalid"
+      #     end
 
-        {:noreply, assign(socket, validation_status: new_validation_status)}
-      end
+      #   {:noreply, assign(socket, validation_status: new_validation_status)}
+      # end
 
       def handle_info(
             %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},

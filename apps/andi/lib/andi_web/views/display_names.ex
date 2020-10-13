@@ -22,6 +22,7 @@ defmodule AndiWeb.Views.DisplayNames do
     language: "Language",
     license: "License",
     logoUrl: "Logo URL",
+    method: "Method",
     minute: "Minute",
     modifiedDate: "Last Updated",
     month: "Month",
