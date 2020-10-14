@@ -17,6 +17,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias AndiWeb.Views.HttpStatusDescriptions
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.ExtractSteps
+  alias AndiWeb.Helpers.FormTools
 
   def mount(_, %{"dataset" => dataset}, socket) do
     step =
@@ -157,21 +158,19 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, assign(socket, testing: true)}
   end
 
-  # def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "url"]}, socket) do
-  #   form_data
-  #   |> FormTools.adjust_source_query_params_for_url()
-  #   # TODO maybe refactor
-  #   |> UrlFormSchema.changeset_from_form_data()
-  #   |> complete_validation(socket)
-  # end
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "url"]}, socket) do
+    form_data
+    |> FormTools.adjust_extract_query_params_for_url()
+    |> ExtractHttpStep.changeset_from_form_data()
+    |> complete_validation(socket)
+  end
 
-  # def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "queryParams" | _]}, socket) do
-  #   form_data
-  #   |> FormTools.adjust_source_url_for_query_params()
-  #   # TODO maybe refactor
-  #   |> UrlFormSchema.changeset_from_form_data()
-  #   |> complete_validation(socket)
-  # end
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "queryParams" | _]}, socket) do
+    form_data
+    |> FormTools.adjust_extract_url_for_query_params()
+    |> ExtractHttpStep.changeset_from_form_data()
+    |> complete_validation(socket)
+  end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data

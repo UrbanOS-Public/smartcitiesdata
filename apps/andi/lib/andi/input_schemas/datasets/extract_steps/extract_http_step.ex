@@ -48,5 +48,15 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
     |> foreign_key_constraint(:technical_id)
   end
 
+  def changeset_from_form_data(form_data) do
+    form_data_as_params =
+      form_data
+      |> AtomicMap.convert(safe: false, underscore: false)
+      |> Map.put_new(:queryParams, %{})
+      |> Map.put_new(:headers, %{})
+
+    changeset(form_data_as_params)
+  end
+
   def preload(struct), do: StructTools.preload(struct, [:headers, :queryParams])
 end
