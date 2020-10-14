@@ -12,6 +12,7 @@ defmodule Andi.Application do
       [
         AndiWeb.Endpoint,
         ecto_repo(),
+        guardian_db_sweeper(),
         {Brook, Application.get_env(:andi, :brook)},
         Andi.DatasetCache,
         Andi.Migration.Migrations,
@@ -89,4 +90,13 @@ defmodule Andi.Application do
       end
     end
   end
+
+  defp guardian_db_sweeper do
+    Application.get_env(:guardian, Guardian.DB)
+    |> case do
+         nil -> []
+         _ -> Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
+       end
+  end
+
 end

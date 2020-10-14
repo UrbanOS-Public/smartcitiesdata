@@ -1,7 +1,7 @@
 defmodule AndiWeb.API.OrganizationControllerTest do
   use ExUnit.Case
   use Placebo
-  use AndiWeb.ConnCase
+  use AndiWeb.Test.AuthConnCase.UnitCase
 
   @route "/api/v1/organization"
   @get_orgs_route "/api/v1/organizations"

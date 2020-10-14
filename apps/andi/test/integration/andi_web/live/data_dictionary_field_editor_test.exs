@@ -1,7 +1,7 @@
 defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
   use ExUnit.Case
   use Andi.DataCase
-  use AndiWeb.AuthConnCase
+  use AndiWeb.Test.AuthConnCase.IntegrationCase
   import Phoenix.LiveViewTest
   import Checkov
 

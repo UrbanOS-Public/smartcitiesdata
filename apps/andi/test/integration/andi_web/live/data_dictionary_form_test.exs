@@ -1,7 +1,7 @@
 defmodule AndiWeb.DataDictionaryFormTest do
   use ExUnit.Case
   use Andi.DataCase
-  use AndiWeb.AuthConnCase
+  use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Placebo
 
   @moduletag shared_data_connection: true

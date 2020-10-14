@@ -1,7 +1,7 @@
 defmodule AndiWeb.EditControllerTest do
   use ExUnit.Case
   use Andi.DataCase
-  use AndiWeb.AuthConnCase
+  use AndiWeb.Test.AuthConnCase.IntegrationCase
 
   @moduletag shared_data_connection: true
 

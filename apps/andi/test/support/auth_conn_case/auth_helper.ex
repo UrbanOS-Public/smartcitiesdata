@@ -1,41 +1,46 @@
-defmodule Andi.Test.AuthHelper do
+defmodule Andi.Test.AuthConnCase.AuthHelper do
   @moduledoc """
   Helper functions and valid values for testing auth things.
   """
   alias AndiWeb.Auth.TokenHandler
 
-  def build_authorized_conn() do
-    default_opts = [
-      store: :cookie,
-      key: "secretkey",
-      encryption_salt: "encrypted cookie salt",
-      signing_salt: "signing salt"
+  def build_connections() do
+    authorized_jwt = valid_jwt()
+    unauthorized_jwt = valid_jwt_unauthorized_roles()
+
+    authorized_conn = Phoenix.ConnTest.build_conn()
+    |> Plug.Test.init_test_session(%{})
+    |> TokenHandler.put_session_token(authorized_jwt)
+
+    unauthorized_conn = Phoenix.ConnTest.build_conn()
+    |> Plug.Test.init_test_session(%{})
+    |> TokenHandler.put_session_token(unauthorized_jwt)
+
+    [
+      conn: authorized_conn,
+      authorized_conn: authorized_conn,
+      unauthorized_conn: unauthorized_conn
     ]
+  end
 
-    signing_opts = Plug.Session.init(Keyword.put(default_opts, :encrypt, false))
+  def setup_jwks() do
+    bypass = Bypass.open()
+    Bypass.stub(bypass, "GET", "/.well-known/jwks.json", fn conn ->
+      Plug.Conn.resp(conn, :ok, Jason.encode!(valid_jwks()))
+    end)
 
-    really_far_in_the_future = 3_000_000_000_000
+    current_config = Application.get_env(:andi, AndiWeb.Auth.TokenHandler) || []
 
-    config = [
-      allowed_algos: ["RS256"],
-      issuer: "https://smartcolumbusos-demo.auth0.com/",
-      secret_fetcher: Auth.Auth0.SecretFetcher,
-      verify_issuer: true,
-      allowed_drift: really_far_in_the_future
-    ]
+    bypassed_config = Keyword.merge(
+      current_config,
+      [issuer: "http://localhost:#{bypass.port}/"]
+    )
 
-    Application.put_env(:andi, TokenHandler, config)
+    Application.put_env(:andi, AndiWeb.Auth.TokenHandler, bypassed_config)
 
-    jwt = valid_jwt()
-    conn =
-      Phoenix.ConnTest.build_conn()
-      |> Map.put(:secret_key_base, "H6YQQ2WrncgGPFvRVraAEAH2GqdUSCGTMklHHKNnOEXtBd9ugvFYo/ZDJH+5vKKj")
-      |> Plug.Session.call(signing_opts)
-      |> Plug.Conn.fetch_session()
-      |> TokenHandler.put_session_token(jwt)
-      |> Guardian.Plug.VerifySession.call(module: TokenHandler, error_handler: AndiWeb.Auth.ErrorHandler, claims: %{})
-
-    conn
+    fn ->
+      Application.put_env(:andi, AndiWeb.Auth.TokenHandler, current_config)
+    end
   end
 
   def valid_jwt() do

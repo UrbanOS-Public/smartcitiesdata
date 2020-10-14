@@ -1,5 +1,5 @@
 defmodule AndiWeb.API.DatasetControllerTest do
-  use AndiWeb.ConnCase
+  use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
 
   @route "/api/v1/dataset"

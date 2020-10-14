@@ -2,7 +2,7 @@ defmodule AndiWeb.AuthTest do
   @moduledoc false
   use ExUnit.Case
   use Andi.DataCase
-  use AndiWeb.AuthConnCase
+  use AndiWeb.Test.AuthConnCase.IntegrationCase
 
   test "redirects users who are not authenticated to login page" do
     unauthenticated_conn = build_conn()

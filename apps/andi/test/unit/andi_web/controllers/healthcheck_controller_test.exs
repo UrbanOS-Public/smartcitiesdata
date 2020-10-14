@@ -1,5 +1,5 @@
 defmodule AndiWeb.HealthcheckControllerTest do
-  use AndiWeb.ConnCase
+  use AndiWeb.Test.AuthConnCase.UnitCase
 
   test "GET /healthcheck/", %{conn: conn} do
     conn = get(conn, "/healthcheck")
