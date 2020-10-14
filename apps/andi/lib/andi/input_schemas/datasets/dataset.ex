@@ -5,6 +5,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Andi.Schemas.User
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Business
   alias Andi.InputSchemas.Datasets.Technical
@@ -16,6 +17,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     field(:dlq_message, :map)
     field(:ingestedTime, :utc_datetime, default: nil)
     field(:version, :string)
+    belongs_to(:owner, User, type: Ecto.UUID, foreign_key: :owner_id)
     has_many(:data_dictionaries, DataDictionary)
     has_one(:business, Business, on_replace: :update)
     has_one(:technical, Technical, on_replace: :update)
@@ -32,6 +34,14 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     |> cast(changes, @cast_fields)
     |> cast_assoc(:technical, with: &Technical.changeset/2)
     |> cast_assoc(:business, with: &Business.changeset/2)
+  end
+
+  def changeset_for_draft(dataset, %{owner: owner} = changes) do
+    dataset
+    |> cast(changes, @cast_fields)
+    |> put_assoc(:owner, owner)
+    |> cast_assoc(:technical, with: &Technical.changeset_for_draft/2)
+    |> cast_assoc(:business, with: &Business.changeset_for_draft/2)
   end
 
   def changeset_for_draft(dataset, changes) do

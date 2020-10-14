@@ -56,10 +56,11 @@ defmodule AndiWeb.DatasetLiveView do
     """
   end
 
-  def mount(_params, _session, socket) do
+  def mount(_params, %{"user_id" => user_id} = _session, socket) do
     {:ok,
      assign(socket,
        datasets: nil,
+       user_id: user_id,
        search_text: nil,
        include_remotes: false,
        order: {"data_title", "asc"},
@@ -88,7 +89,8 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   def handle_event("add-dataset", _, socket) do
-    new_dataset = Datasets.create()
+    owner = Andi.Repo.get(Andi.Schemas.User, socket.assigns.user_id)
+    new_dataset = Datasets.create(owner)
 
     {:noreply, push_redirect(socket, to: "/datasets/#{new_dataset.id}")}
   end

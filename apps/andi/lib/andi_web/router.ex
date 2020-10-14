@@ -32,7 +32,7 @@ defmodule AndiWeb.Router do
     pipe_through [:browser, :auth]
 
     get "/", Redirect, to: "/datasets"
-    live "/datasets", DatasetLiveView, layout: {AndiWeb.LayoutView, :root}
+    live "/datasets", DatasetLiveView, layout: {AndiWeb.LayoutView, :root}, session: {AndiWeb.Auth.TokenHandler.Plug, :current_resource, []}
     get "/datasets/:id", EditController, :show_dataset
 
     live "/organizations", OrganizationLiveView, layout: {AndiWeb.LayoutView, :root}

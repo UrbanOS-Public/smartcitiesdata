@@ -28,7 +28,7 @@ defmodule Andi.SecretRetrieverTest do
       assert SecretRetriever.retrieve_auth0_credentials() == {:ok, values.credentials}
     end
 
-    test "returns error when kubernetes token file is not found", values do
+    test "returns error when kubernetes token file is not found" do
       allow File.read("/var/run/secrets/kubernetes.io/serviceaccount/token"), return: {:error, :enoent}
 
       assert capture_log(fn ->
