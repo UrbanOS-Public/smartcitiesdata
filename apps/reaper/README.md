@@ -1,4 +1,4 @@
-[![Master](https://travis-ci.org/smartcitiesdata/reaper.svg?branch=master)](https://travis-ci.org/smartcitiesdata/reaper)
+[![Master](https://travis-ci.org/Datastillery/reaper.svg?branch=master)](https://travis-ci.org/Datastillery/reaper)
 
 # Reaper
 
@@ -147,4 +147,4 @@ The resulting supervision tree looks roughly like this:
 
 ## License
 
-Released under [Apache 2 license](https://github.com/smartcitiesdata/reaper/blob/master/LICENSE).
+Released under [Apache 2 license](https://github.com/Datastillery/reaper/blob/master/LICENSE).
