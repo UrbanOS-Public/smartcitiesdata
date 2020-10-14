@@ -106,7 +106,7 @@ config :discovery_api, DiscoveryApi.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   port: "5456"
 
-config :andi, DiscoveryApiWeb.Auth.TokenHandler,
+config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler,
   issuer: "https://smartcolumbusos-demo.auth0.com/",
   allowed_algos: ["RS256"],
   verify_issuer: false,

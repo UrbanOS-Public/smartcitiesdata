@@ -4,7 +4,6 @@ defmodule DiscoveryApi.Test.Helper do
   """
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Schemas.Users
-  alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Auth.Auth0.CachedJWKS
   alias DiscoveryApiWeb.Auth.TokenHandler
   alias DiscoveryApi.Auth.GuardianConfigurator
@@ -84,58 +83,6 @@ defmodule DiscoveryApi.Test.Helper do
   def clear_saved_models() do
     Brook.Test.clear_view_state(@instance_name, :models)
   end
-
-  def auth0_setup() do
-    secret_key = Application.get_env(:discovery_api, TokenHandler) |> Keyword.get(:secret_key)
-    GuardianConfigurator.configure(issuer: AuthHelper.valid_issuer())
-
-    jwks = AuthHelper.valid_jwks()
-    CachedJWKS.set(jwks)
-
-    bypass = Bypass.open()
-
-    really_far_in_the_future = 3_000_000_000_000
-    AuthHelper.set_allowed_guardian_drift(really_far_in_the_future)
-
-    Application.put_env(
-      :discovery_api,
-      :user_info_endpoint,
-      "http://localhost:#{bypass.port}/userinfo"
-    )
-
-    Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
-      Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z"}))
-    end)
-
-    exit_fn = fn ->
-      AuthHelper.set_allowed_guardian_drift(0)
-      GuardianConfigurator.configure(secret_key: secret_key)
-    end
-
-    %{subject_id: AuthHelper.valid_jwt_sub(), token: AuthHelper.valid_jwt(), exit_fn: exit_fn}
-  end
-
-  def extract_token(cookie_string) do
-    cookie_string
-    |> parse_cookie_string()
-    |> Map.get(default_guardian_token_key())
-  end
-
-  def extract_response_cookie_as_map(conn) do
-    conn
-    |> Plug.Conn.get_resp_header("set-cookie")
-    |> List.first()
-    |> parse_cookie_string()
-  end
-
-  defp parse_cookie_string(cookie_string) do
-    cookie_string
-    |> String.split("; ")
-    |> Enum.map(&String.split(&1, "="))
-    |> Enum.reduce(%{}, fn key_value, acc -> Map.put(acc, Enum.at(key_value, 0), Enum.at(key_value, 1, true)) end)
-  end
-
-  def default_guardian_token_key(), do: Guardian.Plug.Keys.token_key() |> Atom.to_string()
 
   def stringify_keys(map) do
     map

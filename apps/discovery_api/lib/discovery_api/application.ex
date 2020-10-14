@@ -11,8 +11,6 @@ defmodule DiscoveryApi.Application do
   def start(_type, _args) do
     import Supervisor.Spec
 
-    GuardianConfigurator.configure()
-
     get_s3_credentials()
 
     children =

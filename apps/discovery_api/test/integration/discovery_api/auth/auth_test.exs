@@ -7,7 +7,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
   import SmartCity.TestHelper, only: [eventually: 3]
 
   alias DiscoveryApi.Test.Helper
-  alias DiscoveryApi.Test.AuthHelper
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Visualizations
   alias DiscoveryApi.Repo
@@ -68,15 +67,16 @@ defmodule DiscoveryApi.Auth.AuthTest do
         get(setup_map.authorized_conn, "/api/v1/dataset/#{setup_map.private_model_that_belongs_to_org_1.id}")
         |> json_response(200)
 
-      assert body.id == setup_map[:private_model_that_belongs_to_org_1].id
+      assert body["id"] == setup_map[:private_model_that_belongs_to_org_1].id
     end
 
     @moduletag capture_log: true
     test "is not able to access a restricted dataset with a bad token", setup_map do
       body = get(setup_map.invalid_conn, "/api/v1/dataset/#{setup_map.private_model_that_belongs_to_org_1.id}")
       |> response(401)
+      |> Jason.decode!()
 
-      assert body == "Unauthorized"
+      assert body == %{"message" => "Unauthorized"}
     end
   end
 
@@ -120,7 +120,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
   describe "POST /logged-out" do
     test "logout is not idempotent", setup_map do
-      subject = setup_map.revocable_subject
       assert post(setup_map.revocable_conn, "/api/v1/logged-in")
       |> response(200)
 
@@ -142,20 +141,22 @@ defmodule DiscoveryApi.Auth.AuthTest do
       assert post(setup_map.revocable_conn, "/api/v1/logged-in")
       |> response(200)
 
-      assert get(setup_map.revocable_conn, "http://localhost:4000/api/v1/dataset/#{model.id}/")
+      assert %{"id" => ^model_id} = get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
       |> json_response(200)
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-out")
       |> response(200)
 
-      assert %{message: "Unauthorized"} == get(setup_map.revocable_conn, "http://localhost:4000/api/v1/dataset/#{model.id}/")
-      |> json_response(401)
+      assert %{"message" => "Unauthorized"} == get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
+      |> response(401)
+      |> Jason.decode!()
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-in")
       |> response(401)
 
-      assert %{message: "Unauthorized"} == get(setup_map.revocable_conn, "http://localhost:4000/api/v1/dataset/#{model.id}/")
-      |> json_response(401)
+      assert %{"message" => "Unauthorized"} == get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
+      |> response(401)
+      |> Jason.decode!()
     end
 
     test "when user is logged-out, it doesn't affect other users", %{private_model_that_belongs_to_org_1: model} = setup_map do
@@ -175,10 +176,11 @@ defmodule DiscoveryApi.Auth.AuthTest do
       assert post(setup_map.revocable_conn, "/api/v1/logged-out")
       |> response(200)
 
-      assert %{message: "Unauthorized"} == get(setup_map.revocable_conn, "http://localhost:4000/api/v1/dataset/#{model.id}/")
-      |> json_response(401)
+      assert %{"message" => "Unauthorized"} == get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
+      |> response(401)
+      |> Jason.decode!()
 
-      assert %{id: ^model_id} = get(setup_map.authorized_conn, "http://localhost:4000/api/v1/dataset/#{model.id}/")
+      assert %{"id" => ^model_id} = get(setup_map.authorized_conn, "/api/v1/dataset/#{model.id}/")
         |> json_response(200)
     end
   end
@@ -188,10 +190,10 @@ defmodule DiscoveryApi.Auth.AuthTest do
       user = Helper.create_persisted_user(setup_map.authorized_subject)
       post_body = ~s({"query": "select * from tarps", "title": "My favorite title", "chart": {"data": "hello"}})
 
-      assert body == post(setup_map.authorized_conn, post_body, "/api/v1/visualization")
+      %{"id" => id} = post(setup_map.authorized_conn, "/api/v1/visualization", post_body)
       |> json_response(201)
 
-      visualization = Visualizations.get_visualization_by_id(body.id) |> elem(1) |> Repo.preload(:owner)
+      visualization = Visualizations.get_visualization_by_id(id) |> elem(1) |> Repo.preload(:owner)
 
       assert visualization.owner.subject_id == user.subject_id
     end
@@ -199,8 +201,9 @@ defmodule DiscoveryApi.Auth.AuthTest do
     test "returns 'unauthorized' when token is invalid", setup_map do
       post_body = ~s({"query": "select * from tarps", "title": "My favorite title", "chart": {"data": "hello"}})
 
-      assert %{body: "Unauthorized"} == post(setup_map.invalid_conn, post_body, "/api/v1/visualization")
-      |> json_response(401)
+      assert %{"message" => "Unauthorized"} == post(setup_map.invalid_conn, "/api/v1/visualization", post_body)
+      |> response(401)
+      |> Jason.decode!()
     end
   end
 
@@ -218,7 +221,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
       visualization = create_visualization(model.systemName)
 
-      assert get(conn, "localhost:4000/api/v1/visualization/#{visualization.public_id}")
+      assert get(conn, "/api/v1/visualization/#{visualization.public_id}")
       |> json_response(200)
     end
 
@@ -236,7 +239,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
       visualization = create_visualization(model.systemName)
 
-      assert get(setup_map.authorized_conn, "localhost:4000/api/v1/visualization/#{visualization.public_id}")
+      assert get(setup_map.authorized_conn, "/api/v1/visualization/#{visualization.public_id}")
       |> json_response(200)
     end
 
@@ -254,8 +257,8 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
       visualization = create_visualization(model.systemName)
 
-      assert get(conn, "localhost:4000/api/v1/visualization/#{visualization.public_id}")
-      |> json_response(404)
+      assert get(conn, "/api/v1/visualization/#{visualization.public_id}")
+      |> response(404)
     end
   end
 
@@ -271,34 +274,5 @@ defmodule DiscoveryApi.Auth.AuthTest do
       })
 
     visualization
-  end
-
-  defp post_with_authentication(url, body, bearer_token) do
-    %{
-      status_code: status_code,
-      body: body_json
-    } =
-      HTTPoison.post!(
-        url,
-        body,
-        Authorization: "Bearer #{bearer_token}",
-        "Content-Type": "application/json"
-      )
-
-    %{status_code: status_code, body: Jason.decode!(body_json, keys: :atoms)}
-  end
-
-  defp get_with_authentication(url, bearer_token) do
-    %{
-      status_code: status_code,
-      body: body_json
-    } =
-      HTTPoison.get!(
-        url,
-        Authorization: "Bearer #{bearer_token}",
-        "Content-Type": "application/json"
-      )
-
-    %{status_code: status_code, body: Jason.decode!(body_json, keys: :atoms)}
   end
 end

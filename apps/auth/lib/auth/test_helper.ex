@@ -40,7 +40,7 @@ defmodule Auth.TestHelper do
   end
 
   def valid_jwt_sub() do
-    "auth0|5d7a527176fb160d8d9b2e3d"
+    "auth0|5e3066daf048aa0e71bdd77e"
   end
 
   def revocable_jwt_sub() do
