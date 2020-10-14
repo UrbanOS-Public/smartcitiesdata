@@ -150,6 +150,9 @@ defmodule DiscoveryApi.Test.Helper do
     Process.sleep(5_000)
   end
 
+  def create_persisted_user() do
+    create_persisted_user(Auth.TestHelper.valid_jwt_sub())
+  end
   def create_persisted_user(subject_id) do
     {:ok, user} = Users.create_or_update(subject_id, %{email: Faker.Internet.email()})
     user

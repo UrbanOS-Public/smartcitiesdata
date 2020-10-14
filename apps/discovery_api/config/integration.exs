@@ -106,7 +106,13 @@ config :discovery_api, DiscoveryApi.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   port: "5456"
 
-config :guardian, Guardian.DB, repo: DiscoveryApi.Repo
+config :andi, DiscoveryApiWeb.Auth.TokenHandler,
+  issuer: "https://smartcolumbusos-demo.auth0.com/",
+  allowed_algos: ["RS256"],
+  verify_issuer: false,
+  allowed_drift: 3_000_000_000_000
+
+config :guardian, Guardian.DB, repo: Andi.Repo
 
 config :discovery_api, :brook,
   instance: :discovery_api,
