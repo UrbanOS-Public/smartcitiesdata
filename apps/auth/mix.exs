@@ -23,7 +23,7 @@ defmodule Auth.MixProject do
 
   defp deps do
     [
-      {:bypass, "~> 1.0", only: [:test, :integration]},
+      {:bypass, "~> 2.0", only: [:test, :integration]},
       {:jason, "~> 1.2"},
       {:guardian, "~> 2.0"},
       {:guardian_db, "~> 2.0.3"},

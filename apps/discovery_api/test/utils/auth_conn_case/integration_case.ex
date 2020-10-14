@@ -21,7 +21,7 @@ defmodule DiscoveryApiWeb.Test.AuthConnCase.IntegrationCase do
   end
 
   setup_all do
-    exit_hook = AuthHelper.setup_jwks()
+    {exit_hook, _bypass} = AuthHelper.setup_jwks()
     on_exit(exit_hook)
 
     :ok

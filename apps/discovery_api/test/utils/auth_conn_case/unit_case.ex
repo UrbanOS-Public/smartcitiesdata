@@ -19,15 +19,16 @@ defmodule DiscoveryApiWeb.Test.AuthConnCase.UnitCase do
 
   setup _tags do
     disable_revocation_list()
+    {exit_hook, bypass} = AuthHelper.setup_jwks()
+    on_exit(exit_hook)
     AuthHelper.build_connections()
+    |> Keyword.put(:bypass, bypass)
   end
 
   setup_all do
     disable_revocation_list()
-    exit_hook = AuthTestHelper.setup_jwks()
-    on_exit(exit_hook)
 
-    [auth_conn_case: %{disable_revocation_list: &disable_revocation_list/0}]
+    [auth_conn_case: %{disable_revocation_list: &disable_revocation_list/0, disable_user_addition: &disable_user_addition/0}]
   end
 
   @doc """
@@ -35,5 +36,9 @@ defmodule DiscoveryApiWeb.Test.AuthConnCase.UnitCase do
   """
   def disable_revocation_list() do
     allow Guardian.DB.Token.find_by_claims(any()), return: nil
+  end
+
+  def disable_user_addition() do
+    allow DiscoveryApi.Schemas.Users.create_or_update(any(), any()), return: {:ok, :good}
   end
 end

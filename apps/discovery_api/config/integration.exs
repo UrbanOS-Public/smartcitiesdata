@@ -112,7 +112,7 @@ config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler,
   verify_issuer: false,
   allowed_drift: 3_000_000_000_000
 
-config :guardian, Guardian.DB, repo: Andi.Repo
+config :guardian, Guardian.DB, repo: DiscoveryApi.Repo
 
 config :discovery_api, :brook,
   instance: :discovery_api,

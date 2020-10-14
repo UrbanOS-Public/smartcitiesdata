@@ -31,7 +31,8 @@ defmodule DiscoveryApi.Test.AuthConnCase.AuthHelper do
       invalid_conn: invalid_conn,
       authorized_subject: TestHelper.valid_jwt_sub(),
       revocable_subject: TestHelper.revocable_jwt_sub(),
-      invalid_subject: "blaahhhhhh"
+      invalid_subject: "blaahhhhhh",
+      authorized_token: TestHelper.valid_jwt(),
     ]
   end
 
@@ -53,9 +54,12 @@ defmodule DiscoveryApi.Test.AuthConnCase.AuthHelper do
 
     Application.put_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler, bypassed_config)
 
-    fn ->
-      Application.put_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler, current_config)
-    end
+    {
+      fn ->
+        Application.put_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler, current_config)
+      end,
+      bypass
+    }
   end
 
   def login() do

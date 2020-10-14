@@ -4,8 +4,6 @@ defmodule DiscoveryApi.Application do
   """
   use Application
 
-  alias DiscoveryApi.Auth.GuardianConfigurator
-
   @instance_name DiscoveryApi.instance_name()
 
   def start(_type, _args) do

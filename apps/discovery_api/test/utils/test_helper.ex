@@ -4,9 +4,6 @@ defmodule DiscoveryApi.Test.Helper do
   """
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Schemas.Users
-  alias DiscoveryApi.Auth.Auth0.CachedJWKS
-  alias DiscoveryApiWeb.Auth.TokenHandler
-  alias DiscoveryApi.Auth.GuardianConfigurator
   alias SmartCity.TestDataGenerator, as: TDG
 
   import SmartCity.Event, only: [dataset_update: 0]
