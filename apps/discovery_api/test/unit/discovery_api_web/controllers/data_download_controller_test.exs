@@ -1,5 +1,5 @@
 defmodule DiscoveryApiWeb.DataDownloadControllerTest do
-  use DiscoveryApiWeb.ConnCase
+  use DiscoveryApiWeb.Test.AuthConnCase.UnitCase
   use Placebo
   import Checkov
   import SmartCity.TestHelper
@@ -7,8 +7,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApi.Schemas.Users
-  alias DiscoveryApiWeb.Auth.TokenHandler
-  alias DiscoveryApi.Test.AuthHelper
+  alias DiscoveryApi.Test.Helper
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -16,7 +15,9 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
   @data_name "data1"
   @user_id "user_id"
 
-  setup do
+  setup %{auth_conn_case: auth_conn_case} do
+    auth_conn_case.disable_revocation_list.()
+
     model =
       Helper.sample_model(%{
         id: @dataset_id,
@@ -374,18 +375,13 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
   end
 
   describe "with Auth0 auth provider" do
-    setup do
-      %{subject_id: subject_id, token: token, exit_fn: exit_fn} = Helper.auth0_setup()
-      on_exit(exit_fn)
-
-      %{subject_id: subject_id, token: token}
-    end
-
-    test "returns a presigned url for private datasets when valid token is passed", %{conn: conn, subject_id: subject_id, token: token} do
+    test "returns a presigned url for private datasets when valid token is passed", %{
+      authorized_conn: conn,
+      authorized_subject: subject
+    } do
       dataset_id = "private_dataset"
 
-      allow(TokenHandler.on_verify(any(), any(), any()), exec: &AuthHelper.guardian_verify_passthrough/3, meck_options: [:passthrough])
-      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %{id: @user_id, organizations: [%{id: "org_id"}]}})
+      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{id: @user_id, organizations: [%{id: "org_id"}]}})
 
       model =
         Helper.sample_model(%{
@@ -415,13 +411,14 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
       expires_in_seconds = Application.get_env(:discovery_api, :download_link_expire_seconds)
       expires = DateTime.utc_now() |> DateTime.add(expires_in_seconds, :second) |> DateTime.to_unix()
       url = "https://data.tests.example.com/api/v1/dataset/#{dataset_id}/download/presigned_url"
-      actual_response = conn |> put_req_header("authorization", "Bearer #{token}") |> get(url) |> response(200)
+      actual_response = get(conn, url)
+      |> response(200)
 
       assert "\"https://data.tests.example.com/api/v1/dataset/#{dataset_id}/download?key=#{hmac}&expires=#{expires}\"" == actual_response
     end
   end
 
-  test "public hosted file works", %{conn: conn} do
+  test "public hosted file works", %{anonymous_conn: conn} do
     dataset_id = "kenny_and_austin"
 
     model =
