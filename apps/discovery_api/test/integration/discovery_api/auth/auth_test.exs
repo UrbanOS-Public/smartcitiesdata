@@ -211,7 +211,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
     test "returns visualization for public table when user is anonymous",
          %{
            public_model_that_belongs_to_org_1: model,
-           conn: conn
+           anonymous_conn: conn
          } do
       capture_log(fn ->
         DiscoveryApi.prestige_opts()
@@ -245,7 +245,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
     test "returns not found for private table when user is anonymous", %{
       private_model_that_belongs_to_org_1: model,
-      conn: conn
+      anonymous_conn: conn
     } do
       capture_log(fn ->
         DiscoveryApi.prestige_opts()

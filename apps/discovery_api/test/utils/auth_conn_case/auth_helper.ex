@@ -25,6 +25,7 @@ defmodule DiscoveryApi.Test.AuthConnCase.AuthHelper do
 
     [
       conn: conn,
+      anonymous_conn: conn,
       authorized_conn: authorized_conn,
       revocable_conn: revocable_conn,
       invalid_conn: invalid_conn,
