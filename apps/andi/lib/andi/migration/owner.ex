@@ -10,7 +10,7 @@ defmodule Andi.Migration.Owner do
     |> Enum.each(fn dataset -> update_owner(dataset, owner) end)
   end
 
-  defp update_owner(dataset, owner) do
+  def update_owner(dataset, owner) do
     new_changeset =
       Dataset.changeset_for_draft(
         dataset,

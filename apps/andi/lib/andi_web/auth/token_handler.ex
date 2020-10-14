@@ -19,6 +19,6 @@ defmodule AndiWeb.Auth.TokenHandler do
         user -> user.id
       end
 
-    {:ok, %{"user_id" => user_id}}
+    {:ok, %{"user_id" => user_id, "roles" => claims["https://andi.smartcolumbusos.com/roles"]}}
   end
 end
