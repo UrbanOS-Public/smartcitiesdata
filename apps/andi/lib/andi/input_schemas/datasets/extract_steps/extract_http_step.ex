@@ -48,13 +48,5 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
     |> foreign_key_constraint(:technical_id)
   end
 
-  def changeset_from_andi_dataset(andi_dataset) do
-    dataset = StructTools.to_map(andi_dataset)
-    changes = get_in(dataset, [:technical, :extractSteps]) |> hd()
-
-    changeset(changes)
-  end
-
-
-  def preload(struct), do: struct
+  def preload(struct), do: StructTools.preload(struct, [:headers, :queryParams])
 end

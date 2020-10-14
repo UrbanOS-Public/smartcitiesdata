@@ -4,6 +4,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractQueryParam do
   import Ecto.Changeset
 
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.Datasets.ExtractHttpStep
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "extract_http_queryParams" do
