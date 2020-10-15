@@ -36,4 +36,4 @@ Forklift.Quantum.Scheduler.activate_job(:compactor)
 
 ## License
 
-Released under [Apache 2 license](https://github.com/smartcitiesdata/smartcitiesdata/blob/master/LICENSE).
+Released under [Apache 2 license](https://github.com/Datastillery/smartcitiesdata/blob/master/LICENSE).

@@ -48,4 +48,4 @@ For integration testing, Andi encapsulates its external dependencies in Docker i
 
 ## License
 
-Released under [Apache 2 license](https://github.com/smartcitiesdata/smartcitiesdata/blob/master/LICENSE).
+Released under [Apache 2 license](https://github.com/Datastillery/smartcitiesdata/blob/master/LICENSE).

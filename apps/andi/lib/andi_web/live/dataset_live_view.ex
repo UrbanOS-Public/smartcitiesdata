@@ -12,15 +12,17 @@ defmodule AndiWeb.DatasetLiveView do
     <div class="datasets-view">
       <div class="page-header">
         <a href="/datasets">Dataset Ingestion Interface</a>
+        <%= if @is_curator do %>
         <div class="organization-link" phx-click="show-organizations">
           <div class="organization-link__icon"></div>
-        <div class="organization-link__text">ORGANIZATIONS</div>
+          <div class="organization-link__text">ORGANIZATIONS</div>
         </div>
+        <% end %>
       </div>
 
       <div class="datasets-index">
         <div class="datasets-index__header">
-          <h1 class="datasets-index__title">All Datasets</h1>
+          <h1 class="datasets-index__title"><%= title_text(@is_curator) %></h1>
           <button type="button" class="btn btn--add-dataset btn--action" phx-click="add-dataset">ADD DATASET</button>
         </div>
 
@@ -56,12 +58,14 @@ defmodule AndiWeb.DatasetLiveView do
     """
   end
 
-  def mount(_params, _session, socket) do
+  def mount(_params, %{"user_id" => user_id, "roles" => roles} = _session, socket) do
     {:ok,
      assign(socket,
        datasets: nil,
+       user_id: user_id,
        search_text: nil,
        include_remotes: false,
+       is_curator: Enum.member?(roles, "Curator"),
        order: {"data_title", "asc"},
        params: %{}
      )}
@@ -88,7 +92,8 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   def handle_event("add-dataset", _, socket) do
-    new_dataset = Datasets.create()
+    owner = Andi.Repo.get(Andi.Schemas.User, socket.assigns.user_id)
+    new_dataset = Datasets.create(owner)
 
     {:noreply, push_redirect(socket, to: "/datasets/#{new_dataset.id}")}
   end
@@ -125,13 +130,15 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   defp filter_on_search_change(search_value, include_remotes, socket) do
+    owner_id = socket.assigns.is_curator || socket.assigns.user_id
+
     case search_value == socket.assigns.search_text and include_remotes == socket.assigns.include_remotes do
-      false -> refresh_datasets(search_value, include_remotes)
+      false -> refresh_datasets(search_value, include_remotes, owner_id)
       _ -> socket.assigns.datasets
     end
   end
 
-  defp refresh_datasets(search_value, include_remotes) do
+  defp refresh_datasets(search_value, include_remotes, owner_id) do
     search_string = "%#{search_value}%"
 
     query =
@@ -147,10 +154,14 @@ defmodule AndiWeb.DatasetLiveView do
       )
 
     query
+    |> filter_by_owner(owner_id)
     |> Andi.Repo.all()
     |> filter_remotes(include_remotes)
     |> Enum.map(&to_view_model/1)
   end
+
+  def filter_by_owner(query, owner_id) when owner_id in [true, nil], do: query
+  def filter_by_owner(query, owner_id), do: Ecto.Query.where(query, owner_id: ^owner_id)
 
   defp filter_remotes(datasets, false) do
     Enum.reject(datasets, fn dataset -> dataset.technical.sourceType == "remote" end)
@@ -178,4 +189,7 @@ defmodule AndiWeb.DatasetLiveView do
 
   def string_to_bool("true"), do: true
   def string_to_bool("false"), do: false
+
+  defp title_text(true = _is_curator), do: "All Datasets"
+  defp title_text(false = _is_curator), do: "My Datasets"
 end

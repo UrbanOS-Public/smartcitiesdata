@@ -7,12 +7,18 @@ defmodule Andi.Test.AuthConnCase.AuthHelper do
 
   def build_connections() do
     authorized_jwt = TestHelper.valid_jwt()
+    public_jwt = TestHelper.valid_public_jwt()
     unauthorized_jwt = TestHelper.valid_jwt_unauthorized_roles()
 
     authorized_conn =
       Phoenix.ConnTest.build_conn()
       |> Plug.Test.init_test_session(%{})
       |> TokenHandler.put_session_token(authorized_jwt)
+
+    public_conn =
+      Phoenix.ConnTest.build_conn()
+      |> Plug.Test.init_test_session(%{})
+      |> TokenHandler.put_session_token(public_jwt)
 
     unauthorized_conn =
       Phoenix.ConnTest.build_conn()
@@ -22,7 +28,9 @@ defmodule Andi.Test.AuthConnCase.AuthHelper do
     [
       conn: authorized_conn,
       authorized_conn: authorized_conn,
-      unauthorized_conn: unauthorized_conn
+      unauthorized_conn: unauthorized_conn,
+      public_conn: public_conn,
+      public_subject: TestHelper.valid_public_sub()
     ]
   end
 

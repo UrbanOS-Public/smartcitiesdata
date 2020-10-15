@@ -25,6 +25,14 @@ defmodule AndiWeb.Auth.TokenHandler do
   Given the claims loads a resource (user or otherwise) from a database or separate service to fill out the resource details, such as email, name, etc.
   """
   def resource_from_claims(claims) do
-    {:ok, claims["sub"]}
+    user_id =
+      case Andi.Schemas.User.get_by_subject_id(claims["sub"]) do
+        nil -> nil
+        user -> user.id
+      end
+
+    roles = claims["https://andi.smartcolumbusos.com/roles"] || []
+
+    {:ok, %{"user_id" => user_id, "roles" => roles}}
   end
 end

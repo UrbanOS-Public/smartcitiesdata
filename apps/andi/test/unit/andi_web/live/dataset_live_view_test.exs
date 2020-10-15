@@ -8,6 +8,12 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
+  @user UserHelpers.create_user()
+
+  setup do
+    allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: @user)
+    []
+  end
 
   setup %{auth_conn_case: auth_conn_case} do
     auth_conn_case.disable_revocation_list.()

@@ -18,9 +18,53 @@ defmodule AndiWeb.DatasetLiveViewTest do
   import SmartCity.TestHelper, only: [eventually: 1]
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.Test.AuthHelper
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
+
+  describe "non-curator view" do
+    test "organization button is not shown", %{public_conn: conn} do
+      {:ok, _view, html} = live(conn, @url_path)
+
+      assert Enum.empty?(find_elements(html, ".organization-link"))
+    end
+
+    test "only datasets owned by the user are shown", %{public_conn: conn, public_subject: subject} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+      {:ok, dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      Datasets.create(user)
+
+      {:ok, _view, html} = live(conn, @url_path)
+
+      dataset_rows = find_elements(html, ".datasets-table__tr")
+
+      assert Enum.count(dataset_rows) == 1
+    end
+  end
+
+  describe "curator view" do
+    test "organization button is shown", %{authorized_conn: conn} do
+      {:ok, _view, html} = live(conn, @url_path)
+
+      refute Enum.empty?(find_elements(html, ".organization-link"))
+    end
+
+    test "all datasets are shown", %{authorized_conn: conn, public_subject: subject} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+      {:ok, dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      Datasets.create(user)
+
+      {:ok, _view, html} = live(conn, @url_path)
+
+      dataset_rows = find_elements(html, ".datasets-table__tr")
+
+      assert Enum.count(dataset_rows) == 3
+    end
+  end
+
   describe "dataset status" do
     test "is empty if the dataset has not been ingested", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
@@ -98,6 +142,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   test "add dataset button creates a dataset with a default dataTitle and dataName", %{conn: conn} do
+    {:ok, user} = Andi.Schemas.User.create_or_update(AuthHelper.valid_subject_id(), %{email: "bob@example.com"})
     assert {:ok, view, _html} = live(conn, @url_path)
 
     {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
@@ -113,6 +158,22 @@ defmodule AndiWeb.DatasetLiveViewTest do
     html = render_change(metadata_view, :save)
 
     refute Enum.empty?(find_elements(html, "#orgId-error-msg"))
+  end
+
+  test "add dataset button creates a dataset with the owner as the currently logged in user", %{conn: conn} do
+    {:ok, user} = Andi.Schemas.User.create_or_update(AuthHelper.valid_subject_id(), %{email: "bob@example.com"})
+    assert {:ok, view, _html} = live(conn, @url_path)
+
+    {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+
+    assert {:ok, view, html} = live(conn, edit_page)
+
+    number_of_owned_datasets =
+      Andi.Repo.all(Dataset)
+      |> Enum.filter(fn dataset -> dataset.owner_id == user.id end)
+      |> Enum.count()
+
+    assert number_of_owned_datasets == 1
   end
 
   test "does not load datasets that only contain a timestamp", %{conn: conn} do

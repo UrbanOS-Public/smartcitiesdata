@@ -12,11 +12,13 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
+  @user UserHelpers.create_user()
 
   @ingested_time_a "123123213"
   @ingested_time_b "454699234"
 
   setup %{auth_conn_case: auth_conn_case} do
+    allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: @user)
     auth_conn_case.disable_revocation_list.()
     :ok
   end

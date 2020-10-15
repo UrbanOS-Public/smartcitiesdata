@@ -16,6 +16,8 @@ defmodule AndiWeb.AuthController do
   end
 
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
+    {:ok, _user} = Andi.Schemas.User.create_or_update(auth.uid, %{email: auth.info.email})
+
     conn
     |> TokenHandler.put_session_token(auth.credentials.token)
     |> redirect(to: "/")

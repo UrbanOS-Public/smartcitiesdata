@@ -13,7 +13,7 @@ defmodule AndiWeb.AuthTest do
   end
 
   test "redirects users not assigned to proper role back to login page with error message", %{unauthorized_conn: conn} do
-    result = get(conn, "/datasets")
+    result = get(conn, "/organizations")
 
     assert result.status == 302
     assert result.resp_body =~ "error_message=Unauthorized\""
