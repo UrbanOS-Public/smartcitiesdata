@@ -28,7 +28,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes)
+    changes_with_id = StructTools.ensure_id(extract_step, changes) |> Map.put(:assigns, %{})
 
     extract_step
     |> cast(changes_with_id, @cast_fields, empty_values: [])
@@ -40,7 +40,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
   end
 
   def changeset_for_draft(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes)
+    changes_with_id = StructTools.ensure_id(extract_step, changes) |> Map.put(:assigns, %{})
 
     extract_step
     |> cast(changes_with_id, @cast_fields, empty_values: [])
@@ -57,6 +57,14 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
       |> Map.put_new(:headers, %{})
 
     changeset(form_data_as_params)
+  end
+
+  def changeset_from_andi_step(nil, technical_id), do: changeset(%{type: "http", technical_id: technical_id, assigns: %{}})
+
+  def changeset_from_andi_step(dataset_http_step, _technical_id) do
+    dataset_http_step
+    |> StructTools.to_map
+    |> changeset()
   end
 
   def preload(struct), do: StructTools.preload(struct, [:headers, :queryParams])

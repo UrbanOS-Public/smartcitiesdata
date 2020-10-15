@@ -1,4 +1,4 @@
-defmodule Andi.InputSchemas.ExtractSteps do
+defmodule Andi.InputSchemas.ExtractHttpSteps do
   @moduledoc false
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
   alias Andi.InputSchemas.Datasets.ExtractHeader
@@ -13,6 +13,16 @@ defmodule Andi.InputSchemas.ExtractSteps do
   def get(extract_http_step_id) do
     Repo.get(ExtractHttpStep, extract_http_step_id)
     |> ExtractHttpStep.preload()
+  end
+
+  def update(changes) do
+    from_step =
+      case get(changes.id) do
+        nil -> %ExtractHttpStep{}
+        struct -> struct
+      end
+
+    update(from_step, changes)
   end
 
   def update(%ExtractHttpStep{} = from_extract_step, changes) do
