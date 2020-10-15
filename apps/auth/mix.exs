@@ -23,17 +23,19 @@ defmodule Auth.MixProject do
 
   defp deps do
     [
-      {:bypass, "~> 2.0", only: [:test, :integration]},
+      {:cowlib, "~> 2.8.0", override: true},
       {:jason, "~> 1.2"},
       {:guardian, "~> 2.0"},
       {:guardian_db, "~> 2.0.3"},
       {:httpoison, "~> 1.5"},
       {:memoize, "~> 1.2"},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
-      {:divo_postgres, "~> 0.2", only: [:dev, :integration]},
       {:ecto, "~> 3.3.4"},
       {:ecto_sql, "~> 3.0"},
       {:postgrex, "~> 0.15.1"},
+      {:ranch, "~> 1.7.1", override: true},
+      {:bypass, "~> 2.0", only: [:test, :integration]},
+      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo_postgres, "~> 0.2", only: [:dev, :integration]},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test]},
       {:testing, in_umbrella: true, only: [:test, :integration]},
     ]
