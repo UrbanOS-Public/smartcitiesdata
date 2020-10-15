@@ -21,10 +21,40 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Datasets
   alias Andi.Services.OrgStore
+  alias Andi.Test.AuthHelper
 
   @instance_name Andi.instance_name()
 
   @url_path "/organizations/"
+
+  describe "public organization access" do
+    setup do
+      smrt_org = TDG.create_organization([])
+      {:ok, andi_organization} = Organizations.update(smrt_org)
+      [org: andi_organization, conn: Andi.Test.AuthHelper.build_authorized_conn(jwt: AuthHelper.valid_public_jwt())]
+    end
+
+    test "public users cannot view or edit organizations", %{conn: conn, org: org} do
+      assert {:error,
+      %{
+        redirect: %{
+          to: "/auth/auth0?prompt=login&error_message=Unauthorized"
+        }
+      }} = live(conn, @url_path <> org.id)
+    end
+  end
+
+  describe "curator organization access" do
+    setup do
+      smrt_org = TDG.create_organization([])
+      {:ok, andi_organization} = Organizations.update(smrt_org)
+      [org: andi_organization, conn: Andi.Test.AuthHelper.build_authorized_conn(jwt: AuthHelper.valid_jwt())]
+    end
+
+    test "curators can view and edit organizations", %{conn: conn, org: org} do
+      assert {:ok, view, html} = live(conn, @url_path <> org.id)
+    end
+  end
 
   describe "create new organization" do
     setup do
