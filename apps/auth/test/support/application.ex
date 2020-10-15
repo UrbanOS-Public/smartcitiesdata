@@ -8,15 +8,22 @@ defmodule Auth.Application do
   require Logger
 
   def start(_type, _args) do
-    IO.puts("starting app")
     children =
       [
-        {Auth.Repo, []}
+        ecto_repo()
       ]
       |> List.flatten()
 
 
     opts = [strategy: :one_for_one, name: Auth.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp ecto_repo do
+    Application.get_env(:auth, Auth.Repo)
+    |> case do
+         nil -> []
+         _ -> [{Auth.Repo, []}]
+       end
   end
 end

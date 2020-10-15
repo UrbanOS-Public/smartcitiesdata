@@ -48,7 +48,7 @@ defmodule Auth.MixProject do
   defp test_paths(_), do: ["test/unit"]
 
 
-  defp maybe_application(:integration) do
+  defp maybe_application(env) when env in [:test, :integration] do
     [
       mod: {Auth.Application, []},
       extra_applications: [:logger]

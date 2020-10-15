@@ -10,13 +10,14 @@ defmodule Auth.Guardian.TokenHandler do
   """
 
   defmacro __using__(opts) do
-    otp_app = Keyword.fetch!(opts, :otp_app)
+    options = Keyword.merge(
+      [secret_fetcher: Auth.Auth0.SecretFetcher],
+      opts
+    )
 
     quote do
       @token_type "JWT"
-      use Guardian,
-        otp_app: unquote(otp_app),
-        secret_fetcher: Auth.Auth0.SecretFetcher
+      use Guardian, unquote(options)
 
       @doc """
       Overridable implementation for determining a resource's subject

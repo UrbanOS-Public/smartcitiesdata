@@ -47,6 +47,10 @@ defmodule Auth.TestHelper do
     "auth0|5e3066daf048aa0e71bdd77e"
   end
 
+  def valid_kid() do
+    "ODIyRENDNEYzQkVEMjAyNzE4RTNCMTM2QTNGRjU2NUU3QzZDQUQ1OQ"
+  end
+
   def valid_issuer() do
     "https://smartcolumbusos-demo.auth0.com/"
   end
