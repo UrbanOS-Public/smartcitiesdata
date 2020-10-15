@@ -12,7 +12,7 @@ defmodule AndiWeb.DatasetLiveView do
     <div class="datasets-view">
       <div class="page-header">
         <a href="/datasets">Dataset Ingestion Interface</a>
-        <%= if assigns.is_curator do %>
+        <%= if @is_curator do %>
         <div class="organization-link" phx-click="show-organizations">
           <div class="organization-link__icon"></div>
           <div class="organization-link__text">ORGANIZATIONS</div>
