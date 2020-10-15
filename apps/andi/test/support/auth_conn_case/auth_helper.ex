@@ -6,14 +6,14 @@ defmodule Andi.Test.AuthConnCase.AuthHelper do
   alias Auth.TestHelper
 
   def build_connections() do
-    authorized_jwt = TestHelper.valid_jwt()
+    curator_jwt = TestHelper.valid_jwt()
     public_jwt = TestHelper.valid_public_jwt()
     unauthorized_jwt = TestHelper.valid_jwt_unauthorized_roles()
 
-    authorized_conn =
+    curator_conn =
       Phoenix.ConnTest.build_conn()
       |> Plug.Test.init_test_session(%{})
-      |> TokenHandler.put_session_token(authorized_jwt)
+      |> TokenHandler.put_session_token(curator_jwt)
 
     public_conn =
       Phoenix.ConnTest.build_conn()
@@ -26,10 +26,11 @@ defmodule Andi.Test.AuthConnCase.AuthHelper do
       |> TokenHandler.put_session_token(unauthorized_jwt)
 
     [
-      conn: authorized_conn,
-      authorized_conn: authorized_conn,
-      unauthorized_conn: unauthorized_conn,
+      conn: curator_conn,
+      curator_conn: curator_conn,
       public_conn: public_conn,
+      unauthorized_conn: unauthorized_conn,
+      curator_subject: TestHelper.valid_jwt_sub(),
       public_subject: TestHelper.valid_public_sub()
     ]
   end

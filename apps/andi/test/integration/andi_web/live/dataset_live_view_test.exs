@@ -18,7 +18,6 @@ defmodule AndiWeb.DatasetLiveViewTest do
   import SmartCity.TestHelper, only: [eventually: 1]
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.Test.AuthHelper
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
@@ -45,13 +44,13 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   describe "curator view" do
-    test "organization button is shown", %{authorized_conn: conn} do
+    test "organization button is shown", %{curator_conn: conn} do
       {:ok, _view, html} = live(conn, @url_path)
 
       refute Enum.empty?(find_elements(html, ".organization-link"))
     end
 
-    test "all datasets are shown", %{authorized_conn: conn, public_subject: subject} do
+    test "all datasets are shown", %{curator_conn: conn, public_subject: subject} do
       {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
       {:ok, dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
       {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
@@ -141,8 +140,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
   end
 
-  test "add dataset button creates a dataset with a default dataTitle and dataName", %{conn: conn} do
-    {:ok, user} = Andi.Schemas.User.create_or_update(AuthHelper.valid_subject_id(), %{email: "bob@example.com"})
+  test "add dataset button creates a dataset with a default dataTitle and dataName", %{curator_conn: conn, curator_subject: subject} do
+    {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
     assert {:ok, view, _html} = live(conn, @url_path)
 
     {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
@@ -160,8 +159,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
     refute Enum.empty?(find_elements(html, "#orgId-error-msg"))
   end
 
-  test "add dataset button creates a dataset with the owner as the currently logged in user", %{conn: conn} do
-    {:ok, user} = Andi.Schemas.User.create_or_update(AuthHelper.valid_subject_id(), %{email: "bob@example.com"})
+  test "add dataset button creates a dataset with the owner as the currently logged in user", %{curator_conn: conn, curator_subject: subject} do
+    {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
     assert {:ok, view, _html} = live(conn, @url_path)
 
     {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
