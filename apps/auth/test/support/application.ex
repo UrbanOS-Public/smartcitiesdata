@@ -14,7 +14,6 @@ defmodule Auth.Application do
       ]
       |> List.flatten()
 
-
     opts = [strategy: :one_for_one, name: Auth.Supervisor]
     Supervisor.start_link(children, opts)
   end
@@ -22,8 +21,8 @@ defmodule Auth.Application do
   defp ecto_repo do
     Application.get_env(:auth, Auth.Repo)
     |> case do
-         nil -> []
-         _ -> [{Auth.Repo, []}]
-       end
+      nil -> []
+      _ -> [{Auth.Repo, []}]
+    end
   end
 end

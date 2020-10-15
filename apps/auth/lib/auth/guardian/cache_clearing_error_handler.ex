@@ -16,8 +16,12 @@ defmodule Auth.Guardian.CacheClearingErrorHandler do
           true ->
             auth_error(conn, {:invalid_token__tried_cache_clear, reason}, opts)
             |> Plug.Conn.halt()
+
           false ->
-            Logger.info("Unable to verify auth headers with #{inspect(reason)}\n\nClearing cache and retrying...")
+            Logger.info(
+              "Unable to verify auth headers with #{inspect(reason)}\n\nClearing cache and retrying..."
+            )
+
             cache_clear_and_retry(conn, opts)
         end
       end
@@ -25,7 +29,7 @@ defmodule Auth.Guardian.CacheClearingErrorHandler do
       defp cache_clear_and_retry(conn, opts) do
         CachedJWKS.clear()
 
-        cleared_opts = Keyword.merge(opts, [cache_cleared: true])
+        cleared_opts = Keyword.merge(opts, cache_cleared: true)
 
         unquote(verifier_module).call(conn, cleared_opts)
       end

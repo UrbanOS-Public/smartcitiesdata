@@ -10,10 +10,11 @@ defmodule Auth.Guardian.TokenHandler do
   """
 
   defmacro __using__(opts) do
-    options = Keyword.merge(
-      [secret_fetcher: Auth.Auth0.SecretFetcher],
-      opts
-    )
+    options =
+      Keyword.merge(
+        [secret_fetcher: Auth.Auth0.SecretFetcher],
+        opts
+      )
 
     quote do
       @token_type "JWT"

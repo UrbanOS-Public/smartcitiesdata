@@ -21,6 +21,7 @@ defmodule DiscoveryApiWeb.Test.AuthConnCase.UnitCase do
     disable_revocation_list()
     {exit_hook, bypass} = AuthHelper.setup_jwks()
     on_exit(exit_hook)
+
     AuthHelper.build_connections()
     |> Keyword.put(:bypass, bypass)
   end

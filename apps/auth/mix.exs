@@ -23,7 +23,7 @@ defmodule Auth.MixProject do
 
   defp deps do
     [
-      {:cowlib, "~> 2.8.0", override: true},
+      {:cowlib, "~> 2.8", override: true},
       {:jason, "~> 1.2"},
       {:guardian, "~> 2.0"},
       {:guardian_db, "~> 2.0.3"},
@@ -37,7 +37,7 @@ defmodule Auth.MixProject do
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_postgres, "~> 0.2", only: [:dev, :integration]},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test]},
-      {:testing, in_umbrella: true, only: [:test, :integration]},
+      {:testing, in_umbrella: true, only: [:test, :integration]}
     ]
   end
 
@@ -47,13 +47,13 @@ defmodule Auth.MixProject do
   defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]
 
-
   defp maybe_application(env) when env in [:test, :integration] do
     [
       mod: {Auth.Application, []},
       extra_applications: [:logger]
     ]
   end
+
   defp maybe_application(_) do
     [
       extra_applications: [:logger]

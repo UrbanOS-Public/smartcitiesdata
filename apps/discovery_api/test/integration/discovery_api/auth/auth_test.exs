@@ -72,9 +72,10 @@ defmodule DiscoveryApi.Auth.AuthTest do
     end
 
     test "is not able to access a restricted dataset with a bad token", setup_map do
-      body = get(setup_map.invalid_conn, "/api/v1/dataset/#{setup_map.private_model_that_belongs_to_org_1.id}")
-      |> response(401)
-      |> Jason.decode!()
+      body =
+        get(setup_map.invalid_conn, "/api/v1/dataset/#{setup_map.private_model_that_belongs_to_org_1.id}")
+        |> response(401)
+        |> Jason.decode!()
 
       assert body == %{"message" => "Unauthorized"}
     end
@@ -83,21 +84,22 @@ defmodule DiscoveryApi.Auth.AuthTest do
   describe "POST /logged-in" do
     test "returns 'OK' when token is valid", setup_map do
       assert post(setup_map.authorized_conn, "/api/v1/logged-in")
-      |> response(200)
+             |> response(200)
     end
 
     test "login is IDEMpotent", setup_map do
       assert post(setup_map.authorized_conn, "/api/v1/logged-in")
-      |> response(200)
+             |> response(200)
 
       assert post(setup_map.authorized_conn, "/api/v1/logged-in")
-      |> response(200)
+             |> response(200)
     end
 
     test "saves logged in user", setup_map do
       subject_id = setup_map.authorized_subject
+
       assert post(setup_map.authorized_conn, "/api/v1/logged-in")
-      |> response(200)
+             |> response(200)
 
       eventually(
         fn ->
@@ -114,20 +116,20 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
     test "returns 'unauthorized' when token is invalid", setup_map do
       assert post(setup_map.invalid_conn, "/api/v1/logged-in")
-      |> response(401)
+             |> response(401)
     end
   end
 
   describe "POST /logged-out" do
     test "logout is not idempotent", setup_map do
       assert post(setup_map.revocable_conn, "/api/v1/logged-in")
-      |> response(200)
+             |> response(200)
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-out")
-      |> response(200)
+             |> response(200)
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-in")
-      |> response(401)
+             |> response(401)
     end
 
     test "when user is logged-out, they can't use their token to access protected resources, even when they attempt to login",
@@ -139,24 +141,27 @@ defmodule DiscoveryApi.Auth.AuthTest do
       Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-in")
-      |> response(200)
+             |> response(200)
 
-      assert %{"id" => ^model_id} = get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
-      |> json_response(200)
+      assert %{"id" => ^model_id} =
+               get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
+               |> json_response(200)
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-out")
-      |> response(200)
+             |> response(200)
 
-      assert %{"message" => "Unauthorized"} == get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
-      |> response(401)
-      |> Jason.decode!()
+      assert %{"message" => "Unauthorized"} ==
+               get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
+               |> response(401)
+               |> Jason.decode!()
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-in")
-      |> response(401)
+             |> response(401)
 
-      assert %{"message" => "Unauthorized"} == get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
-      |> response(401)
-      |> Jason.decode!()
+      assert %{"message" => "Unauthorized"} ==
+               get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
+               |> response(401)
+               |> Jason.decode!()
     end
 
     test "when user is logged-out, it doesn't affect other users", %{private_model_that_belongs_to_org_1: model} = setup_map do
@@ -171,17 +176,19 @@ defmodule DiscoveryApi.Auth.AuthTest do
       Helper.associate_user_with_organization(other_user.id, model.organizationDetails.id)
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-in")
-      |> response(200)
+             |> response(200)
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-out")
-      |> response(200)
+             |> response(200)
 
-      assert %{"message" => "Unauthorized"} == get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
-      |> response(401)
-      |> Jason.decode!()
+      assert %{"message" => "Unauthorized"} ==
+               get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
+               |> response(401)
+               |> Jason.decode!()
 
-      assert %{"id" => ^model_id} = get(setup_map.authorized_conn, "/api/v1/dataset/#{model.id}/")
-        |> json_response(200)
+      assert %{"id" => ^model_id} =
+               get(setup_map.authorized_conn, "/api/v1/dataset/#{model.id}/")
+               |> json_response(200)
     end
   end
 
@@ -190,8 +197,9 @@ defmodule DiscoveryApi.Auth.AuthTest do
       user = Helper.create_persisted_user(setup_map.authorized_subject)
       post_body = ~s({"query": "select * from tarps", "title": "My favorite title", "chart": {"data": "hello"}})
 
-      %{"id" => id} = post(setup_map.authorized_conn, "/api/v1/visualization", post_body)
-      |> json_response(201)
+      %{"id" => id} =
+        post(setup_map.authorized_conn, "/api/v1/visualization", post_body)
+        |> json_response(201)
 
       visualization = Visualizations.get_visualization_by_id(id) |> elem(1) |> Repo.preload(:owner)
 
@@ -201,9 +209,10 @@ defmodule DiscoveryApi.Auth.AuthTest do
     test "returns 'unauthorized' when token is invalid", setup_map do
       post_body = ~s({"query": "select * from tarps", "title": "My favorite title", "chart": {"data": "hello"}})
 
-      assert %{"message" => "Unauthorized"} == post(setup_map.invalid_conn, "/api/v1/visualization", post_body)
-      |> response(401)
-      |> Jason.decode!()
+      assert %{"message" => "Unauthorized"} ==
+               post(setup_map.invalid_conn, "/api/v1/visualization", post_body)
+               |> response(401)
+               |> Jason.decode!()
     end
   end
 
@@ -222,12 +231,13 @@ defmodule DiscoveryApi.Auth.AuthTest do
       visualization = create_visualization(model.systemName)
 
       assert get(conn, "/api/v1/visualization/#{visualization.public_id}")
-      |> json_response(200)
+             |> json_response(200)
     end
 
-    test "returns visualization for private table when user has access", %{
-      private_model_that_belongs_to_org_1: model
-    } = setup_map do
+    test "returns visualization for private table when user has access",
+         %{
+           private_model_that_belongs_to_org_1: model
+         } = setup_map do
       user = Helper.create_persisted_user(setup_map.authorized_subject)
       Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
 
@@ -240,7 +250,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       visualization = create_visualization(model.systemName)
 
       assert get(setup_map.authorized_conn, "/api/v1/visualization/#{visualization.public_id}")
-      |> json_response(200)
+             |> json_response(200)
     end
 
     test "returns not found for private table when user is anonymous", %{
@@ -258,7 +268,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       visualization = create_visualization(model.systemName)
 
       assert get(conn, "/api/v1/visualization/#{visualization.public_id}")
-      |> response(404)
+             |> response(404)
     end
   end
 

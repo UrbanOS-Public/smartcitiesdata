@@ -252,8 +252,9 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       {table, id} = Helper.create_persisted_dataset("123A", "a_table", "a_org")
 
       put_body = ~s({"query": "select * from #{table}", "title": "My favorite title", "chart": {"data": "hello"}})
+
       assert put(authorized_conn, "/api/v1/visualization/#{created_visualization.public_id}", put_body)
-      |> response(200)
+             |> response(200)
 
       eventually(fn ->
         {:ok, viz} = Visualizations.get_visualization_by_id(created_visualization.public_id)

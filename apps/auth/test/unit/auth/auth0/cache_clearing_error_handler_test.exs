@@ -16,44 +16,55 @@ defmodule Auth.Auth0.CacheClearingErrorHandlerTest do
       token = TestHelper.valid_jwt()
       successful_claims = %{"claims" => "yes"}
 
-      allow CachedJWKS.clear(), return: :whatever
-      allow Guardian.decode_and_verify(any(), any(), any(), any()), seq: [{:error, {:invalid_token, :old_jwks_cache}}, {:ok, successful_claims}]
+      allow(CachedJWKS.clear(), return: :whatever)
 
-      conn = conn(:get, "/does/not/matter")
-      |> put_req_header("authorization", "Bearer #{token}")
-
-      assert %{halted: false} = conn = Guardian.Plug.Pipeline.call(
-        conn,
-        module: Test.TokenHandler.Invalid,
-        error_handler: Test.ErrorHandler
+      allow(Guardian.decode_and_verify(any(), any(), any(), any()),
+        seq: [{:error, :old_jwks_cache}, {:ok, successful_claims}]
       )
-      |> VerifyHeader.call([])
+
+      conn =
+        conn(:get, "/does/not/matter")
+        |> put_req_header("authorization", "Bearer #{token}")
+
+      assert %{halted: false} =
+               conn =
+               Guardian.Plug.Pipeline.call(
+                 conn,
+                 module: Test.TokenHandler.Invalid,
+                 error_handler: Test.ErrorHandler
+               )
+               |> VerifyHeader.call([])
 
       assert successful_claims == Guardian.Plug.current_claims(conn, [])
 
-      assert_called CachedJWKS.clear(), times: 1
+      assert_called(CachedJWKS.clear(), times: 1)
     end
 
     test "gives up after one failed retry" do
       token = TestHelper.valid_jwt()
 
-      allow CachedJWKS.clear(), return: :whatever
-      allow Guardian.decode_and_verify(any(), any(), any(), any()), return: {:error, {:invalid_token, :truly_broken}}
+      allow(CachedJWKS.clear(), return: :whatever)
 
-      conn = conn(:get, "/does/not/matter")
-      |> put_req_header("authorization", "Bearer #{token}")
+      allow(Guardian.decode_and_verify(any(), any(), any(), any()),
+        return: {:error, :truly_broken}
+      )
+
+      conn =
+        conn(:get, "/does/not/matter")
+        |> put_req_header("authorization", "Bearer #{token}")
 
       assert %{
-        halted: true,
-        status: 401
-      } = Guardian.Plug.Pipeline.call(
-        conn,
-        module: Test.TokenHandler.Invalid,
-        error_handler: Test.ErrorHandler
-      )
-      |> VerifyHeader.call([])
+               halted: true,
+               status: 401
+             } =
+               Guardian.Plug.Pipeline.call(
+                 conn,
+                 module: Test.TokenHandler.Invalid,
+                 error_handler: Test.ErrorHandler
+               )
+               |> VerifyHeader.call([])
 
-      assert_called CachedJWKS.clear(), times: 1
+      assert_called(CachedJWKS.clear(), times: 1)
     end
   end
 end

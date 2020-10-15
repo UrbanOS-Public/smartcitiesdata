@@ -125,32 +125,36 @@ defmodule DiscoveryApi.Data.QueryTest do
   @moduletag capture_log: true
   describe "api/v1/dataset/<id>/query" do
     test "Queries limited data from presto", %{public_dataset: public_dataset, anonymous_conn: conn} do
-      actual = get(conn, "/api/v1/dataset/#{public_dataset.id}/query?limit=2&orderBy=name")
-      |> response(200)
+      actual =
+        get(conn, "/api/v1/dataset/#{public_dataset.id}/query?limit=2&orderBy=name")
+        |> response(200)
 
       assert actual == "id,name\n1,Fred\n2,Gred\n"
     end
 
     test "Queries limited data from presto when using orgName and dataName in url", %{public_dataset: public_dataset, anonymous_conn: conn} do
       actual =
-        get(conn,
+        get(
+          conn,
           "/api/v1/organization/#{public_dataset.technical.orgName}/dataset/#{public_dataset.technical.dataName}/query?limit=2&orderBy=name"
         )
-      |> response(200)
+        |> response(200)
 
       assert actual == "id,name\n1,Fred\n2,Gred\n"
     end
 
     test "Queries data from presto with multiple clauses", %{public_dataset: public_dataset, anonymous_conn: conn} do
-      actual = get(conn, "/api/v1/dataset/#{public_dataset.id}/query?limit=2&columns=name&orderBy=name")
-      |> response(200)
+      actual =
+        get(conn, "/api/v1/dataset/#{public_dataset.id}/query?limit=2&columns=name&orderBy=name")
+        |> response(200)
 
       assert actual == "name\nFred\nGred\n"
     end
 
     test "Queries data from presto with an aggregator", %{public_dataset: public_dataset, anonymous_conn: conn} do
-      actual = get(conn, "/api/v1/dataset/#{public_dataset.id}/query?columns=count(id),%20name&groupBy=name&orderBy=name")
-      |> response(200)
+      actual =
+        get(conn, "/api/v1/dataset/#{public_dataset.id}/query?columns=count(id),%20name&groupBy=name&orderBy=name")
+        |> response(200)
 
       assert actual == "_col0,name\n1,Fred\n1,Gred\n1,Hred\n"
     end
@@ -158,17 +162,14 @@ defmodule DiscoveryApi.Data.QueryTest do
     test "queries data from presto with non-default format", %{public_dataset: public_dataset, anonymous_conn: conn} do
       actual =
         put_req_header(conn, "accept", "application/json")
-        |> get(
-          "/api/v1/dataset/#{public_dataset.id}/query?columns=count(id),%20name&groupBy=name&orderBy=name"
-        )
+        |> get("/api/v1/dataset/#{public_dataset.id}/query?columns=count(id),%20name&groupBy=name&orderBy=name")
         |> json_response(200)
 
-      expected =
-        [
-          %{"_col0" => 1, "name" => "Fred"},
-          %{"_col0" => 1, "name" => "Gred"},
-          %{"_col0" => 1, "name" => "Hred"}
-        ]
+      expected = [
+        %{"_col0" => 1, "name" => "Fred"},
+        %{"_col0" => 1, "name" => "Gred"},
+        %{"_col0" => 1, "name" => "Hred"}
+      ]
 
       assert actual == expected
     end
@@ -179,11 +180,12 @@ defmodule DiscoveryApi.Data.QueryTest do
       anonymous_conn: conn
     } do
       actual =
-        get(conn,
+        get(
+          conn,
           "/api/v1/dataset/#{public_dataset.id}/query?limit=2&columns=(SELECT%20name%20FROM%20#{private_table}%20LIMIT%201)%20AS%20hacked"
         )
-      |> response(400)
-      |> Jason.decode!()
+        |> response(400)
+        |> Jason.decode!()
 
       assert actual == %{"message" => "Bad Request"}
     end
@@ -212,15 +214,16 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT * FROM #{public_table} AS one JOIN #{public_table} AS two ON one.id = two.id
       """
 
-      assert body = Plug.Conn.put_req_header(conn, "accept", "application/json")
-      |> plain_text_post("/api/v1/query", request_body)
-      |> json_response(200)
+      assert body =
+               Plug.Conn.put_req_header(conn, "accept", "application/json")
+               |> plain_text_post("/api/v1/query", request_body)
+               |> json_response(200)
 
       assert body == [
-        %{"id" => 1, "name" => "Fred"},
-        %{"id" => 2, "name" => "Gred"},
-        %{"id" => 3, "name" => "Hred"}
-      ]
+               %{"id" => 1, "name" => "Fred"},
+               %{"id" => 2, "name" => "Gred"},
+               %{"id" => 3, "name" => "Hred"}
+             ]
     end
   end
 
@@ -242,9 +245,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT * FROM public_one JOIN private_one ON public_one.id = private_one.id
       """
 
-      assert [%{"id" => 3}] == put_req_header(authorized_conn, "accept", "application/json")
-      |> plain_text_post("/api/v1/query", request_body)
-      |> json_response(200)
+      assert [%{"id" => 3}] ==
+               put_req_header(authorized_conn, "accept", "application/json")
+               |> plain_text_post("/api/v1/query", request_body)
+               |> json_response(200)
     end
 
     test "anonymous user can't query private datasets as a subquery with public datasets in one statement", %{
@@ -256,9 +260,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT (SELECT id FROM #{private_table} LIMIT 1) FROM #{public_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
     end
 
     test "anonymous user can't query private and public datasets in one statement", %{
@@ -271,8 +276,8 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT * FROM public_one JOIN private_one ON public_one.id = private_one.id
       """
 
-     assert plain_text_post(conn, "/api/v1/query", request_body)
-     |> response(400)
+      assert plain_text_post(conn, "/api/v1/query", request_body)
+             |> response(400)
     end
 
     test "anonymous user can query public datasets in one statement", %{public_table: public_table, anonymous_conn: conn} do
@@ -280,15 +285,16 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT * FROM #{public_table} AS one JOIN #{public_table} AS two ON one.id = two.id
       """
 
-      assert body = put_req_header(conn, "accept", "application/json")
-      |> plain_text_post("/api/v1/query", request_body)
-      |> json_response(200)
+      assert body =
+               put_req_header(conn, "accept", "application/json")
+               |> plain_text_post("/api/v1/query", request_body)
+               |> json_response(200)
 
       assert body == [
-        %{"id" => 1, "name" => "Fred"},
-        %{"id" => 2, "name" => "Gred"},
-        %{"id" => 3, "name" => "Hred"}
-      ]
+               %{"id" => 1, "name" => "Fred"},
+               %{"id" => 2, "name" => "Gred"},
+               %{"id" => 3, "name" => "Hred"}
+             ]
     end
 
     test "any user gets a reasonable response when submitting statements with bad syntax", %{
@@ -299,9 +305,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         SALECT * FORM #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
     end
 
     test "any user can't use multiple line magic comments (on more than one line)", %{
@@ -315,9 +322,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT * FROM #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
     end
 
     test "any user can't use multiple line magic comments", %{
@@ -329,9 +337,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT * FROM #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
     end
 
     test "any user can't use single line magic comments", %{
@@ -343,9 +352,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT * FROM #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
     end
 
     test "any user can't explain a statement", %{
@@ -356,9 +366,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         EXPLAIN ANALYZE SELECT * FROM #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
     end
 
     test "any user can't describe table", %{
@@ -369,9 +380,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         DESCRIBE #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
     end
 
     test "any user can't desc table", %{
@@ -382,9 +394,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         DESC #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
     end
 
     test "any user can't delete from a table", %{
@@ -396,9 +409,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         DELETE FROM #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
 
       assert 3 ==
                prestige_session
@@ -416,9 +430,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         DROP TABLE #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
 
       assert 3 ==
                prestige_session
@@ -436,9 +451,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         CREATE TABLE my_own_table (id integer, name varchar) AS SELECT * FROM #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
 
       assert_raise Prestige.Error, fn ->
         Prestige.query!(prestige_session, ~s|select * from my_own_table|)
@@ -457,9 +473,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         DROP TABLE #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
 
       assert 3 ==
                prestige_session
@@ -475,9 +492,10 @@ defmodule DiscoveryApi.Data.QueryTest do
     } do
       request_body = "SELECT * FROM #{public_table}\rSELECT * FROM #{private_table}"
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
     end
 
     test "any user can't perform multiple queries separated by a semicolon", %{
@@ -490,9 +508,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT * FROM #{public_table}; DROP TABLE #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
 
       assert 3 ==
                prestige_session
@@ -511,9 +530,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         INSERT INTO #{private_table} SELECT * FROM #{public_table}
       """
 
-      assert %{"message" => "Bad Request"} == plain_text_post(conn, "/api/v1/query", request_body)
-      |> response(400)
-      |> Jason.decode!()
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
 
       assert 3 ==
                prestige_session
@@ -526,8 +546,9 @@ defmodule DiscoveryApi.Data.QueryTest do
   @moduletag capture_log: true
   describe "api/v1/dataset/<id>/download" do
     test "downloads all of a dataset's data from presto", %{public_dataset: public_dataset, anonymous_conn: conn} do
-      actual = get(conn, "/api/v1/dataset/#{public_dataset.id}/download")
-      |> response(200)
+      actual =
+        get(conn, "/api/v1/dataset/#{public_dataset.id}/download")
+        |> response(200)
 
       assert actual == "id,name\n1,Fred\n2,Gred\n3,Hred\n"
     end
@@ -560,8 +581,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       expected_body: expected_body,
       anonymous_conn: conn
     } do
-      actual = get(conn, "/api/v1/dataset/#{geojson_dataset.id}/query?_format=geojson&orderBy=feature")
-      |> json_response(200)
+      actual =
+        get(conn, "/api/v1/dataset/#{geojson_dataset.id}/query?_format=geojson&orderBy=feature")
+        |> json_response(200)
 
       assert geojson_dataset.technical.systemName == Map.get(actual, "name")
       sorted_expected_features = expected_body |> Map.get("features") |> Enum.sort()
@@ -574,8 +596,9 @@ defmodule DiscoveryApi.Data.QueryTest do
       expected_body: expected_body,
       anonymous_conn: conn
     } do
-      actual = plain_text_post(conn, "/api/v1/query?_format=geojson", "select * from #{geojson_table} order by feature")
-      |> json_response(200)
+      actual =
+        plain_text_post(conn, "/api/v1/query?_format=geojson", "select * from #{geojson_table} order by feature")
+        |> json_response(200)
 
       sorted_expected_features = expected_body |> Map.get("features") |> Enum.sort()
       sorted_actual_features = Map.get(actual, "features") |> Enum.sort()

@@ -8,10 +8,12 @@ defmodule Auth.Guardian.Plug.VerifySession do
   end
 
   def call(conn, opts) do
-    unhalting_opts = Keyword.merge(
-      opts,
-      [halt: false]
-    )
+    unhalting_opts =
+      Keyword.merge(
+        opts,
+        halt: false
+      )
+
     Guardian.Plug.VerifySession.call(conn, unhalting_opts)
   end
 end

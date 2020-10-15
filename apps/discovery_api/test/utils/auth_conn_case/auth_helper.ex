@@ -8,20 +8,24 @@ defmodule DiscoveryApi.Test.AuthConnCase.AuthHelper do
     authorized_jwt = TestHelper.valid_jwt()
     revocable_jwt = TestHelper.revocable_jwt()
 
-    conn = Phoenix.ConnTest.build_conn()
-    |> set_content_type()
+    conn =
+      Phoenix.ConnTest.build_conn()
+      |> set_content_type()
 
-    authorized_conn = Phoenix.ConnTest.build_conn()
-    |> put_bearer_token(authorized_jwt)
-    |> set_content_type()
+    authorized_conn =
+      Phoenix.ConnTest.build_conn()
+      |> put_bearer_token(authorized_jwt)
+      |> set_content_type()
 
-    revocable_conn = Phoenix.ConnTest.build_conn()
-    |> put_bearer_token(revocable_jwt)
-    |> set_content_type()
+    revocable_conn =
+      Phoenix.ConnTest.build_conn()
+      |> put_bearer_token(revocable_jwt)
+      |> set_content_type()
 
-    invalid_conn = Phoenix.ConnTest.build_conn()
-    |> put_bearer_token("sdfsadfasdfasdfdaf")
-    |> set_content_type()
+    invalid_conn =
+      Phoenix.ConnTest.build_conn()
+      |> put_bearer_token("sdfsadfasdfasdfdaf")
+      |> set_content_type()
 
     [
       conn: conn,
@@ -32,25 +36,28 @@ defmodule DiscoveryApi.Test.AuthConnCase.AuthHelper do
       authorized_subject: TestHelper.valid_jwt_sub(),
       revocable_subject: TestHelper.revocable_jwt_sub(),
       invalid_subject: "blaahhhhhh",
-      authorized_token: TestHelper.valid_jwt(),
+      authorized_token: TestHelper.valid_jwt()
     ]
   end
 
   def setup_jwks() do
     bypass = Bypass.open()
+
     Bypass.stub(bypass, "GET", "/.well-known/jwks.json", fn conn ->
       Plug.Conn.resp(conn, :ok, Jason.encode!(TestHelper.valid_jwks()))
     end)
+
     Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
       Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z"}))
     end)
 
     current_config = Application.get_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler) || []
 
-    bypassed_config = Keyword.merge(
-      current_config,
-      [issuer: "http://localhost:#{bypass.port}/"]
-    )
+    bypassed_config =
+      Keyword.merge(
+        current_config,
+        issuer: "http://localhost:#{bypass.port}/"
+      )
 
     Application.put_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler, bypassed_config)
 

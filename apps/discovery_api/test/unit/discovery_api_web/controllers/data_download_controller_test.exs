@@ -411,8 +411,10 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
       expires_in_seconds = Application.get_env(:discovery_api, :download_link_expire_seconds)
       expires = DateTime.utc_now() |> DateTime.add(expires_in_seconds, :second) |> DateTime.to_unix()
       url = "https://data.tests.example.com/api/v1/dataset/#{dataset_id}/download/presigned_url"
-      actual_response = get(conn, url)
-      |> response(200)
+
+      actual_response =
+        get(conn, url)
+        |> response(200)
 
       assert "\"https://data.tests.example.com/api/v1/dataset/#{dataset_id}/download?key=#{hmac}&expires=#{expires}\"" == actual_response
     end

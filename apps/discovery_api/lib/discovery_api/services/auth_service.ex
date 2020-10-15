@@ -11,8 +11,9 @@ defmodule DiscoveryApi.Services.AuthService do
   end
 
   defp user_info_endpoint() do
-    issuer = Application.get_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler)
-    |> Keyword.fetch!(:issuer)
+    issuer =
+      Application.get_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler)
+      |> Keyword.fetch!(:issuer)
 
     issuer <> "userinfo"
   end

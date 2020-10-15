@@ -18,6 +18,7 @@ defmodule Testing.DataCase do
 
   using opts do
     repo_module = Keyword.fetch!(opts, :repo_module)
+
     quote do
       alias unquote(repo_module)
 
