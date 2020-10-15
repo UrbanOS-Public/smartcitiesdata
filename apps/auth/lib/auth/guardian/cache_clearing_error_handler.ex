@@ -1,6 +1,11 @@
 defmodule Auth.Guardian.CacheClearingErrorHandler do
   @moduledoc """
   Clears the JWKS cache for a token if it is invalid
+
+  NOTEs:
+  - this only catches and halts token verifiers (Plug.VerifyX)
+  - those verifiers need to have an option of `halt: false` set
+  - do NOT set any other plugs (EnsureAuthenticated, etc.) to `halt: false` as this does not re-halt them
   """
 
   alias Auth.Auth0.CachedJWKS
