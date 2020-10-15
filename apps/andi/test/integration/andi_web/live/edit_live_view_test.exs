@@ -17,9 +17,62 @@ defmodule AndiWeb.EditLiveViewTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
+  alias Andi.Test.AuthHelper
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
+
+  setup do
+    {:ok, curator} = Andi.Schemas.User.create_or_update(AuthHelper.valid_subject_id(), %{email: "bob@example.com"})
+    {:ok, public_user} = Andi.Schemas.User.create_or_update(AuthHelper.valid_public_subject_id(), %{email: "bob@example.com"})
+    [curator: curator, public_user: public_user]
+  end
+
+  describe "public access to edit datasets" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn(jwt: AuthHelper.valid_public_jwt())]
+    end
+
+    test "public user can access their own dataset", %{conn: conn, public_user: public_user} do
+      dataset = Datasets.create(public_user)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    end
+
+    test "public user cannot access an unowned dataset", %{conn: conn} do
+      {:ok, dataset} = TDG.create_dataset(%{}) |> Datasets.update()
+
+      get(conn, @url_path <> dataset.id)
+      |> response(404)
+    end
+
+    test "public user cannot access a dataset owned by another user", %{conn: conn, curator: curator} do
+      dataset = Datasets.create(curator)
+
+      get(conn, @url_path <> dataset.id)
+      |> response(404)
+    end
+  end
+
+  describe "curator access to edit datasets" do
+    setup do
+      [conn: Andi.Test.AuthHelper.build_authorized_conn(jwt: AuthHelper.valid_jwt())]
+    end
+
+    test "curator can access their own dataset", %{conn: conn, curator: curator} do
+      dataset = Datasets.create(curator)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    end
+
+    test "curator can access an unowned dataset", %{conn: conn} do
+      {:ok, dataset} = TDG.create_dataset(%{}) |> Datasets.update()
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    end
+
+    test "curator can access a dataset owned by another user", %{conn: conn, public_user: public_user} do
+      dataset = Datasets.create(public_user)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    end
+  end
 
   describe "save and publish form data" do
     setup do

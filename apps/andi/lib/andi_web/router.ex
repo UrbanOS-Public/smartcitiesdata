@@ -22,6 +22,10 @@ defmodule AndiWeb.Router do
     plug Andi.Auth.Pipeline
   end
 
+  pipeline :curator do
+    plug Guardian.Plug.EnsureAuthenticated, claims: %{"https://andi.smartcolumbusos.com/roles" => ["Curator"]}
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
     plug Plug.Logger
@@ -34,6 +38,10 @@ defmodule AndiWeb.Router do
     get "/", Redirect, to: "/datasets"
     live "/datasets", DatasetLiveView, layout: {AndiWeb.LayoutView, :root}, session: {AndiWeb.Auth.TokenHandler.Plug, :current_resource, []}
     get "/datasets/:id", EditController, :show_dataset
+  end
+
+  scope "/", AndiWeb do
+    pipe_through [:browser, :auth, :curator]
 
     live "/organizations", OrganizationLiveView, layout: {AndiWeb.LayoutView, :root}
     get "/organizations/:id", EditController, :show_organization

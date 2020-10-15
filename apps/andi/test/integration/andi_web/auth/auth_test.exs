@@ -53,7 +53,7 @@ defmodule AndiWeb.AuthTest do
       |> Plug.Conn.fetch_session()
       |> AndiWeb.Auth.TokenHandler.put_session_token(jwt)
       |> Guardian.Plug.VerifySession.call(module: AndiWeb.Auth.TokenHandler, error_handler: AndiWeb.Auth.ErrorHandler, claims: %{})
-      |> get("/datasets")
+      |> get("/organizations")
 
     assert conn.status == 302
     assert conn.resp_body =~ "error_message=Unauthorized\""

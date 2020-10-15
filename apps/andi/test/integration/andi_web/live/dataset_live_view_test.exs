@@ -24,12 +24,58 @@ defmodule AndiWeb.DatasetLiveViewTest do
   @url_path "/datasets"
 
   setup do
-    [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    [conn: AuthHelper.build_authorized_conn()]
+  end
+
+  describe "non-curator view" do
+    setup do
+      [conn: AuthHelper.build_authorized_conn(jwt: AuthHelper.valid_public_jwt())]
+    end
+
+    test "organization button is not shown", %{conn: conn} do
+      {:ok, _view, html} = live(conn, @url_path)
+
+      assert Enum.empty?(find_elements(html, ".organization-link"))
+    end
+
+    test "only datasets owned by the user are shown", %{conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+      {:ok, dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
+      {:ok, user} = Andi.Schemas.User.create_or_update(AuthHelper.valid_public_subject_id(), %{email: "bob@example.com"})
+      Datasets.create(user)
+
+      {:ok, _view, html} = live(conn, @url_path)
+
+      dataset_rows = find_elements(html, ".datasets-table__tr")
+
+      assert Enum.count(dataset_rows) == 1
+    end
+  end
+
+  describe "curator view" do
+    test "organization button is shown", %{conn: conn} do
+      {:ok, _view, html} = live(conn, @url_path)
+
+      refute Enum.empty?(find_elements(html, ".organization-link"))
+    end
+
+    test "all datasets are shown", %{conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+      {:ok, dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
+      {:ok, user} = Andi.Schemas.User.create_or_update(AuthHelper.valid_public_subject_id(), %{email: "bob@example.com"})
+      Datasets.create(user)
+
+      {:ok, _view, html} = live(conn, @url_path)
+
+      dataset_rows = find_elements(html, ".datasets-table__tr")
+
+      assert Enum.count(dataset_rows) == 3
+    end
   end
 
   describe "dataset status" do
     setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+      [conn: AuthHelper.build_authorized_conn()]
     end
 
     test "is empty if the dataset has not been ingested", %{conn: conn} do
