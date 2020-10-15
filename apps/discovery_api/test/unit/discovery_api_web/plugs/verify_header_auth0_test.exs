@@ -4,7 +4,7 @@ defmodule DiscoveryApiWeb.Plugs.VerifyHeaderAuth0Test do
 
   use DiscoveryApiWeb.ConnCase
   alias DiscoveryApiWeb.Plugs.VerifyHeaderAuth0
-  alias DiscoveryApi.Auth.Auth0.CachedJWKS
+  alias Auth.Auth0.CachedJWKS
 
   @verified_conn Guardian.Plug.put_current_token(%Plug.Conn{}, "fake_token")
   @unverified_conn %Plug.Conn{}
@@ -32,7 +32,7 @@ defmodule DiscoveryApiWeb.Plugs.VerifyHeaderAuth0Test do
     end
 
     test "retries call to Guardian.Plug.VerifyHeader when verification fails the first time for a cached jwks" do
-      CachedJWKS.set(%{"keys" => []})
+      allow(CachedJWKS.clear(), return: :does_not_matter)
       allow(Guardian.Plug.VerifyHeader.call(any(), any()), return: @unverified_conn)
 
       result = VerifyHeaderAuth0.call(@unverified_conn, @opts)
@@ -42,22 +42,12 @@ defmodule DiscoveryApiWeb.Plugs.VerifyHeaderAuth0Test do
     end
 
     test "invalidates cached jwks when verification fails" do
-      CachedJWKS.set(%{"keys" => []})
+      allow(CachedJWKS.clear(), return: :does_not_matter)
       allow(Guardian.Plug.VerifyHeader.call(any(), any()), return: @unverified_conn)
 
       VerifyHeaderAuth0.call(@unverified_conn, @opts)
 
-      assert CachedJWKS.get() == nil
-    end
-
-    test "does not retry call to Guardian.Plug.VerifyHeader when jwks was not cached" do
-      CachedJWKS.delete()
-      allow(Guardian.Plug.VerifyHeader.call(any(), any()), return: @unverified_conn)
-
-      result = VerifyHeaderAuth0.call(@unverified_conn, @opts)
-
-      assert result == @unverified_conn
-      assert_called(Guardian.Plug.VerifyHeader.call(@unverified_conn, @opts), times(1))
+      assert_called CachedJWKS.clear()
     end
   end
 end
