@@ -19,7 +19,7 @@ defmodule AndiWeb.AuthTest do
     assert result.resp_body =~ "error_message=Unauthorized\""
   end
 
-  test "returns 200 when user is authenticated and has correct roles", %{conn: conn} do
+  test "returns 200 when user is authenticated and has correct roles", %{curator_conn: conn} do
     result = get(conn, "/datasets")
 
     assert result.status == 200

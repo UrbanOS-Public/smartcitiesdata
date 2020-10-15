@@ -58,8 +58,8 @@ defmodule DiscoveryApi.Auth.AuthTest do
   end
 
   describe "GET /dataset/:dataset_id with auth0 auth provider" do
-    setup %{private_model_that_belongs_to_org_1: model} do
-      user = Helper.create_persisted_user()
+    setup %{private_model_that_belongs_to_org_1: model, authorized_subject: subject} do
+      user = Helper.create_persisted_user(subject)
       Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
     end
 
