@@ -159,7 +159,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
     refute Enum.empty?(find_elements(html, "#orgId-error-msg"))
   end
 
-  test "add dataset button creates a dataset with the owner as the currently logged in user", %{curator_conn: conn, curator_subject: subject} do
+  test "add dataset button creates a dataset with the owner as the currently logged in user", %{
+    curator_conn: conn,
+    curator_subject: subject
+  } do
     {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
     assert {:ok, view, _html} = live(conn, @url_path)
 
