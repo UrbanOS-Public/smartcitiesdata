@@ -22,7 +22,7 @@ defmodule AndiWeb.DatasetLiveView do
 
       <div class="datasets-index">
         <div class="datasets-index__header">
-          <h1 class="datasets-index__title">All Datasets</h1>
+          <h1 class="datasets-index__title"><%= title_text(@is_curator) %></h1>
           <button type="button" class="btn btn--add-dataset btn--action" phx-click="add-dataset">ADD DATASET</button>
         </div>
 
@@ -189,4 +189,7 @@ defmodule AndiWeb.DatasetLiveView do
 
   def string_to_bool("true"), do: true
   def string_to_bool("false"), do: false
+
+  defp title_text(true = _is_curator), do: "All Datasets"
+  defp title_text(false = _is_curator), do: "My Datasets"
 end
