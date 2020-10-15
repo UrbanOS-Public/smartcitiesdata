@@ -36,6 +36,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
     |> cast_assoc(:queryParams, with: &ExtractQueryParam.changeset/2)
     |> foreign_key_constraint(:technical_id)
     |> validate_required(@required_fields, message: "is required")
+    |> validate_key_value_parameters()
   end
 
   def changeset_for_draft(extract_step, changes) do
@@ -59,4 +60,31 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
   end
 
   def preload(struct), do: StructTools.preload(struct, [:headers, :queryParams])
+
+  defp validate_key_value_parameters(changeset) do
+    [:queryParams, :headers]
+    |> Enum.reduce(changeset, fn field, acc_changeset ->
+      acc_changeset = clear_field_errors(acc_changeset, field)
+
+      if has_invalid_key_values?(acc_changeset, field) do
+        add_error(acc_changeset, field, "has invalid format", validation: :format)
+      else
+        acc_changeset
+      end
+    end)
+  end
+
+  defp has_invalid_key_values?(%{changes: changes}, field) do
+    case Map.get(changes, field) do
+      nil ->
+        false
+
+      key_value_changesets ->
+        Enum.any?(key_value_changesets, fn key_value_changeset -> not key_value_changeset.valid? end)
+    end
+  end
+
+  defp clear_field_errors(changset, field) do
+    Map.update(changset, :errors, [], fn errors -> Keyword.delete(errors, field) end)
+  end
 end

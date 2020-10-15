@@ -152,6 +152,14 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
       |> convert_source_url()
       |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
+      |> Map.update(:extractSteps, [], fn extract_steps ->
+        extract_steps
+        |> Enum.map(fn step ->
+          step
+          |> Map.update(:queryParams, [], &to_key_value_list/1)
+          |> Map.update(:headers, [], &to_key_value_list/1)
+        end)
+      end)
       |> FormTools.replace(:schema, fn schema ->
         Enum.map(schema, &add_dataset_id(&1, smrt_dataset.id))
       end)

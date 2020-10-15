@@ -32,7 +32,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
           %{type: "http", technical_id: dataset.technical.id}
           |> ExtractHttpStep.changeset()
 
-        #TODO hd()
         false ->
           step
           |> hd()
@@ -100,7 +99,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
                 <div class="extract-step-form__url">
                   <%= label(f, :url, DisplayNames.get(:url), class: "label label--required") %>
                   <%= text_input(f, :url, class: "input full-width", disabled: @testing) %>
-                  <%= ErrorHelpers.error_tag(f, :url) %>
+                  <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
                 </div>
 
                 <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_queryParams, css_label: "source-query-params", form: f, field: :queryParams ) %>
@@ -249,6 +248,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
         nil -> %ExtractHttpStep{}
         struct -> struct
       end
+
     ExtractSteps.update(existing_step, current_changes)
 
     {:ok, dataset} = ExtractSteps.remove_extract_query_param(current_step_id, id)
@@ -312,10 +312,10 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
   end
 
-  # def handle_info(message, socket) do
-  #   Logger.debug(inspect(message))
-  #   {:noreply, socket}
-  # end
+  def handle_info(message, socket) do
+    Logger.debug(inspect(message))
+    {:noreply, socket}
+  end
 
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
