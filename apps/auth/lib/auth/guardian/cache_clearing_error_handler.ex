@@ -5,7 +5,9 @@ defmodule Auth.Guardian.CacheClearingErrorHandler do
 
   alias Auth.Auth0.CachedJWKS
 
-  defmacro __using__(_opts) do
+  defmacro __using__(opts) do
+    verifier_module = Keyword.fetch!(opts, :verifier_module)
+
     quote do
       require Logger
 
@@ -25,7 +27,7 @@ defmodule Auth.Guardian.CacheClearingErrorHandler do
 
         cleared_opts = Keyword.merge(opts, [cache_cleared: true])
 
-        Guardian.Plug.VerifyHeader.call(conn, cleared_opts)
+        unquote(verifier_module).call(conn, cleared_opts)
       end
     end
   end

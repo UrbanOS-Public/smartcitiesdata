@@ -8,6 +8,7 @@ defmodule Auth.Auth0.CacheClearingErrorHandlerTest do
   import Plug.Conn
 
   alias Auth.Auth0.CachedJWKS
+  alias Auth.Guardian.Plug.VerifyHeader
   alias Auth.TestHelper
 
   describe "verify_X in pipeline" do
@@ -26,7 +27,7 @@ defmodule Auth.Auth0.CacheClearingErrorHandlerTest do
         module: Test.TokenHandler.Invalid,
         error_handler: Test.ErrorHandler
       )
-      |> Guardian.Plug.VerifyHeader.call([halt: false])
+      |> VerifyHeader.call([])
 
       assert successful_claims == Guardian.Plug.current_claims(conn, [])
 
@@ -50,7 +51,7 @@ defmodule Auth.Auth0.CacheClearingErrorHandlerTest do
         module: Test.TokenHandler.Invalid,
         error_handler: Test.ErrorHandler
       )
-      |> Guardian.Plug.VerifyHeader.call([halt: false])
+      |> VerifyHeader.call([])
 
       assert_called CachedJWKS.clear(), times: 1
     end
@@ -60,7 +61,8 @@ end
 defmodule Test.ErrorHandler do
   @moduledoc false
 
-  use Auth.Guardian.CacheClearingErrorHandler
+  use Auth.Guardian.CacheClearingErrorHandler,
+    verifier_module: Auth.Guardian.Plug.VerifyHeader
 
   def auth_error(conn, error, _opts) do
     Plug.Conn.resp(conn, 401, Jason.encode!(%{error: error}))

@@ -11,6 +11,8 @@ defmodule DiscoveryApi.Auth.AuthTest do
   alias DiscoveryApi.Schemas.Visualizations
   alias DiscoveryApi.Repo
 
+  @moduletag capture_log: true
+
   @organization_1_name "organization_one"
   @organization_2_name "organization_two"
 
@@ -61,7 +63,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
       Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
     end
 
-    @moduletag capture_log: true
     test "is able to access a restricted dataset with a valid token", setup_map do
       body =
         get(setup_map.authorized_conn, "/api/v1/dataset/#{setup_map.private_model_that_belongs_to_org_1.id}")
@@ -70,7 +71,6 @@ defmodule DiscoveryApi.Auth.AuthTest do
       assert body["id"] == setup_map[:private_model_that_belongs_to_org_1].id
     end
 
-    @moduletag capture_log: true
     test "is not able to access a restricted dataset with a bad token", setup_map do
       body = get(setup_map.invalid_conn, "/api/v1/dataset/#{setup_map.private_model_that_belongs_to_org_1.id}")
       |> response(401)
