@@ -40,12 +40,14 @@ defmodule AndiWeb.EditLiveViewTest do
 
     test "public user cannot access an unowned dataset", %{conn: conn} do
       {:ok, dataset} = TDG.create_dataset(%{}) |> Datasets.update()
+
       get(conn, @url_path <> dataset.id)
       |> response(404)
     end
 
     test "public user cannot access a dataset owned by another user", %{conn: conn, curator: curator} do
       dataset = Datasets.create(curator)
+
       get(conn, @url_path <> dataset.id)
       |> response(404)
     end

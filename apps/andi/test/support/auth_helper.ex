@@ -6,6 +6,11 @@ defmodule Andi.Test.AuthHelper do
 
   def build_authorized_conn(opts \\ []) do
     jwt = Keyword.get(opts, :jwt, valid_jwt())
+
+    if Mix.env() == :integration do
+      Andi.Schemas.User.create_or_update(valid_subject_id(), %{email: "bob@example.com"})
+    end
+
     default_opts = [
       store: :cookie,
       key: "secretkey",

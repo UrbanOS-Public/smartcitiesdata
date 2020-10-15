@@ -131,6 +131,7 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp filter_on_search_change(search_value, include_remotes, socket) do
     owner_id = socket.assigns.is_curator || socket.assigns.user_id
+
     case search_value == socket.assigns.search_text and include_remotes == socket.assigns.include_remotes do
       false -> refresh_datasets(search_value, include_remotes, owner_id)
       _ -> socket.assigns.datasets
