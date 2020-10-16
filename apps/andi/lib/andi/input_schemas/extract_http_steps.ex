@@ -6,8 +6,6 @@ defmodule Andi.InputSchemas.ExtractHttpSteps do
   alias Andi.Repo
   alias Andi.InputSchemas.StructTools
 
-  import Ecto.Query, only: [from: 2]
-
   require Logger
 
   def get(extract_http_step_id) do
@@ -59,9 +57,10 @@ defmodule Andi.InputSchemas.ExtractHttpSteps do
     Repo.delete(%ExtractQueryParam{id: extract_query_param_id})
     from_extract_step = get(extract_step_id)
 
-    updated = Map.update(from_extract_step, :url, [], fn url ->
-      Andi.URI.update_url_with_params(url, from_extract_step.queryParams)
-    end)
+    updated =
+      Map.update(from_extract_step, :url, [], fn url ->
+        Andi.URI.update_url_with_params(url, from_extract_step.queryParams)
+      end)
 
     update(from_extract_step, updated)
   rescue
@@ -77,7 +76,6 @@ defmodule Andi.InputSchemas.ExtractHttpSteps do
   rescue
     _e in Ecto.StaleEntryError ->
       Logger.error("attempted to remove a source query param (id: #{extract_header_id}) that does not exist.")
-    {:ok, get(extract_step_id)}
+      {:ok, get(extract_step_id)}
   end
-
 end

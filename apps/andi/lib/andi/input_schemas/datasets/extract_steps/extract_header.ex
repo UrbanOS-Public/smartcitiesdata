@@ -2,8 +2,9 @@ defmodule Andi.InputSchemas.Datasets.ExtractHeader do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Andi.InputSchemas.Datasets.Technical
+
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.Datasets.ExtractHttpStep
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "extract_http_headers" do

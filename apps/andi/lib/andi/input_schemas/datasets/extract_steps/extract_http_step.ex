@@ -63,7 +63,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
 
   def changeset_from_andi_step(dataset_http_step, _technical_id) do
     dataset_http_step
-    |> StructTools.to_map
+    |> StructTools.to_map()
     |> changeset()
   end
 

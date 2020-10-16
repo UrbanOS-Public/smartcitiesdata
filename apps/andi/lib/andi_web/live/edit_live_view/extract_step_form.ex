@@ -14,7 +14,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias AndiWeb.Views.DisplayNames
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Views.HttpStatusDescriptions
-  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.ExtractHttpSteps
   alias AndiWeb.Helpers.FormTools
 
@@ -179,7 +178,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     ExtractHttpSteps.update(current_changes)
 
     current_step_id = current_changes.id
-    {:ok, dataset} = ExtractHttpSteps.add_extract_query_param(current_step_id)
+    {:ok, _dataset} = ExtractHttpSteps.add_extract_query_param(current_step_id)
 
     new_changes =
       current_step_id
@@ -199,7 +198,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     ExtractHttpSteps.update(current_changes)
 
     current_step_id = current_changes.id
-    {:ok, dataset} = ExtractHttpSteps.add_extract_header(current_step_id)
+    {:ok, _dataset} = ExtractHttpSteps.add_extract_header(current_step_id)
 
     new_changes =
       current_step_id
@@ -218,6 +217,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
       |> StructTools.to_map()
 
     current_step_id = current_changes.id
+
     existing_step =
       case ExtractHttpSteps.get(current_step_id) do
         nil -> %ExtractHttpStep{}
@@ -226,7 +226,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
     ExtractHttpSteps.update(existing_step, current_changes)
 
-    {:ok, dataset} = ExtractHttpSteps.remove_extract_query_param(current_step_id, id)
+    {:ok, _dataset} = ExtractHttpSteps.remove_extract_query_param(current_step_id, id)
+
     new_changes =
       current_step_id
       |> ExtractHttpSteps.get()
@@ -244,14 +245,17 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
       |> StructTools.to_map()
 
     current_step_id = current_changes.id
+
     existing_step =
       case ExtractHttpSteps.get(current_step_id) do
         nil -> %ExtractHttpStep{}
         struct -> struct
       end
+
     ExtractHttpSteps.update(existing_step, current_changes)
 
-    {:ok, dataset} = ExtractHttpSteps.remove_extract_header(current_step_id, id)
+    {:ok, _dataset} = ExtractHttpSteps.remove_extract_header(current_step_id, id)
+
     new_changes =
       current_step_id
       |> ExtractHttpSteps.get()
@@ -262,6 +266,33 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, assign(socket, changeset: changeset)}
   end
 
+  def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
+    new_validation_status = get_new_validation_status(socket.assigns.changeset)
+
+    AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{
+      expand: next_component,
+      dataset_id: socket.assigns.dataset_id
+    })
+
+    {:noreply, assign(socket, visibility: "collapsed", validation_status: new_validation_status)}
+  end
+
+  def handle_event("toggle-component-visibility", _, socket) do
+    current_visibility = Map.get(socket.assigns, :visibility)
+
+    new_visibility =
+      case current_visibility do
+        "expanded" -> "collapsed"
+        "collapsed" -> "expanded"
+      end
+
+    {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
+  end
+
+  def handle_event("save", _, socket) do
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
+    save_draft(socket)
+  end
 
   def handle_info(
         %{topic: "toggle-visibility", payload: %{expand: "extract_step_form", dataset_id: dataset_id}},
@@ -271,6 +302,21 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   end
 
   def handle_info(%{topic: "toggle-visibility"}, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_info(
+        %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
+        %{assigns: %{dataset_id: dataset_id}} = socket
+      ) do
+    save_draft(socket)
+  end
+
+  def handle_info(%{topic: "form-save"}, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_info(%{topic: "toggle-component-visibility"}, socket) do
     {:noreply, socket}
   end
 
@@ -293,7 +339,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   end
 
   defp complete_validation(changeset, socket) do
-    new_changeset = Map.put(changeset, :action, :update) |> IO.inspect()
+    new_changeset = Map.put(changeset, :action, :update)
     send(socket.parent_pid, :form_update)
 
     {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
@@ -328,19 +374,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
   end
 
-  def handle_event("save", _, socket) do
-    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
-    save_draft(socket)
-  end
-
-  def handle_info(
-    %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
-    %{assigns: %{dataset_id: dataset_id}} = socket
-  ) do
-
-    save_draft(socket)
-  end
-
   defp save_draft(socket) do
     new_validation_status =
       case socket.assigns.changeset.valid? do
@@ -354,6 +387,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
       |> StructTools.to_map()
 
     extract_step_id = changes.id
+
     existing_http_step =
       case ExtractHttpSteps.get(extract_step_id) do
         nil -> %ExtractHttpStep{}
@@ -367,43 +401,12 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, assign(socket, validation_status: new_validation_status)}
   end
 
-  def handle_info(%{topic: "form-save"}, socket) do
-    {:noreply, socket}
-  end
-
-  def handle_info(%{topic: "toggle-component-visibility"}, socket) do
-    {:noreply, socket}
-  end
-
-  def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
-    new_validation_status = get_new_validation_status(socket.assigns.changeset)
-
-    AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{
-          expand: next_component,
-          dataset_id: socket.assigns.dataset_id
-                                    })
-
-    {:noreply, assign(socket, visibility: "collapsed", validation_status: new_validation_status)}
-  end
-
-  def handle_event("toggle-component-visibility", _, socket) do
-    current_visibility = Map.get(socket.assigns, :visibility)
-
-    new_visibility =
-      case current_visibility do
-        "expanded" -> "collapsed"
-        "collapsed" -> "expanded"
-      end
-
-    {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
-  end
-
-  def update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
-  when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
+  defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
+       when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
     assign(socket, validation_status: get_new_validation_status(socket.assigns.changeset))
   end
 
-  def update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
+  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 
   defp get_new_validation_status(changeset) do
     case changeset.valid? do

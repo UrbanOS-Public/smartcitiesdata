@@ -219,10 +219,6 @@ defmodule AndiWeb.UrlFormTest do
 
       form_data = %{"sourceQueryParams" => queryParams, "sourceUrl" => initialSourceUrl}
 
-      FormTools.form_data_from_andi_dataset(dataset)
-      |> put_in([:technical, :sourceUrl], initialSourceUrl)
-      |> put_in([:technical, :sourceQueryParams], queryParams)
-
       html =
         render_change(url_form_view, :validate, %{
           "form_data" => form_data,

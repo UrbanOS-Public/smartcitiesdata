@@ -28,7 +28,6 @@ defmodule AndiWeb.ExtractHttpStepTest do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
 
-
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
 
@@ -153,18 +152,18 @@ defmodule AndiWeb.ExtractHttpStepTest do
     test "uses provided query params and headers", %{conn: conn} do
       smrt_dataset =
         TDG.create_dataset(%{
-            technical: %{
-              extractSteps: [
-                %{
-                  type: "http",
-                  method: "GET",
-                  url: "123.com",
-                  queryParams: %{"x" => "y"},
-                  headers: %{"api-key" => "to-my-heart"}
-                }
-              ]
-            }
-          })
+          technical: %{
+            extractSteps: [
+              %{
+                type: "http",
+                method: "GET",
+                url: "123.com",
+                queryParams: %{"x" => "y"},
+                headers: %{"api-key" => "to-my-heart"}
+              }
+            ]
+          }
+        })
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -242,19 +241,20 @@ defmodule AndiWeb.ExtractHttpStepTest do
     end
 
     test "status and time are displayed when source url is tested", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{
-            technical: %{
-              extractSteps: [
-                %{
-                  type: "http",
-                  method: "GET",
-                  url: "123.com",
-                  queryParams: %{"x" => "y"},
-                  headers: %{"api-key" => "to-my-heart"}
-                }
-              ]
-            }
-          })
+      smrt_dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            extractSteps: [
+              %{
+                type: "http",
+                method: "GET",
+                url: "123.com",
+                queryParams: %{"x" => "y"},
+                headers: %{"api-key" => "to-my-heart"}
+              }
+            ]
+          }
+        })
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -278,19 +278,18 @@ defmodule AndiWeb.ExtractHttpStepTest do
     test "status is displayed with an appropriate class when it is between 200 and 399", %{conn: conn} do
       smrt_dataset =
         TDG.create_dataset(%{
-              technical: %{
-                extractSteps: [
-                  %{
-                    type: "http",
-                    method: "GET",
-                    url: "123.com",
-                    queryParams: %{"x" => "y"},
-                    headers: %{"api-key" => "to-my-heart"}
-                  }
-                ]
+          technical: %{
+            extractSteps: [
+              %{
+                type: "http",
+                method: "GET",
+                url: "123.com",
+                queryParams: %{"x" => "y"},
+                headers: %{"api-key" => "to-my-heart"}
               }
-                           })
-
+            ]
+          }
+        })
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -312,19 +311,18 @@ defmodule AndiWeb.ExtractHttpStepTest do
     test "status is displayed with an appropriate class when it is not between 200 and 399", %{conn: conn} do
       smrt_dataset =
         TDG.create_dataset(%{
-              technical: %{
-                extractSteps: [
-                  %{
-                    type: "http",
-                    method: "GET",
-                    url: "123.com",
-                    queryParams: %{"x" => "y"},
-                    headers: %{"api-key" => "to-my-heart"}
-                  }
-                ]
+          technical: %{
+            extractSteps: [
+              %{
+                type: "http",
+                method: "GET",
+                url: "123.com",
+                queryParams: %{"x" => "y"},
+                headers: %{"api-key" => "to-my-heart"}
               }
-                           })
-
+            ]
+          }
+        })
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -347,20 +345,19 @@ defmodule AndiWeb.ExtractHttpStepTest do
 
   test "required url field displays proper error message", %{conn: conn} do
     smrt_dataset =
-    TDG.create_dataset(%{
-          technical: %{
-            extractSteps: [
-              %{
-                type: "http",
-                method: "GET",
-                url: "123.com",
-                queryParams: %{"x" => "y"},
-                headers: %{"api-key" => "to-my-heart"}
-              }
-            ]
-          }
-                       })
-
+      TDG.create_dataset(%{
+        technical: %{
+          extractSteps: [
+            %{
+              type: "http",
+              method: "GET",
+              url: "123.com",
+              queryParams: %{"x" => "y"},
+              headers: %{"api-key" => "to-my-heart"}
+            }
+          ]
+        }
+      })
 
     {:ok, dataset} =
       InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -379,18 +376,18 @@ defmodule AndiWeb.ExtractHttpStepTest do
   data_test "invalid #{field} displays proper error message", %{conn: conn} do
     smrt_dataset =
       TDG.create_dataset(%{
-            technical: %{
-              extractSteps: [
-                %{
-                  type: "http",
-                  method: "GET",
-                  url: "123.com",
-                  queryParams: %{"x" => "y"},
-                  headers: %{"api-key" => "to-my-heart"}
-                }
-              ]
+        technical: %{
+          extractSteps: [
+            %{
+              type: "http",
+              method: "GET",
+              url: "123.com",
+              queryParams: %{"x" => "y"},
+              headers: %{"api-key" => "to-my-heart"}
             }
-                         })
+          ]
+        }
+      })
 
     {:ok, dataset} = Datasets.update(smrt_dataset)
 
