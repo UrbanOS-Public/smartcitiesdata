@@ -8,7 +8,8 @@ db_port = "5456"
 config :auth,
   divo: [
     {
-      DivoPostgres, [
+      DivoPostgres,
+      [
         user: db_username,
         database: db_name,
         port: db_port

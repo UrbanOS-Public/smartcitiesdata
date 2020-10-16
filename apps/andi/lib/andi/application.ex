@@ -94,7 +94,9 @@ defmodule Andi.Application do
   defp guardian_db_sweeper do
     Application.get_env(:andi, Guardian.DB)
     |> case do
-      nil -> []
+      nil ->
+        []
+
       config ->
         Application.put_env(:guardian, Guardian.DB, config)
         Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])

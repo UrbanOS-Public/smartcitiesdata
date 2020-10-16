@@ -28,7 +28,9 @@ defmodule Auth.Application do
 
   defp guardian_db_sweeper do
     case Application.get_env(:auth, Guardian.DB) do
-      nil -> []
+      nil ->
+        []
+
       config ->
         Application.put_env(:guardian, Guardian.DB, config)
         Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
