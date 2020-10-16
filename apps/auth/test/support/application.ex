@@ -19,18 +19,9 @@ defmodule Auth.Application do
   end
 
   defp ecto_repo do
-    case {Application.get_env(:auth, Auth.Repo), disabled?()} do
-      {nil, _} -> []
-      {_, true} -> []
-      {_, false} -> [{Auth.Repo, []}]
+    case Application.get_env(:auth, Auth.Repo) do
+      nil -> []
+      _ -> [{Auth.Repo, []}]
     end
-  end
-
-  def disabled?() do
-    Application.get_env(:auth, :disable_app) || false
-  end
-
-  def disable() do
-    Application.put_env(:auth, :disable_app, true)
   end
 end
