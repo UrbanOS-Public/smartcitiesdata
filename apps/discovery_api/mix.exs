@@ -30,7 +30,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       {:atomic_map, "~> 0.9"},
       {:assertions, "~> 0.14.1", only: [:test, :integration], runtime: false},
-      {:auth, in_umbrella: true, runtime: false},
+      {:auth, in_umbrella: true},
       {:ex_aws, "~> 2.1"},
       # This commit allows us to stream files off of S3 through memory. Release pending.
       {
@@ -65,7 +65,6 @@ defmodule DiscoveryApi.Mixfile do
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14.1"},
       {:phoenix_pubsub, "~> 1.0"},
-      {:memoize, "~> 1.2"},
       {:nanoid, "~> 2.0"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:plug_heartbeat, "~> 0.2.0"},
