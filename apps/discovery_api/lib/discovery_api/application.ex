@@ -60,10 +60,12 @@ defmodule DiscoveryApi.Application do
   end
 
   defp guardian_db_sweeper do
-    Application.get_env(:guardian, Guardian.DB)
+    Application.get_env(:discovery_api, Guardian.DB)
     |> case do
       nil -> []
-      _ -> Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
+      config ->
+        Application.put_env(:guardian, Guardian.DB, config)
+        Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
     end
   end
 

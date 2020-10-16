@@ -131,4 +131,4 @@ config :andi, AndiWeb.Auth.TokenHandler,
   verify_issuer: false,
   allowed_drift: 3_000_000_000_000
 
-config :guardian, Guardian.DB, repo: Andi.Repo
+config :andi, Guardian.DB, repo: Andi.Repo

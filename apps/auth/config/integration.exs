@@ -8,8 +8,7 @@ db_port = "5456"
 config :auth,
   divo: [
     {
-      DivoPostgres,
-      [
+      DivoPostgres, [
         user: db_username,
         database: db_name,
         port: db_port
@@ -27,4 +26,4 @@ config :auth, Auth.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   port: db_port
 
-config :guardian, Guardian.DB, repo: Auth.Repo
+config :auth, Guardian.DB, repo: Auth.Repo

@@ -42,4 +42,4 @@ config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler,
   allowed_drift: 3_000_000_000_000
 
 config :discovery_api, ecto_repos: [DiscoveryApi.Repo]
-config :guardian, Guardian.DB, repo: DiscoveryApi.Repo
+config :discovery_api, Guardian.DB, repo: DiscoveryApi.Repo
