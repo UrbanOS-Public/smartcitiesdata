@@ -1,13 +1,12 @@
 defmodule DiscoveryApiWeb.DataController.RestrictedTest do
-  use DiscoveryApiWeb.ConnCase
+  use DiscoveryApiWeb.Test.AuthConnCase.UnitCase
   use Placebo
   import Checkov
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Services.{PrestoService, MetricsService}
-  alias DiscoveryApiWeb.Auth.TokenHandler
-  alias DiscoveryApi.Test.AuthHelper
+  alias DiscoveryApi.Test.Helper
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -15,7 +14,9 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
   @org_name "org1"
   @data_name "data1"
 
-  setup do
+  setup %{auth_conn_case: auth_conn_case} do
+    auth_conn_case.disable_revocation_list.()
+
     model =
       Helper.sample_model(%{
         id: @dataset_id,
@@ -60,23 +61,13 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
   end
 
   describe "accessing restricted datasets" do
-    setup do
-      %{subject_id: subject_id, token: token, exit_fn: exit_fn} = Helper.auth0_setup()
-      on_exit(exit_fn)
-
-      %{subject_id: subject_id, token: token}
-    end
-
     data_test "downloads a restricted dataset if the given user has access to it, via token", %{
-      conn: conn,
-      subject_id: subject_id,
-      token: token
+      authorized_conn: conn,
+      authorized_subject: subject
     } do
-      allow(TokenHandler.on_verify(any(), any(), any()), exec: &AuthHelper.guardian_verify_passthrough/3, meck_options: [:passthrough])
-      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
+      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
       conn
-      |> put_req_header("authorization", "Bearer #{token}")
       |> put_req_header("accept", accepts)
       |> get(url)
       |> json_response(response_code)

@@ -9,11 +9,23 @@ host =
 redix_args = [host: host]
 endpoint = [{host, 9092}]
 
+db_name = "andi_test"
+db_username = "postgres"
+db_password = "postgres"
+db_port = "5456"
+
 config :andi,
   divo: [
     {DivoKafka, [create_topics: "event-stream:1:1", outside_host: host, kafka_image_version: "2.12-2.1.1"]},
     {DivoRedis, []},
-    {Andi.DivoPostgres, []}
+    {
+      DivoPostgres,
+      [
+        user: db_username,
+        database: db_name,
+        port: db_port
+      ]
+    }
   ],
   divo_wait: [dwell: 700, max_tries: 50],
   kafka_broker: endpoint,
@@ -22,12 +34,12 @@ config :andi,
   hsts_enabled: false
 
 config :andi, Andi.Repo,
-  database: "andi",
-  username: "postgres",
-  password: "postgres",
+  database: db_name,
+  username: db_username,
+  password: db_password,
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox,
-  port: "5456"
+  port: db_port
 
 config :andi, AndiWeb.Endpoint,
   http: [port: 4000],
@@ -116,21 +128,7 @@ config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
 config :andi, AndiWeb.Auth.TokenHandler,
   issuer: "https://smartcolumbusos-demo.auth0.com/",
   allowed_algos: ["RS256"],
-  verify_issuer: true
+  verify_issuer: false,
+  allowed_drift: 3_000_000_000_000
 
-defmodule Andi.DivoPostgres do
-  @moduledoc """
-  Defines a postgres stack compatible with divo
-  for building a docker-compose file.
-  """
-
-  def gen_stack(_envar) do
-    %{
-      postgres: %{
-        logging: %{driver: "none"},
-        image: "postgres:9.6.16",
-        ports: ["5456:5432"]
-      }
-    }
-  end
-end
+config :guardian, Guardian.DB, repo: Andi.Repo

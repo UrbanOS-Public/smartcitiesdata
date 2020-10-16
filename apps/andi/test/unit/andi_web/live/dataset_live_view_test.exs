@@ -1,5 +1,5 @@
 defmodule AndiWeb.DatasetLiveViewTest do
-  use AndiWeb.ConnCase
+  use AndiWeb.Test.AuthConnCase.UnitCase
   use Phoenix.ConnTest
   use Placebo
 
@@ -15,11 +15,12 @@ defmodule AndiWeb.DatasetLiveViewTest do
     []
   end
 
-  describe "Basic live page load" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
+  setup %{auth_conn_case: auth_conn_case} do
+    auth_conn_case.disable_revocation_list.()
+    :ok
+  end
 
+  describe "Basic live page load" do
     test "loads all datasets", %{conn: conn} do
       datasets =
         Enum.map(
@@ -56,7 +57,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     setup do
       allow(Andi.Repo.all(any()), return: [])
 
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+      :ok
     end
 
     test "populates search box", %{conn: conn} do
@@ -79,10 +80,6 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   describe "When form change executes search" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     test "Search Change event triggers redirect and updates search box value", %{conn: conn} do
       allow(Andi.Repo.all(any()), return: [])
       DatasetHelpers.replace_all_datasets_in_repo([])
@@ -101,10 +98,6 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   describe "When form submit executes search" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     test "Search Submit event triggers redirect and updates search box value", %{conn: conn} do
       allow(Andi.Repo.all(any()), return: [])
       DatasetHelpers.replace_all_datasets_in_repo([])
@@ -123,10 +116,6 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   describe "Toggle remote datasets checkbox" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     test "excludes remotes by default", %{conn: conn} do
       dataset_a = DatasetHelpers.create_dataset(technical: %{sourceType: "ingest"})
       dataset_b = DatasetHelpers.create_dataset(technical: %{sourceType: "remote"})

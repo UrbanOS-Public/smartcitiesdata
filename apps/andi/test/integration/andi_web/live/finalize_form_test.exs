@@ -1,7 +1,7 @@
 defmodule AndiWeb.EditLiveView.FinalizeFormTest do
   use ExUnit.Case
   use Andi.DataCase
-  use AndiWeb.ConnCase
+  use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Placebo
   import Checkov
 
@@ -25,10 +25,6 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
-
-  setup do
-    [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-  end
 
   describe "one-time ingestion" do
     setup %{conn: conn} do

@@ -1,5 +1,5 @@
 defmodule AndiWeb.DatasetLiveViewTest.TableTest do
-  use AndiWeb.ConnCase
+  use AndiWeb.Test.AuthConnCase.UnitCase
   use Phoenix.ConnTest
   use Placebo
 
@@ -17,9 +17,10 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   @ingested_time_a "123123213"
   @ingested_time_b "454699234"
 
-  setup do
+  setup %{auth_conn_case: auth_conn_case} do
     allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: @user)
-    [conn: Andi.Test.AuthHelper.build_authorized_conn()]
+    auth_conn_case.disable_revocation_list.()
+    :ok
   end
 
   describe "order by click" do

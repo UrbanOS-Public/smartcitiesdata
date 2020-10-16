@@ -1,18 +1,21 @@
 defmodule DiscoveryApiWeb.MetadataController.DetailTest do
-  use DiscoveryApiWeb.ConnCase
+  use DiscoveryApiWeb.Test.AuthConnCase.UnitCase
   use Placebo
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
-  alias DiscoveryApiWeb.Auth.TokenHandler
-  alias DiscoveryApi.Test.AuthHelper
 
   @dataset_id "123"
   @org_id "456"
 
+  setup %{auth_conn_case: auth_conn_case} do
+    auth_conn_case.disable_revocation_list.()
+    :ok
+  end
+
   describe "fetch dataset detail" do
-    test "retrieves dataset + organization from retriever when organization found", %{conn: conn} do
+    test "retrieves dataset + organization from retriever when organization found", %{anonymous_conn: conn} do
       schema = [
         %{
           description: "a number",
@@ -119,23 +122,16 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
 
       allow(Model.get(@dataset_id), return: model)
 
-      %{subject_id: subject_id, token: token, exit_fn: exit_fn} = Helper.auth0_setup()
-      on_exit(exit_fn)
-
-      %{subject_id: subject_id, token: token}
+      :ok
     end
 
     test "retrieves a restricted dataset if the given user has access to it, via token", %{
-      conn: conn,
-      subject_id: subject_id,
-      token: token
+      authorized_conn: conn,
+      authorized_subject: subject
     } do
-      allow(TokenHandler.on_verify(any(), any(), any()), exec: &AuthHelper.guardian_verify_passthrough/3, meck_options: [:passthrough])
-
-      allow(Users.get_user_with_organizations(subject_id, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
+      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
       conn
-      |> put_req_header("authorization", "Bearer #{token}")
       |> get("/api/v1/dataset/#{@dataset_id}")
       |> json_response(200)
     end

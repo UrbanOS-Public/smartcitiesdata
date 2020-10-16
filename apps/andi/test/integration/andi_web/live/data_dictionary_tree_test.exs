@@ -1,7 +1,7 @@
 defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
   use ExUnit.Case
-  use AndiWeb.ConnCase
   use Andi.DataCase
+  use AndiWeb.Test.AuthConnCase.IntegrationCase
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper
 
@@ -20,7 +20,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
   @url_path "/datasets/"
 
   describe "expand/collapse and check/uncheck" do
-    setup do
+    setup %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
           technical: %{
@@ -51,8 +51,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
         })
 
       {:ok, andi_dataset} = Datasets.update(dataset)
-
-      conn = Andi.Test.AuthHelper.build_authorized_conn()
 
       assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
       data_dictionary_view = find_child(view, "data_dictionary_form_editor")
