@@ -75,29 +75,30 @@ defmodule Properties do
     generic = Keyword.get(opts, :generic, false)
     module = __CALLER__.module
 
-    case required do
-      true ->
-        quote do
-          defp unquote(key)() do
-            case unquote(generic) do
-              true -> Application.get_env(@properties_otp_app, unquote(key), nil)
-              false -> Application.get_env(@properties_otp_app, unquote(module), [])
-                        |> Keyword.fetch!(unquote(key))
-            end
-          end
-        end
+    getter(required, key, module, generic, default)
+  end
 
-      false ->
-        quote do
-          defp unquote(key)() do
-            case unquote(generic) do
-              true -> Application.get_env(@properties_otp_app, unquote(key), unquote(default))
-
-              false -> Application.get_env(@properties_otp_app, unquote(module), [])
-                        |> Keyword.get(unquote(key), unquote(default))
-            end
-          end
+  defp getter(true = _required, key, module, generic, default) do
+    quote do
+      defp unquote(key)() do
+        case unquote(generic) do
+          true -> Application.get_env(@properties_otp_app, unquote(key), unquote(default))
+          false -> Application.get_env(@properties_otp_app, unquote(module), [])
+                    |> Keyword.fetch!(unquote(key))
         end
+      end
+    end
+  end
+
+  defp getter(false = _required, key, module, generic, default) do
+    quote do
+      defp unquote(key)() do
+        case unquote(generic) do
+          true -> Application.get_env(@properties_otp_app, unquote(key), unquote(default))
+          false -> Application.get_env(@properties_otp_app, unquote(module), [])
+                    |> Keyword.get(unquote(key), unquote(default))
+        end
+      end
     end
   end
 end
