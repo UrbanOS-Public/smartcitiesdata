@@ -165,6 +165,8 @@ defmodule Andi.InputSchemas.InputConverter do
     end)
   end
 
+  defp convert_smrt_extract_steps(nil), do: []
+
   defp convert_smrt_extract_steps(extract_steps) do
     extract_steps
     |> Enum.map(fn step ->
