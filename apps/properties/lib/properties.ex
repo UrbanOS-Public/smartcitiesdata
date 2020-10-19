@@ -86,7 +86,8 @@ defmodule Properties do
 
   defp getter(true = _generic, false = _required, _module, key, default) do
     quote do
-      defp unquote(key)(), do: Application.get_env(@properties_otp_app, unquote(key), unquote(default))
+      defp unquote(key)(),
+        do: Application.get_env(@properties_otp_app, unquote(key), unquote(default))
     end
   end
 
