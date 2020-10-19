@@ -35,7 +35,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
        test_results: nil,
        visibility: "collapsed",
        validation_status: "collapsed",
-       dataset_id: dataset.id
+       dataset_id: dataset.id,
+       technical_id: dataset.technical.id
      )}
   end
 
@@ -211,20 +212,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   end
 
   def handle_event("remove", %{"id" => id, "field" => "queryParams"}, socket) do
-    current_changes =
-      socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes()
-      |> StructTools.to_map()
-
-    current_step_id = current_changes.id
-
-    existing_step =
-      case ExtractHttpSteps.get(current_step_id) do
-        nil -> %ExtractHttpStep{}
-        struct -> struct
-      end
-
-    ExtractHttpSteps.update(existing_step, current_changes)
+    current_step_id = Ecto.Changeset.get_field(socket.assigns.changeset, :id)
+    save_draft(socket)
 
     {:ok, _dataset} = ExtractHttpSteps.remove_extract_query_param(current_step_id, id)
 
@@ -239,20 +228,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   end
 
   def handle_event("remove", %{"id" => id, "field" => "headers"}, socket) do
-    current_changes =
-      socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes()
-      |> StructTools.to_map()
-
-    current_step_id = current_changes.id
-
-    existing_step =
-      case ExtractHttpSteps.get(current_step_id) do
-        nil -> %ExtractHttpStep{}
-        struct -> struct
-      end
-
-    ExtractHttpSteps.update(existing_step, current_changes)
+    current_step_id = Ecto.Changeset.get_field(socket.assigns.changeset, :id)
+    save_draft(socket)
 
     {:ok, _dataset} = ExtractHttpSteps.remove_extract_header(current_step_id, id)
 
@@ -291,6 +268,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
   def handle_event("save", _, socket) do
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
+
     save_draft(socket)
   end
 
@@ -381,22 +359,11 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
         false -> "invalid"
       end
 
-    changes =
+    new_changes =
       socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes()
-      |> StructTools.to_map()
+      |> Andi.InputSchemas.InputConverter.form_changes_from_changeset()
 
-    extract_step_id = changes.id
-
-    existing_http_step =
-      case ExtractHttpSteps.get(extract_step_id) do
-        nil -> %ExtractHttpStep{}
-        struct -> struct
-      end
-
-    draft_changeset = ExtractHttpStep.changeset_for_draft(existing_http_step, changes)
-
-    Andi.Repo.insert_or_update(draft_changeset)
+    Andi.InputSchemas.Datasets.update_from_form(socket.assigns.dataset_id, %{extractSteps: [new_changes]})
 
     {:noreply, assign(socket, validation_status: new_validation_status)}
   end
