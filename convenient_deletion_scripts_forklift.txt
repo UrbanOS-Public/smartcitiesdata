@@ -1,0 +1,46 @@
+defmodule DeletionScriptsForPresto do
+    def get_tables_prefixed_with(prefix) do
+        {:ok, %Prestige.Result{rows: rows}} = Pipeline.Writer.TableWriter.Helper.PrestigeHelper.execute_query("select * from hive.information_schema.tables where table_name LIKE '#{prefix}_%'")
+        rows |> Enum.map(fn table_info -> Enum.at(table_info, 2) end)
+    end
+
+    def get_tables_prefixed_with_except(prefix, except) do
+        tables = get_tables_prefixed_with(prefix)
+        tables
+        |> Enum.filter(fn table ->
+            !Enum.member?(except, table)
+           end)
+    end
+
+    def delete_tables_prefixed_with(prefix) do
+        tables = get_tables_prefixed_with(prefix)
+        tables
+        |> Enum.each(fn table ->
+            table
+            |> Pipeline.Writer.TableWriter.Statement.StatementUtils.parse_new_table_name()
+            |> Pipeline.Writer.TableWriter.Statement.StatementUtils.create_new_table_with_existing_table(table)
+           end)
+        nuke_tables(tables)
+    end
+
+    def nuke_tables_prefixed_with(prefix) do
+        tables = get_tables_prefixed_with(prefix)
+        nuke_tables(tables)
+    end
+
+    def nuke_tables_prefixed_with_except(prefix, except) do
+        tables = get_tables_prefixed_with_except(prefix, except)
+        nuke_tables(tables)
+    end
+
+    def nuke_tables(tables) do
+        tables
+        |> Enum.each(fn table ->
+            nuke_table(table)
+           end)
+    end
+
+    def nuke_table(table) do
+        Pipeline.Writer.TableWriter.Statement.StatementUtils.drop_table(table)
+    end
+end

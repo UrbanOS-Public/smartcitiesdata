@@ -1,0 +1,231 @@
+# I made this a txt file because it's not meant to be run without thought. These are conveinence methods
+# so you don't have to do a lot of typing inside iex.
+defmodule DeletionScripts do
+    def delete_datasets_from_andi_view_state(datasets) do
+        datasets |> Enum.map(fn x -> x.business.id end)|>Enum.each(fn x -> Brook.Test.with_event(Andi.instance_name(), fn -> Andi.Services.DatasetStore.delete(x) end) end)
+    end
+
+    def delete_datasets_from_ecto(datasets) do
+        datasets
+        |> Enum.each(fn x -> Brook.Test.with_event(Andi.instance_name(), fn -> Andi.Repo.delete(x) end) end)
+    end
+
+    def filter_datasets_by_regex(regex) do
+        Andi.InputSchemas.Datasets.get_all()
+        |>Enum.filter(fn x -> Regex.match?(regex, x.business.dataTitle) end)
+    end
+
+    def filter_organization_by_regex(regex) do
+        Andi.InputSchemas.Organizations.get_all()
+        |>Enum.filter(fn organization -> Regex.match?(regex, organization.orgTitle) end)
+    end
+
+    def get_all_generic_organizations do
+        filter_organization_by_regex(~r/^\w+_\w+$/)
+    end
+
+    def get_first_10(the_list) do
+        the_list
+        |>Enum.chunk_every(10)
+        |>Enum.at(0)
+    end
+
+    def get_all_datasets_with_dev_names_in_them(developer) do
+        filter_datasets_by_regex(~r/#{developer}/i)
+    end
+
+    def get_all_organizations_with_dev_names_in_them(developer) do
+        filter_organization_by_regex(~r/#{developer}/i)
+    end
+
+    def delete_organizations_from_andi_view_state(organizations) do
+        organizations
+        |> Enum.map(fn x -> x.business.id end) 
+        |> Enum.each(fn x -> Brook.Test.with_event(Andi.instance_name(), fn -> Andi.Services.OrgStore.delete(x) end) end)
+    end
+
+    def delete_organizations_from_ecto(organizations) do
+        organizations
+        |> Enum.each(fn x -> Brook.Test.with_event(Andi.instance_name(), fn -> Andi.Repo.delete(x) end) end)
+    end
+end
+
+# Show all results
+IEx.configure(inspect: [limit: :infinity])
+
+# Get the titles of all generic organizations (organizations that have a word separated by a _ followed by a word)
+DeletionScripts.get_all_generic_organizations()
+    |> Enum.map(fn x -> x.orgTitle end)
+
+# Get the titles of all unique generic organizations (organizations that have a word separated by a _ followed by a word)
+DeletionScripts.get_all_generic_organizations()
+    |> Enum.map(fn x -> x.orgTitle end)|> Enum.uniq()
+
+# Get all dataset that belong to an organization with the title "Foo_Bar"
+Andi.InputSchemas.Datasets.get_all() |> Enum.filter(fn x -> x.business.orgTitle==="Foo_Bar" end)
+
+# Get all datasets whose title starts with "New Dataset"
+DeletionScripts.filter_datasets_by_regex(~r/^New Dataset/)
+
+# Get count of all datasets whose title starts with "New Dataset"
+DeletionScripts.filter_datasets_by_regex(~r/^New Dataset/)
+    |>Enum.count()
+
+# Get dataset titles of the first 10 datasets whose title starts with "New Dataset"
+DeletionScripts.filter_datasets_by_regex(~r/^New Dataset/)
+    |>get_first_10()
+    |>Enum.map(fn x -> x.business.dataTitle end)
+
+# Delete first 10 datasets whose title starts with "New Dataset" from Andi's view state
+DeletionScripts.filter_datasets_by_regex(~r/^New Dataset/)
+    |>get_first_10()
+    |>DeletionScripts.delete_datasets_from_andi_view_state()
+
+# Delete first 10 datasets whose title starts with "New Dataset" from ecto
+DeletionScripts.filter_datasets_by_regex(~r/^New Dataset/)
+    |>get_first_10
+    |>DeletionScripts.delete_datasets_from_ecto()
+
+# Delete all datasets whose title starts with "New Dataset" from Andi's view state
+DeletionScripts.filter_datasets_by_regex(~r/^New Dataset/)
+    |>DeletionScripts.delete_datasets_from_andi_view_state()
+    
+# Delete all datasets whose title start with "New Dataset" from ecto
+DeletionScripts.filter_datasets_by_regex(~r/^New Dataset/)
+    |>DeletionScripts.delete_datasets_from_ecto()
+
+# Delete all smoke test datasets from Andi's view state
+Andi.InputSchemas.Datasets.get_all()
+    |> Enum.filter(fn x -> x.business.orgTitle === "Data Curator UI Smoke Tests" end)
+    |> DeletionScripts.delete_datasets_from_andi_view_state()
+
+# Delete all smoke test datasets from ecto
+Andi.InputSchemas.Datasets.get_all()
+    |> Enum.filter(fn x -> x.business.orgTitle === "Data Curator UI Smoke Tests" end)
+    |> DeletionScripts.delete_datasets_from_ecto()
+
+# Get all datasets that have Jarred in their title
+DeletionScripts.get_all_datasets_with_dev_names_in_them('jarred')
+
+# Get a count of all the Datasets that have Jarred in their title
+DeletionScripts.get_all_datasets_with_dev_names_in_them('jarred')
+    |> Enum.count()
+
+# Delete all datasets that have Jarred in their title from Andi's view state
+DeletionScripts.get_all_datasets_with_dev_names_in_them('jarred')
+    |>DeletionScripts.delete_datasets_from_andi_view_state()
+
+# Delete all datasets that have Jarred in their title from ecto
+DeletionScripts.get_all_datasets_with_dev_names_in_them('jarred')
+    |>DeletionScripts.delete_datasets_from_ecto()
+
+# Get the count of all system test datasets
+DeletionScripts.filter_datasets_by_regex(~r/\w+_\w+_\w+/)|> Enum.count()
+
+# Delete all system test datasets in Andi's view state
+DeletionScripts.filter_datasets_by_regex(~r/\w+_\w+_\w+/)|>DeletionScripts.delete_datasets_from_andi_view_state()
+
+# Delete all system test datasets from ecto
+DeletionScripts.filter_datasets_by_regex(~r/\w+_\w+_\w+/)|>DeletionScripts.delete_datasets_from_ecto()
+
+# Get count of all generic organizations
+DeletionScripts.get_all_generic_organizations()|>Enum.count()
+
+
+# Get all organization names of generic organizations
+DeletionScripts.get_all_generic_organizations() |> Enum.map(fn org -> org.orgTitle end)
+
+# Get organization names of first 1200 organizations
+DeletionScripts.get_all_generic_organizations() |> Enum.chunk(1200) |> Enum.at(0) |> Enum.map(fn org -> org.orgTitle end)
+
+
+# O(n) implementation of: Get ids of all generic organizations with no datasets associated with them
+all_generic_organizations = (
+    Andi.InputSchemas.Organizations.get_all()
+    |> Enum.filter(fn organization -> Regex.match?(~r/^\w+_\w+$/, organization.orgTitle) end)
+    |> MapSet.new()
+)
+
+all_generic_organizations_with_datasets = (
+    Andi.InputSchemas.Datasets.get_all()
+    |> Enum.filter(fn dataset -> dataset.business.orgTitle && Regex.match?(~r/^\w+_\w+$/, dataset.business.orgTitle) end)
+    |> MapSet.new()
+)
+
+orgs2delete = MapSet.difference(all_generic_organizations, all_generic_organizations_with_datasets)
+
+# Get all organizations that have a title that starts with "New Organization"
+DeletionScripts.filter_organization_by_regex(~r/^New Organization/)
+
+# Get org titles of all organizations that have a title that starts with "New Organization"
+DeletionScripts.filter_organization_by_regex(~r/^New Organization/)|> Enum.map(fn organization -> organization.orgTitle end)
+
+# Delete all organizations that have a title that start with "New Organization" from Andi's view state
+DeletionScripts.filter_organization_by_regex(~r/^New Organization/)
+    |> DeletionScripts.delete_organizations_from_andi_view_state()
+
+# Delete all organizations that have a title that starts with "New Organization" from ecto
+DeletionScripts.filter_organization_by_regex(~r/^New Organization/)
+    |> DeletionScripts.delete_organizations_from_ecto()
+
+# Get all organizations that have a title that starts with Jarred
+DeletionScripts.get_all_organizations_with_dev_names_in_them('jarred')
+
+# Get org titles of all organizations that have a title that starts with "jarred"
+DeletionScripts.get_all_organizations_with_dev_names_in_them('jarred')|> Enum.map(fn organization -> organization.orgTitle end)
+
+# Delete all organizations that have a title that starts with "jarred" from Andi's view state
+DeletionScripts.get_all_organizations_with_dev_names_in_them('jarred')
+    |> DeletionScripts.delete_organizations_from_andi_view_state()
+
+# Delete all organizations that have a title that starts with "jarred" from ecto
+DeletionScripts.get_all_organizations_with_dev_names_in_them('jarred')
+    |> DeletionScripts.delete_organizations_from_ecto()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# O(n^2) implementation of: Get all generic organizations with no datasets associated with them DONT USE THIS!
+# idsOfOrgs2delete = (
+# Andi.InputSchemas.Organizations.get_all()
+#     |> Enum.filter(fn organization -> Regex.match?(~r/^\w+_\w+$/, organization.orgTitle) end)
+#     |> Enum.map(fn organization -> organization.id end)
+#     |> Enum.filter(
+#         fn organizationId -> 
+#             Andi.InputSchemas.Datasets.get_all()
+#             |> Enum.filter(fn dataset -> dataset.technical.orgId === organizationId end)
+#             |> Enum.count() === 0
+#         end
+#     )
+# )
+#
+# Get some(specified in chunk) generic organizations with no datasets associated with them
+# idsOfOrgs2delete = (
+#     Andi.InputSchemas.Organizations.get_all() 
+#     |> Enum.filter(fn organization -> Regex.match?(~r/^\w+_\w+$/, organization.orgTitle) end)
+#     |> Enum.chunk(1200)
+#     |> Enum.at(0)
+#     |> Enum.map(fn organization -> organization.id end)
+#     |> Enum.filter(
+#         fn organizationId -> 
+#             Andi.InputSchemas.Datasets.get_all()
+#             |> Enum.filter(fn dataset -> dataset.technical.orgId === organizationId end)
+#             |> Enum.count() === 0
+#         end
+#     )
+# )
+# Delete a list of organizations by id in Andi's view state
+#idsOfOrgs2delete |> Enum.each(fn x -> Brook.Test.with_event(Andi.instance_name(), fn -> Andi.Services.OrgStore.delete(x) end) end)
+# Delete a list of organizations by id in ecto
+#idsOfOrgs2delete |> Enum.each(fn x -> Brook.Test.with_event(Andi.instance_name(), fn -> Andi.Repo.delete(Andi.InputSchemas.Organizations.get(x)) end) end)
