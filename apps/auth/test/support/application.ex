@@ -10,7 +10,8 @@ defmodule Auth.Application do
   def start(_type, _args) do
     children =
       [
-        ecto_repo()
+        ecto_repo(),
+        guardian_db_sweeper()
       ]
       |> List.flatten()
 
@@ -19,18 +20,20 @@ defmodule Auth.Application do
   end
 
   defp ecto_repo do
-    case {Application.get_env(:auth, Auth.Repo), disabled?()} do
-      {nil, _} -> []
-      {_, true} -> []
-      {_, false} -> [{Auth.Repo, []}]
+    case Application.get_env(:auth, Auth.Repo) do
+      nil -> []
+      _ -> [{Auth.Repo, []}]
     end
   end
 
-  def disabled?() do
-    Application.get_env(:auth, :disable_app) || false
-  end
+  defp guardian_db_sweeper do
+    case Application.get_env(:auth, Guardian.DB) do
+      nil ->
+        []
 
-  def disable() do
-    Application.put_env(:auth, :disable_app, true)
+      config ->
+        Application.put_env(:guardian, Guardian.DB, config)
+        Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
+    end
   end
 end

@@ -79,7 +79,7 @@ config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler,
   allowed_algos: ["RS256"],
   verify_issuer: true
 
-config :guardian, Guardian.DB, repo: DiscoveryApi.Repo
+config :discovery_api, Guardian.DB, repo: DiscoveryApi.Repo
 
 config :discovery_api,
   jwks_endpoint: System.get_env("AUTH_JWKS_ENDPOINT"),

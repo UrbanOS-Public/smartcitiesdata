@@ -96,4 +96,4 @@ config :andi, AndiWeb.Auth.TokenHandler,
   allowed_algos: ["RS256"],
   verify_issuer: true
 
-config :guardian, Guardian.DB, repo: Andi.Repo
+config :andi, Guardian.DB, repo: Andi.Repo
