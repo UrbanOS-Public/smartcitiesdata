@@ -33,6 +33,8 @@ defmodule AndiWeb.Auth.TokenHandler do
 
     roles = claims["https://andi.smartcolumbusos.com/roles"] || []
 
-    {:ok, %{"user_id" => user_id, "roles" => roles}}
+    is_curator = Enum.member?(roles, "Curator")
+
+    {:ok, %{"user_id" => user_id, "roles" => roles, "is_curator" => is_curator}}
   end
 end

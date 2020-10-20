@@ -43,6 +43,25 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
 
   use Accessible
 
+  #   Keep the required fields "Title, Name, Description, Format, Name, and Email"
+  #   Keep the optional fields "Last updated, Spatial and Temporal boundaries, Keywords, Homepage URL, and Language"
+
+  @public_fields [
+    :dataName,
+    :dataTitle,
+    :description,
+    :sourceFormat,
+    :contactEmail,
+    :contactName,
+    :modifiedDate,
+    :spatial,
+    :temporal,
+    :keywords,
+    :homepage,
+    :language,
+    :issuedDate
+  ]
+
   @cast_fields [
     :benefitRating,
     :contactEmail,
@@ -111,6 +130,10 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
 
   def changeset_for_draft(metadata, changes) do
     cast(metadata, changes, @cast_fields)
+  end
+
+  def changeset_for_submission(metadata, changes) do
+    cast(metadata, changes, @public_fields)
   end
 
   def changeset_from_andi_dataset(dataset) do

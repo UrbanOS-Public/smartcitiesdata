@@ -16,17 +16,19 @@ defmodule AndiWeb.EditLiveView do
     <div class="edit-page" id="dataset-edit-page">
       <div class="page-header">
         <button type="button" phx-click="cancel-edit" class="return-home-button btn btn--large"><div class="home-icon"></div>HOME</button>
+        <%= if @is_curator do %>
         <div class="organization-link" phx-click="show-organizations">
           <div class="organization-link__icon"></div>
           <div class="organization-link__text">ORGANIZATIONS</div>
         </div>
+        <% end %>
       </div>
 
       <%= f = form_for @changeset, "" %>
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>
-        <%= hidden_input(f, :owner_id) %>
+        <%= hidden_input(f, :owner_id) # TODO: remove me if possible %>
         <%= hidden_input(business, :authorEmail) %>
         <%= hidden_input(business, :authorName) %>
         <%= hidden_input(business, :categories) %>
@@ -51,7 +53,7 @@ defmodule AndiWeb.EditLiveView do
         <%= hidden_input(technical, :systemName) %>
 
         <div class="metadata-form-component">
-          <%= live_render(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, session: %{"dataset" => @dataset}) %>
+          <%= live_render(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
         </div>
 
         <div class="data-dictionary-form-component">
@@ -96,7 +98,7 @@ defmodule AndiWeb.EditLiveView do
     """
   end
 
-  def mount(_params, %{"dataset" => dataset}, socket) do
+  def mount(_params, %{"dataset" => dataset, "is_curator" => is_curator}, socket) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
     Process.flag(:trap_exit, true)
 
@@ -107,6 +109,7 @@ defmodule AndiWeb.EditLiveView do
        changeset: new_changeset,
        dataset: dataset,
        dataset_id: dataset.id,
+       is_curator: is_curator,
        has_validation_errors: false,
        new_field_initial_render: false,
        page_error: false,
