@@ -10,10 +10,6 @@ defmodule AndiWeb.OrganizationLiveView do
   def render(assigns) do
     ~L"""
     <div class="organizations-view">
-      <div class="page-header">
-        <a href="/datasets">Dataset Ingestion Interface</a>
-        </div>
-
       <div class="organizations-index">
         <div class="organizations-index__header">
           <h1 class="organizations-index__title">All Organizations</h1>

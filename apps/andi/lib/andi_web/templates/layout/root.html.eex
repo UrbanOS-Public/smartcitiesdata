@@ -11,8 +11,9 @@
     <title>Andi · Data Curator Interface</title>
   </head>
   <body>
-    <div class="root">
-        <main role="main" class="root__main">
+      <div class="root">
+      <%= live_render(@conn, AndiWeb.HeaderLiveView, session: AndiWeb.Auth.TokenHandler.Plug.current_resource(@conn)) %>
+      <main role="main" class="root__main">
         <%= @inner_content %>
       </main>
     </div>

@@ -10,16 +10,6 @@ defmodule AndiWeb.DatasetLiveView do
   def render(assigns) do
     ~L"""
     <div class="datasets-view">
-      <div class="page-header">
-        <a href="/datasets">Dataset Ingestion Interface</a>
-        <%= if @is_curator do %>
-        <div class="organization-link" phx-click="show-organizations">
-          <div class="organization-link__icon"></div>
-          <div class="organization-link__text">ORGANIZATIONS</div>
-        </div>
-        <% end %>
-      </div>
-
       <div class="datasets-index">
         <div class="datasets-index__header">
           <h1 class="datasets-index__title"><%= title_text(@is_curator) %></h1>
@@ -123,10 +113,6 @@ defmodule AndiWeb.DatasetLiveView do
     search_params = Map.merge(socket.assigns.params, %{"include-remotes" => !current_include_remotes})
 
     {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
-  end
-
-  def handle_event("show-organizations", _, socket) do
-    {:noreply, redirect(socket, to: "/organizations")}
   end
 
   defp filter_on_search_change(search_value, include_remotes, socket) do

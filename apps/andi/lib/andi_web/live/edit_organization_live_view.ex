@@ -18,14 +18,6 @@ defmodule AndiWeb.EditOrganizationLiveView do
   def render(assigns) do
     ~L"""
     <div id="edit-organization-live-view" class="organization-edit-page edit-page">
-      <div class="page-header">
-        <a phx-click="show-datasets">Dataset Ingestion Interface</a>
-        <div class="organization-link" phx-click="show-organizations">
-          <div class="organization-link__icon"></div>
-          <div class="organization-link__text">ORGANIZATIONS</div>
-        </div>
-      </div>
-
       <div class="edit-organization-title">
         <h2 class="component-title-text">Edit Organization </h2>
       </div>
@@ -170,6 +162,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
+  # TODO - figure this event capture stuff out
   def handle_event(redirect_event, _, %{assigns: %{unsaved_changes: true}} = socket)
       when redirect_event in ["cancel-edit", "show-organizations"] do
     {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible", unsaved_changes_link: "/organizations")}
@@ -223,18 +216,6 @@ defmodule AndiWeb.EditOrganizationLiveView do
         Organizations.update_harvested_dataset_include(id, true)
         {:noreply, socket}
     end
-  end
-
-  def handle_event("show-organizations", _, socket) do
-    {:noreply, redirect(socket, to: "/organizations")}
-  end
-
-  def handle_event("show-datasets", _, %{assigns: %{unsaved_changes: true}} = socket) do
-    {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible", unsaved_changes_link: "/datasets")}
-  end
-
-  def handle_event("show-datasets", _, socket) do
-    {:noreply, redirect(socket, to: "/organizations")}
   end
 
   def handle_event("reload-page", _, socket) do
