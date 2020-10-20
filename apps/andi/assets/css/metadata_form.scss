@@ -13,6 +13,17 @@
     "risk-rating .";
 }
 
+.submission-metadata-form-edit-section {
+  grid-template-areas:
+    "title last-updated"
+    "description spatial"
+    "format temporal"
+    "maintainer-name language"
+    "maintainer-email homepage"
+    "release-date ."
+    "keywords .";
+}
+
 .metadata__error-message {
   text-align: right;
   padding-right: 2em;

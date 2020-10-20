@@ -68,19 +68,21 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
 
       <div class="form-section">
         <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
+        <%= hidden_input(f, :dataName) %> <!-- TODO: Will this work? -->
+
           <div class="component-edit-section--<%= @visibility %>">
-            <div class="metadata-form-edit-section form-grid">
+            <div class="submission-metadata-form-edit-section form-grid">
               <div class="metadata-form__title">
                 <%= label(f, :dataTitle, DisplayNames.get(:dataTitle), class: "label label--required") %>
                 <%= text_input(f, :dataTitle, class: "input", phx_value_field: "dataTitle", phx_blur: "validate_system_name", phx_debounce: "1000") %>
                 <%= ErrorHelpers.error_tag(f, :dataTitle, bind_to_input: false) %>
               </div>
 
-              <div class="metadata-form__data-name">
+              <!--<div class="metadata-form__data-name">
                 <%= label(f, :dataName, DisplayNames.get(:dataName), class: "label label--required") %>
                 <%= text_input(f, :dataName, [class: "input input--text", readonly: true]) %>
                 <%= ErrorHelpers.error_tag(f, :dataName, bind_to_input: false) %>
-              </div>
+              </div>-->
 
               <div class="metadata-form__description">
                 <%= label(f, :description, DisplayNames.get(:description), class: "label label--required") %>
