@@ -173,81 +173,73 @@ body {
 
 .page-header {
     background-color: white;
-    /* position: absolute; */
-    /* top: 0; */
-    /* left: 0; */
-    width: 100%;
     height: 5rem;
-    /* margin-bottom: 2rem; */
     box-shadow: $box-shadow;
 
     display: flex;
     justify-content: space-between;
-
-    a {
-        margin-left: 2rem;
-        align-self: center;
-        font-size: 1.6rem;
-        text-decoration: none;
-    }
-
-    a:link {
-        color: black;
-    }
-
-    a:visited {
-        color: black;
-    }
-
-    a:hover {
-        cursor: pointer;
-    }
+    align-items: center;
+    padding: 0 2rem;
 
     .material-icons {
-        height: 24px;
-        width: 24px;
-        margin-right: 0.25rem;
-        align-self: center;
+        font-size: 1.4em;
+        margin-right: 0.25em;
+    }
+
+    .page-header__primary {
+        display: flex;
+    }
+
+    .page-header__secondary {
+        display: flex;
+
+        & > span {
+            margin: 0 1rem;
+        }
+
+        & > span:last-child {
+            margin: 0 0 0 1rem;
+        }
     }
 }
 
-.page-header__primary {
+.datasets-link {
     display: flex;
-}
+    align-items: center;
+    font-size: 1.6rem;
 
-.page-header__secondary {
-    display: flex;
+    &:hover {
+        cursor: pointer;
+    }
 }
 
 .organization-link {
-    margin-right: 2rem;
     display: flex;
+    align-items: center;
+    font-size: 1.1rem;
 
     .organization-link__text {
         font-weight: bold;
-        font-size: 1.1rem;
-        align-self: center;
     }
-}
 
-.organization-link:hover {
-    cursor: pointer;
+    &:hover {
+        cursor: pointer;
+    }
 }
 
 .log-out-link {
-    margin-right: 2rem;
     display: flex;
     color: $color-text-link;
+    align-items: center;
+    font-size: 1.1rem;
 
     .log-out-link__text {
         font-weight: bold;
-        font-size: 1.1rem;
-        align-self: center;
     }
-}
 
-.log-out-link:hover {
-    cursor: pointer;
+    &:hover {
+        cursor: pointer;
+    }
 }
 
 @import "./datasets.scss";

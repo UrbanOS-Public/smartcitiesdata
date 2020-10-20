@@ -15,7 +15,7 @@ defmodule AndiWeb.HeaderLiveView do
   def render(assigns) do
     ~L"""
     <header class="root__header page-header">
-      <span class="page-header__primary" phx-click="show-datasets">
+      <span class="page-header__primary datasets-link" phx-click="show-datasets">
         <span class="datasets-link__icon material-icons">home</span>
         <span class="datasets-link__text">Dataset Ingestion Interface</span>
       </span>
