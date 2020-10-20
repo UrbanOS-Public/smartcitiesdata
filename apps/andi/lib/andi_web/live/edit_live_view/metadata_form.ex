@@ -106,6 +106,11 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
                 <%= ErrorHelpers.error_tag(f, :contactEmail, bind_to_input: false) %>
               </div>
 
+              <div class="metadata-form__dataset-owner">
+                <%= label(f, :owner, DisplayNames.get(:datasetOwner), class: "label") %>
+                <%= select(f, :owner, get_level_of_access_options(), class: "select", selected: "") %>
+              </div>
+
               <div class="metadata-form__release-date">
                 <%= label(f, :issuedDate, DisplayNames.get(:issuedDate), class: "label label--required") %>
                 <%= date_input(f, :issuedDate, class: "input", value: safe_calendar_value(input_value(f, :issuedDate))) %>

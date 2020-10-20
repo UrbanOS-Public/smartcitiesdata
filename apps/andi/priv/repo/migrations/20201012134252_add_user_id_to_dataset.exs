@@ -11,7 +11,7 @@ defmodule Andi.Repo.Migrations.AddUserIdToDataset do
     create unique_index(:users, [:subject_id])
 
     alter table(:datasets) do
-      add :owner_id, references(:users, type: :uuid), null: true
+      add :user_id, references(:users, type: :uuid), null: true
     end
   end
 end
