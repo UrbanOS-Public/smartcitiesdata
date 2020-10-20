@@ -1,0 +1,22 @@
+.extract-step-form-edit-section {
+    grid-template-areas:
+        "type ."
+        "method ."
+        "url url"
+        "source-query-params source-query-params"
+        "source-headers source-headers"
+        "body body"
+        "test-section .";
+
+    .extract-step-form__body textarea{
+        height: 8rem;
+    }
+}
+
+@include area(extract-step-form, type);
+@include area(extract-step-form, method);
+@include area(extract-step-form, url);
+@include area(extract-step-form, body);
+@include area(url-form, source-query-params);
+@include area(url-form, source-headers);
+@include area(extract-step-form, test-section);
