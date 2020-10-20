@@ -380,6 +380,90 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert_redirect(view, url)
     end
+
+    test "allows publish of invalid url form with valid extract step form", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+      url_view = find_child(view, "url_form_editor")
+      extract_step_view = find_child(view, "extract_step_form_editor")
+
+      url_form_data = %{"sourceUrl" => ""}
+      extract_form_data = %{"type" => "http", "method" => "GET", "url" => "cam.com"}
+
+      render_change(url_view, :validate, %{"form_data" => url_form_data})
+      render_change(extract_step_view, :validate, %{"form_data" => extract_form_data})
+
+      render_change(finalize_view, :publish)
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+
+      eventually(fn ->
+        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+        assert dataset_sent != nil
+        assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
+      end)
+    end
+
+    test "allows publish of invalid extract form with valid url form", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+      url_view = find_child(view, "url_form_editor")
+      extract_step_view = find_child(view, "extract_step_form_editor")
+
+      url_form_data = %{"sourceUrl" => "cam.com"}
+      extract_form_data = %{"type" => "http", "method" => "GET", "url" => ""}
+
+      render_change(url_view, :validate, %{"form_data" => url_form_data})
+      render_change(extract_step_view, :validate, %{"form_data" => extract_form_data})
+
+      render_change(finalize_view, :publish)
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+
+      eventually(fn ->
+        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+        assert dataset_sent != nil
+        assert dataset_sent.technical.extractSteps == []
+      end)
+    end
+
+    test "replaces url form elements when both url form and extract form are valid", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+      url_view = find_child(view, "url_form_editor")
+      extract_step_view = find_child(view, "extract_step_form_editor")
+
+      url_form_data = %{"sourceUrl" => "cam.com"}
+      extract_form_data = %{"type" => "http", "method" => "GET", "url" => "cam.com"}
+
+      render_change(url_view, :validate, %{"form_data" => url_form_data})
+      render_change(extract_step_view, :validate, %{"form_data" => extract_form_data})
+
+      render_change(finalize_view, :publish)
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+
+      eventually(fn ->
+        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+        assert dataset_sent != nil
+        assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
+      end)
+    end
   end
 
   describe "delete dataset" do
