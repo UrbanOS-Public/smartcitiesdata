@@ -1,6 +1,6 @@
 defmodule AndiWeb.EditLiveView.ExtractStepForm do
   @moduledoc """
-  LiveComponent for editing dataset URL
+  LiveComponent for editing dataset extract steps
   """
   use Phoenix.LiveView
   import Phoenix.HTML
