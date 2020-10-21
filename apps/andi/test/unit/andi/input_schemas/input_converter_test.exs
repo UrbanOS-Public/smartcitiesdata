@@ -20,7 +20,8 @@ defmodule Andi.InputSchemas.InputConverterTest do
     test "SmartCity.Dataset => Changeset => SmartCity.Dataset" do
       dataset =
         TestDataGenerator.create_dataset(%{
-          business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: "2020-01-05T00:00:00Z"}
+          business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: "2020-01-05T00:00:00Z"},
+          technical: %{extractSteps: []}
         })
 
       {:ok, new_dataset} =
@@ -38,7 +39,8 @@ defmodule Andi.InputSchemas.InputConverterTest do
           business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: "2020-01-05T00:00:00Z"},
           technical: %{
             sourceQueryParams: %{"foo" => "bar", "baz" => "biz"},
-            sourceHeaders: %{"food" => "bard", "bad" => "bid"}
+            sourceHeaders: %{"food" => "bard", "bad" => "bid"},
+            extractSteps: []
           }
         })
 
@@ -54,7 +56,8 @@ defmodule Andi.InputSchemas.InputConverterTest do
     test "conversion preserves empty string modified date" do
       dataset =
         TestDataGenerator.create_dataset(%{
-          business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: ""}
+          business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: ""},
+          technical: %{extractSteps: []}
         })
 
       {:ok, new_dataset} =

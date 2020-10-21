@@ -89,6 +89,12 @@ defmodule Andi.InputSchemas.InputConverter do
     Dataset.full_validation_changeset(%Dataset{}, dataset_as_map)
   end
 
+  def andi_dataset_to_full_ui_changeset_for_publish(%Dataset{} = dataset) do
+    dataset_as_map = StructTools.to_map(dataset)
+
+    Andi.InputSchemas.Datasets.full_validation_changeset_for_publish(%Dataset{}, dataset_as_map)
+  end
+
   def andi_dataset_to_smrt_dataset(%Dataset{} = dataset) do
     dataset
     |> StructTools.to_map()
@@ -152,9 +158,21 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
       |> convert_source_url()
       |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
+      |> Map.update(:extractSteps, [], &convert_smrt_extract_steps/1)
       |> FormTools.replace(:schema, fn schema ->
         Enum.map(schema, &add_dataset_id(&1, smrt_dataset.id))
       end)
+    end)
+  end
+
+  defp convert_smrt_extract_steps(nil), do: []
+
+  defp convert_smrt_extract_steps(extract_steps) do
+    extract_steps
+    |> Enum.map(fn step ->
+      step
+      |> Map.update(:queryParams, [], &to_key_value_list/1)
+      |> Map.update(:headers, [], &to_key_value_list/1)
     end)
   end
 

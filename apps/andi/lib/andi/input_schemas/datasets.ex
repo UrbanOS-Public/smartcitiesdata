@@ -7,6 +7,8 @@ defmodule Andi.InputSchemas.Datasets do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
   alias Ecto.Changeset
+  alias Andi.InputSchemas.Datasets.ExtractHttpStep
+  alias AndiWeb.InputSchemas.UrlFormSchema
 
   import Ecto.Query, only: [from: 2]
 
@@ -111,7 +113,7 @@ defmodule Andi.InputSchemas.Datasets do
       |> StructTools.to_map()
       |> Map.merge(form_changes)
 
-    new_changes = %{technical: technical_changes, business: business_changes, id: dataset_id} |> StructTools.to_map()
+    new_changes = %{technical: technical_changes, business: business_changes, id: dataset_id}
 
     existing_dataset
     |> Andi.Repo.preload([:business, :technical])
@@ -222,5 +224,49 @@ defmodule Andi.InputSchemas.Datasets do
     |> String.replace(~r/[^[:alnum:]_]/, "", global: true)
     |> String.replace(~r/_+/, "_", global: true)
     |> String.downcase()
+  end
+
+  def full_validation_changeset_for_publish(schema, changes) do
+    extract_steps_changes = get_in(changes, [:technical, :extractSteps])
+    extract_steps_valid = extract_steps_valid?(extract_steps_changes)
+
+    url_form_changeset = UrlFormSchema.changeset_from_andi_dataset(changes)
+    url_form_valid = url_form_changeset.valid?
+
+    changes = update_changes_for_invalid_form(changes, extract_steps_valid, url_form_valid)
+
+    schema
+    |> Dataset.changeset(changes)
+    |> Dataset.validate_unique_system_name()
+  end
+
+  defp update_changes_for_invalid_form(changes, false, false), do: changes
+
+  defp update_changes_for_invalid_form(changes, false, true) do
+    put_in(changes, [:technical, :extractSteps], [])
+  end
+
+  defp update_changes_for_invalid_form(changes, true, _) do
+    url_placeholder =
+      case changes.business.homepage do
+        nil -> "N/A"
+        homepage -> homepage
+      end
+
+    changes
+    |> put_in([:technical, :sourceQueryParams], [])
+    |> put_in([:technical, :sourceHeaders], [])
+    |> put_in([:technical, :sourceUrl], url_placeholder)
+  end
+
+  defp extract_steps_valid?(extract_steps_changes) do
+    Enum.reduce_while(extract_steps_changes, true, fn step_changes, _acc ->
+      step_changeset = ExtractHttpStep.changeset(step_changes)
+
+      case step_changeset.valid? do
+        true -> {:cont, true}
+        false -> {:halt, false}
+      end
+    end)
   end
 end
