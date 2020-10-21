@@ -12,7 +12,6 @@
   </head>
   <body>
       <div class="root">
-      <%= live_render(@conn, AndiWeb.HeaderLiveView, session: AndiWeb.Auth.TokenHandler.Plug.current_resource(@conn)) %>
       <main role="main" class="root__main">
         <%= @inner_content %>
       </main>

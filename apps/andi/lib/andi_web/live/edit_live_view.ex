@@ -1,5 +1,7 @@
 defmodule AndiWeb.EditLiveView do
   use AndiWeb, :live_view
+  use AndiWeb.HeaderLiveView,
+    prompt_for_changes?: true
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
@@ -11,9 +13,9 @@ defmodule AndiWeb.EditLiveView do
 
   @instance_name Andi.instance_name()
 
-  # TODO - figure out cancel-edit stuff
   def render(assigns) do
     ~L"""
+    <%= render_header(@socket, @is_curator) %>
     <div class="edit-page" id="dataset-edit-page">
       <%= f = form_for @changeset, "" %>
         <% [business] = inputs_for(f, :business) %>
@@ -92,7 +94,7 @@ defmodule AndiWeb.EditLiveView do
     """
   end
 
-  def mount(_params, %{"dataset" => dataset}, socket) do
+  def mount(_params, %{"dataset" => dataset, "is_curator" => is_curator}, socket) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
     Process.flag(:trap_exit, true)
 
@@ -114,7 +116,8 @@ defmodule AndiWeb.EditLiveView do
        unsaved_changes_link: "/",
        unsaved_changes_modal_visibility: "hidden",
        publish_success_modal_visibility: "hidden",
-       delete_dataset_modal_visibility: "hidden"
+       delete_dataset_modal_visibility: "hidden",
+       is_curator: is_curator
      )}
   end
 
@@ -126,14 +129,6 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, redirect(socket, to: socket.assigns.unsaved_changes_link)}
   end
 
-  def handle_event("show-organizations", _, socket) do
-    case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, unsaved_changes_link: "/organizations", unsaved_changes_modal_visibility: "visible")}
-      false -> {:noreply, redirect(socket, to: "/organizations")}
-    end
-  end
-
-  # TODO - fix this
   def handle_event("cancel-edit", _, socket) do
     case socket.assigns.unsaved_changes do
       true -> {:noreply, assign(socket, unsaved_changes_link: "/", unsaved_changes_modal_visibility: "visible")}

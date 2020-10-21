@@ -1,5 +1,7 @@
 defmodule AndiWeb.DatasetLiveView do
   use Phoenix.LiveView
+  use AndiWeb.HeaderLiveView
+
   import Ecto.Query, only: [from: 2]
 
   alias AndiWeb.Router.Helpers, as: Routes
@@ -9,6 +11,7 @@ defmodule AndiWeb.DatasetLiveView do
 
   def render(assigns) do
     ~L"""
+    <%= render_header(@socket, @is_curator) %>
     <div class="datasets-view">
       <div class="datasets-index">
         <div class="datasets-index__header">
@@ -48,14 +51,14 @@ defmodule AndiWeb.DatasetLiveView do
     """
   end
 
-  def mount(_params, %{"user_id" => user_id, "roles" => roles} = _session, socket) do
+  def mount(_params, %{"user_id" => user_id, "is_curator" => is_curator} = _session, socket) do
     {:ok,
      assign(socket,
        datasets: nil,
        user_id: user_id,
        search_text: nil,
        include_remotes: false,
-       is_curator: Enum.member?(roles, "Curator"),
+       is_curator: is_curator,
        order: {"data_title", "asc"},
        params: %{}
      )}

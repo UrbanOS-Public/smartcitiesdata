@@ -1,5 +1,7 @@
 defmodule AndiWeb.OrganizationLiveView do
   use Phoenix.LiveView
+  use AndiWeb.HeaderLiveView
+
   import Ecto.Query, only: [from: 2]
 
   alias AndiWeb.Router.Helpers, as: Routes
@@ -9,6 +11,7 @@ defmodule AndiWeb.OrganizationLiveView do
 
   def render(assigns) do
     ~L"""
+    <%= render_header(@socket, @is_curator) %>
     <div class="organizations-view">
       <div class="organizations-index">
         <div class="organizations-index__header">
@@ -40,13 +43,14 @@ defmodule AndiWeb.OrganizationLiveView do
     """
   end
 
-  def mount(_params, _session, socket) do
+  def mount(_params, %{"is_curator" => is_curator}, socket) do
     {:ok,
      assign(socket,
        organizations: nil,
        search_text: nil,
        order: {"org_title", "asc"},
-       params: %{}
+       params: %{},
+       is_curator: is_curator
      )}
   end
 
