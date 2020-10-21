@@ -15,6 +15,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   alias Andi.Services.OrgStore
   alias AndiWeb.InputSchemas.MetadataFormSchema
   alias AndiWeb.Helpers.FormTools
+  alias Andi.Schemas.User
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_metadata_changeset = MetadataFormSchema.changeset_from_andi_dataset(dataset)
@@ -35,7 +36,8 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
        dataset_id: dataset.id,
        visibility: "expanded",
        validation_status: "expanded",
-       changeset: new_metadata_changeset
+       changeset: new_metadata_changeset,
+       user_id: dataset.user_id
      )}
   end
 
@@ -107,8 +109,8 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               </div>
 
               <div class="metadata-form__dataset-owner">
-                <%= label(f, :owner, DisplayNames.get(:datasetOwner), class: "label") %>
-                <%= select(f, :owner, get_level_of_access_options(), class: "select", selected: "") %>
+                <%= label(f, :userId, DisplayNames.get(:datasetOwner), class: "label") %>
+                <%= select(f, :userId, get_user_options(), class: "select", selected: "") %>
               </div>
 
               <div class="metadata-form__release-date">
@@ -313,6 +315,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   defp get_rating_options(), do: map_to_dropdown_options(Options.ratings())
   defp get_source_type_options(), do: map_to_dropdown_options(Options.source_type())
   defp get_org_options(), do: Options.organizations(OrgStore.get_all())
+  defp get_user_options(), do: Options.users(User.get_all())
 
   defp get_source_format_options(source_type) when source_type in ["remote", "host"] do
     Options.source_format_extended()

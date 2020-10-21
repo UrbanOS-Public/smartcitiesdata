@@ -7,6 +7,7 @@ defmodule Andi.Schemas.User do
   import Ecto.Changeset
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.StructTools
+  import Ecto.Query, only: [from: 1]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
 
@@ -30,6 +31,12 @@ defmodule Andi.Schemas.User do
     end
     |> changeset(changes)
     |> Repo.insert_or_update()
+  end
+
+  def get_all() do
+    query = from(user in __MODULE__)
+
+    Repo.all(query) |> preload()
   end
 
   def get_by_subject_id(subject_id) do

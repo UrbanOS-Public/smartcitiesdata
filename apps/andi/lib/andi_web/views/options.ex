@@ -108,6 +108,15 @@ defmodule AndiWeb.Views.Options do
     }
   end
 
+  def users(users) do
+    case users do
+      [] -> [{"", ""}]
+      _ -> 
+        user_options = users |> Enum.map(fn user -> {user.email, user.id} end)
+        [{"", ""}] ++ user_options
+    end
+  end
+
   def organizations(stored_organizations) do
     case stored_organizations do
       {:ok, organizations} ->
