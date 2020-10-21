@@ -15,13 +15,11 @@
 
 .submission-metadata-form-edit-section {
   grid-template-areas:
-    "title last-updated"
-    "description spatial"
-    "format temporal"
-    "maintainer-name language"
-    "maintainer-email homepage"
-    "release-date ."
-    "keywords .";
+    "title spatial"
+    "description temporal"
+    "format language"
+    "keywords homepage"
+    "maintainer-email homepage";
 }
 
 .metadata__error-message {

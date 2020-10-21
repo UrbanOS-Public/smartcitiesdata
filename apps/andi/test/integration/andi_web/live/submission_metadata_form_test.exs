@@ -115,28 +115,6 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
         ["ALL CAPS TITLE", "all_caps_title"]
       ])
     end
-
-    data_test "#{title} generating an empty data name is invalid", %{
-      public_conn: conn,
-      public_user: public_user,
-      blank_dataset: blank_dataset
-    } do
-      {:ok, dataset} = Datasets.update(blank_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
-
-      form_data = %{"dataTitle" => title}
-
-      render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "dataTitle"]})
-      html = render(metadata_view)
-
-      assert get_value(html, "#form_data_dataName") == ""
-      refute Enum.empty?(find_elements(html, "#dataName-error-msg"))
-
-      where(title: ["", "!@#$%"])
-    end
   end
 
   describe "enter form data" do
@@ -181,56 +159,6 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       html = render_change(metadata_view, :validate, %{"form_data" => form_data})
 
       assert {"spanish", "Spanish"} = get_select(html, ".metadata-form__language")
-    end
-
-    data_test "errors on invalid email: #{email}", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{business: %{contactEmail: email}})
-
-      {:ok, dataset} =
-        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
-        |> Datasets.save()
-
-      Andi.Migration.Owner.update_owner(dataset, public_user)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
-
-      form_data = %{"contactEmail" => email}
-
-      html = render_change(metadata_view, :validate, %{"form_data" => form_data})
-
-      assert get_text(html, "#contactEmail-error-msg") == "Please enter a valid maintainer email."
-
-      where([
-        [:email],
-        ["foomail.com"],
-        ["kevinspace@"],
-        ["kevinspace@notarealdomain"],
-        ["my little address"]
-      ])
-    end
-
-    data_test "does not error on valid email: #{email}", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{business: %{contactEmail: email}})
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
-
-      form_data = %{"contactEmail" => email}
-
-      html = render_change(metadata_view, :validate, %{"form_data" => form_data})
-      assert get_text(html, "#contactEmail-error-msg") == ""
-
-      where([
-        [:email],
-        ["foo@mail.com"],
-        ["kevin@space.org"],
-        ["my@little.gov"],
-        ["test-email@email.com"]
-      ])
     end
 
     test "adds commas between keywords", %{public_conn: conn, public_user: public_user} do
@@ -332,12 +260,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert get_text(html, ".metadata-form__description textarea") == dataset.business.description
       {selected_format, _} = get_select(html, ".metadata-form__format select")
       assert selected_format == dataset.technical.sourceFormat
-      assert get_value(html, ".metadata-form__maintainer-name input") == dataset.business.contactName
-      assert dataset.business.modifiedDate |> Date.to_string() =~ get_value(html, ".metadata-form__last-updated input")
-      assert get_value(html, ".metadata-form__maintainer-email input") == dataset.business.contactEmail
       assert get_value(html, ".metadata-form__spatial input") == dataset.business.spatial
       assert get_value(html, ".metadata-form__temporal input") == dataset.business.temporal
-
       assert {"english", "English"} == get_select(html, ".metadata-form__language")
       assert get_value(html, ".metadata-form__homepage input") == dataset.business.homepage
     end
@@ -368,10 +292,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       where([
         [:field, :form_data, :expected_error_message],
         [:dataTitle, %{"dataTitle" => ""}, "Please enter a valid dataset title."],
-        [:description, %{"description" => ""}, "Please enter a valid description."],
-        [:contactName, %{"contactName" => ""}, "Please enter a valid maintainer name."],
-        [:contactEmail, %{"contactEmail" => ""}, "Please enter a valid maintainer email."],
-        [:issuedDate, %{"issuedDate" => nil}, "Please enter a valid release date."]
+        [:description, %{"description" => ""}, "Please enter a valid description."]
       ])
     end
 
@@ -390,6 +311,20 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert get_text(html, "#sourceFormat-error-msg") == "Please enter a valid source format."
     end
 
+    test "non-submission required field updateFrequency does not trigger a validation error", %{public_conn: conn, public_user: public_user} do
+      smrt_dataset = TDG.create_dataset(%{business: %{dataTitle: "dater", publishFrequency: "", language: "English", contactEmail: public_user.email, contactName: public_user.subject_id}})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+      Andi.Migration.Owner.update_owner(dataset, public_user)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      metadata_view = find_child(view, "metadata_form_editor")
+
+      render_change(metadata_view, :validate, %{"form_data" => %{"description" => "change", "dataTitle" => smrt_dataset.business.dataTitle}})
+      html = render_change(metadata_view, :save)
+      refute Enum.empty?(find_elements(html, ".component-number-status--valid"))
+    end
+
     test "source format before publish", %{public_conn: conn, public_user: public_user} do
       smrt_dataset = TDG.create_dataset(%{})
 
@@ -402,7 +337,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
     end
 
     test "error message is cleared when form is updated", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{business: %{issuedDate: nil}})
+      smrt_dataset = TDG.create_dataset(%{business: %{description: nil}})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -413,17 +348,17 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
 
-      form_data = %{"issuedData" => nil}
+      form_data = %{"description" => nil}
 
       html = render_change(metadata_view, :validate, %{"form_data" => form_data})
 
-      assert get_text(html, "#issuedDate-error-msg") == "Please enter a valid release date."
+      assert get_text(html, "#description-error-msg") == "Please enter a valid description."
 
-      updated_form_data = %{"issuedDate" => "2020-01-03"}
+      updated_form_data = %{"description" => "Describe this!"}
 
       html = render_change(metadata_view, :validate, %{"form_data" => updated_form_data})
 
-      assert get_text(html, "#issuedDate-error-msg") == ""
+      assert get_text(html, "#description-error-msg") == ""
     end
   end
 

@@ -90,33 +90,10 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
                 <%= ErrorHelpers.error_tag(f, :description, bind_to_input: false) %>
               </div>
 
-              <div class="metadata-form__maintainer-name">
-                <%= label(f, :contactName, DisplayNames.get(:contactName), class: "label label--required") %>
-                <%= text_input(f, :contactName, class: "input") %>
-                <%= ErrorHelpers.error_tag(f, :contactName, bind_to_input: false) %>
-              </div>
-
-              <div class="metadata-form__maintainer-email">
-                <%= label(f, :contactEmail, DisplayNames.get(:contactEmail), class: "label label--required") %>
-                <%= text_input(f, :contactEmail, class: "input") %>
-                <%= ErrorHelpers.error_tag(f, :contactEmail, bind_to_input: false) %>
-              </div>
-
-              <div class="metadata-form__release-date">
-                <%= label(f, :issuedDate, DisplayNames.get(:issuedDate), class: "label label--required") %>
-                <%= date_input(f, :issuedDate, class: "input", value: safe_calendar_value(input_value(f, :issuedDate))) %>
-                <%= ErrorHelpers.error_tag(f, :issuedDate, bind_to_input: false) %>
-              </div>
-
               <div class="metadata-form__keywords">
                 <%= label(f, :keywords, DisplayNames.get(:keywords), class: "label") %>
                 <%= text_input(f, :keywords, value: keywords_to_string(input_value(f, :keywords)), class: "input") %>
                 <div class="label label--inline">Separated by comma</div>
-              </div>
-
-              <div class="metadata-form__last-updated">
-                <%= label(f, :modifiedDate, DisplayNames.get(:modifiedDate), class: "label") %>
-                <%= date_input(f, :modifiedDate, class: "input", value: safe_calendar_value(input_value(f, :modifiedDate))) %>
               </div>
 
               <div class="metadata-form__spatial">
@@ -177,13 +154,13 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
       ) do
     form_data
     |> FormTools.adjust_data_name()
-    |> MetadataFormSchema.changeset_from_form_data()
+    |> MetadataFormSchema.submission_changeset_from_form_data()
     |> complete_validation(socket)
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
-    |> MetadataFormSchema.changeset_from_form_data()
+    |> MetadataFormSchema.submission_changeset_from_form_data()
     |> complete_validation(socket)
   end
 
