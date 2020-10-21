@@ -167,11 +167,11 @@ defmodule AndiWeb.EditOrganizationLiveView do
   end
 
   def handle_event("cancel-edit", _, %{assigns: %{unsaved_changes: true}} = socket) do
-    {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible", unsaved_changes_link: "/organizations")}
+    {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible", unsaved_changes_link: header_organizations_path())}
   end
 
   def handle_event("cancel-edit", _, socket) do
-    {:noreply, redirect(socket, to: "/organizations")}
+    {:noreply, redirect(socket, to: header_organizations_path())}
   end
 
   def handle_event("force-cancel-edit", _, socket) do

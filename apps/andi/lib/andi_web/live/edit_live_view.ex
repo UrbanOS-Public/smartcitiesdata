@@ -113,7 +113,7 @@ defmodule AndiWeb.EditLiveView do
        test_results: nil,
        finalize_form_data: nil,
        unsaved_changes: false,
-       unsaved_changes_link: "/",
+       unsaved_changes_link: header_datasets_path(),
        unsaved_changes_modal_visibility: "hidden",
        publish_success_modal_visibility: "hidden",
        delete_dataset_modal_visibility: "hidden",
@@ -131,8 +131,8 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("cancel-edit", _, socket) do
     case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, unsaved_changes_link: "/", unsaved_changes_modal_visibility: "visible")}
-      false -> {:noreply, redirect(socket, to: "/")}
+      true -> {:noreply, assign(socket, unsaved_changes_link: header_datasets_path(), unsaved_changes_modal_visibility: "visible")}
+      false -> {:noreply, redirect(socket, to: header_datasets_path())}
     end
   end
 
@@ -148,11 +148,11 @@ defmodule AndiWeb.EditLiveView do
     case DatasetStore.get(id) do
       {:ok, nil} ->
         Datasets.delete(id)
-        {:noreply, redirect(socket, to: "/")}
+        {:noreply, redirect(socket, to: header_datasets_path())}
 
       {:ok, smrt_dataset} ->
         Brook.Event.send(@instance_name, dataset_delete(), :andi, smrt_dataset)
-        {:noreply, redirect(socket, to: "/")}
+        {:noreply, redirect(socket, to: header_datasets_path())}
     end
   end
 
@@ -228,8 +228,8 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info(:cancel_edit, socket) do
     case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, unsaved_changes_link: "/", unsaved_changes_modal_visibility: "visible")}
-      false -> {:noreply, redirect(socket, to: "/")}
+      true -> {:noreply, assign(socket, unsaved_changes_link: header_datasets_path(), unsaved_changes_modal_visibility: "visible")}
+      false -> {:noreply, redirect(socket, to: header_datasets_path())}
     end
   end
 

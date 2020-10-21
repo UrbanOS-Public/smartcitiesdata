@@ -38,28 +38,28 @@ defmodule AndiWeb.HeaderLiveView do
       end
 
       def handle_event("show-datasets", _, socket) do
-        AndiWeb.HeaderLiveView.__redirect__(socket, datasets_path(), unquote(prompt_for_changes?))
+        AndiWeb.HeaderLiveView.__redirect__(socket, header_datasets_path(), unquote(prompt_for_changes?))
       end
 
       def handle_event("show-organizations", _, socket) do
-        AndiWeb.HeaderLiveView.__redirect__(socket, organizations_path(), unquote(prompt_for_changes?))
+        AndiWeb.HeaderLiveView.__redirect__(socket, header_organizations_path(), unquote(prompt_for_changes?))
       end
 
       def handle_event("log-out", _, socket) do
-        AndiWeb.HeaderLiveView.__redirect__(socket, log_out_path(), unquote(prompt_for_changes?))
+        AndiWeb.HeaderLiveView.__redirect__(socket, header_log_out_path(), unquote(prompt_for_changes?))
       end
     end
   end
 
-  defmacro datasets_path() do
+  defmacro header_datasets_path() do
     "/datasets"
   end
 
-  defmacro organizations_path() do
+  defmacro header_organizations_path() do
     "/organizations"
   end
 
-  defmacro log_out_path() do
+  defmacro header_log_out_path() do
     "/auth/auth0/logout"
   end
 
