@@ -20,7 +20,10 @@ defmodule AndiWeb.API.DatasetController do
   def create(conn, _params) do
     with message <- add_uuid(conn.body_params),
          {:ok, parsed_message} <- trim_fields(message),
+         #temporarily remove unsupported extract steps from validation check
+         {:ok, original_extract_steps, parsed_message} <- remove_unsupported_extract_steps(parsed_message),
          :valid <- validate_changes(parsed_message),
+         parsed_message <- put_in(parsed_message, ["technical", "extractSteps"], original_extract_steps),
          {:ok, dataset} <- new_dataset(parsed_message),
          :ok <- write_dataset(dataset) do
       respond(conn, :created, dataset)
@@ -155,6 +158,23 @@ defmodule AndiWeb.API.DatasetController do
       item when is_binary(item) -> String.trim(item)
       item -> item
     end)
+  end
+
+  defp remove_unsupported_extract_steps(message) do
+    message_extract_steps =
+      message
+      |> Map.get("technical")
+      |> Map.get("extractSteps")
+
+    supported_extract_steps =
+      Enum.reduce(message_extract_steps, [], fn
+        %{"type" => "http"} = extract_step, acc -> [extract_step | acc]
+        _, acc -> acc
+      end)
+
+    parsed_message = put_in(message, ["technical", "extractSteps"], supported_extract_steps) |> IO.inspect()
+
+    {:ok, message_extract_steps, parsed_message}
   end
 
   defp new_dataset(message) do

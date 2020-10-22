@@ -69,6 +69,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
             <%= hidden_input(f, :id) %>
             <%= hidden_input(f, :type) %>
             <%= hidden_input(f, :technical_id) %>
+            <%= hidden_input(f, :protocol) %>
 
             <div class="component-edit-section--<%= @visibility %>">
               <div class="extract-step-form-edit-section form-grid">
