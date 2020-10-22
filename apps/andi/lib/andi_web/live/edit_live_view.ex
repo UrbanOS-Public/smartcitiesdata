@@ -1,7 +1,6 @@
 defmodule AndiWeb.EditLiveView do
   use AndiWeb, :live_view
-  use AndiWeb.HeaderLiveView,
-    prompt_for_changes?: true
+  use AndiWeb.HeaderLiveView
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
@@ -15,7 +14,7 @@ defmodule AndiWeb.EditLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= render_header(@socket, @is_curator) %>
+    <%= header_render(@socket, @is_curator) %>
     <div class="edit-page" id="dataset-edit-page">
       <%= f = form_for @changeset, "" %>
         <% [business] = inputs_for(f, :business) %>

@@ -27,26 +27,20 @@ defmodule AndiWeb.HeaderLiveView do
     """
   end
 
-  defmacro __using__(opts \\ []) do
-    prompt_for_changes? = Keyword.get(opts, :prompt_for_changes?, false)
-
+  defmacro __using__(_opts \\ []) do
     quote do
       import AndiWeb.HeaderLiveView
 
-      def render_header(socket, is_curator) do
-        live_component(socket, AndiWeb.HeaderLiveView, is_curator: is_curator)
-      end
-
       def handle_event("show-datasets", _, socket) do
-        AndiWeb.HeaderLiveView.__redirect__(socket, header_datasets_path(), unquote(prompt_for_changes?))
+        AndiWeb.HeaderLiveView.__redirect__(socket, header_datasets_path())
       end
 
       def handle_event("show-organizations", _, socket) do
-        AndiWeb.HeaderLiveView.__redirect__(socket, header_organizations_path(), unquote(prompt_for_changes?))
+        AndiWeb.HeaderLiveView.__redirect__(socket, header_organizations_path())
       end
 
       def handle_event("log-out", _, socket) do
-        AndiWeb.HeaderLiveView.__redirect__(socket, header_log_out_path(), unquote(prompt_for_changes?))
+        AndiWeb.HeaderLiveView.__redirect__(socket, header_log_out_path())
       end
     end
   end
@@ -63,11 +57,15 @@ defmodule AndiWeb.HeaderLiveView do
     "/auth/auth0/logout"
   end
 
-  def __redirect__(%{assigns: %{unsaved_changes: true}} = socket, location, true = _prompt_for_changes?) do
+  def header_render(socket, is_curator) do
+    live_component(socket, AndiWeb.HeaderLiveView, is_curator: is_curator)
+  end
+
+  def __redirect__(%{assigns: %{unsaved_changes: true}} = socket, location) do
     {:noreply, assign(socket, unsaved_changes_link: location, unsaved_changes_modal_visibility: "visible")}
   end
 
-  def __redirect__(socket, location, _) do
+  def __redirect__(socket, location) do
     {:noreply, redirect(socket, to: location)}
   end
 end

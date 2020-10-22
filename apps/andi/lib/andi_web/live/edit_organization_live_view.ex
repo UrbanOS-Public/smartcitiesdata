@@ -1,7 +1,6 @@
 defmodule AndiWeb.EditOrganizationLiveView do
   use AndiWeb, :live_view
-  use AndiWeb.HeaderLiveView,
-    prompt_for_changes?: true
+  use AndiWeb.HeaderLiveView
 
   import Phoenix.HTML.Form
   import SmartCity.Event, only: [organization_update: 0, dataset_delete: 0]
@@ -19,7 +18,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= render_header(@socket, @is_curator) %>
+    <%= header_render(@socket, @is_curator) %>
     <div id="edit-organization-live-view" class="organization-edit-page edit-page">
       <div class="edit-organization-title">
         <h2 class="component-title-text">Edit Organization </h2>

@@ -4,7 +4,7 @@ defmodule AndiWeb.EditController do
   alias Andi.InputSchemas.Organizations
 
   def show_dataset(conn, %{"id" => id}) do
-    %{"roles" => roles, "user_id" => user_id, "is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
+    %{"user_id" => user_id, "is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
 
     case get_dataset_if_accessible(id, is_curator, user_id) do
       nil ->

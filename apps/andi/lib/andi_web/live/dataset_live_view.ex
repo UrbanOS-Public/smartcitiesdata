@@ -11,7 +11,7 @@ defmodule AndiWeb.DatasetLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= render_header(@socket, @is_curator) %>
+    <%= header_render(@socket, @is_curator) %>
     <div class="datasets-view">
       <div class="datasets-index">
         <div class="datasets-index__header">
