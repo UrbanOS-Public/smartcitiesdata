@@ -275,6 +275,28 @@ $component-header-height: 7.5rem;
     color: #7f7676;
 }
 
+.document-link {
+    color: $color-text-link;
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.03rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+.section-help {
+    margin-bottom: 1rem;
+}
+
+.link-out {
+    background-image: url('/images/launch.svg');
+    height: 24px;
+    width: 24px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: inline-block;
+    vertical-align: bottom;
+}
+
 #snackbar {
     visibility: hidden;
     min-width: 250px;

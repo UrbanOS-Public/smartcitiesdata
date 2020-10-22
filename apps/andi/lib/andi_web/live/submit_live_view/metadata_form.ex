@@ -68,26 +68,35 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
 
       <div class="form-section">
         <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
-        <%= hidden_input(f, :dataName) %> <!-- TODO: Will this work? -->
+        <%= hidden_input(f, :dataName) %>
 
           <div class="component-edit-section--<%= @visibility %>">
+            <div class="section-help">
+              <a href="http://example.com" class="document-link" target="_blank">How to Complete the Metadata Section <span class="link-out"></span></a>
+            </div>
             <div class="submission-metadata-form-edit-section form-grid">
               <div class="metadata-form__title">
                 <%= label(f, :dataTitle, DisplayNames.get(:dataTitle), class: "label label--required") %>
-                <%= text_input(f, :dataTitle, class: "input", phx_value_field: "dataTitle", phx_blur: "validate_system_name", phx_debounce: "1000") %>
+                <%= text_input(f, :dataTitle, class: "input", phx_value_field: "dataTitle", phx_debounce: "1000") %>
                 <%= ErrorHelpers.error_tag(f, :dataTitle, bind_to_input: false) %>
               </div>
-
-              <!--<div class="metadata-form__data-name">
-                <%= label(f, :dataName, DisplayNames.get(:dataName), class: "label label--required") %>
-                <%= text_input(f, :dataName, [class: "input input--text", readonly: true]) %>
-                <%= ErrorHelpers.error_tag(f, :dataName, bind_to_input: false) %>
-              </div>-->
 
               <div class="metadata-form__description">
                 <%= label(f, :description, DisplayNames.get(:description), class: "label label--required") %>
                 <%= textarea(f, :description, class: "input textarea") %>
                 <%= ErrorHelpers.error_tag(f, :description, bind_to_input: false) %>
+              </div>
+
+              <div class="metadata-form__format">
+                <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
+                <%= select(f, :sourceFormat, get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_exists]) %>
+                <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
+              </div>
+
+              <div class="metadata-form__maintainer-name">
+                <%= label(f, :contactName, DisplayNames.get(:contactName), class: "label label--required") %>
+                <%= text_input(f, :contactName, class: "input") %>
+                <%= ErrorHelpers.error_tag(f, :contactName, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__keywords">
@@ -121,12 +130,6 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
               <div class="metadata-form__homepage">
                 <%= label(f, :homepage, DisplayNames.get(:homepage), class: "label") %>
                 <%= text_input(f, :homepage, class: "input") %>
-              </div>
-
-              <div class="metadata-form__format">
-                <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-                <%= select(f, :sourceFormat, get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_exists]) %>
-                <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
               </div>
             </div>
 

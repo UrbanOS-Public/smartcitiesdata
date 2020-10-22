@@ -31,8 +31,9 @@ defmodule Andi.InputSchemas.Datasets do
   end
 
   def create(owner) do
+    current_date = Date.utc_today()
     new_dataset_id = UUID.uuid4()
-    new_dataset_title = "New Dataset - #{Date.utc_today()}"
+    new_dataset_title = "New Dataset - #{current_date}"
     new_dataset_name = data_title_to_data_name(new_dataset_title)
 
     new_changeset =
@@ -40,7 +41,7 @@ defmodule Andi.InputSchemas.Datasets do
         %Dataset{},
         %{
           id: new_dataset_id,
-          business: %{dataTitle: new_dataset_title},
+          business: %{dataTitle: new_dataset_title, contactEmail: owner.email, issuedDate: current_date, modifiedDate: current_date},
           technical: %{dataName: new_dataset_name},
           owner: owner
         }

@@ -111,7 +111,8 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
 
   @required_submission_fields [
     :dataTitle,
-    :description
+    :description,
+    :contactName
   ]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
