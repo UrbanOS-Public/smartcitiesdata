@@ -194,9 +194,20 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:sourceUrl, nil, &Andi.URI.clear_query_params/1)
       |> Map.update(:sourceQueryParams, nil, &convert_key_value_to_map/1)
       |> Map.update(:sourceHeaders, nil, &convert_key_value_to_map/1)
+      |> Map.update(:extractSteps, nil, &convert_andi_extract_steps/1)
       |> Map.update(:schema, nil, fn schema ->
         Enum.map(schema, &drop_fields_from_dictionary_item/1)
       end)
+    end)
+  end
+
+  defp convert_andi_extract_steps(andi_extract_steps) do
+    andi_extract_steps
+    |> Enum.map(fn step ->
+      step
+      |> Map.delete(:id)
+      |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
+      |> Map.update(:headers, nil, &convert_key_value_to_map/1)
     end)
   end
 
