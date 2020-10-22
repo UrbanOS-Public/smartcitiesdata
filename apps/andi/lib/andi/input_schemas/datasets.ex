@@ -248,16 +248,17 @@ defmodule Andi.InputSchemas.Datasets do
 
   defp update_changes_for_invalid_form(changes, true, _) do
     url_placeholder =
-      case changes.business.homepage do
-        nil -> "N/A"
-        homepage -> homepage
-      end
+      changes.business[:homepage]
+      |> source_url_placeholder_from_homepage()
 
     changes
     |> put_in([:technical, :sourceQueryParams], [])
     |> put_in([:technical, :sourceHeaders], [])
     |> put_in([:technical, :sourceUrl], url_placeholder)
   end
+
+  defp source_url_placeholder_from_homepage(hompage) when is_nil(hompage) or hompage == "", do: "N/A"
+  defp source_url_placeholder_from_homepage(hompage), do: hompage
 
   defp extract_steps_valid?(extract_steps_changes) do
     Enum.reduce_while(extract_steps_changes, true, fn step_changes, _acc ->
