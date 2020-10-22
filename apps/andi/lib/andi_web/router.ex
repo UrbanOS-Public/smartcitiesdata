@@ -45,7 +45,10 @@ defmodule AndiWeb.Router do
   scope "/", AndiWeb do
     pipe_through [:browser, :auth, :curator]
 
-    live "/organizations", OrganizationLiveView, layout: {AndiWeb.LayoutView, :root}, session: {AndiWeb.Auth.TokenHandler.Plug, :current_resource, []}
+    live "/organizations", OrganizationLiveView,
+      layout: {AndiWeb.LayoutView, :root},
+      session: {AndiWeb.Auth.TokenHandler.Plug, :current_resource, []}
+
     get "/organizations/:id", EditController, :show_organization
   end
 

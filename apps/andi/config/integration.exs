@@ -44,21 +44,16 @@ config :andi, Andi.Repo,
 config :andi, AndiWeb.Endpoint,
   http: [port: 4000],
   server: true,
-  check_origin: false,
-  url: [
-    scheme: "https",
-    host: "127.0.0.1.xip.io",
-    port: 4443
-  ]
+  check_origin: false
 
 # for auth0 login use, add to Endpoint config above
 config :andi, AndiWeb.Endpoint,
-https: [
-  port: 4443,
-  otp_app: :andi,
-  keyfile: "priv/key.pem",
-  certfile: "priv/cert.pem"
-]
+  https: [
+    port: 4443,
+    otp_app: :andi,
+    keyfile: "priv/key.pem",
+    certfile: "priv/cert.pem"
+  ]
 
 config :andi, :brook,
   instance: :andi,

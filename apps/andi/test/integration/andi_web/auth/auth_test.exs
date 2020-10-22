@@ -30,8 +30,11 @@ defmodule AndiWeb.AuthTest do
   describe "logout" do
     test "revokes token so it cannot be used again", %{revocable_conn: conn} do
       result = get(conn, "/auth/auth0/logout")
-      auth0_issuer = Application.get_env(:andi, AndiWeb.Auth.TokenHandler)
-      |> Keyword.get(:issuer)
+
+      auth0_issuer =
+        Application.get_env(:andi, AndiWeb.Auth.TokenHandler)
+        |> Keyword.get(:issuer)
+
       auth0_log_out_url = auth0_issuer <> "v2/logout"
 
       assert result.status == 302
@@ -42,6 +45,12 @@ defmodule AndiWeb.AuthTest do
       assert result.resp_body =~ "/auth/auth0?prompt=login\""
     end
 
-    # TODO - maybe check redirect and client id part?
+    test "puts the correct return url in the logout request to auth0", %{revocable_conn: conn} do
+      result = get(conn, "/auth/auth0/logout")
+
+      assert result.status == 302
+      assert result.resp_body =~ "returnTo=http://www.example.com/auth/auth0&"
+    end
+
   end
 end

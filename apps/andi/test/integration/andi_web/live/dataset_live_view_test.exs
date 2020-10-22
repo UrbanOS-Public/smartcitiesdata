@@ -31,7 +31,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
     test "only datasets owned by the user are shown", %{public_conn: conn, public_subject: subject} do
       {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
-      {:ok, dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
+      {:ok, _dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
       {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
       Datasets.create(user)
 
@@ -51,8 +51,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "all datasets are shown", %{curator_conn: conn, public_subject: subject} do
-      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
-      {:ok, dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
+      {:ok, _dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+      {:ok, _dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
       {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
       Datasets.create(user)
 
@@ -141,7 +141,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   test "add dataset button creates a dataset with a default dataTitle and dataName", %{curator_conn: conn, curator_subject: subject} do
-    {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+    {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
     assert {:ok, view, _html} = live(conn, @url_path)
 
     {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
@@ -220,8 +220,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "shows No Datasets if no results returned", %{conn: conn} do
-      {:ok, dataset_a} = TDG.create_dataset(business: %{dataTitle: "data_a"}) |> Datasets.update()
-      {:ok, dataset_b} = TDG.create_dataset(business: %{dataTitle: "data_b"}) |> Datasets.update()
+      {:ok, _dataset_a} = TDG.create_dataset(business: %{dataTitle: "data_a"}) |> Datasets.update()
+      {:ok, _dataset_b} = TDG.create_dataset(business: %{dataTitle: "data_b"}) |> Datasets.update()
 
       {:ok, view, _html} = live(conn, @url_path)
 
