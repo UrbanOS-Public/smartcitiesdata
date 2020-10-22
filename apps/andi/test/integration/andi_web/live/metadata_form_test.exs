@@ -22,12 +22,14 @@ defmodule AndiWeb.MetadataFormTest do
       get_values: 2,
       get_select: 2,
       get_select_first_option: 2,
+      get_all_select_options: 2,
       get_text: 2,
       find_elements: 2
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
+  alias Andi.Schemas.User
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.InputConverter
 
@@ -617,6 +619,23 @@ defmodule AndiWeb.MetadataFormTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       refute Enum.empty?(get_attributes(html, "#form_data_topLevelSelector", "readonly"))
+    end
+
+    test "dataset owner lists all the users in the system by email", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+      User.create_or_update("64d1c660-4734-4b96-96e4-075f7ac9ae30", %{email: "hello@world.com"})
+      User.create_or_update("4f52658b-7064-464e-93d0-9e2ccf1436ef", %{email: "test@test.com"})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      assert [
+               {"", ""},
+               {"bob@example.com", _},
+               {"hello@world.com", _},
+               {"test@test.com", _}
+             ] = get_all_select_options(html, ".metadata-form__dataset-owner")
     end
   end
 

@@ -17,6 +17,8 @@ defmodule Andi.Schemas.User do
     has_many(:datasets, Dataset, on_replace: :delete)
   end
 
+  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+
   def changeset(user, changes) do
     user
     |> cast(changes, [:subject_id, :email])
