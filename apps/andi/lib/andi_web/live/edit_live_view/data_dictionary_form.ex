@@ -167,16 +167,17 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("file_upload", %{"file" => file, "fileType" => "text/csv"}, socket) do
-    try do
-      new_changeset =
-        (file == "" or file == "\n")
-        |> if(do: throw(:error), else: file)
-        |> parse_csv()
-        |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.dataset_id)
+    case validate_empty_csv(file) do
+      {:ok, file} ->
+        new_changeset =
+          file
+          |> parse_csv()
+          |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.dataset_id)
 
-      assign_new_schema(socket, new_changeset)
-    catch
-      :error -> send_error_interpreting_file(socket.assigns.changeset, socket)
+        assign_new_schema(socket, new_changeset)
+
+      :error ->
+        send_error_interpreting_file(socket.assigns.changeset, socket)
     end
   end
 
@@ -185,23 +186,17 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       socket.assigns.changeset
       |> reset_changeset_errors()
 
-    case Jason.decode(file) do
-      {:error, _} ->
-        changeset
-        |> send_error_interpreting_file(socket)
-
+    case validate_empty_json(file) do
       {:ok, decoded_json} ->
-        try do
-          new_changeset =
-            Enum.empty?(decoded_json)
-            |> if(do: throw(:error), else: decoded_json)
-            |> List.wrap()
-            |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.dataset_id)
+        new_changeset =
+          decoded_json
+          |> List.wrap()
+          |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.dataset_id)
 
-          assign_new_schema(socket, new_changeset)
-        catch
-          :error -> send_error_interpreting_file(socket.assigns.changeset, socket)
-        end
+        assign_new_schema(socket, new_changeset)
+
+      :error ->
+        send_error_interpreting_file(changeset, socket)
     end
   end
 
@@ -220,7 +215,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   def handle_event("overwrite-schema", _, %{assigns: %{pending_changeset: nil}} = socket) do
     socket.assigns.changeset
-    |> send_error_interpreting_file(socket)
+    |> send_error_interpreting_file(socket, true)
   end
 
   def handle_event("overwrite-schema", _, socket) do
@@ -468,12 +463,36 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     DataDictionaryFields.get_parent_ids(dataset)
   end
 
-  defp send_error_interpreting_file(changeset, socket) do
+  defp validate_empty_csv(file) do
+    case file == "" or file == "\n" do
+      true -> :error
+      _ -> {:ok, file}
+    end
+  end
+
+  defp validate_empty_json(file) do
+    decoded_json = Jason.decode(file)
+
+    case decoded_json do
+      {:error, _} ->
+        IO.inspect(label: "Pellooooo")
+        :error
+
+      {:ok, decoded_json_value} ->
+        Enum.empty?(decoded_json_value)
+        |> if(do: :error, else: {:ok, decoded_json_value})
+    end
+  end
+
+  defp send_error_interpreting_file(changeset, socket, is_loading_schema \\ false) do
     new_changeset =
       changeset
       |> Map.put(:action, :update)
       |> Changeset.add_error(:schema_sample, "There was a problem interpreting this file")
 
-    {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
+    case is_loading_schema do
+      true -> {:noreply, assign(socket, changeset: new_changeset)}
+      _ -> {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
+    end
   end
 end
