@@ -65,6 +65,7 @@ defmodule AndiWeb.Router do
 
     get "/auth0", AuthController, :request
     get "/auth0/callback", AuthController, :callback
+    get "/auth0/logout", AuthController, :logout
   end
 
   scope "/", AndiWeb do

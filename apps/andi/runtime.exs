@@ -43,6 +43,11 @@ config :andi, :brook,
 config :andi, AndiWeb.Endpoint,
   live_view: [
     signing_salt: live_view_salt
+  ],
+  url: [
+    scheme: "https",
+    host: System.get_env("HOST"),
+    port: 443
   ]
 
 config :andi,
