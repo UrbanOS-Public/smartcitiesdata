@@ -169,8 +169,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   def handle_event("file_upload", %{"file" => file, "fileType" => "text/csv"}, socket) do
     try do
       new_changeset =
-        file
-        |> String.equivalent?("\n")
+        (file == "" or file == "\n")
         |> if(do: throw(:error), else: file)
         |> parse_csv()
         |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.dataset_id)
@@ -194,8 +193,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       {:ok, decoded_json} ->
         try do
           new_changeset =
-            decoded_json
-            |> Enum.empty?()
+            Enum.empty?(decoded_json)
             |> if(do: throw(:error), else: decoded_json)
             |> List.wrap()
             |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.dataset_id)
