@@ -60,6 +60,9 @@ defmodule AndiWeb.EditLiveView do
           <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset}) %>
         </div>
 
+        <div class="extract-steps-form-component">
+          <%= live_render(@socket, AndiWeb.EditLiveView.ExtractStepForm, id: :extract_step_form_editor, session: %{"dataset" => @dataset}) %>
+        </div>
 
         <div class="url-form-component">
           <%= live_render(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, session: %{"dataset" => @dataset}) %>
@@ -178,10 +181,11 @@ defmodule AndiWeb.EditLiveView do
     Process.sleep(1_000)
 
     andi_dataset = Datasets.get(socket.assigns.dataset.id)
-    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
+    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset_for_publish(andi_dataset)
+    dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
 
     if dataset_changeset.valid? do
-      {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(andi_dataset)
+      {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
 
       case Brook.Event.send(@instance_name, dataset_update(), :andi, smrt_dataset) do
         :ok ->
