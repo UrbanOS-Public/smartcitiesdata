@@ -68,7 +68,7 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
 
           <div class="component-edit-section--<%= @visibility %>">
             <div class="section-help">
-              <a href="http://example.com" class="document-link" target="_blank">How to Complete the Metadata Section <span class="link-out"></span></a>
+              <a href="<%= documentation_root() %>/metadata-help.pdf" class="document-link" target="_blank">How to Complete the Metadata Section <span class="link-out"></span></a>
             </div>
             <div class="submission-metadata-form-edit-section form-grid">
               <div class="metadata-form__title">
@@ -180,4 +180,6 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
 
     {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
+
+  defp documentation_root(), do: Application.get_env(:andi, :documentation_root)
 end
