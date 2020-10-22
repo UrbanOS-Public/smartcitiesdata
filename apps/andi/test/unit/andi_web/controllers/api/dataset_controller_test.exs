@@ -1,5 +1,5 @@
 defmodule AndiWeb.API.DatasetControllerTest do
-  use AndiWeb.ConnCase
+  use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
 
   @route "/api/v1/dataset"
@@ -182,8 +182,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
   end
 
   describe "GET dataset definitions from /api/dataset/" do
-    setup %{conn: conn, request: request} do
-      [conn: get(conn, @get_datasets_route, request)]
+    setup %{conn: conn} do
+      [conn: get(conn, @get_datasets_route)]
     end
 
     @tag capture_log: true

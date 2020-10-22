@@ -1,7 +1,7 @@
 defmodule AndiWeb.EditLiveViewTest do
   use ExUnit.Case
   use Andi.DataCase
-  use AndiWeb.ConnCase
+  use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Placebo
   import Checkov
 
@@ -17,35 +17,30 @@ defmodule AndiWeb.EditLiveViewTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
-  alias Andi.Test.AuthHelper
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
 
-  setup do
-    {:ok, curator} = Andi.Schemas.User.create_or_update(AuthHelper.valid_subject_id(), %{email: "bob@example.com"})
-    {:ok, public_user} = Andi.Schemas.User.create_or_update(AuthHelper.valid_public_subject_id(), %{email: "bob@example.com"})
+  setup %{curator_subject: curator_subject, public_subject: public_subject} do
+    {:ok, curator} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob@example.com"})
+    {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
     [curator: curator, public_user: public_user]
   end
 
   describe "public access to edit datasets" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn(jwt: AuthHelper.valid_public_jwt())]
-    end
-
-    test "public user can access their own dataset", %{conn: conn, public_user: public_user} do
+    test "public user can access their own dataset", %{public_conn: conn, public_user: public_user} do
       dataset = Datasets.create(public_user)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
 
-    test "public user cannot access an unowned dataset", %{conn: conn} do
+    test "public user cannot access an unowned dataset", %{public_conn: conn} do
       {:ok, dataset} = TDG.create_dataset(%{}) |> Datasets.update()
 
       get(conn, @url_path <> dataset.id)
       |> response(404)
     end
 
-    test "public user cannot access a dataset owned by another user", %{conn: conn, curator: curator} do
+    test "public user cannot access a dataset owned by another user", %{public_conn: conn, curator: curator} do
       dataset = Datasets.create(curator)
 
       get(conn, @url_path <> dataset.id)
@@ -54,31 +49,23 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   describe "curator access to edit datasets" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn(jwt: AuthHelper.valid_jwt())]
-    end
-
-    test "curator can access their own dataset", %{conn: conn, curator: curator} do
+    test "curator can access their own dataset", %{curator_conn: conn, curator: curator} do
       dataset = Datasets.create(curator)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
 
-    test "curator can access an unowned dataset", %{conn: conn} do
+    test "curator can access an unowned dataset", %{curator_conn: conn} do
       {:ok, dataset} = TDG.create_dataset(%{}) |> Datasets.update()
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
 
-    test "curator can access a dataset owned by another user", %{conn: conn, public_user: public_user} do
+    test "curator can access a dataset owned by another user", %{curator_conn: conn, public_user: public_user} do
       dataset = Datasets.create(public_user)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
   end
 
   describe "save and publish form data" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     test "save button in one section saves all sections", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{technical: %{cadence: "never"}})
       {:ok, dataset} = Datasets.update(smrt_dataset)
@@ -393,13 +380,93 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert_redirect(view, url)
     end
+
+    test "allows publish of invalid url form with valid extract step form", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+      url_view = find_child(view, "url_form_editor")
+      extract_step_view = find_child(view, "extract_step_form_editor")
+
+      url_form_data = %{"sourceUrl" => ""}
+      extract_form_data = %{"type" => "http", "method" => "GET", "url" => "cam.com"}
+
+      render_change(url_view, :validate, %{"form_data" => url_form_data})
+      render_change(extract_step_view, :validate, %{"form_data" => extract_form_data})
+
+      render_change(finalize_view, :publish)
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+
+      eventually(fn ->
+        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+        assert dataset_sent != nil
+        assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
+      end)
+    end
+
+    test "allows publish of invalid extract form with valid url form", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+      url_view = find_child(view, "url_form_editor")
+      extract_step_view = find_child(view, "extract_step_form_editor")
+
+      url_form_data = %{"sourceUrl" => "cam.com"}
+      extract_form_data = %{"type" => "http", "method" => "GET", "url" => ""}
+
+      render_change(url_view, :validate, %{"form_data" => url_form_data})
+      render_change(extract_step_view, :validate, %{"form_data" => extract_form_data})
+
+      render_change(finalize_view, :publish)
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+
+      eventually(fn ->
+        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+        assert dataset_sent != nil
+        assert dataset_sent.technical.extractSteps == []
+      end)
+    end
+
+    test "replaces url form elements when both url form and extract form are valid", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+      url_view = find_child(view, "url_form_editor")
+      extract_step_view = find_child(view, "extract_step_form_editor")
+
+      url_form_data = %{"sourceUrl" => "cam.com"}
+      extract_form_data = %{"type" => "http", "method" => "GET", "url" => "cam.com"}
+
+      render_change(url_view, :validate, %{"form_data" => url_form_data})
+      render_change(extract_step_view, :validate, %{"form_data" => extract_form_data})
+
+      render_change(finalize_view, :publish)
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+
+      eventually(fn ->
+        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+        assert dataset_sent != nil
+        assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
+      end)
+    end
   end
 
   describe "delete dataset" do
-    setup do
-      [conn: Andi.Test.AuthHelper.build_authorized_conn()]
-    end
-
     test "dataset is deleted after confirmation", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
 

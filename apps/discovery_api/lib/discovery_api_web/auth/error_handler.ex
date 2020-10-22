@@ -1,6 +1,8 @@
 defmodule DiscoveryApiWeb.Auth.ErrorHandler do
   @moduledoc false
   @behaviour Guardian.Plug.ErrorHandler
+  use Auth.Guardian.CacheClearingErrorHandler,
+    verifier_module: Auth.Guardian.Plug.VerifyHeader
 
   require Logger
 

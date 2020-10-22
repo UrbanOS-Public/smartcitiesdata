@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.Mixfile do
   def project do
     [
       app: :discovery_streams,
-      version: "2.10.2",
+      version: "2.10.3",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -38,7 +38,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:brook, "~> 0.4.0"},
       {:cachex, "~> 3.0"},
       {:checkov, "~> 1.0", only: [:test, :integration]},
-      {:cowlib, "~> 2.8.0", override: true},
+      {:cowlib, "~> 2.8", override: true},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:definition_kafka, in_umbrella: true},
       {:divo_kafka, "~> 0.1.6", only: [:integration]},

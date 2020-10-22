@@ -11,7 +11,7 @@ defmodule DiscoveryApiWeb.Router do
       error_handler: DiscoveryApiWeb.Auth.ErrorHandler
     )
 
-    plug(DiscoveryApiWeb.Plugs.VerifyToken)
+    plug(Auth.Guardian.Plug.VerifyHeader)
   end
 
   pipeline :add_user_details do

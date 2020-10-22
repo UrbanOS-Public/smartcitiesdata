@@ -5,35 +5,19 @@ defmodule AndiWeb.Helpers.FormTools do
   alias Andi.Services.OrgStore
 
   def adjust_source_url_for_query_params(form_data) do
-    source_url = form_data["sourceUrl"]
-
-    source_query_params =
-      form_data
-      |> Map.get("sourceQueryParams", %{})
-      |> Enum.map(fn {_index, v} -> v end)
-
-    updated_source_url = Andi.URI.update_url_with_params(source_url, source_query_params)
-
-    put_in(form_data, ["sourceUrl"], updated_source_url)
+    adjust_query_params(form_data, "sourceUrl", "sourceQueryParams")
   end
 
   def adjust_source_query_params_for_url(form_data_with_updated_url) do
-    source_url = form_data_with_updated_url["sourceUrl"]
+    adjust_url(form_data_with_updated_url, "sourceUrl", "sourceQueryParams")
+  end
 
-    case Andi.URI.extract_query_params(source_url) do
-      {:ok, params} ->
-        form_data_params =
-          params
-          |> Enum.map(&convert_param_to_key_value/1)
-          |> Enum.with_index()
-          |> Enum.reduce(%{}, &convert_param_to_form_data/2)
+  def adjust_extract_url_for_query_params(form_data) do
+    adjust_query_params(form_data, "url", "queryParams")
+  end
 
-        form_data_with_updated_url
-        |> put_in(["sourceQueryParams"], form_data_params)
-
-      _ ->
-        form_data_with_updated_url
-    end
+  def adjust_extract_query_params_for_url(form_data_with_updated_url) do
+    adjust_url(form_data_with_updated_url, "url", "queryParams")
   end
 
   def adjust_data_name(form_data) do
@@ -76,6 +60,38 @@ defmodule AndiWeb.Helpers.FormTools do
         |> put_in(["orgName"], "")
         |> put_in(["systemName"], "")
     end
+  end
+
+  defp adjust_url(form_data, url_location, query_params_location) do
+    source_url = form_data[url_location]
+
+    case Andi.URI.extract_query_params(source_url) do
+      {:ok, params} ->
+        form_data_params =
+          params
+          |> Enum.map(&convert_param_to_key_value/1)
+          |> Enum.with_index()
+          |> Enum.reduce(%{}, &convert_param_to_form_data/2)
+
+        form_data
+        |> put_in([query_params_location], form_data_params)
+
+      _ ->
+        form_data
+    end
+  end
+
+  defp adjust_query_params(form_data, url_location, query_params_location) do
+    source_url = form_data[url_location]
+
+    source_query_params =
+      form_data
+      |> Map.get(query_params_location, %{})
+      |> Enum.map(fn {_index, v} -> v end)
+
+    updated_source_url = Andi.URI.update_url_with_params(source_url, source_query_params)
+
+    put_in(form_data, [url_location], updated_source_url)
   end
 
   defp convert_param_to_form_data({value, index}, acc) do

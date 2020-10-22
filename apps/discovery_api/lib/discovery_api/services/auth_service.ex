@@ -10,18 +10,11 @@ defmodule DiscoveryApi.Services.AuthService do
     end
   end
 
-  def get_jwks() do
-    case HTTPoison.get(jwks_endpoint()) do
-      {:ok, %{body: body}} -> Jason.decode(body)
-      error -> error
-    end
-  end
-
   defp user_info_endpoint() do
-    Application.get_env(:discovery_api, :user_info_endpoint)
-  end
+    issuer =
+      Application.get_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler)
+      |> Keyword.fetch!(:issuer)
 
-  defp jwks_endpoint() do
-    Application.get_env(:discovery_api, :jwks_endpoint)
+    issuer <> "userinfo"
   end
 end

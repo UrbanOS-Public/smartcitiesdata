@@ -1,13 +1,13 @@
 defmodule DiscoveryApi.Schemas.VisualizationsTest do
   use ExUnit.Case
   use DiscoveryApi.DataCase
+  use DiscoveryApiWeb.Test.AuthConnCase.IntegrationCase
 
   alias DiscoveryApi.Repo
   alias DiscoveryApi.Schemas.{Generators, Users, Visualizations}
   alias DiscoveryApi.Schemas.Visualizations.Visualization
   alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Test.Helper
-  alias DiscoveryApi.Test.AuthHelper
 
   import SmartCity.TestHelper, only: [eventually: 1]
 
@@ -188,14 +188,11 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
   end
 
   describe "update/2" do
-    setup do
-      {:ok, owner} = Users.create_or_update(AuthHelper.valid_jwt_sub(), %{email: "bob@example.com"})
+    setup %{authorized_subject: subject} do
+      {:ok, owner} = Users.create_or_update(subject, %{email: "bob@example.com"})
 
       visualization = %{title: "query title", query: "select * FROM table", owner: owner}
       {:ok, created_visualization} = Visualizations.create_visualization(visualization)
-
-      AuthHelper.auth0_setup()
-      |> on_exit()
 
       %{created_visualization: created_visualization, owner: owner}
     end
@@ -249,36 +246,20 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
     test "given a valid query through the API, it is updated with a list of datasets used in it", %{
       created_visualization: created_visualization,
-      owner: _owner
+      owner: _owner,
+      authorized_conn: authorized_conn
     } do
       {table, id} = Helper.create_persisted_dataset("123A", "a_table", "a_org")
 
-      %{status_code: 200} =
-        put_with_authentication(
-          "localhost:4000/api/v1/visualization/#{created_visualization.public_id}",
-          ~s({"query": "select * from #{table}", "title": "My favorite title", "chart": {"data": "hello"}}),
-          AuthHelper.valid_jwt()
-        )
+      put_body = ~s({"query": "select * from #{table}", "title": "My favorite title", "chart": {"data": "hello"}})
+
+      assert put(authorized_conn, "/api/v1/visualization/#{created_visualization.public_id}", put_body)
+             |> response(200)
 
       eventually(fn ->
         {:ok, viz} = Visualizations.get_visualization_by_id(created_visualization.public_id)
         assert [id] == viz.datasets
       end)
     end
-  end
-
-  defp put_with_authentication(url, body, bearer_token) do
-    %{
-      status_code: status_code,
-      body: body_json
-    } =
-      HTTPoison.put!(
-        url,
-        body,
-        Authorization: "Bearer #{bearer_token}",
-        "Content-Type": "application/json"
-      )
-
-    %{status_code: status_code, body: Jason.decode!(body_json, keys: :atoms)}
   end
 end

@@ -1,7 +1,7 @@
 defmodule Andi.Event.EventHandlerTest do
   @moduledoc false
   use ExUnit.Case
-  use AndiWeb.ConnCase
+  use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
 
   import SmartCity.Event, only: [dataset_delete: 0, dataset_harvest_start: 0, organization_update: 0]

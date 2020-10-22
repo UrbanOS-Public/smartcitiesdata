@@ -95,3 +95,5 @@ config :andi, AndiWeb.Auth.TokenHandler,
   issuer: System.get_env("AUTH_JWT_ISSUER"),
   allowed_algos: ["RS256"],
   verify_issuer: true
+
+config :andi, Guardian.DB, repo: Andi.Repo

@@ -3,12 +3,15 @@ defmodule Auth.Auth0.CachedJWKS do
 
   use Memoize
 
+  def get(issuer) do
+    case HTTPoison.get(issuer <> ".well-known/jwks.json") do
+      {:ok, %{body: body}} -> Jason.decode(body)
+      error -> error
+    end
+  end
+
   defmemo get_key(issuer, key_id) do
-    keystore =
-      case HTTPoison.get(issuer <> ".well-known/jwks.json") do
-        {:ok, %{body: body}} -> Jason.decode(body)
-        error -> error
-      end
+    keystore = get(issuer)
 
     key_from_jwks(keystore, key_id)
   end
@@ -29,5 +32,9 @@ defmodule Auth.Auth0.CachedJWKS do
 
   def clear() do
     Memoize.invalidate(__MODULE__)
+  end
+
+  def clear(issuer, key_id) do
+    Memoize.invalidate(__MODULE__, :get_key, [issuer, key_id])
   end
 end

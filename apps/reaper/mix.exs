@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.24.3",
+      version: "0.24.4",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -44,6 +44,8 @@ defmodule Reaper.MixProject do
       {:brook, "~> 0.4.0"},
       {:cachex, "~> 3.2"},
       {:castore, "~> 0.1"},
+      {:cowlib, "~> 2.8", override: true},
+      {:ranch, "~> 1.7.1", override: true},
       {:dead_letter, in_umbrella: true},
       {:providers, in_umbrella: true},
       {:distillery, "~> 2.1"},
@@ -75,7 +77,7 @@ defmodule Reaper.MixProject do
       {:timex, "~> 3.6"},
       # Test/Dev Dependencies
       {:tasks, in_umbrella: true, only: :dev},
-      {:bypass, "~> 1.0", only: [:test, :integration]},
+      {:bypass, "~> 2.0", only: [:test, :integration]},
       {:checkov, "~> 1.0", only: [:test, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},

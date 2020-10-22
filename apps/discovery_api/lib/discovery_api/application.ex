@@ -4,14 +4,10 @@ defmodule DiscoveryApi.Application do
   """
   use Application
 
-  alias DiscoveryApi.Auth.GuardianConfigurator
-
   @instance_name DiscoveryApi.instance_name()
 
   def start(_type, _args) do
     import Supervisor.Spec
-
-    GuardianConfigurator.configure()
 
     get_s3_credentials()
 
@@ -64,10 +60,14 @@ defmodule DiscoveryApi.Application do
   end
 
   defp guardian_db_sweeper do
-    Application.get_env(:guardian, Guardian.DB)
+    Application.get_env(:discovery_api, Guardian.DB)
     |> case do
-      nil -> []
-      _ -> Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
+      nil ->
+        []
+
+      config ->
+        Application.put_env(:guardian, Guardian.DB, config)
+        Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
     end
   end
 

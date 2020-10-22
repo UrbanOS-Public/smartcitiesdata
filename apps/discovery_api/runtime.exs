@@ -75,9 +75,11 @@ config :redix,
 config :prestige, :session_opts, url: System.get_env("PRESTO_URL")
 
 config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler,
-  issuer: System.get_env("AUTH_JWT_ISSUER")
+  issuer: System.get_env("AUTH_JWT_ISSUER"),
+  allowed_algos: ["RS256"],
+  verify_issuer: true
 
-config :guardian, Guardian.DB, repo: DiscoveryApi.Repo
+config :discovery_api, Guardian.DB, repo: DiscoveryApi.Repo
 
 config :discovery_api,
   jwks_endpoint: System.get_env("AUTH_JWKS_ENDPOINT"),
