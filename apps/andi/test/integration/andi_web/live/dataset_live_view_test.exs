@@ -2,6 +2,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
+  use Placebo
 
   @moduletag shared_data_connection: true
 
@@ -30,7 +31,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "only datasets owned by the user are shown", %{public_conn: conn, public_subject: subject} do
-      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+      {:ok, _dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
       {:ok, _dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
       {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
       Datasets.create(user)
@@ -141,6 +142,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   test "add dataset button creates a dataset with a default dataTitle and dataName", %{curator_conn: conn, curator_subject: subject} do
+    allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
+
     {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
     assert {:ok, view, _html} = live(conn, @url_path)
 
