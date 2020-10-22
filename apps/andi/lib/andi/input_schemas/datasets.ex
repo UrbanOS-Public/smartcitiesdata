@@ -111,30 +111,19 @@ defmodule Andi.InputSchemas.Datasets do
       |> StructTools.to_map()
       |> Map.merge(form_changes)
 
-    user_id = 
+    user_id =
       changeset
       |> Changeset.get_field(:user_id, nil)
       |> extract_user_id(form_changes)
 
     case user_id do
       nil ->
-        new_changes = %{technical: technical_changes, business: business_changes, id: dataset_id} |> StructTools.to_map()
-        existing_dataset
-        |> Andi.Repo.preload([:business, :technical])
-        |> Dataset.changeset_for_draft(new_changes)
-        |> save()
+        existing_dataset |> update(%{technical: technical_changes, business: business_changes, id: dataset_id})
+
       user_id ->
-        new_changes = %{technical: technical_changes, business: business_changes, id: dataset_id, user_id: user_id} |> StructTools.to_map()
-        existing_dataset
-        |> Andi.Repo.preload([:business, :technical])
-        |> Dataset.changeset_for_draft(new_changes)
-        |> save()
+        existing_dataset |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, user_id: user_id})
     end
   end
-
-  defp extract_user_id(nil, %{userId: userId}), do: userId
-  defp extract_user_id(_, %{userId: userId}), do: userId
-  defp extract_user_id(_, _), do: nil
 
   def update_ingested_time(dataset_id, ingested_time) do
     from_dataset = get(dataset_id) || %Dataset{id: dataset_id}
@@ -240,4 +229,8 @@ defmodule Andi.InputSchemas.Datasets do
     |> String.replace(~r/_+/, "_", global: true)
     |> String.downcase()
   end
+
+  defp extract_user_id(nil, %{userId: userId}), do: userId
+  defp extract_user_id(_, %{userId: userId}), do: userId
+  defp extract_user_id(_, _), do: nil
 end
