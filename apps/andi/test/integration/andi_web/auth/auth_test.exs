@@ -51,6 +51,5 @@ defmodule AndiWeb.AuthTest do
       assert result.status == 302
       assert result.resp_body =~ "returnTo=http://www.example.com/auth/auth0&"
     end
-
   end
 end
