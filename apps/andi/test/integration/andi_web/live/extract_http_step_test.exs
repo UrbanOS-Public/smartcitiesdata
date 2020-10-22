@@ -374,6 +374,7 @@ defmodule AndiWeb.ExtractHttpStepTest do
               type: "http",
               method: "GET",
               url: "123.com",
+              body: "",
               queryParams: %{"x" => "y"},
               headers: %{"api-key" => "to-my-heart"}
             }
@@ -386,13 +387,19 @@ defmodule AndiWeb.ExtractHttpStepTest do
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     extract_step_form_view = find_child(view, "extract_step_form_editor")
 
-    form_data = %{field => %{"0" => %{"key" => "", "value" => "where's my key"}}}
+    form_data = %{field => value}
 
     html = render_change(extract_step_form_view, :validate, %{"form_data" => form_data})
 
     assert get_text(html, "##{field}-error-msg") == "Please enter valid key(s)."
 
-    where(field: ["queryParams", "headers"])
+    where([
+      [:field, :value],
+      ["queryParams", %{"0" => %{"key" => "", "value" => "where's my key"}}],
+      ["headers", %{"0" => %{"key" => "", "value" => "where is it?!"}}],
+      ["body", "this is invalid json"],
+      ["body", "{\"so is\": this"]
+    ])
   end
 
   test "given a url with at least one invalid query param it marks the dataset as invalid" do
