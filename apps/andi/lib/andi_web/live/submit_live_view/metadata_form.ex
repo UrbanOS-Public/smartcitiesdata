@@ -7,13 +7,12 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
   import Phoenix.HTML.Form
   import Phoenix.HTML.Link
 
-  alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.ErrorHelpers
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.Services.OrgStore
   alias AndiWeb.InputSchemas.MetadataFormSchema
+  alias AndiWeb.Helpers.MetadataFormHelpers
   alias AndiWeb.Helpers.FormTools
 
   def mount(_, %{"dataset" => dataset}, socket) do
@@ -38,9 +37,6 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
        changeset: new_metadata_changeset
      )}
   end
-
-  #  TODO: Keep the required fields "Title, Name, Description, Format, Name, and Email"
-  #  Keep the optional fields "Last updated, Spatial and Temporal boundaries, Keywords, Homepage URL, and Language"
 
   def render(assigns) do
     action =
@@ -89,7 +85,7 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
 
               <div class="metadata-form__format">
                 <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-                <%= select(f, :sourceFormat, get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_exists]) %>
+                <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_exists]) %>
                 <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
               </div>
 
@@ -101,7 +97,7 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
 
               <div class="metadata-form__keywords">
                 <%= label(f, :keywords, DisplayNames.get(:keywords), class: "label") %>
-                <%= text_input(f, :keywords, value: keywords_to_string(input_value(f, :keywords)), class: "input") %>
+                <%= text_input(f, :keywords, value: MetadataFormHelpers.keywords_to_string(input_value(f, :keywords)), class: "input") %>
                 <div class="label label--inline">Separated by comma</div>
               </div>
 
@@ -124,7 +120,7 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
 
               <div class="metadata-form__language">
                 <%= label(f, :language, DisplayNames.get(:language), class: "label") %>
-                <%= select(f, :language, get_language_options(), value: get_language(input_value(f, :language)), class: "select") %>
+                <%= select(f, :language, MetadataFormHelpers.get_language_options(), value: MetadataFormHelpers.get_language(input_value(f, :language)), class: "select") %>
               </div>
 
               <div class="metadata-form__homepage">
@@ -184,42 +180,4 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
 
     {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
-
-  defp map_to_dropdown_options(options) do
-    Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
-  end
-
-  ## TODO: Make these not repeated
-  defp rating_selection_prompt(), do: "Please Select a Value"
-
-  defp get_language_options(), do: map_to_dropdown_options(Options.language())
-  defp get_level_of_access_options, do: map_to_dropdown_options(Options.level_of_access())
-  defp get_rating_options(), do: map_to_dropdown_options(Options.ratings())
-  defp get_source_type_options(), do: map_to_dropdown_options(Options.source_type())
-  defp get_org_options(), do: Options.organizations(OrgStore.get_all())
-
-  defp get_source_format_options(source_type) when source_type in ["remote", "host"] do
-    Options.source_format_extended()
-  end
-
-  defp get_source_format_options(_), do: Options.source_format()
-
-  defp get_language(nil), do: "english"
-  defp get_language(lang), do: lang
-
-  defp get_license(nil), do: "https://creativecommons.org/licenses/by/4.0/"
-  defp get_license(license), do: license
-
-  defp keywords_to_string(nil), do: ""
-  defp keywords_to_string(keywords) when is_binary(keywords), do: keywords
-  defp keywords_to_string(keywords), do: Enum.join(keywords, ", ")
-
-  defp safe_calendar_value(nil), do: nil
-
-  defp safe_calendar_value(%{calendar: _, day: day, month: month, year: year}) do
-    Timex.parse!("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}")
-    |> NaiveDateTime.to_date()
-  end
-
-  defp safe_calendar_value(value), do: value
 end

@@ -112,7 +112,8 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
   @required_submission_fields [
     :dataTitle,
     :description,
-    :contactName
+    :contactName,
+    :sourceFormat
   ]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
@@ -136,6 +137,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
   end
 
   def changeset_for_submission(changes), do: changeset_for_submission(%__MODULE__{}, changes)
+
   def changeset_for_submission(metadata, changes) do
     cast(metadata, changes, @public_fields)
     |> validate_required(@required_submission_fields, message: "is required")

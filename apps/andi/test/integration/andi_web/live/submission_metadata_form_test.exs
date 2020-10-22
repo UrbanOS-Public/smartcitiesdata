@@ -312,7 +312,16 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
     end
 
     test "non-submission required field updateFrequency does not trigger a validation error", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{business: %{dataTitle: "dater", publishFrequency: "", language: "English", contactEmail: public_user.email, contactName: public_user.subject_id}})
+      smrt_dataset =
+        TDG.create_dataset(%{
+          business: %{
+            dataTitle: "dater",
+            publishFrequency: "",
+            language: "English",
+            contactEmail: public_user.email,
+            contactName: public_user.subject_id
+          }
+        })
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       Andi.Migration.Owner.update_owner(dataset, public_user)
@@ -320,7 +329,15 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
 
-      render_change(metadata_view, :validate, %{"form_data" => %{"description" => "change", "dataTitle" => smrt_dataset.business.dataTitle}})
+      render_change(metadata_view, :validate, %{
+        "form_data" => %{
+          "description" => "change",
+          "dataTitle" => smrt_dataset.business.dataTitle,
+          "contactName" => "Frank Bobbert",
+          "sourceFormat" => "text/csv"
+        }
+      })
+
       html = render_change(metadata_view, :save)
       refute Enum.empty?(find_elements(html, ".component-number-status--valid"))
     end

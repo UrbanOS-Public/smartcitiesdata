@@ -58,15 +58,14 @@ defmodule AndiWeb.DatasetLiveView do
     """
   end
 
-  def mount(_params, %{"user_id" => user_id, "roles" => roles} = _session, socket) do
+  def mount(_params, %{"user_id" => user_id, "roles" => roles, "is_curator" => is_curator} = _session, socket) do
     {:ok,
      assign(socket,
        datasets: nil,
        user_id: user_id,
        search_text: nil,
        include_remotes: false,
-       # TODO: Use version from token_handler
-       is_curator: Enum.member?(roles, "Curator"),
+       is_curator: is_curator,
        order: {"data_title", "asc"},
        params: %{}
      )}
