@@ -475,7 +475,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
     case decoded_json do
       {:error, _} ->
-        IO.inspect(label: "Pellooooo")
         :error
 
       {:ok, decoded_json_value} ->
