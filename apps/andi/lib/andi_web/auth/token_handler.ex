@@ -23,7 +23,7 @@ defmodule AndiWeb.Auth.TokenHandler do
     auth0_base_url = config(:issuer)
     auth0_log_out_url = "#{auth0_base_url}v2/logout?returnTo=#{andi_log_in_url}&client_id=#{auth0_client_id}"
 
-    conn = __MODULE__.Plug.sign_out(conn)
+    conn = AndiWeb.Auth.TokenHandler.Plug.sign_out(conn)
     |> Phoenix.Controller.redirect(external: auth0_log_out_url)
 
     TelemetryEvent.add_event_metrics([app: "andi"], [:andi_logout_success])
