@@ -328,9 +328,9 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps) |> Enum.to_list()
+      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
-      assert expected_assigns == [{:output_file, {:file, "12345-6789"}}]
+      assert expected_assigns == %{output_file: {:file, "12345-6789"}}
       assert File.read!("12345-6789") == "one,two,three\nfour,five,six\n"
     end
 
@@ -366,11 +366,9 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns =
-        ExtractStep.execute_extract_steps(dataset, steps)
-        |> Enum.to_list()
+      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
-      assert expected_assigns == [{:output_file, {:file, "12345-6789"}}, {:token, "secret tunnel"}]
+      assert expected_assigns == %{output_file: {:file, "12345-6789"}, token: "secret tunnel"}
       assert File.read!("12345-6789") == "this,is,another\ncsv,with,columns\n"
     end
 
@@ -398,11 +396,9 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns =
-        ExtractStep.execute_extract_steps(dataset, steps)
-        |> Enum.to_list()
+      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
-      assert expected_assigns == [{:output_file, {:file, "12345-6789"}}, {:token, "bear token"}]
+      assert expected_assigns == %{output_file: {:file, "12345-6789"}, token: "bear token"}
       assert File.read!("12345-6789") == "hello,it's,me\nyour,csv,friend\n"
     end
 
@@ -426,11 +422,9 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assigns =
-        ExtractStep.execute_extract_steps(dataset, steps)
-        |> Enum.to_list()
+      assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
-      assert assigns = [{:output_file, {:file, "12345-6789"}}, {:path, "fancyurl"}]
+      assert assigns = %{output_file: {:file, "12345-6789"}, path: "fancyurl"}
       assert File.read!("12345-6789") == "one,two,three\nfour,five,six\n"
     end
 
@@ -464,11 +458,9 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns =
-        ExtractStep.execute_extract_steps(dataset, steps)
-        |> Enum.to_list()
+      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
-      assert expected_assigns == [{:date, "2018-01-01"}, {:output_file, {:file, "12345-6789"}}]
+      assert expected_assigns == %{date: "2018-01-01", output_file: {:file, "12345-6789"}}
       assert File.read!("12345-6789") == "this,csv,is only\nattainable,with a,post body\n"
     end
 
@@ -494,19 +486,15 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns =
-        ExtractStep.execute_extract_steps(dataset, steps)
-        |> Enum.to_list()
+      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
-      assert expected_assigns == [{:output_file, {:file, "12345-6789"}}]
+      assert expected_assigns == %{output_file: {:file, "12345-6789"}}
       assert_called Mint.HTTP.connect(:http, "localhost", any(), transport_opts: [timeout: 30_000], protocols: [:http1])
     end
   end
 
   describe "execute_extract_steps/2 s3" do
     test "successfully constructs the S3 request", %{dataset: dataset} do
-      File.write!("somefile2", "1,2,3\n4,5,6")
-
       allow Reaper.DataSlurper.S3.slurp(
               "s3://some-bucket/subdir/blaster.exe",
               dataset.id,
@@ -533,11 +521,9 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns =
-        ExtractStep.execute_extract_steps(dataset, steps)
-        |> Enum.to_list()
+      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
-      assert expected_assigns == [{:output_file, {:file, "somefile2"}}]
+      assert expected_assigns == %{output_file: {:file, "somefile2"}}
     end
   end
 
@@ -567,11 +553,14 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns =
-        ExtractStep.execute_extract_steps(dataset, steps)
-        |> Enum.to_list()
+      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
-      assert expected_assigns == [host: "host", output_file: {:file, "somefile2"}, path: "/wow/such/path", port: "port"]
+      assert expected_assigns == %{
+               host: "host",
+               output_file: {:file, "somefile2"},
+               path: "/wow/such/path",
+               port: "port"
+             }
     end
   end
 
