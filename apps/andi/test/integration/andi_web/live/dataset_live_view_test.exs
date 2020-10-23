@@ -170,12 +170,35 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
     assert {:ok, view, html} = live(conn, edit_page)
 
-    number_of_owned_datasets =
-      Andi.Repo.all(Dataset)
+    owned_dataset =
+      Andi.InputSchemas.Datasets.get_all()
       |> Enum.filter(fn dataset -> dataset.owner_id == user.id end)
-      |> Enum.count()
+      |> List.first()
 
-    assert number_of_owned_datasets == 1
+    refute owned_dataset == nil
+    assert owned_dataset.business.contactEmail == user.email
+  end
+
+  test "add dataset button creates a dataset with release date and updated date defaulted to today", %{
+    curator_conn: conn,
+    curator_subject: subject
+  } do
+    expected_date = Date.utc_today()
+    {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+    assert {:ok, view, _html} = live(conn, @url_path)
+
+    {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+
+    assert {:ok, view, html} = live(conn, edit_page)
+
+    owned_dataset =
+      Andi.InputSchemas.Datasets.get_all()
+      |> Enum.filter(fn dataset -> dataset.owner_id == user.id end)
+      |> List.first()
+
+    refute owned_dataset == nil
+    assert owned_dataset.business.issuedDate == expected_date
+    assert owned_dataset.business.modifiedDate == expected_date
   end
 
   test "does not load datasets that only contain a timestamp", %{conn: conn} do
