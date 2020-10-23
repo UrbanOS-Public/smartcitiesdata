@@ -9,8 +9,8 @@ Interactions with Redis are abstracted with `smartcitiesdata.smart_city*` functi
 ## Running Andi
 
 #### Prerequisites for auth0 setup: 
-- In `config/integration.exs`, you must enable HTTPS in order to securely access the Auth0 login page. There is a comment block with the necessary config under the `Endpoint` configuration that can be uncommented.
-- You must create self-signed SSL certificates in order for this configuration to take hold. Generate `key.pem` and a `cert.pem` file in the `priv` folder. You can do this by running `./generate-certs.sh` in the `priv` folder. Or by running the following line: `openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out cert.pem`
+- In `config/integration.exs`, TLS is enabled for Phoenix by default to allow you to work with Auth0, which requires it.
+- You must create self-signed TLS certificates in order for this configuration to take hold. These certs will be regenerated if you run `MIX_ENV=integration mix start` or `mix test.integration`. However, you can generate a key and self-signed certificate that works with the `config/integration.exs` setup by running `mix x509.gen.selfsigned localhost 127.0.0.1.xip.io --force` separately.
 - Andi also requires an Auth0 client secret to be set as a system environment variable. You can get this value from auth0.com in the corresponding tenant configuration for the ANDI application. You will need this value to start andi (specified below in the <auth_client_secret> variable)
 - Lastly, you need an authorized account to login when the application starts
 
@@ -18,10 +18,10 @@ Interactions with Redis are abstracted with `smartcitiesdata.smart_city*` functi
 - Install dependencies with `mix deps.get`
 - `cd assets` and `npm i`
 - `MIX_ENV=integration mix docker.start`
-- `MIX_ENV=integration mix ecto.create && MIX_ENV=integration mix ecto.migrate`
-- Start Phoenix endpoint locally with `AUTH0_CLIENT_SECRET="<auth_client_secret>" MIX_ENV=integration iex -S mix phx.server`
+- Start Phoenix endpoint locally with `AUTH0_CLIENT_SECRET="<auth_client_secret>" MIX_ENV=integration iex -S mix start`
 - Because Auth0 requires `https`, you can visit paths like `localhost` by using `https://127.0.0.1.xip.io:4443/datasets`
 	- port 4443 can be swapped for the port used in the https configuration defined in `integration.exs` under `AndiWeb.Endpoint`
+    - `MIX_ENV=integration mix start` will automatically generate the self-signed certificate for HTTPS. Review the output it gives for directions on how to allow the self-signed cert on your dev machine for ONLY localhost
 
 ###
 
