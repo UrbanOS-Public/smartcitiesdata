@@ -83,6 +83,7 @@ defmodule Andi.MixProject do
       {:timex, "~> 3.6"},
       {:tzdata, "~> 1.0"},
       {:ueberauth_auth0, "~> 0.8.1"},
+      {:x509, "~> 0.8.1", only: [:dev, :integration]},
       {:web, in_umbrella: true}
     ]
   end
@@ -90,7 +91,20 @@ defmodule Andi.MixProject do
   defp aliases do
     [
       verify: ["format --check-formatted", "credo", "sobelow -i Config.HTTPS --skip --compact --exit low"],
-      start: ["ecto.create --quiet", "ecto.migrate", "phx.server"]
+      start: [
+        generate_selfsigned_certs(),
+        "ecto.create --quiet",
+        "ecto.migrate",
+        "phx.server"
+      ],
+      "test.integration": [
+        generate_selfsigned_certs(),
+        "test.integration"
+      ]
     ]
+  end
+
+  defp generate_selfsigned_certs do
+    "x509.gen.selfsigned localhost 127.0.0.1.xip.io --force"
   end
 end
