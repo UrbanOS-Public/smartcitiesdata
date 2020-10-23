@@ -51,5 +51,25 @@ defmodule AndiWeb.AuthTest do
       assert result.status == 302
       assert result.resp_body =~ "returnTo=http://www.example.com/auth/auth0&"
     end
+
+    test "does not affect other, curator-tier users", %{revocable_conn: conn, curator_conn: curator_conn} do
+      result = get(conn, "/auth/auth0/logout")
+
+      assert result.status == 302
+      assert result.resp_body =~ "v2/logout"
+
+      assert get(curator_conn, "/datasets")
+      |> response(200)
+    end
+
+    test "does not affect other, public-tier users", %{revocable_conn: conn, public_conn: public_conn} do
+      result = get(conn, "/auth/auth0/logout")
+
+      assert result.status == 302
+      assert result.resp_body =~ "v2/logout"
+
+      assert get(public_conn, "/datasets")
+      |> response(200)
+    end
   end
 end

@@ -18,14 +18,9 @@ defmodule AndiWeb.Auth.TokenHandler do
   Clears the user's token from their session (which revokes it) and logs them out of Auth0
   """
   def log_out(conn) do
-    andi_log_in_url = log_in_url(conn)
-    auth0_client_id = client_id()
-    auth0_base_url = config(:issuer)
-    auth0_log_out_url = "#{auth0_base_url}v2/logout?returnTo=#{andi_log_in_url}&client_id=#{auth0_client_id}"
-
     conn =
       AndiWeb.Auth.TokenHandler.Plug.sign_out(conn)
-      |> Phoenix.Controller.redirect(external: auth0_log_out_url)
+      |> Phoenix.Controller.redirect(external: log_out_url(conn))
 
     TelemetryEvent.add_event_metrics([app: "andi"], [:andi_logout_success])
 
@@ -64,5 +59,13 @@ defmodule AndiWeb.Auth.TokenHandler do
     ueberauth_config = Application.get_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth)
 
     Keyword.fetch!(ueberauth_config, :client_id)
+  end
+
+  defp log_out_url(conn) do
+    andi_log_in_url = log_in_url(conn)
+    auth0_client_id = client_id()
+    auth0_base_url = config(:issuer)
+
+    "#{auth0_base_url}v2/logout?returnTo=#{andi_log_in_url}&client_id=#{auth0_client_id}"
   end
 end
