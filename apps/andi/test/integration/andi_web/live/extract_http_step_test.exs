@@ -372,7 +372,7 @@ defmodule AndiWeb.ExtractHttpStepTest do
           extractSteps: [
             %{
               type: "http",
-              method: "GET",
+              method: "POST",
               url: "123.com",
               body: "",
               queryParams: %{"x" => "y"},
@@ -387,19 +387,47 @@ defmodule AndiWeb.ExtractHttpStepTest do
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     extract_step_form_view = find_child(view, "extract_step_form_editor")
 
-    form_data = %{field => value}
+    form_data = %{field => value, "method" => "POST"}
 
     html = render_change(extract_step_form_view, :validate, %{"form_data" => form_data})
 
-    assert get_text(html, "##{field}-error-msg") == "Please enter valid key(s)."
+    assert get_text(html, "##{field}-error-msg") == error
 
     where([
-      [:field, :value],
-      ["queryParams", %{"0" => %{"key" => "", "value" => "where's my key"}}],
-      ["headers", %{"0" => %{"key" => "", "value" => "where is it?!"}}],
-      ["body", "this is invalid json"],
-      ["body", "{\"so is\": this"]
+      [:field, :value, :error],
+      ["queryParams", %{"0" => %{"key" => "", "value" => "where's my key"}}, "Please enter valid key(s)."],
+      ["headers", %{"0" => %{"key" => "", "value" => "where is it?!"}}, "Please enter valid key(s)."],
+      ["body", "this is invalid json", "Please enter a valid body."]
     ])
+  end
+
+  test "body passes validation with valid json", %{conn: conn} do
+    smrt_dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          extractSteps: [
+            %{
+              type: "http",
+              method: "POST",
+              url: "123.com",
+              body: "",
+              queryParams: %{"x" => "y"},
+              headers: %{"api-key" => "to-my-heart"}
+            }
+          ]
+        }
+      })
+
+    {:ok, dataset} = Datasets.update(smrt_dataset)
+
+    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    extract_step_form_view = find_child(view, "extract_step_form_editor")
+
+    form_data = %{"body" => "[{\"bob\": 1}]", "method" => "POST"}
+
+    html = render_change(extract_step_form_view, :validate, %{"form_data" => form_data})
+
+    assert get_text(html, "#body-error-msg") == ""
   end
 
   test "given a url with at least one invalid query param it marks the dataset as invalid" do
