@@ -28,7 +28,8 @@ config :andi,
   hsts_enabled: true,
   topic: "dataset-registry",
   organization_topic: "organization-raw",
-  dead_letter_topic: "streaming-dead-letters"
+  dead_letter_topic: "streaming-dead-letters",
+  documentation_root: ""
 
 config :tesla, adapter: Tesla.Adapter.Hackney
 

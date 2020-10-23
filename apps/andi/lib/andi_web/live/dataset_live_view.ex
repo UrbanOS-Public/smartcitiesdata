@@ -11,7 +11,7 @@ defmodule AndiWeb.DatasetLiveView do
     ~L"""
     <div class="datasets-view">
       <div class="page-header">
-        <a href="/datasets">Dataset Ingestion Interface</a>
+        <a href="/datasets"><%= header_text(@is_curator) %></a>
         <%= if @is_curator do %>
         <div class="organization-link" phx-click="show-organizations">
           <div class="organization-link__icon"></div>
@@ -23,7 +23,7 @@ defmodule AndiWeb.DatasetLiveView do
       <div class="datasets-index">
         <div class="datasets-index__header">
           <h1 class="datasets-index__title"><%= title_text(@is_curator) %></h1>
-          <button type="button" class="btn btn--add-dataset btn--action" phx-click="add-dataset">ADD DATASET</button>
+          <button type="button" class="btn btn--add-dataset btn--action" phx-click="add-dataset"><%= action_text(@is_curator) %></button>
         </div>
 
         <div class="input-container">
@@ -58,14 +58,14 @@ defmodule AndiWeb.DatasetLiveView do
     """
   end
 
-  def mount(_params, %{"user_id" => user_id, "roles" => roles} = _session, socket) do
+  def mount(_params, %{"user_id" => user_id, "roles" => roles, "is_curator" => is_curator} = _session, socket) do
     {:ok,
      assign(socket,
        datasets: nil,
        user_id: user_id,
        search_text: nil,
        include_remotes: false,
-       is_curator: Enum.member?(roles, "Curator"),
+       is_curator: is_curator,
        order: {"data_title", "asc"},
        params: %{}
      )}
@@ -192,4 +192,10 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp title_text(true = _is_curator), do: "All Datasets"
   defp title_text(false = _is_curator), do: "My Datasets"
+
+  defp action_text(true = _is_curator), do: "ADD DATASET"
+  defp action_text(false = _is_curator), do: "SUBMIT NEW DATASET"
+
+  defp header_text(true = _is_curator), do: "Dataset Ingestion Interface"
+  defp header_text(false = _is_curator), do: "Dataset Submission Interface"
 end
