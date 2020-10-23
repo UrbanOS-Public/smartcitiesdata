@@ -177,7 +177,8 @@ defmodule Andi.InputSchemas.InputConverter do
         |> Map.update(:queryParams, [], &to_key_value_list/1)
         |> Map.update(:headers, [], &to_key_value_list/1)
 
-      step -> step
+      step ->
+        step
     end)
   end
 

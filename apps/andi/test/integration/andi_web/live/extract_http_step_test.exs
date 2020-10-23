@@ -39,10 +39,12 @@ defmodule AndiWeb.ExtractHttpStepTest do
             extractSteps: [
               %{
                 type: "http",
-                method: "GET",
-                url: "test.com",
-                queryParams: %{"bar" => "biz", "blah" => "dah"},
-                headers: %{"barl" => "biz", "yar" => "har"}
+                context: %{
+                  action: "GET",
+                  url: "test.com",
+                  queryParams: %{"bar" => "biz", "blah" => "dah"},
+                  headers: %{"barl" => "biz", "yar" => "har"}
+                }
               }
             ]
           }
@@ -148,10 +150,12 @@ defmodule AndiWeb.ExtractHttpStepTest do
             extractSteps: [
               %{
                 type: "http",
-                method: "GET",
-                url: "123.com",
-                queryParams: %{"x" => "y"},
-                headers: %{"api-key" => "to-my-heart"}
+                context: %{
+                  action: "GET",
+                  url: "123.com",
+                  queryParams: %{"x" => "y"},
+                  headers: %{"api-key" => "to-my-heart"}
+                }
               }
             ]
           }
@@ -239,10 +243,12 @@ defmodule AndiWeb.ExtractHttpStepTest do
             extractSteps: [
               %{
                 type: "http",
-                method: "GET",
-                url: "123.com",
-                queryParams: %{"x" => "y"},
-                headers: %{"api-key" => "to-my-heart"}
+                context: %{
+                  action: "GET",
+                  url: "123.com",
+                  queryParams: %{"x" => "y"},
+                  headers: %{"api-key" => "to-my-heart"}
+                }
               }
             ]
           }
@@ -274,10 +280,12 @@ defmodule AndiWeb.ExtractHttpStepTest do
             extractSteps: [
               %{
                 type: "http",
-                method: "GET",
-                url: "123.com",
-                queryParams: %{"x" => "y"},
-                headers: %{"api-key" => "to-my-heart"}
+                context: %{
+                  action: "GET",
+                  url: "123.com",
+                  queryParams: %{"x" => "y"},
+                  headers: %{"api-key" => "to-my-heart"}
+                }
               }
             ]
           }
@@ -307,10 +315,12 @@ defmodule AndiWeb.ExtractHttpStepTest do
             extractSteps: [
               %{
                 type: "http",
-                method: "GET",
-                url: "123.com",
-                queryParams: %{"x" => "y"},
-                headers: %{"api-key" => "to-my-heart"}
+                context: %{
+                  action: "GET",
+                  url: "123.com",
+                  queryParams: %{"x" => "y"},
+                  headers: %{"api-key" => "to-my-heart"}
+                }
               }
             ]
           }
@@ -342,10 +352,12 @@ defmodule AndiWeb.ExtractHttpStepTest do
           extractSteps: [
             %{
               type: "http",
-              method: "GET",
-              url: "123.com",
-              queryParams: %{"x" => "y"},
-              headers: %{"api-key" => "to-my-heart"}
+              context: %{
+                action: "GET",
+                url: "123.com",
+                queryParams: %{"x" => "y"},
+                headers: %{"api-key" => "to-my-heart"}
+              }
             }
           ]
         }

@@ -69,7 +69,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
             <%= hidden_input(f, :id) %>
             <%= hidden_input(f, :type) %>
             <%= hidden_input(f, :technical_id) %>
-            <%= hidden_input(f, :protocol) %>
 
             <div class="component-edit-section--<%= @visibility %>">
               <div class="extract-step-form-edit-section form-grid">
@@ -79,9 +78,9 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
                 </div>
 
                 <div class="extract-step-form__method">
-                  <%= label(f, :method, DisplayNames.get(:method), class: "label label--required") %>
-                  <%= select(f, :method, get_http_methods(), id: "http_method", class: "extract-step-form__method select") %>
-                  <%= ErrorHelpers.error_tag(f, :method) %>
+                  <%= label(f, :action, DisplayNames.get(:method), class: "label label--required") %>
+                  <%= select(f, :action, get_http_methods(), id: "http_method", class: "extract-step-form__method select") %>
+                  <%= ErrorHelpers.error_tag(f, :action) %>
                 </div>
 
                 <div class="extract-step-form__url">
