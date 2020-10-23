@@ -46,13 +46,15 @@ config :andi, AndiWeb.Endpoint,
   server: true,
   check_origin: false
 
-config :andi, AndiWeb.Endpoint,
-  https: [
-    port: 4443,
-    otp_app: :andi,
-    keyfile: "priv/cert/selfsigned_key.pem",
-    certfile: "priv/cert/selfsigned.pem"
-  ]
+if File.exists?("priv/cert/selfsigned.pem") do
+  config :andi, AndiWeb.Endpoint,
+    https: [
+      port: 4443,
+      otp_app: :andi,
+      keyfile: "priv/cert/selfsigned_key.pem",
+      certfile: "priv/cert/selfsigned.pem"
+    ]
+end
 
 config :andi, :brook,
   instance: :andi,
