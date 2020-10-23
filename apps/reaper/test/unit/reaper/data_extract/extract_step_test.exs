@@ -541,6 +541,40 @@ defmodule Reaper.DataExtract.ExtractStepTest do
     end
   end
 
+  describe "execute_extract_steps/2 sftp" do
+    test "successfully constructs the sftp request", %{dataset: dataset} do
+      allow Reaper.DataSlurper.Sftp.slurp(
+              "sftp://host:port/wow/such/path",
+              dataset.id,
+              any(),
+              any(),
+              any(),
+              any()
+            ),
+            return: {:file, "somefile2"}
+
+      steps = [
+        %{
+          type: "sftp",
+          context: %{
+            url: "sftp://{{host}}:{{port}}{{path}}"
+          },
+          assigns: %{
+            path: "/wow/such/path",
+            host: "host",
+            port: "port"
+          }
+        }
+      ]
+
+      expected_assigns =
+        ExtractStep.execute_extract_steps(dataset, steps)
+        |> Enum.to_list()
+
+      assert expected_assigns == [host: "host", output_file: {:file, "somefile2"}, path: "/wow/such/path", port: "port"]
+    end
+  end
+
   describe "extract steps error paths" do
     test "Set variable then single extract step for http get", %{dataset: dataset} do
       steps = [

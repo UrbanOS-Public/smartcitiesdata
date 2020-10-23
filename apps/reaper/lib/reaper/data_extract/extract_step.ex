@@ -46,6 +46,14 @@ defmodule Reaper.DataExtract.ExtractStep do
     Map.put(step.assigns, :output_file, output_file)
   end
 
+  defp process_extract_step(dataset, %{type: "sftp"} = step) do
+    output_file =
+      UrlBuilder.build_safe_url_path(step.context.url, step.assigns)
+      |> DataSlurper.slurp(dataset.id)
+
+    Map.put(step.assigns, :output_file, output_file)
+  end
+
   defp process_extract_step(_dataset, %{type: "date"} = step) do
     date =
       case step.context.deltaTimeUnit do
