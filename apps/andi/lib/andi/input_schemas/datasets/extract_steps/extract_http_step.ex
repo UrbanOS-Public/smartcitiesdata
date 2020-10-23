@@ -83,13 +83,15 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
     end)
   end
 
-  defp validate_body_format(%{changes: %{body: body}} = changeset) when body in ["", nil] , do: changeset
+  defp validate_body_format(%{changes: %{body: body}} = changeset) when body in ["", nil], do: changeset
+
   defp validate_body_format(%{changes: %{body: body}} = changeset) do
     case Jason.decode(body) do
       {:ok, _} -> changeset
       {:error, _} -> add_error(changeset, :body, "could not parse json", validation: :format)
     end
   end
+
   defp validate_body_format(changeset), do: changeset
 
   defp has_invalid_key_values?(%{changes: changes}, field) do

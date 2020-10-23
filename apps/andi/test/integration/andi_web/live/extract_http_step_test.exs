@@ -429,16 +429,4 @@ defmodule AndiWeb.ExtractHttpStepTest do
 
     assert get_text(html, "#body-error-msg") == ""
   end
-
-  test "given a url with at least one invalid query param it marks the dataset as invalid" do
-    form_data = %{"url" => "https://source.url.example.com?=oops&a=b"} |> FormTools.adjust_extract_query_params_for_url()
-
-    changeset = ExtractHttpStep.changeset_from_form_data(form_data)
-
-    refute changeset.valid?
-
-    assert {:queryParams, {"has invalid format", [validation: :format]}} in changeset.errors
-
-    assert %{queryParams: [%{key: nil, value: "oops"}, %{key: "a", value: "b"}]} = Ecto.Changeset.apply_changes(changeset)
-  end
 end
