@@ -59,7 +59,7 @@ defmodule AndiWeb.AuthTest do
       assert result.resp_body =~ "v2/logout"
 
       assert get(curator_conn, "/datasets")
-      |> response(200)
+             |> response(200)
     end
 
     test "does not affect other, public-tier users", %{revocable_conn: conn, public_conn: public_conn} do
@@ -69,7 +69,7 @@ defmodule AndiWeb.AuthTest do
       assert result.resp_body =~ "v2/logout"
 
       assert get(public_conn, "/datasets")
-      |> response(200)
+             |> response(200)
     end
   end
 end
