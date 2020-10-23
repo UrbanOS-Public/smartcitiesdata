@@ -20,6 +20,8 @@ defmodule DiscoveryStreams.Stream do
           system_name: String.t()
         ]
 
+  getter(:topic_subscriber_config, generic: true)
+
   def start_link(init_opts) do
     server_opts = Keyword.take(init_opts, [:name])
     GenServer.start_link(__MODULE__, init_opts, server_opts)
@@ -61,7 +63,7 @@ defmodule DiscoveryStreams.Stream do
         app_name: @instance_name,
         dataset_id: state.dataset_id,
         assigns: %{
-          kafka: Application.get_env(:discovery_streams, :topic_subscriber_config),
+          kafka: topic_subscriber_config(),
           system_name: state.system_name
         }
       )
