@@ -4,9 +4,7 @@ defmodule AndiWeb.EditController do
   alias Andi.InputSchemas.Organizations
 
   def show_dataset(conn, %{"id" => id}) do
-    %{"roles" => roles, "user_id" => user_id} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
-
-    is_curator = "Curator" in roles
+    %{"user_id" => user_id, "is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
 
     case get_dataset_if_accessible(id, is_curator, user_id) do
       nil ->
@@ -16,7 +14,11 @@ defmodule AndiWeb.EditController do
         |> render("404.html")
 
       dataset ->
-        live_render(conn, AndiWeb.EditLiveView, session: %{"dataset" => dataset})
+        if is_curator do
+          live_render(conn, AndiWeb.EditLiveView, session: %{"dataset" => dataset, "user_id" => user_id, "is_curator" => is_curator})
+        else
+          live_render(conn, AndiWeb.SubmitLiveView, session: %{"dataset" => dataset, "user_id" => user_id, "is_curator" => is_curator})
+        end
     end
   end
 
