@@ -20,7 +20,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     field(:dataName, :string)
     field(:dataTitle, :string)
     field(:datasetId, :string)
-    field(:userId, :string)
+    field(:ownerId, :string)
     field(:description, :string)
     field(:homepage, :string)
     field(:issuedDate, :date)
@@ -67,7 +67,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     :dataName,
     :dataTitle,
     :datasetId,
-    :userId,
+    :ownerId,
     :description,
     :homepage,
     :issuedDate,
@@ -146,14 +146,14 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
   end
 
   def changeset_from_andi_dataset(dataset) do
-    user_id = dataset.user_id
+    owner_id = dataset.owner_id
     dataset = StructTools.to_map(dataset)
 
     business_changes = dataset.business
     technical_changes = dataset.technical
     changes = Map.merge(business_changes, technical_changes)
     changes = Map.put(changes, :datasetId, dataset.id)
-    changes = Map.put_new(changes, :userId, user_id)
+    changes = Map.put_new(changes, :ownerId, owner_id)
 
     changeset(changes)
   end

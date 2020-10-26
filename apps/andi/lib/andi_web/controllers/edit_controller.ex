@@ -28,10 +28,10 @@ defmodule AndiWeb.EditController do
     Datasets.get(id)
   end
 
-  defp get_dataset_if_accessible(id, false, current_user_id) do
+  defp get_dataset_if_accessible(id, false, user_id) do
     case Datasets.get(id) do
       nil -> nil
-      %{user_id: user_id} = dataset when user_id == current_user_id -> dataset
+      %{owner_id: owner_id} = dataset when owner_id == user_id -> dataset
       _dataset -> nil
     end
   end

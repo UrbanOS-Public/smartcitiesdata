@@ -32,7 +32,7 @@ defmodule Andi.InputSchemas.Datasets do
     Repo.all(query)
   end
 
-  def create(user) do
+  def create(owner) do
     current_date = Date.utc_today()
     new_dataset_id = UUID.uuid4()
     new_dataset_title = "New Dataset - #{current_date}"
@@ -43,9 +43,9 @@ defmodule Andi.InputSchemas.Datasets do
         %Dataset{},
         %{
           id: new_dataset_id,
-          business: %{dataTitle: new_dataset_title, contactEmail: user.email, issuedDate: current_date, modifiedDate: current_date},
+          business: %{dataTitle: new_dataset_title, contactEmail: owner.email, issuedDate: current_date, modifiedDate: current_date},
           technical: %{dataName: new_dataset_name},
-          user_id: user.id
+          owner_id: owner.id
         }
       )
 
@@ -63,7 +63,7 @@ defmodule Andi.InputSchemas.Datasets do
     changes = InputConverter.prepare_smrt_dataset_for_casting(smrt_dataset)
 
     andi_dataset
-    |> Andi.Repo.preload([:business, :technical, :user])
+    |> Andi.Repo.preload([:business, :technical, :owner])
     |> Dataset.changeset_for_draft(changes)
     |> save()
   end
@@ -82,7 +82,7 @@ defmodule Andi.InputSchemas.Datasets do
     changes_as_map = StructTools.to_map(changes)
 
     from_dataset
-    |> Andi.Repo.preload([:business, :technical, :user])
+    |> Andi.Repo.preload([:business, :technical, :owner])
     |> Dataset.changeset_for_draft(changes_as_map)
     |> save()
   end
@@ -114,17 +114,17 @@ defmodule Andi.InputSchemas.Datasets do
       |> StructTools.to_map()
       |> Map.merge(form_changes)
 
-    user_id =
+    owner_id =
       changeset
-      |> Changeset.get_field(:user_id, nil)
-      |> extract_user_id(form_changes)
+      |> Changeset.get_field(:owner_id, nil)
+      |> extract_owner_id(form_changes)
 
-    case user_id do
+    case owner_id do
       nil ->
         existing_dataset |> update(%{technical: technical_changes, business: business_changes, id: dataset_id})
 
-      user_id ->
-        existing_dataset |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, user_id: user_id})
+      owner_id ->
+        existing_dataset |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, owner_id: owner_id})
     end
   end
 
@@ -233,9 +233,9 @@ defmodule Andi.InputSchemas.Datasets do
     |> String.downcase()
   end
 
-  defp extract_user_id(nil, %{userId: userId}), do: userId
-  defp extract_user_id(_, %{userId: userId}), do: userId
-  defp extract_user_id(_, _), do: nil
+  defp extract_owner_id(nil, %{ownerId: ownerId}), do: ownerId
+  defp extract_owner_id(_, %{ownerId: ownerId}), do: ownerId
+  defp extract_owner_id(_, _), do: nil
 
   def full_validation_changeset_for_publish(schema, changes) do
     extract_steps_changes = get_in(changes, [:technical, :extractSteps])

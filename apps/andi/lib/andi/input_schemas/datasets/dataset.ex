@@ -17,7 +17,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     field(:dlq_message, :map)
     field(:ingestedTime, :utc_datetime, default: nil)
     field(:version, :string)
-    belongs_to(:user, User, type: Ecto.UUID)
+    belongs_to(:owner, User, type: Ecto.UUID, foreign_key: :owner_id)
     has_many(:data_dictionaries, DataDictionary)
     has_one(:business, Business, on_replace: :update)
     has_one(:technical, Technical, on_replace: :update)
@@ -25,7 +25,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   use Accessible
 
-  @cast_fields [:id, :ingestedTime, :version, :dlq_message, :user_id]
+  @cast_fields [:id, :ingestedTime, :version, :dlq_message, :owner_id]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
@@ -51,7 +51,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     |> cast_assoc(:business, with: &Business.changeset_for_draft/2)
   end
 
-  def preload(struct), do: StructTools.preload(struct, [:technical, :business, :user])
+  def preload(struct), do: StructTools.preload(struct, [:technical, :business, :owner])
 
   def full_validation_changeset(changes), do: full_validation_changeset(%__MODULE__{}, changes)
 

@@ -36,7 +36,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
        visibility: "expanded",
        validation_status: "expanded",
        changeset: new_metadata_changeset,
-       user_id: dataset.user_id
+       owner_id: dataset.owner_id
      )}
   end
 
@@ -108,8 +108,8 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               </div>
 
               <div class="metadata-form__dataset-owner">
-                <%= label(f, :userId, DisplayNames.get(:datasetOwner), class: "label") %>
-                <%= select(f, :userId, MetadataFormHelpers.get_user_options(), class: "select", selected: "") %>
+                <%= label(f, :ownerId, DisplayNames.get(:datasetOwner), class: "label") %>
+                <%= select(f, :ownerId, MetadataFormHelpers.get_owner_options(), class: "select", selected: "") %>
               </div>
 
               <div class="metadata-form__release-date">

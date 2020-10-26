@@ -32,7 +32,7 @@ defmodule Andi.Schemas.UserTest do
       assert %{subject_id: user_one_subject_id} = User.get_by_subject_id(user_one_subject_id)
 
       dataset_id = Ecto.UUID.generate()
-      dataset = TDG.create_dataset(%{id: dataset_id}) |> Map.put(:user_id, id)
+      dataset = TDG.create_dataset(%{id: dataset_id}) |> Map.put(:owner_id, id)
       Datasets.update(dataset)
 
       assert %{id: id, subject_id: user_one_subject_id, datasets: [%{id: dataset_id}]} = User.get_by_subject_id(user_one_subject_id)

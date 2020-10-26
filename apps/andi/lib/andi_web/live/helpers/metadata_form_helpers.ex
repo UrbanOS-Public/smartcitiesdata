@@ -21,7 +21,7 @@ defmodule AndiWeb.Helpers.MetadataFormHelpers do
   def get_rating_options(), do: map_to_dropdown_options(Options.ratings())
   def get_source_type_options(), do: map_to_dropdown_options(Options.source_type())
   def get_org_options(), do: Options.organizations(OrgStore.get_all())
-  def get_user_options(), do: Options.users(User.get_all())
+  def get_owner_options(), do: Options.users(User.get_all())
 
   def get_source_format_options(source_type) when source_type in ["remote", "host"] do
     Options.source_format_extended()

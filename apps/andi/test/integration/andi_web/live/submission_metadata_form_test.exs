@@ -45,11 +45,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
 
     test "generate dataName from data title", %{public_conn: conn, blank_dataset: blank_dataset, public_user: public_user} do
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
-      {:ok, dataset} = Datasets.update(andi_dataset, %{user_id: public_user.id}) |> IO.inspect(label: "dataset::")
-
-      # Andi.Migration.Owner.update_owner(andi_dataset, public_user)
-
-      IO.inspect(conn, label: "conn:")
+      {:ok, dataset} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
@@ -78,8 +74,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
         30
       )
 
-      andi_dataset = Andi.InputSchemas.Datasets.get(smrt_dataset.id)
-      Andi.Migration.Owner.update_owner(andi_dataset, public_user)
+      andi_dataset = Andi.InputSchemas.Datasets.get(smrt_dataset.id) |> Datasets.update(%{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> smrt_dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
@@ -99,8 +94,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       public_user: public_user,
       blank_dataset: blank_dataset
     } do
-      {:ok, dataset} = Datasets.update(blank_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, andi_dataset} = Datasets.update(blank_dataset)
+      {:ok, dataset} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
@@ -131,7 +126,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 
@@ -142,7 +137,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       smrt_dataset = TDG.create_dataset(%{business: %{language: "spanish"}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
@@ -153,7 +148,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
@@ -169,8 +164,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       smrt_dataset = TDG.create_dataset(%{business: %{keywords: ["one", "two", "three"]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      {:ok, dataset} = Datasets.update(dataset, %{user_id: public_user.id}) |> IO.inspect(label: "dataset:")
-      
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
       [subject] = get_values(html, ".metadata-form__keywords input")
@@ -182,7 +176,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       smrt_dataset = TDG.create_dataset(%{business: %{keywords: nil}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
       [subject] = get_values(html, ".metadata-form__keywords input")
@@ -194,7 +188,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       form_data = %{"keywords" => Enum.join(dataset.business.keywords, ", ")}
       expected = Enum.join(dataset.business.keywords, ", ")
@@ -211,7 +205,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       form_data = %{"keywords" => "a , good ,  keyword   , is .... hard , to find"}
 
@@ -228,7 +222,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       expected = Enum.join(dataset.business.keywords, ", ")
       form_data = %{"keywords" => expected}
@@ -258,7 +252,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
         })
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
       assert get_value(html, ".metadata-form__title input") == dataset.business.dataTitle
@@ -285,7 +279,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
         |> Datasets.save()
 
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
@@ -305,7 +299,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
@@ -329,7 +323,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
         })
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
@@ -351,7 +345,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
@@ -365,7 +359,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
         |> Datasets.save()
 
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
@@ -395,7 +389,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
       eventually(fn -> DatasetStore.get(smrt_dataset.id) != {:ok, nil} end, 300, 100)
       andi_dataset = Andi.InputSchemas.Datasets.get(smrt_dataset.id)
-      Andi.Migration.Owner.update_owner(andi_dataset, public_user)
+      {:ok, dataset} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
       assert {:ok, view, html} = live(conn, @url_path <> smrt_dataset.id)
 
       refute Enum.empty?(get_attributes(html, ".metadata-form__format select", "disabled"))

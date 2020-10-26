@@ -18,7 +18,8 @@ Interactions with Redis are abstracted with `smartcitiesdata.smart_city*` functi
 - Install dependencies with `mix deps.get`
 - `cd assets` and `npm i`
 - `MIX_ENV=integration mix docker.start`
-- Start Phoenix endpoint locally with `AUTH0_CLIENT_SECRET="<auth_client_secret>" MIX_ENV=integration iex -S mix start`
+- `MIX_ENV=integration mix ecto.create && MIX_ENV=integration mix ecto.migrate`
+- Start Phoenix endpoint locally with `AUTH0_CLIENT_SECRET="<auth_client_secret>" MIX_ENV=integration iex -S mix phx.server`
 - Because Auth0 requires `https`, you can visit paths like `localhost` by using `https://127.0.0.1.xip.io:4443/datasets`
 	- port 4443 can be swapped for the port used in the https configuration defined in `integration.exs` under `AndiWeb.Endpoint`
 

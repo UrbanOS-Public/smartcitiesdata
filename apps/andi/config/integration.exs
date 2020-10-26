@@ -46,13 +46,13 @@ config :andi, AndiWeb.Endpoint,
   server: true,
   check_origin: false,
 
-  # for auth0 login use, add to Endpoint config above
-  https: [
-    port: 4443,
-    otp_app: :andi,
-    keyfile: "priv/key.pem",
-    certfile: "priv/cert.pem"
-  ]
+# for auth0 login use, add to Endpoint config above
+# https: [
+#   port: 4443,
+#   otp_app: :andi,
+#   keyfile: "priv/key.pem",
+#   certfile: "priv/cert.pem"
+# ]
 
 config :andi, :brook,
   instance: :andi,
