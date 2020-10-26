@@ -1,0 +1,24 @@
+name: Release
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "[a-zA-Z]+@[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  ci:
+    name: Publish Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1.2.0
+        with:
+          otp-version: 21.3
+          elixir-version: 1.8.2
+      - name: Build
+        run: |
+          bash scripts/gh-action-release.sh
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
