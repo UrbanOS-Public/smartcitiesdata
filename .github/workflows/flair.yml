@@ -60,7 +60,7 @@ jobs:
       - name: Publish Development Image
         run: |
           bash scripts/gh-action-publish.sh flair
-        if: ${{ github.event_name == "push" }}
+        if: github.event_name == 'push'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
