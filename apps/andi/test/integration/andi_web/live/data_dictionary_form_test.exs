@@ -234,6 +234,34 @@ defmodule AndiWeb.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
     end
 
+    test "should throw error when empty csv file is passed", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
+
+      {:ok, _} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+
+      csv_sample = ""
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+
+      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+    end
+
+    test "should throw error when empty csv file with `\n` is passed", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
+
+      {:ok, _} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+
+      csv_sample = "\n"
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+
+      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+    end
+
     test "provides modal when existing schema will be overwritten", %{conn: conn} do
       dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
 
@@ -341,6 +369,21 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
 
+      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+    end
+
+    test "should throw error when empty json file is passed", %{conn: conn} do
+      dataset =
+        TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "application/json"}})
+        |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
+
+      {:ok, _} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+
+      json_sample = "[]"
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
       refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
     end
 
