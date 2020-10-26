@@ -50,7 +50,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
   describe "curator access to edit datasets" do
     test "curator can access their own dataset", %{curator_conn: conn, curator: curator} do
-      dataset = Datasets.create(curator)
+      dataset = Datasets.create(curator) |> IO.inspect(label: "Dataset::")
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
 

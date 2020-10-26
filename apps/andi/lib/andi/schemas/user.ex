@@ -38,12 +38,12 @@ defmodule Andi.Schemas.User do
   def get_all() do
     query = from(user in __MODULE__)
 
-    Repo.all(query) |> preload()
+    Repo.all(query) |> Repo.preload([:datasets])
   end
 
   def get_by_subject_id(subject_id) do
-    Repo.get_by(__MODULE__, subject_id: subject_id) |> preload()
+    Repo.get_by(__MODULE__, subject_id: subject_id) |> Repo.preload([:datasets])
   end
 
-  def preload(struct), do: StructTools.preload(struct, [:datasets])
+  def preload(struct), do: struct
 end

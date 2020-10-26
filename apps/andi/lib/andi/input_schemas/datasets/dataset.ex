@@ -51,7 +51,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     |> cast_assoc(:business, with: &Business.changeset_for_draft/2)
   end
 
-  def preload(struct), do: StructTools.preload(struct, [:technical, :business])
+  def preload(struct), do: StructTools.preload(struct, [:technical, :business, :user])
 
   def full_validation_changeset(changes), do: full_validation_changeset(%__MODULE__{}, changes)
 

@@ -45,7 +45,11 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
 
     test "generate dataName from data title", %{public_conn: conn, blank_dataset: blank_dataset, public_user: public_user} do
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
-      Andi.Migration.Owner.update_owner(andi_dataset, public_user)
+      {:ok, dataset} = Datasets.update(andi_dataset, %{user_id: public_user.id}) |> IO.inspect(label: "dataset::")
+
+      # Andi.Migration.Owner.update_owner(andi_dataset, public_user)
+
+      IO.inspect(conn, label: "conn:")
 
       assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
@@ -165,7 +169,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       smrt_dataset = TDG.create_dataset(%{business: %{keywords: ["one", "two", "three"]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      Andi.Migration.Owner.update_owner(dataset, public_user)
+      {:ok, dataset} = Datasets.update(dataset, %{user_id: public_user.id}) |> IO.inspect(label: "dataset:")
+      
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
       [subject] = get_values(html, ".metadata-form__keywords input")

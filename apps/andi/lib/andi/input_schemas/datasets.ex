@@ -32,7 +32,7 @@ defmodule Andi.InputSchemas.Datasets do
     Repo.all(query)
   end
 
-  def create(owner) do
+  def create(user) do
     current_date = Date.utc_today()
     new_dataset_id = UUID.uuid4()
     new_dataset_title = "New Dataset - #{current_date}"
@@ -43,9 +43,9 @@ defmodule Andi.InputSchemas.Datasets do
         %Dataset{},
         %{
           id: new_dataset_id,
-          business: %{dataTitle: new_dataset_title, contactEmail: owner.email, issuedDate: current_date, modifiedDate: current_date},
+          business: %{dataTitle: new_dataset_title, contactEmail: user.email, issuedDate: current_date, modifiedDate: current_date},
           technical: %{dataName: new_dataset_name},
-          owner: owner
+          user_id: user.id
         }
       )
 
@@ -63,7 +63,7 @@ defmodule Andi.InputSchemas.Datasets do
     changes = InputConverter.prepare_smrt_dataset_for_casting(smrt_dataset)
 
     andi_dataset
-    |> Andi.Repo.preload([:business, :technical])
+    |> Andi.Repo.preload([:business, :technical, :user])
     |> Dataset.changeset_for_draft(changes)
     |> save()
   end
@@ -82,7 +82,7 @@ defmodule Andi.InputSchemas.Datasets do
     changes_as_map = StructTools.to_map(changes)
 
     from_dataset
-    |> Andi.Repo.preload([:business, :technical])
+    |> Andi.Repo.preload([:business, :technical, :user])
     |> Dataset.changeset_for_draft(changes_as_map)
     |> save()
   end
