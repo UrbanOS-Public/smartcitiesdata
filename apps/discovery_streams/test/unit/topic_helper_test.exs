@@ -1,8 +1,11 @@
 defmodule DiscoveryStreams.TopicHelperTest do
   use ExUnit.Case
   use Placebo
+  use Properties, otp_app: :discovery_streams
+
   alias DiscoveryStreams.TopicHelper
-  @input_topic_prefix Application.get_env(:discovery_streams, :topic_prefix, "transformed-")
+
+  getter(:topic_prefix, generic: true, default: "transformed-")
 
   describe "topic_name/1" do
     test "should return given dataset_id prefixed with the topic prefix" do
@@ -23,6 +26,6 @@ defmodule DiscoveryStreams.TopicHelperTest do
     dataset_id = Faker.UUID.v4()
     allow(Elsa.delete_topic(any(), any()), return: :ok)
     TopicHelper.delete_input_topic(dataset_id)
-    assert_called(Elsa.delete_topic(TopicHelper.get_endpoints(), "#{@input_topic_prefix}#{dataset_id}"))
+    assert_called(Elsa.delete_topic(TopicHelper.get_endpoints(), "#{topic_prefix()}#{dataset_id}"))
   end
 end
