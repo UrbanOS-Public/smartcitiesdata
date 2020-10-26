@@ -5,11 +5,13 @@ on:
       - master
     paths:
     - 'apps/web/**'
+    - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
     - 'apps/web/**'
+    - 'mix.lock'
 
 jobs:
   ci:

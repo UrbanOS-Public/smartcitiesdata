@@ -5,11 +5,13 @@ on:
       - master
     paths:
     - 'apps/definition_kafka/**'
+    - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
     - 'apps/definition_kafka/**'
+    - 'mix.lock'
 
 jobs:
   ci:

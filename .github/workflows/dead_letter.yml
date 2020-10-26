@@ -5,11 +5,13 @@ on:
       - master
     paths:
     - 'apps/dead_letter/**'
+    - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
     - 'apps/dead_letter/**'
+    - 'mix.lock'
 
 jobs:
   ci:

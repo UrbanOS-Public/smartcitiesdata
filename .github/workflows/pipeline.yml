@@ -5,11 +5,13 @@ on:
       - master
     paths:
     - 'apps/pipeline/**'
+    - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
     - 'apps/pipeline/**'
+    - 'mix.lock'
 
 jobs:
   ci:

@@ -18,6 +18,7 @@ on:
     - 'apps/initializer/**'
     - 'apps/properties/**'
     - 'apps/telemetry_event/**'
+    - 'mix.lock'
   pull_request:
     branches:
       - master
@@ -36,6 +37,7 @@ on:
     - 'apps/initializer/**'
     - 'apps/properties/**'
     - 'apps/telemetry_event/**'
+    - 'mix.lock'
 
 jobs:
   ci:
