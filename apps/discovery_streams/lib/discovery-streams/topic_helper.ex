@@ -1,7 +1,11 @@
 defmodule DiscoveryStreams.TopicHelper do
   @moduledoc false
 
+  use Properties, otp_app: :discovery_streams
   require Logger
+
+  getter(:endpoints, generic: true)
+  getter(:topic_prefix, generic: true, default: "transformed-")
 
   def topic_name(dataset_id) do
     "#{topic_prefix()}#{dataset_id}"
@@ -13,7 +17,7 @@ defmodule DiscoveryStreams.TopicHelper do
   end
 
   def get_endpoints() do
-    Application.get_env(:discovery_streams, :endpoints)
+    endpoints()
   end
 
   def delete_input_topic(dataset_id) do
@@ -27,10 +31,6 @@ defmodule DiscoveryStreams.TopicHelper do
       {:error, error} ->
         Logger.error("#{__MODULE__}: Failed to delete topic: #{input_topic}, Reason: #{inspect(error)}")
     end
-  end
-
-  defp topic_prefix() do
-    Application.get_env(:discovery_streams, :topic_prefix, "transformed-")
   end
 
   defp input_topic(dataset_id), do: "#{topic_prefix()}#{dataset_id}"

@@ -1,10 +1,12 @@
 defmodule DiscoveryStreams.Application do
   @moduledoc false
   use Application
-
+  use Properties, otp_app: :discovery_streams
   require Cachex.Spec
 
   @instance_name DiscoveryStreams.instance_name()
+
+  getter(:brook, generic: true)
 
   def start(_type, _args) do
     import Supervisor.Spec
@@ -15,7 +17,7 @@ defmodule DiscoveryStreams.Application do
       [
         supervisor(DiscoveryStreamsWeb.Endpoint, []),
         libcluster(),
-        {Brook, Application.get_env(:discovery_streams, :brook)},
+        {Brook, brook()},
         DiscoveryStreams.Stream.Registry,
         DiscoveryStreams.Stream.Supervisor,
         DiscoveryStreams.Init
