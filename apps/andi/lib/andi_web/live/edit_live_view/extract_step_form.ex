@@ -18,19 +18,12 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias AndiWeb.Helpers.FormTools
 
   def mount(_, %{"dataset" => dataset}, socket) do
-    new_changeset =
-      dataset
-      |> get_in([:technical, :extractSteps])
-      |> Andi.InputSchemas.StructTools.to_map()
-      |> List.first()
-      |> ExtractHttpStep.changeset_from_andi_step(dataset.technical.id)
-
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
     {:ok,
      assign(socket,
-       changeset: new_changeset,
+       extract_steps: get_in(dataset, [:technical, :extractSteps]),
        testing: false,
        test_results: nil,
        visibility: "collapsed",
@@ -63,37 +56,11 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
           </div>
         </div>
 
-        <%= live_component(@socket, AndiWeb.ExtractSteps.ExtractHttpStepForm, changeset: @changeset, visibility: @visibility, testing: @testing, socket: @socket, test_results: @test_results ) %>
-
+        <%= for extract_step <- @extract_steps do %>
+          <%= live_render(@socket, AndiWeb.ExtractSteps.ExtractHttpStepForm, id: extract_step.id, session: %{"extract_step" => extract_step, "technical_id" => @technical_id, "dataset_id" => @dataset_id}) %>
+        <% end %>
       </div>
     """
-  end
-
-  def handle_event("test_url", _, socket) do
-    changes = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-    url = Map.get(changes, :url) |> Andi.URI.clear_query_params()
-    query_params = key_values_to_keyword_list(changes, :queryParams)
-    headers = key_values_to_keyword_list(changes, :headers)
-
-    Task.async(fn ->
-      {:test_results, Andi.Services.UrlTest.test(url, query_params: query_params, headers: headers)}
-    end)
-
-    {:noreply, assign(socket, testing: true)}
-  end
-
-  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "url"]}, socket) do
-    form_data
-    |> FormTools.adjust_extract_query_params_for_url()
-    |> ExtractHttpStep.changeset_from_form_data()
-    |> complete_validation(socket)
-  end
-
-  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "queryParams" | _]}, socket) do
-    form_data
-    |> FormTools.adjust_extract_url_for_query_params()
-    |> ExtractHttpStep.changeset_from_form_data()
-    |> complete_validation(socket)
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
@@ -107,78 +74,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     send(socket.parent_pid, :page_error)
 
     {:noreply, socket}
-  end
-
-  def handle_event("add", %{"field" => "queryParams"}, socket) do
-    current_changes =
-      socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes()
-
-    ExtractHttpSteps.update(current_changes)
-
-    current_step_id = current_changes.id
-    {:ok, _dataset} = ExtractHttpSteps.add_extract_query_param(current_step_id)
-
-    new_changes =
-      current_step_id
-      |> ExtractHttpSteps.get()
-      |> StructTools.to_map()
-
-    changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
-
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
-  def handle_event("add", %{"field" => "headers"}, socket) do
-    current_changes =
-      socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes()
-
-    ExtractHttpSteps.update(current_changes)
-
-    current_step_id = current_changes.id
-    {:ok, _dataset} = ExtractHttpSteps.add_extract_header(current_step_id)
-
-    new_changes =
-      current_step_id
-      |> ExtractHttpSteps.get()
-      |> StructTools.to_map()
-
-    changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
-
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
-  def handle_event("remove", %{"id" => id, "field" => "queryParams"}, socket) do
-    current_step_id = Ecto.Changeset.get_field(socket.assigns.changeset, :id)
-    save_draft(socket)
-
-    {:ok, _dataset} = ExtractHttpSteps.remove_extract_query_param(current_step_id, id)
-
-    new_changes =
-      current_step_id
-      |> ExtractHttpSteps.get()
-      |> StructTools.to_map()
-
-    changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
-
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
-  def handle_event("remove", %{"id" => id, "field" => "headers"}, socket) do
-    current_step_id = Ecto.Changeset.get_field(socket.assigns.changeset, :id)
-    save_draft(socket)
-
-    {:ok, _dataset} = ExtractHttpSteps.remove_extract_header(current_step_id, id)
-
-    new_changes =
-      current_step_id
-      |> ExtractHttpSteps.get()
-      |> StructTools.to_map()
-
-    changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
-
-    {:noreply, assign(socket, changeset: changeset)}
   end
 
   def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
@@ -236,11 +131,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, socket}
   end
 
-  def handle_info({_, {:test_results, results}}, socket) do
-    send(socket.parent_pid, {:test_results, results})
-    {:noreply, assign(socket, test_results: results, testing: false)}
-  end
-
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
   # Flags should be reset here.
@@ -252,13 +142,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
-  end
-
-  defp complete_validation(changeset, socket) do
-    new_changeset = Map.put(changeset, :action, :update)
-    send(socket.parent_pid, :form_update)
-
-    {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
 
   defp disabled?(true), do: "disabled"
@@ -318,5 +201,12 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
       true -> "valid"
       false -> "invalid"
     end
+  end
+
+  defp complete_validation(changeset, socket) do
+    new_changeset = Map.put(changeset, :action, :update)
+    send(socket.parent_pid, :form_update)
+
+    {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
 end

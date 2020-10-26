@@ -8,6 +8,7 @@ defmodule AndiWeb.ExtractStepsTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
+
   import FlokiHelpers,
     only: [
       get_attributes: 3,
@@ -30,6 +31,6 @@ defmodule AndiWeb.ExtractStepsTest do
 
     assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
 
-    assert find_elements(html, ".extract-step-container") |> Enum.count == 2
+    assert find_elements(html, ".extract-step-container") |> Enum.count() == 2
   end
 end
