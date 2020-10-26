@@ -1,0 +1,61 @@
+name: Discovery Streams
+on:
+  push:
+    branches:
+      - master
+    paths:
+    - 'apps/discovery_streams/**'
+    - 'apps/pipeline/**'
+    - 'apps/web/**'
+    - 'apps/dead_letter/**'
+    - 'apps/definition*/**'
+    - 'apps/protocol*/**'
+    - 'apps/management/**'
+    - 'apps/ok/**'
+    - 'apps/auth/**'
+    - 'apps/annotated_retry/**'
+    - 'apps/dlq/**'
+    - 'apps/initializer/**'
+    - 'apps/properties/**'
+    - 'apps/telemetry_event/**'
+  pull_request:
+    branches:
+      - master
+    paths:
+    - 'apps/discovery_streams/**'
+    - 'apps/pipeline/**'
+    - 'apps/web/**'
+    - 'apps/dead_letter/**'
+    - 'apps/definition*/**'
+    - 'apps/protocol*/**'
+    - 'apps/management/**'
+    - 'apps/ok/**'
+    - 'apps/auth/**'
+    - 'apps/annotated_retry/**'
+    - 'apps/dlq/**'
+    - 'apps/initializer/**'
+    - 'apps/properties/**'
+    - 'apps/telemetry_event/**'
+
+jobs:
+  ci:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1.2.0
+        with:
+          otp-version: 21.3
+          elixir-version: 1.8.2
+      - name: Get dependencies
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      - name: Run integration tests
+        run: |
+          bash scripts/gh-action-test.sh discovery_streams
+      - name: Publish Development Image
+        run: |
+          bash scripts/gh-action-publish.sh discovery_streams
+ 
