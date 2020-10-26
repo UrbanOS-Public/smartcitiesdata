@@ -109,7 +109,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
               <div class="metadata-form__dataset-owner">
                 <%= label(f, :userId, DisplayNames.get(:datasetOwner), class: "label") %>
-                <%= select(f, :userId, get_user_options(), class: "select", selected: "") %>
+                <%= select(f, :userId, MetadataFormHelpers.get_user_options(), class: "select", selected: "") %>
               </div>
 
               <div class="metadata-form__release-date">
@@ -299,45 +299,4 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
     {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
-
-  defp top_level_selector_label_class(source_format) when source_format in ["text/xml", "xml"], do: "label label--required"
-  defp top_level_selector_label_class(_), do: "label"
-
-  defp map_to_dropdown_options(options) do
-    Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
-  end
-
-  defp rating_selection_prompt(), do: "Please Select a Value"
-
-  defp get_language_options(), do: map_to_dropdown_options(Options.language())
-  defp get_level_of_access_options, do: map_to_dropdown_options(Options.level_of_access())
-  defp get_rating_options(), do: map_to_dropdown_options(Options.ratings())
-  defp get_source_type_options(), do: map_to_dropdown_options(Options.source_type())
-  defp get_org_options(), do: Options.organizations(OrgStore.get_all())
-  defp get_user_options(), do: Options.users(User.get_all())
-
-  defp get_source_format_options(source_type) when source_type in ["remote", "host"] do
-    Options.source_format_extended()
-  end
-
-  defp get_source_format_options(_), do: Options.source_format()
-
-  defp get_language(nil), do: "english"
-  defp get_language(lang), do: lang
-
-  defp get_license(nil), do: "https://creativecommons.org/licenses/by/4.0/"
-  defp get_license(license), do: license
-
-  defp keywords_to_string(nil), do: ""
-  defp keywords_to_string(keywords) when is_binary(keywords), do: keywords
-  defp keywords_to_string(keywords), do: Enum.join(keywords, ", ")
-
-  defp safe_calendar_value(nil), do: nil
-
-  defp safe_calendar_value(%{calendar: _, day: day, month: month, year: year}) do
-    Timex.parse!("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}")
-    |> NaiveDateTime.to_date()
-  end
-
-  defp safe_calendar_value(value), do: value
 end
