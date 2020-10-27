@@ -1,4 +1,4 @@
-defmodule AndiWeb.ExtractStepsTest do
+defmodule AndiWeb.ExtractStepFormTest do
   @moduledoc false
 
   use ExUnit.Case
@@ -25,12 +25,24 @@ defmodule AndiWeb.ExtractStepsTest do
 
   @url_path "/datasets/"
 
-  test "given a dataset with many extract steps, all steps are rendered", %{conn: conn} do
+  setup %{conn: conn} do
     smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http"}, %{type: "http"}]}})
     {:ok, andi_dataset} = Datasets.update(smrt_dataset)
 
-    assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+    {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
 
+    [view: view, html: html, andi_dataset: andi_dataset]
+  end
+
+  test "given a dataset with many extract steps, all steps are rendered", %{html: html} do
     assert find_elements(html, ".extract-step-container") |> Enum.count() == 2
+  end
+
+  test "when the add step button is pressed, a new step is rendered", %{view: view} do
+    editor = find_child(view, "extract_step_form_editor")
+
+    html = render_click(editor, :add_extract_step)
+
+    assert find_elements(html, ".extract-step-container") |> Enum.count() == 3
   end
 end

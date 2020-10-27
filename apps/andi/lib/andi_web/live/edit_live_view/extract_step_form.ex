@@ -115,6 +115,19 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
   end
 
+  def handle_event("add_extract_step", _, socket) do
+    technical_id = socket.assigns.technical_id
+
+    new_extract_step =
+      ExtractHttpStep.changeset_from_andi_step(nil, technical_id)
+      |> Ecto.Changeset.apply_changes()
+      |> Andi.InputSchemas.StructTools.to_map()
+
+    ExtractHttpSteps.update(new_extract_step)
+
+    {:noreply, assign(socket, extract_steps: ExtractHttpSteps.all_for_technical(technical_id))}
+  end
+
   def handle_info(
         %{topic: "toggle-visibility", payload: %{expand: "extract_step_form", dataset_id: dataset_id}},
         %{assigns: %{dataset_id: dataset_id}} = socket

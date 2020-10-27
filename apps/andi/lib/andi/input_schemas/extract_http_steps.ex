@@ -6,11 +6,22 @@ defmodule Andi.InputSchemas.ExtractHttpSteps do
   alias Andi.Repo
   alias Andi.InputSchemas.StructTools
 
+  import Ecto.Query, only: [from: 2]
+
   require Logger
 
   def get(extract_http_step_id) do
     Repo.get(ExtractHttpStep, extract_http_step_id)
     |> ExtractHttpStep.preload()
+  end
+
+  def all_for_technical(technical_id) do
+    query =
+      from(httpStep in ExtractHttpStep,
+        where: httpStep.technical_id == ^technical_id
+      )
+
+    Repo.all(query)
   end
 
   def update(changes) do
