@@ -1,6 +1,7 @@
 defmodule DiscoveryApiWeb.VisualizationController do
   require Logger
   use DiscoveryApiWeb, :controller
+  use Properties, otp_app: :discovery_api
 
   alias DiscoveryApi.Schemas.Visualizations
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
@@ -8,6 +9,8 @@ defmodule DiscoveryApiWeb.VisualizationController do
   @owner_allowed_actions [%{name: :update}, %{name: :create_copy}]
 
   plug(:accepts, DiscoveryApiWeb.VisualizationView.accepted_formats())
+
+  getter(:user_visualization_limit, generic: true)
 
   def index(conn, _body) do
     with user <- Map.get(conn.assigns, :current_user),
@@ -76,7 +79,7 @@ defmodule DiscoveryApiWeb.VisualizationController do
   end
 
   defp under_visualizations_limit?(visualizations) do
-    Enum.count(visualizations) <= Application.get_env(:discovery_api, :user_visualization_limit)
+    Enum.count(visualizations) <= user_visualization_limit()
   end
 
   defp get_allowed_actions(_visualization, nil), do: []

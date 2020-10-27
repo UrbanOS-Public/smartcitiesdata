@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
-      version: "0.51.0",
+      version: "0.51.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -70,6 +70,7 @@ defmodule DiscoveryApi.Mixfile do
       {:plug_heartbeat, "~> 0.2.0"},
       {:postgrex, "~> 0.15.1"},
       {:prestige, "~> 1.0"},
+      {:properties, in_umbrella: true},
       {:quantum, "~>2.4"},
       {:ranch, "~> 1.7.1", override: true},
       {:redix, "~> 0.10"},
