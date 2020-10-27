@@ -4,6 +4,7 @@ end
 
 defmodule DiscoveryApiWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :discovery_api
+  use Properties, otp_app: :discovery_api
 
   socket("/socket", DiscoveryApiWeb.UserSocket)
 
@@ -17,6 +18,8 @@ defmodule DiscoveryApiWeb.Endpoint do
     allow_headers: ["authorization", "content-type"],
     expose_headers: ["token"]
   )
+
+  getter(:hsts_enabled, generic: true, default: true)
 
   if Application.get_env(:discovery_api, :hsts_enabled, true) do
     plug(Plug.SSL,

@@ -1,5 +1,7 @@
 defmodule DiscoveryApiWeb.DataController do
   use DiscoveryApiWeb, :controller
+  use Properties, otp_app: :discovery_api
+
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApiWeb.Plugs.{GetModel, Restrictor, RecordMetrics}
   alias DiscoveryApiWeb.DataView
@@ -13,6 +15,8 @@ defmodule DiscoveryApiWeb.DataController do
   plug(:accepts, DataView.accepted_preview_formats() when action in [:fetch_preview])
   plug(Restrictor)
   plug(RecordMetrics, query: "queries")
+
+  getter(:download_link_expire_seconds, generic: true)
 
   defp conditional_accepts(conn, formats) do
     if conn.assigns.model.sourceType == "host" do
@@ -41,7 +45,7 @@ defmodule DiscoveryApiWeb.DataController do
 
   def download_presigned_url(conn, params) do
     ## Potential issue
-    expires_in_seconds = Application.get_env(:discovery_api, :download_link_expire_seconds)
+    expires_in_seconds = download_link_expire_seconds()
     expires = DateTime.utc_now() |> DateTime.add(expires_in_seconds, :second) |> DateTime.to_unix()
     hmac_token = HmacToken.create_hmac_token(params["dataset_id"], expires)
     scheme = Application.get_env(:discovery_api, DiscoveryApiWeb.Endpoint)[:url][:scheme]

@@ -2,7 +2,11 @@ defmodule DiscoveryApi.S3.CredentialRetriever do
   @moduledoc """
   Retrieves credentials for use in accessing restricted datasets.
   """
+  use Properties, otp_app: :discovery_api
+
   require Logger
+
+  getter(:secrets_endpoint, generic: true)
 
   def retrieve() do
     with {:ok, jwt} <- get_kubernetes_token(),
@@ -29,13 +33,11 @@ defmodule DiscoveryApi.S3.CredentialRetriever do
     Vault.new(
       engine: Vault.Engine.KVV1,
       auth: Vault.Auth.Kubernetes,
-      host: get_secrets_endpoint(),
+      host: secrets_endpoint(),
       token_expires_at: set_login_ttl(20, :second)
     )
     |> Vault.auth(%{role: "discovery-api-role", jwt: token})
   end
 
   defp set_login_ttl(time, interval), do: NaiveDateTime.utc_now() |> NaiveDateTime.add(time, interval)
-
-  defp get_secrets_endpoint(), do: Application.get_env(:discovery_api, :secrets_endpoint)
 end

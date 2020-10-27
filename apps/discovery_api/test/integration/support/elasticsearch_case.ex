@@ -8,6 +8,7 @@ defmodule DiscoveryApi.ElasticSearchCase do
   """
 
   use ExUnit.CaseTemplate
+  use Properties, otp_app: :discovery_api
 
   @url Application.get_env(:discovery_api, :elasticsearch)[:url]
   @indices Application.get_env(:discovery_api, :elasticsearch)[:indices]

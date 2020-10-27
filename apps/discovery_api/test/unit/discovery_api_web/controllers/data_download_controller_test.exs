@@ -1,6 +1,8 @@
 defmodule DiscoveryApiWeb.DataDownloadControllerTest do
   use DiscoveryApiWeb.Test.AuthConnCase.UnitCase
   use Placebo
+  use Properties, otp_app: :discovery_api
+
   import Checkov
   import SmartCity.TestHelper
   alias DiscoveryApi.Services.ObjectStorageService
@@ -14,6 +16,9 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
   @org_name "org1"
   @data_name "data1"
   @user_id "user_id"
+
+  getter(:presign_key, generic: true)
+  getter(:download_link_expire_seconds, generic: true)
 
   setup %{auth_conn_case: auth_conn_case} do
     auth_conn_case.disable_revocation_list.()
@@ -284,7 +289,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
   describe "presign_url" do
     test "returns a presigned url for public datasets when bearer token is not passed", %{conn: conn} do
-      key = Application.get_env(:discovery_api, :presign_key)
+      key = presign_key()
       dataset_id = "public_dataset"
 
       model =
@@ -307,7 +312,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
       allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
       allow(Model.get(dataset_id), return: model)
 
-      expires_in_seconds = Application.get_env(:discovery_api, :download_link_expire_seconds)
+      expires_in_seconds = download_link_expire_seconds()
 
       expires = DateTime.utc_now() |> DateTime.add(expires_in_seconds, :second) |> DateTime.to_unix()
       hmac = :crypto.hmac(:sha256, key, "#{dataset_id}/#{expires}") |> Base.encode16()
@@ -408,7 +413,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
       allow(DiscoveryApiWeb.Utilities.HmacToken.create_hmac_token(any(), any()), return: "IAMANHMACTOKENFORREAL")
       allow(DateTime.utc_now(), return: date_time, meck_options: [:passthrough])
 
-      expires_in_seconds = Application.get_env(:discovery_api, :download_link_expire_seconds)
+      expires_in_seconds = download_link_expire_seconds()
       expires = DateTime.utc_now() |> DateTime.add(expires_in_seconds, :second) |> DateTime.to_unix()
       url = "https://data.tests.example.com/api/v1/dataset/#{dataset_id}/download/presigned_url"
 

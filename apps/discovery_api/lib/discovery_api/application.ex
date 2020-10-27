@@ -3,8 +3,13 @@ defmodule DiscoveryApi.Application do
   Discovery API serves as middleware between our metadata store and our Data Discovery UI.
   """
   use Application
+  use Properties, otp_app: :discovery_api
 
   @instance_name DiscoveryApi.instance_name()
+
+  getter(:brook, generic: true)
+  getter(:secrets_endpoint, generic: true)
+  getter(:elasticsearch, generic: true)
 
   def start(_type, _args) do
     import Supervisor.Spec
@@ -18,7 +23,7 @@ defmodule DiscoveryApi.Application do
         redis(),
         ecto_repo(),
         guardian_db_sweeper(),
-        {Brook, Application.get_env(:discovery_api, :brook)},
+        {Brook, brook()},
         cache_populator(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
         DiscoveryApi.Quantum.Scheduler,
@@ -44,7 +49,7 @@ defmodule DiscoveryApi.Application do
   end
 
   defp get_s3_credentials do
-    Application.get_env(:discovery_api, :secrets_endpoint)
+    secrets_endpoint()
     |> case do
       nil -> nil
       _ -> DiscoveryApi.S3.CredentialRetriever.retrieve()
@@ -72,7 +77,7 @@ defmodule DiscoveryApi.Application do
   end
 
   defp cache_populator do
-    Application.get_env(:discovery_api, :elasticsearch)
+    elasticsearch()
     |> case do
       nil -> []
       _ -> DiscoveryApi.Data.CachePopulator
