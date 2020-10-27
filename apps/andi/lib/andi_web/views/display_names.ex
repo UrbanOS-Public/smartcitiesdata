@@ -7,6 +7,7 @@ defmodule AndiWeb.Views.DisplayNames do
     body: "Body",
     cadence: "Cadence",
     contactEmail: "Maintainer Email",
+    datasetOwner: "Dataset Owner",
     contactName: "Maintainer Name",
     dataJsonUrl: "Data JSON URL",
     dataName: "Data Name",

@@ -2,6 +2,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Phoenix.ConnTest
   use Placebo
+  alias Andi.Schemas.User
 
   import Phoenix.LiveViewTest
 
@@ -18,7 +19,9 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   @ingested_time_b "454699234"
 
   setup %{auth_conn_case: auth_conn_case} do
-    allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: @user)
+    allow(User.get_all(), return: [@user])
+    allow(User.get_by_subject_id(any()), return: @user)
+
     auth_conn_case.disable_revocation_list.()
     :ok
   end
