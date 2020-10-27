@@ -89,18 +89,6 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
                   <% end %>
                 </div>
               </div>
-
-              <div class="edit-button-group form-grid">
-                <div class="edit-button-group__cancel-btn">
-                  <a href="#data-dictionary-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Back</a>
-                  <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
-                </div>
-
-                <div class="edit-button-group__save-btn">
-                  <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="finalize_form">Next</a>
-                  <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
-                </div>
-                </div>
             </div>
           </form>
         </div>
@@ -219,6 +207,13 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     {:noreply, assign(socket, testing: true)}
   end
 
+  def handle_info(
+        %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
+        %{assigns: %{dataset_id: dataset_id}} = socket
+      ) do
+    save_draft(socket)
+  end
+
   def handle_info({_, {:test_results, results}}, socket) do
     send(socket.parent_pid, {:test_results, results})
     {:noreply, assign(socket, test_results: results, testing: false)}
@@ -235,6 +230,21 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
+  end
+
+  defp save_draft(socket) do
+    new_validation_status =
+      case socket.assigns.changeset.valid? do
+        true -> "valid"
+        false -> "invalid"
+      end
+
+    socket.assigns.changeset
+    |> Andi.InputSchemas.InputConverter.form_changes_from_changeset()
+    |> Map.put(:id, socket.assigns.extract_step_id)
+    |> Andi.InputSchemas.ExtractHttpSteps.update()
+
+    {:noreply, assign(socket, validation_status: new_validation_status)}
   end
 
   defp disabled?(true), do: "disabled"
@@ -264,22 +274,6 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
   defp map_to_dropdown_options(options) do
     Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
-  end
-
-  defp save_draft(socket) do
-    new_validation_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    new_changes =
-      socket.assigns.changeset
-      |> Andi.InputSchemas.InputConverter.form_changes_from_changeset()
-
-    Andi.InputSchemas.Datasets.update_from_form(socket.assigns.dataset_id, %{extractSteps: [new_changes]})
-
-    {:noreply, assign(socket, validation_status: new_validation_status)}
   end
 
   defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)

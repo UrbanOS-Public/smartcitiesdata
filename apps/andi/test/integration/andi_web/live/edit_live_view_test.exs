@@ -464,6 +464,33 @@ defmodule AndiWeb.EditLiveViewTest do
         assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
       end)
     end
+
+    test "fails to publish if invalid extract steps are found", %{conn: conn} do
+      extract_steps = [%{type: "http", method: "GET", url: "example.com"}, %{type: "http", method: "GET", url: "example2.com"}]
+      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps, sourceUrl: ""}})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+      extract_step_id = get_extract_step_id(dataset, 1)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+      extract_step_view = find_child(view, "extract_step_form_editor")
+      extract_http_step_form_view = find_child(extract_step_view, extract_step_id)
+
+      extract_form_data = %{"type" => "http", "method" => "GET", "url" => ""}
+
+      render_change(extract_http_step_form_view, :validate, %{"form_data" => extract_form_data})
+
+      render_change(finalize_view, :publish)
+      html = render(view)
+
+      assert Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+
+      eventually(fn ->
+        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+        assert dataset_sent == nil
+      end)
+    end
   end
 
   describe "delete dataset" do
@@ -480,5 +507,13 @@ defmodule AndiWeb.EditLiveViewTest do
         assert nil == Datasets.get(dataset.id)
       end)
     end
+  end
+
+  defp get_extract_step_id(dataset, index) do
+    dataset
+    |> Andi.InputSchemas.StructTools.to_map()
+    |> get_in([:technical, :extractSteps])
+    |> Enum.at(index)
+    |> Map.get(:id)
   end
 end
