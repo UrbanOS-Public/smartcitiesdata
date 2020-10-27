@@ -13,6 +13,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   alias Andi.InputSchemas.Datasets.Dataset
   alias AndiWeb.InputSchemas.MetadataFormSchema
   alias AndiWeb.Helpers.FormTools
+  alias Andi.Schemas.User
   alias AndiWeb.Helpers.MetadataFormHelpers
 
   def mount(_, %{"dataset" => dataset}, socket) do
@@ -34,7 +35,8 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
        dataset_id: dataset.id,
        visibility: "expanded",
        validation_status: "expanded",
-       changeset: new_metadata_changeset
+       changeset: new_metadata_changeset,
+       owner_id: dataset.owner_id
      )}
   end
 
@@ -103,6 +105,11 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
                 <%= label(f, :contactEmail, DisplayNames.get(:contactEmail), class: "label label--required") %>
                 <%= text_input(f, :contactEmail, class: "input") %>
                 <%= ErrorHelpers.error_tag(f, :contactEmail, bind_to_input: false) %>
+              </div>
+
+              <div class="metadata-form__dataset-owner">
+                <%= label(f, :ownerId, DisplayNames.get(:datasetOwner), class: "label") %>
+                <%= select(f, :ownerId, MetadataFormHelpers.get_owner_options(), class: "select", selected: "") %>
               </div>
 
               <div class="metadata-form__release-date">
