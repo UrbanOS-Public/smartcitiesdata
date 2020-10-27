@@ -2,6 +2,7 @@ defmodule AndiWeb.Views.DisplayNames do
   @moduledoc false
 
   @display_names %{
+    action: "Method",
     benefitRating: "Benefit",
     body: "Body",
     cadence: "Cadence",

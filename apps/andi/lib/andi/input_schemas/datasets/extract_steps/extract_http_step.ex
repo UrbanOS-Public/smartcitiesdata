@@ -12,8 +12,9 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
   schema "extract_http_step" do
     field(:assigns, :map)
     field(:body, :string)
-    field(:method, :string)
+    field(:action, :string)
     field(:type, :string)
+    field(:protocol, {:array, :string})
     field(:url, :string)
     has_many(:headers, ExtractHeader, on_replace: :delete)
     has_many(:queryParams, ExtractQueryParam, on_replace: :delete)
@@ -22,8 +23,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
 
   use Accessible
 
-  @cast_fields [:id, :type, :method, :url, :body, :assigns, :technical_id]
-  @required_fields [:type, :method, :url, :assigns]
+  @cast_fields [:id, :type, :action, :protocol, :url, :body, :assigns, :technical_id]
+  @required_fields [:type, :action, :url, :assigns]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
