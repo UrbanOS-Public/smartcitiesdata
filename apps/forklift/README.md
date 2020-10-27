@@ -28,9 +28,13 @@ Compaction is a process that runs that consolidates the data that is being store
 ```elixir
 # Deactive Compaction
 Forklift.Quantum.Scheduler.deactivate_job(:compactor)
+Forklift.Quantum.Scheduler.deactivate_job(:data_migrator)
+Forklift.Quantum.Scheduler.deactivate_job(:partitioned_compactor)
 
 # Active Compaction
 Forklift.Quantum.Scheduler.activate_job(:compactor)
+Forklift.Quantum.Scheduler.activate_job(:data_migrator)
+Forklift.Quantum.Scheduler.activate_job(:partitioned_compactor)
 ```
 
 
