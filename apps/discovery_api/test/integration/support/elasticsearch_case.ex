@@ -10,8 +10,7 @@ defmodule DiscoveryApi.ElasticSearchCase do
   use ExUnit.CaseTemplate
   use Properties, otp_app: :discovery_api
 
-  @url Application.get_env(:discovery_api, :elasticsearch)[:url]
-  @indices Application.get_env(:discovery_api, :elasticsearch)[:indices]
+  getter(:elasticsearch, generic: true)
 
   using do
     quote do
@@ -28,28 +27,28 @@ defmodule DiscoveryApi.ElasticSearchCase do
     end)
 
     [
-      es_url: @url,
-      es_indices: @indices
+      es_url: elasticsearch()[:url],
+      es_indices: elasticsearch()[:indices]
     ]
   end
 
   # as much as it would be nice to have these use the real ones in the search index module, it might create havoc if that breaks
   defp create_indices() do
-    Enum.map(@indices, fn {_id, index} ->
+    Enum.map(elasticsearch()[:indices], fn {_id, index} ->
       create_es_index(index[:name], index[:options])
     end)
   end
 
   defp delete_indices() do
-    Enum.map(@indices, fn {_id, index} ->
+    Enum.map(elasticsearch()[:indices], fn {_id, index} ->
       delete_es_index(index[:name])
     end)
   end
 
   def create_es_index(name, options) do
-    case Elastix.Index.exists?(@url, name) do
+    case Elastix.Index.exists?(elasticsearch()[:url], name) do
       {:ok, false} ->
-        Elastix.Index.create(@url, name, options)
+        Elastix.Index.create(elasticsearch()[:url], name, options)
 
       _ ->
         :ok
@@ -57,9 +56,9 @@ defmodule DiscoveryApi.ElasticSearchCase do
   end
 
   def delete_es_index(name) do
-    case Elastix.Index.exists?(@url, name) do
+    case Elastix.Index.exists?(elasticsearch()[:url], name) do
       {:ok, true} ->
-        Elastix.Index.delete(@url, name)
+        Elastix.Index.delete(elasticsearch()[:url], name)
 
       _ ->
         :ok
