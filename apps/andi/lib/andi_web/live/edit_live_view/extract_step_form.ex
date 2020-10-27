@@ -56,6 +56,10 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
           </div>
         </div>
 
+        <div class="add-step-section">
+          <button type="button" phx-click="add-extract-step" class="btn">Add Step</button>
+        </div>
+
         <%= for extract_step <- @extract_steps do %>
           <%= live_render(@socket, AndiWeb.ExtractSteps.ExtractHttpStepForm, id: extract_step.id, session: %{"extract_step" => extract_step, "technical_id" => @technical_id, "dataset_id" => @dataset_id}) %>
         <% end %>
@@ -115,7 +119,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
   end
 
-  def handle_event("add_extract_step", _, socket) do
+  def handle_event("add-extract-step", _, socket) do
     technical_id = socket.assigns.technical_id
 
     new_extract_step =

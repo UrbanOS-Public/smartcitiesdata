@@ -41,8 +41,27 @@ defmodule AndiWeb.ExtractStepFormTest do
   test "when the add step button is pressed, a new step is rendered", %{view: view} do
     editor = find_child(view, "extract_step_form_editor")
 
-    html = render_click(editor, :add_extract_step)
+    html = render_click(editor, "add-extract-step")
 
     assert find_elements(html, ".extract-step-container") |> Enum.count() == 3
+  end
+
+  test "given an invalid extract step, the section shows an invalid status", %{andi_dataset: dataset, view: view} do
+    extract_step_id = get_extract_step_id(dataset, 0)
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)
+
+    form_data = %{"type" => "http", "action" => "GET", "url" => ""}
+    html = render_change(extract_http_step_form_view, "validate", %{"form-data" => form_data})
+
+    refute Enum.empty?(find_elements(html, ".component-number-status--invalid"))
+  end
+
+  defp get_extract_step_id(dataset, index) do
+    dataset
+    |> Andi.InputSchemas.StructTools.to_map()
+    |> get_in([:technical, :extractSteps])
+    |> Enum.at(index)
+    |> Map.get(:id)
   end
 end
