@@ -93,7 +93,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
                 <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_headers, css_label: "source-headers", form: f, field: :headers ) %>
 
-                <%= if input_value(f, :method) == "POST" do %>
+                <%= if input_value(f, :action) == "POST" do %>
                   <div class="extract-step-form__body">
                     <%= label(f, :body, DisplayNames.get(:body), class: "label") %>
                     <%= textarea(f, :body, class: "input full-width", disabled: @testing) %>

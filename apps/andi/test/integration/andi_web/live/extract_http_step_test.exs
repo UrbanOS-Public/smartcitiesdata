@@ -384,11 +384,13 @@ defmodule AndiWeb.ExtractHttpStepTest do
           extractSteps: [
             %{
               type: "http",
-              method: "POST",
-              url: "123.com",
-              body: "",
-              queryParams: %{"x" => "y"},
-              headers: %{"api-key" => "to-my-heart"}
+              context: %{
+                action: "POST",
+                url: "123.com",
+                body: "",
+                queryParams: %{"x" => "y"},
+                headers: %{"api-key" => "to-my-heart"}
+              }
             }
           ]
         }
@@ -399,7 +401,7 @@ defmodule AndiWeb.ExtractHttpStepTest do
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     extract_step_form_view = find_child(view, "extract_step_form_editor")
 
-    form_data = %{field => value, "method" => "POST"}
+    form_data = %{field => value, "action" => "POST", "type" => "http", "url" => "example.com"}
 
     html = render_change(extract_step_form_view, :validate, %{"form_data" => form_data})
 
@@ -420,11 +422,13 @@ defmodule AndiWeb.ExtractHttpStepTest do
           extractSteps: [
             %{
               type: "http",
-              method: "POST",
-              url: "123.com",
-              body: "",
-              queryParams: %{"x" => "y"},
-              headers: %{"api-key" => "to-my-heart"}
+              context: %{
+                action: "POST",
+                url: "123.com",
+                body: "",
+                queryParams: %{"x" => "y"},
+                headers: %{"api-key" => "to-my-heart"}
+              }
             }
           ]
         }
@@ -435,7 +439,7 @@ defmodule AndiWeb.ExtractHttpStepTest do
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     extract_step_form_view = find_child(view, "extract_step_form_editor")
 
-    form_data = %{"body" => "[{\"bob\": 1}]", "method" => "POST"}
+    form_data = %{"body" => "[{\"bob\": 1}]", "action" => "POST"}
 
     html = render_change(extract_step_form_view, :validate, %{"form_data" => form_data})
 
