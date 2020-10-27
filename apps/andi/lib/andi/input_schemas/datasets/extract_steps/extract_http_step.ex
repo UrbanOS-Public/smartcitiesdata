@@ -35,6 +35,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
     |> cast_assoc(:headers, with: &ExtractHeader.changeset/2)
     |> cast_assoc(:queryParams, with: &ExtractQueryParam.changeset/2)
     |> foreign_key_constraint(:technical_id)
+    |> validate_body_format()
     |> validate_required(@required_fields, message: "is required")
     |> validate_key_value_parameters()
   end
@@ -81,6 +82,17 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
       end
     end)
   end
+
+  defp validate_body_format(%{changes: %{body: body}} = changeset) when body in ["", nil], do: changeset
+
+  defp validate_body_format(%{changes: %{body: body}} = changeset) do
+    case Jason.decode(body) do
+      {:ok, _} -> changeset
+      {:error, _} -> add_error(changeset, :body, "could not parse json", validation: :format)
+    end
+  end
+
+  defp validate_body_format(changeset), do: changeset
 
   defp has_invalid_key_values?(%{changes: changes}, field) do
     case Map.get(changes, field) do

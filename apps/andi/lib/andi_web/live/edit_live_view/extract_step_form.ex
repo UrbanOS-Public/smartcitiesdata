@@ -80,7 +80,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
                 <div class="extract-step-form__method">
                   <%= label(f, :method, DisplayNames.get(:method), class: "label label--required") %>
                   <%= select(f, :method, get_http_methods(), id: "http_method", class: "extract-step-form__method select") %>
-                  <%= ErrorHelpers.error_tag(f, :type) %>
+                  <%= ErrorHelpers.error_tag(f, :method) %>
                 </div>
 
                 <div class="extract-step-form__url">
@@ -97,7 +97,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
                   <div class="extract-step-form__body">
                     <%= label(f, :body, DisplayNames.get(:body), class: "label") %>
                     <%= textarea(f, :body, class: "input full-width", disabled: @testing) %>
-                    <%= ErrorHelpers.error_tag(f, :body) %>
+                    <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false) %>
                   </div>
                 <% end %>
 
