@@ -6,15 +6,16 @@ defmodule Mix.Tasks.App.TagExists do
   def run(_) do
     app_name = application_name()
     app_version = application_version()
-    |> IO.inspect(label: "WTF")
     app_tags = application_tags(app_name)
 
     case app_version in app_tags do
       false ->
         IO.puts("Did not detect any app version problems")
+        System.halt(1)
 
       true ->
-        IO.puts("Tags already exist for #{format_app(app_name, app_version)}. Please update each `apps/${app}/mix.exs` with a new version.")
+        IO.puts("Tag exists for #{format_app(app_name, app_version)}. Please update `apps/#{app_name}/mix.exs` with a new version.")
+        System.halt(0)
     end
   end
 
@@ -31,7 +32,7 @@ defmodule Mix.Tasks.App.TagExists do
   end
 
   defp format_app(app, vsn) do
-    "`#{String.capitalize(app)} #{vsn}}`"
+    "`#{String.capitalize(app)} #{vsn}`"
   end
 
   def application_tags(application) do
