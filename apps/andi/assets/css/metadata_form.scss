@@ -7,6 +7,7 @@
     "top-level-selector organization"
     "maintainer-name level-of-access"
     "maintainer-email language"
+    "dataset-owner ."
     "release-date homepage"
     "update-frequency license "
     "keywords benefit-rating"
@@ -41,6 +42,7 @@
 @include area(metadata-form, top-level-selector);
 @include area(metadata-form, maintainer-name);
 @include area(metadata-form, maintainer-email);
+@include area(metadata-form, dataset-owner);
 @include area(metadata-form, release-date);
 @include area(metadata-form, license);
 @include area(metadata-form, update-frequency);

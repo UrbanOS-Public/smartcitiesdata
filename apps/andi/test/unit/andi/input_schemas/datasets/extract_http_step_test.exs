@@ -9,7 +9,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStepTest do
     setup do
       changes = %{
         type: "http",
-        method: "POST",
+        action: "POST",
         url: "123.com",
         body: "",
         queryParams: %{"x" => "y"},

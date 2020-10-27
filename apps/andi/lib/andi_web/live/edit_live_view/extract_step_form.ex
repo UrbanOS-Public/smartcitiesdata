@@ -78,9 +78,9 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
                 </div>
 
                 <div class="extract-step-form__method">
-                  <%= label(f, :method, DisplayNames.get(:method), class: "label label--required") %>
-                  <%= select(f, :method, get_http_methods(), id: "http_method", class: "extract-step-form__method select") %>
-                  <%= ErrorHelpers.error_tag(f, :method) %>
+                  <%= label(f, :action, DisplayNames.get(:method), class: "label label--required") %>
+                  <%= select(f, :action, get_http_methods(), id: "http_method", class: "extract-step-form__method select") %>
+                  <%= ErrorHelpers.error_tag(f, :action) %>
                 </div>
 
                 <div class="extract-step-form__url">
@@ -93,7 +93,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
                 <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_headers, css_label: "source-headers", form: f, field: :headers ) %>
 
-                <%= if input_value(f, :method) == "POST" do %>
+                <%= if input_value(f, :action) == "POST" do %>
                   <div class="extract-step-form__body">
                     <%= label(f, :body, DisplayNames.get(:body), class: "label") %>
                     <%= textarea(f, :body, class: "input full-width", disabled: @testing) %>
