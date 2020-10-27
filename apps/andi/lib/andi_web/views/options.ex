@@ -122,8 +122,8 @@ defmodule AndiWeb.Views.Options do
   def http_method() do
     %{
       # "" => "",
-      "GET" => "GET"
-      # "POST" => "POST"
+      "GET" => "GET",
+      "POST" => "POST"
     }
   end
 
