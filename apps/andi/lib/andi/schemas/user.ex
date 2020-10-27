@@ -6,7 +6,6 @@ defmodule Andi.Schemas.User do
   alias Andi.Repo
   import Ecto.Changeset
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.StructTools
   import Ecto.Query, only: [from: 1]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}

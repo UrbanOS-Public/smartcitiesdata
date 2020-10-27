@@ -2,6 +2,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Phoenix.ConnTest
   use Placebo
+  alias Andi.Schemas.User
 
   import Phoenix.LiveViewTest
   import FlokiHelpers, only: [get_text: 2, get_values: 2]
@@ -12,6 +13,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   setup do
     allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: @user)
+    allow(User.get_all(), return: [@user])
+    allow(User.get_by_subject_id(any()), return: @user)
     []
   end
 
