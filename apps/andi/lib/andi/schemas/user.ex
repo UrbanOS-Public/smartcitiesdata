@@ -5,13 +5,18 @@ defmodule Andi.Schemas.User do
   use Ecto.Schema
   alias Andi.Repo
   import Ecto.Changeset
+  alias Andi.InputSchemas.Datasets.Dataset
+  import Ecto.Query, only: [from: 1]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
 
   schema "users" do
     field(:subject_id, :string)
     field(:email, :string)
+    has_many(:datasets, Dataset, on_replace: :delete, foreign_key: :owner_id)
   end
+
+  def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(user, changes) do
     user
@@ -29,7 +34,15 @@ defmodule Andi.Schemas.User do
     |> Repo.insert_or_update()
   end
 
-  def get_by_subject_id(subject_id) do
-    Repo.get_by(__MODULE__, subject_id: subject_id)
+  def get_all() do
+    query = from(user in __MODULE__)
+
+    Repo.all(query) |> Repo.preload([:datasets])
   end
+
+  def get_by_subject_id(subject_id) do
+    Repo.get_by(__MODULE__, subject_id: subject_id) |> Repo.preload([:datasets])
+  end
+
+  def preload(struct), do: struct
 end
