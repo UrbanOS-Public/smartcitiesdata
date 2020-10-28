@@ -58,7 +58,7 @@ jobs:
       - name: Run unit tests
         run: |
           bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}
-      - name: Publish Development Image
+      - name: Publish development image
         run: |
           bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}
         if: github.event_name == 'push'
