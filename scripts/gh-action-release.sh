@@ -2,8 +2,10 @@
 
 set -e
 
-if [[ ! -z "$GITHUB_REF" ]]; then
-    tag=${GITHUB_REF#refs/tags/}
+REF=${1}
+
+if [[ ! -z "$REF" ]]; then
+    tag=${REF#refs/tags/}
     app=$(echo "$tag" | cut -d@ -f1)
     vsn=$(echo "$tag" | cut -d@ -f2)
     mix_vsn=$(mix cmd --app $app mix app.version | tail -1)
@@ -18,6 +20,6 @@ if [[ ! -z "$GITHUB_REF" ]]; then
     ./scripts/build.sh $app $vsn
     ./scripts/publish.sh $app $vsn
 else
-    echo "Ref $GITHUB_REF should not be released. Exiting."
+    echo "Ref $REF should not be released. Exiting."
     exit 0
 fi

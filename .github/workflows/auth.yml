@@ -1,16 +1,16 @@
-name: providers
+name: auth
 on:
   push:
     branches:
       - master
     paths:
-    - 'apps/providers/**'
+    - 'apps/auth/**'
     - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
-    - 'apps/providers/**'
+    - 'apps/auth/**'
     - 'mix.lock'
 
 jobs:
@@ -32,3 +32,6 @@ jobs:
       - name: Run unit tests
         run: |
           bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}
+      - name: Run integration tests
+        run: |
+          bash scripts/gh-action-integration-test.sh ${GITHUB_WORKFLOW}

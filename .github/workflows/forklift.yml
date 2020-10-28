@@ -1,47 +1,21 @@
-name: Forklift
+name: forklift
 on:
   push:
     branches:
       - master
     paths:
     - 'apps/forklift/**'
-    - 'apps/pipeline/**'
-    - 'apps/web/**'
-    - 'apps/dead_letter/**'
-    - 'apps/definition*/**'
-    - 'apps/protocol*/**'
-    - 'apps/management/**'
-    - 'apps/ok/**'
-    - 'apps/auth/**'
-    - 'apps/annotated_retry/**'
-    - 'apps/dlq/**'
-    - 'apps/initializer/**'
-    - 'apps/properties/**'
-    - 'apps/telemetry_event/**'
     - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
     - 'apps/forklift/**'
-    - 'apps/pipeline/**'
-    - 'apps/web/**'
-    - 'apps/dead_letter/**'
-    - 'apps/definition*/**'
-    - 'apps/protocol*/**'
-    - 'apps/management/**'
-    - 'apps/ok/**'
-    - 'apps/auth/**'
-    - 'apps/annotated_retry/**'
-    - 'apps/dlq/**'
-    - 'apps/initializer/**'
-    - 'apps/properties/**'
-    - 'apps/telemetry_event/**'
     - 'mix.lock'
 
 jobs:
   ci:
-    name: Integration Tests
+    name: Verify Application
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -51,15 +25,19 @@ jobs:
           elixir-version: 1.8.2
       - name: Get dependencies
         run: |
-          mix local.rebar --force
-          mix local.hex --force
-          mix deps.get
+          bash scripts/gh-action-get-deps.sh
+      - name: Run static checks
+        run: |
+          bash scripts/gh-action-static-checks.sh ${GITHUB_WORKFLOW}
+      - name: Run unit tests
+        run: |
+          bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}
       - name: Run integration tests
         run: |
-          bash scripts/gh-action-test.sh forklift
-      - name: Publish Development Image
+          bash scripts/gh-action-integration-test.sh ${GITHUB_WORKFLOW}
+      - name: Publish development image
         run: |
-          bash scripts/gh-action-publish.sh forklift
+          bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}
         if: github.event_name == 'push'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}

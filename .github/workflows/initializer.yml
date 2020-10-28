@@ -1,16 +1,16 @@
-name: providers
+name: initializer
 on:
   push:
     branches:
       - master
     paths:
-    - 'apps/providers/**'
+    - 'apps/initializer/**'
     - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
-    - 'apps/providers/**'
+    - 'apps/initializer/**'
     - 'mix.lock'
 
 jobs:

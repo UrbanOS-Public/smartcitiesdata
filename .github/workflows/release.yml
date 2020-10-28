@@ -1,4 +1,4 @@
-name: Release
+name: release
 on:
   release:
     types: [created]
@@ -15,12 +15,10 @@ jobs:
           elixir-version: 1.8.2
       - name: Get dependencies
         run: |
-          mix local.rebar --force
-          mix local.hex --force
-          mix deps.get
+          bash scripts/gh-action-get-deps.sh
       - name: Build
         run: |
-          bash scripts/gh-action-release.sh
+          bash scripts/gh-action-release.sh ${GITHUB_REF}
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

@@ -1,16 +1,16 @@
-name: providers
+name: dlq
 on:
   push:
     branches:
       - master
     paths:
-    - 'apps/providers/**'
+    - 'apps/dlq/**'
     - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
-    - 'apps/providers/**'
+    - 'apps/dlq/**'
     - 'mix.lock'
 
 jobs:
