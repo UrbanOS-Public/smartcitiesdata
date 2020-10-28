@@ -10,7 +10,6 @@ defmodule Mix.Tasks.App.TagExists do
 
     case app_version in app_tags do
       false ->
-        IO.puts("Did not detect any app version problems")
         System.halt(1)
 
       true ->

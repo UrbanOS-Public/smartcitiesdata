@@ -1,4 +1,4 @@
-name: VersionChecker
+name: version_checker
 on: [pull_request_target]
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - name: Check App versions
         run: |
-          export MESSAGE=$(elixir -r scripts/version_differ.exs -e 'VersionDiffer.cli')
+          export MESSAGE=$(bash scripts/gh-action-check-version.sh)
           echo ::set-output name=pr_message::$MESSAGE
         id: differ
       - name: Comment PR
