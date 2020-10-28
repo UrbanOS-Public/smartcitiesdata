@@ -1,8 +1,8 @@
-name: VersionChecker
+name: version_checker
 on: [pull_request_target]
 
 jobs:
-  check-mix-version:
+  check-apps-for-update:
     runs-on: ubuntu-latest
 
     steps:
