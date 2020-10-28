@@ -423,7 +423,7 @@ defmodule AndiWeb.ExtractHttpStepTest do
 
     form_data = %{field => %{"0" => %{"key" => "", "value" => "where's my key"}}}
 
-    html = render_change(extract_step_form_view, :save)
+    html = render_change(extract_http_step_form_view, :validate, %{"form_data" => form_data})
 
     assert get_text(html, "##{field}-error-msg") == "Please enter valid key(s)."
 

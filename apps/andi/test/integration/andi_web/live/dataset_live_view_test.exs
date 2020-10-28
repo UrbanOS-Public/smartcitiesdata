@@ -60,7 +60,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       dataset_rows = find_elements(html, ".datasets-table__tr")
 
-      assert Enum.count(dataset_rows) == 3
+      assert Enum.count(dataset_rows) >= 3
     end
   end
 

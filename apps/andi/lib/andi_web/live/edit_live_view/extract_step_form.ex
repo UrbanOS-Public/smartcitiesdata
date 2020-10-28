@@ -117,6 +117,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
   def handle_event("save", _, socket) do
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
+
+    {:noreply, socket}
   end
 
   def handle_event("add-extract-step", _, socket) do
