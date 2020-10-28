@@ -38,7 +38,7 @@ jobs:
       - name: Publish development image
         run: |
           bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}
-        if: contains(['push', 'workflow_dispatch'], github.event_name)
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
