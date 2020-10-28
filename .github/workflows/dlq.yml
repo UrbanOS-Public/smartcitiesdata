@@ -5,11 +5,13 @@ on:
       - master
     paths:
     - 'apps/dlq/**'
+    - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
     - 'apps/dlq/**'
+    - 'mix.lock'
 
 jobs:
   ci:

@@ -6,4 +6,7 @@ app="$1"
 cd apps/$app
 mix format --check-formatted
 mix credo
-mix sobelow
+
+if mix help sobelow >/dev/null 2>&1; then
+    mix sobelow
+fi

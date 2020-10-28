@@ -1,6 +1,4 @@
-name: Valkyrie
-env:
-  NAME: valkyrie
+name: valkyrie
 on:
   push:
     branches:
@@ -56,16 +54,16 @@ jobs:
           bash scripts/gh-action-get-deps.sh
       - name: Run static checks
         run: |
-          bash scripts/gh-action-static-checks.sh ${NAME}
+          bash scripts/gh-action-static-checks.sh ${GITHUB_WORKFLOW}
       - name: Run unit tests
         run: |
-          bash scripts/gh-action-unit-test.sh ${NAME}
+          bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}
       - name: Run integration tests
         run: |
-          bash scripts/gh-action-integration-test.sh ${NAME}
+          bash scripts/gh-action-integration-test.sh ${GITHUB_WORKFLOW}
       - name: Publish Development Image
         run: |
-          bash scripts/gh-action-publish.sh ${NAME}
+          bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}
         if: github.event_name == 'push'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
