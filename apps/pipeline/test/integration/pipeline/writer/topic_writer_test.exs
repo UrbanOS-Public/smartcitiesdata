@@ -90,7 +90,10 @@ defmodule Pipeline.Writer.TopicWriterTest do
       Process.monitor(pid)
       assert_receive {:DOWN, _, _, ^pid, :normal}, 2_000
 
-      eventually(fn -> assert Elsa.topic?(@brokers, @topic) end)
+      eventually(fn ->
+        assert Elsa.topic?(@brokers, @topic)
+        assert {:ok, @topic} = Registry.meta(Pipeline.Registry, :"pipeline-#{@producer}")
+      end)
 
       assert :ok = TopicWriter.write(["foo"], instance: :pipeline, producer_name: @producer)
       assert :ok = TopicWriter.write(["bar", "baz"], instance: :pipeline, producer_name: @producer)
