@@ -2,6 +2,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   use ExUnit.Case
   use DiscoveryApi.ElasticSearchCase
   use DiscoveryApi.DataCase
+  use Properties, otp_app: :discovery_api
 
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
   import SmartCity.Event, only: [data_write_complete: 0]
@@ -17,6 +18,8 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   @instance_name DiscoveryApi.instance_name()
 
   @organization_id_1 "11119ccf-de9f-4229-842f-e3733972d111"
+
+  getter(:elasticsearch, generic: true)
 
   describe "create/0" do
     test "it creates the datasets index", %{es_indices: %{datasets: index}} do
@@ -956,7 +959,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   end
 
   defp reconfigure_es_url(url) do
-    original_config = Application.get_env(:discovery_api, :elasticsearch)
+    original_config = elasticsearch()
     updated_config = Keyword.put(original_config, :url, url)
 
     Application.put_env(:discovery_api, :elasticsearch, updated_config)

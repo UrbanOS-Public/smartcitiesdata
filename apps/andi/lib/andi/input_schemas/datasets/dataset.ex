@@ -25,7 +25,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   use Accessible
 
-  @cast_fields [:id, :ingestedTime, :version, :dlq_message]
+  @cast_fields [:id, :ingestedTime, :version, :dlq_message, :owner_id]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
@@ -51,7 +51,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     |> cast_assoc(:business, with: &Business.changeset_for_draft/2)
   end
 
-  def preload(struct), do: StructTools.preload(struct, [:technical, :business])
+  def preload(struct), do: StructTools.preload(struct, [:technical, :business, :owner])
 
   def full_validation_changeset(changes), do: full_validation_changeset(%__MODULE__{}, changes)
 

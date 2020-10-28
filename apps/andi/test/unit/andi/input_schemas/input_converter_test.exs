@@ -40,7 +40,27 @@ defmodule Andi.InputSchemas.InputConverterTest do
           technical: %{
             sourceQueryParams: %{"foo" => "bar", "baz" => "biz"},
             sourceHeaders: %{"food" => "bard", "bad" => "bid"},
-            extractSteps: []
+            extractSteps: [
+              %{
+                type: "http",
+                assigns: %{},
+                context: %{
+                  headers: %{"key" => "value"},
+                  queryParams: %{"key" => "val"},
+                  action: "POST",
+                  body: %{
+                    "url" => "http://www.something.com/",
+                    "action" => "Add",
+                    "params" => %{
+                      "intA" => 3,
+                      "intB" => 6
+                    }
+                  },
+                  protocol: ["http1"],
+                  url: "example.com"
+                }
+              }
+            ]
           }
         })
 

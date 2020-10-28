@@ -1,6 +1,8 @@
 defmodule DiscoveryApi.Data.HostedFileTest do
   use ExUnit.Case
   use DiscoveryApi.DataCase
+  use Properties, otp_app: :discovery_api
+
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
   import SmartCity.Event, only: [dataset_update: 0]
@@ -15,6 +17,8 @@ defmodule DiscoveryApi.Data.HostedFileTest do
   @dataset_id "123-123"
   @dataset_name "test_id"
 
+  getter(:hosted_bucket, generic: true)
+
   setup do
     Application.put_env(:ex_aws, :access_key_id, "testing_access_key")
     Application.put_env(:ex_aws, :secret_access_key, "testing_secret_key")
@@ -23,12 +27,12 @@ defmodule DiscoveryApi.Data.HostedFileTest do
 
     "test/integration/test-file.test"
     |> ExAws.S3.Upload.stream_file()
-    |> ExAws.S3.upload(Application.get_env(:discovery_api, :hosted_bucket), "test_org/#{@dataset_name}.geojson")
+    |> ExAws.S3.upload(hosted_bucket(), "test_org/#{@dataset_name}.geojson")
     |> ExAws.request!()
 
     "test/integration/test-file.test"
     |> ExAws.S3.Upload.stream_file()
-    |> ExAws.S3.upload(Application.get_env(:discovery_api, :hosted_bucket), "test_org/#{@dataset_name}.shp")
+    |> ExAws.S3.upload(hosted_bucket(), "test_org/#{@dataset_name}.shp")
     |> ExAws.request!()
 
     :ok
