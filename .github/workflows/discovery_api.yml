@@ -1,4 +1,6 @@
 name: Discovery Api
+env:
+  NAME: discovery_api
 on:
   push:
     branches:
@@ -41,7 +43,7 @@ on:
 
 jobs:
   ci:
-    name: Integration Tests
+    name: Verify Application
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -54,18 +56,22 @@ jobs:
           node-version: '10'
       - name: Get dependencies
         run: |
-          mix local.rebar --force
-          mix local.hex --force
-          mix deps.get
+          bash scripts/gh-action-get-deps.sh
+      - name: Run static checks
+        run: |
+          bash scripts/gh-action-static-checks.sh ${NAME}
+      - name: Run unit tests
+        run: |
+          bash scripts/gh-action-unit-test.sh ${NAME}
       - name: Run integration tests
         run: |
-          bash scripts/gh-action-test.sh discovery_api
+          bash scripts/gh-action-integration-test.sh ${NAME}
       - name: Run WDC tests
         run: |
           bash scripts/gh-action-wdc-test.sh
       - name: Publish Development Image
         run: |
-          bash scripts/gh-action-publish.sh discovery_api
+          bash scripts/gh-action-publish.sh ${NAME}
         if: github.event_name == 'push'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
