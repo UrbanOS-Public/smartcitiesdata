@@ -47,12 +47,12 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
             <%= hidden_input(f, :type) %>
             <%= hidden_input(f, :technical_id) %>
 
+            <div class="extract-step-form__type">
+            <h3>Date</h3>
+            </div>
+
             <div class="component-edit-section--<%= @visibility %>">
               <div class="extract-step-form-edit-section form-grid">
-                <div class="extract-step-form__type">
-                  <%= label(f, :type, DisplayNames.get(:type), class: "label") %>
-                  <%= select(f, :type, get_extract_step_types(), id: "step_type", class: "extract-step-form__type select") %>
-                </div>
 
                 <div class="extract-step-form__method">
                   <%= label(f, :action, DisplayNames.get(:method), class: "label label--required") %>

@@ -47,12 +47,12 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
             <%= hidden_input(f, :type) %>
             <%= hidden_input(f, :technical_id) %>
 
+            <div class="extract-step-form__type">
+              <h3>HTTP</h3>
+            </div>
+
             <div class="component-edit-section--<%= @visibility %>">
               <div class="extract-step-form-edit-section form-grid">
-                <div class="extract-step-form__type">
-                  <%= label(f, :type, DisplayNames.get(:type), class: "label") %>
-                  <%= select(f, :type, get_extract_step_types(), id: "step_type", class: "extract-step-form__type select") %>
-                </div>
 
                 <div class="extract-step-form__method">
                   <%= label(f, :action, DisplayNames.get(:method), class: "label label--required") %>
@@ -72,8 +72,8 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
                 <%= if input_value(f, :action) == "POST" do %>
                   <div class="extract-step-form__body">
-                    <%= label(f, :body, DisplayNames.get(:body), class: "label") %>
-                    <%= textarea(f, :body, class: "input full-width", disabled: @testing) %>
+                    <%= label(f, :body, DisplayNames.get(:body),  class: "label") %>
+                    <%= textarea(f, :body, class: "input full-width", phx_hook: "prettify", disabled: @testing) %>
                     <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false) %>
                   </div>
                 <% end %>
