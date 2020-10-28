@@ -33,6 +33,7 @@ defmodule Auth.MixProject do
       {:memoize, "~> 1.2"},
       {:ecto, "~> 3.3.4"},
       {:ecto_sql, "~> 3.0"},
+      {:plug, "~> 1.10"},
       {:postgrex, "~> 0.15.1"},
       {:ranch, "~> 1.7.1", override: true},
       {:bypass, "~> 2.0", only: [:test, :integration]},

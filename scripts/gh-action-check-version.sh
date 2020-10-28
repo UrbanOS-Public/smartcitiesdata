@@ -5,6 +5,11 @@ function _list_apps {
     find apps -name mix.exs | xargs -L1 dirname | grep -vw "apps/tasks"
 }
 
+(
+    cd apps/tasks
+    mix compile >/dev/null 2>&1
+)
+
 for app in $(_list_apps); do
     (
         cd $app
