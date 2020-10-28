@@ -21,6 +21,6 @@ for app in $(_list_apps); do
             continue
         fi
 
-        mix app.tag_exists
+        mix app.tag_exists || true
     )
 done
