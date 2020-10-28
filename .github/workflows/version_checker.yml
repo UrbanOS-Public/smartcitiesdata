@@ -24,7 +24,7 @@ jobs:
       - name: Check App versions
         run: |
           export MESSAGE=$(bash scripts/gh-action-check-version.sh)
-          echo ::set-output name=pr_message::${MESSAGE:-No app changes detected}
+          echo -e "::set-output name=pr_message::${MESSAGE:-No app changes detected}"
         id: differ
       - name: Comment PR
         uses: marocchino/sticky-pull-request-comment@v1
