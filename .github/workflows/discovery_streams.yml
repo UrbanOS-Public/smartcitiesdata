@@ -5,38 +5,12 @@ on:
       - master
     paths:
     - 'apps/discovery_streams/**'
-    - 'apps/pipeline/**'
-    - 'apps/web/**'
-    - 'apps/dead_letter/**'
-    - 'apps/definition*/**'
-    - 'apps/protocol*/**'
-    - 'apps/management/**'
-    - 'apps/ok/**'
-    - 'apps/auth/**'
-    - 'apps/annotated_retry/**'
-    - 'apps/dlq/**'
-    - 'apps/initializer/**'
-    - 'apps/properties/**'
-    - 'apps/telemetry_event/**'
     - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
     - 'apps/discovery_streams/**'
-    - 'apps/pipeline/**'
-    - 'apps/web/**'
-    - 'apps/dead_letter/**'
-    - 'apps/definition*/**'
-    - 'apps/protocol*/**'
-    - 'apps/management/**'
-    - 'apps/ok/**'
-    - 'apps/auth/**'
-    - 'apps/annotated_retry/**'
-    - 'apps/dlq/**'
-    - 'apps/initializer/**'
-    - 'apps/properties/**'
-    - 'apps/telemetry_event/**'
     - 'mix.lock'
 
 jobs:
