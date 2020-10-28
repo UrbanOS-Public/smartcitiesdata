@@ -1,5 +1,5 @@
 name: version_checker
-on: [pull_request]
+on: [pull_request_target]
 
 jobs:
   check-apps-for-update:
