@@ -12,6 +12,9 @@ on:
     paths:
     - 'apps/valkyrie/**'
     - 'mix.lock'
+  workflow_dispatch:
+    branches:
+      - master
 
 jobs:
   ci:
@@ -38,7 +41,7 @@ jobs:
       - name: Publish development image
         run: |
           bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}
-        if: github.event_name == 'push'
+        if: contains(['push', 'workflow_dispatch'], github.event_name)
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
