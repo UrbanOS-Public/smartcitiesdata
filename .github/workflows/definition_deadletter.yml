@@ -1,21 +1,21 @@
-name: Web
+name: definition_deadletter
 on:
   push:
     branches:
       - master
     paths:
-    - 'apps/web/**'
+    - 'apps/definition_deadletter/**'
     - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
-    - 'apps/web/**'
+    - 'apps/definition_deadletter/**'
     - 'mix.lock'
 
 jobs:
   ci:
-    name: Integration Tests
+    name: Verify Library
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -25,9 +25,10 @@ jobs:
           elixir-version: 1.8.2
       - name: Get dependencies
         run: |
-          mix local.rebar --force
-          mix local.hex --force
-          mix deps.get
-      - name: Run integration tests
+          bash scripts/gh-action-get-deps.sh
+      - name: Run static checks
         run: |
-          bash scripts/gh-action-test.sh web
+          bash scripts/gh-action-static-checks.sh ${GITHUB_WORKFLOW}
+      - name: Run unit tests
+        run: |
+          bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}

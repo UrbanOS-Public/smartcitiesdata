@@ -1,16 +1,16 @@
-name: providers
+name: management
 on:
   push:
     branches:
       - master
     paths:
-    - 'apps/providers/**'
+    - 'apps/management/**'
     - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
-    - 'apps/providers/**'
+    - 'apps/management/**'
     - 'mix.lock'
 
 jobs:

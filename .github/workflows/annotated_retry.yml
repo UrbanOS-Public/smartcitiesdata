@@ -1,16 +1,16 @@
-name: providers
+name: annotated_retry
 on:
   push:
     branches:
       - master
     paths:
-    - 'apps/providers/**'
+    - 'apps/annotated_retry/**'
     - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
-    - 'apps/providers/**'
+    - 'apps/annotated_retry/**'
     - 'mix.lock'
 
 jobs:

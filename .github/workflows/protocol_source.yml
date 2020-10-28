@@ -1,16 +1,16 @@
-name: providers
+name: protocol_source
 on:
   push:
     branches:
       - master
     paths:
-    - 'apps/providers/**'
+    - 'apps/protocol_source/**'
     - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
-    - 'apps/providers/**'
+    - 'apps/protocol_source/**'
     - 'mix.lock'
 
 jobs:
