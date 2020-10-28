@@ -14,7 +14,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   alias AndiWeb.Views.DisplayNames
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Views.HttpStatusDescriptions
-  alias Andi.InputSchemas.ExtractHttpSteps
+  alias Andi.InputSchemas.ExtractSteps
   alias AndiWeb.Helpers.FormTools
 
   def mount(_, %{"extract_step" => extract_step, "dataset_id" => dataset_id, "technical_id" => technical_id}, socket) do
@@ -127,14 +127,14 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
       socket.assigns.changeset
       |> Ecto.Changeset.apply_changes()
 
-    ExtractHttpSteps.update(current_changes)
+    ExtractSteps.update(current_changes, ExtractHttpStep)
 
     current_step_id = current_changes.id
-    {:ok, _dataset} = ExtractHttpSteps.add_extract_query_param(current_step_id)
+    {:ok, _dataset} = ExtractSteps.add_extract_query_param(current_step_id)
 
     new_changes =
       current_step_id
-      |> ExtractHttpSteps.get()
+      |> ExtractSteps.get(ExtractHttpStep)
       |> StructTools.to_map()
 
     changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
@@ -147,14 +147,14 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
       socket.assigns.changeset
       |> Ecto.Changeset.apply_changes()
 
-    ExtractHttpSteps.update(current_changes)
+    ExtractSteps.update(current_changes, ExtractHttpStep)
 
     current_step_id = current_changes.id
-    {:ok, _dataset} = ExtractHttpSteps.add_extract_header(current_step_id)
+    {:ok, _dataset} = ExtractSteps.add_extract_header(current_step_id)
 
     new_changes =
       current_step_id
-      |> ExtractHttpSteps.get()
+      |> ExtractSteps.get(ExtractHttpStep)
       |> StructTools.to_map()
 
     changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
@@ -166,11 +166,11 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     current_step_id = Ecto.Changeset.get_field(socket.assigns.changeset, :id)
     save_draft(socket)
 
-    {:ok, _dataset} = ExtractHttpSteps.remove_extract_query_param(current_step_id, id)
+    {:ok, _dataset} = ExtractSteps.remove_extract_query_param(current_step_id, id)
 
     new_changes =
       current_step_id
-      |> ExtractHttpSteps.get()
+      |> ExtractSteps.get(ExtractHttpStep)
       |> StructTools.to_map()
 
     changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
@@ -182,11 +182,11 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     current_step_id = Ecto.Changeset.get_field(socket.assigns.changeset, :id)
     save_draft(socket)
 
-    {:ok, _dataset} = ExtractHttpSteps.remove_extract_header(current_step_id, id)
+    {:ok, _dataset} = ExtractSteps.remove_extract_header(current_step_id, id)
 
     new_changes =
       current_step_id
-      |> ExtractHttpSteps.get()
+      |> ExtractSteps.get(ExtractHttpStep)
       |> StructTools.to_map()
 
     changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
@@ -235,10 +235,11 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   defp save_draft(socket) do
     new_validation_status = get_new_validation_status(socket.assigns.changeset)
 
+    changes_to_save =
     socket.assigns.changeset
     |> Andi.InputSchemas.InputConverter.form_changes_from_changeset()
     |> Map.put(:id, socket.assigns.extract_step_id)
-    |> Andi.InputSchemas.ExtractHttpSteps.update()
+    |> ExtractSteps.update(ExtractHttpStep)
 
     send(socket.parent_pid, {:validation_status, new_validation_status})
 

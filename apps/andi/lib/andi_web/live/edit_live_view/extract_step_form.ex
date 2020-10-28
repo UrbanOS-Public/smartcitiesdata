@@ -8,18 +8,19 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   require Logger
 
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
+  alias Andi.InputSchemas.Datasets.ExtractDateStep
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Views.HttpStatusDescriptions
-  alias Andi.InputSchemas.ExtractHttpSteps
+  alias Andi.InputSchemas.ExtractSteps
   alias AndiWeb.Helpers.FormTools
   alias AndiWeb.ExtractSteps.ExtractDateStepForm
   alias AndiWeb.ExtractSteps.ExtractHttpStepForm
 
-  def mount(_, %{"dataset" => dataset}, socket) do
+  def mount(params, %{"dataset" => dataset}, socket) do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
@@ -28,7 +29,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
        extract_steps: get_in(dataset, [:technical, :extractSteps]),
        testing: false,
        test_results: nil,
-       visibility: "collapsed",
+       visibility: "expanded",
        validation_status: "collapsed",
        dataset_id: dataset.id,
        technical_id: dataset.technical.id
@@ -59,12 +60,13 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
           </div>
         </div>
 
-        <div class="add-step-section">
-          <button type="button" phx-click="add-extract-step" class="btn">Add Step</button>
-        </div>
+       <form phx-submit="add-extract-step">
+          <%= select(:form, :step_type, get_http_methods(), id: "http_method", class: "extract-step-form__method select") %>
+          <button type="submit" class="btn">Add Step</button>
+        </form>
 
         <%= for extract_step <- @extract_steps do %>
-          <%= module_to_render = render_extract_step_form(extract_step) %>
+          <% module_to_render = render_extract_step_form(extract_step) %>
           <%= live_render(@socket, module_to_render, id: extract_step.id, session: %{"extract_step" => extract_step, "technical_id" => @technical_id, "dataset_id" => @dataset_id}) %>
         <% end %>
 
@@ -125,17 +127,30 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, socket}
   end
 
-  def handle_event("add-extract-step", _, socket) do
+  def handle_event("add-extract-step", %{"step_type" => step_type}, socket) do
     technical_id = socket.assigns.technical_id
+    new_extract_step = create_new_extract_step(step_type, technical_id) |> IO.inspect(label: "new step")
 
+    all_steps_for_technical = ExtractSteps.all_for_technical(technical_id)
+    {:noreply, assign(socket, extract_steps:  all_steps_for_technical |> IO.inspect(label: "all steps"))}
+  end
+
+  defp create_new_extract_step("http", technical_id) do
     new_extract_step =
       ExtractHttpStep.changeset_from_andi_step(nil, technical_id)
       |> Ecto.Changeset.apply_changes()
       |> Andi.InputSchemas.StructTools.to_map()
 
-    ExtractHttpSteps.update(new_extract_step)
+    ExtractSteps.update(new_extract_step, ExtractHttpStep)
+  end
 
-    {:noreply, assign(socket, extract_steps: ExtractHttpSteps.all_for_technical(technical_id))}
+  defp create_new_extract_step("date", technical_id) do
+    new_extract_step =
+      ExtractDateStep.changeset_from_andi_step(nil, technical_id)
+      |> Ecto.Changeset.apply_changes()
+      |> Andi.InputSchemas.StructTools.to_map()
+
+    ExtractSteps.update(new_extract_step, ExtractDateStep)
   end
 
   def handle_info(
@@ -206,22 +221,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   defp map_to_dropdown_options(options) do
     Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
   end
-
-  # defp save_draft(socket) do
-  #   new_validation_status =
-  #     case socket.assigns.changeset.valid? do
-  #       true -> "valid"
-  #       false -> "invalid"
-  #     end
-
-  #   new_changes =
-  #     socket.assigns.changeset
-  #     |> Andi.InputSchemas.InputConverter.form_changes_from_changeset()
-
-  #   Andi.InputSchemas.Datasets.update_from_form(socket.assigns.dataset_id, %{extractSteps: [new_changes]})
-
-  #   {:noreply, assign(socket, validation_status: new_validation_status)}
-  # end
 
   defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
        when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
