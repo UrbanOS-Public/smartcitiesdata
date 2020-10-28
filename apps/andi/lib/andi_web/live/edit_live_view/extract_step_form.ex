@@ -153,6 +153,10 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, socket}
   end
 
+  def handle_info({:validation_status, validation_status}, socket) do
+    {:noreply, assign(socket, validation_status: validation_status)}
+  end
+
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
   # Flags should be reset here.

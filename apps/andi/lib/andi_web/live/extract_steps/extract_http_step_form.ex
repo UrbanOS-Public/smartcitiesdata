@@ -233,16 +233,14 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   defp save_draft(socket) do
-    new_validation_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
+    new_validation_status = get_new_validation_status(socket.assigns.changeset)
 
     socket.assigns.changeset
     |> Andi.InputSchemas.InputConverter.form_changes_from_changeset()
     |> Map.put(:id, socket.assigns.extract_step_id)
     |> Andi.InputSchemas.ExtractHttpSteps.update()
+
+    send(socket.parent_pid, {:validation_status, new_validation_status})
 
     {:noreply, assign(socket, validation_status: new_validation_status)}
   end
@@ -278,6 +276,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
   defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
        when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
+    send(socket.parent_pid, {:validation_status, validation_status})
     assign(socket, validation_status: get_new_validation_status(socket.assigns.changeset))
   end
 

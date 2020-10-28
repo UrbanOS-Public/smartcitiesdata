@@ -47,14 +47,17 @@ defmodule AndiWeb.ExtractStepFormTest do
   end
 
   test "given an invalid extract step, the section shows an invalid status", %{andi_dataset: dataset, view: view} do
-    extract_step_id = get_extract_step_id(dataset, 0)
+    extract_step_id = get_extract_step_id(dataset, 1)
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
     extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)
 
     form_data = %{"type" => "http", "action" => "GET", "url" => ""}
-    html = render_change(extract_http_step_form_view, "validate", %{"form-data" => form_data})
+    render_change(extract_http_step_form_view, "validate", %{"form_data" => form_data})
 
-    refute Enum.empty?(find_elements(html, ".component-number-status--invalid"))
+    render_change(extract_steps_form_view, "save")
+    html = render(extract_steps_form_view)
+
+    refute Enum.empty?(find_elements(html, ".component-number--invalid"))
   end
 
   defp get_extract_step_id(dataset, index) do
