@@ -16,6 +16,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias AndiWeb.Views.HttpStatusDescriptions
   alias Andi.InputSchemas.ExtractHttpSteps
   alias AndiWeb.Helpers.FormTools
+  alias AndiWeb.ExtractSteps.ExtractDateStepForm
+  alias AndiWeb.ExtractSteps.ExtractHttpStepForm
 
   def mount(_, %{"dataset" => dataset}, socket) do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
@@ -40,6 +42,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
         "expanded" -> "MINIMIZE"
       end
 
+
     ~L"""
       <div id="extract-step-form" class="form-component">
         <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="extract_form">
@@ -61,7 +64,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
         </div>
 
         <%= for extract_step <- @extract_steps do %>
-          <%= live_render(@socket, AndiWeb.ExtractSteps.ExtractHttpStepForm, id: extract_step.id, session: %{"extract_step" => extract_step, "technical_id" => @technical_id, "dataset_id" => @dataset_id}) %>
+          <%= module_to_render = render_extract_step_form(extract_step) %>
+          <%= live_render(@socket, module_to_render, id: extract_step.id, session: %{"extract_step" => extract_step, "technical_id" => @technical_id, "dataset_id" => @dataset_id}) %>
         <% end %>
 
         <div class="edit-button-group form-grid">
@@ -164,6 +168,10 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     send(socket.parent_pid, :page_error)
     {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
   end
+
+  defp render_extract_step_form(%{type: "http"}), do: ExtractHttpStepForm
+
+  defp render_extract_step_form(%{type: "date"}), do: ExtractDateStepForm
 
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
