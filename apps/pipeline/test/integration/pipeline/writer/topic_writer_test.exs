@@ -86,6 +86,10 @@ defmodule Pipeline.Writer.TopicWriterTest do
 
       assert :ok = TopicWriter.init(config)
 
+      eventually(fn ->
+        assert Elsa.topic?(@topic)
+      end)
+
       [{_, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
       Process.monitor(pid)
       assert_receive {:DOWN, _, _, ^pid, :normal}, 2_000
