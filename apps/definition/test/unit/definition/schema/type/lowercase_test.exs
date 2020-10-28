@@ -8,12 +8,12 @@ defmodule Definition.Schema.Type.LowercaseTest do
   data_test "will validate and coerce binaries to lower case" do
     assert output == Norm.conform(input, %Lowercase{})
 
-    where [
+    where([
       [:input, :output],
       ["hello", {:ok, "hello"}],
       ["Hello", {:ok, "hello"}],
       [1, {:error, [%{input: 1, path: [], spec: "is not a binary"}]}]
-    ]
+    ])
   end
 
   test "will work in maps" do
