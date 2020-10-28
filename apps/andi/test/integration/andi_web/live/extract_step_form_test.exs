@@ -8,6 +8,7 @@ defmodule AndiWeb.ExtractStepFormTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   import FlokiHelpers,
     only: [
@@ -26,7 +27,18 @@ defmodule AndiWeb.ExtractStepFormTest do
   @url_path "/datasets/"
 
   setup %{conn: conn} do
-    smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http"}, %{type: "http"}]}})
+    default_extract_step = %{
+      type: "http",
+      context: %{
+        action: "GET",
+        url: "example.com"
+      }
+    }
+    extract_steps = [
+      default_extract_step,
+      default_extract_step
+    ]
+    smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
     {:ok, andi_dataset} = Datasets.update(smrt_dataset)
 
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
@@ -47,6 +59,22 @@ defmodule AndiWeb.ExtractStepFormTest do
   end
 
   test "given an invalid extract step, the section shows an invalid status", %{andi_dataset: dataset, view: view} do
+    extract_step_id = get_extract_step_id(dataset, 0)
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)
+
+    form_data = %{"type" => "http", "action" => "GET", "url" => ""}
+    render_change(extract_http_step_form_view, "validate", %{"form_data" => form_data})
+
+    render_change(extract_steps_form_view, "save")
+
+    eventually(fn ->
+      html = render(extract_steps_form_view)
+      assert Enum.empty?(find_elements(html, ".component-number--invalid")) == false
+    end)
+  end
+
+  test "given an previously invalid extract step, and its made valid, the section shows a valid status", %{andi_dataset: dataset, view: view} do
     extract_step_id = get_extract_step_id(dataset, 1)
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
     extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)
@@ -55,9 +83,13 @@ defmodule AndiWeb.ExtractStepFormTest do
     render_change(extract_http_step_form_view, "validate", %{"form_data" => form_data})
 
     render_change(extract_steps_form_view, "save")
+
+    form_data = %{"type" => "http", "action" => "GET", "url" => "bob.com"}
+    render_change(extract_http_step_form_view, "validate", %{"form_data" => form_data})
+
     html = render(extract_steps_form_view)
 
-    refute Enum.empty?(find_elements(html, ".component-number--invalid"))
+    refute Enum.empty?(find_elements(html, ".component-number--valid"))
   end
 
   defp get_extract_step_id(dataset, index) do

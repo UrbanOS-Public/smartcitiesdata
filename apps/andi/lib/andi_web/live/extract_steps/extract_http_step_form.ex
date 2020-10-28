@@ -276,8 +276,9 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
   defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
        when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
-    send(socket.parent_pid, {:validation_status, validation_status})
-    assign(socket, validation_status: get_new_validation_status(socket.assigns.changeset))
+    new_status = get_new_validation_status(socket.assigns.changeset)
+    send(socket.parent_pid, {:validation_status, new_status})
+    assign(socket, validation_status: new_status)
   end
 
   defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
