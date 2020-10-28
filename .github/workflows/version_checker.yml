@@ -24,11 +24,10 @@ jobs:
       - name: Check App versions
         run: |
           export MESSAGE=$(bash scripts/gh-action-check-version.sh)
-          echo "::set-output name=pr_message::${MESSAGE:-No app changes detected}"
+          echo -e "${MESSAGE:-No app changes detected}" > comment-updates.txt
         id: differ
       - name: Comment PR
         uses: marocchino/sticky-pull-request-comment@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          message: |
-            ${{ steps.differ.outputs.pr_message }}
+          path: comment-updates.txt
