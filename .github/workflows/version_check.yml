@@ -1,4 +1,4 @@
-name: version_checker
+name: VersionChecker
 on: [pull_request_target]
 
 jobs:
