@@ -1,0 +1,36 @@
+name: Definition Dead Letter
+env:
+  NAME: definition_deadletter
+on:
+  push:
+    branches:
+      - master
+    paths:
+    - 'apps/definition_deadletter/**'
+    - 'mix.lock'
+  pull_request:
+    branches:
+      - master
+    paths:
+    - 'apps/definition_deadletter/**'
+    - 'mix.lock'
+
+jobs:
+  ci:
+    name: Verify Library
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1.2.0
+        with:
+          otp-version: 21.3
+          elixir-version: 1.8.2
+      - name: Get dependencies
+        run: |
+          bash scripts/gh-action-get-deps.sh
+      - name: Run static checks
+        run: |
+          bash scripts/gh-action-static-checks.sh ${NAME}
+      - name: Run unit tests
+        run: |
+          bash scripts/gh-action-unit-test.sh ${NAME}
